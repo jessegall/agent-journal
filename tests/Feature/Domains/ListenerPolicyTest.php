@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Reflection\Support\CatalogueReflectorFactory;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Providers\DomainEventServiceProvider;
@@ -12,6 +11,7 @@ use App\Domains\Registration\ListenerPolicy;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\ListenerOwnership;
 use App\Pipelines\Contracts\PipelineRunner;
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Ui\Contracts\UserInterfaceUpdater;
 use App\Web\Listeners\BroadcastPageChange;
 use Domain\Plans\Api\Events\PlanProgressChanged;

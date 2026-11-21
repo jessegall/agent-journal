@@ -6,7 +6,6 @@ namespace Tests\Feature\Connections;
 
 use App\Agents\Enums\ArrangementType;
 use App\Agents\Models\Host;
-use Domain\Access\Support\AccessSettings;
 use App\Connections\Enums\BindingReadiness;
 use App\Connections\Exceptions\DeviceGrantRefused;
 use App\Connections\Models\DeviceGrant;
@@ -17,6 +16,7 @@ use App\Connections\Values\BindingFolder;
 use App\Connections\Values\CommandFrame;
 use App\Connections\Values\InstallTicket;
 use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
@@ -84,6 +84,7 @@ final class ProjectCommandsTest extends TestCase
 
         $this->command($start, 'request-3', $binding->id, ['comment', 'list'])->assertUnauthorized();
         $this->expectException(DeviceGrantRefused::class);
+
         try {
             DeviceGrant::usable(InstallTicket::digestOf('device-grant'));
         } finally {

@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Hooks\Drivers\Adapters;
 
 use App\Hooks\Drivers\Contracts\DriverCall;
-use App\Hooks\Enums\HookEvent;
-use App\Hooks\Inputs\Contracts\HookInput;
-use App\Hooks\Inputs\Values\HookIdentity;
-use App\Hooks\Inputs\ToolFinished;
-use App\Hooks\Inputs\Values\ToolResult;
-use App\Hooks\Stack\HookAnswer;
-use Closure;
 use App\Hooks\Drivers\DriverReplies;
 use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Drivers\HookPayload;
+use App\Hooks\Enums\HookEvent;
+use App\Hooks\Inputs\Contracts\HookInput;
+use App\Hooks\Inputs\ToolFinished;
+use App\Hooks\Inputs\Values\HookIdentity;
+use App\Hooks\Inputs\Values\ToolResult;
+use App\Hooks\Stack\HookAnswer;
+use Closure;
 
 /**
  * A native call the journal answers: the input for the walk, and how the program's reply is rendered from the answer.

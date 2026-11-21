@@ -6,11 +6,10 @@ namespace App\Hooks\Delivery;
 
 use App\Bus\Contracts\FactStaging;
 use App\Contracts\Event;
+use App\Hooks\StateEvents\StateEventDispatch;
+use App\Hooks\StateEvents\StateEventScope;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
-use App\Hooks\StateEvents\StateEventDispatch;
-use App\Hooks\Delivery\StateEventDispatcher;
-use App\Hooks\StateEvents\StateEventScope;
 
 /**
  * Stages a bridged fact's dispatch with the audience its sibling's admission holds while its command runs, and

@@ -11,7 +11,6 @@ use App\Docking\Sources\Contracts\DockRegistration;
 use App\Docking\Sources\Contracts\FallbackDocks;
 use App\Docking\Sources\DockDefinition;
 use App\Reflection\Contracts\ReflectorFactory;
-use App\Reflection\Support\Reflector;
 use App\Registries\Support\Registry;
 use Illuminate\Container\Attributes\Singleton;
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Agents\Events\MergeOutcomeRecorded;
 use App\Agents\Events\SessionClosed;
 use App\Agents\Events\SessionOpened;
@@ -21,6 +20,7 @@ use App\Pipelines\Contracts\PipelineRunner;
 use App\Processes\Events\OutputChunkCommitted;
 use App\Profiles\Events\SignInAttemptFinished;
 use App\Profiles\Listeners\ReleaseSignInWriter;
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Web\Listeners\BroadcastPageChange;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Api\Events\PlanStarted;

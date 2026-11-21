@@ -62,6 +62,9 @@ if $fresh; then
     rm -f .env.before-local-host secrets/journal_host_secret
 fi
 
+# The services that run journal-agent take the one built here first, so a Go change needs no image build.
+sh scripts/dev-watch-host.sh --once
+
 docker compose up -d --wait app
 docker compose exec -T app php artisan migrate --force
 $fresh && docker compose exec -T app php artisan db:seed --force
@@ -82,3 +85,4 @@ docker compose up -d --wait
 docker compose exec -T app php artisan profile:activate
 docker compose exec -T app php artisan agents:install
 echo "The local host is enrolled and running."
+echo "To reload the host on every Go change, run: sh scripts/dev-watch-host.sh"

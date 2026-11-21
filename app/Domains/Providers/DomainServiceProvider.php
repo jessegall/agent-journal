@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domains\Providers;
 
-use App\Reflection\Contracts\ReflectorFactory;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Support\RecordPolicyMappings;
 use App\Autoload\Support\Psr4ClassNames;
@@ -21,6 +20,7 @@ use App\Mcp\Support\McpCatalogue;
 use App\Pipelines\Contracts\PipelineRunner;
 use App\Processes\Rules\CoreRules;
 use App\Processes\Support\CommandRuleRegistry;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Settings\Support\CoreSettings;
 use App\Settings\Support\EmptySettingsDefinition;
 use App\Settings\Support\SettingRegistry;

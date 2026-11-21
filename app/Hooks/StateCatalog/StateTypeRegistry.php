@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Hooks\StateCatalog;
 
-use App\Hooks\StateLoading\Contracts\StateLoader;
-use App\Hooks\StateCatalog\Registration\Contracts\StateRegistration;
-use App\Hooks\StateLoading\Contracts\TickableStateLoader;
 use App\Hooks\Exceptions\StateTypeRepeated;
 use App\Hooks\Exceptions\StateTypesFrozen;
 use App\Hooks\Exceptions\StateTypeUnknown;
+use App\Hooks\StateCatalog\Registration\Contracts\StateRegistration;
+use App\Hooks\StateLoading\Contracts\StateLoader;
+use App\Hooks\StateLoading\Contracts\TickableStateLoader;
 use App\Registries\Support\Registry;
 
 /**

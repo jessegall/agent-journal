@@ -6,6 +6,7 @@ ${node.line}: ${node.label}
 30 days
 7 days
 A sample run: it shows what the command does and gives no result.
+A terminal on {{ data.machineLabel }} asks to run journal commands for {{ data.projectLabel }}.
 API key
 About the whole record
 About {{ describeRange(text.range) }}
@@ -29,8 +30,12 @@ Agents
 Alias
 Allow one sample run of this exact line
 Any
+Approve
+Approve a terminal
+Approve only when the terminal shows this same code. It lets that terminal run journal commands for this project for twelve hours.
 Approve proposal {{ proposal.number }}
 Approve revision {{ proposal.currentRevision }}
+Approved. Go back to the terminal.
 Asks
 Audit
 Back
@@ -68,7 +73,7 @@ Confirm
 Confirm disabling
 Connect a project
 Connecting lets {{ data.serverName }} direct an agent that can read and change the files of that project.
-Connecting projects is switched off on this server.
+Connecting projects is switched off on this server, or its release cannot connect a project yet.
 Continue
 Continues on its own
 Contract
@@ -322,6 +327,7 @@ This machine and the share service must keep running for the link to work.
 This page could not be refreshed.
 This profile does not allow that model.
 This profile runs only its own driver.
+This release cannot do {{ release.withheldCapabilities.join(', ') }} yet.
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
 To renew it, choose Sign in again on the account.
 Turning off traffic inspection does not hide the content from the provider.
@@ -408,6 +414,9 @@ updated {{ ageSeconds().toFixed(1) }} s ago
 {{ rule.ruleId }} ({{ rule.owner }}) revision {{ rule.revision }}: {{ rule.state }} - {{ rule.reason }}
 {{ runtime.isHealthy ? 'Running' : 'Not answering: no sign of life in the last 45 seconds' }}. Version {{ runtime.endpointVersion }}, last seen {{ runtime.lastHealthAt ?? 'never' }}.
 {{ status.watchers }} watching
+{{ target.name }} is not offered yet: it does not run {{ target.withheldProviders.join(' or ') }} yet.
+{{ target.name }} is not offered yet: its size was not measured.
+{{ target.name }}: {{ megabytes(target.bytes) }} to download and install. Needs {{ target.prerequisites.join(', ') }}.
 {{ title }} can sit beside this pane or join its tabs.
 · device sign-in
 · sign-in page

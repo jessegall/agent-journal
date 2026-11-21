@@ -6,8 +6,8 @@ namespace App\Agents\Models;
 
 use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Values\WorkReference;
 use App\Agents\Values\CommitObservation;
+use App\Agents\Values\WorkReference;
 use App\Agents\Values\WorkspaceFacts;
 use App\Agents\Values\WorkspaceReadReference;
 use App\Contracts\Support\InsertsAbsentRows;

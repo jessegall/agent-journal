@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Hooks\Drivers\Adapters;
 
 use App\Hooks\Drivers\Contracts\DriverCall;
-use Closure;
 use App\Hooks\Drivers\DriverReplies;
 use App\Hooks\Drivers\DriverReply;
+use Closure;
 
 /**
  * A native call to the journal's own MCP server, its tool search or its resources. The bus guard judges the journal

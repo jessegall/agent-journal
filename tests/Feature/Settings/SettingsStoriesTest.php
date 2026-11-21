@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Domains\Support\DomainRegistry;
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Settings\Contracts\SettingCommands;
 use App\Settings\Contracts\SettingsCatalogue;
 use App\Settings\Contracts\SettingsDefinition;

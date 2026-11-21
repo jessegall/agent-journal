@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Sharing\Support;
 
 use App\Reflection\Contracts\ReflectorFactory;
-use App\Reflection\Support\Reflector;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Exceptions\ShareGatewayInvalid;
 use App\Sharing\Exceptions\UnknownShareGateway;

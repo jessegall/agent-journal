@@ -7,7 +7,7 @@
         "laravel",
         "framework"
     ],
-    "license": "MIT",
+    "license": "FSL-1.1-ALv2",
     "require": {
         "php": "^8.5",
         "brick/math": "^1.0",
@@ -121,8 +121,12 @@
         "types:check": [
             "phpstan analyse --memory-limit=1G"
         ],
-        "test": "@php tests/bin/in-docker.php test:inside",
+        "test": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php tests/bin/in-docker.php test:inside"
+        ],
         "test:inside": [
+            "Composer\\Config::disableProcessTimeout",
             "@php artisan config:clear --ansi",
             "@lint:check",
             "@types:check",

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Communication\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Contracts\TargetedCommand;
 use App\Bus\Attributes\Effect;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
+use App\Bus\Contracts\TargetedCommand;
 use App\Bus\Enums\CommandEffectType;
 use App\Bus\Support\Command;
 use App\Communication\Policies\MessagePolicy;

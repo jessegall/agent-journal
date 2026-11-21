@@ -9,6 +9,8 @@ use App\Pipelines\Support\PipelineRunner;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ShellTree;
+use App\Reflection\Contracts\ReflectorFactory;
+use App\Reflection\Support\CatalogueReflectorFactory;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\Container as ContainerContract;
 
@@ -21,6 +23,7 @@ trait ParsesBashLines
     {
         $container = new Container();
         $container->bind(PipelineRunnerContract::class, PipelineRunner::class);
+        $container->bind(ReflectorFactory::class, CatalogueReflectorFactory::class);
         $container->instance(ContainerContract::class, $container);
 
         return $container->make(TreeParser::class)->parse($line, ShellDialect::Bash);

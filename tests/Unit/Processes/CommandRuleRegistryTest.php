@@ -21,6 +21,8 @@ use App\Processes\Values\ProgramSpellings;
 use App\Processes\Values\RuleReference;
 use App\Processes\Values\RuleScope;
 use App\Processes\Values\UnresolvedFact;
+use App\Reflection\Contracts\ReflectorFactory;
+use App\Reflection\Support\CatalogueReflectorFactory;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\Container as ContainerContract;
 use PHPUnit\Framework\TestCase;
@@ -154,6 +156,7 @@ final class CommandRuleRegistryTest extends TestCase
     {
         $container = new Container();
         $container->bind(PipelineRunnerContract::class, PipelineRunner::class);
+        $container->bind(ReflectorFactory::class, CatalogueReflectorFactory::class);
         $container->instance(ContainerContract::class, $container);
         $part = $container->make(TreeParser::class)->parse($line, ShellDialect::Bash)->executableParts()[0];
 

@@ -13,6 +13,15 @@ locally. `sh scripts/local-host.sh --fresh` first removes the local containers, 
 for a clean demo. The development override runs the agent daemon rootful, since OrbStack and Docker Desktop have no
 Sysbox.
 
+In development, code changes reach the running services without an image build. PHP reloads through Octane's watcher
+and the frontend through Vite. For the Go host, `sh scripts/dev-watch-host.sh` builds `journal-agent` on the machine
+with Go's caches whenever a file under `tools/journal-agent` changes, and restarts the host and the sign-in service,
+which the development override points at that binary. The agent image's own tools (the executor, the shell bridge,
+the managed policy) stay in the image, so a change there takes `sh .docker/helper/build.sh linux/arm64` and
+`sh scripts/local-host.sh`. The cached layers make that rebuild quick. Every build ends with
+`.docker/helper/prune.sh`, which removes untagged images and build cache older than a week or past 10 GB, and keeps
+the cache the next build reuses.
+
 ## 1. What the server needs
 
 - **Linux on x86_64 with Docker Engine 28 or later** and the Compose plugin. The test server runs Ubuntu 26.04 (kernel

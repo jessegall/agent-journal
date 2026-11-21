@@ -6,8 +6,6 @@ namespace App\Hooks\CallStages;
 
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\AgentStack;
-use App\Hooks\CallStages\HookCallStage;
-use App\Hooks\CallStages\RestoredCall;
 
 /**
  * A hook call answered for the first time, with the reminders its context start brings.

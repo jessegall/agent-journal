@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\CommandScope;
@@ -14,6 +13,7 @@ use App\Mcp\Exceptions\McpCommandMissing;
 use App\Mcp\Support\McpCatalogue;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Values\ProfileBase;
+use App\Reflection\Support\CatalogueReflectorFactory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Tests\Feature\Bus\CommandBusTestCase;

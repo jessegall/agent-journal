@@ -6,7 +6,6 @@ namespace App\Hooks\Drivers;
 
 use App\Files\Attributes\OutsideThePlaces;
 use App\Files\Enums\PlaceExemption;
-use App\Hooks\Drivers\CodexFolderTrust;
 use App\Hooks\Exceptions\AccountConfigurationUnwritten;
 
 /**

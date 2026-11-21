@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Hooks\StateLoading;
 
-use App\Hooks\References\StateReference;
+use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Exceptions\StateClassMismatch;
 use App\Hooks\Exceptions\StateSubjectMissing;
+use App\Hooks\References\StateReference;
 use App\Hooks\States\AgentState;
 use Closure;
-use App\Hooks\Decisions\StateReferences;
 
 /**
  * The state of each reference of one batch, by its place in the batch; a reference whose subject is gone has none,

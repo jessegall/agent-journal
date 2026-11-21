@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hooks\StateLoading\Contracts;
 
 use App\Hooks\Decisions\StateReferences;
-use App\Hooks\StateLoading\StateSet;
 use App\Hooks\Enums\SessionTransferType;
+use App\Hooks\StateLoading\StateSet;
 use App\Hooks\States\AgentState;
 
 /**

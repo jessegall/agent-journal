@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
-use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Domains\Support\DomainRegistry;
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Settings\Commands\DisableSettingGroup;
 use App\Settings\Commands\EnableSettingGroup;
 use App\Settings\Commands\ResetSetting;

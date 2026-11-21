@@ -26,3 +26,14 @@ rebuilt. Follow what it does with `docker compose logs -f updater`, and turn it 
 
 Know what you switch on: the updater holds the Docker socket, which gives it root on the server, and it runs whatever
 the branch holds a minute after each push.
+
+## Licence
+
+Copyright 2026 Jesse Gall.
+
+The journal is under the [Functional Source License, version 1.1, with Apache 2.0 as its future licence](LICENSE.md)
+(FSL-1.1-ALv2). You may use, change and pass it on for any purpose, also inside a company and to build software you
+sell, except a competing use: offering the journal, or a version of it, to others as a commercial product or hosted
+service. Two years after a version is released, that version is also available under the Apache License 2.0.
+
+A commercial licence without this condition is available from the copyright holder.

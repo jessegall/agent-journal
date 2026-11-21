@@ -7,7 +7,6 @@ namespace App\Hooks\CallStages;
 use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\HookAnswer;
-use App\Hooks\CallStages\HookCallStage;
 
 /**
  * A hook call with the reply the program gets, ready to be saved with its stack.

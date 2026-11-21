@@ -1,10 +1,14 @@
 FROM node:24-bookworm-slim AS node
 
-# journal-agent, the protected agent host, built from tools/journal-agent for the runner image.
+# journal-agent, the protected agent host, built from tools/journal-agent for the runner image. The modules are
+# downloaded from go.mod and go.sum alone, and both Go caches live in BuildKit cache mounts, so a code change compiles
+# only the packages it touched.
 FROM golang:1.26.4-bookworm AS agent-host
 WORKDIR /src
+COPY tools/journal-agent/go.mod tools/journal-agent/go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
 COPY tools/journal-agent/ ./
-RUN CGO_ENABLED=0 go build -o /out/journal-agent ./cmd/journal-agent
+RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 go build -o /out/journal-agent ./cmd/journal-agent
 
 # Tunler for the share service, built from one pinned commit whose source archive must match its checksum; see
 # docs/sharing/binaries.md for how the commit and the sum were checked.
@@ -49,7 +53,8 @@ WORKDIR /app
 FROM php AS vendor
 
 COPY composer.json composer.lock ./
-RUN composer install --no-interaction --prefer-dist --no-scripts --no-autoloader
+RUN --mount=type=cache,target=/root/.cache/composer COMPOSER_CACHE_DIR=/root/.cache/composer \
+    composer install --no-interaction --prefer-dist --no-scripts --no-autoloader
 
 # The npm packages, from package.json and package-lock.json alone.
 FROM node AS node-modules
@@ -57,7 +62,7 @@ FROM node AS node-modules
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 # The journal's PHP console: the packages and the code, with no frontend build. The app and the runner image build on
 # it, so there is one PHP setup.

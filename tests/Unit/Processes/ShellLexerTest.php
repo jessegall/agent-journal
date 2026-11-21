@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Pipelines\Support\PipelineRunner;
 use App\Processes\Enums\AnalysisLimit;
 use App\Processes\Enums\ParseOutcome;
@@ -16,6 +15,7 @@ use App\Processes\Syntax\LexedLine;
 use App\Processes\Syntax\LexerScan;
 use App\Processes\Syntax\ShellLexer;
 use App\Processes\Syntax\Token;
+use App\Reflection\Support\CatalogueReflectorFactory;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
 

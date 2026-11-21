@@ -11,9 +11,10 @@ ARG TARGETOS
 ARG TARGETARCH
 WORKDIR /src
 COPY tools/journal-agent/go.mod tools/journal-agent/go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
 COPY tools/journal-agent/ ./
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-init ./cmd/journal-init \
+RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-init ./cmd/journal-init \
     && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-exec ./cmd/journal-exec \
     && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-shell ./cmd/journal-shell
 

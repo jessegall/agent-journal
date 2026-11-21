@@ -6,11 +6,11 @@ namespace App\Hooks\Settlement;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Enums\LifecycleStage;
+use App\Hooks\Lifecycle\LifecycleAnswer;
+use App\Hooks\Lifecycle\LifecycleOrigin;
 use App\Hooks\Stack\Frames\Frame;
 use App\Hooks\Values\LifecycleCommands;
 use Illuminate\Support\Str;
-use App\Hooks\Lifecycle\LifecycleAnswer;
-use App\Hooks\Lifecycle\LifecycleOrigin;
 
 /**
  * The answers of one settled stack change, in the order the callbacks ran, each with its ordinal under one transition.

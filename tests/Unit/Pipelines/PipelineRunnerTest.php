@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Pipelines;
 
-use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Pipelines\Exceptions\StepOutOfOrder;
 use App\Pipelines\Support\PipelineRunner;
+use App\Reflection\Support\CatalogueReflectorFactory;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Pipelines\Counted;

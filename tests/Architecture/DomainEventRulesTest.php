@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Reflection\Support\CatalogueReflectorFactory;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Registration\ListenerPolicy;
@@ -14,6 +13,7 @@ use App\Domains\Support\StateListenerDeclarations;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Stack\StateTypes;
 use App\Pipelines\Contracts\PipelineRunner;
+use App\Reflection\Support\CatalogueReflectorFactory;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\EventCallScan;

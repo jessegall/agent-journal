@@ -6,7 +6,6 @@ namespace App\Scripts\Support;
 
 use App\Contracts\DomainAvailability;
 use App\Reflection\Contracts\ReflectorFactory;
-use App\Reflection\Support\Reflector;
 use App\Registries\Support\Registry;
 use App\Scripts\Contracts\ScriptKeywordDefinition;
 use App\Scripts\Contracts\ScriptKeywordRegistration;

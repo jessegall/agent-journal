@@ -11,3 +11,8 @@ HelperPurpose::forSubject
 SequenceRun::written
 TaskRun::replyInboxId
 CommandAlias::recordLine
+ChildClaim::ofMain
+ChildClaim::nestedUnder
+ChildClaim::assertBaseIsHead
+WorktreeDelivery::recordMerged
+WorktreeDelivery::recordConflict

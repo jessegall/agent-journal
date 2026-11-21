@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Hooks\Inputs\Values;
 
 use App\Agents\Values\Operation;
-use App\Hooks\Inputs\Values\FileChange;
 
 /**
  * The files one edit changes, in the order the program changes them.

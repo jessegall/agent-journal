@@ -7,10 +7,10 @@ namespace App\Hooks\ToolNames\Enums;
 use App\Agents\Enums\ResourceType;
 use App\Agents\Values\Operation;
 use App\Agents\Values\ResourceRequest;
+use App\Hooks\Enums\FileOperation;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\Values\DriverToolInput;
 use App\Operations\Enums\AccessType;
-use App\Hooks\Enums\FileOperation;
 
 /**
  * The Claude Code tools the adapter knows, and what each one is to the journal.

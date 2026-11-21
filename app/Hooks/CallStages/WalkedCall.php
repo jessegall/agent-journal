@@ -7,8 +7,6 @@ namespace App\Hooks\CallStages;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
-use App\Hooks\CallStages\HookCallStage;
-use App\Hooks\CallStages\SettledCall;
 
 /**
  * A hook call with its final answer and the stack it found.

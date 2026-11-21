@@ -6,8 +6,6 @@ namespace App\Hooks\CallStages;
 
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\HookAnswer;
-use App\Hooks\CallStages\HookCallStage;
-use App\Hooks\CallStages\RenderedCall;
 
 /**
  * A hook call whose frames that left, arrived or came back on top were told so.

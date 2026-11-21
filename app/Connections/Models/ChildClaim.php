@@ -107,7 +107,7 @@ final class ChildClaim extends Model implements ReadableModel
         string $childAgentId,
         ChildRole $role,
         WorkspaceFacts $read,
-        ?string $parentClaimId,
+        string|null $parentClaimId,
         string $rootRuntimeId,
     ): self {
         if ($read->commit->reason === CommitObservation::UNBORN) {

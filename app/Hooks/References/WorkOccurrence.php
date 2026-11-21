@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Hooks\References;
 
-use App\Hooks\References\StateReference;
-use App\Hooks\References\SubjectReference;
-
 /**
  * One occurrence of the work a frame stands for: its state type, its subject and the run of that subject, such as run
  * 3 of task 41. A finished occurrence never comes alive again; a new run is a new occurrence.

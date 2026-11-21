@@ -6,8 +6,6 @@ namespace App\Hooks\References;
 
 use App\Agents\Values\WorkReference;
 use App\Hooks\Enums\NoSubject;
-use App\Hooks\References\WorkOccurrence;
-use App\Hooks\References\SubjectReference;
 
 /**
  * Names a state to put on a stack: its registered type and the subject run it is about.

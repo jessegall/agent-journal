@@ -6,10 +6,10 @@ namespace App\Hooks\Drivers\Adapters;
 
 use App\Hooks\Actions\RecordDriverFailure;
 use App\Hooks\Drivers\Contracts\DriverCall;
+use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Inputs\FailureDetails;
 use App\Hooks\Inputs\Values\HookIdentity;
 use Closure;
-use App\Hooks\Drivers\DriverReply;
 
 /**
  * A native notification that a request failed: the journal records it for recovery and answers with the empty reply

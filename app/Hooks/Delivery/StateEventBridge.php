@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Hooks\Delivery;
 
 use App\Contracts\Event;
-use App\Hooks\Delivery\StateEventDelivery;
 use App\Hooks\StateEvents\StateEventDispatch;
 use App\Hooks\StateEvents\StateEventScope;
 

@@ -14,7 +14,7 @@ use Illuminate\Contracts\Config\Repository;
  */
 final class ProjectKey
 {
-    private ?ConnectedProject $connected = null;
+    private ConnectedProject|null $connected = null;
 
     public function __construct(private readonly Repository $config) {}
 

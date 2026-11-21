@@ -10,11 +10,11 @@ use App\Mcp\Contracts\JobPermissionReader;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use App\Mcp\Support\ToolArguments;
+use App\Reflection\Support\Reflector;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Server\Tool;
 use PhpOption\Option;
-use App\Reflection\Support\Reflector;
 
 /**
  * The base of every journal tool: a strict published schema and arguments limited to the fields it declares.

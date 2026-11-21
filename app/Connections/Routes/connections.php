@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
+use App\Agents\Enums\HostProtocolVersion;
 use App\Connections\Http\Controllers\ApproveDeviceGrantController;
+use App\Connections\Http\Controllers\BindingPresenceController;
+use App\Connections\Http\Controllers\BindingRuntimeController;
 use App\Connections\Http\Controllers\CancelProjectCommandController;
 use App\Connections\Http\Controllers\DeviceCommandController;
 use App\Connections\Http\Controllers\DeviceGrantController;
 use App\Connections\Http\Controllers\InstallScriptController;
-use App\Connections\Http\Controllers\ProjectCommandController;
 use App\Connections\Http\Controllers\IssueProjectInvitationController;
+use App\Connections\Http\Controllers\ProjectCommandController;
 use App\Connections\Http\Controllers\RecoverBindingController;
 use App\Connections\Http\Controllers\RedeemProjectInvitationController;
 use App\Connections\Http\Controllers\RevokeDeviceGrantController;
 use App\Connections\Http\Controllers\RevokeProjectBindingController;
 use App\Connections\Http\Controllers\RevokeProjectInvitationController;
-use App\Agents\Enums\HostProtocolVersion;
-use App\Connections\Http\Controllers\BindingPresenceController;
-use App\Connections\Http\Controllers\BindingRuntimeController;
 use App\Connections\Http\Controllers\RuntimeLeaseController;
 use App\Connections\Http\Controllers\WorktreeDeliveryController;
 use Illuminate\Support\Facades\Route;

@@ -40,7 +40,7 @@ final class ReflectionCatalogue
      *
      * @param  string  $name  any spelling PHP accepts for the type
      * @param  Closure(class-string): Reflector<object>  $build
-     * @return Reflector<object>  the Reflector of exactly the type $name names
+     * @return Reflector<object> the Reflector of exactly the type $name names
      *
      * @throws ClassMissing
      */

@@ -76,3 +76,6 @@ secrets/*
 /.installed-version
 /.installed-commit
 /.failed-commit
+
+# The journal-agent scripts/dev-watch-host.sh builds for the local containers.
+/.build

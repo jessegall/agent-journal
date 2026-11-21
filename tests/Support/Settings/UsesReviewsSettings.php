@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support\Settings;
 
-use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Actors\Support\ActorContext;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\DomainSwitches;
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Settings\Contracts\SettingCommands;
 use App\Settings\Support\CoreSettings;
 use App\Settings\Support\RegisteredSettingCommands;

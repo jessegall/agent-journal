@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Hooks\Inputs\Values;
 
 use App\Hooks\Enums\ToolOutcome;
-use App\Hooks\Inputs\Values\DriverToolInput;
 
 final readonly class ToolResult
 {

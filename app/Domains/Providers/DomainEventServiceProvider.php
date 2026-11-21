@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domains\Providers;
 
-use App\Reflection\Contracts\ReflectorFactory;
 use App\Bus\Support\RequiredListenerRegistry;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
@@ -19,6 +18,7 @@ use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Delivery\StateEventBridge;
 use App\Hooks\Stack\StateTypes;
 use App\Pipelines\Contracts\PipelineRunner;
+use App\Reflection\Contracts\ReflectorFactory;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 

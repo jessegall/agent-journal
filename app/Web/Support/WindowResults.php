@@ -8,7 +8,6 @@ use App\Docking\Data\DockOfferData;
 use App\Docking\Sources\Contracts\DockableWindow;
 use App\Docking\Sources\Contracts\DockOffers;
 use App\Reflection\Contracts\ReflectorFactory;
-use App\Reflection\Support\Reflector;
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Declarations\ResolverDefinition;
 use App\Web\Contracts\WindowResults as WindowResultsContract;

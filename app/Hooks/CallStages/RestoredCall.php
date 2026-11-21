@@ -7,8 +7,6 @@ namespace App\Hooks\CallStages;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
-use App\Hooks\CallStages\HookCallStage;
-use App\Hooks\CallStages\WalkedCall;
 
 /**
  * A hook call with its agent's stack restored as the call found it.

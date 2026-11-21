@@ -17,6 +17,8 @@ use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ProgramIdentity;
 use App\Processes\Values\ProgramSpellings;
 use App\Processes\Values\UnresolvedFact;
+use App\Reflection\Contracts\ReflectorFactory;
+use App\Reflection\Support\CatalogueReflectorFactory;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\Container as ContainerContract;
 use PHPUnit\Framework\TestCase;
@@ -136,6 +138,7 @@ final class ProgramIdentityTest extends TestCase
     {
         $container = new Container();
         $container->bind(PipelineRunnerContract::class, PipelineRunner::class);
+        $container->bind(ReflectorFactory::class, CatalogueReflectorFactory::class);
         $container->instance(ContainerContract::class, $container);
 
         return $container->make(TreeParser::class);

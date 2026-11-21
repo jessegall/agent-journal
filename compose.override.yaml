@@ -118,12 +118,27 @@ services:
         privileged: true
 
     # The Mac's Docker names an image by its manifest digest, not by the config digest the agent daemon pins, so the
-    # services the Mac itself runs from the runner image take it by its build tag.
+    # services the Mac itself runs from the runner image take it by its build tag. The services that run journal-agent
+    # find the one scripts/dev-watch-host.sh builds on this machine first on their PATH, so a Go change needs no image
+    # build. The sign-in service keeps the image's PHP code: the project folder would bring the development .env, whose
+    # cache and queue settings name services its network cannot reach.
     accounts-volume:
         image: journal-runner:build
     agent-host-enroll:
         image: journal-runner:build
+        environment:
+            PATH: &development-path /opt/journal-development/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        volumes:
+            - &development-binaries ./.build/dev/bin:/opt/journal-development/bin:ro
     agent-host:
         image: journal-runner:build
+        environment:
+            PATH: *development-path
+        volumes:
+            - *development-binaries
     accounts:
         image: journal-runner:build
+        environment:
+            PATH: *development-path
+        volumes:
+            - *development-binaries

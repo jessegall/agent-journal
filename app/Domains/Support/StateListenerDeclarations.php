@@ -10,7 +10,6 @@ use App\Hooks\Declarations\StateMethod;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\StateCatalog\StateTypeRegistry;
 use App\Reflection\Contracts\ReflectorFactory;
-use App\Reflection\Support\Reflector;
 
 /**
  * Collects state listeners from loaders and checks the owners of their methods and source files.

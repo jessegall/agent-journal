@@ -20,10 +20,10 @@ function megabytes(bytes: number): string {
                 and install. Needs {{ target.prerequisites.join(', ') }}.
             </li>
             <li v-else-if="!target.isMeasured">
-                {{ target.name }} is withheld: its size was not measured.
+                {{ target.name }} is not offered yet: its size was not measured.
             </li>
             <li v-else>
-                {{ target.name }} is withheld: it does not run
+                {{ target.name }} is not offered yet: it does not run
                 {{ target.withheldProviders.join(' or ') }} yet.
             </li>
         </template>

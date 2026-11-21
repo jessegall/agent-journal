@@ -198,9 +198,9 @@ final readonly class ReleaseManifest
             throw ReleaseManifestInvalid::for($version, "{$key} is not a list");
         }
 
-        return array_values(array_map(fn (mixed $name) => is_string($name) && $name !== ''
+        return array_map(fn (mixed $name) => is_string($name) && $name !== ''
             ? $name
-            : throw ReleaseManifestInvalid::for($version, "an entry of {$key} is not a name"), $names));
+            : throw ReleaseManifestInvalid::for($version, "an entry of {$key} is not a name"), $names);
     }
 
     /**

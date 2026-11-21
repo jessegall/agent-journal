@@ -6,11 +6,11 @@ namespace App\Hooks\Inspection\Queries;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Inspection\Contracts\StackInspectionQuery as StackInspectionQueryContract;
+use App\Hooks\Inspection\InspectedCall;
+use App\Hooks\Inspection\StackInspection;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Stack\StackRestorer;
-use App\Hooks\Inspection\InspectedCall;
-use App\Hooks\Inspection\StackInspection;
 
 /**
  * The named read a signed-in user makes of any agent's stack: an explicit authorized query, never the calling agent's

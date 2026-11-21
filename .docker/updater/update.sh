@@ -74,7 +74,7 @@ install() {
         docker compose exec -T app php artisan profile:activate >/dev/null &&
         docker compose exec -T app php artisan cache:forget installed-version &&
         check_front_door &&
-        docker image prune -f >/dev/null
+        sh .docker/helper/prune.sh >/dev/null
 }
 
 # A service reads a file mounted from the installation folder only when it starts, and compose sees no change in it,

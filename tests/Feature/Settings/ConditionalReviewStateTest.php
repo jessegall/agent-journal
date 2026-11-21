@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
@@ -22,6 +21,7 @@ use App\Hooks\Models\AgentStackRow;
 use App\Hooks\References\StateReference;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Support\StackTransaction;
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Settings\Exceptions\SettingsUnavailable;
 use App\Settings\Models\SettingsRecord;
 use App\Settings\Storage\EncodedToggle;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Reflection\Support\CatalogueReflectorFactory;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Contracts\ToolDiscovery;
 use App\Agents\Support\AgentContext;
@@ -15,6 +14,7 @@ use App\Mcp\Exceptions\McpToolNameInvalid;
 use App\Mcp\Exceptions\McpToolNameTaken;
 use App\Mcp\Servers\JournalServer;
 use App\Mcp\Support\McpCatalogue;
+use App\Reflection\Support\CatalogueReflectorFactory;
 use Carbon\CarbonImmutable;
 use Laravel\Mcp\Server\Tool;
 use Tests\Fixtures\Domains\Ledger\LedgerDomain;

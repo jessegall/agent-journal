@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Hooks\StateCatalog\Contracts;
 
+use App\Hooks\Contracts\WorkOccurrenceGuard;
 use App\Hooks\StateCatalog\StateTypeRegistry;
 use App\Hooks\Ticks\TickingTypes;
-use App\Hooks\Contracts\WorkOccurrenceGuard;
 
 /**
  * What other Core areas use of the Hooks area's StateTypes.

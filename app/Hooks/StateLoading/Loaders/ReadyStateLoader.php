@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Hooks\StateLoading\Loaders;
 
 use App\Hooks\Contracts\OperationPolicy;
-use App\Hooks\StateLoading\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReferences;
-use App\Hooks\StateLoading\StateSet;
 use App\Hooks\Enums\SessionTransferType;
+use App\Hooks\StateLoading\Contracts\StateLoader;
+use App\Hooks\StateLoading\StateSet;
 use App\Hooks\States\Contracts\StopConditionGate;
 use App\Hooks\States\ReadyState;
 use Illuminate\Contracts\Container\Container;

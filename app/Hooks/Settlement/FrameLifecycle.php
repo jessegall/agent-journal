@@ -14,7 +14,6 @@ use App\Hooks\Exceptions\StackTooDeep;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\StateEvents\StateEventActivity;
 use Illuminate\Container\Attributes\Scoped;
-use App\Hooks\Settlement\LifecycleAnswers;
 
 /**
  * Calls the lifecycle methods a committed stack change asks for, from the frames before and after it, compared by

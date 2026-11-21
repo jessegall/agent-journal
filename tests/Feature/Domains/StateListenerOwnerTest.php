@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Reflection\Support\CatalogueReflectorFactory;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Support\DomainRegistry;
@@ -12,6 +11,7 @@ use App\Domains\Support\ListenerOwnership;
 use App\Domains\Support\StateListenerDeclarations;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\StateCatalog\StateTypeRegistry;
+use App\Reflection\Support\CatalogueReflectorFactory;
 use Tests\Fixtures\Hooks\Declarations\OwnerlessLoader;
 use Tests\Fixtures\Hooks\Declarations\OwnerlessState;
 use Tests\TestCase;

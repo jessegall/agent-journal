@@ -9,8 +9,8 @@ use App\Actors\Values\PolicyDefinition;
 use App\Bus\Support\EntryDispatchers;
 use App\Connections\Policies\ConnectionsPolicy;
 use App\Connections\Support\ProjectCommands;
-use App\Processes\Support\JournalRoutes;
 use App\Operations\Enums\AccessType;
+use App\Processes\Support\JournalRoutes;
 use Illuminate\Support\ServiceProvider;
 
 /**

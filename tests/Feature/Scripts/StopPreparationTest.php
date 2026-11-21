@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Scripts;
 
-use App\Agents\Values\CommitObservation;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\ReportWorkspaceRead;
 use App\Agents\Models\WorkspaceRead;
+use App\Agents\Values\CommitObservation;
 use App\Agents\Values\WorkReference;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Contracts\StopPreparer;
