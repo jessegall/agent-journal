@@ -195,12 +195,15 @@ services:
     # server's own Docker socket.
     # Mounts the accounts volume first, from the runner image, so the volume starts with that image's folder: owned by
     # 10001, the sign-in service's user, mode 0700. A volume first mounted by the agent daemon would start root-owned.
+    # The accounts root is root's and not writable by anyone else, so the program's user can neither replace one
+    # account's folder nor make another: the agent host makes and removes each account folder as root (doc 78
+    # revision 2, Startup and ownership). This also settles a volume an earlier version made as the program's user.
     accounts-volume:
         profiles: [contained]
         restart: 'no'
         image: ${RUNNER_IMAGE:-journal-runner:unset}
-        user: '10001:10001'
-        command: ['true']
+        user: '0:0'
+        command: ['sh', '-c', 'chown 0:0 /srv/journal/accounts && chmod 0755 /srv/journal/accounts']
         volumes:
             - accounts-data:/srv/journal/accounts
         network_mode: none

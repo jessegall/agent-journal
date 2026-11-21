@@ -20,6 +20,7 @@ use App\Profiles\Exceptions\SignInMethodMissing;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\SignInAttempt;
+use App\Profiles\Support\LocalAccountFolders;
 use App\Profiles\Support\PrivateSignInProcesses;
 use App\Profiles\Support\SignInProtocols;
 use App\Profiles\Values\ClaimedSignIn;
@@ -221,7 +222,7 @@ final class SignInHostTest extends TestCase
         $protocols = new SignInProtocols($this->app);
         $protocols->register('claude-code', SignInMethod::OAuth, FinishingProtocol::class);
 
-        $ran = new PrivateSignInProcesses($host, $protocols, static fn () => usleep(10_000), $this->app->make(Files::class))->runNext();
+        $ran = new PrivateSignInProcesses($host, $protocols, static fn () => usleep(10_000), $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->runNext();
 
         $this->assertTrue($ran);
         $this->assertSame([SignInOutcome::Waiting, SignInOutcome::Verified], $host->outcomes);
@@ -238,7 +239,7 @@ final class SignInHostTest extends TestCase
         $protocols = new SignInProtocols($this->app);
         $protocols->register('claude-code', SignInMethod::OAuth, LingeringProtocol::class);
 
-        new PrivateSignInProcesses($host, $protocols, static fn () => usleep(10_000), $this->app->make(Files::class))->runNext();
+        new PrivateSignInProcesses($host, $protocols, static fn () => usleep(10_000), $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->runNext();
 
         $this->assertSame([SignInOutcome::Waiting], $host->outcomes);
         $this->assertSame(2, $host->pollCount);
@@ -252,7 +253,7 @@ final class SignInHostTest extends TestCase
         $protocols = new SignInProtocols($this->app);
         $protocols->register('claude-code', SignInMethod::OAuth, FinishingProtocol::class);
 
-        new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class))->runNext();
+        new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->runNext();
 
         $this->assertSame([SignInOutcome::Failed], $host->outcomes);
     }
@@ -262,7 +263,7 @@ final class SignInHostTest extends TestCase
         $claimed = self::claimed('codex', SignInMethod::OAuth, $this->root.'/x');
         $host = new RecordingSignInHost($claimed);
 
-        new PrivateSignInProcesses($host, new SignInProtocols($this->app), static fn () => null, $this->app->make(Files::class))->runNext();
+        new PrivateSignInProcesses($host, new SignInProtocols($this->app), static fn () => null, $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->runNext();
 
         $this->assertSame([SignInOutcome::Failed], $host->outcomes);
     }

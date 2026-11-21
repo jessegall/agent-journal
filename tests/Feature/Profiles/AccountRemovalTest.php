@@ -40,6 +40,7 @@ use App\Profiles\Models\AccountUsageWindow;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Resolvers\AccountsWindowResolver;
+use App\Profiles\Support\LocalAccountFolders;
 use App\Profiles\Support\PrivateSignInProcesses;
 use App\Profiles\Support\SignInProtocols;
 use App\Profiles\Support\UsageReadings;
@@ -169,7 +170,7 @@ final class AccountRemovalTest extends TestCase
             false,
             'account',
         );
-        $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class));
+        $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)));
 
         $this->assertTrue($runner->cleanNext());
         $host->nextCleanup = new ClaimedCleanup(
@@ -222,7 +223,7 @@ final class AccountRemovalTest extends TestCase
                 throw new LogicException('a folder that is gone is used by no session');
             }
         };
-        $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), $nobodyMayDrain);
+        $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)), $nobodyMayDrain);
 
         $this->assertTrue($runner->cleanNext());
         $this->assertFalse($runner->cleanNext());
@@ -260,7 +261,7 @@ final class AccountRemovalTest extends TestCase
             }
         };
 
-        new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), $stillRunning)->cleanNext();
+        new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)), $stillRunning)->cleanNext();
 
         $this->assertEquals([new CleanupProgress(false, false)], $host->cleanups);
         $this->assertDirectoryExists($directory);
@@ -331,7 +332,7 @@ final class AccountRemovalTest extends TestCase
                 return ! $this->isRunning;
             }
         };
-        $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), $session);
+        $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)), $session);
 
         $host->nextCleanup = $displaced;
         $runner->cleanNext();

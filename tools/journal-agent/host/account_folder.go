@@ -94,3 +94,64 @@ func (containers Containers) makeHistoryMountPoint(ctx context.Context, accountI
 
 	return nil
 }
+
+// accountsFolder is the agent daemon's folder of every account's own sign-in folder.
+const accountsFolder = journalRoot + "/accounts"
+
+// accountFolderCapabilities are all a root container needs to keep the accounts root root's, to hand a new account
+// folder to the program's user, and to remove a folder that user filled.
+var accountFolderCapabilities = []string{"--cap-add", "CHOWN", "--cap-add", "FOWNER", "--cap-add", "DAC_OVERRIDE"}
+
+// MakeAccountFolder makes the account's folder, and its history folder, owned by the program's user with mode 0700,
+// and keeps the accounts root root's with mode 0755, so the program's user can neither replace one account's folder
+// nor make another. A folder that already exists is left as it is; a link in its place is refused.
+func (containers Containers) MakeAccountFolder(ctx context.Context, accountID string) error {
+	if !plainAccountID.MatchString(accountID) {
+		return fmt.Errorf("%w: %q is not a plain account id", ErrAccountFolderUnsafe, accountID)
+	}
+
+	user := strconv.Itoa(agentUID)
+	script := strings.Join([]string{
+		"set -e",
+		"chown 0:0 /accounts && chmod 0755 /accounts",
+		`folder=/accounts/` + accountID,
+		`[ -L "$folder" ] && { echo "the account folder is a link"; exit 1; }`,
+		`[ -e "$folder" ] || { mkdir -m 0700 "$folder"; chown ` + user + ":" + user + ` "$folder"; }`,
+		`[ -e "$folder/` + historyFolder + `" ] || { mkdir -m 0700 "$folder/` + historyFolder + `"; chown ` + user + ":" +
+			user + ` "$folder/` + historyFolder + `"; }`,
+	}, "\n")
+	if output, err := containers.runAsRoot(ctx, script); err != nil {
+		return fmt.Errorf("making the account folder failed: %w: %s", err, output)
+	}
+
+	return nil
+}
+
+// RemoveAccountFolder removes the account's folder and everything in it, or a link standing in its place without
+// following it.
+func (containers Containers) RemoveAccountFolder(ctx context.Context, accountID string) error {
+	if !plainAccountID.MatchString(accountID) {
+		return fmt.Errorf("%w: %q is not a plain account id", ErrAccountFolderUnsafe, accountID)
+	}
+
+	if output, err := containers.runAsRoot(ctx, `rm -rf -- /accounts/`+accountID); err != nil {
+		return fmt.Errorf("removing the account folder failed: %w: %s", err, output)
+	}
+
+	return nil
+}
+
+// runAsRoot runs a shell script in the agent image as root, with no network, only the accounts folder mounted and
+// only the capabilities an account folder needs.
+func (containers Containers) runAsRoot(ctx context.Context, script string) (string, error) {
+	run := []string{
+		"run", "--rm", "--network", "none", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
+		"--user", "0:0", "--label", installationLabel + "=" + string(containers.Rules.InstallationName),
+		"--mount", "type=bind,source=" + accountsFolder + ",target=/accounts",
+	}
+	run = append(run, accountFolderCapabilities...)
+	run = append(run, "--entrypoint", "sh", containers.Rules.AgentImage, "-c", script)
+	output, err := containers.command(ctx, run...).CombinedOutput()
+
+	return strings.TrimSpace(string(output)), err
+}

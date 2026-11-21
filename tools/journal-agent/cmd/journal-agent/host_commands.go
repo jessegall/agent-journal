@@ -161,6 +161,7 @@ func serve(arguments []string) error {
 	go opener.usage.Run(ctx, journal)
 	sessions := host.ContainerSessions{}
 	var bindsAccount func(ctx context.Context, folder string) (bool, error)
+	var folders accountFolders
 	if arrangement.IsContained() {
 		sessions, err = host.ContainerSessionsOf(ctx, host.Containers{Docker: "docker", Host: *dockerSocket}, string(installation))
 		if err != nil {
@@ -169,6 +170,7 @@ func serve(arguments []string) error {
 		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage}
 		containers := host.Containers{Docker: "docker", Host: *dockerSocket, Rules: rules}
 		bindsAccount = containers.BindsAccount
+		folders = containers
 		cleanup := host.LaunchCleanup{Containers: containers, Installation: installation,
 			RuntimeFolders: filepath.Join(*stateFolder, "runtimes"), StopSeconds: host.StopSeconds}
 		go runCleanups(ctx, cleanup, journal)
@@ -194,7 +196,7 @@ func serve(arguments []string) error {
 	}
 	startSocket := host.StartSocket{Folder: *startSocketFolder, Executor: &protectedExecutor{
 		preparation: preparation, open: opener.open, reports: reports, reporter: journal,
-		codexOwners: opener.codexOwners, arrangement: arrangement, bindsAccount: bindsAccount,
+		codexOwners: opener.codexOwners, arrangement: arrangement, bindsAccount: bindsAccount, accountFolders: folders,
 	}}
 	startListener, err := startSocket.Listen()
 	if err != nil {
