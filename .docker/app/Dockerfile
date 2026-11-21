@@ -74,7 +74,7 @@ FROM console AS frontend-sources
 
 RUN php artisan journal:ui-manifest \
     && php artisan wayfinder:generate --with-form \
-    && php artisan typescript:transform \
+    && php -d memory_limit=512M artisan typescript:transform \
     && mkdir /frontend \
     && cp -R --parents package.json package-lock.json vite.config.ts vite.sharing.config.ts vite.domains.ts \
         tsconfig.json tsconfig.domains.json scripts/check-domain-imports.mjs resources \
