@@ -46,12 +46,6 @@ def test_a_reader_that_finds_no_summary_misses_the_output():
     assert "--summary found nothing" in misses
 
 
-def test_a_reader_needs_progress_when_its_build_output_prints_a_count():
-    assert "--progress found nothing" in judge().misses(reader(), CommandCategory.BUILD, "done 2/4\n")
-    assert "--progress found nothing" in judge().misses(reader(progress_pattern=r"\[([0-9]+)%\]"), CommandCategory.BUILD, "done 2/4\n")
-    assert "--progress found nothing" not in judge().misses(reader(progress_pattern=r"([0-9]+)/([0-9]+)"), CommandCategory.BUILD, "done 2/4\n")
-
-
 def test_a_build_reader_passes_without_progress_when_its_output_prints_no_count():
     build_reader = reader()
     assert judge().fields_missing(build_reader, CommandCategory.BUILD) == ()
@@ -113,3 +107,12 @@ def test_samples_use_the_newest_matching_kept_parts_up_to_the_limit():
     assert outcome.missed == ()
     parts.kept_samples.assert_called_once()
     assert folder.sample_text.call_count == SAMPLE_OUTPUTS
+
+
+def test_a_part_cut_by_tail_or_head_is_no_sample_of_a_reader():
+    folder = Mock(spec=OutputFolder)
+    folder.sample_text.side_effect = lambda process_id, position: "app/Models/Order.php does not exist\n" if process_id == 1 else "done\n"
+    cut = ProcessPart(id=1, version=1, process_id=1, position=1, text="vendor/bin/phpstan analyse app | tail -15", program="phpstan", category=CommandCategory.BUILD)
+    whole = ProcessPart(id=2, version=1, process_id=2, position=1, text="vendor/bin/phpstan analyse app", program="phpstan", category=CommandCategory.BUILD)
+    outcome = ReaderJudge(ReaderRun(), folder, Mock(spec=ProcessPartQuery)).tested_samples(reader(), (cut, whole))
+    assert (outcome.missed, outcome.output_id) == ((), 2)

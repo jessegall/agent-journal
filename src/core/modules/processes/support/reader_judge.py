@@ -25,6 +25,8 @@ REJECTED_COMMAND_PATTERN = re.compile(r"^usage:|^(?:error: )?(?:unknown option|u
 CRASHED_START_PATTERN = re.compile(r"^Traceback \(most recent call last\)|^\w*Error: |^error: could not find .*Cargo\.toml|^error: fatalError$|: command not found$|^\S+ command not found$", re.MULTILINE)
 KILLED_EXIT_CODES = (129, 130, 134, 137, 139, 143)
 TIMEOUT_PATTERN = re.compile(r"^\+{3,} Timeout \+{3,}$|^Timeout \([0-9:.]+\)!", re.MULTILINE)
+# a part piped through tail or head kept only some of its lines, so its summary or its first lines may be gone
+CUT_OUTPUT_PATTERN = re.compile(r"\|\s*(?:tail|head)\b")
 CRASHING_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD)
 FEW_LINES = 5
 SAMPLE_OUTPUTS = 5
@@ -71,7 +73,7 @@ class ReaderJudge:
     def tested_samples(self, reader: Reader, parts: Sequence[ProcessPart]) -> ReaderCheck:
         sampled_ids: list[int] = []
         missed: list[str] = []
-        for part in islice(parts, SAMPLE_OUTPUTS):
+        for part in islice((part for part in parts if not CUT_OUTPUT_PATTERN.search(part.text)), SAMPLE_OUTPUTS):
             text = self.output_text(part.process_id, part.position)
             if self.is_rejected(part.exit_code, text):
                 continue
