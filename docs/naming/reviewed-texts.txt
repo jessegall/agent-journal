@@ -109,6 +109,7 @@ How to sign in
 Import
 Invalid settings
 It arrived
+It has no email, so give it a name you'll recognise.
 It is
 It never arrived
 It waits on the host until it expires. Resume it from the Accounts header, or cancel it now.
@@ -136,6 +137,7 @@ NOT
 Name
 Name of the layout
 Name of the new layout
+Name this account
 Needs sign-in
 Network
 New compared with the rule in use: {{ revision.addedClasses.join(', ') || 'none' }}
@@ -309,6 +311,7 @@ Working
 Write
 Write a comment
 You can approve once the request is ready for review; a check first needs a checked reader.
+You can change it later from the list.
 You can close this window: the sign-in keeps waiting on the host. Resume it from the Accounts header.
 You pay for what agents use.
 a file the user names on the command line, wherever it lies
@@ -364,3 +367,4 @@ updated {{ ageSeconds().toFixed(1) }} s ago
 · sign-in page
 ← Back
 ← Stay
+✓ {{ method.title }} works.

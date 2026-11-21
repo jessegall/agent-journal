@@ -8,6 +8,7 @@ type SentForm = {
     sent: () => Record<string, unknown>;
     errors: Record<string, string>;
     code?: string;
+    label?: string;
 };
 
 const forms: SentForm[] = [];
@@ -52,6 +53,10 @@ vi.mock('@generated/routes/accounts', () => ({
     cancelSignIn: ({ attempt }: { attempt: string }) => ({
         url: `/accounts/sign-ins/${attempt}`,
         method: 'delete',
+    }),
+    rename: ({ account }: { account: string }) => ({
+        url: `/accounts/${account}/name`,
+        method: 'put',
     }),
     challenge: ({ attempt }: { attempt: string }) => ({
         url: `/accounts/sign-ins/${attempt}/challenge`,
@@ -224,10 +229,28 @@ describe('AddAccountWizard', () => {
 
         await view.setProps({
             attempts: [attempt('complete', { accountId: 'account-1' })],
-            rows: [accountRow('account-1', 'Claude Code API key')],
+            rows: [accountRow('account-1', 'Claude Code API key 2')],
         });
+        await flushPromises();
+
+        expect(view.text()).toContain('Name this account');
+        const field = view.find<HTMLInputElement>(
+            '#new-account-name-account-1',
+        );
+        expect(field.element.value).toBe('Claude Code API key 2');
+
+        await field.setValue('Work key');
+        await view.find('form#add-account-step').trigger('submit');
+        const naming = forms.find((form) => form.label === 'Work key')!;
+        expect(naming.submit).toHaveBeenCalledWith(
+            { url: '/accounts/account-1/name', method: 'put' },
+            expect.anything(),
+        );
+
+        naming.submit.mock.calls[0][1].onSuccess();
+        await view.setProps({ rows: [accountRow('account-1', 'Work key')] });
         expect(view.text()).toContain('Account added');
-        expect(view.text()).toContain('Claude Code API key');
+        expect(view.text()).toContain('Work key');
         expect(view.find('[data-mark="done"]').exists()).toBe(true);
 
         await button(view, 'Done').trigger('click');

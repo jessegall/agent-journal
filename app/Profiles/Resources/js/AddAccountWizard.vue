@@ -11,6 +11,7 @@ import Modal from '@kit/Modal';
 import { computed, ref, watch } from 'vue';
 import ChooseSignIn from './ChooseSignIn.vue';
 import ChosenSignIn from './ChosenSignIn.vue';
+import NameAccountStep from './NameAccountStep.vue';
 import SignInOutcome from './SignInOutcome.vue';
 import SignInTask from './SignInTask.vue';
 import { attemptToRejoin, isLive } from './signIn';
@@ -78,10 +79,33 @@ const accountName = computed(() => {
     return props.rows.find((row) => row.id === accountId)?.label ?? null;
 });
 
+/**
+ * The account a key or token just added, while it still waits for its name: such a sign-in has no email to name it by.
+ */
+const namedAccountId = ref<string | null>(null);
+const accountToName = computed(() => {
+    const accountId = followed.value?.accountId ?? null;
+
+    if (
+        followed.value?.state !== 'complete' ||
+        shownMethod.value?.isSecret !== true ||
+        accountId === namedAccountId.value
+    ) {
+        return undefined;
+    }
+
+    return props.rows.find((row) => row.id === accountId);
+});
+
+function markNamed(): void {
+    namedAccountId.value = followed.value?.accountId ?? null;
+}
+
 watch(
     () => props.request,
     (request) => {
         isAskingToClose.value = false;
+        namedAccountId.value = null;
         followedId.value = null;
         awaited.value = null;
         method.value = null;
@@ -230,6 +254,17 @@ function cancelAndClose(): void {
             />
         </template>
         <template
+            v-else-if="accountToName !== undefined && shownMethod !== undefined"
+        >
+            <NameAccountStep
+                :program="shownProgram"
+                :method="shownMethod"
+                :account="accountToName"
+                :form-id="formId"
+                @named="markNamed"
+            />
+        </template>
+        <template
             v-else-if="followed !== undefined && shownMethod !== undefined"
         >
             <SignInOutcome
@@ -301,6 +336,12 @@ function cancelAndClose(): void {
             <template v-else-if="followed?.state === 'checking'">
                 <span class="flex-1" />
                 <Button @click="close">Close</Button>
+            </template>
+            <template v-else-if="accountToName !== undefined">
+                <span class="flex-1" />
+                <Button type="submit" :form="formId" variant="primary"
+                    >Save</Button
+                >
             </template>
             <template v-else-if="followed?.state === 'complete'">
                 <Button @click="addAnother">Add another</Button>
