@@ -10,6 +10,7 @@ use App\Files\Values\Depth;
 use App\Files\Values\FilePath;
 use App\Files\Values\Fingerprint;
 use App\Files\Values\FolderEntries;
+use Closure;
 
 /**
  * The one way code reads the files of its places: inside the place, never through a link out or a closed folder,
@@ -93,6 +94,48 @@ interface Files
      * Makes the folder and the missing folders above it with the place's mode.
      */
     public function makeFolder(FilePath $folder): void;
+
+    /**
+     * Removes a file or a link, never its target; a missing file is no failure.
+     */
+    public function delete(FilePath $file): void;
+
+    /**
+     * Removes a folder tree no deeper than the depth, refusing a deeper one before anything is removed; links inside
+     * are removed as links, never followed.
+     */
+    public function deleteFolder(FilePath $folder, Depth $depth): void;
+
+    /**
+     * Makes a link to a target in the link's own place; a target in another place is refused.
+     */
+    public function link(FilePath $link, FilePath $target): void;
+
+    /**
+     * Renames an entry within its place, replacing what is at the new path in one step.
+     */
+    public function move(FilePath $from, FilePath $to): void;
+
+    /**
+     * Runs the work while holding an exclusive lock on the lock file, released when the work ends or throws; a read
+     * inside the work is allowed.
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $work
+     * @return T
+     */
+    public function locked(FilePath $lock, Closure $work): mixed;
+
+    /**
+     * Runs the work with a new file path in the temporary place, removed when the work ends or throws.
+     *
+     * @template T
+     *
+     * @param  Closure(FilePath): T  $work
+     * @return T
+     */
+    public function scratch(Closure $work): mixed;
 
     /**
      * The bytes free on the disk that holds the place's root.

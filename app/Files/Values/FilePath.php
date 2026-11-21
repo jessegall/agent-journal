@@ -41,6 +41,28 @@ final readonly class FilePath
     }
 
     /**
+     * The folder this path lies in; the root of a place has none inside it.
+     */
+    public function parent(): self
+    {
+        if ($this->relative === '') {
+            throw FilePathInvalid::climbs('..');
+        }
+
+        $folder = dirname($this->relative);
+
+        return new self($this->place, $folder === '.' ? '' : $folder);
+    }
+
+    /**
+     * The last name of the path, as a folder lists it.
+     */
+    public function name(): string
+    {
+        return basename($this->relative);
+    }
+
+    /**
      * The path as a message names it: the relative path and its place, never the folder on the host.
      */
     public function label(): string

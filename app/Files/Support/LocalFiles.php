@@ -10,6 +10,7 @@ use App\Files\Enums\Place;
 use App\Files\Exceptions\FileJsonInvalid;
 use App\Files\Exceptions\FileReadReentered;
 use App\Files\Exceptions\FileUnreadable;
+use App\Files\Exceptions\LinkLeavesPlace;
 use App\Files\Exceptions\PlaceUnavailable;
 use App\Files\Values\Depth;
 use App\Files\Values\FilePath;
@@ -153,6 +154,63 @@ final class LocalFiles implements Files
     {
         $real = $this->confinement->resolvedForWrite($folder);
         $this->writer->makeFolder($real, $folder->place->folderMode(), $folder->label());
+    }
+
+    public function delete(FilePath $file): void
+    {
+        $path = $this->confinement->entryPath($file);
+        $this->writer->remove($path, $file->label());
+        $this->contents->drop($path);
+    }
+
+    public function deleteFolder(FilePath $folder, Depth $depth): void
+    {
+        $this->writer->removeFolder($this->confinement->entryPath($folder), $depth->levels, $folder->label());
+    }
+
+    public function link(FilePath $link, FilePath $target): void
+    {
+        if ($target->place !== $link->place) {
+            throw LinkLeavesPlace::from($link->label());
+        }
+
+        $path = $this->confinement->entryPath($link);
+        $this->writer->link($path, $this->confinement->resolved($target), $link->label());
+    }
+
+    public function move(FilePath $from, FilePath $to): void
+    {
+        $fromPath = $this->confinement->entryPath($from);
+        $toPath = $this->confinement->entryPath($to);
+        $this->writer->move($fromPath, $toPath, $from->label());
+        $this->contents->drop($fromPath);
+        $this->contents->drop($toPath);
+        clearstatcache(true, $fromPath);
+        clearstatcache(true, $toPath);
+    }
+
+    public function locked(FilePath $lock, Closure $work): mixed
+    {
+        $mode = Permissions::of($lock->place)->mode();
+        $handle = $this->writer->lockOpened($this->writablePath($lock), $mode, $lock->label());
+
+        try {
+            return $work();
+        } finally {
+            flock($handle, LOCK_UN);
+            fclose($handle);
+        }
+    }
+
+    public function scratch(Closure $work): mixed
+    {
+        $file = FilePath::in(Place::Temporary, 'journal-scratch-'.bin2hex(random_bytes(8)));
+
+        try {
+            return $work($file);
+        } finally {
+            $this->delete($file);
+        }
     }
 
     public function freeSpace(Place $place): int

@@ -6,6 +6,10 @@ namespace App\Files\Support;
 
 use App\Files\Exceptions\FileExists;
 use App\Files\Exceptions\FileUnwritable;
+use App\Files\Exceptions\FolderTooDeep;
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 /**
  * Writes at a real path already confined to its place: a whole file replaced atomically, a file created only when
@@ -65,6 +69,24 @@ final readonly class FileWriter
     }
 
     /**
+     * The lock file opened and locked exclusively, made with the mode when it is missing.
+     *
+     * @return resource
+     */
+    public function lockOpened(string $real, int $mode, string $label)
+    {
+        $handle = $this->opened($real, 'cb', $mode, $label);
+
+        if (! flock($handle, LOCK_EX)) {
+            fclose($handle);
+
+            throw FileUnwritable::at($label);
+        }
+
+        return $handle;
+    }
+
+    /**
      * Makes a folder and every missing folder above it with the mode.
      */
     public function makeFolder(string $real, int $mode, string $label): void
@@ -74,6 +96,79 @@ final readonly class FileWriter
         }
 
         if (! @mkdir($real, $mode, true) && ! is_dir($real)) {
+            throw FileUnwritable::at($label);
+        }
+    }
+
+    /**
+     * Removes a file or a link, never following the link; nothing at the path is no failure.
+     */
+    public function remove(string $path, string $label): void
+    {
+        if (! is_file($path) && ! is_link($path)) {
+            return;
+        }
+
+        if (! @unlink($path)) {
+            throw FileUnwritable::at($label);
+        }
+    }
+
+    /**
+     * Removes a folder and everything in it, children first; a tree deeper than the levels is refused before anything
+     * is removed, and links inside are removed as links, never followed. A missing folder is no failure.
+     */
+    public function removeFolder(string $path, int $levels, string $label): void
+    {
+        if (! is_dir($path) || is_link($path)) {
+            return;
+        }
+
+        $entries = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST,
+        );
+        $found = [];
+
+        foreach ($entries as $entry) {
+            if ($entries->getDepth() + 1 > $levels) {
+                throw FolderTooDeep::at($label, $levels);
+            }
+
+            $found[] = $entry;
+        }
+
+        foreach ($found as $entry) {
+            $isRemoved = $entry->isDir() && ! $entry->isLink()
+                ? @rmdir($entry->getPathname())
+                : @unlink($entry->getPathname());
+
+            if (! $isRemoved) {
+                throw FileUnwritable::at($label);
+            }
+        }
+
+        if (! @rmdir($path)) {
+            throw FileUnwritable::at($label);
+        }
+    }
+
+    /**
+     * Makes a link at the path to the real target.
+     */
+    public function link(string $path, string $target, string $label): void
+    {
+        if (! @symlink($target, $path)) {
+            throw FileUnwritable::at($label);
+        }
+    }
+
+    /**
+     * Renames an entry, replacing what is at the new path in one step, as an atomic swap of a link needs.
+     */
+    public function move(string $from, string $to, string $label): void
+    {
+        if (! @rename($from, $to)) {
             throw FileUnwritable::at($label);
         }
     }

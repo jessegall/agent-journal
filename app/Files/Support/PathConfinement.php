@@ -105,6 +105,19 @@ final readonly class PathConfinement
     }
 
     /**
+     * The path of the entry itself, its folder confined to the place and its last name not followed, so a link is
+     * moved or removed as the link, never its target.
+     */
+    public function entryPath(FilePath $file): string
+    {
+        $this->closed->assertNotClosed($file);
+        $path = $this->resolvedForWrite($file->parent()).'/'.$file->name();
+        clearstatcache(true, $path);
+
+        return $path;
+    }
+
+    /**
      * The opened file at a resolved real path, refused when the file was swapped for a link or another file after
      * it was checked.
      *
