@@ -9,8 +9,8 @@ use App\Agents\Events\MergeOutcomeRecorded;
 use App\Agents\Models\MergeAttempt;
 use App\Agents\Support\ProtectedMerge;
 use App\Assignments\Contracts\MaintenanceAdmission;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
-use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Carbon;
 
 /**
@@ -31,7 +31,7 @@ final readonly class InspectMergeAttemptsHandler implements CommandHandler
     public function __construct(
         private MaintenanceAdmission $access,
         private ProtectedMerge $merge,
-        private Dispatcher $events,
+        private CommandFacts $facts,
     ) {}
 
     public function handle(InspectMergeAttempts $command): void
@@ -41,7 +41,8 @@ final readonly class InspectMergeAttemptsHandler implements CommandHandler
 
         foreach (MergeAttempt::interrupted($stale, self::PASS_LIMIT) as $attempt) {
             $this->merge->inspect(MergeAttempt::lockedById($attempt->id));
-            $this->events->dispatch(new MergeOutcomeRecorded($attempt->id));
+            $this->facts->publishAfterCommit(new MergeOutcomeRecorded($attempt->id));
+            $this->facts->applyRequired();
         }
     }
 }

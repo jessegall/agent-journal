@@ -71,25 +71,6 @@ final class PendingAgentMessage extends Model implements ReadableModel
 
     // ----------[ Queries ]----------
 
-    /**
-     * The texts waiting for the agent, oldest first, removed as they are handed over.
-     *
-     * @return list<string>
-     */
-    public static function takeAllFor(ActorIdentity $agent): array
-    {
-        $messages = self::query()
-            ->ownedBy($agent)
-            ->orderBy('created_at')
-            ->orderBy('id')
-            ->lockForUpdate()
-            ->limit(self::DELIVERY_LIMIT)
-            ->get();
-        self::query()->ownedBy($agent)->whereKey($messages->modelKeys())->delete();
-
-        return array_values($messages->flatMap(fn (self $message) => $message->lines)->all());
-    }
-
     public static function countFor(ActorIdentity $agent): int
     {
         return self::query()->ownedBy($agent)->count();

@@ -47,16 +47,14 @@ return [
         ],
     ],
     AgentHoldReleased::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'AgentRuntime::releaseHold',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Agents/Handlers/ReleaseAgentHoldHandler.php',
         ],
     ],
     AgentRuntimeReassigned::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'AgentRuntime::reassignTo',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Agents/Handlers/ReassignAgentRuntimeHandler.php',
@@ -84,8 +82,7 @@ return [
         ],
     ],
     MergeOutcomeRecorded::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'MergeAttempt::recordOutcome',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Agents/Handlers/InspectMergeAttemptsHandler.php',
@@ -93,8 +90,7 @@ return [
         ],
     ],
     ProgramFailed::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'ProcessStart::stopWithProof',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Agents/Handlers/ReportFailureHandler.php',
@@ -102,8 +98,7 @@ return [
         ],
     ],
     SessionClosed::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'AgentSession::end',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Agents/Actions/StartHeartbeats.php',
@@ -111,16 +106,14 @@ return [
         ],
     ],
     SessionOpened::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'AgentSession::start',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Agents/Actions/StartSessions.php',
         ],
     ],
     StartAccepted::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'StartRecord::startedAs',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Agents/Handlers/StartAgentHandler.php',

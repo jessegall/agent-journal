@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Models;
 
 use App\Agents\Exceptions\HelperWorkUncertified;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -36,6 +37,7 @@ final class CertifiedWork extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids;
     use HasWorkColumns;
+    use InsertsAbsentRows;
     use Linkable;
 
     // ----------[ Queries ]----------
@@ -49,15 +51,17 @@ final class CertifiedWork extends Model implements ReadableModel
         $work = $start->ownerWork();
         $policy = SessionPolicy::query()->where('session_id', $start->session_id)->sole();
 
-        return self::query()->firstOrCreate(
-            ['certificate' => $certificate],
-            [
-                'work_type' => $work->type,
-                'work_id' => $work->id,
-                'agent_session_id' => $start->session_id,
-                'worktree' => $policy->execution_policy->worktree,
-            ],
-        );
+        $certified = new self([
+            'certificate' => $certificate,
+            'work_type' => $work->type,
+            'work_id' => $work->id,
+            'agent_session_id' => $start->session_id,
+            'worktree' => $policy->execution_policy->worktree,
+        ]);
+        $certified->setAttribute($certified->getKeyName(), $certified->newUniqueId());
+        $certified->insertIfAbsent();
+
+        return self::query()->where('certificate', $certificate)->sole();
     }
 
     /**

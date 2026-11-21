@@ -18,48 +18,42 @@ use Tests\Architecture\Support\EventRole;
  */
 return [
     BundleActivated::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'ModuleRuleBundle::approve',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Processes/Handlers/ApproveRuleBundleHandler.php',
         ],
     ],
     EvidenceInvalid::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'OutputAssessment::record',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Processes/Support/PartAssessments.php',
         ],
     ],
     OutputChunkCommitted::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'OutputChunk::create',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Processes/Support/SpoolRecorder.php',
         ],
     ],
     RuleActivated::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'ClassificationRule::activate',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Processes/Support/RuleApprovals.php',
         ],
     ],
     RuleRejected::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'RuleProposal::reject',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Processes/Handlers/RejectRuleProposalHandler.php',
         ],
     ],
     RuleRetired::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'ClassificationRule::retire',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Processes/Handlers/RetireCommandRuleHandler.php',

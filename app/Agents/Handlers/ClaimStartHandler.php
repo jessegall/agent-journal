@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Handlers;
 
 use App\Agents\Commands\ClaimStart;
+use App\Agents\Enums\ProcessStartState;
 use App\Agents\Events\AccountSettingsRequested;
 use App\Agents\Exceptions\StartClaimRefused;
 use App\Agents\Models\AgentRuntime;
@@ -37,7 +38,7 @@ final readonly class ClaimStartHandler implements CommandHandler
             throw StartClaimRefused::onAnotherHost($command->sessionId, $command->hostId);
         }
 
-        $start = ProcessStart::claimFor($command->hostId, $command->sessionId);
+        $start = $this->claimFor($command->hostId, $command->sessionId);
 
         if ($start === null) {
             return null;
@@ -56,5 +57,32 @@ final readonly class ClaimStartHandler implements CommandHandler
             $settings->recipeFor($program, $start->transport_profile),
             StartRecord::conversationTargetOf($start->session_id),
         );
+    }
+
+    /**
+     * The pending start of the session, taken by the host that will make its process; none when it was cancelled or
+     * taken already. A start whose session ended is cancelled instead, so no process starts for it.
+     */
+    private function claimFor(string $hostId, string $sessionId): ProcessStart|null
+    {
+        $start = ProcessStart::supervised()
+            ->where('session_id', $sessionId)
+            ->where('state', ProcessStartState::Pending->value)
+            ->lockForUpdate()
+            ->first();
+
+        if ($start === null) {
+            return null;
+        }
+
+        if (! AgentSession::query()->findOrFail($sessionId)->isActive()) {
+            $start->cancelPending();
+
+            return null;
+        }
+
+        $start->claimOn($hostId);
+
+        return $start;
     }
 }

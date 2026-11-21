@@ -44,6 +44,14 @@ final readonly class RequiredDrain
         });
     }
 
+    /**
+     * Runs the fact's required listeners at once, for a fact sent where no unit holds a queue.
+     */
+    public function applyNow(Event $event): void
+    {
+        $this->runListenersOf($event);
+    }
+
     private function runListenersOf(Event $event): void
     {
         foreach ($this->registry->listenersOf($event::class) as $listener) {

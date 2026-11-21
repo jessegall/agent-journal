@@ -222,8 +222,6 @@ final class DriverRequest extends Model implements ReadableModel
      */
     public function settleAfterExit(): void
     {
-        NavigationRequest::cancelOpenFor($this);
-
         if ($this->operation === DriverOperation::Stop) {
             $this->markApplied('process_exited');
 
@@ -354,7 +352,6 @@ final class DriverRequest extends Model implements ReadableModel
     public function cancel(): void
     {
         $this->finish(RequestProgress::Cancelled, null);
-        NavigationRequest::cancelOpenFor($this);
     }
 
     public function fail(RequestOutcome $outcome): void

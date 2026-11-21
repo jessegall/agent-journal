@@ -17,8 +17,13 @@ final readonly class SelectMessageHandler implements CommandHandler
     public function handle(SelectMessage $command): string
     {
         $message = Message::visibleById($command->messageId);
-        AgentSession::selectMessage($this->session->sessionId(), $message->id);
+        $this->selectMessage($this->session->sessionId(), $message->id);
 
         return $message->id;
+    }
+
+    private function selectMessage(string $sessionId, string $messageId): void
+    {
+        AgentSession::query()->whereKey($sessionId)->update(['selected_message_id' => $messageId]);
     }
 }

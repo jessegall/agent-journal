@@ -32,8 +32,8 @@ use App\Agents\Support\HostCapacityLock;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Values\HostCapacity;
 use App\Agents\Values\StartRequest;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Starts inside the command's transaction: the request's record first, so a repeat finds its start; then the
@@ -48,12 +48,12 @@ final readonly class StartAgentHandler implements CommandHandler
         private ActiveAccountReader $accounts,
         private RegisterPendingStart $pendingStarts,
         private PendingStartSecrets $pendingSecrets,
-        private Dispatcher $events,
         private ContainerAdmission $containers,
         private DockerImageVerifier $images,
         private HostCapacity $capacity,
         private HostCapacityLock $capacityLock,
         private ReplyInboxes $replyInboxes,
+        private CommandFacts $facts,
     ) {}
 
     /**
@@ -95,7 +95,7 @@ final readonly class StartAgentHandler implements CommandHandler
         SessionPolicy::create($started->session, $request->policy);
         $record->startedAs($started->session);
         $this->pendingSecrets->keep($request->requestId, $started);
-        $this->events->dispatch(new StartAccepted(
+        $this->facts->publishAfterCommit(new StartAccepted(
             $request->requestId,
             $request->agentId,
             $started->session->id,

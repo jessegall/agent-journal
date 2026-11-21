@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -28,6 +29,7 @@ final class RevisionFence extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -47,7 +49,11 @@ final class RevisionFence extends Model implements ReadableModel
      */
     public static function retain(string $key, int $revision): self
     {
-        return self::query()->firstOrCreate(['profile_key' => $key, 'profile_revision' => $revision]);
+        $fence = new self(['profile_key' => $key, 'profile_revision' => $revision]);
+        $fence->setAttribute($fence->getKeyName(), $fence->newUniqueId());
+        $fence->insertIfAbsent();
+
+        return self::query()->where('profile_key', $key)->where('profile_revision', $revision)->sole();
     }
 
     public static function isPending(string $key, int $revision): bool

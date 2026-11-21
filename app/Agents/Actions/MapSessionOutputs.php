@@ -39,7 +39,7 @@ final readonly class MapSessionOutputs
             $granted[$conversation->id] = $paths;
         }
 
-        SessionOutputGrant::replaceFor($start, $granted);
+        $this->replaceFor($start, $granted);
     }
 
     /**
@@ -58,5 +58,26 @@ final readonly class MapSessionOutputs
             ->exists();
 
         return $isSameAgent ? SessionOutputGrant::heldBy($predecessorId) : [];
+    }
+
+    /**
+     * Replaces every grant of the session with the given ones, under its start's newest mapping generation.
+     *
+     * @param  array<string, SessionOutputPaths>  $pathsByConversation
+     */
+    private function replaceFor(ProcessStart $start, array $pathsByConversation): void
+    {
+        SessionOutputGrant::query()->where('session_id', $start->session_id)->delete();
+
+        foreach ($pathsByConversation as $conversationId => $paths) {
+            $grant = new SessionOutputGrant();
+            $grant->session_id = $start->session_id;
+            $grant->start_id = $start->id;
+            $grant->mapping_generation = $start->output_generation;
+            $grant->conversation_id = (string) $conversationId;
+            $grant->transcript_path = $paths->transcriptPath;
+            $grant->output_directory = $paths->outputDirectory;
+            $grant->save();
+        }
     }
 }

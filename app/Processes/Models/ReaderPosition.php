@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Models;
 
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Processes\Enums\InterpretationState;
 use App\Processes\Enums\PositionPurpose;
@@ -35,6 +36,7 @@ final class ReaderPosition extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -58,21 +60,15 @@ final class ReaderPosition extends Model implements ReadableModel
      */
     public static function of(PartRun $part, ReaderRevision $revision): self
     {
-        return self::query()->firstOrCreate(
-            ['part_run_id' => $part->id, 'reader_revision_id' => $revision->id, 'purpose' => PositionPurpose::Live],
-            ['checkpoint' => new ReaderCheckpoint()->toArray(), 'interpretation' => InterpretationState::Provisional],
-        );
+        return self::madeFor($part, $revision, PositionPurpose::Live, new ReaderCheckpoint());
     }
 
     /**
      * A replay's own position, apart from the live one: it starts again from the first byte each time.
      */
-    public static function replay(PartRun $part, ReaderRevision $revision, ReaderCheckpoint $consumed): self
+    public static function replayOf(PartRun $part, ReaderRevision $revision, ReaderCheckpoint $consumed): self
     {
-        return self::query()->updateOrCreate(
-            ['part_run_id' => $part->id, 'reader_revision_id' => $revision->id, 'purpose' => PositionPurpose::Replay],
-            ['checkpoint' => $consumed->toArray(), 'interpretation' => InterpretationState::Provisional],
-        );
+        return self::madeFor($part, $revision, PositionPurpose::Replay, $consumed);
     }
 
     // ----------[ Mutations ]----------
@@ -84,6 +80,16 @@ final class ReaderPosition extends Model implements ReadableModel
     public function markFailed(): void
     {
         $this->interpretation = InterpretationState::ReaderFailed;
+        $this->save();
+    }
+
+    /**
+     * A replay starts again from the checkpoint the assessment consumed, its interpretation provisional again.
+     */
+    public function rewindTo(ReaderCheckpoint $consumed): void
+    {
+        $this->checkpoint = $consumed->toArray();
+        $this->interpretation = InterpretationState::Provisional;
         $this->save();
     }
 
@@ -103,5 +109,27 @@ final class ReaderPosition extends Model implements ReadableModel
     public function checkpoint(): ReaderCheckpoint
     {
         return ReaderCheckpoint::fromArray($this->checkpoint);
+    }
+    // ----------[ Internals ]----------
+
+    /**
+     * The part's position of the purpose for the reader revision, made at the checkpoint when it is new.
+     */
+    private static function madeFor(
+        PartRun $part,
+        ReaderRevision $revision,
+        PositionPurpose $purpose,
+        ReaderCheckpoint $checkpoint,
+    ): self {
+        $identity = ['part_run_id' => $part->id, 'reader_revision_id' => $revision->id, 'purpose' => $purpose];
+        $position = new self([
+            ...$identity,
+            'checkpoint' => $checkpoint->toArray(),
+            'interpretation' => InterpretationState::Provisional,
+        ]);
+        $position->setAttribute($position->getKeyName(), $position->newUniqueId());
+        $position->insertIfAbsent();
+
+        return self::query()->where($identity)->sole();
     }
 }

@@ -102,64 +102,17 @@ final class ProcessStart extends Model implements ReadableModel
         return $start;
     }
 
-    /**
-     * The pending start of the session, taken by the host that will make its process; none when it was cancelled or
-     * taken already. A start whose session ended is cancelled instead, so no process starts for it.
-     */
-    public static function claimFor(string $hostId, string $sessionId): self|null
-    {
-        $start = self::supervised()
-            ->where('session_id', $sessionId)
-            ->where('state', ProcessStartState::Pending->value)
-            ->lockForUpdate()
-            ->first();
-
-        if ($start === null) {
-            return null;
-        }
-
-        if (! AgentSession::query()->findOrFail($sessionId)->isActive()) {
-            $start->state = ProcessStartState::Cancelled;
-            $start->ended_at = CarbonImmutable::now();
-            $start->save();
-
-            return null;
-        }
-
-        $start->host_id = $hostId;
-        $start->claim();
-
-        return $start;
-    }
-
-    /**
-     * Cancels the agent's starts no host has claimed yet, as its retirement does; a claimed start stays until its host
-     * proves the process gone, since retiring the agent proves no exit.
-     *
-     * @return list<RecordIdentity>
-     */
-    public static function cancelPendingOfAgent(string $agentId): array
-    {
-        $starts = self::supervised()
-            ->where('agent_id', $agentId)
-            ->where('state', ProcessStartState::Pending->value)
-            ->lockForUpdate()
-            ->readAll('a retiring agent has few starts')
-            ->get();
-        $accounts = [];
-
-        foreach ($starts as $start) {
-            $start->state = ProcessStartState::Cancelled;
-            $start->ended_at = CarbonImmutable::now();
-            $start->save();
-            $account = $start->accountIdentity();
-            $accounts["{$account->type} {$account->id}"] = $account;
-        }
-
-        return array_values($accounts);
-    }
-
     // ----------[ Queries ]----------
+
+    /**
+     * The named read of the supervisor and the account-use read, across every agent's starts.
+     *
+     * @return ReadBuilder<self>
+     */
+    public static function supervised(): ReadBuilder
+    {
+        return self::query()->withoutGlobalScope(ProcessStartScope::class);
+    }
 
     /**
      * The session's start that may still run, locked: the newest one not cancelled or stopped; none for a session
@@ -270,43 +223,6 @@ final class ProcessStart extends Model implements ReadableModel
         return array_values(array_unique(array_map(strval(...), $sessionIds->all())));
     }
 
-    /**
-     * Cancels the account's starts that no host has claimed yet, so they never make a process, and answers how many.
-     */
-    public static function cancelPendingOf(RecordIdentity $account): int
-    {
-        return self::supervised()
-            ->onAccount($account)
-            ->where('state', ProcessStartState::Pending->value)
-            ->update(['state' => ProcessStartState::Cancelled->value, 'ended_at' => CarbonImmutable::now()]);
-    }
-
-    /**
-     * Ends the named starts whose host proved their process exited, and answers the accounts they used.
-     *
-     * @param  list<string>  $keys
-     * @return list<RecordIdentity>
-     */
-    public static function stopProven(string $hostId, array $keys): array
-    {
-        $starts = self::supervised()
-            ->where('host_id', $hostId)
-            ->whereIn('start_key', $keys)
-            ->unresolved()
-            ->lockForUpdate()
-            ->readAll('a host reports a bounded batch of exited starts')
-            ->get();
-        $accounts = [];
-
-        foreach ($starts as $start) {
-            $start->stopWithProof();
-            $account = $start->accountIdentity();
-            $accounts["{$account->type} {$account->id}"] = $account;
-        }
-
-        return array_values($accounts);
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -364,6 +280,26 @@ final class ProcessStart extends Model implements ReadableModel
         return true;
     }
 
+    /**
+     * The host takes the start for its own process.
+     */
+    public function claimOn(string $hostId): bool
+    {
+        $this->host_id = $hostId;
+
+        return $this->claim();
+    }
+
+    /**
+     * A pending start that will never run ends cancelled now.
+     */
+    public function cancelPending(): void
+    {
+        $this->state = ProcessStartState::Cancelled;
+        $this->ended_at = CarbonImmutable::now();
+        $this->save();
+    }
+
     // ----------[ Answers ]----------
 
     /**
@@ -377,18 +313,6 @@ final class ProcessStart extends Model implements ReadableModel
     public function accountIdentity(): RecordIdentity
     {
         return new RecordIdentity($this->account_type, $this->account_id);
-    }
-
-    // ----------[ Internals ]----------
-
-    /**
-     * The named read of the supervisor and the account-use read, across every agent's starts.
-     *
-     * @return ReadBuilder<self>
-     */
-    private static function supervised(): ReadBuilder
-    {
-        return self::query()->withoutGlobalScope(ProcessStartScope::class);
     }
 
     // ----------[ Scopes ]----------

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Models;
 
+use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Processes\Casts\StoredValueCast;
 use App\Processes\Casts\StoredValuesCast;
@@ -56,6 +57,22 @@ final class RuleProposalRevision extends Model implements ReadableModel
             'payload' => StoredValueCast::class.':'.CommandRule::class,
             'examples' => StoredValuesCast::class.':'.RuleExample::class,
         ];
+    }
+
+    /**
+     * The proposal's next revision of the proposed rule, by its author.
+     */
+    public static function createFor(RuleProposal $proposal, ProposedRule $proposed, ActorIdentity $author): self
+    {
+        return self::query()->create([
+            'rule_proposal_id' => $proposal->id,
+            'revision' => $proposal->current_revision + 1,
+            'payload' => $proposed->rule,
+            'evidence' => $proposed->evidence,
+            'examples' => $proposed->examples,
+            'author_type' => $author->type->value,
+            'author_id' => $author->id,
+        ]);
     }
 
     protected static function booted(): void

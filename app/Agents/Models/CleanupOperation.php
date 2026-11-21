@@ -7,6 +7,7 @@ namespace App\Agents\Models;
 use App\Agents\Enums\CleanupState;
 use App\Agents\Enums\CleanupStep;
 use App\Agents\Values\CleanupReport;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -48,6 +49,7 @@ final class CleanupOperation extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     /**
@@ -76,15 +78,17 @@ final class CleanupOperation extends Model implements ReadableModel
      */
     public static function open(AgentSession $session, string $hostId): self
     {
-        return self::query()->firstOrCreate(
-            ['start_request_id' => $session->start_request_id],
-            [
-                'agent_session_id' => $session->id,
-                'host_id' => $hostId,
-                'removed_steps' => [],
-                'state' => CleanupState::Pending,
-            ],
-        );
+        $operation = new self([
+            'start_request_id' => $session->start_request_id,
+            'agent_session_id' => $session->id,
+            'host_id' => $hostId,
+            'removed_steps' => [],
+            'state' => CleanupState::Pending,
+        ]);
+        $operation->setAttribute($operation->getKeyName(), $operation->newUniqueId());
+        $operation->insertIfAbsent();
+
+        return self::query()->where('start_request_id', $session->start_request_id)->sole();
     }
 
     /**

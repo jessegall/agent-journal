@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Actions;
 
 use App\Agents\Contracts\ConversationVisits;
+use App\Agents\Enums\ConversationModeType;
 use App\Agents\Exceptions\ConversationIncompatible;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ConversationVisit;
@@ -53,7 +54,7 @@ final readonly class RecordConversationVisit implements ConversationVisits
 
         ConversationVisit::appendOnce($session, $conversation, $eventId, $observedAt);
         $session->enterConversation($conversation);
-        StartRecord::confirmConversation($session->id, $nativeId);
+        $this->confirmConversation($session->id, $nativeId);
 
         if ($start !== null) {
             $this->outputs->map($session, $conversation, $start, $transcriptPath);
@@ -73,5 +74,21 @@ final readonly class RecordConversationVisit implements ConversationVisits
         if ($conversation !== null) {
             ConversationVisit::appendOnce($session, $conversation, $eventId, $observedAt);
         }
+    }
+
+    /**
+     * Records whether the session went on in the conversation its start chose: a session that entered another one,
+     * or a fresh one, never counts as resumed.
+     */
+    private function confirmConversation(string $sessionId, string $nativeId): void
+    {
+        $start = StartRecord::query()->where('session_id', $sessionId)->whereNull('conversation_resumed')->first();
+
+        if ($start === null || $start->conversation_mode !== ConversationModeType::Resume) {
+            return;
+        }
+
+        $start->conversation_resumed = $start->conversation_target === $nativeId;
+        $start->save();
     }
 }

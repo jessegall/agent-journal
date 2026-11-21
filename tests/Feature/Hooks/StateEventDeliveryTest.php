@@ -25,6 +25,7 @@ use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\StateEvents\StateEventScope;
+use App\Hooks\Support\AgentMessageDelivery;
 use App\Hooks\Support\StackTransaction;
 use App\Profiles\Values\ProfileBase;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -274,7 +275,7 @@ final class StateEventDeliveryTest extends TestCase
     private function takeContext(): array
     {
         return $this->app->make(StackTransaction::class)->run(
-            fn () => PendingAgentMessage::takeAllFor($this->target->actorIdentity()),
+            fn () => $this->app->make(AgentMessageDelivery::class)->takeAllFor($this->target->actorIdentity()),
         );
     }
 }

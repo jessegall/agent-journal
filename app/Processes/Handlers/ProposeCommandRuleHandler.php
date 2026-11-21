@@ -10,9 +10,9 @@ use App\Processes\Commands\ProposeCommandRule;
 use App\Processes\Exceptions\RequestTransitionRefused;
 use App\Processes\Exceptions\RuleProposalRefused;
 use App\Processes\Models\CommandRequest;
-use App\Processes\Models\RuleProposal;
 use App\Processes\Support\ProcessAdministration;
 use App\Processes\Support\ProposalChecks;
+use App\Processes\Support\RuleProposals;
 use App\Processes\Values\ProposalReceipt;
 
 /**
@@ -22,7 +22,11 @@ use App\Processes\Values\ProposalReceipt;
  */
 final readonly class ProposeCommandRuleHandler implements CommandHandler
 {
-    public function __construct(private ProcessAdministration $administration, private ProposalChecks $checks) {}
+    public function __construct(
+        private ProcessAdministration $administration,
+        private ProposalChecks $checks,
+        private RuleProposals $proposals,
+    ) {}
 
     /**
      * @throws RuleProposalRefused
@@ -39,7 +43,7 @@ final readonly class ProposeCommandRuleHandler implements CommandHandler
 
         $this->checks->check($command->proposed->rule, $request->hold_reason->needsReader());
 
-        $proposal = RuleProposal::open(
+        $proposal = $this->proposals->open(
             $request->project_key,
             $actor,
             $command->requestId,

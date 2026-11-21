@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Engine\Handlers;
 
 use App\Actors\Contracts\ServerClock;
+use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Models\TerminalView;
 use App\Contracts\CommandHandler;
 use App\Engine\Commands\EndTerminalViews;
 use App\Engine\Support\EngineAccess;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Ends lapsed views and views of stopped runtimes, one bulk update each, only under the engine's grant, and deletes
@@ -26,8 +29,40 @@ final readonly class EndTerminalViewsHandler implements CommandHandler
         $this->access->assertMaintenanceGranted(EndTerminalViews::MAINTENANCE_SCOPE);
         $now = $this->clock->now();
 
-        TerminalView::endLapsed($now);
-        TerminalView::endOfStoppedRuntimes($now);
-        TerminalView::pruneEndedBefore($now->subHours(TerminalView::KEEP_ENDED_HOURS));
+        $this->endLapsed($now);
+        $this->endOfStoppedRuntimes($now);
+        $this->pruneEndedBefore($now->subHours(TerminalView::KEEP_ENDED_HOURS));
+    }
+
+    /**
+     * Ends every view whose lease ran out unrenewed, in one update.
+     */
+    private function endLapsed(CarbonImmutable $now): void
+    {
+        TerminalView::query()->acrossActors()->lapsed($now)->update(['closed_at' => $now]);
+    }
+
+    /**
+     * Ends every live view of a runtime that stopped, in one update.
+     */
+    private function endOfStoppedRuntimes(CarbonImmutable $now): void
+    {
+        TerminalView::query()->acrossActors()->live()->whereHas(
+            'runtime',
+            fn (Builder $runtime) => $runtime->where('activity', RuntimeActivity::Stopped),
+        )->update(['closed_at' => $now]);
+    }
+
+    /**
+     * Deletes the views that ended or lapsed before the cutoff, in one statement.
+     */
+    private function pruneEndedBefore(CarbonImmutable $cutoff): void
+    {
+        TerminalView::query()
+            ->acrossActors()
+            ->where(fn (Builder $ended) => $ended
+                ->where('closed_at', '<', $cutoff)
+                ->orWhere('expires_at', '<', $cutoff))
+            ->delete();
     }
 }

@@ -8,12 +8,13 @@ use App\Agents\Commands\CancelDriverRequest;
 use App\Agents\Enums\RecoveryAction;
 use App\Agents\Exceptions\DriverRequestRefused;
 use App\Agents\Models\AgentRuntime;
+use App\Agents\Support\DriverRequestEndings;
 use App\Agents\Support\DriverRequestRecovery;
 use App\Contracts\CommandHandler;
 
 final readonly class CancelDriverRequestHandler implements CommandHandler
 {
-    public function __construct(private DriverRequestRecovery $recovery) {}
+    public function __construct(private DriverRequestRecovery $recovery, private DriverRequestEndings $endings) {}
 
     public function handle(CancelDriverRequest $command): int
     {
@@ -23,7 +24,7 @@ final readonly class CancelDriverRequestHandler implements CommandHandler
             throw DriverRequestRefused::notCancellable($request->id, $request->progress->value);
         }
 
-        $request->cancel();
+        $this->endings->cancel($request);
 
         if ($request->changesASetting()) {
             AgentRuntime::query()->lockForUpdate()->findOrFail(

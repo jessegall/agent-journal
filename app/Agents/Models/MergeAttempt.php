@@ -9,6 +9,7 @@ use App\Agents\Enums\MergeAttemptState;
 use App\Agents\Enums\MergeRefusalReason;
 use App\Agents\Values\ApprovedHead;
 use App\Agents\Values\MergeOutcome;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -75,6 +76,7 @@ final class MergeAttempt extends Model implements ReadableModel
     use HasActorColumns;
     use HasUlids;
     use HasWorkColumns;
+    use InsertsAbsentRows;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -100,7 +102,8 @@ final class MergeAttempt extends Model implements ReadableModel
      */
     public static function retain(ApprovedHead $approved): self
     {
-        return self::query()->lockForUpdate()->firstOrCreate(['decision_id' => $approved->decision->id], [
+        $attempt = new self([
+            'decision_id' => $approved->decision->id,
             'work_type' => $approved->work->type,
             'work_id' => $approved->work->id,
             'certificate' => $approved->certificate,
@@ -113,6 +116,10 @@ final class MergeAttempt extends Model implements ReadableModel
             'import_ref' => $approved->importRef,
             'state' => MergeAttemptState::Prepared,
         ]);
+        $attempt->setAttribute($attempt->getKeyName(), $attempt->newUniqueId());
+        $attempt->insertIfAbsent();
+
+        return self::query()->where('decision_id', $approved->decision->id)->lockForUpdate()->sole();
     }
 
     /**

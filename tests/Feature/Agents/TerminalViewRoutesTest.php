@@ -12,6 +12,7 @@ use App\Agents\Enums\DriverType;
 use App\Agents\Exceptions\TerminalViewRefused;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
+use App\Agents\Support\DriverRequestEndings;
 use App\Agents\Support\RuntimeScreen;
 use App\Agents\Support\TerminalFrames;
 use App\Http\Responses\Agents\TerminalViewResponses;
@@ -68,7 +69,7 @@ final class TerminalViewRoutesTest extends TestCase
     {
         $process = $this->runtimeOn('host-1', DriverType::Process);
         $stopped = $this->runtimeOn('host-1');
-        $stopped->closeAfterExit();
+        $this->app->make(DriverRequestEndings::class)->closeAfterExit($stopped);
 
         $this->assertRefusal($process->session->agent_id, 422, 'This agent runs without a terminal');
         $this->assertRefusal($stopped->session->agent_id, 409, 'This agent is not running');
@@ -137,7 +138,7 @@ final class TerminalViewRoutesTest extends TestCase
         $agentId = $runtime->session->agent_id;
         $this->actingAs($this->owner)->postJson("/agents/{$agentId}/terminal")->assertOk();
         $this->storeFrame($runtime, 'epoch-1', 1);
-        $runtime->closeAfterExit();
+        $this->app->make(DriverRequestEndings::class)->closeAfterExit($runtime);
 
         $this->actingAs($this->owner)->getJson("/agents/{$agentId}/terminal?epoch=epoch-1&after=1")
             ->assertOk()

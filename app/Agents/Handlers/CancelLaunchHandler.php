@@ -9,14 +9,14 @@ use App\Agents\Events\LaunchCancelled;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\StartRecord;
 use App\Agents\Support\DriverRequests;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
-use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class CancelLaunchHandler implements CommandHandler
 {
     public function __construct(
         private DriverRequests $requests,
-        private Dispatcher $events,
+        private CommandFacts $facts,
     ) {}
 
     /**
@@ -31,7 +31,7 @@ final readonly class CancelLaunchHandler implements CommandHandler
         }
 
         StartRecord::ownerStartOf($command->sessionId)->forAll(
-            fn (StartRecord $start) => $this->events->dispatch(new LaunchCancelled($start->ownerWork())),
+            fn (StartRecord $start) => $this->facts->publishAfterCommit(new LaunchCancelled($start->ownerWork())),
         );
 
         return $hasRuntime;

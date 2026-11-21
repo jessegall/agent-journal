@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Support;
 
+use App\Bus\Contracts\CommandFacts;
 use App\Processes\Events\EvidenceInvalid;
 use App\Processes\Models\OutputAssessment;
 use App\Processes\Models\PartRun;
@@ -12,7 +13,6 @@ use App\Processes\Models\ReaderPosition;
 use App\Processes\Models\ReaderRevision;
 use App\Processes\Values\ApprovedPair;
 use App\Processes\Values\OutputProblem;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Assesses an ended part with the active approved pair of its operation: the reader replayed over the retained bytes
@@ -26,7 +26,7 @@ final readonly class PartAssessments
         private ReaderReplay $replays,
         private EvidenceValidator $validator,
         private ReceiptPublisher $publisher,
-        private Dispatcher $events,
+        private CommandFacts $facts,
         private RunUpdates $updates,
     ) {}
 
@@ -54,7 +54,7 @@ final readonly class PartAssessments
     public function assess(PartRun $part, ApprovedPair $pair): string
     {
         $replayed = $this->replays->replay($pair->reader, $pair->contract, $part);
-        ReaderPosition::replay($part, $pair->reader, $replayed->consumed);
+        ReaderPosition::replayOf($part, $pair->reader, $replayed->consumed)->rewindTo($replayed->consumed);
         $validation = $this->validator->validate($part, $replayed->assessment, $replayed->consumed, $pair->contract);
         $run = ProcessRun::ofAnyActor($part->process_run_id);
         $assessment = OutputAssessment::record($run, $part, $pair->declaration, $pair->reader, $replayed, $validation);
@@ -63,7 +63,9 @@ final readonly class PartAssessments
         if (! $validation->isValid()) {
             $codes = array_map(fn (OutputProblem $problem): string => $problem->code->value, $validation->problems);
             $actor = [(string) $run->actor_type, (string) $run->actor_id];
-            $this->events->dispatch(new EvidenceInvalid($assessment->id, $part->id, $actor[0], $actor[1], $codes));
+            $this->facts->publishAfterCommit(
+                new EvidenceInvalid($assessment->id, $part->id, $actor[0], $actor[1], $codes),
+            );
 
             return '';
         }

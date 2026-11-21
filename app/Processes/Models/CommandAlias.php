@@ -44,26 +44,33 @@ final class CommandAlias extends Model implements ReadableModel
         return ['argument_grammar' => 'array', 'revision' => 'integer'];
     }
 
+    // ----------[ Queries ]----------
+
     /**
-     * Saves a body under a name for a project: a new alias starts at revision 1, a changed body is the next revision.
+     * The project's alias of this name, or a new one at revision 0 that is saved with its first body.
+     */
+    public static function forName(string $projectKey, string $name): self
+    {
+        return self::query()->named($name, $projectKey)->first() ?? new self(
+            ['project_key' => $projectKey, 'name' => $name, 'revision' => 0],
+        );
+    }
+
+    // ----------[ Mutations ]----------
+
+    /**
+     * Saves a body under the alias: a new alias starts at revision 1, a changed body is the next revision.
      *
      * @param  list<string>  $arguments  the names of the positional arguments the body takes
      */
-    public static function record(string $projectKey, string $name, string $line, array $arguments = []): self
+    public function recordLine(string $line, array $arguments = []): void
     {
-        $alias = self::query()->named($name, $projectKey)->first() ?? new self(
-            ['project_key' => $projectKey, 'name' => $name, 'revision' => 0],
-        );
-        $alias->fill(
-            [
-                'line' => $line,
-                'argument_grammar' => $arguments,
-                'body_digest' => hash('sha256', $line),
-                'revision' => $alias->revision + 1,
-            ],
-        )->save();
-
-        return $alias;
+        $this->fill([
+            'line' => $line,
+            'argument_grammar' => $arguments,
+            'body_digest' => hash('sha256', $line),
+            'revision' => $this->revision + 1,
+        ])->save();
     }
 
     // ----------[ Answers ]----------

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Agents\Models\TerminalView;
+use App\Agents\Support\DriverRequestEndings;
 use App\Agents\Support\WatchedRuntimes;
 use App\Engine\Events\EngineTicked;
 use App\Engine\Support\EndTerminalViewsOnTick;
@@ -95,7 +96,7 @@ final class TerminalViewOnHostTest extends TestCase
         $lapsed = TerminalView::create(TestActors::userIdentity(1), $lapsing, 500, CarbonImmutable::now()->subMinute());
         $ofStopped = TerminalView::create(TestActors::userIdentity(1), $stopping, 500, CarbonImmutable::now());
         $live = TerminalView::create(TestActors::userIdentity(1), $kept, 500, CarbonImmutable::now());
-        $stopping->closeAfterExit();
+        $this->app->make(DriverRequestEndings::class)->closeAfterExit($stopping);
         $versions = [$watched->version('host-1'), $watched->version('host-2'), $watched->version('host-3')];
 
         $this->assertNull($lapsed->refresh()->closed_at, 'a view ended before the engine ran');

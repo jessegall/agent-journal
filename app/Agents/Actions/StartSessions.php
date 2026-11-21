@@ -14,6 +14,7 @@ use App\Agents\Support\IsolatedHookSettings;
 use App\Agents\Support\StartedAgent;
 use App\Agents\Values\RuntimeIntent;
 use App\Agents\Values\SelectedProgram;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\StartTransaction;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -30,6 +31,7 @@ final readonly class StartSessions
         private StartTokens $credentials,
         private AgentRuntimes $runtimes,
         private Dispatcher $events,
+        private CommandFacts $facts,
     ) {}
 
     /**
@@ -106,7 +108,8 @@ final readonly class StartSessions
         $token = $this->credentials->issue($session);
         [$runtime, $firstRequest] = $intent === null ? [null, null] : $this->runtimes->open($session, $intent, $token);
 
-        $this->events->dispatch(new SessionOpened($agent->id, $session->id, $authorizedSource));
+        $this->facts->publishAfterCommit(new SessionOpened($agent->id, $session->id, $authorizedSource));
+        $this->facts->applyRequired();
 
         return new StartedAgent(
             $session,
@@ -124,7 +127,8 @@ final readonly class StartSessions
             $this->sessions->end($session);
             $this->credentials->revoke($session);
 
-            $this->events->dispatch(new SessionClosed($session->agent_id, $session->id));
+            $this->facts->publishAfterCommit(new SessionClosed($session->agent_id, $session->id));
+            $this->facts->applyRequired();
         });
     }
 }

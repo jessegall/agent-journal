@@ -152,7 +152,8 @@ final class ProcessRun extends Model implements ReadableModel
      */
     public function nextUpdate(): int
     {
-        $this->increment('update_sequence');
+        $this->update_sequence++;
+        $this->save();
 
         return $this->update_sequence;
     }

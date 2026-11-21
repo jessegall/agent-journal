@@ -6,8 +6,8 @@ namespace App\Agents\Handlers;
 
 use App\Agents\Commands\ReportCleanup;
 use App\Agents\Enums\CleanupState;
-use App\Agents\Models\CapacityReservation;
 use App\Agents\Models\CleanupOperation;
+use App\Agents\Support\CapacityRelease;
 use App\Contracts\CommandHandler;
 
 /**
@@ -16,13 +16,15 @@ use App\Contracts\CommandHandler;
  */
 final readonly class ReportCleanupHandler implements CommandHandler
 {
+    public function __construct(private CapacityRelease $capacity) {}
+
     public function handle(ReportCleanup $command): CleanupState
     {
         $cleanup = CleanupOperation::ofSessionOn($command->hostId, $command->sessionId);
         $cleanup->recordPass($command->report);
 
         if ($cleanup->isDone()) {
-            CapacityReservation::releaseFor($cleanup->start_request_id);
+            $this->capacity->releaseFor($cleanup->start_request_id);
         }
 
         return $cleanup->state;

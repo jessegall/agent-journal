@@ -143,22 +143,6 @@ final class StartRecord extends Model implements ReadableModel
         ]);
     }
 
-    /**
-     * Records whether the session went on in the conversation its start chose: a session that entered another one,
-     * or a fresh one, never counts as resumed.
-     */
-    public static function confirmConversation(string $sessionId, string $nativeId): void
-    {
-        $start = self::query()->where('session_id', $sessionId)->whereNull('conversation_resumed')->first();
-
-        if ($start === null || $start->conversation_mode !== ConversationModeType::Resume) {
-            return;
-        }
-
-        $start->conversation_resumed = $start->conversation_target === $nativeId;
-        $start->save();
-    }
-
     // ----------[ Queries ]----------
 
     /**

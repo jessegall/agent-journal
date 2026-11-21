@@ -10,10 +10,10 @@ use App\Processes\Commands\RestoreCommandRule;
 use App\Processes\Exceptions\ClassificationRuleRefused;
 use App\Processes\Exceptions\RuleProposalRefused;
 use App\Processes\Models\ClassificationRule;
-use App\Processes\Models\RuleProposal;
 use App\Processes\Models\RuleProposalRevision;
 use App\Processes\Models\RuleRevision;
 use App\Processes\Support\ProjectKey;
+use App\Processes\Support\RuleProposals;
 use App\Processes\Values\ProposalReceipt;
 use App\Processes\Values\ProposedRule;
 
@@ -25,6 +25,7 @@ final readonly class RestoreCommandRuleHandler implements CommandHandler
 {
     public function __construct(
         private ProjectKey $projects,
+        private RuleProposals $proposals,
     ) {}
 
     /**
@@ -54,7 +55,7 @@ final readonly class RestoreCommandRuleHandler implements CommandHandler
         $owner = ActorIdentity::of($command->dispatchedBy());
 
         return ProposalReceipt::of(
-            RuleProposal::open($rule->project_key, $owner, $command->requestId, $proposed, null),
+            $this->proposals->open($rule->project_key, $owner, $command->requestId, $proposed, null),
             $proposed,
         );
     }

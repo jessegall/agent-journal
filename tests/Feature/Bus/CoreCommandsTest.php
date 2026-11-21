@@ -36,6 +36,8 @@ use App\Processes\Commands\ProveReader;
 use App\Processes\Commands\ReadPartLive;
 use App\Processes\Commands\ReconcileLostRuns;
 use App\Processes\Commands\RecordEvidenceReads;
+use App\Processes\Commands\RecordRunChunk;
+use App\Processes\Commands\RecordRunEvents;
 use App\Processes\Commands\RejectRuleProposal;
 use App\Processes\Commands\ReplayAssessment;
 use App\Processes\Commands\RestoreCommandRule;
@@ -196,6 +198,8 @@ final class CoreCommandsTest extends CommandBusTestCase
             RestoreCommandRule::class,
             ApproveRuleBundle::class,
             AssessPartOutput::class,
+            RecordRunChunk::class,
+            RecordRunEvents::class,
             ReplayAssessment::class,
             StopProcessRun::class,
             RetryProcessRun::class,

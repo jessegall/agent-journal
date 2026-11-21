@@ -9,6 +9,7 @@ use App\Agents\Models\StartRecord;
 use App\Agents\Values\StackTarget;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\WorkReference;
+use App\Bus\Contracts\CommandFacts;
 use App\Hooks\Contracts\StopConditionGate;
 use App\Hooks\Contracts\StopEvidence;
 use App\Hooks\Contracts\StopPreparer;
@@ -20,7 +21,6 @@ use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Models\StopAttempt;
 use App\Hooks\Values\StopPreparation;
 use App\Hooks\Values\StopPreparationRequest;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Opens the stop attempt of a session started under a frozen policy, once per stop callback, and answers by the
@@ -59,7 +59,7 @@ final readonly class StopAttemptGate implements StopConditionGate
         private StopEvidence $evidence,
         private StopPreparer $preparer,
         private StopCertification $certification,
-        private Dispatcher $events,
+        private CommandFacts $facts,
     ) {}
 
     public function answer(HookIdentity $stop): Decision
@@ -178,7 +178,7 @@ final readonly class StopAttemptGate implements StopConditionGate
     private function tellOwnerHeld(StopAttempt $attempt): void
     {
         StartRecord::ownerStartOf($attempt->session_id)->forAll(
-            fn (StartRecord $start) => $this->events->dispatch(
+            fn (StartRecord $start) => $this->facts->publishAfterCommit(
                 new HelperStopHeld($start->ownerWork(), $attempt->reference()),
             ),
         );

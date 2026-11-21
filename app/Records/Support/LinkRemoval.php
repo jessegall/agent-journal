@@ -12,8 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Removes links one at a time and tells LinksRemoved with their ids through the command's ordered stream, then runs
- * its required listeners at once, so what rested on the links ends before the caller reads on; outside a command the
- * fact is delivered at once.
+ * its required listeners at once, so what rested on the links ends before the caller reads on, outside a command too.
  */
 final readonly class LinkRemoval
 {

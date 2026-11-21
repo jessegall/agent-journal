@@ -10,6 +10,7 @@ use App\Agents\Enums\NavigationState;
 use App\Agents\Exceptions\HostReportRefused;
 use App\Agents\Exceptions\NavigationRaiseRefused;
 use App\Agents\Models\NavigationRequest;
+use App\Agents\Support\DriverRequestEndings;
 use App\Agents\Support\HostRuntimes;
 use App\Contracts\CommandHandler;
 
@@ -19,7 +20,7 @@ use App\Contracts\CommandHandler;
  */
 final readonly class InterruptNavigationHandler implements CommandHandler
 {
-    public function __construct(private HostRuntimes $runtimes) {}
+    public function __construct(private HostRuntimes $runtimes, private DriverRequestEndings $endings) {}
 
     /**
      * @throws HostReportRefused
@@ -39,7 +40,7 @@ final readonly class InterruptNavigationHandler implements CommandHandler
             return;
         }
 
-        $navigation->interrupt();
+        $this->endings->interrupt($navigation);
         $navigation->driverRequest->hold(HoldReason::NeedsAttention);
         $runtime->holdFor(HoldReason::NeedsAttention);
     }

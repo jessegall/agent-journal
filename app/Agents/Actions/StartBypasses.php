@@ -6,6 +6,8 @@ namespace App\Agents\Actions;
 
 use App\Agents\Models\StartBypass;
 use App\Agents\Values\BypassReport;
+use App\Agents\Values\LoggedBypass;
+use Carbon\CarbonImmutable;
 
 /**
  * Keeps the bypasses a start's host reports after the journal came back; they are facts, never fresh permission.
@@ -14,6 +16,24 @@ final readonly class StartBypasses
 {
     public function record(string $sessionId, BypassReport $report): void
     {
-        StartBypass::recordAll($sessionId, $report);
+        $this->recordAll($sessionId, $report);
+    }
+
+    /**
+     * Keeps every bypass of the report for the session in one insert.
+     */
+    private function recordAll(string $sessionId, BypassReport $report): void
+    {
+        $now = CarbonImmutable::now();
+
+        StartBypass::query()->insert(array_map(fn (LoggedBypass $fact) => [
+            'id' => new StartBypass()->newUniqueId(),
+            'agent_session_id' => $sessionId,
+            'native_event' => $fact->nativeEvent,
+            'failure' => $fact->failure,
+            'occurred_at' => $fact->occurredAt,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], $report->bypasses));
     }
 }

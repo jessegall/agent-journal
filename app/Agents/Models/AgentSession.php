@@ -99,21 +99,9 @@ final class AgentSession extends Model implements ReadableModel
 
     // ----------[ Queries ]----------
 
-    public static function selectMessage(string $sessionId, string $messageId): void
-    {
-        self::query()->whereKey($sessionId)->update(['selected_message_id' => $messageId]);
-    }
-
     public static function selectedMessage(string $sessionId): string|null
     {
         return self::query()->whereKey($sessionId)->value('selected_message_id');
-    }
-
-    public static function captureJobSourceMessage(string $sessionId, string $messageId): void
-    {
-        self::query()->whereKey($sessionId)->whereNull('job_source_message_id')->update([
-            'job_source_message_id' => $messageId,
-        ]);
     }
 
     public static function jobSourceMessage(string $sessionId): string|null
@@ -226,34 +214,11 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
-     * Marks every running session that has shown no life since the cutoff as silent, in one update.
-     */
-    public static function markSilentIfNoHeartbeatSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
-    {
-        self::query()->where('status', SessionStatus::Active->value)
-            ->where(fn (Builder $silent) => $silent->where('last_heartbeat_at', '<=', $cutoff)
-                ->orWhere(fn (Builder $neverBeat) => $neverBeat
-                    ->whereNull('last_heartbeat_at')
-                    ->where('created_at', '<=', $cutoff)))
-            ->update(['status' => SessionStatus::Silent->value, 'silent_since' => $now]);
-    }
-
-    /**
      * Locks the session's row, with its start token and agent, so a heartbeat waits for an end or a retirement.
      */
     public static function lockedForHeartbeat(string $sessionId): self
     {
         return self::query()->whereKey($sessionId)->with(['startToken', 'agent'])->lockForUpdate()->firstOrFail();
-    }
-
-    /**
-     * Records the started program's tool discovery at its signed issue time; an older discovery never moves it back.
-     */
-    public static function recordDiscoveryAt(string $sessionId, CarbonImmutable $signedAt): void
-    {
-        self::query()->whereKey($sessionId)
-            ->where(fn (Builder $older) => $older->whereNull('discovered_at')->orWhere('discovered_at', '<', $signedAt))
-            ->update(['discovered_at' => $signedAt]);
     }
 
     /**

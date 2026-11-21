@@ -113,7 +113,6 @@ final class RuleProposal extends Model implements ReadableModel
             'replaces' => $proposed->rule->replaces,
             'current_revision' => 0,
         ]);
-        $proposal->record($proposed, $author);
 
         return $proposal;
     }
@@ -137,22 +136,46 @@ final class RuleProposal extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * Makes the revision just written the proposal's current one, with the rule's program and state: the proposal
+     * waits for review once a revision is complete and stays a draft until then.
+     */
+    public function adopt(RuleProposalRevision $revision, ProposedRule $proposed): void
+    {
+        $this->program = $proposed->rule->programFamily();
+        $this->operation = $proposed->rule->operation();
+        $this->replaces = $proposed->rule->replaces;
+        $this->current_revision = $revision->revision;
+        $this->state = $proposed->isComplete() ? ProposalState::Pending : ProposalState::Draft;
+        $this->save();
+    }
+
     // ----------[ Answers ]----------
 
     /**
-     * The author adds the next revision to the revision they read; an approval of the earlier one no longer fits.
+     * Refuses a revision by anyone but the author, or made against a revision that is no longer current.
      *
      * @throws RuleProposalRefused
      */
-    public function revise(int $expectedRevision, ProposedRule $proposed, ActorIdentity $author): RuleProposalRevision
+    public function assertRevisableAt(int $expectedRevision, ActorIdentity $author): void
     {
         $this->assertAuthor($author);
 
         if ($expectedRevision !== $this->current_revision) {
             throw RuleProposalRefused::stale($this->id, $expectedRevision, $this->current_revision);
         }
+    }
 
-        return $this->record($proposed, $author);
+    /**
+     * Refuses a revision once the proposal ended.
+     *
+     * @throws RuleProposalRefused
+     */
+    public function assertAcceptsRevision(): void
+    {
+        if (! $this->state->canAcceptRevision()) {
+            throw RuleProposalRefused::ended($this->id, $this->state);
+        }
     }
 
     /**
@@ -211,35 +234,6 @@ final class RuleProposal extends Model implements ReadableModel
     }
 
     // ----------[ Internals ]----------
-
-    /**
-     * Adds the next revision; the proposal waits for review once a revision is complete and stays a draft until then.
-     *
-     * @throws RuleProposalRefused when the proposal is already ended
-     */
-    private function record(ProposedRule $proposed, ActorIdentity $author): RuleProposalRevision
-    {
-        if (! $this->state->canAcceptRevision()) {
-            throw RuleProposalRefused::ended($this->id, $this->state);
-        }
-
-        $revision = $this->revisions()->create([
-            'revision' => $this->current_revision + 1,
-            'payload' => $proposed->rule,
-            'evidence' => $proposed->evidence,
-            'examples' => $proposed->examples,
-            'author_type' => $author->type->value,
-            'author_id' => $author->id,
-        ]);
-        $this->program = $proposed->rule->programFamily();
-        $this->operation = $proposed->rule->operation();
-        $this->replaces = $proposed->rule->replaces;
-        $this->current_revision = $revision->revision;
-        $this->state = $proposed->isComplete() ? ProposalState::Pending : ProposalState::Draft;
-        $this->save();
-
-        return $revision;
-    }
 
     /**
      * @throws RuleProposalRefused

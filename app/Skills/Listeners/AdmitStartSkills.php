@@ -7,6 +7,7 @@ namespace App\Skills\Listeners;
 use App\Agents\Events\SessionOpened;
 use App\Agents\Exceptions\StartRefused;
 use App\Agents\Models\AgentSession;
+use App\Contracts\Attributes\InCommandTransaction;
 use App\Contracts\Listener;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Events\SessionSkillsIntended;
@@ -24,6 +25,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  * skill outside the selection refuses the start with its key, and the selected set is saved as a pending publication
  * that is written once the start committed. Before the first skill:refresh there is no generation to publish.
  */
+#[InCommandTransaction]
 final readonly class AdmitStartSkills implements Listener
 {
     public function __construct(

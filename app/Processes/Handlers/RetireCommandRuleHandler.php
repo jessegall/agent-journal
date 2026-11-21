@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\RetireCommandRule;
 use App\Processes\Events\RuleRetired;
 use App\Processes\Exceptions\ClassificationRuleRefused;
 use App\Processes\Models\ClassificationRule;
 use App\Processes\Support\ProjectKey;
-use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class RetireCommandRuleHandler implements CommandHandler
 {
     public function __construct(
-        private Dispatcher $events,
+        private CommandFacts $facts,
         private ProjectKey $projects,
     ) {}
 
@@ -31,7 +31,7 @@ final readonly class RetireCommandRuleHandler implements CommandHandler
             ->sole();
         $rule->retire($command->expectedRevision, $command->reason);
         $retired = RuleRetired::forRule($rule, $command->reason);
-        $this->events->dispatch($retired);
+        $this->facts->publishAfterCommit($retired);
 
         return $rule->id;
     }

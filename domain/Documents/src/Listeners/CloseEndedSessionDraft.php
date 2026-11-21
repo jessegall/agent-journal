@@ -6,6 +6,7 @@ namespace Domain\Documents\Listeners;
 
 use App\Agents\Contracts\SessionProvenance;
 use App\Agents\Events\SessionClosed;
+use App\Contracts\Attributes\InCommandTransaction;
 use App\Contracts\Listener;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Support\DraftClosing;
@@ -15,6 +16,7 @@ use Domain\Documents\Support\DraftClosing;
  * that ends it: a changed draft
  * becomes the next revision under that agent, an unchanged one leaves none. A failure here rolls the ending back.
  */
+#[InCommandTransaction]
 final readonly class CloseEndedSessionDraft implements Listener
 {
     public function __construct(private DraftClosing $drafts, private SessionProvenance $provenance) {}

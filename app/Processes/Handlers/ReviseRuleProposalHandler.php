@@ -11,6 +11,7 @@ use App\Processes\Exceptions\RequestTransitionRefused;
 use App\Processes\Exceptions\RuleProposalRefused;
 use App\Processes\Models\RuleProposal;
 use App\Processes\Support\ProposalChecks;
+use App\Processes\Support\RuleProposals;
 use App\Processes\Values\ProposalReceipt;
 
 /**
@@ -18,7 +19,7 @@ use App\Processes\Values\ProposalReceipt;
  */
 final readonly class ReviseRuleProposalHandler implements CommandHandler
 {
-    public function __construct(private ProposalChecks $checks) {}
+    public function __construct(private ProposalChecks $checks, private RuleProposals $proposals) {}
 
     /**
      * @throws RuleProposalRefused
@@ -30,7 +31,7 @@ final readonly class ReviseRuleProposalHandler implements CommandHandler
         $proposal = RuleProposal::query()->whereKey($command->proposalId)->lockForUpdate()->sole();
         $request = $proposal->commandRequest()->lockForUpdate()->first();
         $this->checks->check($command->proposed->rule, $request !== null && $request->hold_reason->needsReader());
-        $proposal->revise($command->expectedRevision, $command->proposed, $actor);
+        $this->proposals->revise($proposal, $command->expectedRevision, $command->proposed, $actor);
 
         if ($request !== null) {
             $request->answerWith($proposal);

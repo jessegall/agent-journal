@@ -40,7 +40,7 @@ final readonly class PruneHookHistory
             $this->deleteInBatches(
                 fn () => AgentStackRow::query()->prunableBefore($now->subDays($this->periods->closedStackDays)),
             ),
-            StopResult::forgetOutputBefore($now->subDays($this->periods->stopOutputDays)),
+            $this->forgetOutputBefore($now->subDays($this->periods->stopOutputDays)),
         );
     }
 
@@ -59,5 +59,17 @@ final readonly class PruneHookHistory
         } while ($batch->count() === $this->periods->batchSize);
 
         return $deleted;
+    }
+
+    /**
+     * Forgets the raw output of every result recorded before the moment, and answers how many there were; their
+     * summaries stay.
+     */
+    private function forgetOutputBefore(CarbonImmutable $before): int
+    {
+        return StopResult::query()
+            ->whereNotNull('output')
+            ->where('created_at', '<', $before)
+            ->update(['output' => null]);
     }
 }

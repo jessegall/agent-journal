@@ -11,6 +11,7 @@ use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
+use App\Agents\Support\DriverRequestEndings;
 use App\Engine\Events\EngineTicked;
 use App\Engine\Support\EngineListenerSet;
 use App\Engine\Support\EngineTickedDelivery;
@@ -92,7 +93,7 @@ final class NavigationLifecycleTest extends TestCase
         $stalled = $this->stalledScript();
         $navigation = $this->raise($stalled, 'raise-1');
 
-        AgentRuntime::query()->findOrFail($stalled->agent_runtime_id)->closeAfterExit();
+        $this->app->make(DriverRequestEndings::class)->closeAfterExit(AgentRuntime::query()->findOrFail($stalled->agent_runtime_id));
 
         $this->assertSame(NavigationState::Cancelled, $navigation->fresh()?->state);
     }
