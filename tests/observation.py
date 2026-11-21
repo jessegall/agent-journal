@@ -35,7 +35,7 @@ class Observer:
 
     def observe(self, answer=None) -> Observation:
         keystrokes = tuple(self.typed)
-        with self.app.container.get(Scope).environment(self.app.container.get(Environments).lookup("main").id):
+        with self.app.container.get(Scope).environment(self.app.container.get(Environments).ensure("main").id):
             said = self.app.container.get(Entries).newer_kind_rows("nudge", self.last_id)
             self.app.runtime().deferred.drain()
             agent = self.app.container.get(Agents).current()

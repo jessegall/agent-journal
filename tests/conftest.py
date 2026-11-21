@@ -103,7 +103,7 @@ def template_journal(tmp_path_factory) -> Path:
     app.container.get(SettingRows).save(Setting(environment_id=PROJECT, key="plans.test_commands", value="pytest, journal suite"), Actor.system())
     app.container.get(SettingRows).save(Setting(environment_id=PROJECT, key="workers.fitness_warnings", value=True), Actor.system())
     app.runtime().start()
-    app.container.get(Environments).lookup("main")
+    app.container.get(Environments).ensure("main")
     app.runtime().stop()
     return root
 

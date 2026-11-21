@@ -34,7 +34,7 @@ class BehaviourRecord:
 
     @staticmethod
     def entries(app) -> list:
-        with app.container.get(Scope).environment(app.container.get(Environments).lookup("main").id):
+        with app.container.get(Scope).environment(app.container.get(Environments).ensure("main").id):
             return [entry for entry in app.container.get(Entries).kind_entries_scoped(ENTRIES_READ) if entry.entry_type in (NUDGE, StackHistory.KIND)]
 
     def saved(self) -> None:

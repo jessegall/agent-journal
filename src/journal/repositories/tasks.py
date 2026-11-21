@@ -79,7 +79,11 @@ class Tasks(ScopedRepository[Task]):
     def is_wait_resolved(self, ref: Ref) -> bool:
         if ref.type == Plan.table():
             return PlanState(self.row_reader.row_state(ref)).is_closed()
-        return self.waiting(ref).is_resolved()
+        return not self.is_dangling(ref) and self.waiting(ref).is_resolved()
+
+    def is_dangling(self, ref: Ref) -> bool:
+        """Whether the row a wait points at is gone, which leaves the wait open until someone repairs it."""
+        return ref.type in self.awaitable and not self.awaitable[ref.type].is_stored(ref.id)
 
     def waiting_ids(self, tasks: list[Task]) -> set[int]:
         return set(self.open_wait_refs(tasks))
@@ -99,6 +103,10 @@ class Tasks(ScopedRepository[Task]):
 
     def broken_waits(self) -> list[tuple[Task, Check]]:
         return [(task, check) for check in self.checks.broken_waits() for task in self.waiting_refs(check)]
+
+    def dangling_waits(self) -> list[tuple[Task, Ref]]:
+        """The blocked tasks that wait on a row that does not exist, with the ref each waits on."""
+        return [(task, ref) for task in self.matching(state=TaskState.BLOCKED) for ref in self.links.targets(task, WAIT_LINK) if self.is_dangling(ref)]
 
     def waiting_refs(self, model) -> list[Task]:
         return [task for ref in self.links.sources(model, WAIT_LINK) if ref.type == Task.table() and (task := self.find(ref.id)).state == TaskState.BLOCKED]

@@ -107,7 +107,7 @@ def booted(root: Path) -> App:
     settings.set(PlansOptions.TEST_COMMANDS.key, "pytest, journal suite", Actor.user(1))
     app.runtime().start()
     for name in ("main", "spare"):
-        app.container.get(Environments).lookup(name)
+        app.container.get(Environments).ensure(name)
     return app
 
 

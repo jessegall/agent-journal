@@ -35,7 +35,7 @@ class SessionHydration:
     def created(self, name: str, provider: str, session: str, actor: Actor) -> Environment:
         if self.environments.matching(name=name):
             raise Rejection(f"environment {name} exists already: a session fills only a new environment's chat")
-        environment = self.environments.lookup(name)
+        environment = self.environments.ensure(name)
         self.hydrate(environment, provider, session, actor)
         return environment
 
