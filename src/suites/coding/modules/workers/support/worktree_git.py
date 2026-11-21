@@ -488,18 +488,31 @@ class WorktreeGit:
             self.unstash(worktree, stash)
         return WorktreeUpdate(tip)
 
+    # a rebase that stops is undone before the instruction files go back, so it never leaves the head detached on
+    # the base with the branch's later commits missing from the files
     def rebase(self, worktree: Worktree) -> bool:
         stash = self.stash(worktree)
         rebased = False
         try:
             with self.without_instruction_files(worktree.folder):
-                rebased = self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "rebase", worktree.base_branch).returncode == 0
+                try:
+                    rebased = self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "rebase", worktree.base_branch).returncode == 0
+                finally:
+                    if not rebased:
+                        self.abort_rebase(worktree)
             return rebased
         finally:
-            if not rebased:
-                self.git(worktree.folder, GIT_LIMIT_SECONDS, "rebase", "--abort")
             if stash:
                 self.unstash(worktree, stash)
+
+    # an abort git refuses still drops the rebase: its state is quit and the branch is checked out again, its files
+    # whole; the worker's own changes were stashed before the rebase began
+    def abort_rebase(self, worktree: Worktree) -> None:
+        self.git(worktree.folder, GIT_LIMIT_SECONDS, "rebase", "--abort")
+        if not any(FileAccess.is_dir(self.git_folder(worktree.folder) / name) for name in REBASE_FOLDERS) and self.head(worktree.folder) == worktree.branch:
+            return
+        self.git(worktree.folder, GIT_LIMIT_SECONDS, "rebase", "--quit")
+        self.checked(worktree.folder, GIT_LIMIT_SECONDS, "checkout", "--force", worktree.branch)
 
     def restore_stashes(self, worktree: Worktree) -> None:
         stashes = self.branch_stashes(worktree)
