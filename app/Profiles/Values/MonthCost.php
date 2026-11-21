@@ -12,5 +12,9 @@ use Carbon\CarbonImmutable;
  */
 final readonly class MonthCost
 {
-    public function __construct(public UsdAmount $usd, public int $observations, public CarbonImmutable $lastObservedAt) {}
+    public function __construct(
+        public UsdAmount $usd,
+        public int $observations,
+        public CarbonImmutable $lastObservedAt,
+    ) {}
 }

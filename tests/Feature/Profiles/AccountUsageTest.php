@@ -55,7 +55,8 @@ final class AccountUsageTest extends TestCase
         Event::assertDispatchedTimes(AccountUsageChanged::class, 1);
 
         $windows = AccountUsageWindow::query()->withoutGlobalScopes()->orderBy('slot')->get();
-        $this->assertSame([UsageWindowSlot::FiveHour, UsageWindowSlot::SevenDay], [$windows[0]->slot, $windows[1]->slot]);
+        $slots = [$windows[0]->slot, $windows[1]->slot];
+        $this->assertSame([UsageWindowSlot::FiveHour, UsageWindowSlot::SevenDay], $slots);
         $this->assertSame([10.0, 42.5], [$windows[0]->used_percent, $windows[1]->used_percent]);
         $this->assertNotNull($windows[0]->resets_at);
         $this->assertNull($windows[1]->resets_at);
@@ -72,7 +73,8 @@ final class AccountUsageTest extends TestCase
 
     public function test_a_cost_is_kept_once_and_a_different_cost_under_its_source_is_refused(): void
     {
-        $cost = new UsageCost('result-1', UsdAmount::from('0.0128'), CarbonImmutable::parse('2026-11-21T10:00:00.250Z'));
+        $observedAt = CarbonImmutable::parse('2026-11-21T10:00:00.250Z');
+        $cost = new UsageCost('result-1', UsdAmount::from('0.0128'), $observedAt);
         AccountUsageCost::add($this->account, 1, $cost);
         AccountUsageCost::add($this->account, 1, $cost);
 
@@ -107,7 +109,8 @@ final class AccountUsageTest extends TestCase
 
         $this->assertSame('2.000000000000', $totals[$this->account->id]->usd->amount);
         $this->assertSame(2, $totals[$this->account->id]->observations);
-        $this->assertSame('2026-11-30 23:59:59', $totals[$this->account->id]->lastObservedAt->utc()->toDateTimeString());
+        $lastObservedAt = $totals[$this->account->id]->lastObservedAt;
+        $this->assertSame('2026-11-30 23:59:59', $lastObservedAt->utc()->toDateTimeString());
         $this->assertSame(['0.000000000000', 1], [$totals[$other->id]->usd->amount, $totals[$other->id]->observations]);
     }
 
@@ -120,7 +123,8 @@ final class AccountUsageTest extends TestCase
 
         $newest = AccountUsageTokens::newestOf([$this->account->refresh()]);
 
-        $this->assertSame(['thread-a', 1500], [$newest[$this->account->id]->thread_id, $newest[$this->account->id]->total]);
+        $snapshot = $newest[$this->account->id];
+        $this->assertSame(['thread-a', 1500], [$snapshot->thread_id, $snapshot->total]);
         $this->assertSame(2, AccountUsageTokens::query()->withoutGlobalScopes()->count());
     }
 
@@ -132,14 +136,16 @@ final class AccountUsageTest extends TestCase
     private function window(UsageWindowSlot $slot, float $percent, string|null $reset, int $order): UsageWindowReading
     {
         $resetsAt = $reset === null ? null : CarbonImmutable::parse($reset);
-        $source = new UsageSource('start-1', $order, CarbonImmutable::parse('2026-11-21T10:00:00Z')->addMinutes($order));
+        $observedAt = CarbonImmutable::parse('2026-11-21T10:00:00Z')->addMinutes($order);
+        $source = new UsageSource('start-1', $order, $observedAt);
 
         return new UsageWindowReading('claude', $slot, $percent, null, $resetsAt, $source);
     }
 
     private function addCost(Account $account, int $generation, string $source, string $usd, string $at): void
     {
-        AccountUsageCost::add($account, $generation, new UsageCost($source, UsdAmount::from($usd), CarbonImmutable::parse($at)));
+        $cost = new UsageCost($source, UsdAmount::from($usd), CarbonImmutable::parse($at));
+        AccountUsageCost::add($account, $generation, $cost);
     }
 
     private function recordTokens(string $thread, int $total, string $at): void

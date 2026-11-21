@@ -28,7 +28,7 @@ final readonly class ClaimStartController
                 'session_id' => $claimed->sessionId,
                 'directory' => $claimed->directory,
                 'generation' => $claimed->generation,
-                'sign_in_method' => $claimed->method->value,
+                'sign_in_method' => $claimed->signInMethod,
                 'recipe' => $claimed->recipe,
                 'conversation_target' => $claimed->conversationTarget,
                 'conversation_required' => $claimed->conversationRequired,

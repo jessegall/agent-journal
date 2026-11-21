@@ -25,9 +25,11 @@ use App\Http\Controllers\Agents\Host\StaleEntryController;
 use App\Http\Controllers\Agents\Host\StartGrantController;
 use App\Http\Controllers\Agents\Host\ToolDiscoveryController;
 use App\Http\Controllers\Agents\Host\TurnReportController;
+use App\Http\Controllers\Agents\Host\UsageReportController;
 use App\Http\Controllers\Agents\Host\WorkspaceReadController;
 use App\Http\Controllers\Hooks\Host\PendingStopAttemptsController;
 use App\Http\Controllers\Hooks\Host\StopResultsController;
+use App\Http\Middleware\Agents\LimitUsageReport;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('host')->middleware('journal.host')->name('agents.host.')->group(function (): void {
@@ -43,6 +45,9 @@ Route::prefix('host')->middleware('journal.host')->name('agents.host.')->group(f
     Route::post('/reports/activity', ActivityReportController::class)->name('reports.activity');
     Route::post('/reports/request', RequestReportController::class)->name('reports.request');
     Route::post('/reports/turn', TurnReportController::class)->name('reports.turn');
+    Route::post('/reports/usage', UsageReportController::class)
+        ->middleware(LimitUsageReport::class)
+        ->name('reports.usage');
     Route::post('/reports/heartbeat', HeartbeatReportController::class)->name('reports.heartbeat');
     Route::post('/reports/exit', ExitReportController::class)->name('reports.exit');
     Route::post('/reports/screen', ScreenReportController::class)->name('reports.screen');

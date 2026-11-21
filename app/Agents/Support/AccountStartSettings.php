@@ -51,6 +51,8 @@ final class AccountStartSettings
 
     private string $protectionSettings = '';
 
+    private string|null $signInMethod = null;
+
     public function setVariable(string $name, string $variableText): void
     {
         $this->environment[] = new StartSetting($name, $variableText);
@@ -100,6 +102,27 @@ final class AccountStartSettings
         $this->build = $version;
         $this->binaryDigest = $binaryDigest;
         $this->arrangement = $arrangement;
+    }
+
+    /**
+     * The method the start's saved account signed in by, such as oauth or api_key, which the host's usage reader
+     * follows.
+     */
+    public function signInBy(string $method): void
+    {
+        $this->signInMethod = $method;
+    }
+
+    /**
+     * @throws StartRefused
+     */
+    public function signInMethod(string $driver): string
+    {
+        if ($this->signInMethod === null) {
+            throw StartRefused::withoutSignInMethod($driver);
+        }
+
+        return $this->signInMethod;
     }
 
     /**
