@@ -1,6 +1,6 @@
 import { rename } from '@generated/routes/accounts';
 import type { AccountListData } from '@generated/types/accounts';
-import type { WindowResult } from '@generated/types/page-props';
+import type { WindowResult } from '@kit/PageTypes';
 import { useForm } from '@inertiajs/vue3';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { computed } from 'vue';
