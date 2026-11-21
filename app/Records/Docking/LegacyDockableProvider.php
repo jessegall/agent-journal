@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Docking\Support;
+namespace App\Records\Docking;
 
 use App\Docking\Cards\ComposedCard;
 use App\Docking\Exceptions\DockSourceUnavailable;
@@ -14,6 +14,8 @@ use App\Records\Contracts\RecordResolver;
 use App\Records\Data\RecordCard;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
+use App\Records\Docking\LegacyDockable;
+use App\Records\Docking\DeclaredPageRoutes;
 
 /**
  * Reads records with no card of their own through their record provider: one the actor may read for docking, and the

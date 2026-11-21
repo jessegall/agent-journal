@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Docking\Support;
+namespace App\Records\Docking;
 
 use App\Docking\Cards\DestinationArgument;
 use App\Docking\Cards\DockDestination;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
+use Tests\Fixtures\Modules\Notes\Events\NoteRemoved;
 use App\Operations\Enums\AccessType;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
@@ -118,6 +119,7 @@ final class NotesDomain extends Domain implements
     public function exports(): Exports
     {
         return Exports::make()
+            ->events(NoteRemoved::class)
             ->contracts(NoteResolver::class)
             ->values(NoteValue::class)
             ->commands(WriteNote::class)

@@ -6,6 +6,7 @@ namespace App\Records\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
+use App\Docking\Sources\Contracts\FallbackDocks;
 use App\Links\Models\Link;
 use App\Operations\Enums\AccessType;
 use App\Records\Console\LinkAddCommand;
@@ -14,6 +15,7 @@ use App\Records\Contracts\IdentityLinks;
 use App\Records\Contracts\RecordLinker;
 use App\Records\Contracts\RecordProviderRegistration;
 use App\Records\Contracts\RecordResolver;
+use App\Records\Docking\RecordFallbackDocks;
 use App\Records\Policies\RecordLinkPolicy;
 use App\Records\Support\RecordProviders;
 use App\Records\Support\TransactionalIdentityLinks;
@@ -31,6 +33,7 @@ final class RecordsServiceProvider extends ServiceProvider
         $this->app->bind(IdentityLinks::class, TransactionalIdentityLinks::class);
         $this->app->bind(RecordProviderRegistration::class, RecordProviders::class);
         $this->app->bind(RecordResolver::class, RecordProviders::class);
+        $this->app->bind(FallbackDocks::class, RecordFallbackDocks::class);
     }
 
     public function boot(PolicyCatalogue $policies): void

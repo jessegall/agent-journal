@@ -8,9 +8,11 @@ use App\Docking\Sources\Contracts\DestinationGate;
 use App\Docking\Sources\Contracts\DockedSources;
 use App\Docking\Sources\Contracts\DockOffers;
 use App\Docking\Sources\Contracts\DockRegistration;
+use App\Docking\Sources\Contracts\FallbackDocks;
 use App\Docking\Support\DeclaredPageGate;
 use App\Docking\Support\DockDefinitions;
 use App\Docking\Support\NoDockOffers;
+use App\Docking\Support\NoFallbackDocks;
 use App\Docking\Support\NothingDocked;
 use App\Docking\Wire\Contracts\CardEncoder;
 use App\Docking\Wire\DockCardEncoder;
@@ -30,6 +32,7 @@ final class DockingServiceProvider extends ServiceProvider
         $this->app->bind(CardEncoder::class, DockCardEncoder::class);
         $this->app->bindIf(DockOffers::class, NoDockOffers::class);
         $this->app->bindIf(DockedSources::class, NothingDocked::class);
+        $this->app->bindIf(FallbackDocks::class, NoFallbackDocks::class);
         $this->app->singleton(PartMap::class, PartMap::standard(...));
     }
 }

@@ -6,10 +6,14 @@ namespace App\Domains\Support;
 
 use App\Contracts\Event;
 use App\Docking\Sources\Contracts\DockSourceChanged;
+use App\Docking\Sources\Contracts\DockSourceDeleted;
 use App\Domains\Exceptions\InvalidListener;
 use App\Exports\Support\Exports;
 use App\Ui\Contracts\UserInterfaceUpdater;
+use Illuminate\Support\Str;
 use ReflectionClass;
+use ReflectionMethod;
+use ReflectionNamedType;
 
 /**
  * Finds the owners of listener and event declarations and checks their event permissions.
@@ -18,9 +22,13 @@ final readonly class ListenerOwnership
 {
     /**
      * The interfaces a listener may be typed on in place of a concrete event: the facts that update the UI, and the
-     * facts that change a dockable source.
+     * facts that change or delete a dockable source.
      */
-    public const array EXPANDED_INTERFACES = [UserInterfaceUpdater::class, DockSourceChanged::class];
+    public const array EXPANDED_INTERFACES = [
+        UserInterfaceUpdater::class,
+        DockSourceChanged::class,
+        DockSourceDeleted::class,
+    ];
 
     public const string CORE = 'Core';
 
@@ -66,6 +74,10 @@ final readonly class ListenerOwnership
         }
 
         if ($domain === $owner) {
+            return;
+        }
+
+        if ($owner->exportsEvent($event) && self::listensThroughCoreContract($event, $listener, $method)) {
             return;
         }
 
@@ -165,5 +177,19 @@ final readonly class ListenerOwnership
                 ...array_map(fn (DomainEntry $entry) => $entry->exports->events, $this->registry->all()),
             ),
         ];
+    }
+
+    /**
+     * Whether the listener takes a Core contract the event implements, so it hears every domain's exported fact of
+     * that kind without requiring the domain.
+     */
+    private static function listensThroughCoreContract(string $event, string $listener, string $method): bool
+    {
+        $parameters = new ReflectionMethod(Str::before($listener, '@'), $method)->getParameters();
+        $type = $parameters === [] ? null : $parameters[0]->getType();
+
+        return $type instanceof ReflectionNamedType
+            && in_array($type->getName(), self::EXPANDED_INTERFACES, true)
+            && is_subclass_of($event, $type->getName());
     }
 }

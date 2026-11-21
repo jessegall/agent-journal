@@ -8,8 +8,8 @@ use App\Docking\Exceptions\DockDefinitionInvalid;
 use App\Docking\Sources\Contracts\Dockable;
 use App\Docking\Sources\Contracts\DockableProvider;
 use App\Docking\Sources\Contracts\DockRegistration;
+use App\Docking\Sources\Contracts\FallbackDocks;
 use App\Docking\Sources\DockDefinition;
-use App\Records\Contracts\RecordResolver;
 use App\Registries\Support\Registry;
 use Illuminate\Container\Attributes\Singleton;
 
@@ -30,7 +30,7 @@ final class DockDefinitions implements DockRegistration
      */
     private array $offered = [];
 
-    public function __construct(private readonly RecordResolver $records)
+    public function __construct(private readonly FallbackDocks $fallbacks)
     {
         $this->owned = Registry::replacing(DockDefinitionInvalid::unknown(...));
     }
@@ -66,16 +66,12 @@ final class DockDefinitions implements DockRegistration
             return $this->owned->get($type);
         }
 
-        if (! in_array($type, $this->records->types(), true)) {
-            throw DockDefinitionInvalid::unknown($type);
-        }
-
-        return new DockDefinition($type, LegacyDockable::class, LegacyDockableProvider::class);
+        return $this->fallbacks->definition($type);
     }
 
     public function offersDock(string $type): bool
     {
         return isset($this->offered[$type])
-            || (! $this->owned->has($type) && in_array($type, $this->records->types(), true));
+            || (! $this->owned->has($type) && $this->fallbacks->covers($type));
     }
 }

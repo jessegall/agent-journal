@@ -1931,6 +1931,7 @@ class	DockLink
 class	DockNodeTypes
 class	DockOfferData
 class	DockSourceUnavailable
+class	DockedOutput
 class	DockerImageData
 class	DockerImageRecordData
 class	DockerImageVerifier
@@ -2680,6 +2681,7 @@ class	NextStep
 class	NgrokGateway
 class	NoDockOffers
 class	NoEngineGrant
+class	NoFallbackDocks
 class	NoRefusalReason
 class	NoReplacementLine
 class	NoStop
@@ -2766,6 +2768,7 @@ class	OutputChunkCommitted
 class	OutputCleaned
 class	OutputContract
 class	OutputDiskCapacity
+class	OutputDocking
 class	OutputFrame
 class	OutputGrantController
 class	OutputGrantSeal
@@ -3245,6 +3248,7 @@ class	RecordConversationVisit
 class	RecordDriverFailure
 class	RecordEvidenceReads
 class	RecordEvidenceReadsHandler
+class	RecordFallbackDocks
 class	RecordGatewayHealth
 class	RecordGatewayHealthHandler
 class	RecordGatewayOutcome
@@ -3646,6 +3650,7 @@ class	RunChunk
 class	RunClaimRefused
 class	RunContext
 class	RunCurrency
+class	RunDocking
 class	RunEvent
 class	RunEventBatch
 class	RunEventsAccepted
@@ -4892,7 +4897,6 @@ constant	ExecutionBudgets::MOST_CPU_CORES
 constant	ExecutionBudgets::MOST_MEMORY_BYTES
 constant	ExecutionBudgets::MOST_PROCESSES
 constant	ExecutionBudgets::MOST_WORKSPACE_BYTES
-constant	ExpandUiUpdaterListeners::EXPANDED
 constant	ExpireNavigationRequests::MAINTENANCE_SCOPE
 constant	ExpireSharesHandler::MOST_PER_RUN
 constant	ExplainCommandController::NOTICE
@@ -4956,6 +4960,7 @@ constant	LimitMcpMessage::BYTE_LIMIT
 constant	LimitMcpMessage::MAX_DEPTH
 constant	LineAdmission::EXPLAIN
 constant	ListenerOwnership::CORE
+constant	ListenerOwnership::EXPANDED_INTERFACES
 constant	LoggedMcpCall::OUTCOME_OK
 constant	LoginPage::COMPONENT
 constant	MarkMenuEntryStaleHandler::MOST_ROWS
@@ -5020,6 +5025,7 @@ constant	OutageReply::PREPARATION_PENDING_REASON
 constant	OutageReply::PROTECTED_REASON
 constant	OutcomeUnknown::CODE
 constant	OutputAssessment::UPDATED_AT
+constant	OutputDocking::DOCK_TYPE
 constant	OutputPolicy::HIDING_REDIRECTS
 constant	OutputVerdict::CODE
 constant	PackageScripts::HARMLESS_CALLBACKS
@@ -5040,6 +5046,8 @@ constant	ProbeChallenges::SECONDS
 constant	ProcessEvent::OPERATIONAL_ERROR
 constant	ProcessPages::LIST_VIEW
 constant	ProcessPages::WINDOW
+constant	ProcessRun::DOCK_PART_LIMIT
+constant	ProcessRun::DOCK_TYPE
 constant	Profile::LINK_TYPE
 constant	ProfileBases::TYPE
 constant	ProfileBases::VERSION
@@ -5686,6 +5694,8 @@ interface	DockOffers
 interface	DockPart
 interface	DockRegistration
 interface	DockSourceChanged
+interface	DockSourceDeleted
+interface	DockSourceFact
 interface	Dockable
 interface	DockableProvider
 interface	DockableWindow
@@ -5707,6 +5717,7 @@ interface	Event
 interface	EventSource
 interface	FactOrigin
 interface	FactStaging
+interface	FallbackDocks
 interface	FileAccessPolicy
 interface	Files
 interface	GroupDeclaration
@@ -9095,8 +9106,8 @@ method	DockRegistration::definition()
 method	DockRegistration::offerDockFor()
 method	DockRegistration::offersDock()
 method	DockRegistration::register()
-method	DockSourceChanged::dockId()
-method	DockSourceChanged::dockType()
+method	DockSourceFact::dockId()
+method	DockSourceFact::dockType()
 method	DockSourceUnavailable::of()
 method	DockSourceUnavailable::unreadable()
 method	DockSourceUnavailable::unsupported()
@@ -9105,6 +9116,10 @@ method	Dockable::identifyFor()
 method	DockableProvider::cardsFor()
 method	DockableProvider::requireReadable()
 method	DockableWindow::dockSource()
+method	DockedOutput::__construct()
+method	DockedOutput::composeDockCard()
+method	DockedOutput::identifyFor()
+method	DockedOutput::keyOf()
 method	DockedSources::isDocked()
 method	DockerImageData::__construct()
 method	DockerImageData::isAgentImage()
@@ -9847,6 +9862,8 @@ method	FailureLoggingListener::__construct()
 method	FailureLoggingListener::__invoke()
 method	FailureReceipt::casts()
 method	FailureReceipt::receive()
+method	FallbackDocks::covers()
+method	FallbackDocks::definition()
 method	FenceProfileRevision::__construct()
 method	FenceProfileRevisionHandler::handle()
 method	FetchAdmission::__construct()
@@ -10986,6 +11003,7 @@ method	ListenerOwnership::domainHoldingListener()
 method	ListenerOwnership::eventDomain()
 method	ListenerOwnership::exportedEvents()
 method	ListenerOwnership::listenerDomain()
+method	ListenerOwnership::listensThroughCoreContract()
 method	ListenerOwnership::stateDomain()
 method	ListenerOwnership::stateSource()
 method	ListenerPolicy::__construct()
@@ -11692,6 +11710,8 @@ method	NoDockOffers::offerFor()
 method	NoEngineGrant::allowsMaintenance()
 method	NoEngineGrant::allowsTarget()
 method	NoEngineGrant::description()
+method	NoFallbackDocks::covers()
+method	NoFallbackDocks::definition()
 method	NoRefusalReason::forAnswer()
 method	NoReplacementLine::forAnswer()
 method	NoStop::isRequested()
@@ -11890,6 +11910,13 @@ method	OutputContract::label()
 method	OutputContract::plainLines()
 method	OutputDiskCapacity::__construct()
 method	OutputDiskCapacity::hasRoom()
+method	OutputDocking::__construct()
+method	OutputDocking::cardsFor()
+method	OutputDocking::docked()
+method	OutputDocking::latestAttempt()
+method	OutputDocking::outputs()
+method	OutputDocking::parsed()
+method	OutputDocking::requireReadable()
 method	OutputFrame::__construct()
 method	OutputFrame::end()
 method	OutputGrantController::__invoke()
@@ -11927,6 +11954,7 @@ method	OutputRecord::toArray()
 method	OutputRecorder::append()
 method	OutputRecorder::finish()
 method	OutputStorageFailed::at()
+method	OutputStream::consoleStream()
 method	OutputSummaries::__construct()
 method	OutputSummaries::of()
 method	OutputSummaries::partOf()
@@ -12474,7 +12502,9 @@ method	ProcessReconcileCommand::handle()
 method	ProcessRestoreCheckCommand::handle()
 method	ProcessRules::all()
 method	ProcessRun::acceptsEventKey()
+method	ProcessRun::allPartsFinal()
 method	ProcessRun::casts()
+method	ProcessRun::composeDockCard()
 method	ProcessRun::consumeFor()
 method	ProcessRun::create()
 method	ProcessRun::events()
@@ -12482,6 +12512,7 @@ method	ProcessRun::hasCompleteEvidence()
 method	ProcessRun::hasEnded()
 method	ProcessRun::hasHeardFromItsHost()
 method	ProcessRun::hasMissedHeartbeats()
+method	ProcessRun::identifyFor()
 method	ProcessRun::isStale()
 method	ProcessRun::latestAttemptAt()
 method	ProcessRun::markLost()
@@ -12495,6 +12526,7 @@ method	ProcessRun::recordHeartbeat()
 method	ProcessRun::silentSince()
 method	ProcessRun::stopSurvivors()
 method	ProcessRun::unfinishedIn()
+method	ProcessRun::withDockParts()
 method	ProcessShowCommand::handle()
 method	ProcessStart::accountIdentity()
 method	ProcessStart::advanceOutputGeneration()
@@ -13407,6 +13439,9 @@ method	RecordDriverFailure::__construct()
 method	RecordDriverFailure::record()
 method	RecordEvidenceReads::__construct()
 method	RecordEvidenceReadsHandler::handle()
+method	RecordFallbackDocks::__construct()
+method	RecordFallbackDocks::covers()
+method	RecordFallbackDocks::definition()
 method	RecordGatewayHealth::__construct()
 method	RecordGatewayHealthHandler::handle()
 method	RecordGatewayOutcome::__construct()
@@ -14371,6 +14406,8 @@ method	RunAdmissionStale::refusalCode()
 method	RunAdmissionStale::status()
 method	RunAdmittedLinePipeline::pipes()
 method	RunChanged::__construct()
+method	RunChanged::dockId()
+method	RunChanged::dockType()
 method	RunChunk::__construct()
 method	RunChunk::decodedBytes()
 method	RunClaimRefused::claimedByAnother()
@@ -14383,6 +14420,8 @@ method	RunClaims::release()
 method	RunClaims::take()
 method	RunContext::__construct()
 method	RunCurrency::__construct()
+method	RunDocking::cardsFor()
+method	RunDocking::requireReadable()
 method	RunEvent::__construct()
 method	RunEvent::applyTo()
 method	RunEvent::partEnd()
@@ -18340,6 +18379,7 @@ parameter	$display
 parameter	$disposition
 parameter	$dockOffer
 parameter	$docked
+parameter	$docks
 parameter	$document
 parameter	$documentation
 parameter	$documents
@@ -18505,6 +18545,7 @@ parameter	$failureReason
 parameter	$failureSummary
 parameter	$failures
 parameter	$fallback
+parameter	$fallbacks
 parameter	$fallthrough
 parameter	$family
 parameter	$fence
@@ -21667,9 +21708,9 @@ property	DockDefinition::$class
 property	DockDefinition::$presentations
 property	DockDefinition::$provider
 property	DockDefinition::$type
+property	DockDefinitions::$fallbacks
 property	DockDefinitions::$offered
 property	DockDefinitions::$owned
-property	DockDefinitions::$records
 property	DockDestination::$arguments
 property	DockDestination::$page
 property	DockDestinationOptionData::$label
@@ -21685,6 +21726,12 @@ property	DockOfferData::$id
 property	DockOfferData::$label
 property	DockOfferData::$type
 property	DockOfferData::$url
+property	DockedOutput::$attempt
+property	DockedOutput::$lines
+property	DockedOutput::$part
+property	DockedOutput::$runId
+property	DockedOutput::$stream
+property	DockedOutput::$truncated
 property	DockerImageData::$architecture
 property	DockerImageData::$builtAt
 property	DockerImageData::$claudeCode
@@ -23285,6 +23332,7 @@ property	OutputContract::$streams
 property	OutputContract::$summary
 property	OutputDiskCapacity::$config
 property	OutputDiskCapacity::$files
+property	OutputDocking::$output
 property	OutputFrame::$bytes
 property	OutputFrame::$offset
 property	OutputFrame::$stream
@@ -24267,6 +24315,7 @@ property	RecordConversationVisit::$outputs
 property	RecordDriverFailure::$facts
 property	RecordEvidenceReads::$processRunId
 property	RecordEvidenceReads::$ranges
+property	RecordFallbackDocks::$records
 property	RecordGatewayHealth::$configurationId
 property	RecordGatewayHealth::$endpointVersion
 property	RecordGatewayHealth::$healthy
@@ -27249,6 +27298,7 @@ variable	$captured
 variable	$capturedOutput
 variable	$captures
 variable	$card
+variable	$cardParts
 variable	$cards
 variable	$carriageReturn
 variable	$carriedFrames
@@ -27509,6 +27559,7 @@ variable	$except
 variable	$excluded
 variable	$execution
 variable	$existing
+variable	$exit
 variable	$exitCode
 variable	$exits
 variable	$expansion
@@ -28209,6 +28260,7 @@ variable	$rules
 variable	$run
 variable	$runFailures
 variable	$runId
+variable	$runIds
 variable	$runnable
 variable	$runner
 variable	$runnerLine
@@ -28325,6 +28377,7 @@ variable	$stands
 variable	$start
 variable	$startKey
 variable	$started
+variable	$startedAt
 variable	$startedDigest
 variable	$startedEntry
 variable	$starter

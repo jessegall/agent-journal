@@ -6,9 +6,21 @@ namespace App\Processes\Models;
 
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
+use App\Docking\Cards\DockCard;
+use App\Docking\Cards\DockIdentity;
+use App\Docking\Cards\Duration;
+use App\Docking\Cards\Stack;
+use App\Docking\Cards\StateLabel;
+use App\Docking\Cards\Subtitle;
+use App\Docking\Cards\Title;
+use App\Docking\Enums\Tone;
+use App\Docking\Sources\Contracts\CardContext;
+use App\Docking\Sources\Contracts\Dockable;
+use App\Docking\Sources\DockDefinition;
 use App\Links\Support\Linkable;
 use App\Processes\Enums\CaptureState;
 use App\Processes\Enums\LifecycleState;
+use App\Processes\Enums\PartEndType;
 use App\Processes\Enums\RunMode;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\RetryRefused;
@@ -16,10 +28,12 @@ use App\Processes\Values\ExecutionPlan;
 use App\Processes\Values\RunAdmission;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Reads\Values\RelationRead;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -71,8 +85,18 @@ use Illuminate\Support\Carbon;
     'working_folder',
     'plan',
 ])]
-final class ProcessRun extends Model implements ReadableModel
+final class ProcessRun extends Model implements Dockable, ReadableModel
 {
+    /**
+     * The type a run docks under.
+     */
+    public const string DOCK_TYPE = 'process.run';
+
+    /**
+     * The most parts, attempts included, a docked run loads with its card.
+     */
+    public const int DOCK_PART_LIMIT = 500;
+
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
@@ -230,9 +254,7 @@ final class ProcessRun extends Model implements ReadableModel
      */
     public function hasEnded(): bool
     {
-        $parts = $this->parts()->readLimit(500)->get();
-
-        return $parts->isNotEmpty() && $parts->every(fn (PartRun $part): bool => $part->lifecycle->isFinal());
+        return self::allPartsFinal($this->parts()->readLimit(500)->get());
     }
 
     /**
@@ -294,6 +316,39 @@ final class ProcessRun extends Model implements ReadableModel
         return $this->parts()->where('syntax_node', $node)->orderByDesc('attempt')->firstOrFail();
     }
 
+    public function identifyFor(DockDefinition $definition): DockIdentity
+    {
+        return $definition->identity($this->id);
+    }
+
+    /**
+     * Its card in a dock, from its loaded parts: the operation it runs, never its arguments, whether it still runs,
+     * how long it ran, frozen at its end, and how it ended.
+     */
+    public function composeDockCard(CardContext $context): DockCard
+    {
+        $parts = $this->parts->sortBy(['syntax_node', 'attempt']);
+        $last = $parts->last();
+        $title = $last === null ? 'Process run' : "Run of {$last->operation}";
+        $ended = self::allPartsFinal($parts);
+        $startedAt = $parts->first()?->started_at;
+        $cardParts = [
+            new Title('title', $title),
+            new StateLabel('state', $ended ? 'Ended' : 'Running', $ended ? Tone::Muted : Tone::Note),
+        ];
+
+        if ($startedAt !== null) {
+            $cardParts[] = new Duration('duration', $startedAt, $ended ? $last?->ended_at : null);
+        }
+
+        if ($ended && $last !== null) {
+            $exit = $last->end_type === PartEndType::Exited ? "Exit {$last->end_code}" : 'Did not exit';
+            $cardParts[] = new Subtitle('exit', $exit);
+        }
+
+        return DockCard::named($title, Stack::of('root', ...$cardParts));
+    }
+
     // ----------[ Relations ]----------
 
     /**
@@ -312,7 +367,30 @@ final class ProcessRun extends Model implements ReadableModel
         return $this->hasMany(ProcessEvent::class);
     }
 
+    // ----------[ Internals ]----------
+
+    /**
+     * Whether a run's parts have all reached a final state; a run with no part yet has not ended.
+     *
+     * @param  Collection<int, PartRun>  $parts
+     */
+    private static function allPartsFinal(Collection $parts): bool
+    {
+        return $parts->isNotEmpty() && $parts->every(fn (PartRun $part): bool => $part->lifecycle->isFinal());
+    }
+
     // ----------[ Scopes ]----------
+
+    /**
+     * Runs read for a dock, with their parts.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withDockParts(Builder $query): void
+    {
+        $query->with(['parts' => RelationRead::complete(max: self::DOCK_PART_LIMIT)->constraint()]);
+    }
 
     /**
      * Runs of the project that have not ended: admissions not yet started and runs still going.

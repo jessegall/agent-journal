@@ -6,6 +6,7 @@ namespace App\Processes\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
+use App\Docking\Sources\Contracts\DockRegistration;
 use App\Links\Support\LinkTypeRegistry;
 use App\Operations\Enums\AccessType;
 use App\Processes\Admission\LineAdmission;
@@ -63,14 +64,17 @@ use App\Processes\Support\CommandAliases;
 use App\Processes\Support\CommandRuleRegistry;
 use App\Processes\Support\JournalRoutes;
 use App\Processes\Support\OpenTiming;
+use App\Processes\Support\OutputDocking;
 use App\Processes\Support\ProgramClassifiers;
 use App\Processes\Support\ProjectReceipts;
 use App\Processes\Support\ProjectRules;
 use App\Processes\Support\ReceiptPublisher;
 use App\Processes\Support\RequiredServices;
+use App\Processes\Support\RunDocking;
 use App\Processes\Support\ShellParser;
 use App\Processes\Support\SpoolRecorder;
 use App\Processes\Syntax\TreeParser;
+use App\Processes\Values\DockedOutput;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
 use Illuminate\Contracts\Foundation\Application;
@@ -107,8 +111,10 @@ final class ProcessesServiceProvider extends ServiceProvider
         ]));
     }
 
-    public function boot(LinkTypeRegistry $links, PolicyCatalogue $policies): void
+    public function boot(LinkTypeRegistry $links, PolicyCatalogue $policies, DockRegistration $docks): void
     {
+        $docks->offerDockFor($docks->register(ProcessRun::DOCK_TYPE, ProcessRun::class, RunDocking::class));
+        $docks->offerDockFor($docks->register(OutputDocking::DOCK_TYPE, DockedOutput::class, OutputDocking::class));
         $policies->register('Core', new PolicyRegistration(
             ProcessPolicy::class,
             [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Execute, AccessType::Test],

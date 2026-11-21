@@ -629,6 +629,7 @@ use App\Docking\Sources\Contracts\DockedSources;
 use App\Docking\Sources\Contracts\DockOffers;
 use App\Docking\Sources\Contracts\DockRegistration;
 use App\Docking\Sources\Contracts\DockSourceChanged;
+use App\Docking\Sources\Contracts\DockSourceDeleted;
 use App\Docking\Sources\DockDefinition;
 use App\Docking\Wire\Contracts\CardEncoder;
 use App\Docking\Wire\EncodedCard;
@@ -1305,6 +1306,7 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                DockSourceDeleted::class,
                 DockedSources::class,
                 DockOffers::class,
                 DockableWindow::class,
