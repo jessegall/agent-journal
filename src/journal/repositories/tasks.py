@@ -398,7 +398,8 @@ class Tasks(ScopedRepository[Task]):
         tasks = {task.row_id: task for task in self.numbered({link.target.id for link in links})}
         worked: dict[int, list[Task]] = {}
         for link in links:
-            worked.setdefault(link.source.id, []).append(tasks[link.target.id])
+            if link.target.id in tasks:  # a task outside this environment, or gone, is left out rather than failing the page
+                worked.setdefault(link.source.id, []).append(tasks[link.target.id])
         return worked
 
     def finished_ids(self, workers: list[Model]) -> dict[int, list[int]]:
