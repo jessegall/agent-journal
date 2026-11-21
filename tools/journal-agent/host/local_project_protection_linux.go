@@ -4,39 +4,36 @@ package host
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
+	"strings"
 )
 
-// localProjectSystemFolders are the folders of the system a confined program sees, read-only.
-var localProjectSystemFolders = []string{"/usr", "/bin", "/sbin", "/lib", "/lib64", "/etc"}
-
-// localProjectConfinement is a bubblewrap namespace around the program that holds only the system folders read-only,
-// the program itself and the assigned folder writable: the private state folder and every socket outside the
-// assigned folder are not there at all. Claude Code's own sandbox on Linux also needs socat.
-func localProjectConfinement(folders LocalProjectFolders, _ string, program string) (confinement, error) {
+// localProjectConfinement is a bubblewrap namespace around the program over the machine's own folders. Mounts apply
+// in order: the project and the relay's state are covered by empty folders, which also hide every socket in the state,
+// and the child's own checkout and runtime folder are bound back writable over them. Git's common directory, when it
+// lies outside the project, is bound read-only. Claude Code's own sandbox on Linux also needs socat.
+func localProjectConfinement(folders LocalProjectFolders, _ string) (ChildConfinement, error) {
 	for _, tool := range []string{"bwrap", "socat"} {
 		if _, err := exec.LookPath(tool); err != nil {
-			return confinement{}, fmt.Errorf("%w: it needs %s, which this machine does not have", ErrLocalProjectUnprotected, tool)
+			return ChildConfinement{}, fmt.Errorf("%w: it needs %s, which this machine does not have", ErrLocalProjectUnprotected, tool)
 		}
 	}
 
 	bwrap, err := exec.LookPath("bwrap")
 	if err != nil {
-		return confinement{}, err
+		return ChildConfinement{}, err
 	}
 
-	arguments := []string{bwrap, "--die-with-parent", "--unshare-all", "--dev", "/dev", "--proc", "/proc", "--tmpfs", "/tmp"}
-	for _, folder := range localProjectSystemFolders {
-		if _, err := os.Stat(folder); err == nil {
-			arguments = append(arguments, "--ro-bind", folder, folder)
-		}
+	arguments := []string{bwrap, "--die-with-parent", "--bind", "/", "/", "--dev", "/dev", "--proc", "/proc",
+		"--tmpfs", folders.Project, "--tmpfs", folders.State,
+		"--bind", folders.Checkout, folders.Checkout, "--bind", folders.Runtime, folders.Runtime}
+	if !strings.HasPrefix(folders.Common+"/", folders.Project+"/") {
+		arguments = append(arguments, "--ro-bind", folders.Common, folders.Common)
 	}
-	arguments = append(arguments, "--ro-bind", program, program, "--bind", folders.Assigned, folders.Assigned,
-		"--chdir", folders.Assigned)
+	arguments = append(arguments, "--chdir", folders.Checkout)
 
-	return confinement{
-		mechanism: "bubblewrap namespace with only the system folders and the assigned folder",
+	return ChildConfinement{
+		mechanism: "bubblewrap namespace with the project and the relay's state hidden but for the child's own folders",
 		command: func(confined []string) []string {
 			return append(append([]string{}, arguments...), confined...)
 		},

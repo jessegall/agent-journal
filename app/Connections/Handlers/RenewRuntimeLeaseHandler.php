@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Connections\Handlers;
 
 use App\Agents\Models\AgentRuntime;
+use App\Agents\Models\AgentSession;
 use App\Connections\Commands\RenewRuntimeLease;
 use App\Connections\Exceptions\LeaseRefused;
 use App\Connections\Models\ProjectBinding;
@@ -13,8 +14,9 @@ use App\Contracts\CommandHandler;
 use Carbon\CarbonImmutable;
 
 /**
- * Checks the binding, its authority generation and the runtime on every renewal, and answers the lease by server
- * time; a presence report never renews it.
+ * Checks the binding, its authority generation, the runtime and its start grant, and that its session still runs
+ * for the binding's main agent or a child of it, on every renewal, and answers the lease by server time; a presence
+ * report never renews it.
  */
 final readonly class RenewRuntimeLeaseHandler implements CommandHandler
 {
@@ -37,6 +39,11 @@ final readonly class RenewRuntimeLeaseHandler implements CommandHandler
             || $runtime->process_generation !== $command->runtimeGeneration
             || $runtime->canonical_folder !== $binding->canonical_root) {
             throw LeaseRefused::for($command->runtimeId, 'the runtime is not this binding\'s in its generation');
+        }
+
+        if ($runtime->start_grant === null
+            || ! AgentSession::isRunningFor($runtime->agent_session_id, $binding->main_agent_id)) {
+            throw LeaseRefused::for($command->runtimeId, 'the runtime holds no live grant of the binding\'s agents');
         }
 
         $now = CarbonImmutable::now();

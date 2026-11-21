@@ -47,6 +47,18 @@ type ClaimedStart struct {
 	// ConversationRequired is whether the owner chose that conversation explicitly: then a missing transcript fails
 	// the start as a resume failure instead of beginning a fresh conversation.
 	ConversationRequired bool `json:"conversation_required"`
+	// ChildCheckout is the claim a connected project's child works under, in a worktree of its own; nil for any other
+	// start, which works in its runtime's folder.
+	ChildCheckout *ChildCheckout `json:"child_checkout"`
+}
+
+// ChildCheckout mirrors App\Agents\Values\ChildCheckout: the child's claim, its generation, whether it writes and the
+// commit its worktree starts from.
+type ChildCheckout struct {
+	ClaimID    string `json:"claim"`
+	Generation int    `json:"generation"`
+	Writes     bool   `json:"writes"`
+	BaseOID    string `json:"base"`
 }
 
 // ErrIncompleteClaim is returned when a claim's answer lacks its key, folder or recipe: the host never starts a

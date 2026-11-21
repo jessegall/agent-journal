@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"errors"
 	"log"
 	"time"
 )
@@ -23,6 +24,11 @@ func (client *Client) Poll(ctx context.Context, handle func(Claim)) {
 	lost := false
 	for ctx.Err() == nil {
 		claimed, err := client.Claim(ctx, claimLimit, claimWait, watchedVersion)
+		// A journal that does not speak this host's protocol refuses every claim alike, so polling stops at once.
+		if errors.Is(err, ErrProtocolMismatch) {
+			log.Printf("the journal refuses this host's protocol, so claiming stops: %v", err)
+			return
+		}
 		if err != nil {
 			log.Printf("claim failed, retrying in %s: %v", backoff, err)
 			select {

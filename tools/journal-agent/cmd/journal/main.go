@@ -14,12 +14,14 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"syscall"
 	"time"
 
 	"journal-agent/client"
 	"journal-agent/diagnostics"
 	"journal-agent/hookadapter"
 	"journal-agent/host"
+	"journal-agent/lease"
 	"journal-agent/localsession"
 	"journal-agent/profiles"
 	"journal-agent/project"
@@ -201,7 +203,14 @@ func (commands dispatcher) claude(binding host.Binding, folder project.Folder, s
 	}()
 
 	command.Stdin, command.Stdout, command.Stderr = os.Stdin, os.Stdout, os.Stderr
-	if err := command.Run(); err != nil {
+	if err := command.Start(); err != nil {
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+	supervision, endSupervision := context.WithCancel(context.Background())
+	defer endSupervision()
+	go superviseSession(supervision, journal, binding.BindingID, opened, listener, command, stderr)
+	if err := command.Wait(); err != nil {
 		var exited *exec.ExitError
 		if errors.As(err, &exited) {
 			return exited.ExitCode()
@@ -211,6 +220,37 @@ func (commands dispatcher) claude(binding host.Binding, folder project.Folder, s
 	}
 
 	return 0
+}
+
+// firstProcessGeneration is the process generation of a runtime the journal just opened.
+const firstProcessGeneration = 1
+
+// leaseStopGrace is how long a session whose lease ended has to end its own tools before it is killed.
+const leaseStopGrace = 5 * time.Second
+
+// superviseSession keeps the session's execution lease; once it ends, the hook gate closes, so no tool call of the
+// session is answered again, and Claude Code is asked to stop, then killed after a grace.
+func superviseSession(
+	ctx context.Context,
+	journal *client.Client,
+	bindingID string,
+	opened client.OpenedBindingRuntime,
+	gate io.Closer,
+	command *exec.Cmd,
+	stderr io.Writer,
+) {
+	supervisor := lease.Supervisor{Stop: func() {
+		fmt.Fprintln(stderr, "journal: the journal no longer lets this session work, so it stops. Your files stay as they are.")
+		gate.Close()
+		_ = command.Process.Signal(syscall.SIGTERM)
+		time.AfterFunc(leaseStopGrace, func() { _ = command.Process.Kill() })
+	}}
+	renewal := client.LeaseRenewal{AuthorityGeneration: opened.AuthorityGeneration, RuntimeGeneration: firstProcessGeneration}
+	supervisor.Keep(ctx, func(ctx context.Context) (time.Time, time.Time, error) {
+		answer, err := journal.RenewLease(ctx, bindingID, opened.RuntimeID, renewal)
+
+		return answer.ServerTime, answer.ExpiresAt, err
+	}, lease.RenewEvery)
 }
 
 // disconnect removes this folder's connection from this machine once confirmed: its relay and service stop, its

@@ -33,6 +33,10 @@ type WorktreeReceipt struct {
 	Path     string `json:"path"`
 	Branch   string `json:"branch,omitempty"`
 	Complete bool   `json:"complete"`
+	// RuntimeID and StartKey name the child's runtime and its process start once one runs in the worktree, so a
+	// cleanup or a restart maps the claim to the process, not only to the folder.
+	RuntimeID string `json:"runtime,omitempty"`
+	StartKey  string `json:"start,omitempty"`
 }
 
 // NativeWorktrees prepares real linked worktrees of a connected root under .journal/worktrees/<child>, for the
@@ -47,11 +51,11 @@ type NativeWorktrees struct {
 // reader), checks Git registered exactly that path at exactly the base, excludes the private metadata and records
 // the completion. A repeated claim answers its first worktree; one whose intent Git cannot confirm is refused.
 func (worktrees NativeWorktrees) Prepare(ctx context.Context, claim WorktreeClaim) (WorktreeReceipt, error) {
-	common, err := worktrees.git(ctx, worktrees.Root, "rev-parse", "--path-format=absolute", "--git-common-dir")
+	common, err := worktrees.CommonDirectory(ctx)
 	if err != nil {
 		return WorktreeReceipt{}, err
 	}
-	unlock, err := lockFile(filepath.Join(strings.TrimSpace(common), "journal-worktrees.lock"))
+	unlock, err := lockFile(filepath.Join(common, "journal-worktrees.lock"))
 	if err != nil {
 		return WorktreeReceipt{}, err
 	}
@@ -82,6 +86,24 @@ func (worktrees NativeWorktrees) Prepare(ctx context.Context, claim WorktreeClai
 	receipt.Complete = true
 
 	return receipt, worktrees.writeReceipt(receipt)
+}
+
+// CommonDirectory is the absolute path of the root's Git common directory, which every linked worktree shares.
+func (worktrees NativeWorktrees) CommonDirectory(ctx context.Context) (string, error) {
+	common, err := worktrees.git(ctx, worktrees.Root, "rev-parse", "--path-format=absolute", "--git-common-dir")
+	if err != nil {
+		return "", err
+	}
+
+	return strings.TrimSpace(common), nil
+}
+
+// RecordRuntime keeps on the claim's completed receipt the runtime and process start that run in its worktree.
+func (worktrees NativeWorktrees) RecordRuntime(receipt WorktreeReceipt, runtimeID string, startKey string) error {
+	receipt.RuntimeID = runtimeID
+	receipt.StartKey = startKey
+
+	return worktrees.writeReceipt(receipt)
 }
 
 func (worktrees NativeWorktrees) receiptFor(claim WorktreeClaim) WorktreeReceipt {

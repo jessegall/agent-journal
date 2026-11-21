@@ -133,7 +133,7 @@ final class DeviceGrant extends Model implements ReadableModel
     }
 
     /**
-     * The issued, unexpired grant of this digest, with its binding.
+     * The issued, unexpired and approved grant of this digest, with its binding.
      *
      * @throws DeviceGrantRefused
      */
@@ -141,6 +141,7 @@ final class DeviceGrant extends Model implements ReadableModel
     {
         return self::query()->with('binding')->where('grant_digest', $digest)
             ->where('state', DeviceGrantState::Issued)->where('grant_expires_at', '>', CarbonImmutable::now())
+            ->whereNotNull('approved_by_user_id')
             ->whereHas('binding', fn ($binding) => $binding->where('readiness', '!=', BindingReadiness::Revoked))
             ->firstOr(fn () => throw DeviceGrantRefused::notUsable());
     }

@@ -28,13 +28,13 @@ final readonly class SignedHostCalls implements HostCalls
     public function __construct(private Repository $cache) {}
 
     /**
-     * The host and envelope of a signed call speaking this protocol.
+     * The host and envelope of a signed call speaking one of these protocols.
      *
      * @throws HostCredentialRejected
      * @throws CallSignatureInvalid
      * @throws HostProtocolMismatch
      */
-    public function verify(Request $request, HostProtocolVersion $protocol): HostContext
+    public function verify(Request $request, HostProtocolVersion ...$spoken): HostContext
     {
         $secret = $request->bearerToken() ?? throw HostCredentialRejected::missing();
         $callId = $this->header($request, SignedCall::ID_HEADER);
@@ -52,7 +52,7 @@ final readonly class SignedHostCalls implements HostCalls
         }
 
         $host = Host::forSecret($secret);
-        $this->assertSpeaksProtocol($request, $protocol);
+        $protocol = $this->spokenProtocol($request, $spoken);
 
         if (! $this->cache->add("host-call:{$host->id}:{$callId}", true, self::WINDOW_SECONDS * 2)) {
             throw HostCredentialRejected::replayed($callId);
@@ -65,24 +65,32 @@ final readonly class SignedHostCalls implements HostCalls
                 CarbonImmutable::createFromTimestamp($issuedAt),
                 SignedCall::digestOf($request->getContent()),
             ),
+            $protocol,
         );
     }
 
     /**
-     * Refuses a host of another protocol version before it can claim, report, open or recover anything.
+     * The protocol the call speaks, one of those the route speaks; a host of another version is refused before it can
+     * claim, report, open or recover anything.
+     *
+     * @param  list<HostProtocolVersion>  $spoken
      *
      * @throws HostProtocolMismatch
      */
-    private function assertSpeaksProtocol(Request $request, HostProtocolVersion $protocol): void
+    private function spokenProtocol(Request $request, array $spoken): HostProtocolVersion
     {
-        $current = $protocol->value;
+        $first = $spoken[0]->value;
 
         $version = $request->headers->get(SignedCall::HOST_PROTOCOL_HEADER)
-            ?? throw HostProtocolMismatch::missing($current);
+            ?? throw HostProtocolMismatch::missing($first);
 
-        if ($version !== (string) $current) {
-            throw HostProtocolMismatch::speaks($version, $current);
+        foreach ($spoken as $protocol) {
+            if ($version === (string) $protocol->value) {
+                return $protocol;
+            }
         }
+
+        throw HostProtocolMismatch::speaks($version, $first);
     }
 
     private function header(Request $request, string $name): string

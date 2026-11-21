@@ -2,7 +2,10 @@ package drivers
 
 import (
 	"context"
+	"errors"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"testing"
 	"time"
@@ -81,5 +84,32 @@ func TestAContainedClaudeTurnReportsItsUsageFromTheContainerOutputAndEndsWithIts
 
 	if _, err := containedTurn(t, printingContainer{output: containedStream, exit: 3}); err == nil {
 		t.Fatal("a failed container process ended its turn well")
+	}
+}
+
+// recordingConfinement marks the command it wraps, as a confinement puts its launcher before the program.
+type recordingConfinement struct{}
+
+func (recordingConfinement) Wrap(command *exec.Cmd) {
+	command.Args = append([]string{"confined", command.Path}, command.Args[1:]...)
+	command.Path = "confined"
+}
+
+func TestAConfinedChildTurnRunsUnderItsConfinementInPlaceOfTheSessionSandbox(t *testing.T) {
+	settings := t.TempDir()
+	driver := NewHeadlessDriver(HeadlessRuntime{ConversationID: "conversation", Profile: profiles.ClaudeCode{},
+		Account: &profilecontracts.AccountStart{Folder: t.TempDir()}, WorkingFolder: t.TempDir(),
+		Executable: "/opt/claude", Confinement: recordingConfinement{}}, 1)
+
+	command, err := driver.command(profilecontracts.Start{SettingsFolder: settings, SessionID: "conversation"})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	if command.Path != "confined" || command.Args[1] != "/opt/claude" {
+		t.Fatalf("the turn did not run under its confinement: %s %v", command.Path, command.Args)
+	}
+	if _, err := os.Stat(filepath.Join(settings, "session.sb")); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("a session sandbox was written beside the confinement: %v", err)
 	}
 }

@@ -6,6 +6,7 @@ use App\Agents\Events\AccountSettingsRequested;
 use App\Agents\Events\AccountUseChanged;
 use App\Agents\Events\AgentHoldReleased;
 use App\Agents\Events\AgentRuntimeReassigned;
+use App\Agents\Events\ChildCheckoutRequested;
 use App\Agents\Events\DriverFailed;
 use App\Agents\Events\DriverRequestRecovered;
 use App\Agents\Events\DriverSwitchStopped;
@@ -28,6 +29,13 @@ use Tests\Architecture\Support\EventRole;
  */
 return [
     AccountSettingsRequested::class => [
+        'role' => EventRole::Request,
+        'migrated' => false,
+        'producers' => [
+            'app/Agents/Support/StartExtensionRequests.php',
+        ],
+    ],
+    ChildCheckoutRequested::class => [
         'role' => EventRole::Request,
         'migrated' => false,
         'producers' => [

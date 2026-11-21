@@ -76,11 +76,12 @@ type PresenceReport struct {
 	Takeover     bool              `json:"takeover"`
 }
 
-// PresenceReceipt is the journal's answer to a presence report: the boot generation it holds and when the presence
-// expires, by server time.
+// PresenceReceipt is the journal's answer to a presence report: the boot generation it holds, when the presence
+// expires, by server time, and the binding's authority generation every lease renewal carries.
 type PresenceReceipt struct {
-	Generation int       `json:"generation"`
-	ExpiresAt  time.Time `json:"presenceExpiresAt"`
+	Generation          int       `json:"generation"`
+	ExpiresAt           time.Time `json:"presenceExpiresAt"`
+	AuthorityGeneration int       `json:"authorityGeneration"`
 }
 
 // ReportPresence tells the journal the binding's relay is present, with no provider session needed.
@@ -101,10 +102,12 @@ type BindingRuntimeRequest struct {
 	Profile     string `json:"profile"`
 }
 
-// OpenedBindingRuntime is the session and runtime the journal opened for a binding's main agent.
+// OpenedBindingRuntime is the session and runtime the journal opened for a binding's main agent, and the binding's
+// authority generation its lease renewals carry.
 type OpenedBindingRuntime struct {
-	SessionID string `json:"session_id"`
-	RuntimeID string `json:"runtime_id"`
+	SessionID           string `json:"session_id"`
+	RuntimeID           string `json:"runtime_id"`
+	AuthorityGeneration int    `json:"authority_generation"`
 }
 
 // OpenBindingRuntime asks the journal to open the binding's main runtime in its own root.
@@ -117,6 +120,35 @@ func (client *Client) OpenBindingRuntime(
 	err := client.call(ctx, "/host/bindings/"+url.PathEscape(bindingID)+"/runtimes", request, &opened)
 
 	return opened, err
+}
+
+// LeaseRenewal mirrors what App\Connections\Http\Controllers\RuntimeLeaseController reads: the binding's authority
+// generation and the runtime's process generation the relay holds.
+type LeaseRenewal struct {
+	AuthorityGeneration int `json:"authorityGeneration"`
+	RuntimeGeneration   int `json:"runtimeGeneration"`
+}
+
+// RuntimeLease is a renewed execution lease: the runtime and its generation, the server's time and when it ends.
+type RuntimeLease struct {
+	RuntimeID  string    `json:"runtimeId"`
+	Generation int       `json:"generation"`
+	ServerTime time.Time `json:"serverTime"`
+	ExpiresAt  time.Time `json:"expiresAt"`
+}
+
+// RenewLease asks the journal for one more lease of a binding's runtime; a refusal is an error, never a lease.
+func (client *Client) RenewLease(
+	ctx context.Context,
+	bindingID string,
+	runtimeID string,
+	renewal LeaseRenewal,
+) (RuntimeLease, error) {
+	lease := RuntimeLease{}
+	target := "/host/bindings/" + url.PathEscape(bindingID) + "/runtimes/" + url.PathEscape(runtimeID) + "/lease"
+	err := client.call(ctx, target, renewal, &lease)
+
+	return lease, err
 }
 
 // post sends an unsigned JSON call and decodes its answer.

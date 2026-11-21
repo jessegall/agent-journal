@@ -30,7 +30,7 @@ func protection(arguments []string) error {
 		return err
 	}
 	if arrangement == host.LocalProject {
-		return localProjectProtection(*stateFolder)
+		return localProjectProtection()
 	}
 	platform := host.LocalPlatform()
 	if arrangement.IsContained() {
@@ -56,12 +56,12 @@ func protection(arguments []string) error {
 
 // localProjectProtection starts this program as the probe under the local-project confinement and prints what held;
 // a machine with no confining mechanism is refused by name.
-func localProjectProtection(stateFolder string) error {
+func localProjectProtection() error {
 	program, err := os.Executable()
 	if err != nil {
 		return err
 	}
-	report, err := host.ProbeLocalProjectProtection([]string{program, "protection-probe"}, stateFolder)
+	report, err := host.ProbeLocalProjectProtection([]string{program, "protection-probe"})
 	if err != nil {
 		return err
 	}

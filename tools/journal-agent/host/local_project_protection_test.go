@@ -10,15 +10,14 @@ import (
 // probeVariable makes the test binary act as the protection probe program instead of running the tests.
 const probeVariable = "JOURNAL_AGENT_PROTECTION_PROBE"
 
-func TestTheLocalProjectConfinementKeepsAStartInsideItsAssignedFolder(t *testing.T) {
+func TestTheLocalProjectConfinementKeepsAChildInsideItsOwnCheckout(t *testing.T) {
 	program, err := os.Executable()
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv(probeVariable, "1")
-	state := t.TempDir()
 
-	report, err := ProbeLocalProjectProtection([]string{program, "-test.run=^$"}, state)
+	report, err := ProbeLocalProjectProtection([]string{program, "-test.run=^$"})
 	if runtime.GOOS != "darwin" && errors.Is(err, ErrLocalProjectUnprotected) {
 		t.Skipf("this machine has no confinement: %v", err)
 	}
@@ -27,10 +26,14 @@ func TestTheLocalProjectConfinementKeepsAStartInsideItsAssignedFolder(t *testing
 	}
 
 	want := map[string]string{
-		"write inside the assigned folder":                "allowed",
-		"write outside the assigned folder":               "refused",
-		"read the private state folder":                   "refused",
-		"connect to a socket outside the assigned folder": "refused",
+		"write inside its own checkout":         "allowed",
+		"write inside its own runtime folder":   "allowed",
+		"write Git's common directory":          "refused",
+		"write a sibling worktree":              "refused",
+		"read a sibling worktree":               "refused",
+		"read the project's canonical checkout": "refused",
+		"write the relay's state":               "refused",
+		"connect to a socket of the relay":      "refused",
 	}
 	for _, check := range report.Checks {
 		if want[check.Action] != check.Observed || !check.Held {
@@ -40,6 +43,18 @@ func TestTheLocalProjectConfinementKeepsAStartInsideItsAssignedFolder(t *testing
 	}
 	if len(want) != 0 || !report.Available {
 		t.Fatalf("the report left out %v or is not available: %+v", want, report)
+	}
+}
+
+func TestAPlatformWithNoConfinementRefusesTheChildStartByName(t *testing.T) {
+	if runtime.GOOS == "darwin" || runtime.GOOS == "linux" {
+		t.Skip("this platform has a confinement")
+	}
+	folder := t.TempDir()
+	folders := LocalProjectFolders{Checkout: folder, Project: folder, Common: folder, State: folder, Runtime: folder}
+
+	if _, err := ConfineChild(folders); !errors.Is(err, ErrLocalProjectUnprotected) {
+		t.Fatalf("the child start was not refused by name: %v", err)
 	}
 }
 

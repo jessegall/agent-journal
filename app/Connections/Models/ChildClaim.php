@@ -60,6 +60,16 @@ final class ChildClaim extends Model implements ReadableModel
      *
      * @throws ChildClaimRefused
      */
+    /**
+     * The claim already issued for this child agent, none or one: a claimed start asked again answers the same claim.
+     *
+     * @return list<self>
+     */
+    public static function ofChildAgent(string $agentId): array
+    {
+        return array_values(self::query()->where('child_agent_id', $agentId)->latest()->limit(1)->get()->all());
+    }
+
     public static function ofMain(
         ProjectBinding $binding,
         string $parentRuntimeId,

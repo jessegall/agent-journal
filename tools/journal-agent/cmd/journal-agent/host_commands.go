@@ -194,31 +194,15 @@ func serve(arguments []string) error {
 	if *startSocketFolder == "" {
 		*startSocketFolder = *stateFolder
 	}
-	startSocket := host.StartSocket{Folder: *startSocketFolder, Executor: &protectedExecutor{
+	executor := &protectedExecutor{
 		preparation: preparation, open: opener.open, reports: reports, reporter: journal,
 		codexOwners: opener.codexOwners, arrangement: arrangement, bindsAccount: bindsAccount, accountFolders: folders,
-	}}
-	startListener, err := startSocket.Listen()
-	if err != nil {
+	}
+	claims := claimServing{journal: journal, preparation: preparation, open: opener.open, executor: executor,
+		startSocketFolder: *startSocketFolder, socket: socket}
+	if err := claims.run(ctx, func() {}); err != nil {
 		return err
 	}
-	defer startListener.Close()
-	go startSocket.Serve(ctx, startListener)
-	loop := serving.NewLoop(journal, preparation, opener.open)
-	watcher, err := host.NewScreenWatcher(ctx, journal, socket)
-	if err != nil {
-		return err
-	}
-	journal.Poll(ctx, func(claimed client.Claim) {
-		watcher.Set(claimed.Watched)
-		if len(claimed.Requests) == 0 {
-			return
-		}
-		for _, request := range claimed.Requests {
-			log.Printf("claimed %s request %s (sequence %d, attempt %d) of runtime %s", request.Operation, request.RequestID, request.Sequence, request.Attempt, request.RuntimeID)
-		}
-		loop.Take(ctx, claimed.Requests)
-	})
 	return nil
 }
 
@@ -226,6 +210,11 @@ func serve(arguments []string) error {
 // a headless runtime runs one child per turn, a terminal runtime keeps one program open on a PTY the attach socket
 // owns.
 type runtimeOpener struct {
+	// worktrees prepares a connected project's children their own linked worktrees; nil on an enrolled host.
+	worktrees *host.NativeWorktrees
+	// relayState is the relay's whole state folder, which a connected child's confined program neither reads nor
+	// writes.
+	relayState         string
 	stateFolder        string
 	installationFolder string
 	// codexOwners keeps the one app-server of each Codex account generation, shared by its runtimes' threads.
@@ -246,6 +235,10 @@ type runtimeOpener struct {
 	statusLines *host.StatusLineRelays
 }
 
+// ErrCodexChildUnconfined refuses a connected child on Codex: its runtimes are threads of one app-server per account,
+// which no confinement of one child's checkout can hold.
+var ErrCodexChildUnconfined = errors.New("a connected child cannot run on Codex, whose shared app-server is never confined to one checkout")
+
 // defaultRows and defaultColumns size a terminal the host opens before any user attaches to it.
 const (
 	defaultRows    uint16 = 40
@@ -264,6 +257,14 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 	if err := pinnedBuild(profile, grant.Runtime.DriverBuild); err != nil {
 		return nil, fmt.Errorf("runtime %s: %w", runtimeID, err)
 	}
+	var confined *host.ChildConfinement
+	if prepared.Claim.ChildCheckout != nil && opener.worktrees != nil {
+		child, confinement, err := opener.inChildWorktree(runtimeID, prepared)
+		if err != nil {
+			return nil, err
+		}
+		prepared, confined = child, &confinement
+	}
 	environment, err := cleanEnvironmentOf(opener.stateFolder, opener.installationFolder, runtimeID, prepared)
 	if err != nil {
 		return nil, err
@@ -275,18 +276,66 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 	if contained {
 		return opener.containedRuntime(runtimeID, prepared, profile, manifest)
 	}
+	if profile.Program() == "codex" && confined != nil {
+		return nil, fmt.Errorf("runtime %s: %w", runtimeID, ErrCodexChildUnconfined)
+	}
 	if profile.Program() == "codex" {
 		return opener.codexRuntime(runtimeID, prepared, environment)
 	}
 	switch grant.Runtime.Variant {
 	case drivers.HeadlessVariant:
-		return opener.headlessRuntime(runtimeID, prepared, profile, environment)
+		return opener.headlessRuntime(runtimeID, prepared, profile, environment, confined)
 	case drivers.TerminalVariant:
-		return opener.terminalRuntime(runtimeID, prepared, profile, environment)
+		return opener.terminalRuntime(runtimeID, prepared, profile, environment, confined)
 	}
 
 	return nil, fmt.Errorf("runtime %s runs as %s, a variant this host has no runtime for", runtimeID,
 		grant.Runtime.Variant)
+}
+
+// inChildWorktree prepares the linked worktree of a connected project's child before its process exists, keeps the
+// runtime and its start on the claim's receipt, confines the child to it, serves the Git broker in it, and answers
+// the start with the worktree as the runtime's folder. A machine that cannot confine the child refuses its start.
+func (opener runtimeOpener) inChildWorktree(
+	runtimeID string,
+	prepared host.PreparedStart,
+) (host.PreparedStart, host.ChildConfinement, error) {
+	ctx := context.Background()
+	checkout := prepared.Claim.ChildCheckout
+	claim := host.WorktreeClaim{ClaimID: checkout.ClaimID, Generation: checkout.Generation,
+		ChildID: prepared.Claim.SessionID, Writes: checkout.Writes, BaseOID: checkout.BaseOID}
+	receipt, err := opener.worktrees.Prepare(ctx, claim)
+	if err != nil {
+		return host.PreparedStart{}, host.ChildConfinement{}, fmt.Errorf("runtime %s: its worktree was not prepared: %w",
+			runtimeID, err)
+	}
+	if err := opener.worktrees.RecordRuntime(receipt, runtimeID, prepared.Claim.StartKey); err != nil {
+		return host.PreparedStart{}, host.ChildConfinement{}, err
+	}
+	common, err := opener.worktrees.CommonDirectory(ctx)
+	if err != nil {
+		return host.PreparedStart{}, host.ChildConfinement{}, err
+	}
+	folders := host.LocalProjectFolders{Checkout: receipt.Path, Project: opener.worktrees.Root, Common: common,
+		State: opener.relayState, Runtime: filepath.Join(opener.stateFolder, "runtimes", runtimeID)}
+	if account := accountOf(prepared, opener.installationFolder, runtimeID); account != nil {
+		folders.Account = account.Folder
+	}
+	confinement, err := host.ConfineChild(folders)
+	if err != nil {
+		return host.PreparedStart{}, host.ChildConfinement{}, fmt.Errorf("runtime %s: a connected child starts only confined: %w",
+			runtimeID, err)
+	}
+	// The child changes Git only through the broker of fixed operations, served in its worktree's private folder.
+	listener, err := host.ListenBroker(receipt.Path)
+	if err != nil {
+		return host.PreparedStart{}, host.ChildConfinement{}, fmt.Errorf("runtime %s: its Git broker was not served: %w",
+			runtimeID, err)
+	}
+	go host.ServeBroker(listener, host.GitBroker{Checkout: receipt.Path, Writes: checkout.Writes, Git: "git"})
+	prepared.Grant.Runtime.Folder = receipt.Path
+
+	return prepared, confinement, nil
 }
 
 // containedRuntime opens a contained runtime in its session's own container by its variant: a terminal runtime's
@@ -370,6 +419,7 @@ func (opener runtimeOpener) headlessRuntime(
 	prepared host.PreparedStart,
 	profile contracts.ProgramProfile,
 	environment []string,
+	confined *host.ChildConfinement,
 ) (serving.Runtime, error) {
 	grant := prepared.Grant
 	settingsFolder := filepath.Join(opener.stateFolder, "runtimes", runtimeID)
@@ -380,7 +430,7 @@ func (opener runtimeOpener) headlessRuntime(
 	if err != nil {
 		return nil, err
 	}
-	driver := drivers.NewHeadlessDriver(drivers.HeadlessRuntime{
+	headless := drivers.HeadlessRuntime{
 		JournalURL:          opener.journalURL,
 		Credential:          grant.Token,
 		ProfilePin:          grant.ProfileEnvironment(),
@@ -396,7 +446,12 @@ func (opener runtimeOpener) headlessRuntime(
 		RelayVariables:      prepared.RelayVariables(settingsFolder),
 		Executable:          installedProgram(opener.installationFolder, profile),
 		Usage:               opener.usageOf(prepared),
-	}, grant.Runtime.ProcessGeneration)
+	}
+	// A nil pointer must not reach the interface, where it would read as a confinement.
+	if confined != nil {
+		headless.Confinement = confined
+	}
+	driver := drivers.NewHeadlessDriver(headless, grant.Runtime.ProcessGeneration)
 	identity := drivercontracts.RequestIdentity{RuntimeID: runtimeID}
 	if grant.Runtime.Model != nil {
 		change := drivercontracts.ModelChange{Request: identity, Model: *grant.Runtime.Model}
@@ -417,6 +472,7 @@ func (opener runtimeOpener) terminalRuntime(
 	prepared host.PreparedStart,
 	profile contracts.ProgramProfile,
 	environment []string,
+	confined *host.ChildConfinement,
 ) (serving.Runtime, error) {
 	grant := prepared.Grant
 	account := accountOf(prepared, opener.installationFolder, runtimeID)
@@ -430,6 +486,9 @@ func (opener runtimeOpener) terminalRuntime(
 	}
 	request.Rows, request.Columns = defaultRows, defaultColumns
 	request.ReadFiles = prepared.Claim.Recipe.ReadFiles
+	if confined != nil {
+		request.Command = confined.Command(request.Command)
+	}
 	opened, err := opener.socket.Open(request)
 	if err != nil {
 		return nil, err

@@ -9,6 +9,8 @@ use App\Connections\Enums\BindingReadiness;
 use App\Connections\Models\DeviceGrant;
 use App\Connections\Models\ProjectBinding;
 use Carbon\CarbonImmutable;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
@@ -84,6 +86,50 @@ final class DeviceGrantsTest extends TestCase
             BindingReadiness::Revoked,
             ProjectBinding::query()->findOrFail($binding)->readinessAt(CarbonImmutable::now()),
         );
+    }
+
+    public function test_an_approved_grant_authenticates_its_approver_for_its_own_binding_only(): void
+    {
+        $binding = $this->connected();
+        $grant = $this->approvedGrant($binding);
+
+        $command = $this->deviceCommand($grant, $binding)->assertForbidden();
+        $this->assertStringContainsString('overview runs in a provider session', (string) $command->json('message'));
+
+        $other = (string) Str::ulid();
+        $refusal = $this->deviceCommand($grant, $other)->assertForbidden();
+        $this->assertStringContainsString($other, (string) $refusal->json('message'));
+    }
+
+    public function test_a_grant_whose_approver_the_journal_no_longer_admits_is_refused(): void
+    {
+        $binding = $this->connected();
+        $grant = $this->approvedGrant($binding);
+
+        $this->app->instance(AccessSettings::class, new AccessSettings(User::factory()->create()->id));
+
+        $refusal = $this->deviceCommand($grant, $binding)->assertForbidden();
+        $this->assertStringContainsString('can no longer use the journal', (string) $refusal->json('message'));
+    }
+
+    private function approvedGrant(string $binding): string
+    {
+        $start = $this->relay('/api/device-grants', ['binding' => $binding])->assertCreated();
+        $this->actingAs($this->owner)->post("/settings/project-connections/devices/{$start->json('userCode')}/approve");
+
+        return (string) $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->json('grant');
+    }
+
+    private function deviceCommand(string $grant, string $binding): TestResponse
+    {
+        $this->app['auth']->forgetGuards();
+
+        return $this->postJson('https://localhost/api/project-commands/device', [
+            'requestId' => 'request-1',
+            'binding' => $binding,
+            'argv' => ['overview', 'now'],
+            'stdin' => '',
+        ], ['Authorization' => "Bearer {$grant}"]);
     }
 
     private function connected(): string

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Connections\Models;
 
+use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Models\Agent;
 use App\Agents\Models\Host;
@@ -150,11 +151,32 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * The binding's authority generation, which every lease renewal of its runtimes must carry.
+     */
+    public static function authorityGenerationOf(string $bindingId): int
+    {
+        return self::query()->whereKey($bindingId)->firstOrFail()->authority_generation;
+    }
+
+    /**
      * Whether this agent is the main agent of a revoked binding, whose every call is refused.
      */
     public static function isRevokedMainAgent(string $agentId): bool
     {
         return self::query()->where('main_agent_id', $agentId)->where('readiness', BindingReadiness::Revoked)->exists();
+    }
+
+    /**
+     * The id of the live binding a local host serves, none or one: each binding has a host of its own.
+     *
+     * @return list<string>
+     */
+    public static function liveIdOfLocalHost(string $hostId): array
+    {
+        return array_values(self::query()->where('host_id', $hostId)
+            ->where('readiness', '!=', BindingReadiness::Revoked)
+            ->whereHas('host', fn ($host) => $host->where('arrangement', ArrangementType::Local))
+            ->limit(1)->pluck('id')->all());
     }
 
     /**
@@ -295,6 +317,10 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
 
     private function receipt(): PresenceReceipt
     {
-        return new PresenceReceipt($this->boot_generation, (string) $this->presence_expires_at?->toIso8601String());
+        return new PresenceReceipt(
+            $this->boot_generation,
+            (string) $this->presence_expires_at?->toIso8601String(),
+            $this->authority_generation,
+        );
     }
 }
