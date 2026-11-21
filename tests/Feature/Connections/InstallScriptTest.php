@@ -22,7 +22,7 @@ final class InstallScriptTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['project_invitations', 'settings_records'];
+    private const array TABLES = ['project_invitations', 'install_attempts', 'settings_records'];
 
     private const string VERSION = '1.0.0';
 

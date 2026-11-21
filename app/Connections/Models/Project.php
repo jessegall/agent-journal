@@ -53,4 +53,16 @@ final class Project extends Model implements EventSource, ReadableModel
     {
         return self::query()->whereKey($id)->firstOrFail();
     }
+
+    /**
+     * Every connected project, by label; an installation connects a handful.
+     *
+     * @return list<self>
+     */
+    public static function listed(): array
+    {
+        return array_values(
+            self::query()->orderBy('label')->readAll('an installation connects a handful of projects')->get()->all(),
+        );
+    }
 }

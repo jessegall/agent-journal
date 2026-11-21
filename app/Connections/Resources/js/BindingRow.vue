@@ -23,7 +23,7 @@ const lastContact = computed(() =>
 </script>
 
 <template>
-    <li class="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
+    <li :id="`binding-${binding.id}`" class="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
         <template v-if="binding.state !== 'revoked'">
             <input
                 type="checkbox"

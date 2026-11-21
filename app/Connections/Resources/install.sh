@@ -2,6 +2,16 @@
 # Connects the folder this runs in to the journal at @@ORIGIN@@ with journal-agent release @@VERSION@@.
 # Nothing runs before the last line, so a download cut short does nothing.
 
+# Downloads one file from the journal's exact origin: no redirect is followed, and any answer but 200 stops the
+# install before the file is used.
+journal_fetch() {
+    status=$(curl -sS --proto '=https' --max-redirs 0 -o "$2" -w '%{http_code}' "$1") || return 1
+    if [ "$status" != 200 ]; then
+        echo "journal: $1 answered $status instead of the file itself; the journal must serve it directly, with no redirect. Nothing was installed." >&2
+        return 1
+    fi
+}
+
 journal_install() {
     set +x
     umask 077
@@ -34,13 +44,13 @@ journal_install() {
     trap 'exit 1' HUP INT TERM
 
     for file in manifest.json manifest.json.sig; do
-        if ! curl -fsSL --proto '=https' -o "$folder/$file" "$origin/releases/current/$file"; then
+        if ! journal_fetch "$origin/releases/current/$file" "$folder/$file"; then
             echo "journal: the release could not be downloaded from $origin." >&2
             return 1
         fi
     done
 
-    if ! curl -fsSL --proto '=https' -o "$folder/install-relay.sh" "$origin/releases/$version/$os-$arch/$relay"; then
+    if ! journal_fetch "$origin/releases/$version/$os-$arch/$relay" "$folder/install-relay.sh"; then
         echo "journal: the installer could not be downloaded from $origin." >&2
         return 1
     fi

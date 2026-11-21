@@ -104,17 +104,55 @@ func TestConnectWaitsOnlyForAReportWhosePresenceHasNotExpired(t *testing.T) {
 	if err := state.SaveBinding(host.Binding{BindingID: "binding-1"}); err != nil {
 		t.Fatal(err)
 	}
-	if err := state.SaveRelayReport(host.RelayReport{BootID: "old", ExpiresAt: time.Now().Add(-time.Minute)}); err != nil {
+	started := time.Now()
+	expired := host.RelayReport{BindingID: "binding-1", BootID: "old", SetupGeneration: 1, ReportedAt: time.Now(),
+		ExpiresAt: time.Now().Add(-time.Minute)}
+	if err := state.SaveRelayReport(expired); err != nil {
 		t.Fatal(err)
 	}
 
-	if awaitReady(state, 300*time.Millisecond) {
+	if awaitReady(state, "binding-1", 1, started, 300*time.Millisecond) {
 		t.Fatal("an expired report counted as ready")
 	}
-	if err := state.SaveRelayReport(host.RelayReport{BootID: "new", ExpiresAt: time.Now().Add(time.Minute)}); err != nil {
+	live := host.RelayReport{BindingID: "binding-1", BootID: "new", SetupGeneration: 1, ReportedAt: time.Now(),
+		ExpiresAt: time.Now().Add(time.Minute)}
+	if err := state.SaveRelayReport(live); err != nil {
 		t.Fatal(err)
 	}
-	if !awaitReady(state, 300*time.Millisecond) {
+	if !awaitReady(state, "binding-1", 1, started, 300*time.Millisecond) {
 		t.Fatal("a live report did not count as ready")
+	}
+}
+
+func TestAResumedSetupIsReadyOnlyAfterAReportOfItsOwnGenerationInThisRun(t *testing.T) {
+	state := host.ConnectionState{Folder: t.TempDir(), CanonicalRoot: "/work/shop"}
+	before := host.RelayReport{BindingID: "binding-1", BootID: "old", SetupGeneration: 1,
+		ReportedAt: time.Now().Add(-time.Second), ExpiresAt: time.Now().Add(time.Minute)}
+	if err := state.SaveRelayReport(before); err != nil {
+		t.Fatal(err)
+	}
+	started := time.Now()
+
+	if awaitReady(state, "binding-1", 2, started, 300*time.Millisecond) {
+		t.Fatal("a report of the setup before counted for the resumed one")
+	}
+	olderRelay := host.RelayReport{BindingID: "binding-1", BootID: "old", SetupGeneration: 1, ReportedAt: time.Now(),
+		ExpiresAt: time.Now().Add(time.Minute)}
+	if err := state.SaveRelayReport(olderRelay); err != nil {
+		t.Fatal(err)
+	}
+	if awaitReady(state, "binding-1", 2, started, 300*time.Millisecond) {
+		t.Fatal("an older relay's report of the setup before made the resumed setup ready")
+	}
+	resumed := host.RelayReport{BindingID: "binding-1", BootID: "new", SetupGeneration: 2, ReportedAt: time.Now(),
+		ExpiresAt: time.Now().Add(time.Minute)}
+	if err := state.SaveRelayReport(resumed); err != nil {
+		t.Fatal(err)
+	}
+	if !awaitReady(state, "binding-1", 2, started, 300*time.Millisecond) {
+		t.Fatal("the resumed setup's own acknowledged report did not count")
+	}
+	if awaitReady(state, "binding-2", 2, started, 300*time.Millisecond) {
+		t.Fatal("another binding's report counted")
 	}
 }

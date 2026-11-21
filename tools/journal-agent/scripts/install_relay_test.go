@@ -4,6 +4,7 @@ package scripts
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,19 +16,24 @@ import (
 	"journal-agent/release"
 )
 
-// stubCurl copies the file a URL names from the fixture folder, as the journal's release routes would serve it.
+// stubCurl copies the file a URL names from the fixture folder, as the journal's release routes would serve it, and
+// prints the status curl's -w asks for; with REDIRECT set it answers a redirect and writes nothing.
 const stubCurl = `#!/bin/sh
 out=""
 url=""
 while [ $# -gt 0 ]; do
     case "$1" in
         -o) out=$2; shift 2 ;;
-        --proto) shift 2 ;;
+        --proto | --max-redirs | -w) shift 2 ;;
         -*) shift ;;
         *) url=$1; shift ;;
     esac
 done
-cp "$FIXTURE/${url#https://journal.example.com/}" "$out"
+if [ -n "${REDIRECT:-}" ]; then
+    printf 302
+    exit 0
+fi
+cp "$FIXTURE/${url#https://journal.example.com/}" "$out" && printf 200
 `
 
 // stubProgram stands in for journal-agent: install-release lays out an installation, connect records its ticket.
@@ -44,6 +50,7 @@ case "$1" in
     connect)
         read -r ticket
         echo "connect $ticket" >>"$RECORD"
+        exit "${CONNECT_EXIT:-0}"
         ;;
 esac
 `
@@ -56,6 +63,8 @@ type installRelay struct {
 	stubs     string
 	downloads string
 	record    string
+	// extra are more environment entries of the run, such as the stub connect's exit code.
+	extra []string
 }
 
 func newInstallRelay(t *testing.T) installRelay {
@@ -125,9 +134,9 @@ func (run installRelay) install(path string) (string, error) {
 	command := exec.Command("/bin/sh", script, "https://journal.example.com", "1.0.0", run.downloads)
 	command.Dir = run.root
 	command.Stdin = strings.NewReader("the-ticket\n")
-	command.Env = []string{
+	command.Env = append([]string{
 		"PATH=" + path, "HOME=" + run.home, "SHELL=/bin/zsh", "RECORD=" + run.record, "FIXTURE=" + os.Getenv("FIXTURE"),
-	}
+	}, run.extra...)
 	printed, err := command.CombinedOutput()
 
 	return string(printed), err
@@ -213,7 +222,7 @@ func TestEachRefusalStopsBeforeTheTicketIsSpent(t *testing.T) {
 		"an unsupported processor": {func(run installRelay) string {
 			run.write(filepath.Join(run.stubs, "uname"), "#!/bin/sh\n[ \"$1\" = -m ] && echo sparc64 || echo Linux\n")
 			return run.systemPath()
-		}, "processor is not supported"},
+		}, "(Linux sparc64) is not supported. This release has builds for"},
 	}
 
 	for name, refusal := range cases {
@@ -229,6 +238,59 @@ func TestEachRefusalStopsBeforeTheTicketIsSpent(t *testing.T) {
 			}
 			if strings.Contains(run.recorded(), "connect") {
 				t.Fatalf("the ticket was handed on after a refusal: %q", run.recorded())
+			}
+		})
+	}
+}
+
+func TestAConnectedInstallEndsWithZeroAndTheConnectedLine(t *testing.T) {
+	run := newInstallRelay(t)
+
+	printed, err := run.install(run.systemPath())
+
+	if err != nil || !strings.Contains(printed, "journal: connected.") {
+		t.Fatalf("a clean install ended %v:\n%s", err, printed)
+	}
+}
+
+func TestAnInstallWhoseRelayHasNotReachedTheJournalEndsWithTwoAndNoConnectedLine(t *testing.T) {
+	run := newInstallRelay(t)
+	run.extra = []string{"CONNECT_EXIT=2"}
+
+	printed, err := run.install(run.systemPath())
+
+	var exited *exec.ExitError
+	if !errors.As(err, &exited) || exited.ExitCode() != 2 {
+		t.Fatalf("a pending first contact ended %v:\n%s", err, printed)
+	}
+	if strings.Contains(printed, "journal: connected.") || !strings.Contains(printed, "status") {
+		t.Fatalf("a pending install printed:\n%s", printed)
+	}
+}
+
+func TestAFailedConnectOrDamagedOrRedirectedDownloadEndsNonzeroWithoutTheConnectedLine(t *testing.T) {
+	cases := map[string]struct {
+		extra   []string
+		damage  bool
+		message string
+	}{
+		"a failed connect":      {extra: []string{"CONNECT_EXIT=1"}, message: "the connect step failed"},
+		"a damaged download":    {damage: true, message: "the verification step failed"},
+		"a redirected download": {extra: []string{"REDIRECT=1"}, message: "answered 302"},
+	}
+	for name, failure := range cases {
+		t.Run(name, func(t *testing.T) {
+			run := newInstallRelay(t)
+			run.extra = failure.extra
+			if failure.damage {
+				target := release.Target{OS: runtime.GOOS, Arch: runtime.GOARCH}
+				run.write(filepath.Join(os.Getenv("FIXTURE"), "releases/1.0.0", target.Folder(), "bin/journal-agent"), "damaged")
+			}
+
+			printed, err := run.install(run.systemPath())
+
+			if err == nil || strings.Contains(printed, "journal: connected.") || !strings.Contains(printed, failure.message) {
+				t.Fatalf("want a failure naming %q, got %v:\n%s", failure.message, err, printed)
 			}
 		})
 	}

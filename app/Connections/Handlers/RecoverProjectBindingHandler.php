@@ -28,6 +28,12 @@ final readonly class RecoverProjectBindingHandler implements CommandHandler
             $binding,
         );
 
-        return new Redemption($binding->host_id, $binding->project_id, $binding->id, $binding->main_agent_id);
+        return new Redemption(
+            $binding->host_id,
+            $binding->project_id,
+            $binding->id,
+            $binding->main_agent_id,
+            $binding->project_label,
+        );
     }
 }

@@ -70,6 +70,10 @@ func main() {
 	if len(os.Args) >= 2 && hostCommands[os.Args[1]] != nil {
 		if err := hostCommands[os.Args[1]](os.Args[2:]); err != nil {
 			fmt.Fprintln(os.Stderr, "journal-agent:", err)
+			var coded exitCodeError
+			if errors.As(err, &coded) {
+				os.Exit(coded.code)
+			}
 			os.Exit(1)
 		}
 		os.Exit(0)

@@ -36,6 +36,7 @@ final readonly class RedeemProjectInvitationController
             'projectId' => $redemption->projectId,
             'bindingId' => $redemption->bindingId,
             'mainAgentId' => $redemption->mainAgentId,
+            'projectLabel' => $redemption->projectLabel,
             'protocol' => $protocol,
             'canonicalOrigin' => $origin->canonical(),
         ], JsonResponse::HTTP_CREATED, ['Cache-Control' => 'no-store, private']);

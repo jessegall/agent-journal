@@ -32,7 +32,10 @@ final class InstallLinesTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['command_receipts', 'connection_audits', 'project_invitations', 'projects', 'settings_records', 'users'];
+    private const array TABLES = [
+        'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'projects',
+        'settings_records', 'users',
+    ];
 
     private const string VERSION = '1.0.0';
 
@@ -76,7 +79,7 @@ final class InstallLinesTest extends TestCase
             $this->assertStringNotContainsString($ticket, $line);
         }
 
-        foreach (['command_receipts', 'project_invitations'] as $table) {
+        foreach (['command_receipts', 'project_invitations', 'install_attempts'] as $table) {
             $this->assertStringNotContainsString($ticket, (string) json_encode(DB::table($table)->get()));
         }
     }

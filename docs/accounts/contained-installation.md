@@ -176,6 +176,24 @@ Settings, Share gateways, and configure one.
 Open the address, sign in as the owner, then Accounts, Add account, and sign in to Claude Code or Codex. The new
 account shows as signed in.
 
+### Install lines need the journal's own address, with no redirect
+
+An install line (`curl -fsSL https://<origin>/install/<ticket> | sh`) carries a live secret in its URL, and the
+installer downloads every release file from that same origin. Before switching on Connect a project:
+
+- Set `agents.server_origin` to the canonical HTTPS origin users copy lines for, such as
+  `https://journal.example.com`, with no path.
+- Let that origin, and the first proxy in front of it, serve `/install/*` and `/releases/*` itself: no redirect from
+  `http://` to `https://`, from a bare domain to `www.`, or to a CDN. The installer follows none and stops with "the
+  journal must serve it directly"; `journal-agent install-release` stops with a release-verification error and
+  installs nothing.
+- Keep the proxy's access log from recording the path of `/install/*`, or strip its last segment, as the journal's
+  own log does: the journal answers it with `Cache-Control: no-store, private` and redacts the ticket, the relay
+  credential and the device code from every log record it writes.
+- Check it on the deployed server, from outside, before you issue the first line:
+  `curl -sS -o /dev/null -w '%{http_code}\n' https://journal.example.com/releases/current/manifest.json` must print
+  `200`, not a `30x`.
+
 ## 8. Outgoing traffic
 
 The sign-in service reaches the internet only through the `egress` proxy, which allows the hosts in

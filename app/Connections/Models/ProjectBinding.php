@@ -10,8 +10,10 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\Host;
 use App\Connections\Enums\BindingReadiness;
 use App\Connections\Events\ProjectBindingCreated;
+use App\Connections\Events\ProjectBindingEnvironmentAssigned;
 use App\Connections\Events\ProjectBindingReadinessChanged;
 use App\Connections\Events\ProjectBindingRevoked;
+use App\Connections\Exceptions\BindingStartRefused;
 use App\Connections\Exceptions\BindingUnrecoverable;
 use App\Connections\Exceptions\PresenceRefused;
 use App\Connections\Values\BindingFolder;
@@ -37,6 +39,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $host_id
  * @property string $project_id
+ * @property string|null $environment_id
  * @property string $main_agent_id
  * @property string $root_id
  * @property string $canonical_root
@@ -50,6 +53,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $boot_id
  * @property int $report_sequence
  * @property int $boot_generation
+ * @property int $setup_generation
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Agent $mainAgent
@@ -86,18 +90,25 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
             'presence_expires_at' => 'immutable_datetime',
             'report_sequence' => 'integer',
             'boot_generation' => 'integer',
+            'setup_generation' => 'integer',
         ];
     }
 
     /**
-     * Joins the folder to the project through the host, pending until its relay first reports, in authority
-     * generation 1.
+     * Joins the folder to the project's environment through the host, pending until its relay first reports, in
+     * authority generation 1.
      */
-    public static function create(Host $host, Project $project, Agent $mainAgent, BindingFolder $folder): self
-    {
+    public static function create(
+        Host $host,
+        Project $project,
+        Environment $environment,
+        Agent $mainAgent,
+        BindingFolder $folder,
+    ): self {
         $binding = new self();
         $binding->host_id = $host->id;
         $binding->project_id = $project->id;
+        $binding->environment_id = $environment->id;
         $binding->main_agent_id = $mainAgent->id;
         $binding->root_id = $folder->rootId;
         $binding->canonical_root = $folder->canonicalRoot;
@@ -108,6 +119,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $binding->readiness = BindingReadiness::Pending;
         $binding->report_sequence = 0;
         $binding->boot_generation = 0;
+        $binding->setup_generation = 0;
         $binding->assertSaved($binding->save());
         $binding->raise(new ProjectBindingCreated($binding->id, $project->id, $host->id, CarbonImmutable::now()));
 
@@ -205,6 +217,11 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
             return $this->receipt();
         }
 
+        // A relay of a setup older than the one acknowledged changes nothing, as a stale sequence does.
+        if ($report->setupGeneration < $this->setup_generation) {
+            return $this->receipt();
+        }
+
         if (! $isSameBoot && $this->hasLivePresenceAt($now) && ! $report->takesOver) {
             throw PresenceRefused::anotherBootIsLive($this->id);
         }
@@ -217,6 +234,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $readiness = $this->readinessOf($report);
         $changed = $readiness !== $this->readiness;
         $this->report_sequence = $report->sequence;
+        $this->setup_generation = $report->setupGeneration;
         $this->readiness = $readiness;
         $this->last_contact_at = $now;
         $this->presence_expires_at = $now->addSeconds(self::PRESENCE_SECONDS);
@@ -240,7 +258,32 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $this->raise(new ProjectBindingRevoked($this->id, $this->authority_generation, CarbonImmutable::now()));
     }
 
+    /**
+     * Puts a binding with no environment into an environment of its own project, the owner's explicit choice.
+     *
+     * @throws BindingStartRefused
+     */
+    public function assignEnvironment(Environment $environment): void
+    {
+        if ($environment->project_id !== $this->project_id) {
+            throw BindingStartRefused::otherProjectsEnvironment($this->id);
+        }
+
+        $this->environment_id = $environment->id;
+        $this->assertSaved($this->save());
+        $this->raise(new ProjectBindingEnvironmentAssigned($this->id, $environment->id, CarbonImmutable::now()));
+    }
+
     // ----------[ Answers ]----------
+
+    /**
+     * Whether the binding works in no environment yet: it starts nothing and runs no command until the owner assigns
+     * one.
+     */
+    public function isEnvironmentUnassigned(): bool
+    {
+        return $this->environment_id === null;
+    }
 
     /**
      * Whether a start names the binding's registered root: its root id and folder, in a folder its host permits.
@@ -328,7 +371,10 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     private function receipt(): PresenceReceipt
     {
         return new PresenceReceipt(
+            $this->id,
             $this->boot_generation,
+            $this->setup_generation,
+            CarbonImmutable::now()->toIso8601String(),
             (string) $this->presence_expires_at?->toIso8601String(),
             $this->authority_generation,
         );

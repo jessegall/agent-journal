@@ -10,6 +10,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Bus\Contracts\CommandBus;
+use App\Connections\Models\InstallAttempt;
 use App\Connections\Models\ProjectInvitation;
 use App\Connections\Values\InstallTicket;
 use App\Settings\Commands\SetBooleanSetting;
@@ -51,10 +52,9 @@ trait ConnectsProjects
 
     private function issueLine(string $ticket): ProjectInvitation
     {
-        return ProjectInvitation::issueForNewProject(
+        return ProjectInvitation::issueFor(
+            InstallAttempt::openFor($this->owner->id, 'action-'.bin2hex(random_bytes(4)), null),
             InstallTicket::digestOf($ticket),
-            $this->owner->id,
-            'action-'.bin2hex(random_bytes(4)),
         );
     }
 

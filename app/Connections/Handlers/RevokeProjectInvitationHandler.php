@@ -11,13 +11,15 @@ use App\Connections\Models\ProjectInvitation;
 use App\Contracts\CommandHandler;
 
 /**
- * Revokes a pending install line; one already redeemed, expired or revoked is refused by name.
+ * Revokes a pending install line and cancels its install attempt, holding the attempt's row; a line already redeemed,
+ * expired or revoked is refused by name, and an attempt that moved on since the owner saw it is refused.
  */
 final readonly class RevokeProjectInvitationHandler implements CommandHandler
 {
     public function handle(RevokeProjectInvitation $command): void
     {
         $invitation = ProjectInvitation::lockPending($command->invitationId);
+        $invitation->lockAttempt()->cancel($command->seenVersion);
         $invitation->revoke();
 
         ConnectionAudit::ofInvitation(

@@ -6,7 +6,15 @@ const reload = vi.fn();
 const destroy = vi.fn();
 // The page's issue action answers with the line as its one-time flash.
 const keyedPost = vi.fn((_url: string, _body: Record<string, unknown>, _key: string, outcome: KeyedOutcome) => {
-    outcome.onAccepted({ issuedLine: { installLine: LINE, expiresAt: '2026-11-21T12:10:00Z', invitationId: 'one' } });
+    outcome.onAccepted({
+        issuedLine: {
+            installLine: LINE,
+            expiresAt: new Date(Date.now() + 600_000).toISOString(),
+            invitationId: 'one',
+            attemptReference: 'IA-ABCDEFGH',
+            attemptVersion: keyedPost.mock.calls.length,
+        },
+    });
     outcome.onFinish?.();
 });
 
@@ -16,6 +24,9 @@ vi.mock('@inertiajs/vue3', () => ({ router: { reload, delete: destroy } }));
 vi.mock('@kit/keyedPost', () => ({ keyedPost }));
 vi.mock('@generated/routes/connections/invitations', () => ({
     issue: () => ({ url: '/settings/project-connections/invitations' }),
+    revoke: ({ invitation }: { invitation: string }) => ({
+        url: `/settings/project-connections/invitations/${invitation}`,
+    }),
 }));
 vi.mock('@generated/routes/connections/bindings', () => ({
     revoke: ({ binding }: { binding: string }) => ({
@@ -31,46 +42,58 @@ const { default: ConnectProjectWindow } = await import(
 const LINE =
     'curl -fsSL https://journal.example.com/install/Tk3_x-9QvZ0aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0u | sh';
 
-function windowWith(canIssue: boolean) {
-    return mount(ConnectProjectWindow, {
-        props: {
-            data: {
-                serverName: 'journal.example.com',
-                canIssue,
-                release: {
-                    release: '1.0.0',
-                    targets: [
-                        {
-                            name: 'darwin-arm64',
-                            bytes: 9_000_000,
-                            isMeasured: true,
-                            prerequisites: ['git', 'curl'],
-                            missingProviders: [],
-                            isSupported: true,
-                        },
-                        {
-                            name: 'linux-amd64',
-                            bytes: 9_000_000,
-                            isMeasured: true,
-                            prerequisites: ['git', 'curl'],
-                            missingProviders: ['codex'],
-                            isSupported: false,
-                        },
-                    ],
-                    missingCapabilities: [],
-                },
-                bindings: [
-                    {
-                        id: 'binding-1',
-                        machineLabel: 'Owner laptop',
-                        projectLabel: 'Shop',
-                        lastContactAt: null,
-                        state: 'ready',
-                    },
+function windowData(canIssue: boolean, attempts: unknown[] = []) {
+    return {
+        serverName: 'journal.example.com',
+        origin: 'https://journal.example.com',
+        canIssue,
+        projects: [
+            {
+                id: 'project-1',
+                label: 'Shop',
+                environments: [
+                    { id: 'environment-main', label: 'Main' },
+                    { id: 'environment-research', label: 'Research' },
                 ],
             },
+        ],
+        release: {
+            release: '1.0.0',
+            targets: [
+                {
+                    name: 'darwin-arm64',
+                    bytes: 9_000_000,
+                    isMeasured: true,
+                    prerequisites: ['git', 'curl'],
+                    missingProviders: [],
+                    isSupported: true,
+                },
+                {
+                    name: 'linux-amd64',
+                    bytes: 9_000_000,
+                    isMeasured: true,
+                    prerequisites: ['git', 'curl'],
+                    missingProviders: ['codex'],
+                    isSupported: false,
+                },
+            ],
+            missingCapabilities: [],
         },
-    });
+        attempts: { rows: attempts, nextCursor: null },
+        bindings: [
+            {
+                id: 'binding-1',
+                machineLabel: 'Owner laptop',
+                projectLabel: 'Shop',
+                lastContactAt: null,
+                state: 'ready',
+            },
+        ],
+    };
+}
+
+function windowWith(canIssue: boolean) {
+    return mount(ConnectProjectWindow, { props: { data: windowData(canIssue) } });
 }
 
 function button(wrapper: ReturnType<typeof windowWith>, label: string) {
@@ -91,7 +114,7 @@ describe('ConnectProjectWindow', () => {
         const text = windowWith(true).text();
 
         expect(text).toContain('darwin-arm64: 9.0 MB to download and install. Needs git, curl.');
-        expect(text).toContain('linux-amd64 is not offered yet, because it does not run codex.');
+        expect(text).toContain('linux-amd64 is not offered yet: it does not run codex yet.');
     });
 
     it('generates a line, copies exactly its bytes and replaces it under the same action', async () => {
@@ -112,12 +135,13 @@ describe('ConnectProjectWindow', () => {
         const keys = keyedPost.mock.calls.map((call) => call[1].issuanceKey);
         expect(keys).toHaveLength(2);
         expect(keys[0]).toBe(keys[1]);
+        expect(keyedPost.mock.calls[1][1]).toMatchObject({ attemptReference: 'IA-ABCDEFGH', seenVersion: '1' });
     });
 
     it('offers no install action while connecting projects is switched off', () => {
         const wrapper = windowWith(false);
 
-        expect(wrapper.text()).toContain('Connecting projects is switched off');
+        expect(wrapper.text()).toContain('This journal is not issuing install lines.');
         expect(wrapper.findAll('button').map((each) => each.text())).not.toContain(
             'Generate install line',
         );
@@ -169,5 +193,56 @@ describe('ConnectProjectWindow', () => {
             ['page'],
         );
         expect(wrapper.text()).toContain('Revoked');
+    });
+
+    it('joins an explicit environment of a connected project', async () => {
+        const wrapper = windowWith(true);
+
+        await button(wrapper, 'Join a project').trigger('click');
+        await wrapper.find('#join-environment').setValue('environment-research');
+        await button(wrapper, 'Generate install line').trigger('click');
+        await flushPromises();
+
+        expect(keyedPost.mock.calls[0][1]).toMatchObject({ projectId: 'project-1', environmentId: 'environment-research' });
+    });
+
+    it('cancels the line at the version it saw and drops it from the window', async () => {
+        destroy.mockImplementation((_url: string, options: { onSuccess?: () => void }) => options.onSuccess?.());
+        const wrapper = windowWith(true);
+        await button(wrapper, 'Generate install line').trigger('click');
+        await flushPromises();
+
+        await button(wrapper, 'Cancel').trigger('click');
+        await flushPromises();
+
+        expect(destroy).toHaveBeenCalledWith(
+            '/settings/project-connections/invitations/one',
+            expect.objectContaining({ data: { seenVersion: 1 } }),
+        );
+        expect(wrapper.find('input[readonly]').exists()).toBe(false);
+        expect(wrapper.text()).toContain('Cancelled.');
+    });
+
+    it('drops its line at once when the journal reports its attempt spent', async () => {
+        const wrapper = windowWith(true);
+        await button(wrapper, 'Generate install line').trigger('click');
+        await flushPromises();
+
+        await wrapper.setProps({
+            data: windowData(true, [
+                {
+                    reference: 'IA-ABCDEFGH',
+                    target: 'New project',
+                    state: 'spent',
+                    version: 1,
+                    createdAt: new Date().toISOString(),
+                    bindingId: 'binding-1',
+                },
+            ]),
+        });
+
+        expect(wrapper.find('input[readonly]').exists()).toBe(false);
+        expect(wrapper.text()).toContain('This line was used');
+        expect(wrapper.find('a[href="#binding-binding-1"]').exists()).toBe(true);
     });
 });

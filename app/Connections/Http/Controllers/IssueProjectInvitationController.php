@@ -21,7 +21,7 @@ use Inertia\ResponseFactory;
 final readonly class IssueProjectInvitationController
 {
     /**
-     * The flash key the window reads the issued line, its expiry and its invitation from.
+     * The flash key the window reads the issued line, its expiry, its invitation and its install attempt from.
      */
     public const string ISSUED_LINE = 'issuedLine';
 
@@ -39,6 +39,8 @@ final readonly class IssueProjectInvitationController
             'installLine' => $line->for($ticket),
             'expiresAt' => $issued->expiresAt,
             'invitationId' => $issued->invitationId,
+            'attemptReference' => $issued->attemptReference,
+            'attemptVersion' => $issued->attemptVersion,
         ];
 
         if (! $request->expectsJson()) {

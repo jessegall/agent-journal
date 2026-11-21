@@ -20,8 +20,8 @@ final class ConnectProjectWindowTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'command_receipts', 'connection_audits', 'project_invitations', 'project_bindings', 'projects',
-        'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
+        'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings',
+        'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
     ];
 
     public function test_the_owner_sees_the_server_its_bindings_and_never_an_issued_line(): void
@@ -37,11 +37,16 @@ final class ConnectProjectWindowTest extends TestCase
         ) => $page
             ->component('connections/ConnectProjectWindow')
             ->where('page.data.serverName', 'journal.example.com')
+            ->where('page.data.origin', 'https://journal.example.com')
             ->where('page.data.canIssue', true)
+            ->where('page.data.projects.0.label', 'Shop')
+            ->where('page.data.projects.0.environments.0.label', 'Main')
             ->where('page.data.release.targets.0.name', 'darwin-arm64')
             ->where('page.data.release.targets.0.bytes', 9_000_000)
             ->where('page.data.release.targets.0.prerequisites', ['git', 'curl'])
             ->where('page.data.release.missingCapabilities', [])
+            ->has('page.data.attempts.rows', 2)
+            ->where('page.data.attempts.rows.0.state', 'open')
             ->has('page.data.bindings', 1)
             ->where('page.data.bindings.0.projectLabel', 'Shop')
             ->where('page.data.bindings.0.machineLabel', 'Owner laptop')

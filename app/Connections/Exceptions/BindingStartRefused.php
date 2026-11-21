@@ -40,6 +40,18 @@ final class BindingStartRefused extends RuntimeException implements CodedRefusal
         return new self("Binding {$bindingId} starts only its own main agent.");
     }
 
+    public static function environmentUnassigned(string $bindingId): self
+    {
+        return new self(
+            "Binding {$bindingId} works in no environment yet: assign it one of its project's environments in Settings.",
+        );
+    }
+
+    public static function otherProjectsEnvironment(string $bindingId): self
+    {
+        return new self("Binding {$bindingId} works only in an environment of its own project.");
+    }
+
     public function refusalCode(): RefusalCode
     {
         return RefusalCode::Forbidden;

@@ -1,30 +1,53 @@
 <script setup lang="ts">
 import type { ConnectProjectWindowData } from '@generated/types/connections';
 import { revoke, revokeChosen as revokeChosenBindings } from '@generated/routes/connections/bindings';
-import { issue } from '@generated/routes/connections/invitations';
 import Button from '@kit/Button';
 import PageHeader from '@kit/PageHeader';
 import { router } from '@inertiajs/vue3';
 import { keyedPost } from '@kit/keyedPost';
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import BindingRow from './BindingRow.vue';
-import InstallLineField from './InstallLineField.vue';
+import InstallAttemptList from './InstallAttemptList.vue';
+import InstallLinePanel from './InstallLinePanel.vue';
 import ReleasePlatforms from './ReleasePlatforms.vue';
 
 /**
- * The owner connects a project on another machine: one Generate action issues a one-time install line, shown with
- * Copy and its expiry, and Replace issues another under the same action, which ends the first. The line lives in this
- * window alone, never in the page's props, the URL or the history, so closing the window drops it. Below are the
- * connected folders, each with Revoke; several are revoked at once by choosing them, or every one on a machine.
+ * The owner connects a project on another machine: the install line panel issues, replaces and cancels one line for
+ * a new project or an environment to join, and keeps it to itself. Below are the connected folders, each with Revoke;
+ * several are revoked at once by choosing them, or every one on a machine.
  */
 const props = defineProps<{ data: ConnectProjectWindowData }>();
 
-type IssuedLine = { installLine: string; expiresAt: string; invitationId: string };
-
-const issuanceKey = crypto.randomUUID();
-const issued = ref<IssuedLine | null>(null);
-const pending = ref(false);
 const refusal = ref<string | null>(null);
+// Whether the page was read again recently enough to trust a shown line is still the attempt's current one.
+const fresh = ref(true);
+let refreshing: ReturnType<typeof setInterval> | undefined;
+
+/**
+ * Reads the page again, as the attempts change by other tabs and devices; a read that fails marks the line stale.
+ */
+function refresh(): void {
+    if (document.visibilityState !== 'visible') {
+        return;
+    }
+
+    let answered = false;
+    router.reload({
+        only: ['page'],
+        onSuccess: () => (answered = true),
+        onFinish: () => (fresh.value = answered),
+    });
+}
+
+onMounted(() => {
+    refreshing = setInterval(refresh, 5_000);
+    window.addEventListener('focus', refresh);
+});
+
+onBeforeUnmount(() => {
+    clearInterval(refreshing);
+    window.removeEventListener('focus', refresh);
+});
 // The folders chosen to revoke together, and what came of each the last time.
 const chosen = ref<Set<string>>(new Set());
 const outcomes = ref<Record<string, string>>({});
@@ -70,24 +93,6 @@ function revokeChosen(): void {
     }, ['page']);
 }
 
-/**
- * Issues a line through the page's own action, under a fresh request key each time, since Replace is meant to issue a
- * new one; the line arrives as the answer's one-time flash and lives in this component alone.
- */
-function generate(): void {
-    pending.value = true;
-    refusal.value = null;
-    keyedPost(issue().url, { issuanceKey }, crypto.randomUUID(), {
-        onAccepted: (flash) => {
-            const line = flash.issuedLine as IssuedLine | undefined;
-            issued.value = line ?? null;
-        },
-        onRefused: (reason) => (refusal.value = reason),
-        onUncertain: () => (refusal.value = 'The journal did not answer; generate the line again.'),
-        onFinish: () => (pending.value = false),
-    });
-}
-
 function revokeBinding(bindingId: string): void {
     router.delete(revoke({ binding: bindingId }).url, {
         only: ['page'],
@@ -103,48 +108,26 @@ function revokeBinding(bindingId: string): void {
         <section class="flex flex-col gap-3 px-4 sm:px-0">
             <p>
                 Run a project on your own computer and keep its tasks, plans and
-                decisions on {{ data.serverName }}.
+                decisions on {{ data.serverName }} ({{ data.origin }}).
             </p>
             <p class="text-small text-muted">
-                Connecting lets {{ data.serverName }} direct an agent that can
-                read and change the files of that project.
+                This server can direct an agent to read and change files in your
+                project. A line works once, for ten minutes.
             </p>
             <template v-if="!data.canIssue">
                 <p class="text-small text-muted">
-                    Connecting projects is switched off on this server, or its
-                    release cannot connect a project yet.
+                    This journal is not issuing install lines.
                 </p>
             </template>
-            <template v-else-if="issued === null">
-                <div>
-                    <Button
-                        variant="primary"
-                        :disabled="pending"
-                        @click="generate"
-                        >Generate install line</Button
-                    >
-                </div>
-            </template>
             <template v-else>
-                <InstallLineField
-                    :line="issued.installLine"
-                    :expires-at="issued.expiresAt"
-                />
-                <div>
-                    <Button
-                        variant="bordered"
-                        size="small"
-                        :disabled="pending"
-                        @click="generate"
-                        >Replace</Button
-                    >
-                </div>
+                <InstallLinePanel :projects="data.projects" :attempts="data.attempts.rows" :fresh="fresh" />
             </template>
             <ReleasePlatforms :release="data.release" />
             <template v-if="refusal !== null">
                 <p class="text-small text-danger">{{ refusal }}</p>
             </template>
         </section>
+        <InstallAttemptList :attempts="data.attempts" :fresh="fresh" />
         <template v-if="data.bindings.length > 0">
             <div class="flex flex-wrap items-center gap-2 px-4 sm:px-0">
                 <template v-for="machine in machines" :key="machine">

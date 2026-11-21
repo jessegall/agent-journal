@@ -25,6 +25,10 @@ final readonly class AssertBindingStartHandler implements CommandHandler
             throw BindingStartRefused::notTheHost($binding->id);
         }
 
+        if ($binding->isEnvironmentUnassigned()) {
+            throw BindingStartRefused::environmentUnassigned($binding->id);
+        }
+
         if ($binding->readiness === BindingReadiness::Incompatible) {
             throw BindingStartRefused::incompatible($binding->id);
         }

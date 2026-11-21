@@ -24,15 +24,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A one-time install line the owner issued: the digest of its ticket, never the ticket, who issued it, whether it
- * connects a new project or joins one, when it expires and whether it was revoked or spent on a binding.
+ * A one-time install line the owner issued for one install attempt: the digest of its ticket, never the ticket, who
+ * issued it, whether it connects a new project or joins one, when it expires and whether it was revoked or spent on a
+ * binding. An attempt has at most one live line.
  *
  * @property string $id
  * @property string $ticket_digest
  * @property string $issuer_user_id
  * @property InvitationMode $mode
  * @property string|null $project_id
- * @property string $issuance_key
+ * @property string|null $environment_id
+ * @property string|null $install_attempt_id
  * @property CarbonImmutable $expires_at
  * @property CarbonImmutable|null $revoked_at
  * @property CarbonImmutable|null $spent_at
@@ -40,7 +42,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['ticket_digest', 'issuer_user_id', 'mode', 'project_id', 'issuance_key', 'expires_at'])]
+#[Fillable([
+    'ticket_digest', 'issuer_user_id', 'mode', 'project_id', 'environment_id', 'install_attempt_id', 'expires_at',
+])]
 final class ProjectInvitation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -69,24 +73,26 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
     }
 
     /**
-     * An install line for a new project, kept by the digest of its ticket and expiring LIFETIME_MINUTES from now.
-     * The issuance key names the owner action it was issued for.
+     * The attempt's line, kept by the digest of its ticket and expiring LIFETIME_MINUTES from now: for a new project,
+     * or to join the attempt's project, issued by the attempt's owner.
      */
-    public static function issueForNewProject(string $ticketDigest, string $issuerUserId, string $issuanceKey): self
+    public static function issueFor(InstallAttempt $attempt, string $ticketDigest): self
     {
-        return self::issue($ticketDigest, $issuerUserId, InvitationMode::New, null, $issuanceKey);
-    }
+        $invitation = new self();
+        $invitation->ticket_digest = $ticketDigest;
+        $invitation->issuer_user_id = $attempt->owner_user_id;
+        $invitation->mode = $attempt->mode;
+        $invitation->project_id = $attempt->project_id;
+        $invitation->environment_id = $attempt->environment_id;
+        $invitation->install_attempt_id = $attempt->id;
+        $invitation->expires_at = CarbonImmutable::now()->addMinutes(self::LIFETIME_MINUTES);
+        $invitation->assertSaved($invitation->save());
 
-    /**
-     * An install line that joins its folder to a project already connected.
-     */
-    public static function issueToJoin(
-        Project $project,
-        string $ticketDigest,
-        string $issuerUserId,
-        string $issuanceKey,
-    ): self {
-        return self::issue($ticketDigest, $issuerUserId, InvitationMode::Join, $project->id, $issuanceKey);
+        $invitation->raise(
+            new ProjectInvitationIssued($invitation->id, $invitation->expires_at, CarbonImmutable::now()),
+        );
+
+        return $invitation;
     }
 
     // ----------[ Queries ]----------
@@ -115,14 +121,14 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
     }
 
     /**
-     * The lines still pending under an owner action's issuance key, locked until the transaction ends.
+     * The attempt's line still pending, none or one, locked until the transaction ends.
      *
      * @return list<self>
      */
-    public static function lockPendingUnder(string $issuanceKey): array
+    public static function lockPendingOf(InstallAttempt $attempt): array
     {
-        return array_values(self::query()->pending()->where('issuance_key', $issuanceKey)->lockForUpdate()
-            ->readAll('one owner action issues a line or two')->get()->all());
+        return array_values(self::query()->pending()->where('install_attempt_id', $attempt->id)->lockForUpdate()
+            ->limit(1)->get()->all());
     }
 
     /**
@@ -156,29 +162,29 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
         $this->raise(new ProjectInvitationSpent($this->id, $binding->id, $this->spent_at));
     }
 
-    // ----------[ Internals ]----------
+    // ----------[ Answers ]----------
 
-    private static function issue(
-        string $ticketDigest,
-        string $issuerUserId,
-        InvitationMode $mode,
-        string|null $projectId,
-        string $issuanceKey,
-    ): self {
-        $invitation = new self();
-        $invitation->ticket_digest = $ticketDigest;
-        $invitation->issuer_user_id = $issuerUserId;
-        $invitation->mode = $mode;
-        $invitation->project_id = $projectId;
-        $invitation->issuance_key = $issuanceKey;
-        $invitation->expires_at = CarbonImmutable::now()->addMinutes(self::LIFETIME_MINUTES);
-        $invitation->assertSaved($invitation->save());
+    /**
+     * The install attempt this line belongs to, locked until the transaction ends; a line issued before attempts
+     * existed has none and cannot be used.
+     *
+     * @throws InvitationUnusable
+     */
+    public function lockAttempt(): InstallAttempt
+    {
+        if ($this->install_attempt_id === null) {
+            throw InvitationUnusable::forId($this->id);
+        }
 
-        $invitation->raise(
-            new ProjectInvitationIssued($invitation->id, $invitation->expires_at, CarbonImmutable::now()),
-        );
+        return InstallAttempt::lockById($this->install_attempt_id);
+    }
 
-        return $invitation;
+    /**
+     * Whether the line can still be redeemed at this server time: not revoked, not spent and not expired.
+     */
+    public function isRedeemableAt(CarbonImmutable $now): bool
+    {
+        return $this->revoked_at === null && $this->spent_at === null && $this->expires_at->isAfter($now);
     }
 
     // ----------[ Scopes ]----------

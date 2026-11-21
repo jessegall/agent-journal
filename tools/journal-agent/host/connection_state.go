@@ -44,19 +44,31 @@ type PendingConnection struct {
 type Binding struct {
 	Enrollment
 	ProjectID     string `json:"project_id"`
+	ProjectLabel  string `json:"project_label"`
 	BindingID     string `json:"binding_id"`
 	MainAgentID   string `json:"main_agent_id"`
 	RootID        string `json:"root_id"`
 	CanonicalRoot string `json:"canonical_root"`
 }
 
-// RelayReport is what the binding's relay last had acknowledged: its boot, the generation the journal holds for it
-// and when that presence expires. connect waits for the first one.
+// RelayReport is what the binding's relay last had acknowledged: the binding, its boot, the generation the journal
+// holds for it, the folder's setup generation the journal acknowledged, when it was reported and acknowledged and
+// when that presence expires. connect waits for one of its own setup generation.
 type RelayReport struct {
-	BootID     string    `json:"boot_id"`
-	Generation int       `json:"generation"`
-	ReportedAt time.Time `json:"reported_at"`
-	ExpiresAt  time.Time `json:"expires_at"`
+	BindingID       string    `json:"binding_id"`
+	BootID          string    `json:"boot_id"`
+	Generation      int       `json:"generation"`
+	SetupGeneration int       `json:"setup_generation"`
+	ReportedAt      time.Time `json:"reported_at"`
+	AcknowledgedAt  time.Time `json:"acknowledged_at"`
+	ExpiresAt       time.Time `json:"expires_at"`
+}
+
+// AcknowledgesSetup is whether the report is the journal's acknowledgement of this binding's setup generation,
+// reported after the given time and still unexpired now; an older report only tells when the folder was last seen.
+func (report RelayReport) AcknowledgesSetup(bindingID string, setupGeneration int, since time.Time, now time.Time) bool {
+	return report.BindingID == bindingID && report.SetupGeneration == setupGeneration &&
+		report.ReportedAt.After(since) && report.ExpiresAt.After(now)
 }
 
 // ConnectionState is the private state of one project folder's connection, inside the host's state folder and
@@ -236,6 +248,25 @@ func (state ConnectionState) Pending(origin string) (PendingConnection, error) {
 	}
 
 	return pending, writePrivateJSON(state.pendingPath(), pending)
+}
+
+// Staged is the folder's staged connection, without staging one; ErrNotConnected while there is none.
+func (state ConnectionState) Staged() (PendingConnection, error) {
+	content, err := os.ReadFile(state.pendingPath())
+	if errors.Is(err, os.ErrNotExist) {
+		return PendingConnection{}, ErrNotConnected
+	}
+	if err != nil {
+		return PendingConnection{}, err
+	}
+	var pending PendingConnection
+
+	return pending, json.Unmarshal(content, &pending)
+}
+
+// RemoveStaged removes the folder's staged connection, which no journal committed.
+func (state ConnectionState) RemoveStaged() error {
+	return removePrivateFile(state.pendingPath())
 }
 
 // SaveBinding keeps the redeemed binding and drops the staged connection it came from.

@@ -9,6 +9,8 @@ use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use App\Connections\Http\Middleware\ResolveConnectedProject;
+use App\Connections\Models\Environment;
+use App\Connections\Models\InstallAttempt;
 use App\Connections\Models\Project;
 use App\Connections\Models\ProjectBinding;
 use App\Connections\Models\ProjectInvitation;
@@ -32,8 +34,8 @@ final class ConnectedProjectTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'connection_audits', 'project_invitations', 'project_bindings', 'projects', 'agent_runtimes', 'agents',
-        'hosts', 'settings_records', 'users',
+        'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings', 'project_environments',
+        'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
     ];
 
     public function test_successive_calls_of_two_projects_each_read_their_own_project(): void
@@ -49,11 +51,9 @@ final class ConnectedProjectTest extends TestCase
     public function test_two_bindings_joined_to_one_project_read_the_same_project(): void
     {
         $first = $this->bindingOf('shop-ticket', 'nonce-aaaaaaaaaaaaaaaa');
-        ProjectInvitation::issueToJoin(
-            Project::query()->sole(),
+        ProjectInvitation::issueFor(
+            InstallAttempt::openFor($this->owner->id, 'join-action', $this->mainOf(Project::query()->sole())),
             InstallTicket::digestOf('join-ticket'),
-            $this->owner->id,
-            'join-action',
         );
         $second = ProjectBinding::query()->findOrFail(
             $this->redeemLine('join-ticket', 'nonce-cccccccccccccccc')->assertCreated()->json('bindingId'),
@@ -103,5 +103,13 @@ final class ConnectedProjectTest extends TestCase
         $middleware->handle(Request::create('/agent/call'), fn () => new Response());
 
         return $this->app->make(ProjectKey::class)->current();
+    }
+
+    /**
+     * The project's Main environment, which its first line made.
+     */
+    private function mainOf(Project $project): Environment
+    {
+        return Environment::listedOf($project->id)[0];
     }
 }

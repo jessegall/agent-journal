@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -25,44 +24,56 @@ var errTicketMissing = errors.New("no install line ticket on standard input")
 var errLineUnusable = errors.New("this install line cannot be used: copy a new one from the journal")
 
 // connect redeems an install line for the project folder it runs in. The ticket is read from standard input, never
-// from an argument; the host credential is made here, kept in the private state folder and never printed.
+// from an argument; the host credential is made here, kept in the private state folder and never printed. With
+// --resume it finishes a staged install without its ticket; with --abandon it removes one the journal never committed.
 func connect(arguments []string) error {
 	flags := flag.NewFlagSet("connect", flag.ContinueOnError)
 	ticketStdin := flags.Bool("ticket-stdin", false, "read the install line's ticket from standard input")
+	resume := flags.Bool("resume", false, "finish this folder's staged install, without its ticket")
+	abandon := flags.Bool("abandon", false, "remove this folder's staged install the journal never committed")
 	origin := flags.String("origin", "", "the journal's canonical https origin")
 	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
-	if !*ticketStdin || *origin == "" {
-		return fmt.Errorf("usage: journal-agent connect --ticket-stdin --origin <https origin> [--state <folder>]")
+	if !*resume && !*abandon && (!*ticketStdin || *origin == "") {
+		return fmt.Errorf("usage: journal-agent connect --ticket-stdin --origin <https origin> | --resume | --abandon [--state <folder>]")
 	}
 
-	ticket, err := readTicket(os.Stdin)
+	target, err := resolveTarget()
 	if err != nil {
 		return err
 	}
-	root, err := projectRoot()
-	if err != nil {
-		return err
-	}
-
+	root := target.root
 	connection := projectConnection{
 		state:     host.ConnectionState{Folder: *stateFolder, CanonicalRoot: root},
 		origin:    *origin,
 		transport: &http.Client{Timeout: 30 * time.Second},
 	}
-	binding, err := connection.redeem(context.Background(), ticket)
-	if err != nil {
-		return err
+	if *abandon {
+		return connection.abandon(context.Background(), os.Stdout)
 	}
 	installation, err := ownInstallation()
 	if err != nil {
 		return err
 	}
+
+	var binding host.Binding
+	if *resume {
+		binding, err = connection.resume(context.Background())
+	} else {
+		binding, err = connection.redeemConfirmed(target, installation)
+	}
+	if err != nil {
+		return err
+	}
+
+	// Only a report of this run's setup, acknowledged after it began, makes the folder ready.
+	started := time.Now()
 	if err := connection.setUp(binding, installation); err != nil {
 		return err
 	}
+	setupGeneration := project.Folder{Root: root}.SetupGeneration()
 	program, err := os.Executable()
 	if err != nil {
 		return err
@@ -70,15 +81,52 @@ func connect(arguments []string) error {
 	if err := host.StartRelay(program, *stateFolder, binding.BindingID); err != nil {
 		return err
 	}
-	if !awaitReady(connection.state, relayReadyWait) {
-		fmt.Println("Connected, setup pending: this folder's relay has not reported yet. Run the install line again to finish.")
-		return nil
+	dispatcher := filepath.Join(installation.Folder, "bin", "journal")
+	if !awaitReady(connection.state, binding.BindingID, setupGeneration, started, relayReadyWait) {
+		fmt.Printf("Enrolled with %s. Waiting for first contact.\n  binding: %s\n  check it with: %q status\n",
+			binding.JournalURL, binding.BindingID, dispatcher)
+		return errFirstContactPending
 	}
 
-	fmt.Printf("Connected to %s · %s · %s\n", binding.JournalURL, filepath.Base(root), host.MachineLabel())
+	fmt.Printf("Ready: %s answered this folder's relay.\n  project: %s\n  binding: %s\n  machine: %s\n",
+		binding.JournalURL, binding.ProjectLabel, binding.BindingID, host.MachineLabel())
 
 	return nil
 }
+
+// redeemConfirmed checks and confirms the folder, so a refusal leaves the line unspent, prints the ticket-free command
+// that finishes the install if this run is cut short, and redeems the line read from standard input.
+func (connection projectConnection) redeemConfirmed(target targetFolder, installation host.Installation) (host.Binding, error) {
+	ticket, err := readTicket(os.Stdin)
+	if err != nil {
+		return host.Binding{}, err
+	}
+	if err := target.assertNotConnected(connection.state, os.Stdout); err != nil {
+		return host.Binding{}, err
+	}
+	if err := target.confirm(connection.origin, os.Stdout); err != nil {
+		return host.Binding{}, err
+	}
+	fmt.Printf("journal: if this stops before it ends, finish it in %s with: %q connect --resume\n",
+		target.root, filepath.Join(installation.Folder, "bin", "journal-agent"))
+
+	return connection.redeem(context.Background(), ticket)
+}
+
+// errFirstContactPending is the end of a connect whose binding and setup are saved but whose relay the journal has
+// not acknowledged yet; it exits with code 2, so the installer can tell it from a failure.
+var errFirstContactPending = exitCodeError{
+	code:    2,
+	message: "the folder is enrolled, and the journal has not heard from its relay yet",
+}
+
+// exitCodeError ends a command with its own exit code rather than 1.
+type exitCodeError struct {
+	code    int
+	message string
+}
+
+func (failure exitCodeError) Error() string { return failure.message }
 
 // projectConnection redeems one folder's install line against one journal.
 type projectConnection struct {
@@ -117,14 +165,20 @@ func (connection projectConnection) redeem(ctx context.Context, ticket string) (
 		return host.Binding{}, err
 	}
 
+	return connection.keep(redemption, pending)
+}
+
+// keep saves the binding a redemption, or its recovery, made from the staged connection, which it drops.
+func (connection projectConnection) keep(redemption client.Redemption, pending host.PendingConnection) (host.Binding, error) {
 	enrollment := host.Enrollment{
 		JournalURL: originOf(redemption, pending),
 		HostID:     redemption.HostID,
 		Secret:     pending.HostCredential,
 	}
-	binding = host.Binding{
+	binding := host.Binding{
 		Enrollment:    enrollment,
 		ProjectID:     redemption.ProjectID,
+		ProjectLabel:  redemption.ProjectLabel,
 		BindingID:     redemption.BindingID,
 		MainAgentID:   redemption.MainAgentID,
 		RootID:        pending.RootID,
@@ -169,9 +223,7 @@ func (connection projectConnection) recover(
 	pending host.PendingConnection,
 	redeemFailure error,
 ) (client.Redemption, error) {
-	enrollment := host.Enrollment{JournalURL: pending.Origin, Secret: pending.HostCredential}
-	staged := client.ForRemoteProject(enrollment, connection.transport)
-	redemption, err := staged.Recover(ctx, pending.InstallationNonce)
+	redemption, err := connection.committedRedemption(ctx, pending)
 	if err == nil {
 		return redemption, nil
 	}
@@ -213,18 +265,4 @@ func readTicket(input *os.File) (string, error) {
 	}
 
 	return ticket, nil
-}
-
-// projectRoot is the canonical root of the folder this runs in: the top of its Git checkout, or the folder itself
-// outside one, with every link resolved.
-func projectRoot() (string, error) {
-	folder, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-	if printed, err := exec.Command("git", "-C", folder, "rev-parse", "--show-toplevel").Output(); err == nil {
-		folder = strings.TrimSpace(string(printed))
-	}
-
-	return filepath.EvalSymlinks(folder)
 }
