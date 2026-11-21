@@ -57,8 +57,47 @@ install() {
         { [ "$migrations_changed" = no ] || docker compose run --rm -T app php artisan migrate --force; } &&
         roll_app &&
         docker compose $profiles up -d --wait --wait-timeout 240 &&
+        restart_changed_mounts &&
         docker compose exec -T app php artisan cache:forget installed-version &&
+        check_front_door &&
         docker image prune -f >/dev/null
+}
+
+# A service reads a file mounted from the installation folder only when it starts, and compose sees no change in it,
+# so every running service with a mounted file the installed commits changed is restarted.
+restart_changed_mounts() {
+    [ -n "$installed" ] && git -C "$mirror" cat-file -e "$installed^{commit}" 2>/dev/null || return 0
+    git -C "$mirror" diff --name-only "$installed" "$newest" > /tmp/changed-files
+    services=$(docker compose $profiles config --format json | python3 -c '
+import json, os, sys
+root = os.path.realpath(sys.argv[1])
+changed = set(open("/tmp/changed-files").read().split())
+for name, service in json.load(sys.stdin)["services"].items():
+    for volume in service.get("volumes", []):
+        source = os.path.realpath(volume.get("source", ""))
+        if volume.get("type") == "bind" and source.startswith(root + "/"):
+            mounted = os.path.relpath(source, root)
+            if any(path == mounted or path.startswith(mounted + "/") for path in changed):
+                print(name)
+                break
+' "$root")
+    [ -z "$services" ] || docker compose $profiles restart $services
+}
+
+# The installed journal must answer through its front door (the updater shares its network), and a page asked for over HTTPS must link its assets over
+# HTTPS, as the server's own proxy asks for it; otherwise the install counts as failed.
+check_front_door() {
+    front=http://web:8000
+    tries=0
+    until curl -fsS -o /dev/null "$front/up"; do
+        tries=$((tries + 1))
+        [ "$tries" -lt 30 ] || { echo "the journal does not answer at $front/up"; return 1; }
+        sleep 2
+    done
+    if curl -fsS -H 'X-Forwarded-Proto: https' "$front/login" | grep -q 'http://[^"]*/build/'; then
+        echo "a page asked for over HTTPS links its assets over http"
+        return 1
+    fi
 }
 
 # A rolling update of the app: the new container starts beside the old one, and the old one stops only once the new
