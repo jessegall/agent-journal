@@ -39,18 +39,20 @@ arrangement=$(sed -n 's/^AGENTS_ARRANGEMENT=//p' .env | tail -n 1)
 profiles=""
 [ "$arrangement" = contained ] && profiles="--profile contained"
 
+# Each step must pass for the commit to count as installed: set -e does not hold inside an if, so they are chained.
 install() {
-    docker compose --progress=quiet build app share
-    if [ "$arrangement" = contained ]; then
-        platform=$(docker version --format '{{.Server.Os}}/{{.Server.Arch}}')
-        sh .docker/helper/build.sh "$platform" runner
-        runner=$(python3 -c 'import json; print(json.load(open("docs/accounts/docker-images.json"))["images"][-1]["reference"])')
+    docker compose --progress=quiet build app share &&
+        { [ "$arrangement" != contained ] || pin_runner; } &&
+        docker compose $profiles up -d --wait --wait-timeout 240 &&
+        docker compose exec -T app php artisan migrate --force &&
+        docker image prune -f >/dev/null
+}
+
+pin_runner() {
+    platform=$(docker version --format '{{.Server.Os}}/{{.Server.Arch}}') &&
+        sh .docker/helper/build.sh "$platform" runner &&
+        runner=$(python3 -c 'import json; print(json.load(open("docs/accounts/docker-images.json"))["images"][-1]["reference"])') &&
         sed -i "s|^RUNNER_IMAGE=.*|RUNNER_IMAGE=$runner|" .env
-    fi
-    # shellcheck disable=SC2086
-    docker compose $profiles up -d --wait --wait-timeout 240
-    docker compose exec -T app php artisan migrate --force
-    docker image prune -f >/dev/null
 }
 
 if install; then
