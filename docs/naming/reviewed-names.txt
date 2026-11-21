@@ -994,6 +994,11 @@ case	SignInReceiptStatus::Pending
 case	SignInReceiptStatus::Refused
 case	SignInReceiptStatus::Started
 case	SignInReceiptStatus::Unknown
+case	SignInRefusal::NoCredit
+case	SignInRefusal::RateLimited
+case	SignInRefusal::RejectedCredential
+case	SignInRefusal::Unknown
+case	SignInRefusal::Unreachable
 case	SignInState::AlreadyAdded
 case	SignInState::Cancelled
 case	SignInState::Checking
@@ -5240,6 +5245,7 @@ class	SignInAttemptStale
 class	SignInAttemptStarted
 class	SignInChallenge
 class	SignInChallengeController
+class	SignInChallengeRefused
 class	SignInChallengeRequest
 class	SignInChallenges
 class	SignInCode
@@ -7157,6 +7163,7 @@ enum	ShellDialect
 enum	SignInMethod
 enum	SignInOutcome
 enum	SignInReceiptStatus
+enum	SignInRefusal
 enum	SignInState
 enum	SignInType
 enum	SimpleAnswer
@@ -13265,6 +13272,7 @@ method	HookDriver::displayName()
 method	HookDriver::driverKey()
 method	HookDriver::hookCommand()
 method	HookDriver::hostName()
+method	HookDriver::isSignInAddress()
 method	HookDriver::journalToolRules()
 method	HookDriver::keepsOutputsBesideTranscript()
 method	HookDriver::modelArguments()
@@ -20254,6 +20262,9 @@ method	SignInAttemptStarted::driver()
 method	SignInAttemptStarted::subjectId()
 method	SignInChallenge::__construct()
 method	SignInChallengeController::__invoke()
+method	SignInChallengeRefused::refusalCode()
+method	SignInChallengeRefused::status()
+method	SignInChallengeRefused::untrustedAddress()
 method	SignInChallengeRequest::address()
 method	SignInChallengeRequest::attemptId()
 method	SignInChallengeRequest::code()
@@ -20335,6 +20346,9 @@ method	SignInReceipts::of()
 method	SignInReceipts::started()
 method	SignInReconcileRequest::rules()
 method	SignInReconcileRequest::runningAttemptIds()
+method	SignInRefusal::fromProvider()
+method	SignInRefusal::pattern()
+method	SignInRefusal::text()
 method	SignInReportRequest::attemptId()
 method	SignInReportRequest::generation()
 method	SignInReportRequest::identity()
@@ -36340,6 +36354,7 @@ variable	$traverser
 variable	$tree
 variable	$trigger
 variable	$trimmed
+variable	$trusted
 variable	$tunnel
 variable	$tunnels
 variable	$turn

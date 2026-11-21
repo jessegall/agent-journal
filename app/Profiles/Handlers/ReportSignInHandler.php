@@ -8,6 +8,7 @@ use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ReportSignIn;
 use App\Profiles\Enums\SignInOutcome;
+use App\Profiles\Enums\SignInRefusal;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Exceptions\SignInAnswerUndelivered;
 use App\Profiles\Models\SignInAttempt;
@@ -39,7 +40,11 @@ final readonly class ReportSignInHandler implements CommandHandler
                 $command->generation,
                 $command->identity,
             ),
-            SignInOutcome::Failed => $this->end($attempt, SignInState::Failed, $command->refusal),
+            SignInOutcome::Failed => $this->end(
+                $attempt,
+                SignInState::Failed,
+                SignInRefusal::fromProvider($command->refusal)->text(),
+            ),
             SignInOutcome::Interrupted => $this->interrupt($attempt, $command->generation, $command->refusal),
         };
     }

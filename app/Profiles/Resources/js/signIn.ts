@@ -80,8 +80,11 @@ const endedMessages: Record<string, string> = {
  * when it refused the proof; nothing for one that did.
  */
 export function endedMessage(attempt: SignInAttemptData): string | null {
-    if (attempt.state === 'failed' && attempt.refusal !== null) {
-        return `The sign-in was refused: ${attempt.refusal}`;
+    if (
+        (attempt.state === 'failed' || attempt.state === 'interrupted') &&
+        attempt.refusal !== null
+    ) {
+        return attempt.refusal;
     }
 
     return endedMessages[attempt.state] ?? null;

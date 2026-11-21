@@ -14,6 +14,7 @@ use App\Http\Data\Profiles\SignInAttemptData;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInOutcome;
+use App\Profiles\Enums\SignInRefusal;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Exceptions\SignInMethodMissing;
 use App\Profiles\Jobs\SignInDeadline;
@@ -154,7 +155,10 @@ final class SignInHostTest extends TestCase
 
         $attempt = $this->attempt($attemptId);
         $this->assertSame(SignInState::Failed, $attempt->state);
-        $this->assertSame('Invalid API key · Fix external API key', SignInAttemptData::fromAttempt($attempt->load('resultAccount'))->refusal);
+        $this->assertSame(
+            SignInRefusal::RejectedCredential->text(),
+            SignInAttemptData::fromAttempt($attempt->load('resultAccount'))->refusal,
+        );
     }
 
     public function test_another_host_and_an_unsigned_call_reach_no_attempt(): void
@@ -267,6 +271,54 @@ final class SignInHostTest extends TestCase
 
         $this->assertSame([SignInOutcome::Waiting, SignInOutcome::Interrupted], $host->outcomes);
         $this->assertStringContainsString('start a fresh sign-in', (string) end($host->refusals));
+    }
+
+    public function test_a_provider_message_outside_the_reasons_shows_the_generic_failure(): void
+    {
+        $host = $this->enrollHost();
+        $attemptId = $this->begin();
+        $this->signed($host, '/host/sign-ins/claim')->assertOk();
+
+        $this->report($host, $attemptId, 'failed', ['refusal' => 'stack trace at /home/user/.claude/secret line 3'])
+            ->assertNoContent();
+
+        $this->assertSame(SignInRefusal::Unknown->text(), $this->attempt($attemptId)->refusal);
+    }
+
+    public function test_a_challenge_outside_the_providers_pages_publishes_no_link_and_a_stranger_reads_nothing(): void
+    {
+        $owner = $this->owner();
+        $host = $this->enrollHost();
+        $attemptId = $this->begin();
+        $this->signed($host, '/host/sign-ins/claim');
+
+        foreach (['https://claude.ai.evil.test/oauth', 'http://claude.ai/oauth', 'https://evil.test/claude.ai'] as $address) {
+            $this->signed($host, "/host/sign-ins/{$attemptId}/challenge", ['address' => $address, 'code' => null])
+                ->assertStatus(422)
+                ->assertDontSee($address, false);
+        }
+
+        $this->assertNull($this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/challenge")->json('address'));
+        $challenge = ['address' => 'https://claude.ai/oauth/authorize?state', 'code' => null];
+        $this->signed($host, "/host/sign-ins/{$attemptId}/challenge", $challenge)->assertNoContent();
+        $stranger = $this->actingAs(User::factory()->create())->post("/accounts/sign-ins/{$attemptId}/challenge");
+        $this->assertFalse($stranger->isOk());
+        $this->assertStringNotContainsString('claude.ai', (string) $stranger->getContent());
+    }
+
+    public function test_a_failed_answer_flashes_no_code_into_the_session(): void
+    {
+        $owner = $this->owner();
+        $host = $this->enrollHost();
+        $attemptId = $this->begin();
+        $this->signed($host, '/host/sign-ins/claim');
+        $this->report($host, $attemptId, 'waiting')->assertNoContent();
+
+        $this->actingAs($owner)->withHeader('Idempotency-Key', 'answer-1')
+            ->from('/accounts')
+            ->post("/accounts/sign-ins/{$attemptId}/code", ['code' => 'secret code with spaces'])
+            ->assertStatus(303)
+            ->assertSessionMissing('_old_input.code');
     }
 
     public function test_a_success_after_the_deadline_ends_expired_and_a_later_failure_changes_nothing(): void

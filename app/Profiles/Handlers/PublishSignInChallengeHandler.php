@@ -6,8 +6,10 @@ namespace App\Profiles\Handlers;
 
 use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Commands\PublishSignInChallenge;
 use App\Profiles\Events\AccountsChanged;
+use App\Profiles\Exceptions\SignInChallengeRefused;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\SignInChallenges;
 use App\Profiles\Values\SignInChallenge;
@@ -25,6 +27,10 @@ final readonly class PublishSignInChallengeHandler implements CommandHandler
 
         if (! $attempt->isLive()) {
             return;
+        }
+
+        if (! HookDriver::from($attempt->driver)->isSignInAddress($command->address)) {
+            throw SignInChallengeRefused::untrustedAddress($attempt->id);
         }
 
         $challenge = new SignInChallenge($command->address, $command->code);

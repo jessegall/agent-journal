@@ -275,11 +275,13 @@ describe('AddAccountWizard', () => {
         await button(view, 'Continue').trigger('click');
         await view.setProps({ attempts: [attempt('waiting')] });
         await view.setProps({
-            attempts: [attempt('failed', { refusal: 'invalid x-api-key' })],
+            attempts: [attempt('failed', {
+                    refusal: 'The provider did not accept the key or login. Check it and try again.',
+                })],
         });
 
         expect(view.text()).toContain(
-            'The sign-in was refused: invalid x-api-key',
+            'The provider did not accept the key or login. Check it and try again.',
         );
         expect(view.find('[data-mark="grey"]').exists()).toBe(true);
 
