@@ -6,7 +6,7 @@ namespace App\Ui\Enums;
 
 /**
  * The parts a declared layout may hold, as they cross the page wire, with what each accepts: its sizes and
- * styles, default first, and whether it holds children. The first catalogue is box, text, collection and notice.
+ * styles, default first, and whether it holds children: box, text, collection, notice, action and field.
  */
 enum LayoutTag: string
 {
@@ -14,6 +14,8 @@ enum LayoutTag: string
     case Text = 'text';
     case Collection = 'collection';
     case Notice = 'notice';
+    case Action = 'action';
+    case Field = 'field';
 
     /**
      * The sizes the part takes, the default first; none for a part that takes no size.
@@ -24,7 +26,8 @@ enum LayoutTag: string
     {
         return match ($this) {
             self::Box, self::Collection => ['normal', 'compact'],
-            self::Text => ['normal', 'small', 'large'],
+            self::Text, self::Action => ['normal', 'small', 'large'],
+            self::Field => ['normal'],
             self::Notice => [],
         };
     }
@@ -41,6 +44,8 @@ enum LayoutTag: string
             self::Text => ['plain', 'heading', 'muted', 'badge', 'code', 'keyHint'],
             self::Collection => ['list', 'facts'],
             self::Notice => ['info', 'success', 'warning', 'error', 'empty', 'refusal'],
+            self::Action => ['bordered', 'ghost', 'primary', 'danger'],
+            self::Field => ['search', 'text'],
         };
     }
 

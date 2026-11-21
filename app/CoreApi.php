@@ -1302,6 +1302,8 @@ use App\Ui\Enums\PageSkeleton;
 use App\Ui\Enums\SlotContextType;
 use App\Ui\Exceptions\LayoutRefused;
 use App\Ui\Layout\DeclaredLayoutData;
+use App\Ui\Layout\LayoutActionData;
+use App\Ui\Layout\LayoutFieldData;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
 use App\Web\Commands\RecordUserHeartbeat;
@@ -2026,6 +2028,8 @@ final class CoreApi
                 CurrentUser::class,
                 ActionRoute::class,
                 DeclaredLayoutData::class,
+                LayoutActionData::class,
+                LayoutFieldData::class,
                 LayoutPartData::class,
                 LayoutRowData::class,
                 LayoutTag::class,

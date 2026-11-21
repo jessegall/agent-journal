@@ -8,6 +8,7 @@ use App\Ui\Enums\LayoutTag;
 use App\Ui\Exceptions\LayoutRefused;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
@@ -18,6 +19,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LayoutPartData extends Data
 {
+    /**
+     * The tones a badge takes.
+     */
+    private const array TONES = ['quiet', 'good', 'warn', 'danger', 'busy'];
+
     /**
      * @param  list<LayoutRowData>  $rows
      * @param  list<LayoutPartData>  $children
@@ -33,6 +39,9 @@ final class LayoutPartData extends Data
         public readonly array $rows,
         #[DataCollectionOf(LayoutPartData::class)]
         public readonly array $children,
+        public readonly LayoutActionData|Optional $action = new Optional(),
+        public readonly LayoutFieldData|Optional $field = new Optional(),
+        public readonly string|Optional $tone = new Optional(),
     ) {}
 
     public static function box(string $key, string $style, LayoutPartData ...$children): self
@@ -56,6 +65,39 @@ final class LayoutPartData extends Data
     public static function notice(string $key, string $style, string $title, string|null $detail = null): self
     {
         return new self(LayoutTag::Notice, $key, null, $style, $title, $detail, [], []);
+    }
+
+    /**
+     * A short state word in a tone: quiet, good, warn, danger or busy.
+     */
+    public static function badge(string $key, string $word, string $tone = 'quiet'): self
+    {
+        return new self(LayoutTag::Text, $key, 'small', 'badge', $word, null, [], [], tone: $tone);
+    }
+
+    /**
+     * A labelled action that leads where its binding says, or names why it cannot run.
+     */
+    public static function action(
+        string $key,
+        string $label,
+        LayoutActionData $action,
+        string $style = 'bordered',
+    ): self {
+        return new self(LayoutTag::Action, $key, 'normal', $style, $label, null, [], [], action: $action);
+    }
+
+    /**
+     * A labelled field that filters its own window by one query key.
+     */
+    public static function field(
+        string $key,
+        string $label,
+        LayoutFieldData $field,
+        string $style = 'search',
+        string|null $hint = null,
+    ): self {
+        return new self(LayoutTag::Field, $key, 'normal', $style, $label, $hint, [], [], field: $field);
     }
 
     /**
@@ -107,8 +149,32 @@ final class LayoutPartData extends Data
             throw LayoutRefused::childrenNotAllowed($path, $this->tag);
         }
 
+        $this->assertBindings($path);
+
         if (count($this->rows) > LayoutLimits::ROW_LIMIT) {
             throw LayoutRefused::tooManyRows($path, count($this->rows), LayoutLimits::ROW_LIMIT);
+        }
+    }
+
+    /**
+     * Only a badge takes a tone, and only a known one; only an action takes an action binding and only a field a
+     * field binding, and each of them needs its own.
+     */
+    private function assertBindings(string $path): void
+    {
+        $isBadge = $this->style === 'badge';
+
+        $hasTone = ! $this->tone instanceof Optional;
+
+        if ($isBadge !== $hasTone || $hasTone && ! in_array($this->tone, self::TONES, true)) {
+            throw LayoutRefused::toneNotAllowed($path, $hasTone ? $this->tone : 'none');
+        }
+
+        $isAction = $this->tag === LayoutTag::Action;
+        $isField = $this->tag === LayoutTag::Field;
+
+        if ($isAction === $this->action instanceof Optional || $isField === $this->field instanceof Optional) {
+            throw LayoutRefused::bindingMismatch($path, $this->tag);
         }
     }
 }

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { Component } from 'vue';
+import LayoutAction from '@/components/layout/LayoutAction.vue';
 import LayoutBox from '@/components/layout/LayoutBox.vue';
 import LayoutCollection from '@/components/layout/LayoutCollection.vue';
+import LayoutField from '@/components/layout/LayoutField.vue';
 import LayoutNotice from '@/components/layout/LayoutNotice.vue';
 import LayoutText from '@/components/layout/LayoutText.vue';
 import type { LayoutPartData, LayoutTag } from '@/generated/types/core';
@@ -15,6 +17,8 @@ const partComponents: Record<LayoutTag, Component> = {
     text: LayoutText,
     collection: LayoutCollection,
     notice: LayoutNotice,
+    action: LayoutAction,
+    field: LayoutField,
 };
 </script>
 

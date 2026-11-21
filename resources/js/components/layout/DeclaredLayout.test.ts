@@ -63,4 +63,63 @@ describe('a declared layout', () => {
         expect(view.find('dd').text()).toBe('2');
         expect(view.find('[role="alert"]').text()).toContain('Not read');
     });
+
+    it('names why an action cannot run, links an action to its own window query, and tones a badge', () => {
+        const view = mount(DeclaredLayout, {
+            props: {
+                data: {
+                    root: part({
+                        tag: 'box',
+                        key: 'root',
+                        style: 'stack',
+                        children: [
+                            part({
+                                tag: 'action',
+                                key: 'approve',
+                                style: 'primary',
+                                size: 'normal',
+                                text: 'Approve',
+                                action: {
+                                    query: {},
+                                    reason: 'Only the owner approves',
+                                },
+                            }),
+                            part({
+                                tag: 'action',
+                                key: 'next',
+                                style: 'bordered',
+                                size: 'normal',
+                                text: 'Next page',
+                                action: { query: { cursor: 'abc' } },
+                            }),
+                            part({
+                                tag: 'text',
+                                key: 'state',
+                                style: 'badge',
+                                text: 'Open',
+                                tone: 'good',
+                            }),
+                        ],
+                    }),
+                },
+            },
+            global: {
+                stubs: {
+                    Link: {
+                        props: ['href'],
+                        template: '<a :href="href"><slot /></a>',
+                    },
+                },
+            },
+        });
+
+        const disabled = view.find('button[disabled]');
+        const reasonId = disabled.attributes('aria-describedby');
+        expect(disabled.text()).toBe('Approve');
+        expect(view.find(`#${reasonId}`).text()).toBe(
+            'Only the owner approves',
+        );
+        expect(view.find('a').attributes('href')).toContain('cursor=abc');
+        expect(view.text()).toContain('Open');
+    });
 });

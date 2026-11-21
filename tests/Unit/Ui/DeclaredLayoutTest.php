@@ -13,6 +13,8 @@ use App\Ui\Exceptions\InvalidPageDeclaration;
 use App\Ui\Exceptions\InvalidSectionDeclaration;
 use App\Ui\Exceptions\LayoutRefused;
 use App\Ui\Layout\DeclaredLayoutData;
+use App\Ui\Layout\LayoutActionData;
+use App\Ui\Layout\LayoutFieldData;
 use App\Ui\Layout\LayoutLimits;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
@@ -80,6 +82,38 @@ final class DeclaredLayoutTest extends TestCase
         $this->expectExceptionMessage('has the style shout');
 
         DeclaredLayoutData::of(LayoutPartData::box('root', 'stack', LayoutPartData::text('title', 'Hi', 'shout')));
+    }
+
+    public function test_actions_fields_and_badges_carry_their_own_bindings(): void
+    {
+        $layout = DeclaredLayoutData::of(LayoutPartData::box(
+            'root',
+            'stack',
+            LayoutPartData::action('open', 'Open', LayoutActionData::to('/plans/1')),
+            LayoutPartData::action('next', 'Next page', LayoutActionData::changing(['cursor' => 'abc'])),
+            LayoutPartData::action('approve', 'Approve', LayoutActionData::unavailable('Only the owner approves'), 'primary'),
+            LayoutPartData::field('filter', 'Filter', new LayoutFieldData('q', 'oak')),
+            LayoutPartData::badge('state', 'Open', 'good'),
+        ));
+
+        [$open, $next, $approve, $filter, $state] = $layout->root->children;
+        $this->assertInstanceOf(LayoutActionData::class, $open->action);
+        $this->assertInstanceOf(LayoutActionData::class, $next->action);
+        $this->assertInstanceOf(LayoutActionData::class, $approve->action);
+        $this->assertInstanceOf(LayoutFieldData::class, $filter->field);
+        $this->assertSame('/plans/1', $open->action->href);
+        $this->assertSame(['cursor' => 'abc'], $next->action->query);
+        $this->assertSame('Only the owner approves', $approve->action->reason);
+        $this->assertSame(['q', 'oak'], [$filter->field->name, $filter->field->value]);
+        $this->assertSame('good', $state->tone);
+    }
+
+    public function test_a_tone_outside_the_badges_tones_is_refused(): void
+    {
+        $this->expectException(LayoutRefused::class);
+        $this->expectExceptionMessage('has the tone loud');
+
+        DeclaredLayoutData::of(LayoutPartData::badge('state', 'Open', 'loud'));
     }
 
     public function test_a_divider_holding_children_is_refused(): void

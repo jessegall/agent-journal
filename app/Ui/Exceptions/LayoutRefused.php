@@ -28,6 +28,18 @@ final class LayoutRefused extends RuntimeException
         return new self("Layout part {$path} ({$tag->value}) holds children, which it does not take.");
     }
 
+    public static function toneNotAllowed(string $path, string $tone): self
+    {
+        return new self("Layout part {$path} has the tone {$tone}; only a badge takes a tone, and only a known one.");
+    }
+
+    public static function bindingMismatch(string $path, LayoutTag $tag): self
+    {
+        return new self(
+            "Layout part {$path} ({$tag->value}) takes an action binding only as an action, a field binding only as a field.",
+        );
+    }
+
     public static function siblingKeyRepeated(string $path, string $key): self
     {
         return new self("Layout part {$path} holds two children keyed {$key}; sibling keys must differ.");
