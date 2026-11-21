@@ -34,6 +34,7 @@ final readonly class AgentOption
         public DriverSwitchStage|null $switchStage,
         public array $actions,
         public array $conversations,
+        public string|null $startRefusal,
     ) {}
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Handlers;
 
 use App\Agents\Commands\ClaimStart;
+use App\Agents\Contracts\UnstartableProgram;
 use App\Agents\Enums\ProcessStartState;
 use App\Agents\Events\AccountSettingsRequested;
 use App\Agents\Exceptions\StartClaimRefused;
@@ -19,8 +20,9 @@ use App\Contracts\CommandHandler;
 
 /**
  * Hands the host a pending start of a runtime assigned to it, with the recipe the program's adapter checked; another
- * host's start is refused, and when the adapter refuses the program's build or arrangement, or names no sign-in
- * method for the account, the claim rolls back and the start stays pending.
+ * host's start is refused. When the program's build or arrangement cannot start here, the start ends stopped with that
+ * reason and the host gets none; when the adapter names no sign-in method for the account, the claim rolls back and
+ * the start stays pending.
  */
 final readonly class ClaimStartHandler implements CommandHandler
 {
@@ -47,7 +49,15 @@ final readonly class ClaimStartHandler implements CommandHandler
         $driver = AgentSession::query()->findOrFail($start->session_id)->selection()->driver->value;
         $settings = new AccountStartSettings();
         $requested = new AccountSettingsRequested($driver, $start->accountIdentity(), $start->directory, $settings);
-        $this->extensions->accountSettings($requested);
+
+        try {
+            $this->extensions->accountSettings($requested);
+        } catch (UnstartableProgram $refusal) {
+            // The program's build cannot start here at all, so the start ends with the reason instead of waiting.
+            $start->refuse($refusal->getMessage());
+
+            return null;
+        }
 
         return new ClaimedStart(
             $start->start_key,

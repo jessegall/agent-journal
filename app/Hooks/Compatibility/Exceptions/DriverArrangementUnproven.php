@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Compatibility\Exceptions;
 
+use App\Agents\Contracts\UnstartableProgram;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
@@ -15,7 +16,7 @@ use RuntimeException;
 /**
  * A pinned program's way of sharing an account's sign-in is not shown on the real program, so no start uses it.
  */
-final class DriverArrangementUnproven extends RuntimeException implements CodedRefusal, CommandRefusal
+final class DriverArrangementUnproven extends RuntimeException implements CodedRefusal, CommandRefusal, UnstartableProgram
 {
     use RendersRefusal;
 

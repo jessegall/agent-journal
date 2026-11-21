@@ -6,7 +6,7 @@ namespace App\Agents\Enums;
 
 /**
  * What Home says an agent is doing: working in a live session, idle, in the middle of a switch, failed to launch
- * its replacement, or retired.
+ * its replacement or to have its start claimed, or retired.
  */
 enum AgentPresence: string
 {
@@ -16,11 +16,11 @@ enum AgentPresence: string
     case Failed = 'failed';
     case Retired = 'retired';
 
-    public static function of(bool $retired, bool $live, DriverSwitchStage|null $switchStage): self
+    public static function of(bool $retired, bool $live, DriverSwitchStage|null $switchStage, bool $startRefused): self
     {
         return match (true) {
             $retired => self::Retired,
-            $switchStage === DriverSwitchStage::LaunchFailed => self::Failed,
+            $switchStage === DriverSwitchStage::LaunchFailed, $startRefused => self::Failed,
             $switchStage !== null && ! $switchStage->isFinal() => self::PendingSwitch,
             $live => self::Working,
             default => self::Idle,

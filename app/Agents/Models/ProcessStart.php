@@ -7,9 +7,12 @@ namespace App\Agents\Models;
 use App\Agents\Enums\AccountProcessRole;
 use App\Agents\Enums\ProcessStartState;
 use App\Agents\Enums\TransportProfileType;
+use App\Agents\Events\StartRefused;
 use App\Agents\Exceptions\ProcessStartUnknown;
 use App\Agents\Models\Support\ProcessStartScope;
 use App\Agents\Values\SelectedAccount;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -46,15 +49,17 @@ use Illuminate\Support\Str;
  * @property string|null $execution_id
  * @property int $output_generation
  * @property CarbonImmutable|null $ended_at
+ * @property string|null $refusal
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['execution_id'])]
-final class ProcessStart extends Model implements ReadableModel
+final class ProcessStart extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * @var list<string>
@@ -142,6 +147,23 @@ final class ProcessStart extends Model implements ReadableModel
     public static function latestOfSession(string $sessionId): self|null
     {
         return self::supervised()->where('session_id', $sessionId)->orderByDesc('created_at')->first();
+    }
+
+    /**
+     * Why the claim of each of these sessions' starts was refused, by session; a session none was refused for is
+     * not in it. Home reads the sessions it shows at once.
+     *
+     * @param  list<string>  $sessionIds
+     * @return array<string, string>
+     */
+    public static function refusalsOf(array $sessionIds): array
+    {
+        $refused = self::supervised()->whereIn('session_id', $sessionIds)->whereNotNull('refusal')
+            ->orderByDesc('created_at')->limit(count($sessionIds))->get();
+
+        return $refused->unique('session_id')->mapWithKeys(
+            fn (self $start) => [$start->session_id => (string) $start->refusal],
+        )->all();
     }
 
     /**
@@ -291,8 +313,20 @@ final class ProcessStart extends Model implements ReadableModel
     }
 
     /**
-     * A pending start that will never run ends cancelled now.
+     * The host's claim was refused for good: the start ends stopped with the refusal's reason, so the agent shows it
+     * instead of Working, and no process is made for it.
      */
+    public function refuse(string $refusal): void
+    {
+        $this->state = ProcessStartState::Stopped;
+        $this->ended_at = CarbonImmutable::now();
+        $this->refusal = $refusal;
+        $this->assertSaved($this->save());
+        $this->raise(new StartRefused($this->agent_id, $this->session_id, $refusal, $this->ended_at));
+    }
+
+    /**
+     * A pending start that will never run ends cancelled now.
     public function cancelPending(): void
     {
         $this->state = ProcessStartState::Cancelled;

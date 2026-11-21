@@ -16,6 +16,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverConversation;
 use App\Agents\Models\DriverSwitch;
 use App\Agents\Models\MainAgentDesignation;
+use App\Agents\Models\ProcessStart;
 use App\Agents\Support\AgentInspection;
 use App\Agents\Support\AgentOption;
 use App\Agents\Support\ResumableConversation;
@@ -24,8 +25,8 @@ use Illuminate\Support\Collection;
 use PhpOption\Option;
 
 /**
- * Reads the agents for Home in a fixed number of queries: the agents, their running sessions and runtimes, their latest switches
- * and their latest conversations, each for every shown agent at once.
+ * Reads the agents for Home in a fixed number of queries: the agents, their running sessions and runtimes, the
+ * refusals of their starts, their latest switches and their latest conversations, each for every shown agent at once.
  */
 final readonly class AgentRecords implements AgentDirectory
 {
@@ -60,6 +61,8 @@ final readonly class AgentRecords implements AgentDirectory
         $switches = DriverSwitch::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
             ->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_id')->keyBy('agent_id');
 
+        $refusals = ProcessStart::refusalsOf(array_values(array_map(strval(...), $sessions->pluck('id')->all())));
+
         $conversations = DriverConversation::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
             ->readLimit(self::AGENTS_SHOWN * self::CONVERSATIONS_SHOWN)->get()->groupBy('agent_id');
 
@@ -69,6 +72,7 @@ final readonly class AgentRecords implements AgentDirectory
             $runtimes->get((string) $sessions->get($agent->id)?->id),
             $switches->get($agent->id),
             $conversations->get($agent->id, new Collection()),
+            $refusals[(string) $sessions->get($agent->id)?->id] ?? null,
         ))->all());
     }
 
@@ -97,6 +101,7 @@ final readonly class AgentRecords implements AgentDirectory
         AgentRuntime|null $runtime,
         DriverSwitch|null $switch,
         Collection $conversations,
+        string|null $startRefusal,
     ): AgentOption {
         $resumable = array_values($conversations->take(self::CONVERSATIONS_SHOWN)->map(
             fn (DriverConversation $conversation) => new ResumableConversation(
@@ -112,7 +117,7 @@ final readonly class AgentRecords implements AgentDirectory
             $agent->profile_key,
             $agent->assigneeIdentity(),
             $agent->isRetired(),
-            AgentPresence::of($agent->isRetired(), $session !== null, $switch?->stage),
+            AgentPresence::of($agent->isRetired(), $session !== null, $switch?->stage, $startRefusal !== null),
             $session?->id,
             $runtime === null ? 0 : $runtime->process_generation,
             $runtime?->variant === DriverVariant::Terminal,
@@ -126,6 +131,7 @@ final readonly class AgentRecords implements AgentDirectory
                 $switch?->stage,
             ),
             $resumable,
+            $startRefusal,
         );
     }
 }
