@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Programs;
 
+use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Drivers\DriverCapabilities;
 use App\Hooks\Enums\RewriteSupport;
@@ -51,7 +52,7 @@ final class ProgramCapabilitiesTest extends TestCase
             Decision::rewrite('journal run tests'),
             [],
             [],
-            new AgentStack([], new InMemoryStateFactory()),
+            new AgentStack([], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1')),
         );
         $original = new DriverToolInput(['command' => 'composer test']);
 

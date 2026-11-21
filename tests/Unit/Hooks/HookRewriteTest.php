@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\AnswerType;
@@ -160,7 +161,7 @@ final class HookRewriteTest extends TestCase
             $this->frame('ready', $ready, bottom: true),
             ...array_map(fn (MarkedShellState $guard) => $this->frame('guard', $guard), $guards),
             $this->frame('rewriter', $rewriter),
-        ], $factory);
+        ], $factory, new StackTarget('agent-1', 'session-1'));
     }
 
     private function refusingStack(RewritingState $rewriter): AgentStack

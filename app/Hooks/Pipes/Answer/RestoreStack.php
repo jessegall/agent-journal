@@ -22,6 +22,6 @@ final readonly class RestoreStack implements Pipe
     {
         $this->lifecycle->assertNotInCallbacks($prepared->call->target);
 
-        return $prepared->restored($this->restorer->restore($prepared->row->frames));
+        return $prepared->restored($this->restorer->restore($prepared->row->frames, $prepared->row->target()));
     }
 }

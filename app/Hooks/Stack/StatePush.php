@@ -22,18 +22,23 @@ final readonly class StatePush
         private StateTypes $types,
     ) {}
 
-    public function push(StackTarget $target, AgentStackRow $row, StateReference $reference): void
+    /**
+     * Pushes the state and answers the stack as it was saved, for a caller that checks what the push left.
+     */
+    public function push(StackTarget $target, AgentStackRow $row, StateReference $reference): AgentStack
     {
         $this->lifecycle->assertNotInCallbacks($target);
-        $before = $this->restorer->restore($row->frames);
+        $before = $this->restorer->restore($row->frames, $row->target());
         $after = $before->withoutExposedInactive()->withStateOnTop($reference);
         $this->save($target, $row, $before, $after);
+
+        return $after;
     }
 
     public function prune(StackTarget $target, AgentStackRow $row): void
     {
         $this->lifecycle->assertNotInCallbacks($target);
-        $before = $this->restorer->restore($row->frames);
+        $before = $this->restorer->restore($row->frames, $row->target());
         $this->save($target, $row, $before, $before->withoutExposedInactive());
     }
 

@@ -27,6 +27,7 @@ use App\Hooks\Contracts\DriverCompatibilities;
 use App\Hooks\Contracts\IncomingWorkRegistration;
 use App\Hooks\Contracts\StackInspectionQuery as StackInspectionQueryContract;
 use App\Hooks\Contracts\StackPermission;
+use App\Hooks\Contracts\StackStates;
 use App\Hooks\Contracts\StackTransaction as StackTransactionContract;
 use App\Hooks\Contracts\StackTransactionRunner;
 use App\Hooks\Contracts\StateFactory;
@@ -51,6 +52,7 @@ use App\Hooks\Stack\ActiveStackPermission;
 use App\Hooks\Stack\AdvisoryStackAdmission;
 use App\Hooks\Stack\RegisteredStateFactory;
 use App\Hooks\Stack\StateTypes;
+use App\Hooks\Stack\TargetStates;
 use App\Hooks\StateEvents\StateBridgeFactStaging;
 use App\Hooks\StateEvents\StateEventDispatcher;
 use App\Hooks\StateEvents\StateEventScope;
@@ -122,6 +124,7 @@ final class HooksServiceProvider extends ServiceProvider
             $this->app->make('config')->integer('hooks.closed_stack_days'),
         ));
         $this->app->scoped(StateFactory::class, RegisteredStateFactory::class);
+        $this->app->bind(StackStates::class, TargetStates::class);
         $this->app->singleton(
             OperationDeadline::class,
             fn () => new OperationDeadline(

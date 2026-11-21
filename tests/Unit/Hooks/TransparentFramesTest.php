@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Agents\Values\StackTarget;
 use App\Communication\States\AnsweringMessageState;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\StateReference;
@@ -25,6 +26,7 @@ use App\Processes\Values\ShellCommand;
 use Carbon\CarbonImmutable;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\States\WorkingOnPlanState;
+use Domain\Plans\Support\PlanWork;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\States\WorkingOnTaskState;
 use Domain\Tasks\Support\TaskWork;
@@ -146,7 +148,7 @@ final class TransparentFramesTest extends TestCase
     {
         $pushed = fn (): AgentState => new WorkingOnTaskState(new TaskWork(42, 1, TaskState::Started));
 
-        return new AgentStack(array_values($frames), new InMemoryStateFactory(['tasks.working' => $pushed]));
+        return new AgentStack(array_values($frames), new InMemoryStateFactory(['tasks.working' => $pushed]), new StackTarget('agent-1', 'session-1'));
     }
 
     private function ready(): Frame
@@ -162,7 +164,7 @@ final class TransparentFramesTest extends TestCase
 
     private function plan(bool $cancelled = false): Frame
     {
-        $state = new WorkingOnPlanState($cancelled ? PlanState::Cancelled : PlanState::Started);
+        $state = new WorkingOnPlanState(new PlanWork('plan-1', 1, $cancelled ? PlanState::Cancelled : PlanState::Started));
 
         return $this->frame('plan', 'plans.working', '12', $state);
     }

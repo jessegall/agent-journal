@@ -16,6 +16,8 @@ use Domain\Tasks\Enums\TaskRunState;
 use Domain\Tasks\Exceptions\TaskRunFinished;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
@@ -96,6 +98,30 @@ final class TaskRun extends Model implements Assignable, ReadableModel
         return self::query()->whereKey($runId)->lockForUpdate()->firstOr(
             fn () => throw RecordUnavailable::for(new RecordIdentity(self::LINK_TYPE, $runId)),
         );
+    }
+
+    /**
+     * The started runs among exact task and run number pairs, in one bounded query; a pair never started is left out.
+     *
+     * @param  list<array{0: string, 1: int}>  $pairs
+     * @return Collection<int, self>
+     */
+    public static function ofPairs(array $pairs): Collection
+    {
+        if ($pairs === []) {
+            return new Collection();
+        }
+
+        return self::query()
+            ->where(function (Builder $query) use ($pairs): void {
+                foreach ($pairs as [$taskId, $runNumber]) {
+                    $query->orWhere(
+                        fn (Builder $pair) => $pair->where('task_id', $taskId)->where('run_number', $runNumber),
+                    );
+                }
+            })
+            ->limit(count($pairs))
+            ->get();
     }
 
     /**

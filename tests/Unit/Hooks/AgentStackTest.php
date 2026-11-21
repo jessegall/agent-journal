@@ -6,6 +6,7 @@ namespace Tests\Unit\Hooks;
 
 use App\Agents\Enums\AccessRuleType;
 use App\Agents\Values\AccessDecision;
+use App\Agents\Values\StackTarget;
 use App\Communication\States\AnsweringMessageState;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Contracts\OperationPolicy;
@@ -97,7 +98,7 @@ final class AgentStackTest extends TestCase
                 new WorkingOnTaskState(new TaskWork(42, 1, TaskState::Started)),
                 CarbonImmutable::now(),
             ),
-        ], $factory);
+        ], $factory, new StackTarget('agent-1', 'session-1'));
 
         $stack = $stack->withStateOnTop($this->reference('sequences.following', '8'));
         $answer = $stack->answer($this->stop());
@@ -315,7 +316,7 @@ final class AgentStackTest extends TestCase
             $this->ready(),
             $this->frame('invalid', new MarkedStopState(Decision::rewrite('ls'))),
             $this->frame('top', new ScriptedState(Decision::allow()->withPush($this->reference('guide')))),
-        ], $factory);
+        ], $factory, new StackTarget('agent-1', 'session-1'));
 
         try {
             $stack->answer($this->stop());
@@ -332,7 +333,7 @@ final class AgentStackTest extends TestCase
             $this->ready(),
             $this->frame('lower', new MarkedStopState(Decision::pop())),
             $this->frame('top', new ScriptedState(Decision::push($this->reference('guide')))),
-        ], new InMemoryStateFactory(['guide' => fn () => $guide]));
+        ], new InMemoryStateFactory(['guide' => fn () => $guide]), new StackTarget('agent-1', 'session-1'));
 
         $answer = $stack->answer($this->stop());
 
@@ -363,7 +364,7 @@ final class AgentStackTest extends TestCase
         $child = new ScriptedState(Decision::deny('The guide answers now.'));
         $factory = new InMemoryStateFactory(['guide' => fn () => $child]);
         $pushAndDeny = Decision::deny('Read the guide first.')->withPush($this->reference('guide'));
-        $stack = new AgentStack([$this->ready(), $this->frame('top', new ScriptedState($pushAndDeny))], $factory);
+        $stack = new AgentStack([$this->ready(), $this->frame('top', new ScriptedState($pushAndDeny))], $factory, new StackTarget('agent-1', 'session-1'));
 
         $first = $stack->answer(HookInputs::all()['prompt']);
 
@@ -385,7 +386,7 @@ final class AgentStackTest extends TestCase
             $this->ready(),
             $this->frame('covered', new MarkedStopState(Decision::push($this->reference('guide')))),
             $this->frame('top', new ScriptedState(Decision::pop())),
-        ], $factory);
+        ], $factory, new StackTarget('agent-1', 'session-1'));
 
         $this->expectException(StateBelowTopPushed::class);
 
@@ -500,7 +501,7 @@ final class AgentStackTest extends TestCase
 
     private function stack(Frame ...$frames): AgentStack
     {
-        return new AgentStack(array_values($frames), new InMemoryStateFactory());
+        return new AgentStack(array_values($frames), new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1'));
     }
 
     private function ready(bool $mayChangeFiles = true): Frame

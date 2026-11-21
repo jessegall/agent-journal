@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
+use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Decisions\StateReferences;
@@ -23,9 +24,10 @@ final readonly class StackRestorer
         private StateTypes $types,
         private StateFactory $factory,
         private StateMethodSelector $selector = new StateMethodSelector(new StateMethods()),
+        private TargetStates $states = new TargetStates(),
     ) {}
 
-    public function restore(FrameRecords $records): AgentStack
+    public function restore(FrameRecords $records, StackTarget $target): AgentStack
     {
         $records->checkBottom();
         $frameRecords = $records->all();
@@ -43,8 +45,10 @@ final readonly class StackRestorer
 
             foreach (array_chunk($positions, StateReferences::MAXIMUM) as $batch) {
                 $typeEnabled = ! $type instanceof ConditionalStateType || $type->isEnabled();
-                $states = $type->statesFor(
+                $states = $this->states->of(
+                    $type,
                     new StateReferences(array_map(fn (int $position) => $frameRecords[$position]->reference, $batch)),
+                    $target,
                 );
 
                 foreach ($batch as $index => $position) {
@@ -62,7 +66,7 @@ final readonly class StackRestorer
 
         ksort($frames);
 
-        return new AgentStack(array_values($frames), $this->factory, $this->selector);
+        return new AgentStack(array_values($frames), $this->factory, $target, $this->selector);
     }
 
     /**

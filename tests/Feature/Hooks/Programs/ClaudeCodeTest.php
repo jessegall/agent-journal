@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks\Programs;
 
+use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Drivers\ClaudeCodeAdapter;
 use App\Hooks\Drivers\DriverReply;
@@ -191,7 +192,7 @@ final class ClaudeCodeTest extends TestCase
         $call = $this->adapter()->callFor($this->payload($name), $this->hook());
         $this->assertInstanceOf(JudgedCall::class, $call);
 
-        return ($call->render)(new HookAnswer($decision, $context, [], new AgentStack([], new InMemoryStateFactory())));
+        return ($call->render)(new HookAnswer($decision, $context, [], new AgentStack([], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1'))));
     }
 
     private function adapter(): ClaudeCodeAdapter

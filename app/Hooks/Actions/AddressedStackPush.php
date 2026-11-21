@@ -41,7 +41,10 @@ final readonly class AddressedStackPush
      */
     public function offer(array $stacks, StateReference $state): void
     {
-        $restored = array_map(fn (AgentStackRow $stack) => $this->restorer->restore($stack->frames), $stacks);
+        $restored = array_map(
+            fn (AgentStackRow $stack) => $this->restorer->restore($stack->frames, $stack->target()),
+            $stacks,
+        );
 
         foreach ($restored as $stack) {
             if (! $stack->top()->isBottom()) {

@@ -9,6 +9,7 @@ use App\Agents\Enums\AccessRuleType;
 use App\Agents\Support\ReadGrant;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\ReadRequest;
+use App\Agents\Values\StackTarget;
 use App\Assignments\Commands\AssignRecord;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Enums\CommandEffectType;
@@ -77,7 +78,7 @@ final class JobGrantGuardTest extends TestCase
             new AnsweringMessageState('message-id', true),
             CarbonImmutable::now(),
         );
-        $stack = new AgentStack([$frame], $this->createStub(StateFactory::class));
+        $stack = new AgentStack([$frame], $this->createStub(StateFactory::class), new StackTarget('agent-1', 'session-1'));
 
         $permission = $stack->permission();
 

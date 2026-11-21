@@ -14,6 +14,7 @@ use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\States\AgentState;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\States\WorkingOnPlanState;
+use Domain\Plans\Support\PlanWork;
 
 /**
  * Builds the working-on-plan state from the plan as it is now, reading a batch of plans in one query.
@@ -37,7 +38,9 @@ final readonly class WorkingOnPlanStateFactory implements StateLoader
                 throw StateSubjectMissing::for($reference->typeKey);
             }
 
-            return new WorkingOnPlanState($plans[$subject->id]->state);
+            $plan = $plans[$subject->id];
+
+            return new WorkingOnPlanState(new PlanWork($plan->id, $plan->number, $plan->state));
         });
     }
 

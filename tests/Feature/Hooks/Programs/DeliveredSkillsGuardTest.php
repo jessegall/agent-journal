@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks\Programs;
 
 use App\Agents\Models\AgentRuntime;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\DriverCall;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
@@ -157,7 +158,7 @@ final class DeliveredSkillsGuardTest extends TestCase
      */
     private function claudeCode(string $tool, array $arguments): DriverReply
     {
-        $allowed = new HookAnswer(Decision::allow(), [], [], new AgentStack([], new InMemoryStateFactory()));
+        $allowed = new HookAnswer(Decision::allow(), [], [], new AgentStack([], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1')));
 
         return $this->app->make(ClaudeCodeAdapter::class)
             ->callFor($this->payload($tool, $arguments), $this->hookIdentity())

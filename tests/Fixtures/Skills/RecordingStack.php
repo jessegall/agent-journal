@@ -22,4 +22,9 @@ final class RecordingStack implements AgentStack
     {
         $this->pushed[] = $state;
     }
+
+    public function activate(StackTarget $target, StateReference $state): void
+    {
+        $this->pushed[] = $state;
+    }
 }

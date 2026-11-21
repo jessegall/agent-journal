@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domains\Support;
 
+use App\Actors\Support\ActorIdentity;
 use App\Contracts\DomainAvailability;
 use App\Hooks\Contracts\ConditionalStateType;
+use App\Hooks\Contracts\RecipientStateLoader;
 use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
@@ -16,7 +18,7 @@ use Closure;
  * A domain's state type registered with the domain that owns it: it loads states exactly as the domain's own loader
  * does, and is enabled only while that domain is available, asked anew each time.
  */
-final readonly class DomainStateType implements ConditionalStateType, StateLoader
+final readonly class DomainStateType implements ConditionalStateType, RecipientStateLoader
 {
     /**
      * @param  Closure(): DomainAvailability  $availability  resolves the availability of the request running now
@@ -30,6 +32,18 @@ final readonly class DomainStateType implements ConditionalStateType, StateLoade
 
     public function statesFor(StateReferences $references): StateSet
     {
+        return $this->loader->statesFor($references);
+    }
+
+    /**
+     * Reads for the stack's own actor when the domain's loader depends on it, else as statesFor does.
+     */
+    public function statesForRecipient(StateReferences $references, ActorIdentity $recipient): StateSet
+    {
+        if ($this->loader instanceof RecipientStateLoader) {
+            return $this->loader->statesForRecipient($references, $recipient);
+        }
+
         return $this->loader->statesFor($references);
     }
 

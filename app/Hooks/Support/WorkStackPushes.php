@@ -33,7 +33,7 @@ final readonly class WorkStackPushes implements ActorWorkStacks
     public function push(StateReference $state): void
     {
         foreach ($this->targets() as $target) {
-            $this->stacks->push($target, $state);
+            $this->stacks->activate($target, $state);
         }
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
+use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Decisions\StateReference;
@@ -28,6 +29,7 @@ final readonly class AgentStack
     public function __construct(
         private array $frames,
         private StateFactory $factory,
+        private StackTarget $target,
         private StateMethodSelector $selector = new StateMethodSelector(new StateMethods()),
     ) {}
 
@@ -72,6 +74,20 @@ final readonly class AgentStack
     }
 
     /**
+     * Whether a frame for the reference is on the stack as live work, read for the stack's own agent.
+     */
+    public function holdsLive(StateReference $reference): bool
+    {
+        foreach ($this->frames as $frame) {
+            if ($frame->isFor($reference)) {
+                return $frame->isLive();
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * The stack with a state put on top, or this stack when it already holds a state for the same reference or the
      * state is a conditional state that is switched off. Every push passes through here, so a declined push stores
      * nothing.
@@ -88,7 +104,7 @@ final readonly class AgentStack
             return $this;
         }
 
-        $frame = $this->factory->frameFor($reference);
+        $frame = $this->factory->frameFor($reference, $this->target);
 
         if (! $frame->isEnabled()) {
             return $this;

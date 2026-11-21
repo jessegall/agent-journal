@@ -18,6 +18,7 @@ use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\States\Support\WorkingOnPlanStateReference;
+use Domain\Plans\States\WorkingOnPlanState;
 use Domain\Plans\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
@@ -82,11 +83,14 @@ final class PlanWorkingStateTest extends TestCase
         $restorer = $this->app->make(StackRestorer::class);
 
         $this->assertFalse($this->planFrame($restorer, $row)->isFinished());
+        $state = $this->planFrame($restorer, $row)->state;
+        $this->assertInstanceOf(WorkingOnPlanState::class, $state);
+        $this->assertSame([$plan->id, $plan->number], [$state->plan->planId, $state->plan->number]);
 
         Plan::query()->whereKey($plan->id)->update(['state' => PlanState::Cancelled->value]);
 
         $this->assertTrue($this->planFrame($restorer, $row)->isFinished());
-        $this->assertTrue($restorer->restore($row->frames)->top()->isBottom());
+        $this->assertTrue($restorer->restore($row->frames, $row->target())->top()->isBottom());
     }
 
     /**
@@ -94,7 +98,7 @@ final class PlanWorkingStateTest extends TestCase
      */
     private function planFrame(StackRestorer $restorer, AgentStackRow $row): Frame
     {
-        $frames = $restorer->restore($row->frames)->frames();
+        $frames = $restorer->restore($row->frames, $row->target())->frames();
 
         return $frames[array_key_last($frames)];
     }

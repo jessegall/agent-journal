@@ -15,7 +15,6 @@ use App\Hooks\Stack\StateTypes;
 use App\Settings\Commands\DisableSettingGroup;
 use App\Settings\Values\GroupReference;
 use Domain\Access\Support\AccessSettings;
-use Domain\Tasks\Resolvers\Support\TaskRecords;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Tests\Fixtures\Domains\QuestionReminders\QuestionRemindersDomain;
 use Tests\Fixtures\Domains\QuestionReminders\States\AwaitingAnswerLoader;
@@ -46,7 +45,7 @@ final class DomainStateTypesTest extends TestCase
         $this->assertInstanceOf(DomainStateType::class, $working);
         $this->assertSame('Tasks', $working->owner);
         $this->assertSame(
-            new WorkingOnTaskStateFactory($this->app->make(TaskRecords::class))->schemaVersion(),
+            $this->app->make(WorkingOnTaskStateFactory::class)->schemaVersion(),
             $working->schemaVersion(),
         );
         $this->assertNotInstanceOf(ConditionalStateType::class, $types->get('hooks.ready'));

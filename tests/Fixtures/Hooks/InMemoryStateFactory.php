@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
+use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Stack\Frame;
@@ -23,7 +24,7 @@ final class InMemoryStateFactory implements StateFactory
      */
     public function __construct(private readonly array $types = []) {}
 
-    public function frameFor(StateReference $reference): Frame
+    public function frameFor(StateReference $reference, StackTarget $target): Frame
     {
         $this->pushedCount++;
 

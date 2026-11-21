@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks\Programs;
 
+use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Drivers\CodexAdapter;
@@ -118,7 +119,7 @@ final class CodexTest extends TestCase
     public function test_a_rewrite_is_refused_with_the_journal_command_and_its_child_is_dropped(): void
     {
         $capabilities = $this->adapter()->capabilities();
-        $stackBefore = new AgentStack([], new InMemoryStateFactory());
+        $stackBefore = new AgentStack([], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1'));
         $stackAfter = new AgentStack(
             [
                 new Frame(
@@ -129,6 +130,7 @@ final class CodexTest extends TestCase
                 ),
             ],
             new InMemoryStateFactory(),
+            new StackTarget('agent-1', 'session-1'),
         );
         $rewrite = new HookAnswer(Decision::rewrite('journal run tests'), [], [], $stackAfter);
 
@@ -160,7 +162,7 @@ final class CodexTest extends TestCase
     {
         return $this->renderAnswer(
             $name,
-            new HookAnswer($decision, [], [], new AgentStack([], new InMemoryStateFactory())),
+            new HookAnswer($decision, [], [], new AgentStack([], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1'))),
         );
     }
 

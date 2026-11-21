@@ -6,6 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Agents\Contracts\SessionOutputAccess;
 use App\Agents\Values\SessionOutputPaths;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Actions\CheckProtectedResources;
 use App\Hooks\Contracts\DriverCall;
 use App\Hooks\Contracts\HookInput;
@@ -168,7 +169,7 @@ final class AccountProtectionTest extends TestCase
      */
     private static function permissionOf(DriverCall $call): string
     {
-        $allowed = new HookAnswer(Decision::allow(), [], [], new AgentStack([], new InMemoryStateFactory()));
+        $allowed = new HookAnswer(Decision::allow(), [], [], new AgentStack([], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1')));
         $reply = $call->replyWith(fn (HookInput $input, Closure $render) => $render($allowed));
 
         return json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecision'] ?? 'allow';

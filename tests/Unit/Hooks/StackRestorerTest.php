@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;
@@ -34,6 +37,7 @@ use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryTaskLoader;
+use Tests\Fixtures\Hooks\RecipientRecordingLoader;
 use Tests\Fixtures\Hooks\ScriptedState;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Support\FixedServerClock;
@@ -54,7 +58,7 @@ final class StackRestorerTest extends TestCase
 
     public function test_a_stored_stack_comes_back_with_its_frames_in_order(): void
     {
-        $stack = $this->restorer->restore($this->records($this->bottom(), $this->task('task-42', 42)));
+        $stack = $this->restorer->restore($this->records($this->bottom(), $this->task('task-42', 42)), new StackTarget('agent-1', 'session-1'));
 
         $this->assertSame(['ready', 'task-42'], $stack->frameIds());
         $this->assertTrue($stack->answer(HookInputs::all()['stop'])->isDenied());
@@ -64,9 +68,9 @@ final class StackRestorerTest extends TestCase
     {
         $records = $this->records($this->bottom(), $this->task('task-42', 42));
 
-        $before = $this->restorer->restore($records);
+        $before = $this->restorer->restore($records, new StackTarget('agent-1', 'session-1'));
         $this->tasks->tasks[42] = TaskState::Finished;
-        $after = $this->restorer->restore($records);
+        $after = $this->restorer->restore($records, new StackTarget('agent-1', 'session-1'));
 
         $this->assertSame([false], array_map(fn ($frame) => $frame->isFinished(), array_slice($before->frames(), 1)));
         $this->assertSame([true], array_map(fn ($frame) => $frame->isFinished(), array_slice($after->frames(), 1)));
@@ -78,6 +82,7 @@ final class StackRestorerTest extends TestCase
 
         $stack = $this->restorer->restore(
             $this->records($this->bottom(), $this->task('task-42', 42), $this->task('task-43', 43)),
+            new StackTarget('agent-1', 'session-1'),
         );
 
         $this->assertSame(['ready', 'task-42', 'task-43'], $stack->frameIds());
@@ -87,7 +92,7 @@ final class StackRestorerTest extends TestCase
 
     public function test_the_bottom_state_follows_what_the_profile_lets_change(): void
     {
-        $helper = $this->restorerWith($this->tasks, mayEditFiles: false)->restore($this->records($this->bottom()));
+        $helper = $this->restorerWith($this->tasks, mayEditFiles: false)->restore($this->records($this->bottom()), new StackTarget('agent-1', 'session-1'));
 
         $edit = HookInputs::all()['file edit'];
 
@@ -98,28 +103,28 @@ final class StackRestorerTest extends TestCase
     {
         $this->expectException(InvalidBottomState::class);
 
-        $this->restorer->restore($this->records($this->task('task-42', 42)));
+        $this->restorer->restore($this->records($this->task('task-42', 42)), new StackTarget('agent-1', 'session-1'));
     }
 
     public function test_an_empty_stack_is_refused(): void
     {
         $this->expectException(InvalidBottomState::class);
 
-        $this->restorer->restore($this->records());
+        $this->restorer->restore($this->records(), new StackTarget('agent-1', 'session-1'));
     }
 
     public function test_a_second_bottom_is_refused(): void
     {
         $this->expectExceptionObject(InvalidBottomState::repeated('ready-2'));
 
-        $this->restorer->restore($this->records($this->bottom(), $this->bottom(id: 'ready-2')));
+        $this->restorer->restore($this->records($this->bottom(), $this->bottom(id: 'ready-2')), new StackTarget('agent-1', 'session-1'));
     }
 
     public function test_a_bottom_of_another_type_is_refused(): void
     {
         $this->expectExceptionObject(InvalidBottomState::ofAnotherType('hooks.main_ready', ReadyState::TYPE_KEY));
 
-        $this->restorer->restore($this->records($this->bottom('hooks.main_ready')));
+        $this->restorer->restore($this->records($this->bottom('hooks.main_ready')), new StackTarget('agent-1', 'session-1'));
     }
 
     public function test_an_unknown_state_type_is_an_error(): void
@@ -137,6 +142,7 @@ final class StackRestorerTest extends TestCase
                     CarbonImmutable::now(),
                 ),
             ),
+            new StackTarget('agent-1', 'session-1'),
         );
     }
 
@@ -146,14 +152,40 @@ final class StackRestorerTest extends TestCase
 
         $this->expectException(StateSchemaUnknown::class);
 
-        $restorer->restore($this->records($this->bottom(), $this->task('task-42', 42)));
+        $restorer->restore($this->records($this->bottom(), $this->task('task-42', 42)), new StackTarget('agent-1', 'session-1'));
     }
 
     public function test_a_missing_subject_is_an_error_and_not_a_finished_frame(): void
     {
         $this->expectException(StateSubjectMissing::class);
 
-        $this->restorer->restore($this->records($this->bottom(), $this->task('task-99', 99)));
+        $this->restorer->restore($this->records($this->bottom(), $this->task('task-99', 99)), new StackTarget('agent-1', 'session-1'));
+    }
+
+    public function test_a_recipient_aware_type_is_read_for_the_stacks_own_agent_on_restore_and_on_push(): void
+    {
+        $recipientAware = new RecipientRecordingLoader(SwitchableState::class, fn () => new SwitchableState(true));
+        $events = new Dispatcher();
+        $events->listen(StateTypesRequested::class, function (StateTypesRequested $event) use ($recipientAware): void {
+            $event->registry->register('tasks.working', $this->tasks);
+            $event->registry->register('test.recipient', $recipientAware);
+        });
+        $types = new StateTypes($events, FixedOperationPolicy::loader());
+        $restorer = new StackRestorer(
+            $types,
+            new RegisteredStateFactory($types, new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00'))),
+        );
+        $reference = new StateReference('test.recipient', NoSubject::None);
+        $stored = new FrameRecord('mine', $reference, false, 1, CarbonImmutable::now());
+
+        $restorer->restore($this->records($this->bottom(), $stored), new StackTarget('agent-7', 'session-3'));
+        $restorer->restore($this->records($this->bottom()), new StackTarget('agent-8', 'session-4'))
+            ->withStateOnTop($reference);
+
+        $this->assertEquals(
+            [new ActorIdentity(ActorType::Agent, 'agent-7'), new ActorIdentity(ActorType::Agent, 'agent-8')],
+            $recipientAware->recipients,
+        );
     }
 
     public function test_a_switched_off_frame_is_restored_and_validated_and_left_out_only_on_request(): void
@@ -179,7 +211,7 @@ final class StackRestorerTest extends TestCase
             CarbonImmutable::now(),
         );
 
-        $stack = $restorer->restore($this->records($this->bottom(), $this->task('task-42', 42), $switchedOff));
+        $stack = $restorer->restore($this->records($this->bottom(), $this->task('task-42', 42), $switchedOff), new StackTarget('agent-1', 'session-1'));
 
         $this->assertSame(['ready', 'task-42', 'review'], $stack->frameIds());
         $this->assertSame(['ready', 'task-42'], $stack->withoutExposedInactive()->frameIds());
@@ -197,6 +229,7 @@ final class StackRestorerTest extends TestCase
                     CarbonImmutable::now(),
                 ),
             ),
+            new StackTarget('agent-1', 'session-1'),
         );
     }
 
@@ -259,6 +292,7 @@ final class StackRestorerTest extends TestCase
                     CarbonImmutable::now(),
                 ),
             ),
+            new StackTarget('agent-1', 'session-1'),
         );
 
         $this->assertSame(1, $loaded);
@@ -290,7 +324,7 @@ final class StackRestorerTest extends TestCase
         );
 
         $this->expectException(StateClassMismatch::class);
-        $restorer->restore($this->records($this->bottom(), $record));
+        $restorer->restore($this->records($this->bottom(), $record), new StackTarget('agent-1', 'session-1'));
     }
 
     private function restorerWith(InMemoryTaskLoader $tasks, bool $mayEditFiles = true): StackRestorer

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\SubjectReference;
@@ -135,8 +136,8 @@ final class StateLoaderTest extends TestCase
         );
         $reference = new StateReference('tasks.working', new SubjectReference('42', 1));
 
-        $first = $factory->frameFor($reference);
-        $second = $factory->frameFor($reference);
+        $first = $factory->frameFor($reference, new StackTarget('agent-1', 'session-1'));
+        $second = $factory->frameFor($reference, new StackTarget('agent-1', 'session-1'));
 
         $this->assertInstanceOf(WorkingOnTaskState::class, $first->state);
         $this->assertFalse($first->isFinished());

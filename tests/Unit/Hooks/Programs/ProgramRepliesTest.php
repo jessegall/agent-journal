@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Programs;
 
+use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Drivers\DriverReplies;
 use App\Hooks\Drivers\DriverReply;
@@ -148,6 +149,6 @@ final class ProgramRepliesTest extends TestCase
      */
     private function answer(Decision $decision, array $context = []): HookAnswer
     {
-        return new HookAnswer($decision, $context, [], new AgentStack([], new InMemoryStateFactory()));
+        return new HookAnswer($decision, $context, [], new AgentStack([], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1')));
     }
 }

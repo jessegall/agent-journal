@@ -5,8 +5,13 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Feature;
 
 use App\Actors\Exceptions\ActorNotAllowed;
+use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Contracts\CommandBus;
+use App\Desks\Contracts\RunClaims;
+use App\Hooks\Contracts\ActorWorkStacks;
+use App\Hooks\Contracts\StackTransaction;
 use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\Exceptions\ActivationDeclined;
 use App\Hooks\Exceptions\StackAlreadyClosed;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Storage\FrameRecord;
@@ -18,7 +23,9 @@ use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 use Domain\Tasks\Tests\TestCase;
+use Illuminate\Database\Events\QueryExecuted;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -75,6 +82,65 @@ final class TaskStateContributionTest extends TestCase
         $this->assertStringContainsString("Task {$task->number} still needs work", $held);
         $this->assertSame('{}', $allowed);
         $this->assertSame(["tasks.working {$task->id} 1"], $this->taskFrames());
+    }
+
+    public function test_a_frame_stops_holding_its_agent_once_its_run_claim_is_gone(): void
+    {
+        $task = Task::factory()->create(['title' => 'Write the walk']);
+        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
+        $run = $task->fresh()?->currentRun();
+        $this->assertNotNull($run);
+        $claims = $this->app->make(RunClaims::class);
+
+        $held = $this->answerStop('call-1');
+        $this->app->make(AssignmentTransaction::class)->run(
+            fn () => $claims->release($run->assignmentIdentity()),
+        );
+        $released = $this->answerStop('call-2');
+
+        $this->assertStringContainsString("Task {$task->number} still needs work", $held);
+        $this->assertSame('{}', $released);
+        $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
+    }
+
+    public function test_activating_a_task_whose_run_claim_is_gone_is_refused_and_changes_nothing(): void
+    {
+        $task = Task::factory()->create(['title' => 'Write the walk']);
+        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
+        $run = $task->fresh()?->currentRun();
+        $this->assertNotNull($run);
+        $claims = $this->app->make(RunClaims::class);
+        $this->app->make(AssignmentTransaction::class)->run(
+            fn () => $claims->release($run->assignmentIdentity()),
+        );
+        $frames = $this->taskFrames();
+
+        $this->assertThrows(
+            fn () => $this->app->make(StackTransaction::class)->run(
+                fn () => $this->app->make(ActorWorkStacks::class)->push(WorkingOnTaskStateReference::forTask($task)),
+            ),
+            ActivationDeclined::class,
+        );
+        $this->assertSame($frames, $this->taskFrames());
+    }
+
+    public function test_each_read_of_a_stack_reads_the_runs_of_all_its_task_frames_in_one_query(): void
+    {
+        $first = Task::factory()->create(['title' => 'Write the walk']);
+        $second = Task::factory()->create(['title' => 'Read the walk']);
+        $this->app->make(CommandBus::class)->run(new StartTask($first->id));
+        $this->app->make(CommandBus::class)->run(new StartTask($second->id));
+        $pairQueries = [];
+        $this->app->make('db')->listen(function (QueryExecuted $query) use (&$pairQueries): void {
+            if (str_contains($query->sql, 'from "task_runs" where (("task_id" = ?')) {
+                $pairQueries[] = substr_count($query->sql, '"run_number" = ?');
+            }
+        });
+
+        $this->answerStop('call-1');
+
+        $this->assertNotEmpty($pairQueries);
+        $this->assertSame(array_fill(0, count($pairQueries), 2), $pairQueries);
     }
 
     public function test_a_new_run_after_a_blocked_one_gets_its_own_frame(): void

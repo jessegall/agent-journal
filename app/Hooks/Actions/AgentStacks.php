@@ -7,6 +7,7 @@ namespace App\Hooks\Actions;
 use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Exceptions\ActivationDeclined;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\StatePush;
 use App\Hooks\Support\StackAccess;
@@ -33,5 +34,15 @@ final readonly class AgentStacks implements AgentStack
         $this->access->assertTargetGranted($target);
 
         $this->statePush->push($target, AgentStackRow::lockFor($target), $state);
+    }
+
+    public function activate(StackTarget $target, StateReference $state): void
+    {
+        $this->transaction->assertOpen($target);
+        $this->access->assertTargetGranted($target);
+
+        if (! $this->statePush->push($target, AgentStackRow::lockFor($target), $state)->holdsLive($state)) {
+            throw ActivationDeclined::for($state, $target);
+        }
     }
 }

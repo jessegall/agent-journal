@@ -8,6 +8,7 @@ use App\Engine\Values\ScanProgress;
 use App\Engine\Values\TickBatch;
 use App\Engine\Values\TickCandidate;
 use App\Hooks\Contracts\ConditionalStateType;
+use App\Hooks\Contracts\StackStates;
 use App\Hooks\Contracts\StateTypes;
 use App\Hooks\Contracts\TickableState;
 use App\Hooks\Decisions\StateReferences;
@@ -31,8 +32,10 @@ final class TickCandidates
 {
     private ScanProgress $progress;
 
-    public function __construct(private readonly StateTypes $types)
-    {
+    public function __construct(
+        private readonly StateTypes $types,
+        private readonly StackStates $states,
+    ) {
         $this->progress = ScanProgress::start();
     }
 
@@ -136,21 +139,23 @@ final class TickCandidates
         $byType = [];
 
         foreach ($selected as $index => $frame) {
-            $byType[$frame->record->reference->typeKey][] = $index;
+            $byType[$frame->record->reference->typeKey][$frame->row->id][] = $index;
         }
 
         $candidates = [];
 
-        foreach ($byType as $typeKey => $indexes) {
+        foreach ($byType as $typeKey => $indexesByStack) {
             $type = $this->types->registry()->get($typeKey);
 
             if ($type instanceof ConditionalStateType && ! $type->isEnabled()) {
                 continue;
             }
 
-            foreach (array_chunk($indexes, StateReferences::MAXIMUM) as $batch) {
-                $states = $type->statesFor(
+            foreach ($this->batchesPerStack($indexesByStack) as $batch) {
+                $states = $this->states->of(
+                    $type,
                     new StateReferences(array_map(fn (int $index) => $selected[$index]->record->reference, $batch)),
+                    $selected[$batch[0]]->row->target(),
                 );
 
                 foreach ($batch as $position => $index) {
@@ -172,6 +177,23 @@ final class TickCandidates
         ksort($candidates);
 
         return array_values($candidates);
+    }
+
+    /**
+     * One stack's frames of a type, in batches no larger than a read takes, since a state is read for its own stack.
+     *
+     * @param  array<string, list<int>>  $indexesByStack
+     * @return list<non-empty-list<int>>
+     */
+    private function batchesPerStack(array $indexesByStack): array
+    {
+        $batches = [];
+
+        foreach ($indexesByStack as $indexes) {
+            array_push($batches, ...array_chunk($indexes, StateReferences::MAXIMUM));
+        }
+
+        return $batches;
     }
 
     private function candidate(SelectedFrame $frame, AgentState $state): TickCandidate

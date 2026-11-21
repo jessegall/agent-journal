@@ -687,6 +687,7 @@ use App\Hooks\Contracts\HookInput;
 use App\Hooks\Contracts\IncomingWork;
 use App\Hooks\Contracts\IncomingWorkRegistration;
 use App\Hooks\Contracts\OperationPolicy;
+use App\Hooks\Contracts\RecipientStateLoader;
 use App\Hooks\Contracts\ReminderContribution;
 use App\Hooks\Contracts\StackEditor;
 use App\Hooks\Contracts\StackTransactionRunner;
@@ -714,6 +715,7 @@ use App\Hooks\Events\ContextStarted;
 use App\Hooks\Events\HelperCompletionCertified;
 use App\Hooks\Events\HelperStopHeld;
 use App\Hooks\Events\StateTypesRequested;
+use App\Hooks\Exceptions\ActivationDeclined;
 use App\Hooks\Exceptions\IncomingWorkRepeated;
 use App\Hooks\Exceptions\MonotonicClockWentBack;
 use App\Hooks\Exceptions\StackTransactionRequired;
@@ -1374,6 +1376,7 @@ final class CoreApi
                 UserStack::class,
                 StackTransactionRunner::class,
                 StateLoader::class,
+                RecipientStateLoader::class,
                 Answer::class,
                 StackTransition::class,
                 StackEditor::class,
@@ -2246,6 +2249,7 @@ final class CoreApi
                 ResetSettingGroup::class,
             )
             ->exceptions(
+                ActivationDeclined::class,
                 DockCardInvalid::class,
                 DockDefinitionInvalid::class,
                 DockSourceUnavailable::class,

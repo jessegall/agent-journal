@@ -16,15 +16,24 @@ final readonly class TaskWork
         public int $runNumber,
         public TaskState $state,
         public bool $isCurrentRun = true,
+        public bool $isHeld = true,
     ) {}
 
     /**
-     * Whether this run is the task's current one and still started; a finished, blocked, cancelled or released run,
-     * or an earlier run, needs no more work.
+     * The same run, for a recipient that holds no valid claim on it.
+     */
+    public function unheld(): self
+    {
+        return clone ($this, ['isHeld' => false]);
+    }
+
+    /**
+     * Whether this run is the task's current one, still started and held by its recipient; a finished, blocked,
+     * cancelled or released run, an earlier run, or one another actor holds needs no more work here.
      */
     public function needsWork(): bool
     {
-        return $this->isCurrentRun && $this->state === TaskState::Started;
+        return $this->isCurrentRun && $this->isHeld && $this->state === TaskState::Started;
     }
 
     public function unfinishedReason(): string

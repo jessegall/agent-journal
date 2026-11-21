@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Contracts;
 
+use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Stack\Frame;
 
@@ -12,7 +13,7 @@ use App\Hooks\Stack\Frame;
  */
 interface StateFactory
 {
-    public function frameFor(StateReference $reference): Frame;
+    public function frameFor(StateReference $reference, StackTarget $target): Frame;
 
     /**
      * Whether the reference's state type runs now; an unknown type is an error. Asked before any subject is read.

@@ -6,8 +6,8 @@ namespace Domain\Plans\States;
 
 use App\Hooks\Contracts\WorkRecordState;
 use App\Hooks\States\AgentState;
-use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanWork;
 
 /**
  * An agent working on a plan. It answers no hook itself; it marks which plan the agent works on until the plan is done
@@ -15,11 +15,11 @@ use Domain\Plans\Models\Plan;
  */
 final class WorkingOnPlanState extends AgentState implements WorkRecordState
 {
-    public function __construct(private readonly PlanState $plan) {}
+    public function __construct(public readonly PlanWork $plan) {}
 
     public function isFinished(): bool
     {
-        return $this->plan->hasEnded();
+        return $this->plan->state->hasEnded();
     }
 
     public function workRecordType(): string

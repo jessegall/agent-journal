@@ -1095,6 +1095,7 @@ class	ActivateProfilesHandler
 class	ActivateSkillPublication
 class	ActivateSkillPublicationHandler
 class	ActivatedProfile
+class	ActivationDeclined
 class	ActiveAccount
 class	ActiveAccountRecords
 class	ActiveActorCounterMissing
@@ -4477,6 +4478,7 @@ class	TakeSignInCodeHandler
 class	TargetActorAuthorizer
 class	TargetHasNoText
 class	TargetNotCommentable
+class	TargetStates
 class	TerminalFrameController
 class	TerminalFrameData
 class	TerminalFrameRequest
@@ -5806,6 +5808,7 @@ interface	ReadMeter
 interface	ReadableModel
 interface	ReaderRequests
 interface	ReceiptRefusal
+interface	RecipientStateLoader
 interface	RecordCommand
 interface	RecordLinker
 interface	RecordPolicy
@@ -5880,6 +5883,7 @@ interface	StackAdmission
 interface	StackEditor
 interface	StackInspectionQuery
 interface	StackPermission
+interface	StackStates
 interface	StackTransaction
 interface	StackTransactionRunner
 interface	StackTransition
@@ -6152,6 +6156,7 @@ method	ActivateSkillPublication::__construct()
 method	ActivateSkillPublicationHandler::__construct()
 method	ActivateSkillPublicationHandler::handle()
 method	ActivatedProfile::__construct()
+method	ActivationDeclined::for()
 method	ActiveAccount::casts()
 method	ActiveAccount::chooseFirst()
 method	ActiveAccount::clear()
@@ -6589,10 +6594,12 @@ method	AgentSessions::pinned()
 method	AgentSessions::reserveStart()
 method	AgentSessions::start()
 method	AgentStack::__construct()
+method	AgentStack::activate()
 method	AgentStack::answer()
 method	AgentStack::frameIds()
 method	AgentStack::frames()
 method	AgentStack::framesMissingFrom()
+method	AgentStack::holdsLive()
 method	AgentStack::permission()
 method	AgentStack::poppedOf()
 method	AgentStack::push()
@@ -6626,6 +6633,7 @@ method	AgentStackRow::startFor()
 method	AgentStackRow::target()
 method	AgentStackRow::tickingOpen()
 method	AgentStacks::__construct()
+method	AgentStacks::activate()
 method	AgentStacks::push()
 method	AgentStartCommand::startedAgentId()
 method	AgentState::before()
@@ -8749,7 +8757,7 @@ method	CurrentState::of()
 method	CurrentState::record()
 method	CurrentState::top()
 method	CurrentStates::__construct()
-method	CurrentStates::highestUnfinished()
+method	CurrentStates::highestLive()
 method	CurrentStates::of()
 method	CurrentStates::record()
 method	CurrentStates::top()
@@ -9229,6 +9237,7 @@ method	DomainStateType::schemaVersion()
 method	DomainStateType::sessionTransfer()
 method	DomainStateType::stateClass()
 method	DomainStateType::statesFor()
+method	DomainStateType::statesForRecipient()
 method	DomainStatus::__construct()
 method	DomainSwitches::__construct()
 method	DomainSwitches::groups()
@@ -9240,6 +9249,7 @@ method	DomainTickableStateType::schemaVersion()
 method	DomainTickableStateType::sessionTransfer()
 method	DomainTickableStateType::stateClass()
 method	DomainTickableStateType::statesFor()
+method	DomainTickableStateType::statesForRecipient()
 method	DomainTypeWriter::__construct()
 method	DomainTypeWriter::output()
 method	DomainTypeWriter::pathOf()
@@ -13404,6 +13414,7 @@ method	ReceivedScreen::isNewerThan()
 method	RecheckDriverSwitch::__construct()
 method	RecheckDriverSwitchController::__invoke()
 method	RecheckDriverSwitchHandler::handle()
+method	RecipientStateLoader::statesForRecipient()
 method	ReconcileAccountsCommand::handle()
 method	ReconcileAccountsHandler::__construct()
 method	ReconcileAccountsHandler::handle()
@@ -16271,6 +16282,7 @@ method	StackPermission::allows()
 method	StackRestorer::__construct()
 method	StackRestorer::positionsByType()
 method	StackRestorer::restore()
+method	StackStates::of()
 method	StackTarget::__construct()
 method	StackTarget::actorIdentity()
 method	StackTarget::description()
@@ -17120,6 +17132,7 @@ method	TargetAuthorizer::authorize()
 method	TargetAuthorizer::filterActions()
 method	TargetHasNoText::for()
 method	TargetNotCommentable::for()
+method	TargetStates::of()
 method	TerminalFrameController::__invoke()
 method	TerminalFrameData::__construct()
 method	TerminalFrameRequest::agentId()
@@ -17256,6 +17269,7 @@ method	TickBatch::count()
 method	TickBatch::isEmpty()
 method	TickCandidate::__construct()
 method	TickCandidates::__construct()
+method	TickCandidates::batchesPerStack()
 method	TickCandidates::candidate()
 method	TickCandidates::examineAfter()
 method	TickCandidates::next()
@@ -18709,6 +18723,7 @@ parameter	$inboxes
 parameter	$incoming
 parameter	$incomingWork
 parameter	$index
+parameter	$indexesByStack
 parameter	$ineligible
 parameter	$inertia
 parameter	$inherited
@@ -20454,6 +20469,7 @@ property	AgentSessions::$lifecycle
 property	AgentStack::$factory
 property	AgentStack::$frames
 property	AgentStack::$selector
+property	AgentStack::$target
 property	AgentStackRow::$table
 property	AgentStacks::$access
 property	AgentStacks::$statePush
@@ -24545,6 +24561,7 @@ property	RegisteredSection::$section
 property	RegisteredSection::$slot
 property	RegisteredSettingCommands::$registry
 property	RegisteredStateFactory::$clock
+property	RegisteredStateFactory::$states
 property	RegisteredStateFactory::$types
 property	Registry::$missing
 property	Registry::$registrations
@@ -26111,6 +26128,7 @@ property	StackInspectionController::$inspections
 property	StackInspectionQuery::$restorer
 property	StackRestorer::$factory
 property	StackRestorer::$selector
+property	StackRestorer::$states
 property	StackRestorer::$types
 property	StackTarget::$agentId
 property	StackTarget::$sessionId
@@ -26812,6 +26830,7 @@ property	TickCandidate::$stackVersion
 property	TickCandidate::$state
 property	TickCandidate::$target
 property	TickCandidates::$progress
+property	TickCandidates::$states
 property	TickCandidates::$types
 property	TickCommand::$description
 property	TickCommand::$signature
@@ -27250,6 +27269,7 @@ variable	$background
 variable	$backing
 variable	$base
 variable	$batch
+variable	$batches
 variable	$before
 variable	$best
 variable	$bestKey

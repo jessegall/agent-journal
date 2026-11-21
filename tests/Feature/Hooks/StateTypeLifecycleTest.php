@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\NoSubject;
@@ -97,7 +98,7 @@ final class StateTypeLifecycleTest extends TestCase
                 1,
                 CarbonImmutable::now(),
             ),
-        ]));
+        ]), new StackTarget('agent-1', 'session-1'));
 
         $this->assertSame(['ready', 'note-1'], $stack->frameIds());
     }

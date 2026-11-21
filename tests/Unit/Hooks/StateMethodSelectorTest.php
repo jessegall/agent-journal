@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Declarations\StateMethods;
@@ -58,7 +59,7 @@ final class StateMethodSelectorTest extends TestCase
             $this->frame('finished', $finished),
             $this->frame('first', new MarkedState()),
             $this->frame('default', $default),
-        ], new InMemoryStateFactory());
+        ], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1'));
 
         $selector = new StateMethodSelector(new StateMethods());
         $stop = new StopRequested(TestActors::hookIdentity(1, 2, '3', 'digest'), new StopDetails('turn', false));
