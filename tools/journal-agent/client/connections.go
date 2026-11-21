@@ -30,6 +30,7 @@ type Redemption struct {
 	ProjectID       string `json:"projectId"`
 	BindingID       string `json:"bindingId"`
 	MainAgentID     string `json:"mainAgentId"`
+	ProjectLabel    string `json:"projectLabel"`
 	Protocol        int    `json:"protocol"`
 	CanonicalOrigin string `json:"canonicalOrigin"`
 }

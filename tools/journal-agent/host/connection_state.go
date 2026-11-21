@@ -44,6 +44,7 @@ type PendingConnection struct {
 type Binding struct {
 	Enrollment
 	ProjectID     string `json:"project_id"`
+	ProjectLabel  string `json:"project_label"`
 	BindingID     string `json:"binding_id"`
 	MainAgentID   string `json:"main_agent_id"`
 	RootID        string `json:"root_id"`

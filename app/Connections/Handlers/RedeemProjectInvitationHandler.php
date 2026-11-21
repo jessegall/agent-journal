@@ -62,7 +62,7 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
         $attempt->spendOn($binding);
         ConnectionAudit::ofBinding(ConnectionAuditType::Redeemed, ConnectionAuditActor::Host, $host->id, $binding);
 
-        return new Redemption($host->id, $project->id, $binding->id, $mainAgent->id);
+        return new Redemption($host->id, $project->id, $binding->id, $mainAgent->id, $project->label);
     }
 
     /**

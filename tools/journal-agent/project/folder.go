@@ -138,6 +138,18 @@ func (folder Folder) SetUp(connection Connection, installation host.Installation
 	return nil
 }
 
+// IsSetUp is whether every step of the folder's setup is done.
+func (folder Folder) IsSetUp() bool {
+	progress := folder.progress()
+	for _, step := range []string{stepConnection, stepHooks, stepIgnore} {
+		if !slices.Contains(progress.Done, step) {
+			return false
+		}
+	}
+
+	return true
+}
+
 // SetupGeneration is the generation of the folder's latest setup or resume; none before the first.
 func (folder Folder) SetupGeneration() int {
 	return folder.progress().Generation

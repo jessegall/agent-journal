@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -42,15 +41,23 @@ func connect(arguments []string) error {
 	if err != nil {
 		return err
 	}
-	root, err := projectRoot()
+	target, err := resolveTarget()
 	if err != nil {
 		return err
 	}
+	root := target.root
 
 	connection := projectConnection{
 		state:     host.ConnectionState{Folder: *stateFolder, CanonicalRoot: root},
 		origin:    *origin,
 		transport: &http.Client{Timeout: 30 * time.Second},
+	}
+	// The folder is checked and confirmed before the line is redeemed, so a refusal leaves it usable.
+	if err := target.assertNotConnected(connection.state, os.Stdout); err != nil {
+		return err
+	}
+	if err := target.confirm(*origin, os.Stdout); err != nil {
+		return err
 	}
 	binding, err := connection.redeem(context.Background(), ticket)
 	if err != nil {
@@ -128,6 +135,7 @@ func (connection projectConnection) redeem(ctx context.Context, ticket string) (
 	binding = host.Binding{
 		Enrollment:    enrollment,
 		ProjectID:     redemption.ProjectID,
+		ProjectLabel:  redemption.ProjectLabel,
 		BindingID:     redemption.BindingID,
 		MainAgentID:   redemption.MainAgentID,
 		RootID:        pending.RootID,
@@ -216,18 +224,4 @@ func readTicket(input *os.File) (string, error) {
 	}
 
 	return ticket, nil
-}
-
-// projectRoot is the canonical root of the folder this runs in: the top of its Git checkout, or the folder itself
-// outside one, with every link resolved.
-func projectRoot() (string, error) {
-	folder, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-	if printed, err := exec.Command("git", "-C", folder, "rev-parse", "--show-toplevel").Output(); err == nil {
-		folder = strings.TrimSpace(string(printed))
-	}
-
-	return filepath.EvalSymlinks(folder)
 }

@@ -17,16 +17,20 @@ refuse() {
     exit 1
 }
 
+platform="$(uname -s) $(uname -m)"
+builds=$(grep -o '"source":"[a-z0-9]*-[a-z0-9]*/bin/journal-agent"' "$downloads/manifest.json" 2>/dev/null |
+    sed 's/"source":"//; s/\/bin\/journal-agent"//' | sort -u | tr '\n' ' ')
+
 case "$(uname -s)" in
     Darwin) os=darwin ;;
     Linux) os=linux ;;
-    *) refuse "this computer's system is not supported. Supported: macOS and Linux, on arm64 or amd64." ;;
+    *) refuse "this computer ($platform) is not supported. This release has builds for: ${builds:-none}. The install line was not used." ;;
 esac
 
 case "$(uname -m)" in
     arm64 | aarch64) arch=arm64 ;;
     x86_64 | amd64) arch=amd64 ;;
-    *) refuse "this computer's processor is not supported. Supported: macOS and Linux, on arm64 or amd64." ;;
+    *) refuse "this computer ($platform) is not supported. This release has builds for: ${builds:-none}. The install line was not used." ;;
 esac
 
 target="$os-$arch"
@@ -111,7 +115,8 @@ esac
 program="$downloads/journal-agent"
 program_line="\"name\":\"bin/journal-agent\",\"source\":\"$target/bin/journal-agent\",\"sha256\":\""
 program_sha256=$(grep -o "$program_line[0-9a-f]*" "$downloads/manifest.json" | sed "s/.*sha256\":\"//")
-[ -n "$program_sha256" ] || refuse "the release has no journal-agent for $target."
+[ -n "$program_sha256" ] ||
+    refuse "this release has no build for this computer ($target). It has builds for: ${builds:-none}. The install line was not used."
 
 if ! curl -fsSL --proto '=https' -o "$program" "$origin/releases/$version/$target/bin/journal-agent"; then
     refuse "journal-agent could not be downloaded from $origin."
