@@ -6,13 +6,10 @@ namespace Tests\Feature\Profiles;
 
 use App\Agents\Actions\AgentSessions;
 use App\Agents\Contracts\AccountUses;
-use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverSourceType;
 use App\Agents\Enums\DriverSwitchStage;
 use App\Agents\Enums\DriverVariant;
-use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Enums\ResumeRefusal;
 use App\Agents\Enums\StartPreflightRefusal;
 use App\Agents\Events\DriverSwitchStopped;
@@ -20,6 +17,7 @@ use App\Agents\Exceptions\DriverConflict;
 use App\Agents\Exceptions\ResumeRefused;
 use App\Agents\Exceptions\StartPreflightRefused;
 use App\Agents\Models\Agent;
+use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverConversation;
 use App\Agents\Models\DriverSwitch;
@@ -28,11 +26,9 @@ use App\Agents\Models\StartRecord;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Values\ChosenAccount;
 use App\Agents\Values\DriverSwitchTarget;
-use App\Agents\Values\HostCombination;
 use App\Agents\Values\ModelSelection;
 use App\Bus\Contracts\CommandBus;
 use App\Drivers\Enums\HookDriver;
-use App\Hooks\Compatibility\DriverCompatibility;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\StartProfileMain;
 use App\Profiles\Commands\SwitchAgentDriver;
@@ -52,6 +48,7 @@ use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
+use Tests\Support\Agents\ServesEveryCombination;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\WithActiveAccount;
@@ -65,6 +62,7 @@ final class ProfileStartTest extends TestCase
 {
     use HasContainerSupport;
     use RefreshHookDatabase;
+    use ServesEveryCombination;
     use StartsAgentRequests;
     use WithActiveAccount;
 
@@ -202,7 +200,7 @@ final class ProfileStartTest extends TestCase
             'requestId' => strtolower((string) Str::ulid()),
             'agentId' => $this->main->id,
             'expectedSessionId' => $old->sessionId,
-            'expectedGeneration' => 0,
+            'expectedGeneration' => self::generationOf($old->sessionId),
             'driver' => HookDriver::Codex->value,
             'variant' => DriverVariant::Headless->value,
             'accountId' => $codex->id,
@@ -284,6 +282,17 @@ final class ProfileStartTest extends TestCase
         ));
     }
 
+    /**
+     * The process generation the page shows for the session, 0 with no runtime, which a switch names to prove it is
+     * current.
+     */
+    private static function generationOf(string $sessionId): int
+    {
+        $runtime = AgentRuntime::ofSession($sessionId);
+
+        return $runtime === null ? 0 : $runtime->process_generation;
+    }
+
     private function switchTo(string $requestId, string $sessionId, Account $account): DriverSwitchReceipt
     {
         return $this->app->make(CommandBus::class)->run(new SwitchAgentDriver(
@@ -291,7 +300,7 @@ final class ProfileStartTest extends TestCase
             $this->main->id,
             ProfileKey::from('journal-main'),
             $sessionId,
-            0,
+            self::generationOf($sessionId),
             new DriverSwitchTarget(
                 HookDriver::Codex,
                 DriverVariant::Headless,
@@ -347,29 +356,6 @@ final class ProfileStartTest extends TestCase
         $account = $this->app->make(AccountUses::class)->accountOf($sessionId, Account::LINK_TYPE);
 
         return [$record->driver, $record->variant, $record->account_chosen, $account->id];
-    }
-
-    /**
-     * A local host of this protocol that declared every driver and variant on the protected host.
-     */
-    private function serveEveryCombination(): void
-    {
-        $host = Host::create('local host', 'secret', [base_path()], ArrangementType::Local);
-        $combinations = [];
-
-        foreach (HookDriver::cases() as $driver) {
-            foreach (DriverVariant::cases() as $variant) {
-                $combinations[] = new HostCombination(
-                    $driver,
-                    DriverCompatibility::pinned($driver)->version,
-                    ArrangementType::Local,
-                    ExecutionModeType::ProtectedHost,
-                    $variant,
-                )->stored();
-            }
-        }
-
-        $host->recordCombinations(HostProtocolVersion::current()->value, $combinations);
     }
 
     private static function main(string $model, HookDriver $driver, bool $pinned): ProposedProfile

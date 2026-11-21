@@ -4,18 +4,26 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
+use App\Actors\Contracts\ServerClock;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\StartAgent;
+use App\Agents\Contracts\StartHeartbeats;
 use App\Agents\Enums\ConversationModeType;
+use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\ProcessStartState;
+use App\Agents\Enums\SessionStatus;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Events\StartAccepted;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Agents\Exceptions\AgentBusy;
+use App\Agents\Exceptions\HostUnavailable;
 use App\Agents\Exceptions\StartRefused;
+use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
+use App\Agents\Models\DriverRequest;
+use App\Agents\Models\Host;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Models\StartRecord;
 use App\Agents\Resolvers\Support\PendingStartSecrets;
@@ -25,11 +33,14 @@ use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\Agents\ServesEveryCombination;
+use Tests\Support\FixedServerClock;
 use Tests\Support\HasResearcherAgent;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsOwnerRequest;
@@ -44,6 +55,7 @@ final class StartAgentTest extends TestCase
 {
     use HasResearcherAgent;
     use RefreshHookDatabase;
+    use ServesEveryCombination;
     use StartsOwnerRequest;
     use WithActiveAccount;
 
@@ -52,6 +64,7 @@ final class StartAgentTest extends TestCase
         parent::setUp();
 
         $this->chooseActiveAccounts();
+        $this->serveEveryCombination();
     }
 
     public function test_a_session_without_a_selection_cannot_be_written(): void
@@ -168,6 +181,55 @@ final class StartAgentTest extends TestCase
 
         $this->assertSame(0, ProcessStart::query()->withoutGlobalScopes()->count());
         $this->assertSame(0, AgentSession::query()->where('agent_id', $this->agent->id)->count());
+    }
+
+    public function test_a_main_start_opens_its_runtime_on_the_host_that_runs_it_and_wakes_it_there(): void
+    {
+        $host = Host::query()->sole();
+
+        $receipt = $this->start($this->request());
+
+        $runtime = AgentRuntime::ofSession($receipt->sessionId);
+        $wake = DriverRequest::query()->where('agent_runtime_id', $runtime?->id)->sole();
+        $this->assertSame(
+            [$host->id, base_path(), DriverOperation::Wake],
+            [$runtime?->host_id, $runtime?->canonical_folder, $wake->operation],
+        );
+    }
+
+    public function test_a_main_start_with_no_host_to_run_it_is_refused_and_keeps_nothing(): void
+    {
+        Host::query()->sole()->revokeAt(CarbonImmutable::now());
+
+        $this->assertThrows(fn () => $this->start($this->request()), HostUnavailable::class);
+        $this->assertSame(0, AgentSession::query()->where('agent_id', $this->agent->id)->count());
+    }
+
+    public function test_a_start_no_host_took_up_within_the_presence_window_ends_and_the_agent_can_start_again(): void
+    {
+        $receipt = $this->start($this->request());
+        $this->app->instance(ServerClock::class, new FixedServerClock(CarbonImmutable::now()->addSeconds(121)));
+
+        $this->app->make(StartHeartbeats::class)->markSilentStarts();
+
+        $session = AgentSession::query()->findOrFail($receipt->sessionId);
+        $start = ProcessStart::query()->withoutGlobalScopes()->where('session_id', $receipt->sessionId)->sole();
+        $this->assertSame(
+            [SessionStatus::Ended, ProcessStartState::Cancelled],
+            [$session->status, $start->state],
+        );
+        $this->assertNotSame($receipt->sessionId, $this->start($this->request())->sessionId);
+    }
+
+    public function test_a_start_a_host_took_up_stays_running_when_it_falls_silent(): void
+    {
+        $receipt = $this->start($this->request());
+        ProcessStart::query()->withoutGlobalScopes()->where('session_id', $receipt->sessionId)->sole()->claim();
+        $this->app->instance(ServerClock::class, new FixedServerClock(CarbonImmutable::now()->addSeconds(121)));
+
+        $this->app->make(StartHeartbeats::class)->markSilentStarts();
+
+        $this->assertSame(SessionStatus::Silent, AgentSession::query()->findOrFail($receipt->sessionId)->status);
     }
 
     private function request(): StartRequest

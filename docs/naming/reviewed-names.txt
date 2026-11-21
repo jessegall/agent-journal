@@ -432,6 +432,7 @@ case	HookEvent::SessionStart
 case	HookEvent::Stop
 case	HookEvent::StopFailure
 case	HookEvent::UserPromptSubmit
+case	HostCapabilityType::AccountIsolation
 case	HostCapabilityType::AccountTransport
 case	HostCapabilityType::CallbackSeparation
 case	HostCapabilityType::CompletionFence
@@ -2988,6 +2989,7 @@ class	LaunchCandidateQuery
 class	LaunchEnded
 class	LaunchLimits
 class	LaunchProfileKey
+class	LaunchProfiles
 class	Layout
 class	LayoutData
 class	LayoutRequest
@@ -6482,6 +6484,7 @@ constant	StackWriteScan::ROW
 constant	StackWriteScan::SHARED_NAMES
 constant	StaleContinuation::CODE
 constant	StartAccountWindowResolver::MOST_USES
+constant	StartHeartbeats::UNCLAIMED_ENDED_PER_SWEEP
 constant	StartReceipt::ACTUAL_MODEL_NOT_REPORTED
 constant	StartRecordResolver::MOST_PER_OWNER
 constant	StateBlocked::CODE
@@ -12732,6 +12735,7 @@ method	Host::casts()
 method	Host::containedProtectionOf()
 method	Host::create()
 method	Host::declares()
+method	Host::declaresCombination()
 method	Host::forSecret()
 method	Host::hashOf()
 method	Host::isRevoked()
@@ -12740,9 +12744,11 @@ method	Host::protectionOf()
 method	Host::recordCombinations()
 method	Host::recordProtection()
 method	Host::revokeAt()
+method	Host::runningStart()
 method	Host::runsPlacement()
 method	Host::serving()
 method	Host::speaksCurrentProtocol()
+method	Host::startFolder()
 method	HostAccess::__construct()
 method	HostAccess::changesFiles()
 method	HostAccess::contains()
@@ -12762,6 +12768,7 @@ method	HostArrangementRefused::unlikeEnrollment()
 method	HostCapabilities::capability()
 method	HostCapability::__construct()
 method	HostCapability::assertSupported()
+method	HostCapability::isSupported()
 method	HostCapabilityQuery::__construct()
 method	HostCapabilityQuery::describe()
 method	HostCapabilityType::refusalFor()
@@ -12819,6 +12826,8 @@ method	HostStartRefused::unreachable()
 method	HostStartReplyData::__construct()
 method	HostStopReplyData::__construct()
 method	HostUnavailable::forHost()
+method	HostUnavailable::forStart()
+method	HostUnavailable::withoutStartFolder()
 method	IdentityLinks::among()
 method	IdentityLinks::link()
 method	IdentityLinks::linkedOfType()
@@ -13210,6 +13219,9 @@ method	LaunchProfileKey::__construct()
 method	LaunchProfileType::capabilities()
 method	LaunchProfileType::needsAccount()
 method	LaunchProfileType::user()
+method	LaunchProfiles::__construct()
+method	LaunchProfiles::for()
+method	LaunchProfiles::trialOf()
 method	Layout::casts()
 method	Layout::create()
 method	Layout::saveNameAndShape()
@@ -19765,7 +19777,9 @@ method	StartAgent::startedAgentId()
 method	StartAgentController::__invoke()
 method	StartAgentHandler::__construct()
 method	StartAgentHandler::handle()
+method	StartAgentHandler::hostRuntimeOf()
 method	StartAgentHandler::receiptOf()
+method	StartAgentHandler::wakeOnHost()
 method	StartAgentRequest::command()
 method	StartAgentRequest::rules()
 method	StartAnalysis::handle()
@@ -19797,6 +19811,8 @@ method	StartGrant::toArray()
 method	StartGrantController::__invoke()
 method	StartGrantRequested::__construct()
 method	StartHeartbeats::__construct()
+method	StartHeartbeats::endUnclaimed()
+method	StartHeartbeats::endUnclaimedSince()
 method	StartHeartbeats::markExited()
 method	StartHeartbeats::markSilentSince()
 method	StartHeartbeats::markSilentStarts()
@@ -22366,6 +22382,7 @@ parameter	$driverName
 parameter	$driverPinned
 parameter	$driverSource
 parameter	$driverVersion
+parameter	$drivers
 parameter	$due
 parameter	$duration
 parameter	$durationMilliseconds
@@ -22863,6 +22880,7 @@ parameter	$latest
 parameter	$latestLine
 parameter	$launch
 parameter	$launchProfile
+parameter	$launchProfiles
 parameter	$launchReference
 parameter	$launches
 parameter	$layout
@@ -24082,6 +24100,7 @@ parameter	$transport
 parameter	$transportProfile
 parameter	$tree
 parameter	$treeDigest
+parameter	$trialDrivers
 parameter	$trigger
 parameter	$truncated
 parameter	$trust
@@ -27551,6 +27570,9 @@ property	LaunchEnded::$work
 property	LaunchLimits::$clock
 property	LaunchLimits::$requests
 property	LaunchProfileKey::$key
+property	LaunchProfiles::$arrangement
+property	LaunchProfiles::$capabilities
+property	LaunchProfiles::$trialDrivers
 property	LayoutData::$id
 property	LayoutData::$name
 property	LayoutData::$shape
@@ -30956,6 +30978,7 @@ property	SequenceWork::$stepNumber
 property	SessionClosed::$agentId
 property	SessionClosed::$sessionId
 property	SessionContainers::$arrangement
+property	SessionContainers::$launchProfiles
 property	SessionContainers::$policies
 property	SessionEndDetails::$reason
 property	SessionEnded::$end
@@ -31690,6 +31713,7 @@ property	StartAgentHandler::$pendingStarts
 property	StartAgentHandler::$replyInboxes
 property	StartAgentHandler::$sessions
 property	StartAgentHandler::$starts
+property	StartAgentHandler::$wakes
 property	StartDriver::$driver
 property	StartDriver::$provider
 property	StartEnvironment::$variables

@@ -12,21 +12,29 @@ use App\Agents\Actions\StartSessions;
 use App\Agents\Commands\StartAgent;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Enums\StartOriginType;
 use App\Agents\Events\StartAccepted;
 use App\Agents\Exceptions\AgentBusy;
+use App\Agents\Exceptions\HostUnavailable;
 use App\Agents\Exceptions\StartRefused;
 use App\Agents\Exceptions\StartRequestConflict;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverSwitch;
+use App\Agents\Models\Host;
 use App\Agents\Models\SessionPolicy;
 use App\Agents\Models\StartRecord;
 use App\Agents\Resolvers\Support\PendingStartSecrets;
+use App\Agents\Support\AgentWakes;
 use App\Agents\Support\ContainerAdmission;
+use App\Agents\Support\StartedAgent;
 use App\Agents\Support\StartReceipt;
+use App\Agents\Values\RuntimeIntent;
+use App\Agents\Values\StackTarget;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
+use App\Hooks\Compatibility\DriverCompatibility;
 
 /**
  * Starts inside the command's transaction: the request's record first, so a repeat finds its start; then the
@@ -44,6 +52,7 @@ final readonly class StartAgentHandler implements CommandHandler
         private ContainerAdmission $containers,
         private ReplyInboxes $replyInboxes,
         private CommandFacts $facts,
+        private AgentWakes $wakes,
     ) {}
 
     /**
@@ -90,8 +99,10 @@ final readonly class StartAgentHandler implements CommandHandler
             $request->requestId,
             $parent,
             $request->authorizedSource,
+            self::hostRuntimeOf($request),
         );
         $this->pendingStarts->register($started->session, $account);
+        $this->wakeOnHost($started);
         SessionPolicy::create($started->session, $request->policy);
         $record->startedAs($started->session);
         $this->pendingSecrets->keep($request->requestId, $started);
@@ -103,6 +114,51 @@ final readonly class StartAgentHandler implements CommandHandler
         ));
 
         return self::receiptOf($request, $started->session, true);
+    }
+
+    /**
+     * A main start runs on the host that runs its driver build, placement and variant, in that host's start folder; a
+     * start an owner runs through its own host's start socket opens no runtime here.
+     *
+     * @throws HostUnavailable
+     */
+    private static function hostRuntimeOf(StartRequest $request): RuntimeIntent|null
+    {
+        if ($request->origin !== StartOriginType::MainStart) {
+            return null;
+        }
+
+        $driver = $request->selection->driver;
+        $build = DriverCompatibility::pinned($driver)->version;
+        $host = Host::runningStart($driver, $build, $request->execution()->mode, $request->variant);
+
+        return new RuntimeIntent(
+            $host->id,
+            $host->startFolder(),
+            $driver->value,
+            $build,
+            $driver->value,
+            $request->variant,
+            $request->selection->model,
+            null,
+            null,
+            $request->savesVariant,
+        );
+    }
+
+    /**
+     * The host learns of a runtime it was handed by claiming a request for it, so the new runtime gets a wake.
+     */
+    private function wakeOnHost(StartedAgent $started): void
+    {
+        if ($started->runtime === null) {
+            return;
+        }
+
+        $this->wakes->wake(
+            new StackTarget($started->session->agent_id, $started->session->id),
+            'start-'.$started->session->id,
+        );
     }
 
     private static function receiptOf(StartRequest $request, AgentSession $session, bool $newSession): StartReceipt
