@@ -150,7 +150,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
                 return $this->suspend($run, $instruction->source->line, $outcome);
             }
 
-            if ($run->recordedResult($step) === null) {
+            if (! $run->hasRecordedStep($step)) {
                 ProfileStepResult::create($run, $step, $outcome);
             }
 

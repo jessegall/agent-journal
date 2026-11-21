@@ -15,15 +15,15 @@ use App\Agents\Support\OfflineReplySeal;
 use App\Agents\Support\RuntimeStart;
 use App\Agents\Support\SessionContainers;
 use App\Agents\Support\StartAdditions;
+use App\Agents\Support\StartExtensionRequests;
 use App\Agents\Support\StartGrant;
 use App\Contracts\CommandHandler;
-use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class ClaimStartGrantHandler implements CommandHandler
 {
     public function __construct(
         private HostRuntimes $runtimes,
-        private Dispatcher $events,
+        private StartExtensionRequests $extensions,
         private OfflineReplySeal $seal,
         private SessionContainers $containers,
     ) {}
@@ -47,7 +47,7 @@ final readonly class ClaimStartGrantHandler implements CommandHandler
         }
 
         $additions = new StartAdditions();
-        $this->events->dispatch(new StartGrantRequested($runtime->agent_session_id, $additions));
+        $this->extensions->grantAdditions(new StartGrantRequested($runtime->agent_session_id, $additions));
 
         $session = $runtime->load('session')->session;
         $pin = new StartProfilePin((string) $session->profile_key, (int) $session->profile_revision);

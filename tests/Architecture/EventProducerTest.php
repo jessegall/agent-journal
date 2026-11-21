@@ -17,7 +17,7 @@ use Tests\TestCase;
 
 /**
  * A migrated event has one producer, its model (plan 40): every send of an event in app and the domains is either
- * the raise of its owning model method or a producer its area's list in tests/Architecture/Legacy/EventProducers
+ * the raise of its owning model method or a producer its area's list in tests/Architecture/EventOwners
  * names, so a new producer, a send moved into a support service and a duplicate send all fail. A migrated fact also
  * carries a payload a queue can hold.
  */

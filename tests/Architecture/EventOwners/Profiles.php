@@ -21,9 +21,9 @@ use App\Profiles\Events\SignInAttemptStarted;
 use Tests\Architecture\Support\EventRole;
 
 /**
- * The events of Profiles with their role, owning transition and the files that send them today (doc 70, table 1).
- * Each migration slice sets migrated, names a sample, and leaves its owner the one producer; EventProducerTest fails
- * on any producer not listed here. AccountsChanged is the projection of the row facts the Accounts page shows, and of
+ * The events of Profiles with their role, owning transition or the files that send them.
+ * Each row fact names its owning transition and a sample; every other event names the files that send it.
+ * EventProducerTest fails on any producer not listed here. AccountsChanged is the projection of the row facts the Accounts page shows, and of
  * the challenge a host publishes, which writes a cache entry and no row.
  */
 return [
@@ -106,8 +106,7 @@ return [
         'sample' => fn () => new AccountSwitched('claude-code', 'account'),
     ],
     ProfileRevisionRevoked::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'Profile::retire',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Profiles/Handlers/RevokeProfilesHandler.php',

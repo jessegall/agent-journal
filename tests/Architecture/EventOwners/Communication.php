@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
+use App\Communication\Enums\DismissalType;
 use App\Communication\Events\MessageAnswered;
 use App\Communication\Events\MessageAnswerRequired;
 use App\Communication\Events\MessageClaimReleased;
@@ -9,15 +12,12 @@ use App\Communication\Events\MessageDismissed;
 use App\Communication\Events\MessageRead;
 use App\Communication\Events\MessageSent;
 use App\Communication\Events\MessageTakenUp;
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Enums\DismissalType;
 use Tests\Architecture\Support\EventRole;
 
 /**
- * The events of Communication with their role, owning transition and the files that send them today (doc 70, table 1).
- * Each migration slice sets migrated, names a sample, and leaves its owner the one producer; EventProducerTest fails
- * on any producer not listed here.
+ * The events of Communication with their role, owning transition or the files that send them.
+ * Each row fact names its owning transition and a sample; every other event names the files that send it.
+ * EventProducerTest fails on any producer not listed here.
  */
 return [
     MessageAnswerRequired::class => [

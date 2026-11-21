@@ -35,7 +35,7 @@ releases nothing. Each fact carries plain values: ids, and Core values such as `
 | `TaskFinished`, `TaskBlocked`, `TaskCancelled` | `Task::finish`, `Task::block`, `Task::cancel` | a task's run ended | task id |
 | `AssignmentsChanged` | command-level: `AssignmentFacts` | an assignment command or a retirement changed at least one record; a command that changed nothing raises nothing | operation id, the acting actor, the reason (assigned, reassigned, unassigned, retired), every actual change with its record and before and after assignment, the time |
 
-`tests/Architecture/Legacy/EventProducers` lists every event with its owner, and `EventProducerTest` fails on a fact
+`tests/Architecture/EventOwners` lists every event with its owner, and `EventProducerTest` fails on a fact
 sent anywhere else. `AssignmentsChanged` is staged once per command, never per record, and only from the attempt that
 committed: an attempt the writer ran again after a serialization failure leaves no fact. A cascade over a plan raises
 one fact for all its changes.

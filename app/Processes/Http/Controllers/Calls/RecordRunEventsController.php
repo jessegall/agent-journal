@@ -24,7 +24,7 @@ final readonly class RecordRunEventsController
     ): RunEventsAccepted {
         abort_unless($processRun->acceptsEventKey($call->eventKey), 403, 'This event key is not the run\'s.');
 
-        $events = new RunEventBatch($call->events)->toJson();
+        $events = RunEventBatch::from(['events' => $call->events])->toJson();
 
         return new RunEventsAccepted($commands->run(new RecordRunEvents($processRun->id, $events)));
     }

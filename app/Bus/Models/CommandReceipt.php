@@ -122,26 +122,6 @@ final class CommandReceipt extends Model implements ReadableModel
         );
     }
 
-    /**
-     * A new receipt of the refusal a write got after its transaction rolled back.
-     *
-     * @param  array<string, mixed>  $details
-     */
-    public static function createRefused(
-        ReceiptCaller $caller,
-        string $requestKey,
-        object $command,
-        ReceiptRetention $retention,
-        RefusalCode $code,
-        string $message,
-        array $details = [],
-    ): self {
-        return self::query()->create([
-            ...self::keyColumns($caller, $requestKey, $command, $retention),
-            ...self::refusalColumns($code, $message, $details),
-        ]);
-    }
-
     // ----------[ Queries ]----------
 
     /**
@@ -181,7 +161,11 @@ final class CommandReceipt extends Model implements ReadableModel
             return;
         }
 
-        $this->fill(self::refusalColumns($code, $message, $details))->save();
+        $this->state = ReceiptState::Refused;
+        $this->refusal_code = $code->value;
+        $this->refusal_message = $message;
+        $this->refusal_details = $details;
+        $this->save();
     }
 
     // ----------[ Answers ]----------
@@ -244,20 +228,6 @@ final class CommandReceipt extends Model implements ReadableModel
     }
 
     // ----------[ Internals ]----------
-
-    /**
-     * @param  array<string, mixed>  $details
-     * @return array<string, mixed>
-     */
-    private static function refusalColumns(RefusalCode $code, string $message, array $details): array
-    {
-        return [
-            'state' => ReceiptState::Refused,
-            'refusal_code' => $code->value,
-            'refusal_message' => $message,
-            'refusal_details' => $details,
-        ];
-    }
 
     /**
      * @return array<string, mixed>

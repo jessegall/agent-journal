@@ -7,6 +7,7 @@ namespace Tests\Feature\Actors;
 use App\Actors\Models\UserPresence;
 use App\Actors\Support\DatabaseClock;
 use App\Actors\Support\PresenceWindow;
+use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\ActsAsOwner;
