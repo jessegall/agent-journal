@@ -120,11 +120,13 @@ afterEach(() => {
 });
 
 describe('an account row', () => {
-    it('reads its driver and what it bills in one plain line, and says when it is the default', () => {
-        expect(row().text()).toContain('Codex subscription');
-        expect(row({ isChosen: true }).text()).toContain(
-            'Codex subscription · Default',
-        );
+    it('reads its driver, what it bills, its state and whether it is the default in one line under its name', () => {
+        const line = row({ isChosen: true }).find('li > div > div');
+
+        expect(line.text()).toContain('Codex subscription');
+        expect(line.text()).toContain('Default');
+        expect(line.text()).toContain('Signed in');
+        expect(row().find('li > div > div').text()).not.toContain('Default');
     });
 
     it('never repeats who it is signed in as under its name', () => {
@@ -137,12 +139,12 @@ describe('an account row', () => {
         );
     });
 
-    it('shows the expiry under its state, so an expiring row is no taller', () => {
+    it('shows the expiry on the line under its name, so its buttons keep their room', () => {
         const shown = row({
             account: account({ expiresAt: '2026-12-01T00:00:00Z' }),
         });
 
-        expect(shown.text()).toContain('Expires');
+        expect(shown.find('li > div > div').text()).toContain('Expires');
     });
 
     it('has one settings button and no other icon actions', () => {

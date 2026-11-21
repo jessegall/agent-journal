@@ -74,6 +74,7 @@ Copy code
 Copy link
 Copy the code the page shows when you are done.
 Dark
+Default
 Delete
 Detach
 Disable

@@ -54,7 +54,7 @@ function resumeOrAgain(row: AccountRowData): void {
 </script>
 
 <template>
-    <div class="flex flex-col">
+    <div class="mx-auto flex w-full max-w-[760px] flex-col sm:pt-4">
         <PageHeader title="Accounts" :count="data.rows.length">
             <template #actions>
                 <template v-if="waitingSignIn !== undefined">
@@ -96,7 +96,9 @@ function resumeOrAgain(row: AccountRowData): void {
             </div>
         </template>
         <template v-else>
-            <ul class="border-t border-line">
+            <ul
+                class="border-t border-line sm:overflow-hidden sm:rounded-card sm:border sm:bg-bg"
+            >
                 <template v-for="row in data.rows" :key="row.id">
                     <AccountRow
                         :account="row"

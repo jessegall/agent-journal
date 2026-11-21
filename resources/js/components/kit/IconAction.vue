@@ -5,14 +5,19 @@ import type { IconName } from './Icon.vue';
 
 /**
  * Version 5's flush icon button with its tooltip: a 24 px square in one quiet grey, a slight fill on hover, and its
- * tip shown on hover or keyboard focus after a short delay. The label says the whole action for a screen reader.
+ * tip shown on hover or keyboard focus after a short delay. The label says the whole action for a screen reader; the
+ * icon may draw smaller inside the same square.
  */
-defineProps<{
-    icon: IconName;
-    tip: string;
-    label: string;
-    isPressed?: boolean;
-}>();
+withDefaults(
+    defineProps<{
+        icon: IconName;
+        tip: string;
+        label: string;
+        isPressed?: boolean;
+        iconSize?: number;
+    }>(),
+    { isPressed: undefined, iconSize: 16 },
+);
 </script>
 
 <template>
@@ -22,7 +27,7 @@ defineProps<{
             :aria-label="label"
             :aria-pressed="isPressed === undefined ? undefined : isPressed"
         >
-            <Icon :name="icon" />
+            <Icon :name="icon" :size="iconSize" />
         </Button>
         <span
             role="tooltip"
