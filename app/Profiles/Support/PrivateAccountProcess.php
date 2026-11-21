@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
+use App\Profiles\Exceptions\SignInAnswerUndelivered;
 use App\Profiles\Exceptions\SignInProtocolMissing;
 use Closure;
 
@@ -96,11 +97,18 @@ final class PrivateAccountProcess
     }
 
     /**
-     * Gives the program a line on its standard input, such as the code the user typed.
+     * Gives the program a line on its standard input, such as the code the user typed, whole.
+     *
+     * @throws SignInAnswerUndelivered
      */
     public function send(string $line): void
     {
-        fwrite($this->pipes[0], $line.PHP_EOL);
+        $text = $line.PHP_EOL;
+        $written = @fwrite($this->pipes[0], $text);
+
+        if ($written !== strlen($text) || ! fflush($this->pipes[0])) {
+            throw SignInAnswerUndelivered::toProgram();
+        }
     }
 
     /**

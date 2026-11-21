@@ -534,10 +534,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Ends the attempt and lets go of the account folder it wrote, so a later attempt may write it; an account signed
-     * in again that may have changed is checked before starts use it again.
-     */
-    /**
      * A new account came of the attempt: it ends complete and names that account as its result.
      */
     public function completeWith(Account $account): void
@@ -555,6 +551,20 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         $this->finish(SignInState::AlreadyAdded);
     }
 
+    /**
+     * Handing the user's answer to the program broke partway: the attempt ends interrupted with that reason, so it is
+     * told apart from a reply the browser lost, and a fresh sign-in is the way on.
+     */
+    public function interrupt(string $reason): void
+    {
+        $this->refusal = $reason;
+        $this->finish(SignInState::Interrupted);
+    }
+
+    /**
+     * Ends the attempt and lets go of the account folder it wrote, so a later attempt may write it; an account signed
+     * in again that may have changed is checked before starts use it again.
+     */
     public function finish(SignInState $state): void
     {
         $this->end($state);

@@ -13,6 +13,8 @@ use App\Profiles\Contracts\SignInHost;
 use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\SignInOutcome;
+use App\Profiles\Exceptions\SignInAnswerUndelivered;
+use App\Profiles\Exceptions\SignInSecretUnwritable;
 use App\Profiles\Values\ClaimedCleanup;
 use App\Profiles\Values\ClaimedSignIn;
 use App\Profiles\Values\CleanupProgress;
@@ -221,11 +223,32 @@ final readonly class PrivateSignInProcesses
                 return false;
             }
 
-            if ($poll->code !== null) {
-                $protocol->acceptCode($process, $poll->code);
+            if ($poll->code !== null && ! $this->deliver($protocol, $process, $claimed, $poll->code)) {
+                return false;
             }
 
             ($this->pause)();
+        }
+
+        return true;
+    }
+
+    /**
+     * Hands the user's answer to the program and answers whether it arrived whole; one that may have arrived in part
+     * ends the attempt interrupted, since an answer the program may have taken is never given again.
+     */
+    private function deliver(
+        SignInProtocol $protocol,
+        PrivateAccountProcess $process,
+        ClaimedSignIn $claimed,
+        string $answer,
+    ): bool {
+        try {
+            $protocol->acceptCode($process, $answer);
+        } catch (SignInAnswerUndelivered|SignInSecretUnwritable $broken) {
+            $this->host->report($claimed, SignInOutcome::Interrupted, SignInIdentity::unproved(), $broken->getMessage());
+
+            return false;
         }
 
         return true;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
+use App\Profiles\Enums\SignInState;
+use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Values\SignInChallenge;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Cache\Repository;
@@ -37,19 +39,35 @@ final readonly class SignInChallenges
         return new SignInChallenge((string) $challengeFields['address'], $challengeFields['code'] ?? null);
     }
 
-    public function typeCode(string $attemptId, string $code, CarbonImmutable $until): void
+    /**
+     * Stages the user's answer under its request key until the deadline; the host is handed it only once the attempt's
+     * acceptance of that key is committed.
+     */
+    public function typeCode(string $attemptId, string $submissionKey, string $code, CarbonImmutable $until): void
     {
-        $this->cache->put(self::codeKey($attemptId), $this->encrypter->encrypt($code), $until);
+        $answer = ['key' => $submissionKey, 'code' => $code];
+        $this->cache->put(self::codeKey($attemptId), $this->encrypter->encrypt($answer), $until);
     }
 
     /**
-     * The code the user typed, handed over once.
+     * The answer the attempt accepted, handed over once; an answer whose acceptance never committed stays where it is
+     * and is never handed out.
      */
-    public function takeCode(string $attemptId): string|null
+    public function takeCode(SignInAttempt $attempt): string|null
     {
-        $stored = $this->cache->pull(self::codeKey($attemptId));
+        $stored = $this->cache->get(self::codeKey($attempt->id));
 
-        return is_string($stored) ? (string) $this->encrypter->decrypt($stored) : null;
+        if (! is_string($stored)) {
+            return null;
+        }
+
+        $answer = $this->encrypter->decrypt($stored);
+
+        if ($attempt->state !== SignInState::Checking || ! $attempt->tookAnswer((string) $answer['key'])) {
+            return null;
+        }
+
+        return $this->cache->pull(self::codeKey($attempt->id)) === null ? null : (string) $answer['code'];
     }
 
     /**

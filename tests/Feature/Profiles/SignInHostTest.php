@@ -21,13 +21,16 @@ use App\Profiles\Models\Account;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\LocalAccountFolders;
 use App\Profiles\Support\PrivateSignInProcesses;
+use App\Profiles\Support\SignInChallenges;
 use App\Profiles\Support\SignInProtocols;
 use App\Profiles\Values\ClaimedSignIn;
+use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
+use Tests\Fixtures\Profiles\ClosedInputProtocol;
 use Tests\Fixtures\Profiles\FinishingProtocol;
 use Tests\Fixtures\Profiles\LingeringProtocol;
 use Tests\Fixtures\Profiles\RecordingSignInHost;
@@ -214,6 +217,56 @@ final class SignInHostTest extends TestCase
         $this->assertSame(SignInState::Cancelled, $this->attempt($attemptId)->state);
         $read = $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/challenge");
         $this->assertNull($read->json('address'));
+    }
+
+    public function test_an_answer_whose_acceptance_never_committed_is_never_handed_to_the_host(): void
+    {
+        $owner = $this->owner();
+        $host = $this->enrollHost();
+        $attemptId = $this->begin();
+        $this->signed($host, '/host/sign-ins/claim');
+        $this->report($host, $attemptId, 'waiting')->assertNoContent();
+
+        $this->app->make(SignInChallenges::class)
+            ->typeCode($attemptId, 'answer-rolled-back', '1234', CarbonImmutable::now()->addMinutes(5));
+
+        $this->signed($host, "/host/sign-ins/{$attemptId}/code", ['generation' => 0])
+            ->assertExactJson(['live' => true, 'code' => null]);
+        $this->actingAs($owner)->withHeader('Idempotency-Key', 'answer-1')
+            ->post("/accounts/sign-ins/{$attemptId}/code", ['code' => '5678'])->assertStatus(303);
+        $this->signed($host, "/host/sign-ins/{$attemptId}/code", ['generation' => 0])
+            ->assertExactJson(['live' => true, 'code' => '5678']);
+    }
+
+    public function test_a_delivery_that_breaks_ends_the_attempt_interrupted_with_the_answer_erased(): void
+    {
+        $host = $this->enrollHost();
+        $attemptId = $this->begin();
+        $this->signed($host, '/host/sign-ins/claim');
+        $this->report($host, $attemptId, 'waiting')->assertNoContent();
+        $this->actingAs($this->owner())->withHeader('Idempotency-Key', 'answer-1')
+            ->post("/accounts/sign-ins/{$attemptId}/code", ['code' => '1234'])->assertStatus(303);
+
+        $this->report($host, $attemptId, 'interrupted')->assertNoContent();
+
+        $attempt = $this->attempt($attemptId);
+        $this->assertSame(SignInState::Interrupted, $attempt->state);
+        $this->assertStringContainsString('start a fresh sign-in', (string) $attempt->refusal);
+        $this->assertNull($this->app->make(SignInChallenges::class)->takeCode($attempt));
+    }
+
+    public function test_the_runner_stops_a_program_its_answer_could_not_reach_and_reports_it_interrupted(): void
+    {
+        $directory = $this->root.'/new-account';
+        $host = new RecordingSignInHost(self::claimed('claude-code', SignInMethod::OAuth, $directory));
+        $host->answer = '1234';
+        $protocols = new SignInProtocols($this->app);
+        $protocols->register('claude-code', SignInMethod::OAuth, ClosedInputProtocol::class);
+
+        new PrivateSignInProcesses($host, $protocols, static fn () => usleep(10_000), $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->runNext();
+
+        $this->assertSame([SignInOutcome::Waiting, SignInOutcome::Interrupted], $host->outcomes);
+        $this->assertStringContainsString('start a fresh sign-in', (string) end($host->refusals));
     }
 
     public function test_the_runner_makes_the_folder_private_and_reports_what_the_check_says(): void

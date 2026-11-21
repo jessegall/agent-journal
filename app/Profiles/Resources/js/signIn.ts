@@ -70,7 +70,8 @@ const endedMessages: Record<string, string> = {
         'That sign-in was for a different account. The saved login is unchanged; you can add it as a new account.',
     failed: 'The sign-in did not finish.',
     expired: 'The sign-in took too long and was stopped.',
-    interrupted: 'The sign-in was interrupted.',
+    interrupted:
+        'The sign-in stopped before your answer reached it, so it was not used. Start a fresh sign-in.',
     cancelled: 'The sign-in was cancelled.',
 };
 

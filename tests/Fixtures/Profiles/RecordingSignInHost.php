@@ -28,6 +28,11 @@ final class RecordingSignInHost implements SignInHost
     public int $pollCount = 0;
 
     /**
+     * The answer the next live poll hands out, once.
+     */
+    public string|null $answer = null;
+
+    /**
      * @var list<SignInOutcome>
      */
     public array $outcomes = [];
@@ -112,8 +117,9 @@ final class RecordingSignInHost implements SignInHost
     public function poll(ClaimedSignIn $claimed): SignInPoll
     {
         $this->pollCount++;
+        [$answer, $this->answer] = [$this->answer, null];
 
-        return new SignInPoll($this->pollCount < $this->livePolls, null);
+        return new SignInPoll($this->pollCount < $this->livePolls, $answer);
     }
 
     public function report(

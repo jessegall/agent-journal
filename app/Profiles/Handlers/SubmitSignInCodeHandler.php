@@ -41,7 +41,7 @@ final readonly class SubmitSignInCodeHandler implements CommandHandler
             ? $this->secretOf($attempt, $command->code)
             : SignInCode::from($command->code)->code;
 
-        $this->challenges->typeCode($attempt->id, $text, $attempt->expires_at);
+        $this->challenges->typeCode($attempt->id, $command->submissionKey, $text, $attempt->expires_at);
         $attempt->acceptAnswer($command->submissionKey);
     }
 

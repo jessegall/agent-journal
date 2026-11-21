@@ -67,8 +67,8 @@ final class SignInSecretTest extends TestCase
         $this->submit($attempt, " {$key} ");
 
         $challenges = $this->app->make(SignInChallenges::class);
-        $this->assertSame($key, $challenges->takeCode($attempt->id));
-        $this->assertNull($challenges->takeCode($attempt->id));
+        $this->assertSame($key, $challenges->takeCode($attempt->refresh()));
+        $this->assertNull($challenges->takeCode($attempt->refresh()));
         $row = (string) json_encode(DB::table('sign_in_attempts')->where('id', $attempt->id)->sole());
         $this->assertStringNotContainsString($key, $row);
         $this->assertSame(64, strlen((string) $attempt->refresh()->fingerprint));
@@ -115,12 +115,12 @@ final class SignInSecretTest extends TestCase
                 SignInCodeInvalid::class,
                 'it has spaces. Paste the',
             );
-            $this->assertNull($challenges->takeCode($attempt->id));
+            $this->assertNull($challenges->takeCode($attempt->refresh()));
             $this->assertTrue($attempt->refresh()->isLive());
             $this->assertNotSame(SignInState::Checking, $attempt->state);
 
             $this->submit($attempt, $code);
-            $this->assertSame($code, $challenges->takeCode($attempt->id));
+            $this->assertSame($code, $challenges->takeCode($attempt->refresh()));
             $this->assertSame(SignInState::Checking, $attempt->refresh()->state);
         }
     }
@@ -137,8 +137,8 @@ final class SignInSecretTest extends TestCase
         $answer('1234', 'answer-1');
         $answer('9999', 'answer-1');
 
-        $this->assertSame('1234', $challenges->takeCode($attempt->id));
-        $this->assertNull($challenges->takeCode($attempt->id));
+        $this->assertSame('1234', $challenges->takeCode($attempt->refresh()));
+        $this->assertNull($challenges->takeCode($attempt->refresh()));
         $this->assertSame(SignInState::Checking, $attempt->refresh()->state);
         $this->assertThrows(fn () => $answer('5678', 'answer-2'), SignInAnswerRefused::class);
     }

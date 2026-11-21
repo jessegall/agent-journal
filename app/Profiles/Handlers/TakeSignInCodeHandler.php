@@ -30,6 +30,6 @@ final readonly class TakeSignInCodeHandler implements CommandHandler
             return SignInPoll::ended();
         }
 
-        return new SignInPoll(true, $this->challenges->takeCode($attempt->id));
+        return new SignInPoll(true, $this->challenges->takeCode($attempt));
     }
 }

@@ -986,6 +986,7 @@ case	SignInMethod::ApiKey
 case	SignInMethod::OAuth
 case	SignInMethod::ProviderToken
 case	SignInOutcome::Failed
+case	SignInOutcome::Interrupted
 case	SignInOutcome::Verified
 case	SignInOutcome::Waiting
 case	SignInReceiptStatus::Expired
@@ -5228,6 +5229,7 @@ class	ShowReportController
 class	SignInAgainController
 class	SignInAgainRequest
 class	SignInAnswerRefused
+class	SignInAnswerUndelivered
 class	SignInAttempt
 class	SignInAttemptCleanupRetried
 class	SignInAttemptData
@@ -16044,6 +16046,7 @@ method	PrivatePlaceScan::key()
 method	PrivateSignInProcesses::__construct()
 method	PrivateSignInProcesses::checkNext()
 method	PrivateSignInProcesses::cleanNext()
+method	PrivateSignInProcesses::deliver()
 method	PrivateSignInProcesses::isGone()
 method	PrivateSignInProcesses::isStillBound()
 method	PrivateSignInProcesses::isUnused()
@@ -18146,6 +18149,7 @@ method	ReportSignInController::__invoke()
 method	ReportSignInHandler::__construct()
 method	ReportSignInHandler::fail()
 method	ReportSignInHandler::handle()
+method	ReportSignInHandler::interrupt()
 method	ReportStopped::__construct()
 method	ReportStoppedController::__invoke()
 method	ReportStoppedHandler::__construct()
@@ -20179,6 +20183,7 @@ method	SignInAnswerRefused::asksForNone()
 method	SignInAnswerRefused::notWaiting()
 method	SignInAnswerRefused::refusalCode()
 method	SignInAnswerRefused::status()
+method	SignInAnswerUndelivered::toProgram()
 method	SignInAttempt::acceptAnswer()
 method	SignInAttempt::accepts()
 method	SignInAttempt::account()
@@ -20198,6 +20203,7 @@ method	SignInAttempt::fail()
 method	SignInAttempt::finish()
 method	SignInAttempt::finishMatching()
 method	SignInAttempt::found()
+method	SignInAttempt::interrupt()
 method	SignInAttempt::isExpiredAt()
 method	SignInAttempt::isLive()
 method	SignInAttempt::isPublishedIn()
@@ -31754,6 +31760,7 @@ property	ReportSignIn::$hostId
 property	ReportSignIn::$identity
 property	ReportSignIn::$outcome
 property	ReportSignIn::$refusal
+property	ReportSignInHandler::$challenges
 property	ReportSignInHandler::$completion
 property	ReportSignInHandler::$facts
 property	ReportStopped::$hostId

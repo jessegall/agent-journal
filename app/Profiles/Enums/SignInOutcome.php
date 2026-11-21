@@ -13,4 +13,5 @@ enum SignInOutcome: string
     case Waiting = 'waiting';
     case Verified = 'verified';
     case Failed = 'failed';
+    case Interrupted = 'interrupted';
 }
