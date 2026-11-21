@@ -8,6 +8,7 @@ use App\Connections\Http\Controllers\ApproveDeviceGrantController;
 use App\Connections\Http\Controllers\AssignBindingEnvironmentController;
 use App\Connections\Http\Controllers\BindingPresenceController;
 use App\Connections\Http\Controllers\BindingRuntimeController;
+use App\Connections\Http\Controllers\BindingStatusController;
 use App\Connections\Http\Controllers\Calls;
 use App\Connections\Http\Controllers\DeviceCommandController;
 use App\Connections\Http\Controllers\DeviceGrantController;
@@ -30,6 +31,12 @@ Route::post('/host/bindings/{binding}/presence', BindingPresenceController::clas
     ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
     ->whereUlid('binding')
     ->name('agents.host.bindings.presence');
+
+// journal status reads what the journal holds of the binding, signed like a report, and records nothing.
+Route::post('/host/bindings/{binding}/status', BindingStatusController::class)
+    ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
+    ->whereUlid('binding')
+    ->name('agents.host.bindings.status');
 
 Route::post('/host/bindings/{binding}/runtimes', BindingRuntimeController::class)
     ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)

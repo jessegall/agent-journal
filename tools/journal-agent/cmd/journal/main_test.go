@@ -26,6 +26,24 @@ func answer(commands dispatcher, arguments []string, folder string, stdin string
 
 func noGrant(host.Binding) (client.StartGrant, bool) { return client.StartGrant{}, false }
 
+// answeringJournal is a transport whose journal answers every call with the binding ready, last in contact at contact.
+type answeringJournal struct{ contact time.Time }
+
+func (journal answeringJournal) RoundTrip(request *http.Request) (*http.Response, error) {
+	body, err := json.Marshal(map[string]any{"readiness": "ready", "lastContactAt": journal.contact, "serverTime": time.Now()})
+	if err != nil {
+		return nil, err
+	}
+
+	return &http.Response{StatusCode: http.StatusOK, Header: http.Header{"Content-Type": {"application/json"}},
+		Body: io.NopCloser(bytes.NewReader(body)), Request: request}, nil
+}
+
+// reachable is a transport to a journal that answers.
+func reachable() *http.Client {
+	return &http.Client{Transport: answeringJournal{contact: time.Date(2026, 11, 21, 9, 30, 0, 0, time.UTC)}}
+}
+
 // connectedFolder makes a folder connected to a binding of its own in the state folder, as connect leaves it.
 func connectedFolder(t *testing.T, stateFolder string, parent string, name string) string {
 	t.Helper()
@@ -74,14 +92,63 @@ func TestStatusAnswersFromTheRootAndANestedFolderInAPathWithSpaces(t *testing.T)
 	if err := os.MkdirAll(nested, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	commands := dispatcher{stateFolder: state, wake: func(string, string) error { return nil }, grant: noGrant}
+	commands := dispatcher{stateFolder: state, wake: func(string, string) error { return nil }, grant: noGrant,
+		transport: reachable()}
 
 	for _, folder := range []string{root, nested} {
 		printed, _, code := answer(commands, []string{"status"}, folder, "")
-		if code != 0 || !strings.HasPrefix(printed, "Connected to https://journal.example.com · my shop · ") ||
-			!strings.Contains(printed, "last contact ") {
+		if code != 0 || !strings.HasPrefix(printed, "Enrolled with https://journal.example.com\n") ||
+			!strings.Contains(printed, "Folder my shop on ") || !strings.Contains(printed, "Last confirmed contact ") {
 			t.Fatalf("from %s: %q, %d", folder, printed, code)
 		}
+	}
+}
+
+func TestStatusTellsTheLastConfirmedContactFromAFailedRefreshAndPrintsNoSecret(t *testing.T) {
+	state := realTempDir(t)
+	root := connectedFolder(t, state, realTempDir(t), "shop")
+	connection := host.ConnectionState{Folder: state, CanonicalRoot: root}
+	binding, err := connection.Binding()
+	if err != nil {
+		t.Fatal(err)
+	}
+	binding.Secret = "host-secret-never-shown"
+	if err := connection.SaveBinding(binding); err != nil {
+		t.Fatal(err)
+	}
+	acknowledged := time.Date(2026, 11, 20, 18, 5, 0, 0, time.UTC)
+	if err := connection.SaveRelayReport(host.RelayReport{BindingID: "binding-shop", AcknowledgedAt: acknowledged,
+		Readiness: "ready"}); err != nil {
+		t.Fatal(err)
+	}
+	nested := filepath.Join(root, "src")
+	if err := os.MkdirAll(nested, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	commands := dispatcher{stateFolder: state, wake: func(string, string) error { return nil }, grant: noGrant,
+		transport: reachable()}
+
+	printed, _, code := answer(commands, []string{"status"}, nested, "")
+
+	for _, shown := range []string{"Enrolled with https://journal.example.com", "binding binding-shop",
+		"Last confirmed contact " + localMoment(time.Date(2026, 11, 21, 9, 30, 0, 0, time.UTC)), "Readiness ready"} {
+		if code != 0 || !strings.Contains(printed, shown) || strings.Contains(printed, "Refresh failed") {
+			t.Fatalf("the refreshed status printed %q, %d, without %q", printed, code, shown)
+		}
+	}
+
+	commands.transport = &http.Client{Transport: unreachable{}}
+	printed, refusal, code := answer(commands, []string{"status"}, nested, "")
+
+	if code == 0 || !strings.Contains(printed, "Last confirmed contact "+localMoment(acknowledged)) ||
+		!strings.Contains(printed, "Refresh failed: ") {
+		t.Fatalf("the status with the server stopped printed %q, %d", printed, code)
+	}
+	if strings.Contains(printed+refusal, binding.Secret) {
+		t.Fatal("the status printed the host's secret")
+	}
+	if kept, err := connection.RelayReport(); err != nil || !kept.AcknowledgedAt.Equal(acknowledged) {
+		t.Fatalf("the failed refresh changed the kept report: %+v, %v", kept, err)
 	}
 }
 
@@ -90,12 +157,13 @@ func TestTwoConnectedRootsShowTheirOwnProjects(t *testing.T) {
 	parent := realTempDir(t)
 	shop := connectedFolder(t, state, parent, "shop")
 	blog := connectedFolder(t, state, parent, "blog")
-	commands := dispatcher{stateFolder: state, wake: func(string, string) error { return nil }, grant: noGrant}
+	commands := dispatcher{stateFolder: state, wake: func(string, string) error { return nil }, grant: noGrant,
+		transport: reachable()}
 
 	shopStatus, _, _ := answer(commands, []string{"status"}, shop, "")
 	blogStatus, _, _ := answer(commands, []string{"status"}, blog, "")
 
-	if !strings.Contains(shopStatus, " · shop · ") || !strings.Contains(blogStatus, " · blog · ") {
+	if !strings.Contains(shopStatus, "Folder shop on ") || !strings.Contains(blogStatus, "Folder blog on ") {
 		t.Fatalf("statuses %q and %q", shopStatus, blogStatus)
 	}
 }
@@ -104,10 +172,11 @@ func TestAStoppedRelayIsStartedByTheCommand(t *testing.T) {
 	state := realTempDir(t)
 	root := connectedFolder(t, state, realTempDir(t), "shop")
 	woken := []string{}
-	commands := dispatcher{stateFolder: state, grant: noGrant, wake: func(_ string, bindingID string) error {
-		woken = append(woken, bindingID)
-		return nil
-	}}
+	commands := dispatcher{stateFolder: state, grant: noGrant, transport: reachable(),
+		wake: func(_ string, bindingID string) error {
+			woken = append(woken, bindingID)
+			return nil
+		}}
 
 	if _, _, code := answer(commands, []string{"status"}, root, ""); code != 0 {
 		t.Fatal("status failed")

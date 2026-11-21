@@ -196,9 +196,7 @@ func (commands dispatcher) local(
 		return 1
 	}
 
-	fmt.Fprintln(stdout, status(binding, state, folder))
-
-	return 0
+	return commands.status(binding, state, folder, stdout)
 }
 
 // claude opens the binding's main runtime on the journal and starts its isolated Claude Code session on this
@@ -643,6 +641,11 @@ func localDeadline(moment string) string {
 		return moment
 	}
 
+	return localMoment(at)
+}
+
+// localMoment is a moment in this computer's own time zone, in full.
+func localMoment(at time.Time) string {
 	return at.Local().Format("15:04 MST on Mon 2 Jan 2006")
 }
 
@@ -662,15 +665,68 @@ func writeFrameTo(stdout, stderr io.Writer) func(client.CommandFrame) error {
 	}
 }
 
-// status is the one line journal status answers.
-func status(binding host.Binding, state host.ConnectionState, folder project.Folder) string {
-	contact := "no contact yet"
+// statusRefreshWait bounds journal status's one attempt to read what the journal holds of the binding now.
+const statusRefreshWait = 3 * time.Second
+
+// status prints, a line each, the journal this machine is enrolled with, the project and binding, the folder, the last
+// confirmed contact in the user's zone and the binding's readiness. It reads both from the journal first; when that
+// read fails it shows what the last acknowledged report kept, says Refresh failed with the reason and exits 1. Local
+// files stay as they are, and no credential is printed.
+func (commands dispatcher) status(
+	binding host.Binding,
+	state host.ConnectionState,
+	folder project.Folder,
+	stdout io.Writer,
+) int {
+	contact, readiness := time.Time{}, "unknown"
 	if report, err := state.RelayReport(); err == nil {
-		contact = "last contact " + report.ReportedAt.Local().Format(time.DateTime)
+		contact, readiness = report.AcknowledgedAt, report.Readiness
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), statusRefreshWait)
+	defer cancel()
+	refreshed, refreshErr := client.ForRemoteProject(binding.Enrollment, commands.transport).BindingStatus(ctx, binding.BindingID)
+	if refreshErr == nil {
+		contact, readiness = refreshed.LastContactAt, refreshed.Readiness
 	}
 
-	return fmt.Sprintf("Connected to %s · %s · %s · %s",
-		binding.JournalURL, filepath.Base(folder.Root), host.MachineLabel(), contact)
+	fmt.Fprintln(stdout, "Enrolled with "+binding.JournalURL)
+	fmt.Fprintln(stdout, "Project "+binding.ProjectLabel+" ("+binding.ProjectID+") · binding "+binding.BindingID)
+	fmt.Fprintln(stdout, "Folder "+filepath.Base(folder.Root)+" on "+host.MachineLabel())
+	fmt.Fprintln(stdout, "Last confirmed contact "+contactText(contact))
+	fmt.Fprintln(stdout, "Readiness "+readinessText(readiness))
+	if refreshErr != nil {
+		fmt.Fprintln(stdout, "Refresh failed: "+withoutSecret(refreshErr.Error(), binding.Secret))
+		return 1
+	}
+
+	return 0
+}
+
+// contactText is the contact time in the user's own zone, or Never for a binding the journal never confirmed.
+func contactText(contact time.Time) string {
+	if contact.IsZero() {
+		return "Never"
+	}
+
+	return localMoment(contact)
+}
+
+// readinessText is the readiness as the journal named it, or unknown when no report carried one.
+func readinessText(readiness string) string {
+	if readiness == "" {
+		return "unknown"
+	}
+
+	return readiness
+}
+
+// withoutSecret hides the host's credential, should a failure ever quote it.
+func withoutSecret(text string, secret string) string {
+	if secret == "" {
+		return text
+	}
+
+	return strings.ReplaceAll(text, secret, "[hidden]")
 }
 
 // diagnose writes the binding's diagnostics bundle into the project folder and names it.

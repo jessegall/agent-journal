@@ -63,6 +63,8 @@ type RelayReport struct {
 	ReportedAt      time.Time `json:"reported_at"`
 	AcknowledgedAt  time.Time `json:"acknowledged_at"`
 	ExpiresAt       time.Time `json:"expires_at"`
+	// Readiness is the binding's effective readiness the journal answered with the report.
+	Readiness string `json:"readiness,omitempty"`
 }
 
 // AcknowledgesSetup is whether the report is the journal's acknowledgement of this binding's setup generation,

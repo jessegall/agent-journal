@@ -147,6 +147,17 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * The binding of this host, whatever its readiness; another host's binding is refused.
+     *
+     * @throws PresenceRefused
+     */
+    public static function ofHost(string $hostId, string $id): self
+    {
+        return self::query()->whereKey($id)->where('host_id', $hostId)
+            ->firstOr(fn () => throw PresenceRefused::notReadableBy($id));
+    }
+
+    /**
      * One page of the connected folders, PAGE_LIMIT at a time, oldest first by creation time and then id, with the
      * project and environment each names; the cursor reads the next slice in the same order.
      *
@@ -221,12 +232,12 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $isSameBoot = $this->boot_id === $report->bootId;
 
         if ($isSameBoot && $report->sequence <= $this->report_sequence) {
-            return $this->receipt();
+            return $this->presenceReceipt();
         }
 
         // A relay of a setup older than the one acknowledged changes nothing, as a stale sequence does.
         if ($report->setupGeneration < $this->setup_generation) {
-            return $this->receipt();
+            return $this->presenceReceipt();
         }
 
         if (! $isSameBoot && $this->hasLivePresenceAt($now) && ! $report->takesOver) {
@@ -251,7 +262,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
             $this->raise(new ProjectBindingReadinessChanged($this->id, $readiness, $now));
         }
 
-        return $this->receipt();
+        return $this->presenceReceipt();
     }
 
     /**
@@ -326,6 +337,25 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         return BindingReadiness::Ready;
     }
 
+    /**
+     * What the journal holds of the binding's presence now, with its effective readiness and last confirmed contact.
+     */
+    public function presenceReceipt(): PresenceReceipt
+    {
+        $now = CarbonImmutable::now();
+
+        return new PresenceReceipt(
+            $this->id,
+            $this->boot_generation,
+            $this->setup_generation,
+            $now->toIso8601String(),
+            (string) $this->presence_expires_at?->toIso8601String(),
+            $this->authority_generation,
+            $this->readinessAt($now)->value,
+            $this->last_contact_at?->toIso8601String(),
+        );
+    }
+
     // ----------[ Relations ]----------
 
     /**
@@ -381,17 +411,5 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         }
 
         return BindingReadiness::Ready;
-    }
-
-    private function receipt(): PresenceReceipt
-    {
-        return new PresenceReceipt(
-            $this->id,
-            $this->boot_generation,
-            $this->setup_generation,
-            CarbonImmutable::now()->toIso8601String(),
-            (string) $this->presence_expires_at?->toIso8601String(),
-            $this->authority_generation,
-        );
     }
 }

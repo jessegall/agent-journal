@@ -89,6 +89,21 @@ type PresenceReceipt struct {
 	ServerTime          time.Time `json:"serverTime"`
 	ExpiresAt           time.Time `json:"presenceExpiresAt"`
 	AuthorityGeneration int       `json:"authorityGeneration"`
+	// Readiness is where the journal holds the binding now: pending, ready, offline, incompatible or revoked.
+	Readiness string `json:"readiness"`
+}
+
+// BindingStatus is what the journal holds of a binding now: its effective readiness, its last confirmed contact,
+// zero when it never had one, and the server's time.
+type BindingStatus struct {
+	Readiness     string    `json:"readiness"`
+	LastContactAt time.Time `json:"lastContactAt"`
+	ServerTime    time.Time `json:"serverTime"`
+}
+
+// BindingStatus reads what the journal holds of the binding, signed by its host; it records no report.
+func (client *Client) BindingStatus(ctx context.Context, bindingID string) (BindingStatus, error) {
+	return answerOf[BindingStatus](ctx, client, "/host/bindings/"+url.PathEscape(bindingID)+"/status", nil)
 }
 
 // ReportPresence tells the journal the binding's relay is present, with no provider session needed.

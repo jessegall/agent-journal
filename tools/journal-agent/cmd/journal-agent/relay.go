@@ -212,7 +212,7 @@ func (binder bindingRelay) nextReport(receipt client.PresenceReceipt, failure er
 	report := host.RelayReport{
 		BindingID: receipt.BindingID, BootID: bootID, Generation: receipt.Generation,
 		SetupGeneration: receipt.SetupGeneration, ReportedAt: time.Now(), AcknowledgedAt: receipt.ServerTime,
-		ExpiresAt: receipt.ExpiresAt,
+		ExpiresAt: receipt.ExpiresAt, Readiness: receipt.Readiness,
 	}
 	if err := binder.state.SaveRelayReport(report); err != nil {
 		log.Printf("the presence report of binding %s was not kept: %v", binder.binding.BindingID, err)
