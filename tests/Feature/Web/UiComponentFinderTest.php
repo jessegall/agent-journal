@@ -38,6 +38,15 @@ final class UiComponentFinderTest extends TestCase
         $this->assertStringEndsWith('resources/js/pages/Login.vue', $finder->find('Login'));
     }
 
+    public function test_the_page_entry_is_the_component_file_from_the_project_root(): void
+    {
+        $finder = $this->app->make('inertia.view-finder');
+
+        $this->assertSame('resources/js/pages/Login.vue', $finder->entry('Login'));
+        $this->assertStringEndsWith('Library/Resources/js/Index.vue', $finder->entry('library/Index'));
+        $this->assertStringStartsNotWith('/', $finder->entry('library/Index'));
+    }
+
     public function test_an_unknown_component_is_refused(): void
     {
         $this->expectException(InvalidArgumentException::class);

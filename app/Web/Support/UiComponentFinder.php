@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Web\Support;
 
 use App\Ui\Support\UiDeclarations;
+use Illuminate\Support\Str;
 use Illuminate\View\FileViewFinder;
 use InvalidArgumentException;
 
@@ -17,7 +18,18 @@ final readonly class UiComponentFinder
     public function __construct(
         private UiDeclarations $declarations,
         private FileViewFinder $legacyPages,
+        private string $root,
     ) {}
+
+    /**
+     * The component's file as the Vite entry the page loads, a path from the project root.
+     *
+     * @throws InvalidArgumentException
+     */
+    public function entry(string $component): string
+    {
+        return Str::after($this->find($component), "{$this->root}/");
+    }
 
     /**
      * @throws InvalidArgumentException

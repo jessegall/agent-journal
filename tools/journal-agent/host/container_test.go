@@ -176,6 +176,19 @@ func TestTheAgentDaemonMustHoldThePinnedImage(t *testing.T) {
 	}
 }
 
+func TestAnUnreachableAgentDaemonIsNamedAsThatNotAsAMissingImage(t *testing.T) {
+	refused := fakeImageDocker(t, "echo 'permission denied while trying to connect to the Docker daemon socket' >&2; exit 1")
+
+	err := refused.AssertImagePinned(context.Background(), "journal/agent@sha256:aaa")
+	if !errors.Is(err, ErrAgentDaemonUnreachable) || errors.Is(err, ErrInstallationChanged) {
+		t.Fatalf("an unreachable daemon gave %v", err)
+	}
+
+	if !strings.Contains(err.Error(), "permission denied") {
+		t.Fatalf("the daemon's own words are missing from %v", err)
+	}
+}
+
 func TestAContainedStartIsProvenByItsContainer(t *testing.T) {
 	record := StartRecord{SessionID: "s1", Stage: ExecutionKnown, InContainer: true, Claim: &client.ClaimedStart{StartKey: "k1"}}
 	running := ContainerSessions{"s1": {ID: "c1", Session: "s1", Running: true}}

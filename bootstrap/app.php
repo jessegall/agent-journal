@@ -32,6 +32,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withEvents(discover: false)
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(MeasureReads::class);
+        // The app listens on 127.0.0.1 only, so whatever forwards to it is the server's own HTTPS proxy.
+        $middleware->trustProxies(at: '*');
         // An agent call is authenticated before it is throttled: the MCP rate limit counts per agent session.
         $middleware->prependToPriorityList(before: ThrottleRequests::class, prepend: AuthenticateAgent::class);
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticateUser::class);

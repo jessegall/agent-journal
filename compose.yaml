@@ -1,10 +1,22 @@
 services:
     app:
         restart: unless-stopped
+        # A server has no source folder mounted over the image (compose.override.yaml is the Mac's), so the
+        # journal's settings come from .env as the environment; the sign-in runner never gets them.
+        env_file:
+            - path: .env
+              required: false
+        # The one build of the application image; reverb, queue, scheduler and ticker run the same image by its name.
+        image: ${COMPOSE_PROJECT_NAME}-app
         build:
             context: .
             dockerfile: .docker/app/Dockerfile
             target: app
+            args:
+                VITE_REVERB_APP_KEY: ${VITE_REVERB_APP_KEY:-}
+                VITE_REVERB_HOST: ${VITE_REVERB_HOST:-}
+                VITE_REVERB_PORT: ${VITE_REVERB_PORT:-}
+                VITE_REVERB_SCHEME: ${VITE_REVERB_SCHEME:-}
         environment:
             # The most worker threads FrankenPHP grows to under load: about one per two active actors. The threads
             # started at boot (two per processor) are the floor and are never removed.
@@ -28,10 +40,11 @@ services:
     # The websocket server; the app and the queue worker publish to it at reverb:8080 (REVERB_HOST, REVERB_PORT).
     reverb:
         restart: unless-stopped
-        build:
-            context: .
-            dockerfile: .docker/app/Dockerfile
-            target: app
+        env_file:
+            - path: .env
+              required: false
+        image: ${COMPOSE_PROJECT_NAME}-app
+        pull_policy: never
         command: ['php', 'artisan', 'reverb:start', '--host=0.0.0.0', '--port=8080']
         healthcheck:
             test: ['CMD', 'php', '-r', 'exit(@fsockopen("127.0.0.1", 8080) ? 0 : 1);']
@@ -45,10 +58,11 @@ services:
     # Runs queued jobs, broadcasts among them, with the same code, environment and queue connection as the app.
     queue:
         restart: unless-stopped
-        build:
-            context: .
-            dockerfile: .docker/app/Dockerfile
-            target: app
+        env_file:
+            - path: .env
+              required: false
+        image: ${COMPOSE_PROJECT_NAME}-app
+        pull_policy: never
         command: ['php', 'artisan', 'queue:work', '--tries=3', '--backoff=5']
         # A worker listens on no port; the image's web server check does not apply.
         healthcheck:
@@ -62,10 +76,11 @@ services:
     # Runs the scheduled commands, such as the minute account reconciliation, with the queue's code and environment.
     scheduler:
         restart: unless-stopped
-        build:
-            context: .
-            dockerfile: .docker/app/Dockerfile
-            target: app
+        env_file:
+            - path: .env
+              required: false
+        image: ${COMPOSE_PROJECT_NAME}-app
+        pull_policy: never
         command: ['php', 'artisan', 'schedule:work']
         # The scheduler listens on no port; the image's web server check does not apply.
         healthcheck:
@@ -79,10 +94,11 @@ services:
     # Runs the engine: one pass a second while it owns the engine's advisory lock, on its own pinned database session.
     ticker:
         restart: unless-stopped
-        build:
-            context: .
-            dockerfile: .docker/app/Dockerfile
-            target: app
+        env_file:
+            - path: .env
+              required: false
+        image: ${COMPOSE_PROJECT_NAME}-app
+        pull_policy: never
         command: ['php', 'artisan', 'engine:tick']
         # The ticker listens on no port; the image's web server check does not apply.
         healthcheck:
@@ -98,6 +114,9 @@ services:
     # volume; no home folder or personal gateway settings are mounted.
     share:
         restart: unless-stopped
+        env_file:
+            - path: .env
+              required: false
         build:
             context: .
             dockerfile: .docker/app/Dockerfile
@@ -160,12 +179,20 @@ services:
         restart: unless-stopped
         image: ${AGENT_DAEMON_IMAGE:-docker:28-dind-rootless}
         runtime: ${AGENT_DAEMON_RUNTIME:-runc}
+        # A host that restricts unprivileged user namespaces loads .docker/helper/apparmor-agent-daemon and names it.
         security_opt:
             - seccomp=unconfined
-            - apparmor=unconfined
+            - apparmor=${AGENT_DAEMON_APPARMOR:-unconfined}
+        # Rootless Docker-in-Docker makes its own network through a TUN device: never privileged, never the
+        # server's socket.
+        devices:
+            - /dev/net/tun:/dev/net/tun
         environment:
             DOCKER_HOST: unix:///run/agent-docker/docker.sock
-        command: ['--host=unix:///run/agent-docker/docker.sock']
+        # Naming dockerd skips the image's default listeners, so the daemon listens on its socket alone, never on TCP.
+        # Group 0 inside the rootless daemon's user namespace is the rootless user's group 1000 outside it, the group
+        # the socket's clients join.
+        command: ['dockerd', '--host=unix:///run/agent-docker/docker.sock', '--group=0']
         volumes:
             - agent-docker-data:/home/rootless/.local/share/docker
             - agent-docker-socket:/run/agent-docker
@@ -248,6 +275,7 @@ services:
         restart: unless-stopped
         image: ${RUNNER_IMAGE:-journal-runner:unset}
         user: '10001:10001'
+        group_add: ['1000']
         command:
             - journal-agent
             - serve
@@ -288,7 +316,9 @@ services:
         user: '10001:10001'
         command: ['php', '/app/artisan', 'accounts:run-sign-ins']
         environment:
-            ACCOUNTS_ROOT: /accounts
+            # One path for the accounts volume everywhere: the journal names an attempt's folder under this root, and
+            # the agent daemon mounts the same volume at the same path. The journal's .env sets ACCOUNTS_ROOT to it.
+            ACCOUNTS_ROOT: /srv/journal/accounts
             JOURNAL_URL: http://app:8000
             JOURNAL_HOST_SECRET_FILE: /run/secrets/journal_host_secret
             AGENTS_HOST_START_SOCKET: /run/journal-start/start.sock
@@ -298,7 +328,7 @@ services:
         secrets:
             - journal_host_secret
         volumes:
-            - accounts-data:/accounts
+            - accounts-data:/srv/journal/accounts
             - host-start-socket:/run/journal-start
         networks:
             - journal-api
@@ -338,7 +368,13 @@ volumes:
     redis-data:
     sharing-data:
     agent-docker-data:
+    # The agent daemon's socket folder, in memory and owned by the daemon's rootless user (1000): a plain named volume
+    # starts root-owned, where the rootless daemon cannot make its socket. Its clients join group 1000 to reach it.
     agent-docker-socket:
+        driver_opts:
+            type: tmpfs
+            device: tmpfs
+            o: 'uid=1000,gid=1000,mode=0750'
     accounts-data:
     # The contained agent host's enrollment and start records, kept across restarts so it reconciles from them.
     host-state:

@@ -32,9 +32,8 @@ export default defineConfig({
                 },
             },
         }),
-        wayfinder({
-            formVariants: true,
-        }),
+        // An image build generates the routes with PHP first and builds in Node alone (.docker/app/Dockerfile).
+        ...(process.env.WAYFINDER_GENERATED === '1' ? [] : [wayfinder({ formVariants: true })]),
     ]),
     resolve: {
         // The generated aliases name paths from the project root.

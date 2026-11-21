@@ -285,13 +285,24 @@ func (containers Containers) command(ctx context.Context, arguments ...string) *
 	return exec.CommandContext(ctx, containers.Docker, arguments...)
 }
 
+// ErrAgentDaemonUnreachable is returned when a Docker command cannot reach the agent daemon at all, which says nothing
+// about the images it holds (doc 61, story 64).
+var ErrAgentDaemonUnreachable = errors.New("the agent container runtime cannot be reached")
+
 // AssertImagePinned refuses an image the agent daemon lacks or holds under another digest than the reference names;
-// a reference matches the image's id or one of its repository digests.
+// a reference matches the image's id or one of its repository digests. A daemon it cannot reach is named as that.
 func (containers Containers) AssertImagePinned(ctx context.Context, reference string) error {
-	output, err := containers.command(ctx, "image", "inspect", "--format",
-		`{{.Id}} {{join .RepoDigests " "}}`, reference).Output()
-	if err != nil {
+	// A loaded image has no repository digests, on which Docker's join refuses to run: range writes nothing for none.
+	inspect := containers.command(ctx, "image", "inspect", "--format", `{{.Id}}{{range .RepoDigests}} {{.}}{{end}}`, reference)
+	var refusal strings.Builder
+	inspect.Stderr = &refusal
+	output, err := inspect.Output()
+	if err != nil && strings.Contains(refusal.String(), "No such image") {
 		return fmt.Errorf("%w: the image %s is not loaded into the agent daemon", ErrInstallationChanged, reference)
+	}
+
+	if err != nil {
+		return fmt.Errorf("%w: %s", ErrAgentDaemonUnreachable, failureLine(refusal.String(), err))
 	}
 
 	digests := strings.Fields(string(output))

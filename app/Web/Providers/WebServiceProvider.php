@@ -75,6 +75,7 @@ final class WebServiceProvider extends ServiceProvider
                 $app['config']->get('inertia.pages.paths'),
                 $app['config']->get('inertia.pages.extensions'),
             ),
+            $app->basePath(),
         ));
     }
 

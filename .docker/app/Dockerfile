@@ -32,9 +32,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
     && echo "${sum}  /tmp/ngrok.tar.gz" | sha256sum -c - \
     && mkdir -p /out && tar -xzf /tmp/ngrok.tar.gz -C /out ngrok
 
-# The journal's PHP console: the extensions, the Composer packages and the code, with no frontend build. The app and
-# the runner image build on it, so there is one PHP setup.
-FROM dunglas/frankenphp:1-php8.5 AS console
+# PHP with the journal's extensions and Composer, and nothing of the journal: it changes only with the PHP version or
+# the extension list, so every later stage starts from its cache.
+FROM dunglas/frankenphp:1-php8.5 AS php
 
 RUN install-php-extensions pcntl pdo_pgsql redis intl zip bcmath opcache
 
@@ -45,24 +45,75 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
+# The Composer packages, from composer.json and composer.lock alone: a code change never reinstalls them.
+FROM php AS vendor
+
 COPY composer.json composer.lock ./
 RUN composer install --no-interaction --prefer-dist --no-scripts --no-autoloader
 
-COPY . .
-RUN composer dump-autoload --optimize
+# The npm packages, from package.json and package-lock.json alone.
+FROM node AS node-modules
 
-FROM console AS app
-
-# Node runs in the same image as PHP: the Wayfinder Vite plugin calls php artisan while building.
-COPY --from=node /usr/local/bin/node /usr/local/bin/node
-COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
-RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
-    && ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
+WORKDIR /app
 
 COPY package.json package-lock.json ./
 RUN npm ci
 
-RUN npm run build
+# The journal's PHP console: the packages and the code, with no frontend build. The app and the runner image build on
+# it, so there is one PHP setup.
+FROM php AS console
+
+COPY --from=vendor /app/vendor ./vendor
+COPY . .
+RUN composer dump-autoload --optimize
+
+# What the frontend build reads, gathered into /frontend: the files PHP generates (the UI manifest, the routes and the
+# types), resources/ and each domain's component folder. A code change that leaves all of them as they were leaves the
+# frontend build below cached, since a copy from another stage is compared by content.
+FROM console AS frontend-sources
+
+RUN php artisan journal:ui-manifest \
+    && php artisan wayfinder:generate --with-form \
+    && php artisan typescript:transform \
+    && mkdir /frontend \
+    && cp -R --parents package.json package-lock.json vite.config.ts vite.sharing.config.ts vite.domains.ts \
+        tsconfig.json tsconfig.domains.json scripts/check-domain-imports.mjs resources \
+        vendor/laravel/framework/src/Illuminate/Pagination/resources/views /frontend \
+    && php -r 'foreach (json_decode(file_get_contents("resources/js/generated/domain-roots.json"), true)["owners"] as $folder) { echo $folder, PHP_EOL; }' \
+        | xargs -I{} cp -R --parents {} /frontend
+
+# The frontend build, in Node alone: the routes are already generated, so the Wayfinder plugin does not call PHP.
+FROM node-modules AS frontend
+
+COPY --from=frontend-sources /frontend/ ./
+
+# The websocket address the browser connects to is built into the frontend: a server passes its public one, and the
+# image never sees the .env it comes from.
+ARG VITE_REVERB_APP_KEY=""
+ARG VITE_REVERB_HOST=""
+ARG VITE_REVERB_PORT=""
+ARG VITE_REVERB_SCHEME=""
+RUN WAYFINDER_GENERATED=1 npm run build:frontend
+
+# Local development on the Mac: the console with Node and the npm packages, for the Vite dev server and the frontend
+# commands run in the app container. The source is mounted over /app.
+FROM console AS development
+
+COPY --from=node /usr/local/bin/node /usr/local/bin/node
+COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+    && ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
+COPY --from=node-modules /app/node_modules ./node_modules
+
+EXPOSE 8000
+
+CMD ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=8000", "--caddyfile=.docker/app/Caddyfile"]
+
+# The served application: the console and the built frontend, with no Node.
+FROM console AS app
+
+COPY --from=frontend /app/public/build ./public/build
+COPY --from=frontend /app/public/build-sharing ./public/build-sharing
 
 EXPOSE 8000
 

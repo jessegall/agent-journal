@@ -46,7 +46,7 @@ enum SignInMethod: string
         return match ($this) {
             self::OAuth => 'Uses your subscription.',
             self::ApiKey => 'Billed to your API account.',
-            self::ProviderToken => 'Lasts as long as the long-lived token does.',
+            self::ProviderToken => 'Uses your subscription, through a long-lived token provided by Anthropic.',
         };
     }
 }

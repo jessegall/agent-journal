@@ -3,7 +3,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "npm run types:generate && npm run imports:check && vp build && npm run build:sharing",
+        "build": "npm run types:generate && npm run build:frontend",
+        "build:frontend": "npm run imports:check && vp build && npm run build:sharing",
         "build:ssr": "npm run types:generate && npm run imports:check && vp build && vp build --ssr",
         "dev": "npm run types:generate && vp dev",
         "check": "npm run types:generate && npm run imports:check && vp check",
