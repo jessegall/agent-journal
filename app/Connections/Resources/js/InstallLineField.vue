@@ -40,7 +40,7 @@ async function copy(): Promise<void> {
     <div class="flex flex-col gap-2">
         <div class="flex items-center gap-2">
             <input
-                class="min-w-0 flex-1 h-7 rounded-control border border-border-2 bg-code-bg px-2.5 font-mono text-small text-text"
+                class="input h-7 flex-1 bg-code-bg font-mono text-small"
                 :value="line"
                 readonly
                 spellcheck="false"
