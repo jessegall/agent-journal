@@ -1,6 +1,7 @@
 import type {
     SignInAttemptData,
     SignInMethod,
+    SignInReceiptData,
 } from '@generated/types/accounts';
 import {
     cancelSignIn,
@@ -12,13 +13,17 @@ import { useForm } from '@inertiajs/vue3';
 import { formSendingHooks } from '@kit/usePageChanges';
 import type { Ref } from 'vue';
 import { onBeforeUnmount, ref, watch } from 'vue';
-import { readChallenge } from './signIn';
+import { readChallenge, readReceipt } from './signIn';
 import type { SignInChallenge } from './signIn';
 
 /**
  * How each wizard request reloads after it: only the page's own data, keeping the page and the open wizard as they are.
  */
-const KEEP_THE_WIZARD = { only: ['page'], preserveScroll: true, preserveState: true };
+const KEEP_THE_WIZARD = {
+    only: ['page'],
+    preserveScroll: true,
+    preserveState: true,
+};
 
 /**
  * What the add-account wizard does with a sign-in: start one for a new account or an account again, send the code
@@ -27,7 +32,7 @@ const KEEP_THE_WIZARD = { only: ['page'], preserveScroll: true, preserveState: t
  * cancelled or left.
  */
 export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
-    const start = useForm({});
+    const start = useForm({ method: '' });
     const again = useForm({});
     const cancelling = useForm({});
     const answer = useForm({ code: '' });
@@ -35,12 +40,66 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
     let timer: ReturnType<typeof setTimeout> | undefined;
 
     /**
+     * A new account's start whose reply was lost: its request key is read back until the receipt says what became of
+     * it. Only a receipt that knows of no start lets the same start be sent again, under the same key.
+     */
+    const isReconnecting = ref(false);
+    const reconnected = ref<SignInReceiptData | null>(null);
+    let lastStart: {
+        key: string;
+        driver: string;
+        method: SignInMethod;
+        isAbsent: boolean;
+    } | null = null;
+    let receiptTimer: ReturnType<typeof setTimeout> | undefined;
+
+    async function reconnect(key: string, driver: string): Promise<void> {
+        const receipt = await readReceipt(key, driver);
+
+        if (lastStart?.key !== key) {
+            return;
+        }
+
+        if (receipt === null || receipt.status === 'pending') {
+            receiptTimer = setTimeout(() => void reconnect(key, driver), 2000);
+
+            return;
+        }
+
+        isReconnecting.value = false;
+
+        if (receipt.status === 'started') {
+            reconnected.value = receipt;
+
+            return;
+        }
+
+        if (receipt.status === 'refused') {
+            start.setError(
+                'method',
+                receipt.refusal ?? 'The sign-in could not start.',
+            );
+
+            return;
+        }
+
+        lastStart.isAbsent = true;
+        start.setError(
+            'method',
+            'The sign-in did not start. Continue to try again.',
+        );
+    }
+
+    /**
      * Counts every begin, cancel and leave; a challenge read is shown only while its count and its attempt are still
      * the current ones, so a late answer for a cancelled or replaced attempt never shows.
      */
     let generation = 0;
 
-    async function pollChallenge(attemptId: string, asked = generation): Promise<void> {
+    async function pollChallenge(
+        attemptId: string,
+        asked = generation,
+    ): Promise<void> {
         const read = await readChallenge(attemptId);
 
         if (asked !== generation || followed.value?.id !== attemptId) {
@@ -50,7 +109,10 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
         challenge.value = read;
 
         if (read.address === null) {
-            timer = setTimeout(() => void pollChallenge(attemptId, asked), 2000);
+            timer = setTimeout(
+                () => void pollChallenge(attemptId, asked),
+                2000,
+            );
         }
     }
 
@@ -74,16 +136,47 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
         { immediate: true },
     );
 
-    onBeforeUnmount(forget);
+    onBeforeUnmount(() => {
+        forget();
+        lastStart = null;
+        clearTimeout(receiptTimer);
+    });
 
+    /**
+     * Starts a new account's sign-in. A start the receipt said never happened goes again under its own key; any other
+     * start gets a new one. A reply that never comes reconnects through the receipt.
+     */
     function begin(driver: string, method: SignInMethod): void {
         generation++;
+        clearTimeout(receiptTimer);
+        const isRetry =
+            lastStart?.isAbsent === true &&
+            lastStart.driver === driver &&
+            lastStart.method === method;
+        const key =
+            isRetry && lastStart !== null ? lastStart.key : crypto.randomUUID();
+        lastStart = { key, driver, method, isAbsent: false };
+        reconnected.value = null;
+        start.clearErrors();
+        const sending = formSendingHooks();
+        let isAnswered = false;
+
         start
             .transform(() => ({ driver, method }))
             .submit(startSignIn(), {
                 ...KEEP_THE_WIZARD,
-                headers: { 'Idempotency-Key': crypto.randomUUID() },
-                ...formSendingHooks(),
+                headers: { 'Idempotency-Key': key },
+                ...sending,
+                onSuccess: () => (isAnswered = true),
+                onError: () => (isAnswered = true),
+                onFinish: () => {
+                    sending.onFinish();
+
+                    if (!isAnswered && lastStart?.key === key) {
+                        isReconnecting.value = true;
+                        void reconnect(key, driver);
+                    }
+                },
             });
     }
 
@@ -127,6 +220,8 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
         cancelling,
         answer,
         challenge,
+        isReconnecting,
+        reconnected,
         begin,
         beginAgain,
         send,

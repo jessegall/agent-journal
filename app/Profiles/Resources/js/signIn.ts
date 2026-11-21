@@ -1,5 +1,8 @@
-import type { SignInAttemptData } from '@generated/types/accounts';
-import { challenge } from '@generated/routes/accounts';
+import type {
+    SignInAttemptData,
+    SignInReceiptData,
+} from '@generated/types/accounts';
+import { challenge, signInReceipt } from '@generated/routes/accounts';
 import { xsrfToken } from '@kit/xsrfToken';
 
 /**
@@ -114,4 +117,27 @@ export async function readChallenge(
     }
 
     return (await response.json()) as SignInChallenge;
+}
+
+/**
+ * What became of a sign-in start under its request key, for a new account of the driver; nothing when the read itself
+ * failed, so the caller asks again.
+ */
+export async function readReceipt(
+    key: string,
+    driver: string,
+): Promise<SignInReceiptData | null> {
+    const response = await fetch(
+        signInReceipt({ query: { key, driver } }).url,
+        {
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        },
+    );
+
+    return response.ok ? ((await response.json()) as SignInReceiptData) : null;
 }

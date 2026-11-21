@@ -8,12 +8,14 @@ import type {
 } from '@generated/types/accounts';
 import Button from '@kit/Button';
 import Modal from '@kit/Modal';
+import Spinner from '@kit/Spinner';
 import { computed, ref, useId, watch } from 'vue';
 import ChooseSignIn from './ChooseSignIn.vue';
 import ChosenSignIn from './ChosenSignIn.vue';
 import NameAccountStep from './NameAccountStep.vue';
 import SignInOutcome from './SignInOutcome.vue';
 import SignInTask from './SignInTask.vue';
+import { driverName } from './accountLooks';
 import { attemptToRejoin, isLive } from './signIn';
 import type { WizardRequest } from './signIn';
 import { signInActions } from './signInActions';
@@ -146,6 +148,56 @@ watch(
     },
 );
 
+watch(
+    () => actions.reconnected.value,
+    (receipt) => {
+        if (receipt?.attemptId) {
+            followedId.value = receipt.attemptId;
+            awaited.value = null;
+        }
+    },
+);
+
+watch(
+    () => actions.start.errors,
+    (errors) => {
+        if (Object.keys(errors).length > 0) {
+            awaited.value = null;
+        }
+    },
+);
+
+/**
+ * A sign-in of another method already running for the program, such as a subscription sign-in while a key was
+ * asked for in another tab: it shows with Resume or Cancel before it takes any input.
+ */
+const isOtherMethodRunning = computed(
+    () =>
+        followed.value !== undefined &&
+        isLive(followed.value) &&
+        method.value !== null &&
+        followed.value.method !== method.value,
+);
+
+/**
+ * Why the last start did not begin a sign-in, shown under the choice it was made with.
+ */
+const startRefusal = computed(
+    () => Object.values(actions.start.errors)[0] as string | undefined,
+);
+
+function resume(): void {
+    method.value = followed.value?.method ?? method.value;
+}
+
+function cancelAndChooseAgain(): void {
+    if (followed.value !== undefined) {
+        actions.cancel(followed.value.id);
+    }
+
+    chooseAnotherWay();
+}
+
 function begin(of: string, chosen: SignInMethod): void {
     followedId.value = null;
     driver.value = of;
@@ -246,6 +298,37 @@ function cancelAndClose(): void {
                 :methods="methods"
                 @confirm="continueWithChoice"
             />
+            <template v-if="startRefusal !== undefined">
+                <p class="text-small text-danger" role="alert">
+                    {{ startRefusal }}
+                </p>
+            </template>
+        </template>
+        <template v-else-if="step === 2 && isOtherMethodRunning">
+            <ChosenSignIn :driver="shownDriver" :method="shownMethod!" />
+            <div
+                class="flex flex-1 flex-col items-center justify-center gap-3 pb-3 text-center"
+                role="status"
+            >
+                <h4 class="mt-1 font-semibold text-card text-text">
+                    This sign-in is already running
+                </h4>
+                <p class="max-w-[340px] text-field leading-relaxed text-text-2">
+                    Only one new {{ driverName(shownDriver) }} account signs in
+                    at a time. Resume this one, or cancel it and choose again.
+                </p>
+            </div>
+        </template>
+        <template v-else-if="step === 2 && actions.isReconnecting.value">
+            <div
+                class="flex flex-1 flex-col items-center justify-center gap-3 pb-3 text-center"
+                role="status"
+            >
+                <Spinner large class="text-brand" />
+                <p class="text-field text-text-2">
+                    Reconnecting to the sign-in…
+                </p>
+            </div>
         </template>
         <template v-else-if="step === 2 && shownMethod !== undefined">
             <SignInTask
@@ -285,7 +368,11 @@ function cancelAndClose(): void {
                     variant="bordered"
                     :pending="actions.cancelling.processing"
                     @click="cancelAndClose"
-                    >{{ actions.cancelling.processing ? 'Cancelling…' : 'Cancel sign-in' }}</Button
+                    >{{
+                        actions.cancelling.processing
+                            ? 'Cancelling…'
+                            : 'Cancel sign-in'
+                    }}</Button
                 >
                 <Button variant="primary" @click="close">Keep waiting</Button>
             </template>
@@ -299,6 +386,15 @@ function cancelAndClose(): void {
                     @click="continueWithChoice"
                     >Continue</Button
                 >
+            </template>
+            <template v-else-if="step === 2 && isOtherMethodRunning">
+                <Button
+                    :pending="actions.cancelling.processing"
+                    @click="cancelAndChooseAgain"
+                    >Cancel sign-in</Button
+                >
+                <span class="flex-1" />
+                <Button variant="primary" @click="resume">Resume</Button>
             </template>
             <template v-else-if="step === 2">
                 <Button :pending="actions.cancelling.processing" @click="back"

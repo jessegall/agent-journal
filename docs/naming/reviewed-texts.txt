@@ -46,6 +46,7 @@ Breadcrumb
 Build
 Cancel
 Cancel script
+Cancel sign-in
 Cancelled
 Checked reader revision
 Checking the new session
@@ -189,6 +190,7 @@ Older shares
 On the whole record: open record
 On {{ text.anchor.versionLabel }}, lines {{ text.anchor.firstLine }}–{{ text.anchor.lastLine }}
 One piece of text, without spaces.
+Only one new {{ driverName(shownDriver) }} account signs in at a time. Resume this one, or cancel it and choose again.
 Open Claude's sign-in page and sign in.
 Open OpenAI's page and sign in with ChatGPT.
 Open {{ record.target.label }}
@@ -230,6 +232,7 @@ Readers
 Readers and proofs
 Ready
 Reason
+Reconnecting to the sign-in…
 Reconnecting…
 Record
 Record type
@@ -334,6 +337,7 @@ This page could not be refreshed.
 This profile does not allow that model.
 This profile runs only its own driver.
 This release cannot do {{ release.missingCapabilities.join(', ') }} yet.
+This sign-in is already running
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
 This window could not be refreshed. It shows what it last loaded.
 To renew it, choose Sign in again on the account.
