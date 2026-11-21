@@ -98,16 +98,27 @@ function windowData(
             missingCapabilities: [],
         },
         attempts: { rows: attempts, nextCursor: null },
-        bindings: [
-            {
-                id: 'binding-1',
-                machineLabel: 'Owner laptop',
-                projectLabel: 'Shop',
-                lastContactAt: null,
-                state: 'ready',
-                signIns: [],
-            },
-        ],
+        bindings: {
+            rows: [
+                {
+                    id: 'binding-1',
+                    machineLabel: 'Owner laptop',
+                    projectLabel: 'Shop',
+                    lastContactAt: null,
+                    state: 'ready',
+                    projectId: 'project-1',
+                    environmentId: 'environment-main',
+                    environmentLabel: 'Main',
+                    capabilities: [],
+                    presenceExpiresAt: null,
+                    stateText: 'Ready.',
+                    signIns: [],
+                },
+            ],
+            serverTime: new Date().toISOString(),
+            refreshAt: null,
+            nextCursor: null,
+        },
     };
 }
 

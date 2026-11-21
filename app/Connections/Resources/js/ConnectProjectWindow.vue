@@ -57,7 +57,7 @@ const outcomes = ref<Record<string, string>>({});
 
 const machines = computed(() => [
     ...new Set(
-        props.data.bindings
+        props.data.bindings.rows
             .filter((binding) => binding.state !== 'revoked')
             .map((binding) => binding.machineLabel),
     ),
@@ -80,7 +80,7 @@ function choose(bindingId: string, isChosen: boolean): void {
  */
 function chooseMachine(machine: string): void {
     chosen.value = new Set(
-        props.data.bindings
+        props.data.bindings.rows
             .filter(
                 (binding) =>
                     binding.machineLabel === machine &&
@@ -115,6 +115,13 @@ function revokeChosen(): void {
     );
 }
 
+/**
+ * Reads the next page of connected folders, in the same order.
+ */
+function nextBindings(): void {
+    router.reload({ only: ['page'], data: { bindings: props.data.bindings.nextCursor } });
+}
+
 function revokeBinding(bindingId: string): void {
     router.delete(revoke({ binding: bindingId }).url, {
         only: ['page'],
@@ -126,7 +133,7 @@ function revokeBinding(bindingId: string): void {
 
 <template>
     <div class="mx-auto flex w-full max-w-[760px] flex-col gap-4 sm:pt-4">
-        <PageHeader title="Connect a project" :count="data.bindings.length" />
+        <PageHeader title="Connect a project" :count="data.bindings.rows.length" />
         <section class="flex flex-col gap-3 px-4 sm:px-0">
             <p>
                 Run a project on your own computer and keep its tasks, plans and
@@ -154,7 +161,7 @@ function revokeBinding(bindingId: string): void {
             </template>
         </section>
         <InstallAttemptList :attempts="data.attempts" :fresh="fresh" />
-        <template v-if="data.bindings.length > 0">
+        <template v-if="data.bindings.rows.length > 0">
             <div class="flex flex-wrap items-center gap-2 px-4 sm:px-0">
                 <template v-for="machine in machines" :key="machine">
                     <Button
@@ -176,7 +183,7 @@ function revokeBinding(bindingId: string): void {
             <ul
                 class="border-t border-line sm:overflow-hidden sm:rounded-card sm:border sm:bg-bg"
             >
-                <template v-for="binding in data.bindings" :key="binding.id">
+                <template v-for="binding in data.bindings.rows" :key="binding.id">
                     <BindingRow
                         :binding="binding"
                         :is-chosen="chosen.has(binding.id)"
@@ -186,6 +193,11 @@ function revokeBinding(bindingId: string): void {
                     />
                 </template>
             </ul>
+            <template v-if="data.bindings.nextCursor !== null">
+                <div class="px-4 sm:px-0">
+                    <Button variant="ghost" size="small" @click="nextBindings">Show more folders</Button>
+                </div>
+            </template>
         </template>
     </div>
 </template>

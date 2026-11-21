@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
+use App\Agents\Enums\ArrangementType;
+use App\Agents\Models\Agent;
+use App\Agents\Models\Host;
+use App\Connections\Models\Environment;
+use App\Connections\Models\Project;
+use App\Connections\Models\ProjectBinding;
+use App\Connections\Values\BindingFolder;
+use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
@@ -47,13 +55,45 @@ final class ConnectProjectWindowTest extends TestCase
             ->where('page.data.release.missingCapabilities', [])
             ->has('page.data.attempts.rows', 2)
             ->where('page.data.attempts.rows.0.state', 'open')
-            ->has('page.data.bindings', 1)
-            ->where('page.data.bindings.0.projectLabel', 'Shop')
-            ->where('page.data.bindings.0.machineLabel', 'Owner laptop')
-            ->where('page.data.bindings.0.state', 'pending'));
+            ->has('page.data.bindings.rows', 1)
+            ->where('page.data.bindings.rows.0.projectLabel', 'Shop')
+            ->where('page.data.bindings.rows.0.machineLabel', 'Owner laptop')
+            ->where('page.data.bindings.rows.0.environmentLabel', 'Main')
+            ->where('page.data.bindings.rows.0.stateText', 'Waiting for first contact.')
+            ->where('page.data.bindings.rows.0.state', 'pending'));
 
         $this->assertStringNotContainsString((string) $issued->json('installLine'), (string) $page->getContent());
         $this->assertStringNotContainsString('/Users/owner/shop', (string) $page->getContent());
+    }
+
+    public function test_thirty_folders_page_as_twenty_five_then_five_and_an_expired_presence_reads_offline(): void
+    {
+        $project = Project::create('shop', 'Shop');
+        $environment = Environment::openDefaultOf($project);
+        $host = Host::create('laptop', 'secret-'.bin2hex(random_bytes(4)), [], ArrangementType::Local);
+
+        foreach (range(1, 30) as $number) {
+            ProjectBinding::create($host, $project, $environment, Agent::create("Shop agent {$number}", 'main-agent'),
+                new BindingFolder("root-{$number}", "/Users/owner/shop-{$number}", 'Owner laptop', "nonce-{$number}"));
+        }
+        $expired = ProjectBinding::query()->orderBy('created_at')->orderBy('id')->firstOrFail();
+        ProjectBinding::query()->whereKey($expired->id)->update([
+            'readiness' => 'ready',
+            'presence_expires_at' => CarbonImmutable::now()->subMinute(),
+        ]);
+
+        $first = $this->actingAs($this->owner)->get('/connections')->assertOk();
+        $first->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('page.data.bindings.rows', 25)
+            ->where('page.data.bindings.rows.0.state', 'offline')
+            ->where('page.data.bindings.refreshAt', null)
+            ->whereType('page.data.bindings.nextCursor', 'string'));
+        $cursor = (string) $first->viewData('page')['props']['page']['data']['bindings']['nextCursor'];
+
+        $this->actingAs($this->owner)->get('/connections?bindings='.urlencode($cursor))->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->has('page.data.bindings.rows', 5)
+                ->where('page.data.bindings.nextCursor', null));
     }
 
     public function test_someone_other_than_the_owner_sees_no_window(): void

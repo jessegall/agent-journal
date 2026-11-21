@@ -25,6 +25,7 @@ use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -59,6 +60,7 @@ use Illuminate\Support\Carbon;
  * @property-read Agent $mainAgent
  * @property-read Host $host
  * @property-read Project $project
+ * @property-read Environment|null $environment
  */
 #[Fillable([
     'host_id', 'project_id', 'main_agent_id', 'root_id', 'canonical_root', 'project_label', 'machine_label',
@@ -75,6 +77,11 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      * How long one presence report keeps a binding ready; the relay reports again well before it ends.
      */
     public const int PRESENCE_SECONDS = 120;
+
+    /**
+     * The most connected folders one page of the list holds.
+     */
+    public const int PAGE_LIMIT = 25;
 
     // ----------[ Constructors ]----------
 
@@ -140,15 +147,15 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Every connected folder, newest first; an installation connects a handful.
+     * One page of the connected folders, PAGE_LIMIT at a time, oldest first by creation time and then id, with the
+     * project and environment each names; the cursor reads the next slice in the same order.
      *
-     * @return list<self>
+     * @return CursorPaginator<int, self>
      */
-    public static function listed(): array
+    public static function pageAfter(string|null $cursor): CursorPaginator
     {
-        return array_values(
-            self::query()->latest()->readAll('an installation connects a handful of folders')->get()->all(),
-        );
+        return self::query()->with(['project', 'environment'])->orderBy('created_at')->orderBy('id')
+            ->cursorPaginate(self::PAGE_LIMIT, cursor: $cursor);
     }
 
     /**
@@ -327,6 +334,14 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * @return BelongsTo<Environment, $this>
+     */
+    public function environment(): BelongsTo
+    {
+        return $this->belongsTo(Environment::class);
     }
 
     /**
