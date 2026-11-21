@@ -101,13 +101,20 @@ final readonly class TerminalViews implements TerminalViewCloser
         int $after,
         CarbonImmutable $now,
     ): Option {
-        $view = TerminalView::query()->ownedBy($viewer)->live()->ofAgent($agentId)->latest('updated_at')->first();
+        $view = TerminalView::query()->with('runtime')->ownedBy($viewer)->live()->ofAgent($agentId)
+            ->latest('updated_at')->first();
 
         if ($view === null) {
             return Some::create($this->endedView($agentId, $viewer, $now));
         }
 
         $runtime = $this->runtimeOf($agentId);
+
+        if ($view->watchedAnotherSession($runtime)) {
+            $view->close($now);
+
+            return Some::create($this->endedView($agentId, $viewer, $now));
+        }
 
         if (! $view->watches($runtime)) {
             $view->follow($runtime);

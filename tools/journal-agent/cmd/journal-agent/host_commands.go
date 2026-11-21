@@ -150,7 +150,8 @@ func serve(arguments []string) error {
 	defer listener.Close()
 	journal := client.New(enrollment).WithArrangement(string(arrangement))
 	opener := runtimeOpener{stateFolder: *stateFolder, installationFolder: *installationFolder,
-		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(), hookCommand: *hookCommand, socket: socket}
+		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(), hookCommand: *hookCommand, socket: socket,
+		declared: combinationsOf(arrangement)}
 	if arrangement.IsContained() {
 		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage}
 		opener.containers = host.Containers{Docker: "docker", Host: *dockerSocket, Rules: rules}
@@ -217,8 +218,8 @@ func serve(arguments []string) error {
 	return nil
 }
 
-// runtimeOpener opens the driver of a runtime the journal hands this host, by the driver type its start grant names:
-// a process runtime runs one child per turn, a terminal runtime keeps one program open on a PTY the attach socket
+// runtimeOpener opens the driver of a runtime the journal hands this host, by the variant its start grant names:
+// a headless runtime runs one child per turn, a terminal runtime keeps one program open on a PTY the attach socket
 // owns.
 type runtimeOpener struct {
 	stateFolder        string
@@ -233,6 +234,8 @@ type runtimeOpener struct {
 	containers   host.Containers
 	installation host.InstallationName
 	reportExit   func(ctx context.Context, report client.LivenessReport) error
+	// declared is every combination this host told the journal it can run; a grant for any other is refused.
+	declared []client.HostCombination
 }
 
 // defaultRows and defaultColumns size a terminal the host opens before any user attaches to it.
@@ -246,6 +249,9 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 	profile, known := profileFor[grant.Runtime.Driver]
 	if !known {
 		return nil, fmt.Errorf("runtime %s runs %q, which has no pinned profile", runtimeID, grant.Runtime.Driver)
+	}
+	if !declares(opener.declared, grant.Runtime.Driver, grant.Runtime.DriverBuild, grant.Runtime.Variant) {
+		return nil, fmt.Errorf("runtime %s: %w", runtimeID, ErrCombinationNotDeclared)
 	}
 	if err := pinnedBuild(profile, grant.Runtime.DriverBuild); err != nil {
 		return nil, fmt.Errorf("runtime %s: %w", runtimeID, err)
@@ -271,33 +277,31 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 		return opener.terminalRuntime(runtimeID, prepared, profile, environment)
 	}
 
-	return nil, fmt.Errorf("runtime %s runs under the %s driver, which this host has no driver for", runtimeID,
+	return nil, fmt.Errorf("runtime %s runs as %s, a variant this host has no runtime for", runtimeID,
 		grant.Runtime.Variant)
 }
 
-// containedRuntime opens a contained runtime in its session's own container by its driver type: a terminal runtime's
-// program is the container's terminal process, a process runtime's runs one container per turn.
+// containedRuntime opens a contained runtime in its session's own container by its variant: a terminal runtime's
+// program is the container's terminal process, a headless runtime's runs one container per turn.
 func (opener runtimeOpener) containedRuntime(
 	runtimeID string,
 	prepared host.PreparedStart,
 	profile contracts.ProgramProfile,
 	manifest host.ContainerManifest,
 ) (serving.Runtime, error) {
-	driverType := prepared.Grant.Runtime.Variant
+	variant := prepared.Grant.Runtime.Variant
 	if opener.installation == "" {
-		return nil, fmt.Errorf("runtime %s runs contained under the %s driver, which this host runs in no container",
-			runtimeID, driverType)
+		return nil, fmt.Errorf("runtime %s runs contained as %s, which this host runs in no container", runtimeID, variant)
 	}
 
-	switch driverType {
+	switch variant {
 	case drivers.TerminalVariant:
 		return opener.containedTerminalRuntime(runtimeID, prepared, profile, manifest)
 	case drivers.HeadlessVariant:
 		return opener.containedProcessRuntime(runtimeID, prepared, profile, manifest)
 	}
 
-	return nil, fmt.Errorf("runtime %s runs contained under the %s driver, which this host runs in no container",
-		runtimeID, driverType)
+	return nil, fmt.Errorf("runtime %s runs contained as %s, which this host runs in no container", runtimeID, variant)
 }
 
 // codexRuntime opens a Codex runtime as one thread on its account generation's shared app-server, in an empty root

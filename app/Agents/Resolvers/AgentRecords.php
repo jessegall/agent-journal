@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Enums\AgentAction;
 use App\Agents\Enums\AgentPresence;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
@@ -49,8 +50,8 @@ final readonly class AgentRecords implements AgentDirectory
         $ids = $agents->modelKeys();
         $sessions = AgentSession::query()->whereIn('agent_id', $ids)->running()
             ->limit(self::AGENTS_SHOWN)->get()->keyBy('agent_id');
-        $generations = AgentRuntime::query()->whereIn('agent_session_id', $sessions->pluck('id')->all())
-            ->limit(self::AGENTS_SHOWN)->pluck('process_generation', 'agent_session_id');
+        $runtimes = AgentRuntime::query()->whereIn('agent_session_id', $sessions->pluck('id')->all())
+            ->limit(self::AGENTS_SHOWN)->get()->keyBy('agent_session_id');
         $switches = DriverSwitch::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
             ->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_id')->keyBy('agent_id');
         $conversations = DriverConversation::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
@@ -59,7 +60,7 @@ final readonly class AgentRecords implements AgentDirectory
         return array_values($agents->map(fn (Agent $agent) => self::optionOf(
             $agent,
             $sessions->get($agent->id),
-            (int) $generations->get((string) $sessions->get($agent->id)?->id, 0),
+            $runtimes->get((string) $sessions->get($agent->id)?->id),
             $switches->get($agent->id),
             $conversations->get($agent->id, new Collection()),
         ))->all());
@@ -87,7 +88,7 @@ final readonly class AgentRecords implements AgentDirectory
     private static function optionOf(
         Agent $agent,
         AgentSession|null $session,
-        int $generation,
+        AgentRuntime|null $runtime,
         DriverSwitch|null $switch,
         Collection $conversations,
     ): AgentOption {
@@ -107,10 +108,17 @@ final readonly class AgentRecords implements AgentDirectory
             $agent->isRetired(),
             AgentPresence::of($agent->isRetired(), $session !== null, $switch?->stage),
             $session?->id,
-            $generation,
+            $runtime === null ? 0 : $runtime->process_generation,
+            $runtime?->variant === DriverVariant::Terminal,
             $switch?->id,
             $switch?->stage,
-            AgentAction::offeredFor($agent->isRetired(), $session !== null, $resumable !== [], $switch?->stage),
+            AgentAction::offeredFor(
+                $agent->isRetired(),
+                $session !== null,
+                $runtime?->variant === DriverVariant::Terminal,
+                $resumable !== [],
+                $switch?->stage,
+            ),
             $resumable,
         );
     }

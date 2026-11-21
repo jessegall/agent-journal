@@ -21,6 +21,7 @@ function agent(id: string, name: string, presenceLabel: string): AgentOptionData
         presenceLabel,
         sessionId: null,
         sessionGeneration: 0,
+        hasTerminal: false,
         switchId: null,
         switchStage: null,
         actions: ['start'],

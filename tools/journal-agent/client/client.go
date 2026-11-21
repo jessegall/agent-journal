@@ -202,7 +202,7 @@ type LivenessReport struct {
 // ProtectionReport mirrors App\Agents\Data\ProtectionReportData: what a contained host found of one program's
 // protected arrangement in the agent image, item by item.
 type ProtectionReport struct {
-	Driver  string           `json:"driver"`
+	Driver   string           `json:"driver"`
 	Build    string           `json:"build"`
 	Platform string           `json:"platform"`
 	Items    []ProtectionItem `json:"items"`
@@ -358,10 +358,10 @@ type Grant struct {
 
 // RuntimeStart mirrors App\Agents\Support\RuntimeStart: what the host needs to start the runtime's program.
 type RuntimeStart struct {
-	Variant        string  `json:"variant"`
+	Variant           string  `json:"variant"`
 	SessionID         string  `json:"session_id"`
-	Driver           string  `json:"driver"`
-	DriverBuild      string  `json:"driver_build"`
+	Driver            string  `json:"driver"`
+	DriverBuild       string  `json:"driver_build"`
 	Folder            string  `json:"folder"`
 	ProcessGeneration int     `json:"process_generation"`
 	Model             *string `json:"model"`
@@ -556,11 +556,11 @@ func newCallID() (string, error) {
 
 // MainRuntimeRequest mirrors App\Http\Data\Agents\MainRuntimeRequestData.
 type MainRuntimeRequest struct {
-	AgentID      string `json:"agent_id"`
-	Folder       string `json:"folder"`
+	AgentID     string `json:"agent_id"`
+	Folder      string `json:"folder"`
 	Driver      string `json:"driver"`
 	DriverBuild string `json:"driver_build"`
-	Profile      string `json:"profile"`
+	Profile     string `json:"profile"`
 }
 
 // OpenedRuntime is the session and runtime the journal opened.

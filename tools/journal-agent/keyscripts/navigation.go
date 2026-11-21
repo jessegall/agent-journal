@@ -59,11 +59,11 @@ type ActionRecord struct {
 // RoundResult is what came of a round: the screen after it (no rows on a secret screen), the actions carried out,
 // the refusal that stopped it, whether its proof showed, and whether the user's keys paused it.
 type RoundResult struct {
-	ScreenAfter *Uncertainty
-	Actions     []ActionRecord
-	Refusal     string
+	ScreenAfter      *Uncertainty
+	Actions          []ActionRecord
+	Refusal          string
 	HasObservedProof bool
-	Paused      bool
+	Paused           bool
 	// Path is the proven path as library entry steps, built from every round's actions once the proof showed.
 	Path []EntryStep
 }

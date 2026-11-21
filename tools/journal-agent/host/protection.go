@@ -45,7 +45,7 @@ type BoundaryResult struct {
 // available only when every item has a native mechanism and recorded native evidence that it held.
 type ProtectionCapability struct {
 	Platform  string           `json:"platform"`
-	Driver   string           `json:"driver"`
+	Driver    string           `json:"driver"`
 	Build     string           `json:"build"`
 	Items     []BoundaryResult `json:"items"`
 	Available bool             `json:"available"`

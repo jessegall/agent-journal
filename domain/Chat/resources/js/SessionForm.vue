@@ -70,9 +70,9 @@ let polling: ReturnType<typeof setInterval> | undefined;
 const account = computed(() => accounts.value.find((choice) => choice.id === accountId.value));
 const review = computed(() => {
     const driverLabel = drivers.find((choice) => choice.value === driver.value)?.label;
-    const variantLabel = variants.find((choice) => choice.value === variant.value)?.label;
+    const variantLabel = variant.value === '' ? 'its default variant' : variant.value;
 
-    return `${driverLabel}, ${variantLabel}, on ${account.value?.label ?? 'no account'}`;
+    return `${driverLabel} as ${variantLabel}, on ${account.value?.label ?? 'no account'}`;
 });
 const canSubmit = computed(() => account.value !== undefined && account.value.unavailableReason === null && !sending.value);
 

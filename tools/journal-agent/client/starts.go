@@ -19,7 +19,7 @@ type AccountRecipe struct {
 	RemovedVariables     []string       `json:"removedVariables"`
 	StartFlags           []string       `json:"startFlags"`
 	AccountSettings      []StartSetting `json:"accountSettings"`
-	DriverVersion       string         `json:"driverVersion"`
+	DriverVersion        string         `json:"driverVersion"`
 	BinaryDigest         string         `json:"binaryDigest"`
 	Arrangement          string         `json:"arrangement"`
 	ProtectionSettings   string         `json:"protectionSettings"`

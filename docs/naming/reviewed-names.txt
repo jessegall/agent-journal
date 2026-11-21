@@ -16775,6 +16775,7 @@ method	TerminalView::live()
 method	TerminalView::ofAgent()
 method	TerminalView::renew()
 method	TerminalView::runtime()
+method	TerminalView::watchedAnotherSession()
 method	TerminalView::watchedOnHost()
 method	TerminalView::watches()
 method	TerminalViewCloser::closeAllFor()
@@ -18253,6 +18254,7 @@ parameter	$hasMore
 parameter	$hasNextPage
 parameter	$hasObservedProof
 parameter	$hasOpenWork
+parameter	$hasTerminal
 parameter	$hash
 parameter	$hasher
 parameter	$head
@@ -20024,6 +20026,7 @@ property	AgentOption::$actions
 property	AgentOption::$agentId
 property	AgentOption::$assignee
 property	AgentOption::$conversations
+property	AgentOption::$hasTerminal
 property	AgentOption::$name
 property	AgentOption::$presence
 property	AgentOption::$profileKey
@@ -27106,7 +27109,6 @@ variable	$gatewayKeys
 variable	$gathered
 variable	$generated
 variable	$generation
-variable	$generations
 variable	$gh
 variable	$git
 variable	$given

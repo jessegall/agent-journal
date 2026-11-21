@@ -77,7 +77,7 @@ final class ChatWindowTest extends TestCase
         $this->agentInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $agent->id))->inboxId();
     }
 
-    public function test_home_selects_the_idle_main_agent_with_its_history_and_lists_a_live_helper_with_open(): void
+    public function test_home_selects_the_idle_main_agent_and_offers_a_headless_helper_no_terminal(): void
     {
         $main = Agent::create('Main agent', 'main-agent');
         MainAgentDesignation::create($main);
@@ -94,7 +94,7 @@ final class ChatWindowTest extends TestCase
             ->where('page.data.conversation.sessionId', null)
             ->where('page.data.conversation.messages.0.body', 'Done for today.')
             ->where('page.data.agents.0.name', 'Builder')
-            ->where('page.data.agents.0.actions', ['open', 'switch'])
+            ->where('page.data.agents.0.actions', ['switch'])
             ->where('page.data.agents.1.name', 'Main agent')
             ->where('page.data.agents.1.actions', ['start']));
     }

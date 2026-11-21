@@ -29,6 +29,7 @@ final readonly class AgentOption
         public AgentPresence $presence,
         public string|null $sessionId,
         public int $sessionGeneration,
+        public bool $hasTerminal,
         public string|null $switchId,
         public DriverSwitchStage|null $switchStage,
         public array $actions,

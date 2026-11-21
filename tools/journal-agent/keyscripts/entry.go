@@ -19,7 +19,7 @@ var namedKeys = map[string]string{
 // steps from the screen the first one expects, what replaying it completes, and the proof that ends it.
 type Entry struct {
 	ID        string      `json:"id"`
-	Driver   string      `json:"driver"`
+	Driver    string      `json:"driver"`
 	Goal      EntryGoal   `json:"goal"`
 	Steps     []EntryStep `json:"steps"`
 	Completes string      `json:"completes"`

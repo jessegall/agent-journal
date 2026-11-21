@@ -18,7 +18,7 @@ type StartRequest struct {
 	StartID          string `json:"startId"`
 	RuntimeID        string `json:"runtimeId"`
 	SessionID        string `json:"sessionId"`
-	Driver          string `json:"driver"`
+	Driver           string `json:"driver"`
 	ExecutionMode    string `json:"executionMode"`
 	PolicyReference  string `json:"policyReference"`
 	Workspace        string `json:"workspace"`

@@ -7,19 +7,25 @@ namespace Tests\Feature\Agents;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Actions\AgentRuntimes;
+use App\Agents\Actions\AgentSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Data\ScreenFrameData;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Exceptions\TerminalViewRefused;
+use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
 use App\Agents\Support\DriverRequestEndings;
 use App\Agents\Support\RuntimeScreen;
 use App\Agents\Support\TerminalFrames;
+use App\Agents\Values\RuntimeIntent;
 use App\Http\Responses\Agents\TerminalViewResponses;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Symfony\Component\HttpFoundation\Response;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
@@ -162,6 +168,24 @@ final class TerminalViewRoutesTest extends TestCase
             ->assertJson(['state' => 'live', 'frame' => ['epoch' => 'epoch-2']]);
         $view = TerminalView::query()->acrossActors()->sole();
         $this->assertSame($runtime->process_generation, $view->process_generation);
+    }
+
+    public function test_a_view_of_a_session_the_agent_left_ends_instead_of_following_the_replacement(): void
+    {
+        $old = $this->runtimeOn('host-1');
+        $agent = Agent::query()->findOrFail($old->session->agent_id);
+        $this->actingAs($this->owner)->postJson("/agents/{$agent->id}/terminal")->assertOk();
+        $this->app->make(AgentSessions::class)->end($old->session);
+        $agent->fenceRuntimes();
+        $replacement = $this->app->make(StartSessions::class)
+            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId());
+        $intent = new RuntimeIntent('host-1', base_path(), 'claude', '1.0.0', 'default', DriverVariant::Terminal, null, null, null);
+        $this->app->make(AgentRuntimes::class)->open($replacement->session, $intent, 'start-token-2');
+
+        $this->actingAs($this->owner)->getJson("/agents/{$agent->id}/terminal")
+            ->assertOk()
+            ->assertJson(['state' => 'ended']);
+        $this->assertSame(0, TerminalView::query()->acrossActors()->live()->count());
     }
 
     private function assertRefusal(string $agentId, int $status, string $message): void

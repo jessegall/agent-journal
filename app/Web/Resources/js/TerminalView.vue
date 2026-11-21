@@ -19,7 +19,7 @@ const notices = computed<string[]>(() => {
         [state.value === 'restarted', 'restarted'],
         [
             state.value === 'ended',
-            `the agent's terminal ended at ${new Date(endedAt.value).toLocaleTimeString()}`,
+            `this session ended at ${new Date(endedAt.value).toLocaleTimeString()}; open the current one from Home`,
         ],
         [
             isSilent(),
