@@ -87,16 +87,16 @@ afterEach(() => {
 });
 
 describe('ConnectProjectWindow', () => {
-    it('shows each supported platform with its size and prerequisites and names a withheld provider', () => {
+    it('shows each supported platform with its size and prerequisites and names a provider not offered yet', () => {
         const text = windowWith(true).text();
 
         expect(text).toContain('darwin-arm64: 9.0 MB to download and install. Needs git, curl.');
-        expect(text).toContain('linux-amd64 is withheld: it does not run codex yet.');
+        expect(text).toContain('linux-amd64 is not offered yet: it does not run codex yet.');
     });
 
     it('generates a line, copies exactly its bytes and replaces it under the same action', async () => {
         const writeText = vi.fn();
-        Object.assign(navigator, { clipboard: { writeText } });
+        Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
         const wrapper = windowWith(true);
 
         await button(wrapper, 'Generate install line').trigger('click');

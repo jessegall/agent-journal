@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
-use Domain\Tasks\Support\TaskReads;
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
@@ -32,7 +31,6 @@ use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskSummary;
-use Domain\Tasks\Api\TaskText;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Database\Factories\TaskFactory;
 use Domain\Tasks\Enums\TaskState;
@@ -42,6 +40,7 @@ use Domain\Tasks\Exceptions\CandidateLimitInvalid;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Policies\TaskRunPolicy;
+use Domain\Tasks\Support\TaskReads;
 use Domain\Tasks\Support\TaskWork;
 use Illuminate\Contracts\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

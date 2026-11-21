@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
-use Domain\Documents\Support\RecordViews;
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 use App\Contracts\EventSource;
@@ -18,6 +17,7 @@ use Domain\Documents\Api\Events\DocumentClosed;
 use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Exceptions\RecordImmutable;
+use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;

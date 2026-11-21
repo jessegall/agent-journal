@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Comments\Models;
 
-use App\Comments\Support\CommentViews;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Comments\Data\CommentDetails;
@@ -12,6 +11,7 @@ use App\Comments\Enums\WholeRecord;
 use App\Comments\Events\CommentPosted;
 use App\Comments\Exceptions\CommentAnchorCorrupt;
 use App\Comments\Exceptions\CommentImmutable;
+use App\Comments\Support\CommentViews;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;

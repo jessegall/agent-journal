@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
-use App\Agents\Support\RuntimeStatuses;
 use App\Agents\Data\RuntimeStatus;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\DriverVariant;
@@ -12,6 +11,7 @@ use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Enums\SessionStatus;
+use App\Agents\Support\RuntimeStatuses;
 use App\Agents\Values\RuntimeIntent;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;

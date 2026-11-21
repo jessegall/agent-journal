@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
-use Domain\Documents\Support\RecordViews;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\EventSource;
@@ -19,6 +18,7 @@ use Domain\Documents\Api\Events\DocumentDraftSaved;
 use Domain\Documents\Api\Events\DocumentOpened;
 use Domain\Documents\Data\DraftView;
 use Domain\Documents\Support\DraftText;
+use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

@@ -6,7 +6,6 @@ namespace App\Profiles\Support;
 
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Drivers\Enums\HookDriver;
-use App\Http\Data\Profiles\EligibleAccountData;
 use App\Http\Data\Profiles\EligibleAccountsData;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Contracts\StartAccounts;

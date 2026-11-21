@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Profiles\Models;
 
-use App\Profiles\Support\ProfileSnapshots;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
@@ -15,6 +14,7 @@ use App\Profiles\Casts\SupervisorRoutesCast;
 use App\Profiles\Enums\InstancePolicy;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Models\Concerns\PreventsRevisionUpdates;
+use App\Profiles\Support\ProfileSnapshots;
 use App\Profiles\Values\CompiledScript;
 use App\Profiles\Values\ProfileAuthorization;
 use App\Profiles\Values\ProfileBase;

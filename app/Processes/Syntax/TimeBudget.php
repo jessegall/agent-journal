@@ -14,7 +14,7 @@ use App\Processes\Exceptions\ProcessorTimeUnreadable;
  */
 final class TimeBudget
 {
-    private ?float $startedAt = null;
+    private float|null $startedAt = null;
 
     public function isSpent(): bool
     {

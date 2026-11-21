@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
-use App\Agents\Support\RuntimeStatuses;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\ExpectedTiming;
@@ -12,6 +11,7 @@ use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Exceptions\NavigationRaiseRefused;
+use App\Agents\Support\RuntimeStatuses;
 use App\Agents\Values\ClaimedRequest;
 use App\Agents\Values\DriverReceipt;
 use App\Agents\Values\DriverRequestPayload;
