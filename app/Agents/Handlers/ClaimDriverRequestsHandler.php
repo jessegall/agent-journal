@@ -11,6 +11,7 @@ use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
+use App\Agents\Models\ProcessStart;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\PendingWorkSources;
 use App\Contracts\CommandHandler;
@@ -61,6 +62,11 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         $now = CarbonImmutable::now();
         $claimed = [];
 
+        $starts = ProcessStart::latestIdsOfSessions(array_values(array_map(
+            fn (AgentRuntime $runtime) => $runtime->agent_session_id,
+            $runtimes->all(),
+        )));
+
         $waitingOnHelpers = AgentRuntime::sessionsWaitingOnHelpers(array_values(array_map(
             fn (AgentRuntime $runtime) => $runtime->agent_session_id,
             $runtimes->all(),
@@ -74,7 +80,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
             }
 
             $request->stage($now);
-            $claimed[] = $request->claimed();
+            $claimed[] = $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null);
         }
 
         for ($round = 0; count($claimed) < $command->limit && $pending->isNotEmpty(); $round++) {
@@ -91,8 +97,9 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
                     continue;
                 }
 
+                $runtime = $runtimes->get($runtimeId);
                 $request->stage($now);
-                $claimed[] = $request->claimed();
+                $claimed[] = $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null);
 
                 if (count($claimed) === $command->limit) {
                     break;

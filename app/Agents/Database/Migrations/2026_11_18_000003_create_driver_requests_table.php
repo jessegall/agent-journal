@@ -23,6 +23,9 @@ return new class extends Migration
             $table->string('effort', 32)->nullable();
             $table->string('progress', 32);
             $table->string('outcome', 32)->nullable();
+            // The allowlisted reason a host refused the request for, and whether it proved no process was made.
+            $table->string('refusal_reason', 48)->nullable();
+            $table->boolean('no_process_created')->default(false);
             $table->string('expected_timing', 32);
             $table->timestampTz('expected_observed_at')->nullable();
             $table->string('actual_binding', 32)->nullable();

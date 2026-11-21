@@ -151,6 +151,29 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * The id of each of these sessions' latest supervised start, by session; a session the journal does not supervise
+     * is not in it. A host's claim binds its report to it.
+     *
+     * @param  list<string>  $sessionIds
+     * @return array<string, string>
+     */
+    public static function latestIdsOfSessions(array $sessionIds): array
+    {
+        return self::supervised()
+            ->whereIn('session_id', $sessionIds)
+            ->whereNotExists(fn (QueryBuilder $newer) => $newer->from('process_starts', 'newer')
+                ->whereColumn('newer.session_id', 'process_starts.session_id')
+                ->where(fn (QueryBuilder $later) => $later
+                    ->whereColumn('newer.created_at', '>', 'process_starts.created_at')
+                    ->orWhere(fn (QueryBuilder $sameTime) => $sameTime
+                        ->whereColumn('newer.created_at', 'process_starts.created_at')
+                        ->whereColumn('newer.id', '>', 'process_starts.id'))))
+            ->readExactly(count($sessionIds))
+            ->pluck('id', 'session_id')
+            ->all();
+    }
+
+    /**
      * Why each of these agents' latest start was refused, by agent; an agent whose latest start was not refused is not
      * in it. Home reads the agents it shows at once, one latest start for each.
      *

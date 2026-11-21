@@ -36,6 +36,7 @@ use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\HoldReason;
+use App\Agents\Enums\HostWakeRefusal;
 use App\Agents\Enums\RecoveryAction;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
@@ -628,6 +629,46 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame(
             [RequestProgress::Failed, RequestOutcome::Unconfirmed],
             [$highlighted->progress, $highlighted->outcome],
+        );
+    }
+
+    public function test_the_host_reports_the_reason_it_refused_a_request_and_that_no_process_was_made(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $refused = $this->deliver($opened, 'no-container', 'Hello');
+        $unnamed = $this->deliver($opened, 'odd-reason', 'Hello again');
+        $claimed = $this->claimedScript($host, $refused->requestId);
+        $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
+        $this->assertSame(
+            [$runtime->agent_session_id, $runtime->process_generation],
+            [$claimed['sessionId'], $claimed['processGeneration']],
+        );
+        $attempts = DriverRequest::query()
+            ->whereKey([$refused->requestId, $unnamed->requestId])
+            ->limit(2)
+            ->pluck('attempt_version', 'id');
+        $reports = [[$refused, 'container-unavailable'], [$unnamed, 'disk-on-fire']];
+
+        foreach ($reports as [$receipt, $reason]) {
+            $this->hostCall($host, '/host/reports/request', [
+                'request_id' => $receipt->requestId,
+                'attempt' => $attempts[$receipt->requestId],
+                'progress' => 'failed',
+                'actual_binding' => null,
+                'outcome' => 'refused',
+                'refusal_reason' => $reason,
+                'no_process_created' => true,
+                'session_id' => $claimed['sessionId'],
+                'process_start_id' => $claimed['processStartId'],
+                'process_generation' => $claimed['processGeneration'],
+            ])->assertSuccessful();
+        }
+
+        $kept = DriverRequest::query()->findOrFail($refused->requestId);
+        $unknown = DriverRequest::query()->findOrFail($unnamed->requestId);
+        $this->assertSame(
+            [HostWakeRefusal::ContainerUnavailable, true, HostWakeRefusal::Unknown, true],
+            [$kept->refusal_reason, $kept->no_process_created, $unknown->refusal_reason, $unknown->no_process_created],
         );
     }
 

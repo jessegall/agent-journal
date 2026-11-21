@@ -12,7 +12,7 @@ use App\Agents\Support\StartRemedy;
  */
 enum HostRefusal: string
 {
-    case AccountFolderRejected = 'account-folder-rejected';
+    case AccountFolderRejected = 'protected-account-folder-rejected';
     case Unknown = 'unknown';
 
     public function explanation(): string

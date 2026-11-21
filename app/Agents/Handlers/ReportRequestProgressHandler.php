@@ -49,6 +49,10 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
             ),
         };
 
+        if ($command->refusal !== null) {
+            $request->recordRefusal($command->refusal, $command->noProcessCreated);
+        }
+
         if ($command->script !== null) {
             $request->recordScriptProgress($command->script);
         }
