@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Actors\Support\ActorContext;
 use Domain\Plans\Api\Events\PlanCancelled;
 use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Api\Events\PlanProgressChanged;
@@ -17,32 +18,30 @@ return [
     PlanCancelled::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Plan::cancel',
-        'migrated' => false,
-        'producers' => [
-            'domain/Plans/src/Handlers/CancelPlanHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PlanCancelled('plan', ActorContext::forUser('user')),
     ],
     PlanFinished::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Plan::finish',
-        'migrated' => false,
-        'producers' => [
-            'domain/Plans/src/Handlers/FinishPlanHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PlanFinished('plan', ActorContext::forUser('user')),
     ],
     PlanProgressChanged::class => [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
             'domain/Plans/src/Listeners/RaisePlanProgressChanged.php',
+            'domain/Plans/src/Listeners/SamplePlanOfStartedTask.php',
         ],
     ],
     PlanStarted::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Plan::startOnce',
-        'migrated' => false,
-        'producers' => [
-            'domain/Plans/src/Handlers/StartPlanHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new PlanStarted('plan', ActorContext::forUser('user')),
     ],
 ];

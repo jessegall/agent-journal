@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Actors\Support\ActorIdentity;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
@@ -17,33 +18,29 @@ return [
     TaskBlocked::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Task::block',
-        'migrated' => false,
-        'producers' => [
-            'domain/Tasks/src/Handlers/BlockTaskHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TaskBlocked('task'),
     ],
     TaskCancelled::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Task::cancel',
-        'migrated' => false,
-        'producers' => [
-            'domain/Tasks/src/Handlers/CancelTaskHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TaskCancelled('task'),
     ],
     TaskFinished::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Task::finish',
-        'migrated' => false,
-        'producers' => [
-            'domain/Tasks/src/Handlers/FinishTaskHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TaskFinished('task'),
     ],
     TaskStarted::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Task::start',
-        'migrated' => false,
-        'producers' => [
-            'domain/Tasks/src/Handlers/StartTaskHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TaskStarted('task', ActorIdentity::system()),
     ],
 ];

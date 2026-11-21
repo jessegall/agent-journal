@@ -79,6 +79,26 @@ final class TaskCommandsTest extends TestCase
         }
     }
 
+    public function test_a_task_finished_outside_a_command_keeps_its_fact_on_itself_and_sends_nothing(): void
+    {
+        $task = $this->task('Bare');
+
+        $task->finish('Done.');
+
+        $this->assertEquals([new TaskFinished($task->id)], $task->takeRaisedEvents());
+        Event::assertNotDispatched(TaskFinished::class);
+    }
+
+    public function test_another_runs_finish_is_refused_and_nothing_is_announced(): void
+    {
+        $task = $this->task('Taken');
+
+        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new FinishTask($task->id, 3, 'Done.')));
+
+        $this->assertSame(TaskState::Open, $task->fresh()?->state);
+        Event::assertNotDispatched(TaskFinished::class);
+    }
+
     private function task(string $title): Task
     {
         return Task::factory()->create(['title' => $title]);

@@ -10,18 +10,17 @@ use Domain\Plans\Models\Phase;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
-use Domain\Tasks\Events\TaskStarted;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
- * Receives the Tasks facts and tells that the progress of the plan holding that task moved; a task sits in one phase at
- * most, so one plan at most is told.
+ * Receives the committed Tasks facts that end a run and tells that the progress of the plan holding that task moved; a
+ * task sits in one phase at most, so one plan at most is told. A start is sampled by SamplePlanOfStartedTask.
  */
 final readonly class RaisePlanProgressChanged implements Listener
 {
     public function __construct(private Dispatcher $events) {}
 
-    public function handle(TaskStarted|TaskFinished|TaskBlocked|TaskCancelled $event): void
+    public function handle(TaskFinished|TaskBlocked|TaskCancelled $event): void
     {
         $phase = Phase::query()->holdingTask($event->taskId)->first();
 

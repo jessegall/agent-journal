@@ -6,25 +6,25 @@ namespace Domain\Tasks\Handlers;
 
 use App\Actors\Contracts\ReplyInboxes;
 use App\Actors\Support\ActorIdentity;
+use App\Bus\Contracts\CommandFacts;
 use App\Desks\Contracts\RunClaims;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Enums\TaskState;
-use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunTaken;
 use Domain\Tasks\Handlers\Support\TaskCommandHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Resolves the session after every middleware, then starts the task for it under the task's row lock and answers the
- * run number: the same session's active run is kept, another session's run is not taken.
+ * run number: the same session's active run is kept, another session's run is not taken. The start's fact waits for
+ * the run and claim work, and its required listeners run before the reply.
  */
 final readonly class StartTaskHandler extends TaskCommandHandler
 {
     public function __construct(
-        private Dispatcher $events,
+        private CommandFacts $facts,
         private RunClaims $claims,
         private ReplyInboxes $replyInboxes,
     ) {}
@@ -40,10 +40,12 @@ final readonly class StartTaskHandler extends TaskCommandHandler
     {
         $actor = ActorIdentity::of($command->dispatchedBy());
         $this->requireRunNotTaken($task, $actor);
-        $task->start();
-        $run = TaskRun::currentFor($task, $actor, $this->replyInboxes->replyInboxIdFor($actor));
-        $this->claims->take($run->assignmentIdentity(), $task->assignmentIdentity(), $actor);
-        $this->events->dispatch(new TaskStarted($command->taskId, $actor));
+        $this->facts->holdUntilReturn(function () use ($task, $actor): void {
+            $task->start($actor);
+            $run = TaskRun::currentFor($task, $actor, $this->replyInboxes->replyInboxIdFor($actor));
+            $this->claims->take($run->assignmentIdentity(), $task->assignmentIdentity(), $actor);
+        });
+        $this->facts->applyRequired();
 
         return $task->run_number;
     }

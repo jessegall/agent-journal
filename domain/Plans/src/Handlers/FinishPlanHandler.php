@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Handlers;
 
-use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Commands\FinishPlan;
 use Domain\Plans\Exceptions\PlanHasUnfinishedTasks;
 use Domain\Plans\Exceptions\PlanRevisionChanged;
 use Domain\Plans\Handlers\Support\PlanCommandHandler;
 use Domain\Tasks\Contracts\TaskProgressCounter;
-use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class FinishPlanHandler extends PlanCommandHandler
 {
-    public function __construct(private TaskProgressCounter $progress, private Dispatcher $events) {}
+    public function __construct(private TaskProgressCounter $progress) {}
 
     /**
      * @throws PlanRevisionChanged
@@ -34,7 +32,6 @@ final readonly class FinishPlanHandler extends PlanCommandHandler
             throw PlanHasUnfinishedTasks::for($plan->number, $unfinished);
         }
 
-        $plan->finish($command->note);
-        $this->events->dispatch(new PlanFinished($plan->id, $command->dispatchedBy()));
+        $plan->finish($command->note, $command->dispatchedBy());
     }
 }

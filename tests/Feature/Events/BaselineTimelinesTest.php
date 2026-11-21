@@ -142,8 +142,8 @@ final class BaselineTimelinesTest extends TestCase
     }
 
     /**
-     * Doc 67 section 19: Task save, run and claim, TaskStarted with its stack push and plan membership, commit, then
-     * the public plan progress; the claim the start takes sends no AssignmentsChanged today.
+     * Doc 67 section 19: Task save, run and claim, TaskStarted's stack push and plan membership inside the
+     * transaction, commit, then the public TaskStarted and plan progress; the claim sends no AssignmentsChanged.
      */
     public function test_a_task_start_saves_the_task_and_run_pushes_the_stack_then_commits_and_publishes(): void
     {
@@ -155,8 +155,8 @@ final class BaselineTimelinesTest extends TestCase
             'saved Task',
             'saved TaskRun',
             'saved AgentStackRow',
-            'TaskStarted',
             'commit',
+            'TaskStarted',
             'PlanProgressChanged',
         ], $this->timeline);
     }
@@ -174,8 +174,8 @@ final class BaselineTimelinesTest extends TestCase
             'saved Task',
             'saved TaskRun',
             'saved AgentStackRow',
-            'TaskStarted',
             'commit',
+            'TaskStarted',
             'PlanProgressChanged',
         ], $this->timeline);
     }
@@ -192,7 +192,7 @@ final class BaselineTimelinesTest extends TestCase
         $this->start($task);
 
         $this->assertSame(
-            ['saved Task', 'TaskStarted', 'commit', 'PlanProgressChanged'],
+            ['saved Task', 'commit', 'TaskStarted', 'PlanProgressChanged'],
             $this->timeline,
         );
     }
@@ -209,7 +209,7 @@ final class BaselineTimelinesTest extends TestCase
         $this->start($task);
 
         $this->assertSame(
-            ['saved Task', 'saved TaskRun', 'saved AgentStackRow', 'TaskStarted', 'commit'],
+            ['saved Task', 'saved TaskRun', 'saved AgentStackRow', 'commit', 'TaskStarted'],
             $this->timeline,
         );
     }

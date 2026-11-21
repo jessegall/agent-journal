@@ -16,6 +16,9 @@ use App\Profiles\Events\SignInAttemptFinished;
 use App\Profiles\Listeners\ReleaseSignInWriter;
 use App\Web\Listeners\BroadcastPageChange;
 use Domain\Plans\Api\Events\PlanProgressChanged;
+use Domain\Plans\Listeners\SamplePlanOfStartedTask;
+use Domain\Tasks\Events\TaskStarted;
+use Domain\Tasks\Listeners\PushTaskState;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Tests\Fixtures\Boundary\Events\Chat\ChatDomain;
 use Tests\Fixtures\Boundary\Events\Plans\Listeners\RequiredClaimListener;
@@ -51,11 +54,18 @@ final class RequiredListenerLaneTest extends TestCase
         }
     }
 
-    public function test_the_application_requires_only_the_sign_in_writer_release(): void
+    public function test_the_application_requires_the_sign_in_writer_release_and_the_task_start_work(): void
     {
         $registry = $this->app->make(RequiredListenerRegistry::class);
 
-        $this->assertSame([SignInAttemptFinished::class], $registry->events());
+        $this->assertSame([TaskStarted::class, SignInAttemptFinished::class], $registry->events());
+        $this->assertSame(
+            [SamplePlanOfStartedTask::class, PushTaskState::class],
+            array_map(
+                fn (mixed $listener) => explode('@', $listener instanceof AvailableListener ? $listener->listener : '')[0],
+                $registry->listenersOf(TaskStarted::class),
+            ),
+        );
         $this->assertSame([ReleaseSignInWriter::class.'@handle'], $registry->listenersOf(SignInAttemptFinished::class));
         $this->assertFalse($this->app->make('events')->hasListeners(SignInAttemptFinished::class));
     }
