@@ -52,7 +52,7 @@ final readonly class PlanStructure
             PhaseTask::create($phase, $taskId, $next + $offset);
         }
 
-        $placed = PlanProgress::fromTaskProgress($this->taskCounts->progressOf($ids));
+        $placed = PlanProgress::fromTaskProgress($this->taskCounts->progressOfPlaced($ids));
         $phase->recordProgress($phase->progress->plus($placed));
         $plan->recordProgress($plan->progress->plus($placed));
     }

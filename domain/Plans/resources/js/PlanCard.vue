@@ -3,10 +3,18 @@ import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import ActionsMenu from '@kit/ActionsMenu';
 import ActionsMenuItem from '@kit/ActionsMenuItem';
+import CountedProgress from '@kit/CountedProgress';
 import Icon from '@kit/Icon';
 import StateBadge from '@kit/StateBadge';
 import type { PlanCardData } from '@generated/types/plans';
-import { planHeading, planName, progressText, stateLook, typeIcon } from './planLooks';
+import {
+    currentPhaseRule,
+    planHeading,
+    planName,
+    progressText,
+    stateLook,
+    typeIcon,
+} from './planLooks';
 import StartPlanForm from './StartPlanForm.vue';
 
 /**
@@ -22,11 +30,6 @@ const props = defineProps<{
 }>();
 
 const state = computed(() => stateLook[props.card.state]);
-const progress = computed(() =>
-    props.card.totalTasks === 0
-        ? 0
-        : (props.card.finishedTasks / props.card.totalTasks) * 100,
-);
 const name = computed(() => planName(props.card));
 const linkName = computed(() =>
     [
@@ -88,18 +91,19 @@ const linkName = computed(() =>
                     </span>
                 </template>
             </span>
-            <span
-                class="h-1 overflow-hidden rounded-full bg-bar-track"
-                aria-hidden="true"
-            >
+            <CountedProgress
+                :owner="name"
+                :finished="card.finishedTasks"
+                :total="card.totalTasks"
+                :text="progressText(card)"
+            />
+            <template v-if="card.phase !== undefined">
                 <span
-                    class="block h-full bg-brand"
-                    :style="{ width: `${progress}%` }"
-                />
-            </span>
-            <span class="text-small text-text-3 tabular-nums">{{
-                progressText(card)
-            }}</span>
+                    class="text-small text-text-3 tabular-nums"
+                    :title="currentPhaseRule"
+                    >Current phase {{ card.phase }}</span
+                >
+            </template>
         </Link>
         <ActionsMenu :label="`Actions for ${name}`" class="shrink-0">
             <template v-if="card.start">

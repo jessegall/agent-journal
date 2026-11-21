@@ -112,6 +112,20 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
         );
     }
 
+    /**
+     * The task tallies of every phase of the plan, keyed by number in the plan's order, read from the phase rows.
+     *
+     * @return array<int, PlanProgress>
+     */
+    public static function progressOfPhasesIn(string $planId): array
+    {
+        return self::query()->where('plan_id', $planId)->readAll('the task tallies of every phase of one plan')
+            ->orderBy('number')
+            ->get(['id', 'number', 'total_tasks', 'finished_tasks', 'cancelled_tasks', 'blocked_tasks', 'started_tasks'])
+            ->mapWithKeys(fn (self $phase) => [$phase->number => $phase->progress])
+            ->all();
+    }
+
     // ----------[ Mutations ]----------
 
     /**

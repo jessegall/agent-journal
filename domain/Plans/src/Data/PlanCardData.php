@@ -13,7 +13,8 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One plan card (doc 4, 7.3), with the start when the server offers it. The id travels as a decimal string so a
+ * One plan card (doc 4, 7.3), with its task counts, whether a started plan has no unfinished task left (Ready to
+ * finish; FinishPlan decides when asked), and the start when the server offers it. The id travels as a decimal string so a
  * bigint keeps its precision.
  *
  * @method static static from(PlanCard|array<string, mixed> $payload)
@@ -30,7 +31,9 @@ final class PlanCardData extends Data
         public readonly PlanState $state,
         public readonly bool $focused,
         public readonly int $finishedTasks,
+        public readonly int $cancelledTasks,
         public readonly int $totalTasks,
+        public readonly bool $readyToFinish,
         public readonly string|Optional $phase = new Optional(),
         public readonly AssignmentData|Optional $holder = new Optional(),
         public readonly StartPlanData|Optional $start = new Optional(),
@@ -50,7 +53,9 @@ final class PlanCardData extends Data
             'state' => $card->state,
             'focused' => $card->focused,
             'finishedTasks' => $card->progress->finished,
+            'cancelledTasks' => $card->progress->cancelled,
             'totalTasks' => $card->progress->total,
+            'readyToFinish' => $card->state === PlanState::Started && $card->progress->unfinished() === 0,
             'phase' => $card->currentPhase === null ? null : (string) $card->currentPhase,
             'holder' => $card->holder->map(AssignmentData::ofHolder(...))->getOrElse(null),
             'start' => $card->canStart

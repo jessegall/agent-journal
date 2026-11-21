@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import CountedProgress from '@kit/CountedProgress';
 import Icon from '@kit/Icon';
 import Reader from '@kit/Reader';
 import StateBadge from '@kit/StateBadge';
 import type { PlanReaderData } from '@generated/types/plans';
-import { planHeading, progressText, stateLook, typeIcon } from './planLooks';
+import {
+    currentPhaseRule,
+    planHeading,
+    planName,
+    progressText,
+    stateLook,
+    typeIcon,
+} from './planLooks';
 import StartPlanForm from './StartPlanForm.vue';
 
 /**
@@ -74,9 +82,24 @@ const paragraphs = computed(() =>
                 <p class="mt-4 text-small text-text-3">No phases yet</p>
             </template>
             <template v-else>
-                <p class="mt-4 text-small text-text-3 tabular-nums">
-                    {{ progressText(reader.card) }}
-                </p>
+                <div class="mt-4 flex flex-col gap-2">
+                    <CountedProgress
+                        :owner="planName(reader.card)"
+                        :finished="reader.card.finishedTasks"
+                        :total="reader.card.totalTasks"
+                        :text="progressText(reader.card)"
+                    />
+                    <p class="text-small text-text-3 tabular-nums">
+                        <span class="font-medium text-text-2">Current phase</span>
+                        {{ reader.card.phase }}
+                        <span class="block text-text-4">{{ currentPhaseRule }}</span>
+                    </p>
+                    <template v-if="reader.card.readyToFinish">
+                        <p class="text-small font-medium text-text-2">
+                            Ready to finish
+                        </p>
+                    </template>
+                </div>
             </template>
         </Reader>
     </template>

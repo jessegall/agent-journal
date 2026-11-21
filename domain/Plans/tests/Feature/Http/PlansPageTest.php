@@ -158,7 +158,13 @@ final class PlansPageTest extends TestCase
             ->where('page.data.number', '1')
             ->where('page.data.title', 'Read')
             ->where('page.data.tasks.0.number', (string) $task->number)
-            ->where('page.data.tasks.0.title', 'List the plans'));
+            ->where('page.data.tasks.0.title', 'List the plans')
+            ->where('page.data.finishedTasks', 0)
+            ->where('page.data.cancelledTasks', 0)
+            ->where('page.data.totalTasks', 1)
+            ->where('page.data.isCurrent', true)
+            ->where('page.data.canRunChecks', true)
+            ->missing('page.data.checkReceipt'));
 
         $this->actingAs($this->owner)->get("/plans/{$this->paused->number}/phases/1")->assertNotFound();
         $this->actingAs($this->owner)->get("/plans/{$this->release->number}/phases/2")->assertNotFound();
