@@ -7,6 +7,7 @@ namespace App\Profiles\Commands;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Values\ChosenAccount;
+use App\Agents\Values\DriverSwitchTarget;
 use App\Agents\Values\ModelSelection;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
@@ -36,5 +37,28 @@ final readonly class StartProfileMain extends Command
         public DriverVariant|null $variant = null,
         public bool $saveVariant = false,
         public ChosenAccount|null $chosenAccount = null,
+        public string|null $conversationId = null,
     ) {}
+
+    /**
+     * The start that moves an agent to a switch's target, under the switch's own request.
+     */
+    public static function toTarget(
+        string $requestId,
+        string $agentId,
+        ProfileKey $profile,
+        DriverSwitchTarget $target,
+    ): self {
+        return new self(
+            $requestId,
+            $agentId,
+            $profile,
+            ModelSelection::fromInput('default'),
+            $target->driver->value,
+            $target->variant,
+            $target->saveVariant,
+            $target->account,
+            $target->conversationId,
+        );
+    }
 }

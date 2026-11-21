@@ -323,6 +323,7 @@ use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\SelectionSource;
 use App\Agents\Values\StackTarget;
 use App\Agents\Values\StartPolicy;
+use App\Agents\Values\StartProposal;
 use App\Agents\Values\StartRequest;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
@@ -1545,6 +1546,7 @@ final class CoreApi
                 DriverFailure::class,
                 ModelSelection::class,
                 ChosenAccount::class,
+                StartProposal::class,
                 SelectionSource::class,
                 ProfileDefaults::class,
                 ModelSelectionType::class,

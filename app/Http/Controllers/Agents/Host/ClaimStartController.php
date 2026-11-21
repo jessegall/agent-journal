@@ -30,6 +30,7 @@ final readonly class ClaimStartController
                 'generation' => $claimed->generation,
                 'recipe' => $claimed->recipe,
                 'conversation_target' => $claimed->conversationTarget,
+                'conversation_required' => $claimed->conversationRequired,
             ]);
     }
 }

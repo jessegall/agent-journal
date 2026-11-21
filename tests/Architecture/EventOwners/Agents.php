@@ -8,6 +8,7 @@ use App\Agents\Events\AgentHoldReleased;
 use App\Agents\Events\AgentRuntimeReassigned;
 use App\Agents\Events\DriverFailed;
 use App\Agents\Events\DriverRequestRecovered;
+use App\Agents\Events\DriverSwitchStopped;
 use App\Agents\Events\LaunchCancelled;
 use App\Agents\Events\LaunchEnded;
 use App\Agents\Events\MergeOutcomeRecorded;
@@ -73,6 +74,13 @@ return [
         'producers' => [
             'app/Agents/Handlers/CancelLaunchHandler.php',
         ],
+    ],
+    DriverSwitchStopped::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverSwitch::markStopped',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverSwitchStopped('switch'),
     ],
     LaunchEnded::class => [
         'role' => EventRole::Projection,

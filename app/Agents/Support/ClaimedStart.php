@@ -18,5 +18,6 @@ final readonly class ClaimedStart
         public int $generation,
         public AccountStartRecipe $recipe,
         public string|null $conversationTarget,
+        public bool $conversationRequired,
     ) {}
 }

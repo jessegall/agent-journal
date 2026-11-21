@@ -28,6 +28,7 @@ final class SystemEntryPolicies implements SystemEntryPoliciesContract
         'number install' => [],
         'desk install' => [],
         'main agent install' => [],
+        'driver switch' => [],
         'account reconciliation' => [],
     ];
 

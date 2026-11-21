@@ -6,6 +6,7 @@ namespace App\Agents\Handlers;
 
 use App\Agents\Commands\ReconcileStarts;
 use App\Agents\Events\AccountUseChanged;
+use App\Agents\Models\DriverSwitch;
 use App\Agents\Models\ProcessStart;
 use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
@@ -48,6 +49,7 @@ final readonly class ReconcileStartsHandler implements CommandHandler
 
         foreach ($starts as $start) {
             $start->stopWithProof();
+            DriverSwitch::stoppingOf($start->session_id)?->markStopped();
             $account = $start->accountIdentity();
             $accounts["{$account->type} {$account->id}"] = $account;
         }

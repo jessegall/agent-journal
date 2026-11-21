@@ -8,6 +8,7 @@ use App\Agents\Commands\ReportRunning;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
+use App\Agents\Models\DriverSwitch;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Models\StartRecord;
 use App\Contracts\CommandHandler;
@@ -18,6 +19,7 @@ final readonly class ReportRunningHandler implements CommandHandler
     {
         $start = ProcessStart::claimedBy($command->hostId, $command->startKey);
         $start->recordRunning($command->executionId);
+        DriverSwitch::startingOf($start->session_id)?->confirm();
         $saved = $this->variantToKeep($start->session_id);
 
         if ($saved !== null) {

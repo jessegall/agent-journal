@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
-use App\Links\Support\Linkable;
+use App\Agents\Enums\ResumeRefusal;
+use App\Agents\Exceptions\ResumeRefused;
 use App\Drivers\Enums\HookDriver;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -73,7 +75,44 @@ final class DriverConversation extends Model implements ReadableModel
         return $conversation?->native_id;
     }
 
+    /**
+     * The native id of the conversation the owner chose, once it is checked to be this agent's, on this driver and
+     * for this context; a newer conversation never takes its place.
+     *
+     * @throws ResumeRefused
+     */
+    public static function chosenFor(
+        string $conversationId,
+        string $agentId,
+        HookDriver $driver,
+        string|null $contextReference,
+    ): string {
+        $conversation = self::query()->whereKey($conversationId)->firstOr(
+            fn () => throw ResumeRefused::because(ResumeRefusal::ConversationMissing),
+        );
+        $conversation->assertContinuableBy($agentId, $driver, $contextReference);
+
+        return $conversation->native_id;
+    }
+
     // ----------[ Answers ]----------
+
+    /**
+     * @throws ResumeRefused
+     */
+    public function assertContinuableBy(string $agentId, HookDriver $driver, string|null $contextReference): void
+    {
+        $refusal = match (true) {
+            $this->agent_id !== $agentId => ResumeRefusal::OtherAgent,
+            $this->driver !== $driver->value => ResumeRefusal::OtherDriver,
+            $this->context_reference !== $contextReference => ResumeRefusal::OtherContext,
+            default => null,
+        };
+
+        if ($refusal !== null) {
+            throw ResumeRefused::because($refusal);
+        }
+    }
 
     /**
      * Whether a session of this agent, started for this context, may continue the conversation.

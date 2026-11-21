@@ -6,8 +6,10 @@ namespace Tests\Feature\Bus;
 
 use App\Agents\Commands\ClaimStart;
 use App\Agents\Commands\ClaimStartGrant;
+use App\Agents\Commands\FailDriverSwitchLaunch;
 use App\Agents\Commands\FenceProfileRevision;
 use App\Agents\Commands\MergeReviewedWork;
+use App\Agents\Commands\RecheckDriverSwitch;
 use App\Agents\Commands\ReconcileStarts;
 use App\Agents\Commands\RecordHostCombinations;
 use App\Agents\Commands\RecordHostProtection;
@@ -16,6 +18,7 @@ use App\Agents\Commands\ReportFailure;
 use App\Agents\Commands\ReportRunning;
 use App\Agents\Commands\ReportStopped;
 use App\Agents\Commands\ReportWorkspaceRead;
+use App\Agents\Commands\RetryDriverSwitch;
 use App\Agents\Commands\StartAgent;
 use App\Assignments\Commands\AssignRecordForMaintenance;
 use App\Assignments\Commands\ClaimAutoAssignment;
@@ -71,6 +74,8 @@ use App\Profiles\Commands\ReleaseAccountRemoval;
 use App\Profiles\Commands\ReleaseSignInAgain;
 use App\Profiles\Commands\ReportSignIn;
 use App\Profiles\Commands\SaveProfileDraft;
+use App\Profiles\Commands\StartSwitchReplacement;
+use App\Profiles\Commands\SwitchAgentDriver;
 use App\Profiles\Commands\TakeSignInCode;
 use App\Scripts\Commands\RecordScriptStepResult;
 use App\Sharing\Commands\ClaimGatewayOperation;
@@ -165,6 +170,11 @@ final class CoreCommandsTest extends CommandBusTestCase
             ReconcileAccounts::class,
             InstallBuiltInProfiles::class,
             InstallMainAgent::class,
+            StartSwitchReplacement::class,
+            SwitchAgentDriver::class,
+            RecheckDriverSwitch::class,
+            RetryDriverSwitch::class,
+            FailDriverSwitchLaunch::class,
             ReadShare::class,
             ExpireShares::class,
             ClaimGatewayOperation::class,

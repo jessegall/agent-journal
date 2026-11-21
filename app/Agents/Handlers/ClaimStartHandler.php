@@ -56,6 +56,7 @@ final readonly class ClaimStartHandler implements CommandHandler
             $start->account_generation,
             $settings->recipeFor($driver, $start->transport_profile),
             StartRecord::conversationTargetOf($start->session_id),
+            StartRecord::requiresConversation($start->session_id),
         );
     }
 

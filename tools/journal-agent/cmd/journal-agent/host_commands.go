@@ -740,11 +740,17 @@ func terminalSize() (uint16, uint16) {
 	return uint16(rows), uint16(columns)
 }
 
+// ErrResumeFailed refuses a start whose explicitly chosen conversation has no transcript left to resume.
+var ErrResumeFailed = errors.New("the chosen conversation's transcript is gone, so it cannot be resumed; start fresh instead")
+
 // conversationOf is the conversation a start runs in: the one the journal chose to resume when its transcript is in
-// the start's own account folder for its own workspace, else a new one.
+// the start's own account folder for its own workspace, else a new one, unless the owner chose it explicitly.
 func conversationOf(prepared host.PreparedStart, workFolder string) (string, bool, error) {
 	if resumed, ok := prepared.ResumableConversation(workFolder); ok {
 		return resumed, true, nil
+	}
+	if prepared.Claim.ConversationRequired {
+		return "", false, ErrResumeFailed
 	}
 	conversationID, err := newConversationID()
 	return conversationID, false, err

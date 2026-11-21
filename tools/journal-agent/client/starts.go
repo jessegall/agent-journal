@@ -41,6 +41,9 @@ type ClaimedStart struct {
 	// ConversationTarget is the native conversation the journal chose for a resume, empty for a fresh one. The host
 	// resumes it only when its transcript is in this account's folder for the start's own workspace.
 	ConversationTarget string `json:"conversation_target"`
+	// ConversationRequired is whether the owner chose that conversation explicitly: then a missing transcript fails
+	// the start as a resume failure instead of beginning a fresh conversation.
+	ConversationRequired bool `json:"conversation_required"`
 }
 
 // ErrIncompleteClaim is returned when a claim's answer lacks its key, folder or recipe: the host never starts a

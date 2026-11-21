@@ -270,6 +270,7 @@ final class AgentsServiceProvider extends ServiceProvider
         ));
         $systemEntries->allow('account reconciliation', AgentMaintenancePolicy::class);
         $systemEntries->allow('main agent install', AgentPolicy::class);
+        $systemEntries->allow('driver switch', AgentPolicy::class);
         $actors->register(ActorType::Agent, AgentActors::class);
         $actors->registerLabels(ActorType::Agent, AgentLabels::class);
         $actors->registerVisibility(ActorType::Agent, AgentVisibility::class);

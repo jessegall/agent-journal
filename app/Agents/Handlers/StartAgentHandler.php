@@ -18,6 +18,7 @@ use App\Agents\Exceptions\StartRefused;
 use App\Agents\Exceptions\StartRequestConflict;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
+use App\Agents\Models\DriverSwitch;
 use App\Agents\Models\SessionPolicy;
 use App\Agents\Models\StartRecord;
 use App\Agents\Resolvers\Support\PendingStartSecrets;
@@ -64,6 +65,10 @@ final readonly class StartAgentHandler implements CommandHandler
         // the session: the order of every start.
         $agent = Agent::query()->findOrFail($request->agentId);
         $this->sessions->reserveStart($agent);
+
+        if (DriverSwitch::openOf($agent->id)?->stage->blocksWriter() === true) {
+            throw AgentBusy::forAgent($agent->id);
+        }
 
         if ($request->execution()->mode === ExecutionModeType::RequiredContainer) {
             $this->containers->admit($request->requestId, $request->selection->driver, $request->execution());

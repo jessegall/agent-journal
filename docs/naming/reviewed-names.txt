@@ -275,6 +275,17 @@ case	DriverSourceType::Explicit
 case	DriverSourceType::ParentSession
 case	DriverSourceType::Profile
 case	DriverStopDecision::Block
+case	DriverSwitchStage::Cancelled
+case	DriverSwitchStage::Confirmed
+case	DriverSwitchStage::LaunchFailed
+case	DriverSwitchStage::Preflighted
+case	DriverSwitchStage::Refused
+case	DriverSwitchStage::Requested
+case	DriverSwitchStage::StartUnconfirmed
+case	DriverSwitchStage::Starting
+case	DriverSwitchStage::StopUnconfirmed
+case	DriverSwitchStage::Stopped
+case	DriverSwitchStage::Stopping
 case	DriverVariant::Headless
 case	DriverVariant::Terminal
 case	EmptyPolicy::AllowedSuccess
@@ -691,6 +702,10 @@ case	ReservationState::Reserved
 case	ResourceType::Destination
 case	ResourceType::Path
 case	ResourceType::Record
+case	ResumeRefusal::ConversationMissing
+case	ResumeRefusal::OtherAgent
+case	ResumeRefusal::OtherContext
+case	ResumeRefusal::OtherDriver
 case	ReviewDecisionType::Approved
 case	ReviewDecisionType::Returned
 case	ReviewLimit::BatchCharacters
@@ -1903,6 +1918,12 @@ class	DriverRuntimeStops
 class	DriverSettings
 class	DriverSkillAdapters
 class	DriverSkillsUnsupported
+class	DriverSwitch
+class	DriverSwitchReceipt
+class	DriverSwitchStageRefused
+class	DriverSwitchStale
+class	DriverSwitchStopped
+class	DriverSwitchTarget
 class	DriverToolInput
 class	DriverTurn
 class	DriverTurnReportData
@@ -2017,6 +2038,8 @@ class	Explanations
 class	ExplicitTransactionInCommand
 class	ExportBuilder
 class	Exports
+class	FailDriverSwitchLaunch
+class	FailDriverSwitchLaunchHandler
 class	FailSkillPublication
 class	FailSkillPublicationHandler
 class	FailedWindow
@@ -2194,6 +2217,7 @@ class	HostSecret
 class	HostSecretUnreadable
 class	HostSkillPublisher
 class	HostStartExecutor
+class	HostStartPreflight
 class	HostStartRefused
 class	HostStartReplyData
 class	HostStopReplyData
@@ -3102,6 +3126,8 @@ class	ReceiptCallers
 class	ReceiptPublisher
 class	ReceiptRetention
 class	ReceivedScreen
+class	RecheckDriverSwitch
+class	RecheckDriverSwitchHandler
 class	ReconcileAccounts
 class	ReconcileAccountsCommand
 class	ReconcileAccountsHandler
@@ -3418,6 +3444,7 @@ class	ResultTooLarge
 class	ResumeKeyScript
 class	ResumeKeyScriptCommand
 class	ResumeKeyScriptHandler
+class	ResumeRefused
 class	ResumeScriptRuntimeRequestController
 class	RetainedActorRequestKey
 class	RetainedEntries
@@ -3450,6 +3477,8 @@ class	RetryAttemptCleanupHandler
 class	RetryDriverRequest
 class	RetryDriverRequestCommand
 class	RetryDriverRequestHandler
+class	RetryDriverSwitch
+class	RetryDriverSwitchHandler
 class	RetryProcessRun
 class	RetryProcessRunHandler
 class	RetryRefused
@@ -4098,7 +4127,6 @@ class	StartOwnedAgent
 class	StartOwnedAgentHandler
 class	StartPermitRun
 class	StartPolicy
-class	StartPreflight
 class	StartPreflightRefused
 class	StartProfile
 class	StartProfileAuthority
@@ -4131,6 +4159,9 @@ class	StartSettingsRequested
 class	StartSignInController
 class	StartSignInRequest
 class	StartStacks
+class	StartSwitchReplacement
+class	StartSwitchReplacementHandler
+class	StartSwitchReplacementOnStop
 class	StartToken
 class	StartTokenRefused
 class	StartTokens
@@ -4313,6 +4344,8 @@ class	SupplyHookSettings
 class	SupportedDriverAdapters
 class	SwitchAccount
 class	SwitchAccountHandler
+class	SwitchAgentDriver
+class	SwitchAgentDriverHandler
 class	SyntaxOrigin
 class	SystemActor
 class	SystemActorRequired
@@ -5244,6 +5277,7 @@ enum	DriverOperation
 enum	DriverPermission
 enum	DriverSourceType
 enum	DriverStopDecision
+enum	DriverSwitchStage
 enum	DriverVariant
 enum	EmptyPolicy
 enum	EmptySelection
@@ -5335,6 +5369,7 @@ enum	RequestProgress
 enum	RequestState
 enum	ReservationState
 enum	ResourceType
+enum	ResumeRefusal
 enum	ReviewDecisionType
 enum	ReviewLimit
 enum	RewriteSupport
@@ -5695,6 +5730,7 @@ interface	StackTransactionRunner
 interface	StackTransition
 interface	StartExecutor
 interface	StartHeartbeats
+interface	StartPreflight
 interface	StartProfileAdmission
 interface	StartReceipts
 interface	StartRecordResolver
@@ -6324,7 +6360,6 @@ method	AgentRuntime::requestEffort()
 method	AgentRuntime::requestModel()
 method	AgentRuntime::requests()
 method	AgentRuntime::runningHelpersOf()
-method	AgentRuntime::savedVariantOf()
 method	AgentRuntime::secondsSince()
 method	AgentRuntime::session()
 method	AgentRuntime::sessionOfHostRuntime()
@@ -8982,6 +9017,8 @@ method	DriverCompatibility::withEvidence()
 method	DriverConflict::for()
 method	DriverConflict::reason()
 method	DriverConversation::admits()
+method	DriverConversation::assertContinuableBy()
+method	DriverConversation::chosenFor()
 method	DriverConversation::create()
 method	DriverConversation::lastUnder()
 method	DriverConversation::native()
@@ -9127,6 +9164,35 @@ method	DriverSkills::skillFile()
 method	DriverSkills::supportFiles()
 method	DriverSkillsUnsupported::for()
 method	DriverSkillsUnsupported::refusalCode()
+method	DriverSwitch::beginStarting()
+method	DriverSwitch::beginStopping()
+method	DriverSwitch::cancel()
+method	DriverSwitch::casts()
+method	DriverSwitch::confirm()
+method	DriverSwitch::create()
+method	DriverSwitch::failLaunch()
+method	DriverSwitch::markPreflighted()
+method	DriverSwitch::markStopped()
+method	DriverSwitch::moveTo()
+method	DriverSwitch::ofRequest()
+method	DriverSwitch::openOf()
+method	DriverSwitch::recheck()
+method	DriverSwitch::refuse()
+method	DriverSwitch::retryLaunch()
+method	DriverSwitch::startingOf()
+method	DriverSwitch::stoppingOf()
+method	DriverSwitchReceipt::__construct()
+method	DriverSwitchReceipt::of()
+method	DriverSwitchStage::blocksWriter()
+method	DriverSwitchStage::followers()
+method	DriverSwitchStage::isFinal()
+method	DriverSwitchStage::mayMoveTo()
+method	DriverSwitchStageRefused::from()
+method	DriverSwitchStale::forAgent()
+method	DriverSwitchStale::refusalCode()
+method	DriverSwitchStale::status()
+method	DriverSwitchStopped::__construct()
+method	DriverSwitchTarget::__construct()
 method	DriverToolInput::__construct()
 method	DriverToolInput::firstText()
 method	DriverToolInput::hasArgument()
@@ -9487,6 +9553,8 @@ method	Exports::value()
 method	FactOrigin::reference()
 method	FactStaging::deliver()
 method	FactStaging::stage()
+method	FailDriverSwitchLaunch::__construct()
+method	FailDriverSwitchLaunchHandler::handle()
 method	FailSkillPublication::__construct()
 method	FailSkillPublicationHandler::handle()
 method	FailedWindow::__construct()
@@ -10097,6 +10165,9 @@ method	HostStartExecutor::__construct()
 method	HostStartExecutor::exchange()
 method	HostStartExecutor::start()
 method	HostStartExecutor::stop()
+method	HostStartPreflight::assertAdmitted()
+method	HostStartPreflight::hostRefusals()
+method	HostStartPreflight::refusals()
 method	HostStartRefused::because()
 method	HostStartRefused::unreachable()
 method	HostStartReplyData::__construct()
@@ -12313,6 +12384,7 @@ method	ProfileScriptWindowResolver::__construct()
 method	ProfileScriptWindowResolver::read()
 method	ProfileScripts::scriptAt()
 method	ProfileSelection::__construct()
+method	ProfileSelection::proposal()
 method	ProfileSelection::startPolicy()
 method	ProfileSelections::select()
 method	ProfileShowCommand::allowlist()
@@ -12950,6 +13022,8 @@ method	ReceiptRetention::retainedForActor()
 method	ReceiptRetention::standard()
 method	ReceivedScreen::__construct()
 method	ReceivedScreen::isNewerThan()
+method	RecheckDriverSwitch::__construct()
+method	RecheckDriverSwitchHandler::handle()
 method	ReconcileAccountsCommand::handle()
 method	ReconcileAccountsHandler::__construct()
 method	ReconcileAccountsHandler::handle()
@@ -13481,6 +13555,7 @@ method	ReportRequestProgressHandler::handle()
 method	ReportRunning::__construct()
 method	ReportRunningController::__invoke()
 method	ReportRunningHandler::handle()
+method	ReportRunningHandler::variantToKeep()
 method	ReportRuntimeActivity::__construct()
 method	ReportRuntimeActivityHandler::__construct()
 method	ReportRuntimeActivityHandler::handle()
@@ -13682,6 +13757,11 @@ method	ResumeKeyScript::__construct()
 method	ResumeKeyScriptCommand::handle()
 method	ResumeKeyScriptHandler::__construct()
 method	ResumeKeyScriptHandler::handle()
+method	ResumeRefusal::label()
+method	ResumeRefused::__construct()
+method	ResumeRefused::because()
+method	ResumeRefused::refusalCode()
+method	ResumeRefused::status()
 method	ResumeScriptRuntimeRequestController::__invoke()
 method	RetainedActorRequestKey::__construct()
 method	RetainedEntries::__construct()
@@ -13734,6 +13814,8 @@ method	RetryDriverRequest::__construct()
 method	RetryDriverRequestCommand::handle()
 method	RetryDriverRequestHandler::__construct()
 method	RetryDriverRequestHandler::handle()
+method	RetryDriverSwitch::__construct()
+method	RetryDriverSwitchHandler::handle()
 method	RetryProcessRun::__construct()
 method	RetryProcessRunHandler::__construct()
 method	RetryProcessRunHandler::handle()
@@ -15871,7 +15953,6 @@ method	StartPolicy::digest()
 method	StartPolicy::mainOnHost()
 method	StartPolicy::withoutProfile()
 method	StartPreflight::assertAdmitted()
-method	StartPreflight::hostRefusals()
 method	StartPreflight::refusals()
 method	StartPreflightRefusal::label()
 method	StartPreflightRefused::__construct()
@@ -15916,6 +15997,7 @@ method	StartRecord::ownerWork()
 method	StartRecord::replyInboxId()
 method	StartRecord::requestedBy()
 method	StartRecord::requireDigest()
+method	StartRecord::requiresConversation()
 method	StartRecord::resumesConversation()
 method	StartRecord::savedVariantOf()
 method	StartRecord::startedAs()
@@ -15975,6 +16057,11 @@ method	StartStacks::__construct()
 method	StartStacks::carriedFrames()
 method	StartStacks::close()
 method	StartStacks::open()
+method	StartSwitchReplacement::__construct()
+method	StartSwitchReplacementHandler::__construct()
+method	StartSwitchReplacementHandler::handle()
+method	StartSwitchReplacementOnStop::__construct()
+method	StartSwitchReplacementOnStop::handle()
 method	StartToken::casts()
 method	StartToken::isRevoked()
 method	StartToken::issueFor()
@@ -16574,6 +16661,10 @@ method	SupportedDriverAdapters::for()
 method	SwitchAccount::__construct()
 method	SwitchAccountHandler::__construct()
 method	SwitchAccountHandler::handle()
+method	SwitchAgentDriver::__construct()
+method	SwitchAgentDriverHandler::__construct()
+method	SwitchAgentDriverHandler::assertCurrent()
+method	SwitchAgentDriverHandler::handle()
 method	SyntaxForm::isStatement()
 method	SyntaxForm::isStatementBoundary()
 method	SyntaxOrigin::__construct()
@@ -17728,6 +17819,7 @@ parameter	$conversation
 parameter	$conversationId
 parameter	$conversationMode
 parameter	$conversationNativeId
+parameter	$conversationRequired
 parameter	$conversationTarget
 parameter	$conversations
 parameter	$coordinator
@@ -17754,6 +17846,7 @@ parameter	$credentials
 parameter	$current
 parameter	$currentContext
 parameter	$currentRevision
+parameter	$currentSessionId
 parameter	$currentSettings
 parameter	$currentUser
 parameter	$cursor
@@ -17980,6 +18073,7 @@ parameter	$expectedPreviousGenerationId
 parameter	$expectedRevision
 parameter	$expectedRoot
 parameter	$expectedRowVersion
+parameter	$expectedSessionId
 parameter	$expectedState
 parameter	$expectedStateVersion
 parameter	$expectedTiming
@@ -18008,6 +18102,7 @@ parameter	$fail
 parameter	$failed
 parameter	$failure
 parameter	$failureField
+parameter	$failureReason
 parameter	$failureSummary
 parameter	$failures
 parameter	$fallback
@@ -18923,6 +19018,7 @@ parameter	$requestId
 parameter	$requestKey
 parameter	$requestState
 parameter	$requested
+parameter	$requestedBy
 parameter	$requestedModel
 parameter	$requestedModelType
 parameter	$requester
@@ -19292,6 +19388,7 @@ parameter	$supported
 parameter	$surface
 parameter	$swapBytes
 parameter	$switch
+parameter	$switchId
 parameter	$switchable
 parameter	$switchedOn
 parameter	$switches
@@ -20512,6 +20609,7 @@ property	ClaimedSignIn::$driver
 property	ClaimedSignIn::$expiresAt
 property	ClaimedSignIn::$generation
 property	ClaimedSignIn::$method
+property	ClaimedStart::$conversationRequired
 property	ClaimedStart::$conversationTarget
 property	ClaimedStart::$directory
 property	ClaimedStart::$generation
@@ -21223,6 +21321,15 @@ property	DriverRuntimeStops::$requests
 property	DriverSettings::$requests
 property	DriverSkillAdapters::$claudeCode
 property	DriverSkillAdapters::$codex
+property	DriverSwitchReceipt::$failureReason
+property	DriverSwitchReceipt::$stage
+property	DriverSwitchReceipt::$switchId
+property	DriverSwitchStopped::$switchId
+property	DriverSwitchTarget::$account
+property	DriverSwitchTarget::$conversationId
+property	DriverSwitchTarget::$driver
+property	DriverSwitchTarget::$saveVariant
+property	DriverSwitchTarget::$variant
 property	DriverToolInput::$arguments
 property	DriverTurnReportData::$effort
 property	DriverTurnReportData::$finished
@@ -21497,6 +21604,8 @@ property	Exports::$namespace
 property	Exports::$owner
 property	Exports::$support
 property	Exports::$valueClasses
+property	FailDriverSwitchLaunch::$reason
+property	FailDriverSwitchLaunch::$switchId
 property	FailSkillPublication::$publicationId
 property	FailSkillPublication::$reason
 property	FailedWindow::$message
@@ -23591,6 +23700,7 @@ property	ReceiptRetention::$retentionDays
 property	ReceiptRetention::$tombstoneDays
 property	ReceivedScreen::$frame
 property	ReceivedScreen::$receivedAt
+property	RecheckDriverSwitch::$switchId
 property	ReconcileAccountsCommand::$description
 property	ReconcileAccountsCommand::$signature
 property	ReconcileAccountsHandler::$commands
@@ -24188,6 +24298,7 @@ property	ResumeKeyScript::$requestId
 property	ResumeKeyScriptCommand::$description
 property	ResumeKeyScriptCommand::$signature
 property	ResumeKeyScriptHandler::$recovery
+property	ResumeRefused::$refusal
 property	RetainedActorRequestKey::$answerDays
 property	RetainedEntries::$offsets
 property	RetainedEntries::$records
@@ -24238,6 +24349,7 @@ property	RetryDriverRequest::$requestId
 property	RetryDriverRequestCommand::$description
 property	RetryDriverRequestCommand::$signature
 property	RetryDriverRequestHandler::$recovery
+property	RetryDriverSwitch::$switchId
 property	RetryProcessRun::$line
 property	RetryProcessRun::$requestKey
 property	RetryProcessRun::$runId
@@ -25484,6 +25596,7 @@ property	StartProfile::$snapshot
 property	StartProfileAuthority::$profile
 property	StartProfileMain::$agentId
 property	StartProfileMain::$chosenAccount
+property	StartProfileMain::$conversationId
 property	StartProfileMain::$driverKey
 property	StartProfileMain::$profile
 property	StartProfileMain::$requestId
@@ -25559,6 +25672,9 @@ property	StartSettingsRequested::$settings
 property	StartStacks::$clock
 property	StartStacks::$transaction
 property	StartStacks::$types
+property	StartSwitchReplacement::$switchId
+property	StartSwitchReplacementHandler::$commands
+property	StartSwitchReplacementOnStop::$journal
 property	StartUnavailable::$agentId
 property	StartUnavailable::$driver
 property	StartUnavailable::$reason
@@ -25975,6 +26091,16 @@ property	SupportedDriverAdapters::$claudeCode
 property	SupportedDriverAdapters::$codex
 property	SwitchAccount::$accountId
 property	SwitchAccountHandler::$notices
+property	SwitchAgentDriver::$agentId
+property	SwitchAgentDriver::$expectedGeneration
+property	SwitchAgentDriver::$expectedSessionId
+property	SwitchAgentDriver::$profile
+property	SwitchAgentDriver::$requestId
+property	SwitchAgentDriver::$requested
+property	SwitchAgentDriver::$target
+property	SwitchAgentDriverHandler::$commands
+property	SwitchAgentDriverHandler::$preflight
+property	SwitchAgentDriverHandler::$profiles
 property	SyntaxOrigin::$construct
 property	SystemAuthorizerProvider::$actors
 property	SystemAuthorizerProvider::$systemPolicies
@@ -27003,6 +27129,7 @@ variable	$isClean
 variable	$isConcreteCommand
 variable	$isConcreteEvent
 variable	$isCoreListener
+variable	$isCurrent
 variable	$isDirectChild
 variable	$isDirectoryRemoved
 variable	$isExportedUiEvent
@@ -27682,6 +27809,7 @@ variable	$suffix
 variable	$summaries
 variable	$summary
 variable	$summaryTotal
+variable	$switch
 variable	$switchable
 variable	$switchedOn
 variable	$syntaxFacts
@@ -27793,6 +27921,8 @@ variable	$wait
 variable	$waiting
 variable	$waitingIds
 variable	$waitingOnHelpers
+variable	$waitsForStart
+variable	$waitsForStop
 variable	$wake
 variable	$walk
 variable	$wallSeconds

@@ -10,6 +10,7 @@ use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Enums\ActorType;
+use App\Actors\Support\SystemEntryPolicies;
 use App\Actors\Values\PolicyRegistration;
 use App\Actors\Values\ReadEntitlement;
 use App\Agents\Contracts\ActiveAccountReader;
@@ -104,6 +105,7 @@ final class ProfilesServiceProvider extends ServiceProvider
         PolicyCatalogue $policies,
         Dispatcher $events,
         ReadEntitlements $reads,
+        SystemEntryPolicies $systemEntries,
     ): void {
         foreach (BuiltInAuthorizations::ORIENTATION_READS as $read) {
             $reads->declare($read, ReadEntitlement::named());
@@ -114,6 +116,13 @@ final class ProfilesServiceProvider extends ServiceProvider
             [AccessType::Create, AccessType::Edit],
             ownerOnly: [AccessType::Create, AccessType::Edit],
         ));
+
+        // A switch's replacement starts as the journal once the old session's stop is proven, on the account the
+        // owner chose when they asked for the switch.
+        foreach ([ProfileAdministrationPolicy::class, AccountPolicy::class] as $policy) {
+            $systemEntries->allow('driver switch', $policy);
+        }
+
         $policies->register('Core', new PolicyRegistration(
             ProfileDraftPolicy::class,
             [AccessType::Edit],

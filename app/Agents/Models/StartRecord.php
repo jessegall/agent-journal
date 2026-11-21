@@ -191,6 +191,18 @@ final class StartRecord extends Model implements ReadableModel
     }
 
     /**
+     * Whether the owner chose the conversation this session resumes, so the host may not start fresh in its place.
+     */
+    public static function requiresConversation(string $sessionId): bool
+    {
+        return self::query()
+            ->where('session_id', $sessionId)
+            ->where('origin_type', StartOriginType::MainStart->value)
+            ->whereNotNull('conversation_target')
+            ->exists();
+    }
+
+    /**
      * Whether the session was started to resume an earlier conversation of the same agent.
      */
     public static function resumesConversation(string $sessionId): bool

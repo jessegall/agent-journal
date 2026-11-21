@@ -276,6 +276,10 @@ Stop this run
 Stops after {{ sample.byteCap }} bytes or {{ sample.secondsCap }} seconds
 Suits a server.
 Tests and checks
+That conversation belongs to another agent.
+That conversation is not one this agent can continue.
+That conversation ran on another driver; start a new conversation instead.
+That conversation was for other work; start a new conversation instead.
 The address is not available.
 The gateway provider can see the public address and everything a share shows.
 The gateway provider can see the public address and everything this share shows.

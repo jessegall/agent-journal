@@ -9,6 +9,7 @@ use App\Agents\Contracts\StartPreflight;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Models\Agent;
+use App\Agents\Models\DriverConversation;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
@@ -44,6 +45,9 @@ final readonly class StartProfileMainHandler implements CommandHandler
         $agent = Agent::query()->findOrFail($command->agentId);
         $variant = $agent->variantFor($command->variant, $profile->base->defaultVariant);
         $this->preflight->assertAdmitted($profile->proposal($variant, $command->requested->model));
+        $target = $command->conversationId === null
+            ? null
+            : DriverConversation::chosenFor($command->conversationId, $agent->id, $profile->selection->driver, null);
 
         return $this->commands->run(new StartAgent(new StartRequest(
             $command->requestId,
@@ -52,9 +56,10 @@ final readonly class StartProfileMainHandler implements CommandHandler
             StartOriginType::MainStart,
             null,
             null,
-            ConversationModeType::New,
+            $target === null ? ConversationModeType::New : ConversationModeType::Resume,
             null,
             $profile->startPolicy(),
+            conversationTarget: $target,
             variant: $variant,
             chosenAccount: $command->chosenAccount,
             savesVariant: $command->saveVariant,

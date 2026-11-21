@@ -4,21 +4,30 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
+use App\Agents\Actions\AgentSessions;
 use App\Agents\Contracts\AccountUses;
 use App\Agents\Enums\ArrangementType;
+use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverSourceType;
+use App\Agents\Enums\DriverSwitchStage;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\HostProtocolVersion;
+use App\Agents\Enums\ResumeRefusal;
 use App\Agents\Enums\StartPreflightRefusal;
+use App\Agents\Events\DriverSwitchStopped;
 use App\Agents\Exceptions\DriverConflict;
+use App\Agents\Exceptions\ResumeRefused;
 use App\Agents\Exceptions\StartPreflightRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
+use App\Agents\Models\DriverConversation;
+use App\Agents\Models\DriverSwitch;
 use App\Agents\Models\Host;
 use App\Agents\Models\StartRecord;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Values\ChosenAccount;
+use App\Agents\Values\DriverSwitchTarget;
 use App\Agents\Values\HostCombination;
 use App\Agents\Values\ModelSelection;
 use App\Bus\Contracts\CommandBus;
@@ -26,12 +35,16 @@ use App\Drivers\Enums\HookDriver;
 use App\Hooks\Support\DriverCompatibility;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\StartProfileMain;
+use App\Profiles\Commands\SwitchAgentDriver;
 use App\Profiles\Contracts\ProfileResolver;
+use App\Profiles\Exceptions\DriverSwitchStale;
 use App\Profiles\Exceptions\ProfileCannotCoordinate;
+use App\Profiles\Listeners\StartSwitchReplacementOnStop;
 use App\Profiles\Models\Account;
 use App\Profiles\Support\PolicyOverride;
 use App\Profiles\Support\ProposedProfile;
 use App\Profiles\Values\AccountLabel;
+use App\Profiles\Values\DriverSwitchReceipt;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use Domain\Access\Models\User;
@@ -137,11 +150,11 @@ final class ProfileStartTest extends TestCase
         $this->assertSame([$explicit->sessionId, false], [$repeated->sessionId, $repeated->newSession]);
         $this->assertSame(
             [HookDriver::Codex->value, DriverVariant::Headless, true, $chosen->id],
-            $this->recorded($explicit),
+            $this->recorded($explicit->requestId, $explicit->sessionId),
         );
         $this->assertSame(
             [HookDriver::Codex->value, DriverVariant::Terminal, false, $this->accounts['codex']->id],
-            $this->recorded($automatic),
+            $this->recorded($automatic->requestId, $automatic->sessionId),
         );
     }
 
@@ -161,15 +174,147 @@ final class ProfileStartTest extends TestCase
         $this->assertSame($sessions, AgentSession::query()->count());
     }
 
+    public function test_a_switch_the_host_cannot_run_is_refused_and_keeps_the_old_session_and_a_repeat_answers_it(): void
+    {
+        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $old = $this->start('default', null);
+        Host::query()->update(['combinations' => []]);
+        $requestId = strtolower((string) Str::ulid());
+
+        $refused = $this->switchTo($requestId, $old->sessionId, $this->accounts['codex']);
+        $repeated = $this->switchTo($requestId, $old->sessionId, $this->accounts['codex']);
+
+        $this->assertSame(DriverSwitchStage::Refused, $refused->stage);
+        $this->assertSame(StartPreflightRefusal::CombinationNotDeclared->value, $refused->failureReason);
+        $this->assertSame($refused->switchId, $repeated->switchId);
+        $this->assertSame($old->sessionId, $this->main->refresh()->current_session_id);
+    }
+
+    public function test_an_explicit_resume_continues_the_chosen_older_thread_and_a_foreign_one_is_refused(): void
+    {
+        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $first = AgentSession::query()->findOrFail($this->start('default', null)->sessionId);
+        $older = DriverConversation::create($first, 'settings', 'older-thread-0001', null);
+        DriverConversation::create($first, 'settings', 'newer-thread-0002', null);
+        $this->endSession($first);
+
+        $resumed = $this->resume($older->id);
+
+        $record = StartRecord::query()->where('request_id', $resumed->requestId)->sole();
+        $this->assertSame(['older-thread-0001', ConversationModeType::Resume], [$record->conversation_target, $record->conversation_mode]);
+        $this->assertTrue(StartRecord::requiresConversation($resumed->sessionId));
+
+        try {
+            $this->resume(strtolower((string) Str::ulid()));
+            $this->fail('A conversation that does not exist was resumed.');
+        } catch (ResumeRefused $refused) {
+            $this->assertSame(ResumeRefusal::ConversationMissing, $refused->refusal);
+        }
+    }
+
+    public function test_a_switch_that_expects_another_session_is_stale(): void
+    {
+        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $this->start('default', null);
+
+        $this->expectException(DriverSwitchStale::class);
+
+        $this->switchTo(strtolower((string) Str::ulid()), strtolower((string) Str::ulid()), $this->accounts['codex']);
+    }
+
+    public function test_after_a_proven_stop_the_replacement_starts_and_a_refused_one_fails_the_switch(): void
+    {
+        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $codex = $this->accounts['codex'];
+
+        $started = $this->stoppedSwitch(new ChosenAccount($codex->id, $codex->sign_in_generation));
+        $this->replace($started);
+        $failed = $this->stoppedSwitch(new ChosenAccount($codex->id, $codex->sign_in_generation + 1));
+        $this->replace($failed);
+
+        $started->refresh();
+        $this->assertSame(DriverSwitchStage::Starting, $started->stage);
+        $this->assertNotSame($started->expected_session_id, $started->replacement_session_id);
+        $this->assertSame(
+            [HookDriver::Codex->value, DriverVariant::Headless, true, $codex->id],
+            $this->recorded($started->request_id, (string) $started->replacement_session_id),
+        );
+        $this->assertSame(DriverSwitchStage::LaunchFailed, $failed->refresh()->stage);
+    }
+
+    private function resume(string $conversationId): StartReceipt
+    {
+        return $this->app->make(CommandBus::class)->run(new StartProfileMain(
+            strtolower((string) Str::ulid()),
+            $this->main->id,
+            ProfileKey::from('journal-main'),
+            ModelSelection::fromInput('default'),
+            null,
+            conversationId: $conversationId,
+        ));
+    }
+
+    private function switchTo(string $requestId, string $sessionId, Account $account): DriverSwitchReceipt
+    {
+        return $this->app->make(CommandBus::class)->run(new SwitchAgentDriver(
+            $requestId,
+            $this->main->id,
+            ProfileKey::from('journal-main'),
+            $sessionId,
+            0,
+            new DriverSwitchTarget(
+                HookDriver::Codex,
+                DriverVariant::Headless,
+                new ChosenAccount($account->id, $account->sign_in_generation),
+                null,
+                false,
+            ),
+            ModelSelection::fromInput('default'),
+        ));
+    }
+
+    /**
+     * A switch whose old session is proven stopped, as the stop report leaves it; each on an agent of its own.
+     */
+    private function stoppedSwitch(ChosenAccount $account): DriverSwitch
+    {
+        $this->main = Agent::create('Switched main '.Str::random(4), 'journal-main');
+        $session = AgentSession::query()->findOrFail($this->start('default', null)->sessionId);
+        $this->endSession($session);
+        $switch = DriverSwitch::create(
+            strtolower((string) Str::ulid()),
+            $session,
+            0,
+            new DriverSwitchTarget(HookDriver::Codex, DriverVariant::Headless, $account, null, false),
+            'owner',
+        );
+        $switch->markPreflighted();
+        $switch->beginStopping();
+        $switch->markStopped();
+
+        return $switch;
+    }
+
+    private function endSession(AgentSession $session): void
+    {
+        $this->app->make(AgentSessions::class)->end($session);
+        $this->main->fenceRuntimes();
+    }
+
+    private function replace(DriverSwitch $switch): void
+    {
+        $this->app->make(StartSwitchReplacementOnStop::class)->handle(new DriverSwitchStopped($switch->id));
+    }
+
     /**
      * The driver, variant, whether the owner chose the account, and the account the start runs with.
      *
      * @return array{string, DriverVariant, bool, string}
      */
-    private function recorded(StartReceipt $receipt): array
+    private function recorded(string $requestId, string $sessionId): array
     {
-        $record = StartRecord::query()->where('request_id', $receipt->requestId)->sole();
-        $account = $this->app->make(AccountUses::class)->accountOf($receipt->sessionId, Account::LINK_TYPE);
+        $record = StartRecord::query()->where('request_id', $requestId)->sole();
+        $account = $this->app->make(AccountUses::class)->accountOf($sessionId, Account::LINK_TYPE);
 
         return [$record->driver, $record->variant, $record->account_chosen, $account->id];
     }
