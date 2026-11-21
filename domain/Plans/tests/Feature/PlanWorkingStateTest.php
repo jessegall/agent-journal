@@ -78,7 +78,7 @@ final class PlanWorkingStateTest extends TestCase
     public function test_a_plan_frame_is_finished_once_the_plan_is_done_or_cancelled(): void
     {
         $plan = $this->plan();
-        $this->pushState(WorkingOnPlanStateReference::forPlan($plan));
+        $this->pushState(WorkingOnPlanStateReference::forPlan($plan->id));
         $row = AgentStackRow::query()->forTarget($this->target)->sole();
         $restorer = $this->app->make(StackRestorer::class);
 

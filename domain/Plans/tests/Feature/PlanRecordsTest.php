@@ -81,7 +81,7 @@ final class PlanRecordsTest extends TestCase
             CurrentState::class,
             new FixedCurrentState(
                 new StackTarget($agent->id, TestIds::of(10)),
-                [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateReference::forPlan($this->build)],
+                [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateReference::forPlan($this->build->id)],
             ),
         );
         $this->app->make(CurrentActorSetter::class)->set(

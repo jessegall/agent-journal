@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Plans\States;
 
+use App\Hooks\Commands\FocusPlan;
+use App\Hooks\Commands\ReleasePlanFocus;
 use App\Hooks\Contracts\InstructsForeground;
 use App\Hooks\Contracts\WorkRecordState;
+use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
+use App\Hooks\Values\LifecycleCommands;
 use Closure;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Models\Plan;
@@ -31,6 +35,21 @@ final class WorkingOnPlanState extends AgentState implements InstructsForeground
     public function workRecordType(): string
     {
         return Plan::LINK_TYPE;
+    }
+
+    public function onEnter(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::of(new FocusPlan());
+    }
+
+    public function onResume(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::of(new FocusPlan());
+    }
+
+    public function onExit(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::of(new ReleasePlanFocus());
     }
 
     public function instructionType(): string

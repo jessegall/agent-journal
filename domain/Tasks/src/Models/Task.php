@@ -179,6 +179,14 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     /**
+     * The number the task with this id shows.
+     */
+    public static function numberOf(string $id): int
+    {
+        return (int) self::query()->whereKey($id)->readExactly(1)->value('number');
+    }
+
+    /**
      * At most limit open tasks of the pool's members that nobody holds: every open task by id, or the listed ones in
      * their listed order. The filtering happens in the query, before its limit.
      *

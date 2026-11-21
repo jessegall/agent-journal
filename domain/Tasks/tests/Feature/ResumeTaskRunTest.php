@@ -18,8 +18,11 @@ use App\Desks\Exceptions\RunClaimRefused;
 use App\Desks\Support\DeskOpening;
 use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
+use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Commands\ResumeTaskRun;
 use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Exceptions\TaskResumeCovered;
+use Domain\Tasks\Exceptions\TaskRunStale;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Tests\TestCase;
@@ -109,7 +112,40 @@ final class ResumeTaskRunTest extends TestCase
         $this->assertTrue($this->holderOf($run)?->isSameAs(ActorIdentity::of($worker->agent()->firstOrFail())));
     }
 
-    private function runAs(AgentSession $start, StartTask|ResumeTaskRun $command): int
+    public function test_a_resume_under_another_current_task_is_refused_and_changes_nothing(): void
+    {
+        $worker = $this->started('Fourth');
+        $holder = AssigneeIdentity::of($worker->agent()->firstOrFail());
+        $first = Task::factory()->create();
+        $second = Task::factory()->create();
+        AssignmentRecord::create($first->assignmentIdentity(), $holder);
+        AssignmentRecord::create($second->assignmentIdentity(), $holder);
+        $this->runAs($worker, new StartTask($first->id));
+        $this->runAs($worker, new StartTask($second->id));
+
+        $run = TaskRun::query()->where('task_id', $first->id)->sole();
+
+        $this->assertThrows(
+            fn () => $this->runAs($worker, new ResumeTaskRun($run->id)),
+            TaskResumeCovered::class,
+            "Task {$second->number} is current. Finish or block it before resuming task {$first->number}.",
+        );
+    }
+
+    public function test_a_resume_of_a_run_left_behind_by_a_restart_is_refused_as_stale(): void
+    {
+        $worker = $this->started('Fifth');
+        $task = Task::factory()->create();
+        AssignmentRecord::create($task->assignmentIdentity(), AssigneeIdentity::of($worker->agent()->firstOrFail()));
+        $this->runAs($worker, new StartTask($task->id));
+        $first = TaskRun::query()->where('task_id', $task->id)->sole();
+        $this->runAs($worker, new BlockTask($task->id, 1, 'Waits on the server.'));
+        $this->runAs($worker, new StartTask($task->id));
+
+        $this->assertThrows(fn () => $this->runAs($worker, new ResumeTaskRun($first->id)), TaskRunStale::class);
+    }
+
+    private function runAs(AgentSession $start, StartTask|ResumeTaskRun|BlockTask $command): mixed
     {
         $this->startRequestAs($start->agent_id, $start->id);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());

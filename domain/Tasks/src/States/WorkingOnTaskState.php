@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace Domain\Tasks\States;
 
 use App\Hooks\Attributes\StackWide;
+use App\Hooks\Commands\FocusTask;
+use App\Hooks\Commands\ReleaseTaskFocus;
 use App\Hooks\Contracts\InstructsForeground;
 use App\Hooks\Contracts\WorkRecordState;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\StopRequested;
+use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
+use App\Hooks\Values\LifecycleCommands;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskWork;
 
@@ -28,6 +32,21 @@ final class WorkingOnTaskState extends AgentState implements InstructsForeground
     public function workRecordType(): string
     {
         return Task::LINK_TYPE;
+    }
+
+    public function onEnter(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::of(new FocusTask());
+    }
+
+    public function onResume(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::of(new FocusTask());
+    }
+
+    public function onExit(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::of(new ReleaseTaskFocus());
     }
 
     #[StackWide]
