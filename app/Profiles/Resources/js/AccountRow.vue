@@ -78,7 +78,7 @@ function saveName(): void {
 
 <template>
     <li
-        class="flex items-start gap-3 border-b border-line px-4 py-3 last:border-b-0"
+        class="group flex items-start gap-3 border-b border-line px-4 py-3 last:border-b-0"
     >
         <ProgramIcon
             :program="programIcon(account.program)"
@@ -95,28 +95,33 @@ function saveName(): void {
                 <span class="text-small text-text-3 tabular-nums"
                     >{{ account.runningCount }} running</span
                 >
-                <template v-if="!isChosen && !isLeaving">
-                    <ActivateAccount
-                        :account-id="account.id"
-                        :is-signed-in="account.state === 'signed_in'"
-                    />
-                </template>
-                <Button
-                    size="small"
-                    :disabled="isRenaming"
-                    @click="isRenaming = true"
-                    >Rename</Button
+                <!-- The row's actions show while the row is hovered or one of them has the keyboard's focus. -->
+                <span
+                    class="flex flex-wrap items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
                 >
-                <template v-if="!isLeaving">
-                    <ConfirmAction
-                        label="Remove"
-                        question="Remove this account? It signs out and its folder is deleted once its work has ended."
-                        confirm-label="Remove"
-                        :pending="removing.processing"
-                        @confirm="removeAccount"
-                    />
-                    <slot />
-                </template>
+                    <template v-if="!isChosen && !isLeaving">
+                        <ActivateAccount
+                            :account-id="account.id"
+                            :is-signed-in="account.state === 'signed_in'"
+                        />
+                    </template>
+                    <Button
+                        size="small"
+                        :disabled="isRenaming"
+                        @click="isRenaming = true"
+                        >Rename</Button
+                    >
+                    <template v-if="!isLeaving">
+                        <ConfirmAction
+                            label="Remove"
+                            question="Remove this account? It signs out and its folder is deleted once its work has ended."
+                            confirm-label="Remove"
+                            :pending="removing.processing"
+                            @confirm="removeAccount"
+                        />
+                        <slot />
+                    </template>
+                </span>
             </div>
             <template v-if="account.identity">
                 <p class="text-small text-text-3">

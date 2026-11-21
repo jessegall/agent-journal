@@ -28,6 +28,9 @@ echo "$(date -u +%FT%TZ) installing $branch $newest (installed: ${installed:-not
 git -C "$mirror" fetch --quiet --force "$repository" "refs/heads/$branch:refs/heads/$branch"
 
 git -C "$mirror" archive "$newest" | tar -x -C "$root"
+# The version the journal shows, baked into the build: the commit, its branch and its release tag, if it has one.
+tag=$(git -C "$mirror" describe --tags --exact-match "$newest" 2>/dev/null || true)
+printf '%s\n%s\n%s\n' "$newest" "$branch" "$tag" > .installed-version
 if [ -n "$installed" ] && git -C "$mirror" cat-file -e "$installed^{commit}" 2>/dev/null; then
     git -C "$mirror" diff --name-only --diff-filter=D "$installed" "$newest" | while read -r gone; do
         rm -f "$root/$gone"
@@ -45,6 +48,7 @@ install() {
         { [ "$arrangement" != contained ] || pin_runner; } &&
         docker compose $profiles up -d --wait --wait-timeout 240 &&
         docker compose exec -T app php artisan migrate --force &&
+        docker compose exec -T app php artisan cache:forget installed-version &&
         docker image prune -f >/dev/null
 }
 

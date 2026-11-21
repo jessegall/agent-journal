@@ -115,6 +115,9 @@ function isActive(href: string): boolean {
                 class="flex justify-between border-t border-border px-[18px] py-2.5 text-small text-text-3"
             >
                 <span>Agent journal</span>
+                <span class="font-mono" title="The version that runs here">{{
+                    page.props.version
+                }}</span>
             </div>
         </template>
     </aside>

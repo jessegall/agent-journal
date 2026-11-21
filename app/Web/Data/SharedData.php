@@ -17,6 +17,8 @@ final class SharedData extends Data
 {
     public function __construct(
         public readonly string $name,
+        // The version the sidebar shows: a release tag on main, else the short commit hash.
+        public readonly string $version,
         public readonly CurrentUserData|Optional $currentUser = new Optional(),
         public readonly bool|Optional $canShare = new Optional(),
     ) {}

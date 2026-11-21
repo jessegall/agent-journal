@@ -2688,6 +2688,7 @@ class	InstallNumbersCommand
 class	InstallNumbersHandler
 class	InstallShippedReadersCommand
 class	InstallationNameMissing
+class	InstalledVersion
 class	Instruction
 class	IntegerChoiceConstraintsData
 class	IntegerChoiceOptionData
@@ -5763,6 +5764,8 @@ constant	InputRefused::CODE
 constant	InspectMergeAttempts::MAINTENANCE_SCOPE
 constant	InspectMergeAttemptsHandler::PASS_LIMIT
 constant	InspectMergeAttemptsHandler::STALE_MINUTES
+constant	InstalledVersion::CACHE_KEY
+constant	InstalledVersion::HASH_LENGTH
 constant	IntegerSetting::LARGEST
 constant	IntegerSetting::SMALLEST
 constant	JobStopEvidence::ATTEMPT_PREFIX
@@ -6655,6 +6658,7 @@ interface	InboxResolver
 interface	IncomingWork
 interface	IncomingWorkProvider
 interface	IncomingWorkRegistration
+interface	InstalledVersion
 interface	InternalAssignableContributor
 interface	JobPermissionReader
 interface	JournalAdmission
@@ -12082,6 +12086,10 @@ method	InstallNumbersCommand::handle()
 method	InstallNumbersHandler::handle()
 method	InstallShippedReadersCommand::handle()
 method	InstallationNameMissing::whenContained()
+method	InstalledVersion::__construct()
+method	InstalledVersion::checkoutCommit()
+method	InstalledVersion::label()
+method	InstalledVersion::readLabel()
 method	Instruction::__construct()
 method	Instruction::command()
 method	Instruction::condition()
@@ -25647,6 +25655,7 @@ property	HandleInertiaRequests::$navigation
 property	HandleInertiaRequests::$rootView
 property	HandleInertiaRequests::$sharing
 property	HandleInertiaRequests::$users
+property	HandleInertiaRequests::$version
 property	HandledBy::$handler
 property	HeldAccountUses::$account
 property	HeldAccountUses::$sessionIds
@@ -25933,6 +25942,9 @@ property	InstallNumbersCommand::$description
 property	InstallNumbersCommand::$signature
 property	InstallShippedReadersCommand::$description
 property	InstallShippedReadersCommand::$signature
+property	InstalledVersion::$cache
+property	InstalledVersion::$files
+property	InstalledVersion::$process
 property	Instruction::$keyword
 property	Instruction::$operand
 property	Instruction::$source
@@ -29766,6 +29778,7 @@ property	SharedContent::$card
 property	SharedData::$canShare
 property	SharedData::$currentUser
 property	SharedData::$name
+property	SharedData::$version
 property	SharedPage::$allowed
 property	SharedPage::$body
 property	SharedPage::$children
@@ -31414,6 +31427,7 @@ variable	$bootstrapper
 variable	$bottom
 variable	$boundWords
 variable	$bounds
+variable	$branch
 variable	$branches
 variable	$bridge
 variable	$broken
@@ -31530,6 +31544,7 @@ variable	$commentId
 variable	$commentPage
 variable	$commentView
 variable	$comments
+variable	$commit
 variable	$commits
 variable	$compatibility
 variable	$compiled
@@ -31836,6 +31851,7 @@ variable	$gathered
 variable	$generated
 variable	$generation
 variable	$gh
+variable	$git
 variable	$given
 variable	$go
 variable	$goal
@@ -32758,6 +32774,7 @@ variable	$switchedOn
 variable	$syntaxFacts
 variable	$table
 variable	$tables
+variable	$tag
 variable	$tail
 variable	$taken
 variable	$takenUp

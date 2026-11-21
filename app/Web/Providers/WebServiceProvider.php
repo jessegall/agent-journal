@@ -17,6 +17,7 @@ use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Ui\Support\UiDeclarations;
 use App\Web\Console\GenerateUiManifest;
 use App\Web\Contracts\CurrentUserResolver;
+use App\Web\Contracts\InstalledVersion as InstalledVersionContract;
 use App\Web\Contracts\NavigationRecords as NavigationRecordsContract;
 use App\Web\Contracts\ReaderRequests as ReaderRequestsContract;
 use App\Web\Contracts\UiOwnerAvailability as UiOwnerAvailabilityContract;
@@ -25,6 +26,7 @@ use App\Web\Models\Layout;
 use App\Web\Models\Support\CurrentUserScope;
 use App\Web\Policies\PresencePolicy;
 use App\Web\Routes\DeclaredRoutes;
+use App\Web\Support\InstalledVersion;
 use App\Web\Support\NavigationRecords;
 use App\Web\Support\OwnerAutoAssignmentAccess;
 use App\Web\Support\OwnerSettingsAccess;
@@ -58,6 +60,7 @@ final class WebServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(NavigationRecordsContract::class, NavigationRecords::class);
+        $this->app->bind(InstalledVersionContract::class, InstalledVersion::class);
         $this->app->bind(ReaderRequestsContract::class, ReaderRequests::class);
         $this->app->bind(WindowResultsContract::class, WindowResults::class);
         $this->app->bind(UiOwnerAvailabilityContract::class, UiOwnerAvailability::class);

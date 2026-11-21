@@ -10,6 +10,7 @@ use App\Web\Contracts\CurrentUserResolver;
 use App\Web\Contracts\NavigationRecords;
 use App\Web\Data\CurrentUserData;
 use App\Web\Data\SharedData;
+use App\Web\Contracts\InstalledVersion;
 use Illuminate\Container\Attributes\Config;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -36,6 +37,7 @@ class HandleInertiaRequests extends Middleware
         private readonly NavigationRecords $navigation,
         private readonly ResponseFactory $inertia,
         private readonly SharePolicy $sharing,
+        private readonly InstalledVersion $version,
     ) {}
 
     /**
@@ -60,7 +62,10 @@ class HandleInertiaRequests extends Middleware
         $user = $this->users->currentUser();
 
         if ($user->isEmpty()) {
-            return [...parent::share($request), ...SharedData::from(['name' => $this->appName])->toArray()];
+            return [
+                ...parent::share($request),
+                ...SharedData::from(['name' => $this->appName, 'version' => $this->version->label()])->toArray(),
+            ];
         }
 
         return [
@@ -68,6 +73,7 @@ class HandleInertiaRequests extends Middleware
             ...SharedData::from(
                 [
                     'name' => $this->appName,
+                    'version' => $this->version->label(),
                     'currentUser' => CurrentUserData::from($user->get()),
                     'canShare' => $this->sharing->mayManage(ActorContext::forUser($user->get()->id)),
                 ],
