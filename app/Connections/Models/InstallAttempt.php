@@ -37,13 +37,16 @@ use Illuminate\Support\Carbon;
  * @property string $idempotency_key
  * @property InvitationMode $mode
  * @property string|null $project_id
+ * @property string|null $environment_id
  * @property InstallAttemptState $state
  * @property string|null $binding_id
  * @property int $version
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['reference', 'owner_user_id', 'idempotency_key', 'mode', 'project_id', 'state', 'version'])]
+#[Fillable([
+    'reference', 'owner_user_id', 'idempotency_key', 'mode', 'project_id', 'environment_id', 'state', 'version',
+])]
 final class InstallAttempt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -81,16 +84,17 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
 
     /**
      * The owner's attempt under this key, opened now when there is none: two first submissions of one key make one
-     * attempt, as the key is unique per owner.
+     * attempt, as the key is unique per owner. A Join attempt names the environment of the project it lands in.
      */
-    public static function openFor(string $ownerUserId, string $idempotencyKey, string|null $projectId): self
+    public static function openFor(string $ownerUserId, string $idempotencyKey, Environment|null $joins): self
     {
         $attempt = self::query()->createOrFirst(
             ['owner_user_id' => $ownerUserId, 'idempotency_key' => $idempotencyKey],
             [
                 'reference' => self::newReference(),
-                'mode' => $projectId === null ? InvitationMode::New : InvitationMode::Join,
-                'project_id' => $projectId,
+                'mode' => $joins === null ? InvitationMode::New : InvitationMode::Join,
+                'project_id' => $joins?->project_id,
+                'environment_id' => $joins?->id,
                 'state' => InstallAttemptState::Open,
                 'version' => 0,
             ],

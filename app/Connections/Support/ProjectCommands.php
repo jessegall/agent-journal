@@ -69,10 +69,19 @@ final readonly class ProjectCommands
             throw VerbNotServed::notAJournalVerb($call->verbName());
         }
 
-        $own = array_map(fn (ProjectBinding $binding) => $binding->id, ProjectBinding::ofMainAgent($agentId));
+        $own = array_filter(
+            ProjectBinding::ofMainAgent($agentId),
+            fn (ProjectBinding $binding) => $binding->id === $call->bindingId,
+        );
 
-        if (! in_array($call->bindingId, $own, true)) {
+        if ($own === []) {
             throw VerbNotServed::notYourBinding($call->bindingId);
+        }
+
+        foreach ($own as $binding) {
+            if ($binding->isEnvironmentUnassigned()) {
+                throw VerbNotServed::environmentUnassigned($binding->id);
+            }
         }
     }
 

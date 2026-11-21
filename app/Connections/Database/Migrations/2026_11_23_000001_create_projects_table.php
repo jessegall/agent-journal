@@ -17,10 +17,20 @@ return new class extends Migration
             $table->string('label');
             $table->timestampsTz();
         });
+
+        // The environments of a connected project; every binding works in one, its commands scoped to it.
+        Schema::create('project_environments', function (Blueprint $table) {
+            $table->ulid('id')->primary();
+            $table->foreignUlid('project_id')->constrained('projects');
+            $table->string('label');
+            $table->timestampTz('created_at')->nullable();
+            $table->unique(['project_id', 'label']);
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('project_environments');
         Schema::dropIfExists('projects');
     }
 };

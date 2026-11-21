@@ -27,7 +27,7 @@ final class InstallAttemptsTest extends TestCase
 
     private const array TABLES = [
         'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings',
-        'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
+        'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
     ];
 
     public function test_replacing_one_tabs_attempt_leaves_the_other_tabs_line_usable(): void

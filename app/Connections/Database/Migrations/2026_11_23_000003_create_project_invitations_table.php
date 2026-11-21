@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('issuer_user_id');
             $table->string('mode');
             $table->foreignUlid('project_id')->nullable()->constrained('projects');
+            // The environment a Join line lands in; a New line makes its project's Main environment instead.
+            $table->foreignUlid('environment_id')->nullable()->constrained('project_environments')->nullOnDelete();
             // The owner's install attempt this line is one of; an attempt has at most one live line.
             $table->foreignUlid('install_attempt_id')->constrained('install_attempts');
             $table->timestampTz('expires_at');

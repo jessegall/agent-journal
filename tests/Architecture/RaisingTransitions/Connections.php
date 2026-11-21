@@ -7,6 +7,8 @@ declare(strict_types=1);
  * listener or a model (ModelRaiseCallerTest).
  */
 return [
+    'Environment::open',
+    'Environment::openDefaultOf',
     'InstallAttempt::cancel',
     'InstallAttempt::openFor',
     'InstallAttempt::replace',

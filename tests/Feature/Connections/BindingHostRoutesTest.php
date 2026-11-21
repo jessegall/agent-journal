@@ -27,8 +27,8 @@ final class BindingHostRoutesTest extends TestCase
     use SendsHostCalls;
 
     private const array TABLES = [
-        'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings', 'projects',
-        'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
+        'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings',
+        'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
     ];
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';

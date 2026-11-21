@@ -23,6 +23,7 @@ final class IssueProjectInvitationRequest extends FormRequest
         return [
             'issuanceKey' => ['required', 'string', 'max:64', 'regex:/^[A-Za-z0-9_-]+$/'],
             'projectId' => ['nullable', 'string', 'ulid'],
+            'environmentId' => ['nullable', 'required_with:projectId', 'string', 'ulid'],
             'attemptReference' => ['nullable', 'string', 'max:32', 'regex:/^IA-[A-Z0-9]+$/'],
             'seenVersion' => ['nullable', 'integer', 'min:0'],
         ];
@@ -37,6 +38,7 @@ final class IssueProjectInvitationRequest extends FormRequest
             $ticket->digest(),
             $this->issuanceKey(),
             $this->projectId(),
+            $this->environmentId(),
             $this->attemptReference(),
             $this->seenVersion(),
         );
@@ -45,6 +47,11 @@ final class IssueProjectInvitationRequest extends FormRequest
     public function issuanceKey(): string
     {
         return $this->string('issuanceKey')->toString();
+    }
+
+    public function environmentId(): string|null
+    {
+        return $this->filled('environmentId') ? $this->string('environmentId')->toString() : null;
     }
 
     public function attemptReference(): string|null

@@ -7,6 +7,7 @@ namespace Tests\Feature\Connections;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Connections\Enums\BindingReadiness;
 use App\Connections\Enums\ConnectionAuditType;
+use App\Connections\Models\Environment;
 use App\Connections\Models\InstallAttempt;
 use App\Connections\Models\ConnectionAudit;
 use App\Connections\Models\Project;
@@ -30,8 +31,8 @@ final class BindingRevocationTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings', 'projects',
-        'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
+        'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings',
+        'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
     ];
 
     public function test_a_revoked_bindings_host_is_refused_while_the_projects_other_binding_answers(): void
@@ -41,7 +42,7 @@ final class BindingRevocationTest extends TestCase
             $this->redeemLine('ticket-one', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId'),
         );
         ProjectInvitation::issueFor(
-            InstallAttempt::openFor($this->owner->id, 'join-action', Project::query()->sole()->id),
+            InstallAttempt::openFor($this->owner->id, 'join-action', $this->mainOf(Project::query()->sole())),
             InstallTicket::digestOf('ticket-two'),
         );
         $this->redeemLine('ticket-two', 'nonce-bbbbbbbbbbbbbbbb')->assertCreated();
@@ -63,7 +64,7 @@ final class BindingRevocationTest extends TestCase
         $this->issueLine('ticket-one');
         $first = (string) $this->redeemLine('ticket-one', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
         ProjectInvitation::issueFor(
-            InstallAttempt::openFor($this->owner->id, 'join-action', Project::query()->sole()->id),
+            InstallAttempt::openFor($this->owner->id, 'join-action', $this->mainOf(Project::query()->sole())),
             InstallTicket::digestOf('ticket-two'),
         );
         $second = (string) $this->redeemLine('ticket-two', 'nonce-bbbbbbbbbbbbbbbb')->assertCreated()->json('bindingId');
@@ -135,5 +136,13 @@ final class BindingRevocationTest extends TestCase
             HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),
         );
+    }
+
+    /**
+     * The project's Main environment, which its first line made.
+     */
+    private function mainOf(Project $project): Environment
+    {
+        return Environment::listedOf($project->id)[0];
     }
 }

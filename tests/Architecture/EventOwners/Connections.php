@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Connections\Enums\BindingReadiness;
+use App\Connections\Events\EnvironmentOpened;
 use App\Connections\Events\InstallAttemptCancelled;
 use App\Connections\Events\InstallAttemptOpened;
 use App\Connections\Events\InstallAttemptReplaced;
@@ -22,6 +23,13 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
+    EnvironmentOpened::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Environment::open',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new EnvironmentOpened('environment', 'project', new DateTimeImmutable('2026-01-01')),
+    ],
     InstallAttemptOpened::class => [
         'role' => EventRole::RowFact,
         'owner' => 'InstallAttempt::openFor',

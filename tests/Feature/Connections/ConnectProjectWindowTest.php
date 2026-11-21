@@ -20,8 +20,8 @@ final class ConnectProjectWindowTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings', 'projects',
-        'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
+        'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings',
+        'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
     ];
 
     public function test_the_owner_sees_the_server_its_bindings_and_never_an_issued_line(): void

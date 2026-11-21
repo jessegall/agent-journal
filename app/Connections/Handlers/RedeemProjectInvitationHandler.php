@@ -14,6 +14,7 @@ use App\Connections\Enums\ConnectionAuditActor;
 use App\Connections\Enums\ConnectionAuditType;
 use App\Connections\Exceptions\InvitationUnusable;
 use App\Connections\Models\ConnectionAudit;
+use App\Connections\Models\Environment;
 use App\Connections\Models\InstallAttempt;
 use App\Connections\Models\Project;
 use App\Connections\Models\ProjectBinding;
@@ -25,7 +26,8 @@ use Illuminate\Support\Str;
 /**
  * In the bus's one transaction: locks the line by its ticket's digest, refuses it alike when it is not live by server
  * time, its issuer is no longer the owner or connecting is switched off, then makes the host with the relay's
- * credential, the project (or finds the one it joins), the binding and its main agent, and spends the line.
+ * credential, the project and its Main environment (or locks the environment of the project it joins), the binding
+ * in that environment and its main agent, and spends the line.
  */
 final readonly class RedeemProjectInvitationHandler implements CommandHandler
 {
@@ -44,6 +46,8 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
         }
 
         $folder = $command->folder;
+        $environment = $this->environmentOf($invitation, $command->projectLabel);
+        $project = Project::forId($environment->project_id);
 
         $host = Host::create(
             $folder->machineLabel,
@@ -52,9 +56,8 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
             ArrangementType::Local,
         );
 
-        $project = $this->projectOf($invitation, $command->projectLabel);
         $mainAgent = Agent::create("{$project->label} main agent", self::MAIN_AGENT_PROFILE);
-        $binding = ProjectBinding::create($host, $project, $mainAgent, $folder);
+        $binding = ProjectBinding::create($host, $project, $environment, $mainAgent, $folder);
         $invitation->spendOn($binding);
         InstallAttempt::lockById($invitation->install_attempt_id)->spendOn($binding);
         ConnectionAudit::ofBinding(ConnectionAuditType::Redeemed, ConnectionAuditActor::Host, $host->id, $binding);
@@ -63,17 +66,21 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
     }
 
     /**
-     * The project the line joins, or a new one under a key made from its label.
+     * The environment the binding lands in: the one a Join line names, re-read under lock in the project it joins,
+     * or the Main environment of a new project under a key made from its label. A Join line whose environment is
+     * gone, or that names none, is unusable and stays unspent; it never falls back to a default.
+     *
+     * @throws InvitationUnusable
      */
-    private function projectOf(ProjectInvitation $invitation, string $label): Project
+    private function environmentOf(ProjectInvitation $invitation, string $label): Environment
     {
         if ($invitation->project_id !== null) {
-            return Project::forId($invitation->project_id);
+            return Environment::lockOfProjectForLine((string) $invitation->environment_id, $invitation->project_id);
         }
 
         $slug = Str::slug($label);
         $prefix = $slug === '' ? 'project' : $slug;
 
-        return Project::create($prefix.'-'.Str::lower(Str::random(8)), $label);
+        return Environment::openDefaultOf(Project::create($prefix.'-'.Str::lower(Str::random(8)), $label));
     }
 }

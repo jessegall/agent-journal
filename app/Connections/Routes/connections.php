@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\AgentRequests\Support\CallRoutes;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Connections\Http\Controllers\ApproveDeviceGrantController;
+use App\Connections\Http\Controllers\AssignBindingEnvironmentController;
 use App\Connections\Http\Controllers\BindingPresenceController;
 use App\Connections\Http\Controllers\BindingRuntimeController;
 use App\Connections\Http\Controllers\Calls;
@@ -90,6 +91,10 @@ Route::middleware(['web', 'auth', 'journal.user', 'throttle:20,1'])
             ->name('devices.revoke');
 
         Route::post('/bindings/revoke', RevokeProjectBindingsController::class)->name('bindings.revoke-chosen');
+
+        Route::put('/bindings/{binding}/environment/{environment}', AssignBindingEnvironmentController::class)
+            ->whereUlid(['binding', 'environment'])
+            ->name('bindings.environment');
 
         Route::delete('/bindings/{binding}', RevokeProjectBindingController::class)
             ->whereUlid('binding')

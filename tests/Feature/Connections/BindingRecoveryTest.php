@@ -24,8 +24,8 @@ final class BindingRecoveryTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings', 'projects', 'agent_runtimes', 'agents', 'hosts',
-        'settings_records', 'users',
+        'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings', 'project_environments',
+        'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
     ];
 
     private const string TARGET = '/api/project-connections/recover';

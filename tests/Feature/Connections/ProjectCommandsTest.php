@@ -8,6 +8,7 @@ use App\Agents\Enums\ArrangementType;
 use App\Agents\Models\Host;
 use App\Connections\Enums\BindingReadiness;
 use App\Connections\Exceptions\DeviceGrantRefused;
+use App\Connections\Models\Environment;
 use App\Connections\Models\DeviceGrant;
 use App\Connections\Models\Project;
 use App\Connections\Models\ProjectBinding;
@@ -35,7 +36,8 @@ final class ProjectCommandsTest extends TestCase
 
     private const array TABLES = [
         'project_command_runs', 'device_grants', 'connection_audits', 'command_receipts', 'project_bindings',
-        'projects', 'agent_runtimes', 'agent_sessions', 'start_tokens', 'agents', 'hosts', 'settings_records', 'users',
+        'project_environments', 'projects', 'agent_runtimes', 'agent_sessions', 'start_tokens', 'agents', 'hosts',
+        'settings_records', 'users',
     ];
 
     public function test_a_repeated_request_key_answers_the_first_result_without_running_again(): void
@@ -111,9 +113,11 @@ final class ProjectCommandsTest extends TestCase
     {
         $start = TestStart::start();
         $host = Host::create('laptop', 'secret-'.bin2hex(random_bytes(4)), [], ArrangementType::Local);
+        $project = Project::create('shop-'.bin2hex(random_bytes(3)), 'Shop');
         $binding = ProjectBinding::create(
             $host,
-            Project::create('shop-'.bin2hex(random_bytes(3)), 'Shop'),
+            $project,
+            Environment::openDefaultOf($project),
             $start->agent,
             new BindingFolder('root-'.bin2hex(random_bytes(4)), '/Users/owner/shop', 'Owner laptop', bin2hex(random_bytes(8))),
         );

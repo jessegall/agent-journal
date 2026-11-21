@@ -34,6 +34,13 @@ final class VerbNotServed extends RuntimeException implements CodedRefusal
         return new self("{$name} runs in a provider session for now; a signed-in shell runs journal verbs with the next release.");
     }
 
+    public static function environmentUnassigned(string $bindingId): self
+    {
+        return new self(
+            "Binding {$bindingId} works in no environment yet, so it runs no journal verb until one is assigned.",
+        );
+    }
+
     public static function stillRunning(string $requestKey): self
     {
         $refusal = new self("Request {$requestKey} is still running; wait for it or cancel it.");

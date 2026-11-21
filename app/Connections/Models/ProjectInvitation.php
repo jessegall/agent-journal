@@ -33,6 +33,7 @@ use Illuminate\Support\Carbon;
  * @property string $issuer_user_id
  * @property InvitationMode $mode
  * @property string|null $project_id
+ * @property string|null $environment_id
  * @property string $install_attempt_id
  * @property CarbonImmutable $expires_at
  * @property CarbonImmutable|null $revoked_at
@@ -41,7 +42,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['ticket_digest', 'issuer_user_id', 'mode', 'project_id', 'install_attempt_id', 'expires_at'])]
+#[Fillable([
+    'ticket_digest', 'issuer_user_id', 'mode', 'project_id', 'environment_id', 'install_attempt_id', 'expires_at',
+])]
 final class ProjectInvitation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -80,6 +83,7 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
         $invitation->issuer_user_id = $attempt->owner_user_id;
         $invitation->mode = $attempt->mode;
         $invitation->project_id = $attempt->project_id;
+        $invitation->environment_id = $attempt->environment_id;
         $invitation->install_attempt_id = $attempt->id;
         $invitation->expires_at = CarbonImmutable::now()->addMinutes(self::LIFETIME_MINUTES);
         $invitation->assertSaved($invitation->save());

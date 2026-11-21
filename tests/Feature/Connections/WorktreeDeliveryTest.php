@@ -29,8 +29,9 @@ final class WorktreeDeliveryTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'worktree_deliveries', 'child_claims', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings',
-        'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
+        'worktree_deliveries', 'child_claims', 'connection_audits', 'project_invitations', 'install_attempts',
+        'project_bindings', 'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records',
+        'users',
     ];
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';

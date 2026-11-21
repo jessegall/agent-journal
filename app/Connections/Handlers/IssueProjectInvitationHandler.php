@@ -9,6 +9,7 @@ use App\Connections\Commands\IssueProjectInvitation;
 use App\Connections\Enums\ConnectionAuditType;
 use App\Connections\Exceptions\InstallLinesUnavailable;
 use App\Connections\Models\ConnectionAudit;
+use App\Connections\Models\Environment;
 use App\Connections\Models\InstallAttempt;
 use App\Connections\Models\Project;
 use App\Connections\Models\ProjectInvitation;
@@ -53,7 +54,7 @@ final readonly class IssueProjectInvitationHandler implements CommandHandler
 
     /**
      * The attempt the line is for, locked: the one its reference names, or the owner's attempt under the issuance
-     * key, opened now for its target when there is none.
+     * key, opened now for its target when there is none: a new project, or an environment of the project it joins.
      */
     private function attemptOf(IssueProjectInvitation $command, string $owner): InstallAttempt
     {
@@ -61,8 +62,13 @@ final readonly class IssueProjectInvitationHandler implements CommandHandler
             return InstallAttempt::lockOfOwner($owner, $command->attemptReference);
         }
 
-        $projectId = $command->projectId === null ? null : Project::forId($command->projectId)->id;
+        if ($command->projectId === null) {
+            return InstallAttempt::openFor($owner, $command->issuanceKey, null);
+        }
 
-        return InstallAttempt::openFor($owner, $command->issuanceKey, $projectId);
+        $project = Project::forId($command->projectId);
+        $joins = Environment::ofProjectById($project->id, (string) $command->environmentId);
+
+        return InstallAttempt::openFor($owner, $command->issuanceKey, $joins);
     }
 }
