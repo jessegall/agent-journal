@@ -156,6 +156,18 @@ func (manifest ContainerManifest) bindsOnlyAccount(accountID string) bool {
 		mount.Target == accountTarget && mount.Writable && mount.Source == accountsRoot+"/"+accountID
 }
 
+// AccountFolder is the plain id of the account folder the manifest binds at the account home, which the container's
+// account label names; empty when it binds none.
+func (manifest ContainerManifest) AccountFolder() string {
+	for _, mount := range manifest.Mounts {
+		if mount.Target == accountTarget && strings.HasPrefix(mount.Source, accountsRoot+"/") {
+			return strings.TrimPrefix(mount.Source, accountsRoot+"/")
+		}
+	}
+
+	return ""
+}
+
 // IsSafe is whether the manifest may start a container: unprivileged, with no capabilities or published ports, an
 // exact image digest, a named user, security profiles that are one value each, and only the mounts the rules allow.
 func (manifest ContainerManifest) IsSafe(rules ContainerRules) bool {
@@ -369,13 +381,33 @@ func (containers Containers) AssertImagePinned(ctx context.Context, reference st
 		cmp.Or(wanted, reference), digests[0])
 }
 
-// Create creates the container from the manifest and answers its id; a daemon that would discard the manifest's
-// budgets is refused before anything is created.
+// ContainerProcess is the program a container runs as its own process, after the image's entrypoint: its command and
+// the environment it is given, with no path of the host in it. A helper without its own program has none.
+type ContainerProcess struct {
+	Command     []string
+	Environment []string
+}
+
+// arguments puts the process into `docker create` arguments that end with the image: its environment before the
+// image, its command after it.
+func (process ContainerProcess) arguments(create []string) []string {
+	image := create[len(create)-1]
+	arguments := append([]string{}, create[:len(create)-1]...)
+	for _, entry := range process.Environment {
+		arguments = append(arguments, "--env", entry)
+	}
+
+	return append(append(arguments, image), process.Command...)
+}
+
+// Create creates the container from the manifest, running the process, and answers its id; a daemon that would
+// discard the manifest's budgets is refused before anything is created.
 func (containers Containers) Create(
 	ctx context.Context,
 	manifest ContainerManifest,
 	name string,
 	labels LaunchLabels,
+	process ContainerProcess,
 ) (string, error) {
 	arguments, err := manifest.DockerCreateArguments(name, labels, containers.Rules)
 	if err != nil {
@@ -390,8 +422,28 @@ func (containers Containers) Create(
 		return "", err
 	}
 
-	output, err := containers.command(ctx, arguments...).Output()
+	output, err := containers.command(ctx, process.arguments(arguments)...).Output()
 	return strings.TrimSpace(string(output)), err
+}
+
+// EnsureNetwork makes the session's own network when the agent daemon lacks it, labelled with the installation and
+// the session, so a container of the session shares no network with another.
+func (containers Containers) EnsureNetwork(ctx context.Context, name string, labels LaunchLabels) error {
+	if containers.command(ctx, "network", "inspect", name).Run() == nil {
+		return nil
+	}
+
+	create := []string{
+		"network", "create",
+		"--label", installationLabel + "=" + labels.Installation,
+		"--label", sessionLabel + "=" + labels.Session,
+		name,
+	}
+	if output, err := containers.command(ctx, create...).CombinedOutput(); err != nil {
+		return fmt.Errorf("creating the network %s failed: %w: %s", name, err, strings.TrimSpace(string(output)))
+	}
+
+	return nil
 }
 
 // agentUser is the unprivileged user agent containers run as, mirroring ContainerManifest::USER.

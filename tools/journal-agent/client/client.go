@@ -342,7 +342,8 @@ func (folder StartFolder) ArgumentsAt(absolute string) []string {
 	return append(append([]string{}, folder.Arguments...), absolute)
 }
 
-// Grant is a runtime's start token and the folders its start needs, which the journal hands out once.
+// Grant is a runtime's start token and the folders its start needs, which the journal hands out once; a contained
+// session's grant also holds the manifest of its container, which the host package reads.
 type Grant struct {
 	Token           string        `json:"token"`
 	Folders         []StartFolder `json:"folders"`
@@ -351,6 +352,8 @@ type Grant struct {
 	OfflineReply    string        `json:"offline_reply"`
 	OfflineSeal     string        `json:"offline_reply_seal"`
 	Runtime         RuntimeStart  `json:"runtime"`
+	// Container is the manifest of the container the session runs in, null for a start on the protected host.
+	Container json.RawMessage `json:"container,omitempty"`
 }
 
 // RuntimeStart mirrors App\Agents\Support\RuntimeStart: what the host needs to start the runtime's program.

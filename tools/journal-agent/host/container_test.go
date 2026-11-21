@@ -244,7 +244,7 @@ func TestAnAgentContainerIsNotCreatedOnADaemonThatDiscardsItsBudgets(t *testing.
 	unbounded := fakeImageDocker(t, "[ \"$3\" = info ] && { echo none; exit 0; }; touch "+created)
 	unbounded.Rules = containedRules
 
-	_, err := unbounded.Create(context.Background(), containedManifest(), "journal-session-7", accountLabels("7"))
+	_, err := unbounded.Create(context.Background(), containedManifest(), "journal-session-7", accountLabels("7"), ContainerProcess{})
 	if !errors.Is(err, ErrBudgetsUnenforced) {
 		t.Fatalf("a daemon with cgroup driver none gave %v", err)
 	}
@@ -255,7 +255,7 @@ func TestAnAgentContainerIsNotCreatedOnADaemonThatDiscardsItsBudgets(t *testing.
 
 	bounded := fakeImageDocker(t, "[ \"$3\" = info ] && { echo cgroupfs; exit 0; }; echo c1")
 	bounded.Rules = containedRules
-	if id, err := bounded.Create(context.Background(), containedManifest(), "journal-session-7", accountLabels("7")); err != nil || id != "c1" {
+	if id, err := bounded.Create(context.Background(), containedManifest(), "journal-session-7", accountLabels("7"), ContainerProcess{}); err != nil || id != "c1" {
 		t.Fatalf("a daemon with a cgroup driver gave %q, %v", id, err)
 	}
 }
