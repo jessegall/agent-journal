@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { timeOfDay } from '@kit/format';
 import Button from '@kit/Button';
 import { ref, watch } from 'vue';
 
@@ -65,7 +66,7 @@ async function copy(): Promise<void> {
         </template>
         <p class="text-small text-muted">
             Paste it in a terminal in the project folder. It works once, until
-            {{ new Date(expiresAt).toLocaleTimeString() }}.
+            {{ timeOfDay(expiresAt) }}.
         </p>
     </div>
 </template>

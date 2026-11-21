@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { dateOnly } from '@kit/format';
 import type { AccountRowData } from '@generated/types/accounts';
 import { retryCleanup } from '@generated/routes/accounts';
 import { useForm } from '@inertiajs/vue3';
@@ -100,7 +101,7 @@ function retryAccountCleanup(): void {
                     <span class="text-text-4">·</span>
                     <span class="whitespace-nowrap text-text-4">
                         Expires
-                        {{ new Date(account.expiresAt).toLocaleDateString() }}
+                        {{ dateOnly(account.expiresAt) }}
                     </span>
                 </template>
             </div>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue';
 import type { DurationNode } from '@kit/dockCards';
-import { elapsed } from '../elapsed';
+import { elapsed } from '@kit/format';
 
 /**
  * How long something ran: counted here each second while it runs, fixed at its finish.

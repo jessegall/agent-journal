@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { dateTime } from '@kit/format';
 import type { InstallAttemptListData, InstallAttemptRowData } from '@generated/types/connections';
 import { issue } from '@generated/routes/connections/invitations';
 import Button from '@kit/Button';
@@ -51,7 +52,7 @@ function olderPage(): void {
                 <li class="flex flex-wrap items-center gap-2 text-small">
                     <span class="font-mono">{{ row.reference }}</span>
                     <span>{{ row.target }}</span>
-                    <span class="text-muted">{{ new Date(row.createdAt).toLocaleString() }}</span>
+                    <span class="text-muted">{{ dateTime(row.createdAt) }}</span>
                     <span>{{ STATES[row.state] ?? row.state }}</span>
                     <template v-if="row.state === 'open' || row.state === 'expired'">
                         <Button variant="bordered" size="small" @click="replace(row)">Replace</Button>

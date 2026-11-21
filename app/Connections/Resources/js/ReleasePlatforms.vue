@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ReleaseOfferData } from '@generated/types/connections';
+import { size } from '@kit/format';
 
 /**
  * Beside Copy, what the current release installs: each supported platform with its measured size and what the
@@ -7,9 +8,6 @@ import type { ReleaseOfferData } from '@generated/types/connections';
  */
 defineProps<{ release: ReleaseOfferData }>();
 
-function megabytes(bytes: number): string {
-    return `${(bytes / 1_000_000).toFixed(1)} MB`;
-}
 </script>
 
 <template>
@@ -17,7 +15,7 @@ function megabytes(bytes: number): string {
         <template v-for="target in release.targets" :key="target.name">
             <template v-if="target.isSupported">
                 <li>
-                    {{ target.name }}: {{ megabytes(target.bytes) }} to
+                    {{ target.name }}: {{ size(target.bytes) }} to
                     download and install. Needs
                     {{ target.prerequisites.join(', ') }}.
                 </li>

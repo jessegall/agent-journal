@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { seconds, timeOfDay } from '@kit/format';
 import SwitchCase from '@kit/SwitchCase';
 import type { TerminalWindowData } from '@/types/generated';
 import { computed, toRef } from 'vue';
@@ -20,7 +21,7 @@ const notices = computed<string[]>(() => {
         [state.value === 'restarted', 'restarted'],
         [
             state.value === 'ended',
-            `this session ended at ${new Date(endedAt.value).toLocaleTimeString()}; open the current one from Home`,
+            `this session ended at ${timeOfDay(endedAt.value)}; open the current one from Home`,
         ],
         [
             isSilent(),
@@ -58,7 +59,7 @@ const cursorStyle = computed(() => {
         <template #default>
             <div class="flex flex-col gap-1">
                 <p class="text-sm text-text-3">
-                    updated {{ ageSeconds().toFixed(1) }} s ago
+                    updated {{ seconds(ageSeconds()) }} ago
                 </p>
                 <template v-for="notice in notices" :key="notice">
                     <p class="text-warn text-sm">{{ notice }}</p>

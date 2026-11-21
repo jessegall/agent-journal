@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { dateTime } from '@kit/format';
 import type { ShareDetailData } from '@generated/types/sharing';
 
 /**
@@ -40,7 +41,7 @@ defineEmits<{ older: [] }>();
             <tbody>
                 <template v-for="entry in audit.entries" :key="entry.id">
                     <tr :class="entry.isRead ? 'text-muted' : ''">
-                        <td>{{ entry.occurredAt }}</td>
+                        <td>{{ dateTime(entry.occurredAt) }}</td>
                         <td>
                             {{ whatHappened(entry) }}
                         </td>

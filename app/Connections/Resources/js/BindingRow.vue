@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { dateTime } from '@kit/format';
 import type { ProjectBindingRowData } from '@generated/types/connections';
 import Button from '@kit/Button';
 import StateBadge from '@kit/StateBadge';
@@ -18,7 +19,7 @@ const looks = computed(() => bindingLooks[props.binding.state]);
 const lastContact = computed(() =>
     props.binding.lastContactAt === null
         ? 'Not in contact yet'
-        : `Last contact ${new Date(props.binding.lastContactAt).toLocaleString()}`,
+        : `Last contact ${dateTime(props.binding.lastContactAt)}`,
 );
 </script>
 
