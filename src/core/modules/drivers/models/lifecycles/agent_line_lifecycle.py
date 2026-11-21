@@ -4,7 +4,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 
 
 class AgentLineLifecycle(Lifecycle):
-    """A line waits until a hook gives it or the server types it. A line being typed is out of a hook's reach, and
+    """A line waits until a hook gives it or the server types it; a typed line is still given by the agent's next hook, since a busy program holds typed text until its turn ends. A line being typed is out of a hook's reach, and
     waits again if the typing fails. A line another agent caused with no declared crossing is hidden from its
     start and is never given; a waiting line is dropped, hidden, when its agent is retired."""
 
@@ -13,7 +13,7 @@ class AgentLineLifecycle(Lifecycle):
     editable = [AgentLineState.WAITING]
     deletable = [AgentLineState.DELIVERED, AgentLineState.ENTERED, AgentLineState.HIDDEN]
 
-    deliver = Move("deliver", [AgentLineState.WAITING], AgentLineState.DELIVERED)
+    deliver = Move("deliver", [AgentLineState.WAITING, AgentLineState.ENTERED], AgentLineState.DELIVERED)
     claim = Move("claim", [AgentLineState.WAITING], AgentLineState.TYPING)
     release = Move("release", [AgentLineState.TYPING], AgentLineState.WAITING)
     enter = Move("enter", [AgentLineState.WAITING, AgentLineState.TYPING], AgentLineState.ENTERED)

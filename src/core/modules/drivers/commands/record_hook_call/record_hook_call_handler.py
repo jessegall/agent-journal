@@ -28,6 +28,8 @@ from engine.errors.refusal import Refusal
 from engine.row.metadata import Metadata
 from engine.provider.providers import Providers
 from engine.query.queries import Queries
+from engine.query.conditions.greater import Greater
+from engine.query.conditions.is_null import IsNull
 from engine.repository.repository import Repository
 from engine.performance.timing import Timing
 from core.modules.agents.support.agent_rows import AgentRows
@@ -52,6 +54,7 @@ from engine.module.driver_entries import DRIVERS_MODULE
 from core.modules.agents.support.agent_label import AgentLabel
 
 WAITING_LINES_REASON = "every line waiting for the agent may be handed to it at this hook"
+TYPED_LINES_REASON = "the lines typed to the agent since its last hook, a handful"
 
 LOG_LINE_CHARACTERS = 240
 # the characters kept below a program's own limit for the text of one reply, as room for what the program adds
@@ -80,6 +83,14 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         self.bus, self.database, self.queries, self.repository = bus, database, queries, repository
         self.history, self.timing, self.providers = history, timing, providers
 
+    def typed_lines(self, agent_id: int) -> list[AgentLine]:
+        """The lines typed into the agent's terminal since its last hook: a busy program holds typed text until its turn ends, so the next hook gives them too."""
+        previous = self.hook_calls.newest_agent_hook(agent_id)
+        if previous is None:
+            return []
+        return list(self.queries.query(AgentLine).filter(session_agent_id=agent_id, state=AgentLineState.ENTERED).matching(IsNull("hook_call_id")).matching(
+            Greater("updated_at", previous.creation_timestamp().text)).every_row(TYPED_LINES_REASON))
+
     def handle(self, command: RecordHookCall, context: Context) -> HookReply:
         agent = self.agents.find(command.agent_id)
         hook = AgentHook.actor_hook(command.event, self.loader.loaded(agent), context.timestamp)
@@ -92,7 +103,9 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                 self.steps.save(command.step.view, command.step.step, None, context)
             return HookReply.allowed()
         waiting = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).every_row(WAITING_LINES_REASON)
-        handed_lines = DeliveredLines.chosen(command.event, answers, tuple(waiting))
+        typed = self.typed_lines(agent.id)
+        prompted = [row for row in typed if command.event.prompt and row.agent_message.text in command.event.prompt]
+        handed_lines = DeliveredLines.chosen(command.event, answers, (*(row for row in typed if row not in prompted), *waiting))
         split = ContextLineSplit.split(handed_lines.with_answers(answers), self.context_limit(command.event))
         lines = list(split.kept)
         later = {agent_message.text for agent_message in split.remaining_messages}
@@ -125,7 +138,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              metadata=Metadata({DRIVERS_MODULE: metadata})), context)
         for row in handed_rows:
             self.event_rows.remember(row)
-        for row in handed_rows:
+        for row in (*handed_rows, *prompted):
             self.bus.dispatch(DeliverAgentLine(row.id, call.id, context.timestamp), context)
         commit = self.steps.save(command.step.view, command.step.step, call.id, context) if command.step is not None else None
         if commit is not None and not commit.is_saved:
