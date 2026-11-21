@@ -105,6 +105,9 @@ const (
 	initReadyLine = "journal-init: ready"
 	// executorEndpoint is the private folder of the executor's socket in a protected-account container.
 	executorEndpoint = "/run/journal-exec:uid=10002,gid=10001,mode=0750,size=1m"
+	// protectedShell is the shell bridge Claude Code takes as its shell in a protected-account container: every command
+	// the model runs goes, unparsed, to the executor (docs/accounts/claude-integration.md, section Shell handoff).
+	protectedShell = "CLAUDE_CODE_SHELL=/opt/journal/shell/bash"
 	protectedUser    = "0:0"
 )
 
@@ -251,7 +254,7 @@ func (manifest ContainerManifest) DockerCreateArguments(name string, labels Laun
 			arguments = append(arguments, "--cap-add", capability)
 		}
 
-		arguments = append(arguments, "--entrypoint", protectedInit, "--tmpfs", executorEndpoint)
+		arguments = append(arguments, "--entrypoint", protectedInit, "--tmpfs", executorEndpoint, "--env", protectedShell)
 	}
 
 	if manifest.ReadOnlyRoot {

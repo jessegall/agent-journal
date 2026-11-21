@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
-import { flushPromises, mount } from '@vue/test-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 import type { ChatData } from '@generated/types/chat';
 
@@ -69,6 +69,9 @@ function mountPane(conversationId = 'conversation-1') {
         },
     });
 }
+
+// A pane left mounted would answer the next test's reveal too.
+enableAutoUnmount(afterEach);
 
 describe('ChatPane', () => {
     beforeEach(() => {

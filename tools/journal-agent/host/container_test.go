@@ -394,6 +394,7 @@ func TestAProtectedAccountContainerStartsItsInitAsRootWithOnlyThreeCapabilities(
 		"--user 0:0", "--cap-drop ALL", "--cap-add SETUID --cap-add SETGID --cap-add SETPCAP",
 		"--entrypoint /opt/journal/bin/journal-init",
 		"--tmpfs /run/journal-exec:uid=10002,gid=10001,mode=0750,size=1m",
+		"--env CLAUDE_CODE_SHELL=/opt/journal/shell/bash",
 		"--read-only", "no-new-privileges", "seccomp=/etc/journal/seccomp.json", "apparmor=journal-agent",
 	} {
 		if !strings.Contains(joined, want) {

@@ -41,55 +41,6 @@ return new class extends Migration
         });
         DB::statement("create unique index accounts_label_in_use on accounts (driver, label_key) where state <> 'removed'");
 
-        Schema::create('account_usage_windows', function (Blueprint $table) {
-            $table->ulid('id')->primary();
-            $table->foreignUlid('account_id')->constrained('accounts');
-            $table->unsignedBigInteger('sign_in_generation');
-            $table->string('limit_id', 64);
-            $table->string('slot', 16);
-            $table->decimal('used_percent', 7, 4)->nullable();
-            $table->unsignedInteger('duration_minutes')->nullable();
-            $table->timestampTz('resets_at')->nullable();
-            $table->timestampTz('observed_at');
-            $table->string('source_id', 128);
-            $table->unsignedBigInteger('source_order');
-            $table->timestampsTz();
-
-            $table->unique(['account_id', 'sign_in_generation', 'limit_id', 'slot']);
-        });
-
-        Schema::create('account_usage_costs', function (Blueprint $table) {
-            $table->ulid('id')->primary();
-            $table->foreignUlid('account_id')->constrained('accounts');
-            $table->unsignedBigInteger('sign_in_generation');
-            $table->string('source_id', 128);
-            $table->decimal('usd', 24, 12);
-            $table->timestampTz('observed_at');
-            $table->timestampsTz();
-
-            $table->unique(['account_id', 'sign_in_generation', 'source_id']);
-            $table->index(['account_id', 'observed_at']);
-        });
-
-        Schema::create('account_usage_tokens', function (Blueprint $table) {
-            $table->ulid('id')->primary();
-            $table->foreignUlid('account_id')->constrained('accounts');
-            $table->unsignedBigInteger('sign_in_generation');
-            $table->string('thread_id', 128);
-            $table->unsignedBigInteger('total');
-            $table->unsignedBigInteger('input')->nullable();
-            $table->unsignedBigInteger('cached_input')->nullable();
-            $table->unsignedBigInteger('output')->nullable();
-            $table->unsignedBigInteger('reasoning_output')->nullable();
-            $table->unsignedBigInteger('last_turn_total')->nullable();
-            $table->timestampTz('observed_at');
-            $table->string('source_id', 128);
-            $table->unsignedBigInteger('source_order');
-            $table->timestampsTz();
-
-            $table->unique(['account_id', 'sign_in_generation', 'thread_id']);
-        });
-
         Schema::create('active_accounts', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('driver', 64)->unique();
@@ -129,9 +80,6 @@ return new class extends Migration
     {
         Schema::dropIfExists('sign_in_attempts');
         Schema::dropIfExists('active_accounts');
-        Schema::dropIfExists('account_usage_tokens');
-        Schema::dropIfExists('account_usage_costs');
-        Schema::dropIfExists('account_usage_windows');
         Schema::dropIfExists('accounts');
     }
 };
