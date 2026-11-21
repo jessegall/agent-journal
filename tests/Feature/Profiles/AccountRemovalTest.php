@@ -44,6 +44,7 @@ use App\Programs\Enums\HookProgram;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use LogicException;
 use Tests\Fixtures\Profiles\FinishingProtocol;
 use Tests\Fixtures\Profiles\RecordingSignInHost;
 use Tests\Support\CommitsHookRows;
@@ -173,6 +174,37 @@ final class AccountRemovalTest extends TestCase
         $this->assertDirectoryDoesNotExist($directory);
         $this->assertDirectoryExists($directory.'-x');
         rmdir($directory.'-x');
+    }
+
+    public function test_a_cleanup_whose_folder_is_gone_is_done_without_starting_its_program_and_the_drain_goes_on(): void
+    {
+        $directory = sys_get_temp_dir().'/account-cleanup-'.bin2hex(random_bytes(4));
+        $host = new RecordingSignInHost(null);
+        $protocols = new SignInProtocols($this->app);
+        $protocols->register('codex', SignInMethod::OAuth, FinishingProtocol::class);
+        $host->nextCleanup = new ClaimedCleanup(
+            CleanupTarget::SignInAttempt,
+            'attempt',
+            'codex',
+            SignInMethod::OAuth,
+            $directory,
+            1,
+            false,
+            null,
+        );
+        $nobodyMayDrain = new class implements AccountOwnerDrain
+        {
+            public function drain(string $directory, string|null $accountId): bool
+            {
+                throw new LogicException('a folder that is gone has no owners to drain');
+            }
+        };
+        $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), $nobodyMayDrain);
+
+        $this->assertTrue($runner->cleanNext());
+        $this->assertFalse($runner->cleanNext());
+
+        $this->assertEquals([new CleanupProgress(true, true)], $host->cleanups);
     }
 
     public function test_an_account_the_host_cannot_drain_keeps_its_sign_in_and_folder(): void

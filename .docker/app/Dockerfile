@@ -128,10 +128,9 @@ COPY --from=ngrok /out/ngrok /opt/sharing/bin/ngrok
 
 CMD ["php", "artisan", "sharing:supervise"]
 
-# The runner image: the console with no .env, the pinned claude and codex, the no-keychain stand-in under the
-# console's own tools folder, and journal-agent. The agent-host, agent-host-enroll and accounts services each give it
-# their command; it has no entrypoint of its own and runs as 10001:10001.
-FROM console AS runner
+# The runner's tools, apart from the journal's code: the pinned claude and codex, journal-agent, the Docker client and
+# the service user and folders. A code change leaves this stage cached.
+FROM php AS runner-tools
 
 ARG CLAUDE_CODE_VERSION=2.1.323
 ARG CODEX_VERSION=0.165.0
@@ -142,22 +141,29 @@ RUN apt-get update \
     && npm cache clean --force \
     && apt-get purge -y npm && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
-COPY --from=agent-host /out/journal-agent /usr/local/bin/journal-agent
 # The Docker client the contained agent host starts containers with, on the agent daemon only.
 COPY --from=docker:28-cli /usr/local/bin/docker /usr/local/bin/docker
 
-# The code is copied with the modes it has where it was built, where some files may be private: make it readable,
-# and only storage and the bootstrap cache writable, for the user the services run as.
-RUN rm -f /app/.env \
-    && chmod -R a+rX /app \
-    && groupadd --gid 10001 journal \
+# Compose cannot chown a named volume: a volume mounted on an empty folder of the image takes its owner and mode on
+# first use, so the agent host's state and start socket folders and the accounts folder are made here, owner-only for
+# 10001.
+RUN groupadd --gid 10001 journal \
     && useradd --uid 10001 --gid 10001 --home-dir /home/journal --no-create-home journal \
-    && chown -R 10001:10001 /app/storage /app/bootstrap/cache \
-    # Compose cannot chown a named volume: a volume mounted on an empty folder of the image takes its owner and
-    # mode on first use, so the agent host's state and start socket folders are made here, owner-only for 10001.
-    && mkdir -p /var/lib/journal-host /run/journal-start \
-    && chown 10001:10001 /var/lib/journal-host /run/journal-start \
-    && chmod 0700 /var/lib/journal-host /run/journal-start
+    && mkdir -p /var/lib/journal-host /run/journal-start /srv/journal/accounts \
+    && chown 10001:10001 /var/lib/journal-host /run/journal-start /srv/journal/accounts \
+    && chmod 0700 /var/lib/journal-host /run/journal-start /srv/journal/accounts
+
+COPY --from=agent-host /out/journal-agent /usr/local/bin/journal-agent
+
+# The runner image: the tools above and the console with no .env. The agent-host, agent-host-enroll and accounts
+# services each give it their command; it has no entrypoint of its own and runs as 10001:10001.
+FROM runner-tools AS runner
+
+# The code is copied with the modes it has where it was built, where some files may be private: it is made readable,
+# and only storage and the bootstrap cache writable, for the user the services run as.
+COPY --from=console --chmod=a+rX /app /app
+RUN rm -f /app/.env \
+    && chown -R 10001:10001 /app/storage /app/bootstrap/cache
 USER 10001:10001
 ENTRYPOINT []
 CMD []

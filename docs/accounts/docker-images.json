@@ -28,10 +28,10 @@
         {
             "name": "runner",
             "architecture": "linux/amd64",
-            "reference": "sha256:7b917a24d519d2af6c980f9082f394bb6e7916049f8bb376e58670180c345d9c",
+            "reference": "sha256:5ea052598e78efd525d76c4deb581601a21c0e2261f91e91fdd6d48bdb1de566",
             "claude_code": "2.1.323",
             "codex": "0.165.0",
-            "built_at": "2026-11-21T01:37:40+00:00"
+            "built_at": "2026-11-21T01:47:32+00:00"
         }
     ]
 }

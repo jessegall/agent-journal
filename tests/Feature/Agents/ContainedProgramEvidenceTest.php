@@ -107,7 +107,8 @@ final class ContainedProgramEvidenceTest extends TestCase
     }
 
     /**
-     * Every item enforced with evidence, but those named, which give the reason.
+     * Every item enforced with evidence, but those named, which give the reason; each item carries both keys, the
+     * unused one empty, as journal-agent sends them (client.ProtectionItem).
      *
      * @param  list<string>  $unenforced
      * @return list<array<string, mixed>>
@@ -116,8 +117,8 @@ final class ContainedProgramEvidenceTest extends TestCase
     {
         return array_map(
             fn (string $item): array => in_array($item, $unenforced, true)
-                ? ['item' => $item, 'enforced' => false, 'reason' => $reason]
-                : ['item' => $item, 'enforced' => true, 'evidence' => 'run-1'],
+                ? ['item' => $item, 'enforced' => false, 'evidence' => '', 'reason' => $reason]
+                : ['item' => $item, 'enforced' => true, 'evidence' => 'run-1', 'reason' => ''],
             self::ITEMS,
         );
     }

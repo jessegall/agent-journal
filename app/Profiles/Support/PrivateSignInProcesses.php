@@ -139,8 +139,15 @@ final readonly class PrivateSignInProcesses
         return true;
     }
 
+    /**
+     * Whether the cleanup's sign-in is gone: a folder that is gone holds none, so its program is never started in it.
+     */
     private function removeStore(ClaimedCleanup $claimed): bool
     {
+        if ($this->isGone($claimed->directory)) {
+            return true;
+        }
+
         $isServed = $this->protocols->supports($claimed->program, $claimed->method);
 
         if (! $isServed || ! $this->owners->drain($claimed->directory, $claimed->accountId)) {
@@ -162,6 +169,16 @@ final readonly class PrivateSignInProcesses
         if (! $this->files->isLink($folder) && $this->files->isFolder($folder)) {
             $this->files->deleteFolder($folder, Depth::levels(Depth::LEVEL_LIMIT));
         }
+
+        return $this->isGone($directory);
+    }
+
+    /**
+     * Whether nothing is left at the account folder: no link, no folder and no file.
+     */
+    private function isGone(string $directory): bool
+    {
+        $folder = $this->files->pathIn(Place::Accounts, $directory);
 
         return ! $this->files->isLink($folder) && ! $this->files->isFolder($folder) && ! $this->files->exists($folder);
     }

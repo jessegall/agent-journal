@@ -174,6 +174,18 @@ services:
     # relaxed seccomp and AppArmor profiles below for its own user namespaces, and nothing more. Where the server has
     # Sysbox, set AGENT_DAEMON_RUNTIME=sysbox-runc and the same daemon runs with no relaxed profile. It never gets the
     # server's own Docker socket.
+    # Mounts the accounts volume first, from the runner image, so the volume starts with that image's folder: owned by
+    # 10001, the sign-in service's user, mode 0700. A volume first mounted by the agent daemon would start root-owned.
+    accounts-volume:
+        profiles: [contained]
+        restart: 'no'
+        image: ${RUNNER_IMAGE:-journal-runner:unset}
+        user: '10001:10001'
+        command: ['true']
+        volumes:
+            - accounts-data:/srv/journal/accounts
+        network_mode: none
+
     agent-docker:
         profiles: [contained]
         restart: unless-stopped
@@ -183,10 +195,16 @@ services:
         security_opt:
             - seccomp=unconfined
             - apparmor=${AGENT_DAEMON_APPARMOR:-unconfined}
+            # The daemon mounts a fresh /proc for each agent container, which the kernel refuses while this
+            # container's own /proc has paths masked over it.
+            - systempaths=unconfined
         # Rootless Docker-in-Docker makes its own network through a TUN device: never privileged, never the
         # server's socket.
         devices:
             - /dev/net/tun:/dev/net/tun
+        depends_on:
+            accounts-volume:
+                condition: service_completed_successfully
         environment:
             DOCKER_HOST: unix:///run/agent-docker/docker.sock
         # Naming dockerd skips the image's default listeners, so the daemon listens on its socket alone, never on TCP.
@@ -227,9 +245,19 @@ services:
                   echo "Name AGENT_IMAGE and RUNNER_IMAGE by image id in .env." >&2
                   exit 1
               fi
-              for archive in /images/*.tar; do
-                  docker load --quiet --input "$$archive"
+              # The daemon keeps the two pinned images and nothing else, so an earlier build never fills its disk.
+              for held in $$(docker image ls --quiet --no-trunc); do
+                  if [ "$$held" != "$$AGENT_IMAGE" ] && [ "$$held" != "$$RUNNER_IMAGE" ]; then
+                      docker image rm --force "$$held" >/dev/null
+                  fi
               done
+              docker image prune --force >/dev/null
+              # The archives are loaded only when a pinned image is missing.
+              if ! docker image inspect "$$AGENT_IMAGE" "$$RUNNER_IMAGE" >/dev/null 2>&1; then
+                  for archive in /images/*.tar; do
+                      docker load --quiet --input "$$archive"
+                  done
+              fi
               for image in "$$AGENT_IMAGE" "$$RUNNER_IMAGE"; do
                   loaded="$$(docker image inspect --format '{{.Id}}' "$$image" 2>/dev/null || true)"
                   if [ "$$loaded" != "$$image" ]; then
