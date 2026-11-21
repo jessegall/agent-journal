@@ -11,7 +11,7 @@
         "check:fix": "vp check --fix",
         "types:check": "npm run types:generate && npm run imports:check && vue-tsc --noEmit",
         "imports:check": "node scripts/check-domain-imports.mjs",
-        "types:generate": "php artisan journal:ui-manifest && php artisan wayfinder:generate --with-form && php artisan typescript:transform",
+        "types:generate": "php artisan journal:ui-manifest && php artisan wayfinder:generate --with-form && php -d memory_limit=512M artisan typescript:transform",
         "build:sharing": "vp build --config vite.sharing.config.ts"
     },
     "dependencies": {

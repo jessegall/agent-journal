@@ -57,11 +57,13 @@ final class DomainBootstrapperOrderTest extends TestCase
 
             $class = $namespace[1].'\\'.basename($file, '.php');
 
-            $declares = Reflector::find($class)
-                ->filter(fn (Reflector $type) => $type->isSubclassOf(Domain::class))
-                ->filter(fn (Reflector $type) => $type->method('bootstrappers')->declaringClass() === $type);
+            if (! Reflector::isNameSubclassOf($class, Domain::class)) {
+                continue;
+            }
 
-            if ($declares->isDefined()) {
+            $domain = Reflector::of($class);
+
+            if ($domain->method('bootstrappers')->declaringClass() === $domain) {
                 $classes[] = $class;
             }
         }

@@ -29,7 +29,7 @@ final readonly class FolderClasses
 
         return array_values(array_filter(
             $found,
-            fn (string $class) => Reflector::exists($class) && Reflector::of($class)->is($type),
+            fn (string $class) => Reflector::isNameOf($class, $type),
         ));
     }
 
@@ -50,9 +50,7 @@ final readonly class FolderClasses
         foreach ($code->folder($code->projectPathOf("{$folders}/*.php")) as $entry) {
             $class = $names->classOf($entry->fingerprint->realPath);
 
-            if (Reflector::exists($class)
-                && Reflector::of($class)->is($type)
-                && Reflector::of($class)->isInstantiable()) {
+            if (Reflector::isNameOf($class, $type) && Reflector::of($class)->isInstantiable()) {
                 $classes[] = $class;
             }
         }

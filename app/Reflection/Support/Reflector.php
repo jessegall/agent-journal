@@ -19,7 +19,7 @@ use ReflectionProperty;
 /**
  * What PHP declares about one class, interface, trait or enum, read once and kept for the life of the process.
  *
- * @template T of object
+ * @template-covariant T of object
  */
 final class Reflector
 {
@@ -112,6 +112,8 @@ final class Reflector
     /**
      * Whether any autoloader can load a class, interface, trait or enum of this name; nothing is kept for a name that
      * does not load.
+     *
+     * @phpstan-assert-if-true class-string $name
      */
     public static function exists(string $name): bool
     {
@@ -133,11 +135,30 @@ final class Reflector
      * Whether the name names a loadable type that extends or implements this type, as a strict subtype; false for a
      * name no autoloader can load.
      *
-     * @param  class-string  $type
+     * @template S of object
+     *
+     * @param  class-string<S>  $type
+     *
+     * @phpstan-assert-if-true class-string<S> $name
      */
     public static function isNameSubclassOf(string $name, string $type): bool
     {
         return self::find($name)->filter(fn (self $found) => $found->isSubclassOf($type))->isDefined();
+    }
+
+    /**
+     * Whether the name names a loadable type that is this type or a subtype of it; false for a name no autoloader can
+     * load.
+     *
+     * @template S of object
+     *
+     * @param  class-string<S>  $type
+     *
+     * @phpstan-assert-if-true class-string<S> $name
+     */
+    public static function isNameOf(string $name, string $type): bool
+    {
+        return self::find($name)->filter(fn (self $found) => $found->is($type))->isDefined();
     }
 
     /**
@@ -220,7 +241,11 @@ final class Reflector
     /**
      * Whether it is this type or a subtype of it: the same class, a class that extends it, or one that implements it.
      *
-     * @param  class-string  $type
+     * @template S of object
+     *
+     * @param  class-string<S>  $type
+     *
+     * @phpstan-assert-if-true self<S> $this
      */
     public function is(string $type): bool
     {
@@ -238,9 +263,23 @@ final class Reflector
     }
 
     /**
+     * The value as an object of this type; none when it is no such object.
+     *
+     * @return Option<T>
+     */
+    public function asInstance(mixed $value): Option
+    {
+        return $this->isInstance($value) ? new Some($value) : None::create();
+    }
+
+    /**
      * Whether it extends or implements this type, as a strict subtype: the type itself is not its own subclass.
      *
-     * @param  class-string  $type
+     * @template S of object
+     *
+     * @param  class-string<S>  $type
+     *
+     * @phpstan-assert-if-true self<S> $this
      */
     public function isSubclassOf(string $type): bool
     {
@@ -250,7 +289,11 @@ final class Reflector
     /**
      * Whether it implements this interface, itself or through a parent or another interface.
      *
-     * @param  class-string  $interface
+     * @template S of object
+     *
+     * @param  class-string<S>  $interface
+     *
+     * @phpstan-assert-if-true self<S> $this
      */
     public function implements(string $interface): bool
     {
@@ -304,7 +347,8 @@ final class Reflector
             return $this->backingType;
         }
 
-        $backing = $this->isEnum() ? new ReflectionEnum($this->name())->getBackingType() : null;
+        $name = $this->name();
+        $backing = enum_exists($name) ? new ReflectionEnum($name)->getBackingType() : null;
 
         return $this->backingType = $backing === null ? None::create() : new Some((string) $backing);
     }
@@ -316,11 +360,13 @@ final class Reflector
      */
     public function cases(): array
     {
-        return $this->cases ??= $this->isEnum()
-            ? array_map(
+        $name = $this->name();
+
+        return $this->cases ??= enum_exists($name)
+            ? array_values(array_map(
                 fn (ReflectionEnumUnitCase $case) => new ReflectedEnumCase($case),
-                new ReflectionEnum($this->name())->getCases(),
-            )
+                new ReflectionEnum($name)->getCases(),
+            ))
             : [];
     }
 
@@ -462,10 +508,7 @@ final class Reflector
      */
     public function interfaces(): array
     {
-        return array_values(array_map(
-            fn (string $interface) => self::of($interface),
-            $this->type->getInterfaceNames(),
-        ));
+        return array_map(fn (string $interface) => self::of($interface), $this->type->getInterfaceNames());
     }
 
     /**
@@ -475,7 +518,7 @@ final class Reflector
      */
     public function traits(): array
     {
-        return array_values(array_map(fn (string $trait) => self::of($trait), $this->type->getTraitNames()));
+        return array_map(fn (string $trait) => self::of($trait), $this->type->getTraitNames());
     }
 
     /**

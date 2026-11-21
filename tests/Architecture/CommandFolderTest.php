@@ -161,7 +161,7 @@ final class CommandFolderTest extends TestCase
         ) as $declaration) {
             $name = $declaration['name'];
 
-            if (Reflector::find($name)->filter(fn (Reflector $type) => ! $type->isTrait())->isDefined()) {
+            if (Reflector::exists($name) && Reflector::of($name)->not()->isTrait()) {
                 $classes[] = $name;
             }
         }

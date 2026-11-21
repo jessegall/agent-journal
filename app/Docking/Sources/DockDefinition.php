@@ -40,7 +40,7 @@ final readonly class DockDefinition
      */
     public function assertOwns(Dockable $source): void
     {
-        if (! Reflector::of($this->class)->isInstance($source)) {
+        if (Reflector::of($this->class)->asInstance($source)->isEmpty()) {
             throw DockDefinitionInvalid::notOwned($this->type, $source::class);
         }
     }

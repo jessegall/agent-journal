@@ -87,7 +87,7 @@ final class StateMethods
 
         if ($parameterClass === null
             || ! $takesEvent
-            || ! Reflector::of($parameterClass)->isSubclassOf(Event::class)
+            || ! Reflector::isNameSubclassOf($parameterClass, Event::class)
             || ! $this->hasRequiredArgument($method)
             || ! $this->isPublicInstanceMethod($method)) {
             throw InvalidStateMethod::for($method, 'must be a public instance method with one required concrete Event.');
@@ -122,7 +122,7 @@ final class StateMethods
      */
     private function declarationsFor(string $class): array
     {
-        if (! Reflector::exists($class) || ! Reflector::of($class)->isSubclassOf(AgentState::class)) {
+        if (! Reflector::isNameSubclassOf($class, AgentState::class)) {
             throw InvalidStateClass::for($class);
         }
 

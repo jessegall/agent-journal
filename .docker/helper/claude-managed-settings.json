@@ -1,0 +1,57 @@
+{
+    "allowManagedPermissionRulesOnly": true,
+    "allowManagedHooksOnly": true,
+    "allowManagedMcpServersOnly": true,
+    "allowedMcpServers": [{ "serverName": "journal" }],
+    "permissions": {
+        "disableBypassPermissionsMode": "disable",
+        "allow": [
+            "Read(//workspace/**)",
+            "Edit(//workspace/**)",
+            "Read(//tmp/**)",
+            "Edit(//tmp/**)",
+            "Bash(journal:*)",
+            "Bash(ls:*)",
+            "Bash(git status:*)",
+            "Bash(git diff:*)",
+            "Bash(git log:*)",
+            "mcp__journal__*"
+        ],
+        "deny": [
+            "Read(//home/**)",
+            "Edit(//home/**)",
+            "Read(//root/**)",
+            "Edit(//root/**)",
+            "Read(//proc/**)",
+            "Edit(//proc/**)",
+            "Read(//dev/fd/**)",
+            "Edit(//dev/fd/**)",
+            "Read(//run/**)",
+            "Edit(//run/**)",
+            "Read(//sys/**)",
+            "Edit(//sys/**)",
+            "Read(//etc/claude-code/**)",
+            "Edit(//etc/**)",
+            "Edit(//opt/**)",
+            "Agent",
+            "Task",
+            "Workflow",
+            "SendMessage",
+            "ListAgents",
+            "RemoteTrigger",
+            "Skill",
+            "Bash(claude:*)",
+            "Bash(codex:*)",
+            "Bash(*claude -p*)",
+            "Bash(*codex exec*)"
+        ]
+    },
+    "hooks": {
+        "SessionStart": [{ "hooks": [{ "type": "command", "command": "/opt/journal/bin/journal-hook claude-code" }] }],
+        "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "/opt/journal/bin/journal-hook claude-code" }] }],
+        "PreToolUse": [{ "hooks": [{ "type": "command", "command": "/opt/journal/bin/journal-hook claude-code" }] }],
+        "PostToolUse": [{ "hooks": [{ "type": "command", "command": "/opt/journal/bin/journal-hook claude-code" }] }],
+        "Stop": [{ "hooks": [{ "type": "command", "command": "/opt/journal/bin/journal-hook claude-code" }] }],
+        "SessionEnd": [{ "hooks": [{ "type": "command", "command": "/opt/journal/bin/journal-hook claude-code" }] }]
+    }
+}

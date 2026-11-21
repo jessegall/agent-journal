@@ -92,7 +92,7 @@ final readonly class DomainEntry
      */
     public static function fromClass(string $className): self
     {
-        if (! Reflector::exists($className) || ! Reflector::of($className)->isSubclassOf(Domain::class)) {
+        if (! Reflector::isNameSubclassOf($className, Domain::class)) {
             throw NotADomain::for($className);
         }
 

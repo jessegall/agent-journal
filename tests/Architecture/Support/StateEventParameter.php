@@ -21,8 +21,7 @@ final class StateEventParameter
     public static function matches(Param $parameter): bool
     {
         if (! $parameter->type instanceof Name
-            || ! Reflector::exists($parameter->type->toString())
-            || ! Reflector::of($parameter->type->toString())->isSubclassOf(Event::class)) {
+            || ! Reflector::isNameSubclassOf($parameter->type->toString(), Event::class)) {
             return false;
         }
 

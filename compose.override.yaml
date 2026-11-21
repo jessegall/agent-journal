@@ -2,6 +2,9 @@
 # Production runs compose.yaml alone: docker compose -f compose.yaml up
 services:
     app:
+        # The mounted project's .env is read by Laravel itself, so phpunit.xml can still choose the test database;
+        # .env as the container's environment (the server's way) would override it.
+        env_file: !reset []
         # The development image, under its own name, so it never takes the served image's place.
         image: ${COMPOSE_PROJECT_NAME}-development
         build:
@@ -36,11 +39,21 @@ services:
             VITE_PORT: ${VITE_PORT:-54701}
         ports:
             - '127.0.0.1:${VITE_PORT:-54701}:${VITE_PORT:-54701}'
+        # The development image's own check asks for Caddy's metrics, which the Vite server does not serve.
+        healthcheck:
+            test: ['CMD-SHELL', 'curl -fsS -o /dev/null http://127.0.0.1:$${VITE_PORT}/@vite/client']
+            interval: 5s
+            timeout: 5s
+            retries: 3
+            start_period: 120s
         volumes:
             - .:/app
             - /app/node_modules
 
     reverb:
+        # The mounted project's .env is read by Laravel itself, so phpunit.xml can still choose the test database;
+        # .env as the container's environment (the server's way) would override it.
+        env_file: !reset []
         image: ${COMPOSE_PROJECT_NAME}-development
         ports:
             - '127.0.0.1:${FORWARD_REVERB_PORT:-54704}:8080'
@@ -49,6 +62,9 @@ services:
             - /app/node_modules
 
     queue:
+        # The mounted project's .env is read by Laravel itself, so phpunit.xml can still choose the test database;
+        # .env as the container's environment (the server's way) would override it.
+        env_file: !reset []
         image: ${COMPOSE_PROJECT_NAME}-development
         # queue:listen boots the code again for every job, so a change needs no restart in development.
         command: ['php', 'artisan', 'queue:listen', '--tries=3', '--backoff=5']
@@ -57,6 +73,9 @@ services:
             - /app/node_modules
 
     scheduler:
+        # The mounted project's .env is read by Laravel itself, so phpunit.xml can still choose the test database;
+        # .env as the container's environment (the server's way) would override it.
+        env_file: !reset []
         image: ${COMPOSE_PROJECT_NAME}-development
         # schedule:work starts each run as a new process, so a code change needs no restart.
         volumes:
@@ -64,6 +83,9 @@ services:
             - /app/node_modules
 
     ticker:
+        # The mounted project's .env is read by Laravel itself, so phpunit.xml can still choose the test database;
+        # .env as the container's environment (the server's way) would override it.
+        env_file: !reset []
         image: ${COMPOSE_PROJECT_NAME}-development
         # engine:tick keeps its code loaded for the life of the process: after a code change run
         # docker compose restart ticker. No file watcher restarts it.
@@ -72,6 +94,9 @@ services:
             - /app/node_modules
 
     share:
+        # The mounted project's .env is read by Laravel itself, so phpunit.xml can still choose the test database;
+        # .env as the container's environment (the server's way) would override it.
+        env_file: !reset []
         # The share supervisor reads the project's code and .env like the other services; without them it has no
         # database settings and falls back to a SQLite file that does not exist.
         volumes:
@@ -85,3 +110,20 @@ services:
     redis:
         ports:
             - '127.0.0.1:${FORWARD_REDIS_PORT:-54703}:6379'
+
+    # The Mac has no Sysbox, and the rootless daemon cannot serve its socket under OrbStack (it copies /run into its
+    # own namespace), so in development the agent daemon is the rootful one, privileged inside OrbStack's VM only.
+    # scripts/local-host.sh names its image, data folder and socket group in .env.
+    agent-docker:
+        privileged: true
+
+    # The Mac's Docker names an image by its manifest digest, not by the config digest the agent daemon pins, so the
+    # services the Mac itself runs from the runner image take it by its build tag.
+    accounts-volume:
+        image: journal-runner:build
+    agent-host-enroll:
+        image: journal-runner:build
+    agent-host:
+        image: journal-runner:build
+    accounts:
+        image: journal-runner:build

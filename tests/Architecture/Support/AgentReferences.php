@@ -114,10 +114,10 @@ final readonly class AgentReferences
 
         return match ($type->shape) {
             TypeShape::Named => [$type->name()],
-            TypeShape::Union => array_values(array_map(
+            TypeShape::Union => array_map(
                 fn (DeclaredType $part) => $part->isNamed() ? $part->name() : '',
                 $type->members,
-            )),
+            ),
             TypeShape::Intersection => [],
         };
     }
