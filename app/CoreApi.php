@@ -560,7 +560,9 @@ use App\Communication\Support\InboxMembership;
 use App\Agents\Values\CommitObservation;
 use App\Connections\Commands\ApproveDeviceGrant;
 use App\Connections\Commands\AssertBindingStart;
+use App\Connections\Commands\RenewRuntimeLease;
 use App\Connections\Commands\SubmitWorktreeDelivery;
+use App\Connections\Values\RuntimeLease;
 use App\Connections\Values\DeliveryReceipt;
 use App\Connections\Values\DeliverySubmission;
 use App\Connections\Commands\CancelProjectCommandRun;
@@ -2029,6 +2031,7 @@ final class CoreApi
                 PresenceReport::class,
                 CommitObservation::class,
                 DeliveryReceipt::class,
+                RuntimeLease::class,
                 DeliverySubmission::class,
                 PresenceReceipt::class,
                 CommandFrame::class,
@@ -2287,6 +2290,7 @@ final class CoreApi
                 StartDeviceGrant::class,
                 AssertBindingStart::class,
                 SubmitWorktreeDelivery::class,
+                RenewRuntimeLease::class,
                 PollDeviceGrant::class,
                 ApproveDeviceGrant::class,
                 RevokeDeviceGrant::class,

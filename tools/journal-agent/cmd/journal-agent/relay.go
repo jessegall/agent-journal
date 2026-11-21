@@ -97,6 +97,10 @@ func (binder bindingRelay) run(ctx context.Context) error {
 		if !binder.wait(ctx, binder.nextReport(receipt, err, bootID)) {
 			break
 		}
+		// A disconnected folder's state is gone: the relay stops at once rather than at its idle window.
+		if _, err := binder.state.Binding(); err != nil {
+			break
+		}
 	}
 
 	return nil

@@ -22,10 +22,11 @@ import (
 	"journal-agent/localsession"
 	"journal-agent/profiles"
 	"journal-agent/project"
+	"journal-agent/userservice"
 )
 
 // localVerbs are the verbs this machine answers itself; every other verb runs on the server.
-var localVerbs = []string{"status", "claude", "codex", "logout", "attach", "disconnect", "upgrade"}
+var localVerbs = []string{"status", "claude", "codex", "logout", "service", "disconnect", "attach", "disconnect", "upgrade"}
 
 // errVerbLater refuses a local verb this connected machine does not run yet.
 var errVerbLater = errors.New("this verb arrives with the next release")
@@ -116,6 +117,12 @@ func (commands dispatcher) local(
 	if verb == "claude" {
 		return commands.claude(binding, folder, stderr)
 	}
+	if verb == "disconnect" {
+		return commands.disconnect(binding, state, folder, stdout, stderr)
+	}
+	if verb == "service" {
+		return commands.service(binding, stdout, stderr)
+	}
 	if verb == "logout" {
 		return commands.logout(binding, stdout, stderr)
 	}
@@ -191,6 +198,87 @@ func (commands dispatcher) claude(binding host.Binding, folder project.Folder, s
 		fmt.Fprintln(stderr, "journal:", err)
 		return 1
 	}
+
+	return 0
+}
+
+// disconnect removes this folder's connection from this machine once confirmed: its relay and service stop, its
+// private credentials and session state go, dirty worktrees stay with their paths printed, and other connected
+// folders are untouched. The binding reads offline on the journal; its history stays there.
+func (commands dispatcher) disconnect(
+	binding host.Binding,
+	state host.ConnectionState,
+	folder project.Folder,
+	stdout, stderr io.Writer,
+) int {
+	if !slices.Contains(os.Args[2:], "--yes") {
+		fmt.Fprintln(stdout, "This disconnects "+folder.Root+" from "+binding.JournalURL+
+			": its relay stops and this machine forgets its sign-in. Work in progress is kept. Run journal disconnect --yes to go on.")
+		return 1
+	}
+
+	home, _ := os.UserHomeDir()
+	service := userservice.Service{Home: home, BindingID: binding.BindingID, StateFolder: commands.stateFolder}
+	if err := service.Disable(); err != nil && !errors.Is(err, userservice.ErrNoServiceManager) {
+		fmt.Fprintln(stderr, "journal:", err)
+	}
+	kept, err := folder.Disconnect()
+	for _, path := range kept {
+		fmt.Fprintln(stdout, "Kept work in progress at "+path)
+	}
+	if err != nil {
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+	if err := state.Remove(); err != nil {
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+
+	fmt.Fprintln(stdout, "Disconnected "+folder.Root+".")
+	if host.RemainingBindings(commands.stateFolder) == 0 {
+		fmt.Fprintln(stdout, "No connected project is left on this machine. You may remove "+
+			filepath.Join(commands.stateFolder, "releases")+", the journal lines in your shell startup file and the "+
+			"/.journal/ line in .gitignore when you have not changed them.")
+	}
+
+	return 0
+}
+
+// service enables or disables the user service that keeps the binding's relay running.
+func (commands dispatcher) service(binding host.Binding, stdout, stderr io.Writer) int {
+	installation, err := ownInstallation()
+	if err != nil {
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+	service := userservice.Service{
+		Home: home, BindingID: binding.BindingID, StateFolder: commands.stateFolder,
+		Program: filepath.Join(installation, "bin", "journal-agent"),
+	}
+	action := ""
+	if len(os.Args) > 2 {
+		action = os.Args[2]
+	}
+	switch action {
+	case "enable":
+		err = service.Enable()
+	case "disable":
+		err = service.Disable()
+	default:
+		fmt.Fprintln(stderr, "usage: journal service enable|disable")
+		return 2
+	}
+	if err != nil {
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+	fmt.Fprintln(stdout, "The relay of this project is "+action+"d as a user service.")
 
 	return 0
 }

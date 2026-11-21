@@ -247,3 +247,33 @@ func writeJSON(path string, value any) error {
 
 	return host.WritePrivateFile(path, content)
 }
+
+// Disconnect removes what setup owns in the folder: connection.json, the hook entry points, the session state and
+// the setup record. Every linked worktree under .journal/worktrees with uncommitted work is kept, and its path is
+// answered so the work can be recovered; a clean one is removed by Git first.
+func (folder Folder) Disconnect() ([]string, error) {
+	kept := []string{}
+	worktrees, err := os.ReadDir(filepath.Join(folder.journalFolder(), "worktrees"))
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return nil, err
+	}
+	for _, entry := range worktrees {
+		path := filepath.Join(folder.journalFolder(), "worktrees", entry.Name())
+		status, err := exec.Command("git", "-C", path, "status", "--porcelain").Output()
+		if err != nil || len(bytes.TrimSpace(status)) > 0 {
+			kept = append(kept, path)
+			continue
+		}
+		if exec.Command("git", "-C", folder.Root, "worktree", "remove", path).Run() != nil {
+			kept = append(kept, path)
+		}
+	}
+
+	for _, owned := range []string{connectionName, setupName, hooksFolderName, "sessions", "receipts"} {
+		if err := os.RemoveAll(folder.path(owned)); err != nil {
+			return kept, err
+		}
+	}
+
+	return kept, nil
+}

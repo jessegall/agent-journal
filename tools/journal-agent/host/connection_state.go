@@ -109,6 +109,21 @@ func (state ConnectionState) LockRelay() (func(), error) {
 	}, nil
 }
 
+// Remove removes this folder's private connection state: its binding, credential, device grant and relay record.
+func (state ConnectionState) Remove() error {
+	return os.RemoveAll(state.folder())
+}
+
+// RemainingBindings is how many connected folders this machine's state still holds.
+func RemainingBindings(stateFolder string) int {
+	folders, err := filepath.Glob(filepath.Join(stateFolder, connectionsFolderName, "*", bindingName))
+	if err != nil {
+		return 0
+	}
+
+	return len(folders)
+}
+
 // RelayIsRunning is whether a relay holds the binding now.
 func (state ConnectionState) RelayIsRunning() bool {
 	unlock, err := state.LockRelay()

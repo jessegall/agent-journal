@@ -17,6 +17,7 @@ use App\Connections\Http\Controllers\RevokeProjectInvitationController;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Connections\Http\Controllers\BindingPresenceController;
 use App\Connections\Http\Controllers\BindingRuntimeController;
+use App\Connections\Http\Controllers\RuntimeLeaseController;
 use App\Connections\Http\Controllers\WorktreeDeliveryController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,11 @@ Route::post('/host/bindings/{binding}/runtimes', BindingRuntimeController::class
     ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
     ->whereUlid('binding')
     ->name('agents.host.bindings.runtimes');
+
+Route::post('/host/bindings/{binding}/runtimes/{runtime}/lease', RuntimeLeaseController::class)
+    ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
+    ->whereUlid(['binding', 'runtime'])
+    ->name('connections.runtimes.lease');
 
 Route::post('/host/deliveries', WorktreeDeliveryController::class)
     ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
