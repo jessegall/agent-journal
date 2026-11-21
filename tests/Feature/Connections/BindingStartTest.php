@@ -23,8 +23,9 @@ final class BindingStartTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings', 'project_environments',
-        'projects', 'agent_runtimes', 'agent_sessions', 'agents', 'hosts', 'settings_records', 'users',
+        'connection_audits', 'project_invitations', 'install_attempts', 'binding_starts', 'project_bindings',
+        'project_environments', 'projects', 'agent_runtimes', 'agent_sessions', 'agents', 'hosts', 'settings_records',
+        'users',
     ];
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';
@@ -41,6 +42,27 @@ final class BindingStartTest extends TestCase
         $this->signedStart(self::NONCE, $other, [])->assertForbidden();
 
         $this->assertSame($runtimes, AgentRuntime::query()->count());
+    }
+
+    public function test_a_start_asked_again_under_its_id_answers_the_one_runtime_it_opened(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+
+        $first = $this->start($binding, ['startId' => 'start-1'])->assertCreated();
+        $again = $this->start($binding, ['startId' => 'start-1'])->assertOk();
+
+        $this->assertSame($first->json('runtime_id'), $again->json('runtime_id'));
+        $this->assertSame($first->json('session_id'), $again->json('session_id'));
+        $this->assertSame(1, AgentRuntime::query()->count());
+    }
+
+    public function test_a_start_of_a_revoked_binding_cannot_be_looked_up(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+        $this->start($binding, ['startId' => 'start-1'])->assertCreated();
+        ProjectBinding::query()->whereKey($binding->id)->update(['readiness' => 'revoked']);
+
+        $this->start($binding, ['startId' => 'start-1'])->assertForbidden();
     }
 
     private function connected(string $ticket, string $nonce): ProjectBinding

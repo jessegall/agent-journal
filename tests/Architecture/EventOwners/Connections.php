@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Connections\Enums\BindingReadiness;
+use App\Connections\Events\BindingStartRecorded;
 use App\Connections\Events\EnvironmentOpened;
 use App\Connections\Events\InstallAttemptCancelled;
 use App\Connections\Events\InstallAttemptOpened;
@@ -24,6 +25,13 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
+    BindingStartRecorded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'BindingStart::create',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new BindingStartRecorded('binding', 'start', 'runtime', new DateTimeImmutable('2026-01-01')),
+    ],
     ProjectBindingEnvironmentAssigned::class => [
         'role' => EventRole::RowFact,
         'owner' => 'ProjectBinding::assignEnvironment',

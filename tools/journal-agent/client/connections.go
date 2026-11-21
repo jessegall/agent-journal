@@ -107,6 +107,8 @@ type BindingRuntimeRequest struct {
 	Driver      string `json:"driver"`
 	DriverBuild string `json:"driverBuild"`
 	Profile     string `json:"profile"`
+	// StartID names this start before anything launches, so asking again after a lost reply opens nothing new.
+	StartID string `json:"startId"`
 }
 
 // OpenedBindingRuntime is the session and runtime the journal opened for a binding's main agent, and the binding's

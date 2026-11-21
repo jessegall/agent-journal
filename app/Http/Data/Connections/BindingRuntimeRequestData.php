@@ -22,6 +22,7 @@ final class BindingRuntimeRequestData extends Data
         public readonly string $driverBuild,
         public readonly string $profile,
         public readonly string|null $model = null,
+        public readonly string $startId = '',
     ) {}
 
     /**

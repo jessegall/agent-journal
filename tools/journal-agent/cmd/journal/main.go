@@ -172,10 +172,11 @@ func (commands dispatcher) claude(binding host.Binding, folder project.Folder, s
 		return 1
 	}
 	journal := client.ForRemoteProject(binding.Enrollment, &http.Client{Timeout: 30 * time.Second})
-	opened, err := journal.OpenBindingRuntime(context.Background(), binding.BindingID, client.BindingRuntimeRequest{
+	state := host.ConnectionState{Folder: commands.stateFolder, CanonicalRoot: folder.Root}
+	opened, err := openMainRuntime(journal, state, client.BindingRuntimeRequest{
 		RootID: binding.RootID, Folder: folder.Root, AgentID: binding.MainAgentID,
 		Driver: "claude-code", DriverBuild: profiles.ClaudeCode{}.Build(), Profile: "main-agent",
-	})
+	}, binding.BindingID)
 	if err != nil {
 		fmt.Fprintln(stderr, "journal:", err)
 		return 1
@@ -229,6 +230,40 @@ func (commands dispatcher) claude(binding host.Binding, folder project.Folder, s
 	}
 
 	return 0
+}
+
+// openMainRuntime asks the journal for the binding's main runtime under a start id kept before asking: the id of a
+// start whose answer never came, else a new one. A lost answer is asked for again under the same id, which the
+// journal answers with the runtime it opened, never a second one.
+func openMainRuntime(
+	journal *client.Client,
+	state host.ConnectionState,
+	request client.BindingRuntimeRequest,
+	bindingID string,
+) (client.OpenedBindingRuntime, error) {
+	start, err := state.PendingMainStart()
+	if errors.Is(err, host.ErrNotConnected) {
+		startID, keyErr := newRequestKey()
+		if keyErr != nil {
+			return client.OpenedBindingRuntime{}, keyErr
+		}
+		start, err = host.MainStart{StartID: startID}, state.SaveMainStart(host.MainStart{StartID: startID})
+	}
+	if err != nil {
+		return client.OpenedBindingRuntime{}, err
+	}
+	request.StartID = start.StartID
+
+	opened, err := journal.OpenBindingRuntime(context.Background(), bindingID, request)
+	if errors.Is(err, client.ErrUncertain) {
+		opened, err = journal.OpenBindingRuntime(context.Background(), bindingID, request)
+	}
+	if err != nil {
+		return client.OpenedBindingRuntime{}, err
+	}
+	start.RuntimeID = opened.RuntimeID
+
+	return opened, state.SaveMainStart(start)
 }
 
 // firstProcessGeneration is the process generation of a runtime the journal just opened.
