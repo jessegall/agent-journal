@@ -403,6 +403,19 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
+     * The user's code, key or token went to the program, which now checks it; the attempt ends when the check does.
+     */
+    public function startChecking(): void
+    {
+        if ($this->state !== SignInState::Starting && $this->state !== SignInState::Waiting) {
+            return;
+        }
+
+        $this->state = SignInState::Checking;
+        $this->save();
+    }
+
+    /**
      * Takes the account's folder as its one writer and runs in the sign-in generation that starts.
      */
     public function writeFolderOf(Account $account): void

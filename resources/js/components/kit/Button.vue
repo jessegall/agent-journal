@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import Spinner from './Spinner.vue';
 
 /**
  * Doc 4's button: ghost by default, bordered, primary (dim fill, choice 3), danger or icon; small, normal or large.
@@ -67,9 +68,7 @@ const isInactive = computed(() => props.disabled || props.pending);
             ><slot
         /></span>
         <template v-if="pending">
-            <span
-                class="absolute inset-0 m-auto size-[9px] animate-spin rounded-full border border-current border-r-transparent"
-            />
+            <Spinner class="absolute inset-0 m-auto" />
         </template>
     </component>
 </template>

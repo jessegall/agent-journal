@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import type { SignInAttemptData, SignInMethod, SignInMethodData } from '@generated/types/accounts';
+import type {
+    SignInAttemptData,
+    SignInMethod,
+    SignInMethodData,
+} from '@generated/types/accounts';
 import {
     cancelSignIn,
     signInAgain,
@@ -10,9 +14,11 @@ import { useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import ConfirmAction from '@kit/ConfirmAction';
 import FormErrors from '@kit/FormErrors';
+import Spinner from '@kit/Spinner';
 import TextField from '@kit/TextField';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { programName } from './accountLooks';
 import { codeDirection, endedMessage, readChallenge } from './signIn';
 import type { SignInChallenge } from './signIn';
 
@@ -33,22 +39,29 @@ const props = defineProps<{
 }>();
 
 const chosenMethod = ref<SignInMethod>(props.methods[0]?.method ?? 'oauth');
-const runningMethod = computed(() => props.methods.find((option) => option.method === props.running?.method));
-const againLabel = computed(() => (props.accountMethod === 'api_key' ? 'Replace key' : 'Sign in again'));
-const secretForm = useForm({ secret: '' });
+const runningMethod = computed(() =>
+    props.methods.find((option) => option.method === props.running?.method),
+);
+const againLabel = computed(() =>
+    props.accountMethod === 'api_key' ? 'Replace key' : 'Sign in again',
+);
+const secretForm = useForm({ code: '' });
 
 function sendSecret(): void {
     if (props.running === undefined) {
         return;
     }
 
-    secretForm
-        .transform((fields) => ({ code: fields.secret }))
-        .submit(submitCode({ attempt: props.running.id }), {
-            preserveScroll: true,
-            onFinish: () => secretForm.reset(),
-            ...formSendingHooks(),
-        });
+    const sending = formSendingHooks();
+
+    secretForm.submit(submitCode({ attempt: props.running.id }), {
+        preserveScroll: true,
+        ...sending,
+        onFinish: () => {
+            sending.onFinish();
+            secretForm.reset();
+        },
+    });
 }
 
 const methodNames: Record<SignInMethod, string> = {
@@ -57,7 +70,9 @@ const methodNames: Record<SignInMethod, string> = {
     api_key: 'API key',
 };
 
-const endedNote = computed(() => (props.ended === undefined ? null : endedMessage(props.ended)));
+const endedNote = computed(() =>
+    props.ended === undefined ? null : endedMessage(props.ended),
+);
 
 const start = useForm({});
 const again = useForm({});
@@ -150,8 +165,13 @@ function cancel(): void {
             <form class="flex flex-col gap-2" @submit.prevent="begin">
                 <template v-if="methods.length > 1">
                     <fieldset class="flex flex-col gap-1">
-                        <legend class="text-small text-text-3">How to sign in</legend>
-                        <template v-for="option in methods" :key="option.method">
+                        <legend class="text-small text-text-3">
+                            How to sign in
+                        </legend>
+                        <template
+                            v-for="option in methods"
+                            :key="option.method"
+                        >
                             <label class="flex items-baseline gap-2 text-small">
                                 <input
                                     v-model="chosenMethod"
@@ -159,8 +179,12 @@ function cancel(): void {
                                     :name="`method-${program}`"
                                     :value="option.method"
                                 />
-                                <span class="text-text">{{ methodNames[option.method] }}</span>
-                                <span class="text-text-3">{{ option.billingNote }}</span>
+                                <span class="text-text">{{
+                                    methodNames[option.method]
+                                }}</span>
+                                <span class="text-text-3">{{
+                                    option.billingNote
+                                }}</span>
                             </label>
                         </template>
                     </fieldset>
@@ -185,20 +209,40 @@ function cancel(): void {
                 />
             </div>
         </template>
+        <template v-else-if="running?.state === 'checking'">
+            <p
+                class="flex items-center gap-2 text-small text-text-2"
+                role="status"
+            >
+                <Spinner />
+                Checking the sign-in with {{ programName(program) }}…
+            </p>
+        </template>
         <template v-else-if="running !== undefined && runningMethod?.isSecret">
             <form class="flex items-end gap-2" @submit.prevent="sendSecret">
                 <TextField
                     :id="`sign-in-secret-${running.id}`"
-                    v-model="secretForm.secret"
+                    v-model="secretForm.code"
                     :label="methodNames[running.method]"
                     secret
                     :maxlength="4096"
                     :error="secretForm.errors.code"
                 />
-                <Button type="submit" variant="primary" size="small" :pending="secretForm.processing">Send</Button>
+                <Button
+                    type="submit"
+                    variant="primary"
+                    size="small"
+                    :pending="secretForm.processing"
+                    >Send</Button
+                >
             </form>
             <div>
-                <Button size="small" :pending="cancelling.processing" @click="cancel">Cancel sign-in</Button>
+                <Button
+                    size="small"
+                    :pending="cancelling.processing"
+                    @click="cancel"
+                    >Cancel sign-in</Button
+                >
             </div>
         </template>
         <template v-else-if="running !== undefined">
@@ -255,9 +299,18 @@ function cancel(): void {
         </template>
         <template v-if="running === undefined && endedNote !== null">
             <p class="text-small text-text-2" role="status">{{ endedNote }}</p>
-            <template v-if="ended?.state === 'different_account' && accountId !== null">
+            <template
+                v-if="
+                    ended?.state === 'different_account' && accountId !== null
+                "
+            >
                 <div>
-                    <Button size="small" :pending="start.processing" @click="begin">Add account</Button>
+                    <Button
+                        size="small"
+                        :pending="start.processing"
+                        @click="begin"
+                        >Add account</Button
+                    >
                 </div>
             </template>
         </template>

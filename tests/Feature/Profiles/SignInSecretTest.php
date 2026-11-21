@@ -116,9 +116,11 @@ final class SignInSecretTest extends TestCase
             );
             $this->assertNull($challenges->takeCode($attempt->id));
             $this->assertTrue($attempt->refresh()->isLive());
+            $this->assertNotSame(SignInState::Checking, $attempt->state);
 
             $this->submit($attempt, $code);
             $this->assertSame($code, $challenges->takeCode($attempt->id));
+            $this->assertSame(SignInState::Checking, $attempt->refresh()->state);
         }
     }
 
