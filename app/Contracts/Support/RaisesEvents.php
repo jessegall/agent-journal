@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 trait RaisesEvents
 {
+    use InsertsIfAbsent;
+
     /**
      * @var list<Event>
      */
@@ -47,28 +49,6 @@ trait RaisesEvents
         $this->raised = [];
 
         return $raised;
-    }
-
-    /**
-     * Inserts this new row unless its key is taken, and answers whether it did; only an inserted row opens its slot
-     * in the unit, so the constructor raises its fact only then. The insert reads nothing, so no read scope applies.
-     */
-    protected function insertIfAbsent(): bool
-    {
-        if ($this->usesTimestamps()) {
-            $this->updateTimestamps();
-        }
-
-        $inserted = static::query()->withoutGlobalScopes()->insertOrIgnore($this->getAttributes()) === 1;
-
-        if ($inserted) {
-            $this->exists = true;
-            $this->wasRecentlyCreated = true;
-            $this->syncOriginal();
-            Container::getInstance()->make(RowCapture::class)->persisted($this);
-        }
-
-        return $inserted;
     }
 
     protected function raise(Event $event): void

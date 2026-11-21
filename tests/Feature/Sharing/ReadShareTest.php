@@ -89,7 +89,7 @@ final class ReadShareTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
         $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
-        $this->plan->linkTo($this->document);
+        Link::connect($this->plan, $this->document);
         $this->configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
         );
@@ -188,7 +188,7 @@ final class ReadShareTest extends TestCase
         TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $sibling = Document::query()->where('number', 2)->sole();
-        $this->plan->linkTo($sibling);
+        Link::connect($this->plan, $sibling);
         $token = $this->activeShare($this->plan->shareIdentity(), CarbonImmutable::now()->addDay());
         $share = Share::query()->sole();
 

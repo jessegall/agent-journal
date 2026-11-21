@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
+use App\Links\Support\LinkRemoval;
 use App\Agents\Models\Agent;
 use App\Links\Models\Link;
 use App\Records\Support\RecordIdentity;
@@ -46,7 +47,7 @@ final class LinkRemovalTest extends TestCase
 
         $this->source = Agent::create('Source', 'read-only-helper');
         $this->target = Agent::create('Target', 'read-only-helper');
-        $this->source->linkTo($this->target);
+        Link::connect($this->source, $this->target);
         $link = Link::query()->between($this->source, $this->target)->sole();
         $configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
@@ -71,7 +72,7 @@ final class LinkRemovalTest extends TestCase
     public function test_removing_the_link_ends_its_approval_in_the_same_transaction(): void
     {
         DB::transaction(function (): void {
-            $this->source->unlinkFrom($this->target);
+            $this->app->make(LinkRemoval::class)->removeBetween($this->source, $this->target);
 
             $this->assertNotNull($this->member->fresh()?->invalidated_at);
         });
@@ -82,7 +83,7 @@ final class LinkRemovalTest extends TestCase
     public function test_a_rolled_back_removal_leaves_the_approval(): void
     {
         $this->assertThrows(fn () => DB::transaction(function (): void {
-            $this->source->unlinkFrom($this->target);
+            $this->app->make(LinkRemoval::class)->removeBetween($this->source, $this->target);
 
             throw SimulatedFailure::of('rolled back');
         }), RuntimeException::class);
@@ -92,8 +93,8 @@ final class LinkRemovalTest extends TestCase
 
     public function test_linking_again_does_not_restore_the_approval(): void
     {
-        $this->source->unlinkFrom($this->target);
-        $this->source->linkTo($this->target);
+        $this->app->make(LinkRemoval::class)->removeBetween($this->source, $this->target);
+        Link::connect($this->source, $this->target);
         $share = Share::query()->findOrFail($this->member->share_id);
 
         $this->assertNotNull($this->member->fresh()?->invalidated_at);

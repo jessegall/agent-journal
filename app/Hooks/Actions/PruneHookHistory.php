@@ -10,7 +10,7 @@ use App\Hooks\Models\StopResult;
 use App\Hooks\Support\HookRetryWindow;
 use App\Hooks\Support\PrunedHistory;
 use App\Hooks\Support\RetentionPeriods;
-use App\Links\Models\Link;
+use App\Links\Support\LinkRemoval;
 use App\Reads\Support\ReadBuilder;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +25,7 @@ final readonly class PruneHookHistory
     public function __construct(
         private RetentionPeriods $periods,
         private HookRetryWindow $retryWindow,
+        private LinkRemoval $removal,
     ) {}
 
     public function prune(): PrunedHistory
@@ -52,7 +53,7 @@ final readonly class PruneHookHistory
 
         do {
             $batch = $prunable()->orderBy('id')->readExactly($this->periods->batchSize)->get();
-            Link::forgetModels(array_values($batch->all()));
+            $this->removal->forgetModels(array_values($batch->all()));
             $count = $prunable()->whereKey($batch->modelKeys())->delete();
             $deleted += (int) $count;
         } while ($batch->count() === $this->periods->batchSize);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Pipes\Answer;
 
+use App\Links\Models\Link;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\StateTypes;
@@ -29,7 +30,7 @@ final readonly class SaveCall implements Pipe
             $rendered->reply->recordedAs($answer->decision->answerType()),
             RecordedSteps::of($answer->steps),
         );
-        $rendered->row->linkTo($call);
+        Link::connect($rendered->row, $call);
 
         return $rendered->reply;
     }

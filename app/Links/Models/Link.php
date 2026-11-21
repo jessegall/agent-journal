@@ -4,14 +4,10 @@ declare(strict_types=1);
 
 namespace App\Links\Models;
 
-use App\Links\Events\LinksRemoved;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Reads\Support\CountsPivotLoads;
-use App\Reads\Support\ReadBuilder;
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -111,28 +107,14 @@ final class Link extends MorphPivot implements ReadableModel
         return $records->where(fn (Builder $linked) => $linked->whereIn($key, $asTargets)->orWhereIn($key, $asSources));
     }
 
-    /**
-     * Removes every link to or from the given models, which are about to be deleted.
-     *
-     * @param  list<Model>  $models
-     */
-    public static function forgetModels(array $models): void
-    {
-        $removed = [];
-
-        foreach ($models as $model) {
-            array_push($removed, ...self::removeAll(self::query()->touching($model)));
-        }
-
-        self::announceRemoved($removed);
-    }
+    // ----------[ Mutations ]----------
 
     /**
-     * Removes the link between the two models, in either direction, and announces it.
+     * Deletes this link; what rested on it is told by whoever removed it.
      */
-    public static function removeBetween(Model $first, Model $second): void
+    public function remove(): void
     {
-        self::announceRemoved(self::removeAll(self::query()->between($first, $second)));
+        $this->delete();
     }
 
     // ----------[ Answers ]----------
@@ -175,35 +157,6 @@ final class Link extends MorphPivot implements ReadableModel
     public function target(): MorphTo
     {
         return $this->morphTo();
-    }
-
-    // ----------[ Internals ]----------
-
-    /**
-     * Deletes the links of the query and returns their ids.
-     *
-     * @param  ReadBuilder<self>  $query
-     * @return list<string>
-     */
-    private static function removeAll(ReadBuilder $query): array
-    {
-        $removed = $query->readAll('every removed link is announced by id')->pluck('id');
-        $ids = array_values(array_map(strval(...), $removed->all()));
-        self::query()->whereKey($ids)->delete();
-
-        return $ids;
-    }
-
-    /**
-     * Raises LinksRemoved inside the running transaction, so what rested on the links ends with them.
-     *
-     * @param  list<string>  $ids
-     */
-    private static function announceRemoved(array $ids): void
-    {
-        if ($ids !== []) {
-            Container::getInstance()->make(Dispatcher::class)->dispatch(new LinksRemoved($ids));
-        }
     }
 
     // ----------[ Scopes ]----------

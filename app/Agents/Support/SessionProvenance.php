@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Links\Support\LinkRemoval;
 use App\Actors\Support\ActorContext;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\SessionPolicyReader;
@@ -25,6 +26,7 @@ final readonly class SessionProvenance implements SessionProvenanceContract
         private CurrentSession $session,
         private IdentityLinks $links,
         private SessionPolicyReader $policies,
+        private LinkRemoval $removal,
     ) {}
 
     public function record(Model $record): void
@@ -43,7 +45,7 @@ final readonly class SessionProvenance implements SessionProvenanceContract
 
     public function forget(Model $record): void
     {
-        Link::forgetModels([$record]);
+        $this->removal->forgetModels([$record]);
     }
 
     public function isFromCurrentSession(Model $record): bool

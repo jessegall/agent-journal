@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Handlers;
 
+use App\Links\Models\Link;
 use App\Actors\Contracts\JournalAdmission;
 use App\Communication\Commands\AskQuestion;
 use App\Communication\Contracts\ActorInboxResolver;
@@ -32,7 +33,7 @@ final readonly class AskQuestionHandler implements CommandHandler
         );
 
         if ($related !== null) {
-            $message->linkTo($related);
+            Link::connect($message, $related);
         }
 
         return $message->id;

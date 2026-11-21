@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
+use App\Links\Models\Link;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
@@ -60,7 +61,7 @@ final class PlanSharingTest extends TestCase
         $document = Document::query()->where('number', 1)->sole();
         $plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
         $plan->addPhase('Secret phase');
-        $plan->linkTo($document);
+        Link::connect($plan, $document);
 
         $candidates = $this->app->make(ShareScope::class)->discover($plan->shareIdentity(), $this->budget());
         $content = $this->app->make(ShareRecordRegistry::class)->provider(Plan::LINK_TYPE)->content(

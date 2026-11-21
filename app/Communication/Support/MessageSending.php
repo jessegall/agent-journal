@@ -13,12 +13,10 @@ use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\SendMessage;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxResolver;
-use App\Communication\Events\MessageSent;
 use App\Communication\Exceptions\AnswerImpossible;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Models\Message;
 use Closure;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * The one path every message takes: both inboxes locked in a fixed order, the author's membership of the source,
@@ -31,7 +29,6 @@ final readonly class MessageSending
         private InboxResolver $inboxes,
         private AcceptedReceipt $accepted,
         private InboxAttention $attention,
-        private Dispatcher $events,
         private CurrentSession $session,
     ) {}
 
@@ -120,12 +117,6 @@ final readonly class MessageSending
             $author->type->isAgent() && $this->session->hasSession() ? $this->session->sessionId() : null,
         );
         $this->attention->requestFor($destination, AttentionOrigin::message($message->id, $message->origin_receipt_id));
-        $this->events->dispatch(new MessageSent(
-            $message->id,
-            ActorIdentity::of($author),
-            $source->inboxId(),
-            $destination->inboxId(),
-        ));
 
         return $message;
     }

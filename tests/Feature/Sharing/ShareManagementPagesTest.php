@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
+use App\Links\Models\Link;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
@@ -91,7 +92,7 @@ final class ShareManagementPagesTest extends TestCase
         TEXT));
         $this->document = Document::query()->where('number', 1)->sole();
         $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
-        $this->plan->linkTo($this->document);
+        Link::connect($this->plan, $this->document);
         $this->app->make(CurrentActorSetter::class)->clear();
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $configuration->is_default = true;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
+use App\Links\Models\Link;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
@@ -74,7 +75,7 @@ final class SharePreviewPageTest extends TestCase
         TEXT));
         $this->document = Document::query()->where('number', 1)->sole();
         $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
-        $this->plan->linkTo($this->document);
+        Link::connect($this->plan, $this->document);
         $this->app->make(CurrentActorSetter::class)->clear();
         $configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),

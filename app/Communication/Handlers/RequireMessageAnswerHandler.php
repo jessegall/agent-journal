@@ -12,20 +12,17 @@ use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentReference;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Contracts\InboxResolver;
-use App\Communication\Events\MessageAnswerRequired;
 use App\Communication\Exceptions\AnswerImpossible;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Models\Message;
 use App\Contracts\CommandHandler;
-use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class RequireMessageAnswerHandler implements CommandHandler
 {
     public function __construct(
         private InboxResolver $inboxes,
         private ResponsibilityWriter $responsibilities,
-        private Dispatcher $events,
     ) {}
 
     /**
@@ -56,7 +53,6 @@ final readonly class RequireMessageAnswerHandler implements CommandHandler
 
         $message->requireAnswer();
         $this->claimForFirstReader($message);
-        $this->events->dispatch(new MessageAnswerRequired($message->id, $message->destination_inbox_id));
     }
 
     /**

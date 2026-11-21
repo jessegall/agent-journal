@@ -237,7 +237,7 @@ final readonly class ModelWrites
                 continue;
             }
 
-            $isCaptureSafe = $type['type'] === ModelWriteScan::RAISES_EVENTS;
+            $isCaptureSafe = in_array($type['type'], [ModelWriteScan::RAISES_EVENTS, ModelWriteScan::INSERTS_IF_ABSENT], true);
 
             if ($type['isTrait'] && (! in_array($type['type'], $traits, true) || $isCaptureSafe)) {
                 continue;

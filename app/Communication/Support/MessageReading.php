@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Support;
 
+use App\Bus\Contracts\CommandFacts;
 use App\Actors\Support\ActorContext;
 use App\Assignments\Contracts\AssignmentStorage;
 use App\Assignments\Contracts\ResponsibilityWriter;
@@ -14,13 +15,11 @@ use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Data\MessageReadBatch;
 use App\Communication\Data\MessageReadResult;
-use App\Communication\Events\MessageRead;
 use App\Communication\Events\MessageTakenUp;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Models\Message;
 use Carbon\CarbonImmutable;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Reading an inbox's messages: the reader admitted under the inbox's shared guard, the first read of each message
@@ -33,7 +32,7 @@ final readonly class MessageReading
         private ProvedClaims $proved,
         private AssignmentStorage $store,
         private ResponsibilityWriter $responsibilities,
-        private Dispatcher $events,
+        private CommandFacts $facts,
     ) {}
 
     /**
@@ -98,10 +97,6 @@ final readonly class MessageReading
     ): MessageReadResult {
         $firstRead = $message->acknowledge($membership, $now);
 
-        if ($firstRead) {
-            $this->events->dispatch(new MessageRead($message->id, $message->destination_inbox_id, $membership->actor));
-        }
-
         $takenUp = $message->needsReply() && ! $held;
 
         if ($takenUp) {
@@ -125,6 +120,6 @@ final readonly class MessageReading
 
         $claim = $this->responsibilities->assign($record, AssigneeIdentity::ofActorIdentity($membership->actor));
         ClaimAuthorization::forInbox($claim->reference, $membership->seatReference);
-        $this->events->dispatch(new MessageTakenUp($message->id, $membership->actor));
+        $this->facts->publishAfterCommit(new MessageTakenUp($message->id, $membership->actor));
     }
 }
