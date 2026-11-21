@@ -18,8 +18,8 @@ use App\Assignments\Support\AutoAssignmentKey;
 use App\Assignments\Support\PoolReference;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
-use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
+use App\Desks\Support\DeskOpening;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
@@ -64,7 +64,7 @@ final class AssignmentPurposeTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->worker = TestStart::start('writing-helper');
-        $this->seat = DeskSeat::query()->ofDesk(DeskRecord::openNamed('team', 'Team', 1, false))->sole();
+        $this->seat = DeskSeat::query()->ofDesk($this->app->make(DeskOpening::class)->openNamed('team', 'Team', 1, false))->sole();
         $this->startUserRequestAs($owner->id);
     }
 

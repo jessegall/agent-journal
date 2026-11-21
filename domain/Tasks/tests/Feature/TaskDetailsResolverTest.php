@@ -17,7 +17,7 @@ use App\Agents\Support\AgentContext;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Support\NumberedPage;
 use App\Bus\Contracts\CommandBus;
-use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskOpening;
 use App\Desks\Support\DeskSeating;
 use App\Reads\Enums\ReadView;
 use Carbon\CarbonImmutable;
@@ -71,7 +71,7 @@ final class TaskDetailsResolverTest extends TestCase
 
     public function test_a_task_held_by_a_desk_and_run_by_its_occupant_shows_both_separately(): void
     {
-        $desk = DeskRecord::openNamed('team', 'Team', 1, false);
+        $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 1, false);
         $runner = $this->start('Runner');
         $task = Task::factory()->create(['title' => 'Split work', 'brief' => 'Held by one, run by another.']);
         $this->asUser();

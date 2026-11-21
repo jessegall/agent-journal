@@ -12,6 +12,7 @@ use App\Assignments\Models\ClaimAuthorization;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentReference;
 use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskOpening;
 use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
 use App\Desks\Support\SeatChangeResult;
@@ -42,7 +43,7 @@ final class SeatLossTest extends TestCase
 
     public function test_replacing_a_seat_ends_its_claims_and_keeps_the_others(): void
     {
-        $desk = DeskRecord::openNamed('team', 'Team', 2, false);
+        $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 2, false);
         $leaving = ActorIdentity::of(Agent::create('Leaving', 'read-only-helper'));
         $staying = ActorIdentity::of(Agent::create('Staying', 'read-only-helper'));
         $arriving = ActorIdentity::of(Agent::create('Arriving', 'read-only-helper'));

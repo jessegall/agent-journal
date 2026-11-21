@@ -17,7 +17,7 @@ final readonly class SeatLossRepair
 {
     public const string PERSONAL_LABEL = 'Personal inbox';
 
-    public function __construct(private ActorDesks $desks) {}
+    public function __construct(private ActorDesks $desks, private DeskPreferences $preferences) {}
 
     public function afterLoss(ActorIdentity $actor, DeskRecord $lost): void
     {
@@ -30,7 +30,7 @@ final readonly class SeatLossRepair
         }
 
         if (DeskPreference::isPreferredBy($actor, $lost)) {
-            DeskPreference::prefer($actor, $remaining);
+            $this->preferences->prefer($actor, $remaining);
         }
     }
 }

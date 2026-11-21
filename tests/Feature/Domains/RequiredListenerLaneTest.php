@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
+use App\Agents\Events\MergeOutcomeRecorded;
+use App\Agents\Events\SessionClosed;
+use App\Agents\Events\SessionOpened;
 use App\Bus\Support\RequiredListenerRegistry;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
@@ -14,6 +17,7 @@ use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\ListenerOwnership;
 use App\Links\Events\LinksRemoved;
 use App\Pipelines\Contracts\PipelineRunner;
+use App\Processes\Events\OutputChunkCommitted;
 use App\Profiles\Events\SignInAttemptFinished;
 use App\Profiles\Listeners\ReleaseSignInWriter;
 use App\Web\Listeners\BroadcastPageChange;
@@ -62,7 +66,16 @@ final class RequiredListenerLaneTest extends TestCase
         $registry = $this->app->make(RequiredListenerRegistry::class);
 
         $this->assertEqualsCanonicalizing(
-            [TaskStarted::class, SignInAttemptFinished::class, SequenceStarted::class, LinksRemoved::class],
+            [
+                TaskStarted::class,
+                SignInAttemptFinished::class,
+                SequenceStarted::class,
+                LinksRemoved::class,
+                SessionOpened::class,
+                SessionClosed::class,
+                MergeOutcomeRecorded::class,
+                OutputChunkCommitted::class,
+            ],
             $registry->events(),
         );
         $this->assertSame(

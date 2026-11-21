@@ -6,6 +6,7 @@ namespace Domain\Plans\Database\Seeders;
 
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Illuminate\Database\Seeder;
 
 /**
@@ -21,12 +22,13 @@ final class PlansSeeder extends Seeder
      */
     public function run(array $readingTaskIds = [], array $startingTaskIds = [], array $reproducingTaskIds = []): void
     {
+        $structure = new PlanStructure();
         $build = Plan::factory()->create(['title' => 'Build the plans page', 'type' => PlanType::Build]);
-        $build->addPhase('Read the plans')->addTasks($readingTaskIds);
-        $build->addPhase('Start a plan')->addTasks($startingTaskIds);
+        $structure->addTasks($structure->addPhase($build, 'Read the plans'), $readingTaskIds);
+        $structure->addTasks($structure->addPhase($build, 'Start a plan'), $startingTaskIds);
 
         $fix = Plan::factory()->create(['title' => 'Fix the login redirect', 'type' => PlanType::Fix]);
-        $fix->addPhase('Reproduce it')->addTasks($reproducingTaskIds);
+        $structure->addTasks($structure->addPhase($fix, 'Reproduce it'), $reproducingTaskIds);
 
         Plan::factory()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
     }

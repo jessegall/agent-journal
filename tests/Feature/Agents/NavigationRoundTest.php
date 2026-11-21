@@ -14,6 +14,7 @@ use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Models\MenuEntry;
 use App\Agents\Models\NavigationRequest;
+use App\Agents\Support\DriverRequestEndings;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\NavigationRounds;
 use App\Agents\Values\NavigationRound;
@@ -150,7 +151,7 @@ final class NavigationRoundTest extends TestCase
         $this->hostCall($host, '/host/claim?limit=10&wait=0&watched_version=0')->assertOk();
         $queued = $this->append($navigation, NavigationRound::keys($navigation->id, 3, 7, [NavigationKey::Esc]));
 
-        $navigation->cancel();
+        $this->app->make(DriverRequestEndings::class)->cancelNavigation($navigation);
 
         $this->assertSame(RequestProgress::Cancelled, $queued->fresh()?->progress);
         $this->assertGreaterThanOrEqual(400, $this->report($host, $reported, proofSeen: false)->status());

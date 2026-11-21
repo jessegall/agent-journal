@@ -60,7 +60,7 @@ final readonly class RuleProposals
     private function record(RuleProposal $proposal, ProposedRule $proposed, ActorIdentity $author): RuleProposalRevision
     {
         $proposal->assertAcceptsRevision();
-        $revision = RuleProposalRevision::createFor($proposal, $proposed, $author);
+        $revision = RuleProposalRevision::create($proposal, $proposed, $author);
         $proposal->adopt($revision, $proposed);
 
         return $revision;

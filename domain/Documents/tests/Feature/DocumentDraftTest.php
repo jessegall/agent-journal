@@ -15,7 +15,7 @@ use App\Agents\Values\ResourceRequest;
 use App\Agents\Values\StartPolicy;
 use App\Bus\Contracts\CommandBus;
 use App\Communication\Models\Message;
-use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskOpening;
 use App\Hooks\Support\StackTransaction;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Commands\CreateDocument;
@@ -60,7 +60,7 @@ final class DocumentDraftTest extends TestCase
             TestSelections::requestId(),
             $parent->session,
         );
-        DeskRecord::installSourceDesk('system', 'System');
+        $this->app->make(DeskOpening::class)->installSourceDesk('system', 'System');
         $inbox = $this->inboxOf(ActorIdentity::of($parent->agent));
 
         $this->startRequestAs($child->id, $session->id);

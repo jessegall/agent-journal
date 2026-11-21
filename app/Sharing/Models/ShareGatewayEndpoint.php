@@ -80,14 +80,6 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * Counts every endpoint another run opened as stopped: a new run never adopts a process it did not start.
-     */
-    public static function stopAllButRun(string $runId): void
-    {
-        self::query()->notOfRun($runId)->stillRunning()->update(['state' => GatewayEndpointState::Closed->value]);
-    }
-
-    /**
      * The run's running endpoint of the configuration, newest version first and locked, if it has one.
      *
      * @return Option<self>

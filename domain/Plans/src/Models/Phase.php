@@ -15,7 +15,6 @@ use App\Records\Support\RecordIdentity;
 use Domain\Plans\Api\PhaseDetails;
 use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Exceptions\PhaseRevisionChanged;
-use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -59,6 +58,19 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
         return ['number' => 'integer', 'revision' => 'integer'];
     }
 
+    /**
+     * The plan's next phase, numbered within it.
+     */
+    public static function create(Plan $plan, string $title): self
+    {
+        $phase = new self(['title' => $title]);
+        $phase->plan_id = $plan->id;
+        $phase->setRelation('plan', $plan);
+        $phase->save();
+
+        return $phase;
+    }
+
     // ----------[ Queries ]----------
 
     /**
@@ -76,57 +88,27 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
     // ----------[ Mutations ]----------
 
     /**
-     * Puts tasks, named by id, at the end of this phase in the order given, with one insert. A task already in a
-     * phase, or named twice, is refused before anything is written. It runs inside the caller's transaction.
-     *
-     * @param  list<string>  $ids
+     * The phase took new tasks: it moves to its next revision.
      */
-    public function addTasks(array $ids): void
+    public function advanceRevision(): void
     {
-        Plan::lockStructure($this->plan_id);
-        $duplicateTaskIds = array_keys(array_filter(array_count_values($ids), fn (int $count) => $count > 1));
-        $alreadyPlacedTaskId = PhaseTask::query()->whereIn('task_id', $ids)->value('task_id');
-
-        if ($duplicateTaskIds !== [] || $alreadyPlacedTaskId !== null) {
-            throw TaskAlreadyInAPhase::forTask((string) ($duplicateTaskIds[0] ?? $alreadyPlacedTaskId));
-        }
-
-        $next = PhaseTask::query()->where('phase_id', $this->id)->count() + 1;
-
-        PhaseTask::query()->insert(array_map(
-            fn (string $taskId, int $offset) => [
-                'id' => new PhaseTask()->newUniqueId(),
-                'phase_id' => $this->id,
-                'task_id' => $taskId,
-                'position' => $next + $offset,
-            ],
-            $ids,
-            array_keys($ids),
-        ));
-    }
-
-    /**
-     * Adds the tasks only when the phase is still at the revision the caller read, and makes a new revision of it.
-     *
-     * @param  list<string>  $ids
-     *
-     * @throws PhaseRevisionChanged
-     */
-    public function addTasksAtRevision(int $expectedRevision, array $ids): void
-    {
-        Plan::lockStructure($this->plan_id);
-        $this->refresh();
-
-        if ($this->revision !== $expectedRevision) {
-            throw PhaseRevisionChanged::for($this->number, $expectedRevision, $this->revision);
-        }
-
-        $this->addTasks($ids);
         $this->revision++;
         $this->save();
     }
 
     // ----------[ Answers ]----------
+
+    /**
+     * Refuses a change made against a revision of the phase that is no longer current.
+     *
+     * @throws PhaseRevisionChanged
+     */
+    public function assertAtRevision(int $expectedRevision): void
+    {
+        if ($this->revision !== $expectedRevision) {
+            throw PhaseRevisionChanged::for($this->number, $expectedRevision, $this->revision);
+        }
+    }
 
     /**
      * @return list<string>

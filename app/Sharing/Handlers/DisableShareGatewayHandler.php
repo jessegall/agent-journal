@@ -10,6 +10,7 @@ use App\Sharing\Actions\ShareEndings;
 use App\Sharing\Commands\DisableShareGateway;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Enums\GatewayOperationType;
+use App\Sharing\Enums\GatewayOutcome;
 use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
@@ -39,7 +40,7 @@ final readonly class DisableShareGatewayHandler implements CommandHandler
         $configuration = ShareGatewayConfiguration::lockById($command->configurationId);
 
         $this->endings->revokeAll(Share::lockUnendedOf($configuration->id), ActorIdentity::of($owner));
-        ShareGatewayOperation::cancelOpensOf($configuration);
+        $this->cancelOpensOf($configuration);
 
         if (ShareGatewayEndpoint::anyRunningOf($configuration)) {
             ShareGatewayOperation::create($configuration, GatewayOperationType::Close);
@@ -49,5 +50,15 @@ final readonly class DisableShareGatewayHandler implements CommandHandler
         ShareAudit::create(null, ShareAuditType::GatewayChanged, ActorIdentity::of($owner), 'disabled');
 
         return $configuration->toConfiguration();
+    }
+
+    /**
+     * Ends every unfinished request to open the configuration's endpoint as failed: the gateway was disabled.
+     */
+    private function cancelOpensOf(ShareGatewayConfiguration $configuration): void
+    {
+        ShareGatewayOperation::query()->unfinished()->ofConfiguration($configuration->id)->ofType(GatewayOperationType::Open)->update(
+            ['outcome_code' => GatewayOutcome::Failed->value],
+        );
     }
 }

@@ -10,6 +10,7 @@ use Domain\Plans\Exceptions\PhaseCheckRefused;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseCheck;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Tests\Support\Processes\RunsAcmeRequests;
@@ -37,8 +38,8 @@ final class PhaseCheckTest extends TestCase
 
         $plan = Plan::factory()->create(['title' => 'Checked phase']);
         $this->task = Task::factory()->create(['title' => 'Write it']);
-        $this->phase = $plan->addPhase('Build');
-        $this->phase->addTasks([$this->task->id]);
+        $this->phase = $this->planStructure()->addPhase($plan, 'Build');
+        $this->planStructure()->addTasks($this->phase, [$this->task->id]);
         $this->openAcmeRequest();
         $this->approvePair();
     }
@@ -81,5 +82,10 @@ final class PhaseCheckTest extends TestCase
     private function receiptOf(int $status, string $output): string
     {
         return $this->runAsAgent(new AssessPartOutput($this->normalRun($status, $output)->id));
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

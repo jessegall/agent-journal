@@ -10,6 +10,7 @@ use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Tests\Support\ActsAsTestUser;
@@ -31,7 +32,10 @@ final class PlanDetailsResolverTest extends TestCase
     {
         $plan = Plan::factory()->create(['title' => 'Counted plan', 'brief' => 'Count it.']);
         $tasks = Task::factory()->count(3)->create();
-        $plan->addPhase('Work')->addTasks(array_values($tasks->modelKeys()));
+        $this->planStructure()->addTasks(
+            $this->planStructure()->addPhase($plan, 'Work'),
+            array_values($tasks->modelKeys()),
+        );
         $tasks[0]->finish('Done.');
         $resolver = $this->app->make(PlanDetailsResolver::class);
 
@@ -52,8 +56,14 @@ final class PlanDetailsResolverTest extends TestCase
     public function test_a_plan_with_120_tasks_pages_them_50_at_a_time(): void
     {
         $plan = Plan::factory()->create();
-        $plan->addPhase('First')->addTasks(array_values(Task::factory()->count(70)->create()->modelKeys()));
-        $plan->addPhase('Second')->addTasks(array_values(Task::factory()->count(50)->create()->modelKeys()));
+        $this->planStructure()->addTasks(
+            $this->planStructure()->addPhase($plan, 'First'),
+            array_values(Task::factory()->count(70)->create()->modelKeys()),
+        );
+        $this->planStructure()->addTasks(
+            $this->planStructure()->addPhase($plan, 'Second'),
+            array_values(Task::factory()->count(50)->create()->modelKeys()),
+        );
         $resolver = $this->app->make(PlanDetailsResolver::class);
         $seen = [];
         $offset = 0;
@@ -80,12 +90,17 @@ final class PlanDetailsResolverTest extends TestCase
             Task::factory()->create(['title' => 'First']),
             Task::factory()->create(['title' => 'Second']),
         ];
-        $phase = $plan->addPhase('Work');
-        $phase->addTasks([$second->id, $first->id]);
+        $phase = $this->planStructure()->addPhase($plan, 'Work');
+        $this->planStructure()->addTasks($phase, [$second->id, $first->id]);
 
         $read = $this->app->make(PlanDetailsResolver::class)->phase($phase->id);
 
         $this->assertSame([$second->id, $first->id], $read->taskIds);
         $this->assertSame([$plan->id, 'Work', 1], [$read->planId, $read->title, $read->revision]);
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

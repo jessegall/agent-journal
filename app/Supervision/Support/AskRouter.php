@@ -13,6 +13,7 @@ use App\Supervision\Contracts\SupervisorDispatch;
 use App\Supervision\Enums\AskRouteStatus;
 use App\Supervision\Enums\SupervisorDispatchOutcome;
 use App\Supervision\Models\Ask;
+use App\Supervision\Models\AskHop;
 use App\Supervision\Values\SupervisorRequest;
 
 /**
@@ -79,7 +80,8 @@ final readonly class AskRouter
         }
 
         $route = $this->routes->routeOf($ask);
-        $this->attention->retainHop($ask->accept($recipient, $route->version));
+        $ask->accept();
+        $this->attention->retainHop(AskHop::create($ask, $recipient, $route->version));
 
         return AskRouteStatus::Assigned;
     }

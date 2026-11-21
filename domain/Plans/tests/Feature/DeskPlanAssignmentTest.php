@@ -10,13 +10,14 @@ use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
-use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskOpening;
 use App\Desks\Support\DeskSeating;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Commands\AssignPlanWork;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
@@ -52,15 +53,15 @@ final class DeskPlanAssignmentTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
-        $main = DeskRecord::openNamed('main', 'Main inbox', 1, true);
+        $main = $this->app->make(DeskOpening::class)->openNamed('main', 'Main inbox', 1, true);
         $agent = Agent::create('Main', 'main-agent');
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(DeskSeating::class)->seat($main->id, ActorIdentity::of($agent)),
         );
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
-        $phase = $plan->addPhase('Working');
+        $phase = $this->planStructure()->addPhase($plan, 'Working');
         $tasks = [Task::factory()->create(), Task::factory()->create()];
-        $phase->addTasks(array_map(fn (Task $task) => $task->id, $tasks));
+        $this->planStructure()->addTasks($phase, array_map(fn (Task $task) => $task->id, $tasks));
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         $result = $this->app->make(CommandBus::class)->run(
@@ -78,5 +79,10 @@ final class DeskPlanAssignmentTest extends TestCase
 
         $this->assertTrue($result->requests[0]->requested->isSameAs($agent->assigneeIdentity()));
         $this->assertTrue($result->requests[0]->resolved->isSameAs($main->assigneeIdentity()));
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

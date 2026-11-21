@@ -11,7 +11,6 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Supervision\Enums\CoreAskType;
 use Carbon\CarbonImmutable;
-use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -151,21 +150,6 @@ final class AskHop extends Model implements ReadableModel
     public static function hasHeld(Ask $ask, ActorIdentity $actor): bool
     {
         return self::query()->where('ask_id', $ask->id)->byActor($actor)->exists();
-    }
-
-    /**
-     * @param  Closure(self): void  $recover
-     */
-    public static function recoverEach(Closure $recover): void
-    {
-        self::query()->where(fn (Builder $waiting) => $waiting
-            ->where('attention', self::PENDING_DELIVERY)
-            ->orWhereIn('id', self::query()->currentHops()->select('ask_hops.id')))
-            ->readInChunks(50, function ($hops) use ($recover): void {
-                foreach ($hops as $hop) {
-                    $recover($hop);
-                }
-            });
     }
 
     // ----------[ Mutations ]----------

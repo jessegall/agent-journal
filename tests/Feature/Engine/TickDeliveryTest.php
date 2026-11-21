@@ -9,7 +9,6 @@ use App\Agents\Values\StackTarget;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Engine\Contracts\MonotonicClock;
-use App\Engine\Handlers\SettleFrameTimesHandler;
 use App\Engine\Models\EngineFrameTime;
 use App\Engine\Support\EnginePass;
 use App\Engine\Support\FrameBaselines;
@@ -108,16 +107,11 @@ final class TickDeliveryTest extends TestCase
     public function test_after_a_restart_the_delta_is_recovered_from_the_checkpoint_and_marked_approximate(): void
     {
         $stack = $this->tickingStack('test.ticking', ['a'], $this->entry);
-        $this->app->make(SettleFrameTimesHandler::class)->handle(new SettleFrameTimes(
-            [
-                FrameSettlement::at(
-                    new StackTarget($stack->agent_id, $stack->session_id),
-                    $stack->id,
-                    'a',
-                    CarbonImmutable::parse('2026-11-18 12:00:14'),
-                ),
-            ],
-        ));
+        EngineFrameTime::query()->create([
+            'frame_id' => 'a',
+            'stack_id' => $stack->id,
+            'settled_at' => CarbonImmutable::parse('2026-11-18 12:00:14'),
+        ]);
         $this->app->instance(FrameBaselines::class, new FrameBaselines());
 
         $this->passAt(10.0);

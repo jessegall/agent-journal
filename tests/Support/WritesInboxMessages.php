@@ -16,6 +16,7 @@ use App\Communication\Support\MessageBody;
 use App\Communication\Support\MessageEnvelope;
 use App\Desks\Contracts\ActorDesks;
 use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskOpening;
 use stdClass;
 
 /**
@@ -49,7 +50,7 @@ trait WritesInboxMessages
      */
     protected function askNobody(string $body): Message
     {
-        $nobody = DeskRecord::openSourceDesk((string) str()->ulid(), 'Nobody');
+        $nobody = $this->app->make(DeskOpening::class)->openSourceDesk((string) str()->ulid(), 'Nobody');
 
         return $this->askBetween($this->journalDesk(), $nobody, $body);
     }
@@ -70,6 +71,6 @@ trait WritesInboxMessages
 
     private function journalDesk(): DeskRecord
     {
-        return DeskRecord::openSourceDesk((string) str()->ulid(), 'Journal');
+        return $this->app->make(DeskOpening::class)->openSourceDesk((string) str()->ulid(), 'Journal');
     }
 }

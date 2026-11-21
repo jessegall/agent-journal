@@ -8,8 +8,6 @@ use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\ResponsibilityWriter;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Desks\Contracts\ActorDesks;
-use App\Desks\Models\DeskPreference;
-use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
 
 /**
@@ -20,18 +18,20 @@ final readonly class PersonalDesks implements ActorDesks
 {
     public function __construct(
         private ResponsibilityWriter $responsibilities,
+        private DeskPreferences $preferences,
+        private DeskOpening $desks,
     ) {}
 
     public function provision(ActorIdentity $actor, string $label): SeatChangeResult
     {
-        $desk = DeskRecord::openPersonal($label);
+        $desk = $this->desks->openPersonal($label);
         $seat = DeskSeat::query()->ofDesk($desk)->sole();
         $seated = $this->responsibilities->assign(
             $seat->assignmentIdentity(),
             AssigneeIdentity::ofActorIdentity($actor),
         );
         $desk->advanceSeating();
-        DeskPreference::prefer($actor, $desk);
+        $this->preferences->prefer($actor, $desk);
 
         return SeatChangeResult::at($desk, $seat->id, $seated->reference);
     }

@@ -10,3 +10,4 @@ Skill::allForMaintenance
 HelperPurpose::forSubject
 SequenceRun::written
 TaskRun::replyInboxId
+CommandAlias::recordLine

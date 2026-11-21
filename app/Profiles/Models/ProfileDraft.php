@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Profiles\Models;
 
-use App\Actors\Support\ActorIdentity;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Profiles\Exceptions\ProfileDraftRefused;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ScriptSource;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -29,6 +28,7 @@ final class ProfileDraft extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     public const string LINK_TYPE = 'core.profile-draft';
@@ -49,18 +49,6 @@ final class ProfileDraft extends Model implements ReadableModel
             ?? new self(['profile_key' => $profile->key, 'revision' => 0]);
     }
 
-    public static function saveFor(ProfileKey $profile, int $expected, ScriptSource $source, ActorIdentity $author): int
-    {
-        $draft = self::lockForProfiles([$profile->key])[$profile->key];
-        $draft->sourceAt($expected);
-        $revision = ProfileDraftRevision::create($draft, $source, $author);
-        $draft->revision = $revision->revision;
-        $draft->current_revision_id = $revision->id;
-        $draft->save();
-
-        return $revision->revision;
-    }
-
     // ----------[ Queries ]----------
 
     /**
@@ -74,16 +62,12 @@ final class ProfileDraft extends Model implements ReadableModel
         }
 
         sort($profiles);
-        $now = CarbonImmutable::now();
-        self::query()->insertOrIgnore(array_map(
-            fn (string $profile) => [
-                'id' => (string) Str::ulid(),
-                'profile_key' => $profile,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-            $profiles,
-        ));
+
+        foreach ($profiles as $profile) {
+            $draft = new self();
+            $draft->setRawAttributes(['id' => (string) Str::ulid(), 'profile_key' => $profile]);
+            $draft->insertIfAbsent();
+        }
 
         return self::query()
             ->whereIn('profile_key', $profiles)

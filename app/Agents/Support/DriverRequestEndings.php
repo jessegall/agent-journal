@@ -46,6 +46,15 @@ final readonly class DriverRequestEndings
         }
     }
 
+    /**
+     * The navigation ends cancelled, and the rounds it queued with it.
+     */
+    public function cancelNavigation(NavigationRequest $navigation): void
+    {
+        $navigation->cancel();
+        $this->cancelQueuedRoundsOf($navigation);
+    }
+
     public function abandon(NavigationRequest $navigation, string $reason): void
     {
         $navigation->abandon($reason);

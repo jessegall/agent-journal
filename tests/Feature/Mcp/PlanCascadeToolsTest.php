@@ -10,6 +10,7 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
@@ -45,11 +46,11 @@ final class PlanCascadeToolsTest extends TestCase
     public function test_a_cascade_skips_finished_work_and_the_receipt_lists_every_outcome(): void
     {
         $plan = Plan::factory()->create();
-        $phase = $plan->addPhase('Release');
+        $phase = $this->planStructure()->addPhase($plan, 'Release');
         $tasks = Task::factory()->count(20)->create();
         $finished = Task::factory()->create();
         $finished->finish('Done.');
-        $phase->addTasks([...$tasks->modelKeys(), $finished->id]);
+        $this->planStructure()->addTasks($phase, [...$tasks->modelKeys(), $finished->id]);
 
         $summary = $this->callMcpTool($this->caller, 'plans_assign_work', $this->assignArguments($plan))
             ->assertJsonPath('result.isError', false)
@@ -126,7 +127,7 @@ final class PlanCascadeToolsTest extends TestCase
     {
         $plan = Plan::factory()->create();
         $tasks = Task::factory()->count(AssignmentGroup::LARGEST - 1)->create();
-        $plan->addPhase('Large phase')->addTasks($tasks->modelKeys());
+        $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Large phase'), $tasks->modelKeys());
 
         $this->callMcpTool($this->caller, 'plans_assign_work', $this->assignArguments($plan))
             ->assertJsonPath('result.isError', true)
@@ -161,5 +162,10 @@ final class PlanCascadeToolsTest extends TestCase
         )->json('result.structuredContent.holder');
 
         return ['id' => $holder['reference'], 'holder' => ['type' => $holder['type'], 'id' => $holder['id']]];
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

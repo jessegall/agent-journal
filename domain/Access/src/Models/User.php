@@ -10,6 +10,7 @@ use App\Actors\Contracts\SeatedActor;
 use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\Assignee;
 use App\Assignments\Support\AssigneeIdentity;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -62,6 +63,7 @@ class User extends Authenticatable implements
     use HasFactory;
 
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
     use Notifiable;
     use PasskeyAuthenticatable;
@@ -98,7 +100,11 @@ class User extends Authenticatable implements
      */
     public static function installOwner(string $name, string $email, string $password): self
     {
-        return self::query()->firstOrCreate(['email' => $email], ['name' => $name, 'password' => $password]);
+        $owner = new self(['name' => $name, 'email' => $email, 'password' => $password]);
+        $owner->setAttribute($owner->getKeyName(), $owner->newUniqueId());
+        $owner->insertIfAbsent();
+
+        return self::query()->where('email', $email)->sole();
     }
 
     /**

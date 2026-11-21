@@ -7,7 +7,7 @@ namespace Tests\Feature\AgentRequests;
 use App\AgentRequests\Exceptions\CallKeyConflict;
 use App\AgentRequests\Exceptions\CallKeyExpired;
 use App\AgentRequests\Support\CallKey;
-use App\Bus\Models\CommandReceipt;
+use App\Bus\Support\ExpiredReceipts;
 use App\Processes\Calls\AdmissionAlreadyStarted;
 use App\Processes\Calls\AdmissionToStart;
 use App\Processes\Calls\ProcessCalls;
@@ -76,7 +76,7 @@ final class CallRecoveryTest extends TestCase
     {
         $memories = $this->app->make(MemoryCalls::class);
         $memories->saveMemory('Kept a while.', 5, new CallKey('old-key'));
-        CommandReceipt::expirePastRetention(CarbonImmutable::now()->addYears(2));
+        $this->app->make(ExpiredReceipts::class)->expirePastRetention(CarbonImmutable::now()->addYears(2));
 
         try {
             $memories->saveMemory('Kept a while.', 5, new CallKey('old-key'));

@@ -18,6 +18,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Resolvers\PlanRecords;
 use Domain\Plans\States\Support\WorkingOnPlanStateReference;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Hooks\FixedCurrentState;
@@ -47,11 +48,14 @@ final class PlanRecordsTest extends TestCase
         );
 
         $this->build = Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
-        $read = $this->build->addPhase('Read');
+        $read = $this->planStructure()->addPhase($this->build, 'Read');
         $done = Task::factory()->create(['title' => 'Done']);
         $done->finish('Done.');
-        $read->addTasks([$done->id]);
-        $this->build->addPhase('Start')->addTasks([Task::factory()->create(['title' => 'Open'])->id]);
+        $this->planStructure()->addTasks($read, [$done->id]);
+        $this->planStructure()->addTasks(
+            $this->planStructure()->addPhase($this->build, 'Start'),
+            [Task::factory()->create(['title' => 'Open'])->id],
+        );
         $this->empty = Plan::factory()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
     }
 
@@ -155,5 +159,10 @@ final class PlanRecordsTest extends TestCase
     private function cardOf(array $cards, Plan $plan): PlanCard
     {
         return array_values(array_filter($cards, fn (PlanCard $card) => $card->id === $plan->id))[0];
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

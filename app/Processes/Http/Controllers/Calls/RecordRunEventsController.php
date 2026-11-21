@@ -9,7 +9,7 @@ use App\Processes\Calls\RecordRunEventsCall;
 use App\Processes\Calls\RunEventsAccepted;
 use App\Processes\Commands\RecordRunEvents;
 use App\Processes\Models\ProcessRun;
-use App\Processes\Values\RunEvent;
+use App\Processes\Values\RunEventBatch;
 
 /**
  * Records a batch of a run's events for the holder of its event key, assesses the parts that ended and settles them
@@ -24,7 +24,7 @@ final readonly class RecordRunEventsController
     ): RunEventsAccepted {
         abort_unless($processRun->acceptsEventKey($call->eventKey), 403, 'This event key is not the run\'s.');
 
-        $events = json_encode(array_map(fn (RunEvent $event) => $event->toArray(), $call->events), JSON_THROW_ON_ERROR);
+        $events = new RunEventBatch($call->events)->toJson();
 
         return new RunEventsAccepted($commands->run(new RecordRunEvents($processRun->id, $events)));
     }

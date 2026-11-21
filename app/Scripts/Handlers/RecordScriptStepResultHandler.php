@@ -8,6 +8,7 @@ use App\Agents\Contracts\ActorGuidance;
 use App\Contracts\CommandHandler;
 use App\Scripts\Commands\RecordScriptStepResult;
 use App\Scripts\Models\ProfileRun;
+use App\Scripts\Models\ProfileStepResult;
 use App\Scripts\Values\StepOutcome;
 
 /**
@@ -22,10 +23,16 @@ final readonly class RecordScriptStepResultHandler implements CommandHandler
     public function handle(RecordScriptStepResult $command): void
     {
         $run = ProfileRun::lockedForStep($command->runId);
-        $run->recordStep(
-            $command->stepReference,
-            StepOutcome::reported($command->status, $command->port, $command->evidence),
-        );
+
+        if ($run->recordedResult($command->stepReference) === null) {
+            $run->resumeAfter($command->stepReference);
+            ProfileStepResult::create(
+                $run,
+                $command->stepReference,
+                StepOutcome::reported($command->status, $command->port, $command->evidence),
+            );
+        }
+
         $this->guidance->retain($run->actor(), self::RECORDED, $command->stepReference);
     }
 }

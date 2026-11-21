@@ -135,11 +135,11 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The oldest attempt no host runs yet, taken by this host to run its program's sign-in; none when nothing waits.
+     * The oldest attempt no host runs yet, locked for its claim; none when nothing waits.
      */
-    public static function claimFor(string $hostId, CarbonImmutable $now): self|null
+    public static function oldestWaitingAt(CarbonImmutable $now): self|null
     {
-        $attempt = self::query()
+        return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
             ->where('state', SignInState::Starting->value)
             ->where('waits_for_uses', false)
@@ -148,15 +148,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
             ->orderBy('created_at')
             ->lockForUpdate()
             ->first();
-
-        if ($attempt === null) {
-            return null;
-        }
-
-        $attempt->process_reference = $hostId;
-        $attempt->save();
-
-        return $attempt;
     }
 
     // ----------[ Queries ]----------
@@ -426,10 +417,21 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     /**
      * Takes the account's folder as its one writer and runs in the sign-in generation that starts.
      */
-    public function writeFolderOf(Account $account): void
+    /**
+     * The host takes the attempt to run its program's sign-in.
+     */
+    public function claimOn(string $hostId): void
     {
-        $account->writerFor($this);
-        $this->generation = $account->sign_in_generation;
+        $this->process_reference = $hostId;
+        $this->save();
+    }
+
+    /**
+     * The attempt writes in the account's sign-in generation it now holds the folder for.
+     */
+    public function writeInGeneration(int $generation): void
+    {
+        $this->generation = $generation;
         $this->save();
     }
 

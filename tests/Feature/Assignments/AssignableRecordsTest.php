@@ -11,6 +11,7 @@ use App\Records\Support\RecordIdentity;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
@@ -92,16 +93,16 @@ final class AssignableRecordsTest extends TestCase
     public function test_a_phase_is_over_only_when_it_holds_tasks_and_all_ended(): void
     {
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
-        $empty = $plan->addPhase('Empty');
-        $allEnded = $plan->addPhase('All ended');
-        $mixed = $plan->addPhase('Mixed');
+        $empty = $this->planStructure()->addPhase($plan, 'Empty');
+        $allEnded = $this->planStructure()->addPhase($plan, 'All ended');
+        $mixed = $this->planStructure()->addPhase($plan, 'Mixed');
         $done = Task::factory()->create(['title' => 'Done']);
         $done->finish('Done.');
         $dropped = Task::factory()->create(['title' => 'Dropped']);
         $dropped->cancel('Not needed.');
         $running = Task::factory()->create(['title' => 'Running']);
-        $allEnded->addTasks([$done->id, $dropped->id]);
-        $mixed->addTasks([$running->id]);
+        $this->planStructure()->addTasks($allEnded, [$done->id, $dropped->id]);
+        $this->planStructure()->addTasks($mixed, [$running->id]);
 
         $over = $this->registry->recordProvider(Phase::LINK_TYPE)->finishedRecords([$empty, $allEnded, $mixed]);
 
@@ -126,5 +127,10 @@ final class AssignableRecordsTest extends TestCase
         $this->app->make(AssignmentRegistry::class)->recordProvider(Task::LINK_TYPE)->visibleRecords(
             [TestActors::record('tasks.task', 1)],
         );
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

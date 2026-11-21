@@ -25,6 +25,11 @@ use Tests\TestCase;
 final class EventProducerTest extends TestCase
 {
     /**
+     * The guideline a failure points to.
+     */
+    private const string GUIDELINE = '.ai/guidelines/models-raise-their-events.md';
+
+    /**
      * The file that releases migrated facts after the commit, the one place allowed to send them; a fact with no row
      * to raise on goes in through EventUnitLifecycle::publishAfterCommit, which counts as its producer's send.
      */
@@ -42,7 +47,8 @@ final class EventProducerTest extends TestCase
         $this->assertSame(
             [],
             $violations,
-            "Send each event only from its expected producer:\n".implode("\n", $violations),
+            'Send each event only from its expected producer ('.self::GUIDELINE."):\n"
+                .implode("\n", $violations),
         );
     }
 

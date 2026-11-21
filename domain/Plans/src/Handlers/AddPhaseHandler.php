@@ -8,16 +8,19 @@ use Domain\Plans\Commands\AddPhase;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Handlers\Support\PlanCommandHandler;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 
 /**
  * Adds the phase under the plan's row lock, so two phases added at once get two numbers.
  */
 final readonly class AddPhaseHandler extends PlanCommandHandler
 {
+    public function __construct(private PlanStructure $structure) {}
+
     public function handle(AddPhase $command): string
     {
         $plan = Plan::query()->findOr($command->planId, fn () => throw PlanMissing::withId($command->planId));
 
-        return $plan->addPhase($command->title)->id;
+        return $this->structure->addPhase($plan, $command->title)->id;
     }
 }

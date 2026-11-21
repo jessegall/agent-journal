@@ -62,7 +62,7 @@ final class RuleProposalRevision extends Model implements ReadableModel
     /**
      * The proposal's next revision of the proposed rule, by its author.
      */
-    public static function createFor(RuleProposal $proposal, ProposedRule $proposed, ActorIdentity $author): self
+    public static function create(RuleProposal $proposal, ProposedRule $proposed, ActorIdentity $author): self
     {
         return self::query()->create([
             'rule_proposal_id' => $proposal->id,

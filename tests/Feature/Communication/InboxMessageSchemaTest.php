@@ -17,7 +17,7 @@ use App\Communication\Support\AcceptedOperation;
 use App\Communication\Support\InboxMembership;
 use App\Communication\Support\MessageBody;
 use App\Communication\Support\MessageEnvelope;
-use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskOpening;
 use App\Numbers\Models\GlobalGroup;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
@@ -92,8 +92,8 @@ final class InboxMessageSchemaTest extends TestCase
             ReceiptRetention::standard(),
         );
         $envelope = MessageEnvelope::ask(
-            DeskRecord::openSourceDesk((string) str()->ulid(), 'From'),
-            DeskRecord::openSourceDesk((string) str()->ulid(), 'To'),
+            $this->app->make(DeskOpening::class)->openSourceDesk((string) str()->ulid(), 'From'),
+            $this->app->make(DeskOpening::class)->openSourceDesk((string) str()->ulid(), 'To'),
             $this->author,
             MessageBody::from('Can you look?'),
         );

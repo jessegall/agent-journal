@@ -20,6 +20,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
@@ -67,11 +68,11 @@ final class PlanCascadeTest extends TestCase
         $cancelled = Task::factory()->create(['title' => 'Cancelled']);
         $finished->finish('Done.');
         $cancelled->cancel('Not needed.');
-        $this->working = $this->plan->addPhase('Working');
-        $this->working->addTasks([$this->open->id]);
-        $this->over = $this->plan->addPhase('Over');
-        $this->over->addTasks([$finished->id, $cancelled->id]);
-        $this->empty = $this->plan->addPhase('Empty');
+        $this->working = $this->planStructure()->addPhase($this->plan, 'Working');
+        $this->planStructure()->addTasks($this->working, [$this->open->id]);
+        $this->over = $this->planStructure()->addPhase($this->plan, 'Over');
+        $this->planStructure()->addTasks($this->over, [$finished->id, $cancelled->id]);
+        $this->empty = $this->planStructure()->addPhase($this->plan, 'Empty');
     }
 
     public function test_assigning_the_plan_alone_touches_nothing_under_it(): void
@@ -134,8 +135,8 @@ final class PlanCascadeTest extends TestCase
         $this->assignWork($this->plan->assignmentIdentity(), $this->builder);
         $late = Task::factory()->create(['title' => 'Added later']);
 
-        $this->working->addTasks([$late->id]);
-        $this->plan->addPhase('Added later');
+        $this->planStructure()->addTasks($this->working, [$late->id]);
+        $this->planStructure()->addPhase($this->plan, 'Added later');
 
         $this->assertSame(4, AssignmentRecord::query()->count());
         $this->assertFalse(
@@ -163,5 +164,10 @@ final class PlanCascadeTest extends TestCase
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         return $this->app->make(CommandBus::class)->run(new UnassignPlanWork($root, $expectedRoot));
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

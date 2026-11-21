@@ -12,6 +12,7 @@ use Domain\Plans\Commands\AddPhaseTasks;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
@@ -36,7 +37,10 @@ final class AddPhaseTasksTest extends TestCase
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
-        $phase = Plan::factory()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
+        $phase = $this->planStructure()->addPhase(
+            Plan::factory()->create(['title' => 'Build', 'type' => PlanType::Build]),
+            'Read',
+        );
         $first = Task::factory()->create(['title' => 'First'])->id;
         $second = Task::factory()->create(['title' => 'Second'])->id;
 
@@ -51,7 +55,10 @@ final class AddPhaseTasksTest extends TestCase
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
-        $phase = Plan::factory()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
+        $phase = $this->planStructure()->addPhase(
+            Plan::factory()->create(['title' => 'Build', 'type' => PlanType::Build]),
+            'Read',
+        );
         $real = Task::factory()->create(['title' => 'Real'])->id;
 
         try {
@@ -68,7 +75,10 @@ final class AddPhaseTasksTest extends TestCase
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
-        $phase = Plan::factory()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
+        $phase = $this->planStructure()->addPhase(
+            Plan::factory()->create(['title' => 'Build', 'type' => PlanType::Build]),
+            'Read',
+        );
         $task = Task::factory()->create(['title' => 'Twice'])->id;
 
         try {
@@ -78,5 +88,10 @@ final class AddPhaseTasksTest extends TestCase
             $this->assertEquals(TaskAlreadyInAPhase::forTask($task), $refusal);
             $this->assertSame([], $phase->taskIds());
         }
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

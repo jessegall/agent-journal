@@ -29,6 +29,7 @@ use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Commands\StartTask;
@@ -267,7 +268,7 @@ final class BaselineTimelinesTest extends TestCase
         $this->app->make(StackTransaction::class)->run(function () use ($task, $other): void {
             $this->finish($task);
             PhaseTask::query()->where('task_id', $task->id)->delete();
-            $other->addTasks([$task->id]);
+            $this->planStructure()->addTasks($other, [$task->id]);
         });
 
         $this->assertSame([$other->plan_id], $progress());
@@ -325,8 +326,8 @@ final class BaselineTimelinesTest extends TestCase
         $accounts = $this->chooseActiveAccounts();
         $first = $this->signInAgain($accounts['claude-code']);
         $second = $this->signInAgain($accounts['codex']);
-        SignInAttempt::claimFor('host-a', CarbonImmutable::now());
-        SignInAttempt::claimFor('host-a', CarbonImmutable::now());
+        $this->claimSignIn('host-a', CarbonImmutable::now());
+        $this->claimSignIn('host-a', CarbonImmutable::now());
         $events = $this->app->make(Dispatcher::class);
         $events->listen(
             AccountsChanged::class,
@@ -356,7 +357,7 @@ final class BaselineTimelinesTest extends TestCase
     private function taskInPhase(): Task
     {
         $task = Task::factory()->create();
-        $this->phase()->addTasks([$task->id]);
+        $this->planStructure()->addTasks($this->phase(), [$task->id]);
         $this->session ??= $this->startedSession();
         $this->timeline = [];
 
@@ -365,7 +366,7 @@ final class BaselineTimelinesTest extends TestCase
 
     private function phase(): Phase
     {
-        return Plan::factory()->create()->addPhase('Work');
+        return $this->planStructure()->addPhase(Plan::factory()->create(), 'Work');
     }
 
     /**
@@ -427,5 +428,18 @@ final class BaselineTimelinesTest extends TestCase
         $attemptId = $this->app->make(CommandBus::class)->run($begin)->attemptId;
 
         return SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
+    }
+
+    private function claimSignIn(string $hostId, CarbonImmutable $now): SignInAttempt|null
+    {
+        $attempt = SignInAttempt::oldestWaitingAt($now);
+        $attempt?->claimOn($hostId);
+
+        return $attempt;
     }
 }

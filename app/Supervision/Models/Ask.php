@@ -9,6 +9,7 @@ use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Values\WorkReference;
 use App\Assignments\Contracts\Assignable;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Profiles\Values\AskTypeKey;
 use App\Profiles\Values\ProfileKey;
@@ -55,6 +56,7 @@ final class Ask extends Model implements Assignable, ReadableModel
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     public const string LINK_TYPE = 'core.ask';
@@ -107,9 +109,8 @@ final class Ask extends Model implements Assignable, ReadableModel
     ): self {
         $work = $subject->work->isFree() ? 'free' : $subject->work->key;
         $digest = hash('sha256', json_encode([$type->key, $body, $work], JSON_THROW_ON_ERROR));
-        $now = CarbonImmutable::now();
-        $query = self::query()->ownedBy($requester)->where('submission_key', $submissionKey);
-        $query->insertOrIgnore([
+        $ask = new self();
+        $ask->setRawAttributes([
             'id' => $reference->id,
             'actor_type' => $requester->type->value,
             'actor_id' => $requester->id,
@@ -125,10 +126,9 @@ final class Ask extends Model implements Assignable, ReadableModel
             'route_profile' => $routeProfile?->key,
             'version' => 0,
             'open' => true,
-            'created_at' => $now,
-            'updated_at' => $now,
         ]);
-        $ask = $query->firstOrFail();
+        $ask->insertIfAbsent();
+        $ask = self::query()->ownedBy($requester)->where('submission_key', $submissionKey)->firstOrFail();
 
         if (! hash_equals($ask->submission_hash, $digest)) {
             throw AskRefused::submissionChanged();
@@ -183,13 +183,11 @@ final class Ask extends Model implements Assignable, ReadableModel
 
     // ----------[ Mutations ]----------
 
-    public function accept(ActorIdentity $holder, int $routeVersion): AskHop
+    public function accept(): void
     {
         $this->version++;
         $this->pending_target = null;
         $this->save();
-
-        return AskHop::create($this, $holder, $routeVersion);
     }
 
     /**

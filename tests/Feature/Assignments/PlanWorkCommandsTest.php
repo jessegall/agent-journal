@@ -9,6 +9,7 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
@@ -57,8 +58,8 @@ final class PlanWorkCommandsTest extends TestCase
         $open = Task::factory()->create(['title' => 'Open']);
         $finished = Task::factory()->create(['title' => 'Finished']);
         $finished->finish('Done.');
-        $this->plan->addPhase('Working')->addTasks([$open->id]);
-        $this->plan->addPhase('Over')->addTasks([$finished->id]);
+        $this->planStructure()->addTasks($this->planStructure()->addPhase($this->plan, 'Working'), [$open->id]);
+        $this->planStructure()->addTasks($this->planStructure()->addPhase($this->plan, 'Over'), [$finished->id]);
     }
 
     public function test_a_main_agent_gives_moves_and_releases_a_plans_work_with_matching_counts(): void
@@ -185,5 +186,10 @@ final class PlanWorkCommandsTest extends TestCase
             ->expectsOutputToContain('The journal refused the call (')->assertExitCode(1);
         $this->artisan('plan:assign-work', ['type' => Plan::LINK_TYPE, 'id' => $this->plan->id, '--to' => 'nobody'])
             ->expectsOutputToContain('type:id')->assertExitCode(1);
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

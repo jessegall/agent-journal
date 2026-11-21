@@ -12,6 +12,8 @@ use App\Hooks\Contracts\StackTransactionRunner;
 use App\Supervision\Models\Ask;
 use App\Supervision\Models\AskHop;
 use App\Supervision\States\AnsweringAskState;
+use Closure;
+use Illuminate\Database\Eloquent\Builder;
 
 final readonly class AskAttention
 {
@@ -56,7 +58,7 @@ final readonly class AskAttention
 
     public function recover(): void
     {
-        AskHop::recoverEach(function (AskHop $pending): void {
+        $this->recoverEach(function (AskHop $pending): void {
             $this->transactions->run(fn () => $this->recoverHop($pending->lockDelivery()));
         });
     }
@@ -89,5 +91,20 @@ final readonly class AskAttention
         }
 
         return $this->attention->request($actor, $origin)->requestId ?? AskHop::PENDING_DELIVERY;
+    }
+
+    /**
+     * @param  Closure(AskHop): void  $recover
+     */
+    private function recoverEach(Closure $recover): void
+    {
+        AskHop::query()->where(fn (Builder $waiting) => $waiting
+            ->where('attention', AskHop::PENDING_DELIVERY)
+            ->orWhereIn('id', AskHop::query()->currentHops()->select('ask_hops.id')))
+            ->readInChunks(50, function ($hops) use ($recover): void {
+                foreach ($hops as $hop) {
+                    $recover($hop);
+                }
+            });
     }
 }

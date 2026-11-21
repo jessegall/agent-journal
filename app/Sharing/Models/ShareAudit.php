@@ -129,16 +129,6 @@ final class ShareAudit extends Model implements ReadableModel
             ->orderBy('id')->lockForUpdate()->readExactly($most)->get()->all());
     }
 
-    /**
-     * Removes these rows for good.
-     *
-     * @param  list<string>  $ids
-     */
-    public static function removeAll(array $ids): void
-    {
-        self::query()->whereKey($ids)->delete();
-    }
-
     // ----------[ Answers ]----------
 
     /**

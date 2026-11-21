@@ -95,25 +95,6 @@ final class ShareMember extends Model implements ReadableModel
     }
 
     /**
-     * Removes every member of the share, of every scope version, before a refreshed scope replaces them.
-     */
-    public static function forgetAllOf(Share $share): void
-    {
-        self::query()->ofShare($share)->delete();
-    }
-
-    /**
-     * Ends the approval of every member that rested on one of these links; a link made again has a new id, so only a
-     * refreshed scope approves it.
-     *
-     * @param  list<string>  $ids
-     */
-    public static function invalidateForLinks(array $ids, CarbonImmutable $at): void
-    {
-        self::query()->onLinks($ids)->stillApproved()->update(['invalidated_at' => $at]);
-    }
-
-    /**
      * The links the share's current scope still approves.
      *
      * @return list<string>

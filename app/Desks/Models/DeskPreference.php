@@ -54,21 +54,21 @@ final class DeskPreference extends MorphPivot implements ReadableModel
     /**
      * Makes the desk the actor's preferred desk, replacing an earlier preference.
      */
-    public static function prefer(ActorIdentity $actor, Desk $desk): self
+    public static function create(ActorIdentity $actor, Desk $desk): self
     {
-        $preference = self::query()->ownedBy($actor)->lockForUpdate()->first();
-
-        if ($preference !== null) {
-            $preference->switchTo($desk);
-
-            return $preference;
-        }
-
         $preference = new self(['desk_id' => $desk->deskId()]);
         $preference->belongTo($actor);
         $preference->save();
 
         return $preference;
+    }
+
+    /**
+     * The actor's preference, locked, when they have one.
+     */
+    public static function lockedOf(ActorIdentity $actor): self|null
+    {
+        return self::query()->ownedBy($actor)->lockForUpdate()->first();
     }
 
     // ----------[ Queries ]----------

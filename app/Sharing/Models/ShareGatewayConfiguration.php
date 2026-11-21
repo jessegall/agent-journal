@@ -168,14 +168,10 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
     }
 
     /**
-     * Makes this revision the one new shares use when the owner names none; no other stays the default.
+     * Makes this revision the one new shares use when the owner names none; the caller first ends every other default.
      */
     public function makeDefault(): void
     {
-        self::query()->markedDefault()->whereKeyNot(
-            $this->id,
-        )->lockForUpdate()->readAll('at most one configuration is the default')->get();
-        self::query()->markedDefault()->whereKeyNot($this->id)->update(['is_default' => false]);
         $this->is_default = true;
         $this->save();
     }

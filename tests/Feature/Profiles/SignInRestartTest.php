@@ -81,7 +81,7 @@ final class SignInRestartTest extends TestCase
         $begin = new BeginSignIn($program, SignInMethod::OAuth, "key-{$program}");
         $attemptId = $this->app->make(CommandBus::class)->run($begin)
             ->attemptId;
-        $this->assertSame($attemptId, SignInAttempt::claimFor($hostId, CarbonImmutable::now())?->id);
+        $this->assertSame($attemptId, $this->claimSignIn($hostId, CarbonImmutable::now())?->id);
 
         return $attemptId;
     }
@@ -96,5 +96,13 @@ final class SignInRestartTest extends TestCase
             'test host',
             new ReconcileSignIns($hostId, $running),
         );
+    }
+
+    private function claimSignIn(string $hostId, CarbonImmutable $now): SignInAttempt|null
+    {
+        $attempt = SignInAttempt::oldestWaitingAt($now);
+        $attempt?->claimOn($hostId);
+
+        return $attempt;
     }
 }

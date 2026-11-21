@@ -8,6 +8,5 @@ declare(strict_types=1);
  * listed method that writes only its own row.
  */
 return [
-    'GlobalGroup::installJournal' => 9,
     'HasNumber::bootHasNumber' => 9,
 ];

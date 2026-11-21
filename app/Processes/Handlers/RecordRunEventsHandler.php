@@ -15,6 +15,7 @@ use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Support\RunUpdates;
 use App\Processes\Values\RunEvent;
+use App\Processes\Values\RunEventBatch;
 
 final readonly class RecordRunEventsHandler implements CommandHandler
 {
@@ -28,7 +29,7 @@ final readonly class RecordRunEventsHandler implements CommandHandler
     {
         $processRun = ProcessRun::query()->findOrFail($command->processRunId);
         $events = new RecordedRunEvents($processRun, $this->recorder);
-        $batch = array_values(RunEvent::collect((array) json_decode($command->events, true, flags: JSON_THROW_ON_ERROR)));
+        $batch = RunEventBatch::from(json_decode($command->events, true, flags: JSON_THROW_ON_ERROR))->events;
 
         foreach ($batch as $event) {
             if ($event->type === RunEventType::Heartbeat) {

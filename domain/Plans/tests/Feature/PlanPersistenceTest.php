@@ -13,6 +13,7 @@ use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Models\Task;
@@ -29,15 +30,15 @@ final class PlanPersistenceTest extends TestCase
     public function test_phases_and_their_tasks_keep_their_order(): void
     {
         $plan = Plan::factory()->create(['title' => 'Build the plans page', 'type' => PlanType::Build]);
-        $read = $plan->addPhase('Read');
-        $start = $plan->addPhase('Start');
+        $read = $this->planStructure()->addPhase($plan, 'Read');
+        $start = $this->planStructure()->addPhase($plan, 'Start');
         $second = $this->task('Second');
         $first = $this->task('First');
         $third = $this->task('Third');
 
-        $read->addTasks([$second->id]);
-        $start->addTasks([$third->id]);
-        $read->addTasks([$first->id]);
+        $this->planStructure()->addTasks($read, [$second->id]);
+        $this->planStructure()->addTasks($start, [$third->id]);
+        $this->planStructure()->addTasks($read, [$first->id]);
 
         $this->assertSame(['Read', 'Start'], $plan->phases()->pluck('title')->all());
         $this->assertSame([$second->id, $first->id], $read->taskIds());
@@ -49,11 +50,11 @@ final class PlanPersistenceTest extends TestCase
     {
         $plan = Plan::factory()->create(['title' => 'Fix the login redirect', 'type' => PlanType::Fix]);
         $task = $this->task('Write a failing test');
-        $plan->addPhase('Reproduce')->addTasks([$task->id]);
+        $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Reproduce'), [$task->id]);
 
         $this->expectException(TaskAlreadyInAPhase::class);
 
-        $plan->addPhase('Fix')->addTasks([$task->id]);
+        $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Fix'), [$task->id]);
     }
 
     public function test_tasks_count_progress_by_id_including_none(): void
@@ -96,5 +97,10 @@ final class PlanPersistenceTest extends TestCase
     private function task(string $title): Task
     {
         return Task::factory()->create(['title' => $title]);
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

@@ -58,7 +58,8 @@ final readonly class BeginSignInAgainHandler implements CommandHandler
             $command->requestKey,
             $expiresAt,
         );
-        $attempt->writeFolderOf($account);
+        $account->writerFor($attempt);
+        $attempt->writeInGeneration($account->sign_in_generation);
 
         if ($this->uses->counts([$account->recordIdentity()])->isEmpty()) {
             $attempt->releaseForHost();

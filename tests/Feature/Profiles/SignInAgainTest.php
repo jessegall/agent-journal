@@ -98,14 +98,14 @@ final class SignInAgainTest extends TestCase
         $this->startProcessOnAccount();
         $attemptId = $this->again('tab-1');
 
-        $this->assertNull(SignInAttempt::claimFor('host', CarbonImmutable::now()));
+        $this->assertNull($this->claimSignIn('host', CarbonImmutable::now()));
         $this->reconcile();
-        $this->assertNull(SignInAttempt::claimFor('host', CarbonImmutable::now()));
+        $this->assertNull($this->claimSignIn('host', CarbonImmutable::now()));
 
         DB::table('process_starts')->update(['state' => ProcessStartState::Stopped->value]);
         $this->reconcile();
 
-        $this->assertSame($attemptId, SignInAttempt::claimFor('host', CarbonImmutable::now())?->id);
+        $this->assertSame($attemptId, $this->claimSignIn('host', CarbonImmutable::now())?->id);
     }
 
     public function test_success_starts_a_new_generation_and_keeps_the_choice(): void
@@ -330,5 +330,13 @@ final class SignInAgainTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
+    }
+
+    private function claimSignIn(string $hostId, CarbonImmutable $now): SignInAttempt|null
+    {
+        $attempt = SignInAttempt::oldestWaitingAt($now);
+        $attempt?->claimOn($hostId);
+
+        return $attempt;
     }
 }

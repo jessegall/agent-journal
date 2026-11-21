@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Links\Models\Link;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
+use App\Links\Models\Link;
 use App\Reads\Contracts\ReadMeter;
 use App\Sharing\Support\MeteredShareBudget;
 use App\Sharing\Support\ShareContentRead;
@@ -18,6 +18,7 @@ use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Models\Document;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -60,7 +61,7 @@ final class PlanSharingTest extends TestCase
         TEXT));
         $document = Document::query()->where('number', 1)->sole();
         $plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
-        $plan->addPhase('Secret phase');
+        $this->planStructure()->addPhase($plan, 'Secret phase');
         Link::connect($plan, $document);
 
         $candidates = $this->app->make(ShareScope::class)->discover($plan->shareIdentity(), $this->budget());
@@ -83,5 +84,10 @@ final class PlanSharingTest extends TestCase
     private function budget(): MeteredShareBudget
     {
         return MeteredShareBudget::forPreview($this->app->make(ReadMeter::class));
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

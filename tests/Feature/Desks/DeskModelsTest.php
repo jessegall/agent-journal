@@ -14,6 +14,7 @@ use App\Desks\Exceptions\DeskSeatCountInvalid;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
 use App\Desks\Support\DeskInboxAccess;
+use App\Desks\Support\DeskOpening;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -27,7 +28,7 @@ final class DeskModelsTest extends TestCase
 
     public function test_a_named_desk_opens_with_its_inbox_and_seats(): void
     {
-        $desk = DeskRecord::openNamed('team', 'Team', 3, false);
+        $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 3, false);
 
         $this->assertSame([1, 2, 3], DeskSeat::query()->ofDesk($desk)->orderBy('number')->pluck('number')->all());
         $this->assertSame(1, InboxRecord::query()->count());
@@ -38,17 +39,17 @@ final class DeskModelsTest extends TestCase
 
     public function test_a_named_desk_has_one_to_a_hundred_seats_and_a_source_desk_none(): void
     {
-        $this->assertThrows(fn () => DeskRecord::openNamed('empty', 'Empty', 0, false), DeskSeatCountInvalid::class);
-        $this->assertThrows(fn () => DeskRecord::openNamed('crowd', 'Crowd', 101, false), DeskSeatCountInvalid::class);
+        $this->assertThrows(fn () => $this->app->make(DeskOpening::class)->openNamed('empty', 'Empty', 0, false), DeskSeatCountInvalid::class);
+        $this->assertThrows(fn () => $this->app->make(DeskOpening::class)->openNamed('crowd', 'Crowd', 101, false), DeskSeatCountInvalid::class);
 
-        $source = DeskRecord::openSourceDesk('journal', 'Journal');
+        $source = $this->app->make(DeskOpening::class)->openSourceDesk('journal', 'Journal');
 
         $this->assertSame(0, DeskSeat::query()->ofDesk($source)->count());
     }
 
     public function test_the_inbox_admits_a_seated_actor_by_its_seat_assignment_and_refuses_others(): void
     {
-        $desk = DeskRecord::openNamed('team', 'Team', 3, false);
+        $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 3, false);
         $seated = Agent::create('Seated', 'read-only-helper');
         $stranger = Agent::create('Stranger', 'read-only-helper');
         $seat = DeskSeat::query()->ofDesk($desk)->where('number', 2)->sole();
