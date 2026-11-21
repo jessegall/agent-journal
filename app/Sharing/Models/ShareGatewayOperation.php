@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Models;
 
+use App\Contracts\Support\InsertsRowSets;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -44,6 +45,7 @@ final class ShareGatewayOperation extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsRowSets;
     use Linkable;
 
     public const string LINK_TYPE = 'core.share-gateway-operation';
@@ -73,11 +75,21 @@ final class ShareGatewayOperation extends Model implements ReadableModel
      */
     public static function create(ShareGatewayConfiguration $configuration, GatewayOperationType $type): self
     {
+        $operation = self::unsaved($configuration, $type);
+        $operation->save();
+
+        return $operation;
+    }
+
+    /**
+     * The operation of one configuration, not yet written, for createAll.
+     */
+    public static function unsaved(ShareGatewayConfiguration $configuration, GatewayOperationType $type): self
+    {
         $operation = new self();
         $operation->share_gateway_configuration_id = $configuration->id;
         $operation->configuration_version = $configuration->configuration_version;
         $operation->type = $type;
-        $operation->save();
 
         return $operation;
     }
@@ -96,13 +108,20 @@ final class ShareGatewayOperation extends Model implements ReadableModel
     }
 
     /**
-     * Whether an open of the configuration's endpoint waits or runs without an outcome yet.
+     * Which of these configurations already have an open waiting, by configuration id.
+     *
+     * @param  list<string>  $ids
+     * @return list<string>
      */
-    public static function hasUnfinishedOpenFor(ShareGatewayConfiguration $configuration): bool
+    public static function configurationsWaitingToOpen(array $ids): array
     {
-        return self::query()->unfinished()->ofConfiguration($configuration->id)->ofType(
-            GatewayOperationType::Open,
-        )->exists();
+        return array_values(array_unique(self::query()
+            ->unfinished()
+            ->whereIn('share_gateway_configuration_id', $ids)
+            ->ofType(GatewayOperationType::Open)
+            ->readAll('one unfinished open at most per configuration a run reopens')
+            ->pluck('share_gateway_configuration_id')
+            ->all()));
     }
 
     /**

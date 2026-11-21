@@ -115,6 +115,23 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
     }
 
     /**
+     * The configurations of these ids, locked together in id order, so two runs take their locks in the same order.
+     *
+     * @param  list<string>  $ids
+     * @return list<self>
+     */
+    public static function lockAllById(array $ids): array
+    {
+        return array_values(self::query()
+            ->whereKey($ids)
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->readExactly(count($ids))
+            ->get()
+            ->all());
+    }
+
+    /**
      * Every gateway revision, newest first, for the owner's gateway settings.
      *
      * @return list<self>

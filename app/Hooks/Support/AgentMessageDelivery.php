@@ -57,9 +57,10 @@ final readonly class AgentMessageDelivery
         $agent = $target->actorIdentity();
         $origin = AttentionOrigin::agentMessages($input->identity()->hookId);
 
-        foreach ($messages as $text) {
-            PendingAgentMessage::create($agent, $origin, [$text], requestsAttention: true);
-        }
+        PendingAgentMessage::createAll(array_map(
+            fn (string $text) => PendingAgentMessage::unsaved($agent, $origin, [$text], requestsAttention: true),
+            $messages,
+        ));
 
         $this->attention->request($agent, $origin);
     }

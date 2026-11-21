@@ -398,7 +398,8 @@ final readonly class ModelWriteScan implements FileScan
         Expr\MethodCall|Expr\NullsafeMethodCall $call,
         MethodReceivers $context,
     ): array {
-        $isNewRow = $method === 'create' && $context->isStatic && $context->isPlainQuery($call->var);
+        $makesRows = $method === 'create' || $method === 'insert';
+        $isNewRow = $makesRows && $context->isStatic && $context->isPlainQuery($call->var);
 
         return match (true) {
             $isNewRow => [],

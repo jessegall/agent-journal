@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Models;
 
+use App\Contracts\Support\InsertsRowSets;
 use App\Hooks\Enums\StopResultType;
 use App\Hooks\Values\StopResultLine;
 use App\Hooks\Values\StopResultReport;
@@ -52,6 +53,7 @@ final class StopResult extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsRowSets;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -72,6 +74,17 @@ final class StopResult extends Model implements ReadableModel
 
     public static function create(StopAttempt $attempt, StopResultReport $report): self
     {
+        $stopRecord = self::unsaved($attempt, $report);
+        $stopRecord->save();
+
+        return $stopRecord;
+    }
+
+    /**
+     * The result row of one report, not yet written, for createAll.
+     */
+    public static function unsaved(StopAttempt $attempt, StopResultReport $report): self
+    {
         $stopRecord = new self();
         $stopRecord->stop_attempt_id = $attempt->id;
         $stopRecord->condition_key = $report->conditionKey;
@@ -84,7 +97,6 @@ final class StopResult extends Model implements ReadableModel
         $stopRecord->summary = $report->summary;
         $stopRecord->output = $report->output;
         $stopRecord->truncated = $report->truncated;
-        $stopRecord->save();
 
         return $stopRecord;
     }

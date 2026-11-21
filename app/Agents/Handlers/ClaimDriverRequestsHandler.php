@@ -63,7 +63,9 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         )));
 
         foreach ($control as $request) {
-            if ($this->isStopWaitingOnHelpers($request, $runtimes->get($request->agent_runtime_id), $waitingOnHelpers)) {
+            $runtime = $runtimes->get($request->agent_runtime_id);
+
+            if ($this->isStopWaitingOnHelpers($request, $runtime, $waitingOnHelpers)) {
                 continue;
             }
 
@@ -100,12 +102,12 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
     /**
      * A stop of a session whose helpers are not all proven stopped stays waiting, so the helpers end first.
      *
-     * @param  list<string>  $waitingOnHelpers
+     * @param  list<string>  $waiting
      */
-    private function isStopWaitingOnHelpers(DriverRequest $request, AgentRuntime $runtime, array $waitingOnHelpers): bool
+    private function isStopWaitingOnHelpers(DriverRequest $request, AgentRuntime $runtime, array $waiting): bool
     {
         return $request->operation === DriverOperation::Stop
-            && in_array($runtime->agent_session_id, $waitingOnHelpers, true);
+            && in_array($runtime->agent_session_id, $waiting, true);
     }
 
     private function settledWithoutWork(DriverRequest $request, AgentRuntime $runtime): bool

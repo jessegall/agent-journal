@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Models;
 
 use App\Actors\Support\ActorIdentity;
+use App\Contracts\Support\InsertsRowSets;
 use App\Links\Support\Linkable;
 use App\Processes\Enums\EvidenceSource;
 use App\Processes\Values\EvidenceRange;
@@ -46,6 +47,7 @@ final class EvidenceRead extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsRowSets;
     use Linkable;
 
     public const string CREATED_AT = 'read_at';
@@ -69,7 +71,18 @@ final class EvidenceRead extends Model implements ReadableModel
 
     public static function create(ProcessRun $run, ActorIdentity $reader, EvidenceRange $range): self
     {
-        return self::query()->create([
+        $read = self::unsaved($run, $reader, $range);
+        $read->save();
+
+        return $read;
+    }
+
+    /**
+     * The row of one read range, not yet written, for createAll.
+     */
+    public static function unsaved(ProcessRun $run, ActorIdentity $reader, EvidenceRange $range): self
+    {
+        return new self([
             'project_key' => $run->project_key,
             'actor_type' => $reader->type->value,
             'actor_id' => $reader->id,

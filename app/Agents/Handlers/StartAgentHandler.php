@@ -11,26 +11,18 @@ use App\Agents\Actions\RegisterPendingStart;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Commands\StartAgent;
 use App\Agents\Contracts\ActiveAccountReader;
-use App\Agents\Contracts\DockerImageVerifier;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Events\StartAccepted;
-use App\Agents\Exceptions\AccountContainerUnsupported;
 use App\Agents\Exceptions\AgentBusy;
-use App\Agents\Exceptions\CapacityUnavailable;
-use App\Agents\Exceptions\ContainerUnavailable;
-use App\Agents\Exceptions\ImageUnverified;
 use App\Agents\Exceptions\StartRefused;
 use App\Agents\Exceptions\StartRequestConflict;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
-use App\Agents\Models\CapacityReservation;
 use App\Agents\Models\SessionPolicy;
 use App\Agents\Models\StartRecord;
 use App\Agents\Resolvers\Support\PendingStartSecrets;
 use App\Agents\Support\ContainerAdmission;
-use App\Agents\Support\HostCapacityLock;
 use App\Agents\Support\StartReceipt;
-use App\Agents\Values\HostCapacity;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
@@ -49,9 +41,6 @@ final readonly class StartAgentHandler implements CommandHandler
         private RegisterPendingStart $pendingStarts,
         private PendingStartSecrets $pendingSecrets,
         private ContainerAdmission $containers,
-        private DockerImageVerifier $images,
-        private HostCapacity $capacity,
-        private HostCapacityLock $capacityLock,
         private ReplyInboxes $replyInboxes,
         private CommandFacts $facts,
     ) {}
@@ -77,7 +66,7 @@ final readonly class StartAgentHandler implements CommandHandler
         $this->sessions->reserveStart($agent);
 
         if ($request->execution()->mode === ExecutionModeType::RequiredContainer) {
-            $this->admitContainer($request);
+            $this->containers->admit($request->requestId, $request->selection->program, $request->execution());
         }
 
         $account = $this->accounts->forStart($request->selection->program);
@@ -119,26 +108,5 @@ final readonly class StartAgentHandler implements CommandHandler
             StartReceipt::ACTUAL_MODEL_NOT_REPORTED,
             $selection->program->modelArguments($selection->model),
         );
-    }
-
-    /**
-     * A required container start needs a proven account transport, a proven container runtime and the verified
-     * image before it reserves its share of the host; it never falls back to the host.
-     *
-     * @throws ContainerUnavailable
-     * @throws AccountContainerUnsupported
-     * @throws ImageUnverified
-     * @throws CapacityUnavailable
-     */
-    private function admitContainer(StartRequest $request): void
-    {
-        $this->containers->assertSupported($request->selection->program);
-
-        if (! $this->images->isVerified((string) $request->execution()->imageReference)) {
-            throw ImageUnverified::because((string) $request->execution()->imageReference);
-        }
-
-        $this->capacityLock->holdUntilCommit();
-        CapacityReservation::reserve($request->requestId, $request->execution()->budgets, $this->capacity);
     }
 }

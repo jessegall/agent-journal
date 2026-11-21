@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Models;
 
+use App\Contracts\Support\InsertsRowSets;
 use App\Links\Models\Link;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
@@ -39,6 +40,7 @@ final class ShareMember extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsRowSets;
     use Linkable;
 
     public const string LINK_TYPE = 'core.share-member';
@@ -61,6 +63,17 @@ final class ShareMember extends Model implements ReadableModel
      */
     public static function create(Share $share, RecordIdentity $source, ShareSelectedTarget $target): self
     {
+        $member = self::unsaved($share, $source, $target);
+        $member->save();
+
+        return $member;
+    }
+
+    /**
+     * The row of one shared target, not yet written, for createAll.
+     */
+    public static function unsaved(Share $share, RecordIdentity $source, ShareSelectedTarget $target): self
+    {
         $member = new self();
         $member->share_id = $share->id;
         $member->scope_version = $share->scope_version;
@@ -69,7 +82,6 @@ final class ShareMember extends Model implements ReadableModel
         $member->source_id = $source->id;
         $member->target_type = $target->record->type;
         $member->target_id = $target->record->id;
-        $member->save();
 
         return $member;
     }

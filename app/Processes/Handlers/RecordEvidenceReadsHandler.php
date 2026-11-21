@@ -9,6 +9,7 @@ use App\Contracts\CommandHandler;
 use App\Processes\Commands\RecordEvidenceReads;
 use App\Processes\Models\EvidenceRead;
 use App\Processes\Models\ProcessRun;
+use App\Processes\Values\EvidenceRange;
 
 final readonly class RecordEvidenceReadsHandler implements CommandHandler
 {
@@ -17,9 +18,10 @@ final readonly class RecordEvidenceReadsHandler implements CommandHandler
         $reader = ActorIdentity::of($command->dispatchedBy());
         $run = ProcessRun::query()->whereKey($command->processRunId)->sole();
 
-        foreach ($command->ranges as $range) {
-            EvidenceRead::create($run, $reader, $range);
-        }
+        EvidenceRead::createAll(array_map(
+            fn (EvidenceRange $range) => EvidenceRead::unsaved($run, $reader, $range),
+            $command->ranges,
+        ));
 
         return count($command->ranges);
     }

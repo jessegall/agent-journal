@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Models;
 
 use App\Agents\Values\SessionOutputPaths;
+use App\Contracts\Support\InsertsRowSets;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -40,6 +41,7 @@ final class SessionOutputGrant extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsRowSets;
     use Linkable;
 
     private const int MOST_GRANTS = 200;
@@ -57,6 +59,22 @@ final class SessionOutputGrant extends Model implements ReadableModel
     protected function casts(): array
     {
         return ['mapping_generation' => 'integer'];
+    }
+
+    /**
+     * The grant of one conversation's output paths to the start's session, not yet written, for createAll.
+     */
+    public static function unsaved(ProcessStart $start, string $conversationId, SessionOutputPaths $paths): self
+    {
+        $grant = new self();
+        $grant->session_id = $start->session_id;
+        $grant->start_id = $start->id;
+        $grant->mapping_generation = $start->output_generation;
+        $grant->conversation_id = $conversationId;
+        $grant->transcript_path = $paths->transcriptPath;
+        $grant->output_directory = $paths->outputDirectory;
+
+        return $grant;
     }
 
     // ----------[ Queries ]----------

@@ -7,6 +7,7 @@ namespace App\Hooks\Models;
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\AttentionOrigin;
+use App\Contracts\Support\InsertsRowSets;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -34,6 +35,7 @@ final class PendingAgentMessage extends Model implements ReadableModel
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
+    use InsertsRowSets;
     use Linkable;
 
     /**
@@ -57,6 +59,23 @@ final class PendingAgentMessage extends Model implements ReadableModel
         array $lines,
         bool $requestsAttention,
     ): self {
+        $message = self::unsaved($agent, $origin, $lines, $requestsAttention);
+        $message->save();
+
+        return $message;
+    }
+
+    /**
+     * The row of one message, not yet written, for createAll.
+     *
+     * @param  list<string>  $lines
+     */
+    public static function unsaved(
+        ActorIdentity $agent,
+        AttentionOrigin $origin,
+        array $lines,
+        bool $requestsAttention,
+    ): self {
         $message = new self([
             'origin_type' => $origin->type,
             'origin_id' => $origin->id,
@@ -64,7 +83,6 @@ final class PendingAgentMessage extends Model implements ReadableModel
             'requests_attention' => $requestsAttention,
         ]);
         $message->belongTo($agent);
-        $message->save();
 
         return $message;
     }

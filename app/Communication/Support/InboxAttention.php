@@ -24,6 +24,7 @@ final readonly class InboxAttention
     public function requestFor(Inbox $inbox, AttentionOrigin $origin): void
     {
         $asked = MessageAttention::actorsAskedFor($origin);
+        $attentions = [];
 
         foreach ($this->inboxes->membersOf($inbox) as $membership) {
             $actor = $membership->actor;
@@ -32,7 +33,10 @@ final readonly class InboxAttention
                 continue;
             }
 
-            MessageAttention::create($origin, $inbox->inboxId(), $actor, $this->attention->request($actor, $origin));
+            $outcome = $this->attention->request($actor, $origin);
+            $attentions[] = MessageAttention::unsaved($origin, $inbox->inboxId(), $actor, $outcome);
         }
+
+        MessageAttention::createAll($attentions);
     }
 }

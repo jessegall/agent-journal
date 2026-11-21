@@ -25,6 +25,7 @@ use App\Sharing\Support\MeteredShareBudget;
 use App\Sharing\Support\ShareDuration;
 use App\Sharing\Support\ShareGrant;
 use App\Sharing\Support\ShareScope;
+use App\Sharing\Support\ShareSelectedTarget;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 
@@ -152,9 +153,14 @@ final readonly class ShareGrants
 
     private function publish(Actor $owner, Share $share, ConsumedPreview $consumed, ShareAuditType $type): void
     {
-        foreach ($consumed->selection as $target) {
-            ShareMember::create($share, $consumed->candidates->sourceOf($target), $target);
-        }
+        ShareMember::createAll(array_map(
+            fn (ShareSelectedTarget $target) => ShareMember::unsaved(
+                $share,
+                $consumed->candidates->sourceOf($target),
+                $target,
+            ),
+            $consumed->selection,
+        ));
 
         ShareAudit::create($share, $type, ActorIdentity::of($owner), null);
     }

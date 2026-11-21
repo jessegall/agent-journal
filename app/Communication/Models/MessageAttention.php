@@ -9,6 +9,7 @@ use App\Actors\Support\AttentionOrigin;
 use App\Actors\Support\AttentionOutcome;
 use App\Communication\Data\WakeStatus;
 use App\Communication\Support\InboxMembers;
+use App\Contracts\Support\InsertsRowSets;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -46,6 +47,7 @@ final class MessageAttention extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsRowSets;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -64,7 +66,22 @@ final class MessageAttention extends Model implements ReadableModel
         ActorIdentity $actor,
         AttentionOutcome $outcome,
     ): self {
-        $attention = new self([
+        $attention = self::unsaved($origin, $inboxId, $actor, $outcome);
+        $attention->save();
+
+        return $attention;
+    }
+
+    /**
+     * The row of one actor asked, not yet written, for createAll.
+     */
+    public static function unsaved(
+        AttentionOrigin $origin,
+        string $inboxId,
+        ActorIdentity $actor,
+        AttentionOutcome $outcome,
+    ): self {
+        return new self([
             'origin_type' => $origin->type,
             'origin_id' => $origin->id,
             'origin_receipt_id' => $origin->sourceId,
@@ -74,9 +91,6 @@ final class MessageAttention extends Model implements ReadableModel
             'request_id' => $outcome->requestId,
             'wake_sequence' => $outcome->requestId === null ? null : $outcome->sequence,
         ]);
-        $attention->save();
-
-        return $attention;
     }
 
     // ----------[ Queries ]----------
