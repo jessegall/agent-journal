@@ -1,6 +1,6 @@
 # Start handshake: which accounts can run credential-free in a container
 
-This file holds the evidence behind `docs/accounts/container-capabilities.json`, the matrix `RecordedHostCapabilities` answers from. Only a row marked `supported`, with native evidence here, may start. Every other row, and every combination without a row, is refused with `account-container-unsupported`: no process is released, no account is changed and nothing falls back to the host or to API billing (doc 14, sections 58 and 61).
+This file holds the evidence behind `docs/accounts/container-capabilities.json`, the matrix `RecordedHostCapabilities` answers from. Only a row marked `supported`, with its evidence recorded, may start. Every other row, and every combination without a row, is refused with `account-container-unsupported`: no process is released, no account is changed and nothing falls back to the host or to API billing (doc 14, sections 58 and 61).
 
 ## The question asked of each pinned client
 
@@ -8,7 +8,8 @@ Can the program run entirely inside an admitted container, reaching its provider
 
 - keeps the doc 15 account and its one refresh owner on the host,
 - keeps the explicitly selected model and the program's own conversation behaviour,
-- copies no login file, mounts no account folder and passes no token through the environment or arguments,
+- mounts only the agent's own account folder into the agent's own container, as the user decided (question 30), and
+  passes no token through the environment or arguments,
 - does not switch to API billing?
 
 Running the program on the host and only its tools in a container does not answer yes (doc 14, section 61).
@@ -47,19 +48,24 @@ The vendor documentation read for doc 15 (sections 7 and 8) describes the same a
 
 ## Claude Code in a required container
 
-Status: unverified.
+Status: supported, by the account mount the user decided on (question 30).
 
-- The subscription login lives in the program's own account store; a container client would need that store or a copy of it, which doc 14 section 61 forbids.
-- `claude setup-token` prints a long-lived token: putting it in the container is a credential in the container (doc 15 excludes it).
-- `claude gateway` runs an enterprise auth and telemetry gateway from a YAML configuration. It is the one host-run component that could sit between a container client and the provider, but nothing read shows it carries a claude.ai subscription, keeps the host's single refresh owner or preserves the selected model for a credential-free client. Until a native run proves that path, the combination stays refused.
+- The subscription login lives in the program's own account store, `.credentials.json` in the account folder. That
+  folder, and no other, is mounted into the agent's own container, where Claude Code signs in and refreshes it itself
+  ([contained-capability-runs.md](contained-capability-runs.md#account-transport-supported)).
+- `claude setup-token` is not used: it prints a long-lived token that would sit in the container's environment.
+- `claude gateway` is not needed for this route.
 
 ## Codex in a required container
 
-Status: unsupported.
+Status: supported, by the same account mount (question 30).
 
-- The managed ChatGPT login lives in `auth.json` (or a keyring) under the account's `CODEX_HOME`, refreshed by the program; mounting or copying it is forbidden.
-- `codex login --with-api-key` and `--with-access-token` put a credential in the container, and an API key switches to API billing.
-- `codex app-server` (with `proxy`), `codex remote-control` and `codex exec-server forward` split the program the other way: the agent and its login stay in the host daemon and only command execution moves to a remote environment. That is the host-CLI-with-container-tools shape doc 14 section 61 does not accept.
+- The managed ChatGPT login lives in `auth.json` under the account's `CODEX_HOME`, refreshed by the program. That
+  folder, and no other, is mounted into the agent's own container.
+- `codex login --with-api-key` and `--with-access-token` are not used: they put a credential in the environment, and
+  an API key switches to API billing.
+- `codex app-server`, `codex remote-control` and `codex exec-server forward` keep the agent on the host and only its
+  tools elsewhere, which doc 14 section 61 does not accept; they are not used.
 
 ## The protected host
 

@@ -54,26 +54,18 @@ final class HostCapabilitiesTest extends TestCase
     {
         $capabilities = $this->app->make(HostCapabilities::class);
 
-        $this->assertSame(
-            CapabilityStatusType::Unverified,
-            $capabilities->capability(
-                $this->capabilityQuery(
-                    HostCapabilityType::AccountTransport,
-                    HookDriver::ClaudeCode,
-                    ExecutionModeType::RequiredContainer,
-                ),
-            )->status,
-        );
-        $this->assertSame(
-            CapabilityStatusType::Unsupported,
-            $capabilities->capability(
-                $this->capabilityQuery(
-                    HostCapabilityType::AccountTransport,
-                    HookDriver::Codex,
-                    ExecutionModeType::RequiredContainer,
-                ),
-            )->status,
-        );
+        foreach (HookDriver::cases() as $driver) {
+            $this->assertSame(
+                CapabilityStatusType::Supported,
+                $capabilities->capability(
+                    $this->capabilityQuery(
+                        HostCapabilityType::AccountTransport,
+                        $driver,
+                        ExecutionModeType::RequiredContainer,
+                    ),
+                )->status,
+            );
+        }
 
         foreach (HostCapabilityType::cases() as $capability) {
             foreach (HookDriver::cases() as $driver) {
@@ -96,7 +88,7 @@ final class HostCapabilitiesTest extends TestCase
             $this->capabilityQuery(
                 HostCapabilityType::AccountTransport,
                 HookDriver::Codex,
-                ExecutionModeType::RequiredContainer,
+                ExecutionModeType::ProtectedHost,
             ),
         );
 
@@ -106,7 +98,7 @@ final class HostCapabilitiesTest extends TestCase
         } catch (AccountContainerUnsupported $refusal) {
             $this->assertSame(StartRefusalType::AccountContainerUnsupported, $refusal->reason());
             $this->assertStringStartsWith(
-                'The journal cannot start account-transport for codex with a subscription account in required_container mode: ',
+                'The journal cannot start account-transport for codex with a subscription account in protected_host mode: ',
                 $refusal->getMessage(),
             );
             $this->assertStringEndsWith('Nothing was started.', $refusal->getMessage());

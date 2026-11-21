@@ -64,6 +64,17 @@ The ninth process is refused and the 200 MB buffer is killed under its 64 MB lim
 `AGENT_DAEMON_IMAGE=docker:28-dind`, `AGENT_DAEMON_RUNTIME=sysbox-runc`, `AGENT_DAEMON_DATA=/var/lib/docker` and
 `AGENT_DAEMON_SOCKET_GROUP=1000`, after Sysbox is installed on the server (the contained installation document, task 1502, holds the steps).
 
+## account-transport: supported
+
+The user decided (question 30) that an agent's own account sign-in is mounted into that agent's own container. The
+contained start builds that mount (tasks 1495 to 1497): the manifest binds the account's folder and no other, and a
+manifest that binds another account's folder is refused before anything is created
+(`TestAContainerOnAnAccountCarriesItsLabelAndBindsOnlyThatAccountsFolder`,
+`TestASavedAccountInAContainerIsRefusedBeforeAnythingIsCreated`). Inside the container the program keeps its own
+store and refreshes it itself: Claude Code its `.credentials.json`, Codex its `auth.json` under `CODEX_HOME`. Nothing
+of another account or session reaches the container, and no token passes through the environment or the arguments.
+The runs of tasks 1634 and 1501 record a signed-in session using it.
+
 ## relay-protection: unsupported
 
 The contained host's protection report, recorded on the host's row (`hosts.protection`, `claude-code@2.1.323`,

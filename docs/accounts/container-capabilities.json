@@ -6,9 +6,9 @@
             "program_version": "2.1.323",
             "account_mode": "subscription",
             "execution_mode": "required_container",
-            "status": "unverified",
-            "evidence": "docs/accounts/start-handshake.md#claude-code-in-a-required-container",
-            "reason": "Claude Code signs in to a claude.ai subscription only through its own account store (Keychain or .credentials.json); its gateway command runs an enterprise auth gateway that is not shown to carry a claude.ai subscription for a credential-free container client, and setup-token would put a long-lived secret in the container."
+            "status": "supported",
+            "evidence": "docs/accounts/contained-capability-runs.md#account-transport-supported",
+            "reason": "The agent's own account folder, holding Claude Code's own .credentials.json, is mounted into that agent's container alone, as the user decided (question 30); Claude Code signs in and refreshes from its own store there, and no other account or session's folder is mounted."
         },
         {
             "capability": "account-transport",
@@ -16,9 +16,9 @@
             "program_version": "0.165.0",
             "account_mode": "subscription",
             "execution_mode": "required_container",
-            "status": "unsupported",
-            "evidence": "docs/accounts/start-handshake.md#codex-in-a-required-container",
-            "reason": "Codex signs in to a managed ChatGPT account only through auth.json in its CODEX_HOME (or a keyring), which the program refreshes itself; its app-server, remote-control and exec-server commands keep the agent and its login on the host and run only tools elsewhere, which doc 14 section 61 does not accept, and an API key or access token would put a credential in the container or switch to API billing."
+            "status": "supported",
+            "evidence": "docs/accounts/contained-capability-runs.md#account-transport-supported",
+            "reason": "The agent's own account folder, holding Codex's own auth.json under its CODEX_HOME, is mounted into that agent's container alone, as the user decided (question 30); Codex refreshes it itself there, and no other account or session's folder is mounted."
         },
         {
             "capability": "account-transport",
