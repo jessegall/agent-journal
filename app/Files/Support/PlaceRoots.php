@@ -109,23 +109,26 @@ final readonly class PlaceRoots
     }
 
     /**
-     * The real path of a path, or of its folder followed by its name when the file does not exist yet.
+     * The real path of a path; for a path not there yet, the real path of its nearest existing folder followed by the
+     * names below it, none of which may climb.
      */
     private function realPathOf(#[SensitiveParameter] string $path): string
     {
-        $real = realpath($path);
+        $existing = $path;
+        $missing = [];
 
-        if ($real !== false) {
-            return $real;
+        while (realpath($existing) === false) {
+            $name = basename($existing);
+
+            if ($name === '..' || $existing === dirname($existing)) {
+                throw FileOutsidePlaces::given();
+            }
+
+            array_unshift($missing, $name);
+            $existing = dirname($existing);
         }
 
-        $folder = realpath(dirname($path));
-
-        if ($folder === false) {
-            throw FileOutsidePlaces::given();
-        }
-
-        return $folder.'/'.basename($path);
+        return rtrim((string) realpath($existing).'/'.implode('/', $missing), '/');
     }
 
     /**
