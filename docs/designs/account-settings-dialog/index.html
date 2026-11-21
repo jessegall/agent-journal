@@ -46,6 +46,7 @@ h1{font-size:22px;margin:0 0 6px} h2{font-size:16px;margin:44px 0 6px}
 .dlg header h3{margin:0;flex:1;font-size:var(--t-title);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dlg .body{height:420px;padding:20px;display:flex;flex-direction:column;gap:16px;overflow:hidden;position:relative}
 .dlg .body.scroll{overflow-y:auto}
+.dlg .body>*{flex-shrink:0}
 .dlg footer{height:52px;display:flex;align-items:center;gap:8px;padding:0 12px;border-top:1px solid var(--line);background:var(--bg-2)}
 .dlg.short .body{height:auto;min-height:0}
 .clip{position:absolute;left:0;right:0;bottom:0;height:34px;background:repeating-linear-gradient(-45deg,color-mix(in srgb,var(--danger) 18%,transparent) 0 6px,transparent 6px 12px);border-top:1px dashed var(--danger);font-size:11px;color:var(--danger);display:flex;align-items:center;justify-content:center}
@@ -101,7 +102,7 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--good);margin-right:6px;vertical-align:1px}
 .dot.warn{background:var(--warn)}
 .defrow .v{display:flex;align-items:center;gap:8px}
-.chip{font-size:11px;line-height:18px;padding:0 6px;border-radius:var(--r-badge);background:var(--chip);color:var(--text-2);display:inline-flex;gap:4px;align-items:center}
+.chip{font-size:11px;line-height:18px;padding:0 6px;border-radius:var(--r-badge);background:var(--chip);color:var(--text-2);display:inline-flex;gap:4px;align-items:center;white-space:nowrap;flex:none}
 .quiet{color:var(--text-4)}
 a.start{color:var(--brand-text);text-decoration:none}
 a.start:hover{text-decoration:underline}
@@ -181,7 +182,7 @@ code{font-family:var(--font-mono);font-size:11.5px}
           </div>
           <div class="group">
             <div class="gh">Use</div>
-            <div class="row defrow"><span class="t">Default</span><span class="v"><span class="chip"><svg class="i" style="width:12px;height:12px"><use href="#star"/></svg>Default</span><span class="quiet">for new Claude Code starts</span></span></div>
+            <div class="row defrow"><span class="t">Default</span><span class="v"><span class="chip"><svg class="i" style="width:12px;height:12px"><use href="#star"/></svg>Default</span></span></div>
             <div class="row"><span class="t">Running now</span><span class="v">2 agents</span></div>
             <div class="row"><span class="t">Recent starts</span><span class="v" style="display:flex;flex-direction:column;gap:2px"><a class="start" href="#"><span class="dot"></span>Running since 21 Nov, 13:40</a><a class="start" href="#" style="padding-left:12px">Started 20 Nov, 09:12</a></span></div>
           </div>
@@ -225,8 +226,8 @@ code{font-family:var(--font-mono);font-size:11.5px}
       <div class="group"><div class="row defrow" style="border-top:0"><span class="t">Default</span><span class="v"><span class="quiet" style="flex:1">No</span><button class="btn sm bordered">Make default</button></span></div></div>
       <p>The button sits in the row it changes, right-aligned; while it sends, it shows the spinner, then the row turns into the Default chip.</p></div>
     <div class="st"><b>The default</b>
-      <div class="group"><div class="row defrow" style="border-top:0"><span class="t">Default</span><span class="v"><span class="chip"><svg class="i" style="width:12px;height:12px"><use href="#star"/></svg>Default</span><span class="quiet">for new Claude Code starts</span></span></div></div>
-      <p>The sentence the dialog shows today, as a chip and a grey line.</p></div>
+      <div class="group"><div class="row defrow" style="border-top:0"><span class="t">Default</span><span class="v"><span class="chip"><svg class="i" style="width:12px;height:12px"><use href="#star"/></svg>Default</span></span></div></div>
+      <p>The chip alone; it needs no sentence.</p></div>
     <div class="st"><b>Removing or removed</b>
       <div class="group"><div class="row" style="border-top:0"><span class="t">State</span><span class="v"><span class="spin" style="display:inline-block;vertical-align:-1px;margin-right:6px"></span>Removing</span></div></div>
       <p>No Remove account in the footer and no Make default, as today; the name field is disabled.</p></div>
