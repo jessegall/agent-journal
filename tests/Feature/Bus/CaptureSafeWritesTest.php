@@ -7,7 +7,7 @@ namespace Tests\Feature\Bus;
 use App\Bus\Support\ActiveEventUnits;
 use App\Bus\Support\EventUnit;
 use App\Bus\Support\RequiredDrain;
-use App\Domains\Support\RequiredListenerRegistry;
+use App\Bus\Support\RequiredListenerRegistry;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Contracts\RaisingRow;

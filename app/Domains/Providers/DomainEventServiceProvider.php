@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domains\Providers;
 
+use App\Bus\Support\RequiredListenerRegistry;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Support\AvailableListener;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\FailureLoggingListener;
 use App\Domains\Support\ListenerOwnership;
-use App\Domains\Support\ListenerPolicy;
-use App\Domains\Support\RequiredListenerRegistry;
+use App\Domains\Registration\ListenerPolicy;
 use App\Domains\Support\StateListenerDeclarations;
 use App\Hooks\Declarations\StateEvents;
 use App\Hooks\Declarations\StateMethods;
@@ -33,9 +33,9 @@ final class DomainEventServiceProvider extends EventServiceProvider
     /**
      * The mark of a cache built with the required lane, so a cache from before it fails loudly.
      */
-    private const string LANES = '@listener-lanes';
+    public const string LANES = '@listener-lanes';
 
-    private const string LANES_VERSION = 'required-and-public-1';
+    public const string LANES_VERSION = 'required-and-public-1';
 
     /**
      * The listeners this process already discovered, by the folders they were discovered in: the files cannot change

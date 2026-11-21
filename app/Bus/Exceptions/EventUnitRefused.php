@@ -17,6 +17,11 @@ final class EventUnitRefused extends RuntimeException
         return new self("{$command} cannot commit: a command or required listener of its transaction failed.");
     }
 
+    public static function nothingPending(): self
+    {
+        return new self('The event unit was asked for a pending fact while none waits.');
+    }
+
     public static function readyTwice(): self
     {
         return new self('The batch of an event unit was marked ready twice; a commit releases it once.');

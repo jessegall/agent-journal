@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Bus\Exceptions;
+namespace App\Contracts\Exceptions;
 
 use RuntimeException;
 

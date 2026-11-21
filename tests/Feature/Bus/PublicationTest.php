@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Bus;
 
 use App\Bus\Support\EventUnitLifecycle;
-use App\Domains\Support\RequiredListenerRegistry;
+use App\Bus\Support\RequiredListenerRegistry;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Schema\Blueprint;

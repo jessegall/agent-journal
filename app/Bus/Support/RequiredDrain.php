@@ -6,8 +6,6 @@ namespace App\Bus\Support;
 
 use App\Bus\Exceptions\CausalDepthExceeded;
 use App\Contracts\Event;
-use App\Domains\Support\AvailableListener;
-use App\Domains\Support\RequiredListenerRegistry;
 use Illuminate\Contracts\Container\Container;
 
 /**
@@ -33,14 +31,15 @@ final readonly class RequiredDrain
         $unit->pump(function () use ($unit): void {
             $unit->seal();
 
-            for ($next = $unit->takePending(); $next !== null; $next = $unit->takePending()) {
-                $chain = [...$next['chain'], $next['event']::class];
+            while ($unit->hasPending()) {
+                $next = $unit->takePending();
+                $chain = $next->chainWithItself();
 
                 if (count($chain) > self::CAUSAL_DEPTH_LIMIT) {
                     throw CausalDepthExceeded::along($chain, self::CAUSAL_DEPTH_LIMIT);
                 }
 
-                $unit->drain($next, $chain, fn () => $this->runListenersOf($next['event']));
+                $unit->drain($next, fn () => $this->runListenersOf($next->event));
             }
         });
     }
@@ -48,7 +47,7 @@ final readonly class RequiredDrain
     private function runListenersOf(Event $event): void
     {
         foreach ($this->registry->listenersOf($event::class) as $listener) {
-            if ($listener instanceof AvailableListener) {
+            if (is_callable($listener)) {
                 $listener($event);
 
                 continue;

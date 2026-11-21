@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\ModelWrites\Recording;
 
 use App\Contracts\EventSource;
-use App\Contracts\RaisesEvents;
+use App\Contracts\Support\RaisesEvents;
 use Illuminate\Database\Eloquent\Model;
 
 /**

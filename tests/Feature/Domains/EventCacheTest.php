@@ -24,7 +24,9 @@ final class EventCacheTest extends TestCase
         $this->cachePath = (string) tempnam(sys_get_temp_dir(), 'events-cache-').'.php';
         file_put_contents(
             $this->cachePath,
-            '<?php return '.var_export([DomainEventServiceProvider::class => []], true).';',
+            '<?php return '.var_export([DomainEventServiceProvider::class => [
+                DomainEventServiceProvider::LANES => [DomainEventServiceProvider::LANES_VERSION],
+            ]], true).';',
         );
         $this->useEventCachePath($this->cachePath);
 

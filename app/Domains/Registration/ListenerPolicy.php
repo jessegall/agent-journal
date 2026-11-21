@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Domains\Support;
+namespace App\Domains\Registration;
 
 use App\Domains\Pipes\CheckListenerPairs;
 use App\Domains\Pipes\ExpandUiUpdaterListeners;
 use App\Domains\Pipes\GateListenersByDomain;
 use App\Domains\Pipes\SeparateRequiredListeners;
-use App\Domains\Values\GatedListeners;
-use App\Domains\Values\ListenerDeclarations;
 use App\Pipelines\Contracts\PipelineRunner;
+use App\Domains\Support\GatedListeners;
+use App\Domains\Support\ListenerDeclarations;
+use App\Domains\Support\ListenerOwnership;
 
 /**
  * Runs the steps for discovering, checking and registering event listeners: the dispatcher's ordinary ones and the

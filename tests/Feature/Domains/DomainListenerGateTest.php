@@ -52,6 +52,7 @@ final class DomainListenerGateTest extends TestCase
     {
         $provider = new DomainEventServiceProvider($this->app);
         $discovered = $provider->discoverEvents();
+        unset($discovered[DomainEventServiceProvider::LANES]);
         $gated = $provider->getEvents();
 
         $this->assertSame(

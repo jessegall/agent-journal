@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
+use App\Bus\Support\RequiredListenerRegistry;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Support\AvailableListener;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\ListenerOwnership;
-use App\Domains\Support\ListenerPolicy;
-use App\Domains\Support\RequiredListenerRegistry;
+use App\Domains\Registration\ListenerPolicy;
 use App\Pipelines\Contracts\PipelineRunner;
 use App\Web\Listeners\BroadcastPageChange;
 use Domain\Plans\Api\Events\PlanProgressChanged;
@@ -96,7 +96,7 @@ final class RequiredListenerLaneTest extends TestCase
     {
         return new ListenerPolicy(
             $this->app->make(PipelineRunner::class),
-            new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders()),
+            new ListenerOwnership($registry, CoreApi::exports(), [...CoreApi::listenerFolders(), base_path('tests/Fixtures/Listeners')]),
         );
     }
 }

@@ -35,7 +35,7 @@ final readonly class ModelWriteScan implements FileScan
      */
     public const string EVENT_SOURCE = 'App\Contracts\EventSource';
 
-    public const string RAISES_EVENTS = 'App\Contracts\RaisesEvents';
+    public const string RAISES_EVENTS = 'App\Contracts\Support\RaisesEvents';
 
     /**
      * The Eloquent calls that write a row, a relation or a pivot.

@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Agents\Support\StackTarget;
 use App\Bus\Support\EventUnitLifecycle;
-use App\Domains\Support\RequiredListenerRegistry;
+use App\Bus\Support\RequiredListenerRegistry;
 use App\Hooks\StateEvents\StateEventBridge;
 use App\Hooks\StateEvents\StateEventScope;
 use App\Hooks\Support\StackTransaction;

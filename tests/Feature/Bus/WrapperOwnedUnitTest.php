@@ -8,7 +8,7 @@ use App\Bus\CommandMiddleware\RunInTransaction;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandNesting;
 use App\Bus\Support\Publication;
-use App\Domains\Support\RequiredListenerRegistry;
+use App\Bus\Support\RequiredListenerRegistry;
 use Domain\Tasks\Commands\StartTask;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Events\Dispatcher;

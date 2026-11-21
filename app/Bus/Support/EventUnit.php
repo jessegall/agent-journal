@@ -25,26 +25,31 @@ final class EventUnit
     private FactStaging|null $staging;
 
     /**
-     * The command depth the open slot was opened at, and the depth of the command running now.
+     * The command depth the open slot was opened at.
      */
     private int $openDepth = 0;
 
-    private int $depth = 0;
+    /**
+     * One entry for each command running one level deeper than the unit's owner, so its count is the depth now.
+     *
+     * @var list<true>
+     */
+    private array $levels = [];
 
     /**
      * The facts held back from the drain until their operation ends, by the command depth whose scope holds them.
      *
-     * @var array<int, list<array{event: Event, chain: list<string>, staged: object|null}>>
+     * @var array<int, list<Occurrence>>
      */
     private array $held = [];
 
     /**
-     * @var list<array{event: Event, chain: list<string>, staged: object|null}>
+     * @var list<Occurrence>
      */
     private array $pending = [];
 
     /**
-     * @var list<array{event: Event, staged: object|null}>
+     * @var list<Occurrence>
      */
     private array $batch = [];
 
@@ -74,7 +79,7 @@ final class EventUnit
         $this->seal();
         $row->takeRaisedEvents();
         $this->open = $row;
-        $this->openDepth = $this->depth;
+        $this->openDepth = count($this->levels);
     }
 
     /**
@@ -87,9 +92,9 @@ final class EventUnit
         }
 
         foreach ($this->open->takeRaisedEvents() as $event) {
-            $occurrence = ['event' => $event, 'chain' => $this->cause, 'staged' => $this->staging?->stage($event)];
+            $occurrence = new Occurrence($event, $this->cause, $this->staging?->stage($event));
 
-            if (isset($this->held[$this->openDepth])) {
+            if (array_key_exists($this->openDepth, $this->held)) {
                 $this->held[$this->openDepth][] = $occurrence;
             } else {
                 $this->pending[] = $occurrence;
@@ -105,7 +110,7 @@ final class EventUnit
     public function stage(Event $event): void
     {
         $this->seal();
-        $this->pending[] = ['event' => $event, 'chain' => $this->cause, 'staged' => $this->staging?->stage($event)];
+        $this->pending[] = new Occurrence($event, $this->cause, $this->staging?->stage($event));
     }
 
     /**
@@ -118,12 +123,12 @@ final class EventUnit
      */
     public function deeper(callable $work): mixed
     {
-        $this->depth++;
+        $this->levels[] = true;
 
         try {
             return $work();
         } finally {
-            $this->depth--;
+            array_pop($this->levels);
         }
     }
 
@@ -139,11 +144,12 @@ final class EventUnit
      */
     public function hold(callable $work): mixed
     {
-        if (isset($this->held[$this->depth])) {
+        $level = count($this->levels);
+
+        if (array_key_exists($level, $this->held)) {
             return $work();
         }
 
-        $level = $this->depth;
         $this->held[$level] = [];
 
         try {
@@ -159,25 +165,31 @@ final class EventUnit
     }
 
     /**
-     * The oldest pending fact with its chain, taken off the queue, or none when nothing waits.
-     *
-     * @return array{event: Event, chain: list<string>, staged: object|null}|null
+     * Whether a sealed fact waits for the drain.
      */
-    public function takePending(): array|null
+    public function hasPending(): bool
     {
-        return array_shift($this->pending);
+        return $this->pending !== [];
+    }
+
+    /**
+     * The oldest pending fact, taken off the queue.
+     *
+     * @throws EventUnitRefused
+     */
+    public function takePending(): Occurrence
+    {
+        return array_shift($this->pending) ?? throw EventUnitRefused::nothingPending();
     }
 
     /**
      * Runs the work with the fact's chain as the cause of what its listeners raise, and adds the fact to the batch.
      *
-     * @param  array{event: Event, chain: list<string>, staged: object|null}  $occurrence
-     * @param  list<string>  $chain  the fact's chain, itself included
      * @param  callable(): void  $work
      */
-    public function drain(array $occurrence, array $chain, callable $work): void
+    public function drain(Occurrence $occurrence, callable $work): void
     {
-        $this->cause = $chain;
+        $this->cause = $occurrence->chainWithItself();
 
         try {
             $work();
@@ -186,7 +198,7 @@ final class EventUnit
             $this->cause = [];
         }
 
-        $this->batch[] = ['event' => $occurrence['event'], 'staged' => $occurrence['staged']];
+        $this->batch[] = $occurrence;
     }
 
     /**
@@ -220,13 +232,13 @@ final class EventUnit
      */
     public function batch(): array
     {
-        return array_column($this->batch, 'event');
+        return array_map(fn (Occurrence $occurrence) => $occurrence->event, $this->batch);
     }
 
     /**
      * The drained facts in their order, each with the delivery context staged for it.
      *
-     * @return list<array{event: Event, staged: object|null}>
+     * @return list<Occurrence>
      */
     public function stagedBatch(): array
     {

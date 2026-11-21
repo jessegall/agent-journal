@@ -414,6 +414,7 @@ use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommandFacts;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Contracts\CommandMiddlewareProvider;
 use App\Bus\Contracts\CommandProvider;
@@ -454,12 +455,10 @@ use App\Bus\Exceptions\MiddlewareSwallowedFailure;
 use App\Bus\Exceptions\NestedCommandFailureIgnored;
 use App\Bus\Exceptions\OperationUnavailable;
 use App\Bus\Exceptions\RaisedOutsideUnit;
-use App\Bus\Exceptions\RowWriteRefused;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\Command as BaseCommand;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandScope;
-use App\Bus\Support\EventUnitLifecycle;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\Operation;
 use App\Bus\Values\RecoveryCall;
@@ -547,9 +546,10 @@ use App\Contracts\CommandRefusal;
 use App\Contracts\DomainAvailability;
 use App\Contracts\Event;
 use App\Contracts\EventSource;
+use App\Contracts\Exceptions\RowWriteRefused;
 use App\Contracts\Listener;
 use App\Contracts\ListenerFailureLog;
-use App\Contracts\RaisesEvents;
+use App\Contracts\Support\RaisesEvents;
 use App\Desks\Commands\CreateDesk;
 use App\Desks\Commands\InstallDesks;
 use App\Desks\Commands\ProvisionActorDesk;
@@ -1386,6 +1386,7 @@ final class CoreApi
                 CommandRefusal::class,
                 Event::class,
                 EventSource::class,
+                CommandFacts::class,
                 Listener::class,
                 CommandHandler::class,
                 CommandProvider::class,
@@ -2351,7 +2352,6 @@ final class CoreApi
             )
             ->support(
                 RaisesEvents::class,
-                EventUnitLifecycle::class,
                 BelongsToOneActor::class,
                 HasComments::class,
                 BoundedReads::class,

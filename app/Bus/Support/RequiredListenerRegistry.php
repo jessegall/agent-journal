@@ -2,23 +2,24 @@
 
 declare(strict_types=1);
 
-namespace App\Domains\Support;
+namespace App\Bus\Support;
 
 /**
- * The listeners the command's transaction runs, by event, each gated by its domain's availability and in the order of
- * their full names; built once at boot from the same map as the dispatcher's, and never handed to the dispatcher.
+ * The listeners the command's transaction runs, by event, each a Class@method name or an invokable that gates it by
+ * its domain's availability, in the order of their full names; built once at boot from the same map as the
+ * dispatcher's, and never handed to the dispatcher.
  */
 final readonly class RequiredListenerRegistry
 {
     /**
-     * @param  array<string, list<string|AvailableListener>>  $listeners
+     * @param  array<string, list<string|callable(object): mixed>>  $listeners
      */
     public function __construct(private array $listeners = []) {}
 
     /**
      * The required listeners of the event, in their order; none for an event no listener requires.
      *
-     * @return list<string|AvailableListener>
+     * @return list<string|callable(object): mixed>
      */
     public function listenersOf(string $event): array
     {

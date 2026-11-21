@@ -8,6 +8,7 @@ use App\Bus\Contracts\FactStaging;
 use App\Bus\Exceptions\OverlappingTransactionOwner;
 use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
+use PhpOption\Option;
 
 /**
  * The event unit active for each database connection in this execution, scoped so an Octane request or a queued job
@@ -23,9 +24,14 @@ final class ActiveEventUnits
 
     public function __construct(private readonly FactStaging $staging) {}
 
-    public function activeFor(ConnectionInterface $connection): EventUnit|null
+    /**
+     * The unit open for the connection's transaction, if an owner opened one.
+     *
+     * @return Option<EventUnit>
+     */
+    public function activeFor(ConnectionInterface $connection): Option
     {
-        return $this->units[self::nameOf($connection)] ?? null;
+        return Option::fromValue($this->units[self::nameOf($connection)] ?? null);
     }
 
     /**

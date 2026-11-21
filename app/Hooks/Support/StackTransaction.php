@@ -6,8 +6,8 @@ namespace App\Hooks\Support;
 
 use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\StackAdmission;
+use App\Bus\Contracts\UnitOwner;
 use App\Bus\Exceptions\StackLockTimedOut;
-use App\Bus\Support\EventUnitLifecycle;
 use App\Bus\Support\OperationDeadline;
 use App\Contracts\StartTransaction;
 use App\Hooks\Contracts\StackTransaction as StackTransactionContract;
@@ -33,7 +33,7 @@ final readonly class StackTransaction implements StackTransactionContract, Stack
         private OperationDeadline $deadline,
         private StackAdmission $admission,
         private StateEventScope $eventScope,
-        private EventUnitLifecycle $lifecycle,
+        private UnitOwner $lifecycle,
     ) {}
 
     /**

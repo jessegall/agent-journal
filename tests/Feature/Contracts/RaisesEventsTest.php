@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Contracts;
 
-use App\Bus\Exceptions\RowWriteRefused;
+use App\Contracts\Exceptions\RowWriteRefused;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Contracts\RaisingRow;

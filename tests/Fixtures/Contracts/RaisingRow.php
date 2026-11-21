@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Contracts;
 
 use App\Contracts\EventSource;
-use App\Contracts\RaisesEvents;
+use App\Contracts\Support\RaisesEvents;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -20,6 +20,8 @@ final class RaisingRow extends Model implements EventSource
     use RaisesEvents;
 
     protected $table = 'raising_rows';
+
+    protected $fillable = ['name', 'times'];
 
     /**
      * Inserts the row unless its id is taken, raising its fact only when it inserted.

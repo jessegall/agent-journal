@@ -9,7 +9,7 @@ namespace App\Bus\Support;
  * database seeder and the tests only. The application never allows it, so a production write that skips the bus fails
  * by name.
  */
-final class WritesOutsideCommands
+final class OutsideCommandAllowance
 {
     private bool $allowed = false;
 

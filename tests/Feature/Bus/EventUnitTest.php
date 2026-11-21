@@ -8,7 +8,7 @@ use App\Bus\Exceptions\CausalDepthExceeded;
 use App\Bus\Support\ActiveEventUnits;
 use App\Bus\Support\EventUnit;
 use App\Bus\Support\RequiredDrain;
-use App\Domains\Support\RequiredListenerRegistry;
+use App\Bus\Support\RequiredListenerRegistry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Event;
@@ -86,7 +86,7 @@ final class EventUnitTest extends TestCase
         $unit->seal();
 
         $this->assertNull($watched->get());
-        $this->assertNull($unit->takePending());
+        $this->assertFalse($unit->hasPending());
     }
 
     public function test_a_required_listener_runs_on_drain_and_its_fact_follows_its_siblings(): void

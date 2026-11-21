@@ -6,6 +6,7 @@ namespace App\Bus\Support;
 
 use App\Bus\Exceptions\RaisedOutsideUnit;
 use App\Contracts\EventSource;
+use App\Contracts\RowCapture;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -14,21 +15,21 @@ use Illuminate\Database\Eloquent\Model;
  * never dispatches and never drains, so a lifecycle observer that reenters a business mutation between a save and
  * its raise would break the save order, and none may.
  */
-final readonly class EventCapture
+final readonly class EventCapture implements RowCapture
 {
-    public function __construct(private ActiveEventUnits $units, private WritesOutsideCommands $outsideCommands) {}
+    public function __construct(private ActiveEventUnits $units, private OutsideCommandAllowance $outsideCommands) {}
 
     /**
      * @throws RaisedOutsideUnit
      */
     public function persisted(Model&EventSource $row): void
     {
-        $unit = $this->units->activeFor($row->getConnection());
+        $active = $this->units->activeFor($row->getConnection());
 
-        if ($unit === null && ! $this->outsideCommands->isAllowed()) {
+        if ($active->isEmpty() && ! $this->outsideCommands->isAllowed()) {
             throw RaisedOutsideUnit::for($row::class);
         }
 
-        $unit?->openSlot($row);
+        $active->forAll(fn (EventUnit $unit) => $unit->openSlot($row));
     }
 }

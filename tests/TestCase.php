@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests;
 
 use App\Bus\Support\OuterTransactionOwner;
-use App\Bus\Support\WritesOutsideCommands;
+use App\Bus\Support\OutsideCommandAllowance;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -42,7 +42,7 @@ abstract class TestCase extends BaseTestCase
         $this->applicationMorphMap = Relation::morphMap();
         Http::preventStrayRequests();
         $this->withoutVite();
-        $this->app->make(WritesOutsideCommands::class)->allow();
+        $this->app->make(OutsideCommandAllowance::class)->allow();
         $this->app->make(OuterTransactionOwner::class)->register();
         $this->beforeApplicationDestroyed(fn () => $this->closeConnections());
     }

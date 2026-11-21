@@ -7,7 +7,7 @@ namespace App\Domains\Pipes;
 use App\Contracts\Attributes\InCommandTransaction;
 use App\Contracts\Attributes\RequiresListener;
 use App\Domains\Exceptions\InvalidListener;
-use App\Domains\Values\ListenerDeclarations;
+use App\Domains\Support\ListenerDeclarations;
 use App\Pipelines\Contracts\Pipe;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
@@ -99,7 +99,11 @@ final readonly class SeparateRequiredListeners implements Pipe
         $owner = $declarations->ownership->domainHoldingListener((string) $class->getFileName());
         $eventOwner = $declarations->ownership->eventDomain($event, $listener);
 
-        if ($owner !== null && $owner !== $eventOwner && ! self::isDeclaredBy($event, $class->getName())) {
+        $isForeignUndeclared = $owner !== null
+            && $owner !== $eventOwner
+            && ! self::isDeclaredBy($event, $class->getName());
+
+        if ($isForeignUndeclared) {
             throw InvalidListener::requiredWithoutDeclaration($listener, $event, $owner->name);
         }
     }

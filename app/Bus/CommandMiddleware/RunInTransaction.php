@@ -53,7 +53,7 @@ final readonly class RunInTransaction implements CommandMiddleware
         if ($this->database->transactionLevel() > 0) {
             $isolation = $this->requireJoinable($call);
 
-            if (! $this->running->isRunning() && $this->ownsOuterTransaction()) {
+            if (! $this->running->isRunning() && $this->isUnownedOuterTransaction()) {
                 return $this->lifecycle->own(
                     $this->database,
                     $call->name(),
@@ -131,9 +131,9 @@ final readonly class RunInTransaction implements CommandMiddleware
     /**
      * Whether the open transaction is the registered outer owner's with no unit yet, so this command owns one.
      */
-    private function ownsOuterTransaction(): bool
+    private function isUnownedOuterTransaction(): bool
     {
-        return $this->outerOwner->isRegistered() && $this->units->activeFor($this->database) === null;
+        return $this->outerOwner->isRegistered() && $this->units->activeFor($this->database)->isEmpty();
     }
 
     /**

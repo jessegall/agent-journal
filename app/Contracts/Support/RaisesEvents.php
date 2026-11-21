@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Contracts;
+namespace App\Contracts\Support;
 
-use App\Bus\Exceptions\RowWriteRefused;
-use App\Bus\Support\EventCapture;
+use App\Contracts\Exceptions\RowWriteRefused;
+use App\Contracts\RowCapture;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
+use App\Contracts\Event;
+use App\Contracts\EventSource;
 
 /**
  * Keeps the facts a model's own transitions establish, for EventSource. A transition raises only after its own save
@@ -30,7 +32,7 @@ trait RaisesEvents
     public static function bootRaisesEvents(): void
     {
         $capture = static fn (Model&EventSource $row) => Container::getInstance()
-            ->make(EventCapture::class)
+            ->make(RowCapture::class)
             ->persisted($row);
         static::saved($capture);
         static::deleted($capture);
@@ -63,7 +65,7 @@ trait RaisesEvents
             $this->exists = true;
             $this->wasRecentlyCreated = true;
             $this->syncOriginal();
-            Container::getInstance()->make(EventCapture::class)->persisted($this);
+            Container::getInstance()->make(RowCapture::class)->persisted($this);
         }
 
         return $inserted;

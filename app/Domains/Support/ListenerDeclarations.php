@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domains\Values;
-
-use App\Domains\Support\ListenerOwnership;
+namespace App\Domains\Support;
 
 /**
  * The declared listeners by event and the ownership rules for their registration.

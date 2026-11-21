@@ -9,7 +9,7 @@ use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\ListenerOwnership;
-use App\Domains\Support\ListenerPolicy;
+use App\Domains\Registration\ListenerPolicy;
 use App\Pipelines\Contracts\PipelineRunner;
 use App\Ui\Contracts\UserInterfaceUpdater;
 use App\Web\Listeners\BroadcastPageChange;

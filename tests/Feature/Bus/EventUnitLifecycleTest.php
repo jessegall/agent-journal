@@ -8,7 +8,7 @@ use App\Bus\Exceptions\EventUnitRefused;
 use App\Bus\Support\ActiveEventUnits;
 use App\Bus\Support\EventUnit;
 use App\Bus\Support\EventUnitLifecycle;
-use App\Domains\Support\RequiredListenerRegistry;
+use App\Bus\Support\RequiredListenerRegistry;
 use App\Hooks\Support\StackTransaction;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Schema\Blueprint;
@@ -60,7 +60,7 @@ final class EventUnitLifecycleTest extends TestCase
 
         $unit = $this->owned(function () use ($row, &$seen): void {
             $this->within(fn () => $row->rename('first'));
-            $seen = $this->activeUnit()?->batch() ?? [];
+            $seen = $this->activeUnit()->batch();
         });
 
         $this->assertEquals([new RowRenamed($row->id, 'first'), new RowNoted($row->id)], $seen);
@@ -72,16 +72,18 @@ final class EventUnitLifecycleTest extends TestCase
         $row = RaisingRow::query()->create(['name' => 'start']);
         $unit = null;
         $caught = '';
-        $commit = fn () => $this->owned(function () use ($row, &$unit, &$caught): void {
-            $unit = $this->activeUnit();
-            $row->rename('second');
+        $commit = function () use ($row, &$unit, &$caught): void {
+            $this->owned(function () use ($row, &$unit, &$caught): void {
+                $unit = $this->activeUnit();
+                $row->rename('second');
 
-            try {
-                $this->within(fn () => throw new RuntimeException('inner command failed'));
-            } catch (RuntimeException $failure) {
-                $caught = $failure->getMessage();
-            }
-        });
+                try {
+                    $this->within(fn () => throw new RuntimeException('inner command failed'));
+                } catch (RuntimeException $failure) {
+                    $caught = $failure->getMessage();
+                }
+            });
+        };
 
         $this->assertThrows($commit, EventUnitRefused::class);
         $this->assertSame('inner command failed', $caught);
@@ -99,7 +101,7 @@ final class EventUnitLifecycleTest extends TestCase
 
             throw new RuntimeException('the stack failed');
         }), RuntimeException::class);
-        $next = $stack->run(fn () => $this->activeUnit()?->batch());
+        $next = $stack->run(fn () => $this->activeUnit()->batch());
 
         $this->assertSame('start', $row->refresh()->name);
         $this->assertSame([], $row->takeRaisedEvents());
@@ -154,8 +156,9 @@ final class EventUnitLifecycleTest extends TestCase
         $this->app->make(EventUnitLifecycle::class)->within($this->app->make(ConnectionInterface::class), $work(...));
     }
 
-    private function activeUnit(): EventUnit|null
+    private function activeUnit(): EventUnit
     {
-        return $this->app->make(ActiveEventUnits::class)->activeFor($this->app->make(ConnectionInterface::class));
+        return $this->app->make(ActiveEventUnits::class)->activeFor($this->app->make(ConnectionInterface::class))
+            ->getOrThrow(new RuntimeException('No unit is active.'));
     }
 }

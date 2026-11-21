@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
+use App\Bus\Contracts\CommandFacts;
 use App\Bus\Contracts\FactStaging;
+use App\Bus\Contracts\UnitOwner;
 use App\Bus\Exceptions\EventUnitRefused;
 use App\Contracts\Event;
 use Closure;
@@ -17,7 +19,7 @@ use Throwable;
  * rollback, and detach the unit on every exit; a committed unit goes to the publication. A command joining the
  * transaction drains its required work before it returns and marks the unit failed when a failure crosses it.
  */
-final readonly class EventUnitLifecycle
+final readonly class EventUnitLifecycle implements CommandFacts, UnitOwner
 {
     public function __construct(
         private ActiveEventUnits $units,
@@ -84,21 +86,31 @@ final readonly class EventUnitLifecycle
      */
     public function within(ConnectionInterface $connection, Closure $work): mixed
     {
-        $unit = $this->units->activeFor($connection);
+        $active = $this->units->activeFor($connection);
+
+        if ($active->isEmpty()) {
+            return $work();
+        }
+
+        $unit = $active->get();
 
         try {
-            $result = $unit === null ? $work() : $unit->deeper($work);
-
-            if ($unit !== null) {
+            return $unit->deeper(function () use ($work, $unit): mixed {
+                $result = $work();
                 $this->drain->applyRequired($unit);
-            }
 
-            return $result;
+                return $result;
+            });
         } catch (Throwable $failure) {
-            $unit?->markFailed();
+            $unit->markFailed();
 
             throw $failure;
         }
+    }
+
+    public function applyRequired(): void
+    {
+        $this->units->activeFor($this->database)->forAll(fn (EventUnit $unit) => $this->drain->applyRequired($unit));
     }
 
     /**
@@ -110,15 +122,15 @@ final readonly class EventUnitLifecycle
      */
     public function publishAfterCommit(Event $event): void
     {
-        $unit = $this->units->activeFor($this->database);
+        $active = $this->units->activeFor($this->database);
 
-        if ($unit === null) {
+        if ($active->isEmpty()) {
             $this->staging->deliver($event, null);
 
             return;
         }
 
-        $unit->stage($event);
+        $active->get()->stage($event);
     }
 
     /**
@@ -132,12 +144,13 @@ final readonly class EventUnitLifecycle
      */
     public function holdUntilReturn(Closure $work): mixed
     {
-        $unit = $this->units->activeFor($this->database);
+        $active = $this->units->activeFor($this->database);
 
-        if ($unit === null) {
+        if ($active->isEmpty()) {
             return $work();
         }
 
+        $unit = $active->get();
         $result = $unit->hold($work);
         $this->drain->applyRequired($unit);
 

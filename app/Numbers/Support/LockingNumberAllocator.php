@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Numbers\Support;
 
 use App\Bus\Contracts\CommandTransaction;
-use App\Bus\Support\WritesOutsideCommands;
+use App\Bus\Support\OutsideCommandAllowance;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Exceptions\NumberHolderUnsaved;
 use App\Numbers\Models\NumberGroup;
@@ -21,7 +21,7 @@ final readonly class LockingNumberAllocator
     public function __construct(
         private CommandTransaction $transaction,
         private NumberedTypeRegistry $types,
-        private WritesOutsideCommands $outsideCommands,
+        private OutsideCommandAllowance $outsideCommands,
     ) {}
 
     public function allocate(Model&Numbered $record): void

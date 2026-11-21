@@ -6,7 +6,7 @@ namespace Tests\Feature\Bus;
 
 use App\Bus\Exceptions\RaisedOutsideUnit;
 use App\Bus\Support\ActiveEventUnits;
-use App\Bus\Support\WritesOutsideCommands;
+use App\Bus\Support\OutsideCommandAllowance;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Contracts\RaisingRow;
@@ -35,7 +35,7 @@ final class RaisedOutsideUnitTest extends TestCase
 
     public function test_a_bare_save_fails_naming_the_model_when_writes_outside_commands_are_not_allowed(): void
     {
-        $this->app->make(WritesOutsideCommands::class)->forbid();
+        $this->app->make(OutsideCommandAllowance::class)->forbid();
 
         $this->expectExceptionObject(RaisedOutsideUnit::for(RaisingRow::class));
 
@@ -44,7 +44,7 @@ final class RaisedOutsideUnitTest extends TestCase
 
     public function test_a_save_inside_a_unit_passes(): void
     {
-        $this->app->make(WritesOutsideCommands::class)->forbid();
+        $this->app->make(OutsideCommandAllowance::class)->forbid();
         $row = new RaisingRow();
         $this->app->make(ActiveEventUnits::class)->open($row->getConnection());
 

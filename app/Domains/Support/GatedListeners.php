@@ -2,10 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domains\Values;
-
-use App\Domains\Support\AvailableListener;
-use App\Domains\Support\FailureLoggingListener;
+namespace App\Domains\Support;
 
 /**
  * The event listeners ready for the dispatcher.

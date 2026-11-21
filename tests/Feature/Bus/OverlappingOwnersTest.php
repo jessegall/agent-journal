@@ -18,7 +18,7 @@ final class OverlappingOwnersTest extends TestCase
     public function test_a_second_owner_on_another_connection_is_refused_while_a_unit_is_open(): void
     {
         $database = $this->app->make(DatabaseManager::class);
-        $this->app->make('config')->set('database.connections.second', $database->connection()->getConfig());
+        $this->app->make('config')->set('database.connections.second', [...$database->connection()->getConfig(), 'name' => 'second']);
         $units = $this->app->make(ActiveEventUnits::class);
         $units->open($database->connection());
 
@@ -41,6 +41,6 @@ final class OverlappingOwnersTest extends TestCase
         $next = $this->app->make(ActiveEventUnits::class);
 
         $this->assertNotSame($units, $next);
-        $this->assertNull($next->activeFor($database->connection()));
+        $this->assertTrue($next->activeFor($database->connection())->isEmpty());
     }
 }

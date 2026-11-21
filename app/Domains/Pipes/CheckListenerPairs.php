@@ -6,8 +6,8 @@ namespace App\Domains\Pipes;
 
 use App\Contracts\Event;
 use App\Domains\Exceptions\InvalidListener;
+use App\Domains\Support\ListenerDeclarations;
 use App\Domains\Support\ListenerOwnership;
-use App\Domains\Values\ListenerDeclarations;
 use App\Hooks\States\AgentState;
 use App\Pipelines\Contracts\Pipe;
 use ReflectionClass;

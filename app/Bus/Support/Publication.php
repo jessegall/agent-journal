@@ -6,13 +6,12 @@ namespace App\Bus\Support;
 
 use App\Bus\Contracts\FactStaging;
 use App\Contracts\Event;
-use Illuminate\Contracts\Container\Container;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
  * Releases the facts of committed event units once no command of the request still runs: each occurrence in its
- * order, once, through Laravel's dispatcher resolved at delivery, so wildcard, queued and broadcast listeners and a
+ * order, once, through the fact staging and Laravel's dispatcher, so wildcard, queued and broadcast listeners and a
  * test's fake see only committed facts. A failure is logged and delivery goes on with the next occurrence; it never
  * rolls back the committed producer.
  */
@@ -25,7 +24,7 @@ final class Publication
 
     public function __construct(
         private readonly CommandNesting $nesting,
-        private readonly Container $container,
+        private readonly FactStaging $staging,
         private readonly LoggerInterface $log,
     ) {}
 
@@ -50,7 +49,7 @@ final class Publication
             $unit = array_shift($this->committed);
 
             foreach ($unit->stagedBatch() as $occurrence) {
-                $this->deliver($occurrence['event'], $occurrence['staged']);
+                $this->deliver($occurrence->event, $occurrence->staged);
             }
         }
     }
@@ -58,7 +57,7 @@ final class Publication
     private function deliver(Event $event, object|null $staged): void
     {
         try {
-            $this->container->make(FactStaging::class)->deliver($event, $staged);
+            $this->staging->deliver($event, $staged);
         } catch (Throwable $failure) {
             $this->log->error('A listener of a committed fact failed.', [
                 'event' => $event::class,

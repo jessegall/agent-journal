@@ -8,8 +8,8 @@ use App\Contracts\ListenerFailureLog;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Support\AvailableListener;
 use App\Domains\Support\FailureLoggingListener;
-use App\Domains\Values\GatedListeners;
-use App\Domains\Values\ListenerDeclarations;
+use App\Domains\Support\GatedListeners;
+use App\Domains\Support\ListenerDeclarations;
 use App\Pipelines\Contracts\Pipe;
 use ReflectionClass;
 
@@ -51,8 +51,7 @@ final readonly class GateListenersByDomain implements Pipe
         ListenerDeclarations $declarations,
         string $event,
         string $listener,
-    ): string|AvailableListener
-    {
+    ): string|AvailableListener {
         $class = explode('@', $listener, 2)[0];
 
         if (! class_exists($class)) {

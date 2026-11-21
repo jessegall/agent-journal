@@ -8,7 +8,7 @@ use App\Bus\Support\ActiveEventUnits;
 use App\Bus\Support\EventUnit;
 use App\Bus\Support\EventUnitLifecycle;
 use App\Bus\Support\RequiredDrain;
-use App\Domains\Support\RequiredListenerRegistry;
+use App\Bus\Support\RequiredListenerRegistry;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -175,6 +175,6 @@ final class EventHoldTest extends TestCase
     private function activeUnit(): EventUnit
     {
         return $this->app->make(ActiveEventUnits::class)->activeFor($this->database())
-            ?? throw new RuntimeException('No unit is active.');
+            ->getOrThrow(new RuntimeException('No unit is active.'));
     }
 }
