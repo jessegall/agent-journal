@@ -16,6 +16,11 @@ const props = defineProps<{
     id: string;
     state: NotificationLoadState;
     page: NotificationPage | null;
+    // Every row loaded, the first page and the older pages, newest first.
+    items: NotificationItem[];
+    hasOlder: boolean;
+    olderFailed: boolean;
+    hasNewItems: boolean;
     pending: ReadonlySet<string>;
     canChange: boolean;
     // The row whose Open link was followed last, focused again when the list comes back.
@@ -26,6 +31,8 @@ const emit = defineEmits<{
     read: [receiptId: string];
     open: [receiptId: string];
     retry: [];
+    loadOlder: [];
+    revealNew: [];
 }>();
 
 const heading = ref<HTMLElement | null>(null);
@@ -97,7 +104,10 @@ defineExpose({ focusHeading });
                         <Button size="small" variant="bordered" @click="emit('retry')">Retry</Button>
                     </p>
                 </template>
-                <template v-if="page === null || page.items.length === 0">
+                <template v-if="hasNewItems">
+                    <Button size="small" variant="bordered" @click="emit('revealNew')">New notifications</Button>
+                </template>
+                <template v-if="page === null || items.length === 0">
                     <EmptyState icon="bell" title="No notifications yet" />
                 </template>
                 <template v-else>
@@ -105,7 +115,7 @@ defineExpose({ focusHeading });
                         <p class="px-2 text-small text-text-3">All caught up</p>
                     </template>
                     <ul ref="list" class="flex max-h-[60vh] flex-col overflow-y-auto">
-                        <template v-for="item in page.items" :key="item.id">
+                        <template v-for="item in items" :key="item.id">
                             <NotificationRow
                                 :item="item"
                                 :is-pending="pending.has(item.id)"
@@ -115,6 +125,15 @@ defineExpose({ focusHeading });
                             />
                         </template>
                     </ul>
+                    <template v-if="olderFailed">
+                        <p class="flex items-center gap-2 px-2 text-small text-text-2" role="alert">
+                            Couldn't refresh notifications
+                            <Button size="small" variant="bordered" @click="emit('loadOlder')">Retry</Button>
+                        </p>
+                    </template>
+                    <template v-else-if="hasOlder">
+                        <Button size="small" variant="bordered" @click="emit('loadOlder')">Load older</Button>
+                    </template>
                 </template>
             </template>
         </SwitchCase>

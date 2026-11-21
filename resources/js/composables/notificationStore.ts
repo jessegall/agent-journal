@@ -46,6 +46,14 @@ export type NotificationStore = {
     state: Ref<NotificationLoadState>;
     // The snapshot the bell may show now: none while loading, after a failed first load or past the lease.
     shown: ComputedRef<NotificationPage | null>;
+    // The rows the list shows: the first page and every older page loaded, newest first.
+    items: ComputedRef<NotificationItem[]>;
+    // Whether an older page waits to be loaded, whether its last load failed, and whether newer rows wait above.
+    hasOlder: ComputedRef<boolean>;
+    olderFailed: Ref<boolean>;
+    hasNewItems: Ref<boolean>;
+    loadOlder(): Promise<void>;
+    revealNew(): void;
     pending: Ref<ReadonlySet<string>>;
     canChange: ComputedRef<boolean>;
     refresh(): Promise<void>;
@@ -73,13 +81,38 @@ export function notificationStore(
     let generation = 0;
     let authorizedAt = 0;
     let changesCursor: string | null = null;
+    const listed = shallowRef<NotificationItem[]>([]);
+    const olderCursor = ref<string | null>(null);
+    const olderFailed = ref(false);
+    const hasNewItems = ref(false);
+    let olderLoaded = false;
 
     const shown = computed(() =>
         state.value === 'loaded' || state.value === 'refreshFailed'
             ? snapshot.value
             : null,
     );
-    const canChange = computed(() => state.value === 'loaded');
+    const canChange = computed(() => state.value === 'loaded' && !olderFailed.value);
+    const items = computed(() => (shown.value === null ? [] : listed.value));
+    const hasOlder = computed(() => olderCursor.value !== null);
+
+    /**
+     * Shows a new first page, unless older pages are open: then the shown rows only take their new read states and
+     * the new rows wait above them until revealed, so nothing moves under the reader.
+     */
+    function list(page: NotificationPage): void {
+        if (!olderLoaded) {
+            listed.value = page.items;
+            olderCursor.value = page.nextCursor;
+
+            return;
+        }
+
+        const current = new Map(page.items.map((item) => [item.id, item]));
+        const known = new Set(listed.value.map((row) => row.id));
+        hasNewItems.value = hasNewItems.value || page.items.some((item) => !known.has(item.id));
+        listed.value = listed.value.map((row) => current.get(row.id) ?? row);
+    }
 
     function take(page: NotificationPage, startedIn: number): void {
         if (startedIn !== generation) {
@@ -91,6 +124,7 @@ export function notificationStore(
         if (snapshot.value === null || BigInt(page.version) >= BigInt(snapshot.value.version)) {
             snapshot.value = page;
             changesCursor = page.changesCursor === '' ? null : page.changesCursor;
+            list(page);
         }
 
         state.value = 'loaded';
@@ -133,6 +167,20 @@ export function notificationStore(
         return snapshot.value?.items.some(
             (item) => item.target?.key === targetKey && item.target.id === targetId && item.readAt !== null,
         ) ?? false;
+    }
+
+    /**
+     * An older row the first page does not hold takes its read state from the server's next read; until then a mark
+     * the server took shows it read.
+     */
+    function showReadOlderRow(receiptId: string): void {
+        if (snapshot.value === null || snapshot.value.items.some((item) => item.id === receiptId)) {
+            return;
+        }
+
+        listed.value = listed.value.map((row) =>
+            row.id === receiptId && row.readAt === null ? { ...row, readAt: new Date(now()).toISOString() } : row,
+        );
     }
 
     function isStillUnread(receiptId: string): boolean {
@@ -219,6 +267,49 @@ export function notificationStore(
             .filter((item): item is NotificationItem => item !== undefined && item.readAt === null);
     }
 
+    /**
+     * Appends the next older page; a failed load keeps the rows and the cursor, so Retry asks for the same page, and
+     * holds changes and paging until it succeeds.
+     */
+    async function loadOlder(): Promise<void> {
+        const cursor = olderCursor.value;
+        const startedIn = generation;
+
+        if (cursor === null) {
+            return;
+        }
+
+        try {
+            const page = await client.page(cursor);
+
+            if (startedIn !== generation) {
+                return;
+            }
+
+            const known = new Set(listed.value.map((item) => item.id));
+            listed.value = [...listed.value, ...page.items.filter((item) => !known.has(item.id))];
+            olderCursor.value = page.nextCursor;
+            olderLoaded = true;
+            olderFailed.value = false;
+        } catch {
+            if (startedIn === generation) {
+                olderFailed.value = true;
+            }
+        }
+    }
+
+    /**
+     * Shows the newest first page in place of the open older pages.
+     */
+    function revealNew(): void {
+        olderLoaded = false;
+        hasNewItems.value = false;
+
+        if (snapshot.value !== null) {
+            list(snapshot.value);
+        }
+    }
+
     function checkLease(): void {
         if (snapshot.value !== null && now() - authorizedAt >= LEASE_MILLISECONDS) {
             state.value = 'expired';
@@ -229,6 +320,11 @@ export function notificationStore(
         generation++;
         snapshot.value = null;
         changesCursor = null;
+        listed.value = [];
+        olderCursor.value = null;
+        olderFailed.value = false;
+        hasNewItems.value = false;
+        olderLoaded = false;
         pending.value = new Set();
         authorizedAt = 0;
         state.value = 'loading';
@@ -237,10 +333,19 @@ export function notificationStore(
     return {
         state,
         shown,
+        items,
+        hasOlder,
+        olderFailed,
+        hasNewItems,
+        loadOlder,
+        revealNew,
         pending,
         canChange,
         refresh,
-        markRead: (receiptId) => mark(receiptId, () => client.markRead(receiptId), () => isStillUnread(receiptId)),
+        markRead: async (receiptId) => {
+            await mark(receiptId, () => client.markRead(receiptId), () => isStillUnread(receiptId));
+            showReadOlderRow(receiptId);
+        },
         markQuestionRead: (messageId) =>
             mark(messageId, () => client.markQuestionRead(messageId), () => !isTargetRead(QUESTION_TARGET, messageId)),
         markTargetRead: (targetKey, targetId) =>

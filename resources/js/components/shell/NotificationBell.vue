@@ -14,7 +14,7 @@ import NotificationList from './NotificationList.vue';
  * closing return focus to the bell.
  */
 const notifications = useNotifications();
-const { state, shown, pending, canChange } = notifications;
+const { state, shown, items, hasOlder, olderFailed, hasNewItems, pending, canChange } = notifications;
 const panelId = 'notification-panel';
 const { isOpen, registerFocus } = useBellPanel();
 const isCompact = ref(false);
@@ -115,12 +115,18 @@ function followed(receiptId: string): void {
                     :id="panelId"
                     :state="state"
                     :page="shown"
+                    :items="items"
+                    :has-older="hasOlder"
+                    :older-failed="olderFailed"
+                    :has-new-items="hasNewItems"
                     :pending="pending"
                     :can-change="canChange"
                     :last-opened-id="lastOpenedId"
                     @read="(receiptId) => notifications.markRead(receiptId)"
                     @open="followed"
                     @retry="notifications.refresh()"
+                    @load-older="notifications.loadOlder()"
+                    @reveal-new="notifications.revealNew()"
                 />
                 <template v-if="isQuiet">
                     <button type="button" class="px-2 pt-1 text-small text-text-3 underline" @click="resumeForUser">
@@ -136,12 +142,18 @@ function followed(receiptId: string): void {
                     :id="panelId"
                     :state="state"
                     :page="shown"
+                    :items="items"
+                    :has-older="hasOlder"
+                    :older-failed="olderFailed"
+                    :has-new-items="hasNewItems"
                     :pending="pending"
                     :can-change="canChange"
                     :last-opened-id="lastOpenedId"
                     @read="(receiptId) => notifications.markRead(receiptId)"
                     @open="followed"
                     @retry="notifications.refresh()"
+                    @load-older="notifications.loadOlder()"
+                    @reveal-new="notifications.revealNew()"
                 />
                 <template v-if="isQuiet">
                     <button type="button" class="text-small text-text-3 underline" @click="resumeForUser">

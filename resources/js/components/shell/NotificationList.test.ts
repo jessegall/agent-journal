@@ -24,11 +24,25 @@ function pageOf(unread: number, readAt: string | null): NotificationPage {
     };
 }
 
-function listOf(state: NotificationLoadState, page: NotificationPage | null) {
+function listOf(state: NotificationLoadState, page: NotificationPage | null, paging: Partial<Paging> = {}) {
     return mount(NotificationList, {
-        props: { id: 'panel', state, page, pending: new Set<string>(), canChange: true, lastOpenedId: undefined },
+        props: {
+            id: 'panel',
+            state,
+            page,
+            items: page?.items ?? [],
+            hasOlder: false,
+            olderFailed: false,
+            hasNewItems: false,
+            pending: new Set<string>(),
+            canChange: true,
+            lastOpenedId: undefined,
+            ...paging,
+        },
     });
 }
+
+type Paging = { hasOlder: boolean; olderFailed: boolean; hasNewItems: boolean };
 
 describe('NotificationList', () => {
     it('says there are no notifications yet for an empty history', () => {
@@ -77,5 +91,19 @@ describe('NotificationList', () => {
 
         expect(list.text()).toContain("Couldn't refresh notifications");
         expect(list.find('a[data-open="receipt-1"]').exists()).toBe(true);
+    });
+
+    it('offers Load older, a retry of the same page after a failure, and the new-items control', async () => {
+        const older = listOf('loaded', pageOf(1, null), { hasOlder: true });
+        await older.findAll('button').find((button) => button.text() === 'Load older')?.trigger('click');
+        expect(older.emitted('loadOlder')).toHaveLength(1);
+
+        const failed = listOf('loaded', pageOf(1, null), { hasOlder: true, olderFailed: true });
+        expect(failed.text()).toContain("Couldn't refresh notifications");
+        expect(failed.text()).not.toContain('Load older');
+
+        const arrived = listOf('loaded', pageOf(1, null), { hasNewItems: true });
+        await arrived.findAll('button').find((button) => button.text() === 'New notifications')?.trigger('click');
+        expect(arrived.emitted('revealNew')).toHaveLength(1);
     });
 });

@@ -185,4 +185,44 @@ describe('notificationStore', () => {
 
         expect(await store.catchUp()).toEqual([]);
     });
+
+    it('appends an older page once and holds new rows above it until revealed', async () => {
+        const row = (id: string) => ({ id, sequence: 1, readAt: null, title: id, target: undefined });
+        const first = { ...pageOf(1, 2), items: [row('b')], nextCursor: 'older' };
+        const older = { ...pageOf(1, 2), items: [row('a')], nextCursor: null };
+        const arrived = { ...pageOf(2, 3), items: [row('c'), row('b')], nextCursor: 'older' };
+        const page = vi
+            .fn()
+            .mockResolvedValueOnce(first)
+            .mockResolvedValueOnce(older)
+            .mockResolvedValueOnce(arrived);
+        const store = notificationStore(clientOf({ page }));
+
+        await store.refresh();
+        await store.loadOlder();
+        await store.refresh();
+
+        expect(store.items.value.map((item) => item.id)).toEqual(['b', 'a']);
+        expect(store.hasNewItems.value).toBe(true);
+
+        store.revealNew();
+
+        expect(store.items.value.map((item) => item.id)).toEqual(['c', 'b']);
+    });
+
+    it('keeps the rows and the cursor when an older page fails, and allows no change until it loads', async () => {
+        const page = vi
+            .fn()
+            .mockResolvedValueOnce({ ...pageOf(1, 1), nextCursor: 'older' })
+            .mockRejectedValueOnce(new Error('down'));
+        const store = notificationStore(clientOf({ page }));
+
+        await store.refresh();
+        await store.loadOlder();
+
+        expect(store.olderFailed.value).toBe(true);
+        expect(store.hasOlder.value).toBe(true);
+        expect(store.canChange.value).toBe(false);
+        expect(store.items.value).toHaveLength(1);
+    });
 });
