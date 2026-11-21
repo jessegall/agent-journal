@@ -35,6 +35,11 @@ abstract readonly class ClaudeSecretSignIn implements SignInProtocol
         return null;
     }
 
+    public function canTakeAnswer(): bool
+    {
+        return true;
+    }
+
     /**
      * Keeps the value in its own file, created only for the owner, lets the program find it, and ends the wait.
      */

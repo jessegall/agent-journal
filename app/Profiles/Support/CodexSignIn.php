@@ -59,6 +59,11 @@ final readonly class CodexSignIn implements SignInProtocol
         return $deviceCode === null ? null : new SignInChallenge($deviceCode['address'], $deviceCode['code']);
     }
 
+    public function canTakeAnswer(): bool
+    {
+        return false;
+    }
+
     /**
      * A device sign-in's code goes out to the user only; nothing typed is ever given to the program.
      */

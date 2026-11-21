@@ -5227,6 +5227,7 @@ class	ShowReportCall
 class	ShowReportController
 class	SignInAgainController
 class	SignInAgainRequest
+class	SignInAnswerRefused
 class	SignInAttempt
 class	SignInAttemptCleanupRetried
 class	SignInAttemptData
@@ -9946,6 +9947,7 @@ method	ClaudeSecretSignIn::__construct()
 method	ClaudeSecretSignIn::acceptCode()
 method	ClaudeSecretSignIn::authMethod()
 method	ClaudeSecretSignIn::begin()
+method	ClaudeSecretSignIn::canTakeAnswer()
 method	ClaudeSecretSignIn::challengeFrom()
 method	ClaudeSecretSignIn::hasFinished()
 method	ClaudeSecretSignIn::install()
@@ -9962,6 +9964,7 @@ method	ClaudeSignIn::__construct()
 method	ClaudeSignIn::acceptCode()
 method	ClaudeSignIn::addressFrom()
 method	ClaudeSignIn::begin()
+method	ClaudeSignIn::canTakeAnswer()
 method	ClaudeSignIn::challengeFrom()
 method	ClaudeSignIn::hasFinished()
 method	ClaudeSignIn::prove()
@@ -10120,6 +10123,7 @@ method	CodexJournalServer::tomlTable()
 method	CodexKeySignIn::__construct()
 method	CodexKeySignIn::acceptCode()
 method	CodexKeySignIn::begin()
+method	CodexKeySignIn::canTakeAnswer()
 method	CodexKeySignIn::challengeFrom()
 method	CodexKeySignIn::hasFinished()
 method	CodexKeySignIn::prove()
@@ -10134,6 +10138,7 @@ method	CodexSignIn::acceptCode()
 method	CodexSignIn::accountIn()
 method	CodexSignIn::answerIn()
 method	CodexSignIn::begin()
+method	CodexSignIn::canTakeAnswer()
 method	CodexSignIn::challengeFrom()
 method	CodexSignIn::completionIn()
 method	CodexSignIn::deviceCodeFrom()
@@ -20170,9 +20175,15 @@ method	ShownOnAccounts::subjectId()
 method	SignInAgainController::__invoke()
 method	SignInAgainRequest::accountId()
 method	SignInAgainRequest::rules()
+method	SignInAnswerRefused::asksForNone()
+method	SignInAnswerRefused::notWaiting()
+method	SignInAnswerRefused::refusalCode()
+method	SignInAnswerRefused::status()
+method	SignInAttempt::acceptAnswer()
 method	SignInAttempt::accepts()
 method	SignInAttempt::account()
 method	SignInAttempt::applyCleanup()
+method	SignInAttempt::assertWaitsForAnswer()
 method	SignInAttempt::awaitsCleanupRetry()
 method	SignInAttempt::begin()
 method	SignInAttempt::casts()
@@ -20206,7 +20217,7 @@ method	SignInAttempt::releaseForHost()
 method	SignInAttempt::resultAccount()
 method	SignInAttempt::retryCleanup()
 method	SignInAttempt::runBy()
-method	SignInAttempt::startChecking()
+method	SignInAttempt::tookAnswer()
 method	SignInAttempt::type()
 method	SignInAttempt::waitForUser()
 method	SignInAttempt::waitingForUsesIds()
@@ -20288,6 +20299,7 @@ method	SignInPoll::__construct()
 method	SignInPoll::ended()
 method	SignInProtocol::acceptCode()
 method	SignInProtocol::begin()
+method	SignInProtocol::canTakeAnswer()
 method	SignInProtocol::challengeFrom()
 method	SignInProtocol::hasFinished()
 method	SignInProtocol::prove()
@@ -21519,7 +21531,9 @@ method	SubmitSignInCodeHandler::handle()
 method	SubmitSignInCodeHandler::secretOf()
 method	SubmitSignInCodeRequest::attemptId()
 method	SubmitSignInCodeRequest::code()
+method	SubmitSignInCodeRequest::prepareForValidation()
 method	SubmitSignInCodeRequest::rules()
+method	SubmitSignInCodeRequest::submissionKey()
 method	SubmitWorktreeDelivery::__construct()
 method	SubmitWorktreeDeliveryHandler::handle()
 method	SubstitutionQueue::__construct()
@@ -33905,8 +33919,10 @@ property	SubjectType::$isWorkRequired
 property	SubjectType::$key
 property	SubmitSignInCode::$attemptId
 property	SubmitSignInCode::$code
+property	SubmitSignInCode::$submissionKey
 property	SubmitSignInCodeHandler::$challenges
 property	SubmitSignInCodeHandler::$config
+property	SubmitSignInCodeHandler::$protocols
 property	SubmitWorktreeDelivery::$hostId
 property	SubmitWorktreeDelivery::$submission
 property	SubstitutionQueue::$found

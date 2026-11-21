@@ -7,7 +7,7 @@ namespace App\Http\Requests\Profiles;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * The code the owner typed for the sign-in the route names; the sign-in's own rules check it.
+ * The code the owner typed for the sign-in the route names, under its request key; the sign-in's own rules check it.
  */
 final class SubmitSignInCodeRequest extends FormRequest
 {
@@ -19,7 +19,23 @@ final class SubmitSignInCodeRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['code' => ['required', 'string', 'max:4200']];
+        return [
+            'code' => ['required', 'string', 'max:4200'],
+            'submission_key' => ['required', 'string', 'max:128'],
+        ];
+    }
+
+    /**
+     * The answer's request key comes as the Idempotency-Key header, so a repeat of one answer is known.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge(['submission_key' => $this->header('Idempotency-Key')]);
+    }
+
+    public function submissionKey(): string
+    {
+        return $this->string('submission_key')->toString();
     }
 
     public function attemptId(): string

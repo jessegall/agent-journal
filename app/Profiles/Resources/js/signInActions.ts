@@ -105,6 +105,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
         // A sent code or secret is never kept: it clears on success and on a refusal alike, so it is never sent again.
         answer.submit(submitCode({ attempt: attemptId }), {
             ...KEEP_THE_WIZARD,
+            headers: { 'Idempotency-Key': crypto.randomUUID() },
             ...sending,
             onSuccess: () => answer.reset(),
             onError: () => answer.reset('code'),

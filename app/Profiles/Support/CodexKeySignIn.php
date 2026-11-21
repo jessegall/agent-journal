@@ -28,6 +28,11 @@ final readonly class CodexKeySignIn implements SignInProtocol
         return null;
     }
 
+    public function canTakeAnswer(): bool
+    {
+        return true;
+    }
+
     public function acceptCode(PrivateAccountProcess $process, string $code): void
     {
         $process->send($code);

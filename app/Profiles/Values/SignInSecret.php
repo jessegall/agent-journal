@@ -8,7 +8,7 @@ use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Exceptions\SignInCodeInvalid;
 
 /**
- * A key or token the owner gives for a secret sign-in method: trimmed, 1 to 4096 characters, one line with no control
+ * A key or token the owner gives for a secret sign-in method: trimmed, 1 to 4096 bytes, one line with no control
  * character. It travels to the host like a typed code and is never saved in any row.
  */
 final readonly class SignInSecret

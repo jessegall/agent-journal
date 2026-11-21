@@ -26,6 +26,11 @@ final readonly class LingeringProtocol implements SignInProtocol
         return null;
     }
 
+    public function canTakeAnswer(): bool
+    {
+        return true;
+    }
+
     public function acceptCode(PrivateAccountProcess $process, string $code): void {}
 
     public function hasFinished(PrivateAccountProcess $process): bool

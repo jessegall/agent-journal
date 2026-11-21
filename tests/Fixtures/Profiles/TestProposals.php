@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Enums\InstancePolicy;
 use App\Profiles\Support\PolicyOverride;
 use App\Profiles\Support\ProfileProposal;
@@ -11,7 +12,6 @@ use App\Profiles\Support\ProposedProfile;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\WithheldGrant;
-use App\Drivers\Enums\HookDriver;
 
 /**
  * Proposals of profiles that take every policy field from their type's defaults, as tests that only need some

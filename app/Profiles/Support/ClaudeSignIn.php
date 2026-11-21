@@ -35,6 +35,11 @@ final readonly class ClaudeSignIn implements SignInProtocol
         return $address === null ? null : new SignInChallenge($address, null);
     }
 
+    public function canTakeAnswer(): bool
+    {
+        return true;
+    }
+
     public function acceptCode(PrivateAccountProcess $process, string $code): void
     {
         $this->submitCode($process, $code);

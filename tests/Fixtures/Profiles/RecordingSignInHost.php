@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
-use App\Profiles\Values\SignInIdentity;
 use App\Profiles\Contracts\SignInHost;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\SignInOutcome;
@@ -13,6 +12,7 @@ use App\Profiles\Values\ClaimedCleanup;
 use App\Profiles\Values\ClaimedSignIn;
 use App\Profiles\Values\CleanupProgress;
 use App\Profiles\Values\SignInChallenge;
+use App\Profiles\Values\SignInIdentity;
 use App\Profiles\Values\SignInPoll;
 
 /**

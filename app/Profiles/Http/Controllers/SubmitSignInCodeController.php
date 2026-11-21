@@ -20,7 +20,7 @@ final readonly class SubmitSignInCodeController
         CommandBus $commands,
         Redirector $redirect,
     ): RedirectResponse {
-        $commands->run(new SubmitSignInCode($request->attemptId(), $request->code()));
+        $commands->run(new SubmitSignInCode($request->attemptId(), $request->code(), $request->submissionKey()));
 
         return $redirect->back(303);
     }

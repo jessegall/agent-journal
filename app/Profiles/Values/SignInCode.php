@@ -7,7 +7,7 @@ namespace App\Profiles\Values;
 use App\Profiles\Exceptions\SignInCodeInvalid;
 
 /**
- * A code the user typed for a sign-in: trimmed, 1 to 512 characters, one word with no control character, so it is
+ * A code the user typed for a sign-in: trimmed, 1 to 512 bytes, one word with no control character, so it is
  * typed into the program as nothing but itself.
  */
 final readonly class SignInCode
@@ -25,7 +25,7 @@ final readonly class SignInCode
     }
 
     /**
-     * The text trimmed, when it is 1 to the limit's characters on one line with no control character.
+     * The text trimmed, when it is 1 to the limit's bytes on one line with no control character.
      *
      * @throws SignInCodeInvalid
      */

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
-use App\Profiles\Values\SignInIdentity;
 use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Support\PrivateAccountProcess;
 use App\Profiles\Values\SignInChallenge;
+use App\Profiles\Values\SignInIdentity;
 use App\Profiles\Values\SignInVerification;
 
 /**
@@ -23,6 +23,11 @@ final readonly class FinishingProtocol implements SignInProtocol
     public function challengeFrom(PrivateAccountProcess $process): SignInChallenge
     {
         return new SignInChallenge('https://example.test/approve', 'CODE-1');
+    }
+
+    public function canTakeAnswer(): bool
+    {
+        return true;
     }
 
     public function acceptCode(PrivateAccountProcess $process, string $code): void {}

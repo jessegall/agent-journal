@@ -20,6 +20,7 @@ use App\Profiles\Events\SignInAttemptCleanupRetried;
 use App\Profiles\Events\SignInAttemptFinished;
 use App\Profiles\Events\SignInAttemptReleased;
 use App\Profiles\Events\SignInAttemptStarted;
+use App\Profiles\Exceptions\SignInAnswerRefused;
 use App\Profiles\Exceptions\SignInAttemptMissing;
 use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Profiles\Models\Support\KeepsCleanupTries;
@@ -49,6 +50,7 @@ use Illuminate\Support\Str;
  * @property ActorType $actor_type
  * @property string $actor_id
  * @property string|null $fingerprint
+ * @property string|null $submission_key
  * @property SignInState $state
  * @property int $generation
  * @property string|null $directory
@@ -81,7 +83,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     /**
      * @var list<string>
      */
-    protected $hidden = ['directory', 'process_reference', 'login_reference'];
+    protected $hidden = ['directory', 'process_reference', 'login_reference', 'submission_key'];
 
     // ----------[ Constructors ]----------
 
@@ -404,15 +406,13 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The user's code, key or token went to the program, which now checks it; the attempt ends when the check does.
+     * The user's answer, under its request key, went to the program, which now checks it; the key is the answer's
+     * receipt, so a repeat of it is known.
      */
-    public function startChecking(): void
+    public function acceptAnswer(string $submissionKey): void
     {
-        if ($this->state !== SignInState::Starting && $this->state !== SignInState::Waiting) {
-            return;
-        }
-
         $this->state = SignInState::Checking;
+        $this->submission_key = $submissionKey;
         $this->save();
     }
 
@@ -494,6 +494,24 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     public function type(): SignInType
     {
         return $this->account_id === null ? SignInType::NewAccount : SignInType::SignInAgain;
+    }
+
+    /**
+     * Whether the answer under this request key is the one the attempt already took.
+     */
+    public function tookAnswer(string $submissionKey): bool
+    {
+        return $this->submission_key !== null && hash_equals($this->submission_key, $submissionKey);
+    }
+
+    /**
+     * @throws SignInAnswerRefused
+     */
+    public function assertWaitsForAnswer(CarbonImmutable $now): void
+    {
+        if ($this->state !== SignInState::Waiting || $this->isExpiredAt($now)) {
+            throw SignInAnswerRefused::notWaiting($this->id);
+        }
     }
 
     public function isLive(): bool

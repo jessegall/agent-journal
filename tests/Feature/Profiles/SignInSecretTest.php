@@ -16,6 +16,7 @@ use App\Profiles\Commands\CompleteSignIn;
 use App\Profiles\Commands\SubmitSignInCode;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
+use App\Profiles\Exceptions\SignInAnswerRefused;
 use App\Profiles\Exceptions\SignInCodeInvalid;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\SignInAttempt;
@@ -124,6 +125,36 @@ final class SignInSecretTest extends TestCase
         }
     }
 
+    public function test_an_answer_is_taken_only_while_the_attempt_waits_and_a_repeat_is_its_first_receipt(): void
+    {
+        $challenges = $this->app->make(SignInChallenges::class);
+        $attempt = $this->attempt(HookDriver::ClaudeCode, SignInMethod::OAuth, 'request-1');
+        $answer = fn (string $code, string $key) => $this->app->make(CommandBus::class)
+            ->run(new SubmitSignInCode($attempt->id, $code, $key));
+
+        $this->assertThrows(fn () => $answer('1234', 'answer-1'), SignInAnswerRefused::class);
+        $attempt->refresh()->waitForUser();
+        $answer('1234', 'answer-1');
+        $answer('9999', 'answer-1');
+
+        $this->assertSame('1234', $challenges->takeCode($attempt->id));
+        $this->assertNull($challenges->takeCode($attempt->id));
+        $this->assertSame(SignInState::Checking, $attempt->refresh()->state);
+        $this->assertThrows(fn () => $answer('5678', 'answer-2'), SignInAnswerRefused::class);
+    }
+
+    public function test_a_code_is_bounded_in_bytes_and_a_codex_device_sign_in_takes_no_answer(): void
+    {
+        $oauth = $this->attempt(HookDriver::ClaudeCode, SignInMethod::OAuth, 'request-1');
+        $device = $this->attempt(HookDriver::Codex, SignInMethod::OAuth, 'request-2');
+
+        $this->assertThrows(fn () => $this->submit($oauth, str_repeat('a', 513)), SignInCodeInvalid::class);
+        $this->assertThrows(fn () => $this->submit($oauth, str_repeat('é', 257)), SignInCodeInvalid::class);
+        $this->assertSame(SignInState::Waiting, $oauth->refresh()->state);
+        $this->assertThrows(fn () => $this->submit($device, '1234'), SignInAnswerRefused::class);
+        $this->assertSame(SignInState::Waiting, $device->refresh()->state);
+    }
+
     public function test_key_accounts_are_named_for_their_method_and_the_same_key_is_already_added(): void
     {
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(1)));
@@ -175,6 +206,7 @@ final class SignInSecretTest extends TestCase
 
     private function submit(SignInAttempt $attempt, string $text): void
     {
-        $this->app->make(CommandBus::class)->run(new SubmitSignInCode($attempt->id, $text));
+        $attempt->waitForUser();
+        $this->app->make(CommandBus::class)->run(new SubmitSignInCode($attempt->id, $text, 'answer-'.bin2hex(random_bytes(4))));
     }
 }

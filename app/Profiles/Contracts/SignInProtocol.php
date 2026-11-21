@@ -25,6 +25,11 @@ interface SignInProtocol
     public function challengeFrom(PrivateAccountProcess $process): SignInChallenge|null;
 
     /**
+     * Whether the sign-in asks the user for an answer, a code or a key; one approved on the provider's page takes none.
+     */
+    public function canTakeAnswer(): bool;
+
+    /**
      * Gives the program the code the user typed, for a sign-in that asks for one; others ignore it.
      */
     public function acceptCode(PrivateAccountProcess $process, string $code): void;

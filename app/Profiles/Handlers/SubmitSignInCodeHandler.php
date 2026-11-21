@@ -6,9 +6,10 @@ namespace App\Profiles\Handlers;
 
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\SubmitSignInCode;
-use App\Profiles\Exceptions\SignInAttemptStale;
+use App\Profiles\Exceptions\SignInAnswerRefused;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\SignInChallenges;
+use App\Profiles\Support\SignInProtocols;
 use App\Profiles\Values\SignInCode;
 use App\Profiles\Values\SignInSecret;
 use Carbon\CarbonImmutable;
@@ -16,14 +17,24 @@ use Illuminate\Contracts\Config\Repository;
 
 final readonly class SubmitSignInCodeHandler implements CommandHandler
 {
-    public function __construct(private SignInChallenges $challenges, private Repository $config) {}
+    public function __construct(
+        private SignInChallenges $challenges,
+        private SignInProtocols $protocols,
+        private Repository $config,
+    ) {}
 
     public function handle(SubmitSignInCode $command): void
     {
         $attempt = SignInAttempt::lockedForOwner($command->attemptId);
 
-        if (! $attempt->isLive() || $attempt->isExpiredAt(CarbonImmutable::now())) {
-            throw SignInAttemptStale::for($attempt->id);
+        if ($attempt->tookAnswer($command->submissionKey)) {
+            return;
+        }
+
+        $attempt->assertWaitsForAnswer(CarbonImmutable::now());
+
+        if (! $this->protocols->for($attempt->driver, $attempt->method)->canTakeAnswer()) {
+            throw SignInAnswerRefused::asksForNone($attempt->id);
         }
 
         $text = $attempt->method->isSecret()
@@ -31,7 +42,7 @@ final readonly class SubmitSignInCodeHandler implements CommandHandler
             : SignInCode::from($command->code)->code;
 
         $this->challenges->typeCode($attempt->id, $text, $attempt->expires_at);
-        $attempt->startChecking();
+        $attempt->acceptAnswer($command->submissionKey);
     }
 
     /**
