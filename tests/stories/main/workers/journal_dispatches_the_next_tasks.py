@@ -133,6 +133,10 @@ def test_an_open_task_still_marked_delegated_that_no_worker_holds_is_handed_out_
     story.expect_task_logged(printer, "no worker holds it any more, so the journal hands it out again")
     story.expect_worker(story.newest("workers"), state=WorkerState.DISPATCHED)
     story.expect_task(printer, delegated=True)
+    sent = story.newest("workers")
+    story.time_travel(seconds=121)
+    story.journal_dispatches_the_next_tasks()
+    assert story.newest("workers") == sent, "the task is handed out once, not on every round"
     story.expect_stack(story.agents.subject, Orchestrating)
 
 
