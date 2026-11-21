@@ -22,7 +22,7 @@ final readonly class ProgramConversationRecords implements ProgramConversationRe
             'context_reference',
             $contextReference,
         )
-            ->readLimit(self::MOST_CONVERSATIONS)->get()->keyBy('id');
+            ->limit(self::MOST_CONVERSATIONS)->get()->keyBy('id');
         $lastVisits = ConversationVisit::query()->whereIn(
             'conversation_id',
             $conversations->keys()->all(),

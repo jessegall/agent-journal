@@ -65,7 +65,7 @@ final readonly class AssignmentRecords implements AssignmentResolver
                     fn (Builder $ofType) => $ofType->where('record_type', $type)->whereIn('record_id', $ids),
                 );
             }
-        })->readLimit(array_sum(array_map(count(...), $visibleIdsByType)))->orderBy('id')->get();
+        })->readExactly(array_sum(array_map(count(...), $visibleIdsByType)))->orderBy('id')->get();
 
         return new AssignmentSet(array_values($rows->map(fn (AssignmentRecord $row) => $row->toAssignment())->all()));
     }

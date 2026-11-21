@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Contracts;
 
-use App\Agents\Support\StartPolicy;
+use App\Agents\Values\StartPolicy;
 
 /**
  * The policy a session was started under, as it was frozen then.

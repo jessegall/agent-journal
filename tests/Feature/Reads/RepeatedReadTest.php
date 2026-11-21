@@ -42,7 +42,7 @@ final class RepeatedReadTest extends TestCase
             ->create();
 
         $records = $this->app->make(TaskRecords::class);
-        $numbers = Task::query()->readLimit(12)->pluck('number')->all();
+        $numbers = Task::query()->limit(12)->pluck('number')->all();
         $this->expectException(RepeatedReadRefused::class);
 
         $this->app->make(ReadMeter::class)->measure('one read per task', function () use ($records, $numbers): void {
@@ -60,7 +60,7 @@ final class RepeatedReadTest extends TestCase
             ->create();
 
         $records = $this->app->make(TaskRecords::class);
-        $numbers = Task::query()->readLimit(12)->pluck('number')->all();
+        $numbers = Task::query()->limit(12)->pluck('number')->all();
         array_map(fn (int $number) => $records->identityOf($number), $numbers);
 
         $identities = $this->app->make(ReadMeter::class)->measure(

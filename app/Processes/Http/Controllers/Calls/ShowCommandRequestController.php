@@ -23,8 +23,8 @@ final readonly class ShowCommandRequestController
             ->whereKey($call->commandRequest)
             ->firstOrFail();
         $next = $request->nextStep();
-        $proposals = RuleProposal::query()->where('command_request_id', $request->id)->readLimit(50)->get();
-        $readers = ReaderRevision::query()->where('command_request_id', $request->id)->readLimit(50)->get();
+        $proposals = RuleProposal::query()->where('command_request_id', $request->id)->limit(50)->get();
+        $readers = ReaderRevision::query()->where('command_request_id', $request->id)->limit(50)->get();
 
         return CommandRequestShown::from([
             'requestId' => $request->id,

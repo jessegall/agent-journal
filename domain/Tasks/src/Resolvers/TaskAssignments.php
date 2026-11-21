@@ -39,7 +39,7 @@ final readonly class TaskAssignments implements AssignableProvider
         $this->actors->actor();
         $visibleTaskIds = Task::query()->whereKey(
             array_map(fn (RecordIdentity $record) => $record->id, $records),
-        )->readLimit(count($records))->pluck('id')->all();
+        )->readExactly(count($records))->pluck('id')->all();
 
         return array_values(array_filter(
             $records,

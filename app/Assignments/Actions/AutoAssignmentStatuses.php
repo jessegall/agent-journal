@@ -15,11 +15,11 @@ use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\AutoAssignmentPoolUnreadable;
 use App\Assignments\Models\AutoAssignment;
 use App\Assignments\Support\AssigneeIdentity;
+use App\Assignments\Support\AssignmentRoom;
 use App\Assignments\Support\AssignmentTotals;
 use App\Assignments\Support\AutoAssignmentFact;
 use App\Assignments\Support\AutoAssignmentStatus;
 use App\Assignments\Support\PoolDescription;
-use App\Assignments\Support\SizeAssignmentRoom;
 use App\Contracts\DomainAvailability;
 use PhpOption\None;
 use PhpOption\Option;
@@ -38,7 +38,7 @@ final readonly class AutoAssignmentStatuses
         private AssignmentProviders $providers,
         private DomainAvailability $domains,
         private AssignedWorkResolver $work,
-        private SizeAssignmentRoom $room,
+        private AssignmentRoom $room,
     ) {}
 
     public function of(AutoAssignment $row): AutoAssignmentStatus

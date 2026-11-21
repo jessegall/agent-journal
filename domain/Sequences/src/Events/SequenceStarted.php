@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Events;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Contracts\Event;
 
 /**

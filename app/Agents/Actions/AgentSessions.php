@@ -11,7 +11,7 @@ use App\Agents\Exceptions\StartRefused;
 use App\Agents\Lifecycle\AgentLifecycle;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
-use App\Agents\Support\SelectedProgram;
+use App\Agents\Values\SelectedProgram;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\DatabaseManager;
 

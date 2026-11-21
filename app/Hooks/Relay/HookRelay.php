@@ -8,7 +8,7 @@ use App\AgentRequests\Contracts\AgentRequestClient;
 use App\AgentRequests\Exceptions\CallDeadlinePassed;
 use App\AgentRequests\Exceptions\JournalUnreachable;
 use App\AgentRequests\Support\AgentCallReply;
-use App\Agents\Support\LoggedBypass;
+use App\Agents\Values\LoggedBypass;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Hooks\Enums\CallFailure;
@@ -23,6 +23,8 @@ use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Http\Client\ConnectionException;
 use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use TypeError;
 
 /**
  * What the host runs for every native hook call: upload the bypasses logged while the journal was away, give the
@@ -154,22 +156,21 @@ final readonly class HookRelay
      */
     private function touchesAccounts(string $json, RelaySettings $settings): bool
     {
-        $call = json_decode($json, true);
-
-        if (! is_array($call) || ! is_array($call['tool_input'] ?? null)) {
+        try {
+            $call = RelayedToolCall::from(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        } catch (JsonException|CannotCreateData|TypeError) {
             return false;
         }
 
-        $workFolder = is_string($call['cwd'] ?? null) ? $call['cwd'] : '/';
-        $readPath = $call['tool_input']['file_path'] ?? null;
-        $isOwnOutputRead = ($call['tool_name'] ?? null) === self::READ_TOOL && is_string($readPath)
-            && $this->grantsOf($settings)->allowsRead(ProtectedFileRead::resolve($workFolder, $readPath));
+        $readPath = $call->readPath();
+        $isOwnOutputRead = $call->toolName === self::READ_TOOL && $readPath !== null
+            && $this->grantsOf($settings)->allowsRead(ProtectedFileRead::resolve($call->cwd, $readPath));
 
         if ($isOwnOutputRead) {
             return false;
         }
 
-        return $settings->accounts->isTouchedByToolCall($call['tool_input'], $workFolder);
+        return $settings->accounts->isTouchedByToolCall($call->toolInput, $call->cwd);
     }
 
     /**

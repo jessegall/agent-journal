@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Stored;
 
-use App\Agents\Support\ExecutionBudgets;
+use App\Agents\Values\ExecutionBudgets;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;

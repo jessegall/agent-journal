@@ -120,7 +120,7 @@ final readonly class MessageRecords implements ConversationResolver
         return array_values(MessageAttention::query()
             ->where('origin_type', AttentionOrigin::MESSAGE)
             ->where('origin_id', $message->id)
-            ->readLimit(InboxMembers::LIMIT)
+            ->limit(InboxMembers::LIMIT)
             ->get()
             ->map(fn (MessageAttention $attention) => $attention->wakeStatus())
             ->all());

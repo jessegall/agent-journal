@@ -360,7 +360,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
             ->where('navigation_request_id', $this->id)
             ->whereIn('progress', [RequestProgress::Accepted, RequestProgress::Staged])
             ->lockForUpdate()
-            ->readLimit(20)
+            ->limit(20)
             ->get();
 
         foreach ($queued as $round) {

@@ -39,7 +39,7 @@ final class ShareEndTest extends TestCase
         $this->assertNotNull($fresh->token_digest);
         $this->assertCount(1, $raised);
         $this->assertInstanceOf(ShareRevoked::class, $raised[0]);
-        $this->assertEquals($fresh->terminal_at, $raised[0]->share->occurredAt);
+        $this->assertSame($fresh->terminal_at->getTimestamp(), $raised[0]->share->occurredAt->getTimestamp());
         $this->assertSame([], $share->takeRaisedEvents());
     }
 

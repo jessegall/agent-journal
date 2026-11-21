@@ -91,7 +91,7 @@ final class MessageAttention extends Model implements ReadableModel
         return array_values(self::query()
             ->where('origin_type', $origin->type)
             ->where('origin_id', $origin->id)
-            ->readLimit(InboxMembers::LIMIT)
+            ->limit(InboxMembers::LIMIT)
             ->get()
             ->map(fn (self $attention) => "{$attention->actor_type}:{$attention->actor_id}")
             ->all());

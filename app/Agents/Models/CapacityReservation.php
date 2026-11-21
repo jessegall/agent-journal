@@ -6,8 +6,8 @@ namespace App\Agents\Models;
 
 use App\Agents\Enums\ReservationState;
 use App\Agents\Exceptions\CapacityUnavailable;
-use App\Agents\Support\ExecutionBudgets;
-use App\Agents\Support\HostCapacity;
+use App\Agents\Values\ExecutionBudgets;
+use App\Agents\Values\HostCapacity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;

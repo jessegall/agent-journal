@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Enums\DriverOperation;
+use App\Agents\Values\DriverReceipt;
 use App\Agents\Values\DriverRequestPayload;
+use App\Agents\Values\StackTarget;
 
 /**
  * Asks an agent's runtime to wake: an open wake is asked again, else a new wake request is appended. It joins the

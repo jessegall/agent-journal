@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Handlers;
 
 use App\Agents\Commands\RecordRuntime;
-use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\DriverRequests;
+use App\Agents\Values\DriverReceipt;
 use App\Agents\Values\DriverRequestPayload;
 use App\Contracts\CommandHandler;
 

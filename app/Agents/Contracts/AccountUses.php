@@ -6,8 +6,8 @@ namespace App\Agents\Contracts;
 
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Agents\Exceptions\AccountUseMissing;
-use App\Agents\Support\AccountUse;
 use App\Agents\Support\AccountUseCounts;
+use App\Agents\Values\AccountUse;
 use App\Records\Support\RecordIdentity;
 
 /**

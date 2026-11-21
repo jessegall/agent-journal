@@ -246,7 +246,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
             ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
             ->where('expires_at', '<=', $now)
             ->orderBy('expires_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->pluck('id');
 
         return array_values(array_map(strval(...), $ids->all()));
@@ -265,7 +265,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
                 ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
                 ->orWhere('updated_at', '>=', $now->subMinutes(15)))
             ->orderByDesc('created_at')
-            ->readLimit(50)
+            ->limit(50)
             ->get();
 
         return array_values($attempts->all());
@@ -339,7 +339,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
             ->where('cleanup_pending', true)
             ->whereNotIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
             ->orderBy('created_at')
-            ->readLimit(50)
+            ->limit(50)
             ->get();
 
         return array_values($attempts->all());
@@ -357,7 +357,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
             ->where('waits_for_uses', true)
             ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
             ->orderBy('created_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->pluck('id');
 
         return array_values(array_map(strval(...), $ids->all()));
@@ -406,6 +406,19 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         }
 
         $this->state = SignInState::Waiting;
+        $this->save();
+    }
+
+    /**
+     * The user's code, key or token went to the program, which now checks it; the attempt ends when the check does.
+     */
+    public function startChecking(): void
+    {
+        if ($this->state !== SignInState::Starting && $this->state !== SignInState::Waiting) {
+            return;
+        }
+
+        $this->state = SignInState::Checking;
         $this->save();
     }
 

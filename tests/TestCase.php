@@ -42,9 +42,20 @@ abstract class TestCase extends BaseTestCase
         $this->applicationMorphMap = Relation::morphMap();
         Http::preventStrayRequests();
         $this->withoutVite();
-        $this->app->make(OutsideCommandAllowance::class)->allow();
         $this->app->make(OuterTransactionOwner::class)->register();
         $this->beforeApplicationDestroyed(fn () => $this->closeConnections());
+    }
+
+    /**
+     * Lets seeding saves run outside a command before any trait's own setUp writes rows.
+     *
+     * @return array<class-string, class-string>
+     */
+    protected function setUpTraits(): array
+    {
+        $this->app->make(OutsideCommandAllowance::class)->allow();
+
+        return parent::setUpTraits();
     }
 
     /**

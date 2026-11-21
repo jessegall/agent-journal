@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\QuestionReminders\Commands;
 
-use App\Operations\Enums\AccessType;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
-use Tests\Fixtures\Bus\Models\FixtureWork;
+use App\Operations\Enums\AccessType;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 use Tests\Fixtures\Domains\QuestionReminders\Handlers\SendQuestionReminderHandler;
 

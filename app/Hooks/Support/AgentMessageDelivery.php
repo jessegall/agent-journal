@@ -6,7 +6,7 @@ namespace App\Hooks\Support;
 
 use App\Actors\Contracts\ActorAttention;
 use App\Actors\Support\AttentionOrigin;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Models\PendingAgentMessage;
 use App\Hooks\Stack\HookAnswer;

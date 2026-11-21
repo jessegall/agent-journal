@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Values\SelectedProgram;
 
 /**
  * Everything the host needs for one committed start: the runtime and session it belongs to, the selected program and

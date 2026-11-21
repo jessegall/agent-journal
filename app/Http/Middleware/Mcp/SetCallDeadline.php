@@ -8,6 +8,7 @@ use App\Agents\Contracts\AgentCallContext;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Support\OperationDeadline;
+use App\Mcp\Data\JsonRpcIdData;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Container\Container;
@@ -60,12 +61,9 @@ final readonly class SetCallDeadline
 
     private function expired(Request $request): JsonResponse
     {
-        $frame = json_decode($request->getContent(), true);
-        $id = is_array($frame) ? ($frame['id'] ?? null) : null;
-
         return new JsonResponse([
             'jsonrpc' => '2.0',
-            'id' => is_int($id) || is_string($id) ? $id : null,
+            'id' => JsonRpcIdData::idIn($request->getContent()),
             'error' => [
                 'code' => self::SERVER_ERROR,
                 'message' => 'The call reached the journal after its deadline and was not run; send it again.',

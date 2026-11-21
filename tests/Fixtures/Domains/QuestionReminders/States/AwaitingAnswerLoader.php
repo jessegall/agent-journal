@@ -29,13 +29,13 @@ final class AwaitingAnswerLoader implements TickableStateLoader
     public function statesFor(StateReferences $references): StateSet
     {
         $questions = Question::query()->whereKey(
-$references->subjectIds(),
-)->readLimit(StateReferences::MAXIMUM)->get()->keyBy('id');
+            $references->subjectIds(),
+        )->limit(StateReferences::MAXIMUM)->get()->keyBy('id');
 
         return StateSet::build($references, function (StateReference $reference) use ($questions): AwaitingAnswerState {
             $question = $reference->subject instanceof SubjectReference ? $questions->get(
-$reference->subject->id,
-) : null;
+                $reference->subject->id,
+            ) : null;
 
             if (! $question instanceof Question) {
                 throw StateSubjectMissing::for(self::TYPE_KEY);

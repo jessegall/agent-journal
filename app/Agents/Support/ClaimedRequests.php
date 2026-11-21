@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Values\ClaimedRequest;
+
 /**
  * The batch of requests one host claim hands out, in the order it took them from its runtimes.
  */

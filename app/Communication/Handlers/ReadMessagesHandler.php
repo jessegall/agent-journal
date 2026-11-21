@@ -25,7 +25,7 @@ final readonly class ReadMessagesHandler implements CommandHandler
             ->whereKey($command->messageIds)
             ->where('destination_inbox_id', $inbox->inboxId())
             ->lockForUpdate()
-            ->readLimit(count($command->messageIds))
+            ->readExactly(count($command->messageIds))
             ->get()
             ->keyBy('id');
         $missing = array_diff($command->messageIds, $messages->keys()->all());

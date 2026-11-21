@@ -27,7 +27,7 @@ final readonly class TaskRunAssignments implements AssignableProvider
     {
         $visibleRunIds = TaskRun::query()
             ->whereKey(array_map(fn (RecordIdentity $record) => $record->id, $records))
-            ->readLimit(count($records))
+            ->readExactly(count($records))
             ->pluck('id')
             ->all();
 

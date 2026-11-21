@@ -12,7 +12,8 @@ use Tests\TestCase;
 
 /**
  * The JSON a rule is stored as is pinned by the digests approvals and the frozen corpus classifications bind: a check
- * rule with its contract, and a project rule that replaces it, keep their digests and read back to the same rule.
+ * rule with its contract, and a project rule that replaces it, keep their digests and read back to the same rule,
+ * also through the fromJson and listFromJson their casts read with.
  */
 final class StoredRuleShapeTest extends TestCase
 {
@@ -42,6 +43,27 @@ final class StoredRuleShapeTest extends TestCase
         $this->assertSame(self::REPLACING_DIGEST, $replacing->digest());
         $this->assertSame(self::REPLACING_DIGEST, $this->readBack($replacing)->digest());
         $this->assertSame('core core.php.artisan-test@1', $this->readBack($replacing)->replaces[0]->label());
+    }
+
+    public function test_a_stored_rule_reads_back_through_its_cast_to_the_same_json_and_digest(): void
+    {
+        $core = $this->checkRule();
+        $replacing = $core->ownedBy(RuleScope::project(), 2)
+            ->replacing(new RuleReference($core->scope, $core->id, $core->revision));
+        $stored = json_encode($core->toArray(), JSON_THROW_ON_ERROR);
+        $storedList = json_encode([$core->toArray(), $replacing->toArray()], JSON_THROW_ON_ERROR);
+        $readList = CommandRule::listFromJson($storedList);
+
+        $this->assertSame($stored, json_encode(CommandRule::fromJson($stored)->toArray(), JSON_THROW_ON_ERROR));
+        $this->assertSame(self::RULE_DIGEST, CommandRule::fromJson($stored)->digest());
+        $this->assertSame(
+            $storedList,
+            json_encode(array_map(fn (CommandRule $rule) => $rule->toArray(), $readList), JSON_THROW_ON_ERROR),
+        );
+        $this->assertSame(
+            [self::RULE_DIGEST, self::REPLACING_DIGEST],
+            array_map(fn (CommandRule $rule) => $rule->digest(), $readList),
+        );
     }
 
     private function checkRule(): CommandRule

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Agents\Contracts\BuiltInStartProfiles;
-use App\Agents\Support\SelectedProgram;
+use App\Agents\Values\SelectedProgram;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Profiles\Commands\InstallBuiltInProfiles;

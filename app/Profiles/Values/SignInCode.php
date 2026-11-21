@@ -7,7 +7,7 @@ namespace App\Profiles\Values;
 use App\Profiles\Exceptions\SignInCodeInvalid;
 
 /**
- * A code the user typed for a sign-in: trimmed, 1 to 512 characters, one line with no control character, so it is
+ * A code the user typed for a sign-in: trimmed, 1 to 512 characters, one word with no control character, so it is
  * typed into the program as nothing but itself.
  */
 final readonly class SignInCode
@@ -35,6 +35,10 @@ final readonly class SignInCode
 
         if ($line === '' || strlen($line) > $limit || preg_match('/[\p{Cc}]/u', $line) === 1) {
             throw SignInCodeInvalid::make($what, $limit);
+        }
+
+        if (preg_match('/\s/u', $line) === 1) {
+            throw SignInCodeInvalid::withSpace($what);
         }
 
         return $line;

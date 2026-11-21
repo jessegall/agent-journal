@@ -7,7 +7,7 @@ namespace App\Text\Contracts;
 use App\Reads\Values\PageSize;
 use App\Records\Support\RecordIdentity;
 use App\Text\Data\TextSections;
-use App\Text\Data\TextVersionInfo;
+use App\Text\Data\TextVersionSummary;
 use App\Text\Support\TextPart;
 use App\Text\Support\TextSelection;
 
@@ -20,7 +20,7 @@ interface TextResolver
     /**
      * The version named, or the current one for none.
      */
-    public function version(RecordIdentity $target, string|null $version = null): TextVersionInfo;
+    public function version(RecordIdentity $target, string|null $version = null): TextVersionSummary;
 
     /**
      * The sections after the given number, zero for the first page.

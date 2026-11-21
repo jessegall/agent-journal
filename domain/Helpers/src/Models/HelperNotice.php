@@ -78,7 +78,7 @@ final class HelperNotice extends Model implements ReadableModel
             ->whereNull('delivered_at')
             ->orderBy('id')
             ->lockForUpdate()
-            ->readLimit(self::DELIVERED_LIMIT)
+            ->limit(self::DELIVERED_LIMIT)
             ->get()
             ->all());
     }

@@ -97,7 +97,7 @@ final readonly class ProtectionReport
         $unenforced = $this->unenforced();
 
         return "the agent image's protection report leaves ".implode(', ', array_column($unenforced, 'item'))
-            ." unenforced: {$unenforced[0]->reason}";
+            ." unenforced ({$unenforced[0]->reason})";
     }
 
     /**

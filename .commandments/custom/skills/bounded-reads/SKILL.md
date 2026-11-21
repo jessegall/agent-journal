@@ -12,7 +12,9 @@ A read that grows with the data, or runs once per item, is the slowest code in t
 The Reads area (app/Reads) caps plain reads at 50 rows and makes a larger read name itself; these rules keep code
 from stepping around it.
 
-- **No Model::all().** Read a page, `readLimit(n)`, `readAll('why every row')` or `readInChunks(n)`.
+- **No Model::all().** Read a page with `limit(n)` (at most `reads.page_max`, 100), a known set with
+  `readExactly(count($ids))`, a fixed number past a page with `readLimit(n)` (refused at 100 or less),
+  every row with `readAll('why every row')`, or a large set with `readInChunks(n)`.
 - **No DB facade reads.** A table is read through its model, its scopes and its readers (rule 25).
 - **No toBase() or getQuery().** They leave the bounded builder; only app/Reads may use them.
 - **No find, first or sole inside a loop.** Read every row the loop needs in one query before it (`whereKey($ids)`,
@@ -28,5 +30,5 @@ foreach ($ids as $id) {
 }
 
 // After: one query for all of them
-$titles = Task::query()->whereKey($ids)->readLimit(count($ids))->pluck('title')->all();
+$titles = Task::query()->whereKey($ids)->readExactly(count($ids))->pluck('title')->all();
 ```

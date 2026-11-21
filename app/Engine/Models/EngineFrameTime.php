@@ -59,7 +59,7 @@ final class EngineFrameTime extends Model implements ReadableModel
             return [];
         }
 
-        return self::query()->whereIn('frame_id', $ids)->readLimit(count($ids))->get()
+        return self::query()->whereIn('frame_id', $ids)->readExactly(count($ids))->get()
             ->mapWithKeys(fn (self $time) => [$time->frame_id => $time->settled_at])
             ->all();
     }

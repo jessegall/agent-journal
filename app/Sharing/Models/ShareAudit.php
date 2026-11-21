@@ -96,7 +96,7 @@ final class ShareAudit extends Model implements ReadableModel
         $query = self::query()->ofShare($share)->orderByDesc('id');
         $query->when($after, fn (Builder $query, string $id) => $query->olderThan($id));
 
-        return array_values($query->readLimit($rows + 1)->get()->all());
+        return array_values($query->readExactly($rows + 1)->get()->all());
     }
 
     /**
@@ -126,7 +126,7 @@ final class ShareAudit extends Model implements ReadableModel
                         $endedLongAgo,
                     ),
                 ))
-            ->orderBy('id')->lockForUpdate()->readLimit($most)->get()->all());
+            ->orderBy('id')->lockForUpdate()->readExactly($most)->get()->all());
     }
 
     /**

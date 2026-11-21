@@ -7,10 +7,10 @@ namespace App\Http\Requests\Agents;
 use App\Agents\Commands\StartAgent;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\StartOriginType;
-use App\Agents\Support\ModelSelection;
-use App\Agents\Support\SelectedProgram;
-use App\Agents\Support\StartPolicy;
-use App\Agents\Support\StartRequest;
+use App\Agents\Values\ModelSelection;
+use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\StartPolicy;
+use App\Agents\Values\StartRequest;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

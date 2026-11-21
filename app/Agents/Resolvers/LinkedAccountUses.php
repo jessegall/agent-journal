@@ -47,7 +47,7 @@ final readonly class LinkedAccountUses implements AccountUses
         $sessions = $this->sessions->all($account)
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get();
 
         return array_values($sessions->map(fn (AgentSession $session) => $session->useOf($account))->all());

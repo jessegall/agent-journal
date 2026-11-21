@@ -8,6 +8,7 @@ use App\Agents\Enums\DriverOperation;
 use App\Agents\Exceptions\DriverRequestRefused;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Values\DriverRequestPayload;
+use App\Agents\Values\StackTarget;
 
 /**
  * Accepts a model and an effort as one settings change: the pair is validated before either is accepted, and each

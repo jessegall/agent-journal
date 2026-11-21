@@ -6,6 +6,7 @@ namespace App\Processes\Values;
 
 use App\Processes\Contracts\StoredValue;
 use App\Processes\Enums\ExampleType;
+use App\Processes\Stored\StoredRuleExample;
 
 /**
  * One example a proposal gives for review: a command line the rule must match with the classes it must give, or a
@@ -38,11 +39,25 @@ final readonly class RuleExample implements StoredValue
      */
     public static function fromArray(array $fields): self
     {
-        return new self(
-            ExampleType::from($fields['type']),
-            $fields['line'],
-            CommandClassSet::fromArray($fields['classes']),
-        );
+        return self::fromStored(StoredRuleExample::from($fields));
+    }
+
+    public static function fromJson(string $json): self
+    {
+        return self::fromStored(StoredRuleExample::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR)));
+    }
+
+    public static function listFromJson(string $json): array
+    {
+        return array_values(array_map(
+            self::fromStored(...),
+            StoredRuleExample::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)),
+        ));
+    }
+
+    private static function fromStored(StoredRuleExample $stored): self
+    {
+        return new self($stored->type, $stored->line, CommandClassSet::fromArray($stored->classes));
     }
 
     /**

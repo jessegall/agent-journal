@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Casts;
 
-use App\Records\Support\RecordIdentity;
+use App\Sharing\Data\StoredSelectedTargetData;
 use App\Sharing\Exceptions\StoredShareColumnInvalid;
 use App\Sharing\Support\ShareSelectedTarget;
 use Error;
@@ -13,6 +13,7 @@ use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
 
 /**
  * Reads the JSON selection column of a preview as its list of selected targets and writes it back, each target as
@@ -31,15 +32,11 @@ final class SelectedTargetsCast implements CastsAttributes
     public function get(Model $model, string $key, mixed $value, array $attributes): array
     {
         try {
-            return array_map(
-                fn (array $target) => new ShareSelectedTarget(
-                    new RecordIdentity($target['type'], $target['id']),
-                    $target['link_id'],
-                    $target['publication_version'],
-                ),
-                array_values(json_decode((string) $value, true, 3, JSON_THROW_ON_ERROR)),
-            );
-        } catch (JsonException|InvalidArgumentException|ErrorException|Error $failure) {
+            return array_values(array_map(
+                fn (StoredSelectedTargetData $target) => $target->target(),
+                StoredSelectedTargetData::collect(json_decode((string) $value, true, 3, JSON_THROW_ON_ERROR)),
+            ));
+        } catch (JsonException|CannotCreateData|InvalidArgumentException|ErrorException|Error $failure) {
             throw StoredShareColumnInvalid::for($model->getTable(), $key, (string) $model->getKey(), $failure);
         }
     }

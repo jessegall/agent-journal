@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Storage;
 
+use App\Contracts\Attributes\DecodesAnyJson;
 use JsonSerializable;
 use PhpOption\None;
 use PhpOption\Option;
@@ -72,6 +73,10 @@ final readonly class EncodedValue implements JsonSerializable
         return is_int($decoded) ? Option::fromValue($decoded) : None::create();
     }
 
+    /**
+     * The stored value decoded, which may be any JSON type, so it has no fixed shape for a Data class to hold.
+     */
+    #[DecodesAnyJson]
     public function jsonSerialize(): mixed
     {
         return json_decode($this->json, false, 512, JSON_THROW_ON_ERROR);

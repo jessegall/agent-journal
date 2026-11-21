@@ -10,11 +10,11 @@ use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\SessionSelectionFixed;
-use App\Agents\Support\AccountUse;
-use App\Agents\Support\ModelSelection;
-use App\Agents\Support\SelectedProgram;
-use App\Agents\Support\SelectionSource;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\AccountUse;
+use App\Agents\Values\ModelSelection;
+use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectionSource;
+use App\Agents\Values\StackTarget;
 use App\Links\Support\Linkable;
 use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
@@ -164,7 +164,7 @@ final class AgentSession extends Model implements ReadableModel
             ->where('agent_id', $agentId)
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->pluck('id');
 
         return array_values(array_map(strval(...), $ids->all()));
@@ -180,7 +180,7 @@ final class AgentSession extends Model implements ReadableModel
         $running = self::query()
             ->running()
             ->orderBy('created_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get();
 
         return array_values($running->all());
@@ -197,7 +197,7 @@ final class AgentSession extends Model implements ReadableModel
             ->running()
             ->whereIn('id', StartRecord::query()->whereNotNull('owner_reference')->select('session_id'))
             ->orderBy('created_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get();
 
         return array_values($launches->all());
@@ -214,7 +214,7 @@ final class AgentSession extends Model implements ReadableModel
             ->running()
             ->where('profile_key', $key)
             ->where('profile_revision', $revision)
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get();
 
         return array_values($sessions->all());

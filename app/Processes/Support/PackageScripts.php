@@ -6,9 +6,13 @@ namespace App\Processes\Support;
 
 use App\Files\Attributes\OutsideThePlaces;
 use App\Files\Enums\PlaceExemption;
+use App\Processes\Data\PackageFileData;
 use App\Processes\Values\ScriptBinding;
 use App\Processes\Values\ScriptBody;
 use App\Processes\Values\Word;
+use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use TypeError;
 
 /**
  * Finds the package script a composer, npm or pnpm command runs (doc 21 revision 6, sections 67 and 68) in the trusted
@@ -60,9 +64,7 @@ final readonly class PackageScripts
     {
         $file = self::PACKAGE_FILES[$manager];
         $path = rtrim($projectRoot, '/')."/{$file}";
-        $package = is_file($path) ? json_decode((string) file_get_contents($path), true) : [];
-        $body = is_array($package) ? ($package['scripts'][$name] ?? []) : [];
-        $lines = array_values(array_map(strval(...), is_array($body) ? $body : [$body]));
+        $lines = is_file($path) ? self::packageOf((string) file_get_contents($path))->linesOf($name) : [];
 
         if ($lines === []) {
             return [];
@@ -79,5 +81,17 @@ final readonly class PackageScripts
     public function isHarmlessCallback(string $line): bool
     {
         return in_array($line, self::HARMLESS_CALLBACKS, true);
+    }
+
+    /**
+     * The package file its text reads as, with no scripts when it is not a JSON object of that shape.
+     */
+    private static function packageOf(string $text): PackageFileData
+    {
+        try {
+            return PackageFileData::from(json_decode($text, true, 512, JSON_THROW_ON_ERROR));
+        } catch (JsonException|CannotCreateData|TypeError) {
+            return new PackageFileData();
+        }
     }
 }

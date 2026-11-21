@@ -12,8 +12,8 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentInspection;
 use App\Agents\Support\SessionOption;
-use App\Agents\Support\StackTarget;
 use App\Agents\Support\StartReceipt;
+use App\Agents\Values\StackTarget;
 use App\Reads\Support\ReadBuilder;
 
 /**
@@ -42,7 +42,7 @@ final readonly class SessionRecords implements SessionResolver
             'status',
             array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()),
         )
-            ->orderBy('id')->readLimit(self::CHOICES_SHOWN)->get()
+            ->orderBy('id')->limit(self::CHOICES_SHOWN)->get()
             ->map(fn (AgentSession $session) => self::optionOf($session))
             ->all());
     }

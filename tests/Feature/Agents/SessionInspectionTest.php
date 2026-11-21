@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Models\SessionPolicy;
-use App\Agents\Support\StartPolicy;
+use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
 use App\Hooks\Commands\RecordStopResults;

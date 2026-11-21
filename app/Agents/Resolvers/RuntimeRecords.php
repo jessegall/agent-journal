@@ -27,7 +27,7 @@ final readonly class RuntimeRecords implements RuntimeResolver
             ->withWatchers()
             ->orderBy('id')
             ->forPage(max(1, $page), $perPage)
-            ->readLimit($perPage)
+            ->readExactly($perPage)
             ->get()
             ->map(fn (AgentRuntime $runtime) => $runtime->status($now))
             ->all());
@@ -48,7 +48,7 @@ final readonly class RuntimeRecords implements RuntimeResolver
         return array_values(DriverRequest::query()
             ->where('agent_runtime_id', $this->visibleRuntimeOf($sessionId)->id)
             ->orderByDesc('sequence')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get()
             ->map(fn (DriverRequest $request) => $request->status())
             ->all());
@@ -56,7 +56,7 @@ final readonly class RuntimeRecords implements RuntimeResolver
 
     private function visibleRuntimeOf(string $sessionId): AgentRuntime
     {
-        return $this->visibleRuntimes()->with('session')->where('agent_session_id', $sessionId)->readLimit(1)->firstOr(
+        return $this->visibleRuntimes()->with('session')->where('agent_session_id', $sessionId)->limit(1)->firstOr(
             fn () => throw StackTargetRefused::forTarget("session {$sessionId}"),
         );
     }

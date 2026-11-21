@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Support;
 
+use App\Contracts\Attributes\DecodesAnyJson;
 use App\Processes\Enums\ClaimedOutcome;
 use App\Processes\Enums\FramingType;
 use App\Processes\Enums\OutputEncoding;
@@ -211,8 +212,9 @@ final readonly class DeclarativeReader
 
     /**
      * A JSON-lines record is matched as its top-level fields written key=value in their order; other framings read
-     * the line as it is.
+     * the line as it is. The line is the tool's own JSON, whose keys are not ours to name.
      */
+    #[DecodesAnyJson]
     private function lineOf(string $line): string
     {
         if ($this->contract->framing !== FramingType::JsonLines) {

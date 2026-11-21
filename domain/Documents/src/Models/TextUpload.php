@@ -174,7 +174,7 @@ final class TextUpload extends Model implements ReadableModel
         $body = '';
         $chunks = TextUploadChunk::query()->where('upload_id', $this->id)->orderBy('position');
 
-        foreach ($chunks->readLimit($this->next_index)->cursor() as $chunk) {
+        foreach ($chunks->readExactly($this->next_index)->cursor() as $chunk) {
             $body .= $chunk->text();
         }
 

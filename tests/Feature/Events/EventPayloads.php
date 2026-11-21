@@ -513,7 +513,7 @@ final class EventPayloads
                 'afterCommit' => false,
                 'fields' => [
                     'runId' => 'string',
-                    'target' => 'App\Agents\Support\StackTarget',
+                    'target' => 'App\Agents\Values\StackTarget',
                 ],
             ],
             TaskBlocked::class => [

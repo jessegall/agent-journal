@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\StateEvents;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\CommandNotRegistered;
 use App\Bus\Support\CommandRegistry;

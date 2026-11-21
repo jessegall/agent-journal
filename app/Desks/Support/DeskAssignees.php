@@ -54,7 +54,7 @@ final readonly class DeskAssignees implements AssigneeProvider
         $this->actors->actor();
         $ids = array_values(array_unique(array_map(fn (AssigneeIdentity $assignee) => $assignee->id, $assignees)));
 
-        return array_values(DeskRecord::query()->whereKey($ids)->readLimit(count($ids))->orderBy('id')->get()
+        return array_values(DeskRecord::query()->whereKey($ids)->readExactly(count($ids))->orderBy('id')->get()
             ->map(fn (DeskRecord $desk) => self::nameOf($desk))
             ->all());
     }

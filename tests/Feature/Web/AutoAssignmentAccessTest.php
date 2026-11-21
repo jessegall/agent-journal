@@ -11,7 +11,7 @@ use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Assignments\Exceptions\AssignmentDenied;
 use App\Assignments\Exceptions\AutoAssignmentDenied;
 use App\Assignments\Providers\AssignmentsServiceProvider;
-use App\Assignments\Support\DenyAllAutoAssignmentAccess;
+use App\Assignments\Support\ClosedAutoAssignmentAccess;
 use App\Engine\Support\EngineActor;
 use App\Web\Support\OwnerAutoAssignmentAccess;
 use Domain\Access\Models\User;
@@ -53,7 +53,7 @@ final class AutoAssignmentAccessTest extends TestCase
         new AssignmentsServiceProvider($this->app)->register();
         $access = $this->app->make(AutoAssignmentAccess::class);
 
-        $this->assertInstanceOf(DenyAllAutoAssignmentAccess::class, $access);
+        $this->assertInstanceOf(ClosedAutoAssignmentAccess::class, $access);
         $this->assertThrows(
             fn () => $access->assertMayRead($this->owner, ActorIdentity::of($this->owner)),
             AutoAssignmentDenied::class,

@@ -6,7 +6,6 @@ namespace App\Hooks\Storage;
 
 use App\Hooks\Exceptions\StoredValueInvalid;
 use Closure;
-use JsonException;
 use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;
 
@@ -18,14 +17,14 @@ final class StoredJson
     /**
      * @template TValue
      *
-     * @param  Closure(array<mixed>): TValue  $build
+     * @param  Closure(string): TValue  $build  hands the JSON text to a Data class's from(), which decodes it
      * @return TValue
      */
     public static function read(string $column, mixed $json, Closure $build): mixed
     {
         try {
-            return $build((array) json_decode((string) $json, true, flags: JSON_THROW_ON_ERROR));
-        } catch (JsonException|CannotCreateData|TypeError $failure) {
+            return $build((string) $json);
+        } catch (CannotCreateData|TypeError $failure) {
             throw StoredValueInvalid::forColumn($column, $failure);
         }
     }

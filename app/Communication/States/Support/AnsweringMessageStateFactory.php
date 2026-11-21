@@ -42,7 +42,7 @@ final readonly class AnsweringMessageStateFactory implements StateLoader
         )));
         $messages = Message::query()->acrossInboxes()
             ->whereKey(array_map(fn ($claim) => $claim->record->id, array_values($claims)))
-            ->readLimit(max(1, count($claims)))
+            ->readExactly(max(1, count($claims)))
             ->get()
             ->keyBy('id');
 

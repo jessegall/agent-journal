@@ -7,7 +7,7 @@ namespace App\Agents\Commands;
 use App\Agents\Enums\NavigationCompletion;
 use App\Agents\Handlers\ProveNavigationHandler;
 use App\Agents\Policies\AgentPolicy;
-use App\Agents\Support\DriverReceipt;
+use App\Agents\Values\DriverReceipt;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;

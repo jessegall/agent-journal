@@ -45,16 +45,7 @@ final readonly class CallbackEnvelope
      */
     public static function fromJson(string $json): self
     {
-        $fields = json_decode($json, true, 4, JSON_THROW_ON_ERROR);
-
-        return new self(
-            $fields['id'],
-            $fields['program'],
-            $fields['body'],
-            $fields['bodyDigest'],
-            $fields['issuedAt'],
-            $fields['deadlineAt'],
-        );
+        return CallbackEnvelopeData::from(json_decode($json, true, 4, JSON_THROW_ON_ERROR))->envelope();
     }
 
     public function deadline(): CarbonImmutable

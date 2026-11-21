@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Engine\Handlers;
 
-use App\Agents\Contracts\ExpiresNavigation;
+use App\Agents\Contracts\NavigationExpiry;
 use App\Contracts\CommandHandler;
 use App\Engine\Commands\ExpireNavigationRequests;
 use App\Engine\Support\EngineAccess;
@@ -16,7 +16,7 @@ final readonly class ExpireNavigationRequestsHandler implements CommandHandler
 {
     public function __construct(
         private EngineAccess $access,
-        private ExpiresNavigation $navigation,
+        private NavigationExpiry $navigation,
     ) {}
 
     public function handle(ExpireNavigationRequests $command): void

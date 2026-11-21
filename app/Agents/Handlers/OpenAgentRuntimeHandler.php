@@ -17,10 +17,10 @@ use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\Host;
 use App\Agents\Support\ArrangementSetting;
-use App\Agents\Support\ModelSelection;
 use App\Agents\Support\OpenedRuntime;
-use App\Agents\Support\RuntimeIntent;
-use App\Agents\Support\SelectedProgram;
+use App\Agents\Values\ModelSelection;
+use App\Agents\Values\RuntimeIntent;
+use App\Agents\Values\SelectedProgram;
 use App\Contracts\CommandHandler;
 use Illuminate\Support\Str;
 

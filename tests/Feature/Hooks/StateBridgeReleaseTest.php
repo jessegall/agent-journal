@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Bus\Support\EventUnitLifecycle;
 use App\Bus\Support\RequiredListenerRegistry;
 use App\Hooks\StateEvents\StateEventBridge;

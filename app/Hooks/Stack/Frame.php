@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Contracts\Event;
 use App\Hooks\Contracts\ConditionalState;
 use App\Hooks\Contracts\HookInput;

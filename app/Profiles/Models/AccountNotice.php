@@ -109,7 +109,7 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
      */
     public static function openNotices(): array
     {
-        return array_values(self::query()->open()->latest()->readLimit(20)->get()->all());
+        return array_values(self::query()->open()->latest()->limit(20)->get()->all());
     }
 
     // ----------[ Mutations ]----------

@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace App\Hooks\Exceptions;
 
 use RuntimeException;
+use Throwable;
 
 /**
  * A start's output grant snapshot that is not one the journal sealed for it; the relay grants nothing from it.
  */
 final class OutputGrantsInvalid extends RuntimeException
 {
-    public static function malformed(): self
+    public static function malformed(Throwable|null $cause = null): self
     {
-        return new self('The output grant snapshot is not a sealed list of paths.');
+        return new self('The output grant snapshot is not a sealed list of paths.', 0, $cause);
     }
 
     public static function unsealed(): self

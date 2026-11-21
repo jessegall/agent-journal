@@ -6,7 +6,7 @@ namespace Tests\Unit\Hooks;
 
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\Denied;
-use App\Hooks\Decisions\PushState;
+use App\Hooks\Decisions\PushTransition;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\NoSubject;
@@ -67,7 +67,7 @@ final class DecisionTest extends TestCase
         $reference = new StateReference('communication.answering', NoSubject::None);
         $change = Decision::push($reference)->transition;
 
-        $this->assertInstanceOf(PushState::class, $change);
+        $this->assertInstanceOf(PushTransition::class, $change);
         $this->assertSame($reference, $change->state);
     }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests\Feature;
 
 use App\Agents\Events\LaunchEnded;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Support\ContextReminders;

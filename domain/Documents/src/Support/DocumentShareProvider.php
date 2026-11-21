@@ -82,6 +82,6 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
     {
         return Document::query()->sharedPublished()->with(
             ['currentRevision' => fn (BelongsTo $revision) => $revision->forCards()],
-        )->whereKey($ids)->readLimit(count($ids));
+        )->whereKey($ids)->readExactly(count($ids));
     }
 }

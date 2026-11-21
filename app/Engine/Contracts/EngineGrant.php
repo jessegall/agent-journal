@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Engine\Contracts;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 
 /**
  * What the engine may address right now: the target of the frame it delivers to, or one declared maintenance scope.

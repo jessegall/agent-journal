@@ -31,7 +31,7 @@ final readonly class NavigationRequestProvider implements AssignableProvider
     {
         $found = NavigationRequest::query()
             ->whereKey(array_map(fn (RecordIdentity $record) => $record->id, $records))
-            ->readLimit(count($records))
+            ->readExactly(count($records))
             ->pluck('id')
             ->all();
 

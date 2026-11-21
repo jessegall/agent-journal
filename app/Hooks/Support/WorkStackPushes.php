@@ -7,7 +7,7 @@ namespace App\Hooks\Support;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\WorkStacks;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Actions\AddressedStackPush;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\AgentStack;

@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Agents\Host;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Models\SessionOutputGrant;
 use App\Agents\Support\HostContext;
-use App\Agents\Support\SessionOutputPaths;
+use App\Agents\Values\SessionOutputPaths;
 use App\Hooks\Relay\OutputGrantSeal;
 use App\Http\Requests\Agents\StartReportRequest;
 use Illuminate\Http\JsonResponse;

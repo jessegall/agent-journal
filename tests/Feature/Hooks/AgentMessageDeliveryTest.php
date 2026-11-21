@@ -12,7 +12,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Support\PendingWorkSources;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\FileOperation;

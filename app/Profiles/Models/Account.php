@@ -6,7 +6,7 @@ namespace App\Profiles\Models;
 
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
-use App\Agents\Support\SelectedAccount;
+use App\Agents\Values\SelectedAccount;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
@@ -167,7 +167,7 @@ final class Account extends Model implements EventSource, ReadableModel
             ->where('program', $program->value)
             ->where('subject', $identity->subject)
             ->where('state', '!=', AccountState::Removed->value)
-            ->readLimit(20)
+            ->limit(20)
             ->get()
             ->first(fn (self $account) => $account->isSamePrincipal($identity));
     }
@@ -321,7 +321,7 @@ final class Account extends Model implements EventSource, ReadableModel
             ->where('state', AccountState::Removing->value)
             ->where('cleanup_released', false)
             ->orderBy('updated_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->pluck('id');
 
         return array_values(array_map(strval(...), $ids->all()));

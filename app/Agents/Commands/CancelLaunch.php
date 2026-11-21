@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Contracts\TargetsAgentStack;
+use App\Agents\Contracts\AgentStackCommand;
 use App\Agents\Handlers\CancelLaunchHandler;
 use App\Agents\Policies\AgentPolicy;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
@@ -21,7 +21,7 @@ use App\Operations\Enums\AccessType;
  */
 #[HandledBy(CancelLaunchHandler::class)]
 #[Authorize(AgentPolicy::class, AccessType::Edit)]
-final readonly class CancelLaunch extends Command implements TargetsAgentStack
+final readonly class CancelLaunch extends Command implements AgentStackCommand
 {
     public function __construct(
         public string $agentId,

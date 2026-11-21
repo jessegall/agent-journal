@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Contracts\Support;
 
+use App\Contracts\Event;
+use App\Contracts\EventSource;
 use App\Contracts\Exceptions\RowWriteRefused;
 use App\Contracts\RowCapture;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
-use App\Contracts\Event;
-use App\Contracts\EventSource;
 
 /**
  * Keeps the facts a model's own transitions establish, for EventSource. A transition raises only after its own save
@@ -51,7 +51,7 @@ trait RaisesEvents
 
     /**
      * Inserts this new row unless its key is taken, and answers whether it did; only an inserted row opens its slot
-     * in the unit, so the constructor raises its fact only then.
+     * in the unit, so the constructor raises its fact only then. The insert reads nothing, so no read scope applies.
      */
     protected function insertIfAbsent(): bool
     {
@@ -59,7 +59,7 @@ trait RaisesEvents
             $this->updateTimestamps();
         }
 
-        $inserted = static::query()->insertOrIgnore($this->getAttributes()) === 1;
+        $inserted = static::query()->withoutGlobalScopes()->insertOrIgnore($this->getAttributes()) === 1;
 
         if ($inserted) {
             $this->exists = true;

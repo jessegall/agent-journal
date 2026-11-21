@@ -11,8 +11,11 @@ use App\Processes\Enums\OutputRequirement;
 use App\Processes\Enums\ScopeType;
 use App\Processes\Enums\ToolType;
 use App\Processes\Exceptions\CommandRuleInvalid;
+use App\Processes\Stored\StoredCommandRule;
 use App\Processes\Stored\StoredExecutableBinding;
+use App\Processes\Stored\StoredRuleReference;
 use App\Processes\Stored\StoredRuleScope;
+use App\Processes\Stored\StoredVerificationContract;
 
 /**
  * One declared behaviour of a program (doc 21 revision 3, sections 9 and 27): which program and subcommands it
@@ -153,19 +156,40 @@ final readonly class CommandRule implements StoredValue
      */
     public static function fromArray(array $fields): self
     {
+        return self::fromStored(StoredCommandRule::from($fields));
+    }
+
+    public static function fromJson(string $json): self
+    {
+        return self::fromStored(StoredCommandRule::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR)));
+    }
+
+    public static function listFromJson(string $json): array
+    {
+        return array_values(array_map(
+            self::fromStored(...),
+            StoredCommandRule::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)),
+        ));
+    }
+
+    /**
+     * The rule its stored shape names.
+     */
+    private static function fromStored(StoredCommandRule $stored): self
+    {
         return new self(
-            $fields['id'],
-            StoredRuleScope::from($fields['scope'])->toRuleScope(),
-            ProgramSpellings::fromArray($fields['program']),
-            $fields['subcommands'],
-            ArgumentGrammar::fromArray($fields['arguments']),
-            CommandClassSet::fromArray($fields['classes']),
-            CommandType::from($fields['purpose']),
-            OutputRequirement::from($fields['output_requirement']),
-            StoredExecutableBinding::from($fields['binding'])->toBinding(),
-            $fields['revision'],
-            array_values(array_map(RuleReference::fromArray(...), $fields['replaces'])),
-            array_values(array_map(VerificationContract::fromArray(...), $fields['contracts'])),
+            $stored->id,
+            $stored->scope->toRuleScope(),
+            ProgramSpellings::fromArray($stored->program),
+            $stored->subcommands,
+            ArgumentGrammar::fromArray($stored->arguments),
+            CommandClassSet::fromArray($stored->classes),
+            $stored->purpose,
+            $stored->outputRequirement,
+            $stored->binding->toBinding(),
+            $stored->revision,
+            array_map(fn (StoredRuleReference $replaced) => $replaced->toReference(), $stored->replaces),
+            array_map(fn (StoredVerificationContract $contract) => $contract->toContract(), $stored->contracts),
         );
     }
 

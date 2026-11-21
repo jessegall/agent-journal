@@ -20,7 +20,7 @@ final readonly class RunListResolver implements PageResolver
 
     public function read(): RunListData
     {
-        $runs = ProcessRun::query()->forActor()->where('project_key', $this->projects->current())->readLimit(50)->get();
+        $runs = ProcessRun::query()->forActor()->where('project_key', $this->projects->current())->limit(50)->get();
         $operations = PartRun::query()
             ->whereIn('process_run_id', $runs->modelKeys())
             ->readLimit(1_000)

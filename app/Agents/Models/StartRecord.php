@@ -11,7 +11,7 @@ use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Exceptions\StartRequestConflict;
-use App\Agents\Support\StartRequest;
+use App\Agents\Values\StartRequest;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;

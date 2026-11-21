@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\StateEvents;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\Command;
 use App\Bus\Enums\CommandOriginStatus;
 use Psr\Log\LoggerInterface;

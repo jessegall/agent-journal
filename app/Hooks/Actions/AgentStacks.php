@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Actions;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Models\AgentStackRow;

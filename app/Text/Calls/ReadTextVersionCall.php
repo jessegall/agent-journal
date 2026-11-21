@@ -7,16 +7,16 @@ namespace App\Text\Calls;
 use App\AgentRequests\Attributes\Endpoint;
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Enums\CallEffect;
-use App\Text\Data\TextVersionInfo;
+use App\Text\Data\TextVersionSummary;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Data;
 
 /**
  * Reads a record's text version: the one named, or its current one.
  *
- * @implements JournalCall<TextVersionInfo>
+ * @implements JournalCall<TextVersionSummary>
  */
-#[Endpoint('text/version', 'POST', TextVersionInfo::class, CallEffect::Read)]
+#[Endpoint('text/version', 'POST', TextVersionSummary::class, CallEffect::Read)]
 final class ReadTextVersionCall extends Data implements JournalCall
 {
     public function __construct(

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Values;
 
 use App\Processes\Contracts\StoredValue;
+use App\Processes\Stored\StoredScriptBinding;
 
 /**
  * Which package script a command ran and the exact body it resolved to: a changed body has a new digest, so anything
@@ -22,12 +23,17 @@ final readonly class ScriptBinding implements StoredValue
         return ['package_file' => $this->packageFile, 'script' => $this->script, 'digest' => $this->digest];
     }
 
-    /**
-     * @param  array<string, mixed>  $fields  the shape toArray writes
-     */
-    public static function fromArray(array $fields): self
+    public static function fromJson(string $json): self
     {
-        return new self($fields['package_file'], $fields['script'], $fields['digest']);
+        return StoredScriptBinding::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR))->binding();
+    }
+
+    public static function listFromJson(string $json): array
+    {
+        return array_values(array_map(
+            fn (StoredScriptBinding $stored) => $stored->binding(),
+            StoredScriptBinding::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)),
+        ));
     }
 
     public function reference(): string

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Handlers;
 
 use App\Agents\Commands\ChangeAgentModel;
-use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\DriverSettings;
+use App\Agents\Values\DriverReceipt;
 use App\Contracts\CommandHandler;
 
 final readonly class ChangeAgentModelHandler implements CommandHandler

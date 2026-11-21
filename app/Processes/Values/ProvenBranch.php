@@ -6,6 +6,7 @@ namespace App\Processes\Values;
 
 use App\Processes\Contracts\StoredValue;
 use App\Processes\Enums\Outcome;
+use App\Processes\Stored\StoredProvenBranch;
 
 /**
  * One exit branch a reader proof covers: the real sample run and part that ended with its status, the branch's
@@ -38,17 +39,16 @@ final readonly class ProvenBranch implements StoredValue
         ];
     }
 
-    /**
-     * @param  array<string, mixed>  $fields  the shape toArray writes
-     */
-    public static function fromArray(array $fields): self
+    public static function fromJson(string $json): self
     {
-        return new self(
-            $fields['status'],
-            Outcome::from($fields['outcome']),
-            $fields['process_run_id'],
-            $fields['part_run_id'],
-            $fields['manifests'],
-        );
+        return StoredProvenBranch::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR))->branch();
+    }
+
+    public static function listFromJson(string $json): array
+    {
+        return array_values(array_map(
+            fn (StoredProvenBranch $stored) => $stored->branch(),
+            StoredProvenBranch::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)),
+        ));
     }
 }

@@ -32,6 +32,11 @@ final class ProgramArrangementUnproven extends RuntimeException implements Coded
         );
     }
 
+    public static function inContainer(string $program, string $version, string $shortfall): self
+    {
+        return new self("{$program} {$version} cannot start in a container: {$shortfall}.");
+    }
+
     protected function status(): int
     {
         return 409;

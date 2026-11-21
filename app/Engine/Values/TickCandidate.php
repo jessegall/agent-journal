@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Engine\Values;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\TickableState;
 use App\Hooks\Values\WorkOccurrence;
 use Carbon\CarbonImmutable;

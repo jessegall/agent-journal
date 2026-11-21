@@ -100,6 +100,30 @@ final class SignInSecretTest extends TestCase
         $this->assertNull($oauth->refresh()->fingerprint);
     }
 
+    public function test_a_pasted_error_message_is_refused_and_the_attempt_waits_for_the_real_code(): void
+    {
+        $challenges = $this->app->make(SignInChallenges::class);
+        $pasted = "Error in event handler: TypeError: Cannot read properties of undefined (reading 'id')";
+        $code = 'Ksaw83zu7MDwmacNrrJ8tHqQXm1P6Rs1n7KMTUjY2lKY1#DV0-PaIOKpbJKqe--nxwxE48';
+
+        foreach ([SignInMethod::OAuth, SignInMethod::ProviderToken] as $index => $method) {
+            $attempt = $this->attempt(HookProgram::ClaudeCode, $method, "request-{$index}");
+
+            $this->assertThrows(
+                fn () => $this->submit($attempt, $pasted),
+                SignInCodeInvalid::class,
+                'it has spaces. Paste the',
+            );
+            $this->assertNull($challenges->takeCode($attempt->id));
+            $this->assertTrue($attempt->refresh()->isLive());
+            $this->assertNotSame(SignInState::Checking, $attempt->state);
+
+            $this->submit($attempt, $code);
+            $this->assertSame($code, $challenges->takeCode($attempt->id));
+            $this->assertSame(SignInState::Checking, $attempt->refresh()->state);
+        }
+    }
+
     public function test_key_accounts_are_named_for_their_method_and_the_same_key_is_already_added(): void
     {
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(1)));

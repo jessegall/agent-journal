@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Ticks;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use Carbon\CarbonImmutable;
 
 /**

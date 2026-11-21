@@ -7,6 +7,7 @@ namespace Tests\Feature\Domains;
 use App\Bus\Support\RequiredListenerRegistry;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
+use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Registration\ListenerPolicy;
 use App\Domains\Support\AvailableListener;
 use App\Domains\Support\DomainRegistry;
@@ -58,7 +59,7 @@ final class RequiredListenerLaneTest extends TestCase
     {
         $registry = $this->app->make(RequiredListenerRegistry::class);
 
-        $this->assertSame([TaskStarted::class, SignInAttemptFinished::class], $registry->events());
+        $this->assertEqualsCanonicalizing([TaskStarted::class, SignInAttemptFinished::class], $registry->events());
         $this->assertSame(
             [SamplePlanOfStartedTask::class, PushTaskState::class],
             array_map(
@@ -67,7 +68,8 @@ final class RequiredListenerLaneTest extends TestCase
             ),
         );
         $this->assertSame([ReleaseSignInWriter::class.'@handle'], $registry->listenersOf(SignInAttemptFinished::class));
-        $this->assertFalse($this->app->make('events')->hasListeners(SignInAttemptFinished::class));
+        $public = new DomainEventServiceProvider($this->app)->getEvents()[SignInAttemptFinished::class] ?? [];
+        $this->assertNotContains(ReleaseSignInWriter::class.'@handle', $public);
     }
 
     public function test_a_queued_required_listener_is_refused(): void

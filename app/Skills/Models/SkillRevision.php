@@ -146,7 +146,7 @@ final class SkillRevision extends Model implements ReadableModel
             return [];
         }
 
-        return self::query()->whereKey($ids)->readLimit(count($ids))->get()->keyBy('skill_id')->all();
+        return self::query()->whereKey($ids)->readExactly(count($ids))->get()->keyBy('skill_id')->all();
     }
 
     public static function numbered(Skill $skill, int $revision): self
@@ -161,7 +161,7 @@ final class SkillRevision extends Model implements ReadableModel
      */
     public static function historyOf(Skill $skill, int $limit): array
     {
-        return array_values(self::query()->ofSkill($skill)->orderByDesc('revision')->readLimit($limit)->get()->all());
+        return array_values(self::query()->ofSkill($skill)->orderByDesc('revision')->readExactly($limit)->get()->all());
     }
 
     // ----------[ Answers ]----------

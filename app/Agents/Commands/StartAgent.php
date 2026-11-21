@@ -8,7 +8,7 @@ use App\Agents\Contracts\AgentStartCommand;
 use App\Agents\Handlers\StartAgentHandler;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\StartReceipt;
-use App\Agents\Support\StartRequest;
+use App\Agents\Values\StartRequest;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;

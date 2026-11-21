@@ -10,6 +10,7 @@ use App\Agents\Models\DriverRequest;
 use App\Agents\Models\NavigationRequest;
 use App\Agents\Values\DriverRequestPayload;
 use App\Agents\Values\NavigationRound;
+use App\Agents\Values\StackTarget;
 
 /**
  * Appends the main agent's rounds to the stalled runtime's own ledger as Navigate driver requests, named by the

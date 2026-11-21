@@ -197,7 +197,7 @@ final class ReadShareTest extends TestCase
         $links = Link::query()
             ->whereIn('target_id', $documentIds)
             ->orWhereIn('source_id', $documentIds)
-            ->readLimit(count($documents))
+            ->readExactly(count($documents))
             ->get();
 
         foreach ($documents as $document) {

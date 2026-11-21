@@ -7,7 +7,7 @@ namespace App\Agents\Resolvers;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
-use App\Agents\Support\SelectedAccount;
+use App\Agents\Values\SelectedAccount;
 use App\Programs\Enums\HookProgram;
 
 /**

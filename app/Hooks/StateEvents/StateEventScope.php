@@ -7,7 +7,7 @@ namespace App\Hooks\StateEvents;
 use App\Actors\Contracts\CurrentActor;
 use App\Agents\Contracts\AgentCallContext;
 use App\Agents\Support\AgentContext;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Contracts\Event;
 use App\Hooks\Values\FrameGrant;
 use Closure;

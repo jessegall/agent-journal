@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Decisions\StateReference;
 use PhpOption\None;
@@ -25,15 +25,15 @@ final readonly class FixedCurrentState implements CurrentState
     public function of(StackTarget $target, string $typeKey): Option
     {
         return $target == $this->target && isset(
-$this->frames[$typeKey],
-) ? new Some($this->frames[$typeKey]) : None::create();
+            $this->frames[$typeKey],
+        ) ? new Some($this->frames[$typeKey]) : None::create();
     }
 
     public function top(StackTarget $target): Option
     {
         return $target == $this->target && $this->frames !== [] ? new Some(
-$this->frames[array_key_last($this->frames)],
-) : None::create();
+            $this->frames[array_key_last($this->frames)],
+        ) : None::create();
     }
 
     public function record(StackTarget $target): Option

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Agents\Models\AgentSession;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Support\ContextReminders;

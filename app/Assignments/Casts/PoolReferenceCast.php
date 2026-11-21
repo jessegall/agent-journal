@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Assignments\Casts;
 
+use App\Assignments\Data\StoredPoolData;
 use App\Assignments\Exceptions\AutoAssignmentPoolUnreadable;
 use App\Assignments\Support\PoolReference;
-use App\Records\Support\RecordIdentity;
 use ErrorException;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;
 
 /**
@@ -30,11 +31,8 @@ final class PoolReferenceCast implements CastsAttributes
     public function get(Model $model, string $key, mixed $value, array $attributes): PoolReference
     {
         try {
-            $pool = json_decode((string) $value, true, 4, JSON_THROW_ON_ERROR);
-            $target = $pool['target'] === null ? null : new RecordIdentity(...$pool['target']);
-
-            return new PoolReference($pool['type'], $target, $pool['record_ids']);
-        } catch (JsonException|InvalidArgumentException|TypeError|ErrorException $failure) {
+            return StoredPoolData::from(json_decode((string) $value, true, 4, JSON_THROW_ON_ERROR))->pool();
+        } catch (JsonException|CannotCreateData|InvalidArgumentException|TypeError|ErrorException $failure) {
             throw AutoAssignmentPoolUnreadable::forRow((string) $model->getKey(), $failure);
         }
     }

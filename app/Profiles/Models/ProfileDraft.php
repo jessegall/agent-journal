@@ -90,7 +90,7 @@ final class ProfileDraft extends Model implements ReadableModel
             ->orderBy('profile_key')
             ->lockForUpdate()
             ->with('currentRevision')
-            ->readLimit(count($profiles))
+            ->readExactly(count($profiles))
             ->get()
             ->keyBy('profile_key')
             ->all();

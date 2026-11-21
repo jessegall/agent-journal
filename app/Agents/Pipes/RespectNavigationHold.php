@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Pipes;
 
 use App\Agents\Enums\NavigationAnswerer;
-use App\Agents\Support\NavigationRaiseAnswer;
 use App\Agents\Pipelines\NavigationAdmission;
+use App\Agents\Support\NavigationRaiseAnswer;
 use App\Pipelines\Contracts\Pipe;
 
 /**

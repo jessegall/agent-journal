@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace App\Profiles\Casts;
 
+use App\Bus\Contracts\Command;
+use App\Contracts\Attributes\DecodesAnyJson;
+use App\Profiles\Data\StoredPolicyGrant;
+use App\Profiles\Data\StoredScopedRead;
 use App\Profiles\Enums\AuthorizationType;
 use App\Profiles\Exceptions\GrantShapeInvalid;
 use App\Profiles\Exceptions\ProfileRevisionUnreadable;
-use App\Profiles\Values\PolicyGrant;
 use App\Profiles\Values\ProfileAuthorization;
-use App\Profiles\Values\ScopedRead;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
 use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;
 use ValueError;
 
@@ -31,17 +34,23 @@ final class ProfileAuthorizationCast implements CastsAttributes
     public function get(Model $model, string $key, mixed $value, array $attributes): ProfileAuthorization
     {
         try {
-            $grants = json_decode((string) $attributes['policy_grants'], true, 8, JSON_THROW_ON_ERROR);
-            $deniedCommands = json_decode((string) $attributes['denied_commands'], true, 4, JSON_THROW_ON_ERROR);
-            $reads = json_decode((string) $attributes['read_grants'], true, 4, JSON_THROW_ON_ERROR);
-
             return new ProfileAuthorization(
                 AuthorizationType::from((string) $attributes['authorization_type']),
-                array_values(array_map(PolicyGrant::fromArray(...), $grants)),
-                array_values($deniedCommands),
-                array_values(array_map(ScopedRead::fromArray(...), $reads)),
+                array_values(array_map(
+                    fn (StoredPolicyGrant $stored) => $stored->grant,
+                    StoredPolicyGrant::collect(
+                        json_decode((string) $attributes['policy_grants'], true, 8, JSON_THROW_ON_ERROR),
+                    ),
+                )),
+                self::deniedCommandsOf((string) $attributes['denied_commands']),
+                array_values(array_map(
+                    fn (StoredScopedRead $stored) => $stored->read(),
+                    StoredScopedRead::collect(
+                        json_decode((string) $attributes['read_grants'], true, 4, JSON_THROW_ON_ERROR),
+                    ),
+                )),
             );
-        } catch (JsonException|TypeError|ValueError|GrantShapeInvalid $failure) {
+        } catch (JsonException|CannotCreateData|TypeError|ValueError|GrantShapeInvalid $failure) {
             throw ProfileRevisionUnreadable::forRevision((string) $model->getKey(), $failure);
         }
     }
@@ -59,5 +68,18 @@ final class ProfileAuthorizationCast implements CastsAttributes
             'denied_commands' => json_encode($value->deniedCommands, JSON_THROW_ON_ERROR),
             'read_grants' => json_encode($value->readsAsArrays(), JSON_THROW_ON_ERROR),
         ];
+    }
+
+    /**
+     * The denied commands column: a bare JSON list of command classes, with no keys for a Data class to name.
+     *
+     * @return list<class-string<Command<mixed>>>
+     *
+     * @throws JsonException
+     */
+    #[DecodesAnyJson]
+    private static function deniedCommandsOf(string $json): array
+    {
+        return array_values((array) json_decode($json, true, 4, JSON_THROW_ON_ERROR));
     }
 }

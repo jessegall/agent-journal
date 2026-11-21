@@ -8,8 +8,6 @@ declare(strict_types=1);
  * listed method that writes only its own row.
  */
 return [
-    'ActiveAccount::lockedFor' => 3,
-    'ActiveAccount::lockedForJournal' => 3,
     'Profile::activate' => 5,
     'ProfileDraft::lockForProfiles' => 5,
     'ProfileDraft::saveFor' => 5,

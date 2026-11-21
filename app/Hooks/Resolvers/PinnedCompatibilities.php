@@ -35,6 +35,6 @@ final readonly class PinnedCompatibilities implements ProgramCompatibilities
             return $pinned->withEvidence(ProgramEvidence::NativeShown, 'the agent image\'s protection report');
         }
 
-        return $pinned->withEvidence(ProgramEvidence::PrerequisiteMissing, $report->shortfall());
+        return $pinned->withContainedShortfall($report->shortfall());
     }
 }

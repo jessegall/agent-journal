@@ -125,7 +125,7 @@ final class StopAttempt extends Model implements ReadableModel
             ->whereIn('session_id', $sessionIds)
             ->where('state', StopAttemptState::Pending->value)
             ->orderBy('created_at')
-            ->readLimit(50)
+            ->limit(50)
             ->get()
             ->all());
     }
@@ -143,7 +143,7 @@ final class StopAttempt extends Model implements ReadableModel
             ->where('state', StopAttemptState::Passed->value)
             ->whereNull('certified_at')
             ->orderBy('created_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get()
             ->all());
     }
@@ -161,7 +161,7 @@ final class StopAttempt extends Model implements ReadableModel
             ->where('state', '!=', StopAttemptState::Pending->value)
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->readLimit($count)
+            ->readExactly($count)
             ->get()
             ->all());
     }
