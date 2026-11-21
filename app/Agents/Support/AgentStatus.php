@@ -100,6 +100,23 @@ final readonly class AgentStatus
             return self::failedRequest($evidence, $stop);
         }
 
+        $ended = match ($stop->progress) {
+            RequestProgress::Superseded => 'Stop replaced',
+            RequestProgress::Cancelled => 'Stop cancelled',
+            RequestProgress::Unavailable => 'Stop unavailable',
+            default => null,
+        };
+
+        if ($ended !== null) {
+            return self::labelled(
+                SessionState::Unknown,
+                $ended,
+                $evidence,
+                [StatusAction::of(StatusActionType::CheckStatus)],
+                $operation,
+            );
+        }
+
         if (! $isUnderWay) {
             return null;
         }
@@ -213,7 +230,10 @@ final readonly class AgentStatus
         }
 
         return match ($runtime->activity) {
-            RuntimeActivity::Running => self::plain(SessionState::Working, $evidence, $switch),
+            RuntimeActivity::Running => self::plain(SessionState::Working, $evidence, [
+                ...$switch,
+                ...($evidence->canStop ? [StatusAction::of(StatusActionType::Interrupt)] : []),
+            ]),
             RuntimeActivity::Idle => self::plain(SessionState::Idle, $evidence, $switch),
             RuntimeActivity::Starting => self::plain(SessionState::Starting, $evidence, []),
             RuntimeActivity::Interrupting => self::plain(SessionState::Interrupting, $evidence, []),

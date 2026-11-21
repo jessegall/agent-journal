@@ -8,6 +8,7 @@ use App\Http\Controllers\Agents\CancelLaunchController;
 use App\Http\Controllers\Agents\CheckCapacityController;
 use App\Http\Controllers\Agents\ContinueStartController;
 use App\Http\Controllers\Agents\DismissLaunchOutcomeController;
+use App\Http\Controllers\Agents\InterruptAgentController;
 use App\Http\Controllers\Agents\RecheckDriverSwitchController;
 use App\Http\Controllers\Agents\RetireAgentController;
 use App\Http\Controllers\Agents\RetryDriverSwitchController;
@@ -28,6 +29,11 @@ Route::post('/agents/{agent}/stop', StopAgentController::class)
     ->middleware(['web', 'auth', 'journal.user'])
     ->whereUlid('agent')
     ->name('agents.stop');
+
+Route::post('/agents/{agent}/interrupt', InterruptAgentController::class)
+    ->middleware(['web', 'auth', 'journal.user'])
+    ->whereUlid('agent')
+    ->name('agents.interrupt');
 
 Route::get('/agents/{agent}/capacity', CheckCapacityController::class)
     ->middleware(['web', 'auth', 'journal.user'])

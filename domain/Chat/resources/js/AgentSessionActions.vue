@@ -10,6 +10,7 @@ import {
     dismissLaunchOutcome,
     recheck,
     retry,
+    interruptTurn,
     stopSession,
     terminalPage,
 } from '@kit/sessionStarts';
@@ -17,6 +18,7 @@ import { keyedPost } from '@kit/keyedPost';
 import { useSwitchOperation } from './composables/useSwitchOperation';
 import SessionAction from './SessionAction.vue';
 import SessionForm from './SessionForm.vue';
+import StopConfirmation from './StopConfirmation.vue';
 
 /**
  * What the chosen agent's status offers now, from the server's projection: each action maps to its route or dialog.
@@ -33,12 +35,29 @@ type FormMode = 'start' | 'resume' | 'switch';
 type CapacityAnswer = { fits: boolean; resource?: string; explanation?: string; remedy?: string };
 
 const formMode = ref<FormMode | null>(null);
+const isStopAsked = ref(false);
+// The button that opened a dialog, which gets the focus back when the dialog closes.
+let opener: HTMLElement | null = null;
 const notice = ref<string | null>(null);
 const pendingType = ref<string | null>(null);
 const switching = useSwitchOperation(() => props.agent);
 const http = useHttp<{ requestId: string; version: string }, CapacityAnswer>({ requestId: '', version: '' });
 
-watch(formMode, (mode) => emit('dialog', mode !== null));
+watch([formMode, isStopAsked], ([mode, isAsked]) => emit('dialog', mode !== null || isAsked));
+
+function rememberOpener(): void {
+    opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+}
+
+function returnFocus(): void {
+    opener?.focus();
+    opener = null;
+}
+
+function closeStop(): void {
+    isStopAsked.value = false;
+    returnFocus();
+}
 
 function settleSwitch(route: typeof retry, label: 'Retrying' | 'Checking'): void {
     if (props.agent.switchId === null) {
@@ -91,13 +110,15 @@ function cancelStart(): void {
 }
 
 /**
- * Stops the session the bar shows, at the generation it shows, once under a new request id; the bar then follows the
- * stop from the page.
+ * Stops the session the bar shows, at the generation it shows, once under a new request id, after the confirmation;
+ * the bar then follows the stop from the page, and Stopped shows only when the page says so.
  */
 function stop(): void {
     if (props.agent.sessionId === null) {
         return;
     }
+
+    isStopAsked.value = false;
 
     pendingType.value = 'stop';
     const requestId = newRequestId();
@@ -109,16 +130,50 @@ function stop(): void {
             onAccepted: () => undefined,
             onRefused: (reason) => (notice.value = reason),
             onUncertain: readAgain,
-            onFinish: () => (pendingType.value = null),
+            onFinish: () => {
+                pendingType.value = null;
+                returnFocus();
+            },
         },
     );
 }
 
+/**
+ * Interrupts the current turn once; the session stays and the bar shows Interrupting, then the observed activity.
+ */
+function interrupt(): void {
+    if (props.agent.sessionId === null) {
+        return;
+    }
+
+    pendingType.value = 'interrupt';
+    const requestId = newRequestId();
+    keyedPost(interruptTurn.url(props.agent.id), { requestId, sessionId: props.agent.sessionId }, requestId, {
+        onAccepted: () => undefined,
+        onRefused: (reason) => (notice.value = reason),
+        onUncertain: readAgain,
+        onFinish: () => (pendingType.value = null),
+    });
+}
+
 const handlers: Record<StatusActionData['type'], () => void> = {
-    stop,
-    start: () => (formMode.value = 'start'),
-    resume: () => (formMode.value = 'resume'),
-    switch: () => (formMode.value = 'switch'),
+    stop: () => {
+        rememberOpener();
+        isStopAsked.value = true;
+    },
+    interrupt,
+    start: () => {
+        rememberOpener();
+        formMode.value = 'start';
+    },
+    resume: () => {
+        rememberOpener();
+        formMode.value = 'resume';
+    },
+    switch: () => {
+        rememberOpener();
+        formMode.value = 'switch';
+    },
     retry: () => settleSwitch(retry, 'Retrying'),
     'recheck-switch': () => settleSwitch(recheck, 'Checking'),
     'check-status': () => {
@@ -160,7 +215,22 @@ const handlers: Record<StatusActionData['type'], () => void> = {
             <p class="text-small text-danger">{{ switching.refusal.value }}</p>
         </template>
         <template v-if="formMode">
-            <SessionForm :agent="agent" :mode="formMode" @close="formMode = null" />
+            <SessionForm
+                :agent="agent"
+                :mode="formMode"
+                @close="
+                    formMode = null;
+                    returnFocus();
+                "
+            />
+        </template>
+        <template v-if="isStopAsked">
+            <StopConfirmation
+                :agent-name="agent.name"
+                :is-pending="pendingType === 'stop'"
+                @confirm="stop"
+                @close="closeStop"
+            />
         </template>
     </div>
 </template>

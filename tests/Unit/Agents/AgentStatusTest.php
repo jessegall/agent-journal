@@ -241,7 +241,10 @@ final class AgentStatusTest extends TestCase
         $refused = AgentStatus::of(self::live(self::runtime(RuntimeActivity::Running)), self::words(false));
 
         $this->assertSame(
-            [[StatusActionType::Stop, StatusActionType::Switch], [StatusActionType::Switch]],
+            [
+                [StatusActionType::Stop, StatusActionType::Switch, StatusActionType::Interrupt],
+                [StatusActionType::Switch],
+            ],
             [
                 array_map(fn (StatusAction $action) => $action->type, $status->actions),
                 array_map(fn (StatusAction $action) => $action->type, $refused->actions),
