@@ -72,18 +72,18 @@ const claudeMethods = [
         method: 'oauth',
         isSecret: false,
         billingNote: 'Uses your subscription.',
-        cardTitle: 'Sign in with Claude',
-        howItWorks: "Opens Claude's sign-in page.",
-        billingWord: 'Subscription',
+        title: 'Sign in with Claude',
+        description: "Opens Claude's sign-in page.",
+        billingLabel: 'Subscription',
     },
     {
         method: 'api_key',
         isSecret: true,
         billingNote: 'Billed to your API account.',
-        cardTitle: 'API key',
-        howItWorks: 'Paste a key from the Anthropic Console.',
-        billingWord: 'API usage',
-        whereToGetIt:
+        title: 'API key',
+        description: 'Paste a key from the Anthropic Console.',
+        billingLabel: 'API usage',
+        secretSource:
             'In the Anthropic Console, open API keys and create a key.',
     },
 ];

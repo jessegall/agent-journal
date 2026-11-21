@@ -62,10 +62,10 @@ final class SignInMethodsTest extends TestCase
         );
         $shown = array_map(
             fn (array $card) => [
-                $card['cardTitle'],
-                $card['billingWord'],
-                $card['howItWorks'],
-                $card['whereToGetIt'] ?? null,
+                $card['title'],
+                $card['billingLabel'],
+                $card['description'],
+                $card['secretSource'] ?? null,
             ],
             $cards,
         );
@@ -111,6 +111,6 @@ final class SignInMethodsTest extends TestCase
     {
         $this->expectException(SignInMethodMissing::class);
 
-        SignInMethod::ProviderToken->cardTitle(HookProgram::Codex);
+        SignInMethod::ProviderToken->title(HookProgram::Codex);
     }
 }

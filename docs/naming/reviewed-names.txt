@@ -1134,6 +1134,7 @@ class	AccountCleanupRetried
 class	AccountConfigurationUnwritten
 class	AccountConfigurationWrite
 class	AccountContainerUnsupported
+class	AccountFolderInvalid
 class	AccountHeldForMaintenance
 class	AccountInUse
 class	AccountLabel
@@ -5830,6 +5831,7 @@ constant	ModuleRuleBundle::CREATED_AT
 constant	ModuleRuleBundle::UPDATED_AT
 constant	MonotonicStop::NANOSECONDS_PER_MILLISECOND
 constant	MountRules::ACCOUNTS_ROOT
+constant	MountRules::ACCOUNT_TARGET
 constant	MountRules::CONTAINED_TARGETS
 constant	MountRules::DAEMON_ROOT
 constant	MountRules::MOST_CONTAINED_MOUNTS
@@ -6962,6 +6964,7 @@ method	AccountConfigurationWrite::withTables()
 method	AccountConfigurationWrite::withoutTables()
 method	AccountContainerUnsupported::for()
 method	AccountContainerUnsupported::reason()
+method	AccountFolderInvalid::named()
 method	AccountHeldForMaintenance::__construct()
 method	AccountHeldForMaintenance::program()
 method	AccountHeldForMaintenance::subjectId()
@@ -13149,6 +13152,8 @@ method	MonotonicStop::remainingMilliseconds()
 method	MonotonicStopTimes::__construct()
 method	MonotonicStopTimes::at()
 method	MountRules::__construct()
+method	MountRules::accountFolder()
+method	MountRules::accountMounts()
 method	MountRules::assertContainedSource()
 method	MountRules::assertLocal()
 method	MountRules::assertPermits()
@@ -17164,6 +17169,7 @@ method	SelectMessageTool::command()
 method	SelectMessageTool::present()
 method	SelectMessageTool::writeSchema()
 method	SelectedAccount::__construct()
+method	SelectedAccount::folder()
 method	SelectedFrame::__construct()
 method	SelectedFrame::typeKey()
 method	SelectedMessages::__construct()
@@ -18256,8 +18262,12 @@ method	SignInIdentity::expiry()
 method	SignInIdentity::shown()
 method	SignInIdentity::unproved()
 method	SignInMethod::accountNameFor()
+method	SignInMethod::billingLabel()
 method	SignInMethod::billingNote()
+method	SignInMethod::description()
 method	SignInMethod::isSecret()
+method	SignInMethod::secretSource()
+method	SignInMethod::title()
 method	SignInMethodData::__construct()
 method	SignInMethodData::fromMethod()
 method	SignInMethodMissing::for()
@@ -20801,6 +20811,7 @@ parameter	$beats
 parameter	$because
 parameter	$before
 parameter	$bg
+parameter	$billingLabel
 parameter	$billingNote
 parameter	$binary
 parameter	$binaryDigest
@@ -22554,6 +22565,7 @@ parameter	$secondsCap
 parameter	$secondsLimit
 parameter	$secret
 parameter	$secretReferences
+parameter	$secretSource
 parameter	$secretText
 parameter	$secrets
 parameter	$section
@@ -29864,9 +29876,13 @@ property	SignInIdentity::$display
 property	SignInIdentity::$expiresAt
 property	SignInIdentity::$subject
 property	SignInIdentity::$workspace
+property	SignInMethodData::$billingLabel
 property	SignInMethodData::$billingNote
+property	SignInMethodData::$description
 property	SignInMethodData::$isSecret
 property	SignInMethodData::$method
+property	SignInMethodData::$secretSource
+property	SignInMethodData::$title
 property	SignInPoll::$code
 property	SignInPoll::$isLive
 property	SignInProtocols::$container

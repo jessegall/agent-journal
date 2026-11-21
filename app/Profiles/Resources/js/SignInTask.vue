@@ -72,18 +72,18 @@ const openLink =
             class="flex flex-1 flex-col gap-4"
             @submit.prevent="send"
         >
-            <template v-if="method.whereToGetIt">
+            <template v-if="method.secretSource">
                 <p
                     class="rounded-field bg-raised px-3.5 py-3 text-small leading-relaxed text-text-2"
                 >
                     <b class="font-medium text-text">Where to get it.</b>
-                    {{ method.whereToGetIt }}
+                    {{ method.secretSource }}
                 </p>
             </template>
             <TextField
                 :id="`sign-in-secret-${attempt?.id}`"
                 v-model="actions.answer.code"
-                :label="method.cardTitle"
+                :label="method.title"
                 secret
                 :maxlength="4096"
                 hint="Kept on the host only and never shown again."

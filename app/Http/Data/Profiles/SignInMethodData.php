@@ -12,8 +12,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One sign-in method a program declares here, as the add-account wizard offers it: whether the owner gives a key or
- * token, the sentence about how it is paid for or how long it lasts, and its card: title, how it works, the short
- * billing word and, for a key or token, where to get it.
+ * token, the sentence about how it is paid for or how long it lasts, and its card: title, description, the short
+ * billing label and, for a key or token, where to get the secret.
  */
 #[TypeScript]
 final class SignInMethodData extends Data
@@ -22,10 +22,10 @@ final class SignInMethodData extends Data
         public readonly SignInMethod $method,
         public readonly bool $isSecret,
         public readonly string $billingNote,
-        public readonly string $cardTitle,
-        public readonly string $howItWorks,
-        public readonly string $billingWord,
-        public readonly string|Optional $whereToGetIt = new Optional(),
+        public readonly string $title,
+        public readonly string $description,
+        public readonly string $billingLabel,
+        public readonly string|Optional $secretSource = new Optional(),
     ) {}
 
     public static function fromMethod(HookProgram $program, SignInMethod $method): self
@@ -34,10 +34,10 @@ final class SignInMethodData extends Data
             'method' => $method,
             'isSecret' => $method->isSecret(),
             'billingNote' => $method->billingNote(),
-            'cardTitle' => $method->cardTitle($program),
-            'howItWorks' => $method->howItWorks($program),
-            'billingWord' => $method->billingWord(),
-            'whereToGetIt' => $method->whereToGetIt($program) ?? Optional::create(),
+            'title' => $method->title($program),
+            'description' => $method->description($program),
+            'billingLabel' => $method->billingLabel(),
+            'secretSource' => $method->secretSource($program) ?? Optional::create(),
         ]);
     }
 }

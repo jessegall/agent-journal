@@ -19,7 +19,7 @@ defineProps<{ program: string; method: SignInMethodData }>();
             class="mr-0.5"
         />
         {{ programName(program) }} ·
-        <b class="font-medium text-text">{{ method.cardTitle }}</b>
-        <span class="ml-auto whitespace-nowrap">{{ method.billingWord }}</span>
+        <b class="font-medium text-text">{{ method.title }}</b>
+        <span class="ml-auto whitespace-nowrap">{{ method.billingLabel }}</span>
     </div>
 </template>

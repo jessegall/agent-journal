@@ -55,7 +55,7 @@ enum SignInMethod: string
     /**
      * The short word the method's card shows on its right about what it bills.
      */
-    public function billingWord(): string
+    public function billingLabel(): string
     {
         return $this === self::ApiKey ? 'API usage' : 'Subscription';
     }
@@ -65,7 +65,7 @@ enum SignInMethod: string
      *
      * @throws SignInMethodMissing when the program has no such sign-in
      */
-    public function cardTitle(HookProgram $program): string
+    public function title(HookProgram $program): string
     {
         return match ([$program, $this]) {
             [HookProgram::ClaudeCode, self::OAuth] => 'Sign in with Claude',
@@ -81,7 +81,7 @@ enum SignInMethod: string
      *
      * @throws SignInMethodMissing when the program has no such sign-in
      */
-    public function howItWorks(HookProgram $program): string
+    public function description(HookProgram $program): string
     {
         return match ([$program, $this]) {
             [HookProgram::ClaudeCode, self::OAuth] => "Opens Claude's sign-in page. You sign in there and paste back "
@@ -103,7 +103,7 @@ enum SignInMethod: string
      *
      * @throws SignInMethodMissing when the program has no such sign-in
      */
-    public function whereToGetIt(HookProgram $program): string|null
+    public function secretSource(HookProgram $program): string|null
     {
         return match ([$program, $this]) {
             [HookProgram::ClaudeCode, self::OAuth], [HookProgram::Codex, self::OAuth] => null,

@@ -33,9 +33,9 @@ const cards = computed(() =>
             ?.methods ?? []
     ).map((option) => ({
         value: option.method,
-        title: option.cardTitle,
-        aside: option.billingWord,
-        description: option.howItWorks,
+        title: option.title,
+        aside: option.billingLabel,
+        description: option.description,
     })),
 );
 
