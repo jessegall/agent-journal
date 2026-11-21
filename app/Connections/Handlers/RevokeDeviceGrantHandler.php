@@ -12,6 +12,6 @@ final readonly class RevokeDeviceGrantHandler implements CommandHandler
 {
     public function handle(RevokeDeviceGrant $command): void
     {
-        DeviceGrant::lockById($command->grantId)->revoke();
+        DeviceGrant::lockById($command->id)->revoke();
     }
 }

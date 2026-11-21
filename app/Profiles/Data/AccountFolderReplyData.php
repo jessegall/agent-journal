@@ -12,7 +12,7 @@ use Spatie\LaravelData\Data;
 final class AccountFolderReplyData extends Data
 {
     public function __construct(
-        public readonly bool $done = false,
+        public readonly bool $isDone = false,
         public readonly string $reason = '',
     ) {}
 }

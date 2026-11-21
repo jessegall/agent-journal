@@ -14,7 +14,7 @@ use Illuminate\Contracts\Config\Repository;
  */
 final class ProjectKey
 {
-    private ConnectedProject|null $connected = null;
+    private ConnectedProject|null $connectedProject = null;
 
     public function __construct(private readonly Repository $config) {}
 
@@ -23,16 +23,16 @@ final class ProjectKey
      */
     public function connect(ConnectedProject $project): void
     {
-        $this->connected = $project;
+        $this->connectedProject = $project;
     }
 
     public function current(): string
     {
-        if ($this->connected === null) {
+        if ($this->connectedProject === null) {
             return (string) $this->config->get('processes.project_key');
         }
 
-        return $this->connected->key;
+        return $this->connectedProject->key;
     }
 
     /**
@@ -43,7 +43,7 @@ final class ProjectKey
      */
     public function assertFolderAllowed(string $folder): void
     {
-        if ($this->connected === null || $this->connected->holds($folder)) {
+        if ($this->connectedProject === null || $this->connectedProject->contains($folder)) {
             return;
         }
 

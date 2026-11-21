@@ -9,5 +9,5 @@ namespace App\Connections\Values;
  */
 final readonly class DeliveryReceipt
 {
-    public function __construct(public string $deliveryId, public string $deliveredTip, public string $outcome) {}
+    public function __construct(public string $id, public string $deliveredTip, public string $outcome) {}
 }

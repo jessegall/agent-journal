@@ -47,11 +47,11 @@ func (executor *recordingExecutor) FolderUse(_ context.Context, request FolderUs
 }
 
 func (executor *recordingExecutor) MakeFolder(_ context.Context, request AccountFolderRequest) (AccountFolderReply, error) {
-	return AccountFolderReply{Done: true, Reason: "made " + request.Folder}, nil
+	return AccountFolderReply{IsDone: true, Reason: "made " + request.Folder}, nil
 }
 
 func (executor *recordingExecutor) RemoveFolder(_ context.Context, request AccountFolderRequest) (AccountFolderReply, error) {
-	return AccountFolderReply{Done: true, Reason: "removed " + request.Folder}, nil
+	return AccountFolderReply{IsDone: true, Reason: "removed " + request.Folder}, nil
 }
 
 func TestAFolderUseRequestNeedsAPlainIdAndReachesTheExecutor(t *testing.T) {
@@ -160,8 +160,8 @@ func TestADrainAnswersWhetherNothingOfTheAccountRuns(t *testing.T) {
 
 func TestAnAccountFolderRequestNeedsAPlainIdAndReachesTheExecutor(t *testing.T) {
 	for line, want := range map[string]string{
-		`{"makeFolder":{"folder":"a7"}}`:   `{"done":true,"reason":"made a7"}`,
-		`{"removeFolder":{"folder":"a7"}}`: `{"done":true,"reason":"removed a7"}`,
+		`{"makeFolder":{"folder":"a7"}}`:   `{"isDone":true,"reason":"made a7"}`,
+		`{"removeFolder":{"folder":"a7"}}`: `{"isDone":true,"reason":"removed a7"}`,
 	} {
 		pipe := &connection{Reader: strings.NewReader(line + "\n")}
 		if err := AnswerHostRequest(context.Background(), pipe, &recordingExecutor{}); err != nil || strings.TrimSpace(pipe.written.String()) != want {

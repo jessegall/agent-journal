@@ -23,7 +23,7 @@ final class ChildClaimRefused extends RuntimeException implements CodedRefusal, 
         return new self('The project has no commit yet: make a first commit, then dispatch the child again.');
     }
 
-    public static function notACommitRead(): self
+    public static function readWithoutCommit(): self
     {
         return new self('This workspace read names no commit, so no child can start from it; read the workspace again.');
     }

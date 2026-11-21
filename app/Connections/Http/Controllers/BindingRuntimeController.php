@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Connections\Http\Controllers;
 
-use App\Agents\Commands\OpenHostMainRuntime;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
-use App\Connections\Commands\AssertBindingStart;
 use App\Connections\Models\ProjectBinding;
 use App\Http\Data\Connections\BindingRuntimeRequestData;
 use Illuminate\Http\JsonResponse;
@@ -24,19 +22,8 @@ final readonly class BindingRuntimeController
         HostContext $host,
         CommandBus $commands,
     ): JsonResponse {
-        $commands->run(
-            new AssertBindingStart($host->hostId, $binding, $request->rootId, $request->folder, $request->agentId),
-        );
-
-        $opened = $commands->run(new OpenHostMainRuntime(
-            $request->agentId,
-            $host->hostId,
-            $request->folder,
-            $request->driver,
-            $request->driverBuild,
-            $request->profile,
-            $request->model,
-        ));
+        $commands->run($request->asBindingStart($host->hostId, $binding));
+        $opened = $commands->run($request->asMainRuntime($host->hostId));
 
         return new JsonResponse(
             [

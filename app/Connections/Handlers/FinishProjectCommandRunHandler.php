@@ -12,7 +12,7 @@ final readonly class FinishProjectCommandRunHandler implements CommandHandler
 {
     public function handle(FinishProjectCommandRun $command): void
     {
-        foreach (ProjectCommandRun::lockByRequest($command->requestId) as $run) {
+        foreach (ProjectCommandRun::lockByRequest($command->requestKey) as $run) {
             $run->finish($command->frames, $command->exitCode);
         }
     }

@@ -20,7 +20,7 @@ use App\Operations\Enums\AccessType;
 final readonly class RevokeProjectBindings extends Command
 {
     /**
-     * @param  list<string>  $bindingIds
+     * @param  list<string>  $ids
      */
-    public function __construct(public array $bindingIds) {}
+    public function __construct(public array $ids) {}
 }

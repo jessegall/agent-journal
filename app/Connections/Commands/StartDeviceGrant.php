@@ -17,5 +17,10 @@ use App\Connections\Values\DeviceGrantStart;
 #[Entry(CommandEntry::HostControl)]
 final readonly class StartDeviceGrant extends Command
 {
-    public function __construct(public string $hostId, public string $bindingId, public string $deviceCodeDigest, public string $userCode) {}
+    public function __construct(
+        public string $hostId,
+        public string $bindingId,
+        public string $deviceCodeDigest,
+        public string $userCode,
+    ) {}
 }

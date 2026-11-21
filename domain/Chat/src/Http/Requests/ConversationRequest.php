@@ -34,7 +34,7 @@ final class ConversationRequest extends FormRequest
      *
      * @return list<HookDriver>
      */
-    public function askedAccountsDriver(): array
+    public function accountDrivers(): array
     {
         return $this->filled('accountsFor') ? [$this->enum('accountsFor', HookDriver::class)] : [];
     }

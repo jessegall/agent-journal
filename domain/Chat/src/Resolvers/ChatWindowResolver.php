@@ -35,7 +35,7 @@ final readonly class ChatWindowResolver implements PageResolver
         private AuthorizedConversations $conversations,
         private DockProjection $dock,
         private SlotSections $slots,
-        private StartAccounts $accounts,
+        private StartAccounts $startAccounts,
     ) {}
 
     public function read(): ChatData
@@ -53,7 +53,7 @@ final readonly class ChatWindowResolver implements PageResolver
                 ->getOrElse(Optional::create()),
             'conversation' => $chosen->map($this->conversationWith(...))->getOrElse(Optional::create()),
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
-            ...$this->askedAccounts(),
+            ...$this->eligibleAccounts(),
         ]);
     }
 
@@ -62,12 +62,12 @@ final readonly class ChatWindowResolver implements PageResolver
      *
      * @return array<string, EligibleAccountsData>
      */
-    private function askedAccounts(): array
+    private function eligibleAccounts(): array
     {
         $asked = [];
 
-        foreach ($this->request->askedAccountsDriver() as $driver) {
-            $asked['eligibleAccounts'] = $this->accounts->forDriver($driver);
+        foreach ($this->request->accountDrivers() as $driver) {
+            $asked['eligibleAccounts'] = $this->startAccounts->forDriver($driver);
         }
 
         return $asked;

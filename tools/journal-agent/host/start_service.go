@@ -23,6 +23,8 @@ type StartJournal interface {
 type PreparedStart struct {
 	Grant client.Grant
 	Claim client.ClaimedStart
+	// BrokerSocket is where a connected child's Git broker listens; a start that is no connected child has none.
+	BrokerSocket string
 }
 
 // ProgramBuild is the build of the program the grant starts.
@@ -65,12 +67,18 @@ func (prepared PreparedStart) ContainerManifest() (ContainerManifest, bool, erro
 	return manifest, true, nil
 }
 
-// RelayVariables tell the program's hook relay the start's key and where its sealed output grants are.
+// RelayVariables tell the program's hook relay the start's key and where its sealed output grants are, and a
+// connected child where its Git broker listens.
 func (prepared PreparedStart) RelayVariables(runtimeFolder string) []string {
-	return []string{
+	variables := []string{
 		"JOURNAL_START_KEY=" + prepared.Claim.StartKey,
 		"JOURNAL_OUTPUT_GRANTS=" + filepath.Join(runtimeFolder, OutputGrantsName),
 	}
+	if prepared.BrokerSocket != "" {
+		variables = append(variables, BrokerSocketVariable+"="+prepared.BrokerSocket)
+	}
+
+	return variables
 }
 
 // StartPrerequisites refuses a start the host cannot run protected, such as one with no verified installation or

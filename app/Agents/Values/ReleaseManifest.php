@@ -17,7 +17,7 @@ final readonly class ReleaseManifest
     /**
      * What a release must do before the window offers its install line to the public.
      */
-    public const array CAPABILITIES = ['enrollment', 'presence', 'commands', 'child-worktrees'];
+    public const array REQUIRED_CAPABILITIES = ['enrollment', 'presence', 'commands', 'child-worktrees'];
 
     /**
      * @param  array<string, array<string, ReleaseFile>>  $files  by target folder (darwin-arm64), each file by the
@@ -124,20 +124,20 @@ final readonly class ReleaseManifest
      *
      * @return list<string>
      */
-    public function withheldCapabilities(): array
+    public function missingCapabilities(): array
     {
-        return array_values(array_diff(self::CAPABILITIES, $this->capabilities));
+        return array_values(array_diff(self::REQUIRED_CAPABILITIES, $this->capabilities));
     }
 
     /**
      * Whether the window may offer this release's install line: it speaks this journal's protocol, has every
      * capability and ships for at least one platform with measured sizes, prerequisites and both providers.
      */
-    public function isPublic(): bool
+    public function canBeOffered(): bool
     {
-        $supported = array_filter($this->targets, fn (ReleaseTarget $target) => $target->isSupported());
+        $supportedTargets = array_filter($this->targets, fn (ReleaseTarget $target) => $target->isSupported());
 
-        return $this->speaksSpokenProtocol() && $this->withheldCapabilities() === [] && $supported !== [];
+        return $this->speaksSpokenProtocol() && $this->missingCapabilities() === [] && $supportedTargets !== [];
     }
 
     /**

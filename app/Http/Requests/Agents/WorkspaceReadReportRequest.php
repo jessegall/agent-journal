@@ -37,14 +37,14 @@ final class WorkspaceReadReportRequest extends FormRequest
     public function observedCommit(): CommitObservation
     {
         if ($this->integer('version', 1) !== 2) {
-            return CommitObservation::versionOne();
+            return CommitObservation::notRecorded();
         }
 
         $binding = $this->string('binding')->toString();
         $checkout = $this->string('checkout')->toString();
 
         if (! $this->filled('head')) {
-            return CommitObservation::without($binding, $checkout, $this->string('reason', CommitObservation::UNAVAILABLE)->toString());
+            return CommitObservation::withoutCommit($binding, $checkout, $this->string('reason', CommitObservation::UNAVAILABLE)->toString());
         }
 
         return CommitObservation::ofHead($binding, $checkout, $this->string('head')->toString());

@@ -197,11 +197,11 @@ final class WorkspaceRead extends Model implements ReadableModel
     private function commitObservation(): CommitObservation
     {
         if ($this->observation_version !== 2) {
-            return CommitObservation::versionOne();
+            return CommitObservation::notRecorded();
         }
 
         if ($this->head_oid === '') {
-            return CommitObservation::without($this->binding_id, $this->checkout_id, $this->unavailable_reason);
+            return CommitObservation::withoutCommit($this->binding_id, $this->checkout_id, $this->unavailable_reason);
         }
 
         return CommitObservation::ofHead($this->binding_id, $this->checkout_id, $this->head_oid);

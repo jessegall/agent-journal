@@ -109,11 +109,11 @@ final class InstallLineAvailabilityTest extends TestCase
         $offer = $this->offer();
 
         $this->assertTrue($this->availability()->canIssue());
-        $this->assertSame([], $offer->withheldCapabilities);
+        $this->assertSame([], $offer->missingCapabilities);
         $this->assertSame(
             ['darwin-arm64', 9_000_000, ['git', 'curl'], [], true],
             [$offer->targets[0]->name, $offer->targets[0]->bytes, $offer->targets[0]->prerequisites,
-                $offer->targets[0]->withheldProviders, $offer->targets[0]->isSupported],
+                $offer->targets[0]->missingProviders, $offer->targets[0]->isSupported],
         );
     }
 
@@ -124,7 +124,7 @@ final class InstallLineAvailabilityTest extends TestCase
         $manifest['targets'][0]['providers'] = ['claude-code'];
         $this->publish($manifest);
 
-        $this->assertSame(['codex'], $this->offer()->targets[0]->withheldProviders);
+        $this->assertSame(['codex'], $this->offer()->targets[0]->missingProviders);
         $this->assertFalse($this->offer()->targets[0]->isSupported);
         $this->assertFalse($this->availability()->canIssue());
     }
@@ -140,7 +140,7 @@ final class InstallLineAvailabilityTest extends TestCase
 
     private function offer(): ReleaseOfferData
     {
-        return ReleaseOfferData::ofPublished($this->app->make(PublishedReleases::class)->publishedManifest());
+        return ReleaseOfferData::ofPublished($this->app->make(PublishedReleases::class)->currentRelease());
     }
 
     private function switchOn(): void

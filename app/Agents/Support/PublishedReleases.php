@@ -73,7 +73,7 @@ final readonly class PublishedReleases
      */
     public function hasCompatibleRelease(): bool
     {
-        return $this->hasCurrentManifest() && $this->manifestOf($this->current)->isPublic();
+        return $this->hasCurrentManifest() && $this->manifestOf($this->current)->canBeOffered();
     }
 
     /**
@@ -81,7 +81,7 @@ final readonly class PublishedReleases
      *
      * @return list<ReleaseManifest>
      */
-    public function publishedManifest(): array
+    public function currentRelease(): array
     {
         return $this->hasCurrentManifest() ? [$this->manifestOf($this->current)] : [];
     }

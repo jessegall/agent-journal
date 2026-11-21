@@ -38,7 +38,7 @@ final class ChildClaimTest extends TestCase
         $parent = (string) Str::ulid();
         $child = (string) Str::ulid();
 
-        $claim = ChildClaim::ofMain($binding, $parent, $child, ChildRole::Writer, $this->read($binding, true, 4));
+        $claim = ChildClaim::forMainRuntime($binding, $parent, $child, ChildRole::Writer, $this->read($binding, true, 4));
         $grandchild = ChildClaim::nestedUnder($claim, (string) Str::ulid(), ChildRole::Reader, $this->read($binding, false, 5));
 
         $this->assertSame(
@@ -53,15 +53,15 @@ final class ChildClaimTest extends TestCase
     public function test_an_unborn_root_and_a_read_with_no_commit_are_refused(): void
     {
         $binding = $this->connected();
-        $unborn = $this->readOf(CommitObservation::without($binding->id, 'checkout-main', CommitObservation::UNBORN));
+        $unborn = $this->readOf(CommitObservation::withoutCommit($binding->id, 'checkout-main', CommitObservation::UNBORN));
 
-        $this->assertRefused(fn () => ChildClaim::ofMain($binding, (string) Str::ulid(), (string) Str::ulid(), ChildRole::Writer, $unborn));
-        $this->assertRefused(fn () => ChildClaim::ofMain(
+        $this->assertRefused(fn () => ChildClaim::forMainRuntime($binding, (string) Str::ulid(), (string) Str::ulid(), ChildRole::Writer, $unborn));
+        $this->assertRefused(fn () => ChildClaim::forMainRuntime(
             $binding,
             (string) Str::ulid(),
             (string) Str::ulid(),
             ChildRole::Writer,
-            $this->readOf(CommitObservation::versionOne()),
+            $this->readOf(CommitObservation::notRecorded()),
         ));
         $this->assertSame(0, ChildClaim::query()->count());
     }
@@ -69,11 +69,11 @@ final class ChildClaimTest extends TestCase
     public function test_a_base_the_head_moved_from_is_refused(): void
     {
         $binding = $this->connected();
-        $claim = ChildClaim::ofMain($binding, (string) Str::ulid(), (string) Str::ulid(), ChildRole::Writer, $this->read($binding, false, 1));
+        $claim = ChildClaim::forMainRuntime($binding, (string) Str::ulid(), (string) Str::ulid(), ChildRole::Writer, $this->read($binding, false, 1));
 
-        $claim->assertBaseIsHead(CommitObservation::ofHead($binding->id, 'checkout-main', self::HEAD));
+        $claim->assertHeadUnmoved(CommitObservation::ofHead($binding->id, 'checkout-main', self::HEAD));
         $this->expectException(ChildClaimRefused::class);
-        $claim->assertBaseIsHead(CommitObservation::ofHead($binding->id, 'checkout-main', str_repeat('b', 40)));
+        $claim->assertHeadUnmoved(CommitObservation::ofHead($binding->id, 'checkout-main', str_repeat('b', 40)));
     }
 
     private function connected(): ProjectBinding

@@ -161,7 +161,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     /**
      * Whether this agent is the main agent of a revoked binding, whose every call is refused.
      */
-    public static function isRevokedMainAgent(string $agentId): bool
+    public static function isMainAgentOfRevokedBinding(string $agentId): bool
     {
         return self::query()->where('main_agent_id', $agentId)->where('readiness', BindingReadiness::Revoked)->exists();
     }
@@ -241,6 +241,16 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Answers ]----------
+
+    /**
+     * Whether a start names the binding's registered root: its root id and folder, in a folder its host permits.
+     */
+    public function isRootOf(string $rootId, string $folder): bool
+    {
+        return $rootId === $this->root_id
+            && $folder === $this->canonical_root
+            && $this->host->permitsFolder($folder);
+    }
 
     /**
      * Whether this host may report the binding's presence: it is the binding's own host and the binding is not revoked.

@@ -18,7 +18,7 @@ final class ProjectCommandRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'requestId' => ['required', 'string', 'max:64', 'regex:/^[A-Za-z0-9_-]+$/'],
+            'request_key' => ['required', 'string', 'max:64', 'regex:/^[A-Za-z0-9_-]+$/'],
             'binding' => ['required', 'string', 'ulid'],
             'argv' => ['required', 'array', 'min:2', 'max:200'],
             'argv.*' => ['string', 'max:8192'],
@@ -26,9 +26,9 @@ final class ProjectCommandRequest extends FormRequest
         ];
     }
 
-    public function requestId(): string
+    public function requestKey(): string
     {
-        return $this->string('requestId')->toString();
+        return $this->string('request_key')->toString();
     }
 
     public function bindingId(): string

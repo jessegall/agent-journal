@@ -29,14 +29,14 @@ final class VerbNotServed extends RuntimeException implements CodedRefusal
         return new self("Binding {$bindingId} is not the binding of the calling agent.");
     }
 
-    public static function notYetForShellUsers(string $name): self
+    public static function providerSessionOnly(string $name): self
     {
         return new self("{$name} runs in a provider session for now; a signed-in shell runs journal verbs with the next release.");
     }
 
-    public static function stillRunning(string $requestId): self
+    public static function stillRunning(string $requestKey): self
     {
-        $refusal = new self("Request {$requestId} is still running; wait for it or cancel it.");
+        $refusal = new self("Request {$requestKey} is still running; wait for it or cancel it.");
         $refusal->status = 409;
 
         return $refusal;

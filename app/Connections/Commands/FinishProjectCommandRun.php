@@ -20,5 +20,5 @@ final readonly class FinishProjectCommandRun extends Command
     /**
      * @param  list<CommandFrame>  $frames
      */
-    public function __construct(public string $requestId, public array $frames, public int $exitCode) {}
+    public function __construct(public string $requestKey, public array $frames, public int $exitCode) {}
 }

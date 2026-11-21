@@ -386,13 +386,13 @@ func (commands dispatcher) forward(
 	stdin []byte,
 	stdout, stderr io.Writer,
 ) int {
-	requestID, err := newRequestID()
+	requestKey, err := newRequestKey()
 	if err != nil {
 		fmt.Fprintln(stderr, "journal:", err)
 		return 1
 	}
 
-	command := client.ProjectCommand{RequestID: requestID, Binding: binding.BindingID, Argv: arguments, Stdin: string(stdin)}
+	command := client.ProjectCommand{RequestKey: requestKey, Binding: binding.BindingID, Argv: arguments, Stdin: string(stdin)}
 	write := writeFrameTo(stdout, stderr)
 	var code int
 	if grant, found := commands.grant(binding); found {
@@ -401,7 +401,7 @@ func (commands dispatcher) forward(
 		code, err = commands.asShellUser(binding, state, command, write, stderr)
 	}
 	if err != nil {
-		fmt.Fprintf(stderr, "journal: %v (request %s)\n", err, requestID)
+		fmt.Fprintf(stderr, "journal: %v (request %s)\n", err, requestKey)
 		return 1
 	}
 
@@ -525,7 +525,7 @@ func wakeRelay(stateFolder string, bindingID string) error {
 	return host.StartRelay(filepath.Join(filepath.Dir(program), "journal-agent"), stateFolder, bindingID)
 }
 
-func newRequestID() (string, error) {
+func newRequestKey() (string, error) {
 	random := make([]byte, 16)
 	if _, err := rand.Read(random); err != nil {
 		return "", err

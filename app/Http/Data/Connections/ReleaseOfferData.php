@@ -17,17 +17,17 @@ final class ReleaseOfferData extends Data
 {
     /**
      * @param  list<ReleaseTargetData>  $targets
-     * @param  list<string>  $withheldCapabilities
+     * @param  list<string>  $missingCapabilities
      */
     public function __construct(
         public readonly string|null $release,
         #[DataCollectionOf(ReleaseTargetData::class)]
         public readonly array $targets,
-        public readonly array $withheldCapabilities,
+        public readonly array $missingCapabilities,
     ) {}
 
     /**
-     * The offer of the published manifest, none or one; with none every capability is withheld.
+     * The offer of the published manifest, none or one; with none every capability is missing.
      *
      * @param  list<ReleaseManifest>  $published
      */
@@ -37,7 +37,7 @@ final class ReleaseOfferData extends Data
             return self::from([
                 'release' => null,
                 'targets' => [],
-                'withheldCapabilities' => ReleaseManifest::CAPABILITIES,
+                'missingCapabilities' => ReleaseManifest::REQUIRED_CAPABILITIES,
             ]);
         }
 
@@ -46,7 +46,7 @@ final class ReleaseOfferData extends Data
         return self::from([
             'release' => $manifest->version,
             'targets' => array_map(ReleaseTargetData::fromTarget(...), $manifest->targets),
-            'withheldCapabilities' => $manifest->withheldCapabilities(),
+            'missingCapabilities' => $manifest->missingCapabilities(),
         ]);
     }
 }

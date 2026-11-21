@@ -6,11 +6,9 @@ namespace App\Connections\Http\Controllers\Calls;
 
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
-use App\Connections\Calls\ProjectCommandFrame;
 use App\Connections\Calls\ProjectCommandFrames;
 use App\Connections\Calls\RunProjectCommandCall;
 use App\Connections\Support\ProjectCommands;
-use App\Connections\Values\CommandFrame;
 use Illuminate\Http\Request;
 
 /**
@@ -31,9 +29,6 @@ final readonly class RunProjectCommandController
             'JOURNAL_PROFILE_REVISION' => (string) $request->header(SignedCall::PROFILE_REVISION_HEADER),
         ]);
 
-        return new ProjectCommandFrames(array_map(
-            fn (CommandFrame $frame) => ProjectCommandFrame::fromFrame($frame),
-            $frames,
-        ));
+        return ProjectCommandFrames::fromFrames($frames);
     }
 }

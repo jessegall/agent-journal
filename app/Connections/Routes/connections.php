@@ -85,7 +85,9 @@ Route::middleware(['web', 'auth', 'journal.user', 'throttle:20,1'])
             ->where('userCode', '[A-Za-z0-9-]+')
             ->name('devices.approve');
 
-        Route::delete('/devices/{grant}', RevokeDeviceGrantController::class)->whereUlid('grant')->name('devices.revoke');
+        Route::delete('/devices/{grant}', RevokeDeviceGrantController::class)
+            ->whereUlid('grant')
+            ->name('devices.revoke');
 
         Route::post('/bindings/revoke', RevokeProjectBindingsController::class)->name('bindings.revoke-chosen');
 

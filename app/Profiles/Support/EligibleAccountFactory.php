@@ -10,7 +10,7 @@ use App\Profiles\Models\Account;
 /**
  * How an account becomes a choice of a start form; kept out of the exported Data class.
  */
-final readonly class EligibleAccountRows
+final readonly class EligibleAccountFactory
 {
     public static function of(Account $account, bool $isDefault): EligibleAccountData
     {

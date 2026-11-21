@@ -31,7 +31,7 @@ final readonly class WorktreeDeliveryController
         $receipt = $commands->run(new SubmitWorktreeDelivery($host->hostId, $submission));
 
         return new JsonResponse([
-            'deliveryId' => $receipt->deliveryId,
+            'deliveryId' => $receipt->id,
             'tip' => $receipt->deliveredTip,
             'outcome' => $receipt->outcome,
         ], JsonResponse::HTTP_OK);

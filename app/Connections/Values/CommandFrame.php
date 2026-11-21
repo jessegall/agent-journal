@@ -13,7 +13,7 @@ final readonly class CommandFrame
     private function __construct(
         public int $sequence,
         public string $stream,
-        public string $data,
+        public string $text,
         public bool $isBase64,
         public int $exitCode,
     ) {}
@@ -28,29 +28,29 @@ final readonly class CommandFrame
     /**
      * A frame as a run recorded it.
      *
-     * @param  array{sequence: int, stream: string, data: string, base64: bool, code: int}  $frame
+     * @param  array{sequence: int, stream: string, text: string, isBase64: bool, exitCode: int}  $frame
      */
-    public static function recorded(array $frame): self
+    public static function fromRecord(array $frame): self
     {
-        return new self($frame['sequence'], $frame['stream'], $frame['data'], $frame['base64'], $frame['code']);
+        return new self($frame['sequence'], $frame['stream'], $frame['text'], $frame['isBase64'], $frame['exitCode']);
     }
 
-    public static function exit(int $sequence, int $code): self
+    public static function exit(int $sequence, int $exitCode): self
     {
-        return new self($sequence, 'exit', '', false, $code);
+        return new self($sequence, 'exit', '', false, $exitCode);
     }
 
     /**
-     * @return array{sequence: int, stream: string, data: string, base64: bool, code: int}
+     * @return array{sequence: int, stream: string, text: string, isBase64: bool, exitCode: int}
      */
     public function toArray(): array
     {
         return [
             'sequence' => $this->sequence,
             'stream' => $this->stream,
-            'data' => $this->data,
-            'base64' => $this->isBase64,
-            'code' => $this->exitCode,
+            'text' => $this->text,
+            'isBase64' => $this->isBase64,
+            'exitCode' => $this->exitCode,
         ];
     }
 }

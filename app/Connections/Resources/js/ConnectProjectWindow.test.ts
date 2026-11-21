@@ -45,7 +45,7 @@ function windowWith(canIssue: boolean) {
                             bytes: 9_000_000,
                             isMeasured: true,
                             prerequisites: ['git', 'curl'],
-                            withheldProviders: [],
+                            missingProviders: [],
                             isSupported: true,
                         },
                         {
@@ -53,11 +53,11 @@ function windowWith(canIssue: boolean) {
                             bytes: 9_000_000,
                             isMeasured: true,
                             prerequisites: ['git', 'curl'],
-                            withheldProviders: ['codex'],
+                            missingProviders: ['codex'],
                             isSupported: false,
                         },
                     ],
-                    withheldCapabilities: [],
+                    missingCapabilities: [],
                 },
                 bindings: [
                     {

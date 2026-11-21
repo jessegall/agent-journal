@@ -19,14 +19,14 @@ final readonly class RevokedBindings
      *
      * @return array<string, string>
      */
-    public function byBinding(): array
+    public function outcomesByBindingId(): array
     {
-        $byBinding = [];
+        $outcomesById = [];
 
         foreach ($this->outcomes as $each) {
-            $byBinding[$each->bindingId] = $each->outcome;
+            $outcomesById[$each->id] = $each->result;
         }
 
-        return $byBinding;
+        return $outcomesById;
     }
 }

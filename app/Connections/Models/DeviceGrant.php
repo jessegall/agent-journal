@@ -57,7 +57,7 @@ final class DeviceGrant extends Model implements ReadableModel
     /**
      * The fewest seconds between two polls of one device code.
      */
-    public const int POLL_SECONDS = 5;
+    public const int POLL_SECONDS_MINIMUM = 5;
 
     public const array SCOPES = ['commands'];
 
@@ -77,11 +77,11 @@ final class DeviceGrant extends Model implements ReadableModel
         ];
     }
 
-    public static function create(ProjectBinding $binding, string $codeDigest, string $userCode): self
+    public static function start(ProjectBinding $binding, string $deviceCodeDigest, string $userCode): self
     {
         $grant = new self();
         $grant->binding_id = $binding->id;
-        $grant->device_code_digest = $codeDigest;
+        $grant->device_code_digest = $deviceCodeDigest;
         $grant->user_code = $userCode;
         $grant->scopes = self::SCOPES;
         $grant->state = DeviceGrantState::Pending;
@@ -137,7 +137,7 @@ final class DeviceGrant extends Model implements ReadableModel
      *
      * @throws DeviceGrantRefused
      */
-    public static function usable(string $digest): self
+    public static function usableByDigest(string $digest): self
     {
         return self::query()->with('binding')->where('grant_digest', $digest)
             ->where('state', DeviceGrantState::Issued)->where('grant_expires_at', '>', CarbonImmutable::now())
@@ -168,7 +168,7 @@ final class DeviceGrant extends Model implements ReadableModel
     }
 
     /**
-     * Records a poll; refuses one sooner than POLL_SECONDS after the last.
+     * Records a poll; refuses one sooner than POLL_SECONDS_MINIMUM after the last.
      *
      * @throws DeviceGrantRefused
      */
@@ -176,7 +176,7 @@ final class DeviceGrant extends Model implements ReadableModel
     {
         $now = CarbonImmutable::now();
 
-        if ($this->last_polled_at !== null && $now->lessThan($this->last_polled_at->addSeconds(self::POLL_SECONDS))) {
+        if ($this->last_polled_at !== null && $now->lessThan($this->last_polled_at->addSeconds(self::POLL_SECONDS_MINIMUM))) {
             throw DeviceGrantRefused::pollingTooFast();
         }
 

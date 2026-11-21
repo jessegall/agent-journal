@@ -14,7 +14,7 @@ use PhpOption\Option;
 /**
  * How a task becomes the details and texts a read shows; kept out of the exported Data classes.
  */
-final readonly class TaskReads
+final readonly class TaskDetailsFactory
 {
     /**
      * A task as a read shows it, without its long texts, with who holds it and how it runs.

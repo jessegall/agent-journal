@@ -17,12 +17,12 @@ final readonly class StartProjectCommandRunHandler implements CommandHandler
 {
     public function handle(StartProjectCommandRun $command): CommandRunStart
     {
-        foreach (ProjectCommandRun::lockByRequest($command->requestId) as $earlier) {
+        foreach (ProjectCommandRun::lockByRequest($command->requestKey) as $earlier) {
             return new CommandRunStart(false, $earlier->isRunning(), $earlier->recordedFrames());
         }
 
         $binding = ProjectBinding::lockById($command->bindingId);
-        ProjectCommandRun::create($command->requestId, $command->agentId, $binding, $command->argv);
+        ProjectCommandRun::start($command->requestKey, $command->agentId, $binding, $command->argv);
 
         return new CommandRunStart(true, true, []);
     }

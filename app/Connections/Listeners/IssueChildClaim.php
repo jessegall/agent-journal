@@ -25,12 +25,7 @@ final class IssueChildClaim implements Listener
     {
         foreach (ProjectBinding::liveIdOfLocalHost($request->hostId) as $bindingId) {
             foreach ($this->claimsOf($bindingId, $request) as $claim) {
-                $request->slot->fill(new ChildCheckout(
-                    $claim->id,
-                    $claim->parent_generation,
-                    $claim->role === ChildRole::Writer,
-                    $claim->base_oid,
-                ));
+                $request->slot->fill($claim->checkout);
             }
         }
     }
@@ -57,7 +52,7 @@ final class IssueChildClaim implements Listener
         $binding = ProjectBinding::query()->findOrFail($bindingId);
 
         return array_map(
-            fn ($read) => ChildClaim::ofMain($binding, $parent->id, $request->childAgentId, ChildRole::Writer, $read),
+            fn ($read) => ChildClaim::forMainRuntime($binding, $parent->id, $request->childAgentId, ChildRole::Writer, $read),
             WorkspaceRead::latestCommitReadOf($parent->session->agent_id),
         );
     }

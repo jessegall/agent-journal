@@ -24,7 +24,7 @@ final readonly class RevokeProjectBindingsHandler implements CommandHandler
     {
         $outcomes = [];
 
-        foreach ($command->bindingIds as $bindingId) {
+        foreach ($command->ids as $bindingId) {
             $binding = ProjectBinding::lockById($bindingId);
 
             if ($binding->readiness === BindingReadiness::Revoked) {

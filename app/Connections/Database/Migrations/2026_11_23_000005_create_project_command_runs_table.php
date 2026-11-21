@@ -14,7 +14,7 @@ return new class extends Migration
         // first result instead of running it again.
         Schema::create('project_command_runs', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('request_id')->unique();
+            $table->string('request_key')->unique();
             $table->string('agent_id');
             $table->foreignUlid('binding_id')->constrained('project_bindings');
             $table->jsonb('argv');

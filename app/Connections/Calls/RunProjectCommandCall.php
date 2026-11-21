@@ -41,8 +41,8 @@ final class RunProjectCommandCall extends Data implements JournalCall
      * @param  list<string>  $argv
      */
     public function __construct(
-        #[Ulid]
-        public string $binding,
+        #[Ulid, MapName('binding')]
+        public string $bindingId,
         #[Min(2), Max(200)]
         public array $argv,
         #[LiteralTypeScriptType('string')]

@@ -34,7 +34,7 @@ final readonly class HostAccountFolders implements AccountFolders
             throw AccountFolderRefused::hostUnreachable();
         }
 
-        if (! $reply->done) {
+        if (! $reply->isDone) {
             throw AccountFolderRefused::byHost($reply->reason);
         }
     }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Connections\Calls;
 
-use App\Connections\Values\CommandFrame;
 use Spatie\LaravelData\Data;
 
 /**
@@ -16,13 +15,8 @@ final class ProjectCommandFrame extends Data
     public function __construct(
         public readonly int $sequence,
         public readonly string $stream,
-        public readonly string $data,
-        public readonly bool $base64,
-        public readonly int $code,
+        public readonly string $text,
+        public readonly bool $isBase64,
+        public readonly int $exitCode,
     ) {}
-
-    public static function fromFrame(CommandFrame $frame): self
-    {
-        return self::from($frame->toArray());
-    }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Connections\Models;
 
+use App\Agents\Values\ChildCheckout;
 use App\Agents\Values\CommitObservation;
 use App\Agents\Values\WorkspaceFacts;
 use App\Connections\Enums\ChildRole;
@@ -12,6 +13,7 @@ use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -31,6 +33,7 @@ use Illuminate\Support\Carbon;
  * @property bool $parent_was_dirty
  * @property string|null $parent_claim_id
  * @property string $root_runtime_id
+ * @property-read ChildCheckout $checkout
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -60,17 +63,7 @@ final class ChildClaim extends Model implements ReadableModel
      *
      * @throws ChildClaimRefused
      */
-    /**
-     * The claim already issued for this child agent, none or one: a claimed start asked again answers the same claim.
-     *
-     * @return list<self>
-     */
-    public static function ofChildAgent(string $agentId): array
-    {
-        return array_values(self::query()->where('child_agent_id', $agentId)->latest()->limit(1)->get()->all());
-    }
-
-    public static function ofMain(
+    public static function forMainRuntime(
         ProjectBinding $binding,
         string $parentRuntimeId,
         string $agentId,
@@ -92,14 +85,42 @@ final class ChildClaim extends Model implements ReadableModel
         return self::issue($binding, $parent->id, $agentId, $role, $read, $parent->id, $parent->root_runtime_id);
     }
 
+    // ----------[ Queries ]----------
+
+    /**
+     * The claim already issued for this child agent, none or one: a claimed start asked again answers the same claim.
+     *
+     * @return list<self>
+     */
+    public static function ofChildAgent(string $agentId): array
+    {
+        return array_values(self::query()->where('child_agent_id', $agentId)->latest()->limit(1)->get()->all());
+    }
+
     // ----------[ Answers ]----------
+
+    /**
+     * The checkout the relay prepares the child's worktree for: this claim, its generation, whether the child writes
+     * and the commit it starts from.
+     *
+     * @return Attribute<ChildCheckout, never>
+     */
+    protected function checkout(): Attribute
+    {
+        return Attribute::get(fn () => new ChildCheckout(
+            $this->id,
+            $this->parent_generation,
+            $this->role === ChildRole::Writer,
+            $this->base_oid,
+        ));
+    }
 
     /**
      * Refuses a claim whose parent's HEAD moved since the read: the old reference is never reinterpreted.
      *
      * @throws ChildClaimRefused
      */
-    public function assertBaseIsHead(CommitObservation $now): void
+    public function assertHeadUnmoved(CommitObservation $now): void
     {
         if ($now->headOid !== $this->base_oid) {
             throw ChildClaimRefused::baseMoved($this->base_oid, $now->headOid);
@@ -125,7 +146,7 @@ final class ChildClaim extends Model implements ReadableModel
         }
 
         if (! $read->commit->authorizesCommitDispatch()) {
-            throw ChildClaimRefused::notACommitRead();
+            throw ChildClaimRefused::readWithoutCommit();
         }
 
         $claim = new self();

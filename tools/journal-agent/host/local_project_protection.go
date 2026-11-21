@@ -30,13 +30,15 @@ const (
 // LocalProjectFolders are what a connected project's child start is confined to. Its own checkout is the one folder
 // of the project it reads and writes: the rest of the canonical root, every sibling worktree and Git's common
 // directory are closed to it. The relay's state folder, its sockets included, is closed too, but for the start's own
-// runtime folder, which holds the program's settings.
+// runtime folder, which holds the program's settings. Of the Git brokers' sockets it reaches only its own.
 type LocalProjectFolders struct {
 	Checkout string
 	Project  string
 	Common   string
 	State    string
 	Runtime  string
+	// Broker is the child's own Git broker socket, already listening, under the root of every broker socket.
+	Broker string
 	// Account is the saved account folder whose other workspaces' history stays closed, as in a session sandbox.
 	Account string
 }
@@ -70,7 +72,8 @@ type ChildConfinement struct {
 // start's own runtime folder. A platform with no confining mechanism refuses the start with
 // ErrLocalProjectUnprotected.
 func ConfineChild(folders LocalProjectFolders) (ChildConfinement, error) {
-	for _, folder := range []string{folders.Checkout, folders.Project, folders.Common, folders.State, folders.Runtime} {
+	paths := []string{folders.Checkout, folders.Project, folders.Common, folders.State, folders.Runtime, folders.Broker}
+	for _, folder := range paths {
 		if !filepath.IsAbs(folder) || strings.ContainsAny(folder, "\"\\\n") {
 			return ChildConfinement{}, fmt.Errorf("the confined folder %q is not a plain absolute path", folder)
 		}
@@ -90,6 +93,7 @@ func (folders LocalProjectFolders) real() LocalProjectFolders {
 		Common:   realPath(folders.Common),
 		State:    realPath(folders.State),
 		Runtime:  realPath(folders.Runtime),
+		Broker:   realPath(folders.Broker),
 	}
 	if folders.Account != "" {
 		resolved.Account = realPath(folders.Account)
@@ -101,6 +105,11 @@ func (folders LocalProjectFolders) real() LocalProjectFolders {
 // Command is the command line that runs the program confined.
 func (confined ChildConfinement) Command(program []string) []string {
 	return confined.command(program)
+}
+
+// brokerRoot is the folder every Git broker socket lives under, which the child may reach only for its own socket.
+func (folders LocalProjectFolders) brokerRoot() string {
+	return filepath.Dir(filepath.Dir(folders.Broker))
 }
 
 // Wrap makes the command run its program confined.
@@ -154,6 +163,19 @@ func ProbeLocalProjectProtection(probe []string) (LocalProjectProtection, error)
 	}
 	defer socket.Close()
 
+	brokers := map[string]string{}
+	for _, child := range []string{"child", "sibling"} {
+		path := BrokerSocketPath(root + "/" + child)
+		listener, err := ListenBroker(path)
+		if err != nil {
+			return LocalProjectProtection{}, err
+		}
+		defer os.RemoveAll(filepath.Dir(path))
+		defer listener.Close()
+		brokers[child] = path
+	}
+	folders.Broker = brokers["child"]
+
 	confined, err := ConfineChild(folders)
 	if err != nil {
 		return LocalProjectProtection{}, err
@@ -169,6 +191,8 @@ func ProbeLocalProjectProtection(probe []string) (LocalProjectProtection, error)
 		{"read the project's canonical checkout", ProbeRead, project, refusedOutcome},
 		{"write the relay's state", ProbeWrite, filepath.Join(folders.State, "file"), refusedOutcome},
 		{"connect to a socket of the relay", ProbeConnect, socket.Addr().String(), refusedOutcome},
+		{"connect to its own Git broker", ProbeConnect, brokers["child"], allowedOutcome},
+		{"connect to a sibling's Git broker", ProbeConnect, brokers["sibling"], refusedOutcome},
 	} {
 		result := check.run(confined, probe)
 		report.Checks = append(report.Checks, result)

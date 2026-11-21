@@ -42,7 +42,7 @@ final class DeviceGrantsTest extends TestCase
         $this->assertStringStartsWith('https://journal.example.com/connections/devices/', (string) $start->json('approvalUrl'));
         $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertStatus(428);
 
-        $this->travel(DeviceGrant::POLL_SECONDS + 1)->seconds();
+        $this->travel(DeviceGrant::POLL_SECONDS_MINIMUM + 1)->seconds();
         $this->actingAs($this->owner)
             ->post("/settings/project-connections/devices/{$start->json('userCode')}/approve")
             ->assertRedirect();
@@ -77,7 +77,7 @@ final class DeviceGrantsTest extends TestCase
             ->assertNoContent();
 
         $this->postJson('https://localhost/api/project-commands/device', [
-            'requestId' => 'request-1',
+            'request_key' => 'request-1',
             'binding' => $binding,
             'argv' => ['overview', 'now'],
             'stdin' => '',
@@ -125,7 +125,7 @@ final class DeviceGrantsTest extends TestCase
         $this->app['auth']->forgetGuards();
 
         return $this->postJson('https://localhost/api/project-commands/device', [
-            'requestId' => 'request-1',
+            'request_key' => 'request-1',
             'binding' => $binding,
             'argv' => ['overview', 'now'],
             'stdin' => '',

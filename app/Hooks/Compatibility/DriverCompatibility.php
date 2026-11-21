@@ -21,7 +21,7 @@ final readonly class DriverCompatibility
      * @param  list<string>  $startFlags  the checked flags every account start passes
      * @param  array<string, string>  $settings  the checked settings each account's own configuration holds
      * @param  string|null  $containedShortfall  what keeps a contained start back; null where starts are not contained
-     * @param  bool  $isContainedReportMissing  whether the shortfall is only that no contained host reported yet, which
+     * @param  bool  $awaitsContainedReport  whether the shortfall is only that no contained host reported yet, which
      *                                          a later report may lift, rather than a report this build fails
      */
     public function __construct(
@@ -34,7 +34,7 @@ final readonly class DriverCompatibility
         public DriverEvidence $arrangementEvidence,
         public string $evidenceOwner,
         public string|null $containedShortfall = null,
-        public bool $isContainedReportMissing = false,
+        public bool $awaitsContainedReport = false,
     ) {}
 
     /**
@@ -80,9 +80,9 @@ final readonly class DriverCompatibility
      * The same compatibility held back in a container until a contained host reports its protection: a wait, not a
      * refusal of the build.
      */
-    public function withContainedReportMissing(string $shortfall): self
+    public function awaitingContainedReport(string $shortfall): self
     {
-        return clone ($this->withContainedShortfall($shortfall), ['isContainedReportMissing' => true]);
+        return clone ($this->withContainedShortfall($shortfall), ['awaitsContainedReport' => true]);
     }
 
     /**
@@ -104,7 +104,7 @@ final readonly class DriverCompatibility
      */
     public function assertStartable(): void
     {
-        if ($this->containedShortfall !== null && ! $this->isContainedReportMissing) {
+        if ($this->containedShortfall !== null && ! $this->awaitsContainedReport) {
             throw DriverUnstartableInContainer::for($this->driver->value, $this->version, $this->containedShortfall);
         }
 
