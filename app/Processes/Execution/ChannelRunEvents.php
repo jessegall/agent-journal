@@ -201,7 +201,10 @@ final class ChannelRunEvents implements RunEvents
      */
     private function sendSpooled(): void
     {
-        $events = array_values(array_slice(RunEvent::collect($this->spooledRecords('events.jsonl')), $this->sent));
+        $events = array_values(array_slice(array_map(
+            fn (string $line): RunEvent => RunEvent::from(json_decode($line, true, 512, JSON_THROW_ON_ERROR)),
+            $this->spooledLines('events.jsonl'),
+        ), $this->sent));
 
         if ($events !== []) {
             $this->processes->recordRunEvents($this->runId, $this->eventKey, $events);
@@ -210,23 +213,11 @@ final class ChannelRunEvents implements RunEvents
 
         $chunks = $this->spooledLines('chunks.jsonl');
 
-        foreach (RunChunk::collect($this->spooledRecords('chunks.jsonl')) as $index => $chunk) {
+        foreach ($chunks as $index => $line) {
+            $chunk = RunChunk::from(json_decode($line, true, 512, JSON_THROW_ON_ERROR));
             $this->processes->recordRunChunk($this->runId, $this->eventKey, $chunk);
             $rest = implode('', array_map(fn (string $left) => $left."\n", array_slice($chunks, $index + 1)));
             $this->files->write($this->spoolFolder->child('chunks.jsonl'), $rest);
         }
-    }
-
-    /**
-     * The records of a spool file, one for each line.
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function spooledRecords(string $name): array
-    {
-        return array_map(
-            fn (string $line): array => (array) json_decode($line, true, 512, JSON_THROW_ON_ERROR),
-            $this->spooledLines($name),
-        );
     }
 }

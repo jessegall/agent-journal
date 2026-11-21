@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Values;
 
 use App\Files\Support\CodeFiles;
+use App\Processes\Data\ProofManifestData;
 
 /**
  * A reader Core ships for one tool, bound to the version its samples came from: the core rule it approves, where that
@@ -36,12 +37,9 @@ final readonly class ShippedReader
      */
     public function samples(): array
     {
-        /**
-         * @var array{samples: list<array{file: string, exit: int, proves: string}>} $manifest
-         */
-        $manifest = json_decode($this->proofFile('manifest.json'), true, 512, JSON_THROW_ON_ERROR);
-
-        return array_map(ProofSample::fromArray(...), $manifest['samples']);
+        return ProofManifestData::from(
+            json_decode($this->proofFile('manifest.json'), true, 512, JSON_THROW_ON_ERROR),
+        )->samples;
     }
 
     /**
