@@ -53,6 +53,24 @@ final class ReplyToMessageTest extends MessagingTestCase
         $this->runOnBus(new ReplyToMessage($questionId, $stale, 'Again.'));
     }
 
+    public function test_two_replies_to_one_version_have_one_winner_and_the_loser_is_told_the_version_is_stale(): void
+    {
+        $questionId = $this->ownerAsks($this->inboxIdOf($this->builder), 'Which port?');
+        $this->asAgent($this->builder);
+        $this->runOnBus(new ReadMessages($this->inboxIdOf($this->builder), [$questionId]));
+        $shown = $this->versionOf($questionId);
+        $this->runOnBus(new ReplyToMessage($questionId, $shown, 'Port 8080.', $this->builder->agent_id));
+
+        try {
+            $this->runOnBus(new ReplyToMessage($questionId, $shown, 'Port 9090.', $this->builder->agent_id));
+            $this->fail('The second reply to the same version went through.');
+        } catch (MessageStateConflict $refused) {
+            $this->assertSame('stale-version', $refused->staleCode());
+        }
+
+        $this->assertSame(1, Message::query()->acrossInboxes()->where('reply_to_id', $questionId)->count());
+    }
+
     private function versionOf(string $messageId): int
     {
         return Message::query()->findOrFail($messageId)->state_version;

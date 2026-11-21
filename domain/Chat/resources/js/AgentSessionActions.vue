@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import Button from '@kit/Button';
-import { postJson } from '@kit/jsonRequests';
+import { newRequestId } from '@kit/requestId';
 import type { AgentOptionData } from '@generated/types/chat';
 import type { AgentAction } from '@kit/CoreTypes';
 import { recheck, retry, terminalPage } from '@kit/sessionStarts';
+import { useSwitchOperation } from './composables/useSwitchOperation';
 import SessionForm from './SessionForm.vue';
 
 /**
@@ -17,7 +18,7 @@ const props = defineProps<{ agent: AgentOptionData }>();
 type FormMode = 'start' | 'resume' | 'switch';
 
 const formMode = ref<FormMode | null>(null);
-const refusal = ref<string | null>(null);
+const switching = useSwitchOperation(() => props.agent);
 const labels: Record<AgentAction, string> = {
     open: 'Terminal',
     start: 'Start session',
@@ -27,25 +28,26 @@ const labels: Record<AgentAction, string> = {
     recheck: 'Recheck',
 };
 
-async function settleSwitch(route: typeof retry): Promise<void> {
+/**
+ * Retries or rechecks the agent's switch once at a time; the switch is followed until it is over.
+ */
+function settleSwitch(route: typeof retry, label: 'Retrying' | 'Checking'): void {
     if (props.agent.switchId === null) {
         return;
     }
 
-    const reply = await postJson(route.url(props.agent.switchId));
-    refusal.value = reply.ok ? null : reply.message;
-    router.reload();
+    switching.retry(route.url(props.agent.switchId), newRequestId(), label);
 }
 
 function act(action: AgentAction): void {
     if (action === 'retry') {
-        void settleSwitch(retry);
+        settleSwitch(retry, 'Retrying');
 
         return;
     }
 
     if (action === 'recheck') {
-        void settleSwitch(recheck);
+        settleSwitch(recheck, 'Checking');
 
         return;
     }
@@ -70,8 +72,11 @@ function act(action: AgentAction): void {
                 <Button variant="bordered" size="small" @click="act(action)">{{ labels[action] }}</Button>
             </template>
         </template>
-        <template v-if="refusal">
-            <p class="text-small text-danger" role="alert">{{ refusal }}</p>
+        <template v-if="switching.progress.value && switching.state.value !== 'idle'">
+            <p class="text-small text-text-3" aria-live="polite">{{ switching.progress.value }}</p>
+        </template>
+        <template v-if="switching.refusal.value">
+            <p class="text-small text-danger" role="alert">{{ switching.refusal.value }}</p>
         </template>
         <template v-if="formMode">
             <SessionForm :agent="agent" :mode="formMode" @close="formMode = null" />

@@ -34,5 +34,6 @@ function loadMore(token: string): void {
         :offers-choice="ownPage"
         :agent-url="(agent: AgentOptionData) => agentUrl(page.url, agent)"
         :load-more="loadMore"
+        :protected-prop="ownPage ? 'page' : HOME_PROP"
     />
 </template>

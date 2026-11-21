@@ -125,6 +125,21 @@ final class ChatWindowTest extends TestCase
         $this->assertNull($this->stored($notShown)->read_at);
     }
 
+    public function test_reading_on_chats_own_page_returns_to_that_page(): void
+    {
+        $shown = $this->agentAsks('Shown?');
+        $chat = '/chat?agent='.$this->session->agent_id;
+
+        $this->actingAs($this->owner)
+            ->from($chat)
+            ->post('/chat/messages/read', [
+                'inboxId' => $this->ownInboxId,
+                'messageIds' => [$shown],
+                'agent' => $this->session->agent_id,
+            ])
+            ->assertRedirect($chat);
+    }
+
     public function test_a_reply_to_a_message_that_changed_is_refused_and_writes_nothing(): void
     {
         $questionId = $this->agentAsks('Which port?');

@@ -26,6 +26,9 @@ final readonly class UndockController
         $conversation = $requests->conversationWith($input->agent);
         $commands->run(new UndockSource($conversation->id, $input->placementId, $input->type, $input->id));
 
-        return $redirect->route('home', ConversationRequest::queryFor($input->agent), 303);
+        $home = $redirect->getUrlGenerator()->route('home', ConversationRequest::queryFor($input->agent), false);
+
+        // The page that showed the dock, Home or Chat's own, is shown again on the same dock page.
+        return $redirect->back(303, [], $home);
     }
 }

@@ -7,7 +7,9 @@ namespace App\Communication\Support;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\AttentionOrigin;
+use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Contracts\CurrentSession;
+use App\Agents\Exceptions\SessionOutdated;
 use App\Bus\Support\AcceptedReceipt;
 use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\SendMessage;
@@ -30,6 +32,7 @@ final readonly class MessageSending
         private AcceptedReceipt $accepted,
         private InboxAttention $attention,
         private CurrentSession $session,
+        private AgentDirectory $agents,
     ) {}
 
     public function send(SendMessage $command): string
@@ -47,8 +50,16 @@ final readonly class MessageSending
         )->id;
     }
 
+    /**
+     * @throws SessionOutdated when the user saw a session the agent no longer runs
+     */
     public function ask(AskMessage $command): string
     {
+        if ($command->seenSession !== null) {
+            $seen = $command->seenSession;
+            $this->agents->visibleAgent($seen->agentId)->assertRuns($seen->sessionId, $seen->generation);
+        }
+
         return $this->question(
             $command->sourceInboxId,
             $command->destinationInboxId,

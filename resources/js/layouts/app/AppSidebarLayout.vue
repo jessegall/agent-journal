@@ -3,7 +3,7 @@ import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppSidebar from '@/components/shell/AppSidebar.vue';
 import AppTopbar from '@/components/shell/AppTopbar.vue';
-import { useLiveConnection } from '@/composables/useLiveConnection';
+import { liveStage, retryLiveConnection, useLiveConnection } from '@/composables/useLiveConnection';
 import { usePresenceHeartbeat } from '@/composables/usePresenceHeartbeat';
 
 /**
@@ -22,6 +22,12 @@ const title = computed(() => page.component);
         <AppSidebar />
         <div class="flex min-w-0 flex-1 flex-col">
             <AppTopbar :title="title" />
+            <template v-if="liveStage === 'refused'">
+                <p role="status" class="flex items-center gap-2 border-b border-border px-4 py-1 text-small text-text-3">
+                    Reconnecting…
+                    <button type="button" class="underline" @click="retryLiveConnection()">Retry</button>
+                </p>
+            </template>
             <main class="min-h-0 flex-1 overflow-hidden"><slot /></main>
         </div>
     </div>

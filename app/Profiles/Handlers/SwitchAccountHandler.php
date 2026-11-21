@@ -23,6 +23,11 @@ final readonly class SwitchAccountHandler implements CommandHandler
     {
         $driver = Account::driverOf($command->accountId);
         $selection = ActiveAccount::lockedFor($driver);
+
+        if ($command->expectedChangeNumber !== null) {
+            $selection->assertAtChange($command->expectedChangeNumber);
+        }
+
         $account = Account::lockedForChange($command->accountId);
 
         $this->notices->resolveOpen($driver->value, CarbonImmutable::now());

@@ -13,7 +13,7 @@ import AccountRecovery from './AccountRecovery.vue';
 import AccountRow from './AccountRow.vue';
 import AddAccountWizard from './AddAccountWizard.vue';
 import { signInAgainLabel } from './accountLooks';
-import { isChosen, newestSelections } from './accountSelections';
+import { changeNumberOf, isChosen, newestSelections } from './accountSelections';
 import { attemptToRejoin, isLive } from './signIn';
 import type { WizardRequest } from './signIn';
 import { useUsageClock } from './usageClock';
@@ -106,6 +106,7 @@ function resumeOrAgain(row: AccountRowData): void {
                     <AccountRow
                         :account="row"
                         :is-chosen="isChosen(selections, row.driver, row.id)"
+                        :selection-change-number="changeNumberOf(selections, row.driver)"
                         :now="now"
                         @sign-in-again="resumeOrAgain(row)"
                     >

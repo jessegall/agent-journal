@@ -20,7 +20,7 @@ final readonly class ActivateAccountController
         CommandBus $commands,
         Redirector $redirect,
     ): RedirectResponse {
-        $commands->run(new SwitchAccount($request->accountId()));
+        $commands->run(new SwitchAccount($request->accountId(), $request->expectedChangeNumber()));
 
         return $redirect->back(303);
     }

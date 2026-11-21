@@ -2,7 +2,8 @@
 import type { ShareDetailData, ShareLinkData } from '@generated/types/sharing';
 import { postJson } from '@kit/jsonRequests';
 import { revealShareLink } from '@generated/routes/sharing';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
+import FormErrors from '@kit/FormErrors';
 import Button from '@kit/Button';
 import PageHeader from '@kit/PageHeader';
 import { ref } from 'vue';
@@ -28,6 +29,8 @@ function olderAudit(): void {
 }
 const revealFailed = ref(false);
 const copied = ref(false);
+// A refused retry or revoke comes back as the page's errors, shown under the header.
+const page = usePage<{ errors: Record<string, string> }>();
 
 async function reveal(): Promise<void> {
     revealFailed.value = false;
@@ -76,6 +79,7 @@ function revoke(): void {
         <PageHeader
             :title="`${data.state === 'proposed' ? 'Proposal' : 'Share'} ${data.number}`"
         />
+        <FormErrors :errors="page.props.errors" />
         <div class="flex gap-2" role="tablist">
             <button
                 type="button"

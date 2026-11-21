@@ -9,6 +9,7 @@ use App\Contracts\Listener;
 use App\Ui\Contracts\UserInterfaceUpdater;
 use App\Web\Events\PageChanged;
 use Illuminate\Contracts\Events\Dispatcher;
+use Psr\Log\LoggerInterface;
 
 /**
  * Turns each committed fact that changes what a page shows into one page change for the users Access allows. The
@@ -19,11 +20,13 @@ final readonly class BroadcastPageChange implements Listener
     public function __construct(
         private AdmittedRecipients $recipients,
         private Dispatcher $events,
+        private LoggerInterface $log,
     ) {}
 
     public function handle(UserInterfaceUpdater $fact): void
     {
         $userIds = $this->recipients->userIds();
+        $this->log->info('A page fact was committed.', ['fact' => $fact::class, 'users' => count($userIds)]);
 
         if ($userIds === []) {
             return;

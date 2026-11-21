@@ -105,6 +105,21 @@ final class DockAdmissionTest extends TestCase
         $this->assertSame(0, DockPlacement::query()->count());
     }
 
+    public function test_undocking_on_chats_own_page_returns_to_that_page_and_its_dock_page(): void
+    {
+        $added = $this->runKeyed($this->dockTask(), (string) Str::ulid());
+        $chat = "/chat?agent={$this->agentId}&dock=page-2";
+
+        $this->actingAs($this->owner)->from($chat)->post('/chat/dock/remove', [
+            'agent' => $this->agentId,
+            'placementId' => $added->placementId,
+            'type' => 'tasks.task',
+            'id' => $this->task->id,
+        ])->assertRedirect($chat);
+
+        $this->assertSame(0, DockPlacement::query()->count());
+    }
+
     public function test_a_guessed_placement_is_nothing_to_act_on(): void
     {
         $this->runKeyed($this->dockTask(), (string) Str::ulid());

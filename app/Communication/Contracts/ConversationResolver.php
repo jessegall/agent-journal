@@ -24,6 +24,11 @@ interface ConversationResolver
     public function detail(string $messageId): MessageView;
 
     /**
+     * Whether the current actor may see the message now.
+     */
+    public function canSee(string $messageId): bool;
+
+    /**
      * The messages between two inboxes, both ways, older than the cursor.
      */
     public function between(

@@ -36,6 +36,9 @@ final class AgentOptionData extends Data
         public readonly bool $hasTerminal,
         public readonly string|null $switchId,
         public readonly DriverSwitchStage|null $switchStage,
+        // How the switch's stage reads on screen, and whether it is over; none without a switch.
+        public readonly string|null $switchStageLabel,
+        public readonly bool $isSwitchOver,
         public readonly array $actions,
         #[DataCollectionOf(ResumableConversationData::class)]
         public readonly array $conversations,
@@ -55,6 +58,8 @@ final class AgentOptionData extends Data
             'hasTerminal' => $agent->hasTerminal,
             'switchId' => $agent->switchId,
             'switchStage' => $agent->switchStage,
+            'switchStageLabel' => $agent->switchStage?->label(),
+            'isSwitchOver' => $agent->switchStage?->isFinal() ?? true,
             'actions' => $agent->actions,
             'conversations' => $agent->conversations,
         ]);
