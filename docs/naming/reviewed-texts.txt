@@ -104,7 +104,6 @@ Filter
 Filter shares
 Finish signing in
 Fixed public address
-Follow the system
 From line
 Full
 Full screen
@@ -285,6 +284,7 @@ Stops after {{ sample.byteCap }} bytes or {{ sample.secondsCap }} seconds
 Suits a server.
 Switched
 Switching
+System
 Tests and checks
 That conversation belongs to another agent.
 That conversation is not one this agent can continue.
