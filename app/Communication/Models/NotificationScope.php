@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Models;
 
+use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Events\NotificationsChanged;
 use App\Contracts\EventSource;
@@ -88,6 +89,18 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
     public static function findFor(string $key, ActorIdentity $recipient): Option
     {
         return Option::fromValue(self::query()->ofRecipient($key, $recipient)->first());
+    }
+
+    /**
+     * The user a scope belongs to, when its recipient is a user; an agent's scope has no browser to tell.
+     *
+     * @return Option<string>
+     */
+    public static function userOf(string $id): Option
+    {
+        $scope = self::query()->whereKey($id)->where('recipient_type', ActorType::User->value)->first();
+
+        return Option::fromValue($scope?->recipient_id);
     }
 
     /**
