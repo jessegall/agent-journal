@@ -49,6 +49,7 @@ final readonly class DeclaredCommand
         $declaration = Reflector::of($command);
         $authorizations = $declaration->attributes(Authorize::class);
         $entries = $declaration->attributes(Entry::class);
+
         $entry = $entries->first()
             ->map(fn (Entry $declared) => $declared->entry)
             ->getOrElse(CommandEntry::Application);

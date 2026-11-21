@@ -70,6 +70,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
         }
 
         $script = $scripts->get();
+
         $run = ProfileRun::forTrigger(
             $request->actor,
             $request->work,
@@ -211,6 +212,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
         $wasHeld = $run->previous()
             ->filter(fn (ProfileRun $previous) => $previous->state === ProfileRunState::Held)
             ->isDefined();
+
         $run->finish(ProfileRunState::Held, $message, $unchangedReturns);
 
         return $this->answer($run, tellsOwner: ! $wasHeld);

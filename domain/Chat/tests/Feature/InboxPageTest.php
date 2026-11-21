@@ -52,13 +52,16 @@ final class InboxPageTest extends TestCase
         $this->startUserRequestAs($owner->id);
         $own = $this->inboxOf(ActorIdentity::of($owner));
         $team = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDesk('Team', 2, false)));
+
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(DeskSeating::class)->seat($team->id, ActorIdentity::of($owner)),
         );
+
         $questionId = $this->runOnBus(new AskMessage($own->inboxId(), $team->inboxId(), 'Who takes this?'));
 
         $this->actingAs($owner)->get('/chat/inbox')->assertInertia(fn (AssertableInertia $page) => $page
             ->has('page.data.panels', 2));
+
         $this->assertNull(Message::query()->withoutGlobalScopes()->findOrFail($questionId)->read_at);
 
         $this->actingAs($owner)->post('/chat/inbox/take-next', ['inboxId' => $team->inboxId()])->assertRedirect();

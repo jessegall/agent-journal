@@ -67,6 +67,7 @@ final class PhaseCheck extends Model implements ReadableModel
             'actor_type' => $recorder->type->value,
             'actor_id' => $recorder->id,
         ]);
+
         $check->setAttribute($check->getKeyName(), $check->newUniqueId());
         $check->insertIfAbsent();
 

@@ -70,9 +70,11 @@ final class ChatWindowTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $agent = Agent::create('Builder', 'main-agent');
+
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
+
         $this->ownInboxId = $this->inboxOf(ActorIdentity::of($this->owner))->inboxId();
         $this->agentInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $agent->id))->inboxId();
     }
@@ -81,6 +83,7 @@ final class ChatWindowTest extends TestCase
     {
         $main = Agent::create('Main agent', 'main-agent');
         MainAgentDesignation::create($main);
+
         $this->askBetween(
             $this->inboxOf(ActorIdentity::of($this->owner)),
             $this->inboxOf(new ActorIdentity(ActorType::Agent, $main->id)),
@@ -144,6 +147,7 @@ final class ChatWindowTest extends TestCase
     {
         $questionId = $this->agentAsks('Which port?');
         $shownVersion = $this->stored($questionId)->state_version;
+
         $this->actingAs($this->owner)->post('/chat/messages/reply', [
             'messageId' => $questionId,
             'stateVersion' => $shownVersion,

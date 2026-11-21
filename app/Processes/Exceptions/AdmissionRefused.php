@@ -27,6 +27,7 @@ final class AdmissionRefused extends CallRefused implements CallRefusal
     public function consoleLines(): array
     {
         $details = AdmissionRefusalDetails::from($this->details);
+
         $lines = [
             "{$details->reasonCode}: {$details->reason} {$details->notice}",
             "Correction: {$details->correction}",

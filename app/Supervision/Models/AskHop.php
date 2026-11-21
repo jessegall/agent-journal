@@ -138,6 +138,7 @@ final class AskHop extends Model implements ReadableModel
             ->selectRaw('actor_type, actor_id, max(updated_at) as answered_at')
             ->readAll('one row per holder that ever answered, to start its queue clock')
             ->get();
+
         $times = [];
 
         foreach ($answered as $row) {

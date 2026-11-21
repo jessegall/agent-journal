@@ -16,6 +16,7 @@ final readonly class HoldHelperJobHandler extends HelperCommandHandler
     {
         JobStopEvidence::openJob($command->jobId)->forAll(function (HelperJob $job) use ($command): void {
             $job->hold($command->reference);
+
             HelperNotice::create($job, sprintf(
                 'Helper %s failed its final checks on job %s three times the same way; the job is held for repair.',
                 $job->helper_identity_id,

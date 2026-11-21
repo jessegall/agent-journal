@@ -65,6 +65,7 @@ final readonly class AssigneeRecords implements AssigneeResolver
         $names = $this->names(
             array_map(fn (Assignment $assignment) => $assignment->holder(), $assignments->assignments),
         );
+
         $holders = [];
 
         foreach ($assignments->assignments as $assignment) {

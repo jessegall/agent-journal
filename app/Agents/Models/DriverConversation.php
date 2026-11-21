@@ -90,6 +90,7 @@ final class DriverConversation extends Model implements ReadableModel
         $conversation = self::query()->whereKey($conversationId)->firstOr(
             fn () => throw ResumeRefused::because(ResumeRefusal::ConversationMissing),
         );
+
         $conversation->assertContinuableBy($agentId, $driver, $contextReference);
 
         return $conversation->native_id;

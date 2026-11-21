@@ -47,6 +47,7 @@ final readonly class ExplainCommandController
             base_path(),
             RequestHoldReason::from($part->holdReason),
         ));
+
         $opened = CommandRequest::query()->findOrFail($requestId);
 
         return $part->heldIn($opened);

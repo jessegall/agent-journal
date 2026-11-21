@@ -40,6 +40,7 @@ final readonly class RecordStopResults extends Command
             fn (StopResultReport $stopReport): array => $stopReport->fingerprint(),
             $this->stopReports,
         );
+
         sort($fingerprints);
 
         return hash('sha256', json_encode(

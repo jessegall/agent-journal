@@ -46,6 +46,7 @@ final readonly class StackRestorer
 
             foreach (array_chunk($positions, StateReferences::MAXIMUM) as $batch) {
                 $typeEnabled = ! $type instanceof ConditionalStateType || $type->isEnabled();
+
                 $states = $this->states->of(
                     $type,
                     new StateReferences(array_map(fn (int $position) => $frameRecords[$position]->reference, $batch)),

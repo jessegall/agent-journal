@@ -37,6 +37,7 @@ final readonly class PlanAssignmentProvider implements AssignableProvider
     public function visibleRecords(array $records): array
     {
         $this->actors->actor();
+
         $visiblePlanIds = Plan::query()->whereKey(
             array_map(fn (RecordIdentity $record) => $record->id, $records),
         )->readExactly(count($records))->pluck('id')->all();

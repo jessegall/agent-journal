@@ -139,6 +139,7 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         string|null $senderSessionId = null,
     ): self {
         $author = $envelope->author;
+
         $message = new self([
             'source_inbox_id' => $envelope->source->inboxId(),
             'destination_inbox_id' => $envelope->destination->inboxId(),
@@ -151,11 +152,15 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
             'origin_receipt_id' => $operation->receiptId,
             'reply_to_id' => $envelope->replyToId,
         ]);
+
         $message->id = $message->newUniqueId();
+
         $message->conversation_id = $envelope->replyToId === null
             ? $message->id
             : self::query()->acrossInboxes()->findOrFail($envelope->replyToId)->conversation_id;
+
         $message->assertSaved($message->save());
+
         $message->raise(new MessageSent(
             $message->id,
             $author,

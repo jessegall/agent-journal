@@ -29,6 +29,7 @@ final readonly class ReleaseMessageClaimHandler implements CommandHandler
         $message = Message::query()->acrossInboxes()->whereKey($command->messageId)->lockForUpdate()->firstOr(
             fn () => throw MessageMissing::forId($command->messageId),
         );
+
         $this->responsibilities->release($message->assignmentIdentity(), $command->expectedClaim);
         $this->facts->publishAfterCommit(new MessageClaimReleased($message->id, $command->expectedClaim));
     }

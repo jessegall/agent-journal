@@ -27,6 +27,7 @@ final readonly class DraftRecords implements DraftResolver
             'number',
             $documentNumber,
         )->firstOr(fn () => throw DraftMissing::forDocument($documentNumber));
+
         $draft = $document->draft ?? throw DraftMissing::forDocument($documentNumber);
 
         if (! $this->editors->isEditing($draft)) {
@@ -42,6 +43,7 @@ final readonly class DraftRecords implements DraftResolver
             'number',
             $documentNumber,
         )->firstOr(fn () => throw DraftMissing::forDocument($documentNumber));
+
         $draft = $document->draft;
 
         if ($draft === null) {
@@ -52,6 +54,7 @@ final readonly class DraftRecords implements DraftResolver
             $held = ['state' => EditingState::Held, 'holder' => $draft->holderLabel()];
 
             $administrativeAccesses = [AccessType::Edit];
+
             $mayAdminister = $this->authorizer->filterActions(
                 DocumentAdministrationPolicy::class,
                 Document::class,

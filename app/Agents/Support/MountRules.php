@@ -228,6 +228,7 @@ final readonly class MountRules
         $isClean = str_starts_with($source, self::DAEMON_ROOT)
             && ! in_array('..', explode('/', $source), true)
             && strpbrk($source, ",\n") === false;
+
         $isAccount = $source === self::ACCOUNTS_ROOT || str_starts_with($source, self::ACCOUNTS_ROOT.'/');
 
         return $isClean && (! $isAccount || $source === $this->accountSource);

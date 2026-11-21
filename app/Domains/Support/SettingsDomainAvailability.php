@@ -61,6 +61,7 @@ final readonly class SettingsDomainAvailability implements DomainAvailability
         $switchedOn = $this->switches->of($domain->name)
             ->map(fn (ToggleGroup $switch) => ! $snapshot->group($switch) instanceof DisabledSettingsGroup)
             ->getOrElse(true);
+
         $unavailable = [];
 
         foreach ($domain->requires as $requiredClass) {

@@ -45,6 +45,7 @@ final class RulePageChangeTest extends TestCase
         $this->app->make(CommandBus::class)->run(new ApproveRule($rule->id));
 
         Event::assertDispatchedTimes(PageChanged::class, 1);
+
         Event::assertDispatched(PageChanged::class, fn (PageChanged $change) => $change->userIds === [$this->owner->id]
             && $change->broadcastOn()[0]->name === 'private-'.UserChannel::nameFor($this->owner->id)
             && $change->broadcastWith() === []);

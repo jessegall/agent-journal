@@ -52,6 +52,7 @@ final readonly class DockRequests
             $named = Conversation::query()
                 ->whereKey($chat)
                 ->firstOr(fn () => throw ConversationUnavailable::missing($chat));
+
             $this->assertJoined($named);
 
             return $named;

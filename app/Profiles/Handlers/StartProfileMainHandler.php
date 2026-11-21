@@ -45,6 +45,7 @@ final readonly class StartProfileMainHandler implements CommandHandler
         $agent = Agent::query()->findOrFail($command->agentId);
         $variant = $agent->variantFor($command->variant, $profile->base->defaultVariant);
         $this->preflight->assertAdmitted($profile->proposal($variant, $command->requested->model));
+
         $target = $command->conversationId === null
             ? null
             : DriverConversation::chosenFor($command->conversationId, $agent->id, $profile->selection->driver, null);

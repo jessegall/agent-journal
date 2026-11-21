@@ -73,6 +73,7 @@ final class CommandBusServiceProvider extends ServiceProvider
         $this->app->scoped(Publication::class);
         $this->app->scoped(CommandTransaction::class, RunningCommandTransaction::class);
         $this->app->alias(CommandStops::class, CommandStopsContract::class);
+
         $this->app->scoped(
             LaravelCommandBus::class,
             fn ($app) => LaravelCommandBus::forRequest(
@@ -82,6 +83,7 @@ final class CommandBusServiceProvider extends ServiceProvider
                 $app->make(MiddlewareRunner::class),
             ),
         );
+
         $this->app->alias(LaravelCommandBus::class, CommandBus::class);
         $this->app->alias(LaravelCommandBus::class, GuardedCommandBus::class);
     }
@@ -95,10 +97,12 @@ final class CommandBusServiceProvider extends ServiceProvider
         $this->commands([PruneReceiptsCommand::class]);
         $this->callAfterResolving(ExceptionHandler::class, self::renderSignedCallRefusals(...));
         self::refuseExplicitTransactionsOn($databases->connection());
+
         $events->listen(
             ConnectionEstablished::class,
             static fn (ConnectionEstablished $event) => self::refuseExplicitTransactionsOn($event->connection),
         );
+
         $events->listen(CommandFinished::class, static fn () => self::finishConsoleOwner());
     }
 

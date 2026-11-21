@@ -164,6 +164,7 @@ final readonly class CompileContext
     {
         $keyword = $statement->keyword;
         $registered = $this->keywords->get($keyword->token);
+
         $this->graph->remember('keyword:'.$keyword->token, [
             $registered->owner, $keyword->form, $keyword->implementation, $keyword->effects, $implementation->flow(),
         ]);

@@ -44,6 +44,7 @@ final readonly class LinkedAccountUses implements AccountUses
     public function history(RecordIdentity $account, int $limit): array
     {
         $this->authorizeRead();
+
         $sessions = $this->sessions->all($account)
             ->orderByDesc('created_at')
             ->orderByDesc('id')

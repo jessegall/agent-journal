@@ -42,6 +42,7 @@ final class HelperPurposeTest extends TestCase
         $this->parent = ActorIdentity::of($actor);
         $this->visible = new RecordIdentity('plans.plan', (string) Str::ulid());
         $visible = $this->visible;
+
         $this->app->instance(RecordVisibility::class, new class($visible) implements RecordVisibility
         {
             public function __construct(private RecordIdentity $visible) {}

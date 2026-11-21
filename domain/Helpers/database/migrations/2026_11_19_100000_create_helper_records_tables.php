@@ -39,6 +39,7 @@ return new class extends Migration
 
             $table->unique(['actor_type', 'actor_id', 'profile_key', 'subject_type', 'subject_id']);
         });
+
         DB::statement("ALTER TABLE helper_purposes ADD CONSTRAINT helper_purposes_subject_matches_type CHECK (
             (purpose_type = 'subject' AND subject_type IS NOT NULL AND subject_id IS NOT NULL)
             OR (purpose_type = 'free' AND subject_type IS NULL AND subject_id IS NULL))");

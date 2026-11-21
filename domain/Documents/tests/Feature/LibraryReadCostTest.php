@@ -49,10 +49,12 @@ final class LibraryReadCostTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
+
         $bus = $this->app->make(CommandBus::class);
 
         foreach (range(1, 12) as $number) {
             $phrase = $number % 3 === 0 ? 'The retention window is thirty days.' : 'Nothing to find here.';
+
             $bus->run(
                 new CreateDocument(
                     "Design {$number}",
@@ -115,6 +117,7 @@ final class LibraryReadCostTest extends TestCase
                 self::isBounded($query),
                 'A list query reads more than a page and one row: '.$query['query'],
             );
+
             $this->assertDoesNotMatchRegularExpression(
                 '/^select \* from "document_revisions"/',
                 $query['query'],

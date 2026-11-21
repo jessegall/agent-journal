@@ -31,6 +31,7 @@ final readonly class RejectRuleProposalHandler implements CommandHandler
             ->whereKey($command->proposalId)
             ->lockForUpdate()
             ->sole();
+
         $proposal->reject();
         $request = $proposal->commandRequest()->lockForUpdate()->first();
 

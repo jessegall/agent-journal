@@ -63,6 +63,7 @@ final class PlanPersistenceTest extends TestCase
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
+
         $done = $this->task('Done');
         $done->finish('Done.');
         $started = $this->task('Started');

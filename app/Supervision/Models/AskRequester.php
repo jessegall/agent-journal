@@ -31,10 +31,12 @@ final class AskRequester extends Model implements ReadableModel
     public static function lockSubmissions(ActorIdentity $actor): void
     {
         $requester = new self();
+
         $requester->setRawAttributes([
             $requester->getKeyName() => $requester->newUniqueId(),
             ...$actor->asColumns('actor'),
         ]);
+
         $requester->insertIfAbsent();
         self::query()->where($actor->asColumns('actor'))->lockForUpdate()->sole();
     }

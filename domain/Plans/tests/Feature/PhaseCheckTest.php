@@ -63,10 +63,12 @@ final class PhaseCheckTest extends TestCase
 
         $superseded = new RecordPhaseCheck($this->phase->id, $first);
         $this->assertThrows(fn () => $this->runAsAgent($superseded), PhaseCheckRefused::class);
+
         $this->assertThrows(
             fn () => $this->runAsAgent(new RecordPhaseCheck($this->phase->id, 'no-receipt-for-an-evidence-run')),
             PhaseCheckRefused::class,
         );
+
         $this->assertSame(0, PhaseCheck::query()->count());
     }
 

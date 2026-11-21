@@ -62,6 +62,7 @@ final class SupervisorLink extends Model implements ReadableModel
     public static function graphRoutes(): array
     {
         $routes = [];
+
         self::query()->acrossActors()->readInChunks(50, function ($links) use (&$routes): void {
             foreach ($links as $link) {
                 $routes[$link->actor_type.':'.strtolower($link->actor_id)] = $link->routes;

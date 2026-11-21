@@ -162,6 +162,7 @@ final readonly class FolderWalker
     private function entry(FilePath $path, string $realPath): FolderEntry
     {
         $type = EntryType::at($realPath);
+
         $fingerprint = $type === EntryType::Link
             ? Fingerprint::ofLink($path, $realPath)
             : Fingerprint::of($path, $realPath);

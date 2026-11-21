@@ -54,9 +54,11 @@ final class PipelinePump
                     ARRAY_FILTER_USE_BOTH,
                 ),
             );
+
             $write = array_values(
                 array_filter($inputs, fn ($pipe, int $index) => $waiting[$index - 1] !== '', ARRAY_FILTER_USE_BOTH),
             );
+
             $except = null;
 
             if (($read !== [] || $write !== []) && @stream_select($read, $write, $except, 0, 200_000) === false) {

@@ -166,6 +166,7 @@ final class SharePreview extends Model implements ReadableModel
         $selection = $current->selection(
             array_map(fn (ShareSelectedTarget $target) => $target->record->id, $this->selection),
         );
+
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id);
 
         if ($checksum !== $this->checksum

@@ -89,6 +89,7 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
             'usd' => $cost->usd->amount,
             'observed_at' => $cost->observedTime(),
         ]);
+
         $entry->assertSaved($entry->save());
         $entry->raise(new AccountUsageChanged($account->driver, $account->id));
     }
@@ -105,6 +106,7 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
     public static function monthTotals(array $ids, CarbonImmutable $instant): array
     {
         $monthStart = $instant->utc()->startOfMonth();
+
         $totals = self::query()
             ->whereIn('account_id', $ids)
             ->where('observed_at', '>=', $monthStart)
@@ -113,6 +115,7 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
             ->groupBy('account_id')
             ->readExactly(count($ids))
             ->get();
+
         $costs = [];
 
         foreach ($totals as $total) {

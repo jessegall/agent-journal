@@ -48,6 +48,7 @@ class DomainServiceProvider extends ServiceProvider
         $registry = DomainRegistry::from($this->domainClasses());
 
         $this->app->instance(DomainRegistry::class, $registry);
+
         $this->app->singleton(
             CommandRegistry::class,
             fn (Application $app) => $registry->commandDeclarations(
@@ -55,30 +56,38 @@ class DomainServiceProvider extends ServiceProvider
                 $app->make(PipelineRunner::class),
             ),
         );
+
         $this->app->singleton(
             McpCatalogue::class,
             fn (Application $app) => $this->mcpCatalogue($registry, $app->make(CommandRegistry::class)),
         );
+
         $this->app->singleton(
             CommandRuleRegistry::class,
             fn (): CommandRuleRegistry => $registry->commandRules(new CoreRules()->all()),
         );
+
         $this->app->singleton(
             SkillRegistry::class,
             fn () => SkillRegistry::of($registry->skillDeclarations(CoreSkills::owner())),
         );
+
         $this->app->singleton(
             ConditionRegistry::class,
             fn () => ConditionRegistry::of($registry->skillConditionDeclarations()),
         );
+
         $this->app->singleton(DomainSwitches::class, fn () => $registry->domainSwitches());
+
         $this->app->singleton(
             SettingRegistry::class,
             fn () => $this->settingRegistry($registry, $this->app->make(DomainSwitches::class)),
         );
+
         $this->app->scoped(DomainAvailability::class, SettingsDomainAvailability::class);
 
         $classNames = Psr4ClassNames::fromComposer();
+
         DiscoverEvents::guessClassNamesUsing(
             fn (SplFileInfo $file, string $basePath) => $classNames->classOf((string) $file->getRealPath()),
         );

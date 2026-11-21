@@ -39,10 +39,12 @@ final readonly class SetCallDeadline
     public function handle(Request $request, Closure $next): Response
     {
         $issuedAt = $this->calls->context()->getOrThrow(AgentContextMissing::forRequest())->call->issuedAt;
+
         $signedLeft = (int) CarbonImmutable::now()->diffInMilliseconds(
             $issuedAt->addMilliseconds(self::SIGNED_MILLISECONDS),
             false,
         );
+
         $deadline = new OperationDeadline(min(self::ENTRY_MILLISECONDS, $signedLeft));
 
         if ($deadline->hasRunOut()) {

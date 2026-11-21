@@ -202,6 +202,7 @@ final class ProfileRevision extends Model implements ReadableModel
     public static function currentSupervisorProfiles(): array
     {
         $profiles = [];
+
         self::query()
             ->join('profiles', 'profiles.current_revision_id', '=', 'profile_revisions.id')
             ->whereNull('profiles.retired_at')

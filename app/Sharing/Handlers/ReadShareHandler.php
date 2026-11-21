@@ -154,9 +154,11 @@ final readonly class ReadShareHandler implements CommandHandler
             }
 
             $provider = $this->records->provider($type);
+
             $page = $budget->run(
                 fn () => $provider->readTargets(new ShareTargetRead([$target], $targets, null), $budget),
             );
+
             array_push($cards, ...array_map(SharedPageItem::fromCard(...), $page->eligible));
         }
 
@@ -189,6 +191,7 @@ final readonly class ReadShareHandler implements CommandHandler
         }
 
         $relation = $owned[0]->name;
+
         $place = new ShareCursor(
             $share->id,
             $share->scope_version,
@@ -197,14 +200,17 @@ final readonly class ReadShareHandler implements CommandHandler
             ShareCursor::ORDER_WRITTEN_THEN_ID,
             '',
         );
+
         $continuation = $cursor === null ? null : $this->cursors->read($cursor, $place)->continuation;
         $provider = $this->records->provider($target->type);
+
         $page = $budget->run(
             fn () => $provider->readRelated(
                 new ShareRelationRead($target, $relation, self::CHILDREN_PAGE, $continuation),
                 $budget,
             ),
         );
+
         $next = $page->continuation === null ? null : $this->cursors->write(
             new ShareCursor(
                 $share->id,

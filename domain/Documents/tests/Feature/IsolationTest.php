@@ -84,6 +84,7 @@ final class IsolationTest extends TestCase
     {
         $this->actAsUser(1);
         $announced = [];
+
         $this->app->make(Dispatcher::class)->listen(DocumentCreated::class, function (
             DocumentCreated $event,
         ) use (&$announced): void {

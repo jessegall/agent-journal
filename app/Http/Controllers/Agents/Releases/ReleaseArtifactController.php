@@ -23,6 +23,7 @@ final readonly class ReleaseArtifactController
         string $name,
     ): BinaryFileResponse {
         $artifact = new ReleaseArtifact($version, $target, $name);
+
         $response = new BinaryFileResponse($releases->artifact($artifact), headers: [
             'Content-Type' => 'application/octet-stream',
         ]);

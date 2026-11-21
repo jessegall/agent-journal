@@ -20,6 +20,7 @@ final readonly class AttachmentPages implements AttachmentReader
     public function attachment(string $id, string|null $continuation): ToolResult
     {
         $upload = TextUpload::sealed($id);
+
         $position = $continuation === null
             ? new Continuation(self::TOOL, $id, [], 1)
             : $this->continuations->open($continuation, self::TOOL, $id);

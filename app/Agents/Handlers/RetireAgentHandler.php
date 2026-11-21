@@ -125,6 +125,7 @@ final readonly class RetireAgentHandler implements CommandHandler
             ->lockForUpdate()
             ->readAll('a retiring agent has few starts')
             ->get();
+
         $accounts = [];
 
         foreach ($starts as $start) {

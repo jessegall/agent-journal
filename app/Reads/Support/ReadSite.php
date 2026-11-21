@@ -20,6 +20,7 @@ final readonly class ReadSite
     {
         foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 60) as $frame) {
             $file = $frame['file'] ?? '';
+
             $isApplicationCode = (str_starts_with($file, $basePath.'/app/') || str_starts_with(
                 $file,
                 $basePath.'/domain/',

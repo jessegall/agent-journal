@@ -74,6 +74,7 @@ final class HelperPurpose extends Model implements ReadableModel
             'subject_id' => $subject->id,
             'label' => "{$subject->type}:{$subject->id}",
         ]);
+
         $purpose->id = strtolower((string) Str::ulid());
         $purpose->belongTo($parent);
         $purpose->insertIfAbsent();

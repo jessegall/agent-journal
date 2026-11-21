@@ -39,10 +39,12 @@ final readonly class CommentRecords implements CommentResolver
     {
         $record = $this->commentable($target);
         $card = $this->records->card($target);
+
         $comments = self::commentsOf($record)
             ->when($page->afterId !== null, fn ($query) => $query->where('id', '>', $page->afterId))
             ->readExactly($page->limit + 1)
             ->get();
+
         $shown = $comments->take($page->limit);
 
         return CommentList::from([
@@ -57,9 +59,11 @@ final readonly class CommentRecords implements CommentResolver
         TextSelection $selection = new TextSelection(),
     ): RecordCommentLocation|TextCommentLocation {
         $record = $this->commentable($target);
+
         $comment = self::commentsOf($record)->whereKey($commentId)->firstOr(
             fn () => throw CommentUnavailable::for($commentId),
         );
+
         $subject = $comment->subject();
         $card = $this->records->card($target);
 
@@ -72,6 +76,7 @@ final readonly class CommentRecords implements CommentResolver
         $text = $record instanceof TextContent ? $record->textVersion(
             $subject->versionId,
         ) : throw TargetHasNoText::for($target->type);
+
         $chosen = $selection->isOutlineOnly() ? TextSelection::from([
             'firstLine' => $subject->firstLine,
             'lastLine' => $subject->lastLine,

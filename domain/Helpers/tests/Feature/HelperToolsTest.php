@@ -46,6 +46,7 @@ final class HelperToolsTest extends TestCase
         $helper = TestStart::start('writing-helper');
 
         $this->assertSame([], array_intersect(self::HELPER_TOOLS, array_column($this->catalogue($helper), 'name')));
+
         $this->sendMcp($helper, 'tools/call', [
             'name' => 'helpers_start',
             'arguments' => ['profile_key' => 'plan-reviewer', 'model' => 'default', 'brief' => 'Review it.'],

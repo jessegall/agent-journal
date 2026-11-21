@@ -35,9 +35,11 @@ final readonly class DismissMessageHandler implements CommandHandler
     public function handle(DismissMessage $command): void
     {
         $actor = $command->dispatchedBy();
+
         $message = Message::query()->acrossInboxes()->whereKey($command->messageId)->lockForUpdate()->firstOr(
             fn () => throw MessageMissing::forId($command->messageId),
         );
+
         $type = $this->dismissalBy($message, $actor);
         $dismissedBy = ActorIdentity::of($actor);
         $message->dismissBy($dismissedBy, $type, $command->reason, CarbonImmutable::now());

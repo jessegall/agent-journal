@@ -73,6 +73,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
         $catalogueDigest = $this->digestOf($skillEntries);
         $previous = SkillGeneration::latestReady();
         $reused = $previous !== null && $previous->catalogue_digest === $catalogueDigest;
+
         $generation = $reused
             ? $previous
             : SkillGeneration::create(

@@ -42,6 +42,7 @@ final readonly class DeskSeatAdmission
         }
 
         $this->assertOneForwardingSeat($desk, $actor);
+
         $seat = DeskSeat::query()->ofDesk($desk)->vacant()->firstOr(
             fn () => throw SeatCapacityReached::forDesk($desk->id),
         );

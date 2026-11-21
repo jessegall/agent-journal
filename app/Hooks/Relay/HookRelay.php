@@ -163,6 +163,7 @@ final readonly class HookRelay
         }
 
         $readPath = $call->readPath();
+
         $isOwnOutputRead = $call->toolName === self::READ_TOOL && $readPath !== null
             && $this->grantsOf($settings)->allowsRead(ProtectedFileRead::resolve($call->cwd, $readPath));
 

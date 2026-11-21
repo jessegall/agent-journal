@@ -95,6 +95,7 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
             'body' => $baseRevision->body,
             'opened_at' => CarbonImmutable::now(),
         ]);
+
         $draft->assertSaved($draft->save());
         $draft->raise(new DocumentOpened($document->id, $document->number));
 

@@ -122,11 +122,13 @@ final class ReaderPosition extends Model implements ReadableModel
         ReaderCheckpoint $checkpoint,
     ): self {
         $identity = ['part_run_id' => $part->id, 'reader_revision_id' => $revision->id, 'purpose' => $purpose];
+
         $position = new self([
             ...$identity,
             'checkpoint' => $checkpoint->toArray(),
             'interpretation' => InterpretationState::Provisional,
         ]);
+
         $position->setAttribute($position->getKeyName(), $position->newUniqueId());
         $position->insertIfAbsent();
 

@@ -220,6 +220,7 @@ final readonly class CodexAdapter implements DriverAdapter
                 : new FileChange(trim($match[2]), FileOperation::fromPatchAction($match[1])),
             $matches,
         );
+
         $destinations = array_map(fn (array $move) => new FileChange(trim($move[2]), FileOperation::Write), $moves);
 
         return new FileChanges([...$changes, ...$destinations]);

@@ -39,6 +39,7 @@ return new class extends Migration
 
             $table->index('driver');
         });
+
         DB::statement("create unique index accounts_label_in_use on accounts (driver, label_key) where state <> 'removed'");
 
         Schema::create('active_accounts', function (Blueprint $table) {

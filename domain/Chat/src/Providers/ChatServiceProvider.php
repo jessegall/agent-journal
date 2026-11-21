@@ -51,6 +51,7 @@ final class ChatServiceProvider extends ServiceProvider
                     'This agent session cannot take a message now.',
                 ),
             );
+
             $exceptions->renderable(
                 fn (SessionOutdated $outdated, Request $request) => $this->composerError(
                     $outdated,

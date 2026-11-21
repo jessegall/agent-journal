@@ -41,6 +41,7 @@ final readonly class SignedCallSender implements CallSender
         $callFields = $call instanceof Data ? $call->toArray() : [];
         $path = $this->pathOf($declaration, $callFields);
         $body = array_diff_key($callFields, array_flip($declaration->pathProperties));
+
         $prepared = $this->client->prepareWithId(
             $this->settings,
             "/agent/{$path}",
@@ -48,6 +49,7 @@ final readonly class SignedCallSender implements CallSender
             Str::ulid()->toString(),
             CarbonImmutable::now()->getTimestamp(),
         );
+
         $deadline = CarbonImmutable::now()->addSeconds($this->settings->timeoutSeconds);
         $key = isset($body['request_key']) ? new CallKey((string) $body['request_key']) : null;
 

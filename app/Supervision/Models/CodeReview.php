@@ -105,6 +105,7 @@ final class CodeReview extends Model implements ReadableModel
             'state' => CodeReviewState::AwaitingImport,
             'import_attempts' => 0,
         ]);
+
         $review->setAttribute($review->getKeyName(), $review->newUniqueId());
         $review->insertIfAbsent();
 

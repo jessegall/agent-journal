@@ -26,6 +26,7 @@ final readonly class AnsweringAskStates implements StateLoader
 
         return StateSet::build($references, static function (StateReference $reference) use ($versions) {
             $subject = $reference->subject;
+
             $isCurrent = $subject instanceof SubjectReference
                 && ($versions[$subject->id] ?? null) === $subject->runNumber;
 

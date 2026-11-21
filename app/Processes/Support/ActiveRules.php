@@ -27,6 +27,7 @@ final readonly class ActiveRules
     public function registry(): CommandRuleRegistry
     {
         $approvals = $this->project->approvedBundles();
+
         $approved = array_values(array_filter(
             $this->startup->bundles(),
             fn (RuleBundle $bundle): bool => array_any(

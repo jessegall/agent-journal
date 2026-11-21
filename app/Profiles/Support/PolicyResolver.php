@@ -108,6 +108,7 @@ final readonly class PolicyResolver
 
         foreach ([$project, $profile->override] as $override) {
             $rules = $override->appliedTo($rules);
+
             $grants = [
                 ...array_filter($grants, fn (OperationGrant $grant) => ! in_array(
                     $grant->operation,
@@ -116,6 +117,7 @@ final readonly class PolicyResolver
                 )),
                 ...array_map(fn (OperationRule $rule) => $rule->grant(), $override->allowOperations),
             ];
+
             $denials = [...$denials, ...$override->denyOperations];
         }
 

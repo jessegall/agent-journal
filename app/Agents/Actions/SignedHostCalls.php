@@ -76,6 +76,7 @@ final readonly class SignedHostCalls implements HostCalls
     private function assertSpeaksProtocol(Request $request, HostProtocolVersion $protocol): void
     {
         $current = $protocol->value;
+
         $version = $request->headers->get(SignedCall::HOST_PROTOCOL_HEADER)
             ?? throw HostProtocolMismatch::missing($current);
 

@@ -27,6 +27,7 @@ final class SkillRevisionsCommand extends Command
         return $this->printRefusals(function () use ($console) {
             $console->actAsOwner();
             $skill = $console->stored((string) $this->argument('number'));
+
             $this->table(
                 ['Revision', 'Name', 'Author', 'Copied from', 'Saved'],
                 array_map(

@@ -92,6 +92,7 @@ final class HelperDispatchTest extends TestCase
 
         HelperJob::query()->findOrFail($busy->jobId)->markUnfinished('stop:1');
         $this->endSessionOf($busy);
+
         $this->assertThrows(
             fn () => $this->send('request-3', $busy->identityId, 'Review plan 8'),
             HelperJobUnfinished::class,
@@ -99,6 +100,7 @@ final class HelperDispatchTest extends TestCase
 
         HelperJob::query()->findOrFail($busy->jobId)->cancel();
         $this->agentOf($busy)->retireAt(CarbonImmutable::now());
+
         $this->assertThrows(
             fn () => $this->send('request-4', $busy->identityId, 'Review plan 8'),
             HelperRetired::class,
@@ -106,6 +108,7 @@ final class HelperDispatchTest extends TestCase
 
         $other = TestStart::start();
         $other->startRequest($this->app);
+
         $this->assertThrows(
             fn () => $this->send('request-5', $busy->identityId, 'Review plan 8'),
             HelperUnavailable::class,
@@ -120,6 +123,7 @@ final class HelperDispatchTest extends TestCase
             fn () => $this->start('request-1', 'Review plan 7', profileKey: 'journal-main'),
             HelperProfileTypeConflict::class,
         );
+
         $this->assertThrows(
             fn () => $this->start('request-2', 'Review plan 7', profileKey: 'missing-helper'),
             HelperProfilesUnavailable::class,
@@ -136,9 +140,11 @@ final class HelperDispatchTest extends TestCase
         $helper->startRequest($this->app);
 
         $this->assertThrows(fn () => $this->start('request-1', 'Review plan 7'), HelperUnavailable::class);
+
         $this->assertTrue(ProfileBase::mainAgent()->defaultAccess()->contains(
             ProfileBase::readOnlyHelper()->defaultAccess(),
         ));
+
         $this->assertFalse(ProfileBase::readOnlyHelper()->defaultAccess()->contains(
             ProfileBase::writingHelper()->defaultAccess(),
         ));
@@ -185,6 +191,7 @@ final class HelperDispatchTest extends TestCase
         $this->assertSame('opus', $read->start->selection->model);
 
         TestStart::start()->startRequest($this->app);
+
         $this->assertThrows(
             fn () => $this->app->make(HelperReader::class)->receiptOf($receipt->jobId),
             HelperUnavailable::class,

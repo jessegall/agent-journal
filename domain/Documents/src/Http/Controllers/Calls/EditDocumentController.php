@@ -20,12 +20,14 @@ final readonly class EditDocumentController
     public function __invoke(EditDocumentCall $call, CommandBus $commands): DraftHeld
     {
         $target = $call->target();
+
         $command = match ($call->mode) {
             'section' => new EditDocument($target, (string) $call->section, $call->body, $call->uploadId),
             'text' => new ReplaceDocumentText($target, (string) $call->originalText, (string) $call->replacementText),
             'details' => new ChangeDocumentDetails($target, (string) $call->title, (string) $call->abstract),
             default => new ReplaceDocumentBody($target, (string) $call->body),
         };
+
         $draft = $commands->run($command);
 
         return DraftHeld::from([

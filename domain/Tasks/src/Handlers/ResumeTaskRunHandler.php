@@ -49,6 +49,7 @@ final readonly class ResumeTaskRunHandler extends TaskCommandHandler
         }
 
         $this->assertNotCovered($task);
+
         $this->claims->take(
             $run->assignmentIdentity(),
             $task->assignmentIdentity(),

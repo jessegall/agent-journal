@@ -53,6 +53,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
             $command->generation,
             $command->answer,
         );
+
         $request = $this->rounds->append($navigation, $round);
 
         if ($navigation->state === NavigationState::Open) {
@@ -71,6 +72,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
     {
         $stalled = DriverRequest::query()->whereKey($navigation->driver_request_id)->lockForUpdate()->firstOrFail();
         $generation = $navigation->screen->generation;
+
         $stalled->recordScriptProgress(
             new ScriptProgress($navigation->stalled_step, $generation, 'answered by main agent'),
         );

@@ -62,13 +62,16 @@ final class FlowGraphData extends Data
             $nodes[$fallthrough] = new FlowNodeData($fallthrough, 'final checks', FlowNodeType::Policy, null);
             $nodes[$returnToActor] = new FlowNodeData($returnToActor, 'return policy', FlowNodeType::Policy, null);
             $nodes['certified'] = new FlowNodeData('certified', 'certified', FlowNodeType::Terminal, null);
+
             $nodes['return-to-actor'] = new FlowNodeData(
                 'return-to-actor',
                 'return to actor',
                 FlowNodeType::Terminal,
                 null,
             );
+
             $nodes['held'] = new FlowNodeData('held', 'held', FlowNodeType::Terminal, null);
+
             array_push(
                 $edges,
                 new FlowEdgeData($fallthrough, 'certified', 'passed'),
@@ -124,6 +127,7 @@ final class FlowGraphData extends Data
 
         foreach (array_keys(array_count_values($ranks)) as $rank) {
             $inRank = array_values(array_filter($nodes, fn (FlowNodeData $node) => $ranks[$node->id] === $rank));
+
             usort($inRank, fn (FlowNodeData $first, FlowNodeData $second) => [$first->line ?? PHP_INT_MAX, $first->id]
                 <=> [$second->line ?? PHP_INT_MAX, $second->id]);
 

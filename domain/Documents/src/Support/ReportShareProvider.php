@@ -44,6 +44,7 @@ final readonly class ReportShareProvider implements ShareRecordProvider
         $report = Report::query()->sharedPublished()->whereKey($read->record->id)->firstOr(
             fn () => throw RecordUnavailable::forActor($read->record),
         );
+
         $bytes = Report::bodyBytesOf($report->id);
 
         if ($bytes > MarkdownText::BODY_BYTES) {

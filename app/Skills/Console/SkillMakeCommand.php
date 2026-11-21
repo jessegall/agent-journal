@@ -34,6 +34,7 @@ final class SkillMakeCommand extends Command
         return $this->printRefusals(function () use ($console, $commands, $requestId) {
             $console->actAsOwner();
             $key = (string) $this->argument('key');
+
             $draft = new SkillDraft(
                 (string) ($this->option('name') ?? $key),
                 (string) $this->option('description'),

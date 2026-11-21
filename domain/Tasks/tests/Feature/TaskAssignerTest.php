@@ -75,6 +75,7 @@ final class TaskAssignerTest extends TestCase
         $assigner = $this->app->make(TaskAssigner::class);
 
         $this->assertSame([$middle], $assigner->pick($this->builder, self::pool(PoolMembers::all()), 1)->ids);
+
         $this->assertSame(
             [$middle, $highest],
             $assigner->pick($this->builder, self::pool(PoolMembers::all()), 5)->ids,
@@ -117,6 +118,7 @@ final class TaskAssignerTest extends TestCase
             fn () => $assigner->pick($this->builder, self::pool(PoolMembers::all()), 0),
             CandidateLimitInvalid::class,
         );
+
         $this->assertThrows(
             fn () => $assigner->pick($this->builder, self::pool(PoolMembers::all()), 1001),
             CandidateLimitInvalid::class,

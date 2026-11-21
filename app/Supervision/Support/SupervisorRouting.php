@@ -65,11 +65,14 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
         $routes = $type === null ? $old->withDefault($command->target) : $old->withOverride($type, $command->target);
         $profiles = $this->profileRoutes([]);
         $this->requireKnown($routes, $profiles);
+
         $this->requireAcyclic(
             $profiles,
             [...SupervisorLink::graphRoutes(), SupervisorTarget::forActor($command->actor)->key => $routes],
         );
+
         $link->change($routes, $type);
+
         SupervisorChange::create(
             $link,
             $author,

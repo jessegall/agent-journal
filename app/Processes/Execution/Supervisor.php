@@ -167,18 +167,24 @@ final readonly class Supervisor
         }
 
         $stdout = '';
+
         $pump = function (int $index, OutputStream $stream, string $bytes) use ($commands, $state, &$stdout): void {
             $state->events->output($commands[$index][0], $stream, $bytes);
+
             $kept = $index === array_key_last($commands)
                 && $stream === OutputStream::Stdout
                 && strlen($stdout) < self::KEPT_OUTPUT_BYTE_LIMIT;
+
             $stdout .= $kept ? $bytes : '';
         };
+
         new PipelinePump()->run(array_column($commands, 1), $pump, $state->stop);
+
         $statuses = array_map(
             fn (array $command) => $this->finishExternal($command[0], $command[1], $state),
             $commands,
         );
+
         $failed = array_values(array_filter($statuses, fn (int $status) => $status !== 0));
 
         $status = $context->pipefail && $failed !== [] ? array_last($failed) : array_last($statuses);
@@ -245,10 +251,12 @@ final readonly class Supervisor
         }
 
         $stdout = '';
+
         $drained = $process->drain(function (OutputStream $stream, string $bytes) use ($part, $state, &$stdout): void {
             $state->events->output($part, $stream, $bytes);
             $stdout .= $stream === OutputStream::Stdout && strlen($stdout) < self::KEPT_OUTPUT_BYTE_LIMIT ? $bytes : '';
         }, SpawnedProcess::DRAIN_SECONDS, $state->stop);
+
         $status = $this->finishExternal($part, $process, $state, $drained);
 
         return new StepOutcome($status, $context, $stdout);

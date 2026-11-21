@@ -49,6 +49,7 @@ final class ReportTest extends TestCase
         }
 
         $bus->run(new CommitUpload($upload));
+
         $id = $this->signed($reviewer, '/agent/reports/make', [
             'title' => 'Review',
             'abstract' => 'Evidence and observations.',
@@ -62,6 +63,7 @@ final class ReportTest extends TestCase
             'body' => 'Clarification on the first finding.',
             'request_key' => 'clarify-first-finding',
         ];
+
         $first = $this->signed($reviewer, '/agent/reports/comment', $comment)->assertOk()->json();
         $this->assertSame($first, $this->signed($reviewer, '/agent/reports/comment', $comment)->assertOk()->json());
         $this->assertSame($comment['body'], Comment::query()->sole()->body);
@@ -78,10 +80,12 @@ final class ReportTest extends TestCase
         $this->assertSame($reviewer->agent->id, $report->creator_id);
         $links = $this->app->make(IdentityLinks::class);
         $this->assertSame([$source->id], array_column($links->linkedOfType($report, 'documents.document'), 'id'));
+
         $this->assertSame(
             [$reviewer->session->id],
             array_column($links->linkedOfType($report, 'core.agent-session'), 'id'),
         );
+
         $reviewer->startRequest($this->app);
         $inspection = $this->app->make(ReportResolver::class)->inspect($report->number);
         $this->assertSame('The findings were addressed.', $inspection->settlements[0]->reason);

@@ -212,6 +212,7 @@ final readonly class UiManifest
             '@generated/types/*' => ['./resources/js/generated/types/*'],
             '@generated/routes/*' => ['./resources/js/routes/*'],
         ];
+
         $include = self::SHARED_INCLUDES;
 
         foreach ($folders as $key => $path) {

@@ -115,6 +115,7 @@ final readonly class PrivateSignInProcesses
             $verification->isSignedIn => AccountCheckResult::SignedIn,
             default => AccountCheckResult::SignedOut,
         };
+
         $this->host->reportCheck($claimed, $accountCheck);
 
         return true;

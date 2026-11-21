@@ -44,6 +44,7 @@ final readonly class TextRecords implements TextResolver
                 fn ($section) => $section->number > $afterSection,
             ),
         );
+
         $page = array_slice($after, 0, $size->rows);
 
         return TextSections::from(

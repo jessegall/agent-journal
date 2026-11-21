@@ -46,6 +46,7 @@ final readonly class RegisterStates implements DomainBootstrapper
 
             foreach ($domain->states() as $typeKey => $factory) {
                 $loader = $this->container->make($factory);
+
                 $event->registry->register(
                     $typeKey,
                     $switchable ? $this->domainStateType($domain, $loader, $availability) : $loader,

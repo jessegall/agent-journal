@@ -22,6 +22,7 @@ final readonly class MakeDocumentController
             fn (string $name) => $records->identify(RecordReference::parse(trim($name))),
             $call->relatedRecords,
         );
+
         $created = $commands->run(new CreateDocument(
             $call->title,
             $call->abstract,

@@ -95,16 +95,20 @@ final class AssignmentsServiceProvider extends ServiceProvider
 
         $reads->declare('assignees_list', $readGrant);
         $reads->declare('assignments_read', $readGrant);
+
         $policies->register('Core', new PolicyDefinition(
             AssignmentPolicy::class,
             [AccessType::Read, AccessType::Create, AccessType::Edit],
         ));
+
         $policies->register('Core', new PolicyDefinition(
             AssignmentRecipientPolicy::class,
             [AccessType::Create, AccessType::Delegate, AccessType::Delete],
         ));
+
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/assignments.php');
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
+
         $this->app->booted(function (): void {
             $registry = $this->app->make(AssignmentRegistry::class);
             $registry->checkRecordModels($this->app->make(LinkTypeRegistry::class));

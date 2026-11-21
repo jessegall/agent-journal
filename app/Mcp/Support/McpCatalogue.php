@@ -205,6 +205,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
             }
 
             $definition = $tool->toArray();
+
             $definitions[$name] = [
                 'name' => $definition['name'],
                 'title' => $definition['title'],

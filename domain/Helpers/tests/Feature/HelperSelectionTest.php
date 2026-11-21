@@ -48,6 +48,7 @@ final class HelperSelectionTest extends TestCase
         parent::setUp();
 
         $this->parent = $this->actAsUser('parent');
+
         $this->review = HelperPurpose::forSubject(
             $this->parent,
             'read-only-helper',
@@ -59,6 +60,7 @@ final class HelperSelectionTest extends TestCase
     public function test_a_codex_follow_up_picks_the_codex_reviewer_even_when_the_other_finished_later(): void
     {
         $codex = $this->helperWhoReviewed(HookDriver::Codex, self::LUNA, CarbonImmutable::parse('2026-11-19 10:00'));
+
         $claude = $this->helperWhoReviewed(
             HookDriver::ClaudeCode,
             TestSelections::MODEL,
@@ -87,11 +89,13 @@ final class HelperSelectionTest extends TestCase
     public function test_an_independent_review_skips_every_helper_that_saw_the_subject(): void
     {
         $this->helperWhoReviewed(HookDriver::Codex, self::LUNA, CarbonImmutable::parse('2026-11-19 10:00'));
+
         $this->helperWhoReviewed(
             HookDriver::ClaudeCode,
             TestSelections::MODEL,
             CarbonImmutable::parse('2026-11-19 12:00'),
         );
+
         $fresh = $this->declareHelper('read-only-helper');
 
         $candidates = $this->candidates(HookDriver::Codex, self::LUNA, independent: true);
@@ -120,6 +124,7 @@ final class HelperSelectionTest extends TestCase
     public function test_a_helper_with_open_work_is_not_offered(): void
     {
         $busy = $this->declareHelper('read-only-helper');
+
         HelperJob::create(
             $busy,
             $this->review,
@@ -157,11 +162,13 @@ final class HelperSelectionTest extends TestCase
     ): HelperIdentity {
         $identity = $this->helperWithJob($finishedAt);
         $agent = Agent::query()->findOrFail($identity->helper_actor_id);
+
         $session = $this->app->make(StartSessions::class)->start(
             $agent,
             SelectedDriver::resolve($driver->value, ModelSelection::named($model), null, null),
             TestSelections::requestId(),
         )->session;
+
         $conversation = DriverConversation::create($session, 'settings', (string) Str::uuid(), $this->review->id);
         ConversationVisit::appendOnce($session, $conversation, 'event-1', $finishedAt);
         $session->endAt($finishedAt);
@@ -172,6 +179,7 @@ final class HelperSelectionTest extends TestCase
     private function helperWithJob(CarbonImmutable $finishedAt): HelperIdentity
     {
         $identity = $this->declareHelper('read-only-helper');
+
         $job = HelperJob::create(
             $identity,
             $this->review,
@@ -180,6 +188,7 @@ final class HelperSelectionTest extends TestCase
             ['subjects' => []],
             self::launchFor((string) Str::ulid()),
         );
+
         $this->travelTo($finishedAt);
         $job->finish('report:1');
         $this->travelBack();

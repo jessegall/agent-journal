@@ -28,6 +28,7 @@ final readonly class StartOwnedAgentHandler implements CommandHandler
     {
         $request = $command->request;
         $parentSessionId = $this->sessions->hasSession() ? $this->sessions->sessionId() : null;
+
         $receipt = $this->commands->run(
             new StartAgent($request->startRequest($parentSessionId, $this->sources->selectedSource())),
         );

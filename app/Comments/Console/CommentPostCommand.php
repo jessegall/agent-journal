@@ -45,6 +45,7 @@ final class CommentPostCommand extends Command
     private function place(): CommentPlace|null
     {
         $span = $this->lineSpan();
+
         $fields = array_filter([
             'section' => $this->filledOption('section') === null ? null : (int) $this->option('section'),
             'firstLine' => $span[0] ?? null,
@@ -53,6 +54,7 @@ final class CommentPostCommand extends Command
             'startOffset' => $this->filledOption('start-offset') === null ? null : (int) $this->option('start-offset'),
             'endOffset' => $this->filledOption('end-offset') === null ? null : (int) $this->option('end-offset'),
         ], fn (int|string|null $commentField): bool => $commentField !== null);
+
         $version = $this->filledOption('at-revision');
 
         if ($version === null && $fields === []) {

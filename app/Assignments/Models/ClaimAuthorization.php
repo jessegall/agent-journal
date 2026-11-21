@@ -130,8 +130,10 @@ final class ClaimAuthorization extends Model implements ReadableModel
     {
         $participation = $liveHolders[(string) $this->participation_assignment_id] ?? null;
         $work = $liveHolders[(string) $this->work_assignment_id] ?? null;
+
         $participationHolds = ! $this->basis_type->needsParticipation()
             || ($participation !== null && $participation->isSameAs($claimant));
+
         $workHolds = ! $this->basis_type->needsWork()
             || ($work !== null && (! $this->basis_type->needsClaimantToHoldWork() || $work->isSameAs($claimant)));
 
@@ -162,6 +164,7 @@ final class ClaimAuthorization extends Model implements ReadableModel
             'participation_assignment_id' => $participationId,
             'work_assignment_id' => $workId,
         ]);
+
         $proof->save();
 
         return $proof;

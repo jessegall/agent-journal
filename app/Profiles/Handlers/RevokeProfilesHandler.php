@@ -33,6 +33,7 @@ final readonly class RevokeProfilesHandler implements CommandHandler
             $revision = ProfileRevision::currentOf($profile);
             $profile->retire();
             $this->commands->run(new FenceProfileRevision($profile->key, $revision->revision));
+
             $this->facts->publishAfterCommit(new ProfileRevisionRevoked(
                 ProfileKey::from($profile->key),
                 $revision->revision,

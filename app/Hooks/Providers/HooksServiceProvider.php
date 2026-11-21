@@ -93,6 +93,7 @@ final class HooksServiceProvider extends ServiceProvider
                 static fn (): StateEventScope => Container::getInstance()->make(StateEventScope::class),
             ),
         );
+
         Event::clearResolvedInstance('events');
 
         $this->app->bind(AgentStack::class, AgentStacks::class);
@@ -110,9 +111,11 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->bind(StartTransaction::class, StackTransaction::class);
         $this->app->bind(FactStaging::class, StateBridgeFactStaging::class);
         $this->app->bind(WorkProgress::class, FrameProgress::class);
+
         $this->app->singleton(ProtectedAccounts::class, fn ($app) => new ProtectedAccounts([
             $app->make(Repository::class)->string('accounts.root'),
         ]));
+
         $this->app->bind(DriverCompatibilities::class, PinnedCompatibilities::class);
         $this->app->bind(DriverAdapters::class, SupportedDriverAdapters::class);
         $this->app->scoped(StackAdmission::class, AdvisoryStackAdmission::class);
@@ -122,22 +125,27 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->bind(ActorGuidance::class, HookGuidance::class);
         $this->app->bind(PinnedBuilds::class, PinnedDriverBuilds::class);
         $this->app->scoped(ActorWorkStacks::class, WorkStackPushes::class);
+
         $this->app->singleton(RetentionPeriods::class, fn () => new RetentionPeriods(
             $this->app->make('config')->integer('hooks.hook_call_days'),
             $this->app->make('config')->integer('hooks.closed_stack_days'),
         ));
+
         $this->app->scoped(StateFactory::class, RegisteredStateFactory::class);
         $this->app->bind(StackStates::class, TargetStates::class);
+
         $this->app->singleton(
             OperationDeadline::class,
             fn () => new OperationDeadline(
                 $this->app->make('config')->integer('hooks.operation_deadline_milliseconds'),
             ),
         );
+
         $this->app->singleton(
             ContextBudget::class,
             fn () => new ContextBudget($this->app->make('config')->integer('hooks.context_budget_characters')),
         );
+
         $this->app->singleton(
             HookRetryWindow::class,
             fn () => new HookRetryWindow($this->app->make('config')->integer('hooks.retry_seconds')),
@@ -153,6 +161,7 @@ final class HooksServiceProvider extends ServiceProvider
         $actors->registerWorkStack(ActorType::Agent, AgentWorkStack::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/hooks.php');
         $this->commands([PruneHookHistoryCommand::class, RelayHookCommand::class]);
+
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule->command('hooks:prune')->daily(),

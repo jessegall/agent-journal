@@ -35,12 +35,15 @@ final class CoreSettings implements SettingsDefinition
             minimumLength: 1,
             maximumLength: 200,
         );
+
         $this->general = SettingGroup::make('general', 'General', [$this->displayName]);
+
         $this->remoteProjects = BooleanSetting::make(
             key: 'remote_projects',
             label: 'Connect projects on other machines',
             default: false,
         );
+
         $this->connectedProjects = SettingGroup::make(
             'connected_projects',
             'Connected projects',

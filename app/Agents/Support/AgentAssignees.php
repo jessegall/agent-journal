@@ -72,11 +72,13 @@ final readonly class AgentAssignees implements AssigneeProvider
     public function eligible(Page $page): AssigneeList
     {
         $this->actors->actor();
+
         $agents = Agent::query()->whereNull('retired_at')
             ->when($page->afterId !== null, fn ($query) => $query->where('id', '>', $page->afterId))
             ->orderBy('id')
             ->limit($page->limit + 1)
             ->get();
+
         $shown = $agents->take($page->limit);
 
         return new AssigneeList(

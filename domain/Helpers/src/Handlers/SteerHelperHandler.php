@@ -24,6 +24,7 @@ final readonly class SteerHelperHandler extends HelperCommandHandler
         $identity = HelperIdentity::query()->whereKey($command->identityId)->firstOr(
             fn () => throw HelperUnavailable::toYou(),
         );
+
         $latest = HelperJob::query()->ofIdentities([$identity->id])->latest('id')->lockForUpdate()->first();
 
         if ($latest !== null && $latest->state->isLive()) {
@@ -39,6 +40,7 @@ final readonly class SteerHelperHandler extends HelperCommandHandler
                 escapeshellarg($identity->id),
                 escapeshellarg($command->text),
             );
+
         $message = HelperMessage::create(
             ActorIdentity::of($command->dispatchedBy()),
             $identity,

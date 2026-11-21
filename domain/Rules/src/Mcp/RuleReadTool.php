@@ -36,6 +36,7 @@ final class RuleReadTool extends JournalReadTool
     {
         $rule = $this->rules->rule($arguments->ulid('rule_id'));
         $text = array_filter(['text' => $rule->text, 'reason' => $rule->reason], is_string(...));
+
         $card = [
             'rule_id' => $rule->id,
             'number' => $rule->number,
@@ -46,6 +47,7 @@ final class RuleReadTool extends JournalReadTool
             ],
             'replaces_rule_number' => $rule->replacesRuleNumber,
         ];
+
         $cursor = $arguments->continuation();
 
         if ($cursor !== null) {

@@ -34,6 +34,7 @@ final readonly class ReportPages implements ReportReader
     {
         $report = ReportRecords::published($id);
         $cursor = $arguments->continuation();
+
         $position = $cursor === null ? new Continuation(
             self::TOOL,
             (string) $id,
@@ -41,6 +42,7 @@ final readonly class ReportPages implements ReportReader
             1,
             revision: 1,
         ) : $this->continuations->open($cursor, self::TOOL, (string) $id);
+
         $card = new ReportReadCard($report->number, $report->id, $report->attention);
 
         $body = MarkdownText::body($report->body);

@@ -44,16 +44,22 @@ final readonly class AgentRecords implements AgentDirectory
     public function visible(): array
     {
         $query = Agent::query()->orderBy('created_at')->orderBy('id');
+
         $agents = ($this->inspection->seesEveryAgent() ? $query : $query->whereKey($this->actors->actor()->id))
             ->limit(self::AGENTS_SHOWN)
             ->get();
+
         $ids = $agents->modelKeys();
+
         $sessions = AgentSession::query()->whereIn('agent_id', $ids)->running()
             ->limit(self::AGENTS_SHOWN)->get()->keyBy('agent_id');
+
         $runtimes = AgentRuntime::query()->whereIn('agent_session_id', $sessions->pluck('id')->all())
             ->limit(self::AGENTS_SHOWN)->get()->keyBy('agent_session_id');
+
         $switches = DriverSwitch::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
             ->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_id')->keyBy('agent_id');
+
         $conversations = DriverConversation::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
             ->readLimit(self::AGENTS_SHOWN * self::CONVERSATIONS_SHOWN)->get()->groupBy('agent_id');
 

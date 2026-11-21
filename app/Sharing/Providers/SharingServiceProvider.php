@@ -51,10 +51,12 @@ final class SharingServiceProvider extends ServiceProvider
             SharingPolicy::class,
             [AccessType::Create, AccessType::Edit],
         ));
+
         $policies->register('Core', new PolicyDefinition(
             ShareRequestPolicy::class,
             [AccessType::Create],
         ));
+
         $numbers->register(NumberedModel::global(Share::class));
         $gateways->register(TunlerGateway::KEY, TunlerGateway::class);
         $gateways->register(NgrokGateway::KEY, NgrokGateway::class);

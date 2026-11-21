@@ -30,6 +30,7 @@ final class TaskReadsTest extends TestCase
             ActorContext::forAgent(TestIds::of(3)),
             TestStartAuthority::forAgent(TestIds::of(3)),
         );
+
         $first = Task::factory()->create(['title' => 'Write the walk']);
         $second = Task::factory()->create(['title' => 'Test the walk']);
 
@@ -45,6 +46,7 @@ final class TaskReadsTest extends TestCase
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
+
         $done = Task::factory()->create(['title' => 'Write the walk']);
         $done->finish('Done.');
         $open = Task::factory()->create(['title' => 'Test the walk']);
@@ -63,6 +65,7 @@ final class TaskReadsTest extends TestCase
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
+
         $first = Task::factory()->create(['title' => 'First']);
         $second = Task::factory()->create(['title' => 'Second']);
         $resolver = $this->app->make(TaskResolver::class);
@@ -83,6 +86,7 @@ final class TaskReadsTest extends TestCase
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
+
         $task = Task::factory()->create(['title' => 'Found']);
         $firstMissing = TestIds::of(999999);
 

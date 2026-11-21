@@ -26,6 +26,7 @@ final readonly class RecordScriptStepResultHandler implements CommandHandler
 
         if (! $run->hasRecordedStep($command->stepReference)) {
             $run->resumeAfter($command->stepReference);
+
             ProfileStepResult::create(
                 $run,
                 $command->stepReference,

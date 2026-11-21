@@ -39,6 +39,7 @@ final class LifecycleAnswers
             $frame->reference,
             $stage,
         );
+
         $this->answers[] = new LifecycleAnswer($origin, $commands);
     }
 

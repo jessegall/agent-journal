@@ -73,6 +73,7 @@ final class PlanInputLimitsTest extends TestCase
             CommandInputInvalid::class,
             "{$field}:",
         );
+
         $this->assertSame(0, Plan::query()->count());
     }
 

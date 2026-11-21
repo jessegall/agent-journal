@@ -46,11 +46,13 @@ final readonly class PlanShareProvider implements ShareRecordProvider
                 array_filter($read->targets, fn (RecordIdentity $target) => $target->type === Plan::LINK_TYPE),
             ),
         );
+
         $cards = array_values(
             Plan::query()->whereKey($ids)->readExactly(count($ids))->get(self::SUMMARY_COLUMNS)->map(
                 fn (Plan $plan) => $plan->shareCard(),
             )->all(),
         );
+
         $publishedPlanIds = array_map(fn (ShareRecordCard $card) => $card->record->id, $cards);
 
         foreach ($cards as $card) {

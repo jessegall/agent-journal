@@ -34,6 +34,7 @@ final readonly class RunSnapshotResolver
             ->where('project_key', $this->projects->current())
             ->whereKey($runId)
             ->firstOr(fn () => throw new NotFoundHttpException());
+
         $parts = $run->parts()->orderBy('syntax_node')->orderBy('attempt')->readLimit(500)->get();
 
         return RunSnapshotData::from([
@@ -48,10 +49,12 @@ final readonly class RunSnapshotResolver
     private function partOf(PartRun $part): PartSnapshotData
     {
         $activity = $this->activity->ofPart($part);
+
         $position = ReaderPosition::query()
             ->where('part_run_id', $part->id)
             ->where('purpose', PositionPurpose::Live->value)
             ->first();
+
         $assessment = OutputAssessment::latestOf($part);
         $receipt = $this->receipts->forPart($part->id);
         $receipt = $receipt->isDefined() ? $receipt->get()->receiptId : null;

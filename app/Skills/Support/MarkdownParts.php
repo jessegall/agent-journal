@@ -99,6 +99,7 @@ final readonly class MarkdownParts implements MarkdownPartsContract
     {
         $outline = array_values(array_filter($markdown->sections, fn (Section $section) => $section->level > 0));
         $title = $outline[0] ?? null;
+
         $textBeforeTitle = array_filter(
             $markdown->sections,
             fn (Section $section) => $section->level === 0 && trim(

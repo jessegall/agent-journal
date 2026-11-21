@@ -37,6 +37,7 @@ final readonly class CleanProcessOutputHandler implements CommandHandler
 
         $parts = PartRun::query()->whereIn('process_run_id', $runs->modelKeys())->readLimit(5_000)->get();
         $chunks = OutputChunk::query()->whereIn('part_run_id', $parts->modelKeys())->readLimit(100_000)->get();
+
         $preview = new CleanPreview(
             array_values($runs->modelKeys()),
             array_values($parts->modelKeys()),

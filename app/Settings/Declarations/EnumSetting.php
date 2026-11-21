@@ -67,6 +67,7 @@ final readonly class EnumSetting implements OptionSetting
         $backing = $type->backingType()->get() === 'int'
             ? SettingType::Integer
             : SettingType::String;
+
         $options = array_map(fn (BackedEnum $case) => self::choiceOf($case), $enum::cases());
 
         return new self($key, $label, $enum, $default, $backing, ChoiceOptions::check($key, $options, $default->value));

@@ -62,9 +62,11 @@ final class HelperCommandsTest extends TestCase
         $this->artisan('helper:steer', ['identity' => $receipt->identityId, 'text' => 'Look at the tests too'])
             ->expectsOutputToContain("Steered job {$receipt->jobId}.")
             ->assertSuccessful();
+
         $this->artisan('helper:cancel', ['identity' => $receipt->identityId, '--job' => $receipt->jobId])
             ->expectsOutputToContain("Cancelled job {$receipt->jobId}")
             ->assertSuccessful();
+
         $this->artisan('helper:notices')->assertSuccessful();
 
         $job = HelperJob::query()->acrossActors()->findOrFail($receipt->jobId);

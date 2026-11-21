@@ -28,6 +28,7 @@ final readonly class ScriptCompiler
             $graph->addTerminal($policy->fallthrough);
             $graph->addTerminal($policy->failure);
             $graph->addTerminal($policy->returnToActor);
+
             $context = CompileContext::forHandler(
                 $this->keywords,
                 $this->objects,
@@ -35,6 +36,7 @@ final readonly class ScriptCompiler
                 $source->definitions(),
                 $policy,
             );
+
             $handlerEntries[$trigger->token] = [
                 'entry' => $context->compileBlock($handler->statements),
                 'policy' => $policy,

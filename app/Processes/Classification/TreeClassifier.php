@@ -374,7 +374,9 @@ final readonly class TreeClassifier implements CommandClassifier
                 $program->family,
                 substr($line, 1),
             ) : $line;
+
             $inner = $this->classifyTree($this->syntax->parse($source, ShellDialect::Bash), $depth + 1, $context);
+
             $facts = array_map(
                 fn (ClassFact $fact) => new ClassFact(
                     $fact->class,
@@ -384,9 +386,11 @@ final readonly class TreeClassifier implements CommandClassifier
                 ),
                 $inner->facts(),
             );
+
             $contracts = array_merge(
                 ...array_map(fn (PartClassification $part): array => $part->contracts, $inner->parts),
             );
+
             $children[] = new PartClassification(
                 $node,
                 $facts,
@@ -463,6 +467,7 @@ final readonly class TreeClassifier implements CommandClassifier
             $depth + 1,
             $context->insideAlias($alias->id, array_values(array_filter($literalArguments, 'is_string'))),
         );
+
         $facts = array_map(
             fn (ClassFact $fact) => new ClassFact(
                 $fact->class,
@@ -472,6 +477,7 @@ final readonly class TreeClassifier implements CommandClassifier
             ),
             $inner->facts(),
         );
+
         $contracts = array_merge(...array_map(fn (PartClassification $part): array => $part->contracts, $inner->parts));
 
         return new PartClassification(
@@ -534,6 +540,7 @@ final readonly class TreeClassifier implements CommandClassifier
             ),
             $wrapper->classes->classes,
         );
+
         $unresolved = [];
         $index = 1;
 
@@ -672,6 +679,7 @@ final readonly class TreeClassifier implements CommandClassifier
             $depth + 1,
             $context,
         );
+
         $source = new PartClassification(
             $node,
             $inner->facts(),
@@ -721,6 +729,7 @@ final readonly class TreeClassifier implements CommandClassifier
                     $depth + 1,
                     $context,
                 );
+
                 $index = $end;
 
                 continue;
@@ -806,6 +815,7 @@ final readonly class TreeClassifier implements CommandClassifier
                 '=',
                 true,
             ) : false;
+
             $unresolved = $name === false ? $unresolved : [
                 ...$unresolved,
                 ...$this->contextAssignment(rtrim($name, '+'), $node->id),

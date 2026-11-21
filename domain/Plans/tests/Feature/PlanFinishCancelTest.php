@@ -72,6 +72,7 @@ final class PlanFinishCancelTest extends TestCase
             PlanHasUnfinishedTasks::class,
             '2 unfinished tasks',
         );
+
         $this->assertSame(PlanState::Started, $plan->fresh()?->state);
         Event::assertNotDispatched(PlanFinished::class);
     }
@@ -86,7 +87,9 @@ final class PlanFinishCancelTest extends TestCase
             [PlanState::Done, 'Shipped.', 2],
             [$plan->fresh()?->state, $plan->fresh()?->finish_note, $plan->fresh()?->revision],
         );
+
         Event::assertDispatchedTimes(PlanFinished::class, 1);
+
         Event::assertDispatched(
             PlanFinished::class,
             fn (PlanFinished $finished) => $finished->finishedBy == ActorContext::forUser($this->owner->id),
@@ -96,10 +99,12 @@ final class PlanFinishCancelTest extends TestCase
     public function test_cancelling_keeps_every_task_and_assignment(): void
     {
         $plan = $this->startedPlan([TaskState::Open, TaskState::Started]);
+
         $this->app->make(AssignmentWriterInTransaction::class)->assign(
             $plan->assignmentIdentity(),
             new AssigneeIdentity(ActorType::User->value, $this->owner->id),
         );
+
         $assignments = AssignmentRecord::query()->withoutGlobalScopes()->count();
 
         $this->bus()->run(new CancelPlan($plan->id, 1, 'Superseded.'));
@@ -108,10 +113,12 @@ final class PlanFinishCancelTest extends TestCase
             [PlanState::Cancelled, 'Superseded.'],
             [$plan->fresh()?->state, $plan->fresh()?->cancel_reason],
         );
+
         $this->assertSame(
             [TaskState::Open, TaskState::Started],
             Task::query()->whereKey($plan->taskIds())->orderBy('number')->pluck('state')->all(),
         );
+
         $this->assertSame($assignments, AssignmentRecord::query()->withoutGlobalScopes()->count());
         Event::assertDispatchedTimes(PlanCancelled::class, 1);
     }
@@ -133,6 +140,7 @@ final class PlanFinishCancelTest extends TestCase
     {
         $plan = Plan::factory()->create();
         $plan->startOnce(ActorContext::forUser($this->owner->id));
+
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($plan, 'Work'),
             array_map(fn (TaskState $state): string => $this->taskIn($state)->id, $states),

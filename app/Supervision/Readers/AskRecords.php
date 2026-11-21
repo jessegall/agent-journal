@@ -68,6 +68,7 @@ final readonly class AskRecords implements AskReader
         return array_map(function (Ask $ask) use ($assignments, $holder, $replies): AskCard {
             $assigned = $assignments->forRecord($ask->assignmentIdentity())
                 ->map(fn (Assignment $assignment) => $assignment->holder());
+
             $current = $assigned->getOrElse(null);
 
             return AskCard::from([

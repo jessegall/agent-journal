@@ -29,6 +29,7 @@ final class DocRevisionCommand extends Command
                 (string) $this->argument('number'),
                 (int) $this->argument('revision'),
             );
+
             $historicalLabel = $revision->historical ? ' (historical)' : '';
 
             return CommandReport::ending(self::SUCCESS)

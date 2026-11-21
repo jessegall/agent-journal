@@ -92,25 +92,32 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
             AutoAssignmentDeclarationRefused::ownerUnknown(...),
             AutoAssignmentDeclarationRefused::ownerRepeated(...),
         );
+
         $this->recordProviders = Registry::once(
             AssignmentTypeUnavailable::forType(...),
             AssignmentTypeRepeated::for(...),
         );
+
         $this->recordOwners = Registry::replacing(AssignmentTypeUnavailable::forType(...));
         $this->recordPurposes = Registry::replacing(AssignmentTypeUnavailable::forType(...));
+
         $this->autoAssigners = Registry::once(
             AssignmentTypeUnavailable::forAutoAssignment(...),
             AutoAssignmentDeclarationRefused::assignerRepeated(...),
         );
+
         $this->pools = Registry::once(
             AssignmentTypeUnavailable::forPool(...),
             AutoAssignmentDeclarationRefused::poolRepeated(...),
         );
+
         $this->poolOwners = Registry::replacing(AssignmentTypeUnavailable::forPool(...));
+
         $this->assigneeProviders = Registry::once(
             AssignmentTypeUnavailable::forType(...),
             AssigneeTypeRepeated::for(...),
         );
+
         $this->activities = Registry::once(
             fn (string $type) => AssignmentTypeUnavailable::forActorType(ActorType::from($type)),
             AssigneeTypeRepeated::for(...),
@@ -374,6 +381,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
     {
         foreach ($this->pools->all() as $key => $pool) {
             $owner = $this->poolOwners->get($key);
+
             $recordOwner = $this->recordOwners->find($pool->assignableType)
                 ->getOrThrow(AutoAssignmentDeclarationRefused::typeNotAssignable($pool->assignableType, $owner));
 

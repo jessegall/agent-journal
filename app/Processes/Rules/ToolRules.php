@@ -72,6 +72,7 @@ final readonly class ToolRules
             OptionGrammar::flag('--paginate'),
             OptionGrammar::valued(OperandType::Text, '-H', '--header'),
         );
+
         $rules[] = CommandRule::forProgram('core.gh.api-read', $gh, ['api'], $api, $read);
 
         return $rules;
@@ -123,21 +124,25 @@ final readonly class ToolRules
         $docker = new ProgramSpellings('docker');
         $read = CommandClassSet::of(CommandClass::Read);
         $process = CommandClassSet::of(CommandClass::ProcessControl, CommandClass::Write);
+
         $listing = $nameOperands->repeating()->withOptions(
             OptionGrammar::flag('-a', '--all'),
             OptionGrammar::flag('-q', '--quiet'),
             OptionGrammar::valued(OperandType::Text, '--format'),
         );
+
         $logs = $nameOperands->repeating()->withOptions(
             OptionGrammar::valued(OperandType::Count, '--tail', '-n'),
             OptionGrammar::valued(OperandType::Text, '--since'),
         );
+
         $build = ArgumentGrammar::operands(OperandType::Path)->withOptions(
             OptionGrammar::valued(OperandType::Name, '-t', '--tag'),
             OptionGrammar::valued(OperandType::Path, '-f', '--file'),
             OptionGrammar::flag('--no-cache'),
             OptionGrammar::valued(OperandType::Text, '--progress'),
         );
+
         $up = $nameOperands->repeating()->withOptions(
             OptionGrammar::flag('-d', '--detach'),
             OptionGrammar::flag('--build'),
@@ -190,16 +195,19 @@ final readonly class ToolRules
         $sqlite = new ProgramSpellings('sqlite3');
         $query = ArgumentGrammar::operands(OperandType::Path, OperandType::Text)->requiringOperands(1);
         $readOnly = $query->withOptions(OptionGrammar::flag('-readonly')->required(), $jsonFlag);
+
         $login = ArgumentGrammar::operands(OperandType::Name)->requiringOperands(1)->withOptions(
             OptionGrammar::valued(OperandType::Count, '-p'),
             OptionGrammar::valued(OperandType::Path, '-i'),
         );
+
         $information = ArgumentGrammar::none()->withOptions(
             OptionGrammar::flag('-v', '--version'),
             OptionGrammar::flag('-m'),
             OptionGrammar::flag('-i'),
             OptionGrammar::valued(OperandType::Path, '-l'),
         );
+
         $php = new ProgramSpellings('php', ['php8.1', 'php8.2', 'php8.3', 'php8.4', 'php8.5']);
         $read = CommandClassSet::of(CommandClass::Read);
 
@@ -233,11 +241,13 @@ final readonly class ToolRules
         $names = ArgumentGrammar::operands(OperandType::Name)->repeating()->withOptions(OptionGrammar::flag('--json'));
         $networkRead = CommandClassSet::of(CommandClass::Network, CommandClass::Read);
         $read = CommandClassSet::of(CommandClass::Read);
+
         $vitest = ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(
             OptionGrammar::valued(OperandType::Pattern, '-t', '--testNamePattern'),
             OptionGrammar::valued(OperandType::Text, '--reporter'),
             OptionGrammar::flag('--coverage'),
         );
+
         $check = CommandClassSet::of(CommandClass::Verification, CommandClass::Read);
 
         return [

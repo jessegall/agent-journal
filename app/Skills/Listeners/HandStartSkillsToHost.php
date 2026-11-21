@@ -43,11 +43,13 @@ final readonly class HandStartSkillsToHost implements Listener
 
         $delivery = $this->adapters->for(DriverKey::from($publication->driver))->delivery();
         $files = PublicationFiles::of($publication, $this->targets, $this->adapters)->files;
+
         $event->additions->addFolder(new StartFolder(
             $delivery->folder,
             array_map(fn (string $path) => new StartFile($path, $files[$path]), array_keys($files)),
             $delivery->folderArguments,
         ));
+
         AgentSession::byId($event->sessionId)->recordSkillGeneration($publication->generation_id);
     }
 }

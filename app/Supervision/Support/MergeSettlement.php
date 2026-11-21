@@ -36,10 +36,12 @@ final readonly class MergeSettlement
 
         $ask = Ask::lockedForMaintenance($attempt->ask_id);
         $hop = AskHop::currentFor($ask);
+
         $summary = match ($attempt->state) {
             MergeAttemptState::Merged => "Merged as {$attempt->result} onto {$attempt->target_branch}.",
             default => "Not merged ({$attempt->state->value}): {$attempt->evidence}",
         };
+
         $this->attention->retainReply($ask, $hop, $summary);
 
         if ($attempt->state === MergeAttemptState::Merged || $attempt->refusal?->needsRepair() === true) {
@@ -57,6 +59,7 @@ final readonly class MergeSettlement
 
         if ($attempt->refusal?->needsRepair() === true) {
             $review = CodeReview::query()->where('certificate', $attempt->certificate)->sole();
+
             $this->repairs->send(
                 "merge:{$attempt->id}",
                 $review,

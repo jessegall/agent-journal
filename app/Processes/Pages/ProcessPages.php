@@ -64,11 +64,13 @@ final class ProcessPages implements PageProvider
             ApproveSamplePageController::class,
             'approve-sample',
         );
+
         $approve = ActionRoute::post(
             'proposals/{proposal}/approval',
             ApproveProposalPageController::class,
             'approve-proposal',
         );
+
         $reject = ActionRoute::post(
             'proposals/{proposal}/rejection',
             RejectProposalPageController::class,

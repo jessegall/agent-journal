@@ -52,10 +52,12 @@ final class PlanRecordsTest extends TestCase
         $done = Task::factory()->create(['title' => 'Done']);
         $done->finish('Done.');
         $this->planStructure()->addTasks($read, [$done->id]);
+
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($this->build, 'Start'),
             [Task::factory()->create(['title' => 'Open'])->id],
         );
+
         $this->empty = Plan::factory()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
     }
 
@@ -77,6 +79,7 @@ final class PlanRecordsTest extends TestCase
     {
         $agent = Agent::create('Planner', 'main-agent');
         $this->app->instance(CurrentSession::class, new FixedSession(TestIds::of(10)));
+
         $this->app->instance(
             CurrentState::class,
             new FixedCurrentState(
@@ -84,10 +87,12 @@ final class PlanRecordsTest extends TestCase
                 [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateReference::forPlan($this->build->id)],
             ),
         );
+
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($agent->id),
             TestStartAuthority::forAgent($agent->id),
         );
+
         $this->app->make(AssignmentWriterInTransaction::class)->assign(
             $this->build->assignmentIdentity(),
             AssigneeIdentity::of($agent),
@@ -99,6 +104,7 @@ final class PlanRecordsTest extends TestCase
             [$this->build->id, 'Planner', true],
             [$cards[0]->id, $cards[0]->holder->get()->name, $cards[0]->focused],
         );
+
         $this->assertTrue($cards[0]->holder->get()->holder()->isSameAs(AssigneeIdentity::of($agent)));
     }
 
@@ -132,6 +138,7 @@ final class PlanRecordsTest extends TestCase
         $inside = $this->records()->list(
             new PlanFilters(search: 'release', selectedPlanId: $this->build->id),
         )->selection;
+
         $outside = $this->records()->list(
             new PlanFilters(search: 'release', selectedPlanId: $this->empty->id),
         )->selection;

@@ -50,6 +50,7 @@ final readonly class PhaseTiming implements VerificationTiming
                 $holder,
                 new Page($afterId, Page::LARGEST_LIMIT),
             );
+
             $started = Plan::query()->amongIds($page->ids)->inStates([PlanState::Started])
                 ->orderBy('id')->readExactly(count($page->ids))->get();
 

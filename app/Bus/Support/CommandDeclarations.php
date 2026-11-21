@@ -60,6 +60,7 @@ final readonly class CommandDeclarations
     public function grammarFor(CommandOwner $owner): CommandGrammar
     {
         $owners = $this->owners;
+
         $exportsTo = static fn (CommandOwner $other, string $class): bool => $other->exportsClass($class)
             && ($other->name === CommandOwner::CORE || $owner->requiresOwner($other->name));
 

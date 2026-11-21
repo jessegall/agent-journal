@@ -27,6 +27,7 @@ final readonly class DocumentDockResolver implements SectionResolver
             ->latest('id')
             ->limit(self::SUGGESTIONS_SHOWN)
             ->get();
+
         $reports = Report::query()
             ->inAttention(AttentionState::Active)
             ->latest('id')

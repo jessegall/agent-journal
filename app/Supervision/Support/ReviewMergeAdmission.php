@@ -43,11 +43,13 @@ final readonly class ReviewMergeAdmission implements MergeAdmission
         }
 
         $ask = new AskReference($approval->merge_ask_id);
+
         $admitted = $this->admission->requireCurrent(
             $ask,
             CoreAskType::MergeReady->requiredCommand(),
             $expectedVersion,
         );
+
         $review = $approval->review;
 
         return new ApprovedHead(

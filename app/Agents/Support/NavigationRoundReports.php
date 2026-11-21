@@ -72,6 +72,7 @@ final readonly class NavigationRoundReports
             $stalled->recordScriptProgress(
                 new ScriptProgress($navigation->stalled_step, $report->generation, $evidence),
             );
+
             $stalled->markApplied('navigation');
 
             return;
@@ -80,6 +81,7 @@ final readonly class NavigationRoundReports
         $stalled->recordScriptProgress(
             new ScriptProgress((int) $navigation->next_step, $report->generation, $evidence),
         );
+
         $stalled->retry();
     }
 }

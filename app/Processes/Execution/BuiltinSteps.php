@@ -136,6 +136,7 @@ final readonly class BuiltinSteps
 
         do {
             $pass = array_splice($arguments, 0, $perPass);
+
             $output .= (string) preg_replace_callback('/%([sd%])/', function (array $match) use (&$pass): string {
                 return match ($match[1]) {
                     '%' => '%',

@@ -173,6 +173,7 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
         $invitation->issuance_key = $issuanceKey;
         $invitation->expires_at = CarbonImmutable::now()->addMinutes(self::LIFETIME_MINUTES);
         $invitation->assertSaved($invitation->save());
+
         $invitation->raise(
             new ProjectInvitationIssued($invitation->id, $invitation->expires_at, CarbonImmutable::now()),
         );

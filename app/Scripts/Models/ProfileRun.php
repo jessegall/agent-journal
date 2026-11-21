@@ -101,6 +101,7 @@ final class ProfileRun extends Model implements ReadableModel
         string $reference,
     ): self {
         $runs = self::query()->acrossActors()->ownedBy($actor)->where('work', $work->key);
+
         $run = (clone $runs)->where('trigger_reference', $reference)->first()
             ?? (clone $runs)->whereIn('state', ProfileRunState::unfinished())->first();
 

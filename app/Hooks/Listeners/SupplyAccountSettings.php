@@ -33,6 +33,7 @@ final class SupplyAccountSettings implements Listener
 
         $compatibility = $this->compatibilities->for($driver);
         $compatibility->assertStartable();
+
         $event->settings->holdFor(
             $compatibility->version,
             $compatibility->binaryDigest,

@@ -112,6 +112,7 @@ final class HookPayload extends Data
         $named = $arguments->presentTexts('file_path', 'path');
         $searched = ProtectedFileRead::resolve($folder, $named[0] ?? '.');
         $pattern = $arguments->textArgument('pattern');
+
         $patternFolder = is_string($pattern) && strcspn($pattern, '*?[{') < strlen($pattern)
             ? [ProtectedFileRead::patternFolder($searched, $pattern)]
             : [];

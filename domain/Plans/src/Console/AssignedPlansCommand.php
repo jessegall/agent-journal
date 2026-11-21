@@ -28,6 +28,7 @@ final class AssignedPlansCommand extends Command
     public function handle(PlanCalls $plans): int
     {
         $search = (string) $this->option('search');
+
         $call = ListAssignedPlansCall::from([
             'search' => $search === '' ? null : $search,
             'states' => array_values(array_map(strval(...), (array) $this->option('state'))),
@@ -42,6 +43,7 @@ final class AssignedPlansCommand extends Command
         return $this->runReport(function () use ($plans, $call): int {
             $assignedPlanPage = $plans->listAssignedPlans($call->search, $call->states, $call->page, $call->perPage);
             $headers = ['Id', 'Title', 'Type', 'State', 'Holder', 'Reference'];
+
             $this->table($headers, array_map(fn (AssignedPlanCardData $card) => [
                 $card->id,
                 $card->title,
@@ -50,6 +52,7 @@ final class AssignedPlansCommand extends Command
                 $card->holder->label(),
                 $card->holder->reference,
             ], $assignedPlanPage->cards));
+
             $this->line(
                 "Page {$assignedPlanPage->page}: ".count($assignedPlanPage->cards)." of {$assignedPlanPage->total}",
             );

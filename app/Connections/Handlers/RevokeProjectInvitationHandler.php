@@ -19,6 +19,7 @@ final readonly class RevokeProjectInvitationHandler implements CommandHandler
     {
         $invitation = ProjectInvitation::lockPending($command->invitationId);
         $invitation->revoke();
+
         ConnectionAudit::ofInvitation(
             ConnectionAuditType::InvitationRevoked,
             $command->dispatchedBy()->actorId(),

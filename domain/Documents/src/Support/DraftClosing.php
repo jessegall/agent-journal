@@ -92,6 +92,7 @@ final readonly class DraftClosing
         $draft = DocumentDraft::query()->where('document_id', $document->id)->where('token', $target->token)->firstOr(
             fn () => throw DraftMissing::forDocument($document->number),
         );
+
         $requireCloser($draft);
 
         if ($target->expectedVersion !== null) {
@@ -126,6 +127,7 @@ final readonly class DraftClosing
             $draft->author_type,
             $draft->author_id,
         );
+
         $close = DocumentClose::create($document, $draft, $revision->number, $cause, $closer, $reason, true);
         $document->publish($revision);
         $this->provenance->inherit($revision, $draft);

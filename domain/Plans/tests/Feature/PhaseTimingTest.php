@@ -48,10 +48,12 @@ final class PhaseTimingTest extends TestCase
         $this->agent = Agent::create('Worker', 'writing-helper');
         $this->plan = Plan::factory()->create(['title' => 'Phase timing', 'state' => PlanState::Started]);
         $this->tasks = [Task::factory()->create(['title' => 'First']), Task::factory()->create(['title' => 'Second'])];
+
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($this->plan, 'Build'),
             array_map(fn (Task $task): string => $task->id, $this->tasks),
         );
+
         $this->startUserRequestAs(TestIds::of(7));
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $writer->assign($this->plan->assignmentIdentity(), AssigneeIdentity::of($this->agent));

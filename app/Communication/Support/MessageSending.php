@@ -122,11 +122,13 @@ final readonly class MessageSending
         $destination = $this->inboxes->resolve($destinationInboxId);
         $this->lockShared([$source, $destination]);
         $this->assertSourceAccess($source, $author);
+
         $message = Message::create(
             $envelope($source, $destination, ActorIdentity::of($author)),
             new AcceptedOperation($this->accepted->requireFor(self::class)),
             $author->type->isAgent() && $this->session->hasSession() ? $this->session->sessionId() : null,
         );
+
         $this->attention->requestFor($destination, AttentionOrigin::message($message->id, $message->origin_receipt_id));
 
         return $message;

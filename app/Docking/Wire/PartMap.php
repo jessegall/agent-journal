@@ -68,33 +68,40 @@ final class PartMap
         $map->part(Stack::class, PartType::Stack);
         $map->part(Row::class, PartType::Row, EnumField::named('alignment', Alignment::class));
         $map->part(Group::class, PartType::Group, $labelField);
+
         $map->part(
             Disclosure::class,
             PartType::Disclosure,
             TextField::named('title'),
             EnumField::named('initial', DisclosureState::class),
         );
+
         $map->part(Title::class, PartType::Title, $textField);
         $map->part(Subtitle::class, PartType::Subtitle, $textField);
+
         $map->part(
             StateLabel::class,
             PartType::StateLabel,
             $textField,
             EnumField::named('tone', Tone::class),
         );
+
         $map->part(
             CountedProgress::class,
             PartType::CountedProgress,
             NumberField::named('completed'),
             NumberField::named('total'),
         );
+
         $map->part(IndeterminateProgress::class, PartType::IndeterminateProgress, $labelField);
+
         $map->part(
             Duration::class,
             PartType::Duration,
             InstantField::named('startedAt'),
             InstantField::optional('finishedAt'),
         );
+
         $map->part(
             ConsoleOutput::class,
             PartType::ConsoleOutput,
@@ -103,12 +110,14 @@ final class PartMap
             FlagField::named('truncated'),
             $openField,
         );
+
         $map->part(
             ChatExcerpt::class,
             PartType::ChatExcerpt,
             ExcerptField::named('messages'),
             $openField,
         );
+
         $map->part(
             Button::class,
             PartType::Button,
@@ -116,6 +125,7 @@ final class PartMap
             EnumField::named('emphasis', Emphasis::class),
             DestinationField::named('target'),
         );
+
         $map->assertEveryTypeMapped();
 
         return $map;

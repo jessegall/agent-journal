@@ -62,6 +62,7 @@ final class PlanBuilder
 
         if (StepType::isControl($node->type)) {
             $control = StepType::ofControl($node->type);
+
             $children = array_map(
                 fn (ShellNode $child) => $this->step(
                     $child->id,
@@ -94,6 +95,7 @@ final class PlanBuilder
                 ),
             ),
         );
+
         $children = array_map(
             fn (ShellNode $substitution) => PlanStep::from([
                 'type' => StepType::Substitution,
@@ -106,7 +108,9 @@ final class PlanBuilder
             ]),
             $substitutions,
         );
+
         $argv = array_map(fn (Word $word) => $this->planWord($word, $node, $substitutions), $node->words);
+
         $redirects = array_map(
             fn ($redirect) => new PlanRedirect(
                 $redirect->descriptor,
@@ -117,6 +121,7 @@ final class PlanBuilder
             ),
             $node->redirects,
         );
+
         $assignments = $this->assignments($node, $substitutions);
         $program = $argv === [] ? null : $argv[0]->literal();
 

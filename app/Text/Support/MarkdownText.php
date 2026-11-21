@@ -211,6 +211,7 @@ final readonly class MarkdownText
 
         for ($number = $first; $number <= $last; $number++) {
             $line = $lines[$number - 1];
+
             $kept = (! $selection->bullets || preg_match('/^\s*([-*+]|\d+[.)])\s/', $line) === 1)
                 && ($selection->words === null || mb_stripos($line, $selection->words) !== false);
 
@@ -284,6 +285,7 @@ final readonly class MarkdownText
 
         $replaced = array_slice($lines, $section->firstLine - 1, $section->lastLine - $section->firstLine + 1);
         $blankLinesAfter = count($replaced) - count(self::withoutTrailingBlankLines($replaced));
+
         array_splice(
             $lines,
             $section->firstLine - 1,
@@ -375,6 +377,7 @@ final readonly class MarkdownText
         }
 
         $html = (string) new MarkdownConverter($environment)->convert($text);
+
         $html = (string) preg_replace(
             '/<img src="([^"]*)" alt="([^"]*)"[^>]*>/',
             '<a href="$1" rel="noopener noreferrer">$2</a>',

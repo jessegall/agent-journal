@@ -220,6 +220,7 @@ final readonly class LineAdmission implements ShellAdmission
         $code = $permissions->deniedPatterns->matchesAny($argv)
             ? AdmissionRefusalCode::CommandDenied
             : AdmissionRefusalCode::ClassDenied;
+
         $classes = implode(', ', $classes->toArray());
 
         $reason = "Your permissions do not admit {$classes}.";
@@ -266,6 +267,7 @@ final readonly class LineAdmission implements ShellAdmission
         $plan = $this->planner->plan($tree, $classification);
         $policy = $this->permissions->forActor($actor);
         $references = array_map(fn (ClassFact $fact): string => $fact->origin->reference(), $classification->facts());
+
         $stored = ProcessRun::create($actor, new RunAdmission(
             $requestKey,
             RunMode::Normal,

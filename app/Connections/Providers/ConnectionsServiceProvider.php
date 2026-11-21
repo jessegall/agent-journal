@@ -35,6 +35,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
             ConnectionsPolicy::class,
             [AccessType::Create, AccessType::Edit],
         ));
+
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/connections.php');
     }
 }

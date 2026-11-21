@@ -58,6 +58,7 @@ final class PlanAuthoringTest extends TestCase
                 ['brief', 'creator_type', 'creator_id', 'revision', 'finish_note', 'cancel_reason'],
             ),
         );
+
         $this->assertTrue(Schema::hasColumn('phases', 'revision'));
     }
 
@@ -75,10 +76,12 @@ final class PlanAuthoringTest extends TestCase
         )->assertOk()->json('plan_id');
 
         $plan = Plan::query()->findOrFail($planId);
+
         $this->assertSame(
             ['Ship version 6.', PlanType::Build, PlanState::Planned, 1],
             [$plan->brief, $plan->type, $plan->state, $plan->revision],
         );
+
         $this->assertSame([ActorType::Agent, $this->start->agent->id], [$plan->creator_type, $plan->creator_id]);
     }
 
@@ -123,6 +126,7 @@ final class PlanAuthoringTest extends TestCase
     public function test_a_stale_phase_revision_adds_nothing(): void
     {
         $phase = $this->planStructure()->addPhase(Plan::factory()->create(), 'Build');
+
         $this->signed(
             $this->start,
             '/agent/plans/phases/add-tasks',
@@ -165,6 +169,7 @@ final class PlanAuthoringTest extends TestCase
                 'request_key' => bin2hex(random_bytes(8)),
             ],
         )->assertConflict();
+
         $this->signed(
             $this->start,
             '/agent/plans/edit',
@@ -180,6 +185,7 @@ final class PlanAuthoringTest extends TestCase
             ['Second', 'Third brief', PlanType::Fix, 3],
             [$plan->fresh()?->title, $plan->fresh()?->brief, $plan->fresh()?->type, $plan->fresh()?->revision],
         );
+
         $this->assertSame($assignments, AssignmentRecord::query()->withoutGlobalScopes()->count());
     }
 

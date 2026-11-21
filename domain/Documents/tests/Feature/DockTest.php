@@ -61,11 +61,13 @@ final class DockTest extends TestCase
         parent::setUp();
 
         $start = $this->app->make(StartSessions::class);
+
         $this->builderSession = $start->start(
             Agent::create('Builder', 'main-agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;
+
         $this->reviewerSession = $start->start(
             Agent::create('Reviewer', 'main-agent'),
             TestSelections::of('claude-code'),
@@ -82,6 +84,7 @@ final class DockTest extends TestCase
         $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
 
         $this->assertFalse(Schema::hasTable('record_docks'));
+
         $this->assertEqualsCanonicalizing(
             [['report', '1'], ['doc', '1']],
             array_map(fn ($card) => [$card->type, $card->number], $this->dockOf($this->builderSession)->suggestions),
@@ -109,6 +112,7 @@ final class DockTest extends TestCase
             ActorContext::forAgent($session->agent_id),
             TestStartAuthority::forAgent($session->agent_id),
         );
+
         $this->app->instance(
             AgentContext::class,
             new AgentContext(

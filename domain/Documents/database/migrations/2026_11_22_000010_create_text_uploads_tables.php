@@ -22,6 +22,7 @@ return new class extends Migration
             $table->timestampTz('consumed_at')->nullable();
             $table->timestampsTz();
         });
+
         Schema::create('text_upload_chunks', function (Blueprint $table): void {
             $table->ulid('id')->primary();
             $table->foreignUlid('upload_id')->constrained('text_uploads')->cascadeOnDelete();

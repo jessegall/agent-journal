@@ -31,6 +31,7 @@ final readonly class ReportRecords implements ReportResolver
     public function list(DocumentFilters $filters): PublicationList
     {
         $size = $filters->pageSize()->rows;
+
         $reports = Report::query()->sharedPublished()->inAttention($filters->attention->state())
             ->when($filters->searches(), fn (Builder $query) => $query->matchingText($filters->query))
             ->when(
@@ -41,6 +42,7 @@ final readonly class ReportRecords implements ReportResolver
             ->orderByDesc('id')
             ->limit($size + 1)
             ->get();
+
         $page = $reports->take($size);
 
         return PublicationList::from([

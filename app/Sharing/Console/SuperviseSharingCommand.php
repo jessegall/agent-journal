@@ -59,11 +59,13 @@ final class SuperviseSharingCommand extends Command
         pcntl_signal(SIGINT, fn () => $this->stopping = true);
         $supervisor->begin();
         $this->info("Sharing supervisor run {$supervisor->runId} on {$host}:{$port}.");
+
         $timers = [
             new SupervisorTimer($healthSeconds, $supervisor->checkHealth(...)),
             new SupervisorTimer($expirySeconds, $supervisor->expire(...)),
             new SupervisorTimer($auditPruneSeconds, $supervisor->pruneAudit(...)),
         ];
+
         $healthy = true;
 
         while (! $this->stopping && $healthy) {

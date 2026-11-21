@@ -75,14 +75,17 @@ final class TaskDetailsResolverTest extends TestCase
         $runner = $this->start('Runner');
         $task = Task::factory()->create(['title' => 'Split work', 'brief' => 'Held by one, run by another.']);
         $this->asUser();
+
         $this->app->make(AssignmentWriterInTransaction::class)->assign(
             $task->assignmentIdentity(),
             $desk->assigneeIdentity(),
         );
+
         $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeating::class)->seat(
             $desk->id,
             new ActorIdentity(ActorType::Agent, $runner->agent_id),
         ));
+
         $this->actAs($runner);
         $this->app->make(CommandBus::class)->run(new StartTask($task->id));
         $this->asUser();
@@ -90,6 +93,7 @@ final class TaskDetailsResolverTest extends TestCase
         $details = $this->app->make(TaskDetailsResolver::class)->details($task->id, ReadView::Context);
 
         $this->assertSame($desk->id, $details->holder->get()->holder()->id);
+
         $this->assertSame(
             [$runner->agent_id, 'Runner', 1, TaskState::Started],
             [
@@ -99,7 +103,9 @@ final class TaskDetailsResolverTest extends TestCase
                 $details->execution?->state,
             ],
         );
+
         $this->assertSame('Held by one, run by another.', $details->text->brief);
+
         $this->assertInstanceOf(
             Optional::class,
             $this->app->make(TaskDetailsResolver::class)->details($task->id, ReadView::Summary)->text,
@@ -123,6 +129,7 @@ final class TaskDetailsResolverTest extends TestCase
 
         $this->asUser();
         $agentReads = 0;
+
         DB::listen(function (QueryExecuted $query) use (&$agentReads): void {
             $agentReads += str_contains($query->sql, 'from "agents"') ? 1 : 0;
         });
@@ -133,6 +140,7 @@ final class TaskDetailsResolverTest extends TestCase
             20,
             array_filter($taskPage->cards, fn ($card) => $card->execution?->actorLabel === 'Runner'),
         );
+
         // One read for the holders' names, now that starting a task gives it to its starter, and one for the runners.
         $this->assertSame(2, $agentReads);
     }
@@ -161,6 +169,7 @@ final class TaskDetailsResolverTest extends TestCase
     private function actAs(AgentSession $session): void
     {
         $this->app->forgetScopedInstances();
+
         $this->app->instance(
             AgentContext::class,
             new AgentContext(
@@ -170,6 +179,7 @@ final class TaskDetailsResolverTest extends TestCase
                 null,
             ),
         );
+
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($session->agent_id),
             TestStartAuthority::forAgent($session->agent_id),
@@ -179,6 +189,7 @@ final class TaskDetailsResolverTest extends TestCase
     private function asUser(): void
     {
         $this->app->forgetScopedInstances();
+
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser($this->owner->id),
             new OwnerAuthority('test'),

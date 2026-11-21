@@ -32,10 +32,12 @@ final class PlanDetailsResolverTest extends TestCase
     {
         $plan = Plan::factory()->create(['title' => 'Counted plan', 'brief' => 'Count it.']);
         $tasks = Task::factory()->count(3)->create();
+
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($plan, 'Work'),
             array_values($tasks->modelKeys()),
         );
+
         $tasks[0]->finish('Done.');
         $resolver = $this->app->make(PlanDetailsResolver::class);
 
@@ -56,14 +58,17 @@ final class PlanDetailsResolverTest extends TestCase
     public function test_a_plan_with_120_tasks_pages_them_50_at_a_time(): void
     {
         $plan = Plan::factory()->create();
+
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($plan, 'First'),
             array_values(Task::factory()->count(70)->create()->modelKeys()),
         );
+
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($plan, 'Second'),
             array_values(Task::factory()->count(50)->create()->modelKeys()),
         );
+
         $resolver = $this->app->make(PlanDetailsResolver::class);
         $seen = [];
         $offset = 0;
@@ -86,10 +91,12 @@ final class PlanDetailsResolverTest extends TestCase
     public function test_a_phase_read_lists_its_task_references_in_order(): void
     {
         $plan = Plan::factory()->create();
+
         [$first, $second] = [
             Task::factory()->create(['title' => 'First']),
             Task::factory()->create(['title' => 'Second']),
         ];
+
         $phase = $this->planStructure()->addPhase($plan, 'Work');
         $this->planStructure()->addTasks($phase, [$second->id, $first->id]);
 

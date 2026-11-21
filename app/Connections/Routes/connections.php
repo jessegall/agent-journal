@@ -26,6 +26,7 @@ Route::post('/host/bindings/{binding}/presence', BindingPresenceController::clas
     ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
     ->whereUlid('binding')
     ->name('agents.host.bindings.presence');
+
 Route::post('/host/bindings/{binding}/runtimes', BindingRuntimeController::class)
     ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
     ->whereUlid('binding')
@@ -49,6 +50,7 @@ Route::post('/api/project-connections/redeem', RedeemProjectInvitationController
 // A connected machine's journal verbs, signed with the calling start's own token (the agent call envelope).
 Route::middleware('journal.agent')->group(function (): void {
     Route::post('/api/project-commands', ProjectCommandController::class)->name('connections.commands.run');
+
     Route::delete('/api/project-commands/{requestId}', CancelProjectCommandController::class)
         ->where('requestId', '[A-Za-z0-9_-]+')
         ->name('connections.commands.cancel');
@@ -73,13 +75,17 @@ Route::middleware(['web', 'auth', 'journal.user', 'throttle:20,1'])
     ->name('connections.')
     ->group(function (): void {
         Route::post('/invitations', IssueProjectInvitationController::class)->name('invitations.issue');
+
         Route::delete('/invitations/{invitation}', RevokeProjectInvitationController::class)
             ->whereUlid('invitation')
             ->name('invitations.revoke');
+
         Route::post('/devices/{code}/approve', ApproveDeviceGrantController::class)
             ->where('userCode', '[A-Za-z0-9-]+')
             ->name('devices.approve');
+
         Route::delete('/devices/{grant}', RevokeDeviceGrantController::class)->whereUlid('grant')->name('devices.revoke');
+
         Route::delete('/bindings/{binding}', RevokeProjectBindingController::class)
             ->whereUlid('binding')
             ->name('bindings.revoke');

@@ -37,6 +37,7 @@ final class SequenceStateContributionTest extends TestCase
             [SequenceRunState::Running, 1, 'agent', TestIds::of(1)],
             [$run->fresh()?->state, $run->fresh()?->current_step, $run->fresh()?->actor_type, $run->fresh()?->actor_id],
         );
+
         $this->assertSame(['hooks.ready', 'sequences.following'], $this->storedTypeKeys());
     }
 
@@ -63,6 +64,7 @@ final class SequenceStateContributionTest extends TestCase
         $onSecondStep = $this->answerStop('call-2');
 
         $this->assertStringContainsString("Sequence run {$run->number} is on step 1: Read the brief.", $onFirstStep);
+
         $this->assertStringContainsString(
             "Sequence run {$run->number} is on step 2: Run the phase tests.",
             $onSecondStep,
@@ -109,12 +111,14 @@ final class SequenceStateContributionTest extends TestCase
     private function answerCompaction(string $callId): string
     {
         $this->callAs($callId);
+
         $capabilities = new DriverCapabilities(
             'Test program',
             'compaction context',
             ['onCompaction'],
             RewriteSupport::WithoutApproval,
         );
+
         $compaction = new ContextCompacted(
             new HookIdentity(TestIds::of(1), TestIds::of(10), $callId, self::inputDigest()),
             new CompactionDetails('compaction-1'),

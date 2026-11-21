@@ -39,6 +39,7 @@ final readonly class SwitchAgentDriverHandler implements CommandHandler
         $agent = Agent::query()->findOrFail($command->agentId);
         $this->assertCurrent($agent, $command);
         $session = AgentSession::query()->findOrFail($command->expectedSessionId);
+
         $switch = DriverSwitch::create(
             $command->requestId,
             $session,
@@ -46,6 +47,7 @@ final readonly class SwitchAgentDriverHandler implements CommandHandler
             $command->target,
             $command->dispatchedBy()->id,
         );
+
         $target = $command->target;
         $selection = $this->profiles->select($command->profile, $command->requested, $target->driver->value, null);
         $refusals = $this->preflight->refusals($selection->proposal($target->variant, $command->requested->model));

@@ -41,14 +41,17 @@ final readonly class DeclaredType
     {
         $this->text = (string) $type;
         $this->allowsNull = $type->allowsNull();
+
         $this->shape = match (true) {
             $type instanceof ReflectionUnionType => TypeShape::Union,
             $type instanceof ReflectionIntersectionType => TypeShape::Intersection,
             default => TypeShape::Named,
         };
+
         $this->members = $type instanceof ReflectionUnionType || $type instanceof ReflectionIntersectionType
             ? array_values(array_map(fn (ReflectionType $member) => new self($member), $type->getTypes()))
             : [];
+
         $this->name = $type instanceof ReflectionNamedType ? $type->getName() : '';
         $this->builtin = $type instanceof ReflectionNamedType && $type->isBuiltin();
     }

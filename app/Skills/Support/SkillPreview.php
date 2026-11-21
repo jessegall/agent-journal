@@ -36,6 +36,7 @@ final readonly class SkillPreview
         $agents = $this->contexts->visible(array_values(
             Agent::query()->orderBy('name')->readLimit(self::MOST_AGENTS)->get()->all(),
         ));
+
         $rows = array_map(fn (Agent $agent) => $this->rowFor($skill, $agent), $agents);
 
         return [
@@ -68,6 +69,7 @@ final readonly class SkillPreview
     public function forAgent(SkillEntry $skill, array $skills, Agent $agent): SkillAgentSelection
     {
         $selected = $this->selection->select($skills, $this->contexts->forAgent($agent));
+
         $excluded = array_column(
             array_map(
                 fn (ExcludedSkill $excluded) => ['key' => $excluded->key->key, 'reason' => $excluded->reason],

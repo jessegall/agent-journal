@@ -31,9 +31,11 @@ final readonly class LegacyDockable implements Dockable
     public function composeDockCard(CardContext $context): DockCard
     {
         $title = new Title('title', $this->record->title);
+
         $root = $this->record->abstract === null
             ? Stack::of('root', $title)
             : Stack::of('root', $title, new Subtitle('abstract', $this->record->abstract));
+
         $open = $this->page === null ? null : $context->permittedDestination($this->page)->getOrElse(null);
 
         return DockCard::named($this->record->title, $root, $open);

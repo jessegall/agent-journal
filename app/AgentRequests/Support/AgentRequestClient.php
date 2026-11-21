@@ -46,6 +46,7 @@ final readonly class AgentRequestClient implements AgentRequestClientContract
         int $issuedAt,
     ): PreparedAgentCall {
         $url = $settings->journalUrl.$path;
+
         $signature = SignedCall::agentSignatureFor(
             $settings->token,
             'POST',

@@ -108,16 +108,19 @@ final class TaskRunTest extends TestCase
         $task = Task::factory()->create();
         AssignmentRecord::create($task->assignmentIdentity(), $desk->assigneeIdentity());
         $this->startUserRequestAs($this->owner->id);
+
         $seat = $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(DeskSeating::class)->seat(
                 $desk->id,
                 ActorIdentity::of($leaving->agent()->firstOrFail()),
             ),
         );
+
         $this->startRequestAs($leaving->agent_id, $leaving->id);
         $this->app->make(CommandBus::class)->run(new StartTask($task->id));
 
         $this->startUserRequestAs($this->owner->id);
+
         $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeating::class)->replace(
             new SeatChange(
                 $desk->id,
@@ -126,6 +129,7 @@ final class TaskRunTest extends TestCase
                 ActorIdentity::of($arriving->agent()->firstOrFail()),
             ),
         ));
+
         $this->startRequestAs($leaving->agent_id, $leaving->id);
 
         $this->assertThrows(

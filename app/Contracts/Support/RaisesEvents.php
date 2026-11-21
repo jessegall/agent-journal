@@ -36,6 +36,7 @@ trait RaisesEvents
         $capture = static fn (Model&EventSource $row) => Container::getInstance()
             ->make(RowCapture::class)
             ->persisted($row);
+
         static::saved($capture);
         static::deleted($capture);
     }

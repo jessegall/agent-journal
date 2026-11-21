@@ -25,6 +25,7 @@ final readonly class AskQuestionHandler implements CommandHandler
     {
         $author = $command->dispatchedBy();
         $related = $command->relatedRecord === null ? null : $this->records->requireReadable($command->relatedRecord);
+
         $message = $this->sending->question(
             $this->inboxes->preferredFor($author)->inboxId(),
             $this->inboxes->preferredFor($this->admission->owner())->inboxId(),

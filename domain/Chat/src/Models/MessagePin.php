@@ -74,6 +74,7 @@ final class MessagePin extends Model implements ReadableModel
             'message_id' => $messageId,
             'pinned_at' => CarbonImmutable::now(),
         ]);
+
         $pin->belongTo($owner);
         $pin->save();
 

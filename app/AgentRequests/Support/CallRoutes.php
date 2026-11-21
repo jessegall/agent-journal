@@ -43,6 +43,7 @@ final readonly class CallRoutes implements CallRegistrar
     private static function callOf(string $controller): string
     {
         $parameters = Reflector::of($controller)->method('__invoke')->parameters();
+
         $call = $parameters === [] ? '' : $parameters[0]->type()
             ->filter(fn (DeclaredType $type) => $type->isNamed())
             ->map(fn (DeclaredType $type) => $type->name())

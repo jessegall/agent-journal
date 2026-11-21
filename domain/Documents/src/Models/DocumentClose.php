@@ -95,6 +95,7 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
             'published' => $published,
             'closed_at' => CarbonImmutable::now(),
         ]);
+
         $close->assertSaved($close->save());
         $close->raise(new DocumentClosed($document->id, $document->number, $resultNumber));
 

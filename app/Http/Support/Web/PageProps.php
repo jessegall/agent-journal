@@ -125,6 +125,7 @@ final readonly class PageProps
         $record = $page->get();
         $routeArguments = array_map($request->parameter(...), $record->path->parameters);
         $route = new Route(['GET'], $record->uri, []);
+
         $route->bind(
             Request::create(
                 '/'.strtr(

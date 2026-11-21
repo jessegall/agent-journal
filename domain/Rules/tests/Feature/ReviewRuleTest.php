@@ -40,10 +40,12 @@ final class ReviewRuleTest extends TestCase
         parent::setUp();
 
         Event::fake([RuleApproved::class, RuleDenied::class]);
+
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
+
         $this->proposed = Rule::create(
             'No phase waits on the user.',
             'Agents keep forgetting it.',
@@ -62,6 +64,7 @@ final class ReviewRuleTest extends TestCase
             ["Rule {$this->proposed->id}: No phase waits on the user."],
             $this->app->make(ActiveRules::class)->reminders(),
         );
+
         Event::assertDispatched(
             RuleApproved::class,
             fn (RuleApproved $event) => $event->ruleId === $this->proposed->id,

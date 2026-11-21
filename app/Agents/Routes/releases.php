@@ -12,6 +12,7 @@ Route::prefix('releases')->name('agents.releases.')->group(function (): void {
     Route::get('/compatibility', ReleaseCompatibilityController::class)->name('compatibility');
     Route::get('/current/manifest.json', CurrentManifestController::class)->name('manifest');
     Route::get('/current/manifest.json.sig', CurrentSignatureController::class)->name('signature');
+
     Route::get('/{version}/{target}/{name}', ReleaseArtifactController::class)
         ->where([
             'version' => '[0-9A-Za-z][0-9A-Za-z.+_-]*',

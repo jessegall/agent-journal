@@ -55,6 +55,7 @@ final readonly class AdmitStartSkills implements Listener
 
         $context = $this->contexts->forSession($session);
         $selected = $this->selection->select($this->skills->all(), $context);
+
         $publication = $this->publications->intend(
             $session->id,
             $driver->key,

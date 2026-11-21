@@ -42,12 +42,14 @@ trait DispatchesHelpers
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->supportContainers();
+
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile('plan-reviewer', ProfileBase::readOnlyHelper()),
             TestProposals::profile('journal-main', ProfileBase::mainAgent()),
             TestProposals::profile('lone-reviewer', ProfileBase::readOnlyHelper(), instances: InstancePolicy::Single),
             TestProposals::profile('job-reviewer', ProfileBase::readOnlyHelper(), instances: InstancePolicy::PerJob),
         )));
+
         $this->parent = TestStart::start();
         $this->parent->startRequest($this->app);
         $this->supportContainers();
@@ -88,6 +90,7 @@ trait DispatchesHelpers
                 );
             }
         });
+
         $this->app->instance(DockerImageVerifier::class, new class implements DockerImageVerifier
         {
             public function isVerified(string $imageReference): bool
@@ -95,6 +98,7 @@ trait DispatchesHelpers
                 return true;
             }
         });
+
         $this->app->instance(HostCapacity::class, new HostCapacity(8, 64 * 1024 ** 3, 500 * 1024 ** 3));
     }
 }

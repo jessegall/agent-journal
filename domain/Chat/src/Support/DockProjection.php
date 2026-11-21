@@ -60,6 +60,7 @@ final readonly class DockProjection
         $conversationKey = $conversation === null ? "{$peers->ownInboxId}:{$peers->peerInboxId}" : $conversation->id;
         $first = DockCursor::start($viewer, $conversationKey);
         $end = DockCursor::end($viewer, $conversationKey);
+
         $start = $token === null
             ? $first
             : DockCursor::read($this->encrypter, $token, $viewer, $conversationKey)->getOrElse($first);

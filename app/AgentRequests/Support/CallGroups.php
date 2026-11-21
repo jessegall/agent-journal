@@ -69,6 +69,7 @@ final class CallGroups
             array_keys($groups),
             $groups,
         ));
+
         $constructor = $groups === [] ? '' : <<<TEXT
 
             public function __construct({$properties}
@@ -129,13 +130,16 @@ final class CallGroups
         $endpoint = CallDeclaration::of($call)->endpoint;
         $declaration = Reflector::of($call);
         $name = lcfirst(Str::beforeLast($declaration->shortName(), 'Call'));
+
         $parameters = $declaration->constructor()
             ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
             ->getOrElse([]);
+
         $signature = implode('', array_map(
             fn (ReflectedParameter $parameter) => "\n        ".self::parameter($parameter).',',
             $parameters,
         ));
+
         $parameterAssignments = implode('', array_map(
             fn (ReflectedParameter $parameter) => <<<TEXT
 
@@ -143,6 +147,7 @@ final class CallGroups
             TEXT,
             $parameters,
         ));
+
         $answer = '\\'.$endpoint->answer;
         $docblock = self::docblock($declaration);
 
@@ -221,6 +226,7 @@ final class CallGroups
         }
 
         $imports = self::importsOf($call);
+
         $lines = array_map(
             fn (array $param) => '     * @param  '.self::fullyNamed($param[1], $imports, $call)."  {$param[2]}\n",
             $params,
@@ -238,12 +244,14 @@ final class CallGroups
     private static function importsOf(Reflector $call): array
     {
         $code = CodeFiles::ofProcess();
+
         preg_match_all(
             '/^use\s+([\w\\\\]+)(?:\s+as\s+(\w+))?;/m',
             $code->file($code->projectPathOf($call->fileName()->getOrElse(''))),
             $uses,
             PREG_SET_ORDER,
         );
+
         $imports = [];
 
         foreach ($uses as $use) {

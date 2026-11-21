@@ -70,11 +70,13 @@ final class DockProjectionTest extends TestCase
         $agentId = $this->startedMainAgentSession()->agent_id;
         $this->inboxOf(ActorIdentity::of($this->owner));
         $this->inboxOf(new ActorIdentity(ActorType::Agent, $agentId));
+
         $this->app->make(DockRegistration::class)->register(
             self::TYPE,
             ProjectionDockable::class,
             ProjectionDockableProvider::class,
         );
+
         $this->startUserRequestAs($this->owner->id);
         $this->peers = $this->app->make(AuthorizedConversations::class)->withAgent($agentId);
     }
@@ -99,6 +101,7 @@ final class DockProjectionTest extends TestCase
 
         $this->assertLessThan(DockProjection::BYTE_LIMIT, strlen((string) json_encode($first)));
         $this->assertNotEmpty($first->cards);
+
         $this->assertSame(
             array_map(fn (int $number) => sprintf('large-%02d', $number), range(10, 1)),
             [...$this->names($first), ...$this->names($second)],

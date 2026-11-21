@@ -54,6 +54,7 @@ return new class extends Migration
         });
 
         DB::statement('ALTER TABLE messages ADD CONSTRAINT messages_number_positive CHECK (number > 0)');
+
         DB::statement(<<<'SQL'
             ALTER TABLE messages ADD CONSTRAINT messages_read_audit_whole CHECK (
                 (read_at IS NULL AND read_by_type IS NULL AND read_by_id IS NULL
@@ -68,6 +69,7 @@ return new class extends Migration
                 state <> 'answered' OR answer_message_id IS NOT NULL
             )
             SQL);
+
         DB::statement(<<<'SQL'
             ALTER TABLE messages ADD CONSTRAINT messages_dismissed_names_closer CHECK (
                 state <> 'dismissed'

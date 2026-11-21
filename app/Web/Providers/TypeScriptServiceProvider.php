@@ -30,6 +30,7 @@ final class TypeScriptServiceProvider extends TypeScriptTransformerApplicationSe
     public function register(): void
     {
         parent::register();
+
         $this->app->singleton(
             TypeOwners::class,
             fn () => TypeOwners::of($this->app->make(DomainRegistry::class), $this->app->make(UiDeclarations::class)),
@@ -39,6 +40,7 @@ final class TypeScriptServiceProvider extends TypeScriptTransformerApplicationSe
     protected function configure(TypeScriptTransformerConfigFactory $config): void
     {
         $registry = $this->app->make(DomainRegistry::class);
+
         $config
             ->extension(new LaravelDataTypeScriptTransformerExtension())
             ->replaceTransformer(DataClassTransformer::class, new HiddenAwareDataTransformer())

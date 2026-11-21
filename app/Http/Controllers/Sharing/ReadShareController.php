@@ -34,12 +34,14 @@ final readonly class ReadShareController
         try {
             $permit = $this->issue($request, $permits, $limits);
             $limits->admitRead($permit->shareId);
+
             $read = new ReadShare(
                 $permit->reference,
                 $request->sharePath(),
                 $request->cursor(),
                 $request->wantsHeadOnly(),
             );
+
             $page = $dispatchers->runAsJournal(CommandEntry::ShareGateway, 'share read', $read);
         } finally {
             $permits->clear();

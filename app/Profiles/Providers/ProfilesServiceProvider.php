@@ -85,12 +85,15 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->app->bind(BuiltInStartProfiles::class, BuiltInProfilePins::class);
         $this->app->bind(ActiveAccountReader::class, ActiveAccountRecords::class);
         $this->app->singleton(SignInProtocols::class);
+
         $this->app->singleton(AgentImage::class, fn () => AgentImage::fromConfig(
             $this->app->make('config')->string('agents.agent_image'),
         ));
+
         $this->app->singleton(SignInEgress::class, fn () => new SignInEgress(
             $this->app->make('config')->string('accounts.egress_proxy'),
         ));
+
         $this->callAfterResolving(
             SignInProtocols::class,
             function (SignInProtocols $protocols): void {
@@ -129,15 +132,19 @@ final class ProfilesServiceProvider extends ServiceProvider
             ProfileDraftPolicy::class,
             [AccessType::Edit],
         ));
+
         $policies->register('Core', new PolicyDefinition(
             AccountPolicy::class,
             [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete],
         ));
+
         $this->scopeAccountsToOwner($events);
+
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule->command('accounts:reconcile')->everyMinute()->withoutOverlapping(),
         );
+
         $authorizers->register(ActorType::Agent, ProfileAuthorizerProvider::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/web.php');
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/sign-in-host.php');

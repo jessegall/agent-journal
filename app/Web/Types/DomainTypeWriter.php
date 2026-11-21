@@ -62,6 +62,7 @@ final readonly class DomainTypeWriter implements Writer
     private function pathOf(Transformed $transformed): string
     {
         $reference = $transformed->getReference();
+
         $owner = $reference instanceof ClassStringReference ? $this->owners->ownerOf(
             $reference->classString,
         ) : 'shared';

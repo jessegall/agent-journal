@@ -94,6 +94,7 @@ final class DockAdmissionTest extends TestCase
     {
         $key = (string) Str::ulid();
         $added = $this->runKeyed($this->dockTask(), $key);
+
         $this->runKeyed(
             new UndockSource($this->conversationId, (string) $added->placementId, 'tasks.task', $this->task->id),
             (string) Str::ulid(),

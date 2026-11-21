@@ -80,31 +80,38 @@ final class ReadsServiceProvider extends ServiceProvider
             ConnectionEstablished::class,
             static fn (ConnectionEstablished $event) => self::countQueriesOn($event->connection),
         );
+
         $events->listen(
             QueryExecuted::class,
             static fn () => ScopedReadMeter::ofCurrentScope()->recordCompletedQuery(),
         );
+
         $events->listen(
             CommandStarting::class,
             static fn (
                 CommandStarting $starting,
             ) => $selfMeasured->has($starting->command) ? null : ScopedReadMeter::ofCurrentScope()->begin(),
         );
+
         $events->listen(
             CommandFinished::class,
             static fn (CommandFinished $finished) => $selfMeasured->has($finished->command) ? null : self::endEntry(
                 "artisan {$finished->command}",
             ),
         );
+
         $events->listen(JobProcessing::class, static fn () => ScopedReadMeter::ofCurrentScope()->begin());
+
         $events->listen(
             JobProcessed::class,
             static fn (JobProcessed $processed) => self::endEntry("job {$processed->job->resolveName()}"),
         );
+
         $events->listen(
             JobFailed::class,
             static fn (JobFailed $failed) => self::endEntry("job {$failed->job->resolveName()}"),
         );
+
         $events->listen(
             'eloquent.retrieved: *',
             static fn (
@@ -128,6 +135,7 @@ final class ReadsServiceProvider extends ServiceProvider
         }
 
         self::$countedConnections[$connection] = true;
+
         $connection->beforeExecuting(
             static fn (
                 string $query,

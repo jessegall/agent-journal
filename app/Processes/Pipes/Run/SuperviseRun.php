@@ -39,6 +39,7 @@ final readonly class SuperviseRun implements Pipe
             $admission->spoolFolder(),
             $this->files,
         );
+
         $outcome = $this->supervisor->run($events, $admission->plan(), $admission->context());
         $events->flush();
         $preview = mb_substr($outcome->output, -self::PREVIEW_CHARACTER_LIMIT);

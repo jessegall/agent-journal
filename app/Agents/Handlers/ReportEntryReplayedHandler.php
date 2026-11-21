@@ -27,6 +27,7 @@ final readonly class ReportEntryReplayedHandler implements CommandHandler
     public function handle(ReportEntryReplayed $command): void
     {
         $runtime = $this->runtimes->lockedFor($command->hostId, $command->runtimeId);
+
         $entry = MenuEntry::query()->acrossActors()->whereKey($command->entryId)->lockForUpdate()->firstOr(
             fn () => throw NavigationRaiseRefused::unknownEntry($command->entryId),
         );

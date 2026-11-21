@@ -113,6 +113,7 @@ final readonly class ReaderProofCheck
     private function replayFailures(ReaderRevision $reader, VerificationContract $contract, PartRun $part): array
     {
         $assessment = $this->replays->replay($reader, $contract, $part)->assessment;
+
         $failures = array_map(
             fn (OutputProblem $problem): string => sprintf(
                 '%s at %s bytes %s-%s: %s',
@@ -124,6 +125,7 @@ final readonly class ReaderProofCheck
             ),
             $assessment->problems,
         );
+
         $outcome = $contract->exits->outcomeOf($part->end_code);
 
         if (! $outcome->acceptsClaim($assessment->claimed)) {

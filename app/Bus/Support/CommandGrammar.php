@@ -164,12 +164,14 @@ final readonly class CommandGrammar
     private static function importsOf(string $file): array
     {
         $code = CodeFiles::ofProcess();
+
         preg_match_all(
             '/^use\s+([A-Za-z0-9_\\\\]+)(?:\s+as\s+([A-Za-z0-9_]+))?;/m',
             $code->file($code->projectPathOf($file)),
             $imports,
             PREG_SET_ORDER,
         );
+
         $byName = [];
 
         foreach ($imports as $import) {

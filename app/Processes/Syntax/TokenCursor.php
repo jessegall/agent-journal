@@ -34,6 +34,7 @@ final class TokenCursor
         $this->tokens = array_values(
             array_filter($tokens, fn (Token $token) => $token->type !== TokenType::HereDocumentBody),
         );
+
         $this->hereDocumentBodies = array_values(
             array_filter($tokens, fn (Token $token) => $token->type === TokenType::HereDocumentBody),
         );

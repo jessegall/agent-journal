@@ -58,6 +58,7 @@ final readonly class SkillStatusResolver
         $started = SkillPublication::firstOfSession($sessionId);
         $generation = SkillGeneration::latestReady();
         $driver = DriverKey::from($started->driver);
+
         $reloadsAtNewSession = $this->adapters->supports($driver)
             && $this->adapters->for($driver)->reloadMode() === SkillReload::NewSession;
 
@@ -71,9 +72,11 @@ final readonly class SkillStatusResolver
         ) {
             $key = $entry->key->key;
             $selected = in_array($key, $selection['selected'], true);
+
             $deliveredEntry = $delivered !== null && in_array($key, $delivered->skill_keys, true)
                 ? $delivered->generation()->entry($key)
                 : null;
+
             $startedEntry = in_array($key, $started->skill_keys, true) ? $started->generation()->entry($key) : null;
             $startedDigest = $startedEntry === null ? null : $startedEntry['digest'];
             $currentDigest = $deliveredEntry === null ? null : $deliveredEntry['digest'];

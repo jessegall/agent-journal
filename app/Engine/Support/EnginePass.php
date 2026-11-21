@@ -67,6 +67,7 @@ final readonly class EnginePass
     private function bindPassDeadline(int $startNanoseconds): void
     {
         $budget = $this->settings->passBudgetMilliseconds;
+
         $this->app->bind(OperationDeadline::class, fn () => new OperationDeadline(
             $budget - intdiv($this->clock->nanoseconds() - $startNanoseconds, self::NANOSECONDS_PER_MILLISECOND),
         ));

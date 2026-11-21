@@ -24,6 +24,7 @@ final readonly class MarkHelperJobUnfinishedHandler extends HelperCommandHandler
     {
         JobStopEvidence::openJob($command->jobId)->forAll(function (HelperJob $job): void {
             $job->markUnfinished(self::ENDED_REFERENCE);
+
             HelperNotice::create($job, sprintf(
                 'Helper %s stopped before job %s was finished. Continue it with: %s',
                 $job->helper_identity_id,

@@ -70,6 +70,7 @@ final class DockSectionTest extends TestCase
         $this->startUserRequestAs($owner->id);
         $conversation = $this->app->make(DockRequests::class)->conversationWith($session->agent_id);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
+
         $this->app->make(CommandBus::class)->run(
             new DockSource($conversation->id, 'tasks.task', $task->id),
         );
@@ -82,11 +83,13 @@ final class DockSectionTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $session = $this->startedMainAgentSession();
+
         $message = $this->askBetween(
             $this->inboxOf(ActorIdentity::of($owner)),
             $this->inboxOf(new ActorIdentity(ActorType::Agent, $session->agent_id)),
             "Build ready\nAll checks passed.",
         );
+
         $dock = ['agent' => $session->agent_id, 'type' => Message::LINK_TYPE, 'id' => $message->id];
 
         $this->actingAs($owner)->postJson('/chat/dock', $dock)->assertSuccessful()->assertJson(['outcome' => 'added']);

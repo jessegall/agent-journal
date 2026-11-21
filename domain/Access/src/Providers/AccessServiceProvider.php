@@ -44,6 +44,7 @@ class AccessServiceProvider extends ServiceProvider
         $this->app->bind(CurrentUserResolver::class, CurrentUserRecords::class);
         $this->app->bind(JournalAdmission::class, OwnerAdmission::class);
         $this->app->bind(AdmittedRecipients::class, AdmittedUsers::class);
+
         // The owner's row is read on the first use of the settings, never while a service that holds them is built.
         $this->app->singleton(AccessSettings::class, fn (): AccessSettings => Reflector::of(
             AccessSettings::class,
@@ -53,6 +54,7 @@ class AccessServiceProvider extends ServiceProvider
             $ownerEmail = $this->app->make('config')->get('access.owner_email');
             $settings->__construct(is_string($ownerEmail) ? User::ownerIdFor($ownerEmail) : null);
         }));
+
         $this->app->scoped(UserAssignees::class);
     }
 

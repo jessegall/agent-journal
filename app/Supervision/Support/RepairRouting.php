@@ -90,6 +90,7 @@ final readonly class RepairRouting
             $request->work(),
             AskOriginType::Internal,
         );
+
         $request->settle(RepairRequestState::Capped);
         $this->router->route($ask, 0, null);
     }

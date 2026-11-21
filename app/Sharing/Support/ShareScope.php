@@ -111,6 +111,7 @@ final readonly class ShareScope
                 $source->id,
             )->orderBy('id')->readExactly($budget->mostLinks + 1)->get(),
         );
+
         $budget->chargeLinks($links->count());
         $budget->chargeRecords($links->count());
         $linkOfTarget = [];

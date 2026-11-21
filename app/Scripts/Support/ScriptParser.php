@@ -106,6 +106,7 @@ final readonly class ScriptParser
 
             $cursor->countStatement($line->source);
             $cursor->advance();
+
             $operand = match ($keyword->form) {
                 SyntaxForm::Block => $this->block($cursor, $line, $depth + 1),
                 SyntaxForm::Expression => $this->expression($line),
@@ -113,6 +114,7 @@ final readonly class ScriptParser
                 SyntaxForm::Text => $this->text($line),
                 default => throw self::formError($line, $keyword->form->value),
             };
+
             $statements[] = new ParsedStatement($keyword, $line->source, $line->operandSource, $operand);
         }
 

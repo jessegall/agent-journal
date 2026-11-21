@@ -58,6 +58,7 @@ final class TaskPoolsTest extends TestCase
             PoolMembersType::All,
             $factory->open(new PoolReference('tasks.open', null, []), $this->builder)->members()->type,
         );
+
         $this->assertThrows(
             fn () => $factory->validate(
                 new PoolReference('tasks.open', new RecordIdentity('plans.plan', TestIds::of(40)), []),
@@ -65,10 +66,12 @@ final class TaskPoolsTest extends TestCase
             ),
             TaskPoolRefused::class,
         );
+
         $this->assertThrows(
             fn () => $factory->validate(new PoolReference('tasks.open', null, [$task]), $this->builder),
             TaskPoolRefused::class,
         );
+
         $this->assertThrows(
             fn () => $factory->validate(new PoolReference('tasks.named', null, []), $this->builder),
             TaskPoolRefused::class,
@@ -95,6 +98,7 @@ final class TaskPoolsTest extends TestCase
         $task = Task::factory()->create()->id;
 
         $this->assertThrows(fn () => new PoolReference('tasks.named', null, [$task, $task]), InvalidRecordIds::class);
+
         $this->assertThrows(
             fn () => new PoolReference(
                 'tasks.named',
@@ -103,6 +107,7 @@ final class TaskPoolsTest extends TestCase
             ),
             InvalidRecordIds::class,
         );
+
         $this->assertThrows(
             fn () => $factory->validate(
                 new PoolReference('tasks.named', null, [$task, TestIds::of(99)]),
@@ -110,10 +115,12 @@ final class TaskPoolsTest extends TestCase
             ),
             TaskMissing::class,
         );
+
         $this->assertThrows(
             fn () => $factory->validate(new PoolReference('tasks.named', null, []), $this->builder),
             TaskPoolRefused::class,
         );
+
         $this->assertThrows(
             fn () => $factory->validate(
                 new PoolReference('tasks.named', new RecordIdentity('plans.plan', TestIds::of(40)), [$task]),

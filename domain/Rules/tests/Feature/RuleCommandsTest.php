@@ -63,6 +63,7 @@ final class RuleCommandsTest extends TestCase
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
+
         $rule = HoldingRules::create('Old rule.');
 
         $this->app->make(CommandBus::class)->run(new RemoveRule($rule->id));
@@ -77,6 +78,7 @@ final class RuleCommandsTest extends TestCase
             ActorContext::forAgent(TestIds::of(3)),
             TestStartAuthority::forAgent(TestIds::of(3)),
         );
+
         $rule = Rule::create(
             'No phase waits on the user.',
             'Agents keep forgetting it.',
@@ -98,12 +100,14 @@ final class RuleCommandsTest extends TestCase
             ActorContext::forAgent(TestIds::of(3)),
             TestStartAuthority::forAgent(TestIds::of(3)),
         );
+
         $rule = Rule::create(
             'No phase waits on the user.',
             'Agents keep forgetting it.',
             null,
             ActorContext::forAgent(TestIds::of(70)),
         );
+
         Route::post('/rules-test/approve', fn (CommandBus $commands) => $commands->run(new ApproveRule($rule->id)));
 
         $this->postJson('/rules-test/approve')->assertForbidden();

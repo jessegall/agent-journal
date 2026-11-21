@@ -155,6 +155,7 @@ final class MenuEntry extends Model implements ReadableModel
     ): self|null {
         $menuQuery = self::query()->ownedBy($owner)->current()->forDriver($runtime->driver)
             ->matching($fingerprint, $goal)->whereNotIn('id', $declinedEntries)->recentFirst();
+
         $build = $runtime->driver_build;
         $current = (clone $menuQuery)->whereJsonContains('builds', [['build' => $build, 'stale' => false]])->first();
 
@@ -268,8 +269,10 @@ final class MenuEntry extends Model implements ReadableModel
     public function markStaleOn(string $build, string $reason, array $screen): void
     {
         $builds = $this->builds();
+
         $builds[$build] = ($builds[$build] ?? MenuEntryBuild::proven($build, CarbonImmutable::now()))
             ->markedStale($reason, $screen);
+
         $this->storeBuilds($builds);
     }
 

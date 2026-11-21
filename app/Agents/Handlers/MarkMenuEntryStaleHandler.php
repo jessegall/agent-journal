@@ -39,6 +39,7 @@ final readonly class MarkMenuEntryStaleHandler implements CommandHandler
         }
 
         $this->runtimes->lockedFor($command->hostId, $command->runtimeId);
+
         $entry = MenuEntry::query()
             ->ownedBy(ActorIdentity::of($this->admission->owner()))
             ->whereKey($command->entryId)

@@ -26,6 +26,7 @@ final readonly class ShareListResolver implements PageResolver
         $filters = $this->request->filters();
         $found = Share::listPage($filters->toFilters(), self::ROWS);
         $rows = array_slice($found, 0, self::ROWS);
+
         $gatewayKeys = ShareGatewayConfiguration::gatewayKeysOf(
             array_values(
                 array_unique(
@@ -33,6 +34,7 @@ final readonly class ShareListResolver implements PageResolver
                 ),
             ),
         );
+
         $last = $rows === [] ? null : $rows[array_key_last($rows)];
 
         return new ShareListData(

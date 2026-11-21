@@ -23,9 +23,11 @@ final readonly class MessageReadResult
     public function read(string $messageId, ToolArguments $arguments, string $tool): ToolResult
     {
         $cursor = $arguments->continuation();
+
         $details = $cursor === null
             ? $this->messages->message($messageId, $arguments->enumOr('view', $this->defaultView($tool)))
             : $this->messages->context($messageId, $cursor);
+
         $messageResponse = ['message' => self::card($details->message)];
         $body = $details->body;
 

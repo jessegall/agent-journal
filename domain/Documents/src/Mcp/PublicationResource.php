@@ -32,6 +32,7 @@ abstract class PublicationResource extends JournalResource
     protected function bodyArguments(Request $request, string $tool, int|null $revision = null): ToolArguments
     {
         $continuation = ToolArguments::query($this->name(), $request, ['continuation'])->continuation();
+
         $arguments = match (true) {
             $continuation !== null => ['continuation' => $continuation],
             $revision !== null => ['view' => PublicationView::Body->value, 'revision' => $revision],

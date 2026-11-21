@@ -29,6 +29,7 @@ final readonly class JobContext
             ->where('helper_actor_type', $helper->type->value)
             ->where('helper_actor_id', $helper->id)
             ->first();
+
         $job = $identity === null ? null : HelperJob::query()
             ->acrossActors()
             ->ofIdentities([$identity->id])

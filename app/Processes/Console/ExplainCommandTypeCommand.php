@@ -45,6 +45,7 @@ final class ExplainCommandTypeCommand extends Command
         $where = $explanation->diagnostic === null
             ? ''
             : " at byte {$explanation->diagnosticPosition}: {$explanation->diagnostic}";
+
         $this->line("Outcome: {$explanation->outcome}{$where}");
 
         if ($explanation->executableParts === 0) {

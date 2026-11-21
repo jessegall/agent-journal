@@ -48,9 +48,11 @@ final class HelperJobEndingTest extends TestCase
         $cancelled = $this->job();
 
         $this->actAsUser('another');
+
         $this->app->make(HoldFailingJob::class)->handle(
             new HelperStopHeld($held->assignmentIdentity(), new StopAttemptReference('attempt-2')),
         );
+
         $this->raise(new LaunchCancelled($cancelled->assignmentIdentity()));
 
         $this->assertSame(JobState::Held, HelperJob::query()->acrossActors()->findOrFail($held->id)->state);
@@ -71,12 +73,14 @@ final class HelperJobEndingTest extends TestCase
     private function job(): HelperJob
     {
         $parent = $this->actAsUser('parent');
+
         $helper = HelperIdentity::create(
             $parent,
             ActorIdentity::of(Agent::create('Helper '.Str::random(6), 'writing-helper')),
             'writing-helper',
             'writing-helper',
         );
+
         $purpose = HelperPurpose::free($parent, 'writing-helper', 'General work '.Str::random(6));
 
         return HelperJob::create(

@@ -37,6 +37,7 @@ final readonly class NavigationAnswerCheck
             ->whereKey($navigationId)
             ->lockForUpdate()
             ->firstOr(fn () => throw NavigationRaiseRefused::unknownRequest($navigationId));
+
         $this->checkAnswerer($navigation);
 
         return $navigation;

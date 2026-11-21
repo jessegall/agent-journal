@@ -79,6 +79,7 @@ final readonly class AgentMessageDelivery
             ->lockForUpdate()
             ->limit(PendingAgentMessage::DELIVERY_LIMIT)
             ->get();
+
         PendingAgentMessage::query()->ownedBy($agent)->whereKey($messages->modelKeys())->delete();
 
         return array_values($messages->flatMap(fn (PendingAgentMessage $message) => $message->lines)->all());

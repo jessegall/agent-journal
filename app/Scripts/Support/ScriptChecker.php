@@ -68,6 +68,7 @@ final readonly class ScriptChecker implements ScriptChecks
             fn (RegisteredKeyword $keyword) => [$keyword, $this->keywords->isAvailable($keyword)],
             $this->keywords->all(),
         );
+
         $objects = array_map(
             fn (ObjectDefinition $object) => [$object, $this->objects->isAvailable($object)],
             $this->objects->all(),

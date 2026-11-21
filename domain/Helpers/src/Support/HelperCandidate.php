@@ -28,6 +28,7 @@ final readonly class HelperCandidate
         $conversation = $this->resumesConversation
             ? 'It resumes its conversation.'
             : 'It starts a new conversation.';
+
         $exposure = $this->exposureChecked
             ? ' Nothing it saw before touches this subject.'
             : '';

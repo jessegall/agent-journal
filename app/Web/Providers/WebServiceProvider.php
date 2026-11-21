@@ -72,12 +72,15 @@ final class WebServiceProvider extends ServiceProvider
         $this->app->bind(UiOwnerAvailabilityContract::class, UiOwnerAvailability::class);
         $this->app->bind(SettingsAccessPolicy::class, OwnerSettingsAccess::class);
         $this->app->bind(AutoAssignmentAccess::class, OwnerAutoAssignmentAccess::class);
+
         $this->app->singleton(
             UiDeclarations::class,
             fn ($app) => $app->make(DomainRegistry::class)->uiDeclarations(...CorePages::declarations()),
         );
+
         $this->app->bind(SlotSections::class, UiDeclarations::class);
         $this->app->bind(DeclaredPages::class, UiDeclarations::class);
+
         // Inertia's page check reads the declared components, and today's pages through its usual finder.
         $this->app->bind('inertia.view-finder', fn ($app) => new UiComponentFinder(
             $app->make(UiDeclarations::class),
@@ -106,6 +109,7 @@ final class WebServiceProvider extends ServiceProvider
             'Core',
             new PolicyDefinition(PresencePolicy::class, [AccessType::Edit]),
         );
+
         $links->register(['web.layout' => Layout::class]);
         $this->renderRefusals($exceptions);
         $scope = new CurrentUserScope(static fn () => Container::getInstance()->make(CurrentUserResolver::class));
@@ -123,6 +127,7 @@ final class WebServiceProvider extends ServiceProvider
         $this->app->booted(
             fn () => $declaredRoutes->refuseTakenPrefixes($router->getRoutes(), $this->app->publicPath()),
         );
+
         // The channel sign-in runs behind the same session, sign-in and user checks as every page.
         $broadcast->routes(['middleware' => ['web', 'auth', 'journal.user']]);
         $broadcast->channel(UserChannel::PATTERN, UserChannel::class);
@@ -154,6 +159,7 @@ final class WebServiceProvider extends ServiceProvider
                     ->withErrors(['command' => $failure->getMessage()])
                     ->with(CommandRefusal::CODE_FLASH_KEY, $reason->code);
         });
+
         $exceptions->renderable(function (ValidationException $refused, Request $request): JsonResponse|null {
             if (! $request->expectsJson() || ! $request->hasSession()) {
                 return null;
@@ -163,6 +169,7 @@ final class WebServiceProvider extends ServiceProvider
 
             return $this->refusalAnswer('invalid-input', $refused->getMessage(), $fields, 422);
         });
+
         $exceptions->renderable(function (AuthenticationException $expired, Request $request): JsonResponse|null {
             if (! $request->expectsJson() || ! $request->hasSession()) {
                 return null;

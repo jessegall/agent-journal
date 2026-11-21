@@ -49,6 +49,7 @@ final readonly class RestoreCommandRuleHandler implements CommandHandler
             ->ofRule($rule->scope, $rule->rule_id)
             ->where('revision', $command->fromRevision)
             ->sole();
+
         $declaration = RuleProposalRevision::query()->whereKey($earlier->rule_proposal_revision_id)->sole();
         $evidence = "Restore of approved revision {$earlier->revision}: {$declaration->evidence}";
         $proposed = new ProposedRule($declaration->payload, $evidence, $declaration->examples);

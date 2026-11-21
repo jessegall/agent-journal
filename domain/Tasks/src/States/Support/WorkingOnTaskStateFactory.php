@@ -49,6 +49,7 @@ final readonly class WorkingOnTaskStateFactory implements RecipientStateLoader
     {
         $tasks = $this->tasks->many($references->subjectIds());
         $runs = $this->runsOf($references, $tasks);
+
         $holders = $this->container->make(RunClaims::class)->holdersOf(
             array_values(array_map(fn (TaskRun $run) => $run->assignmentIdentity(), $runs)),
         );

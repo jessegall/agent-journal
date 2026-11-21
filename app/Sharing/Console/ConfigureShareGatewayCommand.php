@@ -33,6 +33,7 @@ final class ConfigureShareGatewayCommand extends Command
         $key = $owner->useRequestKey(
             $this->option('request-key') === null ? null : (string) $this->option('request-key'),
         );
+
         $configuration = $commands->run(new ConfigureShareGateway(
             (string) $this->argument('gateway'),
             (string) $this->option('program-version'),

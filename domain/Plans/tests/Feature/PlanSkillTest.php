@@ -32,6 +32,7 @@ final class PlanSkillTest extends TestCase
             $this->app->make(SkillResolver::class)->find(SkillKey::from('journal-plans'))->rendered->markdown,
             $shown,
         );
+
         $this->assertStringContainsString(<<<'TEXT'
         # Plans
 
@@ -39,11 +40,13 @@ final class PlanSkillTest extends TestCase
 
         A plan orders the work
         TEXT, $shown);
+
         $this->assertStringContainsString(<<<'TEXT'
         ## States
 
         A plan has a type (build, fix, research or cleanup)
         TEXT, $shown);
+
         $this->assertStringContainsString(
             <<<'TEXT'
             ## Holding plan work
@@ -52,6 +55,7 @@ final class PlanSkillTest extends TestCase
             TEXT,
             $shown,
         );
+
         $this->assertLessThan(strpos($shown, '## Holding plan work'), strpos($shown, '## States'));
     }
 }

@@ -326,11 +326,13 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     public function composeDockCard(CardContext $context): DockCard
     {
         $revision = $this->currentRevisionOrFail();
+
         $parts = [
             new Title('title', $revision->title),
             new Subtitle('revision', "revision {$revision->number}"),
             $this->attention->stateLabel(),
         ];
+
         $open = new DockDestination('documents.document', new DestinationArgument('document', (string) $this->number));
 
         foreach ($context->permittedDestination($open) as $permitted) {

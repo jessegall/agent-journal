@@ -26,9 +26,11 @@ final readonly class JournalSearch
     {
         $classes = $this->catalogue->searchContributionClasses();
         $cursor = $arguments->continuation();
+
         $read = $cursor === null
             ? $this->firstPage($arguments, array_keys($classes))
             : $this->continuations->open($cursor, self::TOOL, '');
+
         $hits = [];
         $unavailable = [];
         $more = [];

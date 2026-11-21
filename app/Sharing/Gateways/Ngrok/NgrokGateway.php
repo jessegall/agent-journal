@@ -106,6 +106,7 @@ final readonly class NgrokGateway implements ShareGateway
 
         $configFile = $this->writeConfiguration($this->secrets->read($reference));
         $upstream = "127.0.0.1:{$settings->listenerPort}";
+
         $child = $this->processes->newPendingProcess()->timeout(0)->env(['HOME' => $this->configFolder])
             ->start(
                 [
@@ -180,6 +181,7 @@ final readonly class NgrokGateway implements ShareGateway
     {
         $file = $this->files->pathIn(Place::SharingTunnels, $this->configFolder)->child('ngrok.yml');
         $quotedAuthtoken = json_encode($authtoken, JSON_THROW_ON_ERROR);
+
         $this->files->write($file, <<<YAML
             version: "2"
             authtoken: {$quotedAuthtoken}

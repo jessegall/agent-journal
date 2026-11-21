@@ -49,6 +49,7 @@ final class McpServiceProvider extends ServiceProvider
     {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/mcp.php');
         $this->commands([ContractSnapshotCommand::class, RelayCommand::class]);
+
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule->command('model:prune', ['--model' => [RetainedPage::class]])->daily(),

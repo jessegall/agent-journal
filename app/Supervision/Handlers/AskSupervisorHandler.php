@@ -48,6 +48,7 @@ final readonly class AskSupervisorHandler implements CommandHandler
         }
 
         $work = $this->stacks->currentRecord()->getOrElse(null);
+
         $ask = $this->opening->open(
             $requester,
             $type,
@@ -56,6 +57,7 @@ final readonly class AskSupervisorHandler implements CommandHandler
             $work,
             AskOriginType::Supervisor,
         );
+
         $this->commands->run(new RouteAsk($ask->reference(), 0));
 
         return $ask->reference();

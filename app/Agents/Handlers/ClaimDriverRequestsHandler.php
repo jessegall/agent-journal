@@ -36,7 +36,9 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
             ->where('host_id', $command->hostId)
             ->get()
             ->keyBy('id');
+
         $runtimeIds = $runtimes->keys()->all();
+
         $control = DriverRequest::query()
             ->whereIn('agent_runtime_id', $runtimeIds)
             ->where('progress', RequestProgress::Accepted)
@@ -45,6 +47,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
             ->lockForUpdate()
             ->readAll('every waiting stop, interrupt and recording of one host is taken before other work')
             ->get();
+
         $pending = DriverRequest::query()
             ->whereIn('agent_runtime_id', $runtimeIds)
             ->where('progress', RequestProgress::Accepted)
@@ -57,6 +60,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
 
         $now = CarbonImmutable::now();
         $claimed = [];
+
         $waitingOnHelpers = AgentRuntime::sessionsWaitingOnHelpers(array_values(array_map(
             fn (AgentRuntime $runtime) => $runtime->agent_session_id,
             $runtimes->all(),

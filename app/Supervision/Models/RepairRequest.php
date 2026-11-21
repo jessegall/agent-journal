@@ -87,6 +87,7 @@ final class RepairRequest extends Model implements ReadableModel
             'target_commit' => $targetCommit,
             'state' => RepairRequestState::Pending,
         ]);
+
         $repair->setAttribute($repair->getKeyName(), $repair->newUniqueId());
         $repair->insertIfAbsent();
 

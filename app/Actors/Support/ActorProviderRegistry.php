@@ -63,10 +63,12 @@ final class ActorProviderRegistry implements
     {
         $this->providers = Registry::once(ActorProviderMissing::forType(...), ActorProviderRepeated::forType(...));
         $this->labelProviders = Registry::once(ActorProviderMissing::forType(...), ActorProviderRepeated::forType(...));
+
         $this->visibilityProviders = Registry::once(
             CrossOwnerReadRefused::forActor(...),
             ActorProviderRepeated::forType(...),
         );
+
         $this->workStackProviders = Registry::once(
             ActorProviderMissing::forType(...),
             ActorProviderRepeated::forType(...),
@@ -209,6 +211,7 @@ final class ActorProviderRegistry implements
         $sessions = $this->workStackOf($actors->actor()->actorType()->value)
             ->map(fn (WorkStackProvider $provider) => $provider->sessionsToAdmit())
             ->getOrElse([]);
+
         sort($sessions);
 
         return $sessions;

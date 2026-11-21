@@ -55,6 +55,7 @@ final readonly class JournalClassifier implements ProgramClassifier
             ':',
             array_map(fn (Word $word): string => (string) $word->literal(), array_slice($words, 1, 2)),
         );
+
         $route = $this->routes->routeOf($name);
 
         if ($route === []) {
@@ -68,6 +69,7 @@ final readonly class JournalClassifier implements ProgramClassifier
 
         $origin = new RuleOrigin("core.journal.{$name}", 1);
         $classes = $route[0]->classes();
+
         $facts = array_map(
             fn (CommandClass $class) => new ClassFact($class, $node, $origin, "The journal route {$name} does it."),
             $classes,

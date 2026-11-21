@@ -61,6 +61,7 @@ final class PlansServiceProvider extends ServiceProvider
                 PlanMissing::class,
                 fn (PlanMissing $missingPlan) => new NotFoundHttpException(previous: $missingPlan),
             );
+
             $exceptions->renderable(fn (StartDenied $denied) => $this->app->make(Redirector::class)
                 ->back(303)
                 ->withErrors(['start' => $denied->getMessage()]));
@@ -68,6 +69,7 @@ final class PlansServiceProvider extends ServiceProvider
 
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
+
         $links->register([
             Plan::LINK_TYPE => Plan::class,
             Phase::LINK_TYPE => Phase::class,

@@ -65,6 +65,7 @@ final readonly class HookController
 
             $call = $adapter->callFor($hookInput, $access->hookIdentity());
             $capabilities = $adapter->capabilities();
+
             $answer = function (HookInput $input, Closure $render) use (
                 $sessionId,
                 $generation,
@@ -75,6 +76,7 @@ final readonly class HookController
 
                 return $machine->answer($input, $capabilities, $this->deadline, $render);
             };
+
             $reply = $call->replyWith($answer);
         } catch (UnsupportedHook|UnreadablePayload $refused) {
             return $this->failure($refused->getMessage(), Response::HTTP_UNPROCESSABLE_ENTITY);

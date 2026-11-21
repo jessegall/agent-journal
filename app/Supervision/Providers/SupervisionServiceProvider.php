@@ -70,18 +70,22 @@ final class SupervisionServiceProvider extends ServiceProvider
         $engineListeners->add(SettleMergeOutcomesOnTick::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/asks.php');
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
+
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule->command('asks:recover-delivery')->everyMinute()->withoutOverlapping(),
         );
+
         $policies->register('Core', new PolicyDefinition(
             SupervisorPolicy::class,
             [AccessType::Edit],
         ));
+
         $policies->register('Core', new PolicyDefinition(
             AskPolicy::class,
             [AccessType::Edit],
         ));
+
         $types->register($this->app->make(QuestionType::class));
         $types->register($this->app->make(CodeReviewType::class));
         $types->register($this->app->make(MergeReadyType::class));

@@ -25,6 +25,7 @@ final readonly class ManifestCheck
     {
         $next = [];
         $state = CaptureState::Complete;
+
         OutputChunk::query()->where(
             'part_run_id',
             $part->id,

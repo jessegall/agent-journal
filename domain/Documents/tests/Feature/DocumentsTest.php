@@ -43,11 +43,13 @@ final class DocumentsTest extends TestCase
         Ship it.
 
         TEXT));
+
         $second = $this->bus()->run(new CreateDocument('Notes', 'What we saw', "Text\n"));
 
         $this->assertSame('doc 1', $first->label());
         $this->assertSame('doc 2', $second->label());
         $this->assertSame(['1'], [$this->app->make(DocumentResolver::class)->show(2)->revision]);
+
         $this->assertSame(<<<'TEXT'
         # Goal
         Ship it.
@@ -74,6 +76,7 @@ final class DocumentsTest extends TestCase
             CommandInputInvalid::class,
             'title: The title field is required.',
         );
+
         $this->assertSame(0, Document::query()->count());
     }
 
@@ -89,11 +92,13 @@ final class DocumentsTest extends TestCase
             CommandInputInvalid::class,
             'abstract: The abstract must be one line',
         );
+
         $this->assertThrows(
             fn () => $this->bus()->run(new CreateReport('Check', 'What we found', "Text\n", $about)),
             CommandInputInvalid::class,
             'relatedRecords: The related records field must not have more than 50 items.',
         );
+
         $this->assertSame(0, Document::query()->count() + Report::query()->count());
     }
 
@@ -105,6 +110,7 @@ final class DocumentsTest extends TestCase
         $document = $this->app->make(DocumentResolver::class)->show(1);
 
         $this->assertSame(['Plan for May', 'What we build'], [$document->title, $document->abstract]);
+
         $this->assertSame(['Plan for May', 'What we found'], [
             Report::query()->sole()->title,
             Report::query()->sole()->abstract,

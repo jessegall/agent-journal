@@ -285,6 +285,7 @@ final readonly class WriteAssignments implements
             [new AssignmentOutcome($record, $after, AssignmentOutcomeType::Changed)],
             [new AssignmentChange($record, $before, $after)],
         );
+
         $this->facts->publish(ActorIdentity::of($this->actors->actor()), $reason, $assignmentChange);
 
         return $assignmentChange;

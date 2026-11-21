@@ -67,6 +67,7 @@ final class WorkReservation extends Model implements ReadableModel
             ...$actor->asColumns('actor'),
             'generation' => $generation,
         ]);
+
         $reservation->setAttribute($reservation->getKeyName(), $reservation->newUniqueId());
         $reservation->insertIfAbsent();
 

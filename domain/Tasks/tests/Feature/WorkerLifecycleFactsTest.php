@@ -40,12 +40,14 @@ final class WorkerLifecycleFactsTest extends TestCase
     public function test_a_failed_lifecycle_leaves_the_next_one_an_empty_unit_and_only_its_own_facts(): void
     {
         $facts = [];
+
         $this->app->make(Dispatcher::class)->listen(
             [TaskFinished::class, TaskCancelled::class],
             function (object $fact) use (&$facts): void {
                 $facts[] = $fact::class;
             },
         );
+
         $task = Task::factory()->create(['title' => 'Kept']);
         $this->startUserRequestAs(TestIds::of(7));
 

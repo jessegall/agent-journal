@@ -221,6 +221,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
 
         $column = fn (string $field, string $name): string|int => $this->getAttribute($name)
             ?? throw IncompleteTextAnchor::missing($type->value, $field);
+
         $isQuote = $type === TextAnchorType::Quote;
 
         return TextAnchor::restored(

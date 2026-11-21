@@ -27,6 +27,7 @@ final readonly class WorktreeDeliveryController
             $request->string('targetRef')->toString(),
             $request->string('expectedTarget')->toString(),
         );
+
         $receipt = $commands->run(new SubmitWorktreeDelivery($host->hostId, $submission));
 
         return new JsonResponse([

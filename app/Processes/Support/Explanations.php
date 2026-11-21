@@ -45,10 +45,12 @@ final readonly class Explanations
         $tree = $this->syntax->parse($line, $dialect);
         $context = new ExecutionContext($dialect, base_path(), base_path());
         $classification = $this->classifier->classify($tree, $context);
+
         $nodes = array_map(
             fn (ShellNode $node) => $this->nodeOf($tree, $node, $classification),
             array_values($tree->nodes),
         );
+
         $classes = $classification->requiredClasses()->classes;
 
         return ExplanationData::from([
@@ -101,14 +103,17 @@ final readonly class Explanations
         $snippet = $node->type === NodeType::HereDocument
             ? '(here-document body left out)'
             : self::safe($this->sliceWithoutBodies($tree, $node->range));
+
         $facts = array_values(array_filter(
             $classification->facts(),
             fn (ClassFact $fact): bool => $fact->node === $node->id,
         ));
+
         $parts = array_values(array_filter(
             $classification->parts,
             fn (PartClassification $part): bool => $part->node === $node->id,
         ));
+
         $unresolved = array_merge(...array_map(fn (PartClassification $part): array => $part->unresolved, $parts));
         $contracts = $parts[0]->contracts ?? [];
         $program = $parts[0]->program ?? null;

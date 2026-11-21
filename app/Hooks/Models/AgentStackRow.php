@@ -80,6 +80,7 @@ final class AgentStackRow extends Model implements ReadableModel
     public static function insertIfMissing(StackTarget $target, FrameRecords $frames, TickingTypes $ticking): bool
     {
         $row = new self();
+
         $row->setRawAttributes([
             'id' => $row->newUniqueId(),
             'agent_id' => $target->agentId,

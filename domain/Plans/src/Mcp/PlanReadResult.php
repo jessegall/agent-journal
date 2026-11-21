@@ -34,9 +34,11 @@ final readonly class PlanReadResult
     public function read(string $planId, ToolArguments $arguments): ToolResult
     {
         $cursor = $arguments->continuation();
+
         $position = $cursor === null
             ? $this->first($planId, $arguments->enumOr('view', ReadView::Summary))
             : $this->continuations->open($cursor, self::TOOL, $planId);
+
         $view = ReadView::from($position->filters['view']);
         $isTextContinuation = isset($position->filters['text_digest']);
         $plan = $this->plans->plan($planId, $view, $isTextContinuation ? 0 : $position->offset);
@@ -65,6 +67,7 @@ final readonly class PlanReadResult
             $plan->phases,
             fn (PlanPhaseTasks $phase): bool => $phase->taskIds !== [],
         ));
+
         $phaseOffset = (int) $position->filters['phase_offset'];
         $page = array_slice($phases, $phaseOffset, self::PHASES_PER_RESULT);
         $next = $this->nextPhases($plan, $position, $phaseOffset + count($page), count($phases));

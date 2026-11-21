@@ -60,6 +60,7 @@ final class HistoryPageTest extends TestCase
         $reviewerInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $reviewer[0]))->inboxId();
         $this->startRequestAs($reviewer[0], $reviewer[1]);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
+
         $questionId = $this->app->make(CommandBus::class)
             ->run(new AskMessage($reviewerInboxId, $builderInboxId, 'Still needed?'));
 
@@ -68,6 +69,7 @@ final class HistoryPageTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('page.data.isInspection', true)
                 ->where('page.data.page.messages.0.id', $questionId));
+
         $this->assertNull($this->stored($questionId)->read_at);
 
         $this->actingAs($owner)

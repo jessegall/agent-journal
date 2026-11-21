@@ -23,6 +23,7 @@ final readonly class DriverConversationRecords implements DriverConversationReso
             $contextReference,
         )
             ->limit(self::MOST_CONVERSATIONS)->get()->keyBy('id');
+
         $lastVisits = ConversationVisit::query()->whereIn(
             'conversation_id',
             $conversations->keys()->all(),
@@ -30,6 +31,7 @@ final readonly class DriverConversationRecords implements DriverConversationReso
             ->readAll('the visits of at most 20 conversations, to find each one\'s last')
             ->get()
             ->unique('conversation_id');
+
         $models = AgentSession::query()->whereIn(
             'id',
             $lastVisits->pluck('session_id')->all(),

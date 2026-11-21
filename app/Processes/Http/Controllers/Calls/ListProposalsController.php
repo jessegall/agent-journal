@@ -18,6 +18,7 @@ final readonly class ListProposalsController
     public function __invoke(ListProposalsCall $call, ProjectKey $projects): ProposalList
     {
         $states = $call->states === [] ? ProposalState::cases() : array_map(ProposalState::from(...), $call->states);
+
         $proposals = RuleProposal::query()
             ->ofProject($projects->current())
             ->whereIn('state', array_map(fn (ProposalState $state): string => $state->value, $states))

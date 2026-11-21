@@ -34,6 +34,7 @@ final readonly class MergeReviewedWorkHandler implements CommandHandler
             new ReviewDecisionReference($command->decisionId),
             $command->expectedVersion,
         );
+
         $attempt = MergeAttempt::retain($approved);
 
         if ($attempt->state->isTerminal()) {

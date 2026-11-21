@@ -36,6 +36,7 @@ final readonly class DriverRequestEndings
     public function closeAfterExit(AgentRuntime $runtime): void
     {
         $runtime->closeAfterExit();
+
         $open = $runtime->requests()
             ->whereIn('progress', RequestProgress::open())
             ->readAll('every open request of a runtime that exited gets its final outcome')

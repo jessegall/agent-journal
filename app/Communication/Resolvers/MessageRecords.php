@@ -72,11 +72,13 @@ final readonly class MessageRecords implements ConversationResolver
     public function counts(string $inboxId): InboxCounts
     {
         $incoming = fn () => Message::query()->toInbox($inboxId);
+
         $waitingIds = $incoming()
             ->where('state', MessageState::WaitingForAnswer)
             ->readLimit(MessagePage::LARGEST_LIMIT * 10)
             ->pluck('id')
             ->all();
+
         $claimed = count($this->proved->validClaimsOn(Message::LINK_TYPE, array_values($waitingIds)));
 
         return new InboxCounts(
@@ -139,12 +141,14 @@ final readonly class MessageRecords implements ConversationResolver
     {
         $pageSize = max(1, min($limit, MessagePage::LARGEST_LIMIT));
         $cursor = $olderCursor === null ? null : (clone $query)->whereKey($olderCursor)->first();
+
         $rows = $query
             ->when($cursor !== null, fn (Builder $older) => $older->olderThan($cursor))
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->limit($pageSize + 1)
             ->get();
+
         $shown = $rows->take($pageSize);
 
         return MessagePage::from([
@@ -165,6 +169,7 @@ final readonly class MessageRecords implements ConversationResolver
             array_map(fn (Message $message) => $message->source_inbox_id, $messages),
             array_map(fn (Message $message) => $message->destination_inbox_id, $messages),
         )));
+
         $inboxLabels = [];
 
         foreach ($inboxIds as $inboxId) {
@@ -172,12 +177,14 @@ final readonly class MessageRecords implements ConversationResolver
         }
 
         $authors = $this->labels->labelsFor(array_map(fn (Message $message) => $message->author(), $messages));
+
         $claims = $this->proved->validClaimsOn(
             Message::LINK_TYPE,
             array_map(fn (Message $message) => $message->id, $messages),
         );
 
         $holderFields = array_map(fn ($claim) => ['claimHolder' => MessageClaimHolder::ofClaim($claim)], $claims);
+
         $requestKeys = CommandReceipt::readableKeysOf(array_values(array_unique(
             array_map(fn (Message $message) => $message->origin_receipt_id, $messages),
         )));

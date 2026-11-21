@@ -35,6 +35,7 @@ final readonly class RequestListResolver implements PageResolver
         $requests = CommandRequest::query()->ofProject($project)->limit(100)->get();
         $rules = ClassificationRule::query()->ofProject($project)->readLimit(200)->get();
         $activated = $this->approved->approvedBundles();
+
         $waiting = array_filter(
             $this->rules->bundles(),
             fn (RuleBundle $bundle): bool => ! array_any(

@@ -18,6 +18,7 @@ trait PrintsInspection
         $editing = $inspection->editing->state === EditingState::Free
             ? 'free'
             : "held by {$this->holderOf($inspection)}";
+
         $report = CommandReport::ending(self::SUCCESS)
             ->line($inspection->label)
             ->line("Editing: {$editing}")

@@ -39,14 +39,17 @@ final readonly class ReadHereDocumentBodies implements Pipe
         foreach ($cursor->hereDocuments->takeWaiting() as $waiting) {
             $redirectIndex = $waiting->redirect;
             $stripsTabs = $waiting->stripsTabs;
+
             $delimiterWord = $tokens[$redirectIndex + 1]->word ?? throw ShellLineUnreadable::unfinished(
                 'a here-document without a delimiter',
                 $tokens[$redirectIndex]->range->start,
             );
+
             $isQuoted = array_any(
                 $delimiterWord->segments,
                 fn (WordSegment $segment) => $segment->type !== WordSegmentType::Literal,
             );
+
             $delimiter = implode('', array_map(fn (WordSegment $segment) => $segment->text, $delimiterWord->segments));
 
             $bodyStart = $cursor->position;
@@ -84,6 +87,7 @@ final readonly class ReadHereDocumentBodies implements Pipe
             }
 
             $body = new SourceRange($bodyStart, $bodyEnd);
+
             $cursor->append(new Token(
                 TokenType::HereDocumentBody,
                 $body,

@@ -32,6 +32,7 @@ final readonly class ReportDocking implements DockableProvider
             ->whereKey($ids)
             ->readExactly(count($ids))
             ->get();
+
         $cards = [];
 
         foreach ($reports as $report) {

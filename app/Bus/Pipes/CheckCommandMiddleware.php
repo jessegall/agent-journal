@@ -53,6 +53,7 @@ final readonly class CheckCommandMiddleware implements Pipe
                     $class,
                     static fn (string $problem) => MiddlewareDeclarationInvalid::for($class, $problem),
                 );
+
                 self::checkScope($owner, $declaration, $commandOwners, $ownerClasses);
                 $seen[$key] = true;
                 $registered[] = new RegisteredMiddleware($owner->name, $declaration);

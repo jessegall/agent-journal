@@ -45,6 +45,7 @@ final readonly class MiddlewareRunner
         try {
             $name = $command::class;
             $owner = $this->registry->ownerOf($name);
+
             $call = CommandCall::of(
                 $command,
                 $owner,
@@ -52,11 +53,13 @@ final readonly class MiddlewareRunner
                 $this->registry->needsRepeatableRead($name),
                 $this->actors->hasActor() ? $this->actors->actor() : null,
             );
+
             $inside = fn (CommandCall $current, Closure $handler) => $this->through(
                 [...$this->core(CommandFrame::INSIDE), ...$this->module($name, MiddlewareStage::InsideTransaction)],
                 $current,
                 $handler,
             );
+
             $steps = [
                 ...$this->core(CommandFrame::FIRST),
                 fn (

@@ -109,6 +109,7 @@ final readonly class AccountConfigurationWrite
                 str_ends_with($prepared, "\n") => "\n",
                 default => "\n\n",
             };
+
             $prepared .= $separator.trim($table)."\n";
         }
 
@@ -139,6 +140,7 @@ final readonly class AccountConfigurationWrite
     private function replace(string $path, string $contents): void
     {
         $temporary = $path.'.'.bin2hex(random_bytes(6)).'.new';
+
         $isWritten = file_put_contents($temporary, $contents) === strlen($contents)
             && chmod($temporary, 0600)
             && rename($temporary, $path);

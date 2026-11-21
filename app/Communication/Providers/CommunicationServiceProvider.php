@@ -78,26 +78,31 @@ final class CommunicationServiceProvider extends ServiceProvider
         $reads->declare('inbox_counts', $readGrant);
         $reads->declare('attachments_read', $readGrant);
         $system->allow(InboxNotices::SYSTEM_ENTRY, MessagePolicy::class);
+
         $policies->register('Core', new PolicyDefinition(
             MessagePolicy::class,
             [AccessType::Read, AccessType::Create, AccessType::Edit],
         ));
+
         $policies->register('Core', new PolicyDefinition(
             MessageAdministrationPolicy::class,
             [AccessType::Read, AccessType::Edit],
         ));
+
         $links->register([Message::LINK_TYPE => Message::class]);
         $pendingWork->register(PendingInboxWork::class);
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/communication.php');
         $incoming->register(MessageAnswerActivation::class);
         $assignments->registerOwner('Communication', []);
+
         $assignments->registerRecord(
             Message::LINK_TYPE,
             MessageClaimProvider::class,
             'Communication',
             AssignmentPurpose::InternalResponsibility,
         );
+
         $records->register(Message::LINK_TYPE, MessageLinkRecords::class);
         $numbers->register(NumberedModel::global(Message::class));
     }

@@ -55,6 +55,7 @@ final class FailureReceipt extends Model implements ReadableModel
     public static function receive(HookIdentity $hook, DriverFailure $failure): bool
     {
         $receipt = new self();
+
         $receipt->setRawAttributes([
             'id' => $receipt->newUniqueId(),
             'agent_id' => $hook->agentId,

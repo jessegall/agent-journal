@@ -33,6 +33,7 @@ final readonly class DocumentDocking implements DockableProvider
             ->whereKey($ids)
             ->readExactly(count($ids))
             ->get();
+
         $cards = [];
 
         foreach ($documents as $document) {

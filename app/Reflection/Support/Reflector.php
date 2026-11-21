@@ -81,6 +81,7 @@ final class Reflector
     private function __construct(string $name)
     {
         $this->type = new ReflectionClass($name);
+
         $this->declaredAttributes = new DeclarationAttributes(
             fn () => $this->type->getAttributes(),
             "class {$this->type->getName()}",

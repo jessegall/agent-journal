@@ -45,6 +45,7 @@ final readonly class AutoAssignmentStatuses
     {
         try {
             $fact = $row->toFact();
+
             $owners = [
                 $this->providers->recordOwner($fact->key->assignableType),
                 $this->providers->poolOwner($fact->pool->type),
@@ -87,9 +88,11 @@ final readonly class AutoAssignmentStatuses
 
         $held = $this->work->count($fact->key->assignableType, AssigneeIdentity::ofActorIdentity($actor));
         $room = min($fact->size, max(0, $this->room->available($fact, $held)));
+
         $totals = $this->access->mayReadTotals($this->actors->actor(), $actor)
             ? Some::create(new AssignmentTotals($held, $room))
             : None::create();
+
         $state = match (true) {
             $held > $fact->size => AutoAssignmentState::OverCapacity,
             $room === 0 => AutoAssignmentState::Full,

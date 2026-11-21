@@ -51,6 +51,7 @@ final readonly class ContainerAdmission
                 AccountModeType::Subscription,
                 ExecutionModeType::RequiredContainer,
             );
+
             $this->capabilities->capability($query)->assertSupported();
         }
     }

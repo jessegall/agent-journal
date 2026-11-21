@@ -37,10 +37,12 @@ final class AddPhaseTasksTest extends TestCase
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
+
         $phase = $this->planStructure()->addPhase(
             Plan::factory()->create(['title' => 'Build', 'type' => PlanType::Build]),
             'Read',
         );
+
         $first = Task::factory()->create(['title' => 'First'])->id;
         $second = Task::factory()->create(['title' => 'Second'])->id;
 
@@ -55,10 +57,12 @@ final class AddPhaseTasksTest extends TestCase
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
+
         $phase = $this->planStructure()->addPhase(
             Plan::factory()->create(['title' => 'Build', 'type' => PlanType::Build]),
             'Read',
         );
+
         $real = Task::factory()->create(['title' => 'Real'])->id;
 
         try {
@@ -75,10 +79,12 @@ final class AddPhaseTasksTest extends TestCase
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
+
         $phase = $this->planStructure()->addPhase(
             Plan::factory()->create(['title' => 'Build', 'type' => PlanType::Build]),
             'Read',
         );
+
         $task = Task::factory()->create(['title' => 'Twice'])->id;
 
         try {

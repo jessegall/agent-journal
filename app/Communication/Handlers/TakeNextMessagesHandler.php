@@ -18,11 +18,14 @@ final readonly class TakeNextMessagesHandler implements CommandHandler
     {
         [$inbox, $membership] = $this->reading->admit($command->inboxId, $command->dispatchedBy());
         $limit = max(1, min($command->limit, TakeNextMessages::LARGEST_LIMIT));
+
         $candidates = Message::query()
             ->waitingForTakeUp($inbox->inboxId(), TakeNextMessages::LARGEST_LIMIT)
             ->get()
             ->all();
+
         $held = $this->reading->heldIds(array_values(array_map(fn (Message $message) => $message->id, $candidates)));
+
         $free = array_slice(
             array_values(array_filter($candidates, fn (Message $message) => ! in_array($message->id, $held, true))),
             0,

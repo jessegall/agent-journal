@@ -54,12 +54,14 @@ final class DocumentDraftTest extends TestCase
         $parent = TestStart::start();
         $other = TestStart::start();
         $child = Agent::create('Document editor', 'writing-helper');
+
         $session = $this->app->make(AgentSessions::class)->start(
             $child,
             TestSelections::of(),
             TestSelections::requestId(),
             $parent->session,
         );
+
         $this->app->make(DeskOpening::class)->installSourceDesk('system', 'System');
         $inbox = $this->inboxOf(ActorIdentity::of($parent->agent));
 

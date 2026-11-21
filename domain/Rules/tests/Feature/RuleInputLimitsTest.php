@@ -45,6 +45,7 @@ final class RuleInputLimitsTest extends TestCase
             CommandInputInvalid::class,
             "{$field}:",
         );
+
         $this->assertSame(0, Rule::query()->count());
     }
 

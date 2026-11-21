@@ -31,10 +31,12 @@ final readonly class VisibleTasks implements TaskResolver
     {
         $this->actors->actor();
         $requestedTaskIds = array_values(array_unique($ids));
+
         $visibleTaskIds = array_values(array_map(
             strval(...),
             Task::query()->whereKey($requestedTaskIds)->readExactly(count($requestedTaskIds))->pluck('id')->all(),
         ));
+
         $this->assertAllFound($requestedTaskIds, $visibleTaskIds);
     }
 

@@ -44,6 +44,7 @@ final class PlanTaskPoolTest extends TestCase
             'plans.tasks',
             array_map(fn (PoolDefinition $pool) => $pool->key, $providers->pools(TaskType::VALUE)),
         );
+
         $this->assertSame('Plans', $providers->poolOwner('plans.tasks'));
         $this->assertInstanceOf(PlanTaskPoolFactory::class, $providers->poolFactory('plans.tasks'));
     }
@@ -85,10 +86,12 @@ final class PlanTaskPoolTest extends TestCase
     {
         $factory = $this->app->make(PlanTaskPoolFactory::class);
         $plan = Plan::factory()->create(['state' => $state]);
+
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($plan, 'Build'),
             [Task::factory()->create()->id],
         );
+
         $factory->validate(self::reference($plan), $this->builder);
 
         $this->assertThrows(
@@ -101,6 +104,7 @@ final class PlanTaskPoolTest extends TestCase
     public function test_a_plan_of_more_than_a_thousand_tasks_gives_none(): void
     {
         $plan = Plan::factory()->create(['state' => PlanState::Started]);
+
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($plan, 'Build'),
             array_map(fn () => (string) Str::ulid(), range(1, 1001)),
@@ -122,6 +126,7 @@ final class PlanTaskPoolTest extends TestCase
             fn () => $factory->validate(new PoolReference('plans.tasks', null, []), $this->builder),
             PlanPoolRefused::class,
         );
+
         $this->assertThrows(
             fn () => $factory->validate(
                 new PoolReference('plans.tasks', new RecordIdentity(TaskType::VALUE, $task), []),
@@ -129,6 +134,7 @@ final class PlanTaskPoolTest extends TestCase
             ),
             PlanPoolRefused::class,
         );
+
         $this->assertThrows(
             fn () => $factory->validate(
                 new PoolReference('plans.tasks', $plan->assignmentIdentity(), [$task]),
@@ -136,6 +142,7 @@ final class PlanTaskPoolTest extends TestCase
             ),
             PlanPoolRefused::class,
         );
+
         $this->assertThrows(
             fn () => $factory->validate(
                 new PoolReference('plans.tasks', new RecordIdentity(Plan::LINK_TYPE, TestIds::of(99)), []),

@@ -50,6 +50,7 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
         }
 
         $record = SettingsRecord::sharedRuntimeForOwner($owner);
+
         $document = $record->map(
             fn (SettingsRecord $found) => $found->document,
         )->getOrCall(SettingsDocument::empty(...));
@@ -72,6 +73,7 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
             $group,
             $document,
         ) : GroupAvailability::Always;
+
         $availability = $group instanceof ToggleGroup
             ? ToggleGroupAvailabilityData::from(['state' => $state, 'defaultEnabled' => $group->defaultEnabled])
             : PlainGroupAvailabilityData::from([]);

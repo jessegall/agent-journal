@@ -38,16 +38,20 @@ Route::prefix('host')->middleware('journal.host')->name('agents.host.')->group(f
     Route::post('/runtimes/{runtime}/start', StartGrantController::class)->name('start');
     Route::get('/runtimes/{runtime}/tool-discovery', ToolDiscoveryController::class)->name('runtimes.tool-discovery');
     Route::post('/runtimes/{runtime}/navigation', RaiseNavigationController::class)->name('navigation.raise');
+
     Route::post('/navigation/{navigation}/interrupt', InterruptNavigationController::class)
         ->name('navigation.interrupt');
+
     Route::post('/menu-entries/{entry}/replayed', ReplayedEntryController::class)->name('menu-entries.replayed');
     Route::post('/menu-entries/{entry}/stale', StaleEntryController::class)->name('menu-entries.stale');
     Route::post('/reports/activity', ActivityReportController::class)->name('reports.activity');
     Route::post('/reports/request', RequestReportController::class)->name('reports.request');
     Route::post('/reports/turn', TurnReportController::class)->name('reports.turn');
+
     Route::post('/reports/usage', UsageReportController::class)
         ->middleware(LimitUsageReport::class)
         ->name('reports.usage');
+
     Route::post('/reports/heartbeat', HeartbeatReportController::class)->name('reports.heartbeat');
     Route::post('/reports/exit', ExitReportController::class)->name('reports.exit');
     Route::post('/reports/screen', ScreenReportController::class)->name('reports.screen');

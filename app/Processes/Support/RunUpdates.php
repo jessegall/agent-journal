@@ -46,12 +46,14 @@ final readonly class RunUpdates
         $run = ProcessRun::ofAnyActor($part->process_run_id);
         $position = ReaderPosition::query()->where('part_run_id', $part->id)->latest('updated_at')->first();
         $assessment = OutputAssessment::latestOf($part);
+
         $projection = new PartProjection(
             $part->id,
             $position === null ? '' : $position->reader_revision_id,
             $assessment === null ? '' : $assessment->id,
             $position === null ? [] : $position->checkpoint()->offsets,
         );
+
         $this->events->dispatch(new RunChanged($run->id, $run->nextUpdate(), [$projection]));
     }
 }

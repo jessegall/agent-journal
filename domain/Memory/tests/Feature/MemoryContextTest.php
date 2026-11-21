@@ -91,6 +91,7 @@ final class MemoryContextTest extends TestCase
     private function answer(string $callId, HookInput $input, string $method): string
     {
         $this->callAs($callId, hash('sha256', $callId));
+
         $capabilities = new DriverCapabilities(
             'Test program',
             'context starts',

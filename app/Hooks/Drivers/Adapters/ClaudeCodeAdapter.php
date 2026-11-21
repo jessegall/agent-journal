@@ -145,6 +145,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
     private function startCall(HookPayload $hookInput, HookIdentity $hook): DriverCall
     {
         $source = $hookInput->startSource();
+
         $input = $source === ContextStartType::Compact
             ? new ContextCompacted($hook, new CompactionDetails($hook->hookId))
             : new SessionStarted($hook, $hookInput->startDetails());

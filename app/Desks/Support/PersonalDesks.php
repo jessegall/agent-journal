@@ -26,10 +26,12 @@ final readonly class PersonalDesks implements ActorDesks
     {
         $desk = $this->desks->openPersonal($label);
         $seat = DeskSeat::query()->ofDesk($desk)->sole();
+
         $seated = $this->responsibilities->assign(
             $seat->assignmentIdentity(),
             AssigneeIdentity::ofActorIdentity($actor),
         );
+
         $desk->advanceSeating();
         $this->preferences->prefer($actor, $desk);
 

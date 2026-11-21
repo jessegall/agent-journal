@@ -25,6 +25,7 @@ final readonly class DockNodeTypes implements TransformedProvider
             fn (PartDescriptor $descriptor) => $this->alias($descriptor->nodeName(), $descriptor->typeScript()),
             $this->parts->descriptors(),
         );
+
         $names = array_map(fn (PartDescriptor $descriptor) => $descriptor->nodeName(), $this->parts->descriptors());
         $union = implode(' | ', $names);
         $version = EncodedCard::VERSION;

@@ -33,6 +33,7 @@ final readonly class AgentWakes
             $idempotencyKey,
             DriverRequestPayload::nothing(),
         );
+
         $wake->claimWake(1);
 
         return $wake->receipt();

@@ -70,9 +70,11 @@ trait OpensTeamDeskMessage
         $this->app->forgetScopedInstances();
         $this->startUserRequestAs($this->owner->id);
         $seat = DeskSeat::query()->ofDesk($this->desk)->sole();
+
         $this->app->make(AssignmentTransaction::class)->run(function () use ($seat, $agentId): void {
             $current = $this->app->make(AssignmentStore::class)->lockCurrent($seat->assignmentIdentity())->get();
             $successor = new ActorIdentity(ActorType::Agent, $agentId);
+
             $this->app->make(DeskSeating::class)
                 ->replace(new SeatChange($this->desk->id, $seat->id, $current->reference, $successor));
         });

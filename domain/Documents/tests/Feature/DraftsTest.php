@@ -81,26 +81,31 @@ final class DraftsTest extends TestCase
     public function test_two_saves_close_into_exactly_one_next_revision(): void
     {
         $draft = $this->bus()->run(new OpenDocument('1'));
+
         $draft = $this->bus()->run(new EditDocument($draft->target(), '3', <<<'TEXT'
         ## Risks
         Late.
 
         TEXT));
+
         $draft = $this->bus()->run(new ChangeDocumentDetails($draft->target(), 'Design', 'What we build next'));
         $closed = $this->bus()->run(new CloseDocument($draft->target()));
 
         $this->assertSame(3, $draft->version);
         $this->assertSame([2, true], [$closed->revisionNumber, $closed->published]);
+
         $this->assertStringContainsString(<<<'TEXT'
         ## Risks
         Late.
 
         TEXT, $this->documents()->show(1)->body);
+
         $this->assertStringContainsString(<<<'TEXT'
         ## Steps
         One.
 
         TEXT, $this->documents()->show(1)->body);
+
         $this->assertSame(self::BODY, $this->documents()->revision(1, 1)->body);
         $this->assertTrue($this->documents()->revision(1, 1)->historical);
         $this->assertCount(2, $this->documents()->revisions(1, 1));
@@ -155,6 +160,7 @@ final class DraftsTest extends TestCase
     public function test_refused_edits_name_their_cause_and_change_nothing(): void
     {
         $draft = $this->bus()->run(new OpenDocument('1'));
+
         $refusals = [
             [new ReplaceDocumentText($draft->target(), '.', '!'), TextMatchInvalid::class],
             [
@@ -182,6 +188,7 @@ final class DraftsTest extends TestCase
     public function test_a_title_over_its_limit_is_refused_and_the_draft_keeps_its_text(): void
     {
         $draft = $this->bus()->run(new OpenDocument('1'));
+
         $tooLong = new ChangeDocumentDetails(
             $draft->target(),
             str_repeat('a', Document::TITLE_CHARACTER_LIMIT + 1),
@@ -189,6 +196,7 @@ final class DraftsTest extends TestCase
         );
 
         $this->assertThrows(fn () => $this->bus()->run($tooLong), CommandInputInvalid::class, 'title:');
+
         $this->assertSame([1, 'Design'], [
             DocumentDraft::query()->sole()->version,
             DocumentDraft::query()->sole()->title,

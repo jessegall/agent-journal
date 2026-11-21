@@ -47,10 +47,12 @@ final readonly class ContractSnapshot
     {
         $before = ContractSnapshotData::from(json_decode($recorded, true, flags: JSON_THROW_ON_ERROR));
         $after = ContractSnapshotData::from(json_decode($current, true, flags: JSON_THROW_ON_ERROR));
+
         $changes = [
             ...$this->changedFields($before->topLevelFields(), $after->topLevelFields()),
             ...$this->changedFields($before->resources, $after->resources),
         ];
+
         $oldProfiles = $before->profiles;
         $newProfiles = $after->profiles;
 

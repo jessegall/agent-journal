@@ -52,20 +52,25 @@ final class SkillsServiceProvider extends ServiceProvider
         $this->app->scoped(EvaluationGuard::class);
         $this->app->scoped(SkillContextResolver::class);
         $this->app->scoped(SkillStatusResolver::class);
+
         $this->app->scoped(
             SkillContext::class,
             fn (Application $app) => $app->make(SkillContextResolver::class)->current(),
         );
+
         $this->app->singleton(
             SkillTargets::class,
             fn () => new SkillTargets($this->app->make(Repository::class)->string(Place::HostSkills->rootSetting())),
         );
+
         $this->app->bind(SkillPublisher::class, HostSkillPublisher::class);
         $this->app->scoped(FileAccessPolicy::class, DeliveredSkillsAccess::class);
+
         $this->app->bind(SkillTables::class, fn (Application $app) => new SkillTables(
             $app->make(DatabaseManager::class)->connection()->getSchemaBuilder(),
             ['skills', 'skill_revisions', 'skill_requests', 'skill_generations', 'skill_publications'],
         ));
+
         $this->app->scoped(SkillResolver::class, fn (Application $app) => new CatalogueOnFirstRead(
             fn () => SkillCatalogue::build(
                 $app->make(SkillRegistry::class),
@@ -83,10 +88,12 @@ final class SkillsServiceProvider extends ServiceProvider
             SkillPolicy::class,
             [AccessType::Read],
         ));
+
         $policies->register('Core', new PolicyDefinition(
             SkillAuthoringPolicy::class,
             [AccessType::Create, AccessType::Edit],
         ));
+
         $numbers->register(NumberedModel::global(Skill::class));
 
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {

@@ -78,14 +78,18 @@ final class SharingTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
+
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new CreateDocument('Design', 'What we build', self::BODY));
+
         $bus->run(new CreateReport('Check', 'What we found', <<<'TEXT'
         # Found
         All good.
 
         TEXT));
+
         $draft = $bus->run(new OpenDocument('1'));
+
         $bus->run(
             new ReplaceDocumentBody(
                 $draft->target(),
@@ -96,6 +100,7 @@ final class SharingTest extends TestCase
                 TEXT,
             ),
         );
+
         $this->document = Document::query()->where('number', 1)->sole();
         $this->report = Report::query()->where('number', 1)->sole();
     }
@@ -111,6 +116,7 @@ final class SharingTest extends TestCase
             [[Document::LINK_TYPE, ['share-linked-record']], [Report::LINK_TYPE, ['share-linked-record']]],
             $aliases,
         );
+
         $this->assertSame(ShareRelationType::Owned, Document::shareRelations()->find('comments')->get()->type);
         $this->assertSame('share-comment', Report::shareRelations()->find('comments')->get()->capability);
     }
@@ -140,6 +146,7 @@ final class SharingTest extends TestCase
         All good.
 
         TEXT, $content->body);
+
         $this->assertSame(['Check', '1'], [$content->card->title, $content->card->publicationVersion]);
     }
 
@@ -148,6 +155,7 @@ final class SharingTest extends TestCase
         DB::table('reports')->where('id', $this->report->id)->update(
             ['body' => str_repeat('a', MarkdownText::BODY_BYTES + 1)],
         );
+
         $budget = $this->budget();
 
         $this->assertThrows(
@@ -157,6 +165,7 @@ final class SharingTest extends TestCase
             ),
             ContentTooLarge::class,
         );
+
         $this->assertSame(0, $budget->textBytes());
     }
 
@@ -164,6 +173,7 @@ final class SharingTest extends TestCase
     {
         $documents = $this->app->make(DocumentShareProvider::class);
         $missing = new RecordIdentity(Document::LINK_TYPE, TestIds::of(77));
+
         $page = $documents->readTargets(
             new ShareTargetRead([], [$this->document->shareIdentity(), $missing, $this->report->shareIdentity()], null),
             $this->budget(),
@@ -172,6 +182,7 @@ final class SharingTest extends TestCase
         $this->assertSame([$this->document->id], array_map(fn ($card) => $card->record->id, $page->eligible));
         $this->assertEquals([$missing, $this->report->shareIdentity()], $page->ineligible);
         $this->assertFalse($documents->mayDisclose($missing));
+
         $this->assertThrows(
             fn () => $documents->preview(new ShareSelection($missing, []), $this->budget()),
             RecordUnavailable::class,
@@ -190,6 +201,7 @@ final class SharingTest extends TestCase
                 new ShareRelationRead($this->document->shareIdentity(), 'comments', 100, $continuation),
                 $this->budget(),
             );
+
             array_push($seen, ...array_map(fn (ShareRecordCard $card) => $card->record->id, $page->eligible));
             $continuation = $page->continuation;
         } while ($continuation !== null);
@@ -210,6 +222,7 @@ final class SharingTest extends TestCase
             ['Ship it.', ShareRecordCard::QUOTE_NOT_IN_VERSION, null],
             array_map(fn (ShareRecordCard $card) => $card->quote, $page->eligible),
         );
+
         $this->assertSame(
             ['Agreed', 'Why?', 'Overall fine'],
             array_map(fn (ShareRecordCard $card) => $card->excerpt, $page->eligible),

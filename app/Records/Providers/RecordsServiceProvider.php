@@ -42,6 +42,7 @@ final class RecordsServiceProvider extends ServiceProvider
             'Core',
             new PolicyDefinition(RecordLinkPolicy::class, [AccessType::Create, AccessType::Edit]),
         );
+
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/links.php');
 
         if ($this->app->runningInConsole()) {

@@ -37,11 +37,13 @@ final readonly class MessageAnswerActivation implements IncomingWork
         }
 
         $actor = AssigneeIdentity::of($this->actors->actor());
+
         $heldIds = AssignmentRecord::query()
             ->heldRecordIds(Message::LINK_TYPE, $actor)
             ->limit(self::LARGEST_PASS)
             ->pluck('record_id')
             ->all();
+
         $valid = $this->proved->validClaimsOn(Message::LINK_TYPE, array_values(array_map('strval', $heldIds)));
         $oldest = $valid === [] ? null : $valid[min(array_keys($valid))];
 

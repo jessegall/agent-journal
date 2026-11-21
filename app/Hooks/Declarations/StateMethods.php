@@ -62,8 +62,10 @@ final class StateMethods
         $name = $method->name();
         $parameterClass = $this->argumentClass($method);
         $returnType = $method->returnType();
+
         $returnsCommands = $returnType->filter(fn (DeclaredType $type) => $type->isNamedAs(EventCommands::class))
             ->isDefined();
+
         $takesEvent = $parameterClass !== null
             && Reflector::factory()->is($parameterClass, Event::class);
 

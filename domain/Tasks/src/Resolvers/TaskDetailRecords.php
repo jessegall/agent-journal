@@ -27,9 +27,11 @@ final readonly class TaskDetailRecords implements TaskDetailsResolver
     {
         $this->visibility->requireVisible($taskId);
         $task = Task::query()->whereKey($taskId)->sole();
+
         $holder = $this->assignees->holdersOfRecords(
             [$task->assignmentIdentity()],
         )->forRecord($task->assignmentIdentity());
+
         $execution = $this->executions->of($task->newCollection([$task]))[$task->id];
 
         return $view->includesText()

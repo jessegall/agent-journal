@@ -36,6 +36,7 @@ final readonly class DockListing
             ->orderBy('id')
             ->readExactly($limit + 1)
             ->get();
+
         $listed = $placements->take($limit)->map(
             fn (DockPlacement $placement) => self::listed($placement, $shown[$placement->id] ?? null),
         );

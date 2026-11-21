@@ -332,6 +332,7 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
         $title = $last === null ? 'Process run' : "Run of {$last->operation}";
         $ended = self::allPartsFinal($parts);
         $startedAt = $parts->first()?->started_at;
+
         $cardParts = [
             new Title('title', $title),
             new StateLabel('state', $ended ? 'Ended' : 'Running', $ended ? Tone::Muted : Tone::Note),

@@ -36,6 +36,7 @@ final class InboxRecord extends Model implements ReadableModel
             'provider_key' => $providerKey,
             'provider_id' => $providerId,
         ]);
+
         $inbox->save();
 
         return $inbox;

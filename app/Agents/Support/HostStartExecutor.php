@@ -36,6 +36,7 @@ final readonly class HostStartExecutor implements StartExecutor
             'workspace' => $start->workspace,
             'accountReference' => $start->accountReference,
         ]]);
+
         $reply = HostStartReplyData::from(json_decode($line, true, flags: JSON_THROW_ON_ERROR));
 
         return new ExecutionReceipt(

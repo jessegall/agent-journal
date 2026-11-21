@@ -45,11 +45,13 @@ final class Conversation extends Pivot implements ReadableModel
     public static function between(string $firstInboxId, string $secondInboxId): self
     {
         [$low, $high] = self::ordered($firstInboxId, $secondInboxId);
+
         $conversation = new self([
             'id' => strtolower((string) Str::ulid()),
             'low_inbox_id' => $low,
             'high_inbox_id' => $high,
         ]);
+
         $conversation->insertIfAbsent();
 
         return self::query()

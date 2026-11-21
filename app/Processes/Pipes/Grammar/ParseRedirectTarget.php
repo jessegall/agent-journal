@@ -76,11 +76,15 @@ final readonly class ParseRedirectTarget implements Pipe
     {
         $cursor = $toParse->cursor();
         $offset = $cursor->offset();
+
         $body = $cursor->takeHereDocumentBody()
             ?? throw ShellGrammarStopped::invalid('A here-document has no body.', $range->start);
+
         $node = $toParse->draft()->add(NodeType::HereDocument, $body->range->shiftedBy($offset), $toParse->owner);
+
         $hereDocument = $body->hereDocument
             ?? throw ShellGrammarStopped::invalid('A here-document has no body.', $range->start);
+
         $redirect = new Redirect($descriptor, RedirectType::HereDocument, $hereDocument, $range);
 
         if ($body->word === null) {

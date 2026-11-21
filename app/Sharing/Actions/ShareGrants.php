@@ -47,6 +47,7 @@ final readonly class ShareGrants
     {
         $consumed = $this->consume($owner, $previewId, $previewChecksum);
         $this->assertLiveSlotFree();
+
         $share = Share::create(
             $consumed->root,
             $duration->deadlineFrom(CarbonImmutable::now()),
@@ -57,6 +58,7 @@ final readonly class ShareGrants
                 ShareToken::generate(),
             ),
         );
+
         ShareGatewayOperation::create($consumed->configuration, GatewayOperationType::Open);
 
         $this->publish($owner, $share, $consumed, ShareAuditType::Created);
@@ -88,6 +90,7 @@ final readonly class ShareGrants
             ShareToken::generate(),
             $duration->deadlineFrom(CarbonImmutable::now()),
         );
+
         ShareGatewayOperation::create($consumed->configuration, GatewayOperationType::Open);
 
         $this->publish($owner, $proposal, $consumed, ShareAuditType::Approved);

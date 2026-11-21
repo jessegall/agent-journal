@@ -35,6 +35,7 @@ final readonly class PlanAssignmentGroup
     private function forPlan(RecordIdentity $root): AssignmentGroup
     {
         $plan = Plan::lockStructure($root->id);
+
         $phases = Phase::query()->where(
             'plan_id',
             $plan->id,

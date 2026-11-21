@@ -44,6 +44,7 @@ final class PlanWorkingStateTest extends TestCase
     public function test_an_agent_starting_a_plan_gets_its_working_frame_once(): void
     {
         $plan = $this->plan();
+
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent(TestIds::of(1)),
             TestStartAuthority::forAgent(TestIds::of(1)),
@@ -53,6 +54,7 @@ final class PlanWorkingStateTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartPlan($plan->id));
 
         $this->assertSame([WorkingOnPlanStateReference::TYPE_KEY], $this->frameTypes());
+
         $this->assertSame(
             $plan->id,
             $this->app->make(CurrentState::class)->of(
@@ -65,6 +67,7 @@ final class PlanWorkingStateTest extends TestCase
     public function test_a_user_starting_a_plan_changes_no_stack(): void
     {
         $plan = $this->plan();
+
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),

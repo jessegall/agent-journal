@@ -194,6 +194,7 @@ final readonly class ConditionTree
     {
         [$policy, $access] = str_contains($key, ':') ? explode(':', $key, 2) : [$key, ''];
         $accessType = AccessType::tryFrom($access);
+
         $definition = array_find(
             $this->policies->grantable(),
             fn (PolicyDefinition $definition) => $definition->policy === $policy

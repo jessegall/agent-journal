@@ -116,6 +116,7 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
             'creator_id' => $author->actorId(),
             'filed_at' => CarbonImmutable::now(),
         ]);
+
         $report->assertSaved($report->save());
         $report->raise(new ReportFiled($report->id, $report->number, ActorContext::of($author)));
 
@@ -226,6 +227,7 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
             $this->attention->stateLabel(),
             new Subtitle('abstract', mb_strimwidth($this->abstract, 0, self::DOCK_ABSTRACT_CHARACTER_LIMIT, '…')),
         ];
+
         $open = new DockDestination('documents.report', new DestinationArgument('report', (string) $this->number));
 
         foreach ($context->permittedDestination($open) as $permitted) {

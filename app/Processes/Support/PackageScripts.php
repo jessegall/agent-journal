@@ -46,6 +46,7 @@ final readonly class PackageScripts
 
         $texts = array_map(fn (Word $word): string => (string) $word->literal(), array_slice($words, 1, 2));
         $first = $texts[0] ?? '';
+
         $name = match (true) {
             in_array($first, ['run', 'run-script'], true) => $texts[1] ?? '',
             $first === 'test' && $manager !== 'composer' => 'test',

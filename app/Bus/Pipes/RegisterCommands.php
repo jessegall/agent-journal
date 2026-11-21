@@ -51,6 +51,7 @@ final readonly class RegisterCommands implements Pipe
     private function middlewareFor(DeclaredCommand $declared, CommandDeclarations $declarations): array
     {
         $order = array_flip(array_map(static fn ($one) => $one->name, $declarations->owners));
+
         $applying = array_values(array_filter(
             $declarations->middleware,
             static fn (RegisteredMiddleware $entry) => $entry->appliesTo(
@@ -58,6 +59,7 @@ final readonly class RegisterCommands implements Pipe
                 $declared->owner->domainClass,
             ),
         ));
+
         $position = array_flip(array_keys($applying));
 
         // Stage first, then the owner's place, then the declaration's place, as one whole number to sort by.
@@ -66,6 +68,7 @@ final readonly class RegisterCommands implements Pipe
         )
             + $order[$entry->owner] * 100_000
             + $position[array_search($entry, $applying, true)];
+
         usort(
             $applying,
             static fn (RegisteredMiddleware $one, RegisteredMiddleware $other) => $rank($one) <=> $rank($other),

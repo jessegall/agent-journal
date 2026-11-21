@@ -94,9 +94,11 @@ final class TaskStateContributionTest extends TestCase
         $claims = $this->app->make(RunClaims::class);
 
         $held = $this->answerStop('call-1');
+
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $claims->release($run->assignmentIdentity()),
         );
+
         $released = $this->answerStop('call-2');
 
         $this->assertStringContainsString("Task {$task->number} still needs work", $held);
@@ -111,9 +113,11 @@ final class TaskStateContributionTest extends TestCase
         $run = $task->fresh()?->currentRun();
         $this->assertNotNull($run);
         $claims = $this->app->make(RunClaims::class);
+
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $claims->release($run->assignmentIdentity()),
         );
+
         $frames = $this->taskFrames();
 
         $this->assertThrows(
@@ -122,6 +126,7 @@ final class TaskStateContributionTest extends TestCase
             ),
             ActivationDeclined::class,
         );
+
         $this->assertSame($frames, $this->taskFrames());
     }
 
@@ -132,6 +137,7 @@ final class TaskStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartTask($first->id));
         $this->app->make(CommandBus::class)->run(new StartTask($second->id));
         $pairQueries = [];
+
         $this->app->make('db')->listen(function (QueryExecuted $query) use (&$pairQueries): void {
             if (str_contains($query->sql, 'from "task_runs" where (("task_id" = ?')) {
                 $pairQueries[] = substr_count($query->sql, '"run_number" = ?');

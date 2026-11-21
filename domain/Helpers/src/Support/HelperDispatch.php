@@ -127,10 +127,12 @@ final readonly class HelperDispatch
 
         $this->assertNoOpenJob($identity);
         $purpose = $this->purposeOf($request);
+
         $candidates = array_filter(
             $this->candidatesFor($request, $profile, $purpose),
             fn (HelperCandidate $candidate) => $candidate->identity->id === $identity->id,
         );
+
         $conversation = $candidates === []
             ? new ConversationChoice(false, ConversationModeType::New, self::ADDRESSED_REASON)
             : ConversationChoice::reusing(array_values($candidates)[0]);
@@ -152,6 +154,7 @@ final readonly class HelperDispatch
         $profile = $this->admittedProfile($identity->profile_key, $model, $driverKey);
         $this->reserve($identity);
         $job->reopenForAttempt();
+
         $start = $this->commands->run(new StartOwnedAgent(new OwnerStartRequest(
             $requestId,
             $identity->helperActor(),
@@ -350,6 +353,7 @@ final readonly class HelperDispatch
         $helper = $identity->helperActor();
         $this->reserve($identity);
         $this->assertNoOpenJob($identity);
+
         $job = HelperJob::create(
             $identity,
             $purpose,
@@ -366,7 +370,9 @@ final readonly class HelperDispatch
                 $conversation->reason,
             ),
         );
+
         $this->responsibilities->assign($job->assignmentIdentity(), AssigneeIdentity::ofActorIdentity($helper));
+
         $start = $this->commands->run(new StartOwnedAgent(new OwnerStartRequest(
             $job->id,
             $helper,

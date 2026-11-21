@@ -33,6 +33,7 @@ final readonly class AbandonNavigationHandler implements CommandHandler
         $this->answering->assertCurrentVersion($navigation, $command->expectedRowVersion);
 
         $this->endings->abandon($navigation, $command->reason);
+
         DriverRequest::query()
             ->whereKey($navigation->driver_request_id)
             ->lockForUpdate()

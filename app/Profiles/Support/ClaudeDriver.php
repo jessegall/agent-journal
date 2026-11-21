@@ -72,6 +72,7 @@ final readonly class ClaudeDriver
     {
         $arguments = ['-p', 'Reply with OK.', '--output-format', 'json', '--max-turns', '1', '--tools', '',
             '--no-session-persistence'];
+
         $process = $this->start($arguments, $directory, $variables, $readFiles);
         // claude -p reads its standard input to the end before it answers.
         $process->closeInput();

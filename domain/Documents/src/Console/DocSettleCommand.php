@@ -30,6 +30,7 @@ final class DocSettleCommand extends Command
             $revision = is_string($this->option('revision'))
                 ? (int) $this->option('revision')
                 : (int) $documents->showDocument($number)->revision;
+
             $documents->settleDocument($number, (string) $this->option('why'), $revision);
 
             return CommandReport::ending(self::SUCCESS)->line("Settled {$number}.");

@@ -59,6 +59,7 @@ final readonly class PublicationChunks
     public function page(string $text, Continuation $position, string $selectorName, array $card): ToolResult
     {
         $chunk = $this->chunk($text, $position);
+
         $next = $chunk->hasMore ? [$this->continuations->link(new Continuation(
             $position->tool,
             $position->selector,

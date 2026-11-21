@@ -35,6 +35,7 @@ final readonly class ChildCommand
 
         foreach ($children as $child) {
             $contracts = [...$contracts, ...$child->contracts];
+
             $facts = [
                 ...$facts,
                 ...array_map(
@@ -47,6 +48,7 @@ final readonly class ChildCommand
                     $child->facts,
                 ),
             ];
+
             $unresolved = [
                 ...$unresolved,
                 ...array_map(
@@ -54,6 +56,7 @@ final readonly class ChildCommand
                     $child->unresolved,
                 ),
             ];
+
             $purpose = $purpose === CommandType::Ordinary ? $child->purpose : $purpose;
         }
 

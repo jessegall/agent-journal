@@ -36,14 +36,17 @@ final readonly class HelperCandidates
             ->readAll('the parent\'s helper identities of one profile, every one a candidate')
             ->get()
             ->keyBy(fn (HelperIdentity $identity) => $identity->helper_actor_id);
+
         $identityIds = array_values(
             array_map(fn (HelperIdentity $identity): string => $identity->id, $identities->all()),
         );
+
         $jobs = HelperJob::query()
             ->ofIdentities($identityIds)
             ->readAll('the jobs of those identities, for their open work and last finishes')
             ->get()
             ->groupBy('helper_identity_id');
+
         $exposedIdentityIds = $this->exposedIdentities($query, $identityIds);
 
         $ranked = $this->launches->rank(new LaunchCandidateQuery(
@@ -85,6 +88,7 @@ final readonly class HelperCandidates
     private function factsOf(HelperIdentity $identity, array $jobs, CandidateQuery $query): LaunchCandidateFacts
     {
         $finished = array_values(array_filter($jobs, fn (HelperJob $job) => $job->state === JobState::Finished));
+
         $matching = array_values(array_filter(
             $finished,
             fn (HelperJob $job) => $job->helper_purpose_id === $query->purpose->id,

@@ -26,6 +26,7 @@ final readonly class StoredOutput
     {
         $disk = $this->disks->disk(SpoolRecorder::DISK);
         $bytes = '';
+
         OutputChunk::query()
             ->where('part_run_id', $part->id)
             ->where('stream', $stream->value)
@@ -49,6 +50,7 @@ final readonly class StoredOutput
     {
         $disk = $this->disks->disk(SpoolRecorder::DISK);
         $frames = [];
+
         OutputChunk::query()
             ->where('part_run_id', $part->id)
             ->where('stream', $stream->value)

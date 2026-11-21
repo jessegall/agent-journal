@@ -28,9 +28,11 @@ final readonly class SaveSharePreviewHandler implements CommandHandler
         $owner = $command->dispatchedBy();
         $this->policy->assertManager($owner);
         $root = new RecordIdentity($command->rootType, $command->rootId);
+
         $configuration = $command->gatewayConfigurationId === null
             ? ShareGatewayConfiguration::usableDefault()
             : ShareGatewayConfiguration::usable($command->gatewayConfigurationId);
+
         $candidates = $this->scope->discover($root, MeteredShareBudget::forPreview($this->meter));
         $selection = $candidates->selection($command->selectedIds);
         $preview = SharePreview::create($owner->actorId(), $root, $selection, $configuration);

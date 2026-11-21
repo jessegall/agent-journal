@@ -70,6 +70,7 @@ final class TaskRun extends Model implements Assignable, ReadableModel
             'state' => TaskRunState::Running,
             'reply_inbox_id' => $replyInboxId->getOrElse(null),
         ]);
+
         $run->save();
 
         return $run;

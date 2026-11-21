@@ -42,6 +42,7 @@ final class StartPlanTest extends TestCase
 
         Event::fake([PlanStarted::class]);
         $this->plan = Plan::factory()->create(['title' => 'Build the plans page', 'type' => PlanType::Build]);
+
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
@@ -54,6 +55,7 @@ final class StartPlanTest extends TestCase
 
         $this->assertSame(PlanState::Started, $this->plan->fresh()?->state);
         Event::assertDispatchedTimes(PlanStarted::class, 1);
+
         Event::assertDispatched(
             PlanStarted::class,
             fn (

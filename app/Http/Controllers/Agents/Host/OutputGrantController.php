@@ -23,6 +23,7 @@ final readonly class OutputGrantController
     {
         $startKey = $request->startKey();
         $start = ProcessStart::claimedBy($host->hostId, $startKey);
+
         $paths = array_map(
             fn (SessionOutputPaths $paths) => $paths->transcriptPath,
             SessionOutputGrant::currentOf($start),

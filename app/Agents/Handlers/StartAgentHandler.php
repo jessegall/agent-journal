@@ -91,9 +91,11 @@ final readonly class StartAgentHandler implements CommandHandler
                 $request->chosenAccount->accountId,
                 $request->chosenAccount->reviewedSignIn,
             );
+
         $parent = $request->parentSessionId === null
             ? null
             : AgentSession::query()->findOrFail($request->parentSessionId);
+
         $started = $this->starts->startInTransaction(
             $agent,
             $request->selection,
@@ -102,11 +104,13 @@ final readonly class StartAgentHandler implements CommandHandler
             $request->authorizedSource,
             $this->hostRuntimeOf($request),
         );
+
         $this->pendingStarts->register($started->session, $account);
         $this->wakeOnHost($started);
         SessionPolicy::create($started->session, $request->policy);
         $record->startedAs($started->session);
         $this->pendingSecrets->keep($request->requestId, $started);
+
         $this->facts->publishAfterCommit(new StartAccepted(
             $request->requestId,
             $request->agentId,

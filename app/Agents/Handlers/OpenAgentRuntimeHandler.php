@@ -56,6 +56,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         $this->arrangement->assertFits($host);
 
         $parent = $this->parentSessionFor($command);
+
         $intent = new RuntimeIntent(
             $host->id,
             $command->folder,
@@ -75,6 +76,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
             null,
             null,
         );
+
         $this->arrangement->assertContainable($selection->driver);
 
         $agent = Agent::query()->findOrFail($command->agentId);
@@ -87,6 +89,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         }
 
         $account = $this->accounts->forStart($selection->driver);
+
         $started = $this->starts->start(
             $agent,
             $selection,
@@ -94,6 +97,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
             $parent,
             $intent,
         );
+
         $this->pendingStarts->register($started->session, $account);
         SessionPolicy::create($started->session, $policy);
 

@@ -33,6 +33,7 @@ final readonly class ProfileLanguageReader implements ProfileLanguage
             fn (RegisteredKeyword $keyword) => $this->keyword($keyword),
             $this->keywords->all(),
         )));
+
         $objects = array_map(
             fn (ObjectDefinition $object) => ScriptObjectData::fromDefinition(
                 $object,

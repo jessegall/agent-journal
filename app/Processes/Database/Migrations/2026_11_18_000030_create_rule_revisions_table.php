@@ -18,9 +18,11 @@ return new class extends Migration
             $table->string('scope_version');
             $table->string('rule_id');
             $table->unsignedInteger('revision');
+
             $table->foreignUlid('rule_proposal_revision_id')
                 ->constrained('rule_proposal_revisions')
                 ->restrictOnDelete();
+
             $table->jsonb('payload');
             $table->jsonb('script_bindings');
             $table->jsonb('reader_approvals');

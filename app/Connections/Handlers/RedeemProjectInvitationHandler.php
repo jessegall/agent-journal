@@ -43,12 +43,14 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
         }
 
         $folder = $command->folder;
+
         $host = Host::create(
             $folder->machineLabel,
             $command->hostCredential,
             [$folder->canonicalRoot],
             ArrangementType::Local,
         );
+
         $project = $this->projectOf($invitation, $command->projectLabel);
         $mainAgent = Agent::create("{$project->label} main agent", self::MAIN_AGENT_PROFILE);
         $binding = ProjectBinding::create($host, $project, $mainAgent, $folder);

@@ -45,6 +45,7 @@ final class HelperContinueTest extends TestCase
         $job = HelperJob::query()->findOrFail($receipt->jobId);
         $notice = HelperNotice::query()->sole();
         $this->assertSame(JobState::Unfinished, $job->state);
+
         $this->assertStringContainsString(
             sprintf("journal helper continue '%s' --job '%s' --model '", $receipt->identityId, $receipt->jobId),
             $notice->text,

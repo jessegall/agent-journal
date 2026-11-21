@@ -66,6 +66,7 @@ final readonly class ListenerOwnership
                 self::EXPANDED_INTERFACES,
                 fn (string $interface) => $this->reflectors->isSubclassOf($event, $interface),
             ) !== [];
+
             $isExportedUiEvent = $owner->exportsEvent($event) && $isExpanded;
 
             if (! $isExportedUiEvent) {
@@ -140,6 +141,7 @@ final readonly class ListenerOwnership
     {
         $file = $this->reflectors->make($class)->fileName()->getOrElse('');
         $domain = $this->domainHoldingListener($file);
+
         $isCoreListener = array_any(
             $this->coreListenerFolders,
             fn (string $folder) => str_starts_with($file, $folder.DIRECTORY_SEPARATOR),
@@ -200,6 +202,7 @@ final readonly class ListenerOwnership
         }
 
         $parameters = Reflector::of($listenerClass)->method($method)->parameters();
+
         $type = $parameters === [] ? '' : $parameters[0]->type()
             ->filter(fn (DeclaredType $declared) => $declared->isNamed())
             ->map(fn (DeclaredType $declared) => $declared->name())

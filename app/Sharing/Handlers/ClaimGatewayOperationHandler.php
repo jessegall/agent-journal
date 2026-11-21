@@ -39,6 +39,7 @@ final readonly class ClaimGatewayOperationHandler implements CommandHandler
         $configuration = ShareGatewayConfiguration::lockById(
             ShareGatewayOperation::of($operationId)->share_gateway_configuration_id,
         );
+
         $running = ShareGatewayEndpoint::lockRunningOf($configuration, $command->runId);
         $operation = ShareGatewayOperation::lockById($operationId);
 

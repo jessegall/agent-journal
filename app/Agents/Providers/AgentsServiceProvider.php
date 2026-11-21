@@ -154,6 +154,7 @@ final class AgentsServiceProvider extends ServiceProvider
     {
         $this->app->bind(ReadGrantContract::class, ReadGrant::class);
         $this->app->bind(AgentResolver::class, AgentLabels::class);
+
         $this->app->scoped(RequestSession::class, static fn (Container $app) => new RequestSession(
             static fn (): Option => $app->resolved(AgentContext::class)
                 ? new Some($app->make(AgentContext::class))
@@ -168,6 +169,7 @@ final class AgentsServiceProvider extends ServiceProvider
                 $app->instance(AgentContext::class, $context->get());
             },
         ));
+
         $this->app->alias(RequestSession::class, CurrentSession::class);
         $this->app->alias(RequestSession::class, AgentCallContext::class);
         $this->app->bind(ToolDiscovery::class, SessionToolDiscovery::class);
@@ -176,9 +178,11 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(RuntimeStops::class, DriverRuntimeStops::class);
         $this->app->bind(NavigationReader::class, NavigationRecords::class);
         $this->app->bind(TerminalViewCloser::class, TerminalViews::class);
+
         $this->app->bind(StartExecutor::class, fn () => new HostStartExecutor(
             $this->app->make(Repository::class)->string('agents.host_start_socket'),
         ));
+
         $this->app->bind(RuntimeResolver::class, RuntimeRecords::class);
         $this->app->bind(SessionResolver::class, SessionRecords::class);
         $this->app->bind(AgentDirectory::class, AgentRecords::class);
@@ -194,6 +198,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(CallRegistrar::class, CallRoutes::class);
         $this->app->bind(StartRecordResolver::class, StartRecords::class);
         $this->app->bind(DriverConversationResolver::class, DriverConversationRecords::class);
+
         $this->app->bind(
             DockerImageVerifierContract::class,
             fn () => new DockerImageVerifier(
@@ -201,57 +206,71 @@ final class AgentsServiceProvider extends ServiceProvider
                 FilePath::in(Place::Project, 'docs/accounts/docker-images.json'),
             ),
         );
+
         $this->app->bind(SessionPolicyReader::class, FrozenSessionPolicies::class);
         $this->app->bind(SessionProvenanceContract::class, SessionProvenance::class);
         $this->app->bind(LaunchCandidates::class, AgentLaunchCandidates::class);
         $this->app->bind(StartReservations::class, ReserveStarts::class);
         $this->app->bind(StartReceipts::class, OwnerStartReceipts::class);
         $this->app->bind(CallingDriver::class, CallingSessionDriver::class);
+
         $this->app->singleton(DriverBudgets::class, fn () => new DriverBudgets(
             $this->app->make('config')->integer('agents.driver_budgets.claim_batch_max'),
             $this->app->make('config')->integer('agents.driver_budgets.long_poll_max_seconds'),
             $this->app->make('config')->integer('agents.driver_budgets.deliver_max_bytes'),
         ));
+
         $this->app->singleton(ArrangementSetting::class, fn () => ArrangementSetting::fromConfig(
             $this->app->make('config')->string('agents.arrangement'),
             $this->app->make('config')->string('agents.installation_name'),
             $this->app->make('config')->string('agents.workspaces'),
         ));
+
         $this->app->singleton(PublishedReleases::class, fn () => new PublishedReleases(
             $this->app->make(Files::class),
             $this->app->make('config')->string('agents.release'),
         ));
+
         $this->app->bind(InstallLineAvailability::class, fn () => new InstallLineAvailability(
             $this->app->make(SettingsResolver::class),
             $this->app->make(CoreSettings::class),
             $this->app->make(PublishedReleases::class),
             $this->app->make(ServerOrigin::class),
         ));
+
         $this->app->bind(HostCalls::class, SignedHostCalls::class);
+
         $this->app->singleton(ServerOrigin::class, fn () => new ServerOrigin(
             $this->app->make('config')->string('agents.server_origin'),
         ));
+
         $this->app->bind(LaunchProfiles::class, fn () => new LaunchProfiles(
             $this->app->make(ArrangementSetting::class),
             $this->app->make(HostCapabilities::class),
             LaunchProfiles::trialOf($this->app->make('config')->string('agents.protected_account_trial')),
         ));
+
         $this->app->singleton(HostCapacity::class, fn () => new HostCapacity(
             $this->app->make('config')->integer('agents.host_capacity.cpu_cores'),
             $this->app->make('config')->integer('agents.host_capacity.memory_bytes'),
             $this->app->make('config')->integer('agents.host_capacity.disk_bytes'),
             $this->app->make('config')->boolean('agents.host_capacity.guarded'),
         ));
+
         $this->app->scoped(PendingStartSecrets::class);
+
         $this->app->bind(
             HelperCommitImport::class,
             fn () => new HelperCommitImport($this->app->make(Factory::class), base_path()),
         );
+
         $this->app->alias(HelperCommitImport::class, HelperCommitImportContract::class);
+
         $this->app->bind(
             ProtectedMerge::class,
             fn () => new ProtectedMerge($this->app->make(Factory::class), base_path()),
         );
+
         $this->app->bind(
             HostCapabilities::class,
             fn () => new RecordedHostCapabilities(
@@ -259,6 +278,7 @@ final class AgentsServiceProvider extends ServiceProvider
                 FilePath::in(Place::Project, 'docs/accounts/container-capabilities.json'),
             ),
         );
+
         $this->app->bindIf(StartTransaction::class, DatabaseStartTransaction::class);
         $this->app->bind(StartEnvironment::class, StartEnvironment::ofThisProcess(...));
         $this->app->bind(StartTokenSource::class, EnvironmentCredentialSource::class);
@@ -266,10 +286,12 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(StartPreflight::class, HostStartPreflight::class);
         $this->app->bind(AccountUses::class, LinkedAccountUses::class);
         $this->app->bind(SessionOutputAccess::class, GrantedSessionOutputs::class);
+
         $this->app->bind(
             AgentClientSettings::class,
             fn ($app) => $app->make(StartTokenSource::class)->forThisStart(),
         );
+
         $this->app->singleton(PendingWorkSources::class);
     }
 
@@ -288,14 +310,17 @@ final class AgentsServiceProvider extends ServiceProvider
     ): void {
         $starts = new ProcessStartScope(static fn () => Container::getInstance()->make(CurrentActor::class));
         $events->listen('eloquent.booted: '.ProcessStart::class, fn () => ProcessStart::addGlobalScope($starts));
+
         $policies->register('Core', new PolicyDefinition(
             AgentPolicy::class,
             [AccessType::Create, AccessType::Edit, AccessType::Delete],
         ));
+
         $policies->register('Core', new PolicyDefinition(
             AgentMaintenancePolicy::class,
             [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Execute],
         ));
+
         $systemEntries->allow('account reconciliation', AgentMaintenancePolicy::class);
         $systemEntries->allow('main agent install', AgentPolicy::class);
         $systemEntries->allow('driver switch', AgentPolicy::class);
@@ -305,19 +330,23 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agents.php');
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/host.php');
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/releases.php');
+
         $this->commands([
             ...FolderClasses::in(dirname(__DIR__).'/Console', Command::class),
             GenerateCallsCommand::class,
         ]);
+
         $assignments->registerAssignees(new AssigneeDefinition(ActorType::Agent->value, AgentAssignees::class));
         $links->register([NavigationRequest::LINK_TYPE => NavigationRequest::class]);
         $assignments->registerOwner(self::OWNER, []);
+
         $assignments->registerRecord(
             NavigationRequest::LINK_TYPE,
             NavigationRequestProvider::class,
             self::OWNER,
             AssignmentPurpose::InternalResponsibility,
         );
+
         $pendingWork->register(PendingNavigationWork::class);
         $assignments->registerActivity(new ActivityDefinition(ActorType::Agent, AgentActivity::class));
         $presentActors->register(AgentSessionCounter::class);

@@ -154,6 +154,7 @@ final class TreeDraft
         }
 
         $outcome = $this->unsupportedReason === null ? ParseOutcome::Complete : ParseOutcome::Unsupported;
+
         $diagnostic = $this->unsupportedReason === null ? null : new TreeDiagnostic(
             $this->unsupportedAt,
             $this->unsupportedReason,

@@ -62,11 +62,13 @@ final readonly class DeskAssignees implements AssigneeProvider
     public function eligible(Page $page): AssigneeList
     {
         $this->actors->actor();
+
         $desks = DeskRecord::query()
             ->when($page->afterId !== null, fn ($query) => $query->where('id', '>', $page->afterId))
             ->orderBy('id')
             ->limit($page->limit + 1)
             ->get();
+
         $shown = $desks->take($page->limit);
 
         return new AssigneeList(

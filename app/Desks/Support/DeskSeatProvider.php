@@ -34,6 +34,7 @@ final readonly class DeskSeatProvider implements AssignableProvider
     public function visibleRecords(array $records): array
     {
         $this->actors->actor();
+
         $found = DeskSeat::query()
             ->whereKey(array_map(fn (RecordIdentity $record) => $record->id, $records))
             ->readExactly(count($records))

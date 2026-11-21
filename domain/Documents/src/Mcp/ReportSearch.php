@@ -35,6 +35,7 @@ final readonly class ReportSearch implements SearchContribution
             'page' => $page,
             'perPage' => self::PAGE_SIZE,
         ]));
+
         $hits = array_map(fn (PublicationCard $report) => SearchHit::matching(
             $this->recordType(),
             $report->id,

@@ -88,6 +88,7 @@ final class CoreServiceProvider extends ServiceProvider
     public function boot(LinkTypeRegistry $links, AssignmentRegistration $assignments): void
     {
         $assignments->registerOwner('Supervision', []);
+
         $assignments->registerRecord(
             Ask::LINK_TYPE,
             AskAssignments::class,

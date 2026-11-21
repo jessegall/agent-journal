@@ -31,6 +31,7 @@ final readonly class SkillSelection
 
         foreach ($skills as $skill) {
             $evaluation = $skill->condition->evaluate($context);
+
             $reason = match (true) {
                 ! $evaluation->isMatch() => $evaluation->outcome->value.':'.$evaluation->reason,
                 $allowlist !== null && ! in_array($skill->key->key, $allowlist, true) => 'not-in-allowlist',

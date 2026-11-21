@@ -97,6 +97,7 @@ final class RegisteredPolicies implements PolicyCatalogue
     public function grantable(): array
     {
         $availability = Container::getInstance()->make(DomainAvailability::class);
+
         $grantable = array_filter(
             $this->byPolicy->all(),
             fn (array $entry): bool => $availability->isEnabled($entry[0]),

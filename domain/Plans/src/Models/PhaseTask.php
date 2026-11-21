@@ -71,6 +71,7 @@ final class PhaseTask extends Pivot implements ReadableModel
     public static function taskIdsByPhase(array $phaseIds): array
     {
         $taskIds = array_fill_keys($phaseIds, []);
+
         $phaseTasks = self::query()
             ->whereIn('phase_id', $phaseIds)
             ->readAll('every task of the phases a plan read shows')

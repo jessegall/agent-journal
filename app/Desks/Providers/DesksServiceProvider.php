@@ -86,19 +86,23 @@ final class DesksServiceProvider extends ServiceProvider
             DeskPolicy::class,
             [AccessType::Create, AccessType::Edit],
         ));
+
         $links->register([
             DeskRecord::LINK_TYPE => DeskRecord::class,
             DeskSeat::LINK_TYPE => DeskSeat::class,
             DeskPreference::LINK_TYPE => DeskPreference::class,
         ]);
+
         $inboxes->register(DeskRecord::INBOX_PROVIDER, DeskInboxProvider::class, DeskInboxAccess::class);
         $assignments->registerOwner(self::OWNER, []);
+
         $assignments->registerRecord(
             DeskSeat::LINK_TYPE,
             DeskSeatProvider::class,
             self::OWNER,
             AssignmentPurpose::InternalResponsibility,
         );
+
         $this->commands([InstallDesksCommand::class]);
         $destinations->register(DeskRecord::ASSIGNEE_TYPE, DeskDestinationProvider::class);
 

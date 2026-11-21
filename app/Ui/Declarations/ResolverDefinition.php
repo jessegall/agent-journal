@@ -46,6 +46,7 @@ final readonly class ResolverDefinition
         $parameters = Reflector::of($resolver)->constructor()
             ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
             ->getOrElse([]);
+
         $requests = array_values(array_filter(array_map(self::requestOf(...), $parameters)));
 
         if (count($requests) > 1) {

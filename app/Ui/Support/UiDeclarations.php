@@ -87,11 +87,13 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
                 fn (NavigationItem $navigationItem) => RegisteredNavigation::of($owner, $navigationItem, $pages),
                 $owner->navigation,
             );
+
             self::assertUniqueKeys(
                 $owner,
                 'navigation',
                 array_merge([], ...array_map(fn (RegisteredNavigation $root) => $root->keys(), $roots)),
             );
+
             $navigation = [...$navigation, ...$roots];
         }
 
@@ -230,6 +232,7 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
             ),
             $navigationItems,
         );
+
         self::assertUniqueKeys(
             $parent->owner,
             'navigation',

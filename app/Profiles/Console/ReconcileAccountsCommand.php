@@ -25,6 +25,7 @@ final class ReconcileAccountsCommand extends Command
             'account reconciliation',
             new ReconcileAccounts(),
         );
+
         $this->info("Ended {$expired} sign-ins past their deadline.");
 
         return self::SUCCESS;

@@ -76,6 +76,7 @@ final class AutoAssignment extends Model implements ReadableModel
     public static function create(AutoAssignmentInput $input): self
     {
         $key = $input->key;
+
         $row = new self([
             'actor_type' => $key->actor->type,
             'actor_id' => $key->actor->id,
@@ -85,6 +86,7 @@ final class AutoAssignment extends Model implements ReadableModel
             'size' => $input->size,
             'configuration_revision' => 1,
         ]);
+
         $row->setAttribute($row->getKeyName(), $row->newUniqueId());
         $row->insertIfAbsent();
 
@@ -177,6 +179,7 @@ final class AutoAssignment extends Model implements ReadableModel
             ->orderBy('id')
             ->readExactly($page->limit + 1)
             ->get();
+
         $shown = $rows->take($page->limit);
         $facts = array_values($shown->map(fn (self $row) => $row->toFact())->all());
         $hasMore = $rows->count() > $page->limit;

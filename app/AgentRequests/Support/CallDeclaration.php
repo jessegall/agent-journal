@@ -40,6 +40,7 @@ final readonly class CallDeclaration
         $body = [];
 
         $declaration = Reflector::of($call);
+
         $classInput = $declaration->attributes(MapName::class)->first()
             ->map(fn (MapName $mapping) => $mapping->input)
             ->getOrElse(null);
@@ -58,6 +59,7 @@ final readonly class CallDeclaration
             $input = $property->attributes(MapName::class)->first()
                 ->map(fn (MapName $mapping) => $mapping->input)
                 ->getOrElse($classInput);
+
             $body[] = $input === null ? $property->name() : self::inputName($input, $property->name());
         }
 

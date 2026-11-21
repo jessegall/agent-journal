@@ -42,6 +42,7 @@ final readonly class PhaseAssignmentProvider implements AssignableProvider
     public function visibleRecords(array $records): array
     {
         $this->actors->actor();
+
         $visiblePhaseIds = Phase::query()->whereKey(
             array_map(fn (RecordIdentity $record) => $record->id, $records),
         )->readExactly(count($records))->pluck('id')->all();
@@ -66,6 +67,7 @@ final readonly class PhaseAssignmentProvider implements AssignableProvider
                 array_filter($records, fn (Assignable $record) => $record instanceof Phase),
             ),
         );
+
         $taskGroups = array_fill_keys($phaseIds, []);
 
         $phaseTasks = PhaseTask::query()->whereIn(

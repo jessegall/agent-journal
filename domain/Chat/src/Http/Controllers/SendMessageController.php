@@ -33,6 +33,7 @@ final readonly class SendMessageController
         SentMessageAnswer $answer,
     ): JsonResponse|RedirectResponse {
         $agents->visibleAgent($input->agent);
+
         $messageId = $commands->run(new AskMessage(
             $input->sourceInboxId,
             $input->destinationInboxId,

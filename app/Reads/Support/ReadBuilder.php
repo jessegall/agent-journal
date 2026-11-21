@@ -242,6 +242,7 @@ class ReadBuilder extends Builder
         $relation->addEagerConstraints($models);
         $constraints($relation);
         $query = $relation->getQuery();
+
         $readsOnePerParent = $relation instanceof BelongsTo
             || $relation instanceof HasOne
             || $relation instanceof MorphOne
@@ -320,6 +321,7 @@ class ReadBuilder extends Builder
         }
 
         $orderedColumns = array_column($orders, 'column');
+
         $ordersByKey = in_array($key, $orderedColumns, true) || in_array(
             $this->model->getKeyName(),
             $orderedColumns,

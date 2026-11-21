@@ -68,6 +68,7 @@ final class TaskAuthoringTest extends TestCase
         $task->describe('New', 'New brief');
 
         $fresh = $task->fresh();
+
         $this->assertSame(
             ['New', 'New brief', 2, TaskState::Open, 0],
             [$fresh?->title, $fresh?->brief, $fresh?->revision, $fresh?->state, $fresh?->run_number],
@@ -115,6 +116,7 @@ final class TaskAuthoringTest extends TestCase
             CommandInputInvalid::class,
             'title: The title field must not be greater than 240 characters.',
         );
+
         $this->assertSame(0, Task::query()->count());
 
         $taskId = $bus->run(new CreateTask(str_repeat('é', Task::TITLE_CHARACTER_LIMIT), 'Brief'));
@@ -132,6 +134,7 @@ final class TaskAuthoringTest extends TestCase
             CommandInputInvalid::class,
             'title: The title field is required when brief is not present.',
         );
+
         $this->assertSame(1, $task->fresh()?->revision);
     }
 
@@ -146,10 +149,12 @@ final class TaskAuthoringTest extends TestCase
         ])->assertOk()->json('task_id');
 
         $task = Task::query()->findOrFail($taskId);
+
         $this->assertSame(
             [ActorType::Agent, $start->agent->id, TaskState::Open],
             [$task->creator_type, $task->creator_id, $task->state],
         );
+
         $this->assertSame(1, Task::query()->count());
     }
 
@@ -180,11 +185,13 @@ final class TaskAuthoringTest extends TestCase
             'brief' => 'Route brief',
             'request_key' => bin2hex(random_bytes(8)),
         ])->assertOk()->assertJson(['task_id' => $task->id, 'revision' => 2]);
+
         $this->actAsUser();
         $revision = $this->app->make(CommandBus::class)->run(new EditTask($task->id, 2, brief: 'Bus brief'));
 
         $this->assertSame(3, $revision);
         $this->assertSame(['First', 'Bus brief'], [$task->fresh()?->title, $task->fresh()?->brief]);
+
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new EditTask($task->id, 2, title: 'Late')),
             TaskRevisionChanged::class,

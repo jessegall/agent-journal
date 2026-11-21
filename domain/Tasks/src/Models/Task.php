@@ -203,6 +203,7 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
         }
 
         $query = self::query()->where('state', TaskState::Open)->whereNotIn('id', $assignedIds);
+
         $ordered = match ($members->type) {
             PoolMembersType::All => $query->orderBy('id'),
             PoolMembersType::Ordered => $query->whereIn('id', $members->ids->ids)->inListedOrder($members->ids),

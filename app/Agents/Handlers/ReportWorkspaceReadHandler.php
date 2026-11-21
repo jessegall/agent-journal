@@ -23,6 +23,7 @@ final readonly class ReportWorkspaceReadHandler implements CommandHandler
     public function handle(ReportWorkspaceRead $command): void
     {
         $read = WorkspaceRead::byReference($command->reference);
+
         $read->answer(new WorkspaceFacts(
             $command->isAvailable,
             $command->isDirty,
@@ -31,6 +32,7 @@ final readonly class ReportWorkspaceReadHandler implements CommandHandler
             $this->clock->now(),
             $command->commit,
         ));
+
         $this->guidance->retain($read->actor(), self::ANSWERED, $read->read_reference);
     }
 }

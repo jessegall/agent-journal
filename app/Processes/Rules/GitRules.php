@@ -32,6 +32,7 @@ final readonly class GitRules
         $delete = $this->classes(CommandClass::Read, CommandClass::Delete);
         $change = $this->classes(CommandClass::Read, CommandClass::Write, CommandClass::Edit, CommandClass::Delete);
         $remote = $this->classes(CommandClass::Network, CommandClass::Read, CommandClass::Write);
+
         $remoteChange = $this->classes(
             CommandClass::Network,
             CommandClass::Read,
@@ -39,6 +40,7 @@ final readonly class GitRules
             CommandClass::Edit,
             CommandClass::Delete,
         );
+
         $revisions = fn (string ...$flags) => ArgumentGrammar::operands(
             OperandType::Revision,
         )->repeating()->endingOptionsAtDoubleDash()->acceptingNumericOptions()->withOptions(

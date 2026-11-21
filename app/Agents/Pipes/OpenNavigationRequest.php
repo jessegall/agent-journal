@@ -26,9 +26,11 @@ final readonly class OpenNavigationRequest implements Pipe
     public function handle(NavigationAdmission $raise): NavigationRaiseAnswer
     {
         $uncertainty = $raise->command->uncertainty;
+
         $raise->request->recordScriptProgress(
             new ScriptProgress($uncertainty->stalledStep, $uncertainty->screen->generation, 'navigation requested'),
         );
+
         $navigation = NavigationRequest::create(
             $raise->request,
             $raise->owner,
@@ -36,6 +38,7 @@ final readonly class OpenNavigationRequest implements Pipe
             $raise->command->operationKey,
             CarbonImmutable::now()->addMinutes($this->expireMinutes),
         );
+
         $raise->runtime->holdFor(HoldReason::NavigationNeeded);
         $raise->request->hold(HoldReason::NavigationNeeded);
         $raise->dispatch->deliver($navigation, 0);

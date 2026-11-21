@@ -45,6 +45,7 @@ final class AgentInboxTest extends TestCase
             'sender_type', 'sender_id', 'destination_inbox_id', 'reply_to_id',
             'answer_message_id', 'dismissal_reason', 'is_question', 'state_version', 'conversation_id',
         ]));
+
         $this->assertTrue(Schema::hasColumn('agent_sessions', 'selected_message_id'));
         $this->assertTrue(Schema::hasColumn('agent_sessions', 'job_source_message_id'));
     }
@@ -61,6 +62,7 @@ final class AgentInboxTest extends TestCase
         $this->assertSame([$mine->id], array_column($inbox->messages, 'id'));
         $this->assertSame(1, $inbox->messages[0]->revision);
         $this->assertTrue($inbox->messages[0]->isQuestion);
+
         $this->assertThrows(
             fn () => $reader->message($unrelated->id, ReadView::Summary),
             MessageMissing::class,
@@ -69,6 +71,7 @@ final class AgentInboxTest extends TestCase
         $this->callMcpTool($caller, 'overview_read')
             ->assertJsonPath('result.structuredContent.sections.messages.counts.unread', 1)
             ->assertJsonPath('result.structuredContent.sections.messages.counts.pending', 1);
+
         $this->assertNull(AgentSession::selectedMessage($caller->session->id));
         $this->assertNull($mine->refresh()->read_at);
     }
@@ -106,6 +109,7 @@ final class AgentInboxTest extends TestCase
         $this->selectMessage($parent->session->id, $first->id);
         $source = $this->app->make(RequestSource::class)->selectedSource();
         $child = Agent::create('Child', 'writing-helper');
+
         $started = $this->app->make(StartSessions::class)->start(
             $child,
             TestSelections::of(),
@@ -113,6 +117,7 @@ final class AgentInboxTest extends TestCase
             $parent->session,
             authorizedSource: $source,
         );
+
         $this->selectMessage($parent->session->id, $second->id);
 
         $this->assertSame($first->id, AgentSession::jobSourceMessage($started->session->id));

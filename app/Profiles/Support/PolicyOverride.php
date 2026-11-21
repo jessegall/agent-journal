@@ -62,6 +62,7 @@ final readonly class PolicyOverride
             $this->removePaths,
             fn (RootRule $removed) => $removed->isSameAs($class),
         )));
+
         $added = array_values(array_filter($this->allowPaths, fn (RootRule $class) => ! array_any(
             $kept,
             fn (RootRule $existing) => $existing->isSameAs($class),

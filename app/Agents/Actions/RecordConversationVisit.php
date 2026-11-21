@@ -45,6 +45,7 @@ final readonly class RecordConversationVisit implements ConversationVisits
         $start = ProcessStart::lockedCurrentOf($session->id);
         $settings = $start === null ? self::HOST_SETTINGS : $start->settingsIdentity();
         $context = StartRecord::query()->where('request_id', $session->start_request_id)->value('context_reference');
+
         $conversation = DriverConversation::query()->native((string) $session->driver, $settings, $nativeId)->first()
             ?? DriverConversation::create($session, $settings, $nativeId, $context);
 
@@ -67,6 +68,7 @@ final readonly class RecordConversationVisit implements ConversationVisits
     public function compacted(string $sessionId, string $eventId, CarbonImmutable $observedAt): void
     {
         $session = AgentSession::lockedForUpdate($sessionId);
+
         $conversation = $session->current_conversation_id === null ? null : DriverConversation::query()->find(
             $session->current_conversation_id,
         );

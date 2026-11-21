@@ -44,11 +44,13 @@ final class SpawnedProcess
     {
         $command = ['setsid', ...$argv];
         $error = '';
+
         set_error_handler(function (int $level, string $message) use (&$error): bool {
             $error = $message;
 
             return true;
         });
+
         pcntl_signal(SIGPIPE, SIG_DFL);
 
         try {
@@ -89,6 +91,7 @@ final class SpawnedProcess
          * @var array<int, string> $gathered
          */
         $gathered = [1 => '', 2 => ''];
+
         $emitOutput = function (int $descriptor, int $atLeast) use (&$gathered, $onOutput): void {
             if ($gathered[$descriptor] !== '' && strlen($gathered[$descriptor]) >= $atLeast) {
                 $onOutput($descriptor === 1 ? OutputStream::Stdout : OutputStream::Stderr, $gathered[$descriptor]);

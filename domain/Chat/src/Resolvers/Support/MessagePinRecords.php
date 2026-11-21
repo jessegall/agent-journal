@@ -33,6 +33,7 @@ final readonly class MessagePinRecords
             ->orderByDesc('id')
             ->readExactly(max(1, min($limit, MessagePin::LARGEST_LIMIT)))
             ->get();
+
         $views = [];
 
         foreach ($pins as $pin) {

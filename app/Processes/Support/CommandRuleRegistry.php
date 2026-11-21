@@ -40,6 +40,7 @@ final readonly class CommandRuleRegistry
             fn (CommandRule $first, CommandRule $second): int => [$first->id, $first->scope->name()]
                 <=> [$second->id, $second->scope->name()],
         );
+
         $standing = self::withoutReplaced($rules);
         self::checkIds($standing);
         self::assertDisjoint($standing);

@@ -41,6 +41,7 @@ final readonly class ProveReaderHandler implements CommandHandler
             ->whereKey($command->readerRevisionId)
             ->where('command_request_id', $request->id)
             ->sole();
+
         $declaration = RuleProposalRevision::query()->answering($request, $reader->declaration_revision)->first();
 
         if ($declaration === null || $declaration->payload->contracts === []) {

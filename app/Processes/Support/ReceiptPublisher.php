@@ -21,11 +21,13 @@ final readonly class ReceiptPublisher
     {
         $stored = OutputAssessment::query()->findOrFail($verified->assessment->id);
         $checked = $this->validator->verify($stored);
+
         $earlier = ResultReceipt::query()
             ->current()
             ->where('part_run_id', $checked->part->id)
             ->lockForUpdate()
             ->first();
+
         $receipt = ResultReceipt::create($checked, $this->exitPolicyDigest($checked));
         $earlier?->supersedeBy($receipt);
 

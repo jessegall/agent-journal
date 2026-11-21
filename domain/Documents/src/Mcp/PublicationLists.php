@@ -83,6 +83,7 @@ final readonly class PublicationLists
             'title' => TextPreview::within($card->title, 100),
             'abstract' => TextPreview::within($card->abstract, 120),
         ], $cards);
+
         $next = $hasNext ? [new NextAction($position->tool, [
             'continuation' => $this->continuations->issue(new Continuation(
                 $position->tool,

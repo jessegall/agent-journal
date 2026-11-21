@@ -59,11 +59,13 @@ final class ActorsServiceProvider extends ServiceProvider
         $this->app->singleton(PolicyCatalogue::class, RegisteredPolicies::class);
         $this->app->singleton(ReadEntitlements::class, DeclaredReads::class);
         $this->app->bind(ActorContext::class, fn (Application $app) => $app->make(CurrentActor::class)->actor());
+
         $this->app->singleton(PresenceWindow::class, fn (Application $app) => new PresenceWindow(
             $app->make('config')->integer('actors.presence_seconds'),
             $app->make('config')->integer('actors.heartbeat_seconds'),
             $app->make('config')->integer('actors.signed_call_refresh_seconds'),
         ));
+
         $this->app->bind(ServerClock::class, DatabaseClock::class);
         $this->app->singleton(ActiveActorCounterRegistry::class);
         $this->app->bind(ActiveActorRegistration::class, ActiveActorCounterRegistry::class);

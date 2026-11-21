@@ -23,6 +23,7 @@ final readonly class RecordGatewayHealthHandler implements CommandHandler
         $installation = ShareInstallation::create();
         $this->assertCurrentGatewayRun($installation, $command->runId);
         $installation->holdFor($command->runId);
+
         $endpoint = ShareGatewayEndpoint::lockHeldBy(
             $command->configurationId,
             $command->endpointVersion,

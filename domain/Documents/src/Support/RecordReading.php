@@ -24,6 +24,7 @@ final class RecordReading
     {
         $revision = $record instanceof DocumentRevision ? $record->number : 1;
         $body = MarkdownText::body($record->body);
+
         $fields = [
             'label' => $label,
             'revision' => (string) $revision,

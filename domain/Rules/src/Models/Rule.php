@@ -97,6 +97,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
             'proposer_type' => $proposer->type,
             'proposer_id' => $proposer->id,
         ]);
+
         $rule->state = RuleState::Proposed;
         $rule->save();
 

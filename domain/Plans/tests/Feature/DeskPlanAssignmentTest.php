@@ -55,9 +55,11 @@ final class DeskPlanAssignmentTest extends TestCase
         $this->startUserRequestAs($owner->id);
         $main = $this->app->make(DeskOpening::class)->openNamed('main', 'Main inbox', 1, true);
         $agent = Agent::create('Main', 'main-agent');
+
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(DeskSeating::class)->seat($main->id, ActorIdentity::of($agent)),
         );
+
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $phase = $this->planStructure()->addPhase($plan, 'Working');
         $tasks = [Task::factory()->create(), Task::factory()->create()];

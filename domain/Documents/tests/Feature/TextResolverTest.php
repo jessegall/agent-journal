@@ -68,6 +68,7 @@ final class TextResolverTest extends TestCase
         TEXT);
 
         $first = $this->resolver()->sections($this->record('doc', 1), '1', 0, PageSize::from(2));
+
         $rest = $this->resolver()->sections(
             $this->record('doc', 1),
             '1',
@@ -79,6 +80,7 @@ final class TextResolverTest extends TestCase
             [['Notes', 1], ['Notes', 3]],
             array_map(fn ($section) => [$section->heading, $section->firstLine], $first->sections),
         );
+
         $this->assertSame(['End'], array_map(fn ($section) => $section->heading, $rest->sections));
         $this->assertNull($rest->nextAfterSection);
     }
@@ -90,6 +92,7 @@ final class TextResolverTest extends TestCase
         );
 
         $first = $this->resolver()->read($this->record('doc', 1), '1', TextSelection::from(['firstLine' => 1]));
+
         $next = $this->resolver()->read(
             $this->record('doc', 1),
             '1',

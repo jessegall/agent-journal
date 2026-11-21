@@ -23,12 +23,14 @@ final readonly class MemoryReadResult
     public function read(string $id, string|null $cursor): ToolResult
     {
         $memory = $this->memories->memory($id);
+
         $summary = [
             'memory_id' => $memory->id,
             'number' => $memory->number,
             'weight' => $memory->weight,
             'revision' => $memory->revision,
         ];
+
         $text = ['text' => $memory->text];
 
         if ($cursor !== null) {

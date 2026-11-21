@@ -55,6 +55,7 @@ final class EngineServiceProvider extends ServiceProvider
             $app->make('config')->integer('engine.batch_size'),
             $app->make('config')->integer('engine.watchdog_seconds'),
         ));
+
         $this->app->singleton(AdvisoryEngineLock::class);
         $this->app->scoped(EngineAccess::class);
         $this->app->scoped(TickOrigins::class);

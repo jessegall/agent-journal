@@ -31,6 +31,7 @@ final class ImportProfileDraftCommand extends Command
         $expected = DraftExpectations::fromOptions([$profile->key.'='.(string) $this->argument('expected')]);
         $source = self::read($files, (string) $this->argument('source'));
         $definitions = self::readCommands($files, (string) $this->argument('commands'));
+
         $revision = $commands->run(new SaveProfileDraft(
             $profile,
             $expected->revisionOf($profile),

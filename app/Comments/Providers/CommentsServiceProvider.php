@@ -45,7 +45,9 @@ final class CommentsServiceProvider extends ServiceProvider
             'Core',
             new PolicyDefinition(CommentPolicy::class, [AccessType::Create]),
         );
+
         $records->register(Comment::LINK_TYPE, CommentLinkRecords::class);
+
         $shares->register(
             new ShareRecordDefinition(
                 Comment::LINK_TYPE,
@@ -54,6 +56,7 @@ final class CommentsServiceProvider extends ServiceProvider
                 [CommentShareProvider::CAPABILITY],
             ),
         );
+
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/comments.php');
 
         if ($this->app->runningInConsole()) {

@@ -24,6 +24,7 @@ final readonly class InterruptAgentHandler implements CommandHandler
             $command->idempotencyKey,
             DriverRequestPayload::nothing(),
         );
+
         $this->requests->holdRuntime($command->target(), HoldReason::Interrupted);
 
         return $request->receipt();

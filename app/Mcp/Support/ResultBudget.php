@@ -46,6 +46,7 @@ final readonly class ResultBudget
 
         $structured = $toolResult->structuredContent();
         $text = json_encode($structured, self::JSON_FLAGS);
+
         $resultBytes = strlen(
             json_encode(
                 [

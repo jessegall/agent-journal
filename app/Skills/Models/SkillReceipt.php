@@ -70,6 +70,7 @@ final class SkillReceipt extends Model implements ReadableModel
             'content_digest' => $digest,
             'evidence' => $evidence,
         ]);
+
         $receipt->setAttribute($receipt->getKeyName(), $receipt->newUniqueId());
 
         if ($receipt->insertIfAbsent()) {

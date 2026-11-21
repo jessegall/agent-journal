@@ -35,6 +35,7 @@ final class SkillEditCommand extends Command
             $console->actAsOwner();
             $skill = $console->stored((string) $this->argument('number'));
             $current = SkillRevision::currentOf($skill)->draft();
+
             $draft = new SkillDraft(
                 (string) ($this->option('name') ?? $current->name),
                 (string) ($this->option('description') ?? $current->description),

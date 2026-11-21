@@ -82,6 +82,7 @@ final class PendingAgentMessage extends Model implements ReadableModel
             'lines' => $lines,
             'requests_attention' => $requestsAttention,
         ]);
+
         $message->belongTo($agent);
 
         return $message;

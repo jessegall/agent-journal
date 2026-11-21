@@ -41,6 +41,7 @@ final readonly class ProfileRunExecution implements ScriptExecution
         $operation = new Operation('script', 'profile.command:'.$command->key, $command->effects, [
             ResourceRequest::path('.'),
         ], [], 1);
+
         $decision = $this->access->decide($operation);
 
         if (! $decision->allowed) {

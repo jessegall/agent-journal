@@ -162,6 +162,7 @@ final class CommandRequest extends Model implements ReadableModel
     public function unsampledBranches(ExitPolicy $exits): array
     {
         $runs = EvidencePermit::query()->sampling($this)->limit(100)->pluck('process_run_id')->all();
+
         $statuses = PartRun::query()
             ->whereIn('process_run_id', $runs)
             ->where('operation', $this->operation)

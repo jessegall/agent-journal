@@ -117,6 +117,7 @@ final class Exports
     private function command(string $name): string
     {
         $type = $this->ownType('commands', $name);
+
         $isConcreteCommand = ! $type->isInterface() && ! $type->isAbstract() && $type->isFinal()
             && $type->is(Command::class);
 

@@ -81,6 +81,7 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
             $inbox->inboxId(),
             fn () => throw InboxUnavailable::forId($inbox->inboxId()),
         );
+
         [, $accessClass] = $this->providers->find($record->provider_key)
             ->getOrThrow(InboxUnavailable::forId($inbox->inboxId()));
 
@@ -103,6 +104,7 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
             fn (array $provider) => Container::getInstance()->make($provider[1])->memberInboxIds($actor),
             array_values($this->providers->all()),
         );
+
         $first = array_shift($queries) ?? InboxRecord::query()->whereKey([])->select('id');
 
         return array_reduce(

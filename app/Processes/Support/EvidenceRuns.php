@@ -100,6 +100,7 @@ final readonly class EvidenceRuns
             $runner,
             $permit->candidate_rules,
         );
+
         $timing = $classification->hasVerification() ? $this->timing->forCaller() : TimingVerdict::allowed();
 
         if (! $timing->isAllowed()) {
@@ -113,6 +114,7 @@ final readonly class EvidenceRuns
         }
 
         $plan = $this->planner->plan($classification->tree, $classification);
+
         $run = ProcessRun::create($runner, new RunAdmission(
             "evidence-{$permit->id}",
             RunMode::Evidence,
@@ -124,6 +126,7 @@ final readonly class EvidenceRuns
             $permit->working_folder,
             $plan,
         ));
+
         $permit->consume($requestId, $run);
 
         return $run;

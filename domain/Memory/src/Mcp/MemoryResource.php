@@ -38,6 +38,7 @@ final class MemoryResource extends JournalResource implements HasUriTemplate
     {
         $id = ToolArguments::uriId($request);
         $arguments = ToolArguments::query($this->name(), $request, ['continuation']);
+
         $this->reads->assertAllowed(new ReadRequest(
             MemoryReadResult::TOOL,
             arguments: ['memory_id' => $id],

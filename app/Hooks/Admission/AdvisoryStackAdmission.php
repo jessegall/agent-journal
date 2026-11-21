@@ -130,6 +130,7 @@ final class AdvisoryStackAdmission implements StackAdmission
     private function unlock(string $sessionId): void
     {
         $connection = $this->databases->connection();
+
         $released = $connection->selectOne(
             'SELECT pg_advisory_unlock(?, hashtext(?)) AS released',
             [self::NAMESPACE, $sessionId],

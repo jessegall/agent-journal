@@ -23,6 +23,7 @@ final readonly class MakeShareGatewayDefaultController
         Redirector $redirect,
     ): RedirectResponse {
         $settings = ShareGatewayConfiguration::usable($request->configurationId())->settings;
+
         $commands->run(
             new ConfigureShareGateway(
                 $settings->gatewayKey,

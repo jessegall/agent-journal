@@ -105,6 +105,7 @@ final readonly class RecordGatewayOutcomeHandler implements CommandHandler
             }
 
             $share->failActivation();
+
             ShareAudit::create(
                 $share,
                 ShareAuditType::ActivationFailed,

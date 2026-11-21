@@ -67,6 +67,7 @@ final class DocumentsServiceProvider extends ServiceProvider
         $docks->offerDockFor($docks->register(Document::LINK_TYPE, Document::class, DocumentDocking::class));
         $docks->offerDockFor($docks->register(Report::LINK_TYPE, Report::class, ReportDocking::class));
         $reads->declare('docs_drafts_read', ReadEntitlement::grant(DocumentPolicy::class, AccessType::Edit));
+
         $links->register([
             Document::LINK_TYPE => Document::class,
             DocumentRevision::LINK_TYPE => DocumentRevision::class,
@@ -82,9 +83,11 @@ final class DocumentsServiceProvider extends ServiceProvider
             TextUpload::SESSION_SCOPE,
             fn (Builder $uploads) => $this->app->make(SessionProvenance::class)->limitToCurrentSession($uploads),
         );
+
         TextUploadChunk::addGlobalScope(TextUpload::SESSION_SCOPE, fn (Builder $chunks) => $chunks->whereHas('upload'));
         TextUpload::deleting(fn (TextUpload $upload) => $this->app->make(SessionProvenance::class)->forget($upload));
         RetainedDraft::addGlobalScope(RetainedDraft::DRAFT_SCOPE, $this->limitDrafts(...));
+
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule->call(fn (UploadStore $uploads) => $uploads->pruneExpired())->daily(),

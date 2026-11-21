@@ -33,6 +33,7 @@ final readonly class HistoryPageResolver implements PageResolver
         $inboxId = $this->request->chosenInbox()->get();
         $isOwnInbox = $this->messages->sitsAt($inboxId);
         $olderCursor = $this->request->olderCursor();
+
         $page = $isOwnInbox
             ? $this->messages->history($inboxId, $olderCursor, MessagePage::DEFAULT_LIMIT)
             : $this->messages->inspect($inboxId, $olderCursor, MessagePage::DEFAULT_LIMIT);

@@ -26,6 +26,7 @@ final readonly class RecordDriverFailure
         }
 
         $start = ProcessStart::latestOfSession($hook->sessionId);
+
         $failed = new DriverFailed(
             $hook->agentId,
             $hook->sessionId,
@@ -34,6 +35,7 @@ final readonly class RecordDriverFailure
             $start?->accountIdentity(),
             $start?->account_generation,
         );
+
         $this->facts->publishAfterCommit($failed);
     }
 }

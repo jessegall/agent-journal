@@ -21,10 +21,12 @@ final readonly class WorkLockSet
     public static function for(WorkOccurrence $origin, object $command): self
     {
         $declared = $command instanceof TickSubjectLocks ? $command->lockedSubjects() : [];
+
         $others = array_values(array_filter(
             $declared,
             fn (WorkOccurrence $subject): bool => ! $subject->isSameWorkAs($origin),
         ));
+
         usort(
             $others,
             fn (WorkOccurrence $first, WorkOccurrence $second): int => $first->lockKey() <=> $second->lockKey(),

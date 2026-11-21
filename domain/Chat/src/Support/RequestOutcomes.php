@@ -54,6 +54,7 @@ final readonly class RequestOutcomes
     private function confirmed(RequestOutcomeInput $request, string $messageId): RequestOutcomeData
     {
         $answered = $request->answeredMessageId();
+
         $mayStillSee = $this->conversations->canSee($messageId)
             && ($answered === null || $this->conversations->canSee($answered));
 

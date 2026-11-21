@@ -85,6 +85,7 @@ final class CleanupOperation extends Model implements ReadableModel
             'removed_steps' => [],
             'state' => CleanupState::Pending,
         ]);
+
         $operation->setAttribute($operation->getKeyName(), $operation->newUniqueId());
         $operation->insertIfAbsent();
 

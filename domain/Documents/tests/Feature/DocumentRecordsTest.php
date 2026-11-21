@@ -55,12 +55,14 @@ final class DocumentRecordsTest extends TestCase
         $reader->startRequest($this->app);
         $this->assertSame('Design', $this->app->make(DocumentResolver::class)->show($document->number)->title);
         $this->assertSame('Evidence', $this->app->make(ReportResolver::class)->show($report->number)->title);
+
         $this->assertThrows(
             fn () => $this->app->make(DraftResolver::class)->current($document->number),
             DraftMissing::class,
         );
 
         $this->startRequestAs($author->agent->id, $reader->session->id);
+
         $this->assertThrows(
             fn () => $this->app->make(DraftResolver::class)->current($document->number),
             DraftMissing::class,

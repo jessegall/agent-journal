@@ -56,6 +56,7 @@ final readonly class ConfigureShareGatewayHandler implements CommandHandler
             $command->listenerPort,
             $command->secretReferences,
         );
+
         ShareInstallation::create();
         $configuration = ShareGatewayConfiguration::create($settings);
 
@@ -69,9 +70,11 @@ final readonly class ConfigureShareGatewayHandler implements CommandHandler
             ShareGatewayConfiguration::query()->markedDefault()->whereKeyNot(
                 $configuration->id,
             )->lockForUpdate()->readAll('at most one configuration is the default')->get();
+
             ShareGatewayConfiguration::query()->markedDefault()->whereKeyNot($configuration->id)->update(
                 ['is_default' => false],
             );
+
             $configuration->makeDefault();
         }
 

@@ -172,17 +172,21 @@ final readonly class PlanRecords implements PlanResolver
             'plan_id',
             $plans->modelKeys(),
         )->readAll('every phase of the listed plans')->orderBy('number')->get();
+
         $phasesOfPlan = $phases->groupBy('plan_id');
+
         $taskIdsOfPhase = PhaseTask::query()->whereIn(
             'phase_id',
             $phases->modelKeys(),
         )->readAll('plan progress counts every task of the plan')->orderBy('position')->get()
             ->groupBy('phase_id')
             ->map(fn (Collection $places) => array_map(strval(...), array_values($places->pluck('task_id')->all())));
+
         $progressOfPhase = array_map(
             self::planProgressOf(...),
             $this->taskCounts->progressByGroup($taskIdsOfPhase->all()),
         );
+
         $holders = $this->assignees->holdersOfRecords(
             array_values($plans->map(fn (Plan $plan) => $plan->assignmentIdentity())->all()),
         );

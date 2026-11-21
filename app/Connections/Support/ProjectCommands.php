@@ -97,6 +97,7 @@ final readonly class ProjectCommands
     private function execute(ProjectCommandRequest $request, Closure $emit): void
     {
         $argv = $request->argv();
+
         $process = new Process(
             ['php', $this->artisan, $request->verbName(), ...array_slice($argv, 2)],
             dirname($this->artisan),
@@ -104,12 +105,15 @@ final readonly class ProjectCommands
             $request->stdin(),
             null,
         );
+
         $frames = [];
+
         $process->start(function (string $type, string $bytes) use (&$frames, $emit): void {
             $frame = CommandFrame::output(count($frames) + 1, $type === Process::ERR ? 'stderr' : 'stdout', $bytes);
             $frames[] = $frame;
             $emit($frame);
         });
+
         $record = new RecordProjectCommandProcess($request->requestId(), (int) $process->getPid());
         $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'project command', $record);
         $code = $process->wait();

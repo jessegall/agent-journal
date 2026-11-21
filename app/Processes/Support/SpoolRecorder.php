@@ -35,12 +35,14 @@ final readonly class SpoolRecorder implements OutputRecorder
     {
         $stream = $chunk->stream->value;
         $offset = $chunk->part->stream_offsets[$stream] ?? 0;
+
         $relative = "{$chunk->part->process_run_id}/{$chunk->part->id}/{$stream}/".str_pad(
             (string) $offset,
             20,
             '0',
             STR_PAD_LEFT,
         ).'.chunk';
+
         $this->write(FilePath::in(Place::ProcessOutput, $relative), $chunk->bytes);
         $stored = OutputChunk::create($chunk, $offset, $relative);
         $chunk->part->captureUpTo($stored);

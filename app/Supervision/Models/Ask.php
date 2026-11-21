@@ -110,6 +110,7 @@ final class Ask extends Model implements Assignable, ReadableModel
         $work = $subject->work->isFree() ? 'free' : $subject->work->key;
         $digest = hash('sha256', json_encode([$type->key, $body, $work], JSON_THROW_ON_ERROR));
         $ask = new self();
+
         $ask->setRawAttributes([
             'id' => $reference->id,
             'actor_type' => $requester->type->value,
@@ -127,6 +128,7 @@ final class Ask extends Model implements Assignable, ReadableModel
             'version' => 0,
             'open' => true,
         ]);
+
         $ask->insertIfAbsent();
         $ask = self::query()->ownedBy($requester)->where('submission_key', $submissionKey)->firstOrFail();
 

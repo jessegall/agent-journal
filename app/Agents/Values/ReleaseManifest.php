@@ -57,6 +57,7 @@ final readonly class ReleaseManifest
                     self::stringAt($version, $artifact, 'source'),
                     self::stringAt($version, $artifact, 'sha256'),
                 );
+
                 $size = $artifact['size'] ?? 0;
                 $isMeasured = $isMeasured && is_int($size) && $size > 0;
                 $bytes += is_int($size) ? $size : 0;

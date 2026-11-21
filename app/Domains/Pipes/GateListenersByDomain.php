@@ -27,8 +27,10 @@ final readonly class GateListenersByDomain implements Pipe
         foreach ($declarations->events as $event => $listeners) {
             foreach ($listeners as $listener) {
                 $available = $this->available($declarations, $event, $listener);
+
                 $logsFailures = Reflector::exists($event)
                     && Reflector::of($event)->isSubclassOf(ListenerFailureLog::class);
+
                 $gated[$event][] = $logsFailures
                     ? new FailureLoggingListener($event, $available)
                     : $available;

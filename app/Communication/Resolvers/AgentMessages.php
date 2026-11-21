@@ -43,9 +43,11 @@ final readonly class AgentMessages implements AgentMessageReader
         $numbered = new NumberedPage($page);
         $incoming = $this->incoming()->where(fn (Builder $messages) => $messages->forInboxState($state));
         $total = (clone $incoming)->count();
+
         $messages = $incoming->orderByDesc('created_at')->orderByDesc('id')
             ->offset(($numbered->number - 1) * $numbered->size)
             ->readExactly($numbered->size)->get();
+
         $selected = $this->selected();
         $source = $this->source();
 
@@ -68,8 +70,10 @@ final readonly class AgentMessages implements AgentMessageReader
     public function search(string $query, int $page): SearchPage
     {
         $size = SearchContribution::PAGE_SIZE;
+
         $matching = Message::query()->matchingBody($query)->orderByDesc('created_at')->orderByDesc('id')
             ->offset(($page - 1) * $size)->readExactly($size + 1)->get();
+
         $hits = $matching->take($size)->map(fn (Message $message) => SearchHit::matching(
             self::SEARCH_TYPE,
             $message->id,
@@ -95,9 +99,11 @@ final readonly class AgentMessages implements AgentMessageReader
     public function context(string $messageId, string|null $continuation): AgentMessageDetails
     {
         $root = Message::visibleById($messageId);
+
         $position = $continuation === null
             ? new Continuation(self::CONTEXT_TOOL, $messageId, ['message_id' => $messageId], 1)
             : $this->continuations->open($continuation, self::CONTEXT_TOOL, $messageId);
+
         $currentId = (string) $position->filters['message_id'];
         $message = $currentId === $root->id ? $root : Message::visibleById($currentId);
         $position->assertCurrentRevision($message->revision());

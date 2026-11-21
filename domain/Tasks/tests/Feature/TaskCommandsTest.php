@@ -63,6 +63,7 @@ final class TaskCommandsTest extends TestCase
             [TaskState::Finished, TaskState::Blocked, TaskState::Cancelled],
             [$finished->fresh()?->state, $blocked->fresh()?->state, $cancelled->fresh()?->state],
         );
+
         Event::assertDispatchedTimes(TaskFinished::class, 1);
         Event::assertDispatchedTimes(TaskBlocked::class, 1);
         Event::assertDispatchedTimes(TaskCancelled::class, 1);

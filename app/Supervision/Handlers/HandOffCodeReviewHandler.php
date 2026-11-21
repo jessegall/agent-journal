@@ -58,6 +58,7 @@ final readonly class HandOffCodeReviewHandler implements CommandHandler
             $review->work(),
             AskOriginType::Internal,
         );
+
         $review->open($import, $ask);
         $this->router->route($ask, 0, null);
         $reservation->handOff();

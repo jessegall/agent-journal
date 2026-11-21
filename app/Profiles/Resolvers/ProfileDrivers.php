@@ -28,6 +28,7 @@ final readonly class ProfileDrivers implements ProfileSelections
     ): ProfileSelection {
         $snapshot = $this->profiles->snapshotFor($profile);
         $start = $snapshot->start;
+
         $defaults = new ProfileDefaults(
             $profile->key,
             $snapshot->revision,

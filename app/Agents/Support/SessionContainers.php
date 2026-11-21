@@ -46,6 +46,7 @@ final readonly class SessionContainers
         }
 
         $account = $this->accountOf($runtime);
+
         $rules = $this->arrangement->mountRules(
             $account,
             ArrangementSetting::ENVIRONMENT,

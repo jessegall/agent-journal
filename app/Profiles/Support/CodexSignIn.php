@@ -34,12 +34,15 @@ final readonly class CodexSignIn implements SignInProtocol
     public function begin(string $directory): PrivateAccountProcess
     {
         $process = $this->codex->start(['app-server'], $directory);
+
         $process->send(self::message([
             'method' => 'initialize',
             'id' => 0,
             'params' => ['clientInfo' => ['name' => 'journal', 'version' => '6']],
         ]));
+
         $process->send(self::message(['method' => 'initialized']));
+
         $process->send(self::message([
             'method' => 'account/login/start',
             'id' => self::LOGIN_REQUEST,

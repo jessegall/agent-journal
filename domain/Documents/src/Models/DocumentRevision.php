@@ -82,6 +82,7 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
             'author_id' => $authorId,
             'closed_at' => CarbonImmutable::now(),
         ]);
+
         $revision->setRelation('document', $document);
         $revision->save();
 

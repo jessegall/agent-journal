@@ -138,6 +138,7 @@ final readonly class CheckCommandHandlers implements Pipe
         }
 
         self::assertPermits($command, $policy, $model);
+
         $takesBoth = $handle->requiredParameterCount() === 2
             && self::takesAt($handle, 0, $command)
             && self::takesAt($handle, 1, $model);
@@ -165,10 +166,12 @@ final readonly class CheckCommandHandlers implements Pipe
         }
 
         $permits = $declaration->method('permits');
+
         $types = array_map(
             fn (ReflectedParameter $parameter) => self::textOf($parameter->type()),
             $permits->parameters(),
         );
+
         $fits = $permits->isPublic() && ! $permits->isStatic()
             && $types === [Actor::class, $model, AccessType::class]
             && self::textOf($permits->returnType()) === Response::class;

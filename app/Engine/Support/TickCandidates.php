@@ -46,6 +46,7 @@ final class TickCandidates
     public function next(int $limit): TickBatch
     {
         $selected = $this->examineAfter($this->progress, $limit);
+
         $restored = ScopedReadMeter::ofCurrentScope()->withinSchedule(
             'engine ticks',
             fn () => $this->restore($selected),
@@ -96,8 +97,10 @@ final class TickCandidates
     private function examineAfter(ScanProgress $progress, int $limit): array
     {
         $ticking = $this->types->ticking();
+
         $rows = AgentStackRow::query()->tickingOpen()->where('id', '>=', $progress->stackId)->orderBy('id')
             ->readExactly($limit)->get();
+
         $selected = [];
         $last = $progress;
 

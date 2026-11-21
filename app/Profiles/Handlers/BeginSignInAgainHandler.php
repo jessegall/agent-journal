@@ -50,6 +50,7 @@ final readonly class BeginSignInAgainHandler implements CommandHandler
         $account->holdForMaintenance();
         $expiresAt = CarbonImmutable::now()->addMinutes($this->config->integer('accounts.sign_in_minutes'));
         $directory = SignInAttempt::newFolderIn($this->config->string('accounts.root'));
+
         $attempt = SignInAttempt::create(
             ActorIdentity::of($command->dispatchedBy()),
             $account,
@@ -58,6 +59,7 @@ final readonly class BeginSignInAgainHandler implements CommandHandler
             $command->requestKey,
             $expiresAt,
         );
+
         $account->writerFor($attempt);
         $attempt->writeInGeneration($account->sign_in_generation);
 

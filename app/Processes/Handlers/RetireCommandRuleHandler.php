@@ -29,6 +29,7 @@ final readonly class RetireCommandRuleHandler implements CommandHandler
             ->whereKey($command->classificationRuleId)
             ->lockForUpdate()
             ->sole();
+
         $rule->retire($command->expectedRevision, $command->reason);
         $retired = RuleRetired::forRule($rule, $command->reason);
         $this->facts->publishAfterCommit($retired);

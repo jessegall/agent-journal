@@ -39,11 +39,13 @@ final readonly class ShellWordScanner
 
         $literal = $word->literal();
         $isPlain = count($word->segments) === 1 && $word->segments[0]->type === WordSegmentType::Literal;
+
         $type = match (true) {
             $isPlain && $literal === '{' => TokenType::OpenBrace,
             $isPlain && $literal === '}' => TokenType::CloseBrace,
             default => TokenType::Word,
         };
+
         $cursor->append(new Token($type, new SourceRange($start, $cursor->position), word: $word));
     }
 
@@ -104,6 +106,7 @@ final readonly class ShellWordScanner
 
         $escapeStart = $cursor->position;
         $cursor->position += min(2, strlen($cursor->source) - $cursor->position);
+
         $word->add(
             $escapeStart,
             new WordSegment(
@@ -130,6 +133,7 @@ final readonly class ShellWordScanner
             substr($cursor->source, $cursor->position + 1, $close - $cursor->position - 1),
             new SourceRange($cursor->position, $close + 1),
         );
+
         $cursor->position = $close + 1;
 
         return $segment;

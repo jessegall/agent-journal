@@ -54,6 +54,7 @@ final readonly class ShellOperations
         $facts = array_values(
             array_filter($part->facts, fn (ClassFact $fact): bool => ! $fact->origin instanceof SyntaxOrigin),
         );
+
         $name = self::nameOf($part, $facts);
 
         if (! $part->isKnown() || $name === self::UNKNOWN) {

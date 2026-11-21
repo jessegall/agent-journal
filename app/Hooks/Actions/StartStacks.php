@@ -46,6 +46,7 @@ final readonly class StartStacks
     public function open(StackTarget $target): void
     {
         $this->transaction->assertOpen($target);
+
         $bottom = new FrameRecord(
             (string) Str::ulid(),
             new StateReference(ReadyState::TYPE_KEY, NoSubject::None),

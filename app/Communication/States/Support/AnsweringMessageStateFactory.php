@@ -36,10 +36,12 @@ final readonly class AnsweringMessageStateFactory implements StateLoader
         $claimIds = $references->subjectIds();
         $claims = AssignmentRecord::assignmentsOf($claimIds);
         $proofs = ClaimAuthorization::ofClaims($claimIds);
+
         $liveHolders = AssignmentRecord::holdersOf(array_merge(...array_map(
             fn (ClaimAuthorization $proof) => $proof->sourceIds(),
             array_values($proofs),
         )));
+
         $messages = Message::query()->acrossInboxes()
             ->whereKey(array_map(fn ($claim) => $claim->record->id, array_values($claims)))
             ->readExactly(max(1, count($claims)))
@@ -74,6 +76,7 @@ final readonly class AnsweringMessageStateFactory implements StateLoader
         $claim = $claims[$subject->id] ?? null;
         $message = $claim === null ? null : $messages->get($claim->record->id);
         $proof = $proofs[$subject->id] ?? null;
+
         $stands = $claim !== null && $message !== null && $message->needsReply()
             && $proof?->isValidAgainst($claim->holder(), $liveHolders) === true;
 

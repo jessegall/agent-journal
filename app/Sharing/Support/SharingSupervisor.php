@@ -67,6 +67,7 @@ final class SharingSupervisor
 
         $endpoint = GatewayEndpoint::forOperation($claim->operation);
         $gateway = $this->gateways->forOperation($claim->operation);
+
         $outcome = $claim->type === GatewayOperationType::Open ? $this->open(
             $gateway,
             $claim->operation,
@@ -91,6 +92,7 @@ final class SharingSupervisor
         foreach (ShareGatewayEndpoint::openOfRun($this->runId) as $endpoint) {
             $this->assertNoTransaction();
             $healthy = $this->gateways->healthOf($endpoint)->isHealthy();
+
             $this->asSystem(
                 new RecordGatewayHealth(
                     $this->runId,

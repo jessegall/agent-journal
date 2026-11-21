@@ -30,6 +30,7 @@ final readonly class PackageRules
             CommandClass::Delete,
             CommandClass::Network,
         );
+
         $npmOptions = [
             '--save-dev',
             '-D',
@@ -47,6 +48,7 @@ final readonly class PackageRules
             '--no-fund',
             '--force',
         ];
+
         $composerOptions = [
             '--no-interaction',
             '-n',
@@ -68,6 +70,7 @@ final readonly class PackageRules
             '--no-install',
             '--update-with-dependencies',
         ];
+
         $rules = [];
 
         foreach ([
@@ -77,6 +80,7 @@ final readonly class PackageRules
         ] as $program => $subcommands) {
             foreach ($subcommands as $subcommand) {
                 $options = $program === 'composer' ? $composerOptions : $npmOptions;
+
                 $rules[] = CommandRule::forProgram(
                     "core.{$program}.{$subcommand}",
                     new ProgramSpellings($program),

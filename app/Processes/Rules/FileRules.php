@@ -27,6 +27,7 @@ final readonly class FileRules
         $deleteClasses = CommandClassSet::of(CommandClass::Delete);
 
         $write = CommandClassSet::of(CommandClass::Write);
+
         $sedOptions = [
             OptionGrammar::valued(OperandType::Pattern, '-e', '--expression'),
             ...$this->flags('-n', '-E', '-r', '-s', '-u', '-z', '--quiet', '--silent', '--regexp-extended'),

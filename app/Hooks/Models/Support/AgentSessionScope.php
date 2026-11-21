@@ -33,6 +33,7 @@ final readonly class AgentSessionScope implements Scope
     {
         ($this->visibility)()->ownRows($builder, function (Builder $query) use ($model): void {
             $context = ($this->currentContext)();
+
             $query->where($model->qualifyColumn('agent_id'), $context->agentId)
                 ->where($model->qualifyColumn('session_id'), $context->sessionId);
         });

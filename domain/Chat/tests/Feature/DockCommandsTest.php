@@ -63,10 +63,12 @@ final class DockCommandsTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->start = TestStart::start();
+
         Conversation::between(
             $this->inboxOf(ActorIdentity::of($owner))->inboxId(),
             $this->inboxOf(ActorIdentity::of($this->start->agent))->inboxId(),
         );
+
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);
     }
 
@@ -89,6 +91,7 @@ final class DockCommandsTest extends TestCase
         $this->artisan('dock:remove', ['placement' => $placement->id, '--json' => true])
             ->expectsOutputToContain('"outcome":"removed"')
             ->assertExitCode(0);
+
         $this->artisan('dock:add', $add)
             ->expectsOutputToContain("\"outcome\":\"added\",\"placementId\":\"{$placement->id}\"")
             ->assertExitCode(0);
@@ -102,6 +105,7 @@ final class DockCommandsTest extends TestCase
             $this->inboxOf(ActorIdentity::of($this->start->agent))->inboxId(),
             $this->inboxOf(new ActorIdentity(ActorType::Agent, 'another-agent'))->inboxId(),
         );
+
         $this->runCommandsAs($this->start);
 
         $this->artisan('dock:add', ['type' => 'tasks.task', 'id' => $this->task->id])

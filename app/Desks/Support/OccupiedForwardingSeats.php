@@ -24,6 +24,7 @@ final readonly class OccupiedForwardingSeats
     public function forActor(Actor $actor): Option
     {
         $seats = DeskSeat::query()->select('id')->whereIn('desk_id', DeskRecord::query()->forwarding()->select('id'));
+
         $held = AssignmentRecord::query()
             ->assignedAmong(DeskSeat::LINK_TYPE, $seats)
             ->heldBy(AssigneeIdentity::of($actor))

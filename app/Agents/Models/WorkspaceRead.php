@@ -107,6 +107,7 @@ final class WorkspaceRead extends Model implements ReadableModel
         $agentsOnHost = AgentSession::query()
             ->whereIn('id', AgentRuntime::query()->where('host_id', $hostId)->select('agent_session_id'))
             ->select('agent_id');
+
         $pending = self::query()
             ->whereNull('sampled_at')
             ->where('actor_type', 'agent')

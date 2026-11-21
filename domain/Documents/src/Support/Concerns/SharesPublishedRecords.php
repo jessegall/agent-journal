@@ -38,6 +38,7 @@ trait SharesPublishedRecords
     {
         $cards = $this->publishedCards($read->targets, $budget);
         $eligible = array_map(fn (ShareRecordCard $card) => $card->record, $cards);
+
         $ineligible = array_values(
             array_filter($read->targets, fn (RecordIdentity $target) => ! $this->isAmong($target, $eligible)),
         );
@@ -62,6 +63,7 @@ trait SharesPublishedRecords
 
         foreach ($page->comments as $comment) {
             $budget->chargeMetadata(strlen($comment->excerpt));
+
             $cards[] = new ShareRecordCard(
                 $comment->comment,
                 "Comment of {$comment->writtenAt}",
@@ -88,6 +90,7 @@ trait SharesPublishedRecords
                 array_filter($records, fn (RecordIdentity $record) => $record->type === $this->linkType()),
             ),
         );
+
         $cards = $ids === [] ? [] : $this->cardsOf($ids);
 
         foreach ($cards as $card) {

@@ -27,6 +27,7 @@ final readonly class HomeWindowResolver implements PageResolver
         $windows = array_values(
             array_filter($this->declarations->pages(), fn (RegisteredPage $page) => $page->page->homePosition !== null),
         );
+
         usort(
             $windows,
             fn (
@@ -34,6 +35,7 @@ final readonly class HomeWindowResolver implements PageResolver
                 RegisteredPage $other,
             ) => [$one->page->homePosition, $one->key] <=> [$other->page->homePosition, $other->key],
         );
+
         $owners = array_count_values(array_map(fn (RegisteredPage $page) => $page->owner->key, $windows));
 
         return HomeData::from([

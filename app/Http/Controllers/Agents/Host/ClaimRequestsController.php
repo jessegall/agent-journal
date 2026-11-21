@@ -37,19 +37,23 @@ final readonly class ClaimRequestsController
             'watched_version' => ['required', 'integer', 'min:0'],
             'arrangement' => ['sometimes', Rule::enum(ArrangementType::class)],
         ]);
+
         Host::query()->whereKey($host->hostId)->sole()->assertEnrolledAs(
             $request->enum('arrangement', ArrangementType::class) ?? ArrangementType::Local,
         );
+
         $limit = min($budgets->claimBatchMax, max(1, $request->integer('limit', 10)));
         $deadline = microtime(true) + min($budgets->longPollMaxSeconds, max(0, $request->integer('wait', 0)));
         $knownVersion = $request->integer('watched_version');
 
         $claim = fn (): ClaimedRequests => $commands->run(new ClaimDriverRequests($host->hostId, $limit));
         $version = fn (): int => $watched->version($host->hostId);
+
         $claimed = ScopedReadMeter::ofCurrentScope()->withinSchedule(
             'host long poll',
             fn () => $this->pollUntil($deadline, $claim, $version, $knownVersion),
         );
+
         $watchedTerminals = $watched->forHost($host->hostId);
 
         return new JsonResponse(new ClaimAnswer($claimed, $watchedTerminals));

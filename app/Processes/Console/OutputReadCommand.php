@@ -28,11 +28,13 @@ final class OutputReadCommand extends Command
     public function handle(): int
     {
         $run = (string) $this->argument('run');
+
         $place = [
             'processRun' => $run,
             'part' => (int) $this->option('part'),
             'stream' => (string) $this->option('stream'),
         ];
+
         $text = (string) $this->option('search');
 
         return $this->runCall(match (true) {

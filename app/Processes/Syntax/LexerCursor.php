@@ -99,6 +99,7 @@ final class LexerCursor
         $this->position = $end;
         $range = new SourceRange($start, $end);
         $text = substr($this->source, $start, $end - $start);
+
         $this->tokens[] = new Token(
             TokenType::Word,
             $range,

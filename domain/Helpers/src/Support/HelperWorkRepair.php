@@ -31,6 +31,7 @@ final readonly class HelperWorkRepair implements WorkRepair
         $findings = $request->targetRef === null
             ? "Repair your work: {$request->findings}"
             : "Repair your work onto {$request->targetRef}: {$request->findings}";
+
         $job->reopenForRepair($findings);
         $this->guidance->retain($request->worker, $findings, "repair:{$request->source}");
 

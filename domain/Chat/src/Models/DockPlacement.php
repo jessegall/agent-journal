@@ -81,6 +81,7 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
             'assigned_by_id' => $assignedBy->id,
             'assigned_at' => CarbonImmutable::now(),
         ]);
+
         $placement->assertSaved($placement->save());
         $placement->raise(new DockChanged($conversation->id));
 

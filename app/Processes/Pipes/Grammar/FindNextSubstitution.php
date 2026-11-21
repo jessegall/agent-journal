@@ -136,6 +136,7 @@ final readonly class FindNextSubstitution implements Pipe
         $draft = $next->toParse->draft();
         $opening = substr($draft->line, $segment->range->start, 2);
         $isBacktick = str_starts_with($opening, '`');
+
         $type = match (true) {
             $opening === '$(', $isBacktick => NodeType::CommandSubstitution,
             $opening === '<(', $opening === '>(' => NodeType::ProcessSubstitution,

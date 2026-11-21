@@ -54,6 +54,7 @@ final readonly class AutoAssignmentAdmission
     public function admitInput(AutoAssignmentInput $input): void
     {
         $this->admitKey($input->key);
+
         $offered = array_map(
             fn (PoolDefinition $pool) => $pool->key,
             $this->providers->pools($input->key->assignableType),

@@ -43,6 +43,7 @@ final readonly class DeskSeating
             $admitted->seat->assignmentIdentity(),
             AssigneeIdentity::ofActorIdentity($actor),
         );
+
         $admitted->desk->advanceSeating();
 
         return SeatChangeResult::at($admitted->desk, $admitted->seat->id, $after->reference);
@@ -57,11 +58,13 @@ final readonly class DeskSeating
         }
 
         $this->claims->releaseAuthorizedBy($admitted->before->reference);
+
         $after = $this->responsibilities->replace(
             $admitted->seat->assignmentIdentity(),
             $admitted->before->reference,
             AssigneeIdentity::ofActorIdentity($admitted->newActor),
         );
+
         $admitted->desk->advanceSeating();
         $this->publishSeatChange(AssignmentReason::Reassigned, $admitted->before, $after);
         $this->repair->afterLoss($admitted->oldActor, $admitted->desk);

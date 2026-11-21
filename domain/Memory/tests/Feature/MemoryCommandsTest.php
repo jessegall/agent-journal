@@ -63,9 +63,11 @@ final class MemoryCommandsTest extends TestCase
             '--weight' => 7,
             '--json' => true,
         ])->assertExitCode(0);
+
         $memory = Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->sole();
 
         $this->assertSame(['Run migrate:fresh after a create-migration edit.', 7], [$memory->text, $memory->weight]);
+
         $this->artisan('memory:list', ['--json' => true])
             ->expectsOutputToContain('"text":"Run migrate:fresh after a create-migration edit.","weight":7')
             ->assertExitCode(0);
@@ -94,6 +96,7 @@ final class MemoryCommandsTest extends TestCase
             '--text' => 'Better words.',
             '--weight' => '9',
         ])->assertExitCode(0);
+
         $this->assertSame(['Better words.', 9, 2], [$memory->refresh()->text, $memory->weight, $memory->revision]);
 
         $this->artisan('memory:remove', ['memory' => $memory->id])->assertExitCode(0);
@@ -111,10 +114,12 @@ final class MemoryCommandsTest extends TestCase
 
         $this->signed($this->other, '/agent/memory/edit', [...$edit, 'request_key' => bin2hex(random_bytes(8))])
             ->assertJsonPath('message', $notYours);
+
         $this->signed($this->other, '/agent/memory/remove', [
             'memory_id' => $memory->id,
             'request_key' => bin2hex(random_bytes(8)),
         ])->assertJsonPath('message', $notYours);
+
         $this->signed($this->other, '/agent/memory/list', [])->assertJsonPath('memories', []);
         $this->assertSame('Mine alone.', $memory->refresh()->text);
     }
@@ -164,6 +169,7 @@ final class MemoryCommandsTest extends TestCase
         $this->runCommandsAs($this->owner);
         $this->artisan('memory:save', ['text' => 'Old words.'])->assertExitCode(0);
         $memory = Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->sole();
+
         $this->artisan('memory:edit', ['memory' => $memory->id, '--revision' => 1, '--text' => 'Newer words.'])
             ->assertExitCode(0);
 

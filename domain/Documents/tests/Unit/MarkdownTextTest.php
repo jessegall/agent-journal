@@ -72,6 +72,7 @@ final class MarkdownTextTest extends TestCase
         e
 
         TEXT);
+
         $replaced = $text->withSectionReplaced(3, 'new third');
 
         $this->assertStringEndsWith(<<<'TEXT'
@@ -82,6 +83,7 @@ final class MarkdownTextTest extends TestCase
         e
 
         TEXT, $replaced->text);
+
         $this->assertStringContainsString(<<<'TEXT'
         # Three
         new third

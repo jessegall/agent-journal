@@ -103,6 +103,7 @@ final readonly class RetainedNumberedPages implements NumberedPages
         $retainedPageId = $continuation->retainedPageId ?? $this->retained->keep(
             array_map(strval(...), array_keys($page->cards)),
         );
+
         $cursor = $this->continuations->issue(
             new Continuation(
                 $continuation->tool,

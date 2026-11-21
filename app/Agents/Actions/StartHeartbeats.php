@@ -62,6 +62,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
         $this->transaction->runForSession($session->id, function () use ($session, $evidence): void {
             $session->endWithEvidenceAt(CarbonImmutable::now(), "host reported exit: {$evidence}");
             $this->credentials->revoke($session);
+
             AgentRuntime::query()
                 ->where('agent_session_id', $session->id)
                 ->lockForUpdate()
@@ -106,6 +107,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
             $start->cancelPending();
             $this->capacity->releaseFor($session->start_request_id);
             $this->credentials->revoke($session);
+
             AgentRuntime::query()
                 ->where('agent_session_id', $session->id)
                 ->lockForUpdate()

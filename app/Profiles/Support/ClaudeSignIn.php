@@ -65,6 +65,7 @@ final readonly class ClaudeSignIn implements SignInProtocol
         $status = $this->claude->status($directory);
         $realDirectory = $this->files->realPath($this->files->pathIn(Place::Accounts, $directory));
         $isSignedIn = $status->isSignedInBy('claude.ai', $directory, $realDirectory);
+
         $identity = $isSignedIn
             ? new SignInIdentity($status->email, null, null, $status->expiresAt)
             : SignInIdentity::unproved();

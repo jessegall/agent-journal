@@ -57,15 +57,19 @@ final class RecipientChoiceTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+
         $this->app->make(EntryDispatchers::class)
             ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesks());
+
         $this->inboxOf(ActorIdentity::of($owner));
         $main = $this->start('Main');
         $helper = $this->start('Helper');
         $this->startUserRequestAs($owner->id);
+
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(MainSeatTakeover::class)->takeOver(Agent::query()->findOrFail($main[0])),
         );
+
         $mainInboxId = DeskRecord::query()->named(BuiltInDesks::MAIN)->sole()->inboxId();
         $helperInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $helper[0]))->inboxId();
 
@@ -79,9 +83,11 @@ final class RecipientChoiceTest extends TestCase
     private function start(string $name): array
     {
         $agent = Agent::create($name, 'main-agent');
+
         $session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
+
         $this->inboxOf(new ActorIdentity(ActorType::Agent, $agent->id));
 
         return [$agent->id, $session->id];

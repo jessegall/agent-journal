@@ -25,10 +25,12 @@ final readonly class ProvedClaims
 
         $claims = AssignmentRecord::ofRecords($type, $recordIds);
         $proofs = ClaimAuthorization::ofClaims(array_map(fn (AssignmentRecord $claim) => $claim->id, $claims));
+
         $liveHolders = AssignmentRecord::holdersOf(array_merge(...array_map(
             fn (ClaimAuthorization $proof) => $proof->sourceIds(),
             array_values($proofs),
         )));
+
         $valid = [];
 
         foreach ($claims as $claim) {

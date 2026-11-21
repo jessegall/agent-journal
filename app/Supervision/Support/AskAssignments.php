@@ -95,6 +95,7 @@ final readonly class AskAssignments implements JournalAssignableProvider
 
         $this->graph->acquire();
         $handsOff = $this->runsAny(self::MAINTENANCE_ROUTING_COMMANDS);
+
         $ask = $handsOff
             ? Ask::lockedForMaintenance($assignment->record->id)
             : $this->asks->lock(new AskReference($assignment->record->id));
@@ -111,6 +112,7 @@ final readonly class AskAssignments implements JournalAssignableProvider
             ->map(fn (ActorIdentity $actor) => AssigneeIdentity::ofActorIdentity($actor))
             ->map(fn (AssigneeIdentity $assignee) => $assignee->isSameAs($assignment->recipient))
             ->getOrElse(false);
+
         $stillRouted = $route->target->key === $pending->key && $isRecipient;
 
         if (! $stillRouted) {
@@ -167,6 +169,7 @@ final readonly class AskAssignments implements JournalAssignableProvider
     {
         $ask = Ask::lockedForMaintenance($assignment->record->id);
         $pending = $ask->requirePending($assignment->expectedVersion);
+
         $isRecipient = $this->recipients->resolve($pending)
             ->map(fn (ActorIdentity $actor) => AssigneeIdentity::ofActorIdentity($actor))
             ->map(fn (AssigneeIdentity $assignee) => $assignee->isSameAs($assignment->recipient))

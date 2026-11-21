@@ -65,6 +65,7 @@ final class FrameLifecycle
                     $answers->add($resumed, LifecycleStage::Resume, $resumed->resume($target));
                 }
             };
+
             $this->eventActivity->evaluate($target, $callbacks);
         } finally {
             $this->running = $runningBefore;

@@ -27,12 +27,14 @@ final readonly class OwnerStartReceipts implements StartReceipts
     public function receiptFor(RecordIdentity $work): OwnerStartReceipt
     {
         $reference = OwnerStartRequest::ownerReferenceOf($work);
+
         $record = StartRecord::query()
             ->forOwnerReference($reference)
             ->requestedBy(ActorIdentity::of($this->actors->actor()))
             ->whereNotNull('session_id')
             ->latest()
             ->firstOr(fn () => throw StartRecordMissing::forRequest($reference));
+
         $session = AgentSession::query()->findOrFail($record->session_id);
         $policy = SessionPolicy::query()->where('session_id', $session->id)->sole()->policy();
 

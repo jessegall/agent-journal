@@ -238,6 +238,7 @@ final class Account extends Model implements EventSource, ReadableModel
             ->whereKey($accountId)
             ->lockForUpdate()
             ->firstOrFail();
+
         $account->assertAvailable();
 
         return $account;
@@ -259,6 +260,7 @@ final class Account extends Model implements EventSource, ReadableModel
                 $driver->value,
                 StartUnavailableReason::ChosenAccountMissing,
             ));
+
         $account->assertAvailable();
         $account->assertReviewed($reviewedSignIn);
 

@@ -71,6 +71,7 @@ final class CommentsAndReadsTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
+
         $this->bus()->run(
             new CreateDocument('Design', 'What we build', <<<'TEXT'
             # Goal
@@ -117,6 +118,7 @@ final class CommentsAndReadsTest extends TestCase
                 TEXT,
             ),
         );
+
         $section = $this->bus()->run(
             new PostTextComment(
                 $this->documentNumbered(2),
@@ -125,6 +127,7 @@ final class CommentsAndReadsTest extends TestCase
                 (string) Str::uuid(),
             ),
         );
+
         $lines = $this->bus()->run(
             new PostTextComment(
                 $this->documentNumbered(2),
@@ -133,16 +136,20 @@ final class CommentsAndReadsTest extends TestCase
                 (string) Str::uuid(),
             ),
         );
+
         $draft = $this->bus()->run(new OpenDocument('2'));
+
         $draft = $this->bus()->run(
             new ReplaceDocumentText($draft->target(), 'Third part.', 'A rewritten third part.'),
         );
+
         $this->bus()->run(new CloseDocument($draft->target()));
 
         $sectionPlace = $this->comments()->location($this->documentNumbered(2), $section);
         $linesPlace = $this->comments()->location($this->documentNumbered(2), $lines);
 
         $this->assertInstanceOf(TextCommentLocation::class, $sectionPlace);
+
         $this->assertSame(
             ['1', 3, 7, 10],
             [
@@ -152,6 +159,7 @@ final class CommentsAndReadsTest extends TestCase
                 $sectionPlace->part->lastLine,
             ],
         );
+
         $this->assertStringContainsString('Third part.', $sectionPlace->part->text);
         $this->assertInstanceOf(TextCommentLocation::class, $linesPlace);
         $this->assertSame([2, 5], [$linesPlace->part->firstLine, $linesPlace->part->lastLine]);
@@ -179,6 +187,7 @@ final class CommentsAndReadsTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
+
         $comment = $this->comments()->list($this->document(), new Page())->comments[0]->comment;
         $this->assertSame([ActorType::Agent, $agent->id], [$comment->authorType, $comment->authorId]);
     }
@@ -196,6 +205,7 @@ final class CommentsAndReadsTest extends TestCase
     public function test_a_read_without_flags_gives_the_outline_and_a_long_section_is_cut_with_its_continuation(): void
     {
         $lines = implode("\n", array_map(fn (int $line) => "Line {$line}.", range(1, 300)));
+
         $this->bus()->run(new CreateDocument('Long', 'Many lines', <<<TEXT
         # Long
         {$lines}

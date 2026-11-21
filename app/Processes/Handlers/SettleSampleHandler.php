@@ -34,6 +34,7 @@ final readonly class SettleSampleHandler implements CommandHandler
             ->orderByDesc('consumed_at')
             ->orderByDesc('id')
             ->firstOrFail();
+
         $run = ProcessRun::query()->ownedBy($request->actor())->findOrFail($permit->process_run_id);
 
         if (! $run->hasEnded()) {

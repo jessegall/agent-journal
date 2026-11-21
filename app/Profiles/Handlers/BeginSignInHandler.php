@@ -53,6 +53,7 @@ final readonly class BeginSignInHandler implements CommandHandler
 
         $expiresAt = CarbonImmutable::now()->addMinutes($this->config->integer('accounts.sign_in_minutes'));
         $directory = SignInAttempt::newFolderIn($this->config->string('accounts.root'));
+
         $attempt = SignInAttempt::create(
             ActorIdentity::of($command->dispatchedBy()),
             $driver,
@@ -61,6 +62,7 @@ final readonly class BeginSignInHandler implements CommandHandler
             $command->requestKey,
             $expiresAt,
         );
+
         $this->jobs->dispatch(new SignInDeadline($attempt->id)->afterCommit()->delay($attempt->expires_at));
 
         return new SignInStarted($attempt->id, false);

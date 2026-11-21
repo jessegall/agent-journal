@@ -64,9 +64,11 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
         }
 
         $nextAfterId = $page->facts[array_key_last($page->facts)]->id;
+
         $ready = array_values(
             array_filter($page->facts, fn (AutoAssignmentFact $fact) => $this->mayTakeTurn($fact, $stop)),
         );
+
         usort($ready, static fn (AutoAssignmentFact $one, AutoAssignmentFact $other): int => $one->compareTurn($other));
         $started = 0;
         $assigned = 0;
@@ -118,6 +120,7 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
     private function warn(AutoAssignmentFact $fact, Throwable $failure): void
     {
         $key = $fact->key;
+
         $this->logger->warning('Auto-assignment claim failed.', [
             ...$key->actor->asColumns('actor'),
             'type' => $key->assignableType,

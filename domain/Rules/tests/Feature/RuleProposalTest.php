@@ -47,6 +47,7 @@ final class RuleProposalTest extends TestCase
         );
 
         $details = $this->app->make(RuleDetailsResolver::class)->rule($id);
+
         $this->assertSame(
             [RuleState::Proposed, 'The old one is too vague.', ActorType::Agent, $start->agent->id, $old->number],
             [
@@ -57,6 +58,7 @@ final class RuleProposalTest extends TestCase
                 $details->replacesRuleNumber,
             ],
         );
+
         $this->assertSame(["Rule {$old->id}: Old rule."], $this->app->make(ActiveRules::class)->reminders());
         $this->assertSame(1, $this->app->make(RuleDetailsResolver::class)->activeCount());
     }
@@ -82,6 +84,7 @@ final class RuleProposalTest extends TestCase
     public function test_the_user_removes_a_rule(): void
     {
         $active = HoldingRules::create('Held rule.');
+
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),

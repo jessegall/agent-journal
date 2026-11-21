@@ -96,6 +96,7 @@ final class TaskRunOwnershipTest extends TestCase
             [TaskState::Finished, 'Built and tested.'],
             [$this->task->fresh()?->state, $this->task->fresh()?->result_note],
         );
+
         $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
     }
 
@@ -105,16 +106,19 @@ final class TaskRunOwnershipTest extends TestCase
         $run = $this->bus()->run(new StartTask($this->task->id));
 
         $this->actAs($this->second);
+
         $this->assertThrows(
             fn () => $this->bus()->run(new FinishTask($this->task->id, $run, 'Not mine.')),
             ActorNotAllowed::class,
         );
 
         $this->actAs($this->first);
+
         $this->assertThrows(
             fn () => $this->bus()->run(new BlockTask($this->task->id, $run + 1, 'Wrong run.')),
             TaskRunNotYours::class,
         );
+
         $this->bus()->run(new BlockTask($this->task->id, $run, 'Waits on review.'));
 
         $this->assertSame(
@@ -132,6 +136,7 @@ final class TaskRunOwnershipTest extends TestCase
         $this->bus()->run(new StartTask($this->task->id));
 
         $this->actAs($this->second);
+
         $this->assertThrows(
             fn () => $this->bus()->run(new CancelTask($this->task->id, 'Not mine.')),
             ActorNotAllowed::class,
@@ -170,6 +175,7 @@ final class TaskRunOwnershipTest extends TestCase
     {
         $this->app->forgetScopedInstances();
         $agent = $session->agent()->firstOrFail();
+
         $this->app->instance(
             AgentContext::class,
             new AgentContext(
@@ -179,6 +185,7 @@ final class TaskRunOwnershipTest extends TestCase
                 null,
             ),
         );
+
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($agent->id),
             TestStartAuthority::forAgent($agent->id),

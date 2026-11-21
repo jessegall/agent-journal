@@ -48,6 +48,7 @@ final readonly class PublicationPages
         }
 
         $next = $position->offset + count($entries);
+
         $actions = $next <= count($outline) ? [$this->continuations->link(new Continuation(
             $position->tool,
             $position->selector,
@@ -77,6 +78,7 @@ final readonly class PublicationPages
         }
 
         $comment = $entry->comment;
+
         $commentPage = $this->chunks->page($comment->body, $position, $key, [
             ...$card->toArray(),
             'comment' => [

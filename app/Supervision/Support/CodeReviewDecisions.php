@@ -70,6 +70,7 @@ final readonly class CodeReviewDecisions
         $type = $this->types->get(CoreAskType::MergeReady->key());
         $origin = SupervisorTarget::parse((string) $review->origin_target);
         $body = "Merge the approved work under {$review->import_ref}: {$decision->base}..{$decision->head}.";
+
         $merge = $origin->isProfile()
             ? $this->opening->openOnProfile(
                 $origin->profileKey(),
@@ -88,6 +89,7 @@ final readonly class CodeReviewDecisions
                 $review->work(),
                 AskOriginType::Internal,
             );
+
         $decision->linkMerge($merge);
         $this->router->route($merge, 0, null);
     }

@@ -36,6 +36,7 @@ final class ShareListRequest extends FormRequest
             'expiresBefore' => $this->filled('expiresBefore') ? $this->string('expiresBefore')->toString() : null,
             'after' => $this->filled('after') ? $this->string('after')->toString() : null,
         ];
+
         $state = $this->enum('state', ShareState::class);
 
         return ShareFiltersData::from($state === null ? $filters : [...$filters, 'state' => $state]);

@@ -134,6 +134,7 @@ final class ShareMember extends Model implements ReadableModel
         $members = self::query()->targeting($record)->stillApproved()->limit(Share::LIVE_LIMIT)->get(
             ['share_id', 'scope_version'],
         );
+
         $scopeOfShare = Share::liveScopeVersions(array_values(array_unique($members->pluck('share_id')->all())));
 
         return $members->contains(

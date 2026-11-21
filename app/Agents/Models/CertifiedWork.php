@@ -58,6 +58,7 @@ final class CertifiedWork extends Model implements ReadableModel
             'agent_session_id' => $start->session_id,
             'worktree' => $policy->execution_policy->worktree,
         ]);
+
         $certified->setAttribute($certified->getKeyName(), $certified->newUniqueId());
         $certified->insertIfAbsent();
 

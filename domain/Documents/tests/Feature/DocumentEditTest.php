@@ -46,6 +46,7 @@ final class DocumentEditTest extends TestCase
         $draft = $bus->run(new OpenDocument($created->id, 1));
         $target = new DraftTarget($created->id, $draft->token, 1);
         $replacement = str_repeat('a', 1024 * 1024);
+
         $id = $bus->run(new BeginUpload(
             UploadType::EditReplacement,
             strlen($replacement),
@@ -57,6 +58,7 @@ final class DocumentEditTest extends TestCase
         }
 
         $bus->run(new CommitUpload($id));
+
         $this->assertThrows(
             fn () => $bus->run(new EditDocument($target, 'Missing section', null, $id)),
             SectionMissing::class,
@@ -84,11 +86,13 @@ final class DocumentEditTest extends TestCase
         $author->startRequest($this->app);
         $broken = "| A | B |\n| --- | --- |\n| one |";
         $bus->run(new EditDocument(new DraftTarget($created->id, $draft->token, 1), '1', $broken));
+
         $this->assertThrows(
             fn () => $bus->run(new CloseDocument(new DraftTarget($created->id, $draft->token))),
             DraftMarkdownInvalid::class,
             'line',
         );
+
         $this->assertSame('1', $this->app->make(DocumentResolver::class)->show($created->number)->revision);
         $this->assertStringContainsString($broken, $this->app->make(DraftResolver::class)->current(1)->body);
     }
@@ -129,6 +133,7 @@ final class DocumentEditTest extends TestCase
         ])->assertOk();
 
         $author->startRequest($this->app);
+
         $this->assertSame(
             'Replacement text.',
             $this->app->make(DraftResolver::class)->current($document->number)->body,
@@ -139,6 +144,7 @@ final class DocumentEditTest extends TestCase
     {
         $author = TestStart::start();
         $author->startRequest($this->app);
+
         $document = $this->app->make(CommandBus::class)->run(
             new CreateDocument('Design', 'Current design.', 'Published text.'),
         );
@@ -148,6 +154,7 @@ final class DocumentEditTest extends TestCase
             'body' => 'Check the first section.',
             'request_key' => 'comment-on-design',
         ])->assertOk();
+
         $this->assertSame('Check the first section.', Comment::query()->sole()->body);
     }
 }

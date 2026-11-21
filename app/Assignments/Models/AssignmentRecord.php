@@ -76,6 +76,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
             'holder_type' => $holder->type,
             'holder_id' => $holder->id,
         ]);
+
         $row->setAttribute($row->getKeyName(), $row->newUniqueId());
         $row->insertIfAbsent();
     }

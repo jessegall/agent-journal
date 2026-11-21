@@ -28,6 +28,7 @@ final readonly class CreateDocumentHandler extends DocumentCommandHandler
         $actor = $command->dispatchedBy();
         $body = $this->bodies->read($command->body, $command->uploadId, UploadType::DocumentBody);
         $document = Document::create($actor);
+
         $document->startWith(DocumentRevision::create(
             $document,
             trim($command->title),
@@ -36,6 +37,7 @@ final readonly class CreateDocumentHandler extends DocumentCommandHandler
             $actor->actorType(),
             $actor->actorId(),
         ));
+
         $this->provenance->record($document);
         $this->provenance->record($document->currentRevisionOrFail());
         $this->links->linkFrom($document, $command->relatedRecords);

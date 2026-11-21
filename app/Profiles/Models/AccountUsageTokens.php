@@ -80,6 +80,7 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
             'sign_in_generation' => $generation,
             'thread_id' => $tokens->threadId,
         ]);
+
         $snapshot->fillWith($tokens);
         $snapshot->assertSaved($snapshot->save());
         $snapshot->raise(new AccountUsageChanged($account->driver, $account->id));
@@ -123,6 +124,7 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
             ->orderByDesc('source_id')
             ->readExactly(count($accounts))
             ->get();
+
         $newest = [];
 
         foreach ($snapshots as $snapshot) {

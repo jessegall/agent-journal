@@ -50,6 +50,7 @@ final readonly class CodexJournalServer
             ', ',
             array_map(fn (string $name): string => sprintf('"%s"', $name), self::PASSED_VARIABLES),
         );
+
         $header = self::HEADER;
         $command = addcslashes($this->command, '"\\');
         $relay = addcslashes($this->relay, '"\\');

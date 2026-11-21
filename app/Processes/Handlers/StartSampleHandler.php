@@ -31,6 +31,7 @@ final readonly class StartSampleHandler implements CommandHandler
     public function handle(StartSample $command): string
     {
         $request = CommandRequest::lockedForChange($command->commandRequestId);
+
         $permit = EvidencePermit::query()
             ->whereKey($command->permitId)
             ->where('command_request_id', $request->id)

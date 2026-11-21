@@ -24,6 +24,7 @@ final readonly class PostCommentController
     public function __invoke(PostCommentCall $call, CommandBus $commands, RecordResolver $records): CommentPosted
     {
         $target = $records->identify(RecordReference::parse($call->target));
+
         $command = $call->place === null
             ? new PostComment($target, $call->body, $call->submissionKey)
             : new PostTextComment($target, $call->body, $call->place->range(), $call->submissionKey);

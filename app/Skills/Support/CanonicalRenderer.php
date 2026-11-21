@@ -37,6 +37,7 @@ final readonly class CanonicalRenderer
         $this->assertValidDescription($key, $skill->description());
 
         $frontMatter = rtrim(Yaml::dump(['name' => $key->key, 'description' => $skill->description()]), "\n");
+
         $body = implode('', array_map(fn (SkillSection $section) => <<<SECTION
 
 
@@ -44,6 +45,7 @@ final readonly class CanonicalRenderer
 
             {$this->bodyOf($section, $owner)}
             SECTION, $sections));
+
         $page = <<<MARKDOWN
             ---
             {$frontMatter}

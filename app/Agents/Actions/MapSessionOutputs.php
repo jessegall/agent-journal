@@ -28,6 +28,7 @@ final readonly class MapSessionOutputs
     ): void {
         $start->advanceOutputGeneration();
         $granted = SessionOutputGrant::heldBy($session->id) ?: $this->continuedFrom($session);
+
         $paths = $transcriptPath === null ? null : SessionOutputPaths::verified(
             HookDriver::from((string) $session->driver),
             $start->directory,
@@ -52,6 +53,7 @@ final readonly class MapSessionOutputs
         $predecessorId = StartRecord::query()->where('request_id', $session->start_request_id)->value(
             'context_reference',
         );
+
         $isSameAgent = is_string($predecessorId) && AgentSession::query()
             ->whereKey($predecessorId)
             ->where('agent_id', $session->agent_id)

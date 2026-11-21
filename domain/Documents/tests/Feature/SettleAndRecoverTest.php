@@ -72,6 +72,7 @@ final class SettleAndRecoverTest extends TestCase
         parent::setUp();
 
         $this->actAsUser(1);
+
         $this->bus()->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
@@ -103,6 +104,7 @@ final class SettleAndRecoverTest extends TestCase
             CommandInputInvalid::class,
             'reason: The reason field is required.',
         );
+
         $this->assertSame(AttentionState::Active, Document::query()->sole()->attention);
 
         $this->bus()->run(new OpenDocument('1'));
@@ -119,6 +121,7 @@ final class SettleAndRecoverTest extends TestCase
 
         $this->assertThrows(fn () => $this->bus()->run(new SettleDocument(1, 1, $tooLong)), CommandInputInvalid::class);
         $this->assertThrows(fn () => $this->bus()->run(new CloseReport('1', $tooLong)), CommandInputInvalid::class);
+
         $this->assertSame(
             [AttentionState::Active, AttentionState::Active],
             [Document::query()->sole()->attention, Report::query()->sole()->attention],
@@ -146,6 +149,7 @@ final class SettleAndRecoverTest extends TestCase
             CommandInputInvalid::class,
             'reason:',
         );
+
         $this->assertSame(1, DocumentDraft::query()->count());
     }
 
@@ -187,10 +191,12 @@ final class SettleAndRecoverTest extends TestCase
 
         $this->assertSame([2, true], [$result->revisionNumber, $result->published]);
         $this->assertSame(TestIds::of(9), $this->documents()->revisions(1, 1)[1]->authorId);
+
         $this->assertSame(
             [CloseCause::Recovery, TestIds::of(1), 'Agent gone.'],
             [$close->cause, $close->closer_id, $close->reason],
         );
+
         $this->assertSame(1, $this->bus()->run(new OpenDocument('1'))->version);
     }
 
@@ -216,6 +222,7 @@ final class SettleAndRecoverTest extends TestCase
 
         $this->assertSame(0, DocumentDraft::query()->count());
         $this->assertSame(['2', '1'], [$this->documents()->show(1)->revision, $this->documents()->show(2)->revision]);
+
         $this->assertSame(
             [CloseCause::Lifecycle, CloseCause::Lifecycle],
             DocumentClose::query()->orderBy('closed_at')->get()->pluck('cause')->all(),
@@ -236,6 +243,7 @@ final class SettleAndRecoverTest extends TestCase
             }),
             SimulatedFailure::class,
         );
+
         $this->assertSame(1, DocumentDraft::query()->count());
         $this->assertSame(0, DocumentClose::query()->count());
     }
@@ -262,6 +270,7 @@ final class SettleAndRecoverTest extends TestCase
             ActorContext::forAgent(TestIds::of($agent)),
             TestStartAuthority::forAgent(TestIds::of($agent)),
         );
+
         $call = new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64));
         $context = new AgentContext(TestIds::of($agent), TestIds::of($session), $call, null);
         $this->app->instance(AgentContext::class, $context);

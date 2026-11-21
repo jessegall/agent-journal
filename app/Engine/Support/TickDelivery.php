@@ -61,9 +61,11 @@ final readonly class TickDelivery
 
         $passNow = $this->serverClock->now();
         $passClockNanoseconds = $this->clock->nanoseconds();
+
         $checkpoints = EngineFrameTime::settledAtFor(
             array_map(fn (TickCandidate $candidate) => $candidate->frameId, $batch->candidates),
         );
+
         $settled = ScopedReadMeter::ofCurrentScope()->withinSchedule('engine ticks', function () use (
             $batch,
             $passStartNanoseconds,
@@ -127,6 +129,7 @@ final readonly class TickDelivery
             foreach ($commands->all() as $command) {
                 $locks = WorkLockSet::for($candidate->occurrence, $command);
                 $run = fn (): mixed => $this->commands->run($command);
+
                 $this->origins->runWith(
                     $locks,
                     fn (): mixed => $this->entrance->through(CommandEntry::Application, $run),

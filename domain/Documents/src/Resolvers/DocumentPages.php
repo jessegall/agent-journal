@@ -39,6 +39,7 @@ final readonly class DocumentPages implements DocumentReader
         $document = DocumentRecords::published($id);
         $current = $document->currentRevisionOrFail();
         $cursor = $arguments->continuation();
+
         $position = $cursor === null
             ? $this->firstRead((string) $id, $current->number, $arguments)
             : $this->continuations->open($cursor, self::TOOL, (string) $id);
@@ -50,6 +51,7 @@ final readonly class DocumentPages implements DocumentReader
         $revision = $position->revision === $current->number ? $current : $document->publishedRevision(
             (string) $position->revision,
         );
+
         $view = PublicationView::from($position->filters['view']);
         $card = new DocumentReadCard($document->number, $document->id, $revision->number);
 
@@ -109,8 +111,10 @@ final readonly class DocumentPages implements DocumentReader
     {
         $matching = $document->revisions()->sharedPublished()->orderBy('number')
             ->where('number', '>=', $position->offset)->limit(self::REVISIONS + 1)->get();
+
         $page = $matching->take(self::REVISIONS);
         $last = $page->last();
+
         $next = $last !== null && $matching->count() > $page->count() ? [$this->continuations->link(new Continuation(
             $position->tool,
             $position->selector,

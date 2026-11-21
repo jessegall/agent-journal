@@ -116,6 +116,7 @@ final class MergeAttempt extends Model implements ReadableModel
             'import_ref' => $approved->importRef,
             'state' => MergeAttemptState::Prepared,
         ]);
+
         $attempt->setAttribute($attempt->getKeyName(), $attempt->newUniqueId());
         $attempt->insertIfAbsent();
 

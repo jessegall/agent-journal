@@ -66,6 +66,7 @@ final class HelperContextTest extends TestCase
     private function remindersOn(string $agentId, ContextStartType $type): array
     {
         $reminders = $this->app->make(ContextReminders::class);
+
         $this->app->make(SupplyHelperContext::class)->handle(new ContextStarted(
             new StackTarget($agentId, (string) Str::ulid()),
             'hook-'.Str::random(8),

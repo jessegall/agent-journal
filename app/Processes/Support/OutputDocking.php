@@ -58,12 +58,14 @@ final readonly class OutputDocking implements DockableProvider
     {
         $keys = array_filter(array_map(self::parsed(...), $ids), fn (Option $key) => $key->isDefined());
         $runIds = array_values(array_unique(array_map(fn (Option $key) => $key->get()[0], $keys)));
+
         $runs = ProcessRun::query()
             ->withDockParts()
             ->whereKey($runIds)
             ->readExactly(count($runIds))
             ->get()
             ->keyBy('id');
+
         $outputs = [];
 
         foreach ($keys as $id => $key) {

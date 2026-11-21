@@ -142,6 +142,7 @@ final readonly class FileWriter
             new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
             RecursiveIteratorIterator::CHILD_FIRST,
         );
+
         $found = [];
 
         foreach ($entries as $entry) {

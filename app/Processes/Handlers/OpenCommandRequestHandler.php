@@ -18,6 +18,7 @@ final readonly class OpenCommandRequestHandler implements CommandHandler
     {
         $actor = ActorIdentity::of($command->dispatchedBy());
         $projectKey = $this->projects->current();
+
         $open = CommandRequest::query()
             ->ofProject($projectKey)
             ->byActor($actor)

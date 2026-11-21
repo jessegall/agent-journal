@@ -71,6 +71,7 @@ final readonly class SignedSignInHost implements SignInHost
             'expires_at' => $identity->expiresAt,
             'refusal' => $refusal,
         ]);
+
         $this->send('profiles.sign-in-host.report', ['attempt' => $claimed->attemptId], $body);
     }
 
@@ -149,10 +150,12 @@ final readonly class SignedSignInHost implements SignInHost
             'directory_removed' => $progress->isDirectoryRemoved,
             'still_bound' => $progress->isStillBound,
         ]);
+
         [$route, $parameters] = match ($claimed->target) {
             CleanupTarget::Account => ['profiles.account-host.cleanup', ['account' => $claimed->id]],
             CleanupTarget::SignInAttempt => ['profiles.sign-in-host.cleanup', ['attempt' => $claimed->id]],
         };
+
         $this->send($route, $parameters, $body);
     }
 

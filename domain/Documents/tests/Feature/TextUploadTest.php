@@ -48,10 +48,12 @@ final class TextUploadTest extends TestCase
 
         $bus->run(new AppendUpload($id, 0, $part, $chunkDigest));
         $this->assertSame(32, TextUploadChunk::query()->count());
+
         $this->assertThrows(
             fn () => $bus->run(new AppendUpload($id, 0, 'different', hash('sha256', 'different'))),
             UploadChunkConflict::class,
         );
+
         $bus->run(new CommitUpload($id));
 
         $this->assertThrows(fn () => $this->consume($id, UploadType::ReportBody), UploadExpired::class);

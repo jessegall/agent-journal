@@ -56,6 +56,7 @@ final readonly class StateEventEffects
                 $origin->lifecycleOrigin($ordinal + 1),
                 fn () => $this->bus->runGuarded($command, fn () => $this->guard->check($origin)),
             );
+
             $status = $this->admission->admit(
                 $origin->target->sessionId,
                 $this->deadline,

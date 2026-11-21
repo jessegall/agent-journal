@@ -29,24 +29,29 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
             $query->helpers,
             fn (LaunchCandidateFacts $helper) => ! $helper->hasOpenWork,
         ));
+
         $agentIds = array_map(fn (LaunchCandidateFacts $helper) => $helper->actor->id, $helpers);
         $agents = Agent::byIds($agentIds);
         $busy = [...$this->busyAgents($agentIds), ...WorkReservation::reservedAgentIds($agentIds)];
+
         $purposeConversations = DriverConversation::query()
             ->whereIn('agent_id', $agentIds)
             ->where('context_reference', $query->purposeReference)
             ->readAll('every conversation the offered helpers kept under one purpose, to prove exposure')
             ->get();
+
         $exactAgents = $this->agentsLastOnModel(
             $purposeConversations->where('driver', $query->driver->value)->all(),
             $query->model,
         );
+
         $sawPurpose = $purposeConversations->pluck('agent_id')->unique()->all();
 
         $ranked = [];
 
         foreach ($helpers as $helper) {
             $agent = $agents[$helper->actor->id] ?? null;
+
             $eligible = $agent instanceof Agent
                 && ! $agent->isRetired()
                 && $agent->profile_key === $query->profile->key
@@ -91,6 +96,7 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
             ->readAll('the running sessions of the offered helpers')
             ->pluck('agent_id')
             ->all();
+
         $starting = ProcessStart::query()
             ->whereIn('agent_id', $ids)
             ->unresolved()
@@ -121,6 +127,7 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
             ->readAll('the visits of the offered helpers\' conversations under one purpose, to find each last one')
             ->get()
             ->unique('conversation_id');
+
         $models = AgentSession::query()
             ->whereIn('id', $lastVisits->pluck('session_id')->all())
             ->readAll('the sessions of those last visits')

@@ -67,6 +67,7 @@ final readonly class AskRouter
         }
 
         $recipient = $found->get();
+
         $assignment = new JournalAssignment(
             $ask->assignmentIdentity(),
             AssigneeIdentity::ofActorIdentity($recipient),

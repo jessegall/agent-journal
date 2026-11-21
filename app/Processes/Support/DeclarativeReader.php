@@ -89,6 +89,7 @@ final readonly class DeclarativeReader
     {
         if ($frame->stream === OutputStream::Merged && $this->contract->streams === StreamUse::Separate) {
             $explanation = 'Merged output arrived although the contract keeps stdout and stderr apart.';
+
             $builder->problem(
                 ProblemCode::OutputAmbiguous,
                 $frame->stream,
@@ -133,6 +134,7 @@ final readonly class DeclarativeReader
 
         if (strlen($rest) > $this->definition->maxRecordBytes) {
             $explanation = 'A record is longer than the reader allows.';
+
             $builder->problem(
                 ProblemCode::RecordLimit,
                 $stream,
@@ -140,6 +142,7 @@ final readonly class DeclarativeReader
                 $start + strlen($bytes),
                 $explanation,
             );
+
             $rest = '';
         }
 

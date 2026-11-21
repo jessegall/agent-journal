@@ -25,11 +25,13 @@ final readonly class SaveCall implements Pipe
         $answer = $rendered->answer;
         $rendered->row->saveFrames($answer->stack->records(), $this->types->ticking());
         $call = new HookCall();
+
         $call->recordFor(
             $rendered->call->identity,
             $rendered->reply->recordedAs($answer->decision->answerType()),
             RecordedSteps::of($answer->steps),
         );
+
         Link::connect($rendered->row, $call);
 
         return $rendered->reply;

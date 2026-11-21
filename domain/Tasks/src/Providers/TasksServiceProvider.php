@@ -54,6 +54,7 @@ final class TasksServiceProvider extends ServiceProvider
         $reads->declare('tasks_assigned', $readGrant);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
         $this->commands([AssignedTasksCommand::class]);
+
         $links->register([
             Task::LINK_TYPE => Task::class,
             TaskRun::LINK_TYPE => TaskRun::class,

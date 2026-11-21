@@ -82,6 +82,7 @@ final readonly class ShippedReaderInstaller
     private function approve(ShippedReader $reader, string $folder): void
     {
         $core = $this->coreRule($reader);
+
         $requestId = $this->commands->run(new OpenCommandRequest(
             $reader->invocation,
             hash('sha256', $reader->invocation),
@@ -89,11 +90,13 @@ final readonly class ShippedReaderInstaller
             $folder,
             RequestHoldReason::ReaderRequired,
         ));
+
         $proposed = new ProposedRule(
             $this->replacingRule($reader, $core),
             "Core ships a reader proven on {$reader->tool} {$reader->version} ({$reader->versionSource}).",
             [RuleExample::positive($reader->invocation, $core->classes)],
         );
+
         $draftKey = "shipped-{$reader->tool}-{$reader->version}";
         $this->commands->run(new ProposeCommandRule($requestId, $draftKey, $proposed));
         $runs = [];
@@ -135,6 +138,7 @@ final readonly class ShippedReaderInstaller
             ProgressPolicy::indeterminate(),
             ReaderReference::required(),
         );
+
         $rule = CommandRule::fromArray([...$core->toArray(), 'contracts' => [$contract->toArray()]]);
 
         return $rule->ownedBy(RuleScope::project(), 1)

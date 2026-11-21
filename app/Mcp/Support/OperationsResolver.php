@@ -47,6 +47,7 @@ final readonly class OperationsResolver
         $receiptFields = is_array($operation->commandReply)
             ? $operation->commandReply
             : ['value' => $operation->commandReply];
+
         $outcomes = is_array($receiptFields['outcomes'] ?? null) ? array_values($receiptFields['outcomes']) : [];
         unset($receiptFields['outcomes']);
 

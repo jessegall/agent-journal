@@ -45,6 +45,7 @@ final readonly class ReconcileStartsHandler implements CommandHandler
             ->lockForUpdate()
             ->readAll('a host reports a bounded batch of exited starts')
             ->get();
+
         $accounts = [];
 
         foreach ($starts as $start) {

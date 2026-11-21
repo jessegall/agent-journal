@@ -112,6 +112,7 @@ final readonly class ProfileScriptCompiler implements ScriptCompilation
     private function readRefusal(ProfileDefinition $profile, string $read): string|null
     {
         $entitlement = $this->reads->of($read);
+
         $allowed = match ($entitlement->type) {
             ReadEntitlementType::Resolver => true,
             ReadEntitlementType::Grant => $entitlement->isGrantedBy($profile->authorization->grants(...)),

@@ -19,6 +19,7 @@ final readonly class TakeSignInCodeHandler implements CommandHandler
     {
         $attemptId = SignInAttempt::runBy($command->hostId, $command->attemptId)->id;
         $attempt = SignInAttempt::lockedForJournal($attemptId);
+
         $isLive = $attempt->isLive()
             && ! $attempt->isExpiredAt(CarbonImmutable::now())
             && $attempt->generation === $command->generation;

@@ -99,15 +99,19 @@ final class ProcessesServiceProvider extends ServiceProvider
         $this->app->scoped(VerificationTiming::class, OpenTiming::class);
         $this->app->scoped(ReceiptPublisher::class);
         $this->app->scoped(ResultReceipts::class, ProjectReceipts::class);
+
         $this->app->when(TreeClassifier::class)
             ->needs(CommandRuleRegistry::class)
             ->give(fn (Application $app): CommandRuleRegistry => $app->make(ActiveRules::class)->registry());
+
         $this->app->scoped(AliasResolver::class, CommandAliases::class);
         $this->app->scoped(OutputRecorder::class, SpoolRecorder::class);
+
         $this->app->singleton(
             JournalRoutes::class,
             fn (Application $app) => JournalRoutes::fromCommands($app->make(ConsoleKernel::class)->all()),
         );
+
         $this->app->scoped(ProgramClassifiers::class, fn (Application $app) => new ProgramClassifiers([
             new JournalClassifier($app->make(JournalRoutes::class), $app->basePath('bin/journal')),
         ]));
@@ -117,19 +121,24 @@ final class ProcessesServiceProvider extends ServiceProvider
     {
         $docks->offerDockFor($docks->register(ProcessRun::DOCK_TYPE, ProcessRun::class, RunDocking::class));
         $docks->offerDockFor($docks->register(OutputDocking::DOCK_TYPE, DockedOutput::class, OutputDocking::class));
+
         $policies->register('Core', new PolicyDefinition(
             ProcessPolicy::class,
             [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Execute, AccessType::Test],
         ));
+
         $policies->register('Core', new PolicyDefinition(
             ProcessAdministrationPolicy::class,
             [AccessType::Create, AccessType::Edit, AccessType::Test],
         ));
+
         RequiredServices::check($this->app);
+
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule->command('process:reconcile')->everyMinute(),
         );
+
         $links->register([
             'processes.command-alias' => CommandAlias::class,
             'processes.process-run' => ProcessRun::class,
@@ -148,7 +157,9 @@ final class ProcessesServiceProvider extends ServiceProvider
             'processes.output-assessment' => OutputAssessment::class,
             'processes.result-receipt' => ResultReceipt::class,
         ]);
+
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/processes.php');
+
         $this->commands([
             ExplainCommandTypeCommand::class,
             CommandTypeApproveCommand::class,

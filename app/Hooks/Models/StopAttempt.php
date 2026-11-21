@@ -92,6 +92,7 @@ final class StopAttempt extends Model implements ReadableModel
         array $conditionHashes,
     ): self {
         $attempt = new self();
+
         $attempt->setRawAttributes([
             'id' => $attempt->newUniqueId(),
             'agent_id' => $stop->agentId,
@@ -102,6 +103,7 @@ final class StopAttempt extends Model implements ReadableModel
             'condition_hashes' => json_encode($conditionHashes, JSON_THROW_ON_ERROR),
             'state' => StopAttemptState::Pending->value,
         ]);
+
         $attempt->insertIfAbsent();
 
         return self::query()

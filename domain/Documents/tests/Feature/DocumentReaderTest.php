@@ -38,6 +38,7 @@ final class DocumentReaderTest extends TestCase
     {
         TestStart::start()->startRequest($this->app);
         $body = "# Guide\nFirst paragraph.\n\n## Retry\nKeep your key.\n\n## Examples\n".str_repeat("A row.\n", 8000);
+
         $id = $this->app->make(CommandBus::class)->run(
             new CreateDocument('Guide', 'How to use a request key.', $body),
         )->number;
@@ -67,17 +68,21 @@ final class DocumentReaderTest extends TestCase
         $this->publish($number, 'Replacement.');
 
         $currentCursor = $current->nextActions[0]->arguments['continuation'];
+
         $this->assertThrows(
             fn () => $this->read($number, ['continuation' => $currentCursor]),
             ContinuationStale::class,
         );
+
         $pinnedCursor = $pinned->nextActions[0]->arguments['continuation'];
         $continued = $this->read($number, ['continuation' => $pinnedCursor]);
+
         $this->assertSame([2, 2, 4096], [
             $continued->responseFields['revision'],
             $continued->responseFields['line_start'],
             $continued->responseFields['character_offset'],
         ]);
+
         $this->assertSame(str_repeat('a', 4096), $continued->responseFields['body']);
     }
 
@@ -94,6 +99,7 @@ final class DocumentReaderTest extends TestCase
         $answer = $this->app->make(AttachmentReader::class)->attachment($id, null);
         $this->assertSame($text, $answer->responseFields['body']);
         TestStart::start()->startRequest($this->app);
+
         $this->assertThrows(
             fn () => $this->app->make(AttachmentReader::class)->attachment($id, null),
             UploadExpired::class,

@@ -46,13 +46,16 @@ final readonly class SkillPublications
             fn (PublicationIntent $intent) => SkillPublication::openKeyOf($intent->sessionId, $intent->target),
             $intents,
         );
+
         $limit = max(1, count($intents));
+
         $open = SkillPublication::query()
             ->whereIn('open_key', $openKeys)
             ->lockForUpdate()
             ->readExactly($limit)
             ->get()
             ->keyBy('open_key');
+
         $delivered = SkillPublication::query()
             ->whereIn('session_id', array_map(fn (PublicationIntent $intent) => $intent->sessionId, $intents))
             ->inState(PublicationState::Delivered)
@@ -76,6 +79,7 @@ final readonly class SkillPublications
     public function deliver(SkillPublication $publication, int $fence, PublicationManifest $manifest): void
     {
         $publication->deliver($fence, $manifest);
+
         SkillPublication::query()
             ->forTarget($publication->session_id, $publication->target)
             ->inState(PublicationState::Delivered)

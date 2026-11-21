@@ -28,6 +28,7 @@ final readonly class PagePropTypes
     public function pageProps(): array
     {
         $props = [];
+
         $inspectors = $this->resultOf(
             array_values(
                 array_filter(

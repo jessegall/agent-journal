@@ -369,10 +369,12 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
         $query->when($filters->state, fn (Builder $query, ShareState $state) => $query->inState($state));
         $query->when($filters->rootType, fn (Builder $query, string $type) => $query->ofRootType($type));
         $query->when($filters->configurationId, fn (Builder $query, string $id) => $query->servedBy($id));
+
         $query->when(
             $filters->expiresBefore,
             fn (Builder $query, CarbonImmutable $deadline) => $query->expiringBefore($deadline),
         );
+
         $query->when($filters->after, fn (Builder $query, string $id) => $query->olderThan($id));
 
         return array_values($query->readExactly($rows + 1)->get()->all());
@@ -479,6 +481,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
         $this->terminal_at = $endedAt;
         $this->token_ciphertext = null;
         $this->assertSaved($this->save());
+
         match ($terminal) {
             ShareState::Revoked => $this->raise(new ShareRevoked($this->factAt($endedAt))),
             ShareState::Expired => $this->raise(new ShareExpired($this->factAt($endedAt))),
@@ -750,6 +753,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     protected function pastDeadline(Builder $query): void
     {
         $open = [ShareState::Proposed, ...ShareState::liveStates()];
+
         $query->whereIn(
             'state',
             array_map(fn (ShareState $state) => $state->value, $open),

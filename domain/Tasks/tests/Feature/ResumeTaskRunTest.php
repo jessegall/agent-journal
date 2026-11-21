@@ -69,15 +69,18 @@ final class ResumeTaskRunTest extends TestCase
         $task = Task::factory()->create();
         AssignmentRecord::create($task->assignmentIdentity(), $desk->assigneeIdentity());
         $this->startUserRequestAs($this->owner->id);
+
         $seat = $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(DeskSeating::class)->seat(
                 $desk->id,
                 ActorIdentity::of($leaving->agent()->firstOrFail()),
             ),
         );
+
         $this->runAs($leaving, new StartTask($task->id));
         $run = TaskRun::query()->where('task_id', $task->id)->sole();
         $this->startUserRequestAs($this->owner->id);
+
         $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeating::class)->replace(
             new SeatChange(
                 $desk->id,
@@ -97,10 +100,12 @@ final class ResumeTaskRunTest extends TestCase
     {
         $worker = $this->started('Third');
         $task = Task::factory()->create();
+
         $holding = AssignmentRecord::create(
             $task->assignmentIdentity(),
             AssigneeIdentity::of($worker->agent()->firstOrFail()),
         );
+
         $this->runAs($worker, new StartTask($task->id));
         $run = TaskRun::query()->where('task_id', $task->id)->sole();
 

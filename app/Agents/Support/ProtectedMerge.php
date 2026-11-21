@@ -123,6 +123,7 @@ final readonly class ProtectedMerge
     private function publish(MergeAttempt $attempt, string $branch, string $target, string $result): void
     {
         $checkedOut = trim($this->git($this->repository, ['symbolic-ref', '--quiet', 'HEAD'])->output()) === $branch;
+
         $published = $checkedOut
             ? $this->git($this->repository, ['merge', '--ff-only', '--quiet', $result])
             : $this->git($this->repository, ['update-ref', $branch, $result, $target]);

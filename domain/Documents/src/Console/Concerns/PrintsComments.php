@@ -19,6 +19,7 @@ trait PrintsComments
     protected function showComments(string $type): int
     {
         $after = $this->option('after');
+
         $call = ListCommentsCall::from([
             'target' => "{$type} {$this->argument('number')}",
             'after' => is_string($after) ? $after : null,
@@ -49,6 +50,7 @@ trait PrintsComments
             $anchorDescription = $commentView instanceof TextCommentView
                 ? $commentView->anchor->description()
                 : 'on the whole record';
+
             $report = $this->commentReport($report, $commentView->comment, $anchorDescription);
         }
 

@@ -76,6 +76,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         }
 
         $sources = self::draftSources($proposal, $expected, $keys);
+
         $definitions = array_map(
             fn (ProposedProfile $profile) => $this->resolver->resolve($proposal, $profile, $hash),
             $proposal->profiles,
@@ -89,9 +90,11 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         $coverage = $this->supervisors->validate(
             array_map(fn (ProfileDefinition $definition) => $definition->supervisorProfile(), $definitions),
         );
+
         $changes = array_map($this->changeOf(...), $definitions);
         $author = ActorIdentity::of($actor);
         $current = ProfileRevision::currentSources($keys);
+
         $compiled = array_map(
             fn (
                 ProfileDefinition $definition,
@@ -190,6 +193,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
     ): ProfileRevision {
         $profile = Profile::query()->withKey($definition->key)->lockForUpdate()->first()
             ?? new Profile(['key' => $definition->key->key]);
+
         $profile->label = $definition->label;
         $profile->retired_at = null;
         $profile->save();

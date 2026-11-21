@@ -316,6 +316,7 @@ final readonly class DomainEntry
 
         foreach ($definitions as $definition) {
             $key = $definition->key;
+
             $reason = match (true) {
                 ! str_starts_with($key, $prefix) || preg_match(
                     '/^[a-z0-9]+(-[a-z0-9]+)*\.[a-z0-9]+(-[a-z0-9]+)*$/D',

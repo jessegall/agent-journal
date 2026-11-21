@@ -28,6 +28,7 @@ final readonly class RepairDriverSettingsHandler implements CommandHandler
         $request->repairWith($request->operation === DriverOperation::ChangeModel
             ? DriverRequestPayload::model($command->replacementText)
             : DriverRequestPayload::effort($command->replacementText));
+
         AgentRuntime::query()->lockForUpdate()->findOrFail($request->agent_runtime_id)->recomputeRequestedSettings();
 
         return $this->recovery->record($request, RecoveryAction::Repaired, $command->reason);

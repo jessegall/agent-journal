@@ -37,6 +37,7 @@ final readonly class DocumentRecords implements DocumentResolver
         $size = $filters->pageSize()->rows;
         $searched = $filters->revisions ? 'revisions' : 'currentRevision';
         $matching = fn (Builder|HasOneOrMany $revisions) => self::closedMatching($revisions, $filters->query);
+
         $documents = Document::query()->sharedPublished()->inAttention($filters->attention->state())
             ->with(
                 [
@@ -65,6 +66,7 @@ final readonly class DocumentRecords implements DocumentResolver
             ->orderByDesc('id')
             ->limit($size + 1)
             ->get();
+
         $page = $documents->take($size);
 
         return PublicationList::from([
@@ -96,6 +98,7 @@ final readonly class DocumentRecords implements DocumentResolver
     public function revision(int $documentNumber, int $revisionNumber): RevisionView
     {
         $document = self::published($documentNumber);
+
         $revision = $document->revisions()->whereNotNull('closed_at')->where(
             'number',
             $revisionNumber,

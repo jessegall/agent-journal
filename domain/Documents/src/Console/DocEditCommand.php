@@ -51,6 +51,7 @@ final class DocEditCommand extends Command
                 title: $this->stringOption('title'),
                 abstract: $this->stringOption('abstract'),
             );
+
             $drafts->keep($number, $draft->token, $draft->version);
             $report = CommandReport::ending(self::SUCCESS)->line("Saved doc {$number} at version {$draft->version}.");
 

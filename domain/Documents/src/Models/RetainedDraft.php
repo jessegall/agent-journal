@@ -68,6 +68,7 @@ final class RetainedDraft extends Model implements EventSource, ReadableModel
             'author_type' => $draft->author_type,
             'author_id' => $draft->author_id,
         ]);
+
         $kept->assertSaved($kept->save());
         $kept->raise(new DraftKept($kept->id, $kept->document_id, $parent));
 

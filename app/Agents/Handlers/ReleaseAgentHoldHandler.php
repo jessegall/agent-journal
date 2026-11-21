@@ -38,6 +38,7 @@ final readonly class ReleaseAgentHoldHandler implements CommandHandler
 
         $runtime->releaseHold();
         $actor = ActorIdentity::of($command->dispatchedBy());
+
         $this->facts->publishAfterCommit(
             new AgentHoldReleased($runtime->id, $command->expectedHold, $actor, $command->reason),
         );

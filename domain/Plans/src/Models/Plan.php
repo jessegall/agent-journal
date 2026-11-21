@@ -296,6 +296,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
             fn (PlanProgress $combinedProgress, PlanProgress $phase) => $combinedProgress->plus($phase),
             PlanProgress::none(),
         );
+
         $unfinished = array_keys(array_filter($progressOfPhase, fn (PlanProgress $phase) => ! $phase->isComplete()));
         $currentPhase = $unfinished[0] ?? array_key_last($progressOfPhase);
 
@@ -395,6 +396,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         $focusedPlanId->forAll(
             fn (string $id) => $query->orderByRaw('case when "plans"."id" = ? then 0 else 1 end', [$id]),
         );
+
         $query->orderByDesc('id');
     }
 }

@@ -42,11 +42,13 @@ final class LoginTest extends TestCase
         config(['web.local_sign_in' => ['email' => 'owner@journal.local', 'password' => 'password']]);
 
         $this->app->detectEnvironment(fn () => 'local');
+
         $this->get('/login')->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.input.email', 'owner@journal.local')
             ->where('page.input.password', 'password'));
 
         $this->app->detectEnvironment(fn () => 'production');
+
         $this->get('/login')->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.input.email', '')
             ->where('page.input.password', ''));
@@ -67,6 +69,7 @@ final class LoginTest extends TestCase
         $this->from('/login')->post('/login', ['email' => 'owner@journal.local', 'password' => 'wrong'])
             ->assertRedirect('/login')
             ->assertSessionHasErrors('email');
+
         $this->assertGuest();
     }
 
@@ -76,6 +79,7 @@ final class LoginTest extends TestCase
             '/register',
             ['name' => 'Someone', 'email' => 'someone@example.com', 'password' => 'secret-password'],
         )->assertNotFound();
+
         $this->get('/user/two-factor-qr-code')->assertNotFound();
     }
 }

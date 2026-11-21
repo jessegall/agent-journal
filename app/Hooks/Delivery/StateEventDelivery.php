@@ -52,6 +52,7 @@ final readonly class StateEventDelivery
         }
 
         $stage = StateEventStage::Collection;
+
         $advance = static function (StateEventStage $next) use (&$stage): void {
             $stage = $next;
         };
@@ -80,6 +81,7 @@ final readonly class StateEventDelivery
 
             return $listenerResults;
         };
+
         $collected = $this->transaction->runForTargets($targets, $collect);
 
         $advance(StateEventStage::Effects);
@@ -126,6 +128,7 @@ final readonly class StateEventDelivery
         }
 
         $this->activity->trackOrigin($target, $selection->frame->id, $event::class);
+
         $this->log->debug('Calling a state event method.', [
             'dispatch' => $dispatch->id,
             'event' => $event::class,

@@ -92,15 +92,18 @@ final readonly class NavigationRecords implements NavigationReader
         $navigation = NavigationRequest::query()->acrossActors()->whereKey($id)->firstOr(
             fn () => throw NavigationRaiseRefused::unknownRequest($id),
         );
+
         $this->transaction->run(fn () => $this->answering->checkAnswerer($navigation));
         $runtime = AgentRuntime::query()->with('session.agent')->findOrFail($navigation->agent_runtime_id);
         $roundQuery = DriverRequest::query()->where('navigation_request_id', $navigation->id);
         $roundCount = $roundQuery->clone()->count();
+
         $rounds = $roundQuery
             ->orderBy('sequence')
             ->offset($firstRound - 1)
             ->readExactly(self::ROUND_LIMIT)
             ->get();
+
         $nextRound = $firstRound + $rounds->count();
         $screen = $navigation->screen;
 

@@ -78,6 +78,7 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
             'limit_id' => $reading->limitId,
             'slot' => $reading->slot->value,
         ]);
+
         $window->fillWith($reading);
         $window->assertSaved($window->save());
         $window->raise(new AccountUsageChanged($account->driver, $account->id));
@@ -119,6 +120,7 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
             ->orderBy('slot')
             ->readAll('an account holds a few windows of its current sign-in')
             ->get();
+
         $grouped = [];
 
         foreach ($windows as $window) {

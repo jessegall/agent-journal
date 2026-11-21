@@ -52,6 +52,7 @@ final class PresentUserCounterTest extends TestCase
         $this->beat($this->owner->id, CarbonImmutable::parse('2026-11-18 12:00:00'));
         $counter = $this->app->make(PresentUserCounter::class);
         $queries = 0;
+
         DB::listen(function (QueryExecuted $query) use (&$queries): void {
             $queries++;
         });
