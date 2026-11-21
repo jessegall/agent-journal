@@ -56,7 +56,8 @@ final class MessageRequestKeyTest extends MessagingTestCase
         });
         $rows = $this->conversations()->history($this->ownerInboxId(), null, 50)->messages;
 
-        $this->assertSame(['owner-key-3', 'owner-key-2', 'owner-key-1'], array_map(
+        // The history lists a conversation oldest first; readableKeysOf only keys each row's receipt by id.
+        $this->assertSame(['owner-key-1', 'owner-key-2', 'owner-key-3'], array_map(
             fn (MessageView $row) => $row->requestKey,
             array_values(array_filter($rows, fn (MessageView $row) => $row->requestKey !== null)),
         ));
