@@ -483,6 +483,8 @@ use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\Operation;
 use App\Bus\Support\RefusalReason;
+use App\Connections\Values\BindingOutcome;
+use App\Connections\Values\RevokedBindings;
 use App\Bus\Values\ReceiptAnswer;
 use App\Bus\Values\RecoveryCall;
 use App\Comments\Calls\ListCommentsCall;
@@ -1593,6 +1595,8 @@ final class CoreApi
             ->values(
                 SeenSession::class,
                 RefusalReason::class,
+                RevokedBindings::class,
+                BindingOutcome::class,
                 EligibleAccountsData::class,
                 EligibleAccountData::class,
                 ReceiptAnswer::class,
