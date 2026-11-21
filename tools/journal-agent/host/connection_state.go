@@ -250,6 +250,25 @@ func (state ConnectionState) Pending(origin string) (PendingConnection, error) {
 	return pending, writePrivateJSON(state.pendingPath(), pending)
 }
 
+// Staged is the folder's staged connection, without staging one; ErrNotConnected while there is none.
+func (state ConnectionState) Staged() (PendingConnection, error) {
+	content, err := os.ReadFile(state.pendingPath())
+	if errors.Is(err, os.ErrNotExist) {
+		return PendingConnection{}, ErrNotConnected
+	}
+	if err != nil {
+		return PendingConnection{}, err
+	}
+	var pending PendingConnection
+
+	return pending, json.Unmarshal(content, &pending)
+}
+
+// RemoveStaged removes the folder's staged connection, which no journal committed.
+func (state ConnectionState) RemoveStaged() error {
+	return removePrivateFile(state.pendingPath())
+}
+
 // SaveBinding keeps the redeemed binding and drops the staged connection it came from.
 func (state ConnectionState) SaveBinding(binding Binding) error {
 	if err := writePrivateJSON(state.bindingPath(), binding); err != nil {

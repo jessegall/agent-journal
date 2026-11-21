@@ -207,3 +207,60 @@ func assertPrivateFiles(t *testing.T, state string) {
 		t.Fatal(err)
 	}
 }
+
+func TestAResumeAfterACommittedRedemptionWhoseReplyWasLostRestoresTheOneBinding(t *testing.T) {
+	journal := newFakeJournal("the-ticket")
+	journal.drops["/api/project-connections/redeem"] = 1
+	journal.drops["/api/project-connections/recover"] = 1
+	server := httptest.NewTLSServer(journal)
+	defer server.Close()
+	state := t.TempDir()
+	connection := connectionTo(t, server, state, "/work/shop")
+
+	if _, err := connection.redeem(context.Background(), "the-ticket"); err == nil {
+		t.Fatal("a run whose replies were all lost reported a binding")
+	}
+
+	binding, err := connection.resume(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	again, err := connection.resume(context.Background())
+	if err != nil || again.BindingID != binding.BindingID || journal.hosts != 1 {
+		t.Fatalf("the resume made %d hosts and answered %+v, %v", journal.hosts, again, err)
+	}
+	if _, err := connection.state.Staged(); !errors.Is(err, host.ErrNotConnected) {
+		t.Fatalf("the staged install was kept after its binding was saved: %v", err)
+	}
+}
+
+func TestAnUncommittedStagedInstallIsAbandonedAndACommittedOneIsNot(t *testing.T) {
+	journal := newFakeJournal()
+	server := httptest.NewTLSServer(journal)
+	defer server.Close()
+	connection := connectionTo(t, server, t.TempDir(), "/work/shop")
+	if _, err := connection.state.Pending(server.URL); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := connection.resume(context.Background()); !errors.Is(err, errNotCommitted) {
+		t.Fatalf("a resume of an uncommitted install answered %v", err)
+	}
+	if err := connection.abandon(context.Background(), &strings.Builder{}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := connection.state.Staged(); !errors.Is(err, host.ErrNotConnected) {
+		t.Fatalf("the abandoned install is still staged: %v", err)
+	}
+
+	committed := newFakeJournal("the-ticket")
+	committedServer := httptest.NewTLSServer(committed)
+	defer committedServer.Close()
+	other := connectionTo(t, committedServer, t.TempDir(), "/work/shop")
+	if _, err := other.redeem(context.Background(), "the-ticket"); err != nil {
+		t.Fatal(err)
+	}
+	if err := other.abandon(context.Background(), &strings.Builder{}); !errors.Is(err, errCommitted) {
+		t.Fatalf("abandoning a committed install answered %v", err)
+	}
+}
