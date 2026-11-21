@@ -7,6 +7,12 @@ Claude's browser sign-in with a pasted code included. A journal hosted for other
 
 Follow the steps in order on a fresh server that has Docker and nothing else.
 
+On a development machine, `sh scripts/local-host.sh` does all of this in one go: it builds the images for the machine,
+writes the contained settings into `.env`, enrolls a local host and starts everything, so sign-ins and agent starts work
+locally. `sh scripts/local-host.sh --fresh` first removes the local containers, the database and the host's enrolment,
+for a clean demo. The development override runs the agent daemon rootful, since OrbStack and Docker Desktop have no
+Sysbox.
+
 ## 1. What the server needs
 
 - **Linux on x86_64 with Docker Engine 28 or later** and the Compose plugin. The test server runs Ubuntu 26.04 (kernel
