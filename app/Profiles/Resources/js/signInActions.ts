@@ -70,6 +70,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
             }))
             .submit(startSignIn(), {
                 preserveScroll: true,
+                preserveState: true,
                 ...formSendingHooks(),
             });
     }
@@ -79,6 +80,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
             .transform(() => ({ request_key: crypto.randomUUID() }))
             .submit(signInAgain({ account: accountId }), {
                 preserveScroll: true,
+                preserveState: true,
                 ...formSendingHooks(),
             });
     }
@@ -91,6 +93,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
 
         answer.submit(submitCode({ attempt: attemptId }), {
             preserveScroll: true,
+            preserveState: true,
             ...sending,
             onSuccess: () => answer.reset(),
             onFinish: sending.onFinish,
@@ -101,6 +104,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
         forget();
         cancelling.submit(cancelSignIn({ attempt: attemptId }), {
             preserveScroll: true,
+            preserveState: true,
             ...formSendingHooks(),
         });
     }

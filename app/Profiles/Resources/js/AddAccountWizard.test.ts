@@ -65,9 +65,17 @@ vi.mock('@kit/usePageChanges', () => ({
     }),
 }));
 
+import type {
+    AccountRowData,
+    ProgramMethodsData,
+    SignInAttemptData,
+    SignInMethodData,
+    SignInState,
+} from '@generated/types/accounts';
+
 const { default: AddAccountWizard } = await import('./AddAccountWizard.vue');
 
-const claudeMethods = [
+const claudeMethods: SignInMethodData[] = [
     {
         method: 'oauth',
         isSecret: false,
@@ -87,12 +95,12 @@ const claudeMethods = [
             'In the Anthropic Console, open API keys and create a key.',
     },
 ];
-const methods = [
+const methods: ProgramMethodsData[] = [
     { program: 'claude-code', methods: claudeMethods },
     { program: 'codex', methods: [claudeMethods[0]] },
 ];
 
-function attempt(state: string, fields: Record<string, unknown> = {}) {
+function attempt(state: SignInState, fields: Partial<SignInAttemptData> = {}): SignInAttemptData {
     return {
         id: 'attempt-1',
         program: 'claude-code',
@@ -103,6 +111,24 @@ function attempt(state: string, fields: Record<string, unknown> = {}) {
         expiresAt: '2026-11-21T12:00:00+00:00',
         refusal: null,
         ...fields,
+    };
+}
+
+function accountRow(id: string, label: string): AccountRowData {
+    return {
+        id,
+        program: 'claude-code',
+        label,
+        method: 'api_key',
+        state: 'signed_in',
+        identity: null,
+        isActive: false,
+        runningCount: 0,
+        checkedAt: null,
+        expiresAt: null,
+        cleanupProblem: null,
+        awaitsCleanupRetry: false,
+        recentStarts: [],
     };
 }
 
@@ -194,7 +220,7 @@ describe('AddAccountWizard', () => {
 
         await view.setProps({
             attempts: [attempt('complete', { accountId: 'account-1' })],
-            rows: [{ id: 'account-1', label: 'Claude Code API key' }],
+            rows: [accountRow('account-1', 'Claude Code API key')],
         });
         expect(view.text()).toContain('Account added');
         expect(view.text()).toContain('Claude Code API key');
