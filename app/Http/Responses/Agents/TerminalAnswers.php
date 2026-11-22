@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Responses\Agents;
 
-use App\Actors\Contracts\ServerClock;
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\ServerClock;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Data\TerminalControlData;
 use App\Agents\Data\TerminalInterestData;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Support\HeldFrame;
 use App\Actors\Contracts\ServerClock;
 use App\Agents\Data\ScreenFrameData;
 use App\Agents\Data\TerminalFrameData;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
 use App\Agents\Support\EnrolledHost;
+use App\Agents\Support\HeldFrame;
 use App\Agents\Support\RuntimeScreen;
 use App\Agents\Support\ScreenRegistration;
 use App\Agents\Support\TerminalViews;
