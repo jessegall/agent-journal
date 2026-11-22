@@ -7,7 +7,10 @@ namespace App\Communication\Models;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Enums\SpeechOpportunityState;
+use App\Communication\Events\SpeechOpportunitySettled;
 use App\Communication\Exceptions\ChatStateConflict;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -41,10 +44,11 @@ use Illuminate\Database\Eloquent\Model;
  */
 #[Table('speech_opportunities')]
 #[Fillable(['inbox_id', 'user_root_id', 'actor_type', 'actor_id', 'interval_id', 'state', 'lease_version'])]
-final class SpeechOpportunity extends Model implements ReadableModel
+final class SpeechOpportunity extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -76,7 +80,7 @@ final class SpeechOpportunity extends Model implements ReadableModel
             'lease_version' => 0,
         ]);
 
-        $opportunity->save();
+        $opportunity->assertSaved($opportunity->save());
 
         return $opportunity;
     }
@@ -92,7 +96,7 @@ final class SpeechOpportunity extends Model implements ReadableModel
     {
         $this->assertOpen();
         $this->reserved_question_id = $question->id;
-        $this->save();
+        $this->assertSaved($this->save());
     }
 
     /**
@@ -107,7 +111,7 @@ final class SpeechOpportunity extends Model implements ReadableModel
         $this->lease_version++;
         $this->claim_token_digest = $tokenDigest;
         $this->lease_expires_at = $expiresAt;
-        $this->save();
+        $this->assertSaved($this->save());
     }
 
     /**
@@ -123,7 +127,7 @@ final class SpeechOpportunity extends Model implements ReadableModel
 
         $this->state = SpeechOpportunityState::Offered;
         $this->releaseLease();
-        $this->save();
+        $this->assertSaved($this->save());
     }
 
     /**
@@ -138,7 +142,7 @@ final class SpeechOpportunity extends Model implements ReadableModel
         $this->state = SpeechOpportunityState::Spent;
         $this->contribution_message_id = $contribution->id;
         $this->releaseLease();
-        $this->save();
+        $this->settle();
     }
 
     /**
@@ -149,7 +153,7 @@ final class SpeechOpportunity extends Model implements ReadableModel
         $this->assertOpen();
         $this->state = SpeechOpportunityState::Declined;
         $this->releaseLease();
-        $this->save();
+        $this->settle();
     }
 
     /**
@@ -160,7 +164,7 @@ final class SpeechOpportunity extends Model implements ReadableModel
         $this->assertOpen();
         $this->state = SpeechOpportunityState::Cancelled;
         $this->releaseLease();
-        $this->save();
+        $this->settle();
     }
 
     // ----------[ Answers ]----------
@@ -205,6 +209,12 @@ final class SpeechOpportunity extends Model implements ReadableModel
         if (! $this->isOpen()) {
             throw ChatStateConflict::opportunityClosed($this->id);
         }
+    }
+
+    private function settle(): void
+    {
+        $this->assertSaved($this->save());
+        $this->raise(new SpeechOpportunitySettled($this->id, $this->user_root_id, $this->actor, $this->state));
     }
 
     private function releaseLease(): void

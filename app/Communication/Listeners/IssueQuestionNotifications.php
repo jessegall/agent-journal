@@ -8,6 +8,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Data\NotificationTarget;
 use App\Communication\Enums\NotificationSourceType;
+use App\Communication\Events\ChatMessageAccepted;
 use App\Communication\Events\MessageAnswerRequired;
 use App\Communication\Events\MessageSent;
 use App\Communication\Models\Message;
@@ -29,7 +30,7 @@ final readonly class IssueQuestionNotifications implements Listener
         private NotificationDelivery $delivery,
     ) {}
 
-    public function handle(MessageSent|MessageAnswerRequired $fact): void
+    public function handle(MessageSent|ChatMessageAccepted|MessageAnswerRequired $fact): void
     {
         $message = Message::query()->acrossInboxes()->findOrFail($fact->messageId);
 

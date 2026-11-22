@@ -6,7 +6,10 @@ namespace App\Communication\Models;
 
 use App\Communication\Data\WakeStatus;
 use App\Communication\Enums\ReceiptDeliveryState;
+use App\Communication\Events\ReceiptDeliveryChanged;
 use App\Communication\Exceptions\ChatStateConflict;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -35,10 +38,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 #[Table('receipt_deliveries')]
 #[Fillable(['receipt_id', 'notification_key', 'state', 'attempts', 'next_attempt_at'])]
-final class ReceiptDelivery extends Model implements ReadableModel
+final class ReceiptDelivery extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -70,7 +74,7 @@ final class ReceiptDelivery extends Model implements ReadableModel
             'next_attempt_at' => CarbonImmutable::now(),
         ]);
 
-        $delivery->save();
+        $delivery->assertSaved($delivery->save());
 
         return $delivery;
     }
@@ -86,7 +90,7 @@ final class ReceiptDelivery extends Model implements ReadableModel
     {
         $this->assertPending();
         $this->lease_expires_at = $until;
-        $this->save();
+        $this->assertSaved($this->save());
     }
 
     /**
@@ -99,7 +103,7 @@ final class ReceiptDelivery extends Model implements ReadableModel
         $this->attempts++;
         $this->lease_expires_at = null;
         $this->next_attempt_at = null;
-        $this->save();
+        $this->recordChange();
     }
 
     /**
@@ -114,7 +118,7 @@ final class ReceiptDelivery extends Model implements ReadableModel
         $this->state = ReceiptDeliveryState::Waiting;
         $this->next_attempt_at = null;
         $this->lease_expires_at = null;
-        $this->save();
+        $this->recordChange();
     }
 
     /**
@@ -129,7 +133,7 @@ final class ReceiptDelivery extends Model implements ReadableModel
         $this->last_failure = $reason;
         $this->next_attempt_at = $nextAt;
         $this->lease_expires_at = null;
-        $this->save();
+        $this->recordChange();
     }
 
     /**
@@ -145,7 +149,7 @@ final class ReceiptDelivery extends Model implements ReadableModel
         $this->last_failure = $reason;
         $this->next_attempt_at = null;
         $this->lease_expires_at = null;
-        $this->save();
+        $this->recordChange();
     }
 
     /**
@@ -159,7 +163,7 @@ final class ReceiptDelivery extends Model implements ReadableModel
         $this->state = ReceiptDeliveryState::Cancelled;
         $this->next_attempt_at = null;
         $this->lease_expires_at = null;
-        $this->save();
+        $this->recordChange();
     }
 
     // ----------[ Answers ]----------
@@ -193,6 +197,12 @@ final class ReceiptDelivery extends Model implements ReadableModel
     }
 
     // ----------[ Internals ]----------
+
+    private function recordChange(): void
+    {
+        $this->assertSaved($this->save());
+        $this->raise(new ReceiptDeliveryChanged($this->id, $this->receipt_id, $this->state));
+    }
 
     /**
      * @throws ChatStateConflict

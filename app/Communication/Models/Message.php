@@ -16,6 +16,7 @@ use App\Communication\Enums\AgentInboxState;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\MessageState;
 use App\Communication\Enums\MessageType;
+use App\Communication\Events\ChatMessageAccepted;
 use App\Communication\Events\MessageAnswered;
 use App\Communication\Events\MessageAnswerRequired;
 use App\Communication\Events\MessageDismissed;
@@ -235,7 +236,7 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
 
         $message->assertSaved($message->save());
 
-        $message->raise(new MessageSent($message->id, $author, $inboxId, $inboxId));
+        $message->raise(new ChatMessageAccepted($message->id, $author, $inboxId));
 
         return $message;
     }

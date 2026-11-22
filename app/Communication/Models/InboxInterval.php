@@ -8,7 +8,11 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Enums\IntervalRole;
 use App\Communication\Enums\LeaveReason;
+use App\Communication\Events\ChatMemberJoined;
+use App\Communication\Events\ChatMemberLeft;
 use App\Communication\Exceptions\ChatStateConflict;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -39,10 +43,11 @@ use Illuminate\Database\Eloquent\Model;
  */
 #[Table('inbox_intervals')]
 #[Fillable(['inbox_id', 'actor_type', 'actor_id', 'role', 'joined_sequence', 'joined_at'])]
-final class InboxInterval extends Model implements ReadableModel
+final class InboxInterval extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -75,7 +80,8 @@ final class InboxInterval extends Model implements ReadableModel
             'joined_at' => CarbonImmutable::now(),
         ]);
 
-        $interval->save();
+        $interval->assertSaved($interval->save());
+        $interval->raise(new ChatMemberJoined($interval->id, $inboxId, $actor));
 
         return $interval;
     }
@@ -95,7 +101,8 @@ final class InboxInterval extends Model implements ReadableModel
 
         $this->left_at = $at;
         $this->leave_reason = $reason;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ChatMemberLeft($this->id, $this->inbox_id, $this->actor, $reason));
     }
 
     /**
@@ -110,7 +117,7 @@ final class InboxInterval extends Model implements ReadableModel
         }
 
         $this->role = $role;
-        $this->save();
+        $this->assertSaved($this->save());
     }
 
     // ----------[ Answers ]----------

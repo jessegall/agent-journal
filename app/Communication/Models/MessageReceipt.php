@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Communication\Models;
 
+use App\Communication\Events\ChatReceiptPresented;
+use App\Contracts\EventSource;
 use App\Contracts\Support\InsertsRowSets;
+use App\Contracts\Support\RaisesEvents;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -29,10 +32,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 #[Table('message_receipts')]
 #[Fillable(['message_id', 'interval_id', 'presented_at'])]
-final class MessageReceipt extends Model implements ReadableModel
+final class MessageReceipt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use RaisesEvents;
     use InsertsRowSets;
 
     // ----------[ Constructors ]----------
@@ -91,7 +95,8 @@ final class MessageReceipt extends Model implements ReadableModel
 
         if ($changed) {
             $this->presented_at = $at;
-            $this->syncOriginalAttribute('presented_at');
+            $this->assertSaved($this->save());
+            $this->raise(new ChatReceiptPresented($this->id, $this->message_id, $this->interval_id));
         }
 
         return $changed;
