@@ -5,12 +5,13 @@
 #   build stays (an image a container still uses is never removed);
 # - the journal's own images that no container uses any more, left by a service an earlier version had;
 # - build cache unused for a week, then the least recently used cache past a size cap.
-# JOURNAL_BUILD_CACHE_DAYS (7) and JOURNAL_BUILD_CACHE_SIZE (5GB, room for about two builds on a small server disk)
+# JOURNAL_BUILD_CACHE_DAYS (2) and JOURNAL_BUILD_CACHE_SIZE (3GB of reclaimable cache, which is what the cap counts, room
+# for about two builds on a small server disk)
 # change the two limits.
 set -eu
 
-days="${JOURNAL_BUILD_CACHE_DAYS:-7}"
-size="${JOURNAL_BUILD_CACHE_SIZE:-5GB}"
+days="${JOURNAL_BUILD_CACHE_DAYS:-2}"
+size="${JOURNAL_BUILD_CACHE_SIZE:-3GB}"
 
 docker image prune --force >/dev/null
 
