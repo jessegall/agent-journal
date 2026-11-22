@@ -127,3 +127,12 @@ def test_a_summary_pattern_with_a_group_keeps_only_the_group_and_one_without_kee
     full = reader(summary_pattern=r"(?:No sins found|[0-9]+ sins? across).*")
     assert ReaderRun().summary(grouped, JUDGE_OUTPUT) == "138 sins across"
     assert ReaderRun().summary(full, JUDGE_OUTPUT) == "138 sins across 8 skills."
+
+
+def test_a_pattern_that_opens_with_a_lazy_any_is_searched_without_it_and_picks_the_same_lines_and_summary():
+    text = "+    0 => 'Domain\\Tasks\\Commands\\Support\\TaskCommandHandler',\nApp\\Models\\Task: failed\nTests: 260, Errors: 5"
+    lazy = reader(lines_pattern=r".*?(Tests: [0-9].*|[A-Za-z]+(?:\\[A-Za-z]+)+: .*)", summary_pattern=r".*?(Tests: [0-9]+.*)")
+    assert ReaderRun.searched(lazy.lines_pattern).pattern == r"(Tests: [0-9].*|[A-Za-z]+(?:\\[A-Za-z]+)+: .*)"
+    assert ReaderRun().lines(lazy, text, "finished") == ["2: App\\Models\\Task: failed", "3: Tests: 260, Errors: 5"]
+    assert ReaderRun().summary(lazy, text) == "Tests: 260, Errors: 5"
+    assert ReaderRun().summary(reader(summary_pattern=r".*?Errors"), text) == "Tests: 260, Errors"

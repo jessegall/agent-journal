@@ -9,6 +9,10 @@ SCRIPT_SECONDS = 30
 STAGE_VARIABLE = "JOURNAL_OUTPUT_STAGE"
 # a summary is printed at the end of a run: only this many last lines are searched for it, from the bottom up
 SUMMARY_LINES = 1000
+# a search tries every start of the line, so a pattern that opens with a lazy .*? tries every start twice over: on long
+# lines that holds the interpreter for seconds and every other thread of the server waits
+LEADING_LAZY_ANY = ".*?"
+QUANTIFIER_STARTS = ("*", "+", "?", "{")
 
 
 class ReaderRun:
@@ -25,13 +29,13 @@ class ReaderRun:
             return self.script_lines(reader, text, stage)
         if not reader.lines_pattern:
             return []
-        pattern = re.compile(reader.lines_pattern)
+        pattern = ReaderRun.searched(reader.lines_pattern)
         return [f"{number}: {line}" for number, line in enumerate(text.splitlines(), first_number) if pattern.search(line)]
 
     def progress(self, reader: Reader, text: str, current: int) -> int:
         if not reader.progress_pattern:
             return current
-        pattern = re.compile(reader.progress_pattern)
+        pattern = ReaderRun.searched(reader.progress_pattern)
         hits = [hit for line in text.splitlines() if (hit := pattern.search(line))]
         numbers = [int(group) for group in hits[-1].groups() if group and group.isdigit()] if hits else []
         if not numbers:
@@ -43,7 +47,7 @@ class ReaderRun:
     def count(self, reader: Reader, text: str, current: int) -> int:
         if not reader.count_pattern:
             return current
-        pattern = re.compile(reader.count_pattern)
+        pattern = ReaderRun.searched(reader.count_pattern)
         hits = [hit for line in text.splitlines() if (hit := pattern.search(line))]
         if not hits:
             return current
@@ -57,11 +61,21 @@ class ReaderRun:
     def summary(self, reader: Reader, text: str) -> str:
         if not reader.summary_pattern:
             return ""
-        pattern = re.compile(reader.summary_pattern)
+        pattern = ReaderRun.searched(reader.summary_pattern)
         last = next((hit for line in reversed(text.splitlines()[-SUMMARY_LINES:]) if (hit := pattern.search(line))), None)
         if last is None:
             return ""
         return " ".join(last.string[start:end] for start, end in self.outer_spans(last)) if last.groups() else last.group(0)
+
+    # the pattern each line is searched with: a leading .*? before a group finds the same lines and the same groups,
+    # and only a pattern without groups keeps it, as its whole match is the summary
+    @staticmethod
+    def searched(pattern: str) -> re.Pattern[str]:
+        rest = pattern.removeprefix(LEADING_LAZY_ANY)
+        if rest == pattern or rest.startswith(QUANTIFIER_STARTS):
+            return re.compile(pattern)
+        searched = re.compile(rest)
+        return searched if searched.groups else re.compile(pattern)
 
     @staticmethod
     def outer_spans(hit: re.Match[str]) -> list[tuple[int, int]]:
