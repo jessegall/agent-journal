@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Models\AgentRuntime;
+use App\Drivers\Values\DriverKey;
 
 /**
  * What a host needs to start a runtime's driver: its driver type, the session it runs, the driver and the build it
@@ -16,6 +17,7 @@ final readonly class RuntimeStart
         public string $variant,
         public string $sessionId,
         public string $driver,
+        public string $driverKey,
         public string $driverBuild,
         public string $folder,
         public int $processGeneration,
@@ -23,12 +25,13 @@ final readonly class RuntimeStart
         public string|null $effort,
     ) {}
 
-    public static function of(AgentRuntime $runtime): self
+    public static function of(AgentRuntime $runtime, DriverKey $registration): self
     {
         return new self(
             $runtime->mode->value,
             $runtime->agent_session_id,
             $runtime->driver_key,
+            (string) $registration,
             $runtime->driver_build,
             $runtime->canonical_folder,
             $runtime->process_generation,
@@ -38,7 +41,7 @@ final readonly class RuntimeStart
     }
 
     /**
-     * @return array{variant: string, session_id: string, driver: string, driver_build: string, folder: string,
+     * @return array{variant: string, session_id: string, driver: string, driver_key: string, driver_build: string, folder: string,
      *     process_generation: int, model: string|null, effort: string|null}
      */
     public function toArray(): array
@@ -47,6 +50,7 @@ final readonly class RuntimeStart
             'variant' => $this->variant,
             'session_id' => $this->sessionId,
             'driver' => $this->driver,
+            'driver_key' => $this->driverKey,
             'driver_build' => $this->driverBuild,
             'folder' => $this->folder,
             'process_generation' => $this->processGeneration,

@@ -17,6 +17,7 @@ use App\Agents\Support\StartAdditions;
 use App\Agents\Support\StartExtensionRequests;
 use App\Agents\Support\StartGrant;
 use App\Contracts\CommandHandler;
+use App\Drivers\Contracts\DriverCatalogue;
 
 final readonly class ClaimStartGrantHandler implements CommandHandler
 {
@@ -25,6 +26,7 @@ final readonly class ClaimStartGrantHandler implements CommandHandler
         private StartExtensionRequests $extensions,
         private OfflineReplySeal $seal,
         private SessionContainers $containers,
+        private DriverCatalogue $drivers,
     ) {}
 
     /**
@@ -58,7 +60,7 @@ final readonly class ClaimStartGrantHandler implements CommandHandler
             $session->profile_revision,
             $additions->offlineReply(),
             $this->seal->seal($token, $pin, $additions->offlineReply()),
-            RuntimeStart::of($runtime),
+            RuntimeStart::of($runtime, $this->drivers->keyFor($runtime->driver_key, $runtime->mode)),
             $this->containers->manifestOf($runtime),
         );
     }

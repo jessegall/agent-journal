@@ -13496,6 +13496,7 @@ method	DriverCapabilityUnsupported::__construct()
 method	DriverCapabilityUnsupported::for()
 method	DriverCatalogue::catalogue()
 method	DriverCatalogue::forKey()
+method	DriverCatalogue::keyFor()
 method	DriverCatalogue::revision()
 method	DriverCompatibilities::for()
 method	DriverCompatibility::__construct()
@@ -13546,6 +13547,7 @@ method	DriverRegistration::sharesModeWith()
 method	DriverRegistry::__construct()
 method	DriverRegistry::catalogue()
 method	DriverRegistry::forKey()
+method	DriverRegistry::keyFor()
 method	DriverRegistry::register()
 method	DriverRegistry::revision()
 method	DriverReplies::allowTool()
@@ -30556,6 +30558,7 @@ property	ClaimStartCommand::$sessionId
 property	ClaimStartGrantCommand::$hostId
 property	ClaimStartGrantCommand::$runtimeId
 property	ClaimStartGrantHandler::$containers
+property	ClaimStartGrantHandler::$drivers
 property	ClaimStartGrantHandler::$extensions
 property	ClaimStartGrantHandler::$runtimes
 property	ClaimStartGrantHandler::$seal
@@ -36873,6 +36876,7 @@ property	RuntimeSetting::$requested
 property	RuntimeSetting::$staged
 property	RuntimeStart::$driver
 property	RuntimeStart::$driverBuild
+property	RuntimeStart::$driverKey
 property	RuntimeStart::$effort
 property	RuntimeStart::$folder
 property	RuntimeStart::$model

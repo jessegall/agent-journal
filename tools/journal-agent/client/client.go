@@ -505,6 +505,7 @@ type RuntimeStart struct {
 	Variant           string  `json:"variant"`
 	SessionID         string  `json:"session_id"`
 	Driver            string  `json:"driver"`
+	DriverKey         string  `json:"driver_key"`
 	DriverBuild       string  `json:"driver_build"`
 	Folder            string  `json:"folder"`
 	ProcessGeneration int     `json:"process_generation"`

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Drivers\Support;
 
+use App\Agents\Enums\DriverVariant;
 use App\Bus\Contracts\CommandBus;
 use App\Drivers\Contracts\Driver;
 use App\Drivers\Contracts\DriverCapabilities;
@@ -72,6 +73,20 @@ final class DriverRegistry implements DriverCatalogue
         $capabilities = $this->container->make($registration->capabilities);
 
         return new RegisteredDriver($registration, $capabilities, $this->container->make(CommandBus::class));
+    }
+
+    /**
+     * @throws DriverUnknown
+     */
+    public function keyFor(string $family, DriverVariant $mode): DriverKey
+    {
+        foreach ($this->catalogue() as $registration) {
+            if ($registration->family === $family && $registration->mode === $mode) {
+                return $registration->key;
+            }
+        }
+
+        throw DriverUnknown::for("{$family} {$mode->value}");
     }
 
     /**

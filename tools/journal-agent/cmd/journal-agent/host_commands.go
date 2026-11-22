@@ -278,24 +278,77 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 	if err != nil {
 		return nil, err
 	}
+	registration, registered := driverRegistrations[grant.Runtime.DriverKey]
+	if !registered {
+		return nil, fmt.Errorf("runtime %s runs the driver %q, which this host has no registration for", runtimeID,
+			grant.Runtime.DriverKey)
+	}
 	if contained {
-		return opener.containedRuntime(runtimeID, prepared, profile, manifest)
+		return registration.openContained(opener, runtimeID, prepared, profile, manifest)
 	}
-	if profile.Driver() == "codex" && confined != nil {
-		return nil, fmt.Errorf("runtime %s: %w", runtimeID, ErrCodexChildUnconfined)
-	}
-	if profile.Driver() == "codex" {
-		return opener.codexRuntime(runtimeID, prepared, environment)
-	}
-	switch grant.Runtime.Variant {
-	case drivers.HeadlessVariant:
-		return opener.headlessRuntime(runtimeID, prepared, profile, environment, confined)
-	case drivers.TerminalVariant:
-		return opener.terminalRuntime(runtimeID, prepared, profile, environment, confined)
+	if confined != nil && registration.confinementRefusal != nil {
+		return nil, fmt.Errorf("runtime %s: %w", runtimeID, registration.confinementRefusal)
 	}
 
-	return nil, fmt.Errorf("runtime %s runs as %s, a variant this host has no runtime for", runtimeID,
-		grant.Runtime.Variant)
+	return registration.open(opener, runtimeID, prepared, profile, environment, confined)
+}
+
+// driverRegistration is how this host opens one registered driver, found by its key alone: in a session's own
+// container or on the host, and the reason it refuses a confined child, when it cannot hold one.
+type driverRegistration struct {
+	open func(opener runtimeOpener, runtimeID string, prepared host.PreparedStart, profile contracts.DriverProfile,
+		environment []string, confined *host.ChildConfinement) (serving.Runtime, error)
+	openContained func(opener runtimeOpener, runtimeID string, prepared host.PreparedStart,
+		profile contracts.DriverProfile, manifest host.ContainerManifest) (serving.Runtime, error)
+	confinementRefusal error
+}
+
+// ErrCodexTerminalUnproven refuses the Codex terminal driver until its terminal is proven on a host.
+var ErrCodexTerminalUnproven = errors.New("the Codex terminal is not proven on any host yet; use Codex headless meanwhile")
+
+// driverRegistrations are the drivers this host opens, by the registration key the journal names in the grant.
+var driverRegistrations = map[string]driverRegistration{
+	"claude-code": {
+		open:          runtimeOpener.terminalRuntime,
+		openContained: inContainer(runtimeOpener.containedTerminalRuntime),
+	},
+	"claude-code-headless": {
+		open:          runtimeOpener.headlessRuntime,
+		openContained: inContainer(runtimeOpener.containedHeadlessRuntime),
+	},
+	"codex-headless": {
+		open: func(opener runtimeOpener, runtimeID string, prepared host.PreparedStart, _ contracts.DriverProfile,
+			environment []string, _ *host.ChildConfinement) (serving.Runtime, error) {
+			return opener.codexRuntime(runtimeID, prepared, environment)
+		},
+		openContained:      inContainer(runtimeOpener.containedHeadlessRuntime),
+		confinementRefusal: ErrCodexChildUnconfined,
+	},
+	"codex": {
+		open: func(runtimeOpener, string, host.PreparedStart, contracts.DriverProfile, []string,
+			*host.ChildConfinement) (serving.Runtime, error) {
+			return nil, ErrCodexTerminalUnproven
+		},
+		openContained: func(runtimeOpener, string, host.PreparedStart, contracts.DriverProfile,
+			host.ContainerManifest) (serving.Runtime, error) {
+			return nil, ErrCodexTerminalUnproven
+		},
+	},
+}
+
+// inContainer opens a registration's runtime in its session's own container, on a host that runs containers.
+func inContainer(
+	open func(opener runtimeOpener, runtimeID string, prepared host.PreparedStart, profile contracts.DriverProfile,
+		manifest host.ContainerManifest) (serving.Runtime, error),
+) func(runtimeOpener, string, host.PreparedStart, contracts.DriverProfile, host.ContainerManifest) (serving.Runtime, error) {
+	return func(opener runtimeOpener, runtimeID string, prepared host.PreparedStart, profile contracts.DriverProfile,
+		manifest host.ContainerManifest) (serving.Runtime, error) {
+		if opener.installation == "" {
+			return nil, fmt.Errorf("runtime %s runs contained, which this host runs in no container", runtimeID)
+		}
+
+		return open(opener, runtimeID, prepared, profile, manifest)
+	}
 }
 
 // inChildWorktree prepares the linked worktree of a connected project's child before its process exists, keeps the
@@ -346,29 +399,6 @@ func (opener runtimeOpener) inChildWorktree(
 	prepared.BrokerSocket = socket
 
 	return prepared, confinement, nil
-}
-
-// containedRuntime opens a contained runtime in its session's own container by its variant: a terminal runtime's
-// program is the container's terminal process, a headless runtime's runs one container per turn.
-func (opener runtimeOpener) containedRuntime(
-	runtimeID string,
-	prepared host.PreparedStart,
-	profile contracts.DriverProfile,
-	manifest host.ContainerManifest,
-) (serving.Runtime, error) {
-	variant := prepared.Grant.Runtime.Variant
-	if opener.installation == "" {
-		return nil, fmt.Errorf("runtime %s runs contained as %s, which this host runs in no container", runtimeID, variant)
-	}
-
-	switch variant {
-	case drivers.TerminalVariant:
-		return opener.containedTerminalRuntime(runtimeID, prepared, profile, manifest)
-	case drivers.HeadlessVariant:
-		return opener.containedHeadlessRuntime(runtimeID, prepared, profile, manifest)
-	}
-
-	return nil, fmt.Errorf("runtime %s runs contained as %s, which this host runs in no container", runtimeID, variant)
 }
 
 // codexRuntime opens a Codex runtime as one thread on its account generation's shared app-server, in an empty root

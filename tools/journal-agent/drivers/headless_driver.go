@@ -390,20 +390,6 @@ func WithoutJournalVariables(environment []string) []string {
 	return kept
 }
 
-// RegisterHeadlessDriver makes the headless driver available to the factory; runtimeOf supplies what the grant alone
-// does not say: the runtime's folders, its conversation and the generation the journal last recorded.
-func RegisterHeadlessDriver(factory *host.RuntimeFactory, runtimeOf func(grant host.StartGrant) (HeadlessRuntime, int, error)) {
-	factory.Register(HeadlessVariant, func(grant host.StartGrant) (contracts.AgentDriver, error) {
-		runtime, generation, err := runtimeOf(grant)
-		if err != nil {
-			return nil, err
-		}
-		runtime.Credential = grant.Credential
-		runtime.ProfilePin = grant.ProfilePin
-		return NewHeadlessDriver(runtime, generation), nil
-	})
-}
-
 // RunKeyScript is refused: a runtime run one child per turn has no terminal to type a script into.
 func (driver *HeadlessDriver) RunKeyScript(
 	_ context.Context,

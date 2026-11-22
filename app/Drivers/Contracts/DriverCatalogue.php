@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Drivers\Contracts;
 
+use App\Agents\Enums\DriverVariant;
 use App\Drivers\Values\DriverKey;
 use App\Drivers\Values\DriverRegistration;
 
@@ -13,6 +14,11 @@ use App\Drivers\Values\DriverRegistration;
 interface DriverCatalogue
 {
     public function forKey(DriverKey $key): Driver;
+
+    /**
+     * The key of the one driver registered for a family in a mode, as a start form or the command line names it.
+     */
+    public function keyFor(string $family, DriverVariant $mode): DriverKey;
 
     /**
      * @return list<DriverRegistration>

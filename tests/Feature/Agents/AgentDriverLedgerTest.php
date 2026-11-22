@@ -74,6 +74,7 @@ use App\Agents\Values\ScriptProgress;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StopConditions;
 use App\Bus\Contracts\CommandBus;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Drivers\Enums\HookDriver;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
@@ -346,6 +347,19 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertInstanceOf(StartGrant::class, $first);
         $this->assertNotSame('', $first->token);
         $this->assertNull($second);
+    }
+
+    public function test_the_start_grant_names_the_driver_registration_by_its_key(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
+
+        $grant = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
+
+        $this->assertSame(
+            (string) $this->app->make(DriverCatalogue::class)->keyFor($runtime->driver_key, $runtime->mode),
+            $grant->runtime->driverKey,
+        );
     }
 
     public function test_a_start_grant_of_a_session_on_the_protected_host_carries_no_container(): void
