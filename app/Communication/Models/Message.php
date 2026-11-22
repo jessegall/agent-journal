@@ -15,6 +15,7 @@ use App\Communication\Data\MessageReader;
 use App\Communication\Enums\AgentInboxState;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\MessageState;
+use App\Communication\Enums\MessageType;
 use App\Communication\Events\MessageAnswered;
 use App\Communication\Events\MessageAnswerRequired;
 use App\Communication\Events\MessageDismissed;
@@ -50,6 +51,7 @@ use Spatie\LaravelData\Optional;
  * was closed. Every change that moves its state raises its state version, so a stale change is refused.
  *
  * @property string $id
+ * @property MessageType $message_type
  * @property string $number_group_id
  * @property int $number
  * @property string $source_inbox_id
@@ -69,6 +71,14 @@ use Spatie\LaravelData\Optional;
  * @property string $origin_receipt_id
  * @property string|null $reply_to_id
  * @property string|null $answer_message_id
+ * @property string|null $timeline_event_id
+ * @property string|null $addressee_type
+ * @property string|null $addressee_id
+ * @property string|null $respondent_type
+ * @property string|null $respondent_id
+ * @property string|null $user_root_id
+ * @property string|null $request_key
+ * @property string|null $request_digest
  * @property string|null $closed_by_type
  * @property string|null $closed_by_id
  * @property CarbonImmutable|null $closed_at
@@ -78,6 +88,7 @@ use Spatie\LaravelData\Optional;
  * @property CarbonImmutable|null $updated_at
  */
 #[Fillable([
+    'message_type',
     'source_inbox_id',
     'destination_inbox_id',
     'sender_type',
@@ -109,6 +120,7 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
     protected function casts(): array
     {
         return [
+            'message_type' => MessageType::class,
             'state' => MessageState::class,
             'is_question' => 'boolean',
             'state_version' => 'integer',
@@ -141,6 +153,7 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         $author = $envelope->author;
 
         $message = new self([
+            'message_type' => MessageType::Desk,
             'source_inbox_id' => $envelope->source->inboxId(),
             'destination_inbox_id' => $envelope->destination->inboxId(),
             ...$author->asColumns('sender'),
