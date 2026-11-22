@@ -10,7 +10,7 @@ import { keyedPost } from '@kit/keyedPost';
 import { newRequestId } from '@kit/requestId';
 import { useStartRestoration } from './composables/useStartRestoration';
 import { useSwitchOperation } from './composables/useSwitchOperation';
-import type { AgentOptionData, ChatData } from '@generated/types/chat';
+import type { AgentOptionData, ChatData, DriverChoiceData } from '@generated/types/chat';
 import type { WindowResult } from '@kit/PageTypes';
 import type { DriverVariant, HookDriver } from '@kit/CoreTypes';
 import {
@@ -26,7 +26,7 @@ import {
 
 /**
  * Starts, resumes or switches the chosen agent's session: the driver, the model among those the profile permits, the
- * variant (the profile's default unless one is chosen, kept for the agent when asked), the account among those the
+ * registered driver (its terminal or headless mode kept for the agent when asked), the account among those the
  * driver may run with, and for a resume the conversation it continues. The form makes one request id when it opens,
  * so a second press repeats the same start; an edit after a refusal makes a fresh one. A refusal whose next step is a
  * field shows under that field and takes the focus; every other choice stays. Every id comes from the dialog's own
@@ -55,15 +55,6 @@ type SessionChoice = {
     conversationId: string | null;
 };
 
-const drivers: { value: HookDriver; label: string }[] = [
-    { value: 'claude-code', label: 'Claude Code' },
-    { value: 'codex', label: 'Codex' },
-];
-const variants: { value: DriverVariant | ''; label: string }[] = [
-    { value: '', label: "The profile's default" },
-    { value: 'terminal', label: 'Terminal' },
-    { value: 'headless', label: 'Headless' },
-];
 const titles = { start: 'Start session', resume: 'Resume a conversation', switch: 'Switch session' };
 
 // The ids of this dialog's fields, unique to this mount.
@@ -71,7 +62,6 @@ const formId = useId();
 const fieldIds = {
     driver: `${formId}-driver`,
     model: `${formId}-model`,
-    variant: `${formId}-variant`,
     accountId: `${formId}-account`,
     conversationId: `${formId}-conversation`,
 };
@@ -80,8 +70,8 @@ type FieldKey = keyof typeof fieldIds;
 
 let requestId = newRequestId();
 const switching = useSwitchOperation(() => props.agent);
-const driver = ref<HookDriver>(props.agent.conversations[0]?.driver ?? 'claude-code');
-const variant = ref<DriverVariant | ''>('');
+// The registered driver chosen, by its key; the family and mode a start sends come from it.
+const driverKey = ref<string | null>(null);
 const saveVariant = ref(false);
 const accounts = ref<EligibleAccountData[]>([]);
 const accountId = ref<string | null>(null);
@@ -99,10 +89,7 @@ let following: { stop: () => void } | undefined;
 
 const account = computed(() => accounts.value.find((choice) => choice.id === accountId.value));
 const review = computed(() => {
-    const driverLabel = drivers.find((choice) => choice.value === driver.value)?.label;
-    const variantLabel = variant.value === '' ? 'its default variant' : variant.value;
-
-    return `${driverLabel} as ${variantLabel}, on ${account.value?.label ?? 'no account'}`;
+    return `${chosenDriver.value?.label ?? 'its driver'}, on ${account.value?.label ?? 'no account'}`;
 });
 const isSwitchOpen = computed(() => ['sending', 'following', 'uncertain'].includes(switching.state.value));
 const canSubmit = computed(
@@ -133,8 +120,6 @@ type StartReceiptAnswer = {
 const receipts = useHttp<{ requestId: string }, StartReceiptAnswer>({ requestId: '' });
 
 if (restored !== null) {
-    driver.value = restored.driver;
-    variant.value = restored.variant;
     model.value = restored.model;
     accountId.value = restored.accountId;
     conversationId.value = restored.conversationId;
@@ -159,7 +144,6 @@ function keepRestoration(sentRequestId: string | null): void {
 }
 
 let sentRequestId: string | null = restored?.requestId ?? null;
-watch([driver, variant, model, accountId, conversationId, saveVariant, focusedField], () => keepRestoration(sentRequestId));
 
 /**
  * Keeps which field has the focus by its key, not its id, since ids belong to one mount.
@@ -224,6 +208,29 @@ function cancelStart(): void {
 }
 const ownPage = page.component === 'chat/ChatWindow';
 const chatProp = ownPage ? 'page' : 'window_chat_conversation';
+const driverChoices = computed<DriverChoiceData[]>(() => {
+    const shown = page.props[chatProp] as WindowResult<ChatData> | undefined;
+
+    return shown?.state === 'ready' ? shown.data.drivers : [];
+});
+// The chosen driver, else the first that can run in the family of the agent's latest conversation, else the first
+// that can run at all.
+const chosenDriver = computed(() => {
+    const available = driverChoices.value.filter((choice) => choice.isAvailable);
+    const family = props.agent.conversations[0]?.driver;
+
+    return driverChoices.value.find((choice) => choice.key === driverKey.value)
+        ?? available.find((choice) => choice.family === family)
+        ?? available[0];
+});
+const driver = computed(() => (chosenDriver.value?.family ?? 'claude-code') as HookDriver);
+const variant = computed(() => (chosenDriver.value?.mode ?? 'headless') as DriverVariant);
+
+if (restored !== null) {
+    driverKey.value = driverChoices.value
+        .find((choice) => choice.family === restored.driver && choice.mode === restored.variant)?.key ?? null;
+}
+watch([driver, variant, model, accountId, conversationId, saveVariant, focusedField], () => keepRestoration(sentRequestId));
 
 /**
  * Asks the chat window, read again, for the driver's eligible accounts; they arrive as part of its data.
@@ -320,7 +327,7 @@ function sessionChoice(): SessionChoice {
         agentId: props.agent.id,
         model: model.value ?? 'default',
         driver: driver.value,
-        variant: variant.value === '' ? null : variant.value,
+        variant: variant.value,
         saveVariant: saveVariant.value,
         accountId: account.value?.id,
         accountRevision: account.value?.signInRevision,
@@ -415,7 +422,6 @@ function followStart(): void {
 function switchSession(): void {
     switching.begin(requestId, switchMethod.url(props.agent.profileKey), {
         ...sessionChoice(),
-        variant: variant.value === '' ? 'terminal' : variant.value,
         expectedSessionId: props.agent.sessionId,
         expectedGeneration: props.agent.sessionGeneration,
     });
@@ -423,9 +429,9 @@ function switchSession(): void {
 
 // A switch is reviewed before it is sent: its source, its target and what happens to the running session.
 const isReviewing = ref(false);
-const driverLabel = (value: string | null) => drivers.find((choice) => choice.value === value)?.label ?? 'its driver';
-const sourceLabel = computed(() => driverLabel(props.agent.sessionDriver));
-const targetLabel = computed(() => driverLabel(driver.value));
+const familyLabel = (family: string | null) => driverChoices.value.find((choice) => choice.family === family)?.label ?? 'its driver';
+const sourceLabel = computed(() => familyLabel(props.agent.sessionDriver));
+const targetLabel = computed(() => chosenDriver.value?.label ?? 'its driver');
 // The leg of the agent's switch the host has not confirmed, in the words of that leg; none while both are known.
 const unconfirmedLeg = computed(() => {
     if (props.agent.switchStage === 'stop_unconfirmed') {
@@ -552,7 +558,7 @@ onBeforeUnmount(() => following?.stop());
                     <template v-for="conversation in agent.conversations" :key="conversation.id">
                         <label class="flex items-center gap-2 text-small text-text">
                             <input v-model="conversationId" type="radio" :value="conversation.id" />
-                            {{ drivers.find((choice) => choice.value === conversation.driver)?.label }},
+                            {{ familyLabel(conversation.driver) }},
                             {{ dateTime(conversation.startedAt) }}
                         </label>
                     </template>
@@ -575,13 +581,15 @@ onBeforeUnmount(() => following?.stop());
                 <template #default="{ id, describedBy, invalid }">
                     <select
                         :id="id"
-                        v-model="driver"
+                        v-model="driverKey"
                         :aria-describedby="describedBy"
                         :aria-invalid="invalid"
                         class="rounded-control border border-border-2 bg-transparent px-2 py-1 text-body"
                     >
-                        <template v-for="choice in drivers" :key="choice.value">
-                            <option :value="choice.value">{{ choice.label }}</option>
+                        <template v-for="choice in driverChoices" :key="choice.key">
+                            <option :value="choice.key" :disabled="!choice.isAvailable">
+                                {{ choice.label }}<template v-if="!choice.isAvailable">: {{ choice.unavailableReason }}</template>
+                            </option>
                         </template>
                     </select>
                 </template>
@@ -605,17 +613,8 @@ onBeforeUnmount(() => following?.stop());
                     </select>
                 </template>
             </Field>
-            <Field :id="fieldIds.variant" label="Variant">
-                <template #default="{ id }">
-                    <select :id="id" v-model="variant" class="rounded-control border border-border-2 bg-transparent px-2 py-1 text-body">
-                        <template v-for="choice in variants" :key="choice.value">
-                            <option :value="choice.value">{{ choice.label }}</option>
-                        </template>
-                    </select>
-                </template>
-            </Field>
             <label class="flex items-center gap-2 text-small text-text-2">
-                <input v-model="saveVariant" type="checkbox" :disabled="variant === ''" />
+                <input v-model="saveVariant" type="checkbox" />
                 Use as default for this agent
             </label>
             <Field

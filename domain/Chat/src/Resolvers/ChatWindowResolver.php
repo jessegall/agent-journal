@@ -12,6 +12,7 @@ use App\Agents\Support\AgentOption;
 use App\Bus\Contracts\CommandBus;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Exceptions\InboxUnavailable;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Http\Data\Profiles\EligibleAccountsData;
 use App\Profiles\Contracts\StartAccounts;
 use App\Ui\Contracts\PageResolver;
@@ -21,6 +22,7 @@ use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ChatSummaryData;
 use Domain\Chat\Data\ConversationData;
+use Domain\Chat\Data\DriverChoiceData;
 use Domain\Chat\Data\FocusedQuestionData;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Resolvers\Support\ChatConversations;
@@ -51,6 +53,7 @@ final readonly class ChatWindowResolver implements PageResolver
         private SlotSections $slots,
         private StartAccounts $startAccounts,
         private CommandBus $commands,
+        private DriverCatalogue $drivers,
     ) {}
 
     public function read(): ChatData
@@ -77,6 +80,7 @@ final readonly class ChatWindowResolver implements PageResolver
             ...$this->eligibleAccounts($chosen),
             ...$this->focusedQuestion(),
             ...$this->chatList(),
+            'drivers' => DriverChoiceData::listed($this->drivers),
         ]);
     }
 

@@ -2977,6 +2977,7 @@ class	DriverArrangementUnproven
 class	DriverBudgets
 class	DriverCapabilities
 class	DriverCapabilityUnsupported
+class	DriverChoiceData
 class	DriverCompatibility
 class	DriverConflict
 class	DriverConversation
@@ -13540,6 +13541,9 @@ method	DriverCatalogue::forKey()
 method	DriverCatalogue::keyFor()
 method	DriverCatalogue::pinned()
 method	DriverCatalogue::revision()
+method	DriverChoiceData::__construct()
+method	DriverChoiceData::listed()
+method	DriverChoiceData::of()
 method	DriverCompatibilities::for()
 method	DriverCompatibility::__construct()
 method	DriverCompatibility::assertStartable()
@@ -30399,6 +30403,7 @@ property	ChatData::$canCreateChats
 property	ChatData::$chats
 property	ChatData::$conversation
 property	ChatData::$dockSections
+property	ChatData::$drivers
 property	ChatData::$eligibleAccounts
 property	ChatData::$focusedQuestion
 property	ChatData::$focusedQuestionId
@@ -30521,6 +30526,7 @@ property	ChatWindowResolver::$agents
 property	ChatWindowResolver::$chats
 property	ChatWindowResolver::$commands
 property	ChatWindowResolver::$conversations
+property	ChatWindowResolver::$drivers
 property	ChatWindowResolver::$messages
 property	ChatWindowResolver::$request
 property	ChatWindowResolver::$slots
@@ -31890,6 +31896,12 @@ property	DriverCapabilities::$rewrites
 property	DriverCapabilities::$schemaContract
 property	DriverCapabilityUnsupported::$capability
 property	DriverCapabilityUnsupported::$reason
+property	DriverChoiceData::$family
+property	DriverChoiceData::$isAvailable
+property	DriverChoiceData::$key
+property	DriverChoiceData::$label
+property	DriverChoiceData::$mode
+property	DriverChoiceData::$unavailableReason
 property	DriverCompatibility::$arrangement
 property	DriverCompatibility::$arrangementEvidence
 property	DriverCompatibility::$awaitsContainedReport

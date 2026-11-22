@@ -42,6 +42,14 @@ const accountsAnswer = {
     modelChoices: ['claude-opus-5-5', 'claude-sonnet-5-5'],
 };
 
+// The registered drivers the chat window offers, as the journal's catalogue lists them.
+const drivers = [
+    { key: 'claude-code', label: 'Claude Code', family: 'claude-code', mode: 'terminal', isAvailable: true, unavailableReason: null },
+    { key: 'claude-code-headless', label: 'Claude Code headless', family: 'claude-code', mode: 'headless', isAvailable: true, unavailableReason: null },
+    { key: 'codex', label: 'Codex', family: 'codex', mode: 'terminal', isAvailable: false, unavailableReason: 'The Codex terminal is not proven on any host yet.' },
+    { key: 'codex-headless', label: 'Codex headless', family: 'codex', mode: 'headless', isAvailable: true, unavailableReason: null },
+];
+
 // How many of the next account reads fail, as when the journal cannot be reached.
 const readFailures = { count: 0 };
 
@@ -64,7 +72,7 @@ vi.mock('@inertiajs/vue3', () => ({
             shownPage.props = {
                 [options.only[0]]: {
                     state: 'ready',
-                    data: { eligibleAccounts: { ...accountsAnswer } },
+                    data: { eligibleAccounts: { ...accountsAnswer }, drivers },
                 },
             };
         },
@@ -148,9 +156,14 @@ describe('SessionForm', () => {
             ['Old account: its account needs to sign in again', true],
             ['Work account', false],
         ]);
-        expect(form.text()).toContain(
-            'Starts Claude Code as its default variant, on Work account.',
-        );
+        expect(form.text()).toContain('Starts Claude Code, on Work account.');
+        const driverOptions = form.findAll('select[id$="-driver"] option');
+        expect(driverOptions.map((option) => [option.text(), (option.element as HTMLOptionElement).disabled])).toEqual([
+            ['Claude Code', false],
+            ['Claude Code headless', false],
+            ['Codex: The Codex terminal is not proven on any host yet.', true],
+            ['Codex headless', false],
+        ]);
 
         await form.find('form').trigger('submit');
         await flushPromises();
@@ -305,7 +318,7 @@ describe('SessionForm', () => {
         shownPage.props = {
             window_chat_conversation: {
                 state: 'ready',
-                data: { eligibleAccounts: { ...accountsAnswer } },
+                data: { eligibleAccounts: { ...accountsAnswer }, drivers },
             },
         };
         await flushPromises();
