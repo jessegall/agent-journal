@@ -9,11 +9,11 @@ import PlanWorkDialog from './PlanWorkDialog.vue';
 import { useHostProp } from '@kit/hostProp';
 
 /**
- * A plan's review in its reader: Request review or Withdraw review when offered; while it is reviewed, the frozen
- * snapshot of the edition and, for a decider, Approve or Request changes with a required reason; the latest approval
- * as a receipt, or as historical once the plan changed; a request for changes with its note; and what changed against
- * the edition before. One post at a time under its request key, reloading only the window's prop; a lost answer shows
- * Outcome unknown and Check plan, which sends the same request under the same key again only when chosen.
+ * A plan's review in its reader: Request review or Withdraw review when offered; while it is reviewed, which review
+ * is open and, for a decider, Approve or Request changes with a required reason; the latest approval as a receipt, or
+ * as historical once the plan changed; and a request for changes with its note. The plan itself is read live, as it
+ * cannot change under review. One post at a time under its request key, reloading only the window's prop; a lost
+ * answer shows Outcome unknown and Check plan, which sends the same request under the same key again only when chosen.
  */
 const props = defineProps<{
     review: PlanReviewData;
@@ -65,7 +65,7 @@ function post(url: string, data: Record<string, string>, key: string = crypto.ra
     );
 }
 
-async function askForChanges(): Promise<void> {
+async function askForChanges(reviewNumber: number): Promise<void> {
     if (reason.value.trim() === '') {
         refusal.value = 'Say what has to change.';
         await nextTick();
@@ -75,7 +75,7 @@ async function askForChanges(): Promise<void> {
     }
 
     post(requestChanges.url({ plan: props.number }), {
-        edition: String(props.review.edition?.number ?? 0),
+        edition: String(reviewNumber),
         reason: reason.value,
     });
 }
@@ -90,54 +90,25 @@ function decidedText(decidedById: string, decidedByType: string, decidedAt: stri
         <template v-if="review.receipt">
             <p class="text-small text-text-2">
                 <template v-if="review.receipt.isHistorical">
-                    Historical approval: the plan changed since edition {{ review.receipt.editionNumber }} was
-                    approved.
+                    Historical approval: the plan changed after review {{ review.receipt.editionNumber }} approved it.
                 </template>
                 <template v-else>
                     Approved by
                     {{ decidedText(review.receipt.decidedById, review.receipt.decidedByType, review.receipt.decidedAt) }}
-                    (edition {{ review.receipt.editionNumber }})
+                    (review {{ review.receipt.editionNumber }})
                 </template>
             </p>
         </template>
         <template v-if="review.changesRequested">
             <p class="rounded-control border border-border-2 px-3 py-2 text-small text-text">
-                Changes requested on edition {{ review.changesRequested.editionNumber }}:
+                Changes requested in review {{ review.changesRequested.editionNumber }}:
                 <span class="whitespace-pre-wrap" v-text="review.changesRequested.reason" />
             </p>
         </template>
-        <template v-if="review.changes">
-            <p class="text-small text-text-3">
-                Against edition {{ review.changes.olderEdition }}:
-                {{ review.changes.added.length }} tasks added, {{ review.changes.removed.length }} removed,
-                {{ review.changes.changed.length }} changed{{ review.changes.isPlanTextChanged ? ', and the plan text changed' : '' }}{{ review.changes.isWhole ? '' : ' (first 1,000 tasks compared)' }}.
+        <template v-if="review.reviewNumber">
+            <p class="text-small font-medium text-text-2">
+                Review {{ review.reviewNumber }} is open. The plan can't change until it is decided or withdrawn.
             </p>
-        </template>
-        <template v-if="review.edition">
-            <div class="flex flex-col gap-2 rounded-control border border-border px-3 py-2">
-                <p class="text-small font-medium text-text-2">
-                    Edition {{ review.edition.number }} under review
-                </p>
-                <template v-for="phase in review.edition.phases" :key="phase.position">
-                    <div class="flex flex-col gap-1">
-                        <p class="text-small font-medium text-text-2">Phase {{ phase.number }} · {{ phase.title }}</p>
-                        <ul class="flex flex-col gap-1 pl-3">
-                            <template v-for="member in phase.members" :key="member.taskNumber">
-                                <li class="text-small text-text-2">
-                                    <span class="tabular-nums">Task {{ member.taskNumber }}</span> · {{ member.title }}
-                                    <span class="block whitespace-pre-wrap text-text-3 [overflow-wrap:anywhere]" v-text="member.isBriefCut ? `${member.brief}…` : member.brief" />
-                                </li>
-                            </template>
-                        </ul>
-                        <template v-if="phase.hasMoreMembers">
-                            <p class="pl-3 text-small text-text-4">More tasks are in this phase.</p>
-                        </template>
-                    </div>
-                </template>
-                <template v-if="review.edition.hasMorePhases">
-                    <p class="text-small text-text-4">More phases are in this edition.</p>
-                </template>
-            </div>
         </template>
         <template v-if="refusal !== ''">
             <p role="alert" class="text-small text-danger">{{ refusal }}</p>
@@ -173,17 +144,17 @@ function decidedText(decidedById: string, decidedByType: string, decidedAt: stri
                     >Withdraw review</Button
                 >
             </template>
-            <template v-if="review.mayDecide && review.edition">
+            <template v-if="review.mayDecide && review.reviewNumber">
                 <Button
                     size="small"
                     variant="primary"
                     :pending="pending"
-                    @click="post(approveReview.url({ plan: number }), { edition: String(review.edition.number) })"
+                    @click="post(approveReview.url({ plan: number }), { edition: String(review.reviewNumber) })"
                     >Approve</Button
                 >
             </template>
         </div>
-        <template v-if="review.mayDecide && review.edition">
+        <template v-if="review.mayDecide && review.reviewNumber">
             <label class="flex flex-col gap-1 text-small text-text-2">
                 <span>What has to change</span>
                 <textarea
@@ -194,7 +165,7 @@ function decidedText(decidedById: string, decidedByType: string, decidedAt: stri
                 />
             </label>
             <div>
-                <Button size="small" :pending="pending" @click="askForChanges">Request changes</Button>
+                <Button size="small" :pending="pending" @click="askForChanges(review.reviewNumber)">Request changes</Button>
             </div>
         </template>
         <template v-if="isAssigning">

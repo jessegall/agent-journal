@@ -2,7 +2,7 @@
 import { dateTimeWithZone, timeAgo } from '@kit/format';
 import type { ProjectBindingRowData } from '@generated/types/connections';
 import Button from '@kit/Button';
-import Modal from '@kit/Modal';
+import Dialog from '@kit/Dialog';
 import StateBadge from '@kit/StateBadge';
 import { computed, nextTick, ref } from 'vue';
 import { bindingLooks } from './bindingLooks';
@@ -194,8 +194,8 @@ const deviceName = computed(
                 @click="ask"
                 >Revoke</Button
             >
-            <Modal
-                :is-open="isAsking"
+            <Dialog
+                :open="isAsking"
                 :title="`Revoke ${deviceName}?`"
                 @close="takeBack"
                 @opened="cancelButton?.$el.focus()"
@@ -217,7 +217,7 @@ const deviceName = computed(
                         >Revoke connection</Button
                     >
                 </template>
-            </Modal>
+            </Dialog>
         </template>
     </li>
 </template>

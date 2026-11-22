@@ -6,12 +6,8 @@ namespace Domain\Sequences\States\Support;
 
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Enums\SessionTransferType;
-use App\Hooks\Exceptions\StateSubjectMissing;
-use App\Hooks\References\StateReference;
-use App\Hooks\References\SubjectReference;
 use App\Hooks\StateLoading\Contracts\StateLoader;
 use App\Hooks\StateLoading\StateSet;
-use App\Hooks\States\AgentState;
 use Domain\Sequences\Resolvers\Support\SequenceRecords;
 use Domain\Sequences\States\FollowingSequenceState;
 
@@ -31,15 +27,7 @@ final readonly class FollowingSequenceStateFactory implements StateLoader
     {
         $subjects = $this->runs->many($references->subjectIds());
 
-        return StateSet::build($references, function (StateReference $reference) use ($subjects): AgentState {
-            $subject = $reference->subject;
-
-            if (! $subject instanceof SubjectReference || ! isset($subjects[$subject->id])) {
-                throw StateSubjectMissing::for($reference->typeKey);
-            }
-
-            return new FollowingSequenceState($subjects[$subject->id]->work());
-        });
+        return StateSet::forSubjects($references, $subjects, fn ($run) => new FollowingSequenceState($run->work()));
     }
 
     public function schemaVersion(): int

@@ -89,6 +89,7 @@ use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Api\Events\TaskLogged;
 use Domain\Tasks\Api\Events\TaskStartCommitted;
 use Domain\Tasks\Api\Events\TaskWaitChanged;
+use Domain\Tasks\Events\TaskDescribed;
 use Domain\Tasks\Events\TaskStarted;
 
 /**
@@ -567,6 +568,7 @@ final class EventPayloads
                 'fields' => [
                     'planId' => 'string',
                     'editionId' => 'string',
+                    'reviewers' => 'array',
                 ],
             ],
             PlanReviewWithdrawn::class => [
@@ -615,6 +617,10 @@ final class EventPayloads
                     'previousState' => 'Domain\Tasks\Enums\TaskState',
                     'historyEntryId' => 'string',
                 ],
+            ],
+            TaskDescribed::class => [
+                'afterCommit' => false,
+                'fields' => ['taskId' => 'string'],
             ],
             TaskCancelled::class => [
                 'afterCommit' => true,

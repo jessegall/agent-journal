@@ -10,14 +10,12 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
 
 /**
- * The checks every review decision passes, in order: the plan's structure lock first, the edition the decider read
- * still the one asked for (a decided or withdrawn edition reports its outcome), then the certification of the whole
- * content under the members' shared locks.
+ * The checks every review decision passes, in order: the plan's structure lock first, then the review the decider
+ * read still the one asked for (a decided or withdrawn review reports its outcome). The plan could not change while
+ * it was under review, so the decider read what it decides on.
  */
 final readonly class PlanReviewDecision
 {
-    public function __construct(private PlanReviewCertifier $certifier) {}
-
     /**
      * @return array{0: Plan, 1: PlanReviewEdition}
      *
@@ -35,8 +33,6 @@ final readonly class PlanReviewDecision
         if ($edition->state !== PlanReviewState::Requested) {
             throw PlanReviewRefused::alreadyDecided($plan->number, $edition->number, $edition->state->value);
         }
-
-        $this->certifier->assertCurrent($plan, $edition);
 
         return [$plan, $edition];
     }

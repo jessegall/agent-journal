@@ -8,6 +8,7 @@ use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Exceptions\StateClassMismatch;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\References\StateReference;
+use App\Hooks\References\SubjectReference;
 use App\Hooks\States\AgentState;
 use Closure;
 
@@ -43,6 +44,28 @@ final readonly class StateSet
         }
 
         return new self($states, $typeKey);
+    }
+
+    /**
+     * Builds each reference's state from its subject among those read for the whole batch, keyed by id; a reference
+     * whose subject is not among them has no state.
+     *
+     * @template TSubject
+     *
+     * @param  array<string, TSubject>  $subjects
+     * @param  Closure(TSubject, SubjectReference): AgentState  $of
+     */
+    public static function forSubjects(StateReferences $references, array $subjects, Closure $of): self
+    {
+        return self::build($references, function (StateReference $reference) use ($subjects, $of): AgentState {
+            $subject = $reference->subject;
+
+            if (! $subject instanceof SubjectReference || ! isset($subjects[$subject->id])) {
+                throw StateSubjectMissing::for($reference->typeKey);
+            }
+
+            return $of($subjects[$subject->id], $subject);
+        });
     }
 
     /**

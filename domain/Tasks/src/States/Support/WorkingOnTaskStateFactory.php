@@ -8,12 +8,9 @@ use App\Actors\Support\ActorIdentity;
 use App\Desks\Contracts\RunClaims;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Enums\SessionTransferType;
-use App\Hooks\Exceptions\StateSubjectMissing;
-use App\Hooks\References\StateReference;
 use App\Hooks\References\SubjectReference;
 use App\Hooks\StateLoading\Contracts\RecipientStateLoader;
 use App\Hooks\StateLoading\StateSet;
-use App\Hooks\States\AgentState;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Resolvers\Support\TaskRecords;
@@ -71,15 +68,11 @@ final readonly class WorkingOnTaskStateFactory implements RecipientStateLoader
      */
     private function build(StateReferences $references, array $tasks, callable $workOf): StateSet
     {
-        return StateSet::build($references, function (StateReference $reference) use ($tasks, $workOf): AgentState {
-            $subject = $reference->subject;
-
-            if (! $subject instanceof SubjectReference || ! isset($tasks[$subject->id])) {
-                throw StateSubjectMissing::for($reference->typeKey);
-            }
-
-            return new WorkingOnTaskState($workOf($tasks[$subject->id], $subject->runNumber));
-        });
+        return StateSet::forSubjects(
+            $references,
+            $tasks,
+            fn (Task $task, SubjectReference $subject) => new WorkingOnTaskState($workOf($task, $subject->runNumber)),
+        );
     }
 
     /**

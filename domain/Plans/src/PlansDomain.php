@@ -47,7 +47,6 @@ use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Api\PhaseDetails;
 use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanDetails;
-use Domain\Plans\Api\PlanEditionChanges;
 use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Api\PlanList;
 use Domain\Plans\Api\PlanPhaseTasks;
@@ -89,6 +88,8 @@ use Domain\Plans\Resolvers\TaskPlanSection;
 use Domain\Plans\Resolvers\WaitingPlansCount;
 use Domain\Plans\Resolvers\WaitingPlansSection;
 use Domain\Plans\Skills\PlanSkill;
+use Domain\Plans\States\Support\ReviewingPlanStateFactory;
+use Domain\Plans\States\Support\ReviewingPlanStateReference;
 use Domain\Plans\States\Support\WorkingOnPlanStateFactory;
 use Domain\Plans\States\Support\WorkingOnPlanStateReference;
 use Domain\Plans\Support\PhaseAssignmentProvider;
@@ -152,7 +153,6 @@ final class PlansDomain extends Domain implements
                 AssignedPlanFilters::class,
                 AssignedPlanList::class,
                 PlanProgress::class,
-                PlanEditionChanges::class,
                 PlanReviewState::class,
                 PlanType::class,
                 PlanState::class,
@@ -318,7 +318,10 @@ final class PlansDomain extends Domain implements
 
     public function states(): array
     {
-        return [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateFactory::class];
+        return [
+            WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateFactory::class,
+            ReviewingPlanStateReference::TYPE_KEY => ReviewingPlanStateFactory::class,
+        ];
     }
 
     public function mcpResources(): array

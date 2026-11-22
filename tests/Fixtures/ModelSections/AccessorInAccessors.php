@@ -21,6 +21,9 @@ final class AccessorInAccessors extends Model
 
     // ----------[ Accessors ]----------
 
+    /**
+     * @return Attribute<int, never>
+     */
     protected function progress(): Attribute
     {
         return Attribute::get(fn (): int => 3);

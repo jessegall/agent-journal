@@ -10,16 +10,14 @@ use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Domain\Plans\Enums\PlanReviewState;
-use Domain\Plans\Enums\PlanType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One frozen edition of a plan put up for review: the plan's title, brief and type as they were, a fingerprint over
- * its ordered content, and its decision once made. Its phases and members are kept beside it and never change; an
- * edit of the plan afterwards makes an approved edition historical.
+ * One review of a plan: who asked for it, the plan's revision then, and its decision once made. The
+ * plan cannot change while it is under review; an edit after an approval makes that approval historical.
  *
  * @property string $id
  * @property string $plan_id
@@ -27,10 +25,6 @@ use Illuminate\Support\Carbon;
  * @property ActorType $requested_by_type
  * @property string $requested_by_id
  * @property int $plan_revision
- * @property string $title
- * @property string $brief
- * @property PlanType $type
- * @property string $fingerprint
  * @property PlanReviewState $state
  * @property ActorType|null $decided_by_type
  * @property string|null $decided_by_id
@@ -47,10 +41,6 @@ use Illuminate\Support\Carbon;
     'requested_by_type',
     'requested_by_id',
     'plan_revision',
-    'title',
-    'brief',
-    'type',
-    'fingerprint',
     'state',
 ])]
 final class PlanReviewEdition extends Model implements ReadableModel
@@ -70,7 +60,6 @@ final class PlanReviewEdition extends Model implements ReadableModel
             'number' => 'integer',
             'requested_by_type' => ActorType::class,
             'plan_revision' => 'integer',
-            'type' => PlanType::class,
             'state' => PlanReviewState::class,
             'decided_by_type' => ActorType::class,
             'decided_at' => 'datetime',
@@ -79,8 +68,7 @@ final class PlanReviewEdition extends Model implements ReadableModel
     }
 
     /**
-     * The plan's next edition, asked for by the actor, with the plan's own text as it is now; its content is frozen
-     * beside it and sealed with its fingerprint.
+     * The plan's next review, asked for by the actor, at the plan's revision as it is now.
      */
     public static function create(Plan $plan, ActorIdentity $actor): self
     {
@@ -90,10 +78,6 @@ final class PlanReviewEdition extends Model implements ReadableModel
             'requested_by_type' => $actor->type,
             'requested_by_id' => $actor->id,
             'plan_revision' => $plan->revision,
-            'title' => $plan->title,
-            'brief' => $plan->brief,
-            'type' => $plan->type,
-            'fingerprint' => '',
             'state' => PlanReviewState::Requested,
         ]);
     }
@@ -146,15 +130,6 @@ final class PlanReviewEdition extends Model implements ReadableModel
     // ----------[ Mutations ]----------
 
     /**
-     * Seals the frozen content with the fingerprint over it.
-     */
-    public function seal(string $fingerprint): void
-    {
-        $this->fingerprint = $fingerprint;
-        $this->save();
-    }
-
-    /**
      * The edition is withdrawn by the actor before any decision.
      */
     public function withdraw(ActorIdentity $actor): void
@@ -167,8 +142,7 @@ final class PlanReviewEdition extends Model implements ReadableModel
     }
 
     /**
-     * Approves the edition for the actor under the decision's request key; its decider, time and fingerprint are the
-     * receipt.
+     * Approves the review for the actor under the decision's request key; its decider and time are the receipt.
      */
     public function approve(ActorIdentity $actor, string $requestKey): void
     {

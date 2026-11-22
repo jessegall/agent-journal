@@ -1,0 +1,89 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Plans\Tests\Feature;
+
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
+use App\Actors\Values\OwnerAuthority;
+use App\Bus\Contracts\CommandBus;
+use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Storage\FrameRecord;
+use Domain\Plans\Commands\RequestPlanReview;
+use Domain\Plans\Models\Plan;
+use Domain\Plans\States\Support\ReviewingPlanStateReference;
+use Domain\Plans\Tests\TestCase;
+use Tests\Support\CommittedHookStack;
+use Tests\Support\TestIds;
+
+/**
+ * Users 15889 and 15938: each agent named to review a plan gets the review on its stack once the request commits; a
+ * user named as reviewer works on no stack and gets nothing.
+ */
+final class PlanReviewStateTest extends TestCase
+{
+    use CommittedHookStack;
+
+    protected function tearDown(): void
+    {
+        $this->emptyTables('plan_review_editions', 'phase_tasks', 'phases', 'plans');
+
+        parent::tearDown();
+    }
+
+    public function test_an_agent_named_as_reviewer_gets_the_review_on_its_stack(): void
+    {
+        $plan = Plan::factory()->create();
+        $this->actAsUser();
+
+        $this->app->make(CommandBus::class)->run(new RequestPlanReview($plan->id, [
+            new ActorIdentity(ActorType::Agent, TestIds::of(1)),
+            new ActorIdentity(ActorType::User, TestIds::of(7)),
+        ]));
+
+        $this->assertSame([ReviewingPlanStateReference::TYPE_KEY], $this->frameTypes());
+        $this->assertSame($plan->id, $this->frames()[0]->reference->subject?->id);
+    }
+
+    public function test_a_review_with_only_a_user_as_reviewer_changes_no_stack(): void
+    {
+        $plan = Plan::factory()->create();
+        $this->actAsUser();
+
+        $this->app->make(CommandBus::class)->run(new RequestPlanReview($plan->id, [
+            new ActorIdentity(ActorType::User, TestIds::of(7)),
+        ]));
+
+        $this->assertSame([], $this->frameTypes());
+    }
+
+    private function actAsUser(): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(7)),
+            new OwnerAuthority('test'),
+        );
+    }
+
+    /**
+     * @return list<FrameRecord>
+     */
+    private function frames(): array
+    {
+        return array_values(array_filter(
+            AgentStackRow::query()->forTarget($this->target)->sole()->frames->all(),
+            fn (FrameRecord $frame) => ! $frame->isBottom,
+        ));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function frameTypes(): array
+    {
+        return array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->frames());
+    }
+}

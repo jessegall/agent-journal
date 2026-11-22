@@ -48,7 +48,6 @@ use Domain\Tasks\Api\TaskLogPage;
 use Domain\Tasks\Api\TaskProgress;
 use Domain\Tasks\Api\TaskProof;
 use Domain\Tasks\Api\TaskProofPage;
-use Domain\Tasks\Api\TaskReviewText;
 use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Api\TaskText;
 use Domain\Tasks\Api\TaskTransition;
@@ -68,11 +67,11 @@ use Domain\Tasks\Contracts\TaskLogResolver;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskProofResolver;
 use Domain\Tasks\Contracts\TaskResolver;
-use Domain\Tasks\Contracts\TaskReviewTexts;
 use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Enums\TaskHolderFilter;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWaitChange;
+use Domain\Tasks\Events\TaskDescribed;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Http\Controllers\AddTaskWaitPageController;
@@ -160,6 +159,7 @@ final class TasksDomain extends Domain implements
         return Exports::make()
             ->events(
                 TaskStarted::class,
+                TaskDescribed::class,
                 TaskFinished::class,
                 TaskBlocked::class,
                 TaskCancelled::class,
@@ -174,7 +174,6 @@ final class TasksDomain extends Domain implements
                 TaskLogResolver::class,
                 TaskProofResolver::class,
                 TaskWaitResolver::class,
-                TaskReviewTexts::class,
                 TaskResolver::class,
                 TaskAssignmentResolver::class,
                 AssignedTaskResolver::class,
@@ -192,7 +191,6 @@ final class TasksDomain extends Domain implements
                 TaskWaits::class,
                 TaskWaitLink::class,
                 TaskWaitChange::class,
-                TaskReviewText::class,
                 TaskSummary::class,
                 TaskAssignmentCompletion::class,
                 TaskCard::class,

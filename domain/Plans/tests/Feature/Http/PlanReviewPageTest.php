@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature\Http;
 
+use App\Bus\Contracts\CommandBus;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Domain\Plans\Exceptions\PlanUnderReview;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
+use Domain\Tasks\Commands\EditTask;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -51,8 +54,7 @@ final class PlanReviewPageTest extends TestCase
         $reviewing = $this->actingAs($this->owner)->get("/plans/{$this->plan->number}")->assertOk();
 
         $reviewing->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.root.children.2.native.props.review.edition.number', 1)
-            ->where('page.data.root.children.2.native.props.review.edition.phases.0.members.0.brief', 'Write the page.')
+            ->where('page.data.root.children.2.native.props.review.reviewNumber', 1)
             ->where('page.data.root.children.2.native.props.review.mayDecide', true)
             ->missing('page.data.root.children.2.native.props.card.start'));
 
@@ -67,18 +69,25 @@ final class PlanReviewPageTest extends TestCase
             ->where('page.data.root.children.2.native.props.card.start.planNumber', (string) $this->plan->number));
     }
 
-    public function test_a_decision_after_a_member_changed_is_refused_and_approves_nothing(): void
+    public function test_a_task_of_a_plan_under_review_cannot_change_and_the_review_still_decides(): void
     {
         $this->postReview('review')->assertStatus(303);
-        $this->task->describe('Write', 'Write the new page.');
+        $this->startUserRequestAs($this->owner->id);
 
-        $this->postReview('review/approve', ['edition' => 1])->assertStatus(303)->assertSessionHasErrors();
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(
+                new EditTask($this->task->id, $this->task->refresh()->revision, brief: 'Write the new page.'),
+            ),
+            PlanUnderReview::class,
+        );
 
-        $still = $this->actingAs($this->owner)->get("/plans/{$this->plan->number}")->assertOk();
+        $this->postReview('review/approve', ['edition' => 1])->assertStatus(303)->assertSessionHasNoErrors();
 
-        $still->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.root.children.2.native.props.review.edition.number', 1)
-            ->missing('page.data.root.children.2.native.props.review.receipt'));
+        $approved = $this->actingAs($this->owner)->get("/plans/{$this->plan->number}")->assertOk();
+
+        $approved->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.data.root.children.2.native.props.review.receipt.editionNumber', 1)
+            ->missing('page.data.root.children.2.native.props.review.reviewNumber'));
     }
 
     /**

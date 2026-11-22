@@ -38,6 +38,7 @@ final class DomainClassesTest extends TestCase
     {
         yield 'Tasks' => [TasksDomain::class, [], [
             'TaskStarted',
+            'TaskDescribed',
             'TaskFinished',
             'TaskBlocked',
             'TaskCancelled',
@@ -77,8 +78,6 @@ final class DomainClassesTest extends TestCase
             'TaskWaits',
             'TaskWaitLink',
             'TaskWaitChange',
-            'TaskReviewTexts',
-            'TaskReviewText',
         ]];
 
         yield 'Plans' => [PlansDomain::class, [TasksDomain::class], [
@@ -87,7 +86,6 @@ final class DomainClassesTest extends TestCase
             'PlanReviewRequested',
             'PlanReviewWithdrawn',
             'PlanReviewDecided',
-            'PlanEditionChanges',
             'PlanReviewState',
             'PlanResolver',
             'StartPlan',

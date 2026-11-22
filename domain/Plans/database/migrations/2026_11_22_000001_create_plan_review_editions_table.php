@@ -17,10 +17,6 @@ return new class extends Migration
             $table->string('requested_by_type', 16);
             $table->string('requested_by_id', 64);
             $table->unsignedInteger('plan_revision');
-            $table->string('title');
-            $table->text('brief');
-            $table->string('type', 16);
-            $table->string('fingerprint', 64);
             $table->string('state', 24);
             $table->string('decided_by_type', 16)->nullable();
             $table->string('decided_by_id', 64)->nullable();

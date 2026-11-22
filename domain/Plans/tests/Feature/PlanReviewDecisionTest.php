@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
 use Domain\Plans\Commands\ApprovePlanReview;
 use Domain\Plans\Commands\RequestPlanReview;
 use Domain\Plans\Commands\StartPlan;
@@ -23,9 +25,8 @@ use Tests\Support\RunsKeyedCommands;
 use Tests\Support\StartsAgentRequests;
 
 /**
- * A review decision certifies its edition against the plan's current content: approving the current edition records
- * one receipt and a replay returns it; a changed member makes the decision stale; a closed edition reports its
- * outcome; starting stays a separate action.
+ * A review decision: approving the open review records one receipt and a replay returns it; a closed review reports
+ * its outcome; starting stays a separate action. The plan cannot change while it is under review (PlanReviewTest).
  */
 final class PlanReviewDecisionTest extends TestCase
 {
@@ -40,8 +41,6 @@ final class PlanReviewDecisionTest extends TestCase
         'phases',
         'phase_tasks',
         'plan_review_editions',
-        'plan_review_phases',
-        'plan_review_members',
         'tasks',
         'command_receipts',
     ];
@@ -61,46 +60,33 @@ final class PlanReviewDecisionTest extends TestCase
         $structure->addTasks($structure->addPhase($this->plan, 'Writing'), [$this->task->id]);
     }
 
-    public function test_approving_the_current_edition_records_one_receipt_that_a_replay_returns(): void
+    public function test_approving_the_open_review_records_one_receipt_that_a_replay_returns(): void
     {
-        $this->runCommand(new RequestPlanReview($this->plan->id));
+        $this->runCommand(new RequestPlanReview($this->plan->id, [new ActorIdentity(ActorType::User, $this->owner->id)]));
         $key = (string) Str::uuid();
 
         $first = $this->runOnBus(new ApprovePlanReview($this->plan->id, 1, $key), $key);
         $again = $this->runOnBus(new ApprovePlanReview($this->plan->id, 1, $key), $key);
 
         $this->assertSame($first, $again);
-        $edition = PlanReviewEdition::query()->whereKey($first)->sole();
-        $this->assertSame(PlanReviewState::Approved, $edition->state);
-        $this->assertSame($this->owner->id, $edition->decided_by_id);
+        $review = PlanReviewEdition::query()->whereKey($first)->sole();
+        $this->assertSame(PlanReviewState::Approved, $review->state);
+        $this->assertSame($this->owner->id, $review->decided_by_id);
         $this->assertSame(PlanState::Planned, $this->plan->refresh()->state);
 
         $this->runCommand(new StartPlan($this->plan->id));
         $this->assertSame(PlanState::Started, $this->plan->refresh()->state);
     }
 
-    public function test_a_changed_member_makes_the_decision_stale(): void
+    public function test_a_decision_on_a_withdrawn_review_reports_its_outcome(): void
     {
-        $this->runCommand(new RequestPlanReview($this->plan->id));
-        $this->task->describe('Write', 'Write the new page.');
-
-        $this->assertThrows(
-            fn () => $this->runCommand(new ApprovePlanReview($this->plan->id, 1, (string) Str::uuid())),
-            PlanReviewRefused::class,
-        );
-
-        $this->assertSame(PlanState::Reviewing, $this->plan->refresh()->state);
-    }
-
-    public function test_a_decision_on_a_withdrawn_edition_reports_its_outcome(): void
-    {
-        $this->runCommand(new RequestPlanReview($this->plan->id));
+        $this->runCommand(new RequestPlanReview($this->plan->id, [new ActorIdentity(ActorType::User, $this->owner->id)]));
         $this->runCommand(new WithdrawPlanReview($this->plan->id));
 
         $this->assertThrows(
             fn () => $this->runCommand(new ApprovePlanReview($this->plan->id, 1, (string) Str::uuid())),
             PlanReviewRefused::class,
-            'Edition 1 of plan '.$this->plan->number.' is already withdrawn.',
+            'Review 1 of plan '.$this->plan->number.' is already withdrawn.',
         );
     }
 

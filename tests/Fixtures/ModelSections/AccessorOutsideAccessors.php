@@ -14,6 +14,9 @@ final class AccessorOutsideAccessors extends Model
 {
     // ----------[ Answers ]----------
 
+    /**
+     * @return Attribute<int, never>
+     */
     protected function progress(): Attribute
     {
         return Attribute::get(fn (): int => 3);
