@@ -51,7 +51,7 @@ final class PlanReviewMember extends Model implements ReadableModel
         ];
     }
 
-    public static function record(
+    public static function create(
         PlanReviewEdition $edition,
         int $phasePosition,
         int $position,
@@ -79,7 +79,7 @@ final class PlanReviewMember extends Model implements ReadableModel
     public static function pageOf(string $editionId, int $phasePosition, int $afterPosition, int $limit): Collection
     {
         return self::query()->where('edition_id', $editionId)->where('phase_position', $phasePosition)
-            ->where('position', '>', $afterPosition)->orderBy('position')->orderBy('id')->limit($limit)->get();
+            ->where('position', '>', $afterPosition)->orderBy('position')->orderBy('id')->readUpTo($limit)->get();
     }
 
     /**
@@ -90,7 +90,7 @@ final class PlanReviewMember extends Model implements ReadableModel
     public static function firstOf(string $editionId, int $limit): Collection
     {
         return self::query()->where('edition_id', $editionId)
-            ->orderBy('phase_position')->orderBy('position')->orderBy('id')->limit($limit)->get();
+            ->orderBy('phase_position')->orderBy('position')->orderBy('id')->readUpTo($limit)->get();
     }
 
     /**

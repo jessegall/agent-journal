@@ -79,7 +79,7 @@ final class TaskHistoryEntry extends Model implements ReadableModel
      * Appends the task's change under the id its fact names, after the task's last entry; the caller holds the task's
      * row, so two changes of one task never take the same place.
      */
-    public static function recordChange(
+    public static function create(
         string $id,
         Task $task,
         TaskRun|null $run,
@@ -98,6 +98,7 @@ final class TaskHistoryEntry extends Model implements ReadableModel
             'text' => $text,
             'sequence' => self::lastSequenceOf($task->id) + 1,
         ]);
+
         $entry->id = $id;
         $entry->save();
 

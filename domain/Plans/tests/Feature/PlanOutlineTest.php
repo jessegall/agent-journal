@@ -49,16 +49,19 @@ final class PlanOutlineTest extends TestCase
             1,
             new OutlinePageAsk(phase: 1, revision: $giantPhase->fresh()?->revision ?? 0),
         ));
+
         $giantSecond = $this->measured(fn () => $this->outline()->of(
             $giant->id,
             1,
             new OutlinePageAsk(phase: 1, tasksAfter: 50, revision: $giantPhase->fresh()?->revision ?? 0),
         ));
+
         $smallFirst = $this->measured(fn () => $this->outline()->of(
             $small->id,
             1,
             new OutlinePageAsk(phase: 1, revision: $smallPhase->fresh()?->revision ?? 0),
         ));
+
         $wideFirst = $this->measured(fn () => $this->outline()->of($wide->id, 1, new OutlinePageAsk()));
         $wideSecond = $this->measured(fn () => $this->outline()->of($wide->id, 1, new OutlinePageAsk(phasesAfter: 50)));
 
@@ -104,9 +107,11 @@ final class PlanOutlineTest extends TestCase
     private function measured(callable $read): array
     {
         $models = 0;
+
         Event::listen('eloquent.retrieved: *', function () use (&$models): void {
             $models++;
         });
+
         DB::flushQueryLog();
         DB::enableQueryLog();
 

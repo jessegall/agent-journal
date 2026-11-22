@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
+use App\Actors\Support\ActorContext;
+use App\Bus\Contracts\CommandBus;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
+use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
@@ -19,6 +23,7 @@ use Tests\TestCase;
 #[TimeLimit(8, 'The plan journeys cross several signed requests and inspect persisted outcomes.')]
 final class PlanToolsTest extends TestCase
 {
+    use ActsAsActors;
     use CommitsHookRows;
     use SendsMcpFrames;
     use SendsSignedCalls;
@@ -30,11 +35,14 @@ final class PlanToolsTest extends TestCase
 
     private TestStart $caller;
 
+    private string $ownerId;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $owner = User::factory()->create();
+        $this->ownerId = $owner->id;
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->caller = TestStart::start();
     }
@@ -60,8 +68,10 @@ final class PlanToolsTest extends TestCase
         $started->assertJsonPath('result.structuredContent.state', 'started');
         $this->callMcpTool($this->caller, 'phases_read', ['phase_id' => $first])
             ->assertJsonPath('result.structuredContent.task_ids', [$build->id]);
-        $build->finish('Done.');
-        $check->finish('Done.');
+        $this->actAs(ActorContext::forUser($this->ownerId));
+        $bus = $this->app->make(CommandBus::class);
+        $bus->run(new FinishTask($build->id, 0, 'Done.'));
+        $bus->run(new FinishTask($check->id, 0, 'Done.'));
 
         $read = $this->callMcpTool($this->caller, 'plans_read', ['plan_id' => $id, 'view' => 'context'])
             ->assertJsonPath('result.structuredContent.progress.finished', 2)

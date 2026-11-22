@@ -147,7 +147,7 @@ final class DomainClassesTest extends TestCase
 
         yield 'Access' => [AccessDomain::class, [], []];
 
-        yield 'Helpers' => [HelpersDomain::class, [], [
+        yield 'Helpers' => [HelpersDomain::class, [DocumentsDomain::class], [
             'CancelHelperJob',
             'ContinueHelper',
             'HelperBusy',

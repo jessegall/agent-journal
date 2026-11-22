@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Feature;
 
 use App\Bus\Contracts\CommandBus;
+use App\Reflection\Support\Reflector;
 use App\Ui\Contracts\UserInterfaceUpdater;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
@@ -55,7 +56,7 @@ final class TaskPageSignalsTest extends TestCase
     public function test_the_ending_facts_of_a_task_are_page_signals(): void
     {
         foreach ([TaskFinished::class, TaskBlocked::class, TaskCancelled::class, TaskStartCommitted::class] as $fact) {
-            $this->assertTrue(is_subclass_of($fact, UserInterfaceUpdater::class), $fact);
+            $this->assertTrue(Reflector::of($fact)->isSubclassOf(UserInterfaceUpdater::class), $fact);
         }
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
 use Domain\Plans\Commands\ApprovePlanReview;
 use Domain\Plans\Commands\RequestPlanReview;
 use Domain\Plans\Commands\StartPlan;
@@ -20,6 +19,7 @@ use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsKeyedCommands;
 use Tests\Support\StartsAgentRequests;
 
 /**
@@ -31,6 +31,7 @@ final class PlanReviewDecisionTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
+    use RunsKeyedCommands;
     use StartsAgentRequests;
 
     private const array TABLES = [
@@ -65,8 +66,8 @@ final class PlanReviewDecisionTest extends TestCase
         $this->runCommand(new RequestPlanReview($this->plan->id));
         $key = (string) Str::uuid();
 
-        $first = $this->runCommand(new ApprovePlanReview($this->plan->id, 1, $key));
-        $again = $this->runCommand(new ApprovePlanReview($this->plan->id, 1, $key));
+        $first = $this->runOnBus(new ApprovePlanReview($this->plan->id, 1, $key), $key);
+        $again = $this->runOnBus(new ApprovePlanReview($this->plan->id, 1, $key), $key);
 
         $this->assertSame($first, $again);
         $edition = PlanReviewEdition::query()->whereKey($first)->sole();
@@ -87,6 +88,7 @@ final class PlanReviewDecisionTest extends TestCase
             fn () => $this->runCommand(new ApprovePlanReview($this->plan->id, 1, (string) Str::uuid())),
             PlanReviewRefused::class,
         );
+
         $this->assertSame(PlanState::Reviewing, $this->plan->refresh()->state);
     }
 
@@ -104,6 +106,6 @@ final class PlanReviewDecisionTest extends TestCase
 
     private function runCommand(object $command): mixed
     {
-        return $this->app->make(CommandBus::class)->run($command);
+        return $this->runOnBus($command);
     }
 }

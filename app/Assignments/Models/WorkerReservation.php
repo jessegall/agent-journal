@@ -6,6 +6,7 @@ namespace App\Assignments\Models;
 
 use App\Assignments\Exceptions\WorkerAlreadyAssigned;
 use App\Assignments\Support\AssigneeIdentity;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -33,6 +34,7 @@ final class WorkerReservation extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -55,7 +57,10 @@ final class WorkerReservation extends Model implements ReadableModel
         $locked = [];
 
         foreach ($keys as $key => $holder) {
-            self::query()->firstOrCreate(['holder_type' => $holder->type, 'holder_id' => $holder->id]);
+            $reservation = new self(['holder_type' => $holder->type, 'holder_id' => $holder->id]);
+            $reservation->id = $reservation->newUniqueId();
+            $reservation->insertIfAbsent();
+
             $locked[$key] = self::query()->where('holder_type', $holder->type)->where('holder_id', $holder->id)
                 ->lockForUpdate()->sole();
         }

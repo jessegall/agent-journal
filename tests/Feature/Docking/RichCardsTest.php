@@ -141,18 +141,19 @@ final class RichCardsTest extends TestCase
         $this->assertStringContainsString('"accessibleName":"Release review, oversized","safeSummary":"Release review, oversized","open":null,"root":null', $cards);
     }
 
-    public function test_a_change_of_a_docked_task_changes_the_page_and_of_a_loose_one_does_not(): void
+    public function test_a_task_change_refreshes_the_page_once_whether_or_not_the_task_is_docked(): void
     {
         $docked = Task::factory()->create(['title' => 'Docked']);
         $loose = Task::factory()->create(['title' => 'Loose']);
         $this->dock('tasks.task', $docked->id);
         Event::fake([PageChanged::class]);
 
+        // A task change refreshes every page once, docks included, so a docked task adds no second refresh.
         $this->app->make('events')->dispatch(new TaskCancelled($loose->id, TaskState::Open, 'entry'));
-        Event::assertNotDispatched(PageChanged::class);
+        Event::assertDispatchedTimes(PageChanged::class, 1);
 
         $this->app->make('events')->dispatch(new TaskCancelled($docked->id, TaskState::Open, 'entry'));
-        Event::assertDispatchedTimes(PageChanged::class, 1);
+        Event::assertDispatchedTimes(PageChanged::class, 2);
     }
 
     private function dock(string $type, string $id): void

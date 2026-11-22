@@ -123,6 +123,7 @@ final readonly class TaskWindowResolver implements PageResolver
         $allowed = $this->authorizer->filterActions(TaskPolicy::class, $task, [AccessType::Edit, AccessType::Admin]);
         $hasEnded = $task->state->hasEnded();
         $search = $this->request->prerequisiteSearch();
+
         $choices = $search === '' || $hasEnded ? [] : $this->list->list(
             new TaskFilters(search: $search, page: new NumberedPage(1, self::CHOICES)),
         )->cards;
@@ -148,14 +149,17 @@ final readonly class TaskWindowResolver implements PageResolver
     private function actionsOf(string $taskId): TaskActionsData
     {
         $task = Task::ofId($taskId);
+
         $allowed = $this->authorizer->filterActions(
             TaskRunPolicy::class,
             $task,
             [AccessType::Create, AccessType::Edit],
         );
+
         $mayCreate = in_array(AccessType::Create, $allowed, true);
         $mayEditRun = in_array(AccessType::Edit, $allowed, true);
         $isWaiting = $this->waits->readyAmong([$task->id]) === [];
+
         $startReason = match (true) {
             $task->state->hasEnded() => "Task {$task->number} is {$task->state->value}.",
             $task->state === TaskState::Started => "Task {$task->number} is already being worked on.",

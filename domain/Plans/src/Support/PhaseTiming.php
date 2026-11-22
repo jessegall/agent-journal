@@ -76,7 +76,7 @@ final readonly class PhaseTiming implements VerificationTiming
         $afterNumber = 0;
 
         do {
-            $phases = $plan->phases()->where('number', '>', $afterNumber)->limit(self::PHASE_BATCH_SIZE)->get();
+            $phases = $plan->phases()->where('number', '>', $afterNumber)->readUpTo(self::PHASE_BATCH_SIZE)->get();
             $taskIdsByPhase = PhaseTask::taskIdsByPhase(array_values(array_map(strval(...), $phases->modelKeys())));
             $progressByPhase = $this->taskCounts->progressByGroup($taskIdsByPhase);
 

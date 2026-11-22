@@ -118,6 +118,7 @@ final class CommunicationServiceProvider extends ServiceProvider
                 ->call(fn (ReceiptDeliveries $deliveries) => $deliveries->deliverDue(CarbonImmutable::now()))
                 ->everyMinute(),
         );
+
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/communication.php');
         $incoming->register(MessageAnswerActivation::class);

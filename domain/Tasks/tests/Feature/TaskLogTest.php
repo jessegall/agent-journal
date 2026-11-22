@@ -59,6 +59,7 @@ final class TaskLogTest extends TestCase
         $this->assertSame([4, 5], [$newest->olderBefore, $newest->newerAfter]);
         $this->assertSame(['Line 2.', 'Line 3.'], self::texts($older->lines));
         $this->assertSame(['Line 4.', 'Line 5.'], self::texts($newer->lines));
+
         $this->assertSame([1], array_values(array_unique(array_map(
             fn (TaskLogLine $line) => $line->runNumber,
             $newest->lines,

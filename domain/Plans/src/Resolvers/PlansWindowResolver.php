@@ -32,6 +32,7 @@ final readonly class PlansWindowResolver implements PageResolver
         $filters = $this->request->filters();
         $planPage = $this->records->list($filters->toDomain());
         $card = $planPage->selection->card;
+
         $outline = $card === null
             ? Optional::create()
             : $this->outline->of($card->id, $card->currentPhase, $this->request->outlinePageAsk());

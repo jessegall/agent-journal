@@ -65,36 +65,45 @@ final class TaskCheckTest extends TestCase
         $task = Task::factory()->create();
         $mine = (string) Str::ulid();
         $theirs = (string) Str::ulid();
+
         $this->callersAre([
             $mine => ActorIdentity::of($this->owner),
             $theirs => new ActorIdentity(ActorType::User, TestIds::of(9)),
         ]);
+
         $this->startUserRequestAs($this->owner->id);
         $this->runCommand(new StartTask($task->id));
 
         $this->runCommand(new RunTaskCheck($task->id, 1, $mine, 'acme verify'));
+
         $this->assertThrows(
             fn () => $this->runCommand(new RunTaskCheck($task->id, 1, $theirs, 'acme verify')),
             TaskCheckRefused::class,
         );
+
         $this->assertThrows(
             fn () => $this->runCommand(new RunTaskCheck($task->id, 1, $mine, 'acme verify')),
             TaskCheckRefused::class,
         );
 
+        $mineReceipt = strtolower((string) Str::ulid());
+        $looseReceipt = strtolower((string) Str::ulid());
+
         $this->receiptsAre([
-            'receipt-mine' => self::passed('receipt-mine', $mine),
-            'receipt-loose' => self::passed('receipt-loose', (string) Str::ulid()),
+            $mineReceipt => self::passed($mineReceipt, $mine),
+            $looseReceipt => self::passed($looseReceipt, (string) Str::ulid()),
         ]);
-        $this->bind('receipt-mine');
-        $this->bind('receipt-mine');
-        $this->bind('receipt-loose');
+
+        $this->bind($mineReceipt);
+        $this->bind($mineReceipt);
+        $this->bind($looseReceipt);
 
         $check = TaskCheck::query()->where('task_id', $task->id)->sole();
-        $this->assertSame(['receipt-mine', 'passed', 1], [$check->result_receipt_id, $check->outcome, $check->run_number]);
+        $this->assertSame([$mineReceipt, 'passed', 1], [$check->result_receipt_id, $check->outcome, $check->run_number]);
         Event::assertDispatchedTimes(TaskCheckRecorded::class, 1);
 
         $proofs = $this->app->make(TaskProofResolver::class)->proofsOf($task->id, null, 10)->proofs;
+
         $this->assertSame(
             [['acme verify', 'passed', 1]],
             array_map(fn (TaskProof $proof) => [$proof->operation, $proof->outcome, $proof->runNumber], $proofs),

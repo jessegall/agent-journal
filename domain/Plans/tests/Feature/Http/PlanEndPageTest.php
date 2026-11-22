@@ -51,10 +51,12 @@ final class PlanEndPageTest extends TestCase
 
         $this->end('cancel', ['revision' => $this->plan->revision, 'state' => 'planned', 'text' => 'Dropped.'])
             ->assertSessionHasErrors();
+
         $this->assertSame(PlanState::Started, $this->plan->refresh()->state);
 
         $this->end('cancel', ['revision' => $this->plan->revision, 'state' => 'started', 'text' => 'Dropped.'])
             ->assertSessionHasNoErrors();
+
         $this->assertSame(PlanState::Cancelled, $this->plan->refresh()->state);
         $this->assertSame(TaskState::Open, $task->refresh()->state);
     }
@@ -64,12 +66,14 @@ final class PlanEndPageTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartPlan($this->plan->id));
 
         $offered = $this->actingAs($this->owner)->get("/plans/{$this->plan->number}")->assertOk();
+
         $offered->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.review.mayFinish', true)
             ->where('page.data.review.mayCancel', true));
 
         $this->end('finish', ['revision' => $this->plan->revision, 'state' => 'started', 'text' => 'Shipped.'])
             ->assertSessionHasNoErrors();
+
         $this->assertSame(PlanState::Done, $this->plan->refresh()->state);
     }
 

@@ -62,7 +62,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     /**
      * The dependent now waits on the prerequisite, added by the actor.
      */
-    public static function add(Task $dependent, Task $prerequisite, ActorIdentity $actor): self
+    public static function create(Task $dependent, Task $prerequisite, ActorIdentity $actor): self
     {
         $wait = new self([
             'dependent_task_id' => $dependent->id,
@@ -70,7 +70,9 @@ final class TaskWait extends Model implements EventSource, ReadableModel
             'created_by_type' => $actor->type,
             'created_by_id' => $actor->id,
         ]);
+
         $wait->assertSaved($wait->save());
+
         $wait->raise(new TaskWaitChanged(
             $wait->id,
             $wait->dependent_task_id,
@@ -100,8 +102,13 @@ final class TaskWait extends Model implements EventSource, ReadableModel
      */
     public static function prerequisiteIdsOf(array $dependentIds, int $limit): array
     {
-        return array_values(array_map(strval(...), self::query()->whereIn('dependent_task_id', $dependentIds)
-            ->limit($limit)->distinct()->pluck('prerequisite_task_id')->all()));
+        $ids = self::query()
+            ->whereIn('dependent_task_id', $dependentIds)
+            ->groupBy('prerequisite_task_id')
+            ->readUpTo($limit)
+            ->pluck('prerequisite_task_id');
+
+        return array_values(array_map(strval(...), $ids->all()));
     }
 
     /**
@@ -126,8 +133,13 @@ final class TaskWait extends Model implements EventSource, ReadableModel
      */
     public static function dependentIdsAmong(array $ids): array
     {
-        return array_values(array_map(strval(...), self::query()->whereIn('dependent_task_id', $ids)
-            ->readAll('the waiting tasks among a page')->distinct()->pluck('dependent_task_id')->all()));
+        $waiting = self::query()
+            ->whereIn('dependent_task_id', $ids)
+            ->groupBy('dependent_task_id')
+            ->readAll('the waiting tasks among a page')
+            ->pluck('dependent_task_id');
+
+        return array_values(array_map(strval(...), $waiting->all()));
     }
 
     /**
@@ -168,6 +180,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
         $this->waived_by_id = $actor->id;
         $this->waive_reason = $reason;
         $this->assertSaved($this->save());
+
         $this->raise(new TaskWaitChanged(
             $this->id,
             $this->dependent_task_id,
@@ -182,6 +195,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     public function remove(): void
     {
         $this->delete();
+
         $this->raise(new TaskWaitChanged(
             $this->id,
             $this->dependent_task_id,

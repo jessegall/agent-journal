@@ -12,7 +12,7 @@ use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\AssignmentWriterInTransaction;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 
 /**
@@ -21,8 +21,22 @@ use Tests\Support\StartsAgentRequests;
  */
 final class TasksPageTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
     use StartsAgentRequests;
+
+    private const array TABLES = [
+        'users',
+        'tasks',
+        'task_waits',
+        'task_wait_history',
+        'task_history',
+        'task_runs',
+        'task_log_entries',
+        'task_checks',
+        'assignments',
+        'agents',
+        'command_receipts',
+    ];
 
     private User $owner;
 
@@ -39,6 +53,7 @@ final class TasksPageTest extends TestCase
         $task = Task::factory()->create(['title' => 'Write the reader']);
 
         $tasksPage = $this->actingAs($this->owner)->get('/tasks')->assertOk();
+
         $tasksPage->assertInertia(fn (AssertableInertia $page) => $page
             ->component('tasks/TasksWindow')
             ->where('page.data.rows.0.number', (string) $task->number)
@@ -57,6 +72,7 @@ final class TasksPageTest extends TestCase
         $writer->assign($tasks[1]->assignmentIdentity(), AssigneeIdentity::of($this->owner));
 
         $unassigned = $this->actingAs($this->owner)->get('/tasks?holder=unassigned');
+
         $unassigned->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.pagination.total', 23)
             ->where('page.data.pagination.lastPage', 2)
@@ -65,6 +81,7 @@ final class TasksPageTest extends TestCase
             ->where('page.data.filters.holder', 'unassigned'));
 
         $mine = $this->actingAs($this->owner)->get('/tasks?holder=mine');
+
         $mine->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.pagination.total', 2)
             ->where('page.data.rows.0.holder.name', $this->owner->name));
@@ -85,6 +102,7 @@ final class TasksPageTest extends TestCase
     private function assignmentQueriesReading(): int
     {
         $count = 0;
+
         DB::listen(function ($query) use (&$count): void {
             if (str_contains($query->sql, '"assignments"')) {
                 $count++;

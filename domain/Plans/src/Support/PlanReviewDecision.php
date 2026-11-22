@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Domain\Plans\Handlers\Support;
+namespace Domain\Plans\Support;
 
 use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
-use Domain\Plans\Support\PlanReviewCertifier;
 
 /**
  * The checks every review decision passes, in order: the plan's structure lock first, the edition the decider read

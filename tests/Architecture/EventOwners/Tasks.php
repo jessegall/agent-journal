@@ -51,7 +51,7 @@ return [
     ],
     TaskLogged::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'TaskLogEntry::record',
+        'owner' => 'TaskLogEntry::create',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new TaskLogged('task', 'entry'),
@@ -65,7 +65,7 @@ return [
     ],
     TaskWaitChanged::class => [
         'role' => EventRole::RowFact,
-        'owner' => ['TaskWait::add', 'TaskWait::waive', 'TaskWait::remove'],
+        'owner' => ['TaskWait::create', 'TaskWait::waive', 'TaskWait::remove'],
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new TaskWaitChanged('wait', 'dependent', 'prerequisite', TaskWaitChange::Added),

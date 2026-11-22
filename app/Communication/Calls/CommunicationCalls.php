@@ -29,6 +29,20 @@ final readonly class CommunicationCalls
         ]));
     }
 
+    public function askChatQuestion(
+        string $inboxId,
+        string $body,
+        CallKey $requestKey = new CallKey(),
+        string|null $respondent = null,
+    ): MessageNamed {
+        return $this->sender->send(AskChatQuestionCall::from([
+            'inboxId' => $inboxId,
+            'body' => $body,
+            'requestKey' => $requestKey,
+            'respondent' => $respondent,
+        ]));
+    }
+
     public function askMessage(
         NewMessage $message,
         CallKey $requestKey = new CallKey(),
@@ -83,6 +97,18 @@ final readonly class CommunicationCalls
         ]));
     }
 
+    public function postChatMessage(
+        string $inboxId,
+        string $body,
+        CallKey $requestKey = new CallKey(),
+    ): MessageNamed {
+        return $this->sender->send(PostChatMessageCall::from([
+            'inboxId' => $inboxId,
+            'body' => $body,
+            'requestKey' => $requestKey,
+        ]));
+    }
+
     public function readInboxHistory(
         string $inboxId,
         HistoryPage $page = new HistoryPage(),
@@ -131,6 +157,20 @@ final readonly class CommunicationCalls
             'holderId' => $holderId,
             'reason' => $reason,
             'requestKey' => $requestKey,
+        ]));
+    }
+
+    public function replyInChat(
+        string $parentId,
+        string $body,
+        CallKey $requestKey = new CallKey(),
+        string|null $inboxId = null,
+    ): MessageNamed {
+        return $this->sender->send(ReplyInChatCall::from([
+            'parentId' => $parentId,
+            'body' => $body,
+            'requestKey' => $requestKey,
+            'inboxId' => $inboxId,
         ]));
     }
 

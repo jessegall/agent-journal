@@ -82,7 +82,7 @@ final class PlanReviewEdition extends Model implements ReadableModel
      * The plan's next edition, asked for by the actor, with the plan's own text as it is now; its content is frozen
      * beside it and sealed with its fingerprint.
      */
-    public static function open(Plan $plan, ActorIdentity $actor): self
+    public static function create(Plan $plan, ActorIdentity $actor): self
     {
         return self::query()->create([
             'plan_id' => $plan->id,

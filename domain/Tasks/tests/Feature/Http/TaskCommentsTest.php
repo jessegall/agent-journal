@@ -50,6 +50,7 @@ final class TaskCommentsTest extends TestCase
         ));
 
         $taskPage = $this->actingAs($this->owner)->get("/tasks/{$task->number}")->assertOk();
+
         $taskPage->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.label', "task {$task->number}")
             ->where('page.data.comments.items.0.comment.body', 'Is the schema settled?'));
@@ -67,6 +68,7 @@ final class TaskCommentsTest extends TestCase
                 (string) Str::uuid(),
             )),
         );
+
         $this->get("/tasks/{$task->number}")->assertRedirect('/login');
         $this->assertSame(0, $task->comments()->count());
     }

@@ -94,7 +94,7 @@ final class PhaseTask extends Pivot implements ReadableModel
     public static function pageOf(string $phaseId, int $afterPosition, int $limit): array
     {
         return self::query()->where('phase_id', $phaseId)->where('position', '>', $afterPosition)
-            ->orderBy('position')->orderBy('task_id')->limit($limit)
+            ->orderBy('position')->orderBy('task_id')->readUpTo($limit)
             ->pluck('task_id', 'position')
             ->map(fn (mixed $taskId) => (string) $taskId)
             ->all();

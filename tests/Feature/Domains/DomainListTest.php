@@ -7,6 +7,7 @@ namespace Tests\Feature\Domains;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
+use Domain\Documents\DocumentsDomain;
 use Domain\Tasks\TasksDomain;
 use Tests\TestCase;
 
@@ -23,7 +24,7 @@ final class DomainListTest extends TestCase
         $this->assertStringEndsWith('/domain/Plans/src', $registry->get('Plans')->folder);
         $this->assertSame([TasksDomain::class], $registry->get('Plans')->requires);
         $this->assertSame([], $registry->get('Tasks')->requires);
-        $this->assertSame([], $registry->get('Helpers')->requires);
+        $this->assertSame([DocumentsDomain::class], $registry->get('Helpers')->requires);
         $this->assertStringEndsWith('/domain/Helpers/src', $registry->get('Helpers')->folder);
     }
 

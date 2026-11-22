@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Types;
 
-use App\Reflection\Support\Reflector;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Ui\Contracts\PresentsLayout;
 use App\Ui\Declarations\RegisteredPage;
 use App\Ui\Enums\PageDestination;
@@ -20,6 +20,7 @@ final readonly class PagePropTypes
     public function __construct(
         private UiDeclarations $declarations,
         private TypeOwners $owners,
+        private ReflectorFactory $reflector,
     ) {}
 
     /**
@@ -117,7 +118,7 @@ final readonly class PagePropTypes
      */
     private function dataName(string $class): string
     {
-        return Reflector::factory()->isSubclassOf($class, PresentsLayout::class)
+        return $this->reflector->make($class)->isSubclassOf(PresentsLayout::class)
             ? 'DeclaredLayoutData'
             : class_basename($class);
     }

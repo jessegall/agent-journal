@@ -13,7 +13,7 @@ Question 10 had approved edges from the domains to Hooks, Agents and Links. With
 | Web | Plans | the plans page reads plans and starts them | approved (question 13) |
 | Web | Chat | Home's chat pane reads conversations and sends messages | approved (question 13) |
 | Web | Rules | the rules page reads rules and approves or denies proposed ones | approved (question 13) |
-| Helpers | none | it reads profiles through Core's `App\Profiles` contracts (plan 18) and a subject's visibility through Core's `RecordVisibility` | approved (plan 10, decision P1) |
+| Helpers | Documents | a filed report is linked to the helper job that wrote it, through Documents' `ReportFiled` (plan 54) | approved (doc 31, section 91) |
 
 The core's own needs from a domain go through contracts the core owns: Processes fills the core's `ShellCommandParser` with its shell parser, which reads a line into a syntax tree and classifies each part by the active command rules (`docs/processes/classification.md`).
 

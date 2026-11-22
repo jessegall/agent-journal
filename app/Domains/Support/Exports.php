@@ -30,6 +30,7 @@ final class Exports
         'App\Links\Support\Linkable',
         'App\Hooks\Decisions\StateReferenceFactory',
         'App\Assignments\Models\Support\AssignableListing',
+        'App\Http\Requests\Concerns\ReadsIdempotencyKey',
         'App\Http\Requests\Web\Concerns\ReadsRouteNumber',
         'App\Links\Support\LinkAccess',
         'App\Links\Support\LinkTypeRegistry',

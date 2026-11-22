@@ -16,7 +16,6 @@ use App\Communication\Support\NotificationChangeCursor;
 use App\Communication\Support\NotificationScopes;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
-use App\Communication\Resolvers\Support\NotificationFeed;
 
 /**
  * Reads the actor's changes after a cursor in pages of twenty, through one upper version pinned when the scan began,
@@ -37,6 +36,7 @@ final readonly class NotificationChanges
     {
         $scope = NotificationScope::findFor($this->scopes->keyFor($actor), $actor)
             ->getOrThrow(NotificationCursorInvalid::create());
+
         $read = NotificationChangeCursor::read($cursor, $scope->id);
         $upper = $read->isScanning() ? $read->upperVersion : $scope->mutation_version;
 

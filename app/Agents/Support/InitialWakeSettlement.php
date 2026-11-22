@@ -39,6 +39,7 @@ final readonly class InitialWakeSettlement
     {
         $sessionId = $runtime->agent_session_id;
         $binding = $report->binding;
+
         $isProvedUnstarted = $wake->idempotency_key === self::keyOf($sessionId)
             && $report->noProcessCreated
             && $report->attempt === $wake->attempt_version
@@ -59,12 +60,14 @@ final readonly class InitialWakeSettlement
             $reason = ($report->refusal ?? HostWakeRefusal::Unknown)->startReason();
             $session = AgentSession::query()->findOrFail($sessionId);
             $start->refuse($reason->explanation());
+
             StartRecord::query()
                 ->where('request_id', $session->start_request_id)
                 ->lockForUpdate()
                 ->limit(1)
                 ->get()
                 ->each(fn (StartRecord $record) => $record->refuseFor($reason));
+
             $this->heartbeats->markExited($session, "the host never started it ({$reason->value})");
         });
     }

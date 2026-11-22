@@ -61,6 +61,7 @@ final class TaskHistoryTest extends TestCase
                 $history->entries,
             ),
         );
+
         $this->assertSame([3, 2, 1], array_map(fn (TaskTransition $entry) => $entry->sequence, $history->entries));
     }
 
