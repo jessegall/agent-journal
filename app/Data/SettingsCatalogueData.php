@@ -25,4 +25,12 @@ final class SettingsCatalogueData extends Data
         #[DataCollectionOf(SettingGroupData::class)]
         public readonly array $groups,
     ) {}
+
+    /**
+     * Whether the owner declares any setting, so its section has rows to show.
+     */
+    public function declaresSettings(): bool
+    {
+        return array_any($this->groups, fn (SettingGroupData $group) => $group->settings !== []);
+    }
 }

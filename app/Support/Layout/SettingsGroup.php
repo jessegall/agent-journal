@@ -89,7 +89,14 @@ final readonly class SettingsGroup
                 'form',
                 $this->save,
                 'stack',
-                ...[...$rows, LayoutPartData::action('save', 'Save', LayoutActionData::submitting(), 'primary')],
+                ...[
+                    ...$rows,
+                    LayoutPartData::box(
+                        'save-row',
+                        'row',
+                        LayoutPartData::action('save', 'Save', LayoutActionData::submitting(), 'primary'),
+                    ),
+                ],
             ),
         ];
     }

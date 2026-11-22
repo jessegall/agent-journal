@@ -44,9 +44,13 @@ final readonly class SettingsLayout
 
     public function layout(): DeclaredLayoutData
     {
+        $declaring = array_filter(
+            $this->catalogue->everyOwner(),
+            fn (SettingsCatalogueData $catalogue) => $catalogue->declaresSettings(),
+        );
         $groups = array_map(
             fn (SettingsCatalogueData $catalogue) => [$this->rank($catalogue->owner), $this->groupOf($catalogue)],
-            $this->catalogue->everyOwner(),
+            array_values($declaring),
         );
 
         if ($this->connections->allows($this->actors->actor())) {
