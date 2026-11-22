@@ -11,6 +11,7 @@ use App\Agents\Support\ClaimAnswer;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\DriverBudgets;
 use App\Agents\Support\WatchedRuntimes;
+use App\Agents\Values\BrowserInputCapabilities;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Reads\Support\ScopedReadMeter;
@@ -37,6 +38,8 @@ final readonly class ClaimRequestsController
             'watched_version' => ['required', 'integer', 'min:0'],
             'arrangement' => ['sometimes', Rule::enum(ArrangementType::class)],
             'browser_input' => ['sometimes', 'boolean'],
+            'browser_keys' => ['sometimes', 'boolean'],
+            'browser_paste' => ['sometimes', 'boolean'],
         ]);
 
         Host::query()->whereKey($host->hostId)->sole()->assertEnrolledAs(
@@ -47,7 +50,11 @@ final readonly class ClaimRequestsController
         $deadline = microtime(true) + min($budgets->longPollMaxSeconds, max(0, $request->integer('wait', 0)));
         $knownVersion = $request->integer('watched_version');
 
-        $browserInput = $request->boolean('browser_input');
+        $browserInput = new BrowserInputCapabilities(
+            $request->boolean('browser_input'),
+            $request->boolean('browser_keys'),
+            $request->boolean('browser_paste'),
+        );
         $claiming = new ClaimDriverRequests($host->hostId, $limit, $browserInput);
         $claim = fn (): ClaimedRequests => $commands->run($claiming);
         $version = fn (): int => $watched->version($host->hostId);

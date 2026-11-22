@@ -76,7 +76,8 @@ type KeyScriptRequest struct {
 
 // BrowserControl is one browser writer's operation the journal relays to the program's input gate: the operation,
 // the take and grant it names, whether a take renews its grant, the process generation it was meant for, and for an
-// input its sequence, the prompt revision the writer saw, the text, Enter and a draft choice.
+// input its sequence, the prompt revision the writer saw, its kind (text, key or paste), the text, Enter, the named
+// key and a draft choice.
 type BrowserControl struct {
 	Request        RequestIdentity
 	Operation      string
@@ -89,6 +90,8 @@ type BrowserControl struct {
 	Text           string
 	Enter          bool
 	Choice         string
+	InputKind      string
+	Key            string
 }
 
 // BrowserControlled carries out browser writers' operations; a driver without a terminal does not.

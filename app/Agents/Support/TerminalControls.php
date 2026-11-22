@@ -9,6 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Data\TerminalControlData;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\TerminalDraftChoice;
+use App\Agents\Enums\TerminalInputKind;
 use App\Agents\Enums\TerminalReceiptOutcome;
 use App\Agents\Exceptions\TerminalControlRefused;
 use App\Agents\Exceptions\TerminalViewRefused;
@@ -169,7 +170,12 @@ final readonly class TerminalControls
         TerminalInput $input,
         CarbonImmutable $now,
     ): TerminalControlData {
+        if ($input->isOverPasteBound()) {
+            throw TerminalControlRefused::pasteTooLarge(TerminalInput::PASTE_BYTE_LIMIT);
+        }
+
         [$runtime, $grant] = $this->writingGrant($agentId, $writer, $grantId, $now);
+        $this->assertCarriesOut($runtime, $input->kind);
         $this->takeSequence($grant, $input->sequence);
         $this->send($runtime, DriverOperation::TerminalInput, "input:{$grant->grant_id}:{$input->sequence}", [
             'grant_id' => $grant->grant_id,
@@ -177,6 +183,8 @@ final readonly class TerminalControls
             'screen_revision' => $input->screenRevision,
             'text' => $input->text,
             'enter' => $input->enter,
+            'kind' => $input->kind->value,
+            'key' => $input->key?->value,
         ]);
 
         return $this->answerOf($grant, $now);
@@ -329,6 +337,18 @@ final readonly class TerminalControls
             'take_id' => $grant->take_id,
             'grant_id' => $grant->grant_id,
         ]));
+    }
+
+    /**
+     * Refuses a key or a paste for a host that does not carry that kind of input out.
+     *
+     * @throws TerminalControlRefused
+     */
+    private function assertCarriesOut(AgentRuntime $runtime, TerminalInputKind $kind): void
+    {
+        if (! Host::query()->whereKey($runtime->host_id)->sole()->carriesOutBrowserInputOf($kind)) {
+            throw TerminalControlRefused::watchOnly();
+        }
     }
 
     /**

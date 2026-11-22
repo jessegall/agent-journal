@@ -69,6 +69,15 @@ final class TerminalControlRefused extends RuntimeException implements CodedRefu
         );
     }
 
+    public static function pasteTooLarge(int $limitBytes): self
+    {
+        return new self(
+            "A paste may be at most {$limitBytes} bytes.",
+            TerminalControlRefusal::PasteTooLarge,
+            ['limit_bytes' => $limitBytes],
+        );
+    }
+
     public function refusalCode(): RefusalCode
     {
         return $this->refusal->code();

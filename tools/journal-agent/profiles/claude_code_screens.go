@@ -76,5 +76,6 @@ func (ClaudeCode) Screens() screen.Layout {
 			screen.MarkedRow{Label: "spinner", Prefixes: claudeCodeSpinnerGlyphs, Contains: "…"},
 			screen.MarkedRow{Label: "status", Prefixes: []string{"  "}, Contains: "shift+tab", MaxBelow: 3},
 		},
+		BracketedPaste: true,
 	}
 }

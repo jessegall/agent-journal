@@ -312,12 +312,23 @@ func writeFrame(writer io.Writer, kind byte, payload []byte) error {
 	return nil
 }
 
+// attachFrameLimit is the most bytes one frame on the attach socket may declare; a larger declaration is refused
+// before anything is allocated for it.
+const attachFrameLimit = 1 << 20
+
+// errFrameTooLarge refuses a frame that declares more than the limit.
+var errFrameTooLarge = errors.New("the attach frame declares more than the limit")
+
 func readFrame(reader io.Reader) (byte, []byte, error) {
 	header := make([]byte, 5)
 	if _, err := io.ReadFull(reader, header); err != nil {
 		return 0, nil, err
 	}
-	payload := make([]byte, binary.BigEndian.Uint32(header[1:]))
+	length := binary.BigEndian.Uint32(header[1:])
+	if length > attachFrameLimit {
+		return 0, nil, errFrameTooLarge
+	}
+	payload := make([]byte, length)
 	_, err := io.ReadFull(reader, payload)
 	return header[0], payload, err
 }

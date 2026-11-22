@@ -207,6 +207,8 @@ func (loop *Loop) browserControl(ctx context.Context, runtime *liveRuntime, requ
 		Text:           fields.Text,
 		Enter:          fields.Enter,
 		Choice:         fields.Choice,
+		InputKind:      fields.Kind,
+		Key:            fields.Key,
 	})
 	loop.reportResult(ctx, request, result, err)
 }

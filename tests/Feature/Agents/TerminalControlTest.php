@@ -13,12 +13,15 @@ use App\Agents\Data\TerminalControlData;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\TerminalControlRefusal;
 use App\Agents\Enums\TerminalGrantState;
+use App\Agents\Enums\TerminalInputKind;
+use App\Agents\Enums\TerminalNamedKey;
 use App\Agents\Exceptions\TerminalControlRefused;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Models\Host;
 use App\Agents\Models\TerminalGrant;
 use App\Agents\Support\TerminalInput;
+use App\Agents\Values\BrowserInputCapabilities;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
@@ -129,10 +132,42 @@ final class TerminalControlTest extends TestCase
         }
     }
 
+    public function test_a_paste_over_its_bound_is_refused_with_the_limit_before_anything_is_sent(): void
+    {
+        $runtime = $this->controllableRuntime();
+        $this->take($runtime, $this->openInterest($runtime));
+        TerminalGrant::query()->acrossActors()->sole()->issue('grant-1');
+        $paste = new TerminalInput(str_repeat('x', 17 * 1024), false, 1, 0, TerminalInputKind::Paste);
+
+        try {
+            $this->asOwner(new SendTerminalInput($runtime->session->agent_id, 'grant-1', $paste));
+            $this->fail('The large paste was sent.');
+        } catch (TerminalControlRefused $refusal) {
+            $this->assertSame(TerminalControlRefusal::PasteTooLarge, $refusal->refusal);
+            $this->assertSame(TerminalControlRefused::pasteTooLarge(16_384)->getMessage(), $refusal->getMessage());
+        }
+
+        $this->assertSame(0, DriverRequest::query()->where('operation', DriverOperation::TerminalInput)->count());
+    }
+
+    public function test_a_named_key_goes_to_the_host_by_its_name(): void
+    {
+        $runtime = $this->controllableRuntime();
+        $this->take($runtime, $this->openInterest($runtime));
+        TerminalGrant::query()->acrossActors()->sole()->issue('grant-1');
+        $key = new TerminalInput('', false, 1, 0, TerminalInputKind::Key, TerminalNamedKey::CtrlC);
+
+        $this->asOwner(new SendTerminalInput($runtime->session->agent_id, 'grant-1', $key));
+
+        $sent = DriverRequest::query()->where('operation', DriverOperation::TerminalInput)->sole();
+        $this->assertStringContainsString('"key":"ctrl_c"', (string) $sent->message);
+    }
+
     private function controllableRuntime(): AgentRuntime
     {
         $host = $this->enrolledHost();
-        Host::query()->whereKey($host->hostId)->sole()->advertiseBrowserInput(true);
+        $everyInput = new BrowserInputCapabilities(true, true, true);
+        Host::query()->whereKey($host->hostId)->sole()->advertiseBrowserInput($everyInput);
 
         return $this->runtimeOn($host->hostId);
     }

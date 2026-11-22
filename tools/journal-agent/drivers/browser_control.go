@@ -92,6 +92,10 @@ func (driver *TerminalDriver) operationOf(control contracts.BrowserControl) term
 		operation.Kind = terminal.CheckOperation
 	case control.Operation == "draft_choice":
 		operation.Kind, operation.Choice = terminal.ChoiceOperation, terminal.DraftChoice(control.Choice)
+	case control.InputKind == "key":
+		operation.Kind, operation.Key = terminal.KeyOperation, control.Key
+	case control.InputKind == "paste":
+		operation.Kind = terminal.PasteOperation
 	case control.Text == "" && control.Enter:
 		operation.Kind = terminal.EnterOperation
 	case control.Enter:

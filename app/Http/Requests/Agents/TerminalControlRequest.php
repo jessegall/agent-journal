@@ -12,6 +12,8 @@ use App\Agents\Commands\RenewTerminalControl;
 use App\Agents\Commands\SendTerminalInput;
 use App\Agents\Commands\TakeTerminalControl;
 use App\Agents\Enums\TerminalDraftChoice;
+use App\Agents\Enums\TerminalInputKind;
+use App\Agents\Enums\TerminalNamedKey;
 use App\Agents\Support\TerminalInput;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -24,9 +26,9 @@ use Illuminate\Validation\Rule;
 final class TerminalControlRequest extends FormRequest
 {
     /**
-     * The most characters one input may carry.
+     * The most characters one input may carry, the outstanding bound of one view; a paste has its own smaller bound.
      */
-    public const int TEXT_LIMIT = 16_384;
+    public const int TEXT_LIMIT = 65_536;
 
     /**
      * @return array<string, list<mixed>>
@@ -39,6 +41,8 @@ final class TerminalControlRequest extends FormRequest
             'grantId' => ['sometimes', 'string', 'max:64'],
             'text' => ['sometimes', 'string', 'max:'.self::TEXT_LIMIT],
             'enter' => ['sometimes', 'boolean'],
+            'kind' => ['sometimes', Rule::enum(TerminalInputKind::class)],
+            'key' => ['required_if:kind,key', Rule::enum(TerminalNamedKey::class)],
             'sequence' => ['sometimes', 'integer', 'min:1'],
             'screenRevision' => ['sometimes', 'integer', 'min:0'],
             'choice' => ['sometimes', Rule::enum(TerminalDraftChoice::class)],
@@ -74,6 +78,8 @@ final class TerminalControlRequest extends FormRequest
             $this->boolean('enter'),
             $this->sequence(),
             $this->integer('screenRevision'),
+            $this->enum('kind', TerminalInputKind::class) ?? TerminalInputKind::Text,
+            $this->enum('key', TerminalNamedKey::class),
         );
 
         return new SendTerminalInput($this->agentId(), $this->grantId(), $input);

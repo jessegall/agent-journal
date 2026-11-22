@@ -11,6 +11,7 @@ use App\Agents\Enums\TerminalReceiptOutcome;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\Host;
 use App\Agents\Models\TerminalGrant;
+use App\Agents\Values\BrowserInputCapabilities;
 use App\Bus\Enums\RefusalCode;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -59,7 +60,8 @@ final class TerminalControlActionsTest extends TestCase
             ->assertJsonPath('state', TerminalGrantState::Granted->value)
             ->assertJsonPath('grantId', 'grant-1');
 
-        $this->post($agentId, 'control/input', ['grantId' => 'grant-1', 'text' => 'ls', 'enter' => true, 'sequence' => 1])
+        $input = ['grantId' => 'grant-1', 'text' => 'ls', 'enter' => true, 'sequence' => 1];
+        $this->post($agentId, 'control/input', $input)
             ->assertOk()
             ->assertJsonPath('nextSequence', 2);
         $this->receipt($agentId, ['takeId' => $takeId, 'sequence' => 1])
@@ -107,7 +109,8 @@ final class TerminalControlActionsTest extends TestCase
     private function controllableRuntime(): AgentRuntime
     {
         $host = $this->enrolledHost();
-        Host::query()->whereKey($host->hostId)->sole()->advertiseBrowserInput(true);
+        $everyInput = new BrowserInputCapabilities(true, true, true);
+        Host::query()->whereKey($host->hostId)->sole()->advertiseBrowserInput($everyInput);
 
         return $this->runtimeOn($host->hostId);
     }

@@ -8,9 +8,11 @@ use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\HostProtocolVersion;
+use App\Agents\Enums\TerminalInputKind;
 use App\Agents\Exceptions\HostArrangementRefused;
 use App\Agents\Exceptions\HostCredentialRejected;
 use App\Agents\Exceptions\HostUnavailable;
+use App\Agents\Values\BrowserInputCapabilities;
 use App\Agents\Values\HostCombination;
 use App\Agents\Values\ProtectionReport;
 use App\Agents\Values\StartProposal;
@@ -38,6 +40,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property list<array{driver: string, build: string, arrangement: string, placement: string, variant: string}> $combinations
  * @property CarbonImmutable|null $revoked_at
  * @property bool $browser_input
+ * @property bool $browser_keys
+ * @property bool $browser_paste
  */
 #[Fillable(['installation_name', 'credential_hash', 'start_roots', 'arrangement'])]
 final class Host extends Model implements ReadableModel
@@ -59,6 +63,8 @@ final class Host extends Model implements ReadableModel
             'protection' => 'array',
             'combinations' => 'array',
             'browser_input' => 'boolean',
+            'browser_keys' => 'boolean',
+            'browser_paste' => 'boolean',
             'revoked_at' => 'immutable_datetime',
         ];
     }
@@ -182,15 +188,18 @@ final class Host extends Model implements ReadableModel
     }
 
     /**
-     * Keeps whether the host's latest claim says it carries out browser control of its terminals.
+     * Keeps which browser input the host's latest claim says it carries out on its terminals.
      */
-    public function advertiseBrowserInput(bool $carriesOut): void
+    public function advertiseBrowserInput(BrowserInputCapabilities $capabilities): void
     {
-        if ($this->browser_input === $carriesOut) {
+        $this->browser_input = $capabilities->text;
+        $this->browser_keys = $capabilities->keys;
+        $this->browser_paste = $capabilities->paste;
+
+        if (! $this->isDirty(['browser_input', 'browser_keys', 'browser_paste'])) {
             return;
         }
 
-        $this->browser_input = $carriesOut;
         $this->save();
     }
 
@@ -216,6 +225,15 @@ final class Host extends Model implements ReadableModel
     public function carriesOutBrowserInput(): bool
     {
         return $this->browser_input;
+    }
+
+    /**
+     * Whether the host carries out this kind of browser input: text, named keys or pastes.
+     */
+    public function carriesOutBrowserInputOf(TerminalInputKind $kind): bool
+    {
+        return (new BrowserInputCapabilities($this->browser_input, $this->browser_keys, $this->browser_paste))
+            ->carriesOut($kind);
     }
 
     public function speaksCurrentProtocol(): bool

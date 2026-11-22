@@ -88,6 +88,8 @@ type Layout struct {
 	Others            []contracts.Region
 	// UnknownStableFor is how long an unknown screen's text must hold still to count as stable; zero is 500ms.
 	UnknownStableFor time.Duration
+	// BracketedPaste is whether the driver takes a paste of several lines between the bracketed paste markers.
+	BracketedPaste bool
 }
 
 // unknownStableFor is the layout's interval for an unknown screen, or the default when it names none.

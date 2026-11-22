@@ -4,16 +4,31 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Enums\TerminalInputKind;
+use App\Agents\Enums\TerminalNamedKey;
+
 /**
- * One input a browser writer sends through their grant: text, Enter after it or both, at its sequence and for the
- * screen revision the writer saw when they typed it.
+ * One input a browser writer sends through their grant: text with or without Enter, one named key, or a paste, at its
+ * sequence and for the screen revision the writer saw when they composed it.
  */
 final readonly class TerminalInput
 {
+    /**
+     * The most bytes one paste may carry.
+     */
+    public const int PASTE_BYTE_LIMIT = 16_384;
+
     public function __construct(
         public string $text,
         public bool $enter,
         public int $sequence,
         public int $screenRevision,
+        public TerminalInputKind $kind = TerminalInputKind::Text,
+        public TerminalNamedKey|null $key = null,
     ) {}
+
+    public function isOverPasteBound(): bool
+    {
+        return $this->kind === TerminalInputKind::Paste && strlen($this->text) > self::PASTE_BYTE_LIMIT;
+    }
 }

@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"io"
+	"strings"
 
 	"journal-agent/screen"
 	"journal-agent/screen/contracts"
@@ -21,6 +22,18 @@ const (
 	// CheckOperation reconciles a fenced stream against a fresh screen; it takes no sequence and writes nothing.
 	CheckOperation  OperationKind = "check"
 	ChoiceOperation OperationKind = "choice"
+	// KeyOperation sends one named key; PasteOperation pastes text, several lines only in bracketed paste.
+	KeyOperation   OperationKind = "key"
+	PasteOperation OperationKind = "paste"
+)
+
+// PasteByteLimit is the most bytes one paste may carry.
+const PasteByteLimit = 16 << 10
+
+// The markers a driver in bracketed paste mode takes a paste between.
+const (
+	pasteStart = "\x1b[200~"
+	pasteEnd   = "\x1b[201~"
 )
 
 // ReceiptOutcome is what became of a browser operation.
@@ -63,6 +76,7 @@ type BrowserOperation struct {
 	Kind           OperationKind
 	Text           string
 	Choice         DraftChoice
+	Key            string
 }
 
 // BrowserReceipt is the payload-free outcome of a browser operation: its sequence, the outcome, the sequence
@@ -108,6 +122,7 @@ func (receipts *grantReceipts) digestOf(operation BrowserOperation) []byte {
 		string(operation.Kind),
 		operation.Text,
 		string(operation.Choice),
+		operation.Key,
 	}
 	for _, part := range parts {
 		_ = binary.Write(mac, binary.BigEndian, uint32(len(part)))
@@ -197,7 +212,7 @@ func (gate *InputGate) applyLocked(
 		return BrowserReceipt{Sequence: operation.Sequence, Outcome: Paused}, nil
 	}
 
-	return gate.writeLocked(operation, receipts, clearKeys)
+	return gate.writeLocked(operation, receipts, clearKeys, layout.BracketedPaste)
 }
 
 // writeLocked writes a fresh, admitted operation and keeps its receipt.
@@ -205,15 +220,59 @@ func (gate *InputGate) writeLocked(
 	operation BrowserOperation,
 	receipts *grantReceipts,
 	clearKeys string,
+	bracketedPaste bool,
 ) (BrowserReceipt, func() BrowserReceipt) {
 	switch operation.Kind {
 	case TextOperation:
 		return receipts.keep(operation, gate.writeCounted(operation.Sequence, receipts, operation.Text)), nil
 	case EnterOperation:
 		return receipts.keep(operation, gate.writeCounted(operation.Sequence, receipts, enterKey)), nil
+	case KeyOperation:
+		return gate.keyLocked(operation, receipts), nil
+	case PasteOperation:
+		return gate.pasteLocked(operation, receipts, bracketedPaste), nil
 	}
 
 	return gate.chooseLocked(operation, receipts, clearKeys)
+}
+
+// keyLocked writes one named key's sequence; a name the table does not know writes nothing.
+func (gate *InputGate) keyLocked(operation BrowserOperation, receipts *grantReceipts) BrowserReceipt {
+	sequence, found := KeySequence(operation.Key)
+	if !found {
+		return BrowserReceipt{Sequence: operation.Sequence, Outcome: Paused}
+	}
+
+	return receipts.keep(operation, gate.writeCounted(operation.Sequence, receipts, sequence))
+}
+
+// pasteLocked writes a paste: one ordinary line as plain text with no Enter, several lines or control characters
+// only between the bracketed paste markers of a driver that takes them; anything else, and a paste over its bound,
+// writes nothing.
+func (gate *InputGate) pasteLocked(operation BrowserOperation, receipts *grantReceipts, bracketed bool) BrowserReceipt {
+	if len(operation.Text) > PasteByteLimit {
+		return BrowserReceipt{Sequence: operation.Sequence, Outcome: Paused}
+	}
+	if isOrdinaryLine(operation.Text) {
+		return receipts.keep(operation, gate.writeCounted(operation.Sequence, receipts, operation.Text))
+	}
+	if !bracketed {
+		return BrowserReceipt{Sequence: operation.Sequence, Outcome: Paused}
+	}
+	pasted := pasteStart + strings.ReplaceAll(operation.Text, pasteEnd, "") + pasteEnd
+
+	return receipts.keep(operation, gate.writeCounted(operation.Sequence, receipts, pasted))
+}
+
+// isOrdinaryLine is whether the text is one line with no control character in it.
+func isOrdinaryLine(text string) bool {
+	for _, character := range text {
+		if character < ' ' || character == 0x7f {
+			return false
+		}
+	}
+
+	return true
 }
 
 // chooseLocked carries out a give-back choice: Send presses Enter once, Keep typing writes nothing, and Save and

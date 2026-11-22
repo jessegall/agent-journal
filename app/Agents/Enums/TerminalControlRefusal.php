@@ -17,6 +17,7 @@ enum TerminalControlRefusal: string
     case GrantEnded = 'grant_ended';
     case UnknownTake = 'unknown_take';
     case SequenceGap = 'sequence_gap';
+    case PasteTooLarge = 'paste_too_large';
 
     /**
      * The code a caller reads from the refusal, which also gives its HTTP status.
@@ -25,6 +26,7 @@ enum TerminalControlRefusal: string
     {
         return match ($this) {
             self::InspectOnly => RefusalCode::Forbidden,
+            self::PasteTooLarge => RefusalCode::InvalidInput,
             self::WatchOnly, self::GrantEnded => RefusalCode::StateBlocked,
             self::ControlHeld, self::SequenceGap => RefusalCode::Conflict,
             self::UnknownTake => RefusalCode::RecordUnavailable,

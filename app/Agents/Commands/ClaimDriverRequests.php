@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Commands;
 
 use App\Agents\Support\ClaimedRequests;
+use App\Agents\Values\BrowserInputCapabilities;
 use App\Bus\Attributes\Entry;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
@@ -21,7 +22,7 @@ final readonly class ClaimDriverRequests extends Command
     public function __construct(
         public string $hostId,
         public int $limit,
-        // Whether the host says it carries out browser control of its terminals; one that does not is watch-only.
-        public bool $browserInput = false,
+        // Which browser input the host says it carries out on its terminals; one that says none is watch-only.
+        public BrowserInputCapabilities $browserInput,
     ) {}
 }
