@@ -557,6 +557,7 @@ use App\Communication\Data\NotificationTarget;
 use App\Communication\Data\WakeStatus;
 use App\Communication\Enums\AgentInboxState;
 use App\Communication\Enums\DismissalType;
+use App\Communication\Enums\IntervalRole;
 use App\Communication\Enums\MessageState;
 use App\Communication\Enums\NotificationSourceType;
 use App\Communication\Events\MessageAnswered;
@@ -574,6 +575,8 @@ use App\Communication\Exceptions\MessageBodyTooLong;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Exceptions\MessageToSelf;
+use App\Communication\Support\ChatInboxes;
+use App\Communication\Support\ChatInterval;
 use App\Communication\Support\ChatIntervalEvidence;
 use App\Communication\Support\DeskSeatEvidence;
 use App\Communication\Support\InboxMembers;
@@ -2023,6 +2026,9 @@ final class CoreApi
                 DeskSeatEvidence::class,
                 ChatIntervalEvidence::class,
                 InboxMembers::class,
+                ChatInboxes::class,
+                ChatInterval::class,
+                IntervalRole::class,
                 ActorLabelSet::class,
                 UnrestrictedAuthorizer::class,
                 StartProfileAuthority::class,
