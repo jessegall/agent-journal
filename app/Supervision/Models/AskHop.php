@@ -87,12 +87,12 @@ final class AskHop extends Model implements EventSource, ReadableModel
      */
     public static function holderBefore(string $askId, string $hopId): Option
     {
-        return Option::fromValue(self::query()
+        return self::query()
             ->where('ask_id', $askId)
             ->whereKeyNot($hopId)
             ->reorder('version', 'desc')
             ->orderByDesc('id')
-            ->first())
+            ->firstOption()
             ->map(fn (self $hop) => $hop->actor());
     }
 
@@ -103,11 +103,11 @@ final class AskHop extends Model implements EventSource, ReadableModel
      */
     public static function latestHolderOf(string $askId): Option
     {
-        return Option::fromValue(self::query()
+        return self::query()
             ->where('ask_id', $askId)
             ->reorder('version', 'desc')
             ->orderByDesc('id')
-            ->first())
+            ->firstOption()
             ->map(fn (self $hop) => $hop->actor());
     }
 

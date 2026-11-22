@@ -36,7 +36,7 @@ final readonly class ReportNotificationTarget implements NotificationTargetResol
             return Option::fromValue(null);
         }
 
-        return Option::fromValue(Report::query()->sharedPublished()->where('number', (int) $targetId)->first())
+        return Report::query()->sharedPublished()->where('number', (int) $targetId)->firstOption()
             ->map(fn (Report $report) => new NotificationLink(
                 $this->titleOf($report),
                 $this->pages->addressOf(self::REPORT_PAGE, ['report' => (string) $report->number]),

@@ -172,7 +172,7 @@ final class RunOutcomeTest extends TestCase
 
         $this->actAs($atlas);
         $this->app->make(RevokeRunOutcomeAccessHandler::class)->handle(
-            (new RevokeRunOutcomeAccess($run->id))->withDispatcher(ActorContext::forAgent($atlas->id)),
+            new RevokeRunOutcomeAccess($run->id)->withDispatcher(ActorContext::forAgent($atlas->id)),
         );
 
         $this->actAs($kim);

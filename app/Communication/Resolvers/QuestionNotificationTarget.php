@@ -38,7 +38,7 @@ final readonly class QuestionNotificationTarget implements NotificationTargetRes
      */
     public function linkFor(string $targetId): Option
     {
-        return Option::fromValue(Message::query()->whereKey($targetId)->first())
+        return Message::query()->whereKey($targetId)->firstOption()
             ->map(fn (Message $message) => new NotificationLink(
                 $message->firstLine(),
                 $this->pages->addressOf(self::CHAT_PAGE, ['question' => $message->id]),

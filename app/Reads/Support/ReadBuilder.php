@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use PhpOption\Option;
 
 /**
  * The query builder of a model with BoundedReads. A plain read returns at most the model's default rows, newest
@@ -51,6 +52,16 @@ class ReadBuilder extends Builder
     public function createOrFirst(array $attributes = [], Closure|array $creationAttributes = [])
     {
         return $this->create(array_merge($attributes, value($creationAttributes)));
+    }
+
+    /**
+     * The first row the query finds, or none.
+     *
+     * @return Option<TModel>
+     */
+    public function firstOption(): Option
+    {
+        return Option::fromValue($this->first());
     }
 
     /**
