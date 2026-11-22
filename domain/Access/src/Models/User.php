@@ -14,6 +14,7 @@ use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use Carbon\CarbonImmutable;
 use Domain\Access\Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -39,6 +40,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
+ * @property CarbonImmutable|null $disabled_at
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -82,6 +84,7 @@ class User extends Authenticatable implements
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'disabled_at' => 'immutable_datetime',
         ];
     }
 
@@ -120,6 +123,21 @@ class User extends Authenticatable implements
     // ----------[ Mutations ]----------
 
     /**
+     * Disables the account: it is never admitted again until it is enabled.
+     */
+    public function disable(CarbonImmutable $at): void
+    {
+        $this->disabled_at = $at;
+        $this->save();
+    }
+
+    public function enable(): void
+    {
+        $this->disabled_at = null;
+        $this->save();
+    }
+
+    /**
      * Stores a new password; the hashed cast hashes it.
      */
     public function changePassword(string $password): void
@@ -129,6 +147,11 @@ class User extends Authenticatable implements
     }
 
     // ----------[ Answers ]----------
+
+    public function isDisabled(): bool
+    {
+        return $this->disabled_at !== null;
+    }
 
     public function assigneeIdentity(): AssigneeIdentity
     {

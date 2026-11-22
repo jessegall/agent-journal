@@ -132,7 +132,7 @@ func (driver *TerminalDriver) Deliver(
 
 // Wake types the standard pending-work prompt, unless an interrupt holds the runtime: a held runtime does no work.
 func (driver *TerminalDriver) Wake(_ context.Context, wake contracts.WakeRequest) (contracts.OperationResult, error) {
-	return driver.prompt(wake.Request, pendingWorkPrompt)
+	return driver.prompt(wake.Request, wake.PromptOr(pendingWorkPrompt))
 }
 
 // ChangeModel stays staged: the recorded model picker reaches the wanted entry, but no recording shows a confirmed
@@ -286,7 +286,9 @@ func (driver *TerminalDriver) prompt(
 	}
 
 	generation := driver.runtime.Generation(driver.runtime.Composer)
-	line, err := driver.runtime.Gate.Type(request.RequestID, request.Attempt, text, generation)
+	// The text goes in as one bracketed paste of its sanitized form, so a newline in a participant's body never
+	// submits early and no control character reaches the program; only the gate's own Enter submits.
+	line, err := driver.runtime.Gate.Type(request.RequestID, request.Attempt, pastedText(text), generation)
 	if errors.Is(err, terminal.ErrComposerHeld) {
 		return staged(request), nil
 	}
@@ -294,7 +296,7 @@ func (driver *TerminalDriver) prompt(
 		return failed(request), err
 	}
 
-	driver.waitUntil(echoDeadline, func() bool { return driver.runtime.Gate.Echoes(text) })
+	driver.waitUntil(echoDeadline, func() bool { return driver.runtime.Gate.Echoes(sanitizedText(text)) })
 	delivery, err := driver.runtime.Gate.Submit(line, 0)
 	if errors.Is(err, terminal.ErrLineStranded) {
 		return driver.strandedResult(request, line), nil

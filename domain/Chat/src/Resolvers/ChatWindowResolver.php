@@ -4,23 +4,28 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers;
 
+use App\Actors\Contracts\CurrentActor;
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\AgentOption;
+use App\Bus\Contracts\CommandBus;
 use App\Communication\Contracts\ConversationResolver;
-use App\Communication\Data\MessagePage;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Http\Data\Profiles\EligibleAccountsData;
 use App\Profiles\Contracts\StartAccounts;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\SlotSections;
 use App\Web\Exceptions\PrivateRecordMissing;
+use Domain\Chat\Commands\OpenPairChat;
 use Domain\Chat\Data\ChatData;
+use Domain\Chat\Data\ChatSummaryData;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Data\FocusedQuestionData;
 use Domain\Chat\Http\Requests\ConversationRequest;
+use Domain\Chat\Resolvers\Support\ChatConversations;
 use Domain\Chat\Support\AuthorizedConversations;
-use Domain\Chat\Support\DockProjection;
+use Domain\Chat\Support\ChatAdmissionPolicy;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
 
@@ -39,16 +44,25 @@ final readonly class ChatWindowResolver implements PageResolver
         private ConversationRequest $request,
         private AgentDirectory $agents,
         private ConversationResolver $messages,
+        private ChatConversations $chats,
         private AuthorizedConversations $conversations,
-        private DockProjection $dock,
+        private ChatAdmissionPolicy $admission,
+        private CurrentActor $actors,
         private SlotSections $slots,
         private StartAccounts $startAccounts,
+        private CommandBus $commands,
     ) {}
 
     public function read(): ChatData
     {
         $agents = $this->agents->visible();
         $main = $this->agents->mainAgentId();
+        $chosenInbox = $this->request->chosenInbox();
+
+        if ($chosenInbox->isDefined()) {
+            return $this->readChat($agents, $main, $chosenInbox->get());
+        }
+
         $chosen = $this->request->chosenAgent()->orElse($main)->map($this->visibleOrPrivate(...));
 
         return ChatData::from([
@@ -62,7 +76,47 @@ final readonly class ChatWindowResolver implements PageResolver
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
             ...$this->eligibleAccounts($chosen),
             ...$this->focusedQuestion(),
+            ...$this->chatList(),
         ]);
+    }
+
+    /**
+     * The chat window on a chat chosen by its inbox, with or without an agent in it; a chat the reader is not in is
+     * refused like a missing one.
+     *
+     * @param  list<AgentOption>  $agents
+     * @param  Option<string>  $main
+     */
+    private function readChat(array $agents, Option $main, string $inboxId): ChatData
+    {
+        $this->conversations->inInbox($inboxId);
+
+        return ChatData::from([
+            'agents' => $agents,
+            'setupRequired' => $main->isEmpty(),
+            'mainAgentId' => $main->getOrElse(Optional::create()),
+            'selectedAgentId' => Optional::create(),
+            'selectedInboxId' => $inboxId,
+            'conversation' => $this->chats->pageFor(null, $inboxId, $this->request->dockToken()),
+            'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
+            ...$this->focusedQuestion(),
+            ...$this->chatList(),
+        ]);
+    }
+
+    /**
+     * The chats the viewer is in, each with its title and unread count, and whether it may open a new one.
+     *
+     * @return array{chats: list<ChatSummaryData>, canCreateChats: bool}
+     */
+    private function chatList(): array
+    {
+        $viewer = ActorIdentity::of($this->actors->actor());
+
+        return [
+            'chats' => $this->chats->summariesFor($this->messages->ownInboxes()),
+            'canCreateChats' => $this->admission->mayCreate($viewer, null),
+        ];
     }
 
     /**
@@ -145,16 +199,8 @@ final readonly class ChatWindowResolver implements PageResolver
 
     private function conversationWith(AgentOption $agent): ConversationData
     {
-        $peers = $this->conversations->withVisibleAgent($agent);
-        $page = $this->messages->between($peers->ownInboxId, $peers->peerInboxId, null, MessagePage::DEFAULT_LIMIT);
-        $dock = $this->dock->page($peers, $this->request->dockToken());
+        $chatInboxId = $this->commands->run(new OpenPairChat($agent->agentId));
 
-        return ConversationData::fromPage(
-            $peers->ownInboxId,
-            $peers->peerInboxId,
-            $page,
-            $agent,
-            $dock,
-        );
+        return $this->chats->pageFor($agent, $chatInboxId, $this->request->dockToken());
     }
 }

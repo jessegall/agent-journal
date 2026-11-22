@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Agents\Contracts\AgentDirectory;
-use App\Agents\Support\AgentOption;
 use App\Docking\Cards\DockIdentity;
 use App\Docking\Data\DockOfferData;
 use App\Docking\Exceptions\DockSourceUnavailable;
@@ -16,15 +14,14 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * Chat's generic Add to chat: offered for every registered source the viewer may read, docked in the conversation
- * with the agent the viewer chooses among those it may see.
+ * Chat's generic Add to chat: offered for every registered source the viewer may read, docked in the chat the
+ * viewer chooses among those it is a member of.
  */
 final readonly class AgentDockOffers implements DockOffers
 {
     public function __construct(
         private DockRegistration $registry,
         private DockRequests $requests,
-        private AgentDirectory $agents,
     ) {}
 
     public function offerFor(DockIdentity $source): Option
@@ -44,11 +41,8 @@ final readonly class AgentDockOffers implements DockOffers
             'type' => $source->type,
             'id' => $source->id,
             'url' => route('chat.dock', absolute: false),
-            'destinationField' => 'agent',
-            'destinations' => array_map(
-                fn (AgentOption $agent) => ['value' => $agent->agentId, 'label' => $agent->name],
-                $this->agents->visible(),
-            ),
+            'destinationField' => 'inboxId',
+            'destinations' => $this->requests->joinedChats(),
         ]));
     }
 }

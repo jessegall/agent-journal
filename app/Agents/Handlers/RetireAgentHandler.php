@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
+use App\Actors\Contracts\ChatParticipationEnding;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\AgentSessions;
@@ -47,6 +48,7 @@ final readonly class RetireAgentHandler implements CommandHandler
         private AssignmentFactPublisher $facts,
         private DriverRequests $requests,
         private CommandFacts $commandFacts,
+        private ChatParticipationEnding $chats,
     ) {}
 
     public function handle(RetireAgent $command): AssignmentResult
@@ -62,6 +64,8 @@ final readonly class RetireAgentHandler implements CommandHandler
 
         $target->retireAt(CarbonImmutable::now());
         $this->endSessionsOf($target);
+        // Under the lifecycle lock an enrollment of this agent either committed before and ends here, or is refused.
+        $this->chats->endForRetirement(ActorIdentity::of($target));
 
         foreach ($this->cancelPendingOfAgent($target->id) as $account) {
             $this->commandFacts->publishAfterCommit(new AccountUseChanged($account));

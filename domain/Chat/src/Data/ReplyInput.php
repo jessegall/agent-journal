@@ -11,7 +11,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * A reply to one message at the version the user saw.
+ * A reply to one message of a chat at the version the user saw, under its request key.
  */
 #[TypeScript]
 final class ReplyInput extends Data
@@ -24,6 +24,10 @@ final class ReplyInput extends Data
         #[Regex('/\S/')]
         public readonly string $body,
         #[Ulid]
-        public readonly string $agent,
+        public readonly string|null $agent,
+        #[Ulid]
+        public readonly string $inboxId,
+        #[Regex('/^[A-Za-z0-9-]{1,64}$/')]
+        public readonly string $requestKey,
     ) {}
 }

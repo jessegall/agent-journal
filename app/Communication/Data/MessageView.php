@@ -41,5 +41,16 @@ final class MessageView extends Data
         public readonly string $sentAt,
         // The key the viewer sent this message under; only its own sender sees it, every other viewer reads null.
         public readonly string|null $requestKey,
+        // A chat reply whose parent the viewer may not see names no parent and says it is unavailable.
+        public readonly bool $replyUnavailable = false,
+        // A chat row's timeline position, the user message it belongs under when the viewer may see it, whom it
+        // addresses, and whether it was shown to the viewer; a desk message has none of them.
+        public readonly int|null $sequence = null,
+        public readonly string|null $userRootId = null,
+        public readonly string|null $addresseeType = null,
+        public readonly string|null $addresseeId = null,
+        public readonly bool $shownToViewer = false,
+        public readonly string|null $respondentType = null,
+        public readonly string|null $respondentId = null,
     ) {}
 }

@@ -4,16 +4,25 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Providers;
 
+use App\Actors\Contracts\ChatParticipationEnding;
 use App\Actors\Contracts\ReadEntitlements;
+use App\Actors\Support\ChatMemberPolicies;
 use App\Actors\Values\ReadEntitlement;
 use App\Agents\Exceptions\SessionOutdated;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Autoload\Support\FolderClasses;
 use App\Bus\Support\RefusalReason;
+use App\Communication\Contracts\InboxRegistration;
 use App\Contracts\CommandRefusal;
 use App\Docking\Sources\Contracts\DockedSources;
 use App\Docking\Sources\Contracts\DockOffers;
+use Domain\Chat\Models\Conversation;
+use Domain\Chat\Policies\ConversationPolicy;
+use Domain\Chat\Policies\MessagePinPolicy;
 use Domain\Chat\Support\AgentDockOffers;
+use Domain\Chat\Support\ChatInboxAccess;
+use Domain\Chat\Support\ChatInboxProvider;
+use Domain\Chat\Support\ChatRevocation;
 use Domain\Chat\Support\PlacedSources;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -33,10 +42,18 @@ final class ChatServiceProvider extends ServiceProvider
     {
         $this->app->bind(DockOffers::class, AgentDockOffers::class);
         $this->app->bind(DockedSources::class, PlacedSources::class);
+        $this->app->bind(ChatParticipationEnding::class, ChatRevocation::class);
     }
 
-    public function boot(ExceptionHandler $exceptions, ReadEntitlements $reads): void
-    {
+    public function boot(
+        ExceptionHandler $exceptions,
+        ReadEntitlements $reads,
+        InboxRegistration $inboxes,
+        ChatMemberPolicies $chatMembers,
+    ): void {
+        $chatMembers->allow(ConversationPolicy::class);
+        $chatMembers->allow(MessagePinPolicy::class);
+        $inboxes->register(Conversation::CHAT_INBOX_PROVIDER, ChatInboxProvider::class, ChatInboxAccess::class);
         $reads->declare('dock_list', ReadEntitlement::resolver());
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));

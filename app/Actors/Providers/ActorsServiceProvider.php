@@ -27,6 +27,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorProviderRegistry;
 use App\Actors\Support\ActorStore;
 use App\Actors\Support\AuthorizerProviderRegistry;
+use App\Actors\Support\ChatMemberPolicies;
 use App\Actors\Support\CurrentActorAuthorizer;
 use App\Actors\Support\DatabaseClock;
 use App\Actors\Support\DeclaredReads;
@@ -52,6 +53,7 @@ final class ActorsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(SystemEntryPolicies::class);
+        $this->app->singleton(ChatMemberPolicies::class);
         $this->app->alias(SystemEntryPolicies::class, SystemEntryPoliciesContract::class);
         $this->app->bind(CurrentActor::class, ActorStore::class);
         $this->app->bind(CurrentActorSetter::class, ActorStore::class);

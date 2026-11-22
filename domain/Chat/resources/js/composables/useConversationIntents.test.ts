@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
-import type { MessageView } from '@kit/CoreTypes';
+import type { ChatMessageData } from '@generated/types/chat';
 
 type PostOptions = {
     async: boolean;
@@ -34,6 +34,7 @@ vi.mock('@generated/routes/chat', () => ({
 }));
 
 const { useConversationIntents } = await import('./useConversationIntents');
+const { notifyChatAccessEnded } = await import('@kit/chatAccess');
 const { useMessageDrafts } = await import('./useMessageDrafts');
 
 let scope = 0;
@@ -42,25 +43,24 @@ let scope = 0;
  * The draft as the composer holds it once the text was typed.
  */
 function draft(text: string) {
-    useMessageDrafts().write(`user-${scope}/agent-1`, text);
+    useMessageDrafts().write(`user-${scope}/inbox-chat`, text);
 
     return {
-        draftKey: `user-${scope}/agent-1`,
+        draftKey: `user-${scope}/inbox-chat`,
         text,
         agent: 'agent-1',
         expectedSessionId: 'session-1',
         expectedGeneration: 1,
-        sourceInboxId: 'inbox-user',
-        destinationInboxId: 'inbox-agent',
+        inboxId: 'inbox-chat',
     };
 }
 
-function row(id: string, requestKey: string | null): MessageView {
-    return { id, requestKey } as MessageView;
+function row(id: string, requestKey: string | null): ChatMessageData {
+    return { id, requestKey } as ChatMessageData;
 }
 
 function ownerOf() {
-    return useConversationIntents(`user-${scope}/agent-1`);
+    return useConversationIntents(`user-${scope}/inbox-chat`);
 }
 
 describe('useConversationIntents', () => {
@@ -85,7 +85,33 @@ describe('useConversationIntents', () => {
             headers: { 'Idempotency-Key': intent.key },
         });
         expect(posts[0].options.optimistic).toBeUndefined();
-        expect(useMessageDrafts().read(`user-${scope}/agent-1`)).toBe('');
+        expect(useMessageDrafts().read(`user-${scope}/inbox-chat`)).toBe('');
+    });
+
+    it('forgets a lost chat: its pending send, its draft, and nothing restores into it later', () => {
+        const owner = ownerOf();
+        const intent = owner.beginSend(draft('Hello'));
+        owner.submit(intent, 'window_chat_conversation');
+
+        notifyChatAccessEnded('inbox-chat');
+        posts[0].options.onError({ body: 'Refused' });
+        useMessageDrafts().write(`user-${scope}/inbox-chat`, 'Typed after');
+
+        expect(owner.intents).toHaveLength(0);
+        expect(useMessageDrafts().read(`user-${scope}/inbox-chat`)).toBe('');
+    });
+
+    it('posts at the chat inbox under the same request key it sends again on a retry', () => {
+        const owner = ownerOf();
+        const intent = owner.beginSend(draft('Hello'));
+
+        owner.submit(intent, 'window_chat_conversation');
+        owner.finishTransport(intent);
+        owner.retry(intent, 'window_chat_conversation');
+
+        expect(posts[0].data).toMatchObject({ inboxId: 'inbox-chat', requestKey: intent.key });
+        expect(posts[1].data).toMatchObject({ requestKey: intent.key });
+        expect(posts[1].options.headers).toEqual({ 'Idempotency-Key': intent.key });
     });
 
     it('replaces the Sending bubble with the one row a read returned while the request is still out', () => {

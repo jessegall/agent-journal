@@ -7,10 +7,10 @@ namespace Tests\Feature\Mcp;
 use App\Actors\Support\ActorIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\OpensPairChats;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
@@ -25,6 +25,7 @@ use Tests\TestCase;
 #[TimeLimit(5, 'Signed calls cover the dock tools, the journal list and a refused helper.')]
 final class DockToolsTest extends TestCase
 {
+    use OpensPairChats;
     use CommitsHookRows;
     use SendsMcpFrames;
     use SendsSignedCalls;
@@ -113,10 +114,7 @@ final class DockToolsTest extends TestCase
     private function startInConversation(string $profile): TestStart
     {
         $start = TestStart::start($profile);
-        Conversation::between(
-            $this->inboxOf(ActorIdentity::of($this->owner))->inboxId(),
-            $this->inboxOf(ActorIdentity::of($start->agent))->inboxId(),
-        );
+        $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($start->agent));
 
         return $start;
     }

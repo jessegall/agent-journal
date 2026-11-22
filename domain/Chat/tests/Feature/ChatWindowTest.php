@@ -165,30 +165,23 @@ final class ChatWindowTest extends TestCase
             ->assertRedirect($chat);
     }
 
-    public function test_a_reply_to_a_message_that_changed_is_refused_and_writes_nothing(): void
+    public function test_a_reply_from_the_chat_window_to_desk_mail_is_refused_and_writes_nothing(): void
     {
         $questionId = $this->agentAsks('Which port?');
-        $shownVersion = $this->stored($questionId)->state_version;
-
-        $this->actingAs($this->owner)->post('/chat/messages/reply', [
-            'messageId' => $questionId,
-            'stateVersion' => $shownVersion,
-            'body' => 'Port 80.',
-            'agent' => $this->session->agent_id,
-        ]);
 
         $this->actingAs($this->owner)->from('/')
             ->post('/chat/messages/reply', [
                 'messageId' => $questionId,
-                'stateVersion' => $shownVersion,
-                'body' => 'Port 8080.',
+                'stateVersion' => $this->stored($questionId)->state_version,
+                'body' => 'Port 80.',
                 'agent' => $this->session->agent_id,
+                'inboxId' => $this->ownInboxId,
+                'requestKey' => 'window-reply-1',
             ])
             ->assertRedirect('/')
-            ->assertSessionHasErrors('command')
-            ->assertSessionHas('refusal_code', 'stale-version');
+            ->assertSessionHasErrors('command');
 
-        $this->assertSame(2, Message::query()->withoutGlobalScopes()->count());
+        $this->assertSame(1, Message::query()->withoutGlobalScopes()->count());
     }
 
     private function agentAsks(string $body): string

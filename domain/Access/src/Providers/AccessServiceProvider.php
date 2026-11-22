@@ -8,8 +8,10 @@ use App\Actors\Contracts\ActiveActorRegistration;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\AdmittedRecipients;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
+use App\Actors\Contracts\ChatEligibility;
 use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Enums\ActorType;
+use App\Autoload\Support\FolderClasses;
 use App\Reflection\Contracts\TypeReflections;
 use App\Web\Contracts\CurrentUserResolver;
 use Domain\Access\Actions\CreateNewUser;
@@ -19,6 +21,7 @@ use Domain\Access\Models\User;
 use Domain\Access\Resolvers\CurrentUserRecords;
 use Domain\Access\Support\AccessSettings;
 use Domain\Access\Support\AdmittedUsers;
+use Domain\Access\Support\EnvironmentChatEligibility;
 use Domain\Access\Support\OwnerAdmission;
 use Domain\Access\Support\OwnerAuthorizerProvider;
 use Domain\Access\Support\PresentUserCounter;
@@ -27,6 +30,7 @@ use Domain\Access\Support\UserAssignees;
 use Domain\Access\Support\UserLabels;
 use Domain\Access\Support\UserVisibility;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Console\Command;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -44,6 +48,7 @@ class AccessServiceProvider extends ServiceProvider
         $this->app->bind(CurrentUserResolver::class, CurrentUserRecords::class);
         $this->app->bind(JournalAdmission::class, OwnerAdmission::class);
         $this->app->bind(AdmittedRecipients::class, AdmittedUsers::class);
+        $this->app->bind(ChatEligibility::class, EnvironmentChatEligibility::class);
 
         // The owner's row is read on the first use of the settings, never while a service that holds them is built.
         $this->app->singleton(AccessSettings::class, fn (): AccessSettings => $this->app->make(TypeReflections::class)
@@ -71,6 +76,7 @@ class AccessServiceProvider extends ServiceProvider
         $actors->registerLabels(ActorType::User, UserLabels::class);
         $actors->registerVisibility(ActorType::User, UserVisibility::class);
         $presentActors->register(PresentUserCounter::class);
+        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         $this->configureActions();
         $this->configureRateLimiting();
     }

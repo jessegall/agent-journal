@@ -19,9 +19,14 @@ use App\Communication\Data\MessageClaimHolder;
 use App\Communication\Data\MessagePage;
 use App\Communication\Data\MessageView;
 use App\Communication\Enums\MessageState;
+use App\Communication\Enums\MessageType;
+use App\Communication\Exceptions\ChatInboxRefused;
 use App\Communication\Exceptions\MessageMissing;
+use App\Communication\Models\InboxRecord;
 use App\Communication\Models\Message;
+use App\Communication\Models\TimelineEvent;
 use App\Communication\Models\MessageAttention;
+use App\Communication\Models\ReceiptDelivery;
 use App\Communication\Policies\MessageAdministrationPolicy;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\RegisteredInboxes;
@@ -61,20 +66,48 @@ final readonly class MessageRecords implements ConversationResolver
         string|null $olderCursor,
         int $limit,
     ): MessagePage {
+        $this->refuseChatInbox($firstInboxId);
+        $this->refuseChatInbox($secondInboxId);
+
         return $this->page(Message::query()->betweenInboxes($firstInboxId, $secondInboxId), $olderCursor, $limit);
     }
 
     public function history(string $inboxId, string|null $olderCursor, int $limit): MessagePage
     {
+        if (InboxRecord::isChatInbox($inboxId)) {
+            return $this->timeline($inboxId, $olderCursor, $limit);
+        }
+
         return $this->page(Message::query()->ofInbox($inboxId), $olderCursor, $limit);
+    }
+
+    public function timeline(string $inboxId, string|null $olderCursor, int $limit): MessagePage
+    {
+        $pageSize = max(1, min($limit, MessagePage::DEFAULT_LIMIT));
+        $positioned = fn () => Message::query()->toInbox($inboxId)->ofType(MessageType::Chat)->withTimelinePosition();
+        $cursor = $olderCursor === null ? null : $positioned()->whereKey($olderCursor)->first();
+
+        $rows = $positioned()
+            ->when($cursor !== null, fn (Builder $older) => $older->beforePosition($cursor->timeline_position))
+            ->orderByDesc('inbox_timeline_events.sequence')
+            ->limit($pageSize + 1)
+            ->get();
+
+        $shown = $rows->take($pageSize);
+
+        return MessagePage::from([
+            'messages' => $this->viewsOf(array_values($shown->reverse()->all())),
+            'olderCursor' => $rows->count() > $pageSize ? $shown->last()?->id : null,
+        ]);
     }
 
     public function counts(string $inboxId): InboxCounts
     {
         $incoming = fn () => Message::query()->toInbox($inboxId);
+        $reader = ActorIdentity::of($this->actors->actor());
 
         $waitingIds = $incoming()
-            ->where('state', MessageState::WaitingForAnswer)
+            ->waitingFor($reader)
             ->readLimit(MessagePage::LARGEST_LIMIT * 10)
             ->pluck('id')
             ->all();
@@ -82,7 +115,7 @@ final readonly class MessageRecords implements ConversationResolver
         $claimed = count($this->proved->validClaimsOn(Message::LINK_TYPE, array_values($waitingIds)));
 
         return new InboxCounts(
-            $incoming()->whereNull('read_at')->distinct()->count('id'),
+            $incoming()->unreadBy($reader)->distinct()->count('id'),
             count($waitingIds) - $claimed,
             $claimed,
         );
@@ -91,6 +124,7 @@ final readonly class MessageRecords implements ConversationResolver
     public function inspect(string $inboxId, string|null $olderCursor, int $limit): MessagePage
     {
         $this->authorizer->authorize(MessageAdministrationPolicy::class, Message::class, AccessType::Read);
+        $this->refuseChatInbox($inboxId);
 
         return $this->page(Message::query()->acrossInboxes()->ofInbox($inboxId), $olderCursor, $limit);
     }
@@ -125,13 +159,31 @@ final readonly class MessageRecords implements ConversationResolver
             throw MessageMissing::forId($messageId);
         }
 
-        return array_values(MessageAttention::query()
+        $woken = MessageAttention::query()
             ->where('origin_type', AttentionOrigin::MESSAGE)
             ->where('origin_id', $message->id)
             ->limit(InboxMembers::LIMIT)
             ->get()
-            ->map(fn (MessageAttention $attention) => $attention->wakeStatus())
-            ->all());
+            ->map(fn (MessageAttention $attention) => $attention->wakeStatus());
+
+        $unsettled = ReceiptDelivery::query()
+            ->unwokenFor($message->id)
+            ->with('receipt.interval')
+            ->limit(InboxMembers::LIMIT)
+            ->get()
+            ->map(fn (ReceiptDelivery $delivery) => $delivery->wakeStatus());
+
+        return array_values([...$woken->all(), ...$unsettled->all()]);
+    }
+
+    /**
+     * @throws ChatInboxRefused
+     */
+    private function refuseChatInbox(string $inboxId): void
+    {
+        if (InboxRecord::isChatInbox($inboxId)) {
+            throw ChatInboxRefused::forInbox($inboxId);
+        }
     }
 
     /**
@@ -185,6 +237,9 @@ final readonly class MessageRecords implements ConversationResolver
 
         $holderFields = array_map(fn ($claim) => ['claimHolder' => MessageClaimHolder::ofClaim($claim)], $claims);
 
+        $hiddenParents = $this->hiddenChatParents($messages);
+        $chatFields = $this->chatFieldsOf($messages, $hiddenParents);
+
         $requestKeys = CommandReceipt::readableKeysOf(array_values(array_unique(
             array_map(fn (Message $message) => $message->origin_receipt_id, $messages),
         )));
@@ -201,12 +256,84 @@ final readonly class MessageRecords implements ConversationResolver
             'body' => $message->body,
             'state' => $message->state,
             'stateVersion' => $message->state_version,
-            'replyToId' => $message->reply_to_id,
+            'replyToId' => in_array($message->reply_to_id, $hiddenParents, true) ? null : $message->reply_to_id,
+            'replyUnavailable' => in_array($message->reply_to_id, $hiddenParents, true),
             'answerId' => $message->answer_message_id,
             'firstReader' => $message->firstRead(),
             ...$holderFields[$message->id] ?? [],
             'sentAt' => (string) $message->created_at?->toIso8601String(),
             'requestKey' => $requestKeys[$message->origin_receipt_id] ?? null,
+            ...$chatFields[$message->id] ?? [],
         ]), $messages);
+    }
+
+    /**
+     * The reply parents and user roots of chat messages that the reader may not see: shown as unavailable, never by
+     * id or text.
+     *
+     * @param  list<Message>  $messages
+     * @return list<string>
+     */
+    private function hiddenChatParents(array $messages): array
+    {
+        $parentIds = array_values(array_unique(array_filter(array_merge(...array_map(
+            fn (Message $message) => $message->isChat() ? [$message->reply_to_id, $message->user_root_id] : [],
+            $messages,
+        )))));
+
+        if ($parentIds === []) {
+            return [];
+        }
+
+        $visible = Message::query()->whereKey($parentIds)->pluck('id')->all();
+
+        return array_values(array_diff($parentIds, $visible));
+    }
+
+    /**
+     * The chat fields of each chat message, keyed by its id: its timeline position, its user root unless that is
+     * hidden, whom it addresses and whether the viewer was shown it through its active interval.
+     *
+     * @param  list<Message>  $messages
+     * @param  list<string>  $hiddenParents
+     * @return array<string, array<string, mixed>>
+     */
+    private function chatFieldsOf(array $messages, array $hiddenParents): array
+    {
+        $chat = array_values(array_filter($messages, fn (Message $message) => $message->isChat()));
+
+        if ($chat === []) {
+            return [];
+        }
+
+        $sequences = TimelineEvent::query()
+            ->whereKey(array_map(fn (Message $message) => $message->timeline_event_id, $chat))
+            ->pluck('sequence', 'id')
+            ->all();
+        $viewer = ActorIdentity::of($this->actors->actor());
+        $shown = Message::query()
+            ->whereKey(array_map(fn (Message $message) => $message->id, $chat))
+            ->receivedNowBy($viewer)
+            ->whereNotIn('id', Message::query()->whereKey(array_map(fn (Message $message) => $message->id, $chat))
+                ->unpresentedTo($viewer)
+                ->select('id'))
+            ->pluck('id')
+            ->all();
+
+        $fields = [];
+
+        foreach ($chat as $message) {
+            $fields[$message->id] = [
+                'sequence' => (int) $sequences[$message->timeline_event_id],
+                'userRootId' => in_array($message->user_root_id, $hiddenParents, true) ? null : $message->user_root_id,
+                'addresseeType' => $message->addressee_type,
+                'addresseeId' => $message->addressee_id,
+                'respondentType' => $message->respondent_type,
+                'respondentId' => $message->respondent_id,
+                'shownToViewer' => in_array($message->id, $shown, true),
+            ];
+        }
+
+        return $fields;
     }
 }

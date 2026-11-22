@@ -8,6 +8,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\AttentionOrigin;
 use App\Actors\Support\AttentionOutcome;
 use App\Communication\Data\WakeStatus;
+use App\Communication\Enums\WakeState;
 use App\Communication\Support\InboxMembers;
 use App\Contracts\Support\InsertsRowSets;
 use App\Links\Support\Linkable;
@@ -118,6 +119,11 @@ final class MessageAttention extends Model implements ReadableModel
      */
     public function wakeStatus(): WakeStatus
     {
-        return new WakeStatus($this->actor_type, $this->actor_id, $this->request_id);
+        return new WakeStatus(
+            $this->actor_type,
+            $this->actor_id,
+            $this->request_id,
+            $this->request_id === null ? WakeState::WaitingForStartup : WakeState::Accepted,
+        );
     }
 }

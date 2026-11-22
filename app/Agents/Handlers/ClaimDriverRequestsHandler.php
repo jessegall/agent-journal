@@ -15,6 +15,8 @@ use App\Agents\Models\Host;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\PendingWorkSources;
+use App\Agents\Support\PresentationPrompts;
+use App\Agents\Values\ClaimedRequest;
 use App\Contracts\CommandHandler;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -26,7 +28,10 @@ use Illuminate\Support\Collection;
  */
 final readonly class ClaimDriverRequestsHandler implements CommandHandler
 {
-    public function __construct(private PendingWorkSources $pendingWork) {}
+    public function __construct(
+        private PendingWorkSources $pendingWork,
+        private PresentationPrompts $presentation,
+    ) {}
 
     public function handle(ClaimDriverRequests $command): ClaimedRequests
     {
@@ -102,7 +107,8 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
 
                 $runtime = $runtimes->get($runtimeId);
                 $request->stage($now);
-                $claimed[] = $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null);
+                $claim = $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null);
+                $claimed[] = $this->withPresentation($request, $runtime, $claim, $now);
 
                 if (count($claimed) === $command->limit) {
                     break;
@@ -122,6 +128,25 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
     {
         return $request->operation === DriverOperation::Stop
             && in_array($runtime->agent_session_id, $waiting, true);
+    }
+
+    /**
+     * A wake carries the next batch of chat text for the runtime's driver when one waits; otherwise it keeps the
+     * generic pending-work prompt, so desk work is never starved by a chat backlog.
+     */
+    private function withPresentation(
+        DriverRequest $request,
+        AgentRuntime $runtime,
+        ClaimedRequest $claim,
+        CarbonImmutable $now,
+    ): ClaimedRequest {
+        if ($request->operation !== DriverOperation::Wake) {
+            return $claim;
+        }
+
+        $prompt = $this->presentation->promptFor($runtime, $now);
+
+        return $prompt === null ? $claim : $claim->withMessage($prompt);
     }
 
     private function settledWithoutWork(DriverRequest $request, AgentRuntime $runtime): bool

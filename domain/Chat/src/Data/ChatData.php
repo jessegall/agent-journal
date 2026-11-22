@@ -20,6 +20,7 @@ final class ChatData extends Data
 {
     /**
      * @param  list<AgentOptionData>  $agents
+     * @param  list<ChatSummaryData>  $chats
      * @param  list<SlotSectionData>  $dockSections
      */
     public function __construct(
@@ -39,5 +40,10 @@ final class ChatData extends Data
         // may see it; an id without its question is unavailable.
         public readonly string|Optional $focusedQuestionId = new Optional(),
         public readonly FocusedQuestionData|Optional $focusedQuestion = new Optional(),
+        // The chats the viewer is in, for the inbox selector, and whether it may open a new one.
+        #[DataCollectionOf(ChatSummaryData::class)]
+        public readonly array $chats = [],
+        public readonly bool $canCreateChats = false,
+        public readonly string|Optional $selectedInboxId = new Optional(),
     ) {}
 }

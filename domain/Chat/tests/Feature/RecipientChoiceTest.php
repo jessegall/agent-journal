@@ -102,7 +102,7 @@ final class RecipientChoiceTest extends TestCase
             function (AssertableInertia $page) use (&$destination): AssertableInertia {
                 $read = function (AssertableInertia $reload) use (&$destination): AssertableInertia {
                     $window = $reload->toArray()['props']['window_chat_conversation'];
-                    $destination = $window['data']['conversation']['destinationInboxId'];
+                    $destination = $window['data']['conversation']['inboxId'];
 
                     return $reload;
                 };

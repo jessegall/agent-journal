@@ -107,7 +107,7 @@ func (driver *HeadlessDriver) Deliver(_ context.Context, delivery contracts.Deli
 
 // Wake starts one standard turn that checks the agent's pending work.
 func (driver *HeadlessDriver) Wake(_ context.Context, wake contracts.WakeRequest) (contracts.OperationResult, error) {
-	return driver.startTurn(wake.Request, pendingWorkPrompt)
+	return driver.startTurn(wake.Request, wake.PromptOr(pendingWorkPrompt))
 }
 
 func (driver *HeadlessDriver) ChangeModel(_ context.Context, change contracts.ModelChange) (contracts.OperationResult, error) {

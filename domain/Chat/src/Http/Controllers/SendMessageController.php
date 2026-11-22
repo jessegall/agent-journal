@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Chat\Http\Controllers;
 
 use App\Agents\Contracts\AgentDirectory;
-use App\Agents\Values\SeenSession;
 use App\Bus\Contracts\CommandBus;
-use App\Communication\Commands\AskMessage;
+use App\Communication\Commands\AskChatQuestion;
+use App\Communication\Commands\PostChatMessage;
 use Domain\Chat\Data\MessageInput;
 use Domain\Chat\Support\SentMessageAnswer;
 use Illuminate\Http\JsonResponse;
@@ -22,8 +22,8 @@ use Illuminate\Http\Request;
 final readonly class SendMessageController
 {
     /**
-     * Asks from the pair of inboxes the conversation showed, so a send keeps its target even when the window has
-     * moved on, and answers with its message or returns to Home with the same agent chosen.
+     * Posts in the chat inbox the conversation showed, so a send keeps its room even when the window has moved on,
+     * and answers with its message or returns to Home with the same agent chosen.
      */
     public function __invoke(
         MessageInput $input,
@@ -32,15 +32,25 @@ final readonly class SendMessageController
         CommandBus $commands,
         SentMessageAnswer $answer,
     ): JsonResponse|RedirectResponse {
-        $agents->visibleAgent($input->agent);
+        if ($input->agent !== null) {
+            $agents->visibleAgent($input->agent)->assertRuns($input->expectedSessionId, $input->expectedGeneration);
+        }
 
-        $messageId = $commands->run(new AskMessage(
-            $input->sourceInboxId,
-            $input->destinationInboxId,
-            $input->body,
-            new SeenSession($input->agent, $input->expectedSessionId, $input->expectedGeneration),
-        ));
+        $messageId = $input->question
+            ? $commands->run(new AskChatQuestion(
+                $input->inboxId,
+                $input->body,
+                $input->requestKey,
+                $input->addressee,
+            ))
+            : $commands->run(new PostChatMessage(
+                $input->inboxId,
+                $input->body,
+                $input->requestKey,
+                null,
+                $input->addressee,
+            ));
 
-        return $answer->to($request, $messageId, $input->agent);
+        return $answer->to($request, $messageId, $input->agent, $input->inboxId);
     }
 }

@@ -14,6 +14,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('provider_key', 64);
             $table->string('provider_id');
+            $table->unsignedBigInteger('next_sequence')->default(0);
             $table->timestampsTz();
 
             $table->unique(['provider_key', 'provider_id']);

@@ -19,7 +19,7 @@ final class DockListCommand extends Command
 
     protected $signature = 'dock:list'
         .' {--limit=100 : How many placements to list, at most 100}'
-        .' {--chat= : The conversation, when you take part in several}'
+        .' {--chat= : The inbox id of the chat, when you are in several}'
         .' {--json}';
 
     protected $description = 'List the records docked in your conversation: placement, type, id, title and state';

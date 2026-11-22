@@ -8,7 +8,7 @@ async function freshLoad() {
     vi.resetModules();
     const { draftKey, useMessageDrafts } = await import('./useMessageDrafts');
 
-    return { key: draftKey('user-1', 'agent-1'), drafts: useMessageDrafts() };
+    return { key: draftKey('user-1', 'inbox-chat'), drafts: useMessageDrafts() };
 }
 
 /**

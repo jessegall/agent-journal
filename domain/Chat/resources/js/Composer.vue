@@ -4,25 +4,27 @@ import Button from '@kit/Button';
 import { onPurge } from '@kit/protectedView';
 import Icon from '@kit/Icon';
 import { useComposerHeight } from './composables/useComposerHeight';
-import { useConversationIntents } from './composables/useConversationIntents';
+import { useConversationIntents, type ReplyTarget } from './composables/useConversationIntents';
+import type { ParticipantData } from '@generated/types/chat';
 import { useMessageDrafts } from './composables/useMessageDrafts';
-import type { MessageView } from '@kit/CoreTypes';
 
 /**
- * Asks the chosen agent, from the user's inbox to the agent's (doc 4, 6.5). The text is the draft of this agent, so
- * browsing other agents, a switch or a reload keeps it; a send names the session the user saw the agent run, is
+ * Posts in the chat with the chosen agent, at the chat's own inbox (doc 4, 6.5). The text is the draft of this chat,
+ * so browsing other chats, a switch or a reload keeps it; a send names the session the user saw the agent run, is
  * refused when the agent runs another one by then, and clears only its own draft, only if it was not typed on since.
  */
 const props = defineProps<{
     draftKey: string;
-    agent: string;
-    agentName: string;
+    agent: string | null;
+    addresseeName: string | null;
     sessionId: string | null;
     sessionGeneration: number;
-    sourceInboxId: string;
-    destinationInboxId: string;
-    replyingTo: MessageView | null;
+    inboxId: string;
+    replyingTo: ReplyTarget | null;
     conversationProp: string;
+    // The other members the post may be addressed to, as type:id with the label the roster shows.
+    participants: ParticipantData[];
+    viewer: string;
 }>();
 
 const emit = defineEmits<{ replied: [] }>();
@@ -31,6 +33,21 @@ const drafts = useMessageDrafts();
 const body = ref('');
 const textarea = ref<HTMLTextAreaElement | null>(null);
 const hasText = computed(() => body.value.trim() !== '');
+const addressee = ref('');
+const asking = ref(false);
+const others = computed(() => props.participants.filter((member) => member.actor !== props.viewer));
+// A question among more than two people must name who settles it; in a pair the other member is implied.
+const needsRespondent = computed(() => asking.value && others.value.length > 1 && addressee.value === '');
+
+/**
+ * How a member is named in the picker: two members with the same name are told apart by driver and id.
+ */
+function optionLabel(member: ParticipantData): string {
+    const namesake = others.value.filter((other) => other.label === member.label).length > 1;
+    const driver = member.driver === null ? '' : ` (${member.driver})`;
+
+    return namesake ? `${member.label}${driver} · ${member.actor.slice(-6)}` : `${member.label}${driver}`;
+}
 
 useComposerHeight(textarea, body);
 
@@ -59,7 +76,7 @@ watch(
  * owner settles it; a reply goes to the message at the version shown, so a stale one is refused with its text kept.
  */
 function submit(): void {
-    if (!hasText.value) {
+    if (!hasText.value || needsRespondent.value) {
         return;
     }
 
@@ -70,8 +87,9 @@ function submit(): void {
         agent: props.agent,
         expectedSessionId: props.sessionId,
         expectedGeneration: props.sessionGeneration,
-        sourceInboxId: props.sourceInboxId,
-        destinationInboxId: props.destinationInboxId,
+        inboxId: props.inboxId,
+        addressee: addressee.value === '' ? null : addressee.value,
+        question: asking.value,
     };
     const replyingTo = props.replyingTo;
     const intent = replyingTo === null
@@ -102,8 +120,29 @@ function sendOnEnter(event: KeyboardEvent): void {
         @submit.prevent="submit"
     >
         <p class="text-small text-text-3">
-            To {{ agentName }}<template v-if="sessionId === null">, no session</template>
+            <template v-if="addresseeName !== null">
+                To {{ addresseeName }}<template v-if="sessionId === null">, no session</template>
+            </template>
+            <template v-else>To everyone in this chat</template>
         </p>
+        <div class="flex items-center gap-2 text-small text-text-3">
+            <label class="flex items-center gap-1">
+                <span>To</span>
+                <select v-model="addressee" name="addressee" aria-label="Address the message to" class="bg-transparent">
+                    <option value="">Everyone</option>
+                    <template v-for="member in others" :key="member.actor">
+                        <option :value="member.actor">{{ optionLabel(member) }}</option>
+                    </template>
+                </select>
+            </label>
+            <label class="flex items-center gap-1">
+                <input v-model="asking" type="checkbox" name="question" />
+                <span>Ask as a question</span>
+            </label>
+        </div>
+        <template v-if="needsRespondent">
+            <p class="text-small text-danger" role="alert">Choose who should answer this question.</p>
+        </template>
         <template v-if="replyingTo">
             <p class="text-small text-text-3">
                 Replying to: {{ replyingTo.body.slice(0, 80) }}
@@ -114,8 +153,8 @@ function sendOnEnter(event: KeyboardEvent): void {
             v-model="body"
             name="body"
             rows="3"
-            placeholder="Message the agent"
-            aria-label="Message the agent"
+            placeholder="Write a message"
+            aria-label="Write a message"
             class="resize-none border-0 bg-transparent p-0 text-body leading-[1.45] text-text transition-[height] duration-160 outline-none placeholder:text-text-3"
             @keydown.enter="sendOnEnter"
         />

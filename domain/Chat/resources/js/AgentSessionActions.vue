@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { router, useHttp } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { router, useHttp, usePage } from '@inertiajs/vue3';
+import { onMounted, ref, watch } from 'vue';
 import { newRequestId } from '@kit/requestId';
 import type { AgentOptionData, StatusActionData } from '@generated/types/chat';
 import {
@@ -15,6 +15,7 @@ import {
     terminalPage,
 } from '@kit/sessionStarts';
 import { keyedPost } from '@kit/keyedPost';
+import { useOpenSessionDialog } from './composables/useChosenAgent';
 import { useSwitchOperation } from './composables/useSwitchOperation';
 import { openTerminalBesideChat } from './composables/useTerminalDock';
 import SessionAction from './SessionAction.vue';
@@ -25,7 +26,8 @@ import StopConfirmation from './StopConfirmation.vue';
  * What the chosen agent's status offers now, from the server's projection: each action maps to its route or dialog.
  * Start and Resume open the session form, Switch its switch form; Retry and Check and switch follow the
  * switch; Check status reads the agent again; Check capacity reads the host's room without reserving; Sign in opens
- * Accounts; Dismiss hides the launch outcome for this viewer; Cancel start cancels the launch.
+ * Accounts; Dismiss hides the launch outcome for this viewer; Cancel start cancels the launch. Each agent keeps its
+ * own controls: its open dialog and a switch under way survive switching chats and a reload in this tab.
  */
 const props = defineProps<{ agent: AgentOptionData }>();
 
@@ -35,7 +37,12 @@ type FormMode = 'start' | 'resume' | 'switch';
 
 type CapacityAnswer = { fits: boolean; resource?: string; explanation?: string; remedy?: string };
 
-const formMode = ref<FormMode | null>(null);
+const formModes: FormMode[] = ['start', 'resume', 'switch'];
+const viewer = usePage().props.currentUser as { id: string } | undefined;
+const openDialog = viewer === undefined ? undefined : useOpenSessionDialog(viewer.id, props.agent.id);
+const kept = openDialog?.read() ?? null;
+// The dialog this agent had open in this tab comes back, with the start or switch it follows.
+const formMode = ref<FormMode | null>(formModes.find((mode) => mode === kept) ?? null);
 const isStopAsked = ref(false);
 // The button that opened a dialog, which gets the focus back when the dialog closes.
 let opener: HTMLElement | null = null;
@@ -45,6 +52,10 @@ const switching = useSwitchOperation(() => props.agent);
 const http = useHttp<{ requestId: string; version: string }, CapacityAnswer>({ requestId: '', version: '' });
 
 watch([formMode, isStopAsked], ([mode, isAsked]) => emit('dialog', mode !== null || isAsked));
+watch(formMode, (mode) => (mode === null ? openDialog?.forget() : openDialog?.keep(mode)));
+
+// A switch already under way for this agent is followed again, never sent again.
+onMounted(() => switching.resume());
 
 function rememberOpener(): void {
     opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;

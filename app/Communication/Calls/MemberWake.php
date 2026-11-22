@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Communication\Calls;
 
+use App\Communication\Enums\WakeState;
 use Spatie\LaravelData\Data;
 
 /**
- * Whether one notified member's runtime accepted the wake, and its request when it did.
+ * Where waking one notified member stands, and the request its runtime accepted, when it did.
  */
 final class MemberWake extends Data
 {
@@ -15,5 +16,6 @@ final class MemberWake extends Data
         public string $actorType,
         public string $actorId,
         public string|null $requestId,
+        public WakeState $state,
     ) {}
 }

@@ -7,6 +7,7 @@ namespace App\Communication\Handlers;
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
+use App\Communication\Commands\DeclineChatQuestion;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Enums\DismissalType;
@@ -14,6 +15,7 @@ use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Models\Message;
 use App\Communication\Policies\MessageAdministrationPolicy;
+use App\Communication\Support\ChatPosting;
 use App\Communication\Support\InboxMembership;
 use App\Communication\Support\MessageClaims;
 use App\Contracts\CommandHandler;
@@ -26,6 +28,7 @@ final readonly class DismissMessageHandler implements CommandHandler
         private CurrentAuthorizer $authorizer,
         private InboxResolver $inboxes,
         private MessageClaims $claims,
+        private ChatPosting $chats,
     ) {}
 
     /**
@@ -39,6 +42,13 @@ final readonly class DismissMessageHandler implements CommandHandler
         $message = Message::query()->acrossInboxes()->whereKey($command->messageId)->lockForUpdate()->firstOr(
             fn () => throw MessageMissing::forId($command->messageId),
         );
+
+        if ($message->isChat() && ! $message->isWrittenBy(ActorIdentity::of($actor))) {
+            $decline = new DeclineChatQuestion($message->id, $command->reason);
+            $this->chats->decline($decline->withDispatcher($actor));
+
+            return;
+        }
 
         $type = $this->dismissalBy($message, $actor);
         $dismissedBy = ActorIdentity::of($actor);

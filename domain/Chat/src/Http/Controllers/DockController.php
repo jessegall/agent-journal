@@ -8,7 +8,6 @@ use App\Bus\Contracts\CommandBus;
 use Domain\Chat\Commands\DockSource;
 use Domain\Chat\Data\DockAnswerData;
 use Domain\Chat\Data\DockInput;
-use Domain\Chat\Support\DockRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
@@ -22,7 +21,7 @@ final readonly class DockController
     public const string DOCK_OUTCOME = 'dockOutcome';
 
     /**
-     * Docks the source in the conversation with the agent and answers what came of it: a window's offer gets it as a
+     * Docks the source in the chat the inbox names and answers what came of it: a window's offer gets it as a
      * one-time flash beside the page it shows again, a JSON caller as the answer; a retry under the same key answers
      * the first time.
      */
@@ -30,14 +29,11 @@ final readonly class DockController
         DockInput $input,
         Request $request,
         CommandBus $commands,
-        DockRequests $requests,
         ResponseFactory $inertia,
         Redirector $redirect,
     ): DockAnswerData|RedirectResponse {
-        $conversation = $requests->conversationWith($input->agent);
-
         $answer = DockAnswerData::fromDockResult(
-            $commands->run(new DockSource($conversation->id, $input->type, $input->id, $input->presentation)),
+            $commands->run(new DockSource($input->inboxId, $input->type, $input->id, $input->presentation)),
         );
 
         if ($request->expectsJson()) {

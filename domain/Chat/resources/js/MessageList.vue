@@ -1,56 +1,103 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import type { MessageView } from '@kit/CoreTypes';
+import type { ChatMessageData, ParticipantData } from '@generated/types/chat';
 import type { ConversationIntent } from './composables/useConversationIntents';
 import type { RecoveryEntry } from './composables/useMessageDrafts';
+import MessageDeliveries from './MessageDeliveries.vue';
 import PendingMessage from './PendingMessage.vue';
 import RefusedSend from './RefusedSend.vue';
 
 /**
- * The messages between two inboxes, oldest first: the user's own on the right, the other inbox's on the left with
- * the name of whoever wrote it, and for each incoming question whether it is unread, waiting or taken up. After them
+ * The rows of one chat in timeline order: the viewer's own on the right, everyone else's on the left with the name of
+ * whoever wrote it and, for an agent, the driver it runs through; for each incoming row whether the viewer has not
+ * read it yet, for a question whether it still waits, and for the author or an operator which recipients were not
+ * reached yet or were given up. Each row is reached by keyboard in order and named by its speaker and addressee; a
+ * reply's link names its original and moves the focus there, and a hidden original is only words. After them
  * come the user's own sends still settling, and the refused ones to restore or discard. Bodies are shown as text,
  * never as HTML.
  */
 const props = defineProps<{
-    messages: MessageView[];
+    messages: ChatMessageData[];
+    // Whether older rows wait before the first one shown.
+    hasOlder: boolean;
     pending: ConversationIntent[];
     refused: { entry: RecoveryEntry; reason: string }[];
-    ownInboxId: string;
+    // The viewing actor as type:id, the speaker of the viewer's own rows.
+    viewer: string;
+    participants: ParticipantData[];
     // The address that opens one question passively, as a notification opens it.
     questionUrl: (messageId: string) => string;
+    // The page prop a retry reads again.
+    conversationProp: string;
 }>();
 
 const emit = defineEmits<{
-    reply: [message: MessageView];
+    reply: [message: ChatMessageData];
+    older: [];
+    decline: [message: ChatMessageData];
     checkAgain: [intent: ConversationIntent];
     restore: [intentKey: string];
     discard: [intentKey: string];
 }>();
 
-function isOwn(message: MessageView): boolean {
-    return message.sourceInboxId === props.ownInboxId;
+function isOwn(message: ChatMessageData): boolean {
+    return message.speaker.actor === props.viewer;
 }
 
-function stateOf(message: MessageView): string | null {
-    if (isOwn(message)) {
-        return message.state === 'waiting_for_answer' ? 'Waiting for an answer' : null;
+function speakerOf(message: ChatMessageData): string {
+    return message.speaker.driver === null ? message.speaker.label : `${message.speaker.label} · ${message.speaker.driver}`;
+}
+
+/**
+ * The name the roster shows for a member, or the words someone who left for one no longer in the chat.
+ */
+function labelOf(actor: string): string {
+    return props.participants.find((member) => member.actor === actor)?.label ?? 'someone who left';
+}
+
+/**
+ * What a screen reader says for a row: who wrote it, with the driver for an agent, and whom it addresses.
+ */
+function rowLabel(message: ChatMessageData): string {
+    const speaker = isOwn(message) ? 'You' : speakerOf(message);
+    const addressee = message.addressedTo === null ? '' : ` to ${labelOf(message.addressedTo)}`;
+
+    return `${speaker}${addressee}`;
+}
+
+/**
+ * What the reply link says: the original's speaker and its first words, when this view holds it.
+ */
+function originalLabel(message: ChatMessageData): string {
+    const original = props.messages.find((shown) => shown.id === message.replyTo?.id);
+
+    return original === undefined
+        ? 'Go to the original message'
+        : `Go to the original from ${original.speaker.label}: ${original.body.slice(0, 80)}`;
+}
+
+/**
+ * Follows a reply to its original and gives the original the focus, so the keyboard continues from there.
+ */
+function goToOriginal(originalId: string | null): void {
+    if (originalId === null) {
+        return;
     }
 
-    if (message.firstReader === undefined) {
-        return 'Unread';
+    document.getElementById(`message-${originalId}`)?.focus();
+}
+
+function stateOf(message: ChatMessageData): string | null {
+    if (message.state === 'waiting_for_answer') {
+        return isOwn(message) ? 'Waiting for an answer' : 'Waiting for your answer';
     }
 
-    if (message.state !== 'waiting_for_answer') {
-        return null;
-    }
-
-    return message.claimHolder === undefined ? 'Waiting, nobody took it up' : 'Taken up';
+    return isOwn(message) || message.readByMe ? null : 'Unread';
 }
 </script>
 
 <template>
-    <div class="flex flex-1 flex-col gap-2.5 overflow-y-auto pt-4.5 pb-2">
+    <div class="flex flex-1 flex-col gap-2.5 overflow-y-auto pt-4.5 pb-2" role="feed" aria-label="Messages">
         <template v-if="messages.length === 0 && pending.length === 0 && refused.length === 0">
             <div class="m-auto flex flex-col items-center gap-1 text-center">
                 <p class="text-empty text-text-2">No messages yet</p>
@@ -59,17 +106,37 @@ function stateOf(message: MessageView): string | null {
                 </p>
             </div>
         </template>
+        <template v-if="hasOlder">
+            <button type="button" class="self-center text-small text-text-3 underline" @click="emit('older')">
+                Show earlier messages
+            </button>
+        </template>
         <template v-for="message in messages" :key="message.id">
-            <div
+            <article
+                :id="`message-${message.id}`"
+                tabindex="0"
+                :aria-label="rowLabel(message)"
                 :class="[
-                    'flex max-w-[85%] flex-col gap-0.5',
+                    'flex max-w-[85%] flex-col gap-0.5 rounded-control focus-visible:outline-2 focus-visible:outline-brand',
                     isOwn(message) ? 'ml-auto items-end' : 'mr-auto items-start',
                 ]"
             >
-                <template v-if="!isOwn(message)">
-                    <span class="text-small text-text-3">
-                        {{ message.authorLabel ?? message.sourceInboxLabel }}
-                    </span>
+                <span class="text-small text-text-3">
+                    <template v-if="!isOwn(message)">{{ speakerOf(message) }}</template>
+                    <template v-if="message.addressedTo !== null"> → {{ labelOf(message.addressedTo) }}</template>
+                </span>
+                <template v-if="message.replyTo !== null && message.replyTo.visible">
+                    <a
+                        :href="`#message-${message.replyTo.id}`"
+                        class="text-small text-text-3 underline"
+                        :aria-label="originalLabel(message)"
+                        @click.prevent="goToOriginal(message.replyTo.id)"
+                    >
+                        Replying to an earlier message
+                    </a>
+                </template>
+                <template v-if="message.replyTo !== null && !message.replyTo.visible">
+                    <span class="text-small text-text-3">Original unavailable</span>
                 </template>
                 <p
                     class="rounded-bubble bg-raised px-3 py-2 text-body whitespace-pre-wrap text-text"
@@ -80,16 +147,24 @@ function stateOf(message: MessageView): string | null {
                     <template v-if="stateOf(message) !== null">
                         <span>{{ stateOf(message) }}</span>
                     </template>
-                    <template v-if="!isOwn(message) && message.state === 'waiting_for_answer'">
+                    <template v-if="!isOwn(message)">
                         <button type="button" class="underline" @click="emit('reply', message)">
-                            Reply
+                            {{ message.actions.answer ? 'Answer' : 'Reply' }}
                         </button>
+                    </template>
+                    <template v-if="message.actions.decline">
+                        <button type="button" class="underline" @click="emit('decline', message)">Decline</button>
+                    </template>
+                    <template v-if="message.state === 'waiting_for_answer'">
                         <Link :href="questionUrl(message.id)" class="underline" preserve-scroll>
                             Open question
                         </Link>
                     </template>
                 </span>
-            </div>
+                <template v-if="message.deliveries.some((delivery) => delivery.state !== 'accepted')">
+                    <MessageDeliveries :message="message" :conversation-prop="conversationProp" />
+                </template>
+            </article>
         </template>
         <template v-for="intent in pending" :key="intent.key">
             <PendingMessage :intent="intent" @check-again="(shown) => emit('checkAgain', shown)" />

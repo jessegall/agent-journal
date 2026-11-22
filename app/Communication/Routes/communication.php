@@ -48,6 +48,14 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
         $calls->register(Calls\ReadInboxHistoryController::class)->name('history');
         $calls->register(Calls\CountInboxMessagesController::class)->name('counts');
         $calls->register(Calls\ReadWakeStatusController::class)->name('wake-status');
+        $calls->register(Calls\PostChatMessageController::class)->name('chat.post');
+        $calls->register(Calls\AskChatQuestionController::class)->name('chat.ask');
+        $calls->register(Calls\ReplyInChatController::class)->name('chat.reply');
+        $calls->register(Calls\ClaimSpeechController::class)->name('chat.claim');
+        $calls->register(Calls\ReleaseSpeechController::class)->name('chat.release');
+        $calls->register(Calls\AnswerChatQuestionController::class)->name('chat.answer');
+        $calls->register(Calls\DeclineChatQuestionController::class)->name('chat.decline');
+        $calls->register(Calls\AcknowledgePresentationController::class)->name('chat.acknowledge');
     });
 
 Route::middleware(['web', 'auth', 'journal.user'])

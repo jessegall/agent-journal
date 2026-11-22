@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('messages', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->string('message_type', 16);
             $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
             $table->unsignedBigInteger('number');
             $table->ulid('source_inbox_id');
@@ -31,6 +32,18 @@ return new class extends Migration
             $table->ulid('read_participation_assignment_id')->nullable();
             $table->ulid('origin_receipt_id');
             $table->ulid('reply_to_id')->nullable();
+            $table->foreignUlid('timeline_event_id')
+                ->nullable()
+                ->unique()
+                ->constrained('inbox_timeline_events')
+                ->restrictOnDelete();
+            $table->string('addressee_type', 16)->nullable();
+            $table->string('addressee_id', 64)->nullable();
+            $table->string('respondent_type', 16)->nullable();
+            $table->string('respondent_id', 64)->nullable();
+            $table->ulid('user_root_id')->nullable();
+            $table->string('request_key', 128)->nullable();
+            $table->char('request_digest', 64)->nullable();
             $table->ulid('answer_message_id')->nullable()->unique();
             $table->string('closed_by_type', 16)->nullable();
             $table->string('closed_by_id', 64)->nullable();
@@ -43,6 +56,7 @@ return new class extends Migration
             $table->index(['destination_inbox_id', 'state', 'created_at', 'id']);
             $table->index(['destination_inbox_id', 'read_at', 'created_at', 'id']);
             $table->index(['source_inbox_id', 'created_at', 'id']);
+            $table->index(['destination_inbox_id', 'message_type', 'read_at']);
         });
 
         Schema::table('messages', function (Blueprint $table) {
@@ -51,7 +65,27 @@ return new class extends Migration
             $table->foreign('origin_receipt_id')->references('id')->on('command_receipts')->restrictOnDelete();
             $table->foreign('reply_to_id')->references('id')->on('messages')->restrictOnDelete();
             $table->foreign('answer_message_id')->references('id')->on('messages')->restrictOnDelete();
+            $table->foreign('user_root_id')->references('id')->on('messages')->restrictOnDelete();
         });
+
+        DB::statement(<<<'SQL'
+            CREATE UNIQUE INDEX messages_request_key_once
+                ON messages (destination_inbox_id, sender_type, sender_id, request_key)
+                WHERE request_key IS NOT NULL
+            SQL);
+
+        DB::statement(<<<'SQL'
+            ALTER TABLE messages ADD CONSTRAINT messages_shape_by_type CHECK (
+                (message_type = 'desk'
+                    AND source_inbox_id <> destination_inbox_id
+                    AND timeline_event_id IS NULL)
+                OR (message_type = 'chat'
+                    AND source_inbox_id = destination_inbox_id
+                    AND timeline_event_id IS NOT NULL
+                    AND read_at IS NULL AND read_by_type IS NULL AND read_by_id IS NULL
+                    AND read_participation_assignment_id IS NULL)
+            )
+            SQL);
 
         DB::statement('ALTER TABLE messages ADD CONSTRAINT messages_number_positive CHECK (number > 0)');
 

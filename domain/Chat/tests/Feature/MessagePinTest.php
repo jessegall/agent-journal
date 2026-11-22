@@ -16,7 +16,7 @@ use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 
 /**
- * A pin is its owner's alone, one per message and conversation, made only on a message the owner can read, and
+ * A pin is its owner's alone, one per message and inbox, made only on a message the owner can read, and
  * listed only while the owner still can: it hides when access goes and comes back with it.
  */
 final class MessagePinTest extends TestCase
@@ -82,7 +82,7 @@ final class MessagePinTest extends TestCase
 
     private function pin(): void
     {
-        $this->runOnBus(new PinMessage($this->ownInboxId, $this->desk->inboxId(), $this->messageId));
+        $this->runOnBus(new PinMessage($this->desk->inboxId(), $this->messageId));
     }
 
     /**

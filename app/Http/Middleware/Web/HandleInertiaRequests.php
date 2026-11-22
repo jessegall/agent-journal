@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Web;
 
+use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\ChatMemberAuthority;
 use App\Contracts\CommandRefusal;
 use App\Sharing\Contracts\SharePolicy;
 use App\Web\Contracts\CurrentUserResolver;
@@ -39,6 +41,7 @@ class HandleInertiaRequests extends Middleware
         private readonly ResponseFactory $inertia,
         private readonly SharePolicy $sharing,
         private readonly InstalledVersion $version,
+        private readonly CurrentActor $actors,
     ) {}
 
     /**
@@ -83,8 +86,16 @@ class HandleInertiaRequests extends Middleware
             // The navigation the signed-in user may see, and its counts after the page, so a slow count never holds it
             // up.
             'navigation' => fn () => $this->navigation->tree($request),
-            'navigationCounts' => $this->inertia->defer(fn () => $this->navigation->counts(), 'navigation-counts'),
+            // A chat member is shown no journal counts: it sees only the chats it is in.
+            'navigationCounts' => $this->isChatMember()
+                ? []
+                : $this->inertia->defer(fn () => $this->navigation->counts(), 'navigation-counts'),
         ];
+    }
+
+    private function isChatMember(): bool
+    {
+        return $this->actors->hasActor() && $this->actors->authority() instanceof ChatMemberAuthority;
     }
 
     /**
