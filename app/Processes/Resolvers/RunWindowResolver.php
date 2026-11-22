@@ -15,12 +15,14 @@ use App\Processes\Resolvers\Support\RunSnapshotResolver;
 use App\Processes\Support\StoredOutput;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Layout\DeclaredLayoutData;
+use App\Ui\Layout\DetailPage;
+use App\Ui\Layout\LayoutBackData;
 use App\Ui\Layout\LayoutNativeData;
 use App\Ui\Layout\LayoutPartData;
 
 /**
- * One run of the current project for its page: the live snapshot, the escaped tail of every stream of every part and
- * the problems of each part's latest assessment.
+ * One run of the current project for its page, on the shared reader recipe: the live snapshot, the escaped tail of every stream of every part and
+ * the problems of each part's latest assessment; a run that is not there is the removed notice with Back to the runs.
  */
 final readonly class RunWindowResolver implements PageResolver
 {
@@ -34,6 +36,10 @@ final readonly class RunWindowResolver implements PageResolver
 
     public function read(): DeclaredLayoutData
     {
+        if (! $this->snapshots->canSee($this->page->runId())) {
+            return DetailPage::removed('run', new LayoutBackData('/processes/runs', 'Runs'));
+        }
+
         $snapshot = $this->snapshots->snapshot($this->page->runId());
         $run = ProcessRun::query()->forActor()->whereKey($snapshot->runId)->firstOrFail();
         $parts = $run->parts()->readLimit(500)->get();
@@ -45,12 +51,9 @@ final readonly class RunWindowResolver implements PageResolver
             $run->stop_reason,
         );
 
-        return DeclaredLayoutData::of(LayoutPartData::box(
-            'run',
-            'stack',
-            LayoutPartData::box('header', 'header', LayoutPartData::text('title', "Run {$snapshot->runId}", 'heading')),
-            LayoutPartData::native('detail', LayoutNativeData::of('processes/RunView', $detail)),
-        ));
+        return DetailPage::make("Run {$snapshot->runId}")
+            ->withStanding(LayoutPartData::native('detail', LayoutNativeData::of('processes/RunView', $detail)))
+            ->layout();
     }
 
     /**
