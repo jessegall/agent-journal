@@ -134,6 +134,21 @@ func TestAnInterruptBoundToAnEarlierTurnInterruptsNothing(t *testing.T) {
 	}
 }
 
+func TestAnInterruptAfterItsTurnEndedIsAlreadyIdleAndTypesNothing(t *testing.T) {
+	driver, _, program := recordedTurn(t, 11*time.Second)
+	driver.turns, driver.turnEnd = 1, &turnEnd{ended: make(chan error, 1), seen: true}
+	typed := program.String()
+
+	interrupt, err := driver.Interrupt(context.Background(), contracts.InterruptRequest{Request: request("after"), Turn: driver.Turns()})
+
+	if err != nil || interrupt.Outcome != contracts.OutcomeAlreadyIdle {
+		t.Fatalf("the interrupt after the turn ended %+v, %v", interrupt, err)
+	}
+	if program.String() != typed {
+		t.Fatalf("the interrupt after the turn typed %q", strings.TrimPrefix(program.String(), typed))
+	}
+}
+
 func TestSettingChangesStayStagedWithoutARecordedLivePath(t *testing.T) {
 	driver, _, program := recordedTurn(t, 11*time.Second)
 

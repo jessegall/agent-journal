@@ -83,10 +83,12 @@ type stalledScript struct {
 	secret  bool
 }
 
-// turnEnd is the end of one submitted prompt's turn, watched from the first time someone waits for it.
+// turnEnd is the end of one submitted prompt's turn, watched from the first time someone waits for it; seen is set,
+// under the driver's lock, once the watch saw the turn end.
 type turnEnd struct {
 	ended chan error
 	watch sync.Once
+	seen  bool
 }
 
 var _ contracts.AgentDriver = (*TerminalDriver)(nil)
@@ -102,14 +104,14 @@ func (driver *TerminalDriver) Generation() int {
 	return driver.runtime.ProcessGeneration
 }
 
-// Finished delivers the end of the last submitted prompt's turn: once the turn has taken the composer away, the
-// composer is empty and still again. The program keeps running between turns. With no prompt submitted yet there is
-// no turn to end, and the channel never delivers.
 // NativeIdentity is the conversation the program runs, which the start's bootstrap proves to the journal.
 func (driver *TerminalDriver) NativeIdentity() string {
 	return driver.runtime.ConversationID
 }
 
+// Finished delivers the end of the last submitted prompt's turn: once the turn has taken the composer away, the
+// composer is empty and still again. The program keeps running between turns. With no prompt submitted yet there is
+// no turn to end, and the channel never delivers.
 func (driver *TerminalDriver) Finished() <-chan error {
 	driver.mutex.Lock()
 	current := driver.turnEnd
@@ -117,7 +119,7 @@ func (driver *TerminalDriver) Finished() <-chan error {
 	if current == nil {
 		return nil
 	}
-	current.watch.Do(func() { go driver.awaitTurnEnd(current.ended) })
+	current.watch.Do(func() { go driver.awaitTurnEnd(current) })
 
 	return current.ended
 }
@@ -164,21 +166,24 @@ func (driver *TerminalDriver) ChangeEffort(
 	return staged(change.Request), nil
 }
 
-// Interrupt stops the running turn and holds the runtime until a user or a new delivery releases it.
+// Interrupt stops the running turn and holds the runtime until a user or a new delivery releases it. The turn is
+// checked and the key sent under one lock, so a turn that ended, or another turn, gets no key: an interrupt of an
+// ended turn answers already idle and never types into a composer that waits for the user.
 func (driver *TerminalDriver) Interrupt(
 	_ context.Context,
 	interrupt contracts.InterruptRequest,
 ) (contracts.OperationResult, error) {
-	if interrupt.Turn == 0 || interrupt.Turn != driver.Turns() {
+	driver.mutex.Lock()
+	defer driver.mutex.Unlock()
+
+	if interrupt.Turn == 0 || interrupt.Turn != driver.turns || driver.turnEnd.seen {
 		return alreadyIdle(interrupt.Request), nil
 	}
 	if err := driver.runtime.Gate.Keys(interruptKey); err != nil {
 		return failed(interrupt.Request), err
 	}
 
-	driver.mutex.Lock()
 	driver.interrupted = true
-	driver.mutex.Unlock()
 
 	return contracts.OperationResult{
 		Request:  interrupt.Request,
@@ -359,12 +364,15 @@ func (driver *TerminalDriver) strandedResult(
 }
 
 // awaitTurnEnd waits for the turn to take the composer away and then for an empty, still composer again.
-func (driver *TerminalDriver) awaitTurnEnd(ended chan<- error) {
+func (driver *TerminalDriver) awaitTurnEnd(current *turnEnd) {
 	driver.waitUntil(turnStartDeadline, func() bool { return !driver.promptReady() })
 	for !driver.promptReady() {
 		driver.runtime.Clock.Sleep(pollInterval)
 	}
-	ended <- nil
+	driver.mutex.Lock()
+	current.seen = true
+	driver.mutex.Unlock()
+	current.ended <- nil
 }
 
 func (driver *TerminalDriver) promptReady() bool {
