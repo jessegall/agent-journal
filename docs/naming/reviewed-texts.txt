@@ -291,6 +291,7 @@ Replace
 Reply
 Reset layout
 Resize
+Resize panes
 Resume
 Retired
 Retry
@@ -408,6 +409,7 @@ This sign-in is already running
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
 To renew it, choose Sign in again on the account.
 Turning off traffic inspection does not hide the content from the provider.
+Undo
 Unfinished sign-ins
 Unknown
 Update share {{ liveShare.number }}

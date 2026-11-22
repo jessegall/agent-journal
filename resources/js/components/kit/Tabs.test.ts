@@ -32,7 +32,7 @@ describe('Tabs', () => {
         const view = mountTabs();
         const tabButtons = view.findAll('[role="tab"]');
 
-        expect(view.get('[role="tablist"]').exists()).toBe(true);
+        expect(view.find('[role="tablist"]').exists()).toBe(true);
         expect(tabButtons.map((tab) => tab.attributes('aria-selected'))).toEqual(['true', 'false', 'false']);
         expect(tabButtons.map((tab) => tab.attributes('tabindex'))).toEqual(['0', '-1', '-1']);
 
