@@ -14,6 +14,10 @@ use PHPUnit\Framework\TestCase;
  */
 final class SourceLineMarksTest extends TestCase
 {
+    private const string ESCAPED_FORGERY = '&lt;p data-source-first="99"&gt;forged&lt;/p&gt;';
+
+    private const string FORGED_OPENING = '<p data-source-first="99"';
+
     public function test_each_block_carries_its_source_lines(): void
     {
         $markdown = <<<'TEXT'
@@ -32,11 +36,11 @@ final class SourceLineMarksTest extends TestCase
         TEXT;
         $html = MarkdownText::body($markdown)->toSafeHtml();
 
-        $this->assertStringContainsString('<h1 data-source-first="1" data-source-last="1">Goal</h1>', $html);
-        $this->assertStringContainsString('<p data-source-first="3" data-source-last="4">', $html);
-        $this->assertStringContainsString('<li data-source-first="6" data-source-last="6">', $html);
-        $this->assertStringContainsString('<li data-source-first="7" data-source-last="7">', $html);
-        $this->assertStringContainsString('<code data-source-first="9" data-source-last="11">', $html);
+        $this->assertStringContainsString($this->opening('h1', 1, 1).'Goal</h1>', $html);
+        $this->assertStringContainsString($this->opening('p', 3, 4), $html);
+        $this->assertStringContainsString($this->opening('li', 6, 6), $html);
+        $this->assertStringContainsString($this->opening('li', 7, 7), $html);
+        $this->assertStringContainsString($this->opening('code', 9, 11), $html);
     }
 
     public function test_a_part_keeps_the_line_numbers_of_the_whole_text(): void
@@ -47,16 +51,16 @@ final class SourceLineMarksTest extends TestCase
         Text.
         TEXT, 40, 42, null)->toSafeHtml();
 
-        $this->assertStringContainsString('<h2 data-source-first="40" data-source-last="40">Later</h2>', $html);
-        $this->assertStringContainsString('<p data-source-first="42" data-source-last="42">Text.</p>', $html);
+        $this->assertStringContainsString($this->opening('h2', 40, 40).'Later</h2>', $html);
+        $this->assertStringContainsString($this->opening('p', 42, 42).'Text.</p>', $html);
     }
 
     public function test_an_author_cannot_write_a_source_mark(): void
     {
         $html = MarkdownText::body("<p data-source-first=\"99\">forged</p>\n")->toSafeHtml();
 
-        $this->assertStringContainsString('&lt;p data-source-first="99"&gt;forged&lt;/p&gt;', $html);
-        $this->assertStringNotContainsString('<p data-source-first="99"', $html);
+        $this->assertStringContainsString(self::ESCAPED_FORGERY, $html);
+        $this->assertStringNotContainsString(self::FORGED_OPENING, $html);
     }
 
     public function test_a_comment_body_has_no_source_marks(): void
@@ -67,5 +71,10 @@ final class SourceLineMarksTest extends TestCase
         A line.
 
         TEXT));
+    }
+
+    private function opening(string $tag, int $first, int $last): string
+    {
+        return sprintf('<%s data-source-first="%d" data-source-last="%d">', $tag, $first, $last);
     }
 }

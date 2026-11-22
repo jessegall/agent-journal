@@ -36,6 +36,8 @@ final class AccountUsageTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string RESET_TIME = '2026-11-30 23:59:59';
+
     private Account $account;
 
     protected function setUp(): void
@@ -117,7 +119,7 @@ final class AccountUsageTest extends TestCase
         $this->assertSame('2.000000000000', $totals[$this->account->id]->usd->amount);
         $this->assertSame(2, $totals[$this->account->id]->observations);
         $lastObservedAt = $totals[$this->account->id]->lastObservedAt;
-        $this->assertSame('2026-11-30 23:59:59', $lastObservedAt->utc()->toDateTimeString());
+        $this->assertSame(self::RESET_TIME, $lastObservedAt->utc()->toDateTimeString());
         $this->assertSame(['0.000000000000', 1], [$totals[$other->id]->usd->amount, $totals[$other->id]->observations]);
     }
 

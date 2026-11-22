@@ -34,6 +34,12 @@ final class HookEndpointTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string STILL_NEEDS_WORK = 'Task %d still needs work';
+
+    private const string ADMISSION_PREFIX = 'journal process run --admission ';
+
+    private const string SECRET_DETAIL = 'secret detail';
+
     /**
      * The tables these tests commit to, the runtime its start opens included, emptied around each test.
      */
@@ -84,7 +90,7 @@ final class HookEndpointTest extends TestCase
 
         $stdout = $this->hook('claude-code', $this->stopBody())->assertOk()->json('stdout');
 
-        $this->assertStringContainsString("Task {$task->number} still needs work", (string) $stdout);
+        $this->assertStringContainsString(sprintf(self::STILL_NEEDS_WORK, $task->number), (string) $stdout);
     }
 
     #[TimeLimit(
@@ -102,7 +108,7 @@ final class HookEndpointTest extends TestCase
             $refused['hookSpecificOutput']['permissionDecisionReason'],
         );
         $runnerLine = $admitted['hookSpecificOutput']['updatedInput']['command'];
-        $this->assertStringStartsWith('journal process run --admission ', $runnerLine);
+        $this->assertStringStartsWith(self::ADMISSION_PREFIX, $runnerLine);
     }
 
     public function test_no_native_flag_makes_a_line_admitted(): void
@@ -169,7 +175,7 @@ final class HookEndpointTest extends TestCase
         );
         $kept = FailureReceipt::query()->withoutGlobalScopes()->sole();
         $this->assertSame(DriverFailure::Unknown, $kept->failure);
-        $this->assertStringNotContainsString('secret detail', (string) json_encode($kept->getAttributes()));
+        $this->assertStringNotContainsString(self::SECRET_DETAIL, (string) json_encode($kept->getAttributes()));
     }
 
     public function test_an_unauthenticated_call_is_refused(): void

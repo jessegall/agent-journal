@@ -23,6 +23,10 @@ use Tests\Support\TestIds;
  */
 final class StackAdmissionTest extends CommandBusTestCase
 {
+    private const string BUSY = 'busy with another operation';
+
+    private const string OTHER_SESSION = 'other session';
+
     private ConnectionInterface $holder;
 
     protected function setUp(): void
@@ -55,7 +59,7 @@ final class StackAdmissionTest extends CommandBusTestCase
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new WriteNote('waits')),
             StackLockTimedOut::class,
-            'busy with another operation',
+            self::BUSY,
         );
         $this->assertSame(0, $this->rowCount());
     }
@@ -79,9 +83,9 @@ final class StackAdmissionTest extends CommandBusTestCase
         $this->hold(2);
         $this->startTestAgentRequest(1, 3);
 
-        $id = $this->app->make(CommandBus::class)->run(new WriteNote('other session'));
+        $id = $this->app->make(CommandBus::class)->run(new WriteNote(self::OTHER_SESSION));
 
-        $this->assertSame('other session', $this->rowText($id));
+        $this->assertSame(self::OTHER_SESSION, $this->rowText($id));
     }
 
     public function test_a_nested_command_joins_the_outer_admission(): void

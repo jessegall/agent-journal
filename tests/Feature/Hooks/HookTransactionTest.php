@@ -17,6 +17,8 @@ use App\Hooks\Inputs\Values\SessionStartDetails;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Storage\WalkStep;
+use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Support\TaskWork;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;
@@ -28,6 +30,12 @@ use Tests\TestCase;
 final class HookTransactionTest extends TestCase
 {
     use CommittedHookStack;
+
+    private const string WAITING_THEN_COMMITTED = <<<'TEXT'
+        saw the hook waiting
+        committed
+
+        TEXT;
 
     public function test_a_hook_waiting_on_a_held_stack_lock_times_out_and_keeps_nothing(): void
     {
@@ -72,15 +80,11 @@ final class HookTransactionTest extends TestCase
                 fn (HookAnswer $answer) => DriverReplies::stop($answer),
             );
         } finally {
-            $this->assertSame(<<<'TEXT'
-            saw the hook waiting
-            committed
-
-            TEXT, stream_get_contents($process['stdout']));
+            $this->assertSame(self::WAITING_THEN_COMMITTED, stream_get_contents($process['stdout']));
             proc_close($process['handle']);
         }
 
-        $this->assertStringContainsString('Task 43 still needs work', $reply->stdout);
+        $this->assertStringContainsString(new TaskWork(43, 1, TaskState::Started)->unfinishedReason(), $reply->stdout);
         $this->assertSame(['pushed-by-other-process deny'], array_map(
             fn (WalkStep $step) => "{$step->frameId} {$step->answer->value}",
             HookCall::query()->sole()->steps->steps,

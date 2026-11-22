@@ -38,6 +38,17 @@ final class WholeRecordCommentTest extends TestCase
     use InstallsNotesModule;
     use StartsAgentRequests;
 
+    private const string NO_TEXT_REFUSAL = 'A notes.note has no text to read or point at; '
+        .'a comment on it is about the whole record.';
+
+    private const string FIRST_ABSTRACT = 'Comment 1.';
+
+    private const string QUESTION = 'Is this still open?';
+
+    private const string WIRE_TEXT = 'Over the wire.';
+
+    private const string NOTE_LABEL = 'note %d';
+
     private const array TABLES = ['comments', 'users', 'agents', 'number_groups'];
 
     private User $owner;
@@ -69,16 +80,16 @@ final class WholeRecordCommentTest extends TestCase
     public function test_a_comment_on_the_whole_note_is_listed_and_leads_to_the_note(): void
     {
         $commentId = $this->app->make(CommandBus::class)->run(
-            new PostComment($this->target(), 'Is this still open?', (string) Str::uuid()),
+            new PostComment($this->target(), self::QUESTION, (string) Str::uuid()),
         );
 
         $items = $this->app->make(CommentResolver::class)->list($this->target(), new Page())->comments;
         $location = $this->app->make(CommentResolver::class)->location($this->target(), $commentId);
 
         $this->assertInstanceOf(RecordCommentView::class, $items[0]);
-        $this->assertSame('Is this still open?', $items[0]->comment->body);
+        $this->assertSame(self::QUESTION, $items[0]->comment->body);
         $this->assertInstanceOf(RecordCommentLocation::class, $location);
-        $this->assertSame("note {$this->note->number}", $location->target->label);
+        $this->assertSame(sprintf(self::NOTE_LABEL, $this->note->number), $location->target->label);
     }
 
     public function test_a_comment_on_text_is_refused_for_a_record_without_text(): void
@@ -100,23 +111,23 @@ final class WholeRecordCommentTest extends TestCase
             ->post(
                 '/comments/post',
                 [
-                    'target' => "note {$this->note->number}",
-                    'body' => 'Over the wire.',
+                    'target' => sprintf(self::NOTE_LABEL, $this->note->number),
+                    'body' => self::WIRE_TEXT,
                     'submission_key' => (string) Str::uuid(),
                 ],
             )
             ->assertRedirect();
 
         $this->actingAs($this->owner)
-            ->getJson('/comments/list?target='.urlencode("note {$this->note->number}"))
+            ->getJson('/comments/list?target='.urlencode(sprintf(self::NOTE_LABEL, $this->note->number)))
             ->assertOk()
             ->assertJsonPath('items.0.type', 'record')
-            ->assertJsonPath('items.0.comment.body', 'Over the wire.');
+            ->assertJsonPath('items.0.comment.body', self::WIRE_TEXT);
     }
 
     public function test_a_mixed_or_partial_place_is_refused_with_nothing_stored(): void
     {
-        $note = "note {$this->note->number}";
+        $note = sprintf(self::NOTE_LABEL, $this->note->number);
 
         $this->actingAs($this->owner)
             ->postJson(
@@ -157,7 +168,7 @@ final class WholeRecordCommentTest extends TestCase
             ->postJson(
                 '/comments/post',
                 [
-                    'target' => "note {$this->note->number}",
+                    'target' => sprintf(self::NOTE_LABEL, $this->note->number),
                     'body' => 'Spoofed.',
                     'submission_key' => (string) Str::uuid(),
                     'author_id' => 'someone',
@@ -178,11 +189,11 @@ final class WholeRecordCommentTest extends TestCase
     public function test_the_text_routes_refuse_a_record_without_text(): void
     {
         $this->actingAs($this->owner)
-            ->getJson('/text/version?target='.urlencode("note {$this->note->number}"))
+            ->getJson('/text/version?target='.urlencode(sprintf(self::NOTE_LABEL, $this->note->number)))
             ->assertForbidden()
             ->assertJsonPath(
                 'message',
-                'A notes.note has no text to read or point at; a comment on it is about the whole record.',
+                self::NO_TEXT_REFUSAL,
             );
     }
 
@@ -207,7 +218,7 @@ final class WholeRecordCommentTest extends TestCase
             array_fill(0, 3, "comment on note {$this->note->number}"),
             array_map(fn ($card) => $card->label, $cards),
         );
-        $this->assertSame('Comment 1.', $cards[0]->abstract);
+        $this->assertSame(self::FIRST_ABSTRACT, $cards[0]->abstract);
         $this->assertLessThanOrEqual(4, $queries);
     }
 

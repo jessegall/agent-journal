@@ -40,6 +40,8 @@ final class NavigationRoundTest extends TestCase
     use RunsTrustedCommands;
     use SendsHostCalls;
 
+    private const string SAVED_EVIDENCE = 'proven, saved as menu entry %s';
+
     private const array TABLES = [
         'agents',
         'agent_sessions',
@@ -168,7 +170,7 @@ final class NavigationRoundTest extends TestCase
         $this->assertSame($entry->id, $navigation->fresh()?->library_entry_id);
         $this->assertSame([[...$this->step(), 'key' => null, 'proof' => null]], $entry->steps);
         $stalled = DriverRequest::query()->findOrFail($navigation->driver_request_id);
-        $this->assertSame("proven, saved as menu entry {$entry->id}", $stalled->script_evidence);
+        $this->assertSame(sprintf(self::SAVED_EVIDENCE, $entry->id), $stalled->script_evidence);
 
         [$otherHost, $other] = $this->stalled('2.1.400');
         $this->report($otherHost, $this->proved($other), proofSeen: true, steps: [$this->step()])->assertNoContent();

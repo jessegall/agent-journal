@@ -57,6 +57,10 @@ final class CreateShareTest extends TestCase
     use RegistersShareDomains;
     use StartsAgentRequests;
 
+    private const string PENDING_HAS_NO_ADDRESS = 'A pending share has no address yet.';
+
+    private const string OWNER_ONLY_ADDRESS = 'Only the owner reads the address.';
+
     private const string KEY = '01JD8X0G9M3QZ6V4K2CREATE01';
 
     private RecordIdentity $root;
@@ -106,7 +110,7 @@ final class CreateShareTest extends TestCase
         $links = $this->app->make(ShareLinkResolver::class);
         $this->assertTrue(
             $links->linkFor(TestActors::user(9), $share->id)->isEmpty(),
-            'A pending share has no address yet.',
+            self::PENDING_HAS_NO_ADDRESS,
         );
 
         $share->state = ShareState::Active;
@@ -118,7 +122,7 @@ final class CreateShareTest extends TestCase
         );
         $this->assertTrue(
             $links->linkFor(TestActors::user(8), $share->id)->isEmpty(),
-            'Only the owner reads the address.',
+            self::OWNER_ONLY_ADDRESS,
         );
     }
 
@@ -203,7 +207,7 @@ final class CreateShareTest extends TestCase
         $this->assertThrows(
             fn () => $this->create($saved, ShareDuration::STANDARD_MINUTES, '01JD8X0G9M3QZ6V4K2CREATE04'),
             SharePreviewRefused::class,
-            'used already',
+            SharePreviewRefused::consumed($saved->previewId)->getMessage(),
         );
     }
 

@@ -32,7 +32,11 @@ final class TaskWatchDeliveryTest extends TestCase
     use CommittedHookStack {
         setUpCommittedHookStack as private setUpBaseStack;
     }
+
     use InstallsCommandModules;
+
+    private const string WATCH_REPORT = 'Watch 3 saw the task finish.\nWatch 3 saw the task cancelled.\n'
+        .'Watch 1 saw the task cancelled.\nWatch 3 is active.';
 
     protected function setUpCommittedHookStack(): void
     {
@@ -92,8 +96,7 @@ final class TaskWatchDeliveryTest extends TestCase
 
         $stdout = $this->answerStop('call-1');
         $this->assertStringContainsString(
-            'Watch 3 saw the task finish.\nWatch 3 saw the task cancelled.\n'
-                .'Watch 1 saw the task cancelled.\nWatch 3 is active.',
+            self::WATCH_REPORT,
             $stdout,
         );
         $steps = HookCall::query()->forHookId('call-1')->sole()->steps->steps;

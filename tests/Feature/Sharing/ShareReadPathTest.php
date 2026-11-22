@@ -54,7 +54,7 @@ final class ShareReadPathTest extends TestCase
         $this->assertThrows(
             fn () => ShareReadPath::parse($five, $this->root, $this->records),
             ShareReadRefused::class,
-            'at most 4 steps',
+            ShareReadRefused::tooDeep(4)->getMessage(),
         );
         $this->assertThrows(
             fn () => ShareReadPath::parse('notes/pamphlets.pamphlet/'.TestIds::of(1), $this->root, $this->records),
@@ -68,12 +68,12 @@ final class ShareReadPathTest extends TestCase
         $this->assertThrows(
             fn () => ShareReadPath::parse('notes/pamphlets.note/12', $this->root, $this->records),
             ShareReadRefused::class,
-            'not part of the share',
+            ShareReadRefused::malformedPath()->getMessage(),
         );
         $this->assertThrows(
             fn () => ShareReadPath::parse('notes/pamphlets.note', $this->root, $this->records),
             ShareReadRefused::class,
-            'not part of the share',
+            ShareReadRefused::malformedPath()->getMessage(),
         );
     }
 
@@ -92,7 +92,7 @@ final class ShareReadPathTest extends TestCase
                 new ShareCursor(TestIds::of(9), 2, '', 'notes', ShareCursor::ORDER_WRITTEN_THEN_ID, ''),
             ),
             ShareReadRefused::class,
-            'older view',
+            ShareReadRefused::staleCursor()->getMessage(),
         );
         $this->assertThrows(
             fn () => $cursors->read(

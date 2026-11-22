@@ -23,6 +23,8 @@ use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
  */
 final class CommandDispatchTest extends CommandBusTestCase
 {
+    private const string DRAWN_CARD = 'card from red';
+
     public function test_every_registered_command_has_its_handler_and_its_result_comes_back_unchanged(): void
     {
         $this->installCommandModules();
@@ -31,7 +33,7 @@ final class CommandDispatchTest extends CommandBusTestCase
 
         $this->assertInstanceOf(LaravelCommandBus::class, $bus);
         $this->assertTrue($bus->hasHandlerFor(new DrawCard('red')));
-        $this->assertSame('card from red', $bus->run(new DrawCard('red')));
+        $this->assertSame(self::DRAWN_CARD, $bus->run(new DrawCard('red')));
         $bus->run(new WriteNote('cleared'));
         $bus->run(new ClearNotes());
         $this->assertSame(0, $this->rowCount());

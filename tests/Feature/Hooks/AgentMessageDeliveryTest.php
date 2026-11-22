@@ -49,6 +49,12 @@ final class AgentMessageDeliveryTest extends TestCase
 {
     use CommittedHookStack;
 
+    private const string PLAIN_CONTEXT = 'Plain context.';
+
+    private const string WAKE = 'Wake once.';
+
+    private const string MORE_CONTEXT = 'More context.';
+
     public function test_an_allowed_stop_keeps_the_message_and_wakes_the_idle_agent(): void
     {
         Agent::query()->findOrFail($this->target->agentId)->adoptRuntime(
@@ -114,21 +120,21 @@ final class AgentMessageDeliveryTest extends TestCase
 
         $plain = $this->captureFor($target);
         $transaction->run(
-            fn () => $delivery->retainEvent($target, $plain, new StateEventContext(['Plain context.'], [])),
+            fn () => $delivery->retainEvent($target, $plain, new StateEventContext([self::PLAIN_CONTEXT], [])),
         );
 
         $this->assertSame([], $attention->wakes);
         $this->assertSame(0, $work->pendingCount($actor));
 
         $marked = $this->captureFor($target);
-        $context = new StateEventContext(['Wake once.', 'More context.', 'Wake once.'], ['Wake once.', 'Wake once.']);
+        $context = new StateEventContext([self::WAKE, self::MORE_CONTEXT, self::WAKE], [self::WAKE, self::WAKE]);
         $transaction->run(fn () => $delivery->retainEvent($target, $marked, $context));
 
         $this->assertEquals([[$actor, AttentionOrigin::stateEvent($marked->id)->keyFor($actor)]], $attention->wakes);
         $this->assertSame(1, $work->pendingCount($actor));
         $this->assertSame(2, PendingAgentMessage::countFor($actor));
         $this->assertSame(
-            "Plain context.\nWake once.\nMore context.\nWake once.",
+            implode("\n", [self::PLAIN_CONTEXT, self::WAKE, self::MORE_CONTEXT, self::WAKE]),
             $this->contextOf($this->answerPrompt('call-2')),
         );
         $this->assertSame('{}', $this->answerPrompt('call-3'));

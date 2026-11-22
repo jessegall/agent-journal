@@ -20,6 +20,15 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of the project.')]
 final class FolderLayoutTest extends TestCase
 {
+    private const string LOOSE_CLASSES = 'These classes sit loose at a domain or Core area root; '
+        ."move each into the folder of its type, or that area's Support folder.";
+
+    private const string ACTIONS_FOLDER = 'A domain write is a command with a handler (doc 19); '
+        .'only Access keeps the Actions Fortify calls.';
+
+    private const string LOOSE_ENUMS = 'These enums sit outside an Enums folder; '
+        .'move each into the Enums folder of its domain or Core area.';
+
     public function test_every_domain_root_holds_only_its_domain_class_and_a_core_area_root_nothing(): void
     {
         $loose = [];
@@ -44,7 +53,7 @@ final class FolderLayoutTest extends TestCase
         $this->assertSame(
             [],
             $loose,
-            "These classes sit loose at a domain or Core area root; move each into the folder of its type, or that area's Support folder.",
+            self::LOOSE_CLASSES,
         );
     }
 
@@ -53,7 +62,7 @@ final class FolderLayoutTest extends TestCase
         $this->assertSame(
             [],
             self::actionsFoldersIn(base_path('domain')),
-            'A domain write is a command with a handler (doc 19); only Access keeps the Actions Fortify calls.',
+            self::ACTIONS_FOLDER,
         );
     }
 
@@ -105,7 +114,7 @@ final class FolderLayoutTest extends TestCase
         $this->assertSame(
             [],
             $misplaced,
-            'These enums sit outside an Enums folder; move each into the Enums folder of its domain or Core area.',
+            self::LOOSE_ENUMS,
         );
     }
 

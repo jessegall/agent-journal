@@ -10,6 +10,8 @@ use Tests\TestCase;
 
 final class ContractSnapshotTest extends TestCase
 {
+    private const string CHANGED = 'MCP contract changes: %s. Regenerate with mcp:contract.';
+
     public function test_published_contract_matches_the_catalogue(): void
     {
         $snapshot = $this->app->make(ContractSnapshot::class);
@@ -18,7 +20,7 @@ final class ContractSnapshotTest extends TestCase
         $current = $snapshot->render();
         $changes = implode(', ', $snapshot->differences($recorded, $current));
 
-        self::assertSame($recorded, $current, 'MCP contract changes: '.$changes.'. Regenerate with mcp:contract.');
+        self::assertSame($recorded, $current, sprintf(self::CHANGED, $changes));
     }
 
     public function test_a_schema_change_names_the_tool_and_profile(): void

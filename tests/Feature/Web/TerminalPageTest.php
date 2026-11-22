@@ -13,6 +13,7 @@ use App\Agents\Actions\AgentSessions;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Data\ScreenFrameData;
 use App\Agents\Enums\DriverVariant;
+use App\Agents\Exceptions\TerminalViewRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
@@ -42,6 +43,8 @@ final class TerminalPageTest extends TestCase
 {
     use OpensTerminalRuntimes;
     use RefreshHookDatabase;
+
+    private const string NOT_RUNNING = 'This agent is not running';
 
     private User $owner;
 
@@ -73,9 +76,9 @@ final class TerminalPageTest extends TestCase
         $stopped = $this->runtimeOn('host-1');
         $this->app->make(DriverRequestEndings::class)->closeAfterExit($stopped);
 
-        $this->assertRefusal($process->session->agent_id, 'This agent runs without a terminal');
-        $this->assertRefusal($stopped->session->agent_id, 'This agent is not running');
-        $this->assertRefusal('01jzzzzzzzzzzzzzzzzzzzzzzz', 'You may not inspect this agent');
+        $this->assertRefusal($process->session->agent_id, TerminalViewRefused::processDriver()->getMessage());
+        $this->assertRefusal($stopped->session->agent_id, self::NOT_RUNNING);
+        $this->assertRefusal('01jzzzzzzzzzzzzzzzzzzzzzzz', TerminalViewRefused::mayNotInspect()->getMessage());
 
         $stranger = User::factory()->create();
         $this->actingAs($stranger)->post("/web/agents/{$process->session->agent_id}/terminal/open")->assertForbidden();
@@ -90,7 +93,7 @@ final class TerminalPageTest extends TestCase
             TerminalView::create($this->viewerOf($this->owner), $runtime, 500, CarbonImmutable::now());
         }
 
-        $this->assertRefusal($runtime->session->agent_id, 'You may have at most 20 terminal views open');
+        $this->assertRefusal($runtime->session->agent_id, TerminalViewRefused::tooManyViews()->getMessage());
     }
 
     public function test_a_stored_frame_is_served_once_and_then_left_out(): void

@@ -16,6 +16,9 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 6, reason: 'It runs a stand-in program as a host process several times.')]
 final class CodexKeySignInTest extends TestCase
 {
+    private const string KEY_REFUSAL = 'unexpected status 401 Unauthorized: Incorrect API key provided: the key. '
+        .'You can find your API key at https://platform.openai.com/account/api-keys.';
+
     private string $directory;
 
     protected function setUp(): void
@@ -53,11 +56,7 @@ final class CodexKeySignInTest extends TestCase
         $verification = $this->proofOf('sk-proj-revoked-key');
 
         $this->assertFalse($verification->isSignedIn);
-        $this->assertSame(
-            'unexpected status 401 Unauthorized: Incorrect API key provided: the key. You can find your API key at '
-                .'https://platform.openai.com/account/api-keys.',
-            $verification->refusal,
-        );
+        $this->assertSame(self::KEY_REFUSAL, $verification->refusal);
     }
 
     public function test_a_refused_key_or_a_chatgpt_login_proves_nothing(): void

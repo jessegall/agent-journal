@@ -57,7 +57,7 @@ final class OperationFactsTest extends TestCase
                 ),
             );
 
-            $this->assertNotSame([], $unknown, "{$line} was placed.");
+            $this->assertNotSame([], $unknown, $line);
             $this->assertSame([], $unknown[0]->accessTypes);
         }
     }

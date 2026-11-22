@@ -38,6 +38,8 @@ final class GatewayRuntimeTest extends TestCase
     use RefreshHookDatabase;
     use RunsTrustedCommands;
 
+    private const string HELD_OPERATION = 'A held operation is not claimed again.';
+
     private const string FIRST_RUN = '01JD8X0G9M3QZ6V4K2RUN0000A';
 
     private const string SECOND_RUN = '01JD8X0G9M3QZ6V4K2RUN0000B';
@@ -68,7 +70,7 @@ final class GatewayRuntimeTest extends TestCase
             2,
         );
         $this->assertSame($this->configuration->id, $claim->operation->configurationId());
-        $this->assertNull($this->claim(self::FIRST_RUN), 'A held operation is not claimed again.');
+        $this->assertNull($this->claim(self::FIRST_RUN), self::HELD_OPERATION);
     }
 
     public function test_an_outcome_under_an_expired_lease_activates_nothing(): void

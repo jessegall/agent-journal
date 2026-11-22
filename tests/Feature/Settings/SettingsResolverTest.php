@@ -40,6 +40,10 @@ final class SettingsResolverTest extends TestCase
     use CountsReads;
     use RefreshHookDatabase;
 
+    private const string JOURNAL_NAME = 'My journal';
+
+    private const string REVIEW_TITLE = 'Weekly reviews';
+
     private SettingRegistry $registry;
 
     private CoreSettings $core;
@@ -67,14 +71,14 @@ final class SettingsResolverTest extends TestCase
         $resolver = $this->resolver();
         $this->assertSame('Journal', $resolver->string($this->core->displayName));
 
-        $this->storeSetting('Core', 'display_name', 'My journal');
+        $this->storeSetting('Core', 'display_name', self::JOURNAL_NAME);
 
         $this->assertSame(0, $this->readCounts(fn () => $resolver->string($this->core->displayName))->queriesRun);
         $this->assertSame('Journal', $resolver->string($this->core->displayName));
-        $this->assertSame('My journal', $this->resolver()->string($this->core->displayName));
+        $this->assertSame(self::JOURNAL_NAME, $this->resolver()->string($this->core->displayName));
 
         $resolver->forget('Core');
-        $this->assertSame('My journal', $resolver->string($this->core->displayName));
+        $this->assertSame(self::JOURNAL_NAME, $resolver->string($this->core->displayName));
     }
 
     public function test_a_setting_of_a_group_that_can_be_switched_off_is_not_read_on_its_own(): void
@@ -135,12 +139,12 @@ final class SettingsResolverTest extends TestCase
 
     public function test_a_snapshot_reads_every_setting_of_an_owner_with_one_query(): void
     {
-        $this->storeSetting('Reviews', 'title', 'Weekly reviews');
+        $this->storeSetting('Reviews', 'title', self::REVIEW_TITLE);
         $resolver = $this->resolver();
 
         $counts = $this->readCounts(function () use ($resolver): void {
             $snapshot = $resolver->snapshot($this->reviews);
-            $this->assertSame('Weekly reviews', $snapshot->string($this->reviews->title));
+            $this->assertSame(self::REVIEW_TITLE, $snapshot->string($this->reviews->title));
             $this->assertSame(0, $snapshot->choice($this->reviews->priority));
             $review = $snapshot->group($this->reviews->review);
             $this->assertInstanceOf(EnabledSettingsGroup::class, $review);

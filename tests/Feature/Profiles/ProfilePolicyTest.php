@@ -41,6 +41,8 @@ final class ProfilePolicyTest extends TestCase
     use ActsAsTestUser;
     use CommitsHookRows;
 
+    private const string REQUIRED_CONTAINER = 'required container';
+
     private const array TABLES = ['profile_revisions', 'profiles', 'revision_fences', 'command_receipts'];
 
     private const array WORKER = [
@@ -110,7 +112,7 @@ final class ProfilePolicyTest extends TestCase
         $this->assertThrows(
             fn () => $this->activate(['profiles' => ['journal-worker' => [...self::WORKER, 'container' => 'host']]]),
             ProfilePolicyRefused::class,
-            'required container',
+            self::REQUIRED_CONTAINER,
         );
     }
 

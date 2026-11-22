@@ -26,6 +26,8 @@ final class ReportTest extends TestCase
     use CommitsHookRows;
     use SendsSignedCalls;
 
+    private const string SETTLEMENT_REASON = 'The findings were addressed.';
+
     private const array TABLES = [
         'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'links', 'number_groups',
         'documents', 'document_revisions', 'record_settlements', 'reports', 'comments', 'text_uploads',
@@ -70,7 +72,7 @@ final class ReportTest extends TestCase
 
         $this->signed($reviewer, '/agent/reports/close', [
             'number' => $id,
-            'reason' => 'The findings were addressed.',
+            'reason' => self::SETTLEMENT_REASON,
             'request_key' => 'close-review',
         ])->assertOk();
 
@@ -88,7 +90,7 @@ final class ReportTest extends TestCase
 
         $reviewer->startRequest($this->app);
         $inspection = $this->app->make(ReportResolver::class)->inspect($report->number);
-        $this->assertSame('The findings were addressed.', $inspection->settlements[0]->reason);
+        $this->assertSame(self::SETTLEMENT_REASON, $inspection->settlements[0]->reason);
         $this->assertDatabaseCount('plans', 0);
     }
 }

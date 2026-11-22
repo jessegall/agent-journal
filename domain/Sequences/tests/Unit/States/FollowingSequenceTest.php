@@ -48,7 +48,7 @@ final class FollowingSequenceTest extends TestCase
         $decision = $this->following()->onStop($this->stop());
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertSame('Sequence run 8 is on step 3: Run the phase tests.', $decision->refusalReason());
+        $this->assertSame($this->running()->currentInstruction(), $decision->refusalReason());
         $this->assertSame(SimpleTransition::Keep, $decision->transition);
     }
 
@@ -58,7 +58,7 @@ final class FollowingSequenceTest extends TestCase
         $state = new FollowingSequenceState($sequence);
 
         $this->assertSame('sequences.step', $state->instructionType());
-        $this->assertSame('Sequence run 8 is on step 3: Run the phase tests.', $state->instructionText());
+        $this->assertSame($sequence->currentInstruction(), $state->instructionText());
         $this->assertSame($state->instructionText(), $state->instructionText());
         $this->assertSame(3, $sequence->stepNumber);
     }

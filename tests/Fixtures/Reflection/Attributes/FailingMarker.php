@@ -14,8 +14,12 @@ use RuntimeException;
 #[Attribute(Attribute::TARGET_CLASS)]
 final class FailingMarker
 {
+    public const string MESSAGE = 'The marker refuses to be built.';
+
+    public const string CAUSE = 'the cause';
+
     public function __construct()
     {
-        throw new RuntimeException('The marker refuses to be built.', previous: new LogicException('the cause'));
+        throw new RuntimeException(self::MESSAGE, previous: new LogicException(self::CAUSE));
     }
 }

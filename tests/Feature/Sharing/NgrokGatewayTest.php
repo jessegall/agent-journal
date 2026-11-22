@@ -20,6 +20,10 @@ use Tests\TestCase;
  */
 final class NgrokGatewayTest extends TestCase
 {
+    private const string AUTH_TOKEN_LINE = 'authtoken: "fixture-token"';
+
+    private const string WEB_ADDRESS_LINE = 'web_addr: 127.0.0.1:4041';
+
     private const string ORIGIN = 'https://docs.example.org';
 
     private string $folder;
@@ -69,11 +73,11 @@ final class NgrokGatewayTest extends TestCase
 
         $this->assertSame(self::ORIGIN, $endpoint->publicOrigin);
         $this->assertStringContainsString(
-            'authtoken: "fixture-token"',
+            self::AUTH_TOKEN_LINE,
             (string) file_get_contents($this->folder.'/config/ngrok.yml'),
         );
         $this->assertStringContainsString(
-            'web_addr: 127.0.0.1:4041',
+            self::WEB_ADDRESS_LINE,
             (string) file_get_contents($this->folder.'/config/ngrok.yml'),
         );
     }
@@ -87,7 +91,7 @@ final class NgrokGatewayTest extends TestCase
         $this->assertThrows(
             fn () => $this->gateway()->open($this->operation(self::ORIGIN)),
             GatewayOpenFailed::class,
-            'other than its fixed public origin',
+            GatewayOpenFailed::unexpectedAddress('ngrok')->getMessage(),
         );
 
         $this->controlApiAnswers([['public_url' => self::ORIGIN, 'config' => ['addr' => 'http://127.0.0.1:3000']]]);
@@ -95,7 +99,7 @@ final class NgrokGatewayTest extends TestCase
         $this->assertThrows(
             fn () => $this->gateway()->open($this->operation(self::ORIGIN)),
             GatewayOpenFailed::class,
-            'other than its fixed public origin',
+            GatewayOpenFailed::unexpectedAddress('ngrok')->getMessage(),
         );
     }
 

@@ -40,6 +40,10 @@ final class ReaderProposalTest extends TestCase
     use SendsSignedCalls;
     use StartsTestAgent;
 
+    private const string OPERATION = 'acme verify';
+
+    private const string SUMMARY_RULE = 'summary rule';
+
     private CommandRequest $request;
 
     protected function setUp(): void
@@ -48,9 +52,9 @@ final class ReaderProposalTest extends TestCase
 
         ProcessOutputDisk::fake();
         $requestId = $this->runAsAgent(new OpenCommandRequest(
-            'acme verify',
+            self::OPERATION,
             str_repeat('a', 64),
-            'acme verify',
+            self::OPERATION,
             '/projects/acme',
             RequestHoldReason::UnknownCommand,
         ));
@@ -66,7 +70,7 @@ final class ReaderProposalTest extends TestCase
         $this->assertFalse($revision->isProven());
         $this->assertSame($this->request->id, $revision->command_request_id);
         $this->assertSame(1, $revision->declaration_revision);
-        $this->assertSame('acme verify', $revision->operation);
+        $this->assertSame(self::OPERATION, $revision->operation);
         $this->assertSame(RequestState::AwaitingSampleApproval, $this->request->refresh()->state);
     }
 
@@ -74,7 +78,7 @@ final class ReaderProposalTest extends TestCase
     {
         $reply = $this->proposeReader($this->definition(withSummary: false))->assertStatus(422);
 
-        $this->assertStringContainsString('summary rule', (string) $reply->json('message'));
+        $this->assertStringContainsString(self::SUMMARY_RULE, (string) $reply->json('message'));
         $this->assertSame(0, ReaderRevision::query()->count());
     }
 
@@ -159,7 +163,7 @@ final class ReaderProposalTest extends TestCase
                 projectKey: $this->request->project_key,
             ),
         );
-        $part = PartRun::create($run, new PartKey(1, 1, 'acme verify'));
+        $part = PartRun::create($run, new PartKey(1, 1, self::OPERATION));
         $part->start('host', 1);
         $recorder = $this->app->make(SpoolRecorder::class);
         $now = CarbonImmutable::now();

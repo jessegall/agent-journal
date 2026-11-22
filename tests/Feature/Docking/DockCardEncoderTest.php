@@ -22,18 +22,17 @@ use Tests\TestCase;
  */
 final class DockCardEncoderTest extends TestCase
 {
+    private const string EXAMPLE_ENVELOPE = '{"version":1,"placementId":"P7","source":{"type":"message","id":"M4"},'
+        .'"accessibleName":"Message 4","safeSummary":"Message 4","open":null,"root":{"type":"stack","key":"root",'
+        .'"children":[{"type":"subtitle","key":"status","text":"Ready"}]}}';
+
     public function test_the_design_example_card_is_written_as_its_envelope(): void
     {
         $card = DockCard::named('Message 4', Stack::of('root', new Subtitle('status', 'Ready')));
 
         $encoded = $this->app->make(DockCardEncoder::class)->encode($card, 'P7', new DockIdentity('message', 'M4'), 'Message 4');
 
-        $this->assertSame(
-            '{"version":1,"placementId":"P7","source":{"type":"message","id":"M4"},"accessibleName":"Message 4",'
-            .'"safeSummary":"Message 4","open":null,"root":{"type":"stack","key":"root","children":'
-            .'[{"type":"subtitle","key":"status","text":"Ready"}]}}',
-            json_encode($encoded),
-        );
+        $this->assertSame(self::EXAMPLE_ENVELOPE, json_encode($encoded));
     }
 
     public function test_a_card_over_its_budget_keeps_only_its_summary(): void

@@ -36,6 +36,8 @@ final class StopAttemptTest extends TestCase
     use RunsTrustedCommands;
     use SendsHostCalls;
 
+    private const string SUMMARY = 'passed in summary';
+
     private const string DIGEST = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 
     private const string HASH = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
@@ -138,7 +140,7 @@ final class StopAttemptTest extends TestCase
         $result = StopResult::query()->sole();
         $this->assertSame(1, $pruned->stopOutputs);
         $this->assertNull($result->output);
-        $this->assertSame('passed in summary', $result->summary);
+        $this->assertSame(self::SUMMARY, $result->summary);
     }
 
     public function test_the_host_route_takes_the_results_and_answers_the_settled_state(): void

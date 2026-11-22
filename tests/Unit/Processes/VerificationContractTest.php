@@ -28,6 +28,8 @@ use PHPUnit\Framework\TestCase;
  */
 final class VerificationContractTest extends TestCase
 {
+    private const string PASSING_EXIT_EVIDENCE = 'summary.failed == 0';
+
     public function test_the_acme_verify_contract_of_section_72_is_built_and_judges_its_exits(): void
     {
         $contract = new VerificationContract(
@@ -44,7 +46,7 @@ final class VerificationContractTest extends TestCase
                 EmptySelection::ConfigurationProblem,
             ),
             ExitPolicy::of(
-                ExitBranch::of(0, Outcome::Passed, 'summary.failed == 0'),
+                ExitBranch::of(0, Outcome::Passed, self::PASSING_EXIT_EVIDENCE),
                 ExitBranch::of(1, Outcome::Findings, 'summary.failed > 0'),
                 ExitBranch::of(2, Outcome::ExecutionError, 'diagnostic'),
             ),
@@ -54,7 +56,10 @@ final class VerificationContractTest extends TestCase
 
         $this->assertSame(Outcome::Findings, $contract->exits->outcomeOf(1));
         $this->assertSame(Outcome::ExecutionError, $contract->exits->outcomeOf(3));
-        $this->assertContains('exit 0: passed when summary.failed == 0', $contract->description());
+        $this->assertContains(
+            sprintf('exit %s: %s when %s', 0, Outcome::Passed->value, self::PASSING_EXIT_EVIDENCE),
+            $contract->description(),
+        );
     }
 
     public function test_an_unproven_contract_requires_a_reader_and_treats_every_exit_as_an_execution_error(): void
@@ -66,7 +71,7 @@ final class VerificationContractTest extends TestCase
         );
 
         $this->assertSame(Outcome::ExecutionError, $contract->exits->outcomeOf(0));
-        $this->assertContains('reader required', $contract->description());
+        $this->assertContains($contract->reader->label(), $contract->description());
     }
 
     public function test_a_negative_status_is_named(): void

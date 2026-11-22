@@ -12,9 +12,11 @@ use PHPUnit\Framework\TestCase;
  */
 final class TextPreviewTest extends TestCase
 {
+    private const string SHORT_TITLE = 'Short title';
+
     public function test_a_text_that_fits_is_kept_whole(): void
     {
-        $this->assertSame('Short title', TextPreview::within('Short title', 20));
+        $this->assertSame(self::SHORT_TITLE, TextPreview::within(self::SHORT_TITLE, 20));
     }
 
     public function test_a_longer_text_ends_in_an_ellipsis_within_its_bytes(): void

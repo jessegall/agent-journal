@@ -30,6 +30,8 @@ final class DockToolsTest extends TestCase
     use SendsSignedCalls;
     use WritesInboxMessages;
 
+    private const string PLACEMENT_TITLE = 'Ship the dock';
+
     private const array TABLES = [
         'users',
         'agents',
@@ -73,7 +75,7 @@ final class DockToolsTest extends TestCase
             ->json('result.structuredContent.placementId');
         $listed = $this->callMcpTool($caller, 'dock_list')
             ->assertJsonPath('result.structuredContent.placements.0.placementId', $placementId)
-            ->assertJsonPath('result.structuredContent.placements.0.title', 'Ship the dock')
+            ->assertJsonPath('result.structuredContent.placements.0.title', self::PLACEMENT_TITLE)
             ->assertJsonPath('result.structuredContent.placements.0.state', 'shown')
             ->json('result.structuredContent.placements.0');
         $this->runCommandsAs($caller);

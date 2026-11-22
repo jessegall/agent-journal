@@ -41,6 +41,8 @@ final class ConfigureShareGatewayTest extends TestCase
     use StartsAgentRequests;
     use UsesSecretsFolder;
 
+    private const string NOT_LOGGED_IN = 'not logged in';
+
     private const string SECRET = 'hunter2-very-secret-bytes';
 
     protected function setUp(): void
@@ -86,7 +88,7 @@ final class ConfigureShareGatewayTest extends TestCase
         $this->assertThrows(
             fn () => $this->configure(UnconfiguredShareGateway::KEY, true),
             GatewayNotSetUp::class,
-            'not logged in',
+            self::NOT_LOGGED_IN,
         );
         $this->assertSame(0, ShareGatewayConfiguration::query()->where('is_default', true)->count());
 

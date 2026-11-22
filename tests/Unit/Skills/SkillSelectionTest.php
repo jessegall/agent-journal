@@ -57,7 +57,9 @@ final class SkillSelectionTest extends TestCase
     public function test_a_required_skill_outside_the_selection_is_refused_with_its_key_and_reason(): void
     {
         $this->expectException(SkillSelectionConflict::class);
-        $this->expectExceptionMessage('requires the skill journal-main, but it is not selected for this start (no_match:grant-not-held)');
+        $this->expectExceptionMessage(
+            SkillSelectionConflict::requiredNotSelected('journal-main', 'no_match:grant-not-held')->getMessage(),
+        );
 
         new SkillSelection()->select($this->skills(), $this->helper(null, ['journal-main']));
     }

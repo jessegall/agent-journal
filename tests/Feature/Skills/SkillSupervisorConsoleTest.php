@@ -35,6 +35,22 @@ final class SkillSupervisorConsoleTest extends TestCase
     use HasSkillTargets;
     use IntendsSkillPublications;
 
+    private const string FIRST_TEXT = <<<'TEXT'
+        # Journal
+
+        First text.
+
+        TEXT;
+
+    private const string EDITED_BY_HAND = 'Edited by hand.';
+
+    private const string FOURTH_TEXT = <<<'TEXT'
+        # Journal
+
+        Fourth text.
+
+        TEXT;
+
     private const array TABLES = ['skill_publications', 'skill_generations', 'command_receipts'];
 
     public function test_refresh_before_migrating_says_the_tables_are_missing_and_changes_nothing(): void
@@ -72,12 +88,7 @@ final class SkillSupervisorConsoleTest extends TestCase
             ->assertSuccessful();
 
         $this->assertSame(PublicationState::Delivered, $publication->refresh()->state);
-        $this->assertSame(<<<'TEXT'
-        # Journal
-
-        First text.
-
-        TEXT, File::get("{$this->target()}/skills/journal/SKILL.md"));
+        $this->assertSame(self::FIRST_TEXT, File::get("{$this->target()}/skills/journal/SKILL.md"));
     }
 
     public function test_retry_of_an_unknown_publication_is_refused(): void
@@ -113,15 +124,10 @@ final class SkillSupervisorConsoleTest extends TestCase
 
         $this->assertDirectoryDoesNotExist($this->stagingFolder($oldest));
         $this->assertDirectoryDoesNotExist(dirname($this->stagingFolder($oldest)));
-        $this->assertSame('Edited by hand.', File::get("{$this->stagingFolder($edited)}/skills/journal/SKILL.md"));
+        $this->assertSame(self::EDITED_BY_HAND, File::get("{$this->stagingFolder($edited)}/skills/journal/SKILL.md"));
         $this->assertDirectoryExists($this->stagingFolder($previous));
         $this->assertDirectoryExists($this->stagingFolder($current));
-        $this->assertSame(<<<'TEXT'
-        # Journal
-
-        Fourth text.
-
-        TEXT, File::get("{$this->target()}/skills/journal/SKILL.md"));
+        $this->assertSame(self::FOURTH_TEXT, File::get("{$this->target()}/skills/journal/SKILL.md"));
         $this->assertSame(PublicationState::Superseded, $oldest->refresh()->state);
 
         $this->travel(31)->days();

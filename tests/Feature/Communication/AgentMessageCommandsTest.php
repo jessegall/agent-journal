@@ -33,6 +33,10 @@ final class AgentMessageCommandsTest extends MessagingTestCase
 {
     use SendsSignedCalls;
 
+    private const string RELEASE_QUESTION = 'Which release should I prepare?';
+
+    private const string DISMISSAL = 'Already decided.';
+
     public function test_select_changes_only_the_callers_selection_and_hides_other_messages(): void
     {
         $question = $this->ownerAsks($this->inboxIdOf($this->builder), 'Choose this request.');
@@ -88,7 +92,7 @@ final class AgentMessageCommandsTest extends MessagingTestCase
         $this->inboxOf(ActorIdentity::of($caller->agent));
         $destination = $this->ownerInboxId();
         $question = $this->signed($caller, '/agent/communication/question', [
-            'body' => 'Which release should I prepare?',
+            'body' => self::RELEASE_QUESTION,
             'request_key' => 'ask-owner',
         ])->assertOk()->json('message_id');
 
@@ -96,10 +100,10 @@ final class AgentMessageCommandsTest extends MessagingTestCase
         $message = Message::visibleById($question);
         $this->assertTrue($message->is_question);
         $this->assertSame($destination, $message->destination_inbox_id);
-        $this->assertSame('Which release should I prepare?', $message->body);
+        $this->assertSame(self::RELEASE_QUESTION, $message->body);
 
-        $this->runOnBus(new DismissMessage($message->id, 'Already decided.'));
-        $this->assertSame('Already decided.', $this->stored($message->id)->dismissal_reason);
+        $this->runOnBus(new DismissMessage($message->id, self::DISMISSAL));
+        $this->assertSame(self::DISMISSAL, $this->stored($message->id)->dismissal_reason);
     }
 
     private function recordReply(Message $original): Message

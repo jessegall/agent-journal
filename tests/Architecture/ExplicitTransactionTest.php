@@ -16,6 +16,8 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class ExplicitTransactionTest extends TestCase
 {
+    private const string HOW_TO_FIX = 'Name each transaction opener in OPENERS with its unit decision.';
+
     /**
      * The folders judged: the test modules now; each later phase adds the owner it moves.
      */
@@ -77,7 +79,7 @@ final class ExplicitTransactionTest extends TestCase
         $this->assertSame(
             [],
             array_values($unnamed),
-            'Name each transaction opener in OPENERS with its unit decision.',
+            self::HOW_TO_FIX,
         );
     }
 

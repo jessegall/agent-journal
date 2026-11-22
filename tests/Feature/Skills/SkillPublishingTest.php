@@ -32,6 +32,19 @@ final class SkillPublishingTest extends TestCase
     use IntendsSkillPublications;
     use RunsTrustedCommands;
 
+    private const string FIRST_TEXT = <<<'TEXT'
+        # Journal
+
+        First text.
+
+        TEXT;
+
+    private const string NO_SPACE = 'no space left';
+
+    private const string OWN_SKILL = 'My own skill.';
+
+    private const string FOREIGN_FILES = 'holds files the journal did not create';
+
     private const array TABLES = ['skill_publications', 'skill_generations', 'command_receipts'];
 
     public function test_a_pending_publication_ends_delivered_with_skill_files_and_a_manifest_at_the_target(): void
@@ -42,12 +55,7 @@ final class SkillPublishingTest extends TestCase
 
         $target = $this->target();
         $this->assertTrue(is_link($target));
-        $this->assertSame(<<<'TEXT'
-        # Journal
-
-        First text.
-
-        TEXT, File::get("{$target}/skills/journal/SKILL.md"));
+        $this->assertSame(self::FIRST_TEXT, File::get("{$target}/skills/journal/SKILL.md"));
         $manifest = json_decode(File::get("{$target}/manifest.json"), true, flags: JSON_THROW_ON_ERROR);
         $this->assertSame(hash('sha256', <<<'TEXT'
         # Journal
@@ -70,7 +78,7 @@ final class SkillPublishingTest extends TestCase
         $this->assertSame(PublicationState::Failed, $this->publishing()->publish($second->id, 'worker-1'));
         $this->assertSame($before, readlink($this->target()));
         $this->assertSame(PublicationState::Failed, $second->refresh()->state);
-        $this->assertStringContainsString('no space left', (string) $second->error);
+        $this->assertStringContainsString(self::NO_SPACE, (string) $second->error);
     }
 
     public function test_an_unowned_skill_folder_at_the_target_is_refused_and_left_untouched(): void
@@ -80,9 +88,9 @@ final class SkillPublishingTest extends TestCase
         $publication = $this->intend('First text.');
 
         $this->assertSame(PublicationState::Failed, $this->publishing()->publish($publication->id, 'worker-1'));
-        $this->assertSame('My own skill.', File::get($this->target().'/mine/SKILL.md'));
+        $this->assertSame(self::OWN_SKILL, File::get($this->target().'/mine/SKILL.md'));
         $this->assertStringContainsString(
-            'holds files the journal did not create',
+            self::FOREIGN_FILES,
             (string) $publication->refresh()->error,
         );
     }

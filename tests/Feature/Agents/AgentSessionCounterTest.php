@@ -26,6 +26,8 @@ final class AgentSessionCounterTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string COUNT_QUERY = 'select count(*) as "aggregate" from "agent_sessions"';
+
     private const array TABLES = ['agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'hook_calls'];
 
     private CarbonImmutable $beat;
@@ -100,7 +102,7 @@ final class AgentSessionCounterTest extends TestCase
         $this->countAt('2026-11-18 12:01:00');
 
         $this->assertCount(1, $queries);
-        $this->assertStringStartsWith('select count(*) as "aggregate" from "agent_sessions"', $queries[0]);
+        $this->assertStringStartsWith(self::COUNT_QUERY, $queries[0]);
     }
 
     public function test_the_agents_counter_is_registered_for_active_actors(): void

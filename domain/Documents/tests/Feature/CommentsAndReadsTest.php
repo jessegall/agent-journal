@@ -49,6 +49,12 @@ final class CommentsAndReadsTest extends TestCase
     use CommitsHookRows;
     use StartsAgentRequests;
 
+    private const string THIRD_PART = 'Third part.';
+
+    private const string CONTINUATION = '--lines 201- --at-revision 1';
+
+    private const string SHIPPED_PHRASE = 'Ship the editor';
+
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
@@ -140,7 +146,7 @@ final class CommentsAndReadsTest extends TestCase
         $draft = $this->bus()->run(new OpenDocument('2'));
 
         $draft = $this->bus()->run(
-            new ReplaceDocumentText($draft->target(), 'Third part.', 'A rewritten third part.'),
+            new ReplaceDocumentText($draft->target(), self::THIRD_PART, 'A rewritten third part.'),
         );
 
         $this->bus()->run(new CloseDocument($draft->target()));
@@ -160,7 +166,7 @@ final class CommentsAndReadsTest extends TestCase
             ],
         );
 
-        $this->assertStringContainsString('Third part.', $sectionPlace->part->text);
+        $this->assertStringContainsString(self::THIRD_PART, $sectionPlace->part->text);
         $this->assertInstanceOf(TextCommentLocation::class, $linesPlace);
         $this->assertSame([2, 5], [$linesPlace->part->firstLine, $linesPlace->part->lastLine]);
     }
@@ -217,7 +223,7 @@ final class CommentsAndReadsTest extends TestCase
 
         $this->assertSame(['1 Long (lines 1-302)'], $outline->outline);
         $this->assertSame('1-200', $part->lines);
-        $this->assertSame('--lines 201- --at-revision 1', $part->continuation);
+        $this->assertSame(self::CONTINUATION, $part->continuation);
         $this->assertSame(200, count(explode("\n", (string) $part->text)));
     }
 
@@ -241,7 +247,7 @@ final class CommentsAndReadsTest extends TestCase
         $found = $this->documents()->list(new DocumentFilters(query: 'ship THE editor'));
 
         $this->assertSame(['revision 1'], array_map(fn ($row) => $row->foundIn, $found->rows));
-        $this->assertStringContainsString('Ship the editor', (string) $found->rows[0]->snippet);
+        $this->assertStringContainsString(self::SHIPPED_PHRASE, (string) $found->rows[0]->snippet);
         $this->assertSame([], $this->documents()->list(new DocumentFilters(query: 'Only in the draft'))->rows);
         $this->assertCount(1, $this->reports()->list(new DocumentFilters(query: '%_'))->rows);
         $this->assertSame([], $this->reports()->list(new DocumentFilters(query: '0_o'))->rows);

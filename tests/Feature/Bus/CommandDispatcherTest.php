@@ -24,6 +24,8 @@ use Tests\Support\TestIds;
  */
 final class CommandDispatcherTest extends CommandBusTestCase
 {
+    private const string DISPATCH_STEP = 'dispatched by user:%s';
+
     public function test_the_command_passed_on_reports_the_requests_actor_and_the_callers_object_stays_unbound(): void
     {
         $trail = $this->installCommandModules(
@@ -34,7 +36,7 @@ final class CommandDispatcherTest extends CommandBusTestCase
 
         $this->app->make(CommandBus::class)->run($note);
 
-        $this->assertContains('dispatched by user:'.TestIds::of(1), $trail->steps);
+        $this->assertContains(sprintf(self::DISPATCH_STEP, TestIds::of(1)), $trail->steps);
         $this->expectException(CommandDispatcherMissing::class);
         $note->dispatchedBy();
     }
@@ -49,7 +51,7 @@ final class CommandDispatcherTest extends CommandBusTestCase
 
         $this->app->make(CommandBus::class)->run(new WriteNote('loud'));
 
-        $this->assertContains('dispatched by user:'.TestIds::of(1), $trail->steps);
+        $this->assertContains(sprintf(self::DISPATCH_STEP, TestIds::of(1)), $trail->steps);
     }
 
     public function test_a_call_without_an_actor_is_refused_where_the_dispatcher_is_bound_before_the_stack(): void

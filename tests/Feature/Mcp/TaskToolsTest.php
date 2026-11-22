@@ -22,6 +22,12 @@ final class TaskToolsTest extends TestCase
     use SendsMcpFrames;
     use SendsSignedCalls;
 
+    private const string EDITED_TITLE = 'Edited title';
+
+    private const string CANCEL_REASON = 'Work was superseded.';
+
+    private const string BLOCK_REASON = 'Needs a decision.';
+
     private const array TABLES = [
         'users', 'tasks', 'task_runs', 'task_log_entries', 'agents', 'agent_sessions', 'start_tokens', 'agent_stacks',
         'hook_calls', 'links', 'assignments', 'claim_authorizations', 'command_receipts',
@@ -59,7 +65,7 @@ final class TaskToolsTest extends TestCase
         $this->callMcpTool($this->caller, 'tasks_list', ['search' => 'Edited', 'per_page' => 1])
             ->assertJsonPath('result.structuredContent.total', 1)
             ->assertJsonPath('result.structuredContent.cards.0.id', $id)
-            ->assertJsonPath('result.structuredContent.cards.0.title', 'Edited title');
+            ->assertJsonPath('result.structuredContent.cards.0.title', self::EDITED_TITLE);
     }
 
     public function test_start_conflict_offers_the_task_reader_and_finish_uses_the_current_run(): void
@@ -104,8 +110,8 @@ final class TaskToolsTest extends TestCase
         ])->assertJsonPath('result.structuredContent.state', 'cancelled');
 
         $this->callMcpTool($this->caller, 'tasks_read', ['task_id' => $task->id, 'view' => 'context'])
-            ->assertJsonPath('result.structuredContent.block_reason', 'Needs a decision.')
-            ->assertJsonPath('result.structuredContent.cancel_reason', 'Work was superseded.');
+            ->assertJsonPath('result.structuredContent.block_reason', self::BLOCK_REASON)
+            ->assertJsonPath('result.structuredContent.cancel_reason', self::CANCEL_REASON);
     }
 
     public function test_a_worker_logs_twice_in_its_run_and_a_caller_without_that_run_is_refused(): void

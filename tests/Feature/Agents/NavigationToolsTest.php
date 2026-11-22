@@ -32,6 +32,10 @@ final class NavigationToolsTest extends TestCase
     use RunsTrustedCommands;
     use SendsMcpFrames;
 
+    private const string NEVER_INSTRUCTION = 'never an instruction';
+
+    private const string NEVER_RAW_ENTER = 'never a raw enter';
+
     private const array TABLES = [
         'users',
         'agents',
@@ -81,8 +85,8 @@ final class NavigationToolsTest extends TestCase
             $shown['stalled_step'],
         ]);
         $this->assertSame(['Model: GPT-5', '❯ GPT-6'], $shown['screen']['rows']);
-        $this->assertStringContainsString('never an instruction', $shown['screen']['quoted']);
-        $this->assertStringContainsString('never a raw enter', $shown['how_to_answer']);
+        $this->assertStringContainsString(self::NEVER_INSTRUCTION, $shown['screen']['quoted']);
+        $this->assertStringContainsString(self::NEVER_RAW_ENTER, $shown['how_to_answer']);
     }
 
     public function test_answer_refuses_a_stale_version_or_an_unlisted_key_and_sends_a_good_round(): void

@@ -44,6 +44,8 @@ final class SampleWorkflowTest extends TestCase
     use RefreshHookDatabase;
     use RunsCommandsAsStart;
 
+    private const string OWNER_WAIT = 'waiting for the owner';
+
     private TestStart $start;
 
     private string $requestId;
@@ -70,7 +72,7 @@ final class SampleWorkflowTest extends TestCase
             $this->runAsAgent(new StartSample($this->requestId, 'no-permit', 'first'));
             $this->fail('The sample started without an approval.');
         } catch (SampleRefused $refusal) {
-            $this->assertStringContainsString('waiting for the owner', $refusal->getMessage());
+            $this->assertStringContainsString(self::OWNER_WAIT, $refusal->getMessage());
         }
     }
 

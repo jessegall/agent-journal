@@ -25,6 +25,8 @@ final class SignInReceiptTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string NO_STORE_HEADER = 'no-store, private';
+
     private User $owner;
 
     private string $root;
@@ -53,7 +55,7 @@ final class SignInReceiptTest extends TestCase
         $this->start('tab-2', 'oauth')->assertStatus(303);
 
         $attempt = SignInAttempt::query()->withoutGlobalScopes()->sole();
-        $first = $this->receipt('tab-1')->assertOk()->assertHeader('Cache-Control', 'no-store, private');
+        $first = $this->receipt('tab-1')->assertOk()->assertHeader('Cache-Control', self::NO_STORE_HEADER);
         $second = $this->receipt('tab-2')->assertOk();
 
         $this->assertSame(

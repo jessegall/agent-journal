@@ -25,6 +25,8 @@ final class EnvironmentsTest extends TestCase
     use CommitsHookRows;
     use ConnectsProjects;
 
+    private const string NO_ENVIRONMENT = 'works in no environment yet';
+
     private const array TABLES = [
         'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings',
         'project_environments', 'projects', 'agent_runtimes', 'agent_sessions', 'agents', 'hosts',
@@ -73,7 +75,7 @@ final class EnvironmentsTest extends TestCase
         ProjectBinding::query()->whereKey($binding->id)->update(['environment_id' => null]);
 
         $refused = $this->start($binding)->assertForbidden();
-        $this->assertStringContainsString('works in no environment yet', (string) $refused->json('message'));
+        $this->assertStringContainsString(self::NO_ENVIRONMENT, (string) $refused->json('message'));
 
         $this->actingAs($this->owner)
             ->putJson("/settings/project-connections/bindings/{$binding->id}/environment/{$main}")

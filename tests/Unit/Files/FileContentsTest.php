@@ -19,6 +19,8 @@ use Tests\TestCase;
  */
 final class FileContentsTest extends TestCase
 {
+    private const string LONGER_BYTES = 'second, longer';
+
     private string $folder;
 
     private int $loads = 0;
@@ -56,9 +58,9 @@ final class FileContentsTest extends TestCase
         $contents = new FileContents(100, 50);
         $this->write('a.txt', 'first');
         $this->read($contents, 'a.txt');
-        $this->write('a.txt', 'second, longer');
+        $this->write('a.txt', self::LONGER_BYTES);
 
-        $this->assertSame('second, longer', $this->read($contents, 'a.txt'));
+        $this->assertSame(self::LONGER_BYTES, $this->read($contents, 'a.txt'));
         $this->assertSame(2, $contents->openCount($this->real('a.txt')));
     }
 

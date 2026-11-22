@@ -43,6 +43,16 @@ final class RichCardsTest extends TestCase
     use SendsMcpFrames;
     use WritesInboxMessages;
 
+    private const string NO_PHASES_TEXT = '"text":"No phases yet"';
+
+    private const string PROGRESS_PATTERN = '/"completed":1,"total":8.*"label":"Waiting for estimate"'
+        .'.*"type":"duration".*"type":"duration"/';
+
+    private const string TRUNCATED_LINES = '"lines":["error: <script>","second line"],"truncated":true';
+
+    private const string OVERSIZED_CARD = '"accessibleName":"Release review, oversized",'
+        .'"safeSummary":"Release review, oversized","open":null,"root":null';
+
     private const array TABLES = [
         'users',
         'agents',
@@ -122,7 +132,7 @@ final class RichCardsTest extends TestCase
         $cards = $this->cards();
 
         $this->assertStringContainsString('"text":"Blocked","tone":"warn"', $cards);
-        $this->assertStringContainsString('"text":"No phases yet"', $cards);
+        $this->assertStringContainsString(self::NO_PHASES_TEXT, $cards);
         $this->assertStringNotContainsString('"type":"counted-progress"', $cards);
     }
 
@@ -135,12 +145,12 @@ final class RichCardsTest extends TestCase
         $cards = $this->cards();
 
         $this->assertMatchesRegularExpression(
-            '/"completed":1,"total":8.*"label":"Waiting for estimate".*"type":"duration".*"type":"duration"/',
+            self::PROGRESS_PATTERN,
             $cards,
         );
         $this->assertStringContainsString('"title":"Checks","initial":"closed"', $cards);
-        $this->assertStringContainsString('"lines":["error: <script>","second line"],"truncated":true', $cards);
-        $this->assertStringContainsString('"accessibleName":"Release review, oversized","safeSummary":"Release review, oversized","open":null,"root":null', $cards);
+        $this->assertStringContainsString(self::TRUNCATED_LINES, $cards);
+        $this->assertStringContainsString(self::OVERSIZED_CARD, $cards);
     }
 
     public function test_a_task_change_refreshes_the_page_once_whether_or_not_the_task_is_docked(): void

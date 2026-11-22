@@ -37,6 +37,8 @@ final class RuntimesPageTest extends TestCase
     use SwitchesDomainsOff;
     use WithActiveAccount;
 
+    private const string STALE_RUNTIME = 'A runtime another test committed is still here.';
+
     private User $owner;
 
     protected function setUp(): void
@@ -50,7 +52,7 @@ final class RuntimesPageTest extends TestCase
 
     public function test_the_page_lists_each_runtime_with_its_requests_and_writes_nothing(): void
     {
-        $this->assertSame(0, AgentRuntime::query()->count(), 'A runtime another test committed is still here.');
+        $this->assertSame(0, AgentRuntime::query()->count(), self::STALE_RUNTIME);
         $this->switchDomainOff('chat');
         $this->openRuntime();
         $requests = DriverRequest::query()->count();

@@ -33,6 +33,10 @@ final class PlanSharingTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string PLAN_TITLE = 'Version 6';
+
+    private const string SECRET_PHASE = 'Secret phase';
+
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
@@ -60,8 +64,8 @@ final class PlanSharingTest extends TestCase
 
         TEXT));
         $document = Document::query()->where('number', 1)->sole();
-        $plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
-        $this->planStructure()->addPhase($plan, 'Secret phase');
+        $plan = Plan::factory()->create(['title' => self::PLAN_TITLE, 'type' => PlanType::Build]);
+        $this->planStructure()->addPhase($plan, self::SECRET_PHASE);
         Link::connect($plan, $document);
 
         $candidates = $this->app->make(ShareScope::class)->discover($plan->shareIdentity(), $this->budget());
@@ -70,15 +74,15 @@ final class PlanSharingTest extends TestCase
             $this->budget(),
         );
 
-        $this->assertSame('Version 6', $candidates->root->title);
+        $this->assertSame(self::PLAN_TITLE, $candidates->root->title);
         $this->assertSame(
             [$document->id],
             array_map(fn (ShareLinkedCandidate $candidate) => $candidate->recordId(), $candidates->linked),
         );
         $this->assertSame('Design', $candidates->linked[0]->card->title);
-        $this->assertStringContainsString('Version 6', $content->body);
-        $this->assertStringNotContainsString('Secret phase', $content->body);
-        $this->assertStringNotContainsString('Secret phase', (string) json_encode($candidates));
+        $this->assertStringContainsString(self::PLAN_TITLE, $content->body);
+        $this->assertStringNotContainsString(self::SECRET_PHASE, $content->body);
+        $this->assertStringNotContainsString(self::SECRET_PHASE, (string) json_encode($candidates));
     }
 
     private function budget(): MeteredShareBudget

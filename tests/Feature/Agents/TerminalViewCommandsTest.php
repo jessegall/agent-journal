@@ -60,7 +60,7 @@ final class TerminalViewCommandsTest extends TestCase
 
         $this->assertRefused(
             $this->open($runtime),
-            'This agent runs without a terminal (process driver); there is nothing to watch.',
+            TerminalViewRefused::processDriver()->getMessage(),
         );
     }
 
@@ -70,7 +70,10 @@ final class TerminalViewCommandsTest extends TestCase
         $this->travelTo(CarbonImmutable::parse('2026-11-19 14:02:00'));
         $this->app->make(DriverRequestEndings::class)->closeAfterExit($runtime);
 
-        $this->assertRefused($this->open($runtime), 'This agent is not running; its terminal ended at 14:02.');
+        $this->assertRefused(
+            $this->open($runtime),
+            TerminalViewRefused::notRunning(CarbonImmutable::parse('2026-11-19 14:02:00'))->getMessage(),
+        );
     }
 
     public function test_more_than_the_limit_of_views_is_refused(): void
@@ -83,7 +86,7 @@ final class TerminalViewCommandsTest extends TestCase
 
         $this->assertRefused(
             $this->open($runtime),
-            'You may have at most 20 terminal views open; close one first.',
+            TerminalViewRefused::tooManyViews()->getMessage(),
             TerminalView::MAX_PER_VIEWER,
         );
     }
@@ -92,7 +95,7 @@ final class TerminalViewCommandsTest extends TestCase
     {
         $unknown = new OpenTerminalView('no-such-agent');
 
-        $this->assertRefused($unknown, 'You may not inspect this agent');
+        $this->assertRefused($unknown, TerminalViewRefused::mayNotInspect()->getMessage());
     }
 
     public function test_an_actor_without_inspect_is_refused_before_anything_is_read(): void

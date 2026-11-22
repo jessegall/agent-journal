@@ -17,6 +17,8 @@ use Tests\TestCase;
  */
 final class StoredRuleShapeTest extends TestCase
 {
+    private const string REPLACED_LABEL = 'core core.php.artisan-test@1';
+
     private const string CHECK_RULE = 'core.php.artisan-test';
 
     private const string RULE_DIGEST = '595e6cd96ff306222849a67250dc0a4957f9b2f02865d29cf132ad0703f53217';
@@ -42,7 +44,7 @@ final class StoredRuleShapeTest extends TestCase
 
         $this->assertSame(self::REPLACING_DIGEST, $replacing->digest());
         $this->assertSame(self::REPLACING_DIGEST, $this->readBack($replacing)->digest());
-        $this->assertSame('core core.php.artisan-test@1', $this->readBack($replacing)->replaces[0]->label());
+        $this->assertSame(self::REPLACED_LABEL, $this->readBack($replacing)->replaces[0]->label());
     }
 
     public function test_a_stored_rule_reads_back_through_its_cast_to_the_same_json_and_digest(): void

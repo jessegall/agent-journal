@@ -18,6 +18,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DocblockAndStringScanTest extends TestCase
 {
+    private const string STRING_ONLY_SENTENCE = 'your tasks are done';
+
     private const string CHAT = 'Tests\Fixtures\Names\Chat';
 
     /**
@@ -127,7 +129,7 @@ final class DocblockAndStringScanTest extends TestCase
             StringScan::of($this->fixture('StringNames'), $this->roots()),
         );
 
-        $this->assertNotContains('your tasks are done', $names);
+        $this->assertNotContains(self::STRING_ONLY_SENTENCE, $names);
         $this->assertCount(9, $names);
     }
 

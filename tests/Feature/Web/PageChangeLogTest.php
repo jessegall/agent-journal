@@ -20,6 +20,8 @@ use Tests\Support\MessagingTestCase;
  */
 final class PageChangeLogTest extends MessagingTestCase
 {
+    private const string SECRET_PLAN = 'A secret plan.';
+
     /**
      * @var list<array{string, array<string, mixed>}>
      */
@@ -42,7 +44,7 @@ final class PageChangeLogTest extends MessagingTestCase
             ['A page fact was committed.', ['fact' => MessageSent::class, 'users' => 1]],
             $this->lines,
         );
-        $this->assertStringNotContainsString('A secret plan.', json_encode($this->lines, JSON_THROW_ON_ERROR));
+        $this->assertStringNotContainsString(self::SECRET_PLAN, json_encode($this->lines, JSON_THROW_ON_ERROR));
     }
 
     public function test_a_queued_page_change_logs_how_long_it_waited(): void

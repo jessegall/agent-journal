@@ -17,6 +17,8 @@ use Tests\TestCase;
  */
 final class SystemActorBoundaryTest extends TestCase
 {
+    private const string REFRESH_SCRIPT = '@php artisan skill:refresh';
+
     public function test_a_console_run_acts_as_the_system_and_gives_the_actor_back(): void
     {
         $store = $this->app->make(ActorStore::class);
@@ -44,6 +46,6 @@ final class SystemActorBoundaryTest extends TestCase
         $migrate = array_search('@php artisan migrate --force', $setup, true);
 
         $this->assertIsInt($migrate);
-        $this->assertContains('@php artisan skill:refresh', array_slice($setup, $migrate + 1, 2));
+        $this->assertContains(self::REFRESH_SCRIPT, array_slice($setup, $migrate + 1, 2));
     }
 }

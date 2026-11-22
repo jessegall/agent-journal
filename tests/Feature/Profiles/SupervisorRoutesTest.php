@@ -35,6 +35,8 @@ final class SupervisorRoutesTest extends TestCase
     use RefreshHookDatabase;
     use StartsAgentRequests;
 
+    private const string ROUTE_CYCLE = 'The question supervisor route has a cycle:';
+
     private const array PROFILE = ['base' => 'writing-helper', 'model' => 'sonnet'];
 
     public function test_shipped_routes_are_stored_and_their_supervisors_admit_every_required_command(): void
@@ -68,7 +70,7 @@ final class SupervisorRoutesTest extends TestCase
         $this->assertThrows(
             fn () => $this->activate(['profiles' => $routes]),
             SupervisorRouteRefused::class,
-            'The question supervisor route has a cycle:',
+            self::ROUTE_CYCLE,
         );
 
         $saved = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from('route-b'));

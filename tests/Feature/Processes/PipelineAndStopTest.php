@@ -35,6 +35,21 @@ final class PipelineAndStopTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string INPUT_LINES = <<<'TEXT'
+        x one
+        y two
+        x three
+
+        TEXT;
+
+    private const string MATCHING_LINES = <<<'TEXT'
+        x one
+        x three
+
+        TEXT;
+
+    private const string STOP_REASON = 'the user stopped it';
+
     private CollectedOutput $output;
 
     private ProcessRun $processRun;
@@ -52,27 +67,13 @@ final class PipelineAndStopTest extends TestCase
 
     public function test_each_pipeline_stage_keeps_its_own_output_and_end(): void
     {
-        file_put_contents($this->folder.'/input.txt', <<<'TEXT'
-        x one
-        y two
-        x three
-
-        TEXT);
+        file_put_contents($this->folder.'/input.txt', self::INPUT_LINES);
 
         $outcome = $this->supervise('cat input.txt | grep x');
 
         [$cat, $grep] = $this->parts();
-        $this->assertSame(<<<'TEXT'
-        x one
-        y two
-        x three
-
-        TEXT, $this->output->stdoutOf($cat));
-        $this->assertSame(<<<'TEXT'
-        x one
-        x three
-
-        TEXT, $this->output->stdoutOf($grep));
+        $this->assertSame(self::INPUT_LINES, $this->output->stdoutOf($cat));
+        $this->assertSame(self::MATCHING_LINES, $this->output->stdoutOf($grep));
         $this->assertSame(PartEndType::Exited, $cat->end()->type);
         $this->assertSame(0, $outcome->status);
     }
@@ -103,11 +104,11 @@ final class PipelineAndStopTest extends TestCase
     #[TimeLimit(5, 'It waits a fraction of a second before the stop.')]
     public function test_a_stop_ends_the_part_and_records_why(): void
     {
-        $this->supervise('sleep 30', new StopAfter(0.3, 'the user stopped it'));
+        $this->supervise('sleep 30', new StopAfter(0.3, self::STOP_REASON));
 
         $sleep = $this->parts()[0];
         $this->assertSame(LifecycleState::Stopped, $sleep->lifecycle);
-        $this->assertSame('the user stopped it', $sleep->stop_reason);
+        $this->assertSame(self::STOP_REASON, $sleep->stop_reason);
         $this->assertSame(LifecycleState::Stopped, $this->processRun->refresh()->lifecycle);
     }
 

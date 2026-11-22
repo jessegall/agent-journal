@@ -172,7 +172,7 @@ final class AutoAssignmentRegistryTest extends TestCase
                 'Rounds',
             ),
             AutoAssignmentDeclarationRefused::class,
-            'no domain registered it as assignable',
+            AutoAssignmentDeclarationRefused::typeNotAssignable('rounds.round', 'Rounds')->getMessage(),
         );
         $this->assertThrows(
             fn () => $this->registry->registerAutoAssigner(
@@ -180,7 +180,8 @@ final class AutoAssignmentRegistryTest extends TestCase
                 'Rounds',
             ),
             AutoAssignmentDeclarationRefused::class,
-            'only its owner may',
+            AutoAssignmentDeclarationRefused::assignerOfAnotherOwner('errands.chore', 'Rounds', 'Errands')
+                ->getMessage(),
         );
     }
 
@@ -214,7 +215,7 @@ final class AutoAssignmentRegistryTest extends TestCase
         $this->assertThrows(
             fn () => $this->registry->registerPool(self::pool('strays.errands'), 'Strays'),
             AutoAssignmentDeclarationRefused::class,
-            'without registering itself first',
+            AutoAssignmentDeclarationRefused::ownerUnknown('Strays')->getMessage(),
         );
         $this->assertThrows(
             fn () => $this->registry->registerRecord(
@@ -224,7 +225,7 @@ final class AutoAssignmentRegistryTest extends TestCase
                 AssignmentPurpose::PublicWork,
             ),
             AutoAssignmentDeclarationRefused::class,
-            'without registering itself first',
+            AutoAssignmentDeclarationRefused::ownerUnknown('Strays')->getMessage(),
         );
 
         $this->boot(ErrandsDomain::class);

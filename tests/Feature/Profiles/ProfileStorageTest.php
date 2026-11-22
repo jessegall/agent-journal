@@ -35,6 +35,10 @@ final class ProfileStorageTest extends TestCase
     use CommitsHookRows;
     use HasContainerSupport;
 
+    private const string REVIEW_TWICE = 'Review the change twice.';
+
+    private const string REVIEW_ONCE = 'Review the change.';
+
     private const array TABLES = ['profile_revisions', 'profiles', 'command_receipts'];
 
     public function test_a_second_activation_appends_revision_2_and_keeps_revision_1_readable(): void
@@ -48,12 +52,12 @@ final class ProfileStorageTest extends TestCase
 
         $snapshot = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from('journal-reviewer'));
         $this->assertSame(2, $snapshot->revision);
-        $this->assertSame('Review the change twice.', $snapshot->instructions);
+        $this->assertSame(self::REVIEW_TWICE, $snapshot->instructions);
         $this->assertSame([], $snapshot->skillAllowlist);
         $this->assertSame(ProfileBase::readOnlyHelper()->key, $snapshot->base->key);
 
         $profile = Profile::byKey(ProfileKey::from('journal-reviewer'));
-        $this->assertSame('Review the change.', ProfileRevision::numbered($profile, 1)->instructions);
+        $this->assertSame(self::REVIEW_ONCE, ProfileRevision::numbered($profile, 1)->instructions);
         $this->assertNull(ProfileRevision::numbered($profile, 1)->skill_allowlist);
     }
 

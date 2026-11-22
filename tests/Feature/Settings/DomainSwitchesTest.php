@@ -30,6 +30,8 @@ final class DomainSwitchesTest extends TestCase
     use ActsAsTestOwner;
     use CommitsHookRows;
 
+    private const string JOURNAL_NAME = 'My journal';
+
     /**
      * The bus commits the settings commands for real, so this table is emptied around each test.
      */
@@ -91,12 +93,12 @@ final class DomainSwitchesTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new DisableSettingGroup(new GroupReference('Core', 'domain_plans'), 0));
 
-        $change = $bus->run(new SetStringSetting(new SettingReference('Core', 'display_name'), 'My journal', 1));
+        $change = $bus->run(new SetStringSetting(new SettingReference('Core', 'display_name'), self::JOURNAL_NAME, 1));
         $this->app->forgetScopedInstances();
         $core = $this->app->make(SettingRegistry::class)->definition('Core');
         $this->assertInstanceOf(CoreSettings::class, $core);
 
         $this->assertSame(SettingsOutcome::Changed, $change->outcome);
-        $this->assertSame('My journal', $this->app->make(SettingsResolver::class)->string($core->displayName));
+        $this->assertSame(self::JOURNAL_NAME, $this->app->make(SettingsResolver::class)->string($core->displayName));
     }
 }

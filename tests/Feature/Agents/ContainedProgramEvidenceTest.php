@@ -30,6 +30,17 @@ final class ContainedProgramEvidenceTest extends TestCase
     use RunsTrustedCommands;
     use SendsHostCalls;
 
+    private const string NO_CLAUDE_REPORT = 'no contained host has reported the protection of claude-code 2.1.323';
+
+    private const string UNENFORCED = "the agent image's protection report leaves "
+        .'account-secrets, process-inspection unenforced (%s)';
+
+    private const string CODEX_SHORTFALL = 'no contained host has reported the protection of codex 0.165.0 '
+        .'in the agent image for linux-container (journal-agent protection --arrangement=contained)';
+
+    private const string PROTECTED_SHORTFALL = 'no contained host has reported the protection of claude-code 2.1.323 '
+        .'in the agent image for linux-container-protected';
+
     private const array ITEMS = [
         'account-secrets', 'foreign-history', 'keychain', 'control-sockets', 'process-inspection', 'install-writes',
     ];
@@ -47,7 +58,7 @@ final class ContainedProgramEvidenceTest extends TestCase
         $this->useArrangement(ArrangementType::Contained);
 
         $this->expectException(DriverArrangementUnproven::class);
-        $this->expectExceptionMessage('no contained host has reported the protection of claude-code 2.1.323');
+        $this->expectExceptionMessage(self::NO_CLAUDE_REPORT);
 
         $this->compatibility(HookDriver::ClaudeCode)->assertStartable();
     }
@@ -62,14 +73,13 @@ final class ContainedProgramEvidenceTest extends TestCase
         $this->assertThrows(
             fn () => $this->compatibility(HookDriver::ClaudeCode)->assertStartable(),
             DriverUnstartableInContainer::class,
-            'claude-code 2.1.323 cannot start in a container: the agent image\'s protection report leaves '
-                ."account-secrets, process-inspection unenforced ({$reason}).",
+            DriverUnstartableInContainer::for('claude-code', '2.1.323', sprintf(self::UNENFORCED, $reason))
+                ->getMessage(),
         );
         $this->assertThrows(
             fn () => $this->compatibility(HookDriver::Codex)->assertStartable(),
             DriverArrangementUnproven::class,
-            'codex 0.165.0 cannot start in a container: no contained host has reported the protection of codex '
-                .'0.165.0 in the agent image for linux-container (journal-agent protection --arrangement=contained).',
+            DriverArrangementUnproven::inContainer('codex', '0.165.0', self::CODEX_SHORTFALL)->getMessage(),
         );
     }
 
@@ -96,8 +106,7 @@ final class ContainedProgramEvidenceTest extends TestCase
         $this->assertThrows(
             fn () => $this->compatibility(HookDriver::ClaudeCode)->assertStartable(),
             DriverArrangementUnproven::class,
-            'no contained host has reported the protection of claude-code 2.1.323 in the agent image for '
-                .'linux-container-protected',
+            self::PROTECTED_SHORTFALL,
         );
 
         $this->report($host, 'claude-code', '2.1.323', $this->items([], ''), 'linux-container-protected')

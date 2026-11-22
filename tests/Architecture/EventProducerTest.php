@@ -24,6 +24,8 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 30, reason: 'It parses every PHP file of app and the domains.')]
 final class EventProducerTest extends TestCase
 {
+    private const string HOW_TO_FIX = "Send each event only from its expected producer (%s):\n";
+
     /**
      * The guideline a failure points to.
      */
@@ -47,8 +49,7 @@ final class EventProducerTest extends TestCase
         $this->assertSame(
             [],
             $violations,
-            'Send each event only from its expected producer ('.self::GUIDELINE."):\n"
-                .implode("\n", $violations),
+            sprintf(self::HOW_TO_FIX, self::GUIDELINE).implode("\n", $violations),
         );
     }
 

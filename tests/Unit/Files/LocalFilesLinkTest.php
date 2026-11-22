@@ -19,6 +19,10 @@ final class LocalFilesLinkTest extends TestCase
 {
     use UsesTemporaryPlaces;
 
+    private const string FIRST_GENERATION = "# generation-1\n";
+
+    private const string SECOND_GENERATION = "# generation-2\n";
+
     private string $skills;
 
     protected function setUp(): void
@@ -64,12 +68,12 @@ final class LocalFilesLinkTest extends TestCase
         $files = $this->files();
         $skill = FilePath::in(Place::HostSkills, 'active/SKILL.md');
 
-        $this->assertSame("# generation-1\n", $files->read($skill));
+        $this->assertSame(self::FIRST_GENERATION, $files->read($skill));
 
         symlink("{$this->skills}/generations/generation-2", "{$this->skills}/active.next");
         rename("{$this->skills}/active.next", "{$this->skills}/active");
 
-        $this->assertSame("# generation-2\n", $files->read($skill));
+        $this->assertSame(self::SECOND_GENERATION, $files->read($skill));
     }
 
     private function files(): Files

@@ -29,6 +29,12 @@ final class ClaudeCodeTest extends TestCase
     use ChecksProgramAdapter;
     use RefreshHookDatabase;
 
+    private const string SHELL_LINE = 'echo hello';
+
+    private const string PROMPT_REASON = 'Answer message 95 first.';
+
+    private const string STOP_REASON = 'Task 42 still needs work.';
+
     protected static function fixtureFolder(): string
     {
         return 'ClaudeCode';
@@ -76,7 +82,7 @@ final class ClaudeCodeTest extends TestCase
         $input = $this->inputOf($this->adapter()->callFor($this->payload('shell command'), $this->hook()));
 
         $this->assertInstanceOf(ShellCommandRequested::class, $input);
-        $this->assertSame('echo hello', $input->command->source);
+        $this->assertSame(self::SHELL_LINE, $input->command->source);
         $this->assertSame(CommandType::Ordinary, $input->command->parts[0]->type);
     }
 
@@ -136,8 +142,8 @@ final class ClaudeCodeTest extends TestCase
     public function test_a_denied_prompt_is_blocked_with_its_reason(): void
     {
         $this->assertSame(
-            '{"decision":"block","reason":"Answer message 95 first."}',
-            $this->render('prompt', Decision::deny('Answer message 95 first.'))->stdout,
+            json_encode(['decision' => 'block', 'reason' => self::PROMPT_REASON]),
+            $this->render('prompt', Decision::deny(self::PROMPT_REASON))->stdout,
         );
     }
 
@@ -158,8 +164,8 @@ final class ClaudeCodeTest extends TestCase
     public function test_a_held_stop_blocks_and_an_allowed_stop_is_empty(): void
     {
         $this->assertSame(
-            '{"decision":"block","reason":"Task 42 still needs work."}',
-            $this->render('stop', Decision::deny('Task 42 still needs work.'))->stdout,
+            json_encode(['decision' => 'block', 'reason' => self::STOP_REASON]),
+            $this->render('stop', Decision::deny(self::STOP_REASON))->stdout,
         );
         $this->assertSame('{}', $this->render('stop', Decision::allow())->stdout);
     }

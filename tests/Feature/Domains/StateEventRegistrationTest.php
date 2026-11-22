@@ -76,7 +76,7 @@ final class StateEventRegistrationTest extends TestCase
             $this->writeCache($path, $events);
 
             $this->expectException(InvalidListener::class);
-            $this->expectExceptionMessage('The state event declarations changed.');
+            $this->expectExceptionMessage(InvalidListener::stateCacheChanged()->getMessage());
             $provider->boot();
         } finally {
             $this->useEventCachePath(null);

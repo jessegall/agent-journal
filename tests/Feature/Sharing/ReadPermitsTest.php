@@ -82,7 +82,7 @@ final class ReadPermitsTest extends TestCase
             return 'issued';
         });
 
-        $this->assertSame('This share link is not available.', $measured->measuredAnswer);
+        $this->assertSame(ShareLinkRefused::unknown()->getMessage(), $measured->measuredAnswer);
         $this->assertSame(0, $measured->counts->queriesRun);
     }
 

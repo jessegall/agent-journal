@@ -50,7 +50,7 @@ final class SharingExportsTest extends TestCase
             OwnerSharePolicy::class,
             ShareToken::class,
         ] as $private) {
-            $this->assertFalse($exports->has($private), "{$private} is exported.");
+            $this->assertFalse($exports->has($private), $private);
         }
     }
 }

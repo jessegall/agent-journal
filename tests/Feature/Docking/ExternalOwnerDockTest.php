@@ -39,6 +39,10 @@ final class ExternalOwnerDockTest extends TestCase
     use SendsSignedCalls;
     use WritesInboxMessages;
 
+    private const string TASK_TITLE = 'Feed the cat';
+
+    private const string NOTE_COUNT = '1 notes';
+
     private const array TABLES = [
         'users',
         'agents',
@@ -107,7 +111,7 @@ final class ExternalOwnerDockTest extends TestCase
         $this->callMcpTool($this->agent, 'dock_list')
             ->assertJsonPath('result.structuredContent.placements.0.state', 'unavailable')
             ->assertJsonPath('result.structuredContent.placements.0.title', '')
-            ->assertJsonPath('result.structuredContent.placements.1.title', 'Feed the cat')
+            ->assertJsonPath('result.structuredContent.placements.1.title', self::TASK_TITLE)
             ->assertJsonPath('result.structuredContent.placements.1.state', 'shown');
 
         $placement = DockPlacement::query()->where('dockable_id', $agentsNote->id)->sole();
@@ -137,7 +141,7 @@ final class ExternalOwnerDockTest extends TestCase
 
         $this->callMcpTool($this->agent, 'dock_list')
             ->assertJsonPath('result.structuredContent.placements.0.sourceId', NotesTally::KEY)
-            ->assertJsonPath('result.structuredContent.placements.0.title', '1 notes');
+            ->assertJsonPath('result.structuredContent.placements.0.title', self::NOTE_COUNT);
     }
 
     public function test_a_report_page_offers_add_to_chat_with_the_agents_the_viewer_may_see(): void

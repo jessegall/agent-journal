@@ -27,6 +27,8 @@ use Tests\Support\MessagingTestCase;
  */
 final class QuestionNotificationsTest extends MessagingTestCase
 {
+    private const string TRIGGER_REFUSAL = 'refused for the test';
+
     /**
      * Refuses every receipt, so an ask fails after its message and occurrence are written.
      */
@@ -105,7 +107,7 @@ final class QuestionNotificationsTest extends MessagingTestCase
             $this->assertThrows(
                 fn () => $this->runOnBus(new AskMessage($this->ownerInboxId(), $this->team->inboxId(), 'Who takes this?')),
                 QueryException::class,
-                'refused for the test',
+                self::TRIGGER_REFUSAL,
             );
         } finally {
             $database->unprepared('DROP TRIGGER refuse_receipt ON notification_receipts; DROP FUNCTION refuse_receipt();');

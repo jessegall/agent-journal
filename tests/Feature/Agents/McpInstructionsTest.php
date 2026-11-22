@@ -32,6 +32,14 @@ final class McpInstructionsTest extends TestCase
 {
     use CommittedHookStack;
 
+    private const string MCP_ADVICE = 'Use the journal MCP tools';
+
+    private const string HELPER_JOURNEY = 'helper dispatch (journal helper)';
+
+    private const string SEQUENCE_JOURNEY = 'sequences (journal sequence)';
+
+    private const string HELPER_DISPATCH = 'helper dispatch';
+
     public function test_a_main_agents_start_context_holds_the_instructions_once(): void
     {
         $context = $this->startAs();
@@ -39,18 +47,18 @@ final class McpInstructionsTest extends TestCase
         $this->assertSame(
             1,
             count(
-                array_filter($context, fn (string $line): bool => str_starts_with($line, 'Use the journal MCP tools')),
+                array_filter($context, fn (string $line): bool => str_starts_with($line, self::MCP_ADVICE)),
             ),
         );
-        $this->assertStringContainsString('helper dispatch (journal helper)', implode("\n", $context));
+        $this->assertStringContainsString(self::HELPER_JOURNEY, implode("\n", $context));
     }
 
     public function test_a_reviewer_hears_only_its_own_journeys(): void
     {
         $instructions = new McpInstructions(new FixedCurrentAuthorizer())->forCaller();
 
-        $this->assertStringContainsString('sequences (journal sequence)', $instructions);
-        $this->assertStringNotContainsString('helper dispatch', $instructions);
+        $this->assertStringContainsString(self::SEQUENCE_JOURNEY, $instructions);
+        $this->assertStringNotContainsString(self::HELPER_DISPATCH, $instructions);
         $this->assertStringNotContainsString('reminders', $instructions);
     }
 

@@ -28,6 +28,8 @@ final class ProjectRecordsTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string EXPIRES_AT = '2026-11-21 12:10:00';
+
     private const array TABLES = [
         'project_invitations', 'install_attempts', 'project_bindings', 'project_environments', 'projects',
         'agent_runtimes', 'agents', 'hosts',
@@ -57,7 +59,7 @@ final class ProjectRecordsTest extends TestCase
 
         $this->assertSame(InstallTicket::digestOf('the-ticket'), $invitation->ticket_digest);
         $this->assertSame(InvitationMode::New, $invitation->mode);
-        $this->assertSame('2026-11-21 12:10:00', $invitation->expires_at->toDateTimeString());
+        $this->assertSame(self::EXPIRES_AT, $invitation->expires_at->toDateTimeString());
         CarbonImmutable::setTestNow('2026-11-21 12:09:59');
         $this->assertTrue($this->isPending($invitation));
         CarbonImmutable::setTestNow('2026-11-21 12:10:00');

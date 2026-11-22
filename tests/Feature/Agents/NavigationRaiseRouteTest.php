@@ -52,6 +52,8 @@ final class NavigationRaiseRouteTest extends TestCase
     use RunsTrustedCommands;
     use SendsHostCalls;
 
+    private const string STALE_REASON = 'label-missing at step 1';
+
     private const array TABLES = [
         'users',
         'agents',
@@ -282,7 +284,7 @@ final class NavigationRaiseRouteTest extends TestCase
         $entry = MenuEntry::query()->acrossActors()->findOrFail($entry->id);
         $this->assertFalse($entry->isCurrentOn('2.1.323'));
         $this->assertTrue($entry->isCurrentOn('2.1.400'));
-        $this->assertSame('label-missing at step 1', $entry->builds()['2.1.323']->staleReason);
+        $this->assertSame(self::STALE_REASON, $entry->builds()['2.1.323']->staleReason);
         $this->assertSame(['Model: <redacted>'], $entry->builds()['2.1.323']->staleScreen);
     }
 

@@ -18,15 +18,17 @@ use Tests\Support\MessagingTestCase;
  */
 final class DomainConsumerTest extends MessagingTestCase
 {
+    private const string REVIEW_QUESTION = 'Review this?';
+
     public function test_a_domain_asks_through_core_alone_and_hears_the_message_sent(): void
     {
         Event::fake([MessageSent::class]);
         $this->ownerInboxId();
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
-        $view = $this->app->make(ReviewRequests::class)->ask($this->assigneeOf($this->builder), 'Review this?');
+        $view = $this->app->make(ReviewRequests::class)->ask($this->assigneeOf($this->builder), self::REVIEW_QUESTION);
 
-        $this->assertSame('Review this?', $view->body);
+        $this->assertSame(self::REVIEW_QUESTION, $view->body);
         $this->assertSame($this->inboxIdOf($this->builder), $view->destinationInboxId);
         Event::assertDispatched(MessageSent::class, fn (MessageSent $sent) => $sent->messageId === $view->id);
     }
@@ -38,7 +40,7 @@ final class DomainConsumerTest extends MessagingTestCase
         $exports = CoreApi::exports();
 
         foreach ($uses[1] as $used) {
-            $this->assertTrue($exports->has($used), "{$used} is not exported by Core.");
+            $this->assertTrue($exports->has($used), $used);
         }
     }
 }

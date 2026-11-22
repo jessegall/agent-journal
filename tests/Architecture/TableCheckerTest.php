@@ -20,6 +20,13 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class TableCheckerTest extends TestCase
 {
+    private const string TABLE_TWICE = 'creates table notes, which %s also creates';
+
+    private const string FILE_NAME_TWICE = 'has the migration file name 2026_01_01_000000_create_tasks_table.php, '
+        .'as does %s';
+
+    private const string TABLE_CHANGED = 'changes table tasks of Tasks from database/migrations';
+
     public function test_queries_pass_on_own_tables_and_fail_on_every_other_owners_even_a_required_one(): void
     {
         $this->assertSame([
@@ -68,16 +75,9 @@ final class TableCheckerTest extends TestCase
             $this->checker()->migrationViolations(),
         );
 
-        $this->assertContains(
-            'creates table notes, which '.$this->chatTasksMigration().' also creates',
-            $reasons,
-        );
-        $this->assertContains(
-            'has the migration file name 2026_01_01_000000_create_tasks_table.php, as does '
-                .$this->chatTasksMigration(),
-            $reasons,
-        );
-        $this->assertContains('changes table tasks of Tasks from database/migrations', $reasons);
+        $this->assertContains(sprintf(self::TABLE_TWICE, $this->chatTasksMigration()), $reasons);
+        $this->assertContains(sprintf(self::FILE_NAME_TWICE, $this->chatTasksMigration()), $reasons);
+        $this->assertContains(self::TABLE_CHANGED, $reasons);
         $this->assertCount(3, $reasons);
     }
 

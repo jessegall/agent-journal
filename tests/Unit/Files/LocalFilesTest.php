@@ -24,6 +24,10 @@ use Tests\TestCase;
  */
 final class LocalFilesTest extends TestCase
 {
+    private const string JSON_BYTES = '{"a": 1}';
+
+    private const string SECOND_BYTES = 'second version';
+
     private string $folder;
 
     private LocalFiles $files;
@@ -56,10 +60,10 @@ final class LocalFilesTest extends TestCase
 
     public function test_a_project_file_reads_its_bytes_and_a_second_read_opens_nothing(): void
     {
-        $file = $this->write('docs/images.json', '{"a": 1}');
+        $file = $this->write('docs/images.json', self::JSON_BYTES);
 
-        $this->assertSame('{"a": 1}', $this->files->read($file));
-        $this->assertSame('{"a": 1}', $this->files->read($file));
+        $this->assertSame(self::JSON_BYTES, $this->files->read($file));
+        $this->assertSame(self::JSON_BYTES, $this->files->read($file));
         $this->assertSame(1, $this->files->readCount($file));
     }
 
@@ -78,7 +82,10 @@ final class LocalFilesTest extends TestCase
             $this->files->read($this->path('docs/none.json'));
             $this->fail('A missing file was read.');
         } catch (FileMissing $refusal) {
-            $this->assertSame('No file is at docs/none.json in the place project.', $refusal->getMessage());
+            $this->assertSame(
+                FileMissing::at($this->path('docs/none.json')->label())->getMessage(),
+                $refusal->getMessage(),
+            );
         }
     }
 
@@ -135,9 +142,9 @@ final class LocalFilesTest extends TestCase
     {
         $file = $this->write('docs/a.txt', 'first');
         $this->files->read($file);
-        $this->write('docs/a.txt', 'second version');
+        $this->write('docs/a.txt', self::SECOND_BYTES);
 
-        $this->assertSame('second version', $this->files->read($file));
+        $this->assertSame(self::SECOND_BYTES, $this->files->read($file));
 
         unlink("{$this->folder}/project/docs/a.txt");
         $this->expectException(FileMissing::class);
@@ -221,7 +228,7 @@ final class LocalFilesTest extends TestCase
             $this->files->readJson($file);
             $this->fail('Broken JSON was decoded.');
         } catch (FileJsonInvalid $refusal) {
-            $this->assertStringContainsString('docs/broken.json in the place project', $refusal->getMessage());
+            $this->assertStringContainsString($this->path('docs/broken.json')->label(), $refusal->getMessage());
         }
 
         $this->write('docs/broken.json', '{"a": 1}');
