@@ -2,6 +2,7 @@
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useChatTimeline } from './composables/useChatTimeline';
+import { useChosenAgent } from './composables/useChosenAgent';
 import { useConversationIntents } from './composables/useConversationIntents';
 import { draftKey } from './composables/useMessageDrafts';
 import type { AgentOptionData, ChatData } from '@generated/types/chat';
@@ -44,6 +45,31 @@ const chosenAgentId = ref<string | null>(null);
 const agentIdsInChat = computed(() => (conversation.value?.participants ?? [])
     .filter((member) => member.actor.startsWith('agent:'))
     .map((member) => member.actor.slice('agent:'.length)));
+const chosenStore = computed(() => {
+    const user = page.props.currentUser;
+
+    return conversation.value === undefined || !user ? undefined : useChosenAgent(user.id, conversation.value.inboxId);
+});
+
+// Each chat shows the agent last chosen there in this tab; one removed from the chat is forgotten and drops its controls.
+watch(
+    [chosenStore, agentIdsInChat],
+    ([store, ids]) => {
+        const kept = store?.read() ?? null;
+
+        if (kept !== null && !ids.includes(kept)) {
+            store?.forget();
+        }
+
+        chosenAgentId.value = kept !== null && ids.includes(kept) ? kept : null;
+    },
+    { immediate: true },
+);
+
+function chooseAgent(agentId: string): void {
+    chosenAgentId.value = agentId;
+    chosenStore.value?.keep(agentId);
+}
 const selected = computed(() => {
     const ids = agentIdsInChat.value;
     const wanted = chosenAgentId.value !== null && ids.includes(chosenAgentId.value)
@@ -190,13 +216,16 @@ function retryFocused(): void {
         </template>
         <template v-if="conversation && key">
             <template v-if="offersChoice && selected">
-                <AgentSessionActions :key="`${selected.id}-${selected.sessionGeneration}`" :agent="selected" />
+                <section id="chosen-agent-controls" :aria-label="`Session controls for ${selected.name}`">
+                    <AgentSessionActions :key="`${selected.id}-${selected.sessionGeneration}`" :agent="selected" />
+                </section>
+                <p role="status" aria-live="polite" class="sr-only">Session controls for {{ selected.name }}</p>
             </template>
             <ChatRoster
                 :conversation="conversation"
                 :conversation-prop="protectedProp"
                 :chosen-agent-id="selected?.id ?? null"
-                @choose-agent="(agentId) => (chosenAgentId = agentId)"
+                @choose-agent="chooseAgent"
             />
             <template v-if="isShown">
                 <template v-if="chat.focusedQuestionId !== undefined">

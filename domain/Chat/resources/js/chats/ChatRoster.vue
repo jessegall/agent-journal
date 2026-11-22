@@ -48,6 +48,8 @@ function findCandidates(): void {
                             type="button"
                             class="underline"
                             :aria-pressed="participant.actor === `agent:${chosenAgentId}`"
+                            aria-controls="chosen-agent-controls"
+                            :aria-label="`Session controls for ${participant.label}`"
                             @click="emit('chooseAgent', participant.actor.slice('agent:'.length))"
                         >
                             Session
