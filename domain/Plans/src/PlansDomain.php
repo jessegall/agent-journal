@@ -69,13 +69,11 @@ use Domain\Plans\Mcp\Resources\PlanResource;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
-use Domain\Plans\Resolvers\OpenPlansCount;
 use Domain\Plans\Resolvers\PhaseWindowResolver;
 use Domain\Plans\Resolvers\PlansWindowResolver;
 use Domain\Plans\Resolvers\PlanTaskWindowResolver;
 use Domain\Plans\Resolvers\PlanWindowResolver;
 use Domain\Plans\Resolvers\TaskPlanSection;
-use Domain\Plans\Resolvers\WaitingPlansCount;
 use Domain\Plans\Resolvers\WaitingPlansSection;
 use Domain\Plans\Support\Assignments\PlanTaskPoolFactory;
 use Domain\Plans\Support\Mcp\HeldPlansOverview;
@@ -316,13 +314,7 @@ final class PlansDomain extends Domain implements
     public function navigation(): array
     {
         return [
-            NavigationItem::page('list', 'Plans', Icon::Plan, group: 'web.work', position: 20)->children([
-                NavigationItem::page('open', 'Open', page: 'list', query: ['state' => 'open'], position: 10)
-                    ->count(OpenPlansCount::class),
-                NavigationItem::page('waiting', 'Waiting', page: 'list', query: ['state' => 'waiting'], position: 20)
-                    ->count(WaitingPlansCount::class),
-                NavigationItem::page('closed', 'Closed', page: 'list', query: ['state' => 'closed'], position: 30),
-            ]),
+            NavigationItem::page('list', 'Plans', Icon::Plan, position: 20),
         ];
     }
 

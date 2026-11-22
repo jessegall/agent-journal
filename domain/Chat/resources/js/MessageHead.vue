@@ -4,7 +4,7 @@ import Avatar from '@kit/Avatar';
 import type { SpeakerData } from '@generated/types/chat';
 
 /**
- * The line that heads another's message: the speaker's avatar (an agent's driver mark, or a person's initial), name
+ * The line that heads another's message: the speaker's avatar (an agent's driver mark, or the user's initial), name
  * and time, and whom it was addressed to.
  */
 const props = defineProps<{ speaker: SpeakerData; time: string; addressee: string | null }>();

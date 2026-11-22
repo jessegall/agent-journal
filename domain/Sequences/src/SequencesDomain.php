@@ -7,10 +7,12 @@ namespace Domain\Sequences;
 use App\Concerns\HasStates;
 use App\Contracts\CommandProvider;
 use App\Contracts\NativePartProvider;
+use App\Contracts\NavigationProvider;
 use App\Contracts\PageProvider;
 use App\Contracts\PolicyProvider;
 use App\Contracts\SkillProvider;
 use App\Contracts\StateProvider;
+use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Enums\AccessType;
 use App\Enums\Icon;
@@ -30,6 +32,7 @@ use Domain\Sequences\Support\States\Support\FollowingSequenceStateReference;
 final class SequencesDomain extends Domain implements
     CommandProvider,
     NativePartProvider,
+    NavigationProvider,
     PageProvider,
     PolicyProvider,
     SkillProvider,
@@ -78,14 +81,18 @@ final class SequencesDomain extends Domain implements
         return ['SequenceEditor.vue'];
     }
 
+    public function navigation(): array
+    {
+        return [NavigationItem::page('index', 'Sequences', Icon::Sequence, position: 40)];
+    }
+
     /**
-     * The run page, reached by a run's own link, and its index address, which only explains that: no sidebar entry,
-     * since no list of the runs a reader may see exists.
+     * The run page, reached by a run's own link, and the Sequences page the sidebar opens.
      */
     public function pages(): array
     {
         return [
-            Page::layout('index', 'Sequences', Icon::Activity, SequenceIndexResolver::class)->at(''),
+            Page::layout('index', 'Sequences', Icon::Sequence, SequenceIndexResolver::class)->at(''),
             Page::layout('run', 'Sequence run', Icon::Activity, SequenceRunWindowResolver::class)->at('runs/{run}'),
         ];
     }

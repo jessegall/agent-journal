@@ -36,14 +36,14 @@ final readonly class DeclaredSearch
     /**
      * The arguments of the search contract that came before, refused with the current ones named.
      */
-    private const array RETIRED_ARGUMENTS = ['types', 'page'];
+    public const array RETIRED_ARGUMENTS = ['types', 'page'];
 
     /**
      * The selector the search contract that came before signed its cursors with.
      */
     private const string OBSOLETE_SELECTOR = '';
 
-    private const string CURRENT_ARGUMENTS = 'query, within, limit, continuation, discover or prefix';
+    public const string CURRENT_ARGUMENTS = 'query, within, limit, continuation, discover or prefix';
 
     public function __construct(
         private SearchCoordinator $coordinator,

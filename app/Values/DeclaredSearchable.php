@@ -24,7 +24,7 @@ final readonly class DeclaredSearchable
     }
 
     /**
-     * The source as a person reads it: Tasks (tasks.task).
+     * The source as the user reads it: Tasks (tasks.task).
      */
     public function display(): string
     {

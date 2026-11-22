@@ -18,6 +18,7 @@ use App\Support\SearchCoordinator;
 use App\Support\SearchDiagnostics;
 use App\Support\SearchEligibility;
 use App\Support\SearchStates;
+use App\Values\RefreshCandidates;
 use App\Values\SearchAnswer;
 use App\Values\SearchBatch;
 use App\Values\SearchOwner;
@@ -34,6 +35,7 @@ use Tests\Fixtures\Search\CollectingLogger;
 use Tests\Fixtures\Search\MutableReadGrant;
 use Tests\Fixtures\Search\OpenSearchAccess;
 use Tests\Fixtures\Search\SwitchedOffDomains;
+use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -45,6 +47,8 @@ use Tests\TestCase;
 #[TimeLimit(10, 'The hanging fixture source sleeps past its deadline on purpose in several calls.')]
 final class SearchCoordinatorTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const string AGENT_ID = '01ARZ3NDEKTSV4RRFFQ69G5FZZ';
 
     private const string NOTE_ID = '01ARZ3NDEKTSV4RRFFQ69G5FAA';
@@ -223,7 +227,7 @@ final class SearchCoordinatorTest extends TestCase
 
     public function test_a_provider_returning_oversized_output_fails_without_breaking_the_others(): void
     {
-        $tooMany = function (SearchQuery $query): SearchBatch {
+        $tooMany = function (SearchQuery|RefreshCandidates $query): SearchBatch {
             $hits = array_map(fn (int $index) => new SearchResult(
                 "Driver {$index}",
                 'Driver',
@@ -293,7 +297,7 @@ final class SearchCoordinatorTest extends TestCase
             'rule',
             'Rules',
             ClosedSearchAccess::class,
-            fn (SearchQuery $query): SearchBatch => SearchBatch::exhausted('1', [
+            fn (SearchQuery|RefreshCandidates $query): SearchBatch => SearchBatch::exhausted('1', [
                 new SearchResult('Driver rule', 'Driver rule', $c, ScoreTier::TitlePrefix),
                 new SearchResult('Old rule', 'mentions the driver', $d, ScoreTier::BodyContains),
             ]),
@@ -378,7 +382,7 @@ final class SearchCoordinatorTest extends TestCase
 
     private function hanging(): Searchable
     {
-        return Searchable::make('hang', 'Hanging', OpenSearchAccess::class, function (SearchQuery $query): SearchBatch {
+        return Searchable::make('hang', 'Hanging', OpenSearchAccess::class, function (SearchQuery|RefreshCandidates $query): SearchBatch {
             usleep((SearchCoordinator::SOURCE_MILLISECONDS + 50) * 1000);
 
             return SearchBatch::scanning('1', SourcePosition::of(['step' => 1]));
@@ -387,7 +391,7 @@ final class SearchCoordinatorTest extends TestCase
 
     private function oneHit(): Closure
     {
-        return fn (SearchQuery $query): SearchBatch => SearchBatch::exhausted('1', [
+        return fn (SearchQuery|RefreshCandidates $query): SearchBatch => SearchBatch::exhausted('1', [
             new SearchResult(
                 'Driver notes',
                 'Driver notes',

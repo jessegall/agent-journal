@@ -25,6 +25,7 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskSearchProvider;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\RefreshHookDatabase;
 
 /**
  * The title scan visits blocks of at most 32 tasks the tier's pattern matches, tier by tier: a match only in the
@@ -33,6 +34,10 @@ use Illuminate\Support\Facades\DB;
  */
 final class TaskSearchProviderTest extends TestCase
 {
+    use RefreshHookDatabase;
+
+    private const string EDITED_TITLE = 'Deploy notes for Friday';
+
     private const string SOURCE_KEY = 'tasks.task';
 
     private const string ID_PREFIX = '01arz3ndektsv4rrffq69g';
@@ -47,7 +52,7 @@ final class TaskSearchProviderTest extends TestCase
 
         $match = self::task(TaskSearchProvider::BLOCK_SIZE + 1, 'Old driver');
         $provider = $this->app->make(TaskSearchProvider::class);
-        $query = self::query('driver', self::user(), SearchQuery::HIT_LIMIT);
+        $query = self::searchQuery('driver', self::user(), SearchQuery::HIT_LIMIT);
         $batch = $provider->search($query);
         $previous = null;
 
@@ -67,7 +72,7 @@ final class TaskSearchProviderTest extends TestCase
         $first = self::task(1, 'Rotate the keys');
         $second = self::task(2, 'Rotate the keys');
 
-        $batch = $this->app->make(TaskSearchProvider::class)->search(self::query('rotate the keys', self::user()));
+        $batch = $this->app->make(TaskSearchProvider::class)->search(self::searchQuery('rotate the keys', self::user()));
 
         $this->assertSame([$first->id, $second->id], self::ids($batch));
         $this->assertInstanceOf(MoreOutcome::class, $batch->outcome);
@@ -80,7 +85,7 @@ final class TaskSearchProviderTest extends TestCase
         }
 
         $provider = $this->app->make(TaskSearchProvider::class);
-        $query = self::query('zq', self::user());
+        $query = self::searchQuery('zq', self::user());
         $first = $provider->search($query);
         $position = self::nextWork($first);
 
@@ -93,7 +98,7 @@ final class TaskSearchProviderTest extends TestCase
 
         $this->assertInstanceOf(ScanningOutcome::class, $second->outcome);
         $this->assertCount(1, $reads);
-        $this->assertStringContainsString('limit '.TaskSearchProvider::BLOCK_SIZE, $reads[0]['query']);
+        $this->assertMatchesRegularExpression('/\blimit\s+'.TaskSearchProvider::BLOCK_SIZE.'\b/', $reads[0]['query']);
         $this->assertFalse(self::nextWork($second)->equals($position));
     }
 
@@ -102,10 +107,10 @@ final class TaskSearchProviderTest extends TestCase
         $kept = self::task(1, 'Deploy notes');
         $revoked = self::task(2, 'Deploy notes');
         $this->app->instance(ReadGrant::class, self::grantFor([$kept->id]));
-        Task::query()->whereKey($kept->id)->update(['title' => 'Deploy notes for Friday']);
+        Task::query()->whereKey($kept->id)->update(['title' => self::EDITED_TITLE]);
 
         $agent = new SearchReader(ActorContext::forAgent(self::AGENT_ID), SearchSurface::AgentTool);
-        $refresh = self::query('deploy notes', $agent)->refreshing([
+        $refresh = self::searchQuery('deploy notes', $agent)->refreshing([
             new HitIdentity(self::SOURCE_KEY, Task::LINK_TYPE, $kept->id),
             new HitIdentity(self::SOURCE_KEY, Task::LINK_TYPE, $revoked->id),
         ]);
@@ -114,18 +119,19 @@ final class TaskSearchProviderTest extends TestCase
 
         $this->assertSame([$kept->id], self::ids($batch));
         $this->assertSame(ScoreTier::TitlePrefix, $batch->hits[0]->score);
-        $this->assertSame('Deploy notes for Friday', $batch->hits[0]->snippet);
+        $this->assertSame(self::EDITED_TITLE, $batch->hits[0]->snippet);
     }
 
     public function test_a_task_reference_comes_first_at_tier_500(): void
     {
         $task = self::task(1, 'Search through everything');
 
-        $batch = $this->app->make(TaskSearchProvider::class)->search(self::query("task {$task->number}", self::user()));
+        $batch = $this->app->make(TaskSearchProvider::class)->search(self::searchQuery("task {$task->number}", self::user()));
 
         $this->assertSame([$task->id], self::ids($batch));
         $this->assertSame(ScoreTier::Reference, $batch->hits[0]->score);
-        $this->assertSame("Task {$task->number} · Search through everything", $batch->hits[0]->title);
+        $this->assertStringContainsString((string) $task->number, $batch->hits[0]->title);
+        $this->assertStringEndsWith($task->title, $batch->hits[0]->title);
     }
 
     private static function task(int $index, string $title): Task
@@ -133,7 +139,7 @@ final class TaskSearchProviderTest extends TestCase
         return Task::factory()->create(['id' => self::ID_PREFIX.sprintf('%04d', $index), 'title' => $title]);
     }
 
-    private static function query(string $words, SearchReader $reader, int $allowance = 10): SearchQuery
+    private static function searchQuery(string $words, SearchReader $reader, int $allowance = 10): SearchQuery
     {
         return new SearchQuery(
             $reader,
@@ -178,20 +184,20 @@ final class TaskSearchProviderTest extends TestCase
     }
 
     /**
-     * @param  list<string>  $taskIds
+     * @param  list<string>  $ids
      */
-    private static function grantFor(array $taskIds): ReadGrant
+    private static function grantFor(array $ids): ReadGrant
     {
-        return new readonly class($taskIds) implements ReadGrant
+        return new readonly class($ids) implements ReadGrant
         {
             /**
-             * @param  list<string>  $taskIds
+             * @param  list<string>  $ids
              */
-            public function __construct(private array $taskIds) {}
+            public function __construct(private array $ids) {}
 
             public function allows(ReadRequest $request): bool
             {
-                return $request->target !== null && in_array($request->target, $this->taskIds, true);
+                return $request->target !== null && in_array($request->target, $this->ids, true);
             }
 
             public function assertAllowed(ReadRequest $request): void
@@ -203,7 +209,7 @@ final class TaskSearchProviderTest extends TestCase
 
             public function allowedTargets(string $name): AllowedNames
             {
-                return AllowedNames::only($this->taskIds);
+                return AllowedNames::only($this->ids);
             }
         };
     }

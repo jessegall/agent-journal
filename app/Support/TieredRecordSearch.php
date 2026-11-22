@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\ReferenceRecognizer;
+use App\Contracts\StatementDeadlines;
+use App\Contracts\TieredSearch;
 use App\Enums\ScoreTier;
 use App\Exceptions\StatementTimedOut;
 use App\Exceptions\WorkBudgetSpent;
@@ -29,12 +31,8 @@ use Illuminate\Support\Collection;
  * pattern matches, read in fixed segments that overlap by the words' length so a phrase across an edge is found.
  * A refresh rereads held records in bulk and answers those that still match.
  */
-final readonly class TieredRecordSearch
+final readonly class TieredRecordSearch implements TieredSearch
 {
-    public const int BLOCK_SIZE = 32;
-
-    public const int SEGMENT_CHARACTERS = 2048;
-
     private const int BYTES_PER_CHARACTER = 4;
 
     private const string TIER = 'tier';
@@ -57,15 +55,20 @@ final readonly class TieredRecordSearch
 
     private const string LINES_BEFORE = 'search_lines_before';
 
-    public function __construct(private StatementDeadline $deadline) {}
+    public function __construct(private StatementDeadlines $deadline) {}
 
     /**
      * One call of the search over a source: a refresh, the first call, a title tier or the body tier.
      *
+     *
+     * @template TModel of Model
+     *
+     * @param  TieredSearchSource<TModel>  $source
+     *
      * @throws StatementTimedOut
      * @throws WorkBudgetSpent
      */
-    public function search(SearchQuery $query, TieredSearchSource $source): SearchBatch
+    public function search(SearchQuery|RefreshCandidates $query, TieredSearchSource $source): SearchBatch
     {
         if ($query instanceof RefreshCandidates) {
             return $this->refresh($query, $source);
@@ -85,6 +88,10 @@ final readonly class TieredRecordSearch
     /**
      * The complete-reference hit of a numbered record: the record with the recognized number in the journal's
      * group, inside the rows the reader may search, when the reader may open it.
+     *
+     * @template TModel of Model
+     *
+     * @param  TieredSearchSource<TModel>  $source
      */
     public function numberedReference(
         SearchQuery $query,
@@ -97,9 +104,11 @@ final readonly class TieredRecordSearch
             return null;
         }
 
-        $row = $source->rows()->numberedInJournal($reference->number)->first($source->columns);
+        $row = $source->rows()
+            ->scopes(['numberedInJournal' => [$reference->number]])
+            ->first($source->columns);
 
-        if (! $row instanceof Model || ! $source->admitsOpen((string) $row->getKey())) {
+        if ($row === null || ! $source->admitsOpen((string) $row->getKey())) {
             return null;
         }
 
@@ -108,13 +117,17 @@ final readonly class TieredRecordSearch
 
     /**
      * Fixes the high water, answers a complete reference first, then scans the first block of the top title tier.
+     *
+     * @template TModel of Model
+     *
+     * @param  TieredSearchSource<TModel>  $source
      */
     private function start(SearchQuery $query, TieredSearchSource $source): SearchBatch
     {
         $highWater = $source->rows()->max($source->idColumn);
 
         if (! is_string($highWater)) {
-            return SearchBatch::exhausted('', []);
+            return SearchBatch::nothing();
         }
 
         $reference = $source->referenceHit($query);
@@ -131,6 +144,10 @@ final readonly class TieredRecordSearch
     /**
      * One block of the current title tier: its hits are certified, since every later id of this tier sorts after
      * them and every other unseen hit sits in a lower tier.
+     *
+     * @template TModel of Model
+     *
+     * @param  TieredSearchSource<TModel>  $source
      */
     private function scanTitles(SearchQuery $query, SourcePosition $position, TieredSearchSource $source): SearchBatch
     {
@@ -165,7 +182,7 @@ final readonly class TieredRecordSearch
             }
         }
 
-        $examinedWholeBlock = $block->isEmpty() || $lastExamined === (string) $block->last()?->getKey();
+        $examinedWholeBlock = $block->isEmpty() || $lastExamined === (string) $block->last()->getKey();
         $tierFinished = $examinedWholeBlock && $block->count() < $blockSize;
         $next = $tierFinished
             ? self::afterTier($tier, $highWater, $referenceId, $source)
@@ -182,6 +199,11 @@ final readonly class TieredRecordSearch
      * One step of the body tier: a block of whole first segments, or the next segment of the one long text the
      * last step stopped inside. A text read only in part never yields a head before its match is seen, and the
      * rows read are bounded by the byte budget.
+     *
+     * @template TModel of Model
+     *
+     * @param  TieredSearchSource<TModel>  $source
+     * @param  SearchableBody<TModel>  $body
      */
     private function scanBodies(
         SearchQuery $query,
@@ -254,6 +276,12 @@ final readonly class TieredRecordSearch
     /**
      * The body hit of one row's segment: only for a record whose title holds no tier, so its highest tier is the
      * body, at the character the match starts at in the whole text.
+     *
+     * @template TModel of Model
+     *
+     * @param  TieredSearchSource<TModel>  $source
+     * @param  SearchableBody<TModel>  $body
+     * @param  TModel  $row
      */
     private function bodyHit(
         SearchQuery $query,
@@ -283,19 +311,23 @@ final readonly class TieredRecordSearch
     /**
      * Rereads the held records in one query inside the reader's live grant and answers each held identity that
      * still matches: a title hit at its current tier, a passage through the source's own check of its text.
+     *
+     * @template TModel of Model
+     *
+     * @param  TieredSearchSource<TModel>  $source
      */
     private function refresh(RefreshCandidates $query, TieredSearchSource $source): SearchBatch
     {
         $ids = $query->recordIds();
-        $query->budget->chargePolicyChecks(count($ids));
-        $reference = $source->referenceHit($query);
+        $query->original->budget->chargePolicyChecks(count($ids));
+        $reference = $source->referenceHit($query->original);
 
-        $rows = $this->read($query, fn () => $this->rowsWithText($source, $ids));
+        $rows = $this->read($query->original, fn () => $this->rowsWithText($source, $ids));
 
         $matches = [];
 
         foreach ($query->candidates as $candidate) {
-            $match = $this->currentMatch($query, $source, $candidate, $rows->get($candidate->recordId), $reference);
+            $match = $this->currentMatch($query->original, $source, $candidate, $rows->get($candidate->recordId), $reference);
 
             if ($match !== null) {
                 $matches[] = $match;
@@ -309,7 +341,11 @@ final readonly class TieredRecordSearch
 
     /**
      * @param  list<string>  $ids
-     * @return Collection<string, Model>
+     *
+     * @template TModel of Model
+     *
+     * @param  TieredSearchSource<TModel>  $source
+     * @return Collection<string, TModel>
      */
     private function rowsWithText(TieredSearchSource $source, array $ids): Collection
     {
@@ -322,6 +358,12 @@ final readonly class TieredRecordSearch
         return $rows->get()->keyBy(fn (Model $row): string => (string) $row->getKey());
     }
 
+    /**
+     * @template TModel of Model
+     *
+     * @param  TieredSearchSource<TModel>  $source
+     * @param  TModel|null  $row
+     */
     private function currentMatch(
         SearchQuery $query,
         TieredSearchSource $source,
@@ -336,7 +378,7 @@ final readonly class TieredRecordSearch
         if ($candidate->locationId !== null) {
             $text = (string) $row->getAttribute(self::TEXT);
 
-            return $source->body?->passage($row, $text, $candidate, $query);
+            return $source->body?->passage($row, $text, $candidate, $query->words);
         }
 
         if ($reference !== null && $reference->reference->id === $candidate->recordId) {
@@ -362,6 +404,9 @@ final readonly class TieredRecordSearch
     /**
      * The SQL counting the line breaks before a segment's start, so a hit knows its line without reading the text
      * before it.
+     *
+     * @param  literal-string  $column
+     * @return literal-string
      */
     private static function linesBefore(string $column): string
     {
@@ -395,6 +440,10 @@ final readonly class TieredRecordSearch
     /**
      * The start of the tier after this title tier: the next title tier, the body tier of a source with a long
      * text, or null when the range is proven empty.
+     *
+     * @template TModel of Model
+     *
+     * @param  TieredSearchSource<TModel>  $source
      */
     private static function afterTier(
         ScoreTier $tier,

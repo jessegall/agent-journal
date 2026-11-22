@@ -52,7 +52,7 @@ final readonly class TaskRecords implements RecordProvider
             'label' => "task {$record->number}",
             'title' => $record->title,
             'abstract' => null,
-            'route' => null,
+            'route' => "/tasks/{$record->number}",
         ]);
     }
 

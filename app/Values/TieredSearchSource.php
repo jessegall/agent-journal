@@ -5,24 +5,27 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\ScoreTier;
+use App\Support\ReadBuilder;
 use Closure;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * What a domain tells the shared tiered search about one searchable: the rows the reader may search, the id and
  * title columns, the columns a hit needs, how a row's title is read and becomes a hit, whether the reader may open
  * a record, its complete-reference hit when the words are one, and its long text, when it offers passages.
+ *
+ * @template TModel of Model
  */
 final readonly class TieredSearchSource
 {
     /**
-     * @param  Closure(): Builder<Model>  $admitted
+     * @param  Closure(): ReadBuilder<TModel>  $admitted
      * @param  list<string>  $columns
-     * @param  Closure(Model): string  $titleOf
-     * @param  Closure(Model, ScoreTier): SearchResult  $hitOf
+     * @param  Closure(TModel): string  $titleOf
+     * @param  Closure(TModel, ScoreTier): SearchResult  $hitOf
      * @param  Closure(string): bool  $admitsOpen
-     * @param  Closure(SearchQuery, self): (SearchResult|null)  $referenceOf
+     * @param  Closure(SearchQuery, self<TModel>): (SearchResult|null)  $referenceOf
+     * @param  SearchableBody<TModel>|null  $body
      */
     public function __construct(
         public Closure $admitted,
@@ -37,18 +40,24 @@ final readonly class TieredSearchSource
     ) {}
 
     /**
-     * @return Builder<Model>
+     * @return ReadBuilder<TModel>
      */
-    public function rows(): Builder
+    public function rows(): ReadBuilder
     {
         return ($this->admitted)();
     }
 
+    /**
+     * @param  TModel  $row
+     */
     public function titleOf(Model $row): string
     {
         return ($this->titleOf)($row);
     }
 
+    /**
+     * @param  TModel  $row
+     */
     public function hit(Model $row, ScoreTier $tier): SearchResult
     {
         return ($this->hitOf)($row, $tier);

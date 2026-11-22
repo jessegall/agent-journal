@@ -144,6 +144,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
      * Lines of the tasks the subquery selects, such as the tasks a reader may search.
      *
      * @param  Builder<self>  $query
+     * @param  Builder<Task>  $tasks
      */
     #[Scope]
     protected function ofTasksIn(Builder $query, Builder $tasks): void

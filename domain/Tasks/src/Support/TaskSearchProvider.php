@@ -6,19 +6,21 @@ namespace Domain\Tasks\Support;
 
 use App\Contracts\SearchProvider;
 use App\Contracts\ServedEnvironment;
+use App\Contracts\TieredSearch;
 use App\Enums\ScoreTier;
+use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
-use App\Support\TieredRecordSearch;
 use App\Values\AdmittedConstraints;
 use App\Values\HitIdentity;
+use App\Values\RefreshCandidates;
 use App\Values\SearchableBody;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;
 use App\Values\SearchResult;
+use App\Values\SearchWords;
 use App\Values\TieredSearchSource;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Values\TaskBriefPassage;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Searches tasks through the shared bounded tiered search: a task reference such as task 2241 first, then the
@@ -27,9 +29,9 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final readonly class TaskSearchProvider implements SearchProvider
 {
-    public const int BLOCK_SIZE = TieredRecordSearch::BLOCK_SIZE;
+    public const int BLOCK_SIZE = TieredSearch::BLOCK_SIZE;
 
-    public const int SEGMENT_CHARACTERS = TieredRecordSearch::SEGMENT_CHARACTERS;
+    public const int SEGMENT_CHARACTERS = TieredSearch::SEGMENT_CHARACTERS;
 
     private const int SNIPPET_CONTEXT_CHARACTERS = 60;
 
@@ -37,15 +39,15 @@ final readonly class TaskSearchProvider implements SearchProvider
         private TaskSearchAccess $access,
         private TaskReferenceRecognizer $recognizer,
         private ServedEnvironment $environment,
-        private TieredRecordSearch $tiers,
+        private TieredSearch $tiers,
     ) {}
 
-    public function search(SearchQuery $query): SearchBatch
+    public function search(SearchQuery|RefreshCandidates $query): SearchBatch
     {
         $constraints = $this->access->constraints($query->reader);
 
         if ($constraints->recordIds->admitsNone()) {
-            return SearchBatch::exhausted('', []);
+            return SearchBatch::nothing();
         }
 
         return $this->tiers->search($query, new TieredSearchSource(
@@ -65,9 +67,9 @@ final readonly class TaskSearchProvider implements SearchProvider
     /**
      * The tasks the reader may search: those of the served environment, limited to the admitted ids.
      *
-     * @return Builder<Task>
+     * @return ReadBuilder<Task>
      */
-    private function admitted(AdmittedConstraints $constraints): Builder
+    private function admitted(AdmittedConstraints $constraints): ReadBuilder
     {
         $query = Task::query()->inEnvironments($this->environment->environmentIds());
 
@@ -96,7 +98,7 @@ final readonly class TaskSearchProvider implements SearchProvider
         $from = max(0, $column - self::SNIPPET_CONTEXT_CHARACTERS);
 
         return SearchResult::shortened(
-            "Task {$task->number} · {$task->title} · Brief",
+            "Task {$task->number} · {$task->title}",
             mb_substr($text, $from, SearchResult::SNIPPET_CHARACTER_LIMIT),
             new RecordIdentity(Task::LINK_TYPE, $task->id),
             ScoreTier::BodyContains,
@@ -112,7 +114,7 @@ final readonly class TaskSearchProvider implements SearchProvider
         Task $task,
         string $brief,
         HitIdentity $held,
-        SearchQuery $query,
+        SearchWords $words,
     ): SearchResult|null {
         if ($held->locationId === null || ! TaskBriefPassage::isId($held->locationId)) {
             return null;
@@ -120,17 +122,17 @@ final readonly class TaskSearchProvider implements SearchProvider
 
         $passage = TaskBriefPassage::fromId($held->locationId);
 
-        if (! $passage->isOpenIn($brief, $task->revision) || $query->words->titleTier($task->title) !== null) {
+        if (! $passage->isOpenIn($brief, $task->revision) || $words->titleTier($task->title) !== null) {
             return null;
         }
 
         $excerpt = $passage->excerptOf($brief, $task->revision, self::SEGMENT_CHARACTERS);
 
-        if (! $query->words->isFoundIn($excerpt)) {
+        if (! $words->isFoundIn($excerpt)) {
             return null;
         }
 
-        $found = mb_stripos($excerpt, $query->words->text);
+        $found = mb_stripos($excerpt, $words->text);
 
         return self::briefHit($task, $excerpt, $found === false ? 0 : $found, $passage->characterOffset);
     }

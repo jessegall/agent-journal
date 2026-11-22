@@ -4,34 +4,34 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\SearchProvider;
+use App\Contracts\MessageSearch;
 use App\Enums\ScoreTier;
 use App\Models\Message;
 use App\Values\AdmittedConstraints;
+use App\Values\RefreshCandidates;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;
 use App\Values\SearchResult;
 use App\Values\TieredSearchSource;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Searches chat message bodies through the shared bounded tiered search. Every read goes through the Message model,
  * so its visibility scope decides which messages exist for the reader before anything is matched, scored or
  * quoted, and follows that scope as it changes; a hidden message's words give no hit.
  */
-final readonly class MessageSearchProvider implements SearchProvider
+final readonly class MessageSearchProvider implements MessageSearch
 {
     public function __construct(
         private MessageSearchAccess $access,
         private TieredRecordSearch $tiers,
     ) {}
 
-    public function search(SearchQuery $query): SearchBatch
+    public function search(SearchQuery|RefreshCandidates $query): SearchBatch
     {
         $constraints = $this->access->constraints($query->reader);
 
         if ($constraints->recordIds->admitsNone()) {
-            return SearchBatch::exhausted('', []);
+            return SearchBatch::nothing();
         }
 
         return $this->tiers->search($query, new TieredSearchSource(
@@ -47,9 +47,9 @@ final readonly class MessageSearchProvider implements SearchProvider
     }
 
     /**
-     * @return Builder<Message>
+     * @return ReadBuilder<Message>
      */
-    private static function admitted(AdmittedConstraints $constraints): Builder
+    private static function admitted(AdmittedConstraints $constraints): ReadBuilder
     {
         $query = Message::query();
 

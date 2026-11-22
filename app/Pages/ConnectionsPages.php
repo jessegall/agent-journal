@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
-use App\Contracts\NavigationProvider;
 use App\Contracts\PageProvider;
 use App\Contracts\TypeProvider;
 use App\Data\Connections\BindingListData;
@@ -21,7 +20,6 @@ use App\Data\Connections\ReleaseTargetData;
 use App\Data\Connections\SupportRecordRowData;
 use App\Data\Connections\TerminalSignInRowData;
 use App\Declarations\DomainUi;
-use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Enums\BindingReadiness;
 use App\Enums\ChildRole;
@@ -40,7 +38,7 @@ use App\Support\ConnectionsOwnerCheck;
 /**
  * The pages Core's Connections declares, for the owner alone, under /connections: the Connect a project window.
  */
-final class ConnectionsPages implements NavigationProvider, PageProvider, TypeProvider
+final class ConnectionsPages implements PageProvider, TypeProvider
 {
     public function pages(): array
     {
@@ -63,13 +61,6 @@ final class ConnectionsPages implements NavigationProvider, PageProvider, TypePr
             )
                 ->at('devices/{code}')
                 ->visibleWhen(ConnectionsOwnerCheck::class),
-        ];
-    }
-
-    public function navigation(): array
-    {
-        return [
-            NavigationItem::page('connect', 'Connect a project', Icon::Connections, group: 'web.agents', position: 50),
         ];
     }
 

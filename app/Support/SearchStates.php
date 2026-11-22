@@ -7,9 +7,11 @@ namespace App\Support;
 use App\Exceptions\SearchHandleRefused;
 use App\Exceptions\SearchRestartRequired;
 use App\Exceptions\SearchStateFull;
+use App\Exceptions\SearchStoreLocksMissing;
 use App\Values\SearchOwner;
 use App\Values\SearchPosition;
 use Illuminate\Cache\CacheManager;
+use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Contracts\Encryption\Encrypter;
 
@@ -37,9 +39,21 @@ final readonly class SearchStates
 
     private Repository $cache;
 
+    private LockProvider $locks;
+
+    /**
+     * @throws SearchStoreLocksMissing
+     */
     public function __construct(CacheManager $caches, private Encrypter $encrypter)
     {
         $this->cache = $caches->store();
+        $store = $this->cache->getStore();
+
+        if (! $store instanceof LockProvider) {
+            throw SearchStoreLocksMissing::for($store::class);
+        }
+
+        $this->locks = $store;
     }
 
     /**
@@ -59,7 +73,7 @@ final readonly class SearchStates
 
         self::assertFits($stored);
 
-        $this->cache->lock(self::principalKey($owner), self::LOCK_SECONDS)->block(
+        $this->locks->lock(self::principalKey($owner), self::LOCK_SECONDS)->block(
             self::LOCK_WAIT_SECONDS,
             function () use ($owner, $searchId, $stored): void {
                 $this->admitActive($owner, $searchId);
@@ -96,7 +110,7 @@ final readonly class SearchStates
     {
         [$searchId, $positionId] = $this->opened($owner, $handle);
 
-        return $this->cache->lock(self::searchKey($searchId).':lock', self::LOCK_SECONDS)->block(
+        return $this->locks->lock(self::searchKey($searchId).':lock', self::LOCK_SECONDS)->block(
             self::LOCK_WAIT_SECONDS,
             fn (): SearchPosition => $this->advanceLocked($owner, $searchId, $positionId, $page, $successorState),
         );
@@ -237,11 +251,39 @@ final readonly class SearchStates
     {
         $stored = $this->cache->get(self::searchKey($searchId));
 
-        if (! is_array($stored) || ($stored['owner'] ?? null) !== hash('sha256', $owner->binding())) {
+        if (! self::isStoredSearch($stored) || $stored['owner'] !== hash('sha256', $owner->binding())) {
             throw SearchRestartRequired::expired();
         }
 
         return $stored;
+    }
+
+    /**
+     * Whether what the cache holds is a search this class wrote: its owner, its order and its positions.
+     *
+     * @phpstan-assert-if-true array{
+     *     owner: string,
+     *     order: list<string>,
+     *     positions: array<string, array{state: string, page: string|null, successor: string|null}>,
+     * } $stored
+     */
+    private static function isStoredSearch(mixed $stored): bool
+    {
+        return is_array($stored)
+            && is_string($stored['owner'] ?? null)
+            && is_array($stored['order'] ?? null)
+            && array_is_list($stored['order'])
+            && array_all($stored['order'], fn (mixed $id): bool => is_string($id))
+            && is_array($stored['positions'] ?? null)
+            && array_all($stored['positions'], fn (mixed $position): bool => self::isStoredPosition($position));
+    }
+
+    private static function isStoredPosition(mixed $position): bool
+    {
+        return is_array($position)
+            && is_string($position['state'] ?? null)
+            && (is_string($position['page'] ?? null) || ($position['page'] ?? null) === null)
+            && (is_string($position['successor'] ?? null) || ($position['successor'] ?? null) === null);
     }
 
     private function handleOf(SearchOwner $owner, string $searchId, string $positionId): string

@@ -5,19 +5,21 @@ declare(strict_types=1);
 namespace Domain\Documents\Support;
 
 use App\Contracts\SearchProvider;
+use App\Contracts\TieredSearch;
 use App\Enums\ScoreTier;
+use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
-use App\Support\TieredRecordSearch;
 use App\Values\AdmittedConstraints;
 use App\Values\HitIdentity;
+use App\Values\RefreshCandidates;
 use App\Values\SearchableBody;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;
 use App\Values\SearchResult;
+use App\Values\SearchWords;
 use App\Values\TieredSearchSource;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Values\PublicationPassage;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Searches reports through the shared bounded tiered search: a reference such as report 351 first, then the title,
@@ -30,15 +32,15 @@ final readonly class ReportSearchProvider implements SearchProvider
     public function __construct(
         private ReportSearchAccess $access,
         private ReportReferenceRecognizer $recognizer,
-        private TieredRecordSearch $tiers,
+        private TieredSearch $tiers,
     ) {}
 
-    public function search(SearchQuery $query): SearchBatch
+    public function search(SearchQuery|RefreshCandidates $query): SearchBatch
     {
         $constraints = $this->access->constraints($query->reader);
 
         if ($constraints->recordIds->admitsNone()) {
-            return SearchBatch::exhausted('', []);
+            return SearchBatch::nothing();
         }
 
         return $this->tiers->search($query, new TieredSearchSource(
@@ -56,9 +58,9 @@ final readonly class ReportSearchProvider implements SearchProvider
     }
 
     /**
-     * @return Builder<Report>
+     * @return ReadBuilder<Report>
      */
-    private static function admitted(AdmittedConstraints $constraints): Builder
+    private static function admitted(AdmittedConstraints $constraints): ReadBuilder
     {
         $query = Report::query();
 
@@ -102,7 +104,7 @@ final readonly class ReportSearchProvider implements SearchProvider
         Report $report,
         string $body,
         HitIdentity $held,
-        SearchQuery $query,
+        SearchWords $words,
     ): SearchResult|null {
         if ($held->locationId === null || ! PublicationPassage::isId($held->locationId)) {
             return null;
@@ -111,11 +113,11 @@ final readonly class ReportSearchProvider implements SearchProvider
         $passage = PublicationPassage::fromId($held->locationId);
         $excerpt = $passage->excerptOf($body);
 
-        if ($query->words->titleTier($report->title) !== null || ! $query->words->isFoundIn($excerpt)) {
+        if ($words->titleTier($report->title) !== null || ! $words->isFoundIn($excerpt)) {
             return null;
         }
 
-        $found = mb_stripos($excerpt, $query->words->text);
+        $found = mb_stripos($excerpt, $words->text);
 
         return self::bodyHit($report, $excerpt, $found === false ? 0 : $found, 0, $passage->line);
     }

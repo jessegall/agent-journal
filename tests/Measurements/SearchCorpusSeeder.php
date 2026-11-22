@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Database\Seeders;
+namespace Tests\Measurements;
 
 use App\Models\NumberGroup;
 use Domain\Tasks\Models\Task;

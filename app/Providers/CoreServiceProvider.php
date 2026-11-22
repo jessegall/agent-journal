@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Contracts\AssignmentRegistration;
+use App\Contracts\MessageSearch;
 use App\Contracts\PipelineRunner as PipelineRunnerContract;
+use App\Contracts\StatementDeadlines;
+use App\Contracts\TieredSearch;
 use App\Enums\AssignmentPurpose;
 use App\Mcp\Models\RetainedPage;
 use App\Models\Account;
@@ -48,7 +51,10 @@ use App\Models\UserPresence;
 use App\Support\AskAssignments;
 use App\Support\FolderClasses;
 use App\Support\LinkTypeRegistry;
+use App\Support\MessageSearchProvider;
 use App\Support\PipelineRunner;
+use App\Support\StatementDeadline;
+use App\Support\TieredRecordSearch;
 use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
@@ -61,6 +67,9 @@ final class CoreServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(PipelineRunnerContract::class, PipelineRunner::class);
+        $this->app->bind(TieredSearch::class, TieredRecordSearch::class);
+        $this->app->bind(StatementDeadlines::class, StatementDeadline::class);
+        $this->app->bind(MessageSearch::class, MessageSearchProvider::class);
     }
 
     public function boot(LinkTypeRegistry $links, AssignmentRegistration $assignments): void

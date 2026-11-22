@@ -77,9 +77,9 @@ final readonly class SearchAnswer
     }
 
     /**
-     * @param  list<string>  $failedSources
+     * @param  list<string>  $sources
      */
-    public function withFailedSources(array $failedSources): self
+    public function withFailedSources(array $sources): self
     {
         return new self(
             $this->status,
@@ -91,7 +91,7 @@ final readonly class SearchAnswer
             $this->scope,
             $this->words,
             $this->reason,
-            $failedSources,
+            $sources,
         );
     }
 

@@ -18,6 +18,7 @@ use App\Values\SearchBatch;
 use App\Values\SearchQuery;
 use App\Values\SearchReader;
 use App\Values\SearchRequest;
+use App\Values\SearchWords;
 use Closure;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
@@ -79,7 +80,7 @@ final class SearchRequestTest extends TestCase
             SearchRequest::parse(query: ' d ');
             $this->fail('One character was accepted.');
         } catch (SearchWordsInvalid $refusal) {
-            $this->assertStringContainsString('at least 2 characters', $refusal->getMessage());
+            $this->assertSame(SearchWordsInvalid::tooShort(SearchWords::CHARACTER_MINIMUM)->getMessage(), $refusal->getMessage());
         }
 
         $this->assertSame('dr', SearchRequest::parse(query: 'dr')->words?->text);
@@ -93,7 +94,7 @@ final class SearchRequestTest extends TestCase
             SearchRequest::parse(query: str_repeat('secret', 34));
             $this->fail('201 characters were accepted.');
         } catch (SearchWordsInvalid $refusal) {
-            $this->assertStringContainsString('at most 200 characters', $refusal->getMessage());
+            $this->assertSame(SearchWordsInvalid::tooLong(SearchWords::CHARACTER_LIMIT)->getMessage(), $refusal->getMessage());
             $this->assertStringNotContainsString('secret', $refusal->getMessage());
         }
     }
@@ -125,12 +126,14 @@ final class SearchRequestTest extends TestCase
 
     public function test_story_38_a_cursor_with_new_words_conflicts_and_the_cursor_stays_usable(): void
     {
+        $words = 'other words';
+
         try {
-            SearchRequest::parse(query: 'other words', continuation: 'handle');
+            SearchRequest::parse(query: $words, continuation: 'handle');
             $this->fail('A continuation with new words was accepted.');
         } catch (SearchRequestInvalid $refusal) {
-            $this->assertStringContainsString('stays usable', $refusal->getMessage());
-            $this->assertStringNotContainsString('other words', $refusal->getMessage());
+            $this->assertSame(SearchRequestInvalid::conflicting('continuation', 'query')->getMessage(), $refusal->getMessage());
+            $this->assertStringNotContainsString($words, $refusal->getMessage());
         }
 
         $this->assertTrue(SearchRequest::parse(continuation: 'handle')->continues());

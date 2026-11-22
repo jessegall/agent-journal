@@ -56,10 +56,12 @@ final class DeclaredSearchToolTest extends TestCase
 
     public function test_discovery_lists_tasks_by_prefix(): void
     {
-
-        $this->callMcpTool($this->caller, 'search', ['discover' => true, 'prefix' => 'ta'])
+        $sources = $this->callMcpTool($this->caller, 'search', ['discover' => true, 'prefix' => 'ta'])
             ->assertJsonPath('result.isError', false)
-            ->assertJsonPath('result.structuredContent.sources.0.display', 'Tasks (tasks.task)');
+            ->json('result.structuredContent.sources');
+
+        $this->assertContains('tasks.task', array_column($sources, 'key'));
+        $this->assertContains('tasks.log', array_column($sources, 'key'));
     }
 
     public function test_a_continuation_returns_the_next_hit(): void

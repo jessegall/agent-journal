@@ -15,6 +15,9 @@ use App\Exceptions\SearchStateFull;
 use App\Exceptions\SearchValueInvalid;
 use App\Exceptions\StatementTimedOut;
 use App\Exceptions\WorkBudgetSpent;
+use App\Support\Stored\StoredSearchHit;
+use App\Support\Stored\StoredSearchPage;
+use App\Support\Stored\StoredSearchProgress;
 use App\Values\BufferedHit;
 use App\Values\DeclaredSearchable;
 use App\Values\EmittedHit;
@@ -23,8 +26,8 @@ use App\Values\FailedOutcome;
 use App\Values\MoreOutcome;
 use App\Values\ScanningOutcome;
 use App\Values\SearchAnswer;
-use App\Values\SearchCallMeter;
 use App\Values\SearchBatch;
+use App\Values\SearchCallMeter;
 use App\Values\SearchOwner;
 use App\Values\SearchPosition;
 use App\Values\SearchProgress;
@@ -146,11 +149,12 @@ final readonly class SearchCoordinator
             return SearchAnswer::restart();
         }
 
-        $progress = SearchProgress::fromJson($position->state);
+        $stored = StoredSearchProgress::from(json_decode($position->state, true, 16, JSON_THROW_ON_ERROR));
+        $progress = SearchProgress::fromStored($stored);
         $sources = $this->stillEligible($reader, $progress);
 
         if ($position->wasResumed()) {
-            return $this->replay($reader, $progress, $sources, $position);
+            return $this->replay($reader, $stored, $sources, $position);
         }
 
         $progress->calls++;
@@ -167,7 +171,7 @@ final readonly class SearchCoordinator
         }
 
         if ($next->page !== $page) {
-            return $this->replay($reader, SearchProgress::fromJson($position->state), $sources, $next);
+            return $this->replay($reader, $stored, $sources, $next);
         }
 
         return $answer->withContinuation($answer->status->continues() ? $next->successor : null);
@@ -229,7 +233,9 @@ final readonly class SearchCoordinator
 
             $pageFull = $bytesFull || count($emitted) >= $progress->limit;
 
-            if ($asked === 0 || $pageFull || $progress->isFinished() || $timedOut || ! self::hasTime($deadline)) {
+            $canAskAgain = $progress->hasSourceToRefill() && $batches < self::BATCH_LIMIT;
+
+            if ($pageFull || ! $canAskAgain || $timedOut || ! self::hasTime($deadline)) {
                 break;
             }
         }
@@ -254,7 +260,7 @@ final readonly class SearchCoordinator
     {
         $failed = array_keys(array_filter($progress->sources, fn (SourceProgress $source): bool => $source->failed));
 
-        return $answer->withFailedSources(array_values($failed));
+        return $answer->withFailedSources($failed);
     }
 
     /**
@@ -573,17 +579,17 @@ final readonly class SearchCoordinator
      */
     private function replay(
         SearchReader $reader,
-        SearchProgress $progress,
+        StoredSearchProgress $stored,
         array $sources,
         SearchPosition $position,
     ): SearchAnswer {
-        $page = json_decode($position->replayedPage(), true, 8, JSON_THROW_ON_ERROR);
-        $status = SearchStatus::from($page['status']);
+        $progress = SearchProgress::fromStored($stored);
+        $page = StoredSearchPage::from(json_decode($position->replayedPage(), true, 8, JSON_THROW_ON_ERROR));
+        $status = $page->status;
+        $pageHits = array_map(fn (StoredSearchHit $stored): BufferedHit => $stored->toBufferedHit(), $page->hits);
         $held = [];
 
-        foreach ($page['hits'] as $fields) {
-            $hit = BufferedHit::fromArray($fields);
-
+        foreach ($pageHits as $hit) {
             if (isset($sources[$hit->identity->sourceKey])) {
                 $held[$hit->identity->sourceKey][] = $hit;
             }
@@ -604,8 +610,8 @@ final readonly class SearchCoordinator
 
         $hits = [];
 
-        foreach ($page['hits'] as $fields) {
-            $shown = $current[BufferedHit::fromArray($fields)->identity->key()] ?? null;
+        foreach ($pageHits as $hit) {
+            $shown = $current[$hit->identity->key()] ?? null;
 
             if ($shown !== null) {
                 $hits[] = $shown;
@@ -615,7 +621,7 @@ final readonly class SearchCoordinator
         return new SearchAnswer(
             $status,
             $hits,
-            narrowerScopes: $page['narrower'],
+            narrowerScopes: $page->narrower,
             continuation: $status->continues() ? $position->successor : null,
         );
     }

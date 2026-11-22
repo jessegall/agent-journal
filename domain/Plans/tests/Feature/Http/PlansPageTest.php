@@ -99,19 +99,14 @@ final class PlansPageTest extends TestCase
         ])->assertOk()->assertJsonMissingPath('props.page');
     }
 
-    public function test_the_state_children_list_open_waiting_and_closed_plans_and_count_them(): void
+    public function test_the_waiting_filter_lists_waiting_plans_under_the_one_plans_page(): void
     {
         Plan::query()->whereKey($this->paused->id)->update(['state' => PlanState::Reviewing->value]);
 
         $this->actingAs($this->owner)->get('/plans?state=waiting')->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.root.children.0.children.1.text', '1')
             ->where(self::ROWS.'.0.label', 'Compare chat layouts')
-            ->where('navigation.current', ['plans.list', 'plans.waiting'])
-            ->loadDeferredProps('navigation-counts', fn (AssertableInertia $counts) => $counts
-                ->where(
-                    'navigationCounts.counts',
-                    fn ($counts) => $counts['plans.open'] === 1 && $counts['plans.waiting'] === 1,
-                )));
+            ->where('navigation.current', ['plans.list']));
     }
 
     public function test_a_plan_has_its_own_record_page_and_opens_in_the_inspector(): void

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Values;
 
 use App\Values\RecordLocation;
+use Domain\Documents\Exceptions\PublicationPassageUnknown;
 
 /**
  * A passage of a published text as search found it: for a document the revision it was read in, and the line it
@@ -28,10 +29,14 @@ final readonly class PublicationPassage
 
     /**
      * The passage an id names; ask isId() first.
+     *
+     * @throws PublicationPassageUnknown
      */
     public static function fromId(string $id): self
     {
-        preg_match(self::ID_PATTERN, $id, $match);
+        if (preg_match(self::ID_PATTERN, $id, $match) !== 1) {
+            throw PublicationPassageUnknown::for($id);
+        }
 
         return new self($match[1] === '' ? null : (int) $match[1], (int) $match[2]);
     }

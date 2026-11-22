@@ -106,7 +106,7 @@ final readonly class ScopeResolution
     }
 
     /**
-     * The alternatives as a person reads them, such as Tasks (tasks.task).
+     * The alternatives as the user reads them, such as Tasks (tasks.task).
      *
      * @return list<string>
      */

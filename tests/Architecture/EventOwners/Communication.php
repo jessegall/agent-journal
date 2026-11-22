@@ -8,6 +8,7 @@ use App\Enums\IntervalRole;
 use App\Enums\LeaveReason;
 use App\Enums\ReceiptDeliveryState;
 use App\Enums\SpeechOpportunityState;
+use App\Events\ChatLinePosted;
 use App\Events\ChatMemberJoined;
 use App\Events\ChatMemberLeft;
 use App\Events\ChatMessageAccepted;
@@ -34,6 +35,13 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
+    ChatLinePosted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TimelineEvent::create',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ChatLinePosted('event', 'inbox', 1),
+    ],
     ChatMessageAccepted::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Message::createChat',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Exceptions\SearchWordsInvalid;
+use App\Support\Stored\StoredSearchProgress;
 
 /**
  * The private state of one search between calls: its words and scope, the sources fixed at its start with their
@@ -69,6 +70,14 @@ final class SearchProgress
         return array_all($this->sources, fn (SourceProgress $source): bool => $source->isDone());
     }
 
+    /**
+     * Whether some source has shown every hit it held and has more to give, so asking it again can fill the page.
+     */
+    public function hasSourceToRefill(): bool
+    {
+        return array_any($this->sources, fn (SourceProgress $source): bool => $source->needsRefill());
+    }
+
     public function toJson(): string
     {
         return json_encode([
@@ -84,27 +93,28 @@ final class SearchProgress
     }
 
     /**
+     * The progress a search's stored state holds.
+     *
      * @throws SearchWordsInvalid
      */
-    public static function fromJson(string $json): self
+    public static function fromStored(StoredSearchProgress $stored): self
     {
-        $fields = json_decode($json, true, 16, JSON_THROW_ON_ERROR);
         $sources = [];
 
-        foreach ($fields['sources'] as $source) {
-            $progress = SourceProgress::fromArray($source);
+        foreach ($stored->sources as $source) {
+            $progress = $source->toSourceProgress();
             $sources[$progress->sourceKey] = $progress;
         }
 
         return new self(
-            SearchWords::fromInput($fields['words']),
-            $fields['within'],
-            $fields['limit'],
+            SearchWords::fromInput($stored->words),
+            $stored->within,
+            $stored->limit,
             $sources,
-            $fields['delivered'],
-            $fields['frontier'] === null ? null : BufferedHit::fromArray($fields['frontier']),
-            $fields['idle_calls'],
-            $fields['calls'],
+            $stored->delivered,
+            $stored->frontier?->toBufferedHit(),
+            $stored->idleCalls,
+            $stored->calls,
         );
     }
 }

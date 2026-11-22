@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\SearchProvider;
+use App\Values\RefreshCandidates;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;
 use Closure;
@@ -16,7 +17,7 @@ final readonly class ClosureSearchProvider implements SearchProvider
 {
     public function __construct(private Closure $search) {}
 
-    public function search(SearchQuery $query): SearchBatch
+    public function search(SearchQuery|RefreshCandidates $query): SearchBatch
     {
         return ($this->search)($query);
     }

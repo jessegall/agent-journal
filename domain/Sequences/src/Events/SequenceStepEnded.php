@@ -6,13 +6,13 @@ namespace Domain\Sequences\Events;
 
 use App\Contracts\Event;
 use App\Support\ActorIdentity;
-use Domain\Sequences\Contracts\SaidInChat;
+use Domain\Sequences\Contracts\ChatLineSource;
 use Domain\Sequences\Models\SequenceRun;
 
 /**
  * A step of a sequence run ended, numbered from one, as its agent went on past it.
  */
-final readonly class SequenceStepEnded implements Event, SaidInChat
+final readonly class SequenceStepEnded implements Event, ChatLineSource
 {
     public function __construct(
         public string $runId,

@@ -77,26 +77,4 @@ final class SourceProgress
             'failed' => $this->failed,
         ];
     }
-
-    /**
-     * @param  array{
-     *     source: string,
-     *     position: array<string, int|string>|null,
-     *     exhausted: bool,
-     *     buffer: list<array{source: string, type: string, id: string, location: string|null, score: int}>,
-     *     stalls: int,
-     *     failed: bool,
-     * }  $fields
-     */
-    public static function fromArray(array $fields): self
-    {
-        return new self(
-            $fields['source'],
-            $fields['position'] === null ? null : SourcePosition::of($fields['position']),
-            $fields['exhausted'],
-            array_map(BufferedHit::fromArray(...), $fields['buffer']),
-            $fields['stalls'],
-            $fields['failed'],
-        );
-    }
 }

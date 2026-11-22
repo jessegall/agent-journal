@@ -31,5 +31,5 @@ interface ChatLines
      *
      * @return list<ChatLine>
      */
-    public function linesFrom(string $inboxId, int $fromSequence): array;
+    public function linesFrom(string $inboxId, int $sequence): array;
 }

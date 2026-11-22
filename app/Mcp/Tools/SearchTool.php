@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Mcp\Tools;
 
 use App\Mcp\Data\ToolResult;
+use App\Mcp\Exceptions\ToolArgumentUnknown;
 use App\Mcp\Support\DeclaredSearch;
 use App\Mcp\Support\ToolArguments;
 use App\Values\SearchRequest;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\JsonSchemaTypeFactory;
+use Laravel\Mcp\Request;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
@@ -34,6 +37,18 @@ final class SearchTool extends JournalReadTool
             'discover' => $schema->boolean(),
             'prefix' => $schema->string()->max(64),
         ];
+    }
+
+    /**
+     * The schema's arguments and the retired ones, which the search refuses itself with the current ones named.
+     *
+     * @throws ToolArgumentUnknown
+     */
+    protected function arguments(Request $request): ToolArguments
+    {
+        $schema = array_keys($this->schema(new JsonSchemaTypeFactory()));
+
+        return ToolArguments::read($this->name(), $request, [...$schema, ...DeclaredSearch::RETIRED_ARGUMENTS]);
     }
 
     protected function read(ToolArguments $arguments): ToolResult

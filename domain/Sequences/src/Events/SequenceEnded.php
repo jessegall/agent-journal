@@ -6,14 +6,14 @@ namespace Domain\Sequences\Events;
 
 use App\Contracts\Event;
 use App\Support\ActorIdentity;
-use Domain\Sequences\Contracts\SaidInChat;
+use Domain\Sequences\Contracts\ChatLineSource;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Models\SequenceRun;
 
 /**
  * A sequence run ended, finished after its last step or cancelled, in the state it ended in.
  */
-final readonly class SequenceEnded implements Event, SaidInChat
+final readonly class SequenceEnded implements Event, ChatLineSource
 {
     public function __construct(
         public string $runId,

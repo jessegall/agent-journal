@@ -178,7 +178,7 @@ watch(isSearchOpen, async (isOpen) => {
                 <SearchField
                     v-model="scopeFilter"
                     label="Choose a source"
-                    placeholder="Type a source's label or key"
+                    placeholder="Type a source's name"
                     :controls="scopeListId"
                     :active-descendant="activeScope ?? undefined"
                     @move="pressScope($event === 1 ? 'ArrowDown' : 'ArrowUp')"

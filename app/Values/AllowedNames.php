@@ -13,8 +13,8 @@ final readonly class AllowedNames
      * @param  list<string>  $names
      */
     private function __construct(
-        private bool $restricted,
-        private array $names,
+        public bool $restricted,
+        public array $names,
     ) {}
 
     public static function all(): self

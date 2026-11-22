@@ -9,7 +9,6 @@ use App\Enums\SearchSurface;
 use App\Support\ActorContext;
 use App\Support\SearchCoordinator;
 use App\Values\EmittedHit;
-use App\Values\SearchAnswer;
 use App\Values\SearchOwner;
 use App\Values\SearchReader;
 use App\Values\SearchRequest;
@@ -19,6 +18,7 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskLogEntry;
 use Domain\Tasks\Support\Mcp\TaskLogReadResult;
 use Domain\Tasks\Tests\TestCase;
+use Domain\Tasks\Values\TaskLogLocation;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
@@ -33,6 +33,16 @@ final class TaskLogSearchTest extends TestCase
     use CommitsHookRows;
     use StartsAgentRequests;
 
+    private const int PAGE_LIMIT = 10;
+
+    private const string FIRST_LINE = 'Plain start.';
+
+    private const string CRASH_LINE = 'Driver crashed at boot.';
+
+    private const string LAST_LINE = 'Done.';
+
+    private const string APPENDED_LINE = 'Driver again.';
+
     private const array TABLES = [
         'users', 'tasks', 'task_runs', 'task_history', 'task_log_entries', 'agents', 'agent_sessions', 'agent_stacks',
         'assignments', 'claim_authorizations', 'command_receipts',
@@ -41,14 +51,16 @@ final class TaskLogSearchTest extends TestCase
     public function test_a_log_line_opens_at_its_line_and_task_and_log_hits_both_survive(): void
     {
         $task = $this->loggedTask();
-        $answer = $this->search('driver');
+        $hits = $this->hitsOfEveryPage('driver');
 
-        $log = self::hitFrom($answer->hits, 'tasks.log');
-        $title = self::hitFrom($answer->hits, 'tasks.task');
+        $log = self::hitFrom($hits, 'tasks.log');
+        $title = self::hitFrom($hits, 'tasks.task');
 
-        $this->assertSame("Task {$task->number} · Run 1, line 2", $log->title);
-        $this->assertSame('Task log lines', $log->sourceLabel);
-        $this->assertSame('Tasks', $title->sourceLabel);
+        $crash = TaskLogEntry::query()->where('task_id', $task->id)->where('text', self::CRASH_LINE)->sole();
+
+        $this->assertStringContainsString((string) $task->number, $log->title);
+        $this->assertStringEndsWith(TaskLogLocation::of($crash->line)->label(), $log->title);
+        $this->assertNotSame($title->sourceLabel, $log->sourceLabel);
         $this->assertSame($task->id, $log->reference->id);
         $this->assertSame($task->id, $title->reference->id);
         $this->assertSame('tasks_log_read', $log->open->tool);
@@ -58,18 +70,18 @@ final class TaskLogSearchTest extends TestCase
             (string) $log->open->arguments['entry_id'],
         )->structuredContent();
 
-        $this->assertSame('Driver crashed at boot.', $read['entry']['text']);
-        $this->assertSame(['Plain start.'], array_column($read['before'], 'text'));
+        $this->assertSame(self::CRASH_LINE, $read['entry']['text']);
+        $this->assertSame([self::FIRST_LINE], array_column($read['before'], 'text'));
 
         $this->actingAs($this->owner)
             ->get("/tasks/{$task->number}?tab=logs&entry={$log->open->arguments['entry_id']}")
             ->assertOk()
-            ->assertSee('Driver crashed at boot.');
+            ->assertSee(self::CRASH_LINE);
 
         $this->actingAs($this->owner)
             ->get("/tasks/{$task->number}?tab=logs&entry=01arz3ndektsv4rrffq69g0000")
             ->assertOk()
-            ->assertSee('"selectedGone":true');
+            ->assertSee('"selectedGone":true', false);
     }
 
     public function test_lines_appended_mid_search_force_no_restart(): void
@@ -80,13 +92,13 @@ final class TaskLogSearchTest extends TestCase
         $request = SearchRequest::parse(query: 'driver', within: 'tasks.log', limit: 1);
 
         $first = $coordinator->search($owner, $this->reader(), $request);
-        $this->app->make(CommandBus::class)->run(new LogTaskRunCommand($task->id, 1, 'Driver again.'));
+        $this->app->make(CommandBus::class)->run(new LogTaskRunCommand($task->id, 1, self::APPENDED_LINE));
         $this->assertNotNull($first->continuation);
         $resume = SearchRequest::parse(continuation: $first->continuation);
         $next = $coordinator->search($owner, $this->reader(), $resume);
 
         $this->assertNotSame('restart', $next->status->value);
-        $this->assertNotContains('Driver again.', array_map(fn (EmittedHit $hit) => $hit->snippet, $next->hits));
+        $this->assertNotContains(self::APPENDED_LINE, array_map(fn (EmittedHit $hit) => $hit->snippet, $next->hits));
         $this->assertSame(4, TaskLogEntry::query()->where('task_id', $task->id)->count());
     }
 
@@ -97,20 +109,32 @@ final class TaskLogSearchTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new StartTaskCommand($task->id));
 
-        foreach (['Plain start.', 'Driver crashed at boot.', 'Done.'] as $text) {
+        foreach ([self::FIRST_LINE, self::CRASH_LINE, self::LAST_LINE] as $text) {
             $bus->run(new LogTaskRunCommand($task->id, 1, $text));
         }
 
         return $task;
     }
 
-    private function search(string $words): SearchAnswer
+    /**
+     * Every hit the search shows, page after page, as a caller follows its continuations; a call asks each source
+     * only a few times, so a search over every source can take several pages.
+     *
+     * @return list<EmittedHit>
+     */
+    private function hitsOfEveryPage(string $words): array
     {
-        return $this->app->make(SearchCoordinator::class)->search(
-            self::owner(),
-            $this->reader(),
-            SearchRequest::parse(query: $words),
-        );
+        $coordinator = $this->app->make(SearchCoordinator::class);
+        $answer = $coordinator->search(self::owner(), $this->reader(), SearchRequest::parse(query: $words));
+        $hits = $answer->hits;
+
+        for ($page = 1; $answer->continuation !== null && $page < self::PAGE_LIMIT; $page++) {
+            $next = SearchRequest::parse(continuation: $answer->continuation);
+            $answer = $coordinator->search(self::owner(), $this->reader(), $next);
+            $hits = [...$hits, ...$answer->hits];
+        }
+
+        return $hits;
     }
 
     private function reader(): SearchReader

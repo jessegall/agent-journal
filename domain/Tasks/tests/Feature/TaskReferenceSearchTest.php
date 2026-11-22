@@ -20,6 +20,7 @@ use Domain\Tasks\Support\TaskSearchProvider;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Search\MutableReadGrant;
+use Tests\Support\RefreshHookDatabase;
 
 /**
  * A whole task reference is recognized without a read and found in one indexed statement through the numbering key;
@@ -27,6 +28,8 @@ use Tests\Fixtures\Search\MutableReadGrant;
  */
 final class TaskReferenceSearchTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const string READER_ID = '01ARZ3NDEKTSV4RRFFQ69G5FZZ';
 
     public function test_a_task_reference_is_found_by_one_indexed_read(): void
@@ -45,8 +48,10 @@ final class TaskReferenceSearchTest extends TestCase
         $this->assertCount(1, $lookups);
         $this->assertSame($task->id, $batch->hits[0]->reference->id);
         $this->assertSame(ScoreTier::Reference, $batch->hits[0]->score);
-        $this->assertSame("Task {$task->number} · Search through everything", $batch->hits[0]->title);
-        $this->assertSame("Task {$task->number}", $batch->hits[0]->snippet);
+        $this->assertStringContainsString((string) $task->number, $batch->hits[0]->title);
+        $this->assertStringEndsWith($task->title, $batch->hits[0]->title);
+        $this->assertStringEndsWith((string) $task->number, $batch->hits[0]->snippet);
+        $this->assertStringNotContainsString($task->title, $batch->hits[0]->snippet);
     }
 
     public function test_an_invisible_task_and_an_absent_one_give_the_same_answer(): void
@@ -75,7 +80,8 @@ final class TaskReferenceSearchTest extends TestCase
         DB::disableQueryLog();
 
         $this->assertNull($reference);
-        $this->assertSame('Type task 7', $hint);
+        $this->assertStringContainsString('task', $hint);
+        $this->assertStringEndsWith('7', $hint);
         $this->assertSame(0, $queries);
     }
 

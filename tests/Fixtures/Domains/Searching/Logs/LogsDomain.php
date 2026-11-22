@@ -8,6 +8,7 @@ use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\Searchable;
 use App\Values\SearchBatch;
+use App\Values\RefreshCandidates;
 use App\Values\SearchQuery;
 use Tests\Fixtures\Search\ClosedSearchAccess;
 
@@ -39,7 +40,7 @@ final class LogsDomain extends Domain
                 'line',
                 'Tasks',
                 ClosedSearchAccess::class,
-                fn (SearchQuery $query): SearchBatch => SearchBatch::exhausted('1', []),
+                fn (SearchQuery|RefreshCandidates $query): SearchBatch => SearchBatch::exhausted('1', []),
             ),
         ];
     }

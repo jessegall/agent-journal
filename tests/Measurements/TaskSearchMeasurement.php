@@ -14,7 +14,6 @@ use App\Values\SearchAnswer;
 use App\Values\SearchOwner;
 use App\Values\SearchReader;
 use App\Values\SearchRequest;
-use Database\Seeders\SearchCorpusSeeder;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Illuminate\Support\Facades\DB;
@@ -60,7 +59,7 @@ final class TaskSearchMeasurement extends TestCase
         $direct = Task::factory()->create(['title' => 'Direct reference target']);
         $measurements['direct reference'] = ['cold' => $this->measure("task {$direct->number}")];
 
-        print json_encode($measurements, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR)."\n";
+        echo json_encode($measurements, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR)."\n";
 
         $this->addToAssertionCount(1);
     }

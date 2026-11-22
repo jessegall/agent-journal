@@ -91,6 +91,7 @@
     "tasks_finish",
     "tasks_list",
     "tasks_log",
+    "tasks_log_read",
     "tasks_read",
     "tasks_start",
     "uploads_append",

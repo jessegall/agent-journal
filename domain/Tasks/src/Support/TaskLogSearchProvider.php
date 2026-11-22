@@ -6,9 +6,10 @@ namespace Domain\Tasks\Support;
 
 use App\Contracts\SearchProvider;
 use App\Contracts\ServedEnvironment;
+use App\Contracts\StatementDeadlines;
 use App\Enums\ScoreTier;
+use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
-use App\Support\StatementDeadline;
 use App\Support\TextSearch;
 use App\Values\AdmittedConstraints;
 use App\Values\RefreshCandidates;
@@ -19,7 +20,6 @@ use App\Values\SourcePosition;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskLogEntry;
 use Domain\Tasks\Values\TaskLogLocation;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
@@ -46,15 +46,15 @@ final readonly class TaskLogSearchProvider implements SearchProvider
     public function __construct(
         private TaskLogSearchAccess $access,
         private ServedEnvironment $environment,
-        private StatementDeadline $deadline,
+        private StatementDeadlines $deadline,
     ) {}
 
-    public function search(SearchQuery $query): SearchBatch
+    public function search(SearchQuery|RefreshCandidates $query): SearchBatch
     {
         $constraints = $this->access->constraints($query->reader);
 
         if ($constraints->recordIds->admitsNone()) {
-            return SearchBatch::exhausted('', []);
+            return SearchBatch::nothing();
         }
 
         if ($query instanceof RefreshCandidates) {
@@ -65,7 +65,7 @@ final readonly class TaskLogSearchProvider implements SearchProvider
             $highWater = $this->lines($constraints)->max('id');
 
             if (! is_string($highWater)) {
-                return SearchBatch::exhausted('', []);
+                return SearchBatch::nothing();
             }
 
             return $this->scan($query, self::position(ScoreTier::ExactTitle, '', '', $highWater), $constraints);
@@ -112,7 +112,7 @@ final readonly class TaskLogSearchProvider implements SearchProvider
             }
         }
 
-        $examinedWholeBlock = $block->isEmpty() || $afterLine === $block->last()?->id;
+        $examinedWholeBlock = $block->isEmpty() || $afterLine === $block->last()->id;
         $tierFinished = $examinedWholeBlock && $block->count() < $blockSize;
         $nextTier = $tier->nextTitleTier();
 
@@ -121,7 +121,7 @@ final readonly class TaskLogSearchProvider implements SearchProvider
         }
 
         $next = $tierFinished
-            ? self::position($nextTier ?? $tier, '', '', $highWater)
+            ? self::position($nextTier, '', '', $highWater)
             : self::position($tier, $afterTask, $afterLine, $highWater);
 
         return $hits === [] ? SearchBatch::scanning($highWater, $next) : SearchBatch::more($highWater, $hits, $next);
@@ -134,9 +134,9 @@ final readonly class TaskLogSearchProvider implements SearchProvider
     private function refresh(RefreshCandidates $query, AdmittedConstraints $constraints): SearchBatch
     {
         $entryIds = array_values(array_filter(array_map(fn ($held) => $held->locationId, $query->candidates)));
-        $query->budget->chargePolicyChecks(count($entryIds));
+        $query->original->budget->chargePolicyChecks(count($entryIds));
 
-        $lines = $this->deadline->within($query->budget->remainingMilliseconds(), fn () => $this->lines($constraints)
+        $lines = $this->deadline->within($query->original->budget->remainingMilliseconds(), fn () => $this->lines($constraints)
             ->whereKey($entryIds)
             ->readExactly(count($entryIds))
             ->get(self::COLUMNS));
@@ -145,9 +145,9 @@ final readonly class TaskLogSearchProvider implements SearchProvider
         $matches = [];
 
         foreach ($lines as $entry) {
-            $tier = $query->words->titleTier($entry->text);
+            $tier = $query->original->words->titleTier($entry->text);
 
-            if ($tier !== null && $this->access->admitsOpen($query->reader, $entry->task_id)) {
+            if ($tier !== null && $this->access->admitsOpen($query->original->reader, $entry->task_id)) {
                 $matches[] = self::hitOf($entry, $numbers[$entry->task_id], $tier);
             }
         }
@@ -160,9 +160,9 @@ final readonly class TaskLogSearchProvider implements SearchProvider
     /**
      * The lines of the tasks the reader may search: of the served environment, limited to the admitted task ids.
      *
-     * @return Builder<TaskLogEntry>
+     * @return ReadBuilder<TaskLogEntry>
      */
-    private function lines(AdmittedConstraints $constraints): Builder
+    private function lines(AdmittedConstraints $constraints): ReadBuilder
     {
         $tasks = Task::query()->inEnvironments($this->environment->environmentIds());
 
@@ -190,12 +190,12 @@ final readonly class TaskLogSearchProvider implements SearchProvider
         return Task::query()->whereKey($taskIds)->readExactly(count($taskIds))->pluck('number', 'id')->all();
     }
 
-    private static function hitOf(TaskLogEntry $entry, int $taskNumber, ScoreTier $tier): SearchResult
+    private static function hitOf(TaskLogEntry $entry, int $number, ScoreTier $tier): SearchResult
     {
         $location = TaskLogLocation::of($entry->line);
 
         return SearchResult::shortened(
-            "Task {$taskNumber} · {$location->label()}",
+            "Task {$number} · {$location->label()}",
             $entry->text,
             new RecordIdentity(Task::LINK_TYPE, $entry->task_id),
             $tier,

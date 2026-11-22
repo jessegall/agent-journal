@@ -1,0 +1,1 @@
+app/Support/SearchCoordinator.php:334:Parameter #3 $budget of method App\Values\SearchCallMeter::add() expects App\Values\WorkBudget, App\Contracts\WorkAllowance given.

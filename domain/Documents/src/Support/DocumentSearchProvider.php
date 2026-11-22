@@ -5,19 +5,21 @@ declare(strict_types=1);
 namespace Domain\Documents\Support;
 
 use App\Contracts\SearchProvider;
+use App\Contracts\TieredSearch;
 use App\Enums\ScoreTier;
+use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
-use App\Support\TieredRecordSearch;
 use App\Values\AdmittedConstraints;
 use App\Values\HitIdentity;
+use App\Values\RefreshCandidates;
 use App\Values\SearchableBody;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;
 use App\Values\SearchResult;
+use App\Values\SearchWords;
 use App\Values\TieredSearchSource;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Values\PublicationPassage;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Searches documents as published through the shared bounded tiered search: a reference such as doc 104 first, then
@@ -31,15 +33,15 @@ final readonly class DocumentSearchProvider implements SearchProvider
     public function __construct(
         private DocumentSearchAccess $access,
         private DocumentReferenceRecognizer $recognizer,
-        private TieredRecordSearch $tiers,
+        private TieredSearch $tiers,
     ) {}
 
-    public function search(SearchQuery $query): SearchBatch
+    public function search(SearchQuery|RefreshCandidates $query): SearchBatch
     {
         $constraints = $this->access->constraints($query->reader);
 
         if ($constraints->recordIds->admitsNone()) {
-            return SearchBatch::exhausted('', []);
+            return SearchBatch::nothing();
         }
 
         return $this->tiers->search($query, new TieredSearchSource(
@@ -57,9 +59,9 @@ final readonly class DocumentSearchProvider implements SearchProvider
     }
 
     /**
-     * @return Builder<Document>
+     * @return ReadBuilder<Document>
      */
-    private static function admitted(AdmittedConstraints $constraints): Builder
+    private static function admitted(AdmittedConstraints $constraints): ReadBuilder
     {
         $query = Document::query()->withPublishedRevision();
 
@@ -109,7 +111,7 @@ final readonly class DocumentSearchProvider implements SearchProvider
         Document $document,
         string $body,
         HitIdentity $held,
-        SearchQuery $query,
+        SearchWords $words,
     ): SearchResult|null {
         if ($held->locationId === null || ! PublicationPassage::isId($held->locationId)) {
             return null;
@@ -119,15 +121,15 @@ final readonly class DocumentSearchProvider implements SearchProvider
         $excerpt = $passage->excerptOf($body);
         $current = $passage->revision === (int) $document->getAttribute('revision');
 
-        if (! $current || $query->words->titleTier((string) $document->getAttribute('title')) !== null) {
+        if (! $current || $words->titleTier((string) $document->getAttribute('title')) !== null) {
             return null;
         }
 
-        if (! $query->words->isFoundIn($excerpt)) {
+        if (! $words->isFoundIn($excerpt)) {
             return null;
         }
 
-        $found = mb_stripos($excerpt, $query->words->text);
+        $found = mb_stripos($excerpt, $words->text);
         $column = $found === false ? 0 : $found;
 
         return self::bodyHit($document, $excerpt, $column, 0, $passage->line);

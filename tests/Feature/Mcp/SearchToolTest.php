@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Mcp\Contracts\Continuations;
+use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Support\Continuation;
+use App\Mcp\Support\DeclaredSearch;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use Domain\Plans\Models\Plan;
@@ -76,8 +78,9 @@ final class SearchToolTest extends TestCase
         $answer = $this->callMcpTool($caller, 'search', ['query' => 'runway', 'types' => ['tasks.task']])
             ->assertJsonPath('result.isError', true)
             ->json('result.structuredContent');
+        $refusal = ToolArgumentInvalid::for('types', DeclaredSearch::CURRENT_ARGUMENTS)->getMessage();
 
-        $this->assertStringContainsString('query, within, limit', json_encode($answer, JSON_THROW_ON_ERROR));
+        $this->assertSame($refusal, $answer['message']);
     }
 
     public function test_a_cursor_of_the_old_contract_answers_restart(): void

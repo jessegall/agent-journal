@@ -260,6 +260,7 @@ use App\Contracts\AuthorizerProviderRegistration;
 use App\Contracts\AutoAssigner;
 use App\Contracts\AutoAssignmentActivity;
 use App\Contracts\AutoAssignmentProvider;
+use App\Contracts\BatchOutcome;
 use App\Contracts\CallerReceipts;
 use App\Contracts\CallingDriver;
 use App\Contracts\CallRefusal;
@@ -341,6 +342,7 @@ use App\Contracts\MembershipEvidence;
 use App\Contracts\MenuProvider;
 use App\Contracts\MessageCommand;
 use App\Contracts\MessageRecipient;
+use App\Contracts\MessageSearch;
 use App\Contracts\MessageSender;
 use App\Contracts\NativePartProvider;
 use App\Contracts\NativeTurnRecords;
@@ -378,6 +380,7 @@ use App\Contracts\RecordPolicy;
 use App\Contracts\RecordProvider;
 use App\Contracts\RecordResolver;
 use App\Contracts\RecordVisibility;
+use App\Contracts\ReferenceRecognizer;
 use App\Contracts\ReflectedType;
 use App\Contracts\RefusalDetails;
 use App\Contracts\ReminderContribution;
@@ -389,6 +392,8 @@ use App\Contracts\ResultReceipts;
 use App\Contracts\RunClaims;
 use App\Contracts\RuntimeResolver;
 use App\Contracts\ScriptKeywordDefinition;
+use App\Contracts\SearchAccess;
+use App\Contracts\SearchProvider;
 use App\Contracts\SeatedActor;
 use App\Contracts\SectionProvider;
 use App\Contracts\SectionResolver;
@@ -428,12 +433,14 @@ use App\Contracts\StartExecutor;
 use App\Contracts\StartReceipts;
 use App\Contracts\StartRecordResolver;
 use App\Contracts\StartReservations;
+use App\Contracts\StatementDeadlines;
 use App\Contracts\StateProvider;
 use App\Contracts\SupervisorDispatch;
 use App\Contracts\SystemEntryPolicies;
 use App\Contracts\TargetAuthorizer;
 use App\Contracts\TextContent;
 use App\Contracts\TextResolver;
+use App\Contracts\TieredSearch;
 use App\Contracts\ToolDiscovery;
 use App\Contracts\TypeReflections;
 use App\Contracts\UserInterfaceUpdater;
@@ -441,6 +448,7 @@ use App\Contracts\UserPresences;
 use App\Contracts\UserStack;
 use App\Contracts\VerificationTiming;
 use App\Contracts\VisibilityCheck;
+use App\Contracts\WorkAllowance;
 use App\Contracts\WorkProgress;
 use App\Contracts\WorkRepair;
 use App\Contracts\WorkspacePolicy;
@@ -587,6 +595,7 @@ use App\Enums\EmptySelection;
 use App\Enums\EntryType;
 use App\Enums\ExecutionModeType;
 use App\Enums\ExpectedTiming;
+use App\Enums\FailureReason;
 use App\Enums\FileOperation;
 use App\Enums\FramingType;
 use App\Enums\GroupAvailability;
@@ -652,7 +661,9 @@ use App\Enums\ReservationState;
 use App\Enums\ResourceType;
 use App\Enums\RuntimeActivity;
 use App\Enums\ScopeType;
+use App\Enums\ScoreTier;
 use App\Enums\ScreenReportRefusal;
+use App\Enums\SearchSurface;
 use App\Enums\SessionEndReason;
 use App\Enums\SessionState;
 use App\Enums\SessionTransferType;
@@ -918,6 +929,10 @@ use App\Exceptions\RecordUnavailable;
 use App\Exceptions\RelationReadUndeclared;
 use App\Exceptions\RowWriteRefused;
 use App\Exceptions\RunClaimRefused;
+use App\Exceptions\SearchableInvalid;
+use App\Exceptions\SearchBatchInvalid;
+use App\Exceptions\SearchValueInvalid;
+use App\Exceptions\SearchWordsInvalid;
 use App\Exceptions\SeatCapacityReached;
 use App\Exceptions\SeatConflict;
 use App\Exceptions\SecondForwardingSeat;
@@ -961,6 +976,7 @@ use App\Exceptions\StartRecordMissing;
 use App\Exceptions\StartRefused;
 use App\Exceptions\StartRequestConflict;
 use App\Exceptions\StateBlocked;
+use App\Exceptions\StatementTimedOut;
 use App\Exceptions\StateReferencesInvalid;
 use App\Exceptions\StateSubjectMissing;
 use App\Exceptions\StateTypeMissing;
@@ -980,6 +996,7 @@ use App\Exceptions\UnknownAccessType;
 use App\Exceptions\UnknownLinkType;
 use App\Exceptions\UserActorRequired;
 use App\Exceptions\VerificationContractInvalid;
+use App\Exceptions\WorkBudgetSpent;
 use App\Http\Requests\Concerns\ReadsIdempotencyKey;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use App\Mcp\Attributes\Dispatches;
@@ -1170,10 +1187,12 @@ use App\Support\LinkAccess;
 use App\Support\LinkTypeRegistry;
 use App\Support\ManifestMount;
 use App\Support\MarkdownText;
+use App\Support\MessageSearchAccess;
 use App\Support\MiddlewareDeclaration;
 use App\Support\MountRules;
 use App\Support\NavigationRaiseAnswer;
 use App\Support\NumberedPage;
+use App\Support\NumberedReferenceRecognizer;
 use App\Support\OpenedRuntime;
 use App\Support\Operation;
 use App\Support\OperationRule;
@@ -1193,6 +1212,7 @@ use App\Support\PublicComment;
 use App\Support\PublicCommentPage;
 use App\Support\RankedLaunchCandidate;
 use App\Support\ReadBuilder;
+use App\Support\ReadToolSearchAccess;
 use App\Support\RecordIdentity;
 use App\Support\RecordIds;
 use App\Support\RecordReference;
@@ -1204,6 +1224,7 @@ use App\Support\ResumableConversation;
 use App\Support\RootRule;
 use App\Support\SavedSharePreview;
 use App\Support\ScreenReportAnswer;
+use App\Support\Searchable;
 use App\Support\SeatChangeResult;
 use App\Support\Section as TextSection;
 use App\Support\SecurityOptions;
@@ -1264,6 +1285,8 @@ use App\Values\AccessPolicy;
 use App\Values\AccessRequirement;
 use App\Values\AccountUse;
 use App\Values\ActivatedProfile;
+use App\Values\AdmittedConstraints;
+use App\Values\AllowedNames;
 use App\Values\ArgumentGrammar;
 use App\Values\AskTypeKey;
 use App\Values\BindingFolder;
@@ -1312,9 +1335,11 @@ use App\Values\ExecutableBinding;
 use App\Values\ExecutionBudgets;
 use App\Values\ExecutionContext;
 use App\Values\ExecutionPolicy;
+use App\Values\ExhaustedOutcome;
 use App\Values\ExitBranch;
 use App\Values\ExitPolicy;
 use App\Values\ExpectedDraftRevision;
+use App\Values\FailedOutcome;
 use App\Values\FieldOrigin;
 use App\Values\FilePath;
 use App\Values\Fingerprint;
@@ -1324,6 +1349,7 @@ use App\Values\FrameSettlement;
 use App\Values\GroupReference;
 use App\Values\HelperImportReceipt;
 use App\Values\HereDocument;
+use App\Values\HitIdentity;
 use App\Values\HostAccess;
 use App\Values\HostCapacity;
 use App\Values\HostDescriptor;
@@ -1333,6 +1359,7 @@ use App\Values\MarkdownPart;
 use App\Values\Measurement;
 use App\Values\MenuStep;
 use App\Values\ModelSelection;
+use App\Values\MoreOutcome;
 use App\Values\NamedCommand;
 use App\Values\NavigationAnswer;
 use App\Values\NavigationRound;
@@ -1340,6 +1367,7 @@ use App\Values\NavigationRoundReport;
 use App\Values\NavigationScreen;
 use App\Values\NavigationUncertainty;
 use App\Values\NextStep;
+use App\Values\OpenAction;
 use App\Values\Operation as PolicyOperation;
 use App\Values\OperationGrant;
 use App\Values\OperationSupport;
@@ -1378,9 +1406,13 @@ use App\Values\ReaderReference;
 use App\Values\ReadOrder;
 use App\Values\ReadRequest;
 use App\Values\ReceiptAnswer;
+use App\Values\RecognizedReference;
+use App\Values\RecordLocation;
 use App\Values\RecoveryCall;
 use App\Values\Redemption;
 use App\Values\Redirect;
+use App\Values\RefreshCandidates;
+use App\Values\RefreshedOutcome;
 use App\Values\RelationRead;
 use App\Values\RenderedSkill;
 use App\Values\ReportLine;
@@ -1391,6 +1423,7 @@ use App\Values\RuleOrigin;
 use App\Values\RuleReference;
 use App\Values\RuleScope;
 use App\Values\RuntimeLease;
+use App\Values\ScanningOutcome;
 use App\Values\ScopedRead;
 use App\Values\ScriptContext;
 use App\Values\ScriptDiff;
@@ -1398,6 +1431,13 @@ use App\Values\ScriptGoal;
 use App\Values\ScriptParameter;
 use App\Values\ScriptProgress;
 use App\Values\ScriptSource;
+use App\Values\SearchableBody;
+use App\Values\SearchBatch;
+use App\Values\SearchQuery;
+use App\Values\SearchReader;
+use App\Values\SearchResult;
+use App\Values\SearchScope;
+use App\Values\SearchWords;
 use App\Values\SectionDraft;
 use App\Values\SeenSession;
 use App\Values\SelectedAccount;
@@ -1418,6 +1458,8 @@ use App\Values\SkillOwner;
 use App\Values\SkillRevisionResult;
 use App\Values\SkillSection;
 use App\Values\SkillSections;
+use App\Values\SourceHit;
+use App\Values\SourcePosition;
 use App\Values\SourceRange;
 use App\Values\StackTarget;
 use App\Values\StackVerdict;
@@ -1440,6 +1482,7 @@ use App\Values\SyntaxOrigin;
 use App\Values\TextAnchor;
 use App\Values\TextRange;
 use App\Values\TextVersion;
+use App\Values\TieredSearchSource;
 use App\Values\TimingVerdict;
 use App\Values\TreeDiagnostic;
 use App\Values\TrustedEntryAuthority;
@@ -1452,47 +1495,6 @@ use App\Values\WorkRepairRequest;
 use App\Values\WorkspaceClone;
 use App\Values\WorkspacePreparation;
 use App\Values\WorkspaceReadReference;
-use App\Contracts\BatchOutcome;
-use App\Contracts\ReferenceRecognizer;
-use App\Contracts\SearchAccess;
-use App\Contracts\SearchProvider;
-use App\Enums\FailureReason;
-use App\Enums\ScoreTier;
-use App\Enums\SearchSurface;
-use App\Exceptions\SearchableInvalid;
-use App\Exceptions\SearchBatchInvalid;
-use App\Exceptions\SearchValueInvalid;
-use App\Exceptions\SearchWordsInvalid;
-use App\Support\Searchable;
-use App\Values\AdmittedConstraints;
-use App\Values\AllowedNames;
-use App\Values\ExhaustedOutcome;
-use App\Values\FailedOutcome;
-use App\Values\HitIdentity;
-use App\Values\MoreOutcome;
-use App\Values\RecognizedReference;
-use App\Values\RecordLocation;
-use App\Values\RefreshCandidates;
-use App\Values\RefreshedOutcome;
-use App\Values\ScanningOutcome;
-use App\Values\SearchBatch;
-use App\Values\SearchQuery;
-use App\Values\SearchReader;
-use App\Values\SearchResult;
-use App\Values\SearchScope;
-use App\Values\SearchWords;
-use App\Values\SourceHit;
-use App\Values\SourcePosition;
-use App\Values\WorkBudget;
-use App\Values\OpenAction;
-use App\Values\TieredSearchSource;
-use App\Values\SearchableBody;
-use App\Support\ReadToolSearchAccess;
-use App\Support\MessageSearchAccess;
-use App\Support\MessageSearchProvider;
-use App\Support\NumberedReferenceRecognizer;
-use App\Support\TieredRecordSearch;
-use App\Support\StatementDeadline;
 
 /**
  * Core's public surface: every type a domain or module may use, written out one by one. Everything else in Core is
@@ -1557,6 +1559,10 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                WorkAllowance::class,
+                TieredSearch::class,
+                StatementDeadlines::class,
+                MessageSearch::class,
                 AssignableContributor::class,
                 AssigneeContributor::class,
                 LinkRecordProvider::class,
@@ -1862,6 +1868,7 @@ final class CoreApi
                 DockCard::class,
                 DockDestination::class,
                 DockIdentity::class,
+                Searchable::class,
                 ChatLine::class,
                 LineCardPlacement::class,
                 DockLink::class,
@@ -2030,7 +2037,6 @@ final class CoreApi
                 SearchWords::class,
                 SearchScope::class,
                 SearchReader::class,
-                WorkBudget::class,
                 SourcePosition::class,
                 SearchQuery::class,
                 RefreshCandidates::class,
@@ -2715,6 +2721,8 @@ final class CoreApi
                 ResetSettingGroupCommand::class,
             )
             ->exceptions(
+                WorkBudgetSpent::class,
+                StatementTimedOut::class,
                 ChatCursorRefused::class,
                 HookAnswerRefused::class,
                 MembershipEvidenceMismatch::class,
@@ -2992,13 +3000,9 @@ final class CoreApi
                 LinkTypeRegistry::class,
                 StateReferenceFactory::class,
                 ProvidesModelRecords::class,
-                Searchable::class,
                 ReadToolSearchAccess::class,
                 MessageSearchAccess::class,
-                MessageSearchProvider::class,
                 NumberedReferenceRecognizer::class,
-                TieredRecordSearch::class,
-                StatementDeadline::class,
                 HasNumber::class,
                 AssignableListing::class,
                 TextSearch::class,

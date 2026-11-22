@@ -149,8 +149,8 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
     public function navigation(): array
     {
         return [
-            NavigationItem::page('accounts', 'Accounts', Icon::Accounts, group: 'web.agents', position: 40),
-            NavigationItem::page('profiles', 'Profiles', Icon::Accounts, group: 'web.agents', position: 41),
+            NavigationItem::page('profiles', 'Profiles', Icon::Profiles, position: 50),
+            NavigationItem::page('accounts', 'Accounts', Icon::Accounts, position: 60),
         ];
     }
 

@@ -37,11 +37,19 @@ final readonly class SearchBatch
     }
 
     /**
+     * The answer of a source the reader may search nothing of: no hits and no work left.
+     */
+    public static function nothing(): self
+    {
+        return self::exhausted('', []);
+    }
+
+    /**
      * @param  list<SearchResult>  $hits
      */
     public static function exhausted(string $observedVersion, array $hits): self
     {
-        return new self($observedVersion, $hits, new ExhaustedOutcome);
+        return new self($observedVersion, $hits, new ExhaustedOutcome());
     }
 
     /**
@@ -74,14 +82,14 @@ final readonly class SearchBatch
     public static function refreshed(string $observedVersion, RefreshCandidates $query, array $matches): self
     {
         foreach ($matches as $match) {
-            $identity = $match->identity($query->sourceKey);
+            $identity = $match->identity($query->original->sourceKey);
 
             if (! $query->asks($identity)) {
                 throw SearchBatchInvalid::notRequested($identity->key());
             }
         }
 
-        return new self($observedVersion, $matches, new RefreshedOutcome);
+        return new self($observedVersion, $matches, new RefreshedOutcome());
     }
 
     /**

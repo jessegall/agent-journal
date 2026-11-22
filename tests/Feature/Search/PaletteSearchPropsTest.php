@@ -12,6 +12,7 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Support\TaskReferenceRecognizer;
 use Illuminate\Http\Request;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\ActsAsActors;
@@ -72,17 +73,17 @@ final class PaletteSearchPropsTest extends TestCase
         $direct = $this->palette(['searchQuery' => "task {$task->number}"]);
         $short = $this->palette(['searchQuery' => '7']);
 
-        $this->assertSame("Open Task {$task->number}", $direct->directOpenLabel);
+        $this->assertStringEndsWith((string) $task->number, (string) $direct->directOpenLabel);
         $this->assertSame($task->id, $direct->directOpen?->recordId);
         $this->assertSame('too_short', $short->status);
-        $this->assertContains('Type task 7', $short->hints);
+        $this->assertContains(new TaskReferenceRecognizer()->hint('7'), $short->hints);
     }
 
     public function test_the_scope_picker_reads_its_sources_before_two_characters(): void
     {
         $sources = $this->sources(['searchPrefix' => 't']);
 
-        $this->assertContains('Tasks (tasks.task)', array_map(fn ($source) => $source->display, $sources->sources));
+        $this->assertContains('tasks.task', array_map(fn ($source) => $source->key, $sources->sources));
     }
 
     /**

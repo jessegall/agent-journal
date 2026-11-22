@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Contracts\WorkAllowance;
+
 /**
  * The work each source did in one search call, added up over its batches: the time, the rows examined, the bytes
  * read and how its last batch ended. It holds no words, titles or excerpts.
@@ -15,7 +17,7 @@ final class SearchCallMeter
      */
     private array $sources = [];
 
-    public function add(string $sourceKey, int $elapsedMicroseconds, WorkBudget $budget, string $outcome): void
+    public function add(string $sourceKey, int $elapsedMicroseconds, WorkAllowance $budget, string $outcome): void
     {
         $sofar = $this->sources[$sourceKey] ?? ['elapsed_us' => 0, 'rows' => 0, 'bytes' => 0, 'outcome' => $outcome];
 

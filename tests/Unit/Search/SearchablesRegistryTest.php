@@ -8,6 +8,7 @@ use App\Exceptions\SearchableInvalid;
 use App\Support\DomainRegistry;
 use App\Support\Searchable;
 use App\Support\SearchablesRegistry;
+use App\Values\RefreshCandidates;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;
 use PHPUnit\Framework\TestCase;
@@ -29,7 +30,8 @@ final class SearchablesRegistryTest extends TestCase
 
         $this->assertTrue($registry->has('tasks.task'));
         $this->assertSame('Tasks', $registry->get('tasks.task')->owner);
-        $this->assertSame('Tasks (tasks.task)', $registry->get('tasks.task')->display());
+        $this->assertStringStartsWith($registry->get('tasks.task')->label(), $registry->get('tasks.task')->display());
+        $this->assertStringContainsString('tasks.task', $registry->get('tasks.task')->display());
     }
 
     public function test_a_domain_without_searchables_contributes_nothing(): void
@@ -65,7 +67,7 @@ final class SearchablesRegistryTest extends TestCase
     public function test_a_label_that_folds_to_a_qualified_key_is_refused(): void
     {
         $this->expectException(SearchableInvalid::class);
-        $this->expectExceptionMessage('reads as a qualified key');
+        $this->expectExceptionMessage(SearchableInvalid::forQualifiedLabel('tasks.task', 'Plans.Plan')->getMessage());
 
         SearchablesRegistry::publishing(['Tasks' => [self::searchable('task', 'Plans.Plan')]]);
     }
@@ -88,7 +90,7 @@ final class SearchablesRegistryTest extends TestCase
             ]);
             $this->fail('A duplicate qualified key was published.');
         } catch (SearchableInvalid $refusal) {
-            $this->assertStringContainsString('both Tasks and TASKS', $refusal->getMessage());
+            $this->assertSame(SearchableInvalid::forDuplicate('tasks.task', 'Tasks', 'TASKS')->getMessage(), $refusal->getMessage());
         }
 
         $this->assertSame(['tasks.task'], array_map(fn ($source) => $source->qualifiedKey, $registry->all()));
@@ -114,7 +116,7 @@ final class SearchablesRegistryTest extends TestCase
             $key,
             $label,
             OpenSearchAccess::class,
-            fn (SearchQuery $query): SearchBatch => SearchBatch::exhausted('1', []),
+            fn (SearchQuery|RefreshCandidates $query): SearchBatch => SearchBatch::exhausted('1', []),
         );
     }
 }

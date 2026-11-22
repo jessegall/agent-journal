@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Contracts\WorkAllowance;
 use App\Exceptions\WorkBudgetSpent;
 
 /**
@@ -11,7 +12,7 @@ use App\Exceptions\WorkBudgetSpent;
  * bytes of source text it may read and the moment it must stop. A provider charges each before the read that does
  * it, so a call that would go past its allowance stops before it reads.
  */
-final class WorkBudget
+final class WorkBudget implements WorkAllowance
 {
     public const int CANDIDATE_LIMIT = 32;
 

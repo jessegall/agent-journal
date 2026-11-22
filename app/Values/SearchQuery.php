@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Contracts\WorkAllowance;
 use App\Exceptions\SearchValueInvalid;
 
 /**
  * What one provider call is asked: who reads, the words, the scope the caller chose, the source being asked, how
  * many hits it may return, the work it may still do and where it stopped last time, when it has run before.
- * RefreshCandidates is the variant that rereads hits the search already holds.
+ * RefreshCandidates is the query that rereads hits the search already holds.
  */
-readonly class SearchQuery
+final readonly class SearchQuery
 {
     public const int HIT_LIMIT = 51;
 
@@ -24,7 +25,7 @@ readonly class SearchQuery
         public SearchScope $scope,
         public string $sourceKey,
         public int $pageAllowance,
-        public WorkBudget $budget,
+        public WorkAllowance $budget,
         public SourcePosition|null $position = null,
     ) {
         if ($pageAllowance < 1 || $pageAllowance > self::HIT_LIMIT) {

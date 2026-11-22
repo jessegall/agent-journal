@@ -16,6 +16,7 @@ use App\Events\ChatLinePosted;
 use App\Support\ActorIdentity;
 use App\Support\Cards\DockIdentity;
 use App\Values\ChatLine;
+use App\Values\PostedLine;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -26,8 +27,9 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * One position in a chat inbox's timeline: a message, a membership change or a plain line a domain posted, numbered under the inbox's lock so the
- * order every reader sees is the order it was accepted in. A message points at its event, never the other way.
+ * One position in a chat inbox's timeline: a message, a membership change or a plain line a domain posted,
+ * numbered under the inbox's lock so the order every reader sees is the order it was accepted in. A message points
+ * at its event, never the other way.
  *
  * @property string $id
  * @property string $inbox_id
@@ -81,7 +83,7 @@ final class TimelineEvent extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Writes the event at the sequence the inbox lock handed out.
+     * Writes the event at the sequence the inbox lock handed out; a plain line also holds its words and is raised.
      */
     public static function create(
         string $inboxId,
@@ -89,6 +91,7 @@ final class TimelineEvent extends Model implements EventSource, ReadableModel
         TimelineEventType $type,
         ActorIdentity $actor,
         string|null $intervalId,
+        PostedLine|null $posted = null,
     ): self {
         $event = new self([
             'inbox_id' => $inboxId,
@@ -98,38 +101,19 @@ final class TimelineEvent extends Model implements EventSource, ReadableModel
             'interval_id' => $intervalId,
         ]);
 
-        $event->save();
+        if ($posted !== null) {
+            $event->line_subject = mb_substr($posted->subject, 0, self::SUBJECT_CHARACTER_LIMIT);
+            $event->line = mb_substr($posted->line, 0, self::LINE_CHARACTER_LIMIT);
+            $event->line_source_type = $posted->source?->type;
+            $event->line_source_id = $posted->source?->id;
+            $event->line_card_placement = $posted->source === null ? null : $posted->placement;
+        }
 
-        return $event;
-    }
-
-    /**
-     * Writes a plain line at the sequence the inbox lock handed out, posted for the actor it tells about, and raises it:
-     * what it is about, such as a sequence's name, what it says of it, and the record it shows as a card, if any.
-     */
-    public static function createLine(
-        string $inboxId,
-        int $sequence,
-        ActorIdentity $actor,
-        string $subject,
-        string $line,
-        DockIdentity|null $source,
-        LineCardPlacement $placement,
-    ): self {
-        $event = new self([
-            'inbox_id' => $inboxId,
-            'sequence' => $sequence,
-            'type' => TimelineEventType::Line,
-            ...$actor->asColumns('actor'),
-            'interval_id' => null,
-        ]);
-        $event->line_subject = mb_substr($subject, 0, self::SUBJECT_CHARACTER_LIMIT);
-        $event->line = mb_substr($line, 0, self::LINE_CHARACTER_LIMIT);
-        $event->line_source_type = $source?->type;
-        $event->line_source_id = $source?->id;
-        $event->line_card_placement = $source === null ? null : $placement;
         $event->assertSaved($event->save());
-        $event->raise(new ChatLinePosted($event->id, $inboxId, $sequence));
+
+        if ($posted !== null) {
+            $event->raise(new ChatLinePosted($event->id, $inboxId, $sequence));
+        }
 
         return $event;
     }

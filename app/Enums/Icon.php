@@ -18,4 +18,7 @@ enum Icon: string
     case Activity = 'activity';
     case Accounts = 'accounts';
     case Connections = 'connections';
+    case Sequence = 'sequence';
+    case Settings = 'settings';
+    case Profiles = 'agents';
 }

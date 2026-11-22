@@ -37,7 +37,8 @@ final readonly class Searchable
 
     /**
      * @param  class-string<SearchAccess>  $accessClass
-     * @param  class-string<SearchProvider>|Closure  $provider  a closure takes a SearchQuery and returns a SearchBatch
+     * @param  class-string<SearchProvider>|Closure  $provider  a closure takes a SearchQuery or RefreshCandidates and
+     *                                                          returns a SearchBatch
      * @param  class-string<ReferenceRecognizer>|null  $recognizerClass
      *
      * @throws SearchableInvalid
@@ -55,16 +56,6 @@ final readonly class Searchable
 
         if (trim($label) === '') {
             throw SearchableInvalid::forLabel($localKey);
-        }
-
-        self::assertImplements($localKey, $accessClass, SearchAccess::class);
-
-        if (is_string($provider)) {
-            self::assertImplements($localKey, $provider, SearchProvider::class);
-        }
-
-        if ($recognizerClass !== null) {
-            self::assertImplements($localKey, $recognizerClass, ReferenceRecognizer::class);
         }
 
         return new self($localKey, trim($label), $accessClass, $provider, $recognizerClass);
@@ -97,15 +88,5 @@ final readonly class Searchable
         }
 
         return $container->make($this->recognizerClass);
-    }
-
-    /**
-     * @param  class-string  $contract
-     */
-    private static function assertImplements(string $localKey, string $class, string $contract): void
-    {
-        if (! is_a($class, $contract, true)) {
-            throw SearchableInvalid::forClass($localKey, $class, $contract);
-        }
     }
 }

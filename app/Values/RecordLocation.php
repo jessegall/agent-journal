@@ -7,7 +7,7 @@ namespace App\Values;
 use App\Exceptions\SearchValueInvalid;
 
 /**
- * One passage inside a record: an id its owner never changes, such as a log entry's id, and the label a person
+ * One passage inside a record: an id its owner never changes, such as a log entry's id, and the label the user
  * reads, such as Run 2, line 7. A mutable offset is never a location id.
  */
 final readonly class RecordLocation

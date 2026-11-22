@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Rules;
 
+use App\Concerns\HasLinkRecords;
 use App\Contracts\CommandProvider;
-use App\Contracts\NavigationProvider;
+use App\Contracts\LinkRecordProvider;
 use App\Contracts\PageProvider;
 use App\Contracts\PolicyProvider;
 use App\Contracts\SkillProvider;
 use App\Declarations\ActionRoute;
-use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Enums\AccessType;
 use App\Enums\Icon;
@@ -37,9 +37,11 @@ use Domain\Rules\Mcp\Resources\RulesResource;
 use Domain\Rules\Mcp\Tools\ProposeRuleTool;
 use Domain\Rules\Mcp\Tools\RuleReadTool;
 use Domain\Rules\Mcp\Tools\RulesListTool;
+use Domain\Rules\Models\Rule;
 use Domain\Rules\Policies\RulePolicy;
 use Domain\Rules\Resolvers\RulesWindowResolver;
 use Domain\Rules\Support\Mcp\ActiveRulesOverview;
+use Domain\Rules\Support\RuleLinkRecords;
 use Domain\Rules\Support\RuleReferenceRecognizer;
 use Domain\Rules\Support\RuleSearchAccess;
 use Domain\Rules\Support\RuleSearchProvider;
@@ -51,12 +53,14 @@ use Domain\Rules\Values\RuleView;
 
 final class RulesDomain extends Domain implements
     CommandProvider,
+    LinkRecordProvider,
     McpToolProvider,
-    NavigationProvider,
     PageProvider,
     PolicyProvider,
     SkillProvider
 {
+    use HasLinkRecords;
+
     public function description(): string
     {
         return 'The standing project rules every agent is told.';
@@ -118,11 +122,6 @@ final class RulesDomain extends Domain implements
         ];
     }
 
-    public function navigation(): array
-    {
-        return [NavigationItem::page('list', 'Rules', Icon::Rules, group: 'web.agents', position: 30)];
-    }
-
     public function mcpTools(): array
     {
         return [RulesListTool::class, RuleReadTool::class, ProposeRuleTool::class];
@@ -136,6 +135,11 @@ final class RulesDomain extends Domain implements
     public function overviewContributions(): array
     {
         return [ActiveRulesOverview::class];
+    }
+
+    public function linkRecords(): array
+    {
+        return [Rule::LINK_TYPE => RuleLinkRecords::class];
     }
 
     public function searchables(): array

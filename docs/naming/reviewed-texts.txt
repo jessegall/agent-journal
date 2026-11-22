@@ -1,5 +1,6 @@
 ${diagnostic.code}: ${diagnostic.message}
 ${gathered.length} new outcomes
+${hit.title}, ${hit.locationLabel}
 ${node.line}: ${node.label}
 ${option.description} ${option.billingNote}
 (on an older version): open where it was
@@ -29,11 +30,11 @@ Add another
 Add as tab
 Add it as a new account
 Agent
-Agent journal
 Agent terminal, read only
 Alias
 All
 All caught up
+All sources
 Allow one sample run of this exact line
 Answer questions instead
 Anywhere
@@ -71,6 +72,8 @@ Checking the new session
 Checking the sign-in with {{ driverName(driver) }}…
 Checking your notifications again…
 Choose a chat
+Choose a source
+Choose a source:
 Choose a way to sign in to continue.
 Choose all on {{ machine }}
 Choose another way
@@ -131,7 +134,6 @@ Doc {{ number }} · {{ title }}
 Dock
 Dock above
 Dock below
-Dock it back into the layout
 Dock left
 Dock right
 Documents
@@ -140,7 +142,6 @@ Done
 Download it as a file
 Drafted by {{ agent }}. Nothing is saved until you submit.
 Drafting
-Drag to resize; double-click to reset
 Driver
 Driver menu
 Dropped compared with the rule in use: {{ revision.removedClasses.join(', ') || 'none' }}
@@ -247,6 +248,8 @@ No connected host runs agents in this place.
 No endpoint is serving this share.
 No install line was issued in the last 30 days.
 No linked record can be shared with it.
+No matches
+No matches in {{ search.within.value.label }}
 No matching commands
 No memories yet
 No module bundle is waiting.
@@ -256,6 +259,7 @@ No projects connected yet
 No questions waiting.
 No samples
 No saved accounts yet
+No sources are available to search.
 No terminal signed in to this folder yet.
 Not filled in yet: {{ revision.missingFields.join(', ') }}
 Not in contact yet
@@ -359,7 +363,6 @@ Reply
 Requesting control…
 Reset
 Reset layout
-Resize
 Resize panes
 Resolve
 Restarted
@@ -394,8 +397,14 @@ Save revision {{ revision + 1 }}
 Save the current layout to it
 Saved
 Saved draft
+Search again
+Search all
 Search commands
+Search records and passages
+Search results
 Search windows
+Search {{ key }}
+Searching
 Secrets
 Send
 Send Shift+Tab to the agent
@@ -434,6 +443,7 @@ Signed in
 Signed in as {{ accountIdentity }}.
 Sorting a command into kinds does not allow it to run, and a sample run only shows what the command does.
 Source text
+Sources
 Spent
 Split this pane in two?
 Stacked
@@ -480,6 +490,7 @@ That conversation belongs to another agent.
 That conversation is not one this agent can continue.
 That conversation ran on another driver; start a new conversation instead.
 That conversation was for other work; start a new conversation instead.
+That item is no longer available.
 The address is not available.
 The chosen option cannot be read from the screen; refresh or go back.
 The desk
@@ -491,10 +502,10 @@ The journal cannot be reached to check this line is still valid, so it cannot be
 The new session failed to start
 The place this comment points at is not available: {{ unavailable.message }}
 The project's files could not be read.
+The search could not be completed.
 The source holds Markdown marks (such as ** or a link) that the page shows as formatting.
 The terminal still has an unfinished line: {{ view.unsentLine }}
 The unfinished line
-The version that runs here
 This account must sign in again.
 This browser did not let the journal copy the line. Select the line above and copy it with your keyboard.
 This item is unavailable
@@ -505,6 +516,7 @@ This profile does not allow that model.
 This profile runs only its own driver.
 This project is empty
 This release cannot do {{ release.missingCapabilities.join(', ') }} yet.
+This search expired.
 This server can direct an agent to read and change files in your project. A line works once, for ten minutes.
 This sign-in is already running
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
@@ -513,10 +525,12 @@ To renew it, choose Sign in again on the account.
 Try again
 Turning off traffic inspection does not hide the content from the provider.
 Type a command or a page
+Type a source's name
+Type at least two characters
+Type at least {{ MINIMUM_CHARACTERS }} characters to search.
 Type into the terminal; Enter sends the line
 Type without Enter
 Undo
-Undock
 Unfinished input
 Unfinished sign-ins
 Unknown

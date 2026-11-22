@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace Domain\Plans\Support;
 
 use App\Contracts\SearchProvider;
+use App\Contracts\TieredSearch;
 use App\Enums\ScoreTier;
+use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
-use App\Support\TieredRecordSearch;
 use App\Values\AdmittedConstraints;
+use App\Values\RefreshCandidates;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;
 use App\Values\SearchResult;
 use App\Values\TieredSearchSource;
 use Domain\Plans\Models\Plan;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Searches plan titles through the shared bounded tiered search, a plan reference such as plan 57 first.
@@ -24,15 +25,15 @@ final readonly class PlanSearchProvider implements SearchProvider
     public function __construct(
         private PlanSearchAccess $access,
         private PlanReferenceRecognizer $recognizer,
-        private TieredRecordSearch $titles,
+        private TieredSearch $titles,
     ) {}
 
-    public function search(SearchQuery $query): SearchBatch
+    public function search(SearchQuery|RefreshCandidates $query): SearchBatch
     {
         $constraints = $this->access->constraints($query->reader);
 
         if ($constraints->recordIds->admitsNone()) {
-            return SearchBatch::exhausted('', []);
+            return SearchBatch::nothing();
         }
 
         return $this->titles->search($query, new TieredSearchSource(
@@ -49,9 +50,9 @@ final readonly class PlanSearchProvider implements SearchProvider
     }
 
     /**
-     * @return Builder<Plan>
+     * @return ReadBuilder<Plan>
      */
-    private static function admitted(AdmittedConstraints $constraints): Builder
+    private static function admitted(AdmittedConstraints $constraints): ReadBuilder
     {
         $query = Plan::query();
 

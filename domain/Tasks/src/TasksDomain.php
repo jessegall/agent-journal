@@ -14,11 +14,13 @@ use App\Contracts\CommandProvider;
 use App\Contracts\InternalAssignableContributor;
 use App\Contracts\LinkRecordProvider;
 use App\Contracts\NativePartProvider;
+use App\Contracts\NavigationProvider;
 use App\Contracts\PageProvider;
 use App\Contracts\PolicyProvider;
 use App\Contracts\SkillProvider;
 use App\Contracts\StateProvider;
 use App\Declarations\ActionRoute;
+use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Declarations\Slot;
 use App\Enums\AccessType;
@@ -117,6 +119,7 @@ final class TasksDomain extends Domain implements
     LinkRecordProvider,
     McpToolProvider,
     NativePartProvider,
+    NavigationProvider,
     PageProvider,
     PolicyProvider,
     SkillProvider,
@@ -155,6 +158,11 @@ final class TasksDomain extends Domain implements
     public function nativeParts(): array
     {
         return ['TaskCommentsTab.vue', 'TaskGraph.vue', 'TaskLogsTab.vue', 'TaskProofsTab.vue', 'TaskWaitsTab.vue'];
+    }
+
+    public function navigation(): array
+    {
+        return [NavigationItem::page('list', 'Tasks', Icon::Tasks, position: 10)];
     }
 
     public function pages(): array

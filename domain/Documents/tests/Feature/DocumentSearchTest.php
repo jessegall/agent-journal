@@ -40,6 +40,8 @@ final class DocumentSearchTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string RETRY_LINE = 'Keep your idempotency key.';
+
     private const array TABLES = [
         'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'links', 'number_groups',
         'documents', 'document_revisions', 'document_drafts', 'document_closes', 'text_uploads', 'text_upload_chunks',
@@ -50,7 +52,7 @@ final class DocumentSearchTest extends TestCase
     public function test_a_phrase_in_a_section_opens_at_its_line(): void
     {
         TestStart::start()->startRequest($this->app);
-        $body = "# Guide\nFirst paragraph.\n\n## Retry\nKeep your idempotency key.\n";
+        $body = "# Guide\nFirst paragraph.\n\n## Retry\n".self::RETRY_LINE."\n";
         $number = $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Guide', 'About keys.', $body))->number;
 
         $hit = $this->firstHit('idempotency key');
@@ -66,7 +68,7 @@ final class DocumentSearchTest extends TestCase
             ToolArguments::read('docs_read', new Request(array_diff_key($open->arguments, ['doc_id' => true])), $fields),
         );
 
-        $this->assertStringStartsWith('Keep your idempotency key.', $read->responseFields['body']);
+        $this->assertStringStartsWith(self::RETRY_LINE, $read->responseFields['body']);
     }
 
     public function test_a_word_only_in_an_open_draft_gives_no_hit(): void
@@ -93,10 +95,11 @@ final class DocumentSearchTest extends TestCase
             new CreateDocumentCommand('One search across domain declarations', 'About search.', "# Search\nText.\n"),
         )->number;
 
-        $hit = $this->firstHit("doc {$number}");
+        $reference = "doc {$number}";
+        $hit = $this->firstHit($reference);
 
         $this->assertSame(ScoreTier::Reference, $hit->score);
-        $this->assertSame("Doc {$number}", $hit->snippet);
+        $this->assertSame(ucfirst($reference), $hit->snippet);
     }
 
     private function firstHit(string $words): SearchResult

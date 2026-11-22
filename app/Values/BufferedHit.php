@@ -38,15 +38,4 @@ final readonly class BufferedHit
             'score' => $this->score->value,
         ];
     }
-
-    /**
-     * @param  array{source: string, type: string, id: string, location: string|null, score: int}  $fields
-     */
-    public static function fromArray(array $fields): self
-    {
-        return new self(
-            new HitIdentity($fields['source'], $fields['type'], $fields['id'], $fields['location']),
-            ScoreTier::from($fields['score']),
-        );
-    }
 }

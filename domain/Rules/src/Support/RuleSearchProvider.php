@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace Domain\Rules\Support;
 
 use App\Contracts\SearchProvider;
+use App\Contracts\TieredSearch;
 use App\Enums\ScoreTier;
+use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
-use App\Support\TieredRecordSearch;
 use App\Values\AdmittedConstraints;
+use App\Values\RefreshCandidates;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;
 use App\Values\SearchResult;
 use App\Values\TieredSearchSource;
 use Domain\Rules\Models\Rule;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Searches rule texts through the shared bounded tiered search, a rule reference such as rule 34 first. A rule has
@@ -22,20 +23,20 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final readonly class RuleSearchProvider implements SearchProvider
 {
-    public const string RECORD_TYPE = 'rules.rule';
+    public const string RECORD_TYPE = Rule::LINK_TYPE;
 
     public function __construct(
         private RuleSearchAccess $access,
         private RuleReferenceRecognizer $recognizer,
-        private TieredRecordSearch $texts,
+        private TieredSearch $texts,
     ) {}
 
-    public function search(SearchQuery $query): SearchBatch
+    public function search(SearchQuery|RefreshCandidates $query): SearchBatch
     {
         $constraints = $this->access->constraints($query->reader);
 
         if ($constraints->recordIds->admitsNone()) {
-            return SearchBatch::exhausted('', []);
+            return SearchBatch::nothing();
         }
 
         return $this->texts->search($query, new TieredSearchSource(
@@ -52,9 +53,9 @@ final readonly class RuleSearchProvider implements SearchProvider
     }
 
     /**
-     * @return Builder<Rule>
+     * @return ReadBuilder<Rule>
      */
-    private static function admitted(AdmittedConstraints $constraints): Builder
+    private static function admitted(AdmittedConstraints $constraints): ReadBuilder
     {
         $query = Rule::query();
 

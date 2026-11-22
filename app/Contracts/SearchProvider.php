@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts;
 
+use App\Values\RefreshCandidates;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;
 
@@ -14,5 +15,5 @@ use App\Values\SearchQuery;
  */
 interface SearchProvider
 {
-    public function search(SearchQuery $query): SearchBatch;
+    public function search(SearchQuery|RefreshCandidates $query): SearchBatch;
 }

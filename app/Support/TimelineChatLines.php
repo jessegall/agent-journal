@@ -12,6 +12,7 @@ use App\Models\InboxRecord;
 use App\Models\TimelineEvent;
 use App\Support\Cards\DockIdentity;
 use App\Values\ChatLine;
+use App\Values\PostedLine;
 
 /**
  * Posts a plain line about an agent into the timeline of every chat the agent is a member of now, each at the next
@@ -47,7 +48,14 @@ final readonly class TimelineChatLines implements ChatLines
 
         foreach ($inboxIds as $inboxId) {
             $sequence = InboxRecord::lockedForSequence($inboxId)->takeSequence();
-            TimelineEvent::createLine($inboxId, $sequence, $agent, $subject, $line, $source, $placement);
+            TimelineEvent::create(
+                $inboxId,
+                $sequence,
+                TimelineEventType::Line,
+                $agent,
+                null,
+                new PostedLine($subject, $line, $source, $placement),
+            );
         }
     }
 
@@ -56,12 +64,12 @@ final readonly class TimelineChatLines implements ChatLines
      *
      * @return list<ChatLine>
      */
-    public function linesFrom(string $inboxId, int $fromSequence): array
+    public function linesFrom(string $inboxId, int $sequence): array
     {
         $events = TimelineEvent::query()
             ->ofInbox($inboxId)
             ->where('type', TimelineEventType::Line)
-            ->where('sequence', '>=', $fromSequence)
+            ->where('sequence', '>=', $sequence)
             ->orderBy('sequence')
             ->limit(self::PAGE_LINE_LIMIT)
             ->get();

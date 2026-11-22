@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Search;
 
-use App\Support\ActorContext;
-use App\Support\RecordIdentity;
 use App\Enums\FailureReason;
 use App\Enums\ScoreTier;
 use App\Enums\SearchSurface;
 use App\Exceptions\SearchBatchInvalid;
+use App\Support\ActorContext;
+use App\Support\RecordIdentity;
 use App\Values\ExhaustedOutcome;
 use App\Values\FailedOutcome;
 use App\Values\HitIdentity;
@@ -41,7 +41,7 @@ final class SearchBatchTest extends TestCase
         $position = SourcePosition::of(['tier' => 400, 'last_id' => self::FIRST_ID]);
 
         $this->assertInstanceOf(ExhaustedOutcome::class, SearchBatch::exhausted('v1', [])->outcome);
-        $this->assertInstanceOf(MoreOutcome::class, SearchBatch::more('v1', [$this->result()], $position)->outcome);
+        $this->assertInstanceOf(MoreOutcome::class, SearchBatch::more('v1', [$this->searchResult()], $position)->outcome);
         $this->assertInstanceOf(ScanningOutcome::class, SearchBatch::scanning('v1', $position)->outcome);
         $this->assertInstanceOf(FailedOutcome::class, SearchBatch::failed(FailureReason::StorageFailed)->outcome);
         $this->assertTrue(SearchBatch::failed(FailureReason::StorageFailed)->hasFailed());
@@ -70,8 +70,8 @@ final class SearchBatchTest extends TestCase
         $this->expectException(SearchBatchInvalid::class);
 
         SearchBatch::exhausted('v1', [
-            $this->result(self::FIRST_ID, ScoreTier::TitleContains),
-            $this->result(self::SECOND_ID, ScoreTier::ExactTitle),
+            $this->searchResult(self::FIRST_ID, ScoreTier::TitleContains),
+            $this->searchResult(self::SECOND_ID, ScoreTier::ExactTitle),
         ]);
     }
 
@@ -79,14 +79,14 @@ final class SearchBatchTest extends TestCase
     {
         $this->expectException(SearchBatchInvalid::class);
 
-        SearchBatch::exhausted('v1', [$this->result(self::SECOND_ID), $this->result(self::FIRST_ID)]);
+        SearchBatch::exhausted('v1', [$this->searchResult(self::SECOND_ID), $this->searchResult(self::FIRST_ID)]);
     }
 
     public function test_a_repeated_hit_is_refused(): void
     {
         $this->expectException(SearchBatchInvalid::class);
 
-        SearchBatch::exhausted('v1', [$this->result(), $this->result()]);
+        SearchBatch::exhausted('v1', [$this->searchResult(), $this->searchResult()]);
     }
 
     public function test_more_hits_than_a_batch_holds_are_refused(): void
@@ -96,7 +96,7 @@ final class SearchBatchTest extends TestCase
         $hits = [];
 
         for ($number = 0; $number <= SearchQuery::HIT_LIMIT; $number++) {
-            $hits[] = $this->result(sprintf('01ARZ3NDEKTSV4RRFFQ69G%04d', $number));
+            $hits[] = $this->searchResult(sprintf('01ARZ3NDEKTSV4RRFFQ69G%04d', $number));
         }
 
         SearchBatch::exhausted('v1', $hits);
@@ -107,7 +107,7 @@ final class SearchBatchTest extends TestCase
         $kept = new HitIdentity('tasks.task', 'tasks.task', self::FIRST_ID);
         $dropped = new HitIdentity('tasks.task', 'tasks.task', self::SECOND_ID);
         $refresh = $this->query()->refreshing([$kept, $dropped]);
-        $batch = SearchBatch::refreshed('v2', $refresh, [$this->result(self::FIRST_ID)]);
+        $batch = SearchBatch::refreshed('v2', $refresh, [$this->searchResult(self::FIRST_ID)]);
 
         $this->assertInstanceOf(RefreshCandidates::class, $refresh);
         $this->assertSame([self::FIRST_ID, self::SECOND_ID], $refresh->recordIds());
@@ -121,7 +121,7 @@ final class SearchBatchTest extends TestCase
 
         $this->expectException(SearchBatchInvalid::class);
 
-        SearchBatch::refreshed('v2', $refresh, [$this->result(self::SECOND_ID)]);
+        SearchBatch::refreshed('v2', $refresh, [$this->searchResult(self::SECOND_ID)]);
     }
 
     public function test_a_refresh_asks_about_at_most_a_batch_of_candidates(): void
@@ -134,7 +134,7 @@ final class SearchBatchTest extends TestCase
         $this->query()->refreshing($candidates);
     }
 
-    private function result(string $id = self::FIRST_ID, ScoreTier $score = ScoreTier::TitlePrefix): SearchResult
+    private function searchResult(string $id = self::FIRST_ID, ScoreTier $score = ScoreTier::TitlePrefix): SearchResult
     {
         return new SearchResult('Title', 'Snippet', new RecordIdentity('tasks.task', $id), $score);
     }

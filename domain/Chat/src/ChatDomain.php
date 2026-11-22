@@ -6,14 +6,13 @@ namespace Domain\Chat;
 
 use App\Contracts\Command;
 use App\Contracts\CommandProvider;
+use App\Contracts\MessageSearch;
 use App\Contracts\NativePartProvider;
-use App\Contracts\NavigationProvider;
 use App\Contracts\PageProvider;
 use App\Contracts\PolicyProvider;
 use App\Contracts\SectionProvider;
 use App\Contracts\SkillProvider;
 use App\Declarations\ActionRoute;
-use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Declarations\Section;
 use App\Declarations\Slot;
@@ -25,7 +24,6 @@ use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\FolderClasses;
 use App\Support\MessageSearchAccess;
-use App\Support\MessageSearchProvider;
 use App\Support\Searchable;
 use App\Values\PolicyDefinition;
 use Domain\Chat\Events\DockChanged;
@@ -62,7 +60,6 @@ final class ChatDomain extends Domain implements
     CommandProvider,
     McpToolProvider,
     NativePartProvider,
-    NavigationProvider,
     PageProvider,
     PolicyProvider,
     SectionProvider,
@@ -152,11 +149,6 @@ final class ChatDomain extends Domain implements
         return ['InboxMessages.vue'];
     }
 
-    public function navigation(): array
-    {
-        return [NavigationItem::page('conversation', 'Chat', Icon::Chat, position: 10)];
-    }
-
     public function sections(): array
     {
         return [
@@ -191,6 +183,6 @@ final class ChatDomain extends Domain implements
      */
     public function searchables(): array
     {
-        return [Searchable::make('message', 'Messages', MessageSearchAccess::class, MessageSearchProvider::class)];
+        return [Searchable::make('message', 'Messages', MessageSearchAccess::class, MessageSearch::class)];
     }
 }

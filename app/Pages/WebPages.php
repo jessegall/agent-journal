@@ -7,7 +7,6 @@ namespace App\Pages;
 use App\Contracts\NativePartProvider;
 use App\Contracts\NavigationProvider;
 use App\Contracts\PageProvider;
-use App\Contracts\SidebarGroupProvider;
 use App\Contracts\TypeProvider;
 use App\Data\CurrentUserData;
 use App\Data\DeniedWindow;
@@ -30,7 +29,6 @@ use App\Declarations\ActionRoute;
 use App\Declarations\DomainUi;
 use App\Declarations\NavigationItem;
 use App\Declarations\Page;
-use App\Declarations\SidebarGroup;
 use App\Declarations\Slot;
 use App\Enums\Icon;
 use App\Enums\SlotContextType;
@@ -73,7 +71,7 @@ use App\Resolvers\TerminalWindowResolver;
  * /web/runtimes, with the owner's recovery actions; Home, first in the sidebar; and the sidebar groups Work and Agents
  * that any domain may join.
  */
-final class WebPages implements NativePartProvider, NavigationProvider, PageProvider, SidebarGroupProvider, TypeProvider
+final class WebPages implements NativePartProvider, NavigationProvider, PageProvider, TypeProvider
 {
     /**
      * The data classes and enums these pages own, generated in the web module.
@@ -116,11 +114,6 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
     public function navigation(): array
     {
         return [NavigationItem::page('home', 'Home', Icon::Home)];
-    }
-
-    public function sidebarGroups(): array
-    {
-        return [SidebarGroup::make('work', 'Work'), SidebarGroup::make('agents', 'Agents')];
     }
 
     public function pages(): array

@@ -7,7 +7,7 @@ namespace Domain\Tasks\Values;
 use App\Values\RecordLocation;
 
 /**
- * Where a log line sits in its task: the line's own id, which never changes, and the run and line a person reads.
+ * Where a log line sits in its task: the line's own id, which never changes, and the run and line the user reads.
  */
 final readonly class TaskLogLocation
 {

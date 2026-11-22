@@ -11,29 +11,27 @@ use App\Exceptions\SearchBatchInvalid;
  * source. The provider rereads them in bulk, checks live access and answers each that still matches; it never
  * moves its forward position.
  */
-final readonly class RefreshCandidates extends SearchQuery
+final readonly class RefreshCandidates
 {
+    /**
+     * Who rereads the hits, the same reader as the original query's.
+     */
+    public SearchReader $reader;
+
     /**
      * @param  list<HitIdentity>  $candidates
      *
      * @throws SearchBatchInvalid
      */
     public function __construct(
-        SearchQuery $original,
+        public SearchQuery $original,
         public array $candidates,
     ) {
-        if (count($candidates) > self::HIT_LIMIT) {
-            throw SearchBatchInvalid::tooManyCandidates(self::HIT_LIMIT);
-        }
+        $this->reader = $original->reader;
 
-        parent::__construct(
-            $original->reader,
-            $original->words,
-            $original->scope,
-            $original->sourceKey,
-            max(1, count($candidates)),
-            $original->budget,
-        );
+        if (count($candidates) > SearchQuery::HIT_LIMIT) {
+            throw SearchBatchInvalid::tooManyCandidates(SearchQuery::HIT_LIMIT);
+        }
     }
 
     public function asks(HitIdentity $identity): bool

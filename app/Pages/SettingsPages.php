@@ -64,7 +64,7 @@ final class SettingsPages implements NavigationProvider, PageProvider, TypeProvi
 
     public function navigation(): array
     {
-        return [NavigationItem::page('settings', 'Settings', Icon::Rules, group: 'web.agents', position: 90)];
+        return [NavigationItem::page('settings', 'Settings', Icon::Settings, position: 90)];
     }
 
     /**

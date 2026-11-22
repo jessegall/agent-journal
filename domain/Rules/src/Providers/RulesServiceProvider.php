@@ -54,7 +54,7 @@ final class RulesServiceProvider extends ServiceProvider
         }
 
         $links->register([
-            'rules.rule' => Rule::class,
+            Rule::LINK_TYPE => Rule::class,
         ]);
     }
 }
