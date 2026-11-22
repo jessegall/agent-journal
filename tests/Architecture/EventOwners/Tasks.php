@@ -9,7 +9,9 @@ use Domain\Tasks\Api\Events\TaskCheckRecorded;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Api\Events\TaskLogged;
 use Domain\Tasks\Api\Events\TaskStartCommitted;
+use Domain\Tasks\Api\Events\TaskWaitChanged;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Events\TaskStarted;
 use Tests\Architecture\Support\EventRole;
 
@@ -60,6 +62,13 @@ return [
         'producers' => [
             'domain/Tasks/src/Listeners/AnnounceTaskStart.php',
         ],
+    ],
+    TaskWaitChanged::class => [
+        'role' => EventRole::RowFact,
+        'owner' => ['TaskWait::add', 'TaskWait::waive', 'TaskWait::remove'],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TaskWaitChanged('wait', 'dependent', 'prerequisite', TaskWaitChange::Added),
     ],
     TaskStarted::class => [
         'role' => EventRole::RowFact,

@@ -184,6 +184,16 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     }
 
     /**
+     * The task with this id, unlocked; none is refused as missing.
+     *
+     * @throws TaskMissing
+     */
+    public static function ofId(string $id): self
+    {
+        return self::query()->whereKey($id)->firstOr(fn () => throw TaskMissing::forId($id));
+    }
+
+    /**
      * The task read under its row lock, for a change that must happen once.
      */
     public static function lockedById(string $id): self

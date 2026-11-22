@@ -37,6 +37,7 @@ use Domain\Tasks\Api\Events\TaskCheckRecorded;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Api\Events\TaskLogged;
 use Domain\Tasks\Api\Events\TaskStartCommitted;
+use Domain\Tasks\Api\Events\TaskWaitChanged;
 use Domain\Tasks\Api\TaskAssignmentCompletion;
 use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskDetails;
@@ -53,6 +54,8 @@ use Domain\Tasks\Api\TaskProofPage;
 use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Api\TaskText;
 use Domain\Tasks\Api\TaskTransition;
+use Domain\Tasks\Api\TaskWaitLink;
+use Domain\Tasks\Api\TaskWaits;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Assignments\ActiveTaskAssignments;
 use Domain\Tasks\Assignments\NamedTaskPoolFactory;
@@ -67,7 +70,9 @@ use Domain\Tasks\Contracts\TaskLogResolver;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskProofResolver;
 use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Mcp\HeldTasksOverview;
@@ -149,12 +154,14 @@ final class TasksDomain extends Domain implements
                 TaskStartCommitted::class,
                 TaskLogged::class,
                 TaskCheckRecorded::class,
+                TaskWaitChanged::class,
             )
             ->contracts(
                 TaskProgressCounter::class,
                 TaskHistoryResolver::class,
                 TaskLogResolver::class,
                 TaskProofResolver::class,
+                TaskWaitResolver::class,
                 TaskResolver::class,
                 TaskAssignmentResolver::class,
                 AssignedTaskResolver::class,
@@ -169,6 +176,9 @@ final class TasksDomain extends Domain implements
                 TaskLogLine::class,
                 TaskProofPage::class,
                 TaskProof::class,
+                TaskWaits::class,
+                TaskWaitLink::class,
+                TaskWaitChange::class,
                 TaskSummary::class,
                 TaskAssignmentCompletion::class,
                 TaskCard::class,
@@ -190,7 +200,7 @@ final class TasksDomain extends Domain implements
         return [
             new PolicyDefinition(
                 TaskPolicy::class,
-                [AccessType::Read, AccessType::Create, AccessType::Edit],
+                [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Admin],
             ),
             new PolicyDefinition(
                 TaskRunPolicy::class,

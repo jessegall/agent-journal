@@ -78,6 +78,7 @@ use Domain\Tasks\Api\Events\TaskCheckRecorded;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Api\Events\TaskLogged;
 use Domain\Tasks\Api\Events\TaskStartCommitted;
+use Domain\Tasks\Api\Events\TaskWaitChanged;
 use Domain\Tasks\Events\TaskStarted;
 
 /**
@@ -555,6 +556,15 @@ final class EventPayloads
                 'fields' => [
                     'taskId' => 'string',
                     'entryId' => 'string',
+                ],
+            ],
+            TaskWaitChanged::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'waitId' => 'string',
+                    'dependentTaskId' => 'string',
+                    'prerequisiteTaskId' => 'string',
+                    'change' => 'Domain\Tasks\Enums\TaskWaitChange',
                 ],
             ],
             TaskStarted::class => [
