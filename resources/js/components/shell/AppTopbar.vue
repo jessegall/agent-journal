@@ -24,7 +24,7 @@ const page = usePage();
 const appName = computed(() => page.props.name);
 const userName = computed(() => page.props.currentUser?.name);
 const { appearance, update } = useAppearance();
-const { toggle: toggleSidebar } = useSidebar();
+const { toggle: toggleSidebar, isMini } = useSidebar();
 const { isPaletteOpen, isHelpOpen, isSearchOpen } = useShellOverlays();
 
 const schemes: { value: Appearance; label: string }[] = [
@@ -73,7 +73,8 @@ function toggleFullScreen(): void {
             </template>
             <Button
                 variant="icon"
-                aria-label="Show or hide the sidebar"
+                :aria-label="isMini ? 'Show the page names' : 'Hide the page names'"
+                :title="isMini ? 'Show the page names' : 'Hide the page names'"
                 @click="toggleSidebar"
                 ><Icon name="list" :size="13"
             /></Button>

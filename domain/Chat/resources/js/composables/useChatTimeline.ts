@@ -35,10 +35,6 @@ export type ChatTimelineClient = {
     rows(inboxId: string, olderCursor: string | null): Promise<ChatRowsPageData>;
 };
 
-/**
- * Reads one of the chat page's reads by a partial reload: a refused cursor (409) is refused, anything else did not
- * arrive.
- */
 /** The timeline event of a plain line a domain posted, which carries no message. */
 const LINE_EVENT = 'line';
 
@@ -55,6 +51,15 @@ export function isRunning(node: DockNode | null): boolean {
     return 'children' in node && node.children.some((child) => isRunning(child));
 }
 
+/** A chat's timeline started from the page it opened with. */
+function timelineOf(opened: ConversationData): ChatTimeline {
+    return chatTimeline(opened.messages, opened.latestSequence, opened.olderCursor);
+}
+
+/**
+ * Reads one of the chat page's reads by a partial reload: a refused cursor (409) is refused, anything else did not
+ * arrive.
+ */
 function readTimeline<Page>(routeName: string, query: Record<string, string>): Promise<Page> {
     return readPage<Page>(routeName, query).catch((failure: PropReadFailed) => {
         throw new ChatTimelineReadFailed(failure.status === 409);
@@ -275,7 +280,7 @@ export function useChatTimeline(
             lines.value = opened?.lines ?? [];
             timeline = opened === undefined || inboxId === undefined
                 ? null
-                : chatTimeline(opened.messages, opened.latestSequence, opened.olderCursor);
+                : timelineOf(opened);
             changed();
             void catchUp();
         },
@@ -290,7 +295,7 @@ export function useChatTimeline(
             if (opened !== undefined && timeline === null && accessEnded.value) {
                 // A rejoin shows the chat again: it starts from a fresh snapshot, never from the lost cursor.
                 accessEnded.value = false;
-                timeline = chatTimeline(opened.messages, opened.latestSequence, opened.olderCursor);
+                timeline = timelineOf(opened);
                 changed();
                 void catchUp();
 

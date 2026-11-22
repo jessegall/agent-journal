@@ -2,7 +2,7 @@
 import type { DockCardEnvelope } from '@kit/dockCards';
 import Icon from '@kit/Icon';
 import IconButton from '@kit/IconButton';
-import DockPart from './dock/DockPart.vue';
+import RecordCard from './RecordCard.vue';
 
 /**
  * The record a chat line names, open beside the chat: its title and close button, and its card's parts, such as a
@@ -25,12 +25,7 @@ const emit = defineEmits<{ close: [] }>();
             <IconButton icon="close" :label="`Close ${card.accessibleName}`" size="sm" @click="emit('close')" />
         </header>
         <div class="overflow-y-auto px-3 py-3">
-            <template v-if="card.root">
-                <DockPart :node="card.root" :path="`${card.placementId}/${card.root.key}`" />
-            </template>
-            <template v-else>
-                <p class="text-small text-text-2">{{ card.safeSummary }}</p>
-            </template>
+            <RecordCard :card="card" />
         </div>
     </aside>
 </template>

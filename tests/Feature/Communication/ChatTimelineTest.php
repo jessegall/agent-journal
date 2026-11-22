@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Contracts\ChatLines;
 use App\Contracts\ChatTimeline;
 use App\Enums\ChatPermission;
 use App\Exceptions\ChatCursorRefused;
 use App\Support\ActorIdentity;
-use App\Support\ChatLines;
 use App\Support\Web\PageReadProps;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;

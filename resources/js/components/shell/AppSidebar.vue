@@ -7,8 +7,8 @@ import { useSidebar } from '@/composables/useSidebar';
 import NavigationList from './NavigationList.vue';
 
 /**
- * The navigation sidebar: 216 px wide with the Logo, the page records and the current page marked, collapsing to a
- * 56 px rail of icons. On a phone it is not drawn; the topbar button opens the same navigation in a Sheet, which
+ * The navigation sidebar: 216 px wide with the brand row (its title names the version that runs here), the pages and
+ * the current page marked, collapsing to a 56 px rail of icons. On a phone it is not drawn; the topbar button opens the same navigation in a Sheet, which
  * closes when a page is chosen.
  */
 const page = usePage();
@@ -19,31 +19,20 @@ watch(() => page.url, closeOnPhone);
 
 <template>
     <aside
-        class="flex shrink-0 flex-col border-r border-border bg-side max-[760px]:hidden"
+        class="relative z-100 flex shrink-0 flex-col border-r border-border bg-side pt-3 pb-3 max-[760px]:hidden"
         :class="isMini ? 'w-14' : 'w-54'"
     >
         <div
-            class="flex items-center gap-2.5 py-3.5"
-            :class="isMini ? 'justify-center' : 'px-[18px]'"
+            class="flex items-center gap-2 overflow-hidden px-4 pt-0.5 pb-3.5 font-semibold whitespace-nowrap text-text"
+            :class="{ 'justify-center px-0': isMini }"
+            :title="`Agent journal ${page.props.version}`"
         >
             <Logo />
             <template v-if="!isMini">
-                <span class="text-[14px] font-semibold text-text">{{
-                    page.props.name
-                }}</span>
+                <span>{{ page.props.name }}</span>
             </template>
         </div>
         <NavigationList :is-mini="isMini" />
-        <template v-if="!isMini">
-            <div
-                class="flex justify-between border-t border-border px-[18px] py-2.5 text-small text-text-3"
-            >
-                <span>Agent journal</span>
-                <span class="font-mono" title="The version that runs here">{{
-                    page.props.version
-                }}</span>
-            </div>
-        </template>
     </aside>
     <Sheet :is-open="isOpenOnPhone" title="Pages" @close="closeOnPhone">
         <template v-if="isOpenOnPhone">

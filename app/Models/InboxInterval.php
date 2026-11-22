@@ -174,7 +174,7 @@ final class InboxInterval extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function activeFor(Builder $query, string $inboxId): void
     {
-        $query->where('inbox_id', $inboxId)->whereNull('left_at');
+        $query->where('inbox_id', $inboxId)->stillOpen();
     }
 
     /**

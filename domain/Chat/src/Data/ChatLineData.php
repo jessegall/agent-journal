@@ -34,6 +34,13 @@ final class ChatLineData extends Data
 
     public static function fromChatLine(ChatLine $line, EncodedCard|null $card): self
     {
-        return new self($line->sequence, $line->subject, $line->line, $line->postedAt->toIso8601String(), $card, $line->cardPlacement);
+        return new self(
+            $line->sequence,
+            $line->subject,
+            $line->line,
+            $line->postedAt->toIso8601String(),
+            $card,
+            $line->cardPlacement,
+        );
     }
 }

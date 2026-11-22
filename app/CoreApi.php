@@ -269,6 +269,7 @@ use App\Contracts\CatalogueConstraints;
 use App\Contracts\CatalogueValue;
 use App\Contracts\ChatDepartures;
 use App\Contracts\ChatEligibility;
+use App\Contracts\ChatLines;
 use App\Contracts\ChatMemberPolicies;
 use App\Contracts\ChatParticipationEnding;
 use App\Contracts\ChatTimeline;
@@ -601,6 +602,7 @@ use App\Enums\LaunchCandidateRank;
 use App\Enums\LaunchProfileType;
 use App\Enums\LayoutTag;
 use App\Enums\LeaveReason;
+use App\Enums\LineCardPlacement;
 use App\Enums\MenuEntryState;
 use App\Enums\MessageState;
 use App\Enums\MiddlewareStage;
@@ -1271,6 +1273,7 @@ use App\Values\BrowserInputCapabilities;
 use App\Values\CallAccepted;
 use App\Values\CallAnswer;
 use App\Values\CallToSend;
+use App\Values\ChatLine;
 use App\Values\ChatMemberAuthority;
 use App\Values\Choice;
 use App\Values\ChosenAccount;
@@ -1706,6 +1709,7 @@ final class CoreApi
                 ActiveActorCounter::class,
                 UserPresences::class,
                 ConversationResolver::class,
+                ChatLines::class,
                 Notifications::class,
                 NotificationTargets::class,
                 NotificationTargetResolver::class,
@@ -1858,6 +1862,8 @@ final class CoreApi
                 DockCard::class,
                 DockDestination::class,
                 DockIdentity::class,
+                ChatLine::class,
+                LineCardPlacement::class,
                 DockLink::class,
                 Duration::class,
                 EnvironmentTask::class,
