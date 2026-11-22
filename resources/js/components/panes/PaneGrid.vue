@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import SegmentedControl from '@/components/kit/SegmentedControl.vue';
 import { usePaneLayout } from '@/components/panes/usePaneLayout';
 import DetachedWindowFrame from './DetachedWindowFrame.vue';
 import DragGhost from './DragGhost.vue';
-import PaneFrame from './PaneFrame.vue';
 import PaneNode from './PaneNode.vue';
-import { panesIn } from './paneLayout';
+import { windowsIn } from './paneLayout';
 
 /**
  * Version 5's pane grid (panes/PaneGrid.vue): the layout's panes side by side and above each other, split by
- * splitters. Narrower than version 5's 700 px the panes stack instead, the one holding the first window first, each
- * one grid high, with scroll snapping. Detached windows float over everything, and a dragged window's ghost follows
- * the pointer.
+ * splitters. Narrower than version 5's 700 px, on a phone, one window shows under a switcher that lists every open
+ * window and stays in place; every window stays mounted, so choosing another and coming back finds its draft and its
+ * scroll as they were. Detached windows float over everything, and a dragged window's ghost follows the pointer.
  */
 const NARROW_WIDTH = 700;
 
@@ -22,15 +22,21 @@ const grid = ref<HTMLElement | null>(null);
 const isNarrow = ref(false);
 let watcher: ResizeObserver | null = null;
 
-const stackedPanes = computed(() => {
-    const first = store.windows.value[0]?.key;
+const openKeys = computed(() => windowsIn(store.layout.value));
+const activeKey = ref('');
+const items = computed(() =>
+    openKeys.value.map((key) => ({ value: key, label: store.windowOf(key)?.title ?? key })),
+);
 
-    return [...panesIn(store.layout.value)].sort(
-        (one, other) =>
-            Number(other.windows.includes(first)) -
-            Number(one.windows.includes(first)),
-    );
-});
+watch(
+    openKeys,
+    (keys) => {
+        if (!keys.includes(activeKey.value)) {
+            activeKey.value = keys[0] ?? '';
+        }
+    },
+    { immediate: true },
+);
 
 onMounted(() => {
     watcher = new ResizeObserver(([entry]) => {
@@ -48,20 +54,20 @@ onBeforeUnmount(() => watcher?.disconnect());
 <template>
     <div ref="grid" class="relative min-h-0 flex-1 overflow-hidden">
         <template v-if="isNarrow">
-            <div
-                class="flex h-full snap-y snap-proximity flex-col overflow-y-auto overscroll-contain"
-            >
-                <template v-for="pane in stackedPanes" :key="pane.id">
-                    <div
-                        class="h-full flex-none snap-start border-b border-border"
-                    >
-                        <PaneFrame :pane="pane">
-                            <template #default="{ windowKey }">
-                                <slot :window-key="windowKey" />
-                            </template>
-                        </PaneFrame>
-                    </div>
-                </template>
+            <div class="flex h-full flex-col pb-[env(safe-area-inset-bottom)]">
+                <div class="flex-none overflow-x-auto border-b border-border bg-side px-3 py-1.5" data-window-switcher>
+                    <SegmentedControl v-model="activeKey" label="Open windows" :items="items" />
+                </div>
+                <div class="relative min-h-0 flex-1">
+                    <template v-for="key in openKeys" :key="key">
+                        <div v-show="key === activeKey" class="h-full overflow-auto" :data-phone-window="key">
+                            <slot :window-key="key" />
+                        </div>
+                    </template>
+                    <template v-if="openKeys.length === 0">
+                        <p class="p-4 text-body text-text-3">Nothing is open. Add a window from the bar above.</p>
+                    </template>
+                </div>
             </div>
         </template>
         <template v-else>
