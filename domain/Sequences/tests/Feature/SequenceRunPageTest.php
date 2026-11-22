@@ -52,6 +52,13 @@ final class SequenceRunPageTest extends TestCase
                 ->where(self::READER.'.6.rows.0.href', "/sequences/runs/{$run->number}"));
     }
 
+    public function test_a_sequence_without_a_summary_is_listed_by_its_name_alone(): void
+    {
+        $sequence = Sequence::create('Release', '', []);
+
+        $this->actingAs($this->owner)->get("/sequences/{$sequence->id}")->assertOk();
+    }
+
     public function test_an_unknown_sequence_is_not_found(): void
     {
         $this->actingAs($this->owner)->get('/sequences/01ARZ3NDEKTSV4RRFFQ69G5FAV')->assertNotFound();

@@ -12,6 +12,7 @@ use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use Domain\Sequences\Models\Sequence;
+use Spatie\LaravelData\Optional;
 
 /**
  * The Sequences page as the design draws it: the stored sequences, newest first, each a two-line row of its name and
@@ -33,7 +34,7 @@ final readonly class SequenceIndexLayout
             array_map(fn (Sequence $sequence) => new LayoutRowData(
                 $sequence->id,
                 $sequence->name,
-                detail: $sequence->summary === '' ? null : $sequence->summary,
+                detail: $sequence->summary === '' ? Optional::create() : $sequence->summary,
                 href: route('sequences.sequence', ['sequence' => $sequence->id], false),
                 isCurrent: $sequence->id === $chosenId,
             ), $sequences),
