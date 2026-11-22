@@ -4,15 +4,16 @@ import Menu from '@/components/kit/Menu.vue';
 import MenuItem from '@/components/kit/MenuItem.vue';
 
 /**
- * The header of an agent's terminal window, in order: the agent, its driver, who has the input, the placement and
- * the actions. A narrow window wraps it, keeps the agent, the input owner and the main action in reach, and moves the
- * placement actions into a named menu.
+ * The header of an agent's terminal window, in order: the agent, its driver, where it runs, who has the input, the
+ * placement and the actions. A narrow window wraps it, keeps the agent, the input owner and the main action in
+ * reach, and moves the placement actions into a named menu.
  */
 export type TerminalHeaderAction = { key: string; label: string; run: () => void };
 
 defineProps<{
     agentName: string;
     driver: string | null;
+    location: string;
     owner: string;
     placement: string;
     main: TerminalHeaderAction;
@@ -25,6 +26,9 @@ defineProps<{
         <span class="font-semibold text-text">{{ agentName }}</span>
         <template v-if="driver">
             <span>{{ driver }}</span>
+        </template>
+        <template v-if="location">
+            <span>{{ location }}</span>
         </template>
         <span class="text-text">{{ owner }}</span>
         <span class="hidden @[28rem]:inline">{{ placement }}</span>

@@ -4,7 +4,7 @@ import Button from '@kit/Button';
 import TerminalControlBar from '@kit/TerminalControlBar';
 import { useTerminalController } from '@kit/terminalController';
 import { useTerminalResize } from '@kit/terminalResize';
-import { ref, toRef } from 'vue';
+import { ref, toRef, watch } from 'vue';
 
 /**
  * The terminal the chat shows beside it: one controller for the agent, which reads only while the terminal is shown,
@@ -13,7 +13,7 @@ import { ref, toRef } from 'vue';
  */
 const props = defineProps<{ agentId: string; isShown: boolean }>();
 
-const emit = defineEmits<{ backToChat: []; owner: [label: string] }>();
+const emit = defineEmits<{ backToChat: []; owner: [label: string]; location: [label: string] }>();
 
 const { presentation, retry, control } = useTerminalController(
     toRef(() => props.agentId),
@@ -35,6 +35,12 @@ function holdsCloseForDraft(): boolean {
 
 defineExpose({ holdsCloseForDraft });
 
+watch(
+    () => presentation.value.screen.identity?.containerInstance,
+    (instance) => emit('location', instance ? 'Contained session' : 'This Mac'),
+    { immediate: true },
+);
+
 const area = ref<HTMLElement | null>(null);
 useTerminalResize(area, control);
 </script>
@@ -53,7 +59,7 @@ useTerminalResize(area, control);
                 <template v-if="state === 'not_reporting' || state === 'refused' || state === 'connection_lost'">
                     <Button variant="bordered" size="sm" @click="retry">Retry</Button>
                 </template>
-                <template v-if="presentation.screen.frame?.noTerminal">
+                <template v-if="presentation.screen.frame?.noTerminal || state === 'connection_lost'">
                     <Button variant="bordered" size="sm" @click="emit('backToChat')">Back to chat</Button>
                 </template>
             </template>

@@ -282,7 +282,7 @@ export class TerminalSubscription {
             return;
         }
         if (answer.state === 'preview_unavailable' || answer.state === 'connection_lost') {
-            this.publish(blank(answer.state, this.now()));
+            this.publish({ ...blank(answer.state, this.now()), identity });
 
             return;
         }

@@ -12,6 +12,7 @@ use App\Agents\Models\AgentRuntime;
 use App\Agents\Support\RuntimeScreen;
 use App\Agents\Support\ScreenRegistration;
 use App\Agents\Support\ScreenReportAnswer;
+use App\Agents\Support\TerminalControls;
 use App\Agents\Support\WatchedRuntimes;
 use App\Contracts\CommandHandler;
 use Illuminate\Contracts\Cache\Repository;
@@ -21,7 +22,7 @@ use Psr\Log\LoggerInterface;
  * Stores a frame only for a runtime the host runs and somebody watches, within the size bound and the frame rate, and
  * only when it is of the runtime's current screen identity; a refusal stores nothing and is logged at most once a
  * minute, never with the screen. The runtime's row stays locked while the frame is admitted, so a registration change
- * never interleaves with it.
+ * never interleaves with it. A frame of a new contained attachment ends every grant of the old one.
  */
 final readonly class ReportRuntimeScreenHandler implements CommandHandler
 {
@@ -41,6 +42,7 @@ final readonly class ReportRuntimeScreenHandler implements CommandHandler
         private Repository $cache,
         private ServerClock $clock,
         private LoggerInterface $log,
+        private TerminalControls $controls,
     ) {}
 
     public function handle(ReportRuntimeScreen $command): ScreenReportAnswer
@@ -64,9 +66,15 @@ final readonly class ReportRuntimeScreenHandler implements CommandHandler
         }
 
         $now = $this->clock->now();
+        $registration = ScreenRegistration::of($runtime);
+        $before = $this->screens->latest($registration);
 
-        if (! $this->screens->admit(ScreenRegistration::of($runtime), $report->frame, $now)) {
+        if (! $this->screens->admit($registration, $report->frame, $now)) {
             return $this->refuse($command->hostId, $report->runtimeId, ScreenReportRefusal::Retired);
+        }
+
+        if ($before !== null && $before->frame->attachment !== $report->frame->attachment) {
+            $this->controls->revokeRuntime($runtime->load('session'), $now);
         }
 
         $this->cache->add($this->rateKey($report->runtimeId, $now->getTimestamp()), 0, 2);

@@ -34,6 +34,7 @@ const header = ref<HTMLElement | null>(null);
 const terminalPanel = ref<HTMLElement | null>(null);
 const isHelpShown = ref(false);
 const ownerLabel = ref('Watching');
+const locationLabel = ref('');
 const docked = ref<InstanceType<typeof DockedTerminal> | null>(null);
 const width = ref(0);
 const chatShare = ref(readStoredJson('local', SPLIT_STORAGE_KEY, storedShare) ?? DEFAULT_CHAT_SHARE);
@@ -260,6 +261,7 @@ onBeforeUnmount(() => {
                 :agent-name="agent.name"
                 :driver="agent.sessionDriver"
                 :owner="ownerLabel"
+                :location="locationLabel"
                 :placement="placementLabel"
                 :main="mainAction"
                 :secondary="secondaryActions"
@@ -312,6 +314,7 @@ onBeforeUnmount(() => {
                         :is-shown="showsTerminal"
                         @back-to-chat="close"
                         @owner="(label: string) => (ownerLabel = label)"
+                        @location="(label: string) => (locationLabel = label)"
                     />
                 </div>
             </template>

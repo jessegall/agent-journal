@@ -33,6 +33,7 @@ const backToChat = {
             agent-name="Terminal"
             :driver="null"
             :owner="ownerLabel"
+            :location="presentation.screen.identity?.containerInstance ? 'Contained session' : ''"
             placement="Own page"
             :main="backToChat"
             :secondary="[]"
