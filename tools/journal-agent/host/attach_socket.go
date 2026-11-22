@@ -65,6 +65,10 @@ type hostTerminal struct {
 	gate     *inputs.InputGate
 	mutex    sync.Mutex
 	attached io.Writer
+	// connection is the identity of the local connection attached now; only it writes and resizes, and only its own
+	// close detaches it.
+	connection     uint64
+	lastConnection uint64
 }
 
 // Path is where the socket listens.
@@ -108,8 +112,8 @@ func (socket *AttachSocket) serve(connection net.Conn) {
 		writeFrame(connection, frameData, []byte("journal-agent: "+err.Error()+"\r\n"))
 		return
 	}
-	terminal.attach(connection)
-	defer terminal.attach(nil)
+	identity := terminal.attach(connection)
+	defer terminal.detach(identity)
 	terminal.gate.LocalResized()
 	terminal.resize(request.Rows, request.Columns)
 
@@ -117,6 +121,9 @@ func (socket *AttachSocket) serve(connection net.Conn) {
 		kind, payload, err := readFrame(connection)
 		if err != nil {
 			return
+		}
+		if !terminal.isActive(identity) {
+			continue
 		}
 		switch kind {
 		case frameData:
@@ -209,10 +216,33 @@ func (socket *AttachSocket) Open(request AttachRequest) (Terminal, error) {
 	return Terminal{Reader: terminal.reader, Gate: terminal.gate, Hangup: terminal.pty.Close}, nil
 }
 
-func (terminal *hostTerminal) attach(client io.Writer) {
+// attach makes the client the active local connection and gives its identity; a newer attach replaces it.
+func (terminal *hostTerminal) attach(client io.Writer) uint64 {
 	terminal.mutex.Lock()
 	defer terminal.mutex.Unlock()
-	terminal.attached = client
+	terminal.lastConnection++
+	terminal.attached, terminal.connection = client, terminal.lastConnection
+
+	return terminal.connection
+}
+
+// detach clears the attached connection only when it is still the one with this identity, so a retired
+// connection's close never clears its successor.
+func (terminal *hostTerminal) detach(identity uint64) {
+	terminal.mutex.Lock()
+	defer terminal.mutex.Unlock()
+	if terminal.connection != identity {
+		return
+	}
+	terminal.attached, terminal.connection = nil, 0
+}
+
+// isActive is whether the connection with this identity is the one attached now.
+func (terminal *hostTerminal) isActive(identity uint64) bool {
+	terminal.mutex.Lock()
+	defer terminal.mutex.Unlock()
+
+	return terminal.connection == identity
 }
 
 // copyOut sends the program's output to whoever is attached; with nobody attached it is read and dropped, so the

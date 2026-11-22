@@ -1,6 +1,7 @@
 package host
 
 import (
+	"io"
 	"net"
 	"os"
 	"testing"
@@ -9,6 +10,7 @@ import (
 	"github.com/creack/pty"
 
 	"journal-agent/screen"
+	inputs "journal-agent/terminal"
 )
 
 // listeningSocket serves an attach socket whose programs are bare PTYs with nothing running behind them; closing a
@@ -133,4 +135,90 @@ func waitUntilTerminalGone(t *testing.T, socket *AttachSocket, runtimeID string)
 		time.Sleep(5 * time.Millisecond)
 	}
 	t.Fatal("the ended program's terminal stayed")
+}
+
+// terminalOf is the runtime's terminal once the socket has it, failing after a second.
+func terminalOf(t *testing.T, socket *AttachSocket, runtimeID string) *hostTerminal {
+	t.Helper()
+	deadline := time.Now().Add(time.Second)
+	for time.Now().Before(deadline) {
+		socket.mutex.Lock()
+		terminal := socket.terminals[runtimeID]
+		socket.mutex.Unlock()
+		if terminal != nil {
+			return terminal
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	t.Fatalf("the socket never ran %s", runtimeID)
+
+	return nil
+}
+
+// waitForActive waits until the terminal's active connection is a newer one than the given identity.
+func waitForActive(t *testing.T, terminal *hostTerminal, after uint64) uint64 {
+	t.Helper()
+	deadline := time.Now().Add(time.Second)
+	for time.Now().Before(deadline) {
+		terminal.mutex.Lock()
+		active := terminal.connection
+		terminal.mutex.Unlock()
+		if active > after {
+			return active
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	t.Fatal("no newer connection became active")
+
+	return 0
+}
+
+func TestAClosedEarlierConnectionLeavesItsSuccessorAttachedAndAbleToType(t *testing.T) {
+	socket, programs := listeningSocket(t)
+	first := attached(t, socket, "runtime-1", 24, 80)
+	terminal := terminalOf(t, socket, "runtime-1")
+	program := <-programs
+	firstIdentity := waitForActive(t, terminal, 0)
+	second := attached(t, socket, "runtime-1", 24, 80)
+	secondIdentity := waitForActive(t, terminal, firstIdentity)
+
+	first.Close()
+	time.Sleep(20 * time.Millisecond)
+
+	if !terminal.isActive(secondIdentity) {
+		t.Fatal("the first connection's close detached its successor")
+	}
+	if err := WriteKeys(second, []byte("ok\n")); err != nil {
+		t.Fatal(err)
+	}
+	read := make([]byte, 3)
+	program.SetReadDeadline(time.Now().Add(time.Second))
+	if _, err := io.ReadFull(program, read); err != nil || string(read) != "ok\n" {
+		t.Fatalf("the program got %q, %v", read, err)
+	}
+}
+
+func TestALocalKeyRetiresALiveBrowserGrantBeforeItsBytes(t *testing.T) {
+	socket, programs := listeningSocket(t)
+	connection := attached(t, socket, "runtime-1", 24, 80)
+	terminal := terminalOf(t, socket, "runtime-1")
+	<-programs
+	waitForActive(t, terminal, 0)
+	waitForSize(t, socket, "runtime-1", 24, 80)
+	if _, err := terminal.gate.Take("take-1", inputs.GrantScope{}); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := WriteKeys(connection, []byte("x")); err != nil {
+		t.Fatal(err)
+	}
+
+	deadline := time.Now().Add(time.Second)
+	for time.Now().Before(deadline) {
+		if state := terminal.gate.GrantState(); state.GrantID == "" && state.LocalControl {
+			return
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	t.Fatalf("the local key left the browser grant live: %+v", terminal.gate.GrantState())
 }
