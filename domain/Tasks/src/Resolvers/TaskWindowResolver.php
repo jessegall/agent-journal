@@ -12,11 +12,13 @@ use App\Ui\Contracts\SlotSections;
 use Domain\Tasks\Api\TaskProof;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskProofResolver;
+use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Http\Data\TaskLogsData;
 use Domain\Tasks\Http\Data\TaskProofData;
 use Domain\Tasks\Http\Data\TaskProofsData;
 use Domain\Tasks\Http\Data\TaskReaderData;
+use Domain\Tasks\Http\Data\TaskWaitsData;
 use Domain\Tasks\Http\Requests\TaskRequest;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskStream;
@@ -40,6 +42,7 @@ final readonly class TaskWindowResolver implements PageResolver
         private TaskStream $stream,
         private TaskProofResolver $proofs,
         private CommentResolver $comments,
+        private TaskWaitResolver $waits,
     ) {}
 
     public function read(): TaskReaderData
@@ -52,6 +55,9 @@ final readonly class TaskWindowResolver implements PageResolver
                 $this->slots->sectionsIn('tasks.task', 'inspector'),
                 $this->logsOf($taskId),
                 $this->proofsOf($taskId),
+                $this->request->asksForWaits()
+                    ? TaskWaitsData::ofWaits($this->waits->waitsOf($taskId))
+                    : Optional::create(),
             );
         } catch (TaskMissing $missing) {
             throw new NotFoundHttpException(previous: $missing);

@@ -19,7 +19,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * One task's reader: its number, title, state and revision, and three separate facts: the standing holder, the latest
  * run's number, and who runs it now, each absent when there is none; the sections other domains add beside the facts,
  * such as Plans' plan of the task; then its brief, never its result note in its place, and the Logs and Proofs the
- * reader asked for, and its comments under the label they are written against.
+ * reader asked for, its waits when asked, the reason of a block, and its comments under the label they are written
+ * against.
  */
 #[TypeScript]
 final class TaskReaderData extends Data
@@ -42,6 +43,8 @@ final class TaskReaderData extends Data
         public readonly TaskRunnerData|Optional $runningNow = new Optional(),
         public readonly TaskLogsData|Optional $logs = new Optional(),
         public readonly TaskProofsData|Optional $proofs = new Optional(),
+        public readonly TaskWaitsData|Optional $waits = new Optional(),
+        public readonly string|Optional $blockReason = new Optional(),
     ) {}
 
 
@@ -56,6 +59,7 @@ final class TaskReaderData extends Data
         array $sections,
         TaskLogsData|Optional $logs,
         TaskProofsData|Optional $proofs,
+        TaskWaitsData|Optional $waits,
     ): self {
         $execution = $details->execution;
 
@@ -75,6 +79,10 @@ final class TaskReaderData extends Data
                 : null,
             'logs' => $logs instanceof Optional ? null : $logs,
             'proofs' => $proofs instanceof Optional ? null : $proofs,
+            'waits' => $waits instanceof Optional ? null : $waits,
+            'blockReason' => $details->state === TaskState::Blocked && $details->text instanceof TaskText
+                ? $details->text->blockReason
+                : null,
         ], fn (mixed $readerValue) => $readerValue !== null));
     }
 }

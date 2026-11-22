@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Domain\Plans\Support;
 
 use Domain\Plans\Data\PhaseHeadingData;
+use Domain\Plans\Data\PhaseTaskData;
 use Domain\Plans\Data\PhaseTaskPageData;
 use Domain\Plans\Data\PlanOutlineData;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
+use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskWaitResolver;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -23,7 +26,10 @@ final readonly class PlanOutline
 
     public const int TASKS_PER_PAGE = 50;
 
-    public function __construct(private TaskResolver $tasks) {}
+    public function __construct(
+        private TaskResolver $tasks,
+        private TaskWaitResolver $waits,
+    ) {}
 
     public function of(string $planId, int|null $currentPhase, OutlinePageAsk $ask): PlanOutlineData
     {
@@ -60,10 +66,27 @@ final readonly class PlanOutline
             'revision' => $phase->revision,
             'isRevisionChanged' => $isRevisionChanged,
             'after' => (string) $after,
-            'rows' => $this->tasks->summaries(array_values($shown)),
+            'rows' => $this->rowsOf(array_values($shown)),
             'nextAfter' => count($page) > self::TASKS_PER_PAGE
                 ? (string) array_key_last($shown)
                 : Optional::create(),
         ]);
+    }
+
+    /**
+     * The page's rows in their order, with whether each task waits on another, read in one query for the page.
+     *
+     * @param  list<string>  $taskIds
+     * @return list<PhaseTaskData>
+     */
+    private function rowsOf(array $taskIds): array
+    {
+        $waiting = array_flip($this->waits->withWaitsAmong($taskIds));
+
+        return array_map(
+            fn (string $taskId, TaskSummary $summary) => PhaseTaskData::ofSummary($summary, isset($waiting[$taskId])),
+            $taskIds,
+            $this->tasks->summaries($taskIds),
+        );
     }
 }

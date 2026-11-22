@@ -19,6 +19,14 @@ interface TaskWaitResolver
     public function waitsOf(string $taskId): TaskWaits;
 
     /**
+     * The given tasks that wait on any task, read in one query, so a list can offer their prerequisites.
+     *
+     * @param  list<string>  $taskIds
+     * @return list<string>
+     */
+    public function withWaitsAmong(array $taskIds): array;
+
+    /**
      * The given tasks whose every wait is met, in their given order; a task with no waits is ready.
      *
      * @param  list<string>  $taskIds

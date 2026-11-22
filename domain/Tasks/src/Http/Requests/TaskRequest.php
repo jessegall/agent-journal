@@ -25,7 +25,7 @@ final class TaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'section' => ['nullable', 'string', 'in:logs,proofs'],
+            'section' => ['nullable', 'string', 'in:logs,proofs,waits'],
             'logs_before' => ['nullable', 'string', 'regex:/^(n|[0-9]{1,10}),(n|[0-9]{1,10})$/'],
             'proofs_after' => ['nullable', 'string', 'max:26'],
             'commentsAfter' => ['nullable', 'string', 'max:26'],
@@ -38,6 +38,14 @@ final class TaskRequest extends FormRequest
     public function asksForLogs(): bool
     {
         return $this->string('section')->toString() === 'logs';
+    }
+
+    /**
+     * Whether the reader opened its Waits tab, so the task's direct waits both ways are read.
+     */
+    public function asksForWaits(): bool
+    {
+        return $this->string('section')->toString() === 'waits';
     }
 
     /**

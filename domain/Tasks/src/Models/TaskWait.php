@@ -102,6 +102,18 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * The given tasks that wait on any task.
+     *
+     * @param  list<string>  $dependentIds
+     * @return list<string>
+     */
+    public static function dependentIdsAmong(array $dependentIds): array
+    {
+        return array_values(array_map(strval(...), self::query()->whereIn('dependent_task_id', $dependentIds)
+            ->readAll('the waiting tasks among a page')->distinct()->pluck('dependent_task_id')->all()));
+    }
+
+    /**
      * @return Collection<int, self>
      */
     public static function waitsOf(string $dependentId, int $limit): Collection

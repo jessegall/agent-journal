@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Domain\Tasks\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Support\ActorIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Tasks\Api\TaskWaitLink;
 use Domain\Tasks\Api\TaskWaits;
 use Domain\Tasks\Contracts\TaskResolver;
@@ -53,6 +55,13 @@ final readonly class TaskWaitRecords implements TaskWaitResolver
         );
     }
 
+    public function withWaitsAmong(array $taskIds): array
+    {
+        $this->actors->actor();
+
+        return TaskWait::dependentIdsAmong($taskIds);
+    }
+
     public function readyAmong(array $taskIds): array
     {
         $this->actors->actor();
@@ -87,6 +96,10 @@ final readonly class TaskWaitRecords implements TaskWaitResolver
             $other?->state,
             $wait->isSatisfiedBy($prerequisite?->state),
             $wait->waive_reason,
+            $wait->waived_at === null ? null : CarbonImmutable::parse($wait->waived_at),
+            $wait->waived_by_type === null || $wait->waived_by_id === null
+                ? null
+                : new ActorIdentity($wait->waived_by_type, $wait->waived_by_id),
         );
     }
 

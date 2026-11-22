@@ -2,6 +2,8 @@
 import { computed, reactive, ref, watch } from 'vue';
 import Button from '@kit/Button';
 import CommentsPanel from '@kit/CommentsPanel';
+import { commentThreadOf } from '@kit/commentThreads';
+import { useHostProp } from '@/framework/hostProp';
 import FactsList from '@kit/FactsList';
 import Reader from '@kit/Reader';
 import SlotSections from '@kit/SlotSections';
@@ -18,11 +20,14 @@ import { taskStateLook } from './taskLooks';
  * labelled apart (the holder, the latest run and who runs it now, then what other domains add, such as Plans' plan of
  * the task), and its sections as
  * tabs: Brief, the brief's paragraphs in order as text, or No brief yet, never the result note instead; Logs and Proofs,
- * each read only once its tab is chosen; and Comments, Core's thread on the task.
+ * each read only once its tab is chosen; and Comments, Core's thread on the task, whose draft and lost post this
+ * pane keeps for the task across tabs and redraws.
  * Back returns to the tasks list it was opened from, with its query, or to the tasks list.
  */
 const props = defineProps<{ data: TaskReaderData }>();
 
+const pane = useHostProp();
+const thread = computed(() => commentThreadOf(pane, props.data.label));
 const section = ref('brief');
 const opened = reactive(new Set(['brief']));
 watch(section, (chosen) => opened.add(chosen));
@@ -116,6 +121,7 @@ function back(): void {
                             :comments="data.comments"
                             :target="data.label"
                             :version="String(data.revision)"
+                            :thread="thread"
                         />
                     </template>
                     <template #proofs>
