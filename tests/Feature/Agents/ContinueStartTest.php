@@ -7,10 +7,12 @@ namespace Tests\Feature\Agents;
 use App\Agents\Commands\ContinueStart\ContinueStartCommand;
 use App\Agents\Commands\StartAgent\StartAgentCommand;
 use App\Agents\Enums\ConversationModeType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Exceptions\StartRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
+use App\Agents\Models\StartRecord;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
@@ -76,6 +78,19 @@ final class ContinueStartTest extends TestCase
         $this->assertFalse($session->isLinkedTo($newAccount));
     }
 
+    public function test_a_continued_terminal_session_goes_on_in_a_terminal(): void
+    {
+        $first = $this->startFirst(DriverVariant::Terminal);
+        AgentSession::query()->findOrFail($first)->endAt(CarbonImmutable::now());
+
+        $successor = $this->bus()->run(new ContinueStartCommand($first, $this->agent->id));
+
+        $this->assertSame(
+            DriverVariant::Terminal,
+            StartRecord::query()->where('request_id', $successor->requestId)->sole()->mode,
+        );
+    }
+
     public function test_a_session_of_another_agent_cannot_be_continued(): void
     {
         $first = $this->startFirst();
@@ -86,7 +101,7 @@ final class ContinueStartTest extends TestCase
         $this->bus()->run(new ContinueStartCommand($first, $other->id));
     }
 
-    private function startFirst(): string
+    private function startFirst(DriverVariant $variant = DriverVariant::Headless): string
     {
         $request = new StartRequest(
             TestSelections::requestId(),
@@ -98,6 +113,7 @@ final class ContinueStartTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
+            variant: $variant,
         );
 
         return $this->bus()->run(new StartAgentCommand($request))->sessionId;

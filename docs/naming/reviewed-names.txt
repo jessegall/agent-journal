@@ -12265,6 +12265,7 @@ method	ContinueStartCommand::startedAgentId()
 method	ContinueStartController::__invoke()
 method	ContinueStartHandler::__construct()
 method	ContinueStartHandler::handle()
+method	ContinueStartHandler::modeOf()
 method	ContinueStartHandler::successorRequestId()
 method	ContinueStartRequest::command()
 method	ContinueStartRequest::rules()
@@ -31196,6 +31197,7 @@ property	ContinueStartCommand::$agentId
 property	ContinueStartCommand::$sessionId
 property	ContinueStartHandler::$commands
 property	ContinueStartHandler::$policies
+property	ContinueStartHandler::$profiles
 property	ContractSnapshot::$catalogue
 property	ContractSnapshotData::$contractVersion
 property	ContractSnapshotData::$profiles

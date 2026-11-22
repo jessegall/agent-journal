@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace App\Agents\Commands\ContinueStart;
 
 use App\Agents\Commands\StartAgent\StartAgentCommand;
+use App\Agents\Contracts\BuiltInStartProfiles;
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Enums\ConversationModeType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Exceptions\StartRefused;
+use App\Agents\Models\Agent;
+use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Values\StartRequest;
@@ -23,7 +27,11 @@ use Symfony\Component\Uid\Ulid;
  */
 final readonly class ContinueStartHandler implements CommandHandler
 {
-    public function __construct(private CommandBus $commands, private SessionPolicyReader $policies) {}
+    public function __construct(
+        private CommandBus $commands,
+        private SessionPolicyReader $policies,
+        private BuiltInStartProfiles $profiles,
+    ) {}
 
     public function handle(ContinueStartCommand $command): StartReceipt
     {
@@ -46,7 +54,24 @@ final readonly class ContinueStartHandler implements CommandHandler
             ConversationModeType::New,
             $predecessor->parent_session_id,
             $this->policies->policyFor($predecessor->id),
+            variant: $this->modeOf($predecessor),
         )));
+    }
+
+    /**
+     * The successor runs in its predecessor's mode; one that ran no runtime takes the agent's own choice.
+     */
+    private function modeOf(AgentSession $predecessor): DriverVariant
+    {
+        $runtime = AgentRuntime::ofSession($predecessor->id);
+
+        if ($runtime !== null) {
+            return $runtime->mode;
+        }
+
+        $agent = Agent::query()->findOrFail($predecessor->agent_id);
+
+        return $agent->variantFor(null, $this->profiles->defaultVariantOf($agent->profile_key));
     }
 
     /**
