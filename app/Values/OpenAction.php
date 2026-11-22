@@ -11,7 +11,7 @@ namespace App\Values;
 final readonly class OpenAction
 {
     /**
-     * @param  array<string, string>  $arguments
+     * @param  array<string, string|int>  $arguments
      */
     public function __construct(
         public string $tool,
@@ -19,7 +19,7 @@ final readonly class OpenAction
     ) {}
 
     /**
-     * @return array{tool: string, arguments: array<string, string>}
+     * @return array{tool: string, arguments: array<string, string|int>}
      */
     public function toArray(): array
     {

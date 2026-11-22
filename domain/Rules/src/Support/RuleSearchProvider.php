@@ -39,16 +39,15 @@ final readonly class RuleSearchProvider implements SearchProvider
         }
 
         return $this->texts->search($query, new TieredSearchSource(
-            fn () => self::admitted($constraints),
-            'text',
-            ['id', 'number', 'text'],
-            self::hitOf(...),
-            fn (string $ruleId): bool => $this->access->admitsOpen($query->reader, $ruleId),
-            fn (SearchQuery $asked, TieredSearchSource $rules): SearchResult|null => $this->texts->numberedReference(
-                $asked,
-                $this->recognizer,
-                $rules,
-            ),
+            admitted: fn () => self::admitted($constraints),
+            idColumn: 'id',
+            titleColumn: 'text',
+            columns: ['id', 'number', 'text'],
+            titleOf: fn (Rule $rule): string => $rule->text,
+            hitOf: self::hitOf(...),
+            admitsOpen: fn (string $ruleId): bool => $this->access->admitsOpen($query->reader, $ruleId),
+            referenceOf: fn (SearchQuery $asked, TieredSearchSource $rules): SearchResult|null => $this->texts
+                ->numberedReference($asked, $this->recognizer, $rules),
         ));
     }
 

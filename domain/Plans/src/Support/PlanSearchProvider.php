@@ -36,16 +36,15 @@ final readonly class PlanSearchProvider implements SearchProvider
         }
 
         return $this->titles->search($query, new TieredSearchSource(
-            fn () => self::admitted($constraints),
-            'title',
-            ['id', 'number', 'title'],
-            self::hitOf(...),
-            fn (string $planId): bool => $this->access->admitsOpen($query->reader, $planId),
-            fn (SearchQuery $asked, TieredSearchSource $plans): SearchResult|null => $this->titles->numberedReference(
-                $asked,
-                $this->recognizer,
-                $plans,
-            ),
+            admitted: fn () => self::admitted($constraints),
+            idColumn: 'id',
+            titleColumn: 'title',
+            columns: ['id', 'number', 'title'],
+            titleOf: fn (Plan $plan): string => $plan->title,
+            hitOf: self::hitOf(...),
+            admitsOpen: fn (string $planId): bool => $this->access->admitsOpen($query->reader, $planId),
+            referenceOf: fn (SearchQuery $asked, TieredSearchSource $plans): SearchResult|null => $this->titles
+                ->numberedReference($asked, $this->recognizer, $plans),
         ));
     }
 

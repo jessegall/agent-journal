@@ -56,8 +56,8 @@ trait HasNumber
     #[Scope]
     protected function numberedInJournal(Builder $query, int $number): void
     {
-        $query->where('number', $number)->whereIn(
-            'number_group_id',
+        $query->where($query->qualifyColumn('number'), $number)->whereIn(
+            $query->qualifyColumn('number_group_id'),
             NumberGroup::query()->ofJournal($query->getModel()->getMorphClass())->select('id'),
         );
     }

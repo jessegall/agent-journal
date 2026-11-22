@@ -1486,6 +1486,7 @@ use App\Values\SourcePosition;
 use App\Values\WorkBudget;
 use App\Values\OpenAction;
 use App\Values\TieredSearchSource;
+use App\Values\SearchableBody;
 use App\Support\ReadToolSearchAccess;
 use App\Support\NumberedReferenceRecognizer;
 use App\Support\TieredRecordSearch;
@@ -2046,6 +2047,7 @@ final class CoreApi
                 RecognizedReference::class,
                 OpenAction::class,
                 TieredSearchSource::class,
+                SearchableBody::class,
                 Dispatches::class,
                 VisibleToProfiles::class,
                 DiscoveryProfile::class,
