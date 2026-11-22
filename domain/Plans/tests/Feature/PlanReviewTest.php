@@ -38,6 +38,10 @@ final class PlanReviewTest extends TestCase
     use CommitsHookRows;
     use StartsAgentRequests;
 
+    private const string BRIEF = 'Read the notes.';
+
+    private const string NEW_BRIEF = 'Read the new notes.';
+
     private const array TABLES = [
         'users',
         'plans',
@@ -69,7 +73,7 @@ final class PlanReviewTest extends TestCase
         )];
 
         yield 'editing a task of the plan' => [fn (self $test, Plan $plan, Task $task) => $test->runCommand(
-            new EditTask($task->id, $task->revision, brief: 'Read the new notes.'),
+            new EditTask($task->id, $task->revision, brief: self::NEW_BRIEF),
         )];
     }
 
@@ -90,8 +94,8 @@ final class PlanReviewTest extends TestCase
         $this->assertSame(PlanReviewState::Withdrawn, $review->state);
         $this->assertSame($this->owner->id, $review->decided_by_id);
 
-        $this->runCommand(new EditTask($task->id, $task->refresh()->revision, brief: 'Read the new notes.'));
-        $this->assertSame('Read the new notes.', $task->refresh()->brief);
+        $this->runCommand(new EditTask($task->id, $task->refresh()->revision, brief: self::NEW_BRIEF));
+        $this->assertSame(self::NEW_BRIEF, $task->refresh()->brief);
     }
 
     /**
@@ -106,11 +110,11 @@ final class PlanReviewTest extends TestCase
         $this->assertThrows(
             fn () => $change($this, $plan->refresh(), $task->refresh()),
             PlanUnderReview::class,
-            "Plan {$plan->number} is under review, so it can't change now.",
+            PlanUnderReview::forPlan($plan->number)->getMessage(),
         );
 
         $this->assertSame(PlanState::Reviewing, $plan->refresh()->state);
-        $this->assertSame('Read the notes.', $task->refresh()->brief);
+        $this->assertSame(self::BRIEF, $task->refresh()->brief);
         $this->assertSame(1, $plan->phases()->count());
     }
 
@@ -142,7 +146,7 @@ final class PlanReviewTest extends TestCase
     private function planWithTask(): array
     {
         $plan = Plan::factory()->create(['title' => 'Build the release page']);
-        $task = Task::factory()->create(['title' => 'Read', 'brief' => 'Read the notes.']);
+        $task = Task::factory()->create(['title' => 'Read', 'brief' => self::BRIEF]);
         $this->startUserRequestAs($this->owner->id);
         $this->structure()->addTasks($this->structure()->addPhase($plan, 'Reading'), [$task->id]);
 
