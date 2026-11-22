@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import type { MessageView } from '@kit/CoreTypes';
 import type { ConversationIntent } from './composables/useConversationIntents';
 import type { RecoveryEntry } from './composables/useMessageDrafts';
+import NoMessages from './NoMessages.vue';
 import PendingMessage from './PendingMessage.vue';
 import RefusedSend from './RefusedSend.vue';
 
@@ -47,17 +49,15 @@ function stateOf(message: MessageView): string | null {
 
     return message.claimHolder === undefined ? 'Waiting, nobody took it up' : 'Taken up';
 }
+
+// Nothing to show yet: no message, none being sent and none refused.
+const isEmpty = computed(() => props.messages.length === 0 && props.pending.length === 0 && props.refused.length === 0);
 </script>
 
 <template>
     <div class="flex flex-1 flex-col gap-3.5 overflow-y-auto pt-[22px] pb-[18px]">
-        <template v-if="messages.length === 0 && pending.length === 0 && refused.length === 0">
-            <div class="m-auto flex flex-col items-center gap-1 text-center">
-                <p class="text-empty text-text-2">No messages yet</p>
-                <p class="text-small text-text-3">
-                    Send a message below to start a conversation, or start a session from the bar.
-                </p>
-            </div>
+        <template v-if="isEmpty">
+            <NoMessages />
         </template>
         <template v-for="message in messages" :key="message.id">
             <div
