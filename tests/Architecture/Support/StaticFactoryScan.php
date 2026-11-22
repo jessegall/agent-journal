@@ -29,6 +29,12 @@ final readonly class StaticFactoryScan implements FileScan
     public const string INJECTABLE = 'injectable';
 
     /**
+     * The Reflector's static answers that make no Reflector, so a class the container builds asks them of the
+     * Reflector itself: whether a name loads (user message 17588).
+     */
+    private const array NOT_FACTORIES = ['exists'];
+
+    /**
      * Static calls that must run each time: each builds a new mutable store or reads rows, so holding the first answer
      * would share one store between two owners or keep a stale read.
      */
@@ -40,7 +46,7 @@ final readonly class StaticFactoryScan implements FileScan
 
     public function key(): string
     {
-        return 'static-factories-4';
+        return 'static-factories-5';
     }
 
     public function findingsIn(ParsedFile $file): array
@@ -61,7 +67,9 @@ final readonly class StaticFactoryScan implements FileScan
 
                 $printed = $call->class->toString().'::'.$call->name->toString();
 
-                if ($call->class->toString() === Reflector::class && self::isInjectableInstanceMethod($function)) {
+                if ($call->class->toString() === Reflector::class
+                    && ! in_array($call->name->toString(), self::NOT_FACTORIES, true)
+                    && self::isInjectableInstanceMethod($function)) {
                     $findings[] = ['line' => $call->getStartLine(), 'call' => $printed, 'reason' => self::INJECTABLE];
                 }
 
