@@ -34,7 +34,23 @@ const props = defineProps<{
 
 const page = usePage();
 const conversation = computed(() => props.chat.conversation);
-const selected = computed(() => props.chat.agents.find((agent) => agent.id === conversation.value?.agentId));
+/**
+ * The agent whose session controls show: the one chosen from the roster, else the chat's own agent, else the first
+ * agent in it. Each agent keeps its own controls, keyed by its id and session generation; a chat with no agent has
+ * none.
+ */
+const chosenAgentId = ref<string | null>(null);
+const agentIdsInChat = computed(() => (conversation.value?.participants ?? [])
+    .filter((member) => member.actor.startsWith('agent:'))
+    .map((member) => member.actor.slice('agent:'.length)));
+const selected = computed(() => {
+    const ids = agentIdsInChat.value;
+    const wanted = chosenAgentId.value !== null && ids.includes(chosenAgentId.value)
+        ? chosenAgentId.value
+        : conversation.value?.agentId ?? ids[0];
+
+    return props.chat.agents.find((agent) => agent.id === wanted);
+});
 const key = computed(() => {
     const user = page.props.currentUser;
 
@@ -174,9 +190,14 @@ function retryFocused(): void {
         </template>
         <template v-if="conversation && key">
             <template v-if="offersChoice && selected">
-                <AgentSessionActions :agent="selected" />
+                <AgentSessionActions :key="`${selected.id}-${selected.sessionGeneration}`" :agent="selected" />
             </template>
-            <ChatRoster :conversation="conversation" :conversation-prop="protectedProp" />
+            <ChatRoster
+                :conversation="conversation"
+                :conversation-prop="protectedProp"
+                :chosen-agent-id="selected?.id ?? null"
+                @choose-agent="(agentId) => (chosenAgentId = agentId)"
+            />
             <template v-if="isShown">
                 <template v-if="chat.focusedQuestionId !== undefined">
                     <FocusedQuestion
@@ -218,7 +239,7 @@ function retryFocused(): void {
                 />
                 <Composer
                     :draft-key="key"
-                    :agent="conversation.agentId"
+                    :agent="agentIdsInChat.length === 1 ? (selected?.id ?? null) : null"
                     :addressee-name="selected?.name ?? null"
                     :session-id="conversation.sessionId"
                     :session-generation="conversation.sessionGeneration"

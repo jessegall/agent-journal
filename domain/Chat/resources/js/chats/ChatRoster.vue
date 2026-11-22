@@ -11,7 +11,9 @@ import ParticipantRow from './ParticipantRow.vue';
  * user, remove a member, hand the chat over, close it; any member may leave. Each change posts and reloads the room,
  * and the server checks it again.
  */
-const props = defineProps<{ conversation: ConversationData; conversationProp: string }>();
+const props = defineProps<{ conversation: ConversationData; conversationProp: string; chosenAgentId?: string | null }>();
+
+const emit = defineEmits<{ chooseAgent: [agentId: string] }>();
 
 const capabilities = computed(() => props.conversation.capabilities);
 const others = computed(() => props.conversation.participants.filter((member) => member.actor !== props.conversation.viewer));
@@ -41,6 +43,16 @@ function findCandidates(): void {
         <ul class="flex flex-col gap-1">
             <template v-for="participant in conversation.participants" :key="participant.actor">
                 <ParticipantRow :participant="participant">
+                    <template v-if="participant.actor.startsWith('agent:')">
+                        <button
+                            type="button"
+                            class="underline"
+                            :aria-pressed="participant.actor === `agent:${chosenAgentId}`"
+                            @click="emit('chooseAgent', participant.actor.slice('agent:'.length))"
+                        >
+                            Session
+                        </button>
+                    </template>
                     <template v-if="participant.actor !== conversation.viewer && capabilities.remove">
                         <button type="button" class="underline" @click="post(removeMember().url, { participant: participant.actor })">
                             Remove

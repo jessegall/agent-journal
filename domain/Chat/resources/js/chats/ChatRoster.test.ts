@@ -41,4 +41,21 @@ describe('ChatRoster', () => {
         expect(member.text()).not.toContain('Remove');
         expect(member.text()).toContain('Leave');
     });
+
+    it('lets the viewer choose which agent the session controls act on', async () => {
+        const conversation = {
+            ...conversationWith(true),
+            participants: [
+                { actor: 'user:ada', label: 'Ada', driver: null, role: 'owner' },
+                { actor: 'agent:codex', label: 'Codex', driver: 'codex', role: 'member' },
+                { actor: 'agent:claude', label: 'Claude', driver: 'claude-code', role: 'member' },
+            ],
+        } as unknown as ConversationData;
+        const roster = mount(ChatRoster, { props: { conversation, conversationProp: 'page', chosenAgentId: 'codex' } });
+        const sessions = roster.findAll('button').filter((button) => button.text() === 'Session');
+
+        expect(sessions).toHaveLength(2);
+        await sessions[1].trigger('click');
+        expect(roster.emitted('chooseAgent')).toEqual([['claude']]);
+    });
 });
