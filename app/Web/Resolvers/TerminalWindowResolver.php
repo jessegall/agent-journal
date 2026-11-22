@@ -8,7 +8,6 @@ use App\Agents\Support\TerminalFrames;
 use App\Http\Requests\Agents\TerminalFrameRequest;
 use App\Ui\Contracts\PageResolver;
 use App\Web\Data\TerminalWindowData;
-use Spatie\LaravelData\Optional;
 
 /**
  * An agent's terminal page, reloaded by the page itself: once the id of the read interest its open request opened, then
@@ -33,13 +32,8 @@ final readonly class TerminalWindowResolver implements PageResolver
             return new TerminalWindowData($agentId);
         }
 
-        $frame = $this->frames->after(
-            $agentId,
-            $this->request->readInterestId(),
-            $this->request->heldEpoch(),
-            $this->request->heldSequence(),
-        );
+        $frame = $this->frames->after($agentId, $this->request->heldFrame());
 
-        return new TerminalWindowData($agentId, frame: $frame->getOrElse(Optional::create()));
+        return new TerminalWindowData($agentId, frame: $frame);
     }
 }

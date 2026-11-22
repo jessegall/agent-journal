@@ -19,6 +19,11 @@ const notices = computed<string[]>(() => {
     const screen = drawn.value;
     const markers: [boolean, string][] = [
         [state.value === 'restarted', 'restarted'],
+        [state.value === 'preview_unavailable', 'Terminal preview unavailable'],
+        [
+            state.value === 'last_reported',
+            `last reported ${seconds(ageSeconds())} ago; this host does not show a live screen`,
+        ],
         [
             state.value === 'ended',
             `this session ended at ${timeOfDay(endedAt.value)}; open the current one from Home`,

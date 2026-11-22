@@ -28,21 +28,20 @@ final readonly class RuntimeScreen
      */
     public function admit(ScreenRegistration $registration, ScreenFrameData $frame, CarbonImmutable $receivedAt): bool
     {
-        $arriving = ScreenIdentity::ofReport($registration, $frame);
-        $screen = new ReceivedScreen($frame, $receivedAt);
+        $arriving = new ReceivedScreen($frame, ScreenIdentity::ofReport($registration, $frame), $receivedAt);
         $slot = $this->slotOf($registration->runtimeId);
 
         if ($slot === null) {
-            $this->keep($registration->runtimeId, ScreenSlot::first($arriving, $screen));
+            $this->keep($registration->runtimeId, ScreenSlot::first($arriving));
 
             return true;
         }
 
-        if (! $slot->admits($arriving, $frame->sequence)) {
+        if (! $slot->admits($arriving)) {
             return false;
         }
 
-        $this->keep($registration->runtimeId, $slot->replacedBy($arriving, $screen));
+        $this->keep($registration->runtimeId, $slot->replacedBy($arriving));
 
         return true;
     }

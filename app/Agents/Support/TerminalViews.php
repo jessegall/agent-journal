@@ -7,15 +7,14 @@ namespace App\Agents\Support;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\TerminalViewCloser;
 use App\Agents\Data\TerminalFrameData;
+use App\Agents\Data\TerminalInterestData;
+use App\Agents\Data\TerminalScreenIdentityData;
 use App\Agents\Enums\TerminalFrameState;
 use App\Agents\Exceptions\TerminalViewRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
 use Carbon\CarbonImmutable;
-use PhpOption\None;
-use PhpOption\Option;
-use PhpOption\Some;
 
 /**
  * Opens, renews and closes a viewer's read interests in an agent's terminal, one per explicit open and each addressed
@@ -37,7 +36,7 @@ final readonly class TerminalViews implements TerminalViewCloser
         int $intervalMs,
         string $openRequestId,
         CarbonImmutable $now,
-    ): TerminalViewReceipt {
+    ): TerminalInterestData {
         $opened = TerminalView::query()->ownedBy($viewer)->ofAgent($agentId)->openedBy($openRequestId)->first();
 
         if ($opened !== null) {
@@ -70,7 +69,7 @@ final readonly class TerminalViews implements TerminalViewCloser
         ActorIdentity $viewer,
         string $readInterestId,
         CarbonImmutable $now,
-    ): TerminalViewReceipt {
+    ): TerminalInterestData {
         $this->watchableRuntime($agentId);
         $view = $this->interestOf($agentId, $viewer, $readInterestId);
 
@@ -102,26 +101,23 @@ final readonly class TerminalViews implements TerminalViewCloser
     }
 
     /**
-     * The frame the read interest should see next: none while nothing newer than the epoch and sequence it holds is
-     * kept, the last frame once the terminal or the interest ended, and once a restarted answer when the agent moved
-     * to another generation of the same session, which the interest then follows.
-     *
-     * @return Option<TerminalFrameData>
+     * What the read interest should see next: unchanged while nothing newer than the stream and sequence it holds is
+     * kept, the live frame with its proof's remaining lifetime, an older host's frame as last reported, no preview of a
+     * shielded screen, the last frame once the terminal or the interest ended, and restarted, which ends the interest
+     * and asks for a fresh open, once the same session runs in a new generation.
      *
      * @throws TerminalViewRefused
      */
     public function frame(
         string $agentId,
         ActorIdentity $viewer,
-        string $readInterestId,
-        string $epoch,
-        int $after,
+        HeldFrame $held,
         CarbonImmutable $now,
-    ): Option {
-        $view = $this->interestOf($agentId, $viewer, $readInterestId);
+    ): TerminalFrameData {
+        $view = $this->interestOf($agentId, $viewer, $held->readInterestId);
 
         if (! $view->isLive()) {
-            return new Some($this->endedView($view, $now));
+            return $this->endedView($view, $now);
         }
 
         $runtime = $this->runtimeOf($agentId);
@@ -129,30 +125,26 @@ final readonly class TerminalViews implements TerminalViewCloser
         if ($view->watchedAnotherSession($runtime)) {
             $view->close($now);
 
-            return new Some($this->endedView($view, $now));
+            return $this->endedView($view, $now);
         }
 
         if (! $view->watches($runtime)) {
-            $view->follow($runtime);
+            $view->close($now);
 
-            return Some::create(TerminalFrameData::from(['state' => TerminalFrameState::Restarted]));
+            return TerminalFrameData::from(['state' => TerminalFrameState::Restarted]);
         }
 
         $received = $this->screens->latest(ScreenRegistration::of($runtime));
 
         if ($runtime->hasEnded()) {
-            return Some::create($this->ended($received, $runtime->updated_at->toImmutable()));
+            return $this->ended($received, $runtime->updated_at->toImmutable());
         }
 
-        if ($received === null || ! $received->isNewerThan($epoch, $after)) {
-            return None::create();
+        if ($received === null) {
+            return TerminalFrameData::from(['state' => TerminalFrameState::Unchanged]);
         }
 
-        return Some::create(TerminalFrameData::from([
-            'state' => TerminalFrameState::Live,
-            'frame' => $received->frame,
-            'receivedAt' => $received->receivedAt,
-        ]));
+        return $this->answerOf($runtime, $received, $held, $now);
     }
 
     /**
@@ -181,6 +173,51 @@ final readonly class TerminalViews implements TerminalViewCloser
         foreach ($views as $view) {
             $view->close($now);
         }
+    }
+
+    /**
+     * The answer about the runtime's kept screen for a view that holds the given frame.
+     */
+    private function answerOf(
+        AgentRuntime $runtime,
+        ReceivedScreen $received,
+        HeldFrame $held,
+        CarbonImmutable $now,
+    ): TerminalFrameData {
+        $identity = TerminalScreenIdentityData::from([
+            'sessionId' => $runtime->agent_session_id,
+            'processGeneration' => $received->identity->registration->processGeneration,
+            'epoch' => $received->identity->epoch,
+            'stream' => $received->identity->stream,
+            'privacyRevision' => $received->identity->privacyRevision,
+        ]);
+        $liveForMs = $received->liveForMs($now);
+        $proof = $liveForMs === null ? [] : ['liveForMs' => $liveForMs];
+
+        if ($received->frame->shielded) {
+            return TerminalFrameData::from([
+                'state' => TerminalFrameState::PreviewUnavailable,
+                'identity' => $identity,
+                'receivedAt' => $received->receivedAt,
+                ...$proof,
+            ]);
+        }
+
+        if (! $received->isNewerThan($held->epoch, $held->stream, $held->sequence)) {
+            return TerminalFrameData::from([
+                'state' => TerminalFrameState::Unchanged,
+                'identity' => $identity,
+                ...$proof,
+            ]);
+        }
+
+        return TerminalFrameData::from([
+            'state' => $liveForMs === null ? TerminalFrameState::LastReported : TerminalFrameState::Live,
+            'identity' => $identity,
+            'frame' => $received->frame,
+            'receivedAt' => $received->receivedAt,
+            ...$proof,
+        ]);
     }
 
     /**
@@ -263,15 +300,15 @@ final readonly class TerminalViews implements TerminalViewCloser
         return $view;
     }
 
-    private function receiptOf(TerminalView $view, CarbonImmutable $now): TerminalViewReceipt
+    private function receiptOf(TerminalView $view, CarbonImmutable $now): TerminalInterestData
     {
-        return new TerminalViewReceipt(
-            $view->id,
-            $view->read_interest_id,
-            $view->agent_runtime_id,
-            $view->interval_ms,
-            max(0, (int) $now->diffInSeconds($view->expires_at, false)),
-            ! $view->hasEndedAt($now),
-        );
+        return TerminalInterestData::from([
+            'viewId' => $view->id,
+            'readInterestId' => $view->read_interest_id,
+            'runtimeId' => $view->agent_runtime_id,
+            'intervalMs' => $view->interval_ms,
+            'expiresInSeconds' => max(0, (int) $now->diffInSeconds($view->expires_at, false)),
+            'live' => ! $view->hasEndedAt($now),
+        ]);
     }
 }

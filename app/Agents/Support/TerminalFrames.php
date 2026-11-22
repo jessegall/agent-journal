@@ -14,7 +14,6 @@ use App\Agents\Exceptions\TerminalViewRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Policies\AgentMaintenancePolicy;
 use App\Operations\Enums\AccessType;
-use PhpOption\Option;
 
 /**
  * The current viewer's read of an agent's terminal frames, with inspect decided on every read as the view commands
@@ -30,16 +29,14 @@ final readonly class TerminalFrames
     ) {}
 
     /**
-     * @return Option<TerminalFrameData>
+     * What the current viewer's read interest should see after the frame it holds.
      *
      * @throws ActorNotAllowed
      * @throws TerminalViewRefused
      */
-    public function after(string $agentId, string $readInterestId, string $epoch, int $sequence): Option
+    public function after(string $agentId, HeldFrame $held): TerminalFrameData
     {
-        $viewer = $this->inspectingViewer();
-
-        return $this->views->frame($agentId, $viewer, $readInterestId, $epoch, $sequence, $this->clock->now());
+        return $this->views->frame($agentId, $this->inspectingViewer(), $held, $this->clock->now());
     }
 
     /**

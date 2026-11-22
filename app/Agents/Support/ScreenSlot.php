@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 /**
- * What the cache keeps of one runtime's screen: the identity of the newest admitted report, its screen, and the
- * streams it replaced, whose delayed reports are never admitted again.
+ * What the cache keeps of one runtime's screen: the newest admitted screen with its identity, and the streams it
+ * replaced, whose delayed reports are never admitted again.
  */
 final readonly class ScreenSlot
 {
@@ -19,14 +19,13 @@ final readonly class ScreenSlot
      * @param  list<string>  $retiredStreams
      */
     public function __construct(
-        public ScreenIdentity $identity,
         public ReceivedScreen $screen,
         public array $retiredStreams,
     ) {}
 
-    public static function first(ScreenIdentity $identity, ReceivedScreen $screen): self
+    public static function first(ReceivedScreen $screen): self
     {
-        return new self($identity, $screen, []);
+        return new self($screen, []);
     }
 
     /**
@@ -34,40 +33,45 @@ final readonly class ScreenSlot
      * older process generation or a lower privacy revision of the same host process, and within one stream only a
      * strictly higher sequence.
      */
-    public function admits(ScreenIdentity $arriving, int $sequence): bool
+    public function admits(ReceivedScreen $arriving): bool
     {
-        if (in_array($arriving->streamName(), $this->retiredStreams, true)) {
+        $stored = $this->screen->identity;
+        $identity = $arriving->identity;
+
+        if (in_array($identity->streamName(), $this->retiredStreams, true)) {
             return false;
         }
 
-        if ($arriving->registration->processGeneration < $this->identity->registration->processGeneration) {
+        if ($identity->registration->processGeneration < $stored->registration->processGeneration) {
             return false;
         }
 
-        if (! $arriving->isSameHostProcessAs($this->identity)) {
+        if (! $identity->isSameHostProcessAs($stored)) {
             return true;
         }
 
-        if ($arriving->privacyRevision < $this->identity->privacyRevision) {
+        if ($identity->privacyRevision < $stored->privacyRevision) {
             return false;
         }
 
-        return ! $arriving->isSameStreamAs($this->identity) || $sequence > $this->screen->frame->sequence;
+        return ! $identity->isSameStreamAs($stored) || $arriving->frame->sequence > $this->screen->frame->sequence;
     }
 
     /**
      * The slot holding the arriving screen in place of this one's, in one write: a new stream retires the one it
      * replaced.
      */
-    public function replacedBy(ScreenIdentity $arriving, ReceivedScreen $screen): self
+    public function replacedBy(ReceivedScreen $arriving): self
     {
-        if ($arriving->isSameStreamAs($this->identity)) {
-            return new self($arriving, $screen, $this->retiredStreams);
+        $stored = $this->screen->identity;
+
+        if ($arriving->identity->isSameStreamAs($stored)) {
+            return new self($arriving, $this->retiredStreams);
         }
 
-        $retired = [...$this->retiredStreams, $this->identity->streamName()];
+        $retired = [...$this->retiredStreams, $stored->streamName()];
 
-        return new self($arriving, $screen, array_slice($retired, -self::RETIRED_STREAM_LIMIT));
+        return new self($arriving, array_slice($retired, -self::RETIRED_STREAM_LIMIT));
     }
 
     /**
@@ -75,7 +79,7 @@ final readonly class ScreenSlot
      */
     public function screenFor(ScreenRegistration $expected): ReceivedScreen|null
     {
-        if (! $this->identity->registration->isSameAs($expected)) {
+        if (! $this->screen->identity->registration->isSameAs($expected)) {
             return null;
         }
 

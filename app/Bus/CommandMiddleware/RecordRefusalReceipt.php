@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Bus\CommandMiddleware;
 
-use App\Actors\Exceptions\ActorNotAllowed;
-use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Contracts\ReceiptRefusal;
 use App\Bus\Contracts\RefusalDetails;
@@ -26,11 +24,6 @@ use Throwable;
  */
 final readonly class RecordRefusalReceipt implements CommandMiddleware
 {
-    /**
-     * The code of a refusal from an area that cannot carry one of its own.
-     */
-    private const array UNCODED_REFUSALS = [ActorNotAllowed::class => RefusalCode::Forbidden];
-
     public function __construct(
         private RequestKey $key,
         private ReceiptCallers $callers,
@@ -60,7 +53,7 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
      */
     private function recordRefusal(CommandCall $call, string $key, Throwable $failure): void
     {
-        $code = self::codeOf($failure);
+        $code = RefusalCode::of($failure);
         $caller = $this->callers->forCommand($call->name(), $call->actor());
         $details = $failure instanceof RefusalDetails ? $failure->refusalDetails() : [];
         $taken = CommandReceipt::lockedFor($caller, $call->command()::class, $key);
@@ -73,18 +66,6 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
 
         CommandReceipt::create($caller, $key, $call->command(), $this->registry->retentionOf($call->name()))
             ->refuse($code, $failure->getMessage(), $details);
-    }
-
-    /**
-     * The refusal's code: its own when it carries one, forbidden for an actor its authorizer refused, else blocked.
-     */
-    private static function codeOf(Throwable $failure): RefusalCode
-    {
-        if ($failure instanceof CodedRefusal) {
-            return $failure->refusalCode();
-        }
-
-        return self::UNCODED_REFUSALS[$failure::class] ?? RefusalCode::StateBlocked;
     }
 
     /**

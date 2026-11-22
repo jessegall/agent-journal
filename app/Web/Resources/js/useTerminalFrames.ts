@@ -25,6 +25,8 @@ export type TerminalViewState =
     | 'opening'
     | 'refused'
     | 'live'
+    | 'last_reported'
+    | 'preview_unavailable'
     | 'ended'
     | 'restarted';
 
@@ -40,7 +42,7 @@ export function useTerminalFrames(data: Ref<TerminalWindowData>) {
     const drawn = shallowRef<ScreenFrameData | null>(null);
     const receivedAt = ref(Date.now());
     const endedAt = ref('');
-    const held = { epoch: '', after: 0 };
+    const held = { epoch: '', stream: '', after: 0 };
     const interest = { id: '', requestId: '' };
     const now = ref(Date.now());
     const timers: number[] = [];
@@ -53,7 +55,24 @@ export function useTerminalFrames(data: Ref<TerminalWindowData>) {
     }
 
     function receive(answer: TerminalFrameData): void {
+        if (answer.state === 'unchanged') {
+            return;
+        }
+        if (answer.state === 'restarted') {
+            stopTimers();
+            open();
+
+            return;
+        }
         state.value = answer.state;
+        if (answer.state === 'preview_unavailable') {
+            drawn.value = null;
+            held.epoch = '';
+            held.stream = '';
+            held.after = 0;
+
+            return;
+        }
         if (answer.endedAt !== undefined) {
             endedAt.value = answer.endedAt;
         }
@@ -67,6 +86,7 @@ export function useTerminalFrames(data: Ref<TerminalWindowData>) {
         drawn.value = frame;
         receivedAt.value = Date.parse(frameReceivedAt);
         held.epoch = frame.epoch;
+        held.stream = frame.stream ?? '';
         held.after = frame.sequence;
     }
 
@@ -113,6 +133,7 @@ export function useTerminalFrames(data: Ref<TerminalWindowData>) {
         interest.id = '';
         interest.requestId = newRequestId();
         held.epoch = '';
+        held.stream = '';
         held.after = 0;
         send('open', { requestId: interest.requestId }, () =>
             router.reload({ only: ['page'], data: { request: interest.requestId } }),

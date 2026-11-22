@@ -23,8 +23,12 @@ use App\Web\Http\Controllers\Runtimes\ReleaseRuntimeHoldController;
 use App\Web\Http\Controllers\Runtimes\ResolveRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\ResumeScriptRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\RetryRuntimeRequestController;
+use App\Web\Http\Controllers\Terminal\CloseTerminalController;
+use App\Web\Http\Controllers\Terminal\OpenTerminalController;
 use App\Web\Http\Controllers\Terminal\OpenTerminalPageController;
+use App\Web\Http\Controllers\Terminal\RenewTerminalController;
 use App\Web\Http\Controllers\Terminal\RenewTerminalPageController;
+use App\Web\Http\Controllers\Terminal\TerminalFrameController;
 use App\Web\Resolvers\AskDetailResolver;
 use App\Web\Resolvers\AskInboxResolver;
 use App\Web\Resolvers\HomeWindowResolver;
@@ -109,6 +113,22 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
                 ->actions(
                     ActionRoute::post('agents/{agent}/terminal/open', OpenTerminalPageController::class, 'open-terminal'),
                     ActionRoute::post('agents/{agent}/terminal/renew', RenewTerminalPageController::class, 'renew-terminal'),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/interests',
+                        OpenTerminalController::class,
+                        'open-terminal-interest',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/interests/renew',
+                        RenewTerminalController::class,
+                        'renew-terminal-interest',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/interests/close',
+                        CloseTerminalController::class,
+                        'close-terminal-interest',
+                    ),
+                    ActionRoute::get('agents/{agent}/terminal/frame', TerminalFrameController::class, 'terminal-frame'),
                 ),
         ];
     }

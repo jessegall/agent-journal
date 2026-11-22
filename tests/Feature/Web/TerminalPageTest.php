@@ -37,8 +37,8 @@ use Tests\TestCase;
 
 /**
  * A signed-in viewer opens and renews their view of an agent's terminal from its page and reloads the page's data for
- * its frames: a refusal is shown on the page, a frame is served once and then left out, and a stopped or restarted
- * runtime says so.
+ * its frames: a refusal is shown on the page, a frame is served once and then answered unchanged, and a stopped or
+ * restarted runtime says so.
  */
 final class TerminalPageTest extends TestCase
 {
@@ -122,7 +122,7 @@ final class TerminalPageTest extends TestCase
         $agentId = $runtime->session->agent_id;
         $this->open($agentId)->assertSessionHasNoErrors();
 
-        $this->frame($agentId)->assertJsonMissingPath('props.page.data.frame');
+        $this->frame($agentId)->assertJsonPath('props.page.data.frame', ['state' => 'unchanged']);
         $this->storeFrame($runtime, 'epoch-1', 3);
 
         $this->frame($agentId)
@@ -130,7 +130,9 @@ final class TerminalPageTest extends TestCase
             ->assertJsonPath('props.page.data.frame.frame.epoch', 'epoch-1')
             ->assertJsonPath('props.page.data.frame.frame.sequence', 3)
             ->assertJsonPath('props.page.data.frame.frame.rows.0.runs.0.text', '<script>');
-        $this->frame($agentId, '?epoch=epoch-1&after=3')->assertJsonMissingPath('props.page.data.frame');
+        $this->frame($agentId, '?epoch=epoch-1&stream=stream-1&after=3')
+            ->assertJsonPath('props.page.data.frame.state', 'unchanged')
+            ->assertJsonMissingPath('props.page.data.frame.frame');
         $this->frame($agentId, '?epoch=epoch-0&after=9')->assertJsonPath('props.page.data.frame.frame.sequence', 3);
     }
 
@@ -164,7 +166,7 @@ final class TerminalPageTest extends TestCase
             ->assertJsonStructure(['props' => ['page' => ['data' => ['frame' => ['endedAt']]]]]);
     }
 
-    public function test_a_new_generation_answers_restarted_once_and_then_its_frames(): void
+    public function test_a_new_generation_answers_restarted_and_a_fresh_open_shows_its_frames(): void
     {
         $runtime = $this->runtimeOn('host-1');
         $agentId = $runtime->session->agent_id;
@@ -173,10 +175,13 @@ final class TerminalPageTest extends TestCase
         $this->storeFrame($runtime, 'epoch-2', 1);
 
         $this->frame($agentId)->assertJsonPath('props.page.data.frame', ['state' => 'restarted']);
+        $this->assertSame(0, TerminalView::query()->acrossActors()->live()->count());
+
+        $this->open($agentId)->assertSessionHasNoErrors();
         $this->frame($agentId)
             ->assertJsonPath('props.page.data.frame.state', 'live')
             ->assertJsonPath('props.page.data.frame.frame.epoch', 'epoch-2');
-        $view = TerminalView::query()->acrossActors()->sole();
+        $view = TerminalView::query()->acrossActors()->live()->sole();
         $this->assertSame($runtime->process_generation, $view->process_generation);
     }
 
@@ -249,6 +254,8 @@ final class TerminalPageTest extends TestCase
             'too_large' => false,
             'unreadable' => false,
             'no_terminal' => false,
+            'stream' => 'stream-1',
+            'expires_at' => CarbonImmutable::now()->addSeconds(15)->toIso8601ZuluString(),
         ]);
         $this->app->make(RuntimeScreen::class)->admit(ScreenRegistration::of($runtime), $frame, CarbonImmutable::now());
     }

@@ -190,6 +190,7 @@ use App\Agents\Contracts\WorkspaceSource;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
+use App\Agents\Data\TerminalInterestData;
 use App\Agents\Enums\AccessRuleType;
 use App\Agents\Enums\AccountModeType;
 use App\Agents\Enums\AccountProcessRole;
@@ -313,7 +314,6 @@ use App\Agents\Support\StartRecordDetails;
 use App\Agents\Support\StartRemedy;
 use App\Agents\Support\StatusAction;
 use App\Agents\Support\StatusOperation;
-use App\Agents\Support\TerminalViewReceipt;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\AccountUse;
@@ -2030,7 +2030,7 @@ final class CoreApi
                 MenuStep::class,
                 NavigationKey::class,
                 NavigationCompletion::class,
-                TerminalViewReceipt::class,
+                TerminalInterestData::class,
                 ScreenReportAnswer::class,
                 ScreenReportRefusal::class,
                 ToolOutcome::class,

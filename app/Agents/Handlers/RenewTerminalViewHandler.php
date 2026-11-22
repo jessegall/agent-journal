@@ -7,7 +7,7 @@ namespace App\Agents\Handlers;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\RenewTerminalView;
-use App\Agents\Support\TerminalViewReceipt;
+use App\Agents\Data\TerminalInterestData;
 use App\Agents\Support\TerminalViews;
 use App\Contracts\CommandHandler;
 
@@ -18,7 +18,7 @@ final readonly class RenewTerminalViewHandler implements CommandHandler
         private ServerClock $clock,
     ) {}
 
-    public function handle(RenewTerminalView $command): TerminalViewReceipt
+    public function handle(RenewTerminalView $command): TerminalInterestData
     {
         $viewer = ActorIdentity::of($command->dispatchedBy());
 
