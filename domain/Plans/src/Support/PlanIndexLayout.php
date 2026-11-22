@@ -52,8 +52,6 @@ final readonly class PlanIndexLayout
             $this->emptyFor($settled),
         )
             ->counting($page->total)
-            ->searching('Search plans', new LayoutFieldData('q', $settled->search, ['page', 'plan']))
-            ->filteredBy($this->choicesOf($settled))
             ->creatingWith($this->creation())
             ->paged(ListPaging::numbered($page->page, max(1, $page->lastPage)))
             ->withReader(new LayoutBackData(route('plans.list', $settled->toQuery(), false), 'Plans'), ...$reader)
@@ -68,7 +66,6 @@ final readonly class PlanIndexLayout
         return new LayoutRowData(
             $card->id,
             $card->title,
-            detail: $this->countsOf($card),
             href: route('plans.plan', ['plan' => $card->number, ...$filters->toQuery()], false),
             isCurrent: $filters->plan === $card->number,
             leading: [LayoutPartData::text('number', $card->number, 'muted')],
@@ -86,31 +83,6 @@ final readonly class PlanIndexLayout
                     ),
             ],
         );
-    }
-
-    /**
-     * The counts in words: finished of the total and how many were cancelled.
-     */
-    private function countsOf(PlanCardData $card): string
-    {
-        return $card->totalTasks === 0
-            ? 'No tasks'
-            : "{$card->finishedTasks} of {$card->totalTasks} finished, {$card->cancelledTasks} cancelled";
-    }
-
-    private function choicesOf(PlanFiltersData $filters): LayoutPartData
-    {
-        $chosen = $filters->state instanceof PlanStateGroup ? $filters->state->value : '';
-
-        return LayoutPartData::collection('states', 'choices', [
-            new LayoutRowData('all', 'All', query: ['state' => '', 'page' => ''], isCurrent: $chosen === ''),
-            ...array_map(fn (PlanStateGroup $group) => new LayoutRowData(
-                $group->value,
-                ucfirst($group->value),
-                query: ['state' => $group->value, 'page' => ''],
-                isCurrent: $chosen === $group->value,
-            ), PlanStateGroup::cases()),
-        ]);
     }
 
     private function emptyFor(PlanFiltersData $filters): ListEmpty
