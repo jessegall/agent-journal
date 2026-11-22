@@ -42,6 +42,11 @@ final class Memory extends Model implements Numbered, ReadableModel
     use HasUlids;
     use Linkable;
 
+    /**
+     * The record type a memory is linked and found under.
+     */
+    public const string LINK_TYPE = 'memory.memory';
+
     public const int LIGHTEST = 1;
 
     public const int HEAVIEST = 10;

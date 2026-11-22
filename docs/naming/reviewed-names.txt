@@ -3942,6 +3942,8 @@ class	MemoryRemoveCommand
 class	MemoryResource
 class	MemoryRevisionChanged
 class	MemorySaveCommand
+class	MemorySearchAccess
+class	MemorySearchProvider
 class	MemoryServiceProvider
 class	MemorySkill
 class	MemoryUnavailable
@@ -7558,8 +7560,11 @@ constant	McpServiceProvider::CALLS_PER_MINUTE
 constant	MeasureReads::SECRET_PATH
 constant	Memory::HEAVIEST
 constant	Memory::LIGHTEST
+constant	Memory::LINK_TYPE
 constant	MemoryReadResult::TOOL
 constant	MemoryResolver::PER_PAGE
+constant	MemorySearchAccess::ID_ARGUMENT
+constant	MemorySearchProvider::RECORD_TYPE
 constant	MenuStep::FINGERPRINT
 constant	MenuStep::MOST_TEXT_CHARACTERS
 constant	MergeAskNotificationTarget::ASK_PAGE
@@ -16838,6 +16843,13 @@ method	MemoryResource::uriTemplate()
 method	MemoryRevisionChanged::for()
 method	MemoryRevisionChanged::refusalCode()
 method	MemorySaveCommand::handle()
+method	MemorySearchAccess::idArgument()
+method	MemorySearchAccess::readName()
+method	MemorySearchProvider::__construct()
+method	MemorySearchProvider::hitOf()
+method	MemorySearchProvider::noReference()
+method	MemorySearchProvider::ownedBy()
+method	MemorySearchProvider::search()
 method	MemoryServiceProvider::boot()
 method	MemoryServiceProvider::register()
 method	MemorySkill::condition()
@@ -34872,6 +34884,8 @@ property	MemoryResource::$memories
 property	MemoryResource::$reads
 property	MemorySaveCommand::$description
 property	MemorySaveCommand::$signature
+property	MemorySearchProvider::$access
+property	MemorySearchProvider::$texts
 property	Menu::$key
 property	Menu::$label
 property	Menu::$recordParameter

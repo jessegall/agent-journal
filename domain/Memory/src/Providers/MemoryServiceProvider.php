@@ -41,7 +41,7 @@ final class MemoryServiceProvider extends ServiceProvider
         );
 
         $links->register([
-            'memory.memory' => Memory::class,
+            Memory::LINK_TYPE => Memory::class,
         ]);
     }
 }
