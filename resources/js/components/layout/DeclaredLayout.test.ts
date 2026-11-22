@@ -89,6 +89,7 @@ describe('a declared layout', () => {
                                     query: {},
                                     reason: 'Only the owner approves',
                                     submits: false,
+                                    appends: false,
                                 },
                             }),
                             part({
@@ -100,6 +101,7 @@ describe('a declared layout', () => {
                                 action: {
                                     query: { cursor: 'abc' },
                                     submits: false,
+                                    appends: false,
                                 },
                             }),
                             part({
@@ -265,6 +267,76 @@ describe('a declared layout', () => {
             only: ['window_handbook_entry'],
             preserveState: true,
         });
+        view.unmount();
+        visit.mockRestore();
+    });
+
+    it('adds the rows a Show more reads to the rows shown, and keeps them when the read fails', async () => {
+        const visit = vi
+            .spyOn(router, 'visit')
+            .mockImplementation(() => undefined);
+        const row = (key: string) => ({
+            key,
+            label: key,
+            value: '',
+            query: {},
+            isCurrent: false,
+        });
+        const layout = (rows: string[], more: boolean) => ({
+            root: part({
+                tag: 'box',
+                key: 'root',
+                style: 'stack',
+                children: [
+                    part({
+                        tag: 'collection',
+                        key: 'rows',
+                        style: 'list',
+                        rows: rows.map(row),
+                    }),
+                    ...(more
+                        ? [
+                              part({
+                                  tag: 'action',
+                                  key: 'more',
+                                  style: 'bordered',
+                                  size: 'normal',
+                                  text: 'Show more',
+                                  action: {
+                                      query: { after: 'b' },
+                                      submits: false,
+                                      appends: true,
+                                  },
+                              }),
+                          ]
+                        : []),
+                ],
+            }),
+        });
+        const view = mount(DeclaredLayout, {
+            props: { data: layout(['a', 'b'], true) },
+        });
+
+        await view.find('button').trigger('click');
+        const [href, options] = visit.mock.calls[0];
+        expect(String(href)).toContain('after=b');
+
+        options?.onNetworkError?.(new Error('offline') as never);
+        options?.onFinish?.({} as never);
+        await view.vm.$nextTick();
+        expect(view.findAll('li')).toHaveLength(2);
+        expect(view.find('[role="alert"]').exists()).toBe(true);
+
+        await view.find('button').trigger('click');
+        await view.setProps({ data: layout(['c', 'd'], false) });
+        options?.onFinish?.({} as never);
+        await view.vm.$nextTick();
+        expect(view.findAll('li').map((item) => item.text())).toEqual([
+            'a',
+            'b',
+            'c',
+            'd',
+        ]);
         view.unmount();
         visit.mockRestore();
     });
