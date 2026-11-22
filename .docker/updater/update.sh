@@ -72,9 +72,11 @@ profiles=""
 [ "$arrangement" = contained ] && profiles="--profile contained"
 
 # Each step must pass for the commit to count as installed: set -e does not hold inside an if, so they are chained.
+# The prune runs first as well as last, so a failed install that filled the disk does not starve the next build.
 # Migrations run on the new image before the switch, so they must leave the old code working.
 install() {
-    docker compose --progress=quiet build app share web &&
+    sh .docker/helper/prune.sh >/dev/null &&
+        docker compose --progress=quiet build app share web &&
         { [ "$arrangement" != contained ] || pin_runner; } &&
         { [ "$migrations_changed" = no ] || [ "$schema_rebuilt" = yes ] ||
             docker compose run --rm -T app php artisan migrate --force; } &&
