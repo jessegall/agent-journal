@@ -11,7 +11,7 @@ declare(strict_types=1);
  *   php tools/refactoring/layout/apply-manifest.php <manifest.json> --rows=… --rehearse
  *   php tools/refactoring/layout/apply-manifest.php <manifest.json> --root=<tree> --state=<state.json> …
  *
- * Class rows move through move.php, one row at a time; every other row moves with git mv, and the files a row lists
+ * Class rows move together through batch-move.php in one pass; every other row moves with git mv, and the files a row lists
  * in literal_references have its old path rewritten to the new one. Every skipped, missed or occupied row is a
  * failure, as is a removed class still named anywhere. The state file keeps the rows moved and the files each move
  * edited (file, prior blob, resulting blob, move), so a resumed batch retries only the rest and an edit nobody

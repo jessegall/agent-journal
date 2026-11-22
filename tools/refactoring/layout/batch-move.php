@@ -10,7 +10,8 @@ declare(strict_types=1);
  *
  *   php tools/refactoring/layout/batch-move.php <moves.txt> [--root=<tree>]
  *
- * A line of moves.txt is `Old\Class New\Class old/path.php new/path.php`. From the tree it rewrites: the namespace name
+ * A line of moves.txt is `Old\Class New\Class old/path.php new/path.php`, with `merge` after it when New already
+ * exists: every reference then names New and the old file is deleted instead of moved. From the tree it rewrites: the namespace name
  * of a moved file; each import of a moved class, and an import of a class in the moved file's own new namespace goes;
  * each qualified name of a moved class; the short name where a move renames a class; an import, after the last import
  * node, for each class a file named bare through its namespace that is no longer beside it; and inside string and
@@ -141,8 +142,8 @@ $listPath ?? exit(fail(['Name a moves file.']));
 $moves = [];
 
 foreach (file($listPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
-    [$old, $new, $oldPath, $newPath] = array_pad(preg_split('/\s+/', trim($line)) ?: [], 4, '');
-    $moves[ltrim($old, '\\')] = ['class' => ltrim($new, '\\'), 'from' => $oldPath, 'to' => $newPath];
+    [$old, $new, $oldPath, $newPath, $mode] = array_pad(preg_split('/\s+/', trim($line)) ?: [], 5, '');
+    $moves[ltrim($old, '\\')] = ['class' => ltrim($new, '\\'), 'from' => $oldPath, 'to' => $newPath, 'merge' => $mode === 'merge'];
 }
 
 $renames = array_map(fn (array $move) => $move['class'], $moves);
@@ -223,6 +224,13 @@ foreach ($listed as $file) {
 }
 
 foreach ($moves as $move) {
+    if ($move['merge']) {
+        exec('cd '.escapeshellarg($root).' && git rm -qf '.escapeshellarg($move['from']).' 2>&1', $output, $status);
+        $status === 0 || unlink("{$root}/{$move['from']}");
+
+        continue;
+    }
+
     if (! is_dir(dirname("{$root}/{$move['to']}"))) {
         mkdir(dirname("{$root}/{$move['to']}"), 0755, true);
     }
