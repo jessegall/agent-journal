@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Resolvers\Support;
 
+use App\Support\ActorIdentity;
 use App\Values\StackTarget;
 use Domain\Sequences\Exceptions\SequenceRunMissing;
 use Domain\Sequences\Models\SequenceRun;
@@ -37,8 +38,14 @@ final readonly class SequenceRecords
      */
     public function followedBy(StackTarget $target, string $runId): SequenceRun
     {
-        return SequenceRun::query()->ownedBy(
-            $target->actorIdentity(),
-        )->findOr($runId, fn () => throw SequenceRunMissing::forId($runId));
+        return $this->heldBy($target->actorIdentity(), $runId);
+    }
+
+    /**
+     * The journal's own read of a run the agent follows, by the agent alone.
+     */
+    public function heldBy(ActorIdentity $follower, string $runId): SequenceRun
+    {
+        return SequenceRun::query()->ownedBy($follower)->findOr($runId, fn () => throw SequenceRunMissing::forId($runId));
     }
 }

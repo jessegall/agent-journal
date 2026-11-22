@@ -9,6 +9,7 @@ use App\Contracts\ChatTimeline;
 use App\Enums\ChatPermission;
 use App\Exceptions\ChatCursorRefused;
 use App\Support\ActorIdentity;
+use App\Support\ChatLines;
 use App\Support\Web\PageReadProps;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
@@ -17,6 +18,7 @@ use Domain\Chat\Commands\AddChatParticipant\AddChatParticipantCommand;
 use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
 use Domain\Chat\Commands\RemoveChatParticipant\RemoveChatParticipantCommand;
 use Illuminate\Testing\TestResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -28,6 +30,8 @@ final class ChatTimelineTest extends MessagingTestCase
     private User $bea;
 
     private string $inboxId;
+
+    private const string STEP_LINE = 'Step-one-of-four';
 
     protected function setUp(): void
     {
@@ -98,11 +102,27 @@ final class ChatTimelineTest extends MessagingTestCase
             ->assertStatus(409);
     }
 
+    public function test_a_plain_line_posted_for_a_member_shows_in_the_chat_rows_between_the_messages(): void
+    {
+        $this->runOnBus(new PostChatMessageCommand($this->inboxId, 'Before.', 'before'));
+        $this->app->make(ChatLines::class)->post(ActorIdentity::of($this->bea), 'Ship', self::STEP_LINE);
+        $this->runOnBus(new PostChatMessageCommand($this->inboxId, 'After.', 'after'));
+
+        $rows = $this->actingAs($this->owner)->pageRead('chat.rows', ['inboxId' => $this->inboxId])->assertOk();
+        $messages = $rows->json('props.read_chat_rows.messages');
+        $lines = $rows->json('props.read_chat_rows.lines');
+
+        $this->assertSame([self::STEP_LINE], array_column($lines, 'line'));
+        $this->assertGreaterThan($messages[0]['sequence'], $lines[0]['sequence']);
+        $this->assertLessThan($messages[1]['sequence'], $lines[0]['sequence']);
+    }
+
     /**
      * A page read as the chat asks for it: a partial reload of the chat page that names only that read's prop, with
      * its query under read[<prop>].
      *
      * @param  array<string, string>  $query
+     * @return TestResponse<Response>
      */
     private function pageRead(string $routeName, array $query): TestResponse
     {

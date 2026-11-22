@@ -178,6 +178,17 @@ final class InboxInterval extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * The intervals still open, in any inbox.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function stillOpen(Builder $query): void
+    {
+        $query->whereNull('left_at');
+    }
+
+    /**
      * @param  Builder<self>  $query
      */
     #[Scope]

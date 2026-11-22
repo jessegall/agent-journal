@@ -24,7 +24,7 @@ function intent(status: ConversationIntent['status']): ConversationIntent {
 }
 
 function listOf(pending: ConversationIntent[], refused: { entry: object; reason: string }[] = []) {
-    return mount(MessageList, { props: { messages: [], pending, refused, viewer: 'user:user-1', participants: [] } as never });
+    return mount(MessageList, { props: { lines: [], messages: [], pending, refused, viewer: 'user:user-1', participants: [] } as never });
 }
 
 describe('MessageList', () => {
@@ -80,10 +80,10 @@ describe('MessageList', () => {
             { actor: 'user:bea', label: 'Bea', driver: null, role: 'member' },
         ];
         const asBea = mount(MessageList, {
-            props: { messages: [row('q1', true)], pending: [], refused: [], viewer: 'user:bea', participants, questionUrl: () => '#' } as never,
+            props: { lines: [], messages: [row('q1', true)], pending: [], refused: [], viewer: 'user:bea', participants, questionUrl: () => '#' } as never,
         });
         const asCy = mount(MessageList, {
-            props: { messages: [row('q1', false)], pending: [], refused: [], viewer: 'user:cy', participants, questionUrl: () => '#' } as never,
+            props: { lines: [], messages: [row('q1', false)], pending: [], refused: [], viewer: 'user:cy', participants, questionUrl: () => '#' } as never,
         });
 
         expect(asBea.text()).toContain('Ada');
@@ -126,7 +126,7 @@ describe('MessageList', () => {
                 },
             ],
         });
-        const props = { pending: [], refused: [], viewer: 'user:ada', participants: [], questionUrl: () => '#', conversationProp: 'chat' };
+        const props = { lines: [], pending: [], refused: [], viewer: 'user:ada', participants: [], questionUrl: () => '#', conversationProp: 'chat' };
         const operator = mount(MessageList, { props: { ...props, messages: [row(true)] } as never });
         const sender = mount(MessageList, { props: { ...props, messages: [row(false)] } as never });
 
@@ -136,5 +136,41 @@ describe('MessageList', () => {
         expect(operator.findAll('button').map((button) => button.text())).toContain('Retry');
         expect(sender.text()).toContain('Codex: Not delivered');
         expect(sender.text()).not.toContain('Retry');
+    });
+
+    it('shows a plain line between the messages at its timeline position', () => {
+        const message = (id: string, sequence: number) => ({
+            id,
+            sequence,
+            rootId: null,
+            speaker: { actor: 'user:ada', label: 'Ada', driver: null },
+            addressedTo: null,
+            replyTo: null,
+            body: `Body ${id}`,
+            state: 'sent',
+            stateVersion: 0,
+            respondent: null,
+            actions: { answer: false, decline: false, retryDelivery: false },
+            readByMe: true,
+            sentAt: '2026-11-22T13:42:00Z',
+            requestKey: null,
+            deliveries: [],
+        });
+        const step = { sequence: 2, subject: 'Ship', line: 'Step 1 of 4', postedAt: '2026-11-22T13:43:00Z' };
+        const list = mount(MessageList, {
+            props: {
+                lines: [step],
+                messages: [message('first', 1), message('second', 3)],
+                pending: [],
+                refused: [],
+                viewer: 'user:bea',
+                participants: [],
+                questionUrl: () => '#',
+            } as never,
+        });
+        const text = list.text();
+
+        expect(text.indexOf(step.line)).toBeGreaterThan(text.indexOf('Body first'));
+        expect(text.indexOf(step.line)).toBeLessThan(text.indexOf('Body second'));
     });
 });

@@ -16,6 +16,8 @@ use App\Support\Inputs\Values\HookIdentity;
 use App\Support\OperationDeadline;
 use App\Support\Stack\HookAnswer;
 use Carbon\CarbonImmutable;
+use Domain\Sequences\Commands\AdvanceSequence\AdvanceSequenceCommand;
+use Domain\Sequences\Commands\CancelSequence\CancelSequenceCommand;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Models\SequenceRun;
@@ -65,7 +67,7 @@ final class SequenceStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartSequenceCommand($run->id, $this->target->sessionId));
 
         $onFirstStep = $this->answerStop('call-1');
-        $run->advance();
+        $this->app->make(CommandBus::class)->run(new AdvanceSequenceCommand($run->id));
         $onSecondStep = $this->answerStop('call-2');
 
         $this->assertStringContainsString($this->stepText($run, 1, self::FIRST_STEP), $onFirstStep);
@@ -88,15 +90,15 @@ final class SequenceStateContributionTest extends TestCase
     {
         $finished = $this->newRun();
         $this->app->make(CommandBus::class)->run(new StartSequenceCommand($finished->id, $this->target->sessionId));
-        $finished->advance();
-        $finished->advance();
+        $this->app->make(CommandBus::class)->run(new AdvanceSequenceCommand($finished->id));
+        $this->app->make(CommandBus::class)->run(new AdvanceSequenceCommand($finished->id));
 
         $this->assertSame(SequenceRunState::Finished, $finished->fresh()?->state);
         $this->assertSame('{}', $this->answerStop('call-1'));
 
         $cancelled = $this->newRun();
         $this->app->make(CommandBus::class)->run(new StartSequenceCommand($cancelled->id, $this->target->sessionId));
-        $cancelled->cancel();
+        $this->app->make(CommandBus::class)->run(new CancelSequenceCommand($cancelled->id));
 
         $this->assertSame('{}', $this->answerStop('call-2'));
         $this->assertSame(['hooks.ready', 'sequences.following'], $this->storedTypeKeys());

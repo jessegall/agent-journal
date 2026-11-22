@@ -11,11 +11,15 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\EventSource;
 use App\Contracts\Numbered;
 use App\Contracts\ReadableModel;
+use App\Enums\ActorType;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Values\StackTarget;
 use Domain\Sequences\Enums\SequenceRunState;
+use Domain\Sequences\Events\SequenceEnded;
 use Domain\Sequences\Events\SequenceStarted;
+use Domain\Sequences\Events\SequenceStepEnded;
+use Domain\Sequences\Events\SequenceStepReached;
 use Domain\Sequences\Exceptions\SequenceRunMissing;
 use Domain\Sequences\Support\SequenceWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -104,6 +108,7 @@ final class SequenceRun extends Model implements EventSource, Numbered, Readable
         $this->belongTo($follower);
         $this->assertSaved($this->save());
         $this->raise(new SequenceStarted($this->id, new StackTarget($follower->id, $sessionId)));
+        $this->raise(new SequenceStepReached($this->id, $this->follower(), $this->current_step));
     }
 
     /**
@@ -111,21 +116,44 @@ final class SequenceRun extends Model implements EventSource, Numbered, Readable
      */
     public function advance(): void
     {
-        if ($this->current_step >= count($this->steps)) {
+        $ended = $this->current_step;
+
+        if ($ended >= count($this->steps)) {
             $this->state = SequenceRunState::Finished;
-            $this->save();
+            $this->assertSaved($this->save());
+            $this->raise(new SequenceStepEnded($this->id, $this->follower(), $ended));
+            $this->raise(new SequenceEnded($this->id, $this->follower(), $this->state));
 
             return;
         }
 
         $this->current_step++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new SequenceStepEnded($this->id, $this->follower(), $ended));
+        $this->raise(new SequenceStepReached($this->id, $this->follower(), $this->current_step));
     }
 
     public function cancel(): void
     {
         $this->state = SequenceRunState::Cancelled;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new SequenceEnded($this->id, $this->follower(), $this->state));
+    }
+
+    /**
+     * The agent following the run, set by starting it.
+     */
+    public function follower(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from((string) $this->actor_type), (string) $this->actor_id);
+    }
+
+    /**
+     * What the chat says of a step the run came to: the step's place among them and its words.
+     */
+    public function stepLine(int $step): string
+    {
+        return "step {$step} of ".count($this->steps).' · '.$this->steps[$step - 1];
     }
 
     // ----------[ Answers ]----------

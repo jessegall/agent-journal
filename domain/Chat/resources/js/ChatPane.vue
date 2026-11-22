@@ -310,6 +310,7 @@ function retryFocused(): void {
                 </template>
                 <MessageList
                     :messages="timeline.messages.value"
+                    :lines="timeline.lines.value"
                     :has-older="timeline.hasOlder.value"
                     :pending="pending"
                     :refused="refused"

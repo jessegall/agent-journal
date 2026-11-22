@@ -30,6 +30,7 @@ const shapes = {
     power: '<path d="M8 2v6"/><path d="M4.5 4.2a5 5 0 1 0 7 0"/>',
     dots: '<path d="M4 8h.01M8 8h.01M12 8h.01"/>',
     list: '<path d="M3 3.5h10M3 8h10M3 12.5h6"/>',
+    sequence: '<circle cx="3.5" cy="4" r="1.5"/><circle cx="3.5" cy="12" r="1.5"/><path d="M3.5 5.5v5M6.5 4h7M6.5 12h7M6.5 8h5"/>',
     scheme: '<circle cx="8" cy="8" r="5.75"/><path d="M8 2.25a5.75 5.75 0 0 1 0 11.5z" fill="currentColor" stroke="none"/>',
     wide: '<path d="M6.2 2.6H2.6v3.6M9.8 2.6h3.6v3.6M6.2 13.4H2.6V9.8M9.8 13.4h3.6V9.8"/>',
     chevron: '<path d="M6 3.5 10.5 8 6 12.5"/>',

@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Sequences\Events;
+
+use App\Contracts\Event;
+use App\Support\ActorIdentity;
+use Domain\Sequences\Enums\SequenceRunState;
+
+/**
+ * A sequence run ended, finished after its last step or cancelled, in the state it ended in.
+ */
+final readonly class SequenceEnded implements Event
+{
+    public function __construct(
+        public string $runId,
+        public ActorIdentity $follower,
+        public SequenceRunState $state,
+    ) {}
+}

@@ -21,7 +21,9 @@ use App\Support\AgentDrivers;
 use App\Support\AgentOption;
 use App\Support\ChatInboxes;
 use App\Support\ChatInterval;
+use App\Support\ChatLines;
 use Domain\Chat\Data\ChatCapabilitiesData;
+use Domain\Chat\Data\ChatLineData;
 use Domain\Chat\Data\ChatMessageData;
 use Domain\Chat\Data\ChatRowsPageData;
 use Domain\Chat\Data\ChatSummaryData;
@@ -43,6 +45,7 @@ final readonly class ChatConversations
     public function __construct(
         private CurrentActor $actors,
         private ConversationResolver $messages,
+        private ChatLines $lines,
         private InboxResolver $inboxes,
         private ChatInboxes $chats,
         private ActorLabels $labels,
@@ -82,6 +85,7 @@ final readonly class ChatConversations
             'unreadCount' => $this->messages->counts($inboxId)->unread,
             'olderCursor' => $page->olderCursor,
             'messages' => $rows,
+            'lines' => $this->linesFrom($inboxId, $rows, $page->olderCursor === null),
             'dock' => $this->dock->page($conversation, $dockToken),
         ]);
     }
@@ -101,8 +105,23 @@ final readonly class ChatConversations
 
         return ChatRowsPageData::from([
             'messages' => $rows,
+            'lines' => $this->linesFrom($inboxId, $rows, $page->olderCursor === null),
             'olderCursor' => $page->olderCursor,
         ]);
+    }
+
+    /**
+     * The plain lines from a page's first message on, or from the chat's start when the page reaches it; the browser
+     * keeps each line once by its position, so pages that overlap show it once, between the messages around it.
+     *
+     * @param  list<ChatMessageData>  $rows
+     * @return list<ChatLineData>
+     */
+    private function linesFrom(string $inboxId, array $rows, bool $reachesStart): array
+    {
+        $from = $reachesStart || $rows === [] ? 0 : $rows[0]->sequence;
+
+        return array_map(ChatLineData::fromChatLine(...), $this->lines->linesFrom($inboxId, $from));
     }
 
     /**

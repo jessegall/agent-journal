@@ -25,6 +25,7 @@ function conversationOf(rows: ChatMessageData[], olderCursor: string | null = nu
         latestSequence: rows.length === 0 ? 0 : rows[rows.length - 1].sequence,
         olderCursor,
         messages: rows,
+        lines: [],
     } as unknown as ConversationData;
 }
 
@@ -37,7 +38,7 @@ function heldClient() {
     const client: ChatTimelineClient = {
         events: () =>
             answer<ChatEventsPageData>({ accessEnded: false, events: [], cursor: 'cursor-1', watermark: 12 }),
-        rows: () => answer<ChatRowsPageData>({ messages: [row(10), row(11), row(12)], olderCursor: null }),
+        rows: () => answer<ChatRowsPageData>({ messages: [row(10), row(11), row(12)], lines: [], olderCursor: null }),
     };
 
     return { client, releaseAll: () => releases.splice(0).forEach((release) => release()) };
@@ -80,5 +81,27 @@ describe('useChatTimeline', () => {
 
         expect(view.accessEnded.value).toBe(false);
         expect(view.messages.value.map((shown) => shown.id)).toEqual(['m10', 'm11', 'm12']);
+    });
+
+    it('reads a plain line in when a line event arrives, since a line names no message', async () => {
+        const step = { sequence: 13, subject: 'Ship', line: 'Step 1 of 4', postedAt: '2026-11-22T13:43:00Z' };
+        let rowReads = 0;
+        const client: ChatTimelineClient = {
+            events: async () => ({
+                accessEnded: false,
+                events: [{ sequence: 13, type: 'line', actor: 'agent:a1', messageId: null }],
+                cursor: 'cursor-2',
+                watermark: 13,
+            }),
+            // The first read is the snapshot's, before the line was posted; the line is there from the next read on.
+            rows: async () => ({ messages: [row(12)], lines: rowReads++ === 0 ? [] : [step], olderCursor: null }),
+        };
+        const view = mountTimeline(ref<ConversationData | undefined>(conversationOf([row(12)])), client);
+
+        await view.catchUp();
+        expect(view.lines.value).toEqual([]);
+
+        await view.catchUp();
+        expect(view.lines.value).toEqual([step]);
     });
 });
