@@ -11,7 +11,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The sign-in methods one program declares on this host, in the order the form lists them, OAuth first.
+ * The sign-in methods one driver declares on this host, in the order the form lists them, OAuth first.
  */
 #[TypeScript]
 final class DriverMethodsData extends Data

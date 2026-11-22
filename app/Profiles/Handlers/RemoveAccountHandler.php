@@ -14,8 +14,8 @@ use App\Profiles\Models\SignInAttempt;
 use Carbon\CarbonImmutable;
 
 /**
- * Starts the removal under the program's selection lock, then the account's: a sign-in running on the account is
- * cancelled first, the account leaves the program's choice without a replacement, and a new generation makes every
+ * Starts the removal under the driver's selection lock, then the account's: a sign-in running on the account is
+ * cancelled first, the account leaves the driver's choice without a replacement, and a new generation makes every
  * older callback out of date.
  */
 final readonly class RemoveAccountHandler implements CommandHandler

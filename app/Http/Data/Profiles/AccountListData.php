@@ -9,7 +9,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The owner's saved accounts, by program and name, each program's current choice, and the recent sign-ins.
+ * The owner's saved accounts, by driver and name, each driver's current choice, and the recent sign-ins.
  */
 #[TypeScript]
 final class AccountListData extends Data

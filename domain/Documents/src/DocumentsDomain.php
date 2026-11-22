@@ -22,11 +22,14 @@ use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Support\ShareRecordDefinition;
+use App\Ui\Contracts\MenuProvider;
 use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\SectionProvider;
 use App\Ui\Declarations\ActionRoute;
+use App\Ui\Declarations\Menu;
+use App\Ui\Declarations\MenuItem;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Section;
@@ -68,14 +71,12 @@ use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Data\DockData;
 use Domain\Documents\Data\DockSuggestion;
 use Domain\Documents\Data\DocumentFilters;
-use Domain\Documents\Data\DocumentPageData;
 use Domain\Documents\Data\DocumentView;
 use Domain\Documents\Data\DraftState;
 use Domain\Documents\Data\DraftView;
 use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Data\PublicationList;
 use Domain\Documents\Data\RecordInspection;
-use Domain\Documents\Data\RecordPageData;
 use Domain\Documents\Data\RecordReadsData;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\ReportView;
@@ -125,6 +126,7 @@ final class DocumentsDomain extends Domain implements
     CommandProvider,
     LinkRecordProvider,
     McpToolProvider,
+    MenuProvider,
     NativePartProvider,
     NavigationProvider,
     NumberedModelProvider,
@@ -135,6 +137,11 @@ final class DocumentsDomain extends Domain implements
 {
     use HasLinkRecords;
     use HasNumberedModels;
+
+    /**
+     * The full key of a document's actions menu.
+     */
+    public const string DOCUMENT_ACTIONS = 'documents.document-actions';
 
     private const string SHARE_LINKED_RECORD = 'share-linked-record';
 
@@ -172,8 +179,6 @@ final class DocumentsDomain extends Domain implements
                 RecordText::class,
                 EditingState::class,
                 DraftState::class,
-                DocumentPageData::class,
-                RecordPageData::class,
                 RecordReadsData::class,
                 DraftView::class,
                 RevisionCard::class,
@@ -300,14 +305,22 @@ final class DocumentsDomain extends Domain implements
     }
 
     /**
-     * The native parts the record layouts mount: a record's comments, its links and its share control, and the form
-     * that files a new one.
+     * The native parts the record layouts mount: a record's comments, its links and its share control, the form
+     * that files a new one, and a document's draft editor and the form that recovers a held draft.
      *
      * @return list<string>
      */
     public function nativeParts(): array
     {
-        return ['CreateRecordForm.vue', 'RecordComments.vue', 'RecordLinks.vue', 'RecordShare.vue', 'ReportReceipt.vue'];
+        return [
+            'CreateRecordForm.vue',
+            'DraftEditor.vue',
+            'RecordComments.vue',
+            'RecordLinks.vue',
+            'RecordShare.vue',
+            'RecoverForm.vue',
+            'ReportReceipt.vue',
+        ];
     }
 
     public function pages(): array
@@ -319,7 +332,7 @@ final class DocumentsDomain extends Domain implements
                     ActionRoute::post('docs', CreateDocumentPageController::class, 'create-document'),
                     ActionRoute::post('reports', CreateReportPageController::class, 'create-report'),
                 ),
-            Page::make('document', 'Document', Icon::Docs, DocumentWindowResolver::class, 'DocumentWindow.vue')
+            Page::layout('document', 'Document', Icon::Docs, DocumentWindowResolver::class)
                 ->at('docs/{document}')
                 ->inInspector()
                 ->actions(
@@ -351,6 +364,27 @@ final class DocumentsDomain extends Domain implements
                 DocumentDockResolver::class,
                 'DocumentDock.vue',
             ),
+        ];
+    }
+
+    /**
+     * The actions menu of one document, opened from its actions button on its page or its row in the library, or by a
+     * right click on the row; other domains may join it by its full key, documents.document-actions.
+     */
+    public function menus(): array
+    {
+        return [Menu::record('document-actions', 'Document actions', 'document')];
+    }
+
+    public function menuItems(): array
+    {
+        return [
+            MenuItem::opens('document-links', 'Links', self::DOCUMENT_ACTIONS, 'document', ['tab' => 'links'])
+                ->inGroup('open', 10),
+            MenuItem::opens('document-history', 'History', self::DOCUMENT_ACTIONS, 'document', ['tab' => 'history'])
+                ->inGroup('open', 20),
+            MenuItem::sends('document-edit', 'Edit', self::DOCUMENT_ACTIONS, 'open-document')
+                ->inGroup('edit', 30),
         ];
     }
 

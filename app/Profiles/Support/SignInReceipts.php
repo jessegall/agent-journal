@@ -13,7 +13,7 @@ use App\Profiles\Models\SignInAttempt;
 
 /**
  * Tells the owner what became of a sign-in start under its request key. It reads only the owner's receipt of that
- * start for that program or account, and names the attempt only while the owner may still read it.
+ * start for that driver or account, and names the attempt only while the owner may still read it.
  */
 final readonly class SignInReceipts
 {

@@ -14,7 +14,7 @@ use Tests\TestCase;
 
 /**
  * Claude Code's own sign-in run against a stand-in program: the address comes from its private output, the user's
- * code is typed only when it is one clean line, and only the program's own check of this folder signs it in.
+ * code is typed only when it is one clean line, and only the driver's own check of this folder signs it in.
  */
 #[TimeLimit(seconds: 8, reason: 'It runs a stand-in program as a host process several times.')]
 final class ClaudeSignInTest extends TestCase
@@ -124,6 +124,6 @@ final class ClaudeSignInTest extends TestCase
             usleep(20_000);
         }
 
-        $this->fail('The program printed no address.');
+        $this->fail('The driver printed no address.');
     }
 }

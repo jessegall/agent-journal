@@ -6,7 +6,7 @@ namespace App\Hooks\Inputs;
 
 /**
  * The files a native read, list or search tool names, as absolute paths with every . and .. resolved against the
- * program's work folder, so an alias of a protected folder is seen as the folder itself.
+ * driver's work folder, so an alias of a protected folder is seen as the folder itself.
  */
 final readonly class ProtectedFileRead
 {

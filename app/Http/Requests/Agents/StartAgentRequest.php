@@ -14,7 +14,7 @@ use App\Agents\Values\StartRequest;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * A user starts a main agent with a program and a model named outright: no profile chooses either, so leaving
+ * A user starts a main agent with a driver and a model named outright: no profile chooses either, so leaving
  * one out, or asking for the default model, is refused before any session exists.
  */
 final class StartAgentRequest extends FormRequest

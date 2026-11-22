@@ -9,7 +9,7 @@ use Carbon\CarbonImmutable;
 /**
  * Who a sign-in proved, kept apart: the text shown to the user (an email or an organization), the provider's own
  * subject, the workspace or organization it signed in to, and when its login expires, as ISO 8601 text. Each is absent when the
- * program's proof did not name it.
+ * driver's proof did not name it.
  */
 final readonly class SignInIdentity
 {
@@ -21,7 +21,7 @@ final readonly class SignInIdentity
     ) {}
 
     /**
-     * When the login expires, read from the ISO 8601 time the program's check printed.
+     * When the login expires, read from the ISO 8601 time the driver's check printed.
      */
     public function expiry(): CarbonImmutable|null
     {
@@ -37,7 +37,7 @@ final readonly class SignInIdentity
     }
 
     /**
-     * Only the text shown to the user, as a program's status check names it.
+     * Only the text shown to the user, as a driver's status check names it.
      */
     public static function shown(string|null $display): self
     {

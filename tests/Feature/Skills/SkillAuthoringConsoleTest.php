@@ -133,7 +133,7 @@ final class SkillAuthoringConsoleTest extends TestCase
 
         Artisan::call('skill:revision', ['number' => 'user-codex-main', 'revision' => 1]);
         $this->assertStringContainsString(json_encode(['type' => 'all', 'version' => 1, 'children' => [
-            ['type' => 'programs', 'version' => 1, 'keys' => ['codex']],
+            ['type' => 'drivers', 'version' => 1, 'keys' => ['codex']],
             ['type' => 'abilities', 'version' => 1, 'keys' => [self::DISPATCH]],
         ]], JSON_THROW_ON_ERROR), Artisan::output());
     }

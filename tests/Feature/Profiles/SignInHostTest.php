@@ -44,8 +44,8 @@ use Tests\TestCase;
 
 /**
  * The host's sign-in runner and its signed transport: the enrolled host claims each sign-in once, reports only safe
- * outcomes for the attempts it runs, and the runner makes the account folder private, runs the program's own sign-in
- * and reports what the program's own check says.
+ * outcomes for the attempts it runs, and the runner makes the account folder private, runs the driver's own sign-in
+ * and reports what the driver's own check says.
  */
 #[TimeLimit(seconds: 5, reason: 'It enrolls hosts, sends signed calls and runs a short host process.')]
 final class SignInHostTest extends TestCase

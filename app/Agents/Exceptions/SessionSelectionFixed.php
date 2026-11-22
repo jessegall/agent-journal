@@ -7,7 +7,7 @@ namespace App\Agents\Exceptions;
 use LogicException;
 
 /**
- * A second write of a session's program and model: a session keeps the selection it was started with.
+ * A second write of a session's driver and model: a session keeps the selection it was started with.
  */
 final class SessionSelectionFixed extends LogicException
 {

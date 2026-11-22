@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Hooks\Programs;
+namespace Tests\Unit\Hooks\Drivers;
 
 use App\Hooks\Drivers\OutageReply;
 use App\Hooks\Enums\CallFailure;

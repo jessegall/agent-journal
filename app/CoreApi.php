@@ -1318,6 +1318,7 @@ use App\Text\Values\TextRange;
 use App\Text\Values\TextVersion;
 use App\Ui\Contracts\CountResolver;
 use App\Ui\Contracts\DeclaredPages;
+use App\Ui\Contracts\MenuProvider;
 use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Contracts\NavigationProvider;
@@ -1325,8 +1326,10 @@ use App\Ui\Contracts\PageOption;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\PresentsLayout;
+use App\Ui\Contracts\RecordMenus;
 use App\Ui\Contracts\SectionProvider;
 use App\Ui\Contracts\SectionResolver;
+use App\Ui\Contracts\SidebarGroupProvider;
 use App\Ui\Contracts\SlotSections;
 use App\Ui\Contracts\UserInterfaceUpdater;
 use App\Ui\Contracts\VisibilityCheck;
@@ -1334,10 +1337,13 @@ use App\Ui\Data\SlotSectionData;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\ChoiceOption;
 use App\Ui\Declarations\FloatSize;
+use App\Ui\Declarations\Menu as UiMenu;
+use App\Ui\Declarations\MenuItem;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page as UiPage;
 use App\Ui\Declarations\PaneChoice;
 use App\Ui\Declarations\Section;
+use App\Ui\Declarations\SidebarGroup;
 use App\Ui\Declarations\Slot;
 use App\Ui\Declarations\SlotContext;
 use App\Ui\Declarations\ToggleOption;
@@ -1353,6 +1359,7 @@ use App\Ui\Layout\LayoutActionData;
 use App\Ui\Layout\LayoutBodyData;
 use App\Ui\Layout\LayoutFieldData;
 use App\Ui\Layout\LayoutFormData;
+use App\Ui\Layout\LayoutMenuData;
 use App\Ui\Layout\LayoutNativeData;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
@@ -1438,6 +1445,7 @@ final class CoreApi
                 DeclaredPages::class,
                 CardEncoder::class,
                 SlotSections::class,
+                RecordMenus::class,
                 DockPart::class,
                 Dockable::class,
                 DockableProvider::class,
@@ -1633,6 +1641,8 @@ final class CoreApi
                 PageProvider::class,
                 SectionProvider::class,
                 NativePartProvider::class,
+                SidebarGroupProvider::class,
+                MenuProvider::class,
                 SectionResolver::class,
                 VisibilityCheck::class,
                 SettingsProvider::class,
@@ -2129,6 +2139,10 @@ final class CoreApi
                 ChoiceOption::class,
                 FloatSize::class,
                 NavigationItem::class,
+                SidebarGroup::class,
+                UiMenu::class,
+                MenuItem::class,
+                LayoutMenuData::class,
                 UiPage::class,
                 PaneChoice::class,
                 Section::class,

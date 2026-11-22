@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 /**
- * The settings file a started program reads from its own isolated settings folder: only the journal's hooks and
+ * The settings file a started driver reads from its own isolated settings folder: only the journal's hooks and
  * the journal's tool rules, allowed and denied, never anything from the user's own configuration (rule 2).
  */
 final class IsolatedHookSettings
@@ -31,7 +31,7 @@ final class IsolatedHookSettings
     }
 
     /**
-     * Turns off a tool the journal cannot follow safely in this program, such as a native child with no identity of its
+     * Turns off a tool the journal cannot follow safely in this driver, such as a native child with no identity of its
      * own.
      */
     public function denyTool(string $toolName): void
@@ -40,7 +40,7 @@ final class IsolatedHookSettings
     }
 
     /**
-     * Lets the program call a tool without a native prompt, such as the journal's own MCP tools.
+     * Lets the driver call a tool without a native prompt, such as the journal's own MCP tools.
      */
     public function allowTool(string $rule): void
     {

@@ -248,7 +248,7 @@ Open OpenAI's page and sign in with ChatGPT.
 Open a copy
 Open a window
 Open full run
-Open the program
+Open terminal
 Open {{ record.target.label }}
 Open ↗
 Opening the comment's place…

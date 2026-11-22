@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * A machine enrolled to run agent programs: an infrastructure principal with its own credential, never an actor.
+ * A machine enrolled to run agent drivers: an infrastructure principal with its own credential, never an actor.
  *
  * @phpstan-import-type StoredReport from ProtectionReport
  *
@@ -107,7 +107,7 @@ final class Host extends Model implements ReadableModel
     }
 
     /**
-     * The protection a contained host of this installation last reported for the program's build on the platform a
+     * The protection a contained host of this installation last reported for the driver's build on the platform a
      * launch profile names, or an unreported one when no contained host has.
      */
     public static function containedProtectionOf(HookDriver $driver, string $build, string $platform): ProtectionReport
@@ -232,7 +232,7 @@ final class Host extends Model implements ReadableModel
     }
 
     /**
-     * Whether the host reported it can run the program at all, in any build, placement or variant.
+     * Whether the host reported it can run the driver at all, in any build, placement or variant.
      */
     public function declaresDriver(HookDriver $driver): bool
     {

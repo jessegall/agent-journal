@@ -46,7 +46,7 @@ final class ConnectionsPages implements NavigationProvider, PageProvider
     public function navigation(): array
     {
         return [
-            NavigationItem::page('connect', 'Connect a project', Icon::Connections, group: 'Agents', position: 50),
+            NavigationItem::page('connect', 'Connect a project', Icon::Connections, group: 'web.agents', position: 50),
         ];
     }
 

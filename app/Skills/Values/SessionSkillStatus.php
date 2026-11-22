@@ -9,7 +9,7 @@ use JsonSerializable;
 /**
  * One skill as one session has it, each stage on its own: the stored revision, the generated digest, whether it is
  * selected now and why not, the delivered generation, whether the agent read that text in this context, and whether
- * its program needs a new session to load it. A file that exists is never counted as read.
+ * its driver needs a new session to load it. A file that exists is never counted as read.
  */
 final readonly class SessionSkillStatus implements JsonSerializable
 {

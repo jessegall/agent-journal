@@ -7,7 +7,7 @@ namespace App\Http\Requests\Profiles;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * The challenge the host's program printed: the https address the user opens and, for a device sign-in, its code.
+ * The challenge the host's driver printed: the https address the user opens and, for a device sign-in, its code.
  */
 final class SignInChallengeRequest extends FormRequest
 {

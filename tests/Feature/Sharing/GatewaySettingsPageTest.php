@@ -84,18 +84,27 @@ final class GatewaySettingsPageTest extends TestCase
         $page = $this->actingAs($this->owner)->get('/sharing/gateways')->assertOk()->assertInertia(fn (
             AssertableInertia $page,
         ) => $page
-            ->component('sharing/GatewaySettingsWindow')
-            ->where('page.data.isOffline', true)
-            ->has('page.data.revisions', 2)
-            ->where('page.data.revisions.0.gatewayKey', 'ngrok')
-            ->where('page.data.revisions.1.gatewayKey', 'tunler')
-            ->where('page.data.revisions.1.secretReferences', ['tunler-login'])
+            ->component('layout/DeclaredLayout')
+            ->where('page.data.root.children.1.key', 'offline')
+            ->has('page.data.root.children.3.children', 2)
             ->where(
-                'page.data.revisions.1.setupProblems.0',
+                'page.data.root.children.3.children.0.children.0.children.0.text',
+                fn (string $label) => str_starts_with($label, 'ngrok version'),
+            )
+            ->where(
+                'page.data.root.children.3.children.1.children.0.children.0.text',
+                fn (string $label) => str_starts_with($label, 'tunler version'),
+            )
+            ->where('page.data.root.children.3.children.1.children.2.text', 'Secrets: tunler-login')
+            ->where(
+                'page.data.root.children.3.children.1.children.3.rows.0.label',
                 'The tunler program is not installed at its pinned path.',
             ));
 
-        $this->assertContains('tunler', $page->viewData('page')['props']['page']['data']['gatewayKeys']);
+        $this->assertContains(
+            'tunler',
+            $page->viewData('page')['props']['page']['data']['root']['children'][4]['native']['props']['gatewayKeys'],
+        );
         $this->assertStringNotContainsString(self::SECRET, (string) $page->getContent());
         $this->assertStringNotContainsString(
             self::SECRET,
@@ -137,7 +146,7 @@ final class GatewaySettingsPageTest extends TestCase
         $this->actingAs($this->owner)->get('/sharing/gateways')->assertOk()->assertInertia(fn (
             AssertableInertia $page,
         ) => $page
-            ->where('page.data.revisions.0.dependentShares.0.id', $share->id));
+            ->where('page.data.root.children.3.children.0.children.3.children.1.rows.0.key', $share->id));
         $this->write('delete', "/sharing/gateways/{$configuration->id}")->assertStatus(303);
 
         $this->assertSame(ShareState::Revoked, Share::query()->findOrFail($share->id)->state);

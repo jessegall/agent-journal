@@ -14,7 +14,7 @@ use App\Skills\Values\SkillKey;
 /**
  * Claude Code 2.1.323 finds a session's skills in a plugin folder passed with --plugin-dir, the only route that works
  * with the journal's empty setting sources (report 171). The host writes that folder inside the start's isolated
- * settings folder; the program lists its skills at start only.
+ * settings folder; the driver lists its skills at start only.
  */
 final readonly class ClaudeCodeSkills implements DriverSkills
 {

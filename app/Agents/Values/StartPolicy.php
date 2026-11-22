@@ -43,7 +43,7 @@ final readonly class StartPolicy
     }
 
     /**
-     * A user's main agent started with an explicit program and model and no profile: on the protected host, in
+     * A user's main agent started with an explicit driver and model and no profile: on the protected host, in
      * the given folder, with the default budgets.
      */
     public static function mainOnHost(string $worktree): self

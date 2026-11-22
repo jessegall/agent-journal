@@ -75,7 +75,7 @@ final class DriverRequestRefused extends RuntimeException implements CommandRefu
     {
         return new self(
             sprintf(
-                "The runtime of session %s is held for %s, which ends only on the program's own evidence.",
+                "The runtime of session %s is held for %s, which ends only on the driver's own evidence.",
                 $target->sessionId,
                 $hold,
             ),

@@ -38,7 +38,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * One run of a program's own sign-in: for a new account, or to sign an existing one in again. Its private folder,
+ * One run of a driver's own sign-in: for a new account, or to sign an existing one in again. Its private folder,
  * process and login references never leave the server, and no challenge, code or token is ever kept on it. A finished
  * attempt may still owe the deletion of what it left behind.
  *
@@ -108,7 +108,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
 
     /**
      * A new attempt, started by an actor, to sign in by a method into its own new staging folder: a new account of a
-     * program, or an existing account again, in the sign-in generation that account is in. No host takes a sign-in
+     * driver, or an existing account again, in the sign-in generation that account is in. No host takes a sign-in
      * again while a process may still run on the account's folder.
      */
     public static function create(
@@ -163,7 +163,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The earliest attempt still signing in a new account of the program, or this account, which a second start
+     * The earliest attempt still signing in a new account of the driver, or this account, which a second start
      * rejoins instead of starting another writer.
      */
     public static function liveFor(HookDriver $driver, Account|null $account): self|null
@@ -213,7 +213,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The program of an attempt, read before its locks are taken in their order: selection, then attempt.
+     * The driver of an attempt, read before its locks are taken in their order: selection, then attempt.
      *
      * @throws SignInAttemptMissing
      */
@@ -393,7 +393,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The program's sign-in started and now waits for its user; only from here may a verified result complete it.
+     * The driver's sign-in started and now waits for its user; only from here may a verified result complete it.
      */
     public function waitForUser(): void
     {
@@ -406,7 +406,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The user's answer, under its request key, went to the program, which now checks it; the key is the answer's
+     * The user's answer, under its request key, went to the driver, which now checks it; the key is the answer's
      * receipt, so a repeat of it is known.
      */
     public function acceptAnswer(string $submissionKey): void
@@ -417,7 +417,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The host takes the attempt to run its program's sign-in.
+     * The host takes the attempt to run its driver's sign-in.
      */
     public function claimOn(string $hostId): void
     {
@@ -456,7 +456,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
 
     /**
      * The owner asks for the cleanup of an unfinished sign-in's staging folder again, by the attempt alone, even when
-     * its folder is already gone: the host still has to show the program's sign-in is gone.
+     * its folder is already gone: the host still has to show the driver's sign-in is gone.
      */
     public function retryCleanup(): void
     {

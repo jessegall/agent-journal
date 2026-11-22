@@ -100,7 +100,7 @@ final class StartAgentTest extends TestCase
             StartDisposition::Started,
             StartRecord::query()->where('request_id', $request->requestId)->sole()->disposition,
         );
-        $this->assertSame(['--model', TestSelections::MODEL], $first->programArguments);
+        $this->assertSame(['--model', TestSelections::MODEL], $first->driverArguments);
         $this->assertSame(StartReceipt::ACTUAL_MODEL_NOT_REPORTED, $first->actualModel);
     }
 
@@ -150,7 +150,7 @@ final class StartAgentTest extends TestCase
 
         $this->assertSame(
             [['--model', TestSelections::MODEL], StartReceipt::ACTUAL_MODEL_NOT_REPORTED],
-            [$receipt->programArguments, $receipt->actualModel],
+            [$receipt->driverArguments, $receipt->actualModel],
         );
     }
 

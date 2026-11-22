@@ -8,7 +8,7 @@ use RuntimeException;
 use Throwable;
 
 /**
- * The journal answered a hook call successfully but its body is not a program reply.
+ * The journal answered a hook call successfully but its body is not a driver reply.
  */
 final class DriverReplyMalformed extends RuntimeException
 {

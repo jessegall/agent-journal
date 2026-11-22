@@ -114,7 +114,7 @@ final class UiDeclarationValuesTest extends TestCase
 
     public function test_navigation_nests_static_children_with_query_values_and_a_children_reader(): void
     {
-        $plans = NavigationItem::page('list', 'Plans', Icon::Plan, group: 'Work', position: 200)
+        $plans = NavigationItem::page('list', 'Plans', Icon::Plan, group: 'web.work', position: 200)
             ->count(LooseResolver::class)
             ->children([
                 NavigationItem::page('open', 'Open', page: 'list', query: ['state' => 'open']),
@@ -123,7 +123,7 @@ final class UiDeclarationValuesTest extends TestCase
         $collections = NavigationItem::heading('collections', 'Collections', childrenResolver: LooseResolver::class);
 
         $this->assertSame('list', $plans->page);
-        $this->assertSame('Work', $plans->group);
+        $this->assertSame('web.work', $plans->group);
         $this->assertSame(['open', 'closed'], array_map(fn (NavigationItem $child) => $child->key, $plans->children));
         $this->assertSame(['state' => 'open'], $plans->children[0]->queryValues);
         $this->assertSame('list', $plans->children[0]->page);

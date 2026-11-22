@@ -8,7 +8,7 @@ use App\Drivers\Enums\HookDriver;
 use App\Hooks\Compatibility\DriverCompatibility;
 
 /**
- * What start preparation may rely on for each program the journal runs.
+ * What start preparation may rely on for each driver the journal runs.
  */
 interface DriverCompatibilities
 {

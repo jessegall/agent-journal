@@ -9,7 +9,7 @@ use App\Files\Exceptions\FileJsonInvalid;
 use App\Files\Values\FilePath;
 
 /**
- * Whether the program's current context generation is prepared, kept by the host in a file beside the pending
+ * Whether the driver's current context generation is prepared, kept by the host in a file beside the pending
  * envelopes so it holds while the journal is away. Each session start or compaction opens a new generation as
  * unprepared, and only the journal's successful answer to that same callback prepares it; a stale answer for an older
  * generation changes nothing. No file means no generation was ever prepared.

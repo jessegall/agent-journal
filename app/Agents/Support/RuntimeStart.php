@@ -7,7 +7,7 @@ namespace App\Agents\Support;
 use App\Agents\Models\AgentRuntime;
 
 /**
- * What a host needs to start a runtime's program: its driver type, the session it runs, the program and the build it
+ * What a host needs to start a runtime's driver: its driver type, the session it runs, the driver and the build it
  * was opened for, the folder it works in, the process generation to start under and the model and effort asked for.
  */
 final readonly class RuntimeStart

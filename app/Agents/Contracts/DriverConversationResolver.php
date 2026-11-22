@@ -8,7 +8,7 @@ use App\Agents\Support\DriverConversationSummary;
 use App\Drivers\Enums\HookDriver;
 
 /**
- * The native conversations an agent's starts entered for one program and context, newest visit first, at most 20.
+ * The native conversations an agent's starts entered for one driver and context, newest visit first, at most 20.
  */
 interface DriverConversationResolver
 {

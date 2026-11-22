@@ -7,7 +7,7 @@ namespace App\Profiles\Values;
 use Carbon\CarbonImmutable;
 
 /**
- * The estimated cost one result of a program reported, in US dollars, under the source that identifies that result
+ * The estimated cost one result of a driver reported, in US dollars, under the source that identifies that result
  * for good, and the Unix second it was observed.
  */
 final readonly class UsageCost

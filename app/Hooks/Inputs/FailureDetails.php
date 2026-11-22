@@ -7,7 +7,7 @@ namespace App\Hooks\Inputs;
 use App\Agents\Enums\DriverFailure;
 
 /**
- * What a program's failure notification says, in safe terms: the program and why its request failed.
+ * What a driver's failure notification says, in safe terms: the driver and why its request failed.
  */
 final readonly class FailureDetails
 {

@@ -18,7 +18,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * The host withholds work until the program discovered its tools in its current process generation (task 322): a
+ * The host withholds work until the driver discovered its tools in its current process generation (task 322): a
  * fresh runtime is not ready, a discovery after its start makes it ready, a discovery from before a new generation
  * does not carry over, and a session the host never started has nothing to wait for.
  */

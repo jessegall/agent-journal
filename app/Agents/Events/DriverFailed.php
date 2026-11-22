@@ -11,8 +11,8 @@ use App\Records\Support\RecordIdentity;
 use App\Ui\Contracts\UserInterfaceUpdater;
 
 /**
- * A start's program reported that a request failed, and why in its checked vocabulary, with the account by identity
- * and the sign-in generation its start ran in when it ran on one; the program's own error text stays private.
+ * A start's driver reported that a request failed, and why in its checked vocabulary, with the account by identity
+ * and the sign-in generation its start ran in when it ran on one; the driver's own error text stays private.
  */
 final readonly class DriverFailed implements Event, ListenerFailureLog, UserInterfaceUpdater
 {

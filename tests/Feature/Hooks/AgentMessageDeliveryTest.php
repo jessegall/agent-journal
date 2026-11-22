@@ -169,7 +169,7 @@ final class AgentMessageDeliveryTest extends TestCase
     private function messagingCapabilities(): DriverCapabilities
     {
         return new DriverCapabilities(
-            'Test program',
+            'Test driver',
             'prompt, file edit and stop replies',
             ['onPrompt', 'onFileEdit', 'onStop'],
             RewriteSupport::WithoutApproval,

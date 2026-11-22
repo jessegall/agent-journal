@@ -11,7 +11,7 @@ use App\Http\Data\Agents\RuntimeLivenessReportData;
 use Illuminate\Http\Response;
 
 /**
- * Takes the host's verified report that a runtime's program exited. The host's calls run as the journal itself: a host
+ * Takes the host's verified report that a runtime's driver exited. The host's calls run as the journal itself: a host
  * is infrastructure, never an actor.
  */
 final readonly class ExitReportController

@@ -20,7 +20,7 @@ import {
 
 /**
  * One saved account in the list: its driver's icon, its name, and one grey line with its driver, what it bills,
- * whether it is the default, its state and its expiry, and under it one line of the usage its programs reported;
+ * whether it is the default, its state and its expiry, and under it one line of the usage its drivers reported;
  * on the right only its buttons, the way back for an account that must sign in again and one settings button that
  * opens everything else. A row of a list kept after a failed refresh offers none of them.
  */

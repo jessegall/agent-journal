@@ -7,7 +7,7 @@ namespace App\Hooks\Inputs\Values;
 use App\Hooks\Exceptions\UnreadablePayload;
 
 /**
- * The tool arguments a program sent, kept whole so a rewrite changes only the command.
+ * The tool arguments a driver sent, kept whole so a rewrite changes only the command.
  */
 final readonly class DriverToolInput
 {

@@ -12,7 +12,7 @@ use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;
 
 /**
- * Claude Code as every sign-in method runs it on the host: the configured program, with the account folder as its
+ * Claude Code as every sign-in method runs it on the host: the configured driver, with the account folder as its
  * CLAUDE_CONFIG_DIR and HOME and nothing else of the host's configuration, and its status read from
  * `claude auth status --json`.
  */
@@ -30,7 +30,7 @@ final readonly class ClaudeDriver
     ) {}
 
     /**
-     * Runs the program in the account folder, with extra variables that name no secret and files it reads on their
+     * Runs the driver in the account folder, with extra variables that name no secret and files it reads on their
      * own descriptors.
      *
      * @param  list<string>  $arguments

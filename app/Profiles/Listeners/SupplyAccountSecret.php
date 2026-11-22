@@ -12,8 +12,8 @@ use App\Profiles\Support\ClaudeTokenSignIn;
 
 /**
  * A start on a Claude Code account signed in by a provider token gets its token the way the sign-in proved it: the
- * host opens the token's file on a descriptor the program is told about, so the token is in no argument or variable.
- * A key account needs nothing here: its own settings.json already names the apiKeyHelper the program reads.
+ * host opens the token's file on a descriptor the driver is told about, so the token is in no argument or variable.
+ * A key account needs nothing here: its own settings.json already names the apiKeyHelper the driver reads.
  */
 final readonly class SupplyAccountSecret implements Listener
 {

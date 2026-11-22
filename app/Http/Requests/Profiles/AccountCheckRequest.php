@@ -9,7 +9,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * The host's report of an account check: the generation it was asked in and what the program's own check said.
+ * The host's report of an account check: the generation it was asked in and what the driver's own check said.
  */
 final class AccountCheckRequest extends FormRequest
 {

@@ -60,7 +60,8 @@ final class InboxPageTest extends TestCase
         $questionId = $this->runOnBus(new AskMessage($own->inboxId(), $team->inboxId(), 'Who takes this?'));
 
         $this->actingAs($owner)->get('/chat/inbox')->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('page.data.panels', 2));
+            ->has('page.data.root.children', 2)
+            ->where('page.data.root.children.0.children.1.native.component', 'chat/InboxMessages'));
 
         $this->assertNull(Message::query()->withoutGlobalScopes()->findOrFail($questionId)->read_at);
 

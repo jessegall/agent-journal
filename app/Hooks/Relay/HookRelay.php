@@ -29,7 +29,7 @@ use TypeError;
 /**
  * What the host runs for every native hook call: upload the bypasses logged while the journal was away, give the
  * callback its own envelope, keep it, post it, send the same envelope again once if the journal could not be reached,
- * and give the program the journal's reply. Only a transport failure is an outage: then the start's sealed offline
+ * and give the driver the journal's reply. Only a transport failure is an outage: then the start's sealed offline
  * reply answers, and a neutral one is logged as a bypass. Any status or malformed body from the journal is its answer
  * and is refused, never bypassed. While disconnected the relay cannot see a profile revoked meanwhile; every call
  * after reconnection is authenticated again with the pinned profile.

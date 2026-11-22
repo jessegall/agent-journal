@@ -11,13 +11,13 @@ use App\Profiles\Models\ActiveAccount;
 use Carbon\CarbonImmutable;
 
 /**
- * Records and resolves a program's account notices under the program's selection lock, so two records of the same
+ * Records and resolves a driver's account notices under the driver's selection lock, so two records of the same
  * notice count one row twice and a resolve never races a record; each notice changes only its own row.
  */
 final readonly class AccountNotices
 {
     /**
-     * Records that it happened: an open notice of the same program and reason counts once more instead of repeating.
+     * Records that it happened: an open notice of the same driver and reason counts once more instead of repeating.
      */
     public function record(string $driver, AccountNoticeReason $reason): AccountNotice
     {
@@ -34,7 +34,7 @@ final readonly class AccountNotices
     }
 
     /**
-     * Resolves the program's open notices once its accounts work again, in the order of their ids.
+     * Resolves the driver's open notices once its accounts work again, in the order of their ids.
      */
     public function resolveOpen(string $driver, CarbonImmutable $now): void
     {

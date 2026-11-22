@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Enums;
 
 /**
- * Where a started program runs: on the protected host, or entirely inside an admitted container.
+ * Where a started driver runs: on the protected host, or entirely inside an admitted container.
  */
 enum ExecutionModeType: string
 {

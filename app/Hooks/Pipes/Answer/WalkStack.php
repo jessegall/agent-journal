@@ -14,7 +14,7 @@ use App\Pipelines\Contracts\Pipe;
 use Illuminate\Contracts\Container\Container;
 
 /**
- * Walks the restored stack and settles what the program accepts. A shell line walks with its rewrite, and whatever
+ * Walks the restored stack and settles what the driver accepts. A shell line walks with its rewrite, and whatever
  * the frames answered, Core's mandatory admission then decides whether it runs. The rewrite and the admission hold
  * request state, so both are asked for per call.
  */

@@ -77,7 +77,7 @@ final readonly class StartAgentHandler implements CommandHandler
             return self::receiptOf($request, AgentSession::query()->findOrFail($record->session_id), false);
         }
 
-        // The agent's lifecycle and start reservation, then the host's capacity, then the program's account, then
+        // The agent's lifecycle and start reservation, then the host's capacity, then the driver's account, then
         // the session: the order of every start.
         $agent = Agent::query()->findOrFail($request->agentId);
         $this->sessions->reserveStart($agent);

@@ -14,7 +14,7 @@ use App\Operations\Enums\AccessType;
 
 /**
  * A user releases the hold they read on an agent's runtime: an interrupt or a call for attention, never a hold the
- * program itself shows.
+ * driver itself shows.
  *
  * @extends Command<void>
  */

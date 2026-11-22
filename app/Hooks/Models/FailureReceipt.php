@@ -16,8 +16,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One failure a session's program reported, kept once per native event so a retried notification is recorded once.
- * Only the safe failure is kept, never the program's own error text; a request reads only its own session's.
+ * One failure a session's driver reported, kept once per native event so a retried notification is recorded once.
+ * Only the safe failure is kept, never the driver's own error text; a request reads only its own session's.
  *
  * @property string $id
  * @property string $agent_id

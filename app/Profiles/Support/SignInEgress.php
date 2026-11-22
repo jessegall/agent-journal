@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 /**
- * The way out a sign-in program takes on a server: the allow-list proxy the contained arrangement names
+ * The way out a sign-in driver takes on a server: the allow-list proxy the contained arrangement names
  * (JOURNAL_EGRESS_PROXY, doc 61 decision 5), so no sign-in, check or sign-out reaches a provider around it. With no
  * proxy set, as on the Mac, it adds nothing.
  */
@@ -14,7 +14,7 @@ final readonly class SignInEgress
     public function __construct(private string $proxy) {}
 
     /**
-     * The proxy variables both lowercase and uppercase, since programs read either, with the journal's own app
+     * The proxy variables both lowercase and uppercase, since drivers read either, with the journal's own app
      * reached directly; none when no proxy is set.
      *
      * @return array<string, string>

@@ -11,7 +11,7 @@ use App\Skills\Support\StartDriver;
 use Tests\TestCase;
 
 /**
- * A session's program gives its program and provider keys from the program registration, never from a model name.
+ * A session's driver gives its driver and provider keys from the driver registration, never from a model name.
  */
 final class StartProgramTest extends TestCase
 {

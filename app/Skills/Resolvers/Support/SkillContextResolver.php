@@ -20,7 +20,7 @@ use App\Skills\Values\StartProfile;
 
 /**
  * Reads the facts skill conditions decide on for one agent's session: the profile revision it was started with,
- * its program and provider. It reads no token or secret.
+ * its driver and provider. It reads no token or secret.
  */
 final readonly class SkillContextResolver
 {

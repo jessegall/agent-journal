@@ -68,8 +68,8 @@ final class PlanEndPageTest extends TestCase
         $offered = $this->actingAs($this->owner)->get("/plans/{$this->plan->number}")->assertOk();
 
         $offered->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.review.mayFinish', true)
-            ->where('page.data.review.mayCancel', true));
+            ->where('page.data.root.children.2.native.props.review.mayFinish', true)
+            ->where('page.data.root.children.2.native.props.review.mayCancel', true));
 
         $this->end('finish', ['revision' => $this->plan->revision, 'state' => 'started', 'text' => 'Shipped.'])
             ->assertSessionHasNoErrors();

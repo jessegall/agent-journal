@@ -57,11 +57,13 @@ final class RuntimesPageTest extends TestCase
 
         $response = $this->actingAs($this->owner)->get('/web/runtimes')->assertOk();
         $response->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('web/Runtimes')
-            ->where('page.data.runtimes.0.status.driver', 'claude-code')
-            ->where('page.data.runtimes.0.status.isStale', true)
-            ->has('page.data.runtimes.0.requests', 1)
-            ->where('page.data.runtimes.0.requests.0.operation', 'deliver'));
+            ->component('layout/DeclaredLayout')
+            ->where('page.data.root.children.2.children.0.children.0.text', 'claude-code')
+            ->where('page.data.root.children.2.children.0.children.3.key', 'observed')
+            ->where('page.data.root.children.2.children.1.native.props.status.driver', 'claude-code')
+            ->where('page.data.root.children.2.children.1.native.props.status.isStale', true)
+            ->has('page.data.root.children.2.children.1.native.props.requests', 1)
+            ->where('page.data.root.children.2.children.1.native.props.requests.0.operation', 'deliver'));
 
         $this->assertSame($requests, DriverRequest::query()->count());
         $this->assertSame(1, AgentRuntime::query()->count());
@@ -76,8 +78,8 @@ final class RuntimesPageTest extends TestCase
         $request->refresh();
 
         $this->actingAs($this->owner)->get('/web/runtimes')->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.runtimes.0.requests.0.canRetry', true)
-            ->where('page.data.runtimes.0.requests.0.rowVersion', $request->row_version));
+            ->where('page.data.root.children.2.children.1.native.props.requests.0.canRetry', true)
+            ->where('page.data.root.children.2.children.1.native.props.requests.0.rowVersion', $request->row_version));
 
         $this->actingAs($this->owner)
             ->post("/web/runtimes/requests/{$request->id}/retry", [
@@ -116,7 +118,7 @@ final class RuntimesPageTest extends TestCase
         $runtime->save();
 
         $this->actingAs($this->owner)->get('/web/runtimes')->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.runtimes.0.status.canReleaseHold', true));
+            ->where('page.data.root.children.2.children.1.native.props.status.canReleaseHold', true));
 
         $this->actingAs($this->owner)
             ->post("/web/runtimes/{$runtime->agent_session_id}/release-hold", [

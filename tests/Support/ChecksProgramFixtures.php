@@ -11,7 +11,7 @@ use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\Values\HookIdentity;
 
 /**
- * What the adapter tests of every program share: its recorded fixture, its mapping as a data provider, and reading a
+ * What the adapter tests of every driver share: its recorded fixture, its mapping as a data provider, and reading a
  * call's input.
  */
 trait ChecksProgramFixtures

@@ -11,7 +11,7 @@ use App\Drivers\Enums\HookDriver;
 
 /**
  * Refuses a binding's start before any grant unless the calling host is the binding's own, the root id and the
- * folder are the binding's registered root, the agent is its main agent and the program is one it may start.
+ * folder are the binding's registered root, the agent is its main agent and the driver is one it may start.
  *
  * @extends Command<null>
  */

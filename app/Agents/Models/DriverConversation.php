@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One native conversation of a program in one settings store, owned by the agent whose start first entered it and
+ * One native conversation of a driver in one settings store, owned by the agent whose start first entered it and
  * bound to that start's context reference.
  *
  * @property string $id
@@ -60,7 +60,7 @@ final class DriverConversation extends Model implements ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * The native id of the agent's latest conversation under this context in this program, the one a resume
+     * The native id of the agent's latest conversation under this context in this driver, the one a resume
      * continues; none when it never had one there.
      */
     public static function lastUnder(string $agentId, string $contextReference, HookDriver $driver): string|null

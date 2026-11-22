@@ -141,7 +141,7 @@ final class AgentStatusTest extends TestCase
             'unreadable screen' => [
                 self::live(self::runtime(RuntimeActivity::Idle, HoldReason::ScreenUnreadable)),
                 SessionState::Idle,
-                "The journal can't read the program screen.",
+                "The journal can't read the driver screen.",
                 [],
             ],
             'navigation hold' => [
@@ -216,7 +216,7 @@ final class AgentStatusTest extends TestCase
 
         $status = AgentStatusRules::of($evidence, self::words(false));
 
-        $this->assertSame('Ask the host operator to finish setup in the running program.', $status->reason);
+        $this->assertSame('Ask the host operator to finish setup in the running driver.', $status->reason);
     }
 
     public function test_a_live_session_offers_stop_only_to_an_actor_allowed_to_stop(): void

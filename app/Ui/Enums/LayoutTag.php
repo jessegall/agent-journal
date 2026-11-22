@@ -20,6 +20,7 @@ enum LayoutTag: string
     case Tabs = 'tabs';
     case Body = 'body';
     case Native = 'native';
+    case Menu = 'menu';
 
     /**
      * The sizes the part takes, the default first; none for a part that takes no size.
@@ -32,7 +33,7 @@ enum LayoutTag: string
             self::Box, self::Collection => ['normal', 'compact'],
             self::Text, self::Action => ['normal', 'small', 'large'],
             self::Field => ['normal'],
-            self::Notice, self::Form, self::Tabs, self::Body, self::Native => [],
+            self::Notice, self::Form, self::Tabs, self::Body, self::Native, self::Menu => [],
         };
     }
 
@@ -54,6 +55,7 @@ enum LayoutTag: string
             self::Tabs => ['tabs'],
             self::Body => ['prose'],
             self::Native => ['native'],
+            self::Menu => ['dropdown'],
         };
     }
 

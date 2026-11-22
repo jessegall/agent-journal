@@ -1,47 +1,71 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { computed, watch } from 'vue';
-import Icon from '@/components/kit/Icon.vue';
-import type { IconName } from '@/components/kit/Icon.vue';
 import { useSidebar } from '@/composables/useSidebar';
+import type {
+    NavigationCountsData,
+    NavigationData,
+    NavigationItemData,
+} from '@/types/generated';
+import SidebarRow from './SidebarRow.vue';
 
 /**
- * Version 5's sidebar (shell/SidebarPages.vue, doc 12 section 1.4): 220 px, Home pinned first, then a fold head per
- * group, rows of 6 by 8 with a 7 px radius, and the foot line; the 52 px mini form shows icons only. On a phone it
- * is hidden until the menu button opens it over the page.
+ * Version 5's sidebar (shell/SidebarPages.vue, doc 12 section 1.4): 220 px, the navigation the server merged for this
+ * user in its order, a head per sidebar group by the group's own key and label, items without a group in their place,
+ * the foot items in their own region, rows of 6 by 8 with a 7 px radius, and the foot line; the 52 px mini form shows
+ * icons only. On a phone it is hidden until the menu button opens it over the page. The current item and the counts
+ * come from the same server index.
  */
-type SidebarRow = { label: string; icon: IconName; href: string };
+type SidebarSection = {
+    key: string;
+    label: string | null;
+    items: NavigationItemData[];
+};
 
-const groups: { label: string; rows: SidebarRow[] }[] = [
-    { label: 'Work', rows: [{ label: 'Plans', icon: 'plan', href: '/plans' }] },
-    {
-        label: 'Agents',
-        rows: [
-            { label: 'Rules', icon: 'rules', href: '/rules' },
-            { label: 'Accounts', icon: 'accounts', href: '/accounts' },
-        ],
-    },
-];
-
-const home: SidebarRow = { label: 'Home', icon: 'home', href: '/' };
-
-const page = usePage();
+// The navigation comes with every signed-in page, the only pages with a sidebar; its counts follow after the page.
+const page = usePage<{
+    navigation: NavigationData;
+    navigationCounts?: NavigationCountsData;
+}>();
 const appName = computed(() => page.props.name);
 const { isMini, isOpenOnPhone, closeOnPhone } = useSidebar();
 
 watch(() => page.url, closeOnPhone);
 
-function isActive(href: string): boolean {
-    if (href === '/') {
-        return page.url === '/' || page.url.startsWith('/?');
+const navigation = computed(() => page.props.navigation);
+const counts = computed(() => page.props.navigationCounts?.counts ?? {});
+const currentKey = computed(() => navigation.value.current.at(-1) ?? null);
+const groupLabels = computed(
+    () =>
+        new Map(navigation.value.groups.map((group) => [group.key, group.label])),
+);
+
+/**
+ * The items above the foot in the server's order, cut into one section per run of items of the same group; a run
+ * without a group has no head.
+ */
+const sections = computed<SidebarSection[]>(() => {
+    const found: SidebarSection[] = [];
+
+    for (const item of navigation.value.items.filter((root) => !root.atFoot)) {
+        const key = item.group ?? '';
+        const last = found.at(-1);
+
+        if (last !== undefined && last.key === key) {
+            last.items.push(item);
+
+            continue;
+        }
+
+        found.push({ key, label: groupLabels.value.get(key) ?? null, items: [item] });
     }
 
-    return (
-        page.url === href ||
-        page.url.startsWith(`${href}?`) ||
-        page.url.startsWith(`${href}/`)
-    );
-}
+    return found;
+});
+
+const footItems = computed(() =>
+    navigation.value.items.filter((root) => root.atFoot),
+);
 </script>
 
 <template>
@@ -70,52 +94,57 @@ function isActive(href: string): boolean {
             class="flex min-h-0 flex-1 [scrollbar-width:none] flex-col gap-0.5 overflow-y-auto px-2.5 py-1.5"
             aria-label="Pages"
         >
-            <Link
-                :href="home.href"
-                :title="isMini ? home.label : undefined"
-                class="flex shrink-0 items-center gap-2.5 rounded-button py-1.5 text-body text-text hover:bg-raised focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
-                :class="[
-                    isMini ? 'justify-center' : 'px-2',
-                    { 'bg-raised': isActive(home.href) },
-                ]"
-                :aria-current="isActive(home.href) ? 'page' : undefined"
-            >
-                <Icon :name="home.icon" :size="14" class="text-text-3" />
-                <template v-if="!isMini">
-                    <span class="min-w-0 flex-1 truncate">{{
-                        home.label
-                    }}</span>
-                </template>
-            </Link>
-            <template v-for="group in groups" :key="group.label">
-                <template v-if="!isMini">
-                    <div
+            <template v-for="section in sections" :key="section.key">
+                <template v-if="section.label !== null && !isMini">
+                    <h2
+                        :id="`sidebar-group-${section.key}`"
                         class="mt-3.5 flex shrink-0 items-center px-2 py-1 text-meta font-semibold tracking-[.06em] text-text-3 uppercase"
                     >
-                        {{ group.label }}
-                    </div>
+                        {{ section.label }}
+                    </h2>
                 </template>
-                <template v-for="row in group.rows" :key="row.href">
-                    <Link
-                        :href="row.href"
-                        :title="isMini ? row.label : undefined"
-                        class="flex shrink-0 items-center gap-2.5 rounded-button py-1.5 text-body text-text hover:bg-raised focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
-                        :class="[
-                            isMini ? 'justify-center' : 'px-2',
-                            { 'bg-raised': isActive(row.href) },
-                        ]"
-                        :aria-current="isActive(row.href) ? 'page' : undefined"
-                    >
-                        <Icon :name="row.icon" :size="13" class="text-text-3" />
-                        <template v-if="!isMini">
-                            <span class="min-w-0 flex-1 truncate">{{
-                                row.label
-                            }}</span>
-                        </template>
-                    </Link>
-                </template>
+                <div
+                    class="flex flex-col gap-0.5"
+                    :role="section.label !== null ? 'group' : undefined"
+                    :aria-labelledby="
+                        section.label !== null && !isMini
+                            ? `sidebar-group-${section.key}`
+                            : undefined
+                    "
+                    :aria-label="
+                        section.label !== null && isMini
+                            ? section.label
+                            : undefined
+                    "
+                >
+                    <template v-for="item in section.items" :key="item.key">
+                        <SidebarRow
+                            :item="item"
+                            :current-key="currentKey"
+                            :counts="counts"
+                            :is-mini="isMini"
+                            :depth="0"
+                        />
+                    </template>
+                </div>
             </template>
         </nav>
+        <template v-if="footItems.length > 0">
+            <nav
+                class="flex shrink-0 flex-col gap-0.5 border-t border-border px-2.5 py-1.5"
+                aria-label="More pages"
+            >
+                <template v-for="item in footItems" :key="item.key">
+                    <SidebarRow
+                        :item="item"
+                        :current-key="currentKey"
+                        :counts="counts"
+                        :is-mini="isMini"
+                        :depth="0"
+                    />
+                </template>
+            </nav>
+        </template>
         <template v-if="!isMini">
             <div
                 class="flex justify-between border-t border-border px-[18px] py-2.5 text-small text-text-3"

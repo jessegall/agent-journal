@@ -7,7 +7,7 @@ namespace App\Agents\Contracts;
 use Carbon\CarbonImmutable;
 
 /**
- * Whether a started program has discovered its journal MCP tools, by the signed time of its authenticated tools/list.
+ * Whether a started driver has discovered its journal MCP tools, by the signed time of its authenticated tools/list.
  */
 interface ToolDiscovery
 {

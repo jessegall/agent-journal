@@ -9,7 +9,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * Which account new starts of one program use, with the change number that tells a newer choice from an older one.
+ * Which account new starts of one driver use, with the change number that tells a newer choice from an older one.
  */
 #[TypeScript]
 final class AccountSelectionData extends Data

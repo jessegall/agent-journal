@@ -11,7 +11,7 @@ namespace App\Profiles\Contracts;
 interface AccountFolders
 {
     /**
-     * Makes the folder, private to the program's user; an existing folder is left as it is.
+     * Makes the folder, private to the driver's user; an existing folder is left as it is.
      */
     public function make(string $directory): void;
 

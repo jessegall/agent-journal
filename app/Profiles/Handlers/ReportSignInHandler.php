@@ -49,7 +49,7 @@ final readonly class ReportSignInHandler implements CommandHandler
     }
 
     /**
-     * The host could not tell whether the program took the user's answer: a live attempt of that generation ends
+     * The host could not tell whether the driver took the user's answer: a live attempt of that generation ends
      * interrupted and its staged answer is erased, so it is never given again. The host's own words are not kept: the
      * state says what happened.
      */

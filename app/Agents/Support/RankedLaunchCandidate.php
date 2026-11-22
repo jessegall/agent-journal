@@ -8,7 +8,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\LaunchCandidateRank;
 
 /**
- * One helper that may take the launch, with its rank, and whether any of its conversations, on any program, was kept
+ * One helper that may take the launch, with its rank, and whether any of its conversations, on any driver, was kept
  * under the purpose: an independent launch never takes a helper that was.
  */
 final readonly class RankedLaunchCandidate

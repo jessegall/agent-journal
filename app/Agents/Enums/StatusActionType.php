@@ -42,7 +42,7 @@ enum StatusActionType: string
             self::Dismiss => 'Dismiss',
             self::CancelStart => 'Cancel start',
             self::RecheckSwitch => 'Check and switch',
-            self::OpenTerminal => 'Open the program',
+            self::OpenTerminal => 'Open terminal',
             self::Stop => 'Stop session',
             self::Interrupt => 'Interrupt',
         };

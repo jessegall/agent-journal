@@ -14,7 +14,7 @@ use Carbon\CarbonImmutable;
 use PhpOption\Option;
 
 /**
- * One hook call of an agent program, in the journal's own words; it asks a state for the matching answer.
+ * One hook call of an agent driver, in the journal's own words; it asks a state for the matching answer.
  */
 interface HookInput
 {
@@ -43,7 +43,7 @@ interface HookInput
     public function contextStart(): Option;
 
     /**
-     * Records the agent's visit to its program conversation, for a session start or a compaction.
+     * Records the agent's visit to its driver conversation, for a session start or a compaction.
      */
     public function recordVisit(ConversationVisits $visits, string $sessionId, CarbonImmutable $at): void;
 

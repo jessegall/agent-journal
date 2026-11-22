@@ -94,7 +94,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
     }
 
     /**
-     * The script compiled under the definitions registered now, when that gives the program it was activated with;
+     * The script compiled under the definitions registered now, when that gives the driver it was activated with;
      * a definition that changed or is no longer available gives none.
      *
      * @return Option<CompiledScript>

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Enums;
 
 /**
- * Whether a program can take a rewritten command without the journal granting a native approval.
+ * Whether a driver can take a rewritten command without the journal granting a native approval.
  */
 enum RewriteSupport: string
 {
@@ -13,7 +13,7 @@ enum RewriteSupport: string
     case NeedsApproval = 'needs_approval';
 
     /**
-     * Whether the program runs a rewritten command line without asking anyone first.
+     * Whether the driver runs a rewritten command line without asking anyone first.
      */
     public function canRewrite(): bool
     {

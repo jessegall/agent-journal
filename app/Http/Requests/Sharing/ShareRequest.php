@@ -8,7 +8,7 @@ use App\Http\Requests\Sharing\Concerns\ReadsShareId;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * The share the owner's detail page or reveal action names, and the audit page the detail shows.
+ * The share the owner's detail page or reveal action names, the tab the detail shows and the audit page it shows.
  */
 final class ShareRequest extends FormRequest
 {
@@ -19,7 +19,18 @@ final class ShareRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['auditAfter' => ['nullable', 'string', 'ulid']];
+        return [
+            'auditAfter' => ['nullable', 'string', 'ulid'],
+            'tab' => ['nullable', 'string', 'max:40'],
+        ];
+    }
+
+    /**
+     * The tab of the detail the window chose; none chooses the first.
+     */
+    public function chosenTab(): string
+    {
+        return $this->string('tab')->toString();
     }
 
     /**

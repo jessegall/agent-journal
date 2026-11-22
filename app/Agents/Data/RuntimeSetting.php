@@ -9,7 +9,7 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One setting of a runtime in its three states: what was asked for, what the host has staged and what the program
+ * One setting of a runtime in its three states: what was asked for, what the host has staged and what the driver
  * was last seen using. Only the observed value is in effect.
  */
 #[TypeScript]

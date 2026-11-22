@@ -1126,8 +1126,8 @@ case	StartRefusalType::ModelUnavailable
 case	StartRemedyType::CheckCapacity
 case	StartRemedyType::ChooseAccount
 case	StartRemedyType::ChooseConversation
+case	StartRemedyType::ChooseDriver
 case	StartRemedyType::ChooseModel
-case	StartRemedyType::ChooseProgram
 case	StartRemedyType::ConnectHost
 case	StartRemedyType::OperatorInstruction
 case	StartRemedyType::RetryStart
@@ -6389,7 +6389,6 @@ class	UserPresence
 class	UserPresenceRecords
 class	UserStacks
 class	UserVisibility
-class	UserWords
 class	ValidateCommand
 class	VerbNamedTypes
 class	VerbNotServed
@@ -6445,6 +6444,7 @@ class	WithheldGrant
 class	WithheldGrantData
 class	Word
 class	WordBuilder
+class	WordLines
 class	WordSegment
 class	WordToParse
 class	WorkChainEnd
@@ -7442,10 +7442,11 @@ constant	UnsupportedConstruct::COMMAND_STARTING_WORDS
 constant	UploadStore::ACTIVE_UPLOADS
 constant	UsdAmount::MOST_DECIMALS
 constant	UserChannel::PATTERN
-constant	UserWords::EXTENSIONS
-constant	UserWords::GENERATED
-constant	UserWords::WORD
 constant	VerbNamedTypes::VERBS
+constant	WordLines::DRIVER_WORDS
+constant	WordLines::EXTENSIONS
+constant	WordLines::GENERATED
+constant	WordLines::USER_WORDS
 constant	WorkingOnPlanStateReference::TYPE_KEY
 constant	WorkingOnTaskStateReference::TYPE_KEY
 constant	WorkspaceReadController::PENDING_LIMIT
@@ -8142,7 +8143,7 @@ interface	ToolDiscovery
 interface	TypeReflections
 interface	UiOwnerAvailability
 interface	UnitOwner
-interface	UnstartableProgram
+interface	UnstartableDriver
 interface	UserInterfaceUpdater
 interface	UserPresences
 interface	UserStack
@@ -21508,7 +21509,7 @@ method	SignInAnswerRefused::asksForNone()
 method	SignInAnswerRefused::notWaiting()
 method	SignInAnswerRefused::refusalCode()
 method	SignInAnswerRefused::status()
-method	SignInAnswerUndelivered::toProgram()
+method	SignInAnswerUndelivered::toDriver()
 method	SignInAttempt::acceptAnswer()
 method	SignInAttempt::accepts()
 method	SignInAttempt::account()
@@ -24158,10 +24159,6 @@ method	UserStacks::push()
 method	UserVisibility::ownRead()
 method	UserVisibility::ownRows()
 method	UserVisibility::readAcrossOwners()
-method	UserWords::codeFiles()
-method	UserWords::in()
-method	UserWords::isScannedSourceFile()
-method	UserWords::linesOf()
 method	UsesGrammarContext::cursor()
 method	UsesGrammarContext::draft()
 method	ValidateCommand::__construct()
@@ -24292,6 +24289,10 @@ method	WordBuilder::add()
 method	WordBuilder::addCharacter()
 method	WordBuilder::endLiteral()
 method	WordBuilder::word()
+method	WordLines::codeFiles()
+method	WordLines::in()
+method	WordLines::isScannedSourceFile()
+method	WordLines::linesOf()
 method	WordSegment::__construct()
 method	WordSegment::shiftedBy()
 method	WordToParse::__construct()
@@ -25159,6 +25160,7 @@ parameter	$drafts
 parameter	$drain
 parameter	$drained
 parameter	$driver
+parameter	$driverArguments
 parameter	$driverBuild
 parameter	$driverKey
 parameter	$driverName
@@ -26316,7 +26318,6 @@ parameter	$profileType
 parameter	$profiles
 parameter	$profilesFolder
 parameter	$program
-parameter	$programArguments
 parameter	$programClassifiers
 parameter	$programWord
 parameter	$programs
@@ -35859,8 +35860,8 @@ property	StartProposal::$variant
 property	StartReceipt::$actualModel
 property	StartReceipt::$agentId
 property	StartReceipt::$conversationMode
+property	StartReceipt::$driverArguments
 property	StartReceipt::$newSession
-property	StartReceipt::$programArguments
 property	StartReceipt::$requestId
 property	StartReceipt::$selection
 property	StartReceipt::$sessionId
@@ -35945,8 +35946,8 @@ property	StartTaskHandler::$waits
 property	StartUnavailable::$agentId
 property	StartUnavailable::$driver
 property	StartUnavailable::$reason
+property	StartedAgent::$driverArguments
 property	StartedAgent::$firstRequest
-property	StartedAgent::$programArguments
 property	StartedAgent::$runtime
 property	StartedAgent::$session
 property	StartedAgent::$settings
@@ -37978,8 +37979,8 @@ variable	$implements
 variable	$import
 variable	$imported
 variable	$imports
+variable	$inDriver
 variable	$inPath
-variable	$inProgram
 variable	$inRank
 variable	$inbox
 variable	$inboxId

@@ -11,7 +11,7 @@ use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
- * A challenge whose link leads somewhere other than the program's own sign-in pages: it is never shown, and the refusal
+ * A challenge whose link leads somewhere other than the driver's own sign-in pages: it is never shown, and the refusal
  * names no link.
  */
 final class SignInChallengeRefused extends RuntimeException implements CodedRefusal, CommandRefusal

@@ -57,7 +57,7 @@
             "account_mode": "subscription",
             "execution_mode": "required_container",
             "status": "unverified",
-            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
+            "evidence": "docs/hooks/driver-capabilities.md#container-capabilities",
             "reason": "Codex runs hook commands as its own child processes and talks to MCP servers on their own channel, but no container run has shown that a model-run tool cannot reach the hook relay's channel and send it a callback."
         },
         {
@@ -77,7 +77,7 @@
             "account_mode": "subscription",
             "execution_mode": "required_container",
             "status": "unverified",
-            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
+            "evidence": "docs/hooks/driver-capabilities.md#container-capabilities",
             "reason": "Hook commands run as the same user as the model's shell, so the relay material is readable by model-run descendants unless a separate user or Codex's own sandbox keeps it out; neither has been run and checked in a container."
         },
         {
@@ -97,7 +97,7 @@
             "account_mode": "subscription",
             "execution_mode": "required_container",
             "status": "unverified",
-            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
+            "evidence": "docs/hooks/driver-capabilities.md#container-capabilities",
             "reason": "No container run has shown that every model-run descendant, background shells included, stays in one process group the host can see and end."
         },
         {
@@ -117,7 +117,7 @@
             "account_mode": "subscription",
             "execution_mode": "required_container",
             "status": "unverified",
-            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
+            "evidence": "docs/hooks/driver-capabilities.md#container-capabilities",
             "reason": "No host exists yet (task 258) to close new action admission and keep it closed through completion, or to bump a workspace generation before a changing tool; the hook endpoint's refusals alone have not been run against a fenced session."
         },
         {
@@ -137,7 +137,7 @@
             "account_mode": "subscription",
             "execution_mode": "required_container",
             "status": "unverified",
-            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
+            "evidence": "docs/hooks/driver-capabilities.md#container-capabilities",
             "reason": "The task 89 capture saw stop_hook_active on Stop but never blocked a stop or ran past a hook timeout, so the Stop deadline and the continuation cap of 0.165.0 are not measured; only SessionEnd's 1 second default (3 at most) is known."
         },
         {

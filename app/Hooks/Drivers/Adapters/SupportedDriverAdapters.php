@@ -9,7 +9,7 @@ use App\Hooks\Drivers\Contracts\DriverAdapter;
 use App\Hooks\Drivers\Contracts\DriverAdapters;
 
 /**
- * The adapter of each supported program.
+ * The adapter of each supported driver.
  */
 final readonly class SupportedDriverAdapters implements DriverAdapters
 {

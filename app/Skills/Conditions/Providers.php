@@ -10,7 +10,7 @@ use App\Skills\Values\ConditionResult;
 use App\Skills\Values\SkillContext;
 
 /**
- * Matches a session whose program runs on one of these providers; a program with no registered provider is
+ * Matches a session whose driver runs on one of these providers; a driver with no registered provider is
  * unavailable, never a match on an empty name.
  */
 final readonly class Providers implements SkillCondition

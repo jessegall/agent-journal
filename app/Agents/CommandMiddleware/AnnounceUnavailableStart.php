@@ -14,7 +14,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Around a start's transaction: when no account can run it, the refusal rolls the start back and this announces
- * the program and the safe reason, so the owner is told while the agent's work stays as it was.
+ * the driver and the safe reason, so the owner is told while the agent's work stays as it was.
  */
 final readonly class AnnounceUnavailableStart implements CommandMiddleware
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Enums;
 
 /**
- * Why a provider refused a sign-in's proof, from a bounded set: the program's own words never reach the attempt, only
+ * Why a provider refused a sign-in's proof, from a bounded set: the driver's own words never reach the attempt, only
  * the plain reason they match, and words that match none give the generic failure.
  */
 enum SignInRefusal: string
@@ -36,7 +36,7 @@ enum SignInRefusal: string
             self::RejectedCredential => 'The provider did not accept the key or login. Check it and try again.',
             self::NoCredit => 'The provider refused it because the account has no credit or quota left.',
             self::RateLimited => 'The provider is limiting requests. Try again in a few minutes.',
-            self::Unreachable => 'The program could not reach the provider.',
+            self::Unreachable => 'The driver could not reach the provider.',
             self::Unknown => 'The sign-in did not finish.',
         };
     }

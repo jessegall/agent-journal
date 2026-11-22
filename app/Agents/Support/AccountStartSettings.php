@@ -8,8 +8,8 @@ use App\Agents\Enums\TransportProfileType;
 use App\Agents\Exceptions\StartRefused;
 
 /**
- * The account settings of one start as the program's adapter fills them in; Agents knows no program. A start whose
- * program nobody prepared is refused before its claim.
+ * The account settings of one start as the driver's adapter fills them in; Agents knows no driver. A start whose
+ * driver nobody prepared is refused before its claim.
  */
 final class AccountStartSettings
 {
@@ -79,7 +79,7 @@ final class AccountStartSettings
     }
 
     /**
-     * A file the host opens for the program to read, such as a token it reads on a descriptor instead of from its
+     * A file the host opens for the driver to read, such as a token it reads on a descriptor instead of from its
      * environment; answers the descriptor it gets, 3 for the first.
      */
     public function openForReading(string $path): int
@@ -90,7 +90,7 @@ final class AccountStartSettings
     }
 
     /**
-     * The program's private protection settings, which the host writes into a file of this start alone.
+     * The driver's private protection settings, which the host writes into a file of this start alone.
      */
     public function protectWith(string $settings): void
     {

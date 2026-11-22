@@ -17,7 +17,7 @@ use App\Agents\Values\StackTarget;
 final readonly class DriverSettings
 {
     /**
-     * The efforts every supported program build offers (plan 26 phase 1 evidence, doc 46).
+     * The efforts every supported driver build offers (plan 26 phase 1 evidence, doc 46).
      *
      * @var list<string>
      */

@@ -7,7 +7,7 @@ namespace App\Hooks\Drivers;
 use Spatie\LaravelData\Data;
 
 /**
- * The body the journal answers a hook call with: the program's standard output, standard error and exit code.
+ * The body the journal answers a hook call with: the driver's standard output, standard error and exit code.
  */
 final class DriverReplyData extends Data
 {

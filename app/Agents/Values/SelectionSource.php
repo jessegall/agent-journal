@@ -7,8 +7,8 @@ namespace App\Agents\Values;
 use App\Agents\Enums\DriverSourceType;
 
 /**
- * Where a start's program came from, and the profile and its revision when one took part; a main agent with an
- * explicit program has no profile.
+ * Where a start's driver came from, and the profile and its revision when one took part; a main agent with an
+ * explicit driver has no profile.
  */
 final readonly class SelectionSource
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Hooks\Programs;
+namespace Tests\Feature\Hooks\Drivers;
 
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Values\StackTarget;

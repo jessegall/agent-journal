@@ -4,9 +4,10 @@ import ShareButton from '@kit/ShareButton';
 import PlanReader from './PlanReader.vue';
 
 /**
- * One plan, on its own page or in the inspector: the same reader the plans list shows.
+ * One plan's richer interactions, a native part under its layout's header and facts, on its own page or in the
+ * inspector: Share and the same reader the plans list shows, with its outline, start and review.
  */
-defineProps<{ data: PlanReaderData }>();
+const data = defineProps<PlanReaderData>();
 </script>
 
 <template>

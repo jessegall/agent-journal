@@ -9,7 +9,8 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The props of a record's comments part: its comments, the record they are on and who has read it.
+ * The props of a record's comments part: its comments, the record they are on, the revision a new comment is on
+ * and who has read it.
  */
 #[TypeScript]
 final class RecordCommentsPartData extends Data
@@ -18,5 +19,6 @@ final class RecordCommentsPartData extends Data
         public readonly CommentList $comments,
         public readonly string $target,
         public readonly RecordReadsData $reads,
+        public readonly string $version = '1',
     ) {}
 }

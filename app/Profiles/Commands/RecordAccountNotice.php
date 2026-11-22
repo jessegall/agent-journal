@@ -10,7 +10,7 @@ use App\Bus\Support\Command;
 use App\Profiles\Enums\AccountNoticeReason;
 
 /**
- * A refused start or a failure the owner can act on becomes a notice on the program's accounts, counted again while
+ * A refused start or a failure the owner can act on becomes a notice on the driver's accounts, counted again while
  * one of its reason is open. Run by the journal itself (internal, not exported).
  *
  * @extends Command<null>

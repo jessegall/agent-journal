@@ -7,7 +7,7 @@ namespace App\Agents\Exceptions;
 use RuntimeException;
 
 /**
- * A hook call from a program process older than the one its runtime now runs; it changes nothing.
+ * A hook call from a driver process older than the one its runtime now runs; it changes nothing.
  */
 final class StaleProcessGeneration extends RuntimeException
 {

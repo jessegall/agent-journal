@@ -7,7 +7,7 @@ namespace App\Skills\Values;
 use JsonSerializable;
 
 /**
- * What a delivered skill publication wrote: its generation, publication, session and program, the selection it was
+ * What a delivered skill publication wrote: its generation, publication, session and driver, the selection it was
  * made from, and the digest of each file it wrote.
  */
 final readonly class PublicationManifest implements JsonSerializable
@@ -25,7 +25,7 @@ final readonly class PublicationManifest implements JsonSerializable
     ) {}
 
     /**
-     * The manifest as the file a program finds beside the skills.
+     * The manifest as the file a driver finds beside the skills.
      */
     public function text(): string
     {

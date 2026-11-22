@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Hooks\Programs;
+namespace Tests\Feature\Hooks\Drivers;
 
 use App\Drivers\Enums\HookDriver;
 use App\Hooks\Compatibility\DriverCompatibility;
@@ -13,8 +13,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * Each adapter's pinned program is the build its account-free capture checked, every flag it relies on exists in
- * that build, and no account start passes while the real program has not shown how starts share a sign-in.
+ * Each adapter's pinned driver is the build its account-free capture checked, every flag it relies on exists in
+ * that build, and no account start passes while the real driver has not shown how starts share a sign-in.
  */
 final class ProgramCompatibilityTest extends TestCase
 {

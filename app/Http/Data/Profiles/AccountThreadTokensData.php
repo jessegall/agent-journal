@@ -10,7 +10,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The newest thread token count of an account's current sign-in: the thread's total, the parts of it the program
+ * The newest thread token count of an account's current sign-in: the thread's total, the parts of it the driver
  * reported, the last turn's total, and when it was observed.
  */
 #[TypeScript]

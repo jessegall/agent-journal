@@ -19,7 +19,7 @@ use App\Skills\Support\SkillTargets;
 
 /**
  * Hands the host a session's delivered skill set with its grant: the files to write in the start's settings folder
- * and the arguments that point the program at them, and records the generation it spawns with. A set that is not
+ * and the arguments that point the driver at them, and records the generation it spawns with. A set that is not
  * delivered refuses the grant, so nothing spawns without it.
  */
 final readonly class HandStartSkillsToHost implements Listener

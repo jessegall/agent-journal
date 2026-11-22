@@ -124,7 +124,7 @@ final class RulesDomain extends Domain implements
 
     public function navigation(): array
     {
-        return [NavigationItem::page('list', 'Rules', Icon::Rules, group: 'Agents', position: 30)];
+        return [NavigationItem::page('list', 'Rules', Icon::Rules, group: 'web.agents', position: 30)];
     }
 
     public function numberedModels(): array

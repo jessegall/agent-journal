@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Compatibility\Exceptions;
 
-use App\Agents\Contracts\UnstartableProgram;
+use App\Agents\Contracts\UnstartableDriver;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
@@ -12,13 +12,13 @@ use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
- * A pinned program's build cannot start in this container at all: a contained host reported its protection and the
+ * A pinned driver's build cannot start in this container at all: a contained host reported its protection and the
  * report leaves items unenforced, so a start of it ends with this reason instead of waiting to be claimed.
  */
 final class DriverUnstartableInContainer extends RuntimeException implements
     CodedRefusal,
     CommandRefusal,
-    UnstartableProgram
+    UnstartableDriver
 {
     use RendersRefusal;
 

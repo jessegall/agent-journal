@@ -35,7 +35,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * A refused start and a failure the owner can act on leave a notice for the program, without any account or session
+ * A refused start and a failure the owner can act on leave a notice for the driver, without any account or session
  * kept; the owner sees it in the bar, dismisses it, or a working account resolves it; nobody else sees it.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits starts and notices through the bus and empties many tables.')]

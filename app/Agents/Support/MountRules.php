@@ -104,7 +104,7 @@ final readonly class MountRules
     }
 
     /**
-     * A contained session's own account folder, bound read-write at the account home so the program can refresh its
+     * A contained session's own account folder, bound read-write at the account home so the driver can refresh its
      * sign-in (doc 61, decision 8, the user's question 30); none locally or without an account.
      *
      * @return list<ManifestMount>

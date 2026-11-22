@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { nextTick, useId, useTemplateRef } from 'vue';
+import { nextTick, onUpdated, useId, useTemplateRef } from 'vue';
 import { useDropdown } from '@/composables/useDropdown';
 import Icon from './Icon.vue';
 
 /**
  * A button that opens a labelled menu of a record's actions, given as ActionsMenuItem children. Enter or Space opens
  * it on its first item, the arrow keys, Home and End move between the items, and Escape closes it and gives the
- * focus back to the button. Choosing an item closes it too; the items stay mounted, so a form keeps its state.
+ * focus back to the button. Choosing an item closes it too; the items stay mounted, so a form keeps its state. A right
+ * click on the menu's host opens the same menu through openFromContext. When the item in focus goes, the first item
+ * left takes the focus; when none is left, the menu closes and the button takes it.
  */
 defineProps<{ label: string }>();
 
@@ -75,6 +77,30 @@ function closeAfterChoice(event: MouseEvent): void {
 
     closeToButton();
 }
+
+function openFromContext(): void {
+    void openAt('first');
+}
+
+onUpdated(() => {
+    if (!isOpen.value) {
+        return;
+    }
+
+    const shown = items();
+
+    if (shown.length === 0) {
+        closeToButton();
+
+        return;
+    }
+
+    if (!menu.value?.contains(document.activeElement)) {
+        shown[0].focus();
+    }
+});
+
+defineExpose({ openFromContext });
 
 function closeWhenFocusLeaves(event: FocusEvent): void {
     if ((event.currentTarget as HTMLElement).contains(event.relatedTarget as Node | null)) {

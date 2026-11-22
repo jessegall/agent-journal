@@ -10,11 +10,11 @@ use App\Skills\Values\ConditionResult;
 use App\Skills\Values\SkillContext;
 
 /**
- * Matches a session started with one of these programs; a start with no known program is unavailable.
+ * Matches a session started with one of these drivers; a start with no known driver is unavailable.
  */
 final readonly class Drivers implements SkillCondition
 {
-    public const string TYPE = 'programs';
+    public const string TYPE = 'drivers';
 
     public const int VERSION = 1;
 
@@ -28,14 +28,14 @@ final readonly class Drivers implements SkillCondition
     public function evaluate(SkillContext $context): ConditionResult
     {
         if ($context->driver === null) {
-            return ConditionResult::unavailable('program-unavailable');
+            return ConditionResult::unavailable('driver-unavailable');
         }
 
         return in_array(
             $context->driver->key,
             $this->keyTexts(),
             true,
-        ) ? ConditionResult::match('program-listed') : ConditionResult::noMatch('program-not-listed');
+        ) ? ConditionResult::match('driver-listed') : ConditionResult::noMatch('driver-not-listed');
     }
 
     public function toArray(): array

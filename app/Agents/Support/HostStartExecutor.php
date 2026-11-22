@@ -16,7 +16,7 @@ use TypeError;
 
 /**
  * Starts and stops prepared starts through the protected host on this machine: one JSON line to its local socket,
- * one reply line back. It spawns nothing itself; a reply means the program runs, or that it and its tools ended.
+ * one reply line back. It spawns nothing itself; a reply means the driver runs, or that it and its tools ended.
  */
 final readonly class HostStartExecutor implements StartExecutor
 {

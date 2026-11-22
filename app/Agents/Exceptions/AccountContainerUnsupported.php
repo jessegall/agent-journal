@@ -10,7 +10,7 @@ use App\Agents\Support\HostCapability;
 use RuntimeException;
 
 /**
- * A start whose program, account and execution mode the recorded evidence does not prove; no process is released,
+ * A start whose driver, account and execution mode the recorded evidence does not prove; no process is released,
  * no account is changed and nothing falls back to the host or to API billing.
  */
 final class AccountContainerUnsupported extends RuntimeException implements StartRefusal

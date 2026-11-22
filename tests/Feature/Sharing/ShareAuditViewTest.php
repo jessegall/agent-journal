@@ -73,17 +73,18 @@ final class ShareAuditViewTest extends TestCase
     public function test_reads_show_an_unknown_visitor_apart_from_the_lifecycle(): void
     {
         $this->actingAs($this->owner)->get(
-            "/sharing/shares/{$this->share->id}",
+            "/sharing/shares/{$this->share->id}?tab=audit",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('page.data.audit.entries', 3)
-            ->where('page.data.audit.entries.0.type', 'read_denied')
-            ->where('page.data.audit.entries.0.actor', 'visitor')
-            ->where('page.data.audit.entries.0.isRead', true)
-            ->where('page.data.audit.entries.0.reasonCode', 'rate_limited')
-            ->where('page.data.audit.entries.2.type', 'created')
-            ->where('page.data.audit.entries.2.actor', 'owner')
-            ->where('page.data.audit.entries.2.isRead', false)
-            ->where('page.data.audit.nextAfter', null));
+            ->where('page.data.root.children.3.children.0.native.component', 'sharing/AuditSection')
+            ->has('page.data.root.children.3.children.0.native.props.entries', 3)
+            ->where('page.data.root.children.3.children.0.native.props.entries.0.type', 'read_denied')
+            ->where('page.data.root.children.3.children.0.native.props.entries.0.actor', 'visitor')
+            ->where('page.data.root.children.3.children.0.native.props.entries.0.isRead', true)
+            ->where('page.data.root.children.3.children.0.native.props.entries.0.reasonCode', 'rate_limited')
+            ->where('page.data.root.children.3.children.0.native.props.entries.2.type', 'created')
+            ->where('page.data.root.children.3.children.0.native.props.entries.2.actor', 'owner')
+            ->where('page.data.root.children.3.children.0.native.props.entries.2.isRead', false)
+            ->where('page.data.root.children.3.children.0.native.props.nextAfter', null));
     }
 
     public function test_the_audit_pages_on_and_carries_the_pruned_totals(): void
@@ -112,8 +113,8 @@ final class ShareAuditViewTest extends TestCase
         $this->actingAs($this->owner)->get(
             "/sharing/shares/{$this->share->id}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.runtime.isOffline', true)
-            ->where('page.data.runtime.endpointVersion', null));
+            ->where('page.data.root.children.2.native.props.isOffline', true)
+            ->where('page.data.root.children.2.native.props.endpointVersion', null));
 
         ShareInstallation::create()->holdFor(self::RUN);
         $endpoint = ShareGatewayEndpoint::create($this->configuration, 1, self::RUN);
@@ -123,15 +124,15 @@ final class ShareAuditViewTest extends TestCase
         $this->actingAs($this->owner)->get(
             "/sharing/shares/{$this->share->id}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.runtime.isOffline', false)
-            ->where('page.data.runtime.endpointVersion', 1)
-            ->where('page.data.runtime.isHealthy', true));
+            ->where('page.data.root.children.2.native.props.isOffline', false)
+            ->where('page.data.root.children.2.native.props.endpointVersion', 1)
+            ->where('page.data.root.children.2.native.props.isHealthy', true));
 
         $this->travel(46)->seconds();
 
         $this->actingAs($this->owner)->get(
             "/sharing/shares/{$this->share->id}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.runtime.isHealthy', false));
+            ->where('page.data.root.children.2.native.props.isHealthy', false));
     }
 }

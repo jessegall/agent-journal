@@ -28,7 +28,7 @@ use App\Skills\Values\SelectedSkills;
 /**
  * At every boundary of a session (start, clear, resume, compaction) selects its skills afresh from today's facts and
  * revisions. A changed selection becomes a pending publication and holds the session's file changes until it is
- * delivered; a program that loads skills only at a new session is told so. The session's profile and program stay.
+ * delivered; a driver that loads skills only at a new session is told so. The session's profile and driver stay.
  */
 final readonly class RefreshSessionSkills implements Listener
 {

@@ -6,7 +6,7 @@ namespace App\Profiles\Support;
 
 /**
  * Claude Code signed in by a long-lived provider token (`claude setup-token`): the token's file is opened for the
- * program on its own descriptor, named by CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR, and the status says oauth_token.
+ * driver on its own descriptor, named by CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR, and the status says oauth_token.
  */
 final readonly class ClaudeTokenSignIn extends ClaudeSecretSignIn
 {

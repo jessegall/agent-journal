@@ -15,6 +15,7 @@ use App\Processes\Resolvers\RequestWindowResolver;
 use App\Processes\Resolvers\RunListResolver;
 use App\Processes\Resolvers\RunOutcomeWindowResolver;
 use App\Processes\Resolvers\RunWindowResolver;
+use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\DomainUi;
@@ -26,11 +27,18 @@ use App\Ui\Enums\Icon;
  * state, the active and retired rules and the module bundles waiting, and one request with everything its approval
  * binds.
  */
-final class ProcessPages implements PageProvider
+final class ProcessPages implements NativePartProvider, PageProvider
 {
-    private const string LIST_VIEW = 'RequestsWindow.vue';
-
-    private const string WINDOW = 'RequestWindow.vue';
+    /**
+     * The native parts the process layouts mount: the bundle activations of the review list, one request's review and
+     * one run's live cards with their streamed output.
+     *
+     * @return list<string>
+     */
+    public function nativeParts(): array
+    {
+        return ['BundleApprovals.vue', 'RequestWindow.vue', 'RunView.vue'];
+    }
 
     public function pages(): array
     {
@@ -47,13 +55,7 @@ final class ProcessPages implements PageProvider
 
     private function listPage(): Page
     {
-        return Page::make(
-            'command-requests',
-            'Command review',
-            Icon::Rules,
-            RequestListResolver::class,
-            self::LIST_VIEW,
-        )
+        return Page::layout('command-requests', 'Command review', Icon::Rules, RequestListResolver::class)
             ->at('')
             ->actions(ActionRoute::post('bundles/approval', ApproveBundlePageController::class, 'approve-rule-bundle'));
     }
@@ -78,14 +80,14 @@ final class ProcessPages implements PageProvider
             'reject-proposal',
         );
 
-        return Page::make('command-request', 'Command request', Icon::Rules, RequestWindowResolver::class, self::WINDOW)
+        return Page::layout('command-request', 'Command request', Icon::Rules, RequestWindowResolver::class)
             ->at('requests/{request}')
             ->actions($sample, $approve, $reject);
     }
 
     private function runsPage(): Page
     {
-        return Page::make('runs', 'Runs', Icon::Rules, RunListResolver::class, 'RunsWindow.vue')->at('runs');
+        return Page::layout('runs', 'Runs', Icon::Rules, RunListResolver::class)->at('runs');
     }
 
     private function runOutcomePage(): Page
@@ -101,7 +103,7 @@ final class ProcessPages implements PageProvider
 
     private function runPage(): Page
     {
-        return Page::make('run', 'Run', Icon::Rules, RunWindowResolver::class, 'RunView.vue')
+        return Page::layout('run', 'Run', Icon::Rules, RunWindowResolver::class)
             ->at('runs/{run}')
             ->actions(
                 ActionRoute::post('runs/{run}/stop', StopRunPageController::class, 'stop-run'),

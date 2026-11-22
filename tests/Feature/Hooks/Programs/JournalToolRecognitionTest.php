@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Hooks\Programs;
+namespace Tests\Feature\Hooks\Drivers;
 
 use App\Hooks\Contracts\JournalToolNames;
 use App\Hooks\Drivers\Adapters\ClaudeCodeAdapter;

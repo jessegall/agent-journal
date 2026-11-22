@@ -1,13 +1,38 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import RecordMenu from '@/components/kit/RecordMenu.vue';
 import SwitchCase from '@/components/kit/SwitchCase.vue';
 import { useWindowQueryChange } from '@/framework/useWindowQuery';
 import type { LayoutPartData, LayoutRowData } from '@/generated/types/core';
 
 // The keyed rows of a declared layout: facts as term and value pairs, choices that each set the window's query, the
-// chosen one marked current, or a list whose rows open their own page or their own window query.
+// chosen one marked current, or a list whose rows open their own page or their own window query. A row with an actions
+// menu shows its actions button beside it, and a right click on the row opens the same menu, bound to that row's
+// record.
 defineProps<{ part: LayoutPartData }>();
 const windowQuery = useWindowQueryChange();
+const rowMenus = new Map<string, InstanceType<typeof RecordMenu>>();
+
+function keepRowMenu(key: string, menu: unknown): void {
+    if (menu === null) {
+        rowMenus.delete(key);
+
+        return;
+    }
+
+    rowMenus.set(key, menu as InstanceType<typeof RecordMenu>);
+}
+
+function openRowMenu(event: MouseEvent, row: LayoutRowData): void {
+    const menu = rowMenus.get(row.key);
+
+    if (row.menu === undefined || row.menu.groups.length === 0 || menu === undefined) {
+        return;
+    }
+
+    event.preventDefault();
+    menu.openFromContext();
+}
 
 function destinationOf(row: LayoutRowData): string | null {
     if (row.href !== undefined) {
@@ -50,7 +75,10 @@ function destinationOf(row: LayoutRowData): string | null {
         <template #default>
             <ul class="flex flex-col divide-y divide-line">
                 <template v-for="row in part.rows" :key="row.key">
-                    <li>
+                    <li
+                        class="flex items-center gap-1"
+                        @contextmenu="openRowMenu($event, row)"
+                    >
                         <template v-if="destinationOf(row) !== null">
                             <Link
                                 :href="destinationOf(row) ?? ''"
@@ -58,7 +86,7 @@ function destinationOf(row: LayoutRowData): string | null {
                                 :aria-current="
                                     row.isCurrent ? 'true' : undefined
                                 "
-                                class="flex justify-between gap-3 px-3 py-2 hover:bg-hover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
+                                class="flex min-w-0 flex-1 justify-between gap-3 px-3 py-2 hover:bg-hover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
                                 :class="{ 'bg-sel': row.isCurrent }"
                             >
                                 <span class="flex min-w-0 flex-col">
@@ -78,10 +106,16 @@ function destinationOf(row: LayoutRowData): string | null {
                             </Link>
                         </template>
                         <template v-else>
-                            <span class="flex justify-between gap-3 py-2">
+                            <span class="flex flex-1 justify-between gap-3 py-2">
                                 <span class="text-text">{{ row.label }}</span>
                                 <span class="text-text-2">{{ row.value }}</span>
                             </span>
+                        </template>
+                        <template v-if="row.menu !== undefined">
+                            <RecordMenu
+                                :ref="(menu) => keepRowMenu(row.key, menu)"
+                                :menu="row.menu"
+                            />
                         </template>
                     </li>
                 </template>

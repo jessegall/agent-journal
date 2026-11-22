@@ -11,16 +11,16 @@ use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
 
 /**
- * What the journal's contract with one program covers: the reply schema it was written against, the hooks it maps and
+ * What the journal's contract with one driver covers: the reply schema it was written against, the hooks it maps and
  * how it takes a rewrite.
- * It records the contract, not a claim that a program version was tested; docs/hooks/program-capabilities.md holds the
+ * It records the contract, not a claim that a driver version was tested; docs/hooks/driver-capabilities.md holds the
  * evidence.
  */
 final readonly class DriverCapabilities
 {
     /**
      * @param  list<string>  $hookMethods  the hook methods this adapter maps, such as onShellCommand and onStop
-     * @param  bool  $reportsActualModel  whether the program tells which model actually ran; no pinned build does
+     * @param  bool  $reportsActualModel  whether the driver tells which model actually ran; no pinned build does
      */
     public function __construct(
         public string $driver,
@@ -31,7 +31,7 @@ final readonly class DriverCapabilities
     ) {}
 
     /**
-     * The final answer as this program can take it: a rewrite it cannot take becomes a refusal on the stack from before
+     * The final answer as this driver can take it: a rewrite it cannot take becomes a refusal on the stack from before
      * the walk.
      */
     public function finalAnswer(HookAnswer $answer, AgentStack $stackBefore): HookAnswer

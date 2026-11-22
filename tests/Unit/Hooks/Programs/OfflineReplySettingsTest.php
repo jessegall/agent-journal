@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Hooks\Programs;
+namespace Tests\Unit\Hooks\Drivers;
 
 use App\AgentRequests\Support\AgentClientSettings;
 use App\AgentRequests\Support\StartEnvironment;

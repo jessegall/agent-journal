@@ -16,7 +16,7 @@ final readonly class ExecutionPolicy
     /**
      * @param  string|null  $imageReference  the verified image by digest; null exactly on the protected host
      * @param  list<string>  $networkCapabilities
-     * @param  bool  $attachable  whether a contained start's program is its container's own terminal process
+     * @param  bool  $attachable  whether a contained start's driver is its container's own terminal process
      */
     private function __construct(
         public ExecutionModeType $mode,

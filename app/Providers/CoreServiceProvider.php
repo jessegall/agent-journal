@@ -111,7 +111,7 @@ final class CoreServiceProvider extends ServiceProvider
             'core.engine-frame-time' => EngineFrameTime::class,
             'core.capacity-reservation' => CapacityReservation::class,
             'core.conversation-visit' => ConversationVisit::class,
-            'core.program-conversation' => DriverConversation::class,
+            'core.driver-conversation' => DriverConversation::class,
             'core.skill-publication' => SkillPublication::class,
             'core.skill-request' => SkillRequest::class,
             Profile::LINK_TYPE => Profile::class,

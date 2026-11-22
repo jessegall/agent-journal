@@ -18,7 +18,7 @@ final readonly class JournalToolCall implements DriverCall
     private function __construct(private DriverReply $reply) {}
 
     /**
-     * Before the call: the neutral reply, so the program's own permission handling decides.
+     * Before the call: the neutral reply, so the driver's own permission handling decides.
      */
     public static function starting(): self
     {

@@ -20,7 +20,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * A limit window a host observed: the provider's limit, the window, its used percent from 0 to 100, its length in
- * minutes and when it resets, each but the limit and window only when the program reported it.
+ * minutes and when it resets, each but the limit and window only when the driver reported it.
  */
 #[MapInputName(SnakeCaseMapper::class)]
 final class UsageWindowData extends UsageMeasurementData

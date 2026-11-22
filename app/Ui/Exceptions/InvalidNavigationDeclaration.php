@@ -40,6 +40,13 @@ final class InvalidNavigationDeclaration extends UiDeclarationError
         );
     }
 
+    public static function groupMissing(string $label, string $group): self
+    {
+        return new self(
+            "Navigation item {$label} joins the sidebar group {$group}, which no installed domain declares.",
+        );
+    }
+
     public static function rootOnlyOnChild(string $label, string $child): self
     {
         return new self(

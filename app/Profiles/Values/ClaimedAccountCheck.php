@@ -7,7 +7,7 @@ namespace App\Profiles\Values;
 use App\Profiles\Enums\SignInMethod;
 
 /**
- * An account check a host took: the account, its program and method, its folder on the host and the generation to report in.
+ * An account check a host took: the account, its driver and method, its folder on the host and the generation to report in.
  */
 final readonly class ClaimedAccountCheck
 {

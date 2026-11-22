@@ -21,6 +21,7 @@ use App\Profiles\Resolvers\AccountNoticesSection;
 use App\Profiles\Resolvers\AccountsWindowResolver;
 use App\Profiles\Resolvers\StartAccountWindowResolver;
 use App\Profiles\Support\AccountOwnerCheck;
+use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\SectionProvider;
@@ -34,14 +35,24 @@ use App\Ui\Enums\SlotContextType;
 
 /**
  * The pages Core's Profiles declares, for the owner alone, under /accounts: the saved Claude Code and Codex accounts,
- * with choosing the one each program starts with and renaming one.
+ * with choosing the one each driver starts with and renaming one.
  */
-final class ProfilesPages implements NavigationProvider, PageProvider, SectionProvider
+final class ProfilesPages implements NativePartProvider, NavigationProvider, PageProvider, SectionProvider
 {
+    /**
+     * The native part the Accounts layout mounts: the account list with its setup, sign-in and recovery.
+     *
+     * @return list<string>
+     */
+    public function nativeParts(): array
+    {
+        return ['AccountsWindow.vue'];
+    }
+
     public function pages(): array
     {
         return [
-            Page::make('accounts', 'Accounts', Icon::Accounts, AccountsWindowResolver::class, 'AccountsWindow.vue')
+            Page::layout('accounts', 'Accounts', Icon::Accounts, AccountsWindowResolver::class)
                 ->at('')
                 ->visibleWhen(AccountOwnerCheck::class)
                 ->actions(
@@ -91,7 +102,7 @@ final class ProfilesPages implements NavigationProvider, PageProvider, SectionPr
 
     public function navigation(): array
     {
-        return [NavigationItem::page('accounts', 'Accounts', Icon::Accounts, group: 'Agents', position: 40)];
+        return [NavigationItem::page('accounts', 'Accounts', Icon::Accounts, group: 'web.agents', position: 40)];
     }
 
     /**

@@ -31,7 +31,7 @@ use Tests\TestCase;
 
 /**
  * The public seams of skills: domains and modules declare skills and condition types through exported contracts,
- * while the renderer, sources, publisher and program adapters stay Core's own.
+ * while the renderer, sources, publisher and driver adapters stay Core's own.
  */
 final class SkillContractsTest extends TestCase
 {

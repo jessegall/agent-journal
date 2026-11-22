@@ -41,7 +41,7 @@ use Tests\TestCase;
 
 /**
  * A start admits its skills before anything spawns: the selected set is published after the start commits and its
- * grant hands the host the files and arguments, recording the generation; a failed set refuses the grant, a program
+ * grant hands the host the files and arguments, recording the generation; a failed set refuses the grant, a driver
  * without an adapter and a required skill outside the selection refuse the start.
  */
 final class StartSkillsTest extends TestCase
@@ -115,7 +115,7 @@ final class StartSkillsTest extends TestCase
 
     public function test_a_program_without_a_skill_adapter_is_refused_by_name(): void
     {
-        $session = $this->sessionRow(Agent::create('Other program', 'main-agent'), 'gemini-cli', null);
+        $session = $this->sessionRow(Agent::create('Other driver', 'main-agent'), 'gemini-cli', null);
 
         $this->expectException(StartRefused::class);
         $this->expectExceptionMessage('gemini-cli');

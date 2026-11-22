@@ -19,7 +19,7 @@ import { driverName, rowStateLook, signInAgainLabel } from './accountLooks';
 
 /**
  * Everything about one account in one dialog: its way back when it must sign in again, its name, whether it is the
- * default, the facts the row leaves out, the usage its programs reported and its recent starts. Removing it asks
+ * default, the facts the row leaves out, the usage its drivers reported and its recent starts. Removing it asks
  * inside the same dialog, with Back focused, so Enter never removes by accident.
  */
 const props = defineProps<{
@@ -102,7 +102,7 @@ const useFacts = computed(() => {
 
 const signInFacts = computed(() => [
     { term: 'State', value: rowStateLook(props.account).label },
-    { term: 'Program', value: driverName(props.account.driver) },
+    { term: 'Driver', value: driverName(props.account.driver) },
     { term: 'Method', value: props.account.signIn.title },
     { term: 'Billing', value: props.account.signIn.billingLabel },
     { term: 'Signed in as', value: props.account.identity ?? 'Not known' },

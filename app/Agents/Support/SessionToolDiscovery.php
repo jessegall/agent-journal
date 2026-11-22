@@ -33,7 +33,7 @@ final readonly class SessionToolDiscovery implements ToolDiscovery
     }
 
     /**
-     * Records the started program's tool discovery at its signed issue time; an older discovery never moves it back.
+     * Records the started driver's tool discovery at its signed issue time; an older discovery never moves it back.
      */
     private function recordDiscoveryAt(string $sessionId, CarbonImmutable $signedAt): void
     {

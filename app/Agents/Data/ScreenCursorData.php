@@ -8,7 +8,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * Where the terminal's cursor is and whether the program shows it.
+ * Where the terminal's cursor is and whether the driver shows it.
  */
 #[TypeScript]
 final class ScreenCursorData extends Data

@@ -3,15 +3,14 @@ import DataSection from './DataSection.vue';
 
 import type { RequestWindowData } from '@generated/types/processes';
 import { usePage } from '@inertiajs/vue3';
-import PageHeader from '@kit/PageHeader';
 import { computed } from 'vue';
 import ReviewRequestForm from './ReviewRequestForm.vue';
 
 /**
- * One command request for its owner: where it stands and the steps it still requires, every proposal revision with its effects
+ * One command request for its owner, a native part of the request's layout page: where it stands and the steps it still requires, every proposal revision with its effects
  * against the active rule, the samples with their runs, the readers with their proofs, and the review actions.
  */
-defineProps<{ data: RequestWindowData }>();
+const data = defineProps<RequestWindowData>();
 
 const page = usePage<{ errors: Record<string, string> }>();
 const refusal = computed(() => page.props.errors.review ?? '');
@@ -19,7 +18,6 @@ const refusal = computed(() => page.props.errors.review ?? '');
 
 <template>
     <div class="flex flex-col gap-4">
-        <PageHeader :title="`Request: ${data.request.operation}`" />
         <p>
             Sorting a command into kinds does not allow it to run, and a sample
             run only shows what the command does.

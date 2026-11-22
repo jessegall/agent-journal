@@ -9,7 +9,7 @@ use App\Contracts\Listener;
 use App\Drivers\Enums\HookDriver;
 
 /**
- * Adds the journal's hooks for a program it supports to the start's isolated settings, allows the journal's own MCP
+ * Adds the journal's hooks for a driver it supports to the start's isolated settings, allows the journal's own MCP
  * tools and turns off its child tools without identity.
  */
 final class SupplyHookSettings implements Listener

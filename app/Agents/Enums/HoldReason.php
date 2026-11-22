@@ -29,7 +29,7 @@ enum HoldReason: string
     case NavigationNeeded = 'navigation_needed';
 
     /**
-     * Whether only a user can clear the hold: a screen the program shows that the journal never answers alone.
+     * Whether only a user can clear the hold: a screen the driver shows that the journal never answers alone.
      */
     public function needsAUser(): bool
     {

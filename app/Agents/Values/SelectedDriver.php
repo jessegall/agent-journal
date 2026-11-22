@@ -13,7 +13,7 @@ use App\Agents\Exceptions\ModelUnavailable;
 use App\Drivers\Enums\HookDriver;
 
 /**
- * The program and concrete model a start runs, the model selection it asked for and where the program came from.
+ * The driver and concrete model a start runs, the model selection it asked for and where the driver came from.
  */
 final readonly class SelectedDriver
 {
@@ -35,7 +35,7 @@ final readonly class SelectedDriver
     }
 
     /**
-     * Applies D7: a program the caller names wins unless the profile pins another, then the profile's program, then
+     * Applies D7: a driver the caller names wins unless the profile pins another, then the profile's driver, then
      * the parent session's; the default model comes from the profile, and a named one must be allowed by it.
      *
      * @throws DriverRequired

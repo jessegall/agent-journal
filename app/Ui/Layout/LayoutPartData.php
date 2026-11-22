@@ -48,6 +48,7 @@ final class LayoutPartData extends Data
         public readonly array $tabs = [],
         public readonly LayoutBodyData|Optional $body = new Optional(),
         public readonly LayoutNativeData|Optional $native = new Optional(),
+        public readonly LayoutMenuData|Optional $menu = new Optional(),
     ) {}
 
     public static function box(string $key, string $style, LayoutPartData ...$children): self
@@ -139,6 +140,15 @@ final class LayoutPartData extends Data
     public static function body(string $key, LayoutBodyData $body): self
     {
         return new self(LayoutTag::Body, $key, null, 'prose', null, null, [], [], body: $body);
+    }
+
+    /**
+     * A record's actions menu, opened from its actions button or by a right click on its host; the same groups and
+     * items either way.
+     */
+    public static function menu(string $key, LayoutMenuData $menu): self
+    {
+        return new self(LayoutTag::Menu, $key, null, 'dropdown', null, null, [], [], menu: $menu);
     }
 
     /**
@@ -239,6 +249,7 @@ final class LayoutPartData extends Data
             || $isForm === $this->form instanceof Optional
             || ($this->tag === LayoutTag::Body) === $this->body instanceof Optional
             || ($this->tag === LayoutTag::Native) === $this->native instanceof Optional
+            || ($this->tag === LayoutTag::Menu) === $this->menu instanceof Optional
             || ($this->tag === LayoutTag::Tabs) === ($this->tabs === [])
         ) {
             throw LayoutRefused::bindingMismatch($path, $this->tag);

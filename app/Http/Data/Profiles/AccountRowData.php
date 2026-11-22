@@ -15,9 +15,9 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One saved account as its owner sees it: its name, program, how it signs in, its state, the identity and workspace its
- * program reported, whether new starts use it, how many starts run on it, when it was last checked and the usage its
- * programs reported. Never its folder or a credential.
+ * One saved account as its owner sees it: its name, driver, how it signs in, its state, the identity and workspace its
+ * driver reported, whether new starts use it, how many starts run on it, when it was last checked and the usage its
+ * drivers reported. Never its folder or a credential.
  */
 #[TypeScript]
 final class AccountRowData extends Data

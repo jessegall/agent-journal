@@ -9,7 +9,7 @@ use App\Operations\Enums\AccessType;
 
 /**
  * One scope a profile may work in on the host, with the accesses it permits there: a root path ('.' is the whole
- * workspace the program's own sandbox confines it to) or a network destination ('*' is any destination).
+ * workspace the driver's own sandbox confines it to) or a network destination ('*' is any destination).
  */
 final readonly class HostAccess
 {

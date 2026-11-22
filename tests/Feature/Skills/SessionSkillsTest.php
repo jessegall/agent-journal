@@ -29,7 +29,7 @@ use Tests\TestCase;
 
 /**
  * Each boundary of a running session selects its skills afresh: a skill that starts to apply joins the set and a
- * retargeted one leaves it, a set that waits holds the session's file changes, and a program that loads skills only
+ * retargeted one leaves it, a set that waits holds the session's file changes, and a driver that loads skills only
  * at a new session is told so.
  */
 final class SessionSkillsTest extends TestCase

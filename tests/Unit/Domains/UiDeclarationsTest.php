@@ -12,6 +12,7 @@ use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
 use App\Ui\Declarations\RegisteredPage;
 use App\Ui\Declarations\Section;
+use App\Ui\Declarations\SidebarGroup;
 use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
@@ -188,6 +189,28 @@ final class UiDeclarationsTest extends TestCase
             pages: [$this->page('book')->at('{book}')],
             navigation: [NavigationItem::page('first', 'First', page: 'book')],
         );
+    }
+
+    public function test_a_root_joining_a_sidebar_group_nobody_declares_is_refused_until_its_owner_declares_it(): void
+    {
+        $books = NavigationItem::page('books', 'Books', group: 'library.work');
+
+        try {
+            $this->check(pages: [$this->page('books')->at('')], navigation: [$books]);
+            $this->fail('A root joining an undeclared group was accepted.');
+        } catch (InvalidNavigationDeclaration $refusal) {
+            $this->assertEquals(InvalidNavigationDeclaration::groupMissing('library.books', 'library.work'), $refusal);
+        }
+
+        $declarations = UiDeclarations::check([
+            DomainEntry::fromClass(LibraryDomain::class)->declaring(
+                pages: [$this->page('books')->at('')],
+                navigation: [$books],
+                sidebarGroups: [SidebarGroup::make('work', 'Work')],
+            ),
+        ]);
+
+        $this->assertSame('Work', $declarations->sidebarGroup('library.work')->label);
     }
 
     public function test_a_section_for_a_slot_nobody_offers_is_refused(): void

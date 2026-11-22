@@ -1,0 +1,91 @@
+// @vitest-environment happy-dom
+import { mount } from '@vue/test-utils';
+import { defineComponent, h, reactive } from 'vue';
+import { describe, expect, it, vi } from 'vitest';
+import type { NavigationItemData } from '@/types/generated';
+
+const page = reactive({
+    url: '/plans?state=open',
+    props: {
+        name: 'Journal',
+        version: '6',
+        navigation: { items: [], groups: [], current: [] } as {
+            items: NavigationItemData[];
+            groups: { key: string; label: string }[];
+            current: string[];
+        },
+        navigationCounts: undefined as { counts: Record<string, number> } | undefined,
+    },
+});
+
+vi.mock('@inertiajs/vue3', () => ({
+    usePage: () => page,
+    Link: defineComponent({
+        props: { href: { type: String, required: true } },
+        setup(props, { slots, attrs }) {
+            return () => h('a', { ...attrs, href: props.href }, slots.default?.());
+        },
+    }),
+}));
+
+const { default: AppSidebar } = await import('./AppSidebar.vue');
+
+function item(
+    fields: Partial<NavigationItemData> & Pick<NavigationItemData, 'key' | 'label'>,
+): NavigationItemData {
+    return { children: [], atFoot: false, counted: false, ...fields };
+}
+
+describe('the sidebar', () => {
+    it('draws the merged navigation by group, the foot apart, the current item and its counts', () => {
+        page.props.navigation = {
+            items: [
+                item({ key: 'web.home', label: 'Home', url: '/', icon: 'home' }),
+                item({
+                    key: 'plans.list',
+                    label: 'Plans',
+                    url: '/plans',
+                    group: 'web.work',
+                    children: [
+                        item({ key: 'plans.open', label: 'Open', url: '/plans?state=open', counted: true }),
+                        item({ key: 'plans.waiting', label: 'Waiting', url: '/plans?state=waiting', counted: true }),
+                    ],
+                }),
+                item({ key: 'rules.list', label: 'Rules', url: '/rules', group: 'web.agents' }),
+                item({ key: 'other.list', label: 'Rules', url: '/other', group: 'other.agents' }),
+                item({ key: 'help.page', label: 'Help', url: '/help', atFoot: true }),
+            ],
+            groups: [
+                { key: 'web.work', label: 'Work' },
+                { key: 'web.agents', label: 'Agents' },
+                { key: 'other.agents', label: 'Agents' },
+            ],
+            current: ['plans.list', 'plans.open'],
+        };
+        page.props.navigationCounts = { counts: { 'plans.open': 0 } };
+
+        const view = mount(AppSidebar);
+        const headings = view.findAll('h2').map((heading) => heading.text());
+
+        expect(headings).toEqual(['Work', 'Agents', 'Agents']);
+        expect(view.find('[aria-current="page"]').attributes('href')).toBe('/plans?state=open');
+        expect(view.find('a[href="/plans?state=open"]').text()).toContain('0');
+        expect(view.find('a[href="/plans?state=waiting"]').text()).toBe('Waiting');
+        expect(view.find('nav[aria-label="More pages"]').text()).toContain('Help');
+        expect(view.find('nav[aria-label="Pages"]').text()).not.toContain('Help');
+    });
+
+    it('leaves out the head of a group with no visible item', () => {
+        page.props.navigation = {
+            items: [item({ key: 'web.home', label: 'Home', url: '/', icon: 'home' })],
+            groups: [],
+            current: [],
+        };
+        page.props.navigationCounts = undefined;
+
+        const view = mount(AppSidebar);
+
+        expect(view.findAll('h2')).toHaveLength(0);
+        expect(view.find('nav[aria-label="More pages"]').exists()).toBe(false);
+    });
+});

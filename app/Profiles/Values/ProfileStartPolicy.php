@@ -16,7 +16,7 @@ use App\Drivers\Enums\HookDriver;
 use App\Profiles\Enums\PolicyOriginType;
 
 /**
- * How a profile's agent is started: its program and whether a start may choose another, the models it allows (none
+ * How a profile's agent is started: its driver and whether a start may choose another, the models it allows (none
  * listed allows any), what it may do, the conditions it must pass before it stops, where it runs, and where each of
  * those came from. The worktree of its execution policy is the type's placeholder, which the host resolves per start.
  */
@@ -43,7 +43,7 @@ final readonly class ProfileStartPolicy
     ) {}
 
     /**
-     * The global defaults of the type for a program, pinned or open: every policy field from the defaults.
+     * The global defaults of the type for a driver, pinned or open: every policy field from the defaults.
      *
      * @param  list<string>  $allowedModels
      */

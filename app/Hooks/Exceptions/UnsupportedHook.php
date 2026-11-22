@@ -7,7 +7,7 @@ namespace App\Hooks\Exceptions;
 use LogicException;
 
 /**
- * A hook the program's adapter does not map; it is refused by name, never allowed by default.
+ * A hook the driver's adapter does not map; it is refused by name, never allowed by default.
  */
 final class UnsupportedHook extends LogicException
 {

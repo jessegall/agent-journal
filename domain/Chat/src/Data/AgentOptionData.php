@@ -42,11 +42,11 @@ final class AgentOptionData extends Data
         public readonly array $actions,
         #[DataCollectionOf(ResumableConversationData::class)]
         public readonly array $conversations,
-        // Why the host could not start the agent's session, such as a program that cannot start in a container.
+        // Why the host could not start the agent's session, such as a driver that cannot start in a container.
         public readonly string|null $startRefusal,
         // What the agent is doing now, the words for it and what may be done, decided from all its evidence at once.
         public readonly AgentStatusData $status,
-        // The program the live session runs, which a switch names as its source; none without a session.
+        // The driver the live session runs, which a switch names as its source; none without a session.
         public readonly string|null $sessionDriver,
     ) {}
 
