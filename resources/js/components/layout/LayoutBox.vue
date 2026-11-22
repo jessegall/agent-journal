@@ -2,19 +2,28 @@
 import { computed } from 'vue';
 import LayoutPart from '@/components/layout/LayoutPart.vue';
 import ListReaderLayout from '@/components/kit/ListReaderLayout.vue';
+import Reader from '@/components/kit/Reader.vue';
 import SwitchCase from '@/components/kit/SwitchCase.vue';
 import type { LayoutPartData } from '@/generated/types/core';
 
 // A box of a declared layout: a divider, a row, a stack of its children, a page header bar, or a split of its first
 // child as a list beside the rest as its reader. The bar keeps the title, count and views together on the left, the
 // search and creation at the other edge; on a phone the title and creation share the first line, and the views and
-// search wrap below.
+// search wrap below. A reader box draws its title, metadata line, abstract and actions in the kit Reader and the rest
+// of its parts as the body.
 const props = defineProps<{ part: LayoutPartData }>();
 const slotClasses: Record<string, string> = {
     creation: 'order-3 ml-auto @2xl:order-none @2xl:ml-0',
     views: 'order-4 w-full @2xl:order-none @2xl:w-auto',
     search: 'order-5 w-full @2xl:order-none @2xl:w-auto',
 };
+const readerSlots = new Set(['title', 'metadata', 'abstract', 'actions']);
+const readerBody = computed(() => props.part.children.filter((child) => !readerSlots.has(child.key)));
+
+function readerPart(key: string): LayoutPartData | undefined {
+    return props.part.children.find((child) => child.key === key);
+}
+
 const firstTool = computed(
     () => props.part.children.find((child) => child.key === 'search' || child.key === 'creation')?.key,
 );
@@ -34,6 +43,34 @@ const firstTool = computed(
                     <LayoutPart :part="child" />
                 </template>
             </div>
+        </template>
+        <template #reader>
+            <Reader
+                :title="readerPart('title')?.text ?? ''"
+                :abstract="readerPart('abstract')?.text ?? undefined"
+            >
+                <template #meta>
+                    <template
+                        v-for="child in readerPart('metadata')?.children ?? []"
+                        :key="child.key"
+                    >
+                        <LayoutPart :part="child" />
+                    </template>
+                </template>
+                <template #actions>
+                    <template
+                        v-for="child in readerPart('actions')?.children ?? []"
+                        :key="child.key"
+                    >
+                        <LayoutPart :part="child" />
+                    </template>
+                </template>
+                <div class="flex flex-col gap-3 pt-3">
+                    <template v-for="child in readerBody" :key="child.key">
+                        <LayoutPart :part="child" />
+                    </template>
+                </div>
+            </Reader>
         </template>
         <template #bar>
             <div

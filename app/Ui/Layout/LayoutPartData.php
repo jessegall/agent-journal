@@ -265,6 +265,12 @@ final class LayoutPartData extends Data
             );
         }
 
+        foreach ($this->rows as $row) {
+            foreach ($row->parts() as $part) {
+                $parts += $part->assertWithinCatalogue("{$path}.{$row->key}.{$part->key}", $depth + 1, $isInForm);
+            }
+        }
+
         return $parts;
     }
 

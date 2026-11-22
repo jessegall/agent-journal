@@ -46,7 +46,7 @@ enum LayoutTag: string
     public function styles(): array
     {
         return match ($this) {
-            self::Box => ['stack', 'row', 'section', 'card', 'panel', 'header', 'group', 'divider', 'split', 'bar'],
+            self::Box => ['stack', 'row', 'section', 'card', 'panel', 'header', 'group', 'divider', 'split', 'bar', 'reader'],
             self::Text => ['plain', 'heading', 'muted', 'badge', 'code', 'keyHint', 'paragraph', 'time'],
             self::Collection => ['list', 'facts', 'choices'],
             self::Notice => ['info', 'success', 'warning', 'error', 'empty', 'refusal', 'skeleton', 'stale'],

@@ -417,4 +417,73 @@ describe('a declared layout', () => {
         expect(meter.classes()).toContain('max-w-55');
         expect(view.get('[role="progressbar"]').attributes('aria-valuenow')).toBe('3');
     });
+
+    it('draws the leading and trailing parts of a row with only its title linking, and each fact piece as its own link', () => {
+        const view = mount(DeclaredLayout, {
+            props: {
+                data: {
+                    root: part({
+                        tag: 'box',
+                        key: 'root',
+                        style: 'stack',
+                        children: [
+                            part({
+                                tag: 'collection',
+                                key: 'rows',
+                                style: 'list',
+                                rows: [
+                                    {
+                                        key: 'run-1',
+                                        label: 'Run 1',
+                                        value: '',
+                                        query: {},
+                                        isCurrent: true,
+                                        href: '/runs/1',
+                                        leading: [part({ tag: 'text', key: 'driver', style: 'plain', text: 'Claude' })],
+                                        trailing: [part({ tag: 'text', key: 'state', style: 'plain', text: 'Running' })],
+                                    },
+                                ],
+                            }),
+                            part({
+                                tag: 'collection',
+                                key: 'facts',
+                                style: 'facts',
+                                rows: [
+                                    {
+                                        key: 'waits',
+                                        label: 'Waits for',
+                                        value: '',
+                                        query: {},
+                                        isCurrent: false,
+                                        fact: {
+                                            pieces: [
+                                                { label: 'Task 3', href: '/tasks/3' },
+                                                { label: 'Task 4' },
+                                            ],
+                                        },
+                                    },
+                                ],
+                            }),
+                        ],
+                    }),
+                },
+            },
+            global: {
+                stubs: {
+                    Link: {
+                        props: ['href'],
+                        template: '<a :href="href"><slot /></a>',
+                    },
+                },
+            },
+        });
+        const row = view.get('li');
+
+        expect(row.findAll('a')).toHaveLength(1);
+        expect(row.get('a').attributes('href')).toBe('/runs/1');
+        expect(row.text()).toContain('Claude');
+        expect(row.text()).toContain('Running');
+        expect(view.get('dd').findAll('a')).toHaveLength(1);
+        expect(view.get('dd').text()).toContain('Task 4');
+    });
 });

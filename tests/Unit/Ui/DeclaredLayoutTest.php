@@ -16,12 +16,14 @@ use App\Ui\Exceptions\InvalidSectionDeclaration;
 use App\Ui\Exceptions\LayoutRefused;
 use App\Ui\Layout\DeclaredLayoutData;
 use App\Ui\Layout\LayoutActionData;
+use App\Ui\Layout\LayoutFactValueData;
 use App\Ui\Layout\LayoutFieldData;
 use App\Ui\Layout\LayoutFormData;
 use App\Ui\Layout\LayoutLimits;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
 use PHPUnit\Framework\TestCase;
+use Spatie\LaravelData\Optional;
 use Tests\Fixtures\UiDeclarations\Desk\NotesResolver;
 use Tests\Fixtures\UiDeclarations\RecentNotesResolver;
 use Tests\Fixtures\UiDeclarations\ShelfLayoutResolver;
@@ -220,5 +222,31 @@ final class DeclaredLayoutTest extends TestCase
         $this->assertSame(1, $stale->assertWithinCatalogue());
         $this->assertSame('stale', $stale->style);
         $this->assertSame('Offline', $stale->text);
+    }
+
+    public function test_the_parts_that_lead_and_trail_a_row_count_and_are_checked_with_the_layout(): void
+    {
+        $row = new LayoutRowData(
+            'run-1',
+            'Run 1',
+            leading: [LayoutPartData::text('driver', 'Claude', 'badge')],
+            trailing: [LayoutPartData::badge('state', 'Running', 'busy')],
+        );
+
+        $this->assertSame(3, LayoutPartData::collection('rows', 'list', [$row])->assertWithinCatalogue());
+
+        $this->expectException(LayoutRefused::class);
+
+        $unknown = new LayoutRowData('run-2', 'Run 2', trailing: [LayoutPartData::text('state', 'Running', 'unheard')]);
+
+        LayoutPartData::collection('rows', 'list', [$unknown])->assertWithinCatalogue();
+    }
+
+    public function test_a_fact_value_holds_pieces_that_link_only_when_they_have_an_address(): void
+    {
+        $value = LayoutFactValueData::of([['Task 3', '/tasks/3'], ['Task 4', null]]);
+
+        $this->assertSame('/tasks/3', $value->pieces[0]->href);
+        $this->assertInstanceOf(Optional::class, $value->pieces[1]->href);
     }
 }
