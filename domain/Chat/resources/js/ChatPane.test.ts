@@ -50,6 +50,7 @@ vi.mock('./composables/useChatTimeline', async () => {
             unreadShown: computed(() =>
                 (conversation.value?.messages ?? []).filter((row) => !row.readByMe).map((row) => row.id),
             ),
+            lines: ref([]),
             hasOlder: ref(false),
             loadOlder: vi.fn(),
             catchUp: vi.fn(),

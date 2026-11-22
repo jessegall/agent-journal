@@ -1,4 +1,4 @@
-import type { ChatEventsPageData, ChatMessageData, ChatRowsPageData, ConversationData } from '@generated/types/chat';
+import type { ChatEventsPageData, ChatLineData, ChatMessageData, ChatRowsPageData, ConversationData } from '@generated/types/chat';
 import { onChatAccessEnded } from '@kit/chatAccess';
 import { readPage } from '@kit/pageReads';
 import type { PropReadFailed } from '@kit/pageReads';
@@ -38,6 +38,9 @@ export type ChatTimelineClient = {
  * Reads one of the chat page's reads by a partial reload: a refused cursor (409) is refused, anything else did not
  * arrive.
  */
+/** The timeline event of a plain line a domain posted, which carries no message. */
+const LINE_EVENT = 'line';
+
 function readTimeline<Page>(routeName: string, query: Record<string, string>): Promise<Page> {
     return readPage<Page>(routeName, query).catch((failure: PropReadFailed) => {
         throw new ChatTimelineReadFailed(failure.status === 409);
@@ -53,6 +56,8 @@ export const chatTimelineClient: ChatTimelineClient = {
 export type ChatTimelineView = {
     /** The rows this view shows, oldest first, each once. */
     messages: Ref<ChatMessageData[]>;
+    /** The plain lines among the messages, such as a sequence's steps, oldest first. */
+    lines: Ref<ChatLineData[]>;
     /** The incoming rows shown that the viewer has not read: the only ones an acknowledgement names. */
     unreadShown: ComputedRef<string[]>;
     hasOlder: Ref<boolean>;
@@ -77,6 +82,14 @@ export function useChatTimeline(
     let cursor: string | null = null;
     let reading: Promise<void> | null = null;
     const messages = shallowRef<ChatMessageData[]>([]);
+    const lines = shallowRef<ChatLineData[]>([]);
+
+    // Pages overlap, so each plain line is kept once, by its position in the timeline.
+    function keepLines(more: ChatLineData[]): void {
+        const byPosition = new Map(lines.value.map((line) => [line.sequence, line]));
+        more.forEach((line) => byPosition.set(line.sequence, line));
+        lines.value = [...byPosition.values()].sort((one, other) => one.sequence - other.sequence);
+    }
     const hasOlder = ref(false);
     const accessEnded = ref(false);
 
@@ -127,6 +140,7 @@ export function useChatTimeline(
 
         cursor = snapshot.cursor;
         shown.restart(newest.messages, snapshot.watermark, newest.olderCursor);
+        keepLines(newest.lines);
         changed();
     }
 
@@ -145,6 +159,7 @@ export function useChatTimeline(
             }
 
             shown.offerRows(rows.messages);
+            keepLines(rows.lines);
             wanted = new Set([...wanted].filter((id) => !rows.messages.some((row) => row.id === id)));
             older = rows.olderCursor;
 
@@ -175,6 +190,11 @@ export function useChatTimeline(
             }
 
             await fill(inboxId, shown, shown.missingOf(page.events));
+
+            if (page.events.some((event) => event.type === LINE_EVENT)) {
+                // A plain line names no message, so the newest rows page brings it, with the lines after its first row.
+                keepLines((await client.rows(inboxId, null)).lines);
+            }
 
             if (!isCurrent(shown)) {
                 return;
@@ -227,6 +247,7 @@ export function useChatTimeline(
             cursor = null;
             reading = null;
             accessEnded.value = false;
+            lines.value = opened?.lines ?? [];
             timeline = opened === undefined || inboxId === undefined
                 ? null
                 : chatTimeline(opened.messages, opened.latestSequence, opened.olderCursor);
@@ -258,6 +279,7 @@ export function useChatTimeline(
             }
 
             shown.offerPage(page, opened.latestSequence, opened.olderCursor === null);
+            keepLines(opened.lines);
             changed();
 
             if (shown.hasGap()) {
@@ -282,6 +304,7 @@ export function useChatTimeline(
         }
 
         shown.offerOlder(page.messages, page.olderCursor);
+        keepLines(page.lines);
         changed();
     }
 
@@ -299,5 +322,5 @@ export function useChatTimeline(
     });
     onBeforeUnmount(stopListening);
 
-    return { messages, unreadShown, hasOlder, loadOlder, catchUp, accessEnded };
+    return { messages, lines, unreadShown, hasOlder, loadOlder, catchUp, accessEnded };
 }

@@ -15,6 +15,7 @@ enum TimelineEventType: string
     case Left = 'left';
     case Transferred = 'transferred';
     case Closed = 'closed';
+    case Line = 'line';
 
     public function changesMembership(): bool
     {

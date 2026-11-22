@@ -6,9 +6,12 @@ namespace App\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\EventSource;
 use App\Contracts\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\TimelineEventType;
+use App\Events\ChatLinePosted;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -20,7 +23,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * One position in a chat inbox's timeline: a message or a membership change, numbered under the inbox's lock so the
+ * One position in a chat inbox's timeline: a message, a membership change or a plain line a domain posted, numbered under the inbox's lock so the
  * order every reader sees is the order it was accepted in. A message points at its event, never the other way.
  *
  * @property string $id
@@ -30,13 +33,23 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $actor_type
  * @property string $actor_id
  * @property string|null $interval_id
+ * @property string|null $line_subject
+ * @property string|null $line
  * @property CarbonImmutable $created_at
  * @property-read ActorIdentity $actor
  */
 #[Table('inbox_timeline_events')]
 #[Fillable(['inbox_id', 'sequence', 'type', 'actor_type', 'actor_id', 'interval_id'])]
-final class TimelineEvent extends Model implements ReadableModel
+final class TimelineEvent extends Model implements EventSource, ReadableModel
 {
+    use RaisesEvents;
+
+    /** The most characters a plain line holds. */
+    public const int LINE_CHARACTER_LIMIT = 240;
+
+    /** The most characters a plain line's subject holds. */
+    public const int SUBJECT_CHARACTER_LIMIT = 120;
+
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -76,6 +89,27 @@ final class TimelineEvent extends Model implements ReadableModel
         ]);
 
         $event->save();
+
+        return $event;
+    }
+
+    /**
+     * Writes a plain line at the sequence the inbox lock handed out, posted for the actor it tells about, and raises it:
+     * what it is about, such as a sequence's name, and what it says of it.
+     */
+    public static function createLine(string $inboxId, int $sequence, ActorIdentity $actor, string $subject, string $line): self
+    {
+        $event = new self([
+            'inbox_id' => $inboxId,
+            'sequence' => $sequence,
+            'type' => TimelineEventType::Line,
+            ...$actor->asColumns('actor'),
+            'interval_id' => null,
+        ]);
+        $event->line_subject = mb_substr($subject, 0, self::SUBJECT_CHARACTER_LIMIT);
+        $event->line = mb_substr($line, 0, self::LINE_CHARACTER_LIMIT);
+        $event->assertSaved($event->save());
+        $event->raise(new ChatLinePosted($event->id, $inboxId, $sequence));
 
         return $event;
     }

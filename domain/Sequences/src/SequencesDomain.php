@@ -17,6 +17,8 @@ use App\Enums\Icon;
 use App\Support\Domain;
 use App\Support\Exports;
 use App\Values\PolicyDefinition;
+use Domain\Sequences\Commands\AdvanceSequence\AdvanceSequenceCommand;
+use Domain\Sequences\Commands\CancelSequence\CancelSequenceCommand;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Policies\SequencePolicy;
 use Domain\Sequences\Resolvers\SequenceIndexResolver;
@@ -45,7 +47,7 @@ final class SequencesDomain extends Domain implements
         return [
             new PolicyDefinition(
                 SequencePolicy::class,
-                [AccessType::Create],
+                [AccessType::Create, AccessType::Edit],
             ),
         ];
     }
@@ -55,7 +57,7 @@ final class SequencesDomain extends Domain implements
      */
     public function commands(): array
     {
-        return [StartSequenceCommand::class];
+        return [StartSequenceCommand::class, AdvanceSequenceCommand::class, CancelSequenceCommand::class];
     }
 
     /**

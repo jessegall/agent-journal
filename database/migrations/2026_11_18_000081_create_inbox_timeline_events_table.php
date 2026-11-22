@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('actor_type', 16);
             $table->string('actor_id', 64);
             $table->foreignUlid('interval_id')->nullable()->constrained('inbox_intervals')->restrictOnDelete();
+            $table->string('line_subject', 120)->nullable();
+            $table->string('line', 240)->nullable();
             $table->timestampTz('created_at');
 
             $table->unique(['inbox_id', 'sequence']);

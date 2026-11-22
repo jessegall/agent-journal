@@ -21,6 +21,7 @@ final class ConversationData extends Data
     /**
      * @param  list<ParticipantData>  $participants
      * @param  list<ChatMessageData>  $messages
+     * @param  list<ChatLineData>  $lines
      */
     public function __construct(
         public readonly string $inboxId,
@@ -37,6 +38,8 @@ final class ConversationData extends Data
         public readonly string|null $olderCursor,
         #[DataCollectionOf(ChatMessageData::class)]
         public readonly array $messages,
+        #[DataCollectionOf(ChatLineData::class)]
+        public readonly array $lines,
         public readonly DockPageData $dock,
     ) {}
 }
