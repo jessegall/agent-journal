@@ -5,7 +5,7 @@
         "select": "kind:Identifier",
         "where": [
             {
-                "nameMatches": "(?i)kind"
+                "nameMatches": "Kind|(^|_)(?i:kind)"
             }
         ],
         "reject": []

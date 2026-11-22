@@ -118,7 +118,7 @@ final readonly class TaskIndexLayout
         $dialog = new LayoutDialogData(
             'New task',
             'Task created',
-            guidedNoun: $this->producers->offersGuided('task') ? 'task' : new Optional(),
+            guidedNoun: $this->producers->offersGuided('task') ? 'task' : Optional::create(),
         );
 
         return LayoutPartData::dialog(

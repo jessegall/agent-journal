@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Samples\NameSaysKind;
 
+// @righteous DeclarationSaysKindDetector
+final class TaskIndexLayout
+{
+}
+
 // @sin DeclarationSaysKindDetector
 enum OrderKind: string
 {

@@ -120,7 +120,7 @@ final readonly class PlanIndexLayout
             new LayoutDialogData(
                 'New plan',
                 'Plan created',
-                guidedNoun: $this->producers->offersGuided('plan') ? 'plan' : new Optional(),
+                guidedNoun: $this->producers->offersGuided('plan') ? 'plan' : Optional::create(),
             ),
             LayoutPartData::action('open', 'New plan', LayoutActionData::changing([])),
             new LayoutFormData(ActionMethod::Post, route('plans.create-plan', [], false), isKeyed: true),
