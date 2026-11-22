@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Stone and mulberry</title>
+<title>Stone and one accent</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 /* Self-contained: no external fonts or scripts. Every colour inside .app is a version 6 token name
@@ -34,8 +34,8 @@ code,pre,.mono{font-family:ui-monospace,'SF Mono',Menlo,monospace}
 .knobs{display:flex;gap:6px;flex-wrap:wrap;font-size:11.5px;margin-bottom:12px}
 .knobs span{padding:1px 7px;border-radius:5px;border:1px solid color-mix(in srgb,var(--page-text) 14%,transparent);opacity:.8}
 
-/* Accent strip: every variant's mulberry side by side */
-.strip{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+/* Accent strip: every variant's accent side by side */
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 @media (max-width:1100px){.strip{grid-template-columns:repeat(2,1fr)}}
 .sw{border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid color-mix(in srgb,var(--page-text) 12%,transparent)}
 .sw.on{outline:2px solid var(--page-text);outline-offset:2px}
@@ -277,21 +277,21 @@ pre.css{border:1px solid color-mix(in srgb,var(--page-text) 12%,transparent);bor
 </defs></svg>
 
 <div class="top"><div class="in">
-  <h1>Stone and mulberry</h1>
+  <h1>Stone and one accent</h1>
   <div class="pick" id="pick"></div>
   <div class="mode"><button id="mL">Light</button><button id="mD" aria-pressed="true">Dark</button></div>
 </div></div>
 
 <div class="wrap">
-  <p class="lead">Round three, after user message 14216: Stone and mulberry is the house style. This page varies it. Eight variants move only the mulberry: redder to more purple, dustier to brighter, deeper to lighter, mostly in dark mode. Two more keep the original mulberry and change the stone's warmth and how dark the dark mode is. Every variant keeps soft contrast and the round-two rules. Pick one at the top or in the strip, then click through the pages in the sidebar. Round two stays in <code>docs/designs/house-style-quiet/</code>.</p>
+  <p class="lead">Round four, after user message 15186: the stone greys stay exactly as chosen (hue 30°, 3%, a 7% dark page, soft contrast), and only the accent changes. Five accents replace the pink mulberry, none pink or violet: deep teal, ink blue, moss green, ochre and rust. Mulberry stays as the last choice, only to compare. Each accent comes in the same shades (fill, hover, pressed, ring and a faint dim), and its contrast on buttons, focus rings, links and badges is computed below in the mode shown; switch Light and Dark to check both. Pick one at the top or in the strip, then click through the pages in the sidebar.</p>
   <div class="rules">
-    <div><b>Shades, not colours</b>The stone greys share one faint warm hue; the mulberry comes in shades (its fill, hover, pressed, ring and a faint dim). Nothing is told apart by a second hue.</div>
-    <div><b>Icons may keep their colour</b>New in this round: a program's own icon keeps its colour, such as the Claude spark in its orange. Text, badges and surfaces stay grey.</div>
-    <div><b>Mulberry, sparingly</b>The primary button, the selection mark, checked controls, the step bar, and the dot or outline that means “waits on you”.</div>
+    <div><b>Shades, not colours</b>The stone greys share one faint warm hue; the accent comes in shades (its fill, hover, pressed, ring and a faint dim). Nothing is told apart by a second hue.</div>
+    <div><b>Icons may keep their colour</b>A program's own icon keeps its colour, such as the Claude spark in its orange. Text, badges and surfaces stay grey.</div>
+    <div><b>The accent, sparingly</b>The primary button, the focus ring, the selection mark, checked controls, the step bar, and the dot or outline that means “waits on you”.</div>
     <div><b>One muted red</b>Only for an error: a failed task, a refused field, the delete button in its confirm step.</div>
   </div>
 
-  <div class="h">Every variant's mulberry, light on the left, dark on the right · click one</div>
+  <div class="h">Every accent, light on the left, dark on the right · click one</div>
   <div class="strip" id="strip"></div>
 
   <div class="about" style="margin-top:22px"><h2 id="aName"></h2><p id="aLine"></p></div>
@@ -317,20 +317,16 @@ function lum(h){const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(x=>x
 function ratio(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
 
 /* ---------- the variants ----------
-   All are Stone and mulberry: g is the stone grey [hue, saturation], c the contrast (soft is -1), d the dark page's
+   All share the chosen stone: g is the stone grey [hue, saturation], c the contrast (soft is -1), d the dark page's
    lightness in %, and lp / dp the mulberry in light and dark as [hue, saturation, lightness].
    The original, as chosen from round two: g [30,3], c -1, d 7, lp [330,32,37], dp [332,34,72]. */
 const P = {
-  original:{name:'Mulberry (as chosen)',line:'Round two\'s Stone and mulberry, unchanged: the reference for every other variant.',g:[30,3],c:-1,d:7,lp:[330,32,37],dp:[332,34,72],knobs:['hue 330 / 332','saturation 32 / 34','lightness 37 / 72','stone 30°, 3%','dark 7%']},
-  raspberry:{name:'Raspberry',line:'Redder. The dark-mode mulberry moves towards raspberry and feels warmer against the stone.',g:[30,3],c:-1,d:7,lp:[342,36,38],dp:[345,38,72],knobs:['hue 342 / 345','saturation 36 / 38','lightness 38 / 72','redder']},
-  rosewood:{name:'Rosewood',line:'Redder and dustier: a muted rose-brown mulberry, the closest to the stone itself.',g:[30,3],c:-1,d:7,lp:[350,24,38],dp:[352,26,70],knobs:['hue 350 / 352','saturation 24 / 26','lightness 38 / 70','redder, dusty']},
-  deep:{name:'Deep mulberry',line:'The same hue, deeper and richer: a darker fill in light mode and a lower, wine-like glow in dark mode.',g:[30,3],c:-1,d:7,lp:[328,40,30],dp:[330,38,64],knobs:['hue 328 / 330','saturation 40 / 38','lightness 30 / 64','deeper']},
-  bright:{name:'Bright mulberry',line:'The same hue, lighter and more saturated in dark mode: the accent glows more, like a lamp.',g:[30,3],c:-1,d:7,lp:[330,38,40],dp:[330,48,78],knobs:['hue 330 / 330','saturation 38 / 48','lightness 40 / 78','brighter dark']},
-  dusty:{name:'Dusty mulberry',line:'Less saturation: the mulberry reads as a coloured grey, the quietest accent here.',g:[30,3],c:-1,d:7,lp:[328,18,38],dp:[330,20,70],knobs:['hue 328 / 330','saturation 18 / 20','lightness 38 / 70','dusty']},
-  plum:{name:'Plum-leaning',line:'More purple: the mulberry turns towards plum, between round two\'s plum and mulberry.',g:[30,3],c:-1,d:7,lp:[316,30,37],dp:[318,32,72],knobs:['hue 316 / 318','saturation 30 / 32','lightness 37 / 72','more purple']},
-  blackberry:{name:'Blackberry',line:'Most purple and a little deeper: a violet-plum that sits furthest from red.',g:[30,3],c:-1,d:7,lp:[302,26,34],dp:[304,30,70],knobs:['hue 302 / 304','saturation 26 / 30','lightness 34 / 70','purple, deeper']},
-  warmstone:{name:'Warmer stone, darker night',line:'The original mulberry on warmer stone, with a deeper, nearly black dark mode.',g:[30,6],c:-1,d:4,lp:[330,32,37],dp:[332,34,72],knobs:['stone 30°, 6%','dark 4%','mulberry as chosen']},
-  softnight:{name:'Paler stone, softer night',line:'The original mulberry on barely warm stone, with a softer charcoal dark mode.',g:[30,1.5],c:-1,d:10,lp:[330,32,37],dp:[332,34,72],knobs:['stone 30°, 1.5%','dark 10%','mulberry as chosen']},
+  teal:{name:'Deep teal',line:'A deep blue-green, cool against the warm stone: calm, and furthest from the muted red of an error.',g:[30,3],c:-1,d:7,lp:[184,46,28],dp:[178,32,62],knobs:['hue 184 / 178','saturation 46 / 32','lightness 28 / 62','cool']},
+  ink:{name:'Ink blue',line:'The blue of fountain-pen ink: the most familiar accent for an action, softened so it does not shout.',g:[30,3],c:-1,d:7,lp:[214,44,34],dp:[212,48,74],knobs:['hue 214 / 212','saturation 44 / 48','lightness 34 / 74','cool, familiar']},
+  moss:{name:'Moss green',line:'A dusty grey-green, the quietest choice here: it reads almost as a coloured stone.',g:[30,3],c:-1,d:7,lp:[96,22,30],dp:[90,24,64],knobs:['hue 96 / 90','saturation 22 / 24','lightness 30 / 64','quiet']},
+  ochre:{name:'Ochre',line:'An earth yellow, warm like the stone: a deep mustard in light mode, a soft gold in dark mode.',g:[30,3],c:-1,d:7,lp:[38,64,30],dp:[40,56,62],knobs:['hue 38 / 40','saturation 64 / 56','lightness 30 / 62','warm']},
+  rust:{name:'Rust',line:'A burnt orange-brown, the warmest choice. It sits nearest the muted red, so an error must lean on its icon and words as well.',g:[30,3],c:-1,d:7,lp:[22,52,36],dp:[22,50,66],knobs:['hue 22 / 22','saturation 52 / 50','lightness 36 / 66','warm, near red']},
+  original:{name:'Mulberry (for comparison)',line:'Round two\'s Stone and mulberry, unchanged: kept only to compare against.',g:[30,3],c:-1,d:7,lp:[330,32,37],dp:[332,34,72],knobs:['hue 330 / 332','saturation 32 / 34','lightness 37 / 72','as chosen before']},
 };
 
 /* Turns a variant into the app's tokens for one mode. Every grey shares one hue and saturation; light pages are white. */
@@ -425,17 +421,17 @@ const PAGES={
  plans:()=>`<div class="bar"><h3>Plans</h3><span class="sub">3 started</span><div class="r"><button class="btn sm primary">${I('plus','s14')}New plan</button></div></div>
    <div class="scroll pad">${[
      ['Plan 43','The dock: journal and MCP tools in one place',62,[['Phase 242 · Card language and registry','done'],['Phase 243 · Placements and receipts','done'],['Phase 244 · Dock tools through commands','work',1],['Phase 245 · Add to chat everywhere','open']]],
-     ['Plan 44','House style: Stone and mulberry',20,[['Phase 246 · Choose the mulberry','you',1],['Phase 247 · Tokens into app.css','open'],['Phase 248 · Button and badge variants','open']]],
+     ['Plan 44','House style: Stone and one accent',20,[['Phase 246 · Choose the accent','you',1],['Phase 247 · Tokens into app.css','open'],['Phase 248 · Button and badge variants','open']]],
      ['Plan 41','Accounts, second pass',100,[['Phase 236 · One settings button','done'],['Phase 237 · Program becomes driver','done']]],
    ].map(([n,t,pc,ph])=>`<div class="plan"><div class="ph"><span class="num" style="width:auto">${n}</span><b>${t}</b><div class="r"><span>${pc}%</span><div class="meter" style="width:90px"><i style="width:${pc}%"></i></div></div></div>${ph.map(([pt,s,now])=>`<div class="phase ${now?'now':''} ${s==='done'?'done':''}"><span class="t">${pt}</span>${STATE[s]}</div>`).join('')}</div>`).join('')}</div>`,
  docs:()=>`<div class="bar"><h3>Documents</h3><span class="sub">88 documents</span><div class="r"><div class="field" style="width:200px;height:26px">${I('search','s14')}<span class="ph">Search documents</span></div></div></div>
    <div class="split"><div class="l list">${[
      [88,'Design: the journal\'s house style','rev 3 · today'],[85,'Design: account settings dialog','rev 1 · today'],[82,'Design: Accounts page touch-up','rev 1 · today'],[71,'Design: adding an account on the Accounts window','rev 15 · yesterday'],[31,'Accounts: how sign-in works','rev 4 · last week'],[12,'Version 6 deviations from version 5','rev 9 · 2 weeks ago']
    ].map(([n,t,m],i)=>`<div class="lrow ${i===0?'sel':''}"><span class="num">${n}</span><span class="t">${t}</span><span style="color:var(--text-4);font-size:11.5px;flex:none">${m}</span></div>`).join('')}</div>
-   <div class="rr"><div class="reader"><h1>The journal's house style</h1><p class="ab">Stone and mulberry: warm stone greys and one mulberry, in light and dark.</p>
-     <h2>The rule</h2><p>Things are told apart by shades of the stone grey and of the mulberry, not by colour. The mulberry marks the primary action, the selection and what waits on you.</p>
+   <div class="rr"><div class="reader"><h1>The journal's house style</h1><p class="ab">Stone and one accent: warm stone greys and a single accent colour, in light and dark.</p>
+     <h2>The rule</h2><p>Things are told apart by shades of the stone grey and of the accent, not by colour. The accent marks the primary action, focus, the selection and what waits on you.</p>
      <blockquote>A program's own icon keeps its colour; text, badges and surfaces stay grey. The muted red appears only for an error.</blockquote>
-     <h2>Variants</h2><table><tr><th>Variant</th><th>Mulberry</th><th>Dark</th></tr><tr><td>As chosen</td><td>hue 332</td><td>7%</td></tr><tr><td>Raspberry</td><td>redder, 345</td><td>7%</td></tr><tr><td>Plum-leaning</td><td>more purple, 318</td><td>7%</td></tr></table>
+     <h2>Accents</h2><table><tr><th>Accent</th><th>Hue, light / dark</th><th>Dark page</th></tr><tr><td>Deep teal</td><td>184 / 178</td><td>7%</td></tr><tr><td>Ink blue</td><td>214 / 212</td><td>7%</td></tr><tr><td>Moss green</td><td>96 / 90</td><td>7%</td></tr><tr><td>Ochre</td><td>38 / 40</td><td>7%</td></tr><tr><td>Rust</td><td>22 / 22</td><td>7%</td></tr></table>
      <p>The tokens live in <code>resources/css/app.css</code>. See <a class="lk">message 14216</a> for the choice.</p></div></div></div>`,
  accounts:()=>`<div class="bar"><h3>Accounts</h3><span class="sub">4</span><div class="r"><button class="btn sm primary" id="openAdd">${I('plus','s14')}Add account</button></div></div>
    <div class="scroll"><div class="acc"><div class="acccard">${[
@@ -444,7 +440,7 @@ const PAGES={
      ['codex','Codex team key','Codex API key',true,'<span class="st"><span class="dot solid"></span>Signed in</span>','',''],
      ['codex','Codex personal','Codex subscription',false,'<span class="st" style="color:var(--text-2)"><span class="spin"></span>Signing in</span>','','<button class="btn sm bordered"><span class="spin"></span>Finish signing in</button>'],
    ].map(([ic,n,s,def,st,ex,btn])=>`<div class="arow">${ic==='claude'?CLAUDE():CODEX()}<div class="b"><div>${n}</div><div class="mt"><span>${s}</span>${def?'<span class="sep">·</span><span class="chip faint" style="line-height:15px;font-size:11px">Default</span>':''}<span class="sep">·</span>${st}${ex?`<span class="sep">·</span><span style="color:var(--text-4)">${ex}</span>`:''}</div></div>${btn}<span class="ib">${I('cog','s14')}</span></div>`).join('')}</div>
-     <p style="color:var(--text-3);font-size:12px;margin:12px 4px">The Claude spark keeps its orange; the Codex mark is drawn in the text colour, as its own mark is black or white. Needs sign-in carries the mulberry dot because it waits on you.</p></div></div>`,
+     <p style="color:var(--text-3);font-size:12px;margin:12px 4px">The Claude spark keeps its orange; the Codex mark is drawn in the text colour, as its own mark is black or white. Needs sign-in carries the accent dot because it waits on you.</p></div></div>`,
  settings:()=>`<div class="bar"><h3>Settings</h3></div><div class="scroll"><div class="set">
    <h4>Appearance</h4><div class="sgroup">
      <div class="srow"><div class="t">Theme<small>Follows the system unless you choose.</small></div><div class="seg"><span>Light</span><span class="on">Dark</span><span>System</span></div></div>
@@ -467,16 +463,16 @@ const PAGES={
    const plad=['plum-dim','plum-press','plum','plum-hover'];
    return `<div class="bar"><h3>Buttons and badges</h3><span class="sub">every state, in this variant</span></div><div class="scroll"><div class="sheet">
    <div><h5>The stone grey, in shades</h5><div class="ladder">${lad.map((t,i)=>`<div style="background:var(--${t});color:${i<8?'var(--text-2)':'var(--bg)'}">${t}</div>`).join('')}</div></div>
-   <div><h5>The mulberry, in shades</h5><div class="ladder" style="max-width:420px">${plad.map((t,i)=>`<div style="background:var(--${t});color:${i===0?'var(--text-2)':'var(--on-plum)'}">${t}</div>`).join('')}</div></div>
+   <div><h5>The accent, in shades</h5><div class="ladder" style="max-width:420px">${plad.map((t,i)=>`<div style="background:var(--${t});color:${i===0?'var(--text-2)':'var(--on-plum)'}">${t}</div>`).join('')}</div></div>
    <div><h5>Buttons</h5><div class="bt">${b}</div></div>
-   <div><h5>States: an icon, the weight, a shade of grey, or a shade of the mulberry</h5><div class="states">
+   <div><h5>States: an icon, the weight, a shade of grey, or a shade of the accent</h5><div class="states">
      <div>${STATE.done}<small>tick, text-3</small></div><div>${STATE.work}<small>spinner, text-2</small></div><div>${STATE.open}<small>hollow, text-4</small></div>
-     <div>${STATE.blocked}<small>pause ring, text-3</small></div><div>${STATE.testing}<small>mulberry ring</small></div><div>${STATE.you}<small>mulberry dot, heavier</small></div>
+     <div>${STATE.blocked}<small>pause ring, text-3</small></div><div>${STATE.testing}<small>accent ring</small></div><div>${STATE.you}<small>accent dot, heavier</small></div>
      <div>${STATE.failed}<small>the one red: an error</small></div><div><span class="st"><span class="dot solid"></span>Signed in</span><small>solid dot, text-3</small></div><div><span class="st strong"><span class="dot plum"></span>Needs sign-in</span><small>waits on you</small></div>
    </div></div>
    <div><h5>Badges: outlines only, in shades</h5><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="chip faint">frontend</span><span class="chip faint">rev 3</span><span class="chip">Default</span><span class="chip">Opus</span><span class="chip">3 running</span><span class="chip strong">Main agent</span><span class="chip plum">Waits on you</span></div></div>
    <div><h5>Program icons keep their own colour</h5><div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;font-size:12.5px"><span style="display:flex;gap:6px;align-items:center">${CLAUDE()}Claude Code</span><span style="display:flex;gap:6px;align-items:center">${CODEX()}Codex</span><span class="chip" style="gap:5px">${CLAUDE('s14')}Opus</span><span style="color:var(--text-3);font-size:12px">The icon carries the colour; the label and the badge around it stay grey.</span></div></div>
-   <div><h5>Controls with the mulberry, and the one error</h5><div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><span class="toggle on"></span><span class="toggle"></span><span class="check on">${I('tick','s14')}</span><span class="check"></span><span class="radio on"></span><span class="radio"></span><div class="seg"><span class="on">Day</span><span>Week</span></div><div class="field focus" style="width:160px">Focused field</div><div><div class="field bad" style="width:160px">Personal</div><div class="errtext">Another account has this name.</div></div><div style="width:120px"><div class="meter plum"><i style="width:62%"></i></div></div><span style="font-size:12px">A <a class="lk">link</a> is underlined text</span></div></div>
+   <div><h5>Controls with the accent, links, and the one error</h5><div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><span class="toggle on"></span><span class="toggle"></span><span class="check on">${I('tick','s14')}</span><span class="check"></span><span class="radio on"></span><span class="radio"></span><div class="seg"><span class="on">Day</span><span>Week</span></div><div class="field focus" style="width:160px">Focused field</div><div><div class="field bad" style="width:160px">Personal</div><div class="errtext">Another account has this name.</div></div><div style="width:120px"><div class="meter plum"><i style="width:62%"></i></div></div><span style="font-size:12px">A <a class="lk">link</a> is underlined text</span><span style="font-size:12px">or, if links take the accent, <a class="lk" style="color:var(--plum);text-decoration-color:var(--plum)">a link like this</a></span><span class="chip" style="border-color:var(--plum);color:var(--plum);background:var(--plum-dim)">Accent badge</span></div></div>
    </div></div>`;},
 };
 function dialog(){return `<div class="dlg"><header><h3>Add an account</h3><span class="steps"><i class="on"></i><i></i><i></i></span><span class="ib" id="closeAdd">${I('close')}</span></header>
@@ -487,7 +483,7 @@ function dialog(){return `<div class="dlg"><header><h3>Add an account</h3><span 
   <footer><button class="btn" id="cancelAdd">Cancel</button><span style="flex:1"></span><button class="btn primary">Continue${I('arrow','s14')}</button></footer></div>`}
 
 /* ---------- state and drawing ---------- */
-let cur='original', mode='dark', taskOpen=false;
+let cur='teal', mode='dark', taskOpen=false;
 const app=document.getElementById('app');
 function palName(){const pb=document.querySelector('#palBtn span'); if(pb) pb.textContent=P[cur].name;}
 function apply(){
@@ -517,15 +513,19 @@ function draw(){
 }
 function contrast(k){
   const rows=[['Text on the page','text','bg',4.5],['Text-2 on the page','t2','bg',4.5],['Text-3 on the page','t3','bg',4.5],['Text-3 on the sidebar','t3','side',4.5],['Text-3 on a selected row','t3','sel',4.5],
-    ['Text-4 (meta, placeholders)','t4','bg',3,'incidental text only'],['Label on the mulberry button','onPlum','plum',4.5],['Label on mulberry hover','onPlum','plumHover',4.5],['Label on mulberry pressed','onPlum','plumPress',4.5],
-    ['Mulberry against the page (dots, outlines)','plum','bg',3],['Focus ring against the page','ring','bg',3],['Field edge against the page','input','bg',3],
-    ['Muted red against the page (error text)','danger','bg',4.5],['Label on the danger button','onDanger','danger',4.5],['Label on danger hover','onDanger','dangerHover',4.5],['Text on a mulberry-dim choice','text','plumDim',4.5]];
+    ['Text-4 (meta, placeholders)','t4','bg',3,'incidental text only'],
+    ['Button: label on the accent fill','onPlum','plum',4.5],['Button: label on accent hover','onPlum','plumHover',4.5],['Button: label on accent pressed','onPlum','plumPress',4.5],
+    ['Focus ring against the page','ring','bg',3],['Focus ring against the sidebar','ring','side',3],['Focus ring against a selected row','ring','sel',3],['Focus ring against the accent button (2px gap shows the page)','ring','bg',3,'offset ring'],
+    ['Link in the accent, on the page','plum','bg',4.5],['Link in the accent, on a raised card','plum','raised',4.5],['Link in the accent, on the sidebar','plum','side',4.5],
+    ['Badge: accent outline or dot against the page','plum','bg',3],['Badge: accent outline on a raised card','plum','raised',3],['Badge: accent outline on a selected row','plum','sel',3],['Badge: accent text on the accent dim','plum','plumDim',4.5],
+    ['Field edge against the page','input','bg',3],
+    ['Muted red against the page (error text)','danger','bg',4.5],['Label on the danger button','onDanger','danger',4.5],['Label on danger hover','onDanger','dangerHover',4.5],['Text on an accent-dim choice','text','plumDim',4.5]];
   document.getElementById('cr').innerHTML='<tr><th>Pair</th><th>Sample</th><th>Ratio</th><th>Needs</th><th></th></tr>'+rows.map(([n,f,b,need,why])=>{const r=ratio(k[f],k[b]);
     return `<tr><td>${n}</td><td><span class="smp" style="color:${k[f]};background:${k[b]}">Aa</span></td><td class="mono">${r.toFixed(2)}</td><td class="mono">${need}</td><td class="${r>=need?'ok':'no'}">${r>=need?'Pass':'Below'}${why?` <span style="opacity:.6;font-weight:400">· ${why}</span>`:''}</td></tr>`}).join('');
 }
 function cssOut(){
   const p=P[cur], f=m=>Object.entries(tokens(make(p,m))).map(([n,v])=>`    ${n}: ${v};`).join('\n');
-  document.getElementById('css').textContent=`/* Stone and mulberry: ${p.name} */\n:root {\n${f('light')}\n}\n\n.dark {\n${f('dark')}\n}`;
+  document.getElementById('css').textContent=`/* Stone and one accent: ${p.name} */\n:root {\n${f('light')}\n}\n\n.dark {\n${f('dark')}\n}`;
 }
 function strip(){
   document.getElementById('strip').innerHTML=Object.entries(P).map(([key,p])=>{const l=make(p,'light'),d=make(p,'dark');
