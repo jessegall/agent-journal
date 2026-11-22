@@ -4050,8 +4050,6 @@ class	NotificationChangeItem
 class	NotificationChangePage
 class	NotificationChangePruning
 class	NotificationChanges
-class	NotificationChangesController
-class	NotificationChangesRequest
 class	NotificationCursor
 class	NotificationCursorInvalid
 class	NotificationDelivery
@@ -4061,8 +4059,7 @@ class	NotificationItem
 class	NotificationLink
 class	NotificationOccurrence
 class	NotificationPage
-class	NotificationPageController
-class	NotificationPageRequest
+class	NotificationProps
 class	NotificationReceipt
 class	NotificationReceipts
 class	NotificationScope
@@ -7427,6 +7424,8 @@ constant	NotificationChangePruning::BATCH
 constant	NotificationItem::UNAVAILABLE_TITLE
 constant	NotificationOccurrence::UPDATED_AT
 constant	NotificationPage::SIZE
+constant	NotificationProps::CURSOR
+constant	NotificationProps::SINCE
 constant	NotificationReceipt::UPDATED_AT
 constant	NotificationReceipts::MARK_ALL_BATCH
 constant	NotificationScopes::JOURNAL
@@ -17120,9 +17119,6 @@ method	NotificationChanges::isOlderThanKept()
 method	NotificationChanges::itemsOf()
 method	NotificationChanges::reset()
 method	NotificationChanges::since()
-method	NotificationChangesController::__invoke()
-method	NotificationChangesRequest::rules()
-method	NotificationChangesRequest::since()
 method	NotificationCursor::__construct()
 method	NotificationCursor::at()
 method	NotificationCursor::read()
@@ -17147,9 +17143,11 @@ method	NotificationOccurrence::isNew()
 method	NotificationOccurrence::keyed()
 method	NotificationOccurrence::targeting()
 method	NotificationPage::__construct()
-method	NotificationPageController::__invoke()
-method	NotificationPageRequest::cursor()
-method	NotificationPageRequest::rules()
+method	NotificationProps::__construct()
+method	NotificationProps::actor()
+method	NotificationProps::cursorIn()
+method	NotificationProps::of()
+method	NotificationProps::sinceIn()
 method	NotificationReceipt::allForTarget()
 method	NotificationReceipt::casts()
 method	NotificationReceipt::create()
@@ -17557,6 +17555,7 @@ method	Page::options()
 method	Page::slots()
 method	Page::visibleWhen()
 method	PageActionAnswers::__construct()
+method	PageActionAnswers::back()
 method	PageActionAnswers::backWith()
 method	PageActionAnswers::backWithNotice()
 method	PageChangeBroadcastLog::__construct()
@@ -32709,6 +32708,7 @@ property	HandleInertiaRequests::$actors
 property	HandleInertiaRequests::$appName
 property	HandleInertiaRequests::$inertia
 property	HandleInertiaRequests::$navigation
+property	HandleInertiaRequests::$notifications
 property	HandleInertiaRequests::$rootView
 property	HandleInertiaRequests::$sharing
 property	HandleInertiaRequests::$users
@@ -34065,6 +34065,10 @@ property	NotificationPage::$nextCursor
 property	NotificationPage::$through
 property	NotificationPage::$unread
 property	NotificationPage::$version
+property	NotificationProps::$actors
+property	NotificationProps::$changes
+property	NotificationProps::$feed
+property	NotificationProps::$inertia
 property	NotificationReceipts::$scopes
 property	NotificationTarget::$id
 property	NotificationTarget::$key

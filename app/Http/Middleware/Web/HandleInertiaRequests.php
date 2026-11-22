@@ -12,6 +12,7 @@ use App\Contracts\NavigationRecords;
 use App\Contracts\SharePolicy;
 use App\Data\CurrentUserData;
 use App\Data\SharedData;
+use App\Http\Responses\NotificationProps;
 use App\Support\ActorContext;
 use App\Values\ChatMemberAuthority;
 use Illuminate\Container\Attributes\Config;
@@ -42,6 +43,7 @@ class HandleInertiaRequests extends Middleware
         private readonly SharePolicy $sharing,
         private readonly InstalledVersion $version,
         private readonly CurrentActor $actors,
+        private readonly NotificationProps $notifications,
     ) {}
 
     /**
@@ -90,6 +92,8 @@ class HandleInertiaRequests extends Middleware
             'navigationCounts' => $this->isChatMember()
                 ? []
                 : $this->inertia->defer(fn () => $this->navigation->counts(), 'navigation-counts'),
+            // The bell's notifications, read only by a partial reload that names them.
+            ...($this->isChatMember() ? [] : $this->notifications->of($request)),
         ];
     }
 

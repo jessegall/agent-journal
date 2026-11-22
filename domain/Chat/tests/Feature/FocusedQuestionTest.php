@@ -117,8 +117,8 @@ final class FocusedQuestionTest extends TestCase
         $this->assertNull($this->receiptOf(ActorIdentity::of($this->owner), $first)->read_at);
 
         $this->actingAs($this->owner)
-            ->postJson('/communication/notifications/read-question', ['messageId' => $first])
-            ->assertOk();
+            ->post('/communication/notifications/read-question', ['messageId' => $first])
+            ->assertRedirect();
 
         $this->assertNotNull($this->receiptOf(ActorIdentity::of($this->owner), $first)->read_at);
         $this->assertNull($this->receiptOf(ActorIdentity::of($this->owner), $second)->read_at);
@@ -127,7 +127,7 @@ final class FocusedQuestionTest extends TestCase
         $this->assertNull(Message::query()->acrossInboxes()->findOrFail($first)->read_at);
     }
 
-    public function test_a_question_the_reader_cannot_see_is_named_unavailable_and_marks_nothing(): void
+    public function test_a_question_the_reader_cannot_see_is_named_unavailable_and_its_mark_is_refused(): void
     {
         $hidden = $this->askNobody('Out of sight.')->id;
 
@@ -138,8 +138,9 @@ final class FocusedQuestionTest extends TestCase
                 ->missing('page.data.focusedQuestion'));
 
         $this->actingAs($this->owner)
-            ->postJson('/communication/notifications/read-question', ['messageId' => $hidden])
-            ->assertNotFound();
+            ->post('/communication/notifications/read-question', ['messageId' => $hidden])
+            ->assertRedirect()
+            ->assertSessionHasErrors();
     }
 
     private function asOwner(): void

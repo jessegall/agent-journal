@@ -6,11 +6,13 @@ namespace Tests\Feature\Communication;
 
 use App\Data\NotificationTarget;
 use App\Enums\NotificationSourceType;
+use App\Http\Responses\NotificationProps;
 use App\Models\Message;
 use App\Models\NotificationReceipt;
 use App\Resolvers\QuestionNotificationTarget;
 use App\Support\ActorIdentity;
 use App\Support\NotificationDelivery;
+use Illuminate\Testing\TestResponse;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -31,20 +33,20 @@ final class NotificationFeedTest extends MessagingTestCase
     {
         $this->notifyOwner(21);
 
-        $first = $this->actingAs($this->owner)->getJson('/communication/notifications')->assertOk();
+        $first = $this->actingAs($this->owner)->notifications()->assertOk();
 
-        $this->assertCount(20, $first->json('items'));
-        $this->assertSame(21, $first->json('unread'));
-        $this->assertSame('21', $first->json('through'));
-        $this->assertSame(21, $first->json('items.0.sequence'));
-        $this->assertSame(QuestionNotificationTarget::KEY, $first->json('items.0.target.key'));
+        $this->assertCount(20, $first->json('props.notifications.items'));
+        $this->assertSame(21, $first->json('props.notifications.unread'));
+        $this->assertSame('21', $first->json('props.notifications.through'));
+        $this->assertSame(21, $first->json('props.notifications.items.0.sequence'));
+        $this->assertSame(QuestionNotificationTarget::KEY, $first->json('props.notifications.items.0.target.key'));
 
         $second = $this->actingAs($this->owner)
-            ->getJson('/communication/notifications?'.http_build_query(['cursor' => $first->json('nextCursor')]))
+            ->notifications([NotificationProps::CURSOR => $first->json('props.notifications.nextCursor')])
             ->assertOk();
 
-        $this->assertSame([1], array_column($second->json('items'), 'sequence'));
-        $this->assertNull($second->json('nextCursor'));
+        $this->assertSame([1], array_column($second->json('props.notifications.items'), 'sequence'));
+        $this->assertNull($second->json('props.notifications.nextCursor'));
     }
 
     public function test_marking_a_receipt_read_twice_lowers_the_count_once(): void
@@ -52,26 +54,26 @@ final class NotificationFeedTest extends MessagingTestCase
         $this->notifyOwner(2);
         $receiptId = NotificationReceipt::query()->where('sequence', 2)->sole()->id;
 
-        $this->actingAs($this->owner)
-            ->postJson('/communication/notifications/read', ['receiptId' => $receiptId])
-            ->assertOk()
-            ->assertJsonPath('unread', 1);
+        $markRead = fn () => $this->actingAs($this->owner)->from('/chat')
+            ->post('/communication/notifications/read', ['receiptId' => $receiptId])
+            ->assertRedirect('/chat');
 
-        $this->actingAs($this->owner)
-            ->postJson('/communication/notifications/read', ['receiptId' => $receiptId])
-            ->assertOk()
-            ->assertJsonPath('unread', 1);
+        $markRead();
+        $this->assertSame(1, $this->notifications()->json('props.notifications.unread'));
+        $markRead();
+        $this->assertSame(1, $this->notifications()->json('props.notifications.unread'));
     }
 
-    public function test_another_actors_receipt_answers_unavailable_and_changes_nothing(): void
+    public function test_another_actors_receipt_is_refused_and_changes_nothing(): void
     {
         $message = $this->askInboxOf($this->actorOf($this->builder), 'Which port?');
         $this->deliver($message, $this->actorOf($this->builder));
         $receipt = NotificationReceipt::query()->sole();
 
         $this->actingAs($this->owner)
-            ->postJson('/communication/notifications/read', ['receiptId' => $receipt->id])
-            ->assertNotFound();
+            ->post('/communication/notifications/read', ['receiptId' => $receipt->id])
+            ->assertRedirect()
+            ->assertSessionHasErrors();
 
         $this->assertNull($receipt->refresh()->read_at);
     }
@@ -81,21 +83,38 @@ final class NotificationFeedTest extends MessagingTestCase
         $this->notifyOwner(1);
         $this->deliver($this->askNobody('Out of sight.'), ActorIdentity::of($this->owner));
 
-        $page = $this->actingAs($this->owner)->getJson('/communication/notifications')->assertOk();
+        $page = $this->actingAs($this->owner)->notifications()->assertOk();
 
-        $this->assertSame([1], array_column($page->json('items'), 'sequence'));
+        $this->assertSame([1], array_column($page->json('props.notifications.items'), 'sequence'));
     }
 
     public function test_a_cursor_of_another_scope_is_refused(): void
     {
         $this->notifyOwner(21);
-        $cursor = $this->actingAs($this->owner)->getJson('/communication/notifications')->json('nextCursor');
+        $cursor = $this->actingAs($this->owner)->notifications()->json('props.notifications.nextCursor');
         $forged = rtrim(strtr(base64_encode('01jd8x0g9m3qz6v4k2t7r5w1ce.'.'5'), '+/', '-_'), '=');
 
         $this->assertIsString($cursor);
         $this->actingAs($this->owner)
-            ->getJson('/communication/notifications?'.http_build_query(['cursor' => $forged]))
+            ->notifications([NotificationProps::CURSOR => $forged])
             ->assertStatus(422);
+    }
+
+    /**
+     * The shell's notifications as the bell reads them: a partial reload of the chat page that names only them.
+     *
+     * @param  array<string, mixed>  $query
+     */
+    private function notifications(array $query = []): TestResponse
+    {
+        $page = $this->get('/chat')->viewData('page');
+
+        return $this->get('/chat?'.http_build_query($query), [
+            'X-Inertia' => 'true',
+            'X-Inertia-Version' => $page['version'],
+            'X-Inertia-Partial-Component' => $page['component'],
+            'X-Inertia-Partial-Data' => 'notifications',
+        ]);
     }
 
     private function notifyOwner(int $count): void

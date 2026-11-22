@@ -21,6 +21,14 @@ final readonly class PageActionAnswers
     public function __construct(private ResponseFactory $inertia) {}
 
     /**
+     * Back to the page with nothing flashed: the reload the page asked for shows what changed.
+     */
+    public function back(): RedirectResponse
+    {
+        return $this->inertia->back(303);
+    }
+
+    /**
      * Back to the page, with a notice the toast region shows once.
      */
     public function backWithNotice(string $notice): RedirectResponse
