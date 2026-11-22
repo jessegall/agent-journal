@@ -122,6 +122,32 @@ final class ReceiptDelivery extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * The runtime took the wake: the delivery stays open until the driver confirms the text, and is due again only
+     * once the presentation lease runs out.
+     *
+     * @throws ChatStateConflict
+     */
+    public function awaitPresentation(CarbonImmutable $leaseUntil): void
+    {
+        $this->assertPending();
+        $this->lease_expires_at = $leaseUntil;
+        $this->next_attempt_at = $leaseUntil;
+        $this->assertSaved($this->save());
+    }
+
+    /**
+     * An operator asks for the delivery again under the same notification key, from a clean count.
+     */
+    public function reopen(CarbonImmutable $at): void
+    {
+        $this->state = ReceiptDeliveryState::Pending;
+        $this->attempts = 0;
+        $this->next_attempt_at = $at;
+        $this->lease_expires_at = null;
+        $this->recordChange();
+    }
+
+    /**
      * Counts a failed try and sets when the next one is due.
      *
      * @throws ChatStateConflict

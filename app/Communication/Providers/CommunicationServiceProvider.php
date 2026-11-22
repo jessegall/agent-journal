@@ -35,6 +35,7 @@ use App\Communication\Support\MessageClaimProvider;
 use App\Communication\Support\NotificationChangePruning;
 use App\Communication\Support\NotificationTargetRegistry;
 use App\Communication\Support\PendingInboxWork;
+use App\Communication\Support\PresentationSweep;
 use App\Communication\Support\ReceiptDeliveries;
 use App\Communication\Support\RecipientNotifications;
 use App\Communication\Support\RegisteredInboxes;
@@ -116,6 +117,12 @@ final class CommunicationServiceProvider extends ServiceProvider
             Schedule::class,
             fn (Schedule $schedule) => $schedule
                 ->call(fn (ReceiptDeliveries $deliveries) => $deliveries->deliverDue(CarbonImmutable::now()))
+                ->everyMinute(),
+        );
+        $this->callAfterResolving(
+            Schedule::class,
+            fn (Schedule $schedule) => $schedule
+                ->call(fn (PresentationSweep $sweep) => $sweep->sweep(CarbonImmutable::now()))
                 ->everyMinute(),
         );
 

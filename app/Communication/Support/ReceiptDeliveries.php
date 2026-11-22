@@ -106,7 +106,13 @@ final readonly class ReceiptDeliveries
         $receipt = $delivery->receipt;
         $interval = $receipt->interval;
 
-        if ($receipt->isPresented() || ! $interval->isActive()) {
+        if ($receipt->isPresented()) {
+            $delivery->accept();
+
+            return;
+        }
+
+        if (! $interval->isActive()) {
             $delivery->cancel();
 
             return;
@@ -131,7 +137,8 @@ final readonly class ReceiptDeliveries
             return;
         }
 
-        $delivery->accept();
+        // The wake was taken; only the driver's confirmed presentation settles the delivery.
+        $delivery->awaitPresentation($at->addSeconds(PresentationBatches::LEASE_SECONDS));
     }
 
     private function recordFailure(ReceiptDelivery $delivery, string $failure, CarbonImmutable $at): void

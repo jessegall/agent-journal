@@ -75,6 +75,17 @@ final class OutstandingRange extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * An operator asks for the piece again: it is outstanding once more, with no failures counted.
+     */
+    public function reopen(): void
+    {
+        $this->state = OutstandingRangeState::Outstanding;
+        $this->consecutive_failures = 0;
+        $this->exhausted_reason = null;
+        $this->save();
+    }
+
     public function exhaust(string $reason): void
     {
         $this->state = OutstandingRangeState::Exhausted;

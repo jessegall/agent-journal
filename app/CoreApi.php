@@ -544,6 +544,7 @@ use App\Communication\Commands\ReleaseMessageClaim;
 use App\Communication\Commands\ReleaseSpeech;
 use App\Communication\Commands\ReplyInChat;
 use App\Communication\Commands\ReplyToMessage;
+use App\Communication\Commands\RetryDelivery;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SelectMessage;
 use App\Communication\Commands\SendMessage;
@@ -2390,6 +2391,7 @@ final class CoreApi
                 ReplyInChat::class,
                 AcknowledgeChatMessages::class,
                 AcknowledgePresentation::class,
+                RetryDelivery::class,
                 ClaimSpeech::class,
                 ReleaseSpeech::class,
                 AnswerChatQuestion::class,

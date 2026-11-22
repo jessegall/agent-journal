@@ -34,8 +34,9 @@ use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
- * A chat message wakes each agent member once: a user member gets no delivery, an agent that runs nowhere waits for
- * its startup, a failing wake retries until it is exhausted, and a receipt already shown is never woken.
+ * A chat message wakes each agent member once and stays open until its text is presented: a user member gets no
+ * delivery, an agent that runs nowhere waits for its startup, a failing wake retries until it is exhausted, and a
+ * receipt already shown settles its delivery without another wake.
  */
 final class ReceiptDeliveriesTest extends TestCase
 {
@@ -91,7 +92,7 @@ final class ReceiptDeliveriesTest extends TestCase
 
         $this->assertSame(1, $this->requests);
         $this->assertSame(1, ReceiptDelivery::query()->count());
-        $this->assertSame(ReceiptDeliveryState::Accepted, ReceiptDelivery::query()->sole()->state);
+        $this->assertSame(ReceiptDeliveryState::Pending, ReceiptDelivery::query()->sole()->state);
     }
 
     public function test_an_agent_without_a_runtime_waits_for_its_startup(): void
@@ -121,7 +122,7 @@ final class ReceiptDeliveriesTest extends TestCase
         $this->assertSame('runtime refused', $delivery->last_failure);
     }
 
-    public function test_a_presented_receipt_is_cancelled_and_not_woken_again(): void
+    public function test_a_presented_receipt_settles_its_delivery_and_is_not_woken_again(): void
     {
         $this->outcomes = [new RuntimeException('runtime refused')];
 
@@ -132,7 +133,7 @@ final class ReceiptDeliveriesTest extends TestCase
         $this->app->make(ReceiptDeliveries::class)->deliverDue(CarbonImmutable::now()->addDay());
 
         $this->assertSame(1, $this->requests);
-        $this->assertSame(ReceiptDeliveryState::Cancelled, ReceiptDelivery::query()->sole()->state);
+        $this->assertSame(ReceiptDeliveryState::Accepted, ReceiptDelivery::query()->sole()->state);
     }
 
     /**
