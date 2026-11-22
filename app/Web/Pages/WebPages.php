@@ -25,9 +25,7 @@ use App\Web\Http\Controllers\Runtimes\ResumeScriptRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\RetryRuntimeRequestController;
 use App\Web\Http\Controllers\Terminal\CloseTerminalController;
 use App\Web\Http\Controllers\Terminal\OpenTerminalController;
-use App\Web\Http\Controllers\Terminal\OpenTerminalPageController;
 use App\Web\Http\Controllers\Terminal\RenewTerminalController;
-use App\Web\Http\Controllers\Terminal\RenewTerminalPageController;
 use App\Web\Http\Controllers\Terminal\TerminalFrameController;
 use App\Web\Resolvers\AskDetailResolver;
 use App\Web\Resolvers\AskInboxResolver;
@@ -111,8 +109,6 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
             Page::make('terminal', 'Terminal', Icon::Activity, TerminalWindowResolver::class, 'TerminalWindow.vue')
                 ->at('agents/{agent}/terminal')
                 ->actions(
-                    ActionRoute::post('agents/{agent}/terminal/open', OpenTerminalPageController::class, 'open-terminal'),
-                    ActionRoute::post('agents/{agent}/terminal/renew', RenewTerminalPageController::class, 'renew-terminal'),
                     ActionRoute::post(
                         'agents/{agent}/terminal/interests',
                         OpenTerminalController::class,

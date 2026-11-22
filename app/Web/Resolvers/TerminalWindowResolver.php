@@ -4,36 +4,20 @@ declare(strict_types=1);
 
 namespace App\Web\Resolvers;
 
-use App\Agents\Support\TerminalFrames;
 use App\Http\Requests\Agents\TerminalFrameRequest;
 use App\Ui\Contracts\PageResolver;
 use App\Web\Data\TerminalWindowData;
 
 /**
- * An agent's terminal page, reloaded by the page itself: once the id of the read interest its open request opened, then
- * the newest frame of that interest after the epoch and sequence it holds. It reads only; opening, renewing and closing
- * the interest are the page's actions.
+ * An agent's terminal page: only the agent; the page's terminal controller opens, renews, reads and closes its read
+ * interest through the terminal's JSON actions.
  */
 final readonly class TerminalWindowResolver implements PageResolver
 {
-    public function __construct(private TerminalFrameRequest $request, private TerminalFrames $frames) {}
+    public function __construct(private TerminalFrameRequest $request) {}
 
     public function read(): TerminalWindowData
     {
-        $agentId = $this->request->agentId();
-
-        if ($this->request->namesOpenRequest()) {
-            $readInterestId = $this->frames->interestOpenedBy($agentId, $this->request->openRequestId());
-
-            return new TerminalWindowData($agentId, $readInterestId);
-        }
-
-        if (! $this->request->namesInterest()) {
-            return new TerminalWindowData($agentId);
-        }
-
-        $frame = $this->frames->after($agentId, $this->request->heldFrame());
-
-        return new TerminalWindowData($agentId, frame: $frame);
+        return new TerminalWindowData($this->request->agentId());
     }
 }

@@ -2,7 +2,7 @@ import type { ScreenFrameData } from '@generated/types/core';
 import { describe, expect, it } from 'vitest';
 import { supersedes } from '../../../app/Web/Resources/js/terminalFrameOrder';
 
-function frameOf(epoch: string, sequence: number): ScreenFrameData {
+function frameOf(epoch: string, sequence: number, stream: string | null = 's1'): ScreenFrameData {
     return {
         epoch,
         sequence,
@@ -17,7 +17,7 @@ function frameOf(epoch: string, sequence: number): ScreenFrameData {
         noTerminal: false,
         shielded: false,
         privacyRevision: 0,
-        stream: null,
+        stream,
         proof: 0,
         expiresAt: null,
     };
@@ -34,7 +34,8 @@ describe('supersedes', () => {
         expect(supersedes(frameOf('a', 10), frameOf('a', 10))).toBe(false);
     });
 
-    it('starts afresh with a new host process even at a lower sequence', () => {
-        expect(supersedes(frameOf('b', 1), frameOf('a', 50))).toBe(true);
+    it('never takes a frame of another host process or stream in place of the drawn one', () => {
+        expect(supersedes(frameOf('b', 51), frameOf('a', 50))).toBe(false);
+        expect(supersedes(frameOf('a', 51, 's2'), frameOf('a', 50))).toBe(false);
     });
 });

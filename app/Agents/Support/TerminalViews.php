@@ -148,22 +148,6 @@ final readonly class TerminalViews implements TerminalViewCloser
     }
 
     /**
-     * The read interest the viewer opened that a request names, for a page that knows only its open request.
-     *
-     * @throws TerminalViewRefused
-     */
-    public function interestOpenedBy(string $agentId, ActorIdentity $viewer, string $openRequestId): string
-    {
-        $view = TerminalView::query()->ownedBy($viewer)->ofAgent($agentId)->openedBy($openRequestId)->first();
-
-        if ($view === null) {
-            throw TerminalViewRefused::unknownInterest();
-        }
-
-        return $view->read_interest_id;
-    }
-
-    /**
      * Ends the viewer's live views of every runtime of the agent, as when the viewer may no longer inspect it.
      */
     public function closeAllFor(string $agentId, ActorIdentity $viewer, CarbonImmutable $now): void

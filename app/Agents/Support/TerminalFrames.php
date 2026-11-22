@@ -40,17 +40,6 @@ final readonly class TerminalFrames
     }
 
     /**
-     * The id of the read interest the current viewer's open request opened.
-     *
-     * @throws ActorNotAllowed
-     * @throws TerminalViewRefused
-     */
-    public function interestOpenedBy(string $agentId, string $openRequestId): string
-    {
-        return $this->views->interestOpenedBy($agentId, $this->inspectingViewer(), $openRequestId);
-    }
-
-    /**
      * @throws ActorNotAllowed
      */
     private function inspectingViewer(): ActorIdentity
