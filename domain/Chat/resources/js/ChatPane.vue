@@ -8,7 +8,9 @@ import { useConversationIntents } from './composables/useConversationIntents';
 import { draftKey } from './composables/useMessageDrafts';
 import type { AgentOptionData, ChatData } from '@generated/types/chat';
 import type { ReplyTarget } from './composables/useConversationIntents';
+import Button from '@kit/Button';
 import { isRevealed } from '@kit/protectedView';
+import { liveStage, retryLiveConnection } from '@/composables/useLiveConnection';
 import SlotSections from '@kit/SlotSections';
 import { decline as declineRoute, read as readRoute } from '@generated/routes/chat';
 import AgentPicker from './AgentPicker.vue';
@@ -314,6 +316,12 @@ function retryFocused(): void {
                     :conversation-prop="protectedProp"
                     @replied="replyingTo = null"
                 />
+                <template v-if="liveStage === 'refused'">
+                    <p role="status" class="flex items-center gap-2 text-small text-text-3">
+                        Disconnected. The messages, your place and your draft are kept.
+                        <Button size="small" variant="bordered" @click="retryLiveConnection()">Reconnect</Button>
+                    </p>
+                </template>
             </template>
             <template v-else>
                 <p class="m-auto text-empty text-text-3" role="status">Loading the conversation…</p>

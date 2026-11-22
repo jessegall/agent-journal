@@ -97,7 +97,7 @@ function stateOf(message: ChatMessageData): string | null {
 </script>
 
 <template>
-    <div class="flex flex-1 flex-col gap-2.5 overflow-y-auto pt-4.5 pb-2" role="feed" aria-label="Messages">
+    <div class="flex flex-1 flex-col gap-2.5 overflow-y-auto pt-4.5 pb-2" role="log" aria-live="polite" aria-label="Messages">
         <template v-if="messages.length === 0 && pending.length === 0 && refused.length === 0">
             <div class="m-auto flex flex-col items-center gap-1 text-center">
                 <p class="text-empty text-text-2">No messages yet</p>
@@ -136,7 +136,7 @@ function stateOf(message: ChatMessageData): string | null {
                     </a>
                 </template>
                 <template v-if="message.replyTo !== null && !message.replyTo.visible">
-                    <span class="text-small text-text-3">Original unavailable</span>
+                    <span class="text-small text-text-3">The original was removed or is hidden from you</span>
                 </template>
                 <p
                     class="rounded-bubble bg-raised px-3 py-2 text-body whitespace-pre-wrap text-text"
