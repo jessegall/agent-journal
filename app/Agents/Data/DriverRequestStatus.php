@@ -36,6 +36,8 @@ final class DriverRequestStatus extends Data
         public readonly bool $canRetry = false,
         public readonly bool $canCancel = false,
         public readonly bool $canResolve = false,
+        // An uncertain delivery may be sent again as a new request, which may arrive twice.
+        public readonly bool $canSendAgain = false,
         public readonly bool $canResumeScript = false,
         public readonly bool $canCancelScript = false,
     ) {}

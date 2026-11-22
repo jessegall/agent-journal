@@ -5673,6 +5673,7 @@ class	SendMessageCommand
 class	SendMessageController
 class	SendMessageHandler
 class	SendMessageRequest
+class	SendRuntimeRequestAgainController
 class	SendTerminalInputCommand
 class	SendTerminalInputController
 class	SendTerminalInputHandler
@@ -20765,6 +20766,7 @@ method	RequestProgressReportData::navigationReport()
 method	RequestProgressReportData::refusal()
 method	RequestProgressReportData::scriptProgress()
 method	RequestRecoveryRequest::applied()
+method	RequestRecoveryRequest::confirmsPossibleDuplicate()
 method	RequestRecoveryRequest::reason()
 method	RequestRecoveryRequest::requestId()
 method	RequestRecoveryRequest::rowVersion()
@@ -21865,6 +21867,7 @@ method	SendMessageHandler::__construct()
 method	SendMessageHandler::handle()
 method	SendMessageRequest::command()
 method	SendMessageRequest::rules()
+method	SendRuntimeRequestAgainController::__invoke()
 method	SendTerminalInputCommand::__construct()
 method	SendTerminalInputController::__invoke()
 method	SendTerminalInputHandler::__construct()
@@ -26389,6 +26392,7 @@ parameter	$canResumeScript
 parameter	$canRetry
 parameter	$canReview
 parameter	$canRunChecks
+parameter	$canSendAgain
 parameter	$canShare
 parameter	$canStart
 parameter	$canStop
@@ -32013,6 +32017,7 @@ property	DriverRequestStatus::$canCancelScript
 property	DriverRequestStatus::$canResolve
 property	DriverRequestStatus::$canResumeScript
 property	DriverRequestStatus::$canRetry
+property	DriverRequestStatus::$canSendAgain
 property	DriverRequestStatus::$changedAt
 property	DriverRequestStatus::$expectedTiming
 property	DriverRequestStatus::$hold

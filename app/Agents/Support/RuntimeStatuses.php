@@ -72,6 +72,7 @@ final readonly class RuntimeStatuses
             'canRetry' => $request->canRetrySafely(),
             'canCancel' => $request->canCancel(),
             'canResolve' => $request->canResolve(),
+            'canSendAgain' => $request->canSendAgain(),
             'canResumeScript' => $request->canResumeScript(),
             'canCancelScript' => $request->isStoppedKeyScript(),
         ]);

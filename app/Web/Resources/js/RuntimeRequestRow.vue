@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DriverRequestStatus } from '@/types/generated';
+import { router } from '@inertiajs/vue3';
 import { recover } from './runtimeRecovery';
 
 /**
@@ -75,6 +76,21 @@ function run(
                     "
                 >
                     It never arrived
+                </button>
+            </template>
+            <template v-if="request.canSendAgain">
+                <button type="button" @click="router.reload()">Check status</button>
+                <button
+                    type="button"
+                    @click="
+                        run(
+                            'send-again',
+                            'This delivery may already have arrived, so sending it again may deliver it twice. Why send it again?',
+                            { confirmsPossibleDuplicate: true },
+                        )
+                    "
+                >
+                    Send again
                 </button>
             </template>
             <template v-if="request.canResumeScript">

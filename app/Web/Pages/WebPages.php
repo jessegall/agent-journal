@@ -25,6 +25,7 @@ use App\Web\Http\Controllers\Runtimes\ReleaseRuntimeHoldController;
 use App\Web\Http\Controllers\Runtimes\ResolveRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\ResumeScriptRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\RetryRuntimeRequestController;
+use App\Web\Http\Controllers\Runtimes\SendRuntimeRequestAgainController;
 use App\Web\Http\Controllers\Terminal\CancelPrivateEntryController;
 use App\Web\Http\Controllers\Terminal\CancelTerminalTakeController;
 use App\Web\Http\Controllers\Terminal\CheckTerminalScreenController;
@@ -101,6 +102,11 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
                         'runtimes/requests/{driver_request}/retry',
                         RetryRuntimeRequestController::class,
                         'retry-runtime-request',
+                    ),
+                    ActionRoute::post(
+                        'runtimes/requests/{driver_request}/send-again',
+                        SendRuntimeRequestAgainController::class,
+                        'send-runtime-request-again',
                     ),
                     ActionRoute::post(
                         'runtimes/requests/{driver_request}/cancel',

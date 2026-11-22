@@ -21,6 +21,7 @@ final class RequestRecoveryRequest extends FormRequest
             'reason' => ['required', 'string', 'max:500', 'regex:/\S/'],
             'rowVersion' => ['required', 'integer', 'min:0'],
             'applied' => ['sometimes', 'boolean'],
+            'confirmsPossibleDuplicate' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -37,6 +38,14 @@ final class RequestRecoveryRequest extends FormRequest
     public function rowVersion(): int
     {
         return $this->integer('rowVersion');
+    }
+
+    /**
+     * Whether the owner confirmed that sending an uncertain delivery again may deliver it twice.
+     */
+    public function confirmsPossibleDuplicate(): bool
+    {
+        return $this->boolean('confirmsPossibleDuplicate');
     }
 
     public function applied(): bool

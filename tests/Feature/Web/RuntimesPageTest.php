@@ -95,6 +95,30 @@ final class RuntimesPageTest extends TestCase
         $this->assertSame(RequestProgress::Accepted, $request->fresh()?->progress);
     }
 
+    public function test_an_uncertain_delivery_is_sent_again_from_the_page_as_a_possible_duplicate(): void
+    {
+        $this->switchDomainOff('chat');
+        $this->openRuntime();
+        $request = DriverRequest::query()->orderBy('sequence')->firstOrFail();
+        $request->markUncertain();
+        $request->refresh();
+
+        $this->actingAs($this->owner)->get('/web/runtimes')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.data.root.children.2.children.1.native.props.requests.0.canSendAgain', true)
+            ->where('page.data.root.children.2.children.1.native.props.requests.0.canRetry', false));
+
+        $this->actingAs($this->owner)
+            ->post("/web/runtimes/requests/{$request->id}/send-again", [
+                'reason' => 'it never showed up',
+                'rowVersion' => $request->row_version,
+                'confirmsPossibleDuplicate' => true,
+            ])
+            ->assertRedirect();
+
+        $again = DriverRequest::query()->where('possible_duplicate_of_id', $request->id)->sole();
+        $this->assertSame([RequestProgress::DeliveryUncertain, $request->message], [$request->fresh()?->progress, $again->message]);
+    }
+
     public function test_a_refused_recovery_is_shown_on_the_page(): void
     {
         $this->switchDomainOff('chat');
