@@ -40,7 +40,7 @@ final readonly class InitialWakeSettlement
         $sessionId = $runtime->agent_session_id;
         $binding = $report->binding;
 
-        $isProvedUnstarted = $wake->idempotency_key === self::keyOf($sessionId)
+        $isProvedUnstarted = $wake->isInitialWakeOf($sessionId)
             && $report->noProcessCreated
             && $report->attempt === $wake->attempt_version
             && $binding?->sessionId === $sessionId

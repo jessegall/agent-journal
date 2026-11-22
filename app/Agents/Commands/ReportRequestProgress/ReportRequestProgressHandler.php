@@ -14,6 +14,7 @@ use App\Agents\Models\RuntimeEvent;
 use App\Agents\Support\HostRuntimes;
 use App\Agents\Support\InitialWakeSettlement;
 use App\Agents\Support\NavigationRoundReports;
+use App\Agents\Support\StartIdentity;
 use App\Agents\Support\TerminalGrantReports;
 use App\Contracts\CommandHandler;
 
@@ -24,6 +25,7 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
         private NavigationRoundReports $navigationReports,
         private InitialWakeSettlement $initialWakes,
         private TerminalGrantReports $terminalGrants,
+        private StartIdentity $startIdentity,
     ) {}
 
     public function handle(ReportRequestProgressCommand $command): void
@@ -79,6 +81,10 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
         // keeps its own failure and leaves the session as it is.
         if ($request->operation === DriverOperation::Wake && $request->canRetry()) {
             $this->initialWakes->settle($request, $runtime, $command);
+        }
+
+        if ($request->isInitialWakeOf($runtime->agent_session_id)) {
+            $this->startIdentity->settle($runtime, $command);
         }
     }
 }

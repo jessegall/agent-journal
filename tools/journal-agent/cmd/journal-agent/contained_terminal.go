@@ -94,7 +94,7 @@ func (opener runtimeOpener) containedTerminalRuntime(
 	}
 
 	runtime := &containedRuntime{
-		Runtime:   terminalDriverOf(profile, opened, prepared.Grant.Runtime.ProcessGeneration),
+		Runtime:   terminalDriverOf(profile, opened, prepared.Grant.Runtime.ProcessGeneration, conversationID),
 		container: container,
 		manifest:  manifest,
 	}

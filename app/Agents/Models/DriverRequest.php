@@ -12,6 +12,7 @@ use App\Agents\Enums\HostWakeRefusal;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Exceptions\NavigationRaiseRefused;
+use App\Agents\Support\InitialWakeSettlement;
 use App\Agents\Support\RuntimeStatuses;
 use App\Agents\Values\ClaimedRequest;
 use App\Agents\Values\DriverReceipt;
@@ -390,6 +391,15 @@ final class DriverRequest extends Model implements ReadableModel
     public function markUncertain(): void
     {
         $this->finish(RequestProgress::DeliveryUncertain, null);
+    }
+
+    /**
+     * Whether this is the wake a start gives its new session, which bootstraps its driver.
+     */
+    public function isInitialWakeOf(string $sessionId): bool
+    {
+        return $this->operation === DriverOperation::Wake
+            && $this->idempotency_key === InitialWakeSettlement::keyOf($sessionId);
     }
 
     /**

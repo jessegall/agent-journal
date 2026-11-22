@@ -535,7 +535,7 @@ func (opener runtimeOpener) terminalRuntime(
 		return nil, err
 	}
 
-	return terminalDriverOf(profile, opened, grant.Runtime.ProcessGeneration), nil
+	return terminalDriverOf(profile, opened, grant.Runtime.ProcessGeneration, request.ConversationID), nil
 }
 
 // instanceRunsOn answers whether a container instance still runs, for telling a lost attachment from an ended
@@ -550,7 +550,12 @@ func instanceRunsOn(containers host.Containers) func(instance string) bool {
 
 // terminalDriverOf builds the terminal driver of a program the host runs, with its key script runner reading the
 // menus through the profile's layout and reporting each step through the driver's progress relay.
-func terminalDriverOf(profile contracts.DriverProfile, opened host.Terminal, generation int) *drivers.TerminalDriver {
+func terminalDriverOf(
+	profile contracts.DriverProfile,
+	opened host.Terminal,
+	generation int,
+	conversationID string,
+) *drivers.TerminalDriver {
 	layout := profile.Screens()
 	classifier := screen.NewClassifier(layout, opened.Reader)
 	relay := &drivers.ProgressRelay{}
@@ -573,6 +578,7 @@ func terminalDriverOf(profile contracts.DriverProfile, opened host.Terminal, gen
 		Runner:            keyscripts.NewRunner(opened.Gate, classifier, clock, view, driver, relay.Report),
 		Clock:             clock,
 		ProcessGeneration: generation,
+		ConversationID:    conversationID,
 		Progress:          relay,
 	})
 }
@@ -873,8 +879,9 @@ func startOf(
 	startEnvironment = append(startEnvironment, grant.ProfileEnvironment()...)
 	startEnvironment = append(startEnvironment, relayVariables...)
 	return host.AttachRequest{
-		RuntimeID: runtimeID,
-		Driver:    profile.Driver(),
+		RuntimeID:      runtimeID,
+		ConversationID: conversationID,
+		Driver:         profile.Driver(),
 		Command:   append([]string{executable}, startArguments...),
 		Folder:    grant.Runtime.Folder,
 		Env:       startEnvironment,

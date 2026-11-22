@@ -30,6 +30,8 @@ const (
 // run it yet.
 type AttachRequest struct {
 	RuntimeID string `json:"runtime_id"`
+	// ConversationID is the conversation the host started the program on, which its bootstrap proves to the journal.
+	ConversationID string `json:"conversation_id,omitempty"`
 	// Driver is the profile name of the driver the command runs, which its screen layout belongs to; the command
 	// itself may be another, such as a docker attach to a contained session.
 	Driver    string   `json:"driver"`

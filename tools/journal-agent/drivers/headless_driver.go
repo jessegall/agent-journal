@@ -95,6 +95,11 @@ func NewHeadlessDriver(runtime HeadlessRuntime, generation int) *HeadlessDriver 
 }
 
 // Generation is the process generation of the latest child.
+// NativeIdentity is the conversation every child of the runtime continues, which the start's bootstrap proves.
+func (driver *HeadlessDriver) NativeIdentity() string {
+	return driver.runtime.ConversationID
+}
+
 func (driver *HeadlessDriver) Generation() int {
 	driver.mutex.Lock()
 	defer driver.mutex.Unlock()

@@ -41,6 +41,8 @@ const turnStartDeadline = 10 * time.Second
 // the relay its key scripts report their steps through, the layout a browser writer's prompt is classified by, and
 // the runtime-owned hangup that stops the program without a key.
 type TerminalRuntime struct {
+	// ConversationID is the conversation the host started the program on.
+	ConversationID    string
 	Profile           string
 	Classifier        *screen.Classifier
 	Gate              *terminal.InputGate
@@ -103,6 +105,11 @@ func (driver *TerminalDriver) Generation() int {
 // Finished delivers the end of the last submitted prompt's turn: once the turn has taken the composer away, the
 // composer is empty and still again. The program keeps running between turns. With no prompt submitted yet there is
 // no turn to end, and the channel never delivers.
+// NativeIdentity is the conversation the program runs, which the start's bootstrap proves to the journal.
+func (driver *TerminalDriver) NativeIdentity() string {
+	return driver.runtime.ConversationID
+}
+
 func (driver *TerminalDriver) Finished() <-chan error {
 	driver.mutex.Lock()
 	current := driver.turnEnd

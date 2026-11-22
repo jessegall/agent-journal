@@ -43,6 +43,8 @@ return new class extends Migration
             $table->boolean('conversation_resumed')->nullable();
             $table->string('payload_digest', 64);
             $table->string('disposition', 16);
+            $table->string('readiness', 24)->default('accepted');
+            $table->string('native_id', 200)->nullable();
             $table->string('refusal_reason', 48)->nullable();
             $table->timestampTz('refused_at')->nullable();
             $table->ulid('session_id')->nullable()->index();

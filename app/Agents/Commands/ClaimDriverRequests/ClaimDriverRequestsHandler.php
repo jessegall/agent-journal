@@ -12,6 +12,7 @@ use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Models\Host;
 use App\Agents\Models\ProcessStart;
+use App\Agents\Models\StartRecord;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\PendingWorkSources;
 use App\Agents\Support\PresentationPrompts;
@@ -71,6 +72,13 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         $now = CarbonImmutable::now();
         $claimed = [];
 
+        $held = StartRecord::sessionsHoldingDeliveries(array_values(array_map(
+            fn (AgentRuntime $runtime) => $runtime->agent_session_id,
+            $runtimes->all(),
+        )));
+
+        $bootstrapped = [];
+
         $starts = ProcessStart::latestIdsOfSessions(array_values(array_map(
             fn (AgentRuntime $runtime) => $runtime->agent_session_id,
             $runtimes->all(),
@@ -111,6 +119,17 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
                 }
 
                 $runtime = $runtimes->get($runtimeId);
+                $sessionId = $runtime->agent_session_id;
+
+                // Until a start's driver proves its conversation, only its bootstrap goes out; the rest waits.
+                if (in_array($sessionId, $held, true)) {
+                    if (! $request->isInitialWakeOf($sessionId)) {
+                        continue;
+                    }
+
+                    $bootstrapped[] = $sessionId;
+                }
+
                 $request->stage($now);
                 $claim = $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null);
                 $claimed[] = $this->withPresentation($request, $runtime, $claim, $now);
@@ -119,6 +138,10 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
                     break;
                 }
             }
+        }
+
+        if ($bootstrapped !== []) {
+            StartRecord::lockedAcceptedOf($bootstrapped)->each(fn (StartRecord $record) => $record->prepareIdentity());
         }
 
         return new ClaimedRequests($claimed);

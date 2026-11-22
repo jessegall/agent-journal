@@ -13,12 +13,14 @@ use App\Agents\Support\StartRemedy;
 enum HostRefusal: string
 {
     case AccountFolderRejected = 'protected-account-folder-rejected';
+    case IdentityMismatch = 'identity-mismatch';
     case Unknown = 'unknown';
 
     public function explanation(): string
     {
         return match ($this) {
             self::AccountFolderRejected => 'The host could not verify the protection required for this account.',
+            self::IdentityMismatch => 'The driver started a different conversation than this session is bound to, so nothing was sent to it.',
             self::Unknown => 'The host declined this request.',
         };
     }
@@ -29,6 +31,10 @@ enum HostRefusal: string
             self::AccountFolderRejected => StartRemedy::forOperators(
                 StartRemedyType::OperatorInstruction,
                 'Check account-folder ownership on the host',
+            ),
+            self::IdentityMismatch => StartRemedy::forEveryone(
+                StartRemedyType::OperatorInstruction,
+                'Start the agent again',
             ),
             self::Unknown => StartRemedy::forEveryone(
                 StartRemedyType::OperatorInstruction,

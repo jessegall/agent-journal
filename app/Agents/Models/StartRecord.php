@@ -15,6 +15,7 @@ use App\Agents\Enums\ResumeRefusal;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Enums\StartPreflightRefusal;
+use App\Agents\Enums\StartReadiness;
 use App\Agents\Enums\StartRefusalType;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\StartRefusalReplayed;
@@ -66,6 +67,8 @@ use PhpOption\Option;
  * @property bool|null $conversation_resumed
  * @property string $payload_digest
  * @property StartDisposition $disposition
+ * @property StartReadiness $readiness
+ * @property string|null $native_id
  * @property string|null $refusal_reason
  * @property CarbonImmutable|null $refused_at
  * @property string|null $session_id
@@ -100,6 +103,8 @@ use PhpOption\Option;
     'conversation_resumed',
     'payload_digest',
     'disposition',
+    'readiness',
+    'native_id',
     'session_id',
     'reply_inbox_id',
 ])]
@@ -127,6 +132,7 @@ final class StartRecord extends Model implements ReadableModel
             'account_chosen' => 'boolean',
             'remember' => 'boolean',
             'disposition' => StartDisposition::class,
+            'readiness' => StartReadiness::class,
             'refused_at' => 'datetime',
         ];
     }
@@ -185,6 +191,7 @@ final class StartRecord extends Model implements ReadableModel
             'remember' => $request->savesVariant,
             'payload_digest' => $request->digest(),
             'disposition' => StartDisposition::Accepted,
+            'readiness' => StartReadiness::Accepted,
             'reply_inbox_id' => $replyInboxId->getOrElse(null),
         ]);
     }
@@ -222,6 +229,57 @@ final class StartRecord extends Model implements ReadableModel
         $record = self::query()->where('session_id', $sessionId)->where('remember', true)->first();
 
         return $record?->mode;
+    }
+
+    /**
+     * The sessions among these whose latest start's driver has not proved its conversation yet, so their messages wait.
+     *
+     * @param  list<string>  $ids
+     * @return list<string>
+     */
+    public static function sessionsHoldingDeliveries(array $ids): array
+    {
+        return array_values(self::query()
+            ->whereIn('session_id', $ids)
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->readAll('the start records of the sessions one host claims for')
+            ->get()
+            ->keyBy('session_id')
+            ->filter(fn (self $record) => $record->readiness->holdsDeliveries())
+            ->map(fn (self $record) => (string) $record->session_id)
+            ->all());
+    }
+
+    /**
+     * The accepted starts of these sessions, locked, whose bootstrap a claim is taking.
+     *
+     * @param  list<string>  $ids
+     * @return Collection<int, self>
+     */
+    public static function lockedAcceptedOf(array $ids): Collection
+    {
+        return self::query()
+            ->whereIn('session_id', $ids)
+            ->where('readiness', StartReadiness::Accepted)
+            ->lockForUpdate()
+            ->readAll('the accepted starts of the sessions whose bootstrap one claim took')
+            ->get();
+    }
+
+    /**
+     * The latest start of the session, locked, when it began from a start record.
+     *
+     * @return Option<self>
+     */
+    public static function lockedLatestOf(string $sessionId): Option
+    {
+        return Option::fromValue(self::query()
+            ->where('session_id', $sessionId)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->lockForUpdate()
+            ->first());
     }
 
     /**
@@ -271,6 +329,42 @@ final class StartRecord extends Model implements ReadableModel
 
     // ----------[ Mutations ]----------
 
+    /**
+     * The host took the start's bootstrap: its driver is proving which conversation it runs.
+     */
+    public function prepareIdentity(): void
+    {
+        $this->readiness = StartReadiness::PreparingIdentity;
+        $this->save();
+    }
+
+    /**
+     * The driver proved the conversation it runs, so the messages held for it go out; one already bound to another
+     * conversation answers false and stays held.
+     */
+    public function bindIdentity(string $nativeId): bool
+    {
+        if ($this->native_id !== null && $this->native_id !== $nativeId) {
+            return false;
+        }
+
+        $this->native_id = $nativeId;
+        $this->readiness = StartReadiness::Ready;
+        $this->save();
+
+        return true;
+    }
+
+    /**
+     * The bootstrap's end was not seen, so whether the driver runs the right conversation is unknown and its messages
+     * stay held until a later report proves it.
+     */
+    public function markIdentityUncertain(): void
+    {
+        $this->readiness = StartReadiness::Uncertain;
+        $this->save();
+    }
+
     public function startedAs(AgentSession $session): void
     {
         $this->session_id = $session->id;
@@ -294,6 +388,7 @@ final class StartRecord extends Model implements ReadableModel
         StartRefusalType|StartPreflightRefusal|ResumeRefusal|StartUnavailableReason|HostRefusal $reason,
     ): void {
         $this->disposition = StartDisposition::Refused;
+        $this->readiness = StartReadiness::Refused;
         $this->refusal_reason = $reason->value;
         $this->refused_at = CarbonImmutable::now();
         $this->save();

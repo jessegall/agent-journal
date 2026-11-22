@@ -40,6 +40,14 @@ func NewCodexDriver(owner CodexThreads, settings host.CodexThreadSettings, gener
 
 func (driver *CodexDriver) Generation() int { return driver.generation }
 
+// NativeIdentity is the thread the app-server acknowledged, empty until the first turn made it.
+func (driver *CodexDriver) NativeIdentity() string {
+	driver.mutex.Lock()
+	defer driver.mutex.Unlock()
+
+	return driver.threadID
+}
+
 func (driver *CodexDriver) Deliver(ctx context.Context, delivery contracts.Delivery) (contracts.OperationResult, error) {
 	return driver.startTurn(ctx, delivery.Request, delivery.Message)
 }

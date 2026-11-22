@@ -167,6 +167,8 @@ func (runtime *fakeRuntime) Generation() int { return 1 }
 
 func (runtime *fakeRuntime) Finished() <-chan error { return runtime.finished }
 
+func (runtime *fakeRuntime) NativeIdentity() string { return "conversation-1" }
+
 func claimed(id string, sequence int, operation string, message string) client.ClaimedRequest {
 	return client.ClaimedRequest{RuntimeID: "runtime", RequestID: id, Sequence: sequence, Operation: operation, Message: &message}
 }
@@ -219,6 +221,23 @@ func TestEveryReportOfARuntimeIsNumberedOneAfterTheLast(t *testing.T) {
 		if sequence != uint64(index+1) {
 			t.Fatalf("the reports were numbered %v; want 1, 2, 3 and so on", journal.sequences)
 		}
+	}
+}
+
+func TestAnEndedTurnReportsTheConversationItsProgramRuns(t *testing.T) {
+	journal := &fakeJournal{}
+	runtime := &fakeRuntime{}
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
+
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "wake", "")})
+	runtime.finished <- nil
+	waitFor(t, func() bool { return len(journal.progressOf("a")) == 2 })
+
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	applied := journal.reports[len(journal.reports)-1]
+	if applied.ActualBinding == nil || *applied.ActualBinding != runtime.NativeIdentity() {
+		t.Fatalf("the ended turn reported the conversation %v; want %q", applied.ActualBinding, runtime.NativeIdentity())
 	}
 }
 

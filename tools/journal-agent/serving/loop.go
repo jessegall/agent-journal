@@ -33,6 +33,8 @@ type Runtime interface {
 	contracts.AgentDriver
 	Generation() int
 	Finished() <-chan error
+	// NativeIdentity is the conversation the program runs, reported with each turn it ends.
+	NativeIdentity() string
 }
 
 // Opener starts the driver of a runtime from its start grant; it is the one place that chooses by driver type.
@@ -272,7 +274,11 @@ func (loop *Loop) startTurn(ctx context.Context, runtime *liveRuntime, admission
 // with an error, and the runtime idle, and runs what waited behind the turn.
 func (loop *Loop) awaitTurn(ctx context.Context, runtime *liveRuntime) {
 	ended := <-runtime.driver.Finished()
-	result := contracts.OperationResult{Progress: contracts.ProgressApplied, Outcome: contracts.OutcomeConfirmed}
+	result := contracts.OperationResult{
+		Progress:      contracts.ProgressApplied,
+		Outcome:       contracts.OutcomeConfirmed,
+		ActualBinding: runtime.driver.NativeIdentity(),
+	}
 	if ended != nil {
 		log.Printf("the turn of runtime %s ended with an error: %v", runtime.id, ended)
 		result = contracts.OperationResult{Progress: contracts.ProgressDeliveryUncertain}

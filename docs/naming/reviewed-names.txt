@@ -520,6 +520,7 @@ case	HostCapabilityType::StopDeadline
 case	HostProtocolVersion::First
 case	HostProtocolVersion::RemoteProject
 case	HostRefusal::AccountFolderRejected
+case	HostRefusal::IdentityMismatch
 case	HostRefusal::Unknown
 case	HostWakeRefusal::CapacityUnavailable
 case	HostWakeRefusal::ContainerUnavailable
@@ -1177,6 +1178,11 @@ case	StartPreflightRefusal::DriverPinned
 case	StartPreflightRefusal::HostProtocolOutdated
 case	StartPreflightRefusal::ModelNotAllowed
 case	StartPreflightRefusal::NoHost
+case	StartReadiness::Accepted
+case	StartReadiness::PreparingIdentity
+case	StartReadiness::Ready
+case	StartReadiness::Refused
+case	StartReadiness::Uncertain
 case	StartRefusalType::AccountContainerUnsupported
 case	StartRefusalType::CapabilityUnsupported
 case	StartRefusalType::CapacityUnavailable
@@ -6163,6 +6169,7 @@ class	StartHelperCommand
 class	StartHelperController
 class	StartHelperHandler
 class	StartHelperTool
+class	StartIdentity
 class	StartOwnedAgentCommand
 class	StartOwnedAgentHandler
 class	StartPermitRun
@@ -8158,6 +8165,7 @@ enum	StackStatus
 enum	StartDisposition
 enum	StartOriginType
 enum	StartPreflightRefusal
+enum	StartReadiness
 enum	StartRefusalType
 enum	StartRemedyType
 enum	StartUnavailableReason
@@ -13609,6 +13617,7 @@ method	DriverRequest::finish()
 method	DriverRequest::forgetPayload()
 method	DriverRequest::hold()
 method	DriverRequest::isAtRowVersion()
+method	DriverRequest::isInitialWakeOf()
 method	DriverRequest::isKeyScript()
 method	DriverRequest::isStoppedKeyScript()
 method	DriverRequest::markApplied()
@@ -23591,6 +23600,8 @@ method	StartHelperHandler::__construct()
 method	StartHelperHandler::handle()
 method	StartHelperTool::command()
 method	StartHelperTool::present()
+method	StartIdentity::settle()
+method	StartIdentity::settleRecord()
 method	StartOwnedAgentCommand::__construct()
 method	StartOwnedAgentCommand::startedAgentId()
 method	StartOwnedAgentHandler::__construct()
@@ -23650,6 +23661,8 @@ method	StartProposal::__construct()
 method	StartProposal::isContainedCodex()
 method	StartProposal::isDriverPinnedAway()
 method	StartProposal::isModelRefused()
+method	StartReadiness::holdsDeliveries()
+method	StartReadiness::takesReadiness()
 method	StartReceipt::__construct()
 method	StartReceiptController::__invoke()
 method	StartReceiptController::accepted()
@@ -23658,14 +23671,19 @@ method	StartReceipts::receiptFor()
 method	StartRecord::accept()
 method	StartRecord::assertDigest()
 method	StartRecord::assertNotRefused()
+method	StartRecord::bindIdentity()
 method	StartRecord::casts()
 method	StartRecord::conversationTargetOf()
 method	StartRecord::forAgent()
 method	StartRecord::forOwnerReference()
 method	StartRecord::forgetIntent()
 method	StartRecord::latestOf()
+method	StartRecord::lockedAcceptedOf()
+method	StartRecord::lockedLatestOf()
+method	StartRecord::markIdentityUncertain()
 method	StartRecord::ownerStartOf()
 method	StartRecord::ownerWork()
+method	StartRecord::prepareIdentity()
 method	StartRecord::refuse()
 method	StartRecord::refuseFor()
 method	StartRecord::replyInboxId()
@@ -23673,6 +23691,7 @@ method	StartRecord::requestedBy()
 method	StartRecord::requiresConversation()
 method	StartRecord::resumesConversation()
 method	StartRecord::savedVariantOf()
+method	StartRecord::sessionsHoldingDeliveries()
 method	StartRecord::startedAs()
 method	StartRecord::wasRequestedBy()
 method	StartRecordDetails::__construct()
@@ -28614,6 +28633,7 @@ parameter	$startCommand
 parameter	$startEnvironment
 parameter	$startFlags
 parameter	$startId
+parameter	$startIdentity
 parameter	$startKey
 parameter	$startNanoseconds
 parameter	$startOffset
@@ -36279,6 +36299,7 @@ property	ReportRequestProgressCommand::$sequence
 property	ReportRequestProgressHandler::$initialWakes
 property	ReportRequestProgressHandler::$navigationReports
 property	ReportRequestProgressHandler::$runtimes
+property	ReportRequestProgressHandler::$startIdentity
 property	ReportRequestProgressHandler::$terminalGrants
 property	ReportResource::$reads
 property	ReportResource::$reports
@@ -39811,6 +39832,7 @@ variable	$bodyDigest
 variable	$bodyEnd
 variable	$bodyPosition
 variable	$bodyStart
+variable	$bootstrapped
 variable	$bootstrapper
 variable	$bottom
 variable	$boundWords
@@ -40439,6 +40461,7 @@ variable	$inviters
 variable	$isAccount
 variable	$isAction
 variable	$isAllowed
+variable	$isAnotherConversation
 variable	$isApplicationCode
 variable	$isArray
 variable	$isAwaitingReview
@@ -41173,6 +41196,7 @@ variable	$result	app/Supervision/Resolvers/MergeAskNotificationTarget.php
 variable	$result	app/Ui/Declarations/Page.php
 variable	$resultBytes
 variable	$resumable
+variable	$resumedConversation
 variable	$retained
 variable	$retainedPageId
 variable	$retainsKey
