@@ -41,6 +41,7 @@ const (
 	textFolder       = "text"
 	textsKeptFile    = "texts-kept"
 	ignoreFile       = ".gitignore"
+	excludeFile      = ".git/info/exclude"
 	worktreesFolder  = "worktrees"
 	rootFolder       = "."
 )
@@ -352,6 +353,7 @@ func readText(root, path string) *string {
 func fingerprints(root string) (map[string]Fingerprint, error) {
 	rules := ignoreRules{}
 	rules.read(root, rootFolder)
+	rules.readExcludes(root)
 	prints := map[string]Fingerprint{}
 	err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, walkError error) error {
 		if walkError != nil {
@@ -424,6 +426,18 @@ func (rules ignoreRules) read(root, folder string) {
 		return
 	}
 	rules[folder] = parsedPatterns(string(content))
+}
+
+// readExcludes adds the repository's own exclude file to the rules of the root, as git does, so a folder left out
+// there, such as a large scratch folder, is never walked.
+func (rules ignoreRules) readExcludes(root string) {
+	content, err := os.ReadFile(filepath.Join(root, excludeFile))
+	if err != nil {
+		return
+	}
+	excluded := parsedPatterns(string(content))
+	kept := rules[rootFolder]
+	rules[rootFolder] = ignoredPatterns{names: append(kept.names, excluded.names...), paths: append(kept.paths, excluded.paths...)}
 }
 
 // matches says whether the ignore file of any folder above a path leaves it out, each pattern read from its own folder.

@@ -127,6 +127,16 @@ func TestLeftOutFoldersAndIgnoredFilesAreNotRead(t *testing.T) {
 	}
 }
 
+func TestAFolderTheRepositoryExcludesIsNotRead(t *testing.T) {
+	root, state := checkout(t)
+	writeFile(t, root, ".git/info/exclude", "# local\n/scratchpad/\n")
+	scanned(t, root, state)
+	writeFile(t, root, "scratchpad/copy/a.txt", "a\n")
+	if changes := scanned(t, root, state); len(changes) != 0 {
+		t.Fatalf("an excluded folder holds no edits: %v", changes)
+	}
+}
+
 func TestALineThatChangesManyFilesIsNoEdit(t *testing.T) {
 	root, state := checkout(t)
 	for number := 0; number <= ChangedFilesMost; number++ {
