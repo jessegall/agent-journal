@@ -558,6 +558,7 @@ use App\Communication\Data\WakeStatus;
 use App\Communication\Enums\AgentInboxState;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\IntervalRole;
+use App\Communication\Enums\LeaveReason;
 use App\Communication\Enums\MessageState;
 use App\Communication\Enums\NotificationSourceType;
 use App\Communication\Events\MessageAnswered;
@@ -579,6 +580,7 @@ use App\Communication\Support\ChatInboxes;
 use App\Communication\Support\ChatInterval;
 use App\Communication\Support\ChatIntervalEvidence;
 use App\Communication\Support\DeskSeatEvidence;
+use App\Communication\Support\InboxIntervals;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
 use App\Communication\Support\MembershipEvidence;
@@ -2028,7 +2030,9 @@ final class CoreApi
                 InboxMembers::class,
                 ChatInboxes::class,
                 ChatInterval::class,
+                InboxIntervals::class,
                 IntervalRole::class,
+                LeaveReason::class,
                 ActorLabelSet::class,
                 UnrestrictedAuthorizer::class,
                 StartProfileAuthority::class,

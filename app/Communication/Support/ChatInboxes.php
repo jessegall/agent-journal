@@ -57,7 +57,7 @@ final readonly class ChatInboxes
             ->heldBy($actor)
             ->firstOr(fn () => throw InboxUnavailable::forId($inbox->inboxId()));
 
-        return self::intervalOf($interval);
+        return ChatInterval::of($interval);
     }
 
     /**
@@ -73,7 +73,7 @@ final readonly class ChatInboxes
             ->orderBy('id')
             ->limit($limit)
             ->get()
-            ->map(fn (InboxInterval $interval) => self::intervalOf($interval))
+            ->map(fn (InboxInterval $interval) => ChatInterval::of($interval))
             ->all());
     }
 
@@ -85,16 +85,5 @@ final readonly class ChatInboxes
     public function memberInboxIds(ActorIdentity $actor): Builder
     {
         return InboxInterval::query()->whereNull('left_at')->heldBy($actor)->select('inbox_id');
-    }
-
-    private static function intervalOf(InboxInterval $interval): ChatInterval
-    {
-        return new ChatInterval(
-            $interval->id,
-            $interval->inbox_id,
-            $interval->actor,
-            $interval->role,
-            $interval->joined_sequence,
-        );
     }
 }

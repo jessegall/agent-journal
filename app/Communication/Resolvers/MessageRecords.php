@@ -22,6 +22,7 @@ use App\Communication\Enums\MessageState;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Models\Message;
 use App\Communication\Models\MessageAttention;
+use App\Communication\Models\ReceiptDelivery;
 use App\Communication\Policies\MessageAdministrationPolicy;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\RegisteredInboxes;
@@ -125,13 +126,21 @@ final readonly class MessageRecords implements ConversationResolver
             throw MessageMissing::forId($messageId);
         }
 
-        return array_values(MessageAttention::query()
+        $woken = MessageAttention::query()
             ->where('origin_type', AttentionOrigin::MESSAGE)
             ->where('origin_id', $message->id)
             ->limit(InboxMembers::LIMIT)
             ->get()
-            ->map(fn (MessageAttention $attention) => $attention->wakeStatus())
-            ->all());
+            ->map(fn (MessageAttention $attention) => $attention->wakeStatus());
+
+        $unsettled = ReceiptDelivery::query()
+            ->unwokenFor($message->id)
+            ->with('receipt.interval')
+            ->limit(InboxMembers::LIMIT)
+            ->get()
+            ->map(fn (ReceiptDelivery $delivery) => $delivery->wakeStatus());
+
+        return array_values([...$woken->all(), ...$unsettled->all()]);
     }
 
     /**

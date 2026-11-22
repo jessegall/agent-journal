@@ -7,6 +7,7 @@ namespace App\Communication\Models;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Enums\IntervalRole;
+use App\Communication\Enums\LeaveReason;
 use App\Communication\Exceptions\ChatStateConflict;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -31,7 +32,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $joined_sequence
  * @property CarbonImmutable $joined_at
  * @property CarbonImmutable|null $left_at
- * @property string|null $leave_reason
+ * @property LeaveReason|null $leave_reason
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read ActorIdentity $actor
@@ -52,6 +53,7 @@ final class InboxInterval extends Model implements ReadableModel
     {
         return [
             'role' => IntervalRole::class,
+            'leave_reason' => LeaveReason::class,
             'joined_sequence' => 'integer',
             'joined_at' => 'immutable_datetime',
             'left_at' => 'immutable_datetime',
@@ -85,7 +87,7 @@ final class InboxInterval extends Model implements ReadableModel
      *
      * @throws ChatStateConflict
      */
-    public function end(string $reason, CarbonImmutable $at): void
+    public function end(LeaveReason $reason, CarbonImmutable $at): void
     {
         if (! $this->isActive()) {
             throw ChatStateConflict::intervalEnded($this->id);

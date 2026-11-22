@@ -10,6 +10,7 @@ use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\ReceiptCaller;
 use App\Bus\Support\ReceiptRetention;
 use App\Communication\Enums\IntervalRole;
+use App\Communication\Enums\LeaveReason;
 use App\Communication\Enums\ReceiptDeliveryState;
 use App\Communication\Enums\SpeechOpportunityState;
 use App\Communication\Enums\TimelineEventType;
@@ -74,13 +75,16 @@ final class ChatCoreModelsTest extends TestCase
             QueryException::class,
         );
 
-        $interval->end('left', CarbonImmutable::now());
+        $interval->end(LeaveReason::Left, CarbonImmutable::now());
         $rejoined = InboxInterval::open($this->inbox->id, $this->agent, IntervalRole::Owner, 3);
 
         $this->assertFalse($interval->isActive());
         $this->assertTrue($rejoined->isActive());
         $this->assertSame(1, InboxInterval::query()->activeFor($this->inbox->id)->heldBy($this->agent)->count());
-        $this->assertThrows(fn () => $interval->end('left', CarbonImmutable::now()), ChatStateConflict::class);
+        $this->assertThrows(
+            fn () => $interval->end(LeaveReason::Left, CarbonImmutable::now()),
+            ChatStateConflict::class,
+        );
         $this->assertThrows(
             fn () => TimelineEvent::append($this->inbox->id, 1, TimelineEventType::Left, $this->agent, null),
             QueryException::class,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Models;
 
+use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\Support\InsertsAbsentRows;
 use App\Reads\Contracts\ReadableModel;
@@ -87,6 +88,14 @@ final class DirectChat extends Model implements ReadableModel
 
     // ----------[ Answers ]----------
 
+    /**
+     * The side of the pair that is not the given actor.
+     */
+    public function otherSide(ActorIdentity $actor): ActorIdentity
+    {
+        return self::actorOf($this->low_actor === self::key($actor) ? $this->high_actor : $this->low_actor);
+    }
+
     public function holds(ActorIdentity $actor): bool
     {
         $key = self::key($actor);
@@ -105,6 +114,13 @@ final class DirectChat extends Model implements ReadableModel
     }
 
     // ----------[ Internals ]----------
+
+    private static function actorOf(string $key): ActorIdentity
+    {
+        [$type, $id] = explode(':', $key, 2);
+
+        return new ActorIdentity(ActorType::from($type), $id);
+    }
 
     private static function key(ActorIdentity $actor): string
     {

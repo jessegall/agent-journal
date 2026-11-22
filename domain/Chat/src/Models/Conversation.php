@@ -45,6 +45,8 @@ final class Conversation extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    public const string CHAT_INBOX_PROVIDER = 'chat';
+
     // ----------[ Constructors ]----------
 
     /**
@@ -120,18 +122,6 @@ final class Conversation extends Model implements ReadableModel
             ->whereKey($id)
             ->lockForUpdate()
             ->firstOr(fn () => throw ConversationUnavailable::missing($id));
-    }
-
-    /**
-     * The chat registered under the provider id, as the chat inbox provider resolves it.
-     *
-     * @throws ConversationUnavailable
-     */
-    public static function forProviderId(string $providerId): self
-    {
-        return self::query()
-            ->where('provider_id', $providerId)
-            ->firstOr(fn () => throw ConversationUnavailable::missing($providerId));
     }
 
     // ----------[ Mutations ]----------

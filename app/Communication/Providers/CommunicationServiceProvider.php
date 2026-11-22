@@ -34,6 +34,7 @@ use App\Communication\Support\MessageClaimProvider;
 use App\Communication\Support\NotificationChangePruning;
 use App\Communication\Support\NotificationTargetRegistry;
 use App\Communication\Support\PendingInboxWork;
+use App\Communication\Support\ReceiptDeliveries;
 use App\Communication\Support\RecipientNotifications;
 use App\Communication\Support\RegisteredInboxes;
 use App\Communication\Support\SelectedMessages;
@@ -110,6 +111,12 @@ final class CommunicationServiceProvider extends ServiceProvider
             fn (Schedule $schedule) => $schedule
                 ->call(fn (NotificationChangePruning $pruning) => $pruning->prune(CarbonImmutable::now()))
                 ->hourly(),
+        );
+        $this->callAfterResolving(
+            Schedule::class,
+            fn (Schedule $schedule) => $schedule
+                ->call(fn (ReceiptDeliveries $deliveries) => $deliveries->deliverDue(CarbonImmutable::now()))
+                ->everyMinute(),
         );
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/communication.php');

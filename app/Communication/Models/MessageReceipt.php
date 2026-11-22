@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * That one chat message reached one membership interval, and when it was first shown to that member. The sender's
@@ -90,6 +91,24 @@ final class MessageReceipt extends Model implements ReadableModel
     public function isPresented(): bool
     {
         return $this->presented_at !== null;
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<InboxInterval, $this>
+     */
+    public function interval(): BelongsTo
+    {
+        return $this->belongsTo(InboxInterval::class, 'interval_id');
+    }
+
+    /**
+     * @return BelongsTo<Message, $this>
+     */
+    public function message(): BelongsTo
+    {
+        return $this->belongsTo(Message::class, 'message_id');
     }
 
     // ----------[ Scopes ]----------

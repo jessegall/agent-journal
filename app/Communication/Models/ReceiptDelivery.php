@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Models;
 
+use App\Communication\Data\WakeStatus;
 use App\Communication\Enums\ReceiptDeliveryState;
 use App\Communication\Exceptions\ChatStateConflict;
 use App\Reads\Contracts\ReadableModel;
@@ -15,10 +16,11 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * The work of waking one recipient about one receipt: tried until the recipient's runtime accepts it, retried with a
- * later attempt time after each failure, and given up once the tries run out.
+ * The work of waking one recipient about one receipt: tried until the recipient's runtime accepts it or it is found
+ * to run nowhere, retried with a later attempt time after each failure, and given up once the tries run out.
  *
  * @property string $id
  * @property string $receipt_id
@@ -62,7 +64,7 @@ final class ReceiptDelivery extends Model implements ReadableModel
     {
         $delivery = new self([
             'receipt_id' => $receipt->id,
-            'notification_key' => "chat-receipt:{$receipt->id}",
+            'notification_key' => $receipt->id,
             'state' => ReceiptDeliveryState::Pending,
             'attempts' => 0,
             'next_attempt_at' => CarbonImmutable::now(),
@@ -97,6 +99,21 @@ final class ReceiptDelivery extends Model implements ReadableModel
         $this->attempts++;
         $this->lease_expires_at = null;
         $this->next_attempt_at = null;
+        $this->save();
+    }
+
+    /**
+     * The recipient runs in no runtime now: the delivery waits for it to start, without spending a try, and its
+     * startup finds the receipt among its pending work.
+     *
+     * @throws ChatStateConflict
+     */
+    public function await(): void
+    {
+        $this->assertPending();
+        $this->state = ReceiptDeliveryState::Waiting;
+        $this->next_attempt_at = null;
+        $this->lease_expires_at = null;
         $this->save();
     }
 
@@ -145,6 +162,36 @@ final class ReceiptDelivery extends Model implements ReadableModel
         $this->save();
     }
 
+    // ----------[ Answers ]----------
+
+    /**
+     * Where the wake of this delivery's recipient stands, for a delivery no runtime has taken yet.
+     */
+    public function wakeStatus(): WakeStatus
+    {
+        $actor = $this->receipt->interval->actor;
+
+        return new WakeStatus($actor->type->value, $actor->id, null, $this->state->wakeState());
+    }
+
+    /**
+     * Whether this failure is the last one allowed.
+     */
+    public function isLastTry(int $allowedTries): bool
+    {
+        return $this->attempts + 1 >= $allowedTries;
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<MessageReceipt, $this>
+     */
+    public function receipt(): BelongsTo
+    {
+        return $this->belongsTo(MessageReceipt::class, 'receipt_id');
+    }
+
     // ----------[ Internals ]----------
 
     /**
@@ -170,5 +217,22 @@ final class ReceiptDelivery extends Model implements ReadableModel
         $query->where('state', ReceiptDeliveryState::Pending)
             ->where('next_attempt_at', '<=', $at)
             ->where(fn (Builder $free) => $free->whereNull('lease_expires_at')->orWhere('lease_expires_at', '<', $at));
+    }
+
+    /**
+     * The deliveries of a message's receipts that no runtime took and that wait for no startup: pending, exhausted or
+     * cancelled ones.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unwokenFor(Builder $query, string $messageId): void
+    {
+        $query->whereIn('receipt_id', MessageReceipt::query()->where('message_id', $messageId)->select('id'))
+            ->whereIn('state', [
+                ReceiptDeliveryState::Pending,
+                ReceiptDeliveryState::Exhausted,
+                ReceiptDeliveryState::Cancelled,
+            ]);
     }
 }

@@ -10,10 +10,14 @@ use App\Agents\Exceptions\SessionOutdated;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Autoload\Support\FolderClasses;
 use App\Bus\Support\RefusalReason;
+use App\Communication\Contracts\InboxRegistration;
 use App\Contracts\CommandRefusal;
 use App\Docking\Sources\Contracts\DockedSources;
 use App\Docking\Sources\Contracts\DockOffers;
+use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\AgentDockOffers;
+use Domain\Chat\Support\ChatInboxAccess;
+use Domain\Chat\Support\ChatInboxProvider;
 use Domain\Chat\Support\PlacedSources;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -35,8 +39,9 @@ final class ChatServiceProvider extends ServiceProvider
         $this->app->bind(DockedSources::class, PlacedSources::class);
     }
 
-    public function boot(ExceptionHandler $exceptions, ReadEntitlements $reads): void
+    public function boot(ExceptionHandler $exceptions, ReadEntitlements $reads, InboxRegistration $inboxes): void
     {
+        $inboxes->register(Conversation::CHAT_INBOX_PROVIDER, ChatInboxProvider::class, ChatInboxAccess::class);
         $reads->declare('dock_list', ReadEntitlement::resolver());
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
