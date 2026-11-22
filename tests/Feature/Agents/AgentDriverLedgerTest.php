@@ -55,6 +55,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Models\DriverTurn;
 use App\Agents\Models\ProcessStart;
+use App\Agents\Models\RuntimeEvent;
 use App\Agents\Models\SessionPolicy;
 use App\Agents\Support\AgentStatus;
 use App\Agents\Support\ArrangementSetting;
@@ -70,6 +71,7 @@ use App\Agents\Values\BrowserInputCapabilities;
 use App\Agents\Values\DriverReceipt;
 use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\ExecutionPolicy;
+use App\Agents\Values\RequestReportBinding;
 use App\Agents\Values\ScriptProgress;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StopConditions;
@@ -1245,6 +1247,60 @@ final class AgentDriverLedgerTest extends TestCase
         $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
 
         $this->asSystem(new ReportRuntimeExitCommand($host->hostId, $opened->runtimeId, $generation, 'exit code 0'));
+    }
+
+    public function test_a_numbered_report_sent_again_is_taken_once(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $receipt = $this->deliver($opened, 'replayed', 'Read the notes');
+        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+
+        $this->numberedReport($host->hostId, $receipt->requestId, RequestProgress::Applying, 1);
+        $this->numberedReport($host->hostId, $receipt->requestId, RequestProgress::Applied, 2);
+        $this->numberedReport($host->hostId, $receipt->requestId, RequestProgress::Applying, 1);
+
+        $this->assertSame(RequestProgress::Applied, DriverRequest::query()->findOrFail($receipt->requestId)->progress);
+        $this->assertSame(2, RuntimeEvent::query()->where('agent_runtime_id', $opened->runtimeId)->count());
+    }
+
+    public function test_an_idle_report_after_a_missing_one_leaves_the_running_request_uncertain(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
+        $receipt = $this->deliver($opened, 'gap', 'Read the notes');
+        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->numberedReport($host->hostId, $receipt->requestId, RequestProgress::Applying, 1);
+
+        $this->asSystem(new ReportRuntimeActivityCommand(
+            $host->hostId,
+            $runtime->id,
+            RuntimeActivity::Idle,
+            HoldReason::None,
+            $runtime->process_generation,
+            3,
+        ));
+
+        $this->assertSame(
+            RequestProgress::DeliveryUncertain,
+            DriverRequest::query()->findOrFail($receipt->requestId)->progress,
+        );
+    }
+
+    private function numberedReport(string $hostId, string $requestId, RequestProgress $progress, int $sequence): void
+    {
+        $request = DriverRequest::query()->findOrFail($requestId);
+        $runtime = AgentRuntime::query()->findOrFail($request->agent_runtime_id);
+
+        $this->asSystem(new ReportRequestProgressCommand(
+            $hostId,
+            $request->id,
+            $request->attempt_version,
+            $progress,
+            null,
+            null,
+            binding: new RequestReportBinding($runtime->agent_session_id, null, $runtime->process_generation),
+            sequence: $sequence,
+        ));
     }
 
     private function deliver(OpenedRuntime $opened, string $key, string $message): DriverReceipt

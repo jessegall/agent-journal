@@ -30,6 +30,7 @@ final readonly class RequestReportController
             $report->refusal(),
             $report->noProcessCreated,
             $report->binding(),
+            $report->sequence,
         ));
 
         return new Response(status: Response::HTTP_NO_CONTENT);

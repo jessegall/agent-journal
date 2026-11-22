@@ -7,8 +7,10 @@ namespace App\Agents\Commands\ReportRequestProgress;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
+use App\Agents\Enums\RuntimeEventType;
 use App\Agents\Exceptions\HostReportRefused;
 use App\Agents\Models\DriverRequest;
+use App\Agents\Models\RuntimeEvent;
 use App\Agents\Support\HostRuntimes;
 use App\Agents\Support\InitialWakeSettlement;
 use App\Agents\Support\NavigationRoundReports;
@@ -31,6 +33,16 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
 
         if ($command->attempt < $request->attempt_version) {
             throw HostReportRefused::staleAttempt($request->id, $command->attempt, $request->attempt_version);
+        }
+
+        if ($command->sequence !== null && $command->binding !== null && RuntimeEvent::record(
+            $runtime,
+            $command->binding->processGeneration,
+            $command->sequence,
+            RuntimeEventType::RequestProgress,
+            $request->id,
+        )->isReplay) {
+            return;
         }
 
         match ($command->progress) {

@@ -25,6 +25,8 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -529,5 +531,18 @@ final class DriverRequest extends Model implements ReadableModel
     {
         $this->progress = $progress;
         $this->row_version++;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The requests a runtime is still carrying out.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function applyingOn(Builder $query, AgentRuntime $runtime): void
+    {
+        $query->where('agent_runtime_id', $runtime->id)->where('progress', RequestProgress::Applying);
     }
 }

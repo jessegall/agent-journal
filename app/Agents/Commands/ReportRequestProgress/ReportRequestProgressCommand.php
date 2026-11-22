@@ -36,5 +36,7 @@ final readonly class ReportRequestProgressCommand extends Command
         public HostWakeRefusal|null $refusal = null,
         public bool $noProcessCreated = false,
         public RequestReportBinding|null $binding = null,
+        /** the report's place in its runtime generation's numbered reports; none from a host that numbers none */
+        public int|null $sequence = null,
     ) {}
 }

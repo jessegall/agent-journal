@@ -25,5 +25,7 @@ final readonly class ReportRuntimeActivityCommand extends Command
         public RuntimeActivity $activity,
         public HoldReason $hold,
         public int $processGeneration,
+        /** the report's place in its runtime generation's numbered reports; none from a host that numbers none */
+        public int|null $sequence = null,
     ) {}
 }

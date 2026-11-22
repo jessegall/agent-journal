@@ -34,6 +34,7 @@ final class RequestProgressReportData extends Data
         public readonly string|null $sessionId = null,
         public readonly string|null $processStartId = null,
         public readonly int|null $processGeneration = null,
+        public readonly int|null $sequence = null,
     ) {}
 
     /**

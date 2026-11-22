@@ -25,6 +25,7 @@ final readonly class ActivityReportController
                 $report->activity,
                 $report->hold,
                 $report->processGeneration,
+                $report->sequence,
             ),
         );
 

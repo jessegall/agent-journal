@@ -21,5 +21,6 @@ final class RuntimeActivityReportData extends Data
         public readonly RuntimeActivity $activity,
         public readonly HoldReason $hold,
         public readonly int $processGeneration,
+        public readonly int|null $sequence = null,
     ) {}
 }

@@ -145,6 +145,8 @@ type RequestReport struct {
 	// no process of the program was made; both empty for every other failure.
 	RefusalReason    *string `json:"refusal_reason,omitempty"`
 	NoProcessCreated bool    `json:"no_process_created,omitempty"`
+	// Sequence numbers the reports of one runtime in the order the host sends them, as ActivityReport's does.
+	Sequence uint64 `json:"sequence"`
 	// SessionID, ProcessStartID and ProcessGeneration are the claim's binding the report answers.
 	SessionID         string  `json:"session_id,omitempty"`
 	ProcessStartID    *string `json:"process_start_id,omitempty"`
@@ -248,6 +250,9 @@ type ActivityReport struct {
 	Activity          string `json:"activity"`
 	Hold              string `json:"hold"`
 	ProcessGeneration int    `json:"process_generation"`
+	// Sequence numbers the reports of one runtime in the order the host sends them, so the journal takes a report
+	// sent again once and knows when one before it is missing.
+	Sequence uint64 `json:"sequence"`
 }
 
 // TurnReport mirrors App\Http\Data\Agents\DriverTurnReportData.

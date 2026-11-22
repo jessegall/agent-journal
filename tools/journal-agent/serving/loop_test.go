@@ -18,6 +18,8 @@ type fakeJournal struct {
 	reports  []client.RequestReport
 	activity []string
 	holds    []string
+	// sequences are the numbers of every request and activity report, in the order they were sent.
+	sequences []uint64
 	exits    int
 	raises   []client.NavigationRaise
 	// interrupts are the navigation requests the host reported the user took over.
@@ -95,6 +97,7 @@ func (journal *fakeJournal) ReportRequest(_ context.Context, report client.Reque
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.reports = append(journal.reports, report)
+	journal.sequences = append(journal.sequences, report.Sequence)
 	return nil
 }
 
@@ -103,6 +106,7 @@ func (journal *fakeJournal) ReportActivity(_ context.Context, report client.Acti
 	defer journal.mutex.Unlock()
 	journal.activity = append(journal.activity, report.Activity)
 	journal.holds = append(journal.holds, report.Hold)
+	journal.sequences = append(journal.sequences, report.Sequence)
 	return nil
 }
 
@@ -197,6 +201,24 @@ func TestDeliveriesRunAsOneTurnAndAreAppliedWhenItEnds(t *testing.T) {
 	waitFor(t, func() bool { return len(journal.progressOf("b")) == 2 })
 	if got := journal.progressOf("b"); got[1] != "applied" || journal.grants != 1 {
 		t.Fatalf("b was reported %v after %d grants", got, journal.grants)
+	}
+}
+
+func TestEveryReportOfARuntimeIsNumberedOneAfterTheLast(t *testing.T) {
+	journal := &fakeJournal{}
+	runtime := &fakeRuntime{}
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
+
+	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "deliver", "one")})
+	runtime.finished <- nil
+	waitFor(t, func() bool { return len(journal.progressOf("a")) == 2 })
+
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	for index, sequence := range journal.sequences {
+		if sequence != uint64(index+1) {
+			t.Fatalf("the reports were numbered %v; want 1, 2, 3 and so on", journal.sequences)
+		}
 	}
 }
 

@@ -57,6 +57,8 @@ type Loop struct {
 	opening map[string]*sync.Mutex
 	// raiseRetryDelay is how long a raise whose answer was lost waits before it is sent again.
 	raiseRetryDelay time.Duration
+	// sequences is the number of the last report sent for each runtime: its reports are numbered in the order sent.
+	sequences map[string]uint64
 }
 
 // liveRuntime is a runtime the host runs: its driver, the turns it started, the requests of the running turn and
@@ -82,6 +84,7 @@ func NewLoop(journal Journal, prepare Preparer, open Opener) *Loop {
 		open:            open,
 		scheduler:       host.NewScheduler(),
 		runtimes:        map[string]*liveRuntime{},
+		sequences:       map[string]uint64{},
 		opening:         map[string]*sync.Mutex{},
 		raiseRetryDelay: time.Second,
 	}
@@ -578,6 +581,7 @@ func (loop *Loop) activity(ctx context.Context, runtime *liveRuntime, activity s
 		Activity:          activity,
 		Hold:              string(hold),
 		ProcessGeneration: runtime.driver.Generation(),
+		Sequence:          loop.nextSequence(runtime.id),
 	}
 	if err := loop.journal.ReportActivity(ctx, report); err != nil {
 		log.Printf("the activity of runtime %s could not be reported: %v", runtime.id, err)
@@ -627,6 +631,7 @@ func (loop *Loop) report(ctx context.Context, request client.ClaimedRequest, res
 		ProcessStartID:    request.ProcessStartID,
 		ProcessGeneration: request.ProcessGeneration,
 		NoProcessCreated:  result.NoProcessCreated,
+		Sequence:          loop.nextSequence(request.RuntimeID),
 	}
 	if result.RefusalReason != "" {
 		reason := string(result.RefusalReason)
@@ -643,6 +648,15 @@ func (loop *Loop) report(ctx context.Context, request client.ClaimedRequest, res
 	if err := loop.journal.ReportRequest(ctx, report); err != nil {
 		log.Printf("%s request %s (attempt %d) could not be reported: %v", request.Operation, request.RequestID, request.Attempt, err)
 	}
+}
+
+// nextSequence numbers the next report of the runtime, one after the last one sent.
+func (loop *Loop) nextSequence(runtimeID string) uint64 {
+	loop.mutex.Lock()
+	defer loop.mutex.Unlock()
+	loop.sequences[runtimeID]++
+
+	return loop.sequences[runtimeID]
 }
 
 func identityOf(request client.ClaimedRequest) contracts.RequestIdentity {

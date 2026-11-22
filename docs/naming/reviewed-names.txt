@@ -1039,6 +1039,8 @@ case	RuntimeActivity::Running
 case	RuntimeActivity::Starting
 case	RuntimeActivity::Stopped
 case	RuntimeActivity::Stopping
+case	RuntimeEventType::Activity
+case	RuntimeEventType::RequestProgress
 case	ScopeType::Core
 case	ScopeType::Module
 case	ScopeType::Project
@@ -4934,6 +4936,7 @@ class	RecordUserHeartbeatHandler
 class	RecordViews
 class	RecordedAnswer
 class	RecordedAnswerCast
+class	RecordedEvent
 class	RecordedHostCapabilities
 class	RecordedRunEvents
 class	RecordedSteps
@@ -5524,6 +5527,7 @@ class	RunningCommandTransaction
 class	RunningRuntime
 class	RuntimeActivityReportData
 class	RuntimeEntryData
+class	RuntimeEvent
 class	RuntimeEvidence
 class	RuntimeExit
 class	RuntimeIntent
@@ -8118,6 +8122,7 @@ enum	RunMode
 enum	RunRequestIntent
 enum	RunResultSource
 enum	RuntimeActivity
+enum	RuntimeEventType
 enum	ScopeType
 enum	ScreenBuffer
 enum	ScreenReportRefusal
@@ -13585,6 +13590,7 @@ method	DriverReplyMalformed::because()
 method	DriverRequest::accept()
 method	DriverRequest::acknowledgeActivityAt()
 method	DriverRequest::acknowledgeWake()
+method	DriverRequest::applyingOn()
 method	DriverRequest::beginApplying()
 method	DriverRequest::canCancel()
 method	DriverRequest::canRepair()
@@ -19873,6 +19879,7 @@ method	RecordedAnswer::assertCurrentVersion()
 method	RecordedAnswer::of()
 method	RecordedAnswerCast::get()
 method	RecordedAnswerCast::set()
+method	RecordedEvent::__construct()
 method	RecordedHostCapabilities::__construct()
 method	RecordedHostCapabilities::capability()
 method	RecordedHostCapabilities::caseField()
@@ -21435,6 +21442,8 @@ method	RuntimeActivity::expectedTiming()
 method	RuntimeActivity::isStopping()
 method	RuntimeActivityReportData::__construct()
 method	RuntimeEntryData::__construct()
+method	RuntimeEvent::casts()
+method	RuntimeEvent::record()
 method	RuntimeEvidence::__construct()
 method	RuntimeEvidence::isFresh()
 method	RuntimeEvidence::of()
@@ -26982,6 +26991,7 @@ parameter	$folderArguments
 parameter	$folders
 parameter	$follower
 parameter	$following
+parameter	$followsGap
 parameter	$footer
 parameter	$forbidden
 parameter	$form
@@ -27257,6 +27267,7 @@ parameter	$isRead
 parameter	$isReadable
 parameter	$isReconciled
 parameter	$isReference
+parameter	$isReplay
 parameter	$isRequired
 parameter	$isResultUnmatchable
 parameter	$isRevisionChanged
@@ -35747,6 +35758,8 @@ property	RecordedAnswer::$stderr
 property	RecordedAnswer::$stdout
 property	RecordedAnswer::$type
 property	RecordedAnswer::$version
+property	RecordedEvent::$followsGap
+property	RecordedEvent::$isReplay
 property	RecordedHostCapabilities::$files
 property	RecordedHostCapabilities::$matrix
 property	RecordedRunEvents::$outcomes
@@ -36262,6 +36275,7 @@ property	ReportRequestProgressCommand::$progress
 property	ReportRequestProgressCommand::$refusal
 property	ReportRequestProgressCommand::$requestId
 property	ReportRequestProgressCommand::$script
+property	ReportRequestProgressCommand::$sequence
 property	ReportRequestProgressHandler::$initialWakes
 property	ReportRequestProgressHandler::$navigationReports
 property	ReportRequestProgressHandler::$runtimes
@@ -36276,6 +36290,7 @@ property	ReportRuntimeActivityCommand::$hold
 property	ReportRuntimeActivityCommand::$hostId
 property	ReportRuntimeActivityCommand::$processGeneration
 property	ReportRuntimeActivityCommand::$runtimeId
+property	ReportRuntimeActivityCommand::$sequence
 property	ReportRuntimeActivityHandler::$runtimes
 property	ReportRuntimeExitCommand::$evidence
 property	ReportRuntimeExitCommand::$hostId
@@ -36381,6 +36396,7 @@ property	RequestProgressReportData::$progress
 property	RequestProgressReportData::$refusalReason
 property	RequestProgressReportData::$requestId
 property	RequestProgressReportData::$script
+property	RequestProgressReportData::$sequence
 property	RequestProgressReportData::$sessionId
 property	RequestReportBinding::$processGeneration
 property	RequestReportBinding::$processStartId
@@ -36878,6 +36894,7 @@ property	RuntimeActivityReportData::$activity
 property	RuntimeActivityReportData::$hold
 property	RuntimeActivityReportData::$processGeneration
 property	RuntimeActivityReportData::$runtimeId
+property	RuntimeActivityReportData::$sequence
 property	RuntimeEntryData::$requests
 property	RuntimeEntryData::$status
 property	RuntimeEvidence::$activity
