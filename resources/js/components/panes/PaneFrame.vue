@@ -8,7 +8,7 @@ import { detachWindow, dropWindow } from './arrangement';
 import DropCompass from './DropCompass.vue';
 import MenuList from './MenuList.vue';
 import type { MenuEntry } from './MenuList.vue';
-import PaneAddBar from './PaneAddBar.vue';
+import AddWindowPopover from './AddWindowPopover.vue';
 import PaneTabs from './PaneTabs.vue';
 import SplitOffer from './SplitOffer.vue';
 import type { PaneTab } from './PaneTabs.vue';
@@ -34,6 +34,8 @@ const props = defineProps<{ pane: Pane }>();
 const store = usePaneLayout();
 const { grab } = useWindowDrag();
 const isAdding = ref(false);
+const addButton = ref<{ $el: HTMLElement } | null>(null);
+const addAnchor = computed(() => addButton.value?.$el ?? null);
 const isMenuOpen = ref(false);
 
 const tabs = computed<PaneTab[]>(() =>
@@ -216,6 +218,7 @@ const menuEntries = computed<MenuEntry[]>(() => {
             @split="split"
         >
             <Button
+                ref="addButton"
                 variant="icon"
                 aria-label="Add a window"
                 title="Add a window"
@@ -232,17 +235,18 @@ const menuEntries = computed<MenuEntry[]>(() => {
                 ><Icon name="dots-vertical" :size="13"
             /></Button>
         </PaneTabs>
-        <template v-if="isAdding">
-            <PaneAddBar
-                :windows="store.closedWindows.value"
-                @grab="
-                    (event, key) => {
-                        isAdding = false;
-                        grab(event, key, null, () => add(key));
-                    }
-                "
-            />
-        </template>
+        <AddWindowPopover
+            v-model:open="isAdding"
+            :windows="store.closedWindows.value"
+            :anchor="addAnchor"
+            @add="add"
+            @grab="
+                (event, key) => {
+                    isAdding = false;
+                    grab(event, key, null, () => add(key));
+                }
+            "
+        />
         <template v-if="isMenuOpen">
             <MenuList
                 :entries="menuEntries"
