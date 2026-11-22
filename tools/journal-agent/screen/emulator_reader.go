@@ -118,6 +118,24 @@ func (reader *EmulatorReader) Resize(columns, rows int) error {
 	return nil
 }
 
+// Adopt takes the screen of a fresh reader in place of its own, discarding its own emulator and scrollback: the
+// fresh reader's parser saw only output since it was made. Its version and generations go on rising, so nobody
+// mistakes the adopted screen for the old one.
+func (reader *EmulatorReader) Adopt(fresh *EmulatorReader) {
+	fresh.lock.Lock()
+	terminal, visible := fresh.terminal, fresh.cursorVisible
+	fresh.lock.Unlock()
+
+	reader.lock.Lock()
+	defer reader.lock.Unlock()
+
+	reader.terminal, reader.cursorVisible = terminal, visible
+	terminal.SetCallbacks(vt.Callbacks{CursorVisibility: func(visible bool) { reader.cursorVisible = visible }})
+	reader.feedRefused, reader.resizeRefused = false, false
+	reader.version++
+	reader.countGenerations()
+}
+
 func (reader *EmulatorReader) Snapshot() contracts.Snapshot {
 	reader.lock.Lock()
 	defer reader.lock.Unlock()

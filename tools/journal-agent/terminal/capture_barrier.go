@@ -58,6 +58,14 @@ func (barrier *CaptureBarrier) Close() bool {
 	return barrier.confirmed
 }
 
+// Reopen opens the barrier again once the caller proved a complete public redraw; sinks emit from then on.
+func (barrier *CaptureBarrier) Reopen() {
+	barrier.mutex.Lock()
+	defer barrier.mutex.Unlock()
+
+	barrier.closed, barrier.confirmed = false, false
+}
+
 // IsClosed is whether output must not leave through any sink now.
 func (barrier *CaptureBarrier) IsClosed() bool {
 	barrier.mutex.Lock()

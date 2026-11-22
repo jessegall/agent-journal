@@ -44,6 +44,9 @@ type RuntimeScreen struct {
 	Layout  screen.Layout
 	Gate    *inputs.InputGate
 	Barrier *inputs.CaptureBarrier
+	// Incarnation rises each time a verified public redraw replaced the screen after private entry; a sender that
+	// sees it change starts a new stream.
+	Incarnation uint64
 }
 
 // ScreenWatcher sends the screens of the runtimes the journal says are watched, each at its own interval, only when
@@ -187,6 +190,8 @@ type screenSender struct {
 	stream    string
 	sequence  uint64
 	proof     uint64
+	// incarnation is the screen incarnation the stream reads; a new one starts a new stream.
+	incarnation uint64
 	// lastCapture is the screen version last read and from which reader; nil until a capture reads, and after a
 	// failed send, so the next round reads again.
 	lastCapture  *screenCapture
@@ -266,6 +271,7 @@ func (sender *screenSender) read(now time.Time) (screen.Frame, bool) {
 		return marker, true
 	}
 
+	sender.followIncarnation(runtimeScreen.Incarnation)
 	reader := runtimeScreen.Reader
 	if reader.Unreadable() {
 		sender.lastCapture = nil
@@ -288,6 +294,20 @@ func (sender *screenSender) read(now time.Time) (screen.Frame, bool) {
 	frame.PromptRevision = grant.PromptRevision
 
 	return frame.Bounded(screen.FrameLimit), true
+}
+
+// followIncarnation starts a new stream, its sequence from one, when the screen was replaced after private entry, so
+// no frame of the old screen is taken for the new one.
+func (sender *screenSender) followIncarnation(incarnation uint64) {
+	if incarnation == sender.incarnation {
+		return
+	}
+	stream, err := randomName()
+	if err != nil {
+		return
+	}
+	sender.stream, sender.sequence, sender.proof, sender.incarnation = stream, 0, 0, incarnation
+	sender.lastCapture, sender.sentAny = nil, false
 }
 
 // export reads the frame to send: the shield while the capture barrier is closed, otherwise the screen as its layout

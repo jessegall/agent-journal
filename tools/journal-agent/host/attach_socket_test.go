@@ -4,6 +4,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -270,5 +271,77 @@ func TestAClosedCaptureBarrierStopsTheLocalMirrorAndTheWatcherShieldsTheScreen(t
 	sender := &screenSender{watcher: &ScreenWatcher{epoch: "epoch"}, runtimeID: "runtime-1"}
 	if frame := sender.export(runtimeScreen, time.Now()); !frame.Shielded || len(frame.Rows) != 0 {
 		t.Fatalf("the watcher exported %+v while the barrier was closed", frame)
+	}
+}
+
+// publicRedraw is a full redraw of a ready composer, as the program draws it after a private operation.
+const publicRedraw = "\x1b[2J\x1b[H────────\r\n> \r\n────────\x1b[2;3H"
+
+// waitForBarrier waits until the barrier's state is the one wanted, failing after a second.
+func waitForBarrier(t *testing.T, terminal *hostTerminal, closed bool) {
+	t.Helper()
+	deadline := time.Now().Add(time.Second)
+	for time.Now().Before(deadline) {
+		if terminal.barrier.IsClosed() == closed {
+			return
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	t.Fatalf("the barrier never became closed=%v", closed)
+}
+
+func TestAPrivatePromptThenAFullRedrawReturnsToPublicInANewIncarnation(t *testing.T) {
+	socket, programs := listeningSocket(t)
+	attached(t, socket, "runtime-1", 24, 80)
+	terminal := terminalOf(t, socket, "runtime-1")
+	program := <-programs
+	waitForSize(t, socket, "runtime-1", 24, 80)
+
+	if !terminal.enterPrivate() {
+		t.Fatal("private entry did not close every sink")
+	}
+	program.Write([]byte("Password: "))
+	time.Sleep(50 * time.Millisecond)
+	terminal.confirmPrivateEnd()
+	program.Write([]byte("> partial"))
+	time.Sleep(50 * time.Millisecond)
+	if !terminal.barrier.IsClosed() {
+		t.Fatal("a partial redraw reopened the barrier")
+	}
+
+	program.Write([]byte(publicRedraw))
+	waitForBarrier(t, terminal, false)
+
+	snapshot := terminal.reader.Snapshot()
+	if strings.Contains(strings.Join(snapshot.Rows, "\n"), "Password") {
+		t.Fatalf("the promoted screen kept an old row: %q", snapshot.Rows)
+	}
+	if runtimeScreen, _ := socket.ScreenFor("runtime-1"); runtimeScreen.Incarnation != 1 {
+		t.Fatalf("the screen's incarnation is %d, not 1", runtimeScreen.Incarnation)
+	}
+}
+
+func TestALocalKeyDuringPrivateEntryIsDiscardedAndRetiresTheBrowserGrant(t *testing.T) {
+	socket, programs := listeningSocket(t)
+	connection := attached(t, socket, "runtime-1", 24, 80)
+	terminal := terminalOf(t, socket, "runtime-1")
+	program := <-programs
+	waitForSize(t, socket, "runtime-1", 24, 80)
+	terminal.gate.Take("take-1", inputs.GrantScope{})
+	terminal.enterPrivate()
+
+	if err := WriteKeys(connection, []byte("leak\n")); err != nil {
+		t.Fatal(err)
+	}
+
+	program.SetReadDeadline(time.Now().Add(200 * time.Millisecond))
+	if count, _ := program.Read(make([]byte, 16)); count != 0 {
+		t.Fatal("a local key reached the program during private entry")
+	}
+	if state := terminal.gate.GrantState(); state.GrantID != "" || !state.LocalControl {
+		t.Fatalf("the browser grant survived a local key during private entry: %+v", state)
+	}
+	if !terminal.barrier.IsClosed() {
+		t.Fatal("the local key reopened the barrier")
 	}
 }

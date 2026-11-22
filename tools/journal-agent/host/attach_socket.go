@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -72,7 +73,22 @@ type hostTerminal struct {
 	// barrier closes every output sink of this program before private entry; the local mirror is one of them.
 	barrier        *inputs.CaptureBarrier
 	mirrorSilenced bool
+	// private is the isolated fresh parser that reads the program's output while the barrier is closed, with no
+	// export, mirror or recording; endConfirmed and cleared say the driver ended the private operation and the
+	// program has since cleared the whole screen, which together allow a verified public redraw.
+	private      *screen.EmulatorReader
+	endConfirmed bool
+	cleared      bool
+	// incarnation rises each time the fresh parser is promoted, so the watcher starts a new stream.
+	incarnation uint64
 }
+
+// privateNotice is what a local terminal is told when its keys, resize or attach meet private entry; it carries no
+// payload.
+const privateNotice = "\r\n[journal-agent: a private entry is in progress; nothing you typed was sent]\r\n"
+
+// fullClear is the sequence that erases the whole screen, which a verified public redraw starts with.
+const fullClear = "\x1b[2J"
 
 // Path is where the socket listens.
 func (socket *AttachSocket) Path() string { return filepath.Join(socket.Folder, socketName) }
@@ -115,6 +131,12 @@ func (socket *AttachSocket) serve(connection net.Conn) {
 		writeFrame(connection, frameData, []byte("journal-agent: "+err.Error()+"\r\n"))
 		return
 	}
+	if terminal.barrier.IsClosed() {
+		terminal.gate.LocalResized()
+		writeFrame(connection, frameData, []byte(privateNotice))
+
+		return
+	}
 	identity := terminal.attach(connection)
 	defer terminal.detach(identity)
 	terminal.gate.LocalResized()
@@ -126,6 +148,12 @@ func (socket *AttachSocket) serve(connection net.Conn) {
 			return
 		}
 		if !terminal.isActive(identity) {
+			continue
+		}
+		if terminal.barrier.IsClosed() {
+			terminal.gate.LocalResized()
+			writeFrame(connection, frameData, []byte(privateNotice))
+
 			continue
 		}
 		switch kind {
@@ -184,11 +212,15 @@ func (socket *AttachSocket) ScreenFor(runtimeID string) (RuntimeScreen, bool) {
 	if !found {
 		return RuntimeScreen{}, false
 	}
+	terminal.mutex.Lock()
+	incarnation := terminal.incarnation
+	terminal.mutex.Unlock()
 	runtimeScreen := RuntimeScreen{
-		Reader:  terminal.reader,
-		Layout:  terminal.layout,
-		Gate:    terminal.gate,
-		Barrier: terminal.barrier,
+		Reader:      terminal.reader,
+		Layout:      terminal.layout,
+		Gate:        terminal.gate,
+		Barrier:     terminal.barrier,
+		Incarnation: incarnation,
 	}
 
 	return runtimeScreen, true
@@ -239,6 +271,10 @@ type Terminal struct {
 	// Hangup ends the program from outside its input: it closes the PTY the host owns, so no key, draft or Enter is
 	// ever sent to stop it.
 	Hangup func() error
+	// EnterPrivate closes the capture barrier for a private entry and says whether every sink confirmed;
+	// ConfirmPrivateEnd is the driver's word that it ended, after which only a verified public redraw reopens it.
+	EnterPrivate      func() bool
+	ConfirmPrivateEnd func()
 }
 
 // Open starts the runtime's program on a PTY the host owns, or finds the one it already runs under the runtime's id,
@@ -249,7 +285,13 @@ func (socket *AttachSocket) Open(request AttachRequest) (Terminal, error) {
 		return Terminal{}, err
 	}
 
-	return Terminal{Reader: terminal.reader, Gate: terminal.gate, Hangup: terminal.pty.Close}, nil
+	return Terminal{
+		Reader:            terminal.reader,
+		Gate:              terminal.gate,
+		Hangup:            terminal.pty.Close,
+		EnterPrivate:      terminal.enterPrivate,
+		ConfirmPrivateEnd: terminal.confirmPrivateEnd,
+	}, nil
 }
 
 // attach makes the client the active local connection and gives its identity; a newer attach replaces it.
@@ -287,6 +329,9 @@ func (terminal *hostTerminal) copyOut() {
 	buffer := make([]byte, 32*1024)
 	for {
 		count, err := terminal.pty.Read(buffer)
+		if count > 0 && terminal.feedPrivate(buffer[:count]) {
+			continue
+		}
 		if count > 0 {
 			_ = terminal.reader.Feed(buffer[:count])
 			terminal.closeOnSecretEcho()
@@ -308,7 +353,82 @@ func (terminal *hostTerminal) closeOnSecretEcho() {
 	if terminal.barrier.IsClosed() || !terminal.layout.AsksForSecret(terminal.reader.Snapshot()) {
 		return
 	}
-	terminal.barrier.Close()
+	terminal.enterPrivate()
+}
+
+// enterPrivate closes the barrier and starts the isolated fresh parser that reads the program while it is closed;
+// it says whether every sink confirmed.
+func (terminal *hostTerminal) enterPrivate() bool {
+	snapshot := terminal.reader.Snapshot()
+	fresh, err := terminal.layout.NewReader(snapshot.Columns, snapshot.Height, screen.DefaultLimits)
+
+	terminal.mutex.Lock()
+	terminal.private, terminal.endConfirmed, terminal.cleared = fresh, false, false
+	if err != nil {
+		terminal.private = nil
+	}
+	terminal.mutex.Unlock()
+
+	return terminal.barrier.Close() && err == nil
+}
+
+// confirmPrivateEnd is the driver's word that the private operation ended; the barrier still waits for a complete
+// public redraw after it.
+func (terminal *hostTerminal) confirmPrivateEnd() {
+	terminal.mutex.Lock()
+	defer terminal.mutex.Unlock()
+
+	terminal.endConfirmed, terminal.cleared = true, false
+}
+
+// feedPrivate gives a chunk to the fresh parser while the barrier is closed, and says whether it took it. After the
+// driver confirmed the end, a chunk that clears the whole screen and leaves a public screen with its composer drawn
+// is a verified redraw: the old screen is discarded, the fresh parser promoted and the barrier reopened.
+func (terminal *hostTerminal) feedPrivate(chunk []byte) bool {
+	if !terminal.barrier.IsClosed() {
+		return false
+	}
+
+	terminal.mutex.Lock()
+	fresh := terminal.private
+	if terminal.endConfirmed && strings.Contains(string(chunk), fullClear) {
+		terminal.cleared = true
+	}
+	ready := terminal.endConfirmed && terminal.cleared
+	terminal.mutex.Unlock()
+
+	if fresh == nil {
+		return true
+	}
+	_ = fresh.Feed(chunk)
+	if ready && terminal.isCompletePublicRedraw(fresh) {
+		terminal.promote(fresh)
+	}
+
+	return true
+}
+
+// isCompletePublicRedraw is whether the fresh parser shows a public screen whose composer is drawn with the cursor
+// shown, as a program that redrew everything does.
+func (terminal *hostTerminal) isCompletePublicRedraw(fresh *screen.EmulatorReader) bool {
+	snapshot := fresh.Snapshot()
+	_, composer := terminal.layout.Composer.Rows(snapshot)
+
+	return composer && snapshot.Cursor.Visible && terminal.layout.Exportable(snapshot)
+}
+
+// promote discards the old screen for the fresh parser's, reopens the barrier and lets the mirror forward again; the
+// watcher sees a new incarnation and starts a new stream.
+func (terminal *hostTerminal) promote(fresh *screen.EmulatorReader) {
+	terminal.reader.Adopt(fresh)
+
+	terminal.mutex.Lock()
+	terminal.private, terminal.endConfirmed, terminal.cleared = nil, false, false
+	terminal.mirrorSilenced = false
+	terminal.incarnation++
+	terminal.mutex.Unlock()
+
+	terminal.barrier.Reopen()
 }
 
 // silenceMirror stops forwarding output to the attached local client; it confirms once no chunk is being written.
