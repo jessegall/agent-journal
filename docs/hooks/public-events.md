@@ -19,7 +19,7 @@ Every other event stays private to its owner. Another domain hears a public even
 
 A fact is captured where its change is made: a row fact is raised by the model method that saves the change, after
 that save succeeded, and a command-level fact is staged by the command's own code through
-`App\Bus\Contracts\CommandFacts::publishAfterCommit`. Both join the event unit of the transaction in save order.
+`App\Contracts\CommandFacts::publishAfterCommit`. Both join the event unit of the transaction in save order.
 The fact's required listeners run inside that transaction, before it commits; its public listeners hear it through
 Laravel's dispatcher only after the real commit, once no command of the request still runs. A rolled-back change
 releases nothing. Each fact carries plain values: ids, and Core values such as `StackTarget` or `ActorContext`.
@@ -40,7 +40,7 @@ sent anywhere else. `AssignmentsChanged` is staged once per command, never per r
 committed: an attempt the writer ran again after a serialization failure leaves no fact. A cascade over a plan raises
 one fact for all its changes.
 
-A fact that changes what users see also implements `App\Ui\Contracts\UserInterfaceUpdater`. Web's `BroadcastPageChange`
+A fact that changes what users see also implements `App\Contracts\UserInterfaceUpdater`. Web's `BroadcastPageChange`
 listens for that marker, and the checked provider turns it into one listener for each exported event that implements
 it, so a new domain's or module's exported fact refreshes the open pages without any change to Web, while a fact
 nobody exports refreshes nothing; Core owns the marker and names no domain.
@@ -53,7 +53,7 @@ their owners do not export them, so only their own listeners hear them.
 
 ## How a private event is refused
 
-One provider, `App\Domains\Providers\DomainEventServiceProvider`, registers every listener: it discovers the `Listeners` folders of Core (`CoreApi::listenerFolders()`) and of each domain, and `App\Domains\Support\ListenerPolicy` checks each event and listener pair. A listener on an event its owner does not export, on an event of a domain its own domain does not require, or on something that is not a concrete event stops the application with `InvalidListener`, naming the listener, the event and its owner. The same check runs when `php artisan event:cache` writes the cache and when a cached boot reads it, so a cache cannot let a private pair through. A cache written before a declaration change is refused with the instruction to run `php artisan event:cache` again; restart long-lived workers (`php artisan octane:reload`, `php artisan queue:restart`) after a declaration change. A listener registered by hand (`Event::listen` on a project event, a wildcard, a subscriber or a `listen` property) is refused by the architecture suite; the one exception is each domain's state types answering `StateTypesRequested` through the `RegisterStates` bootstrapper.
+One provider, `App\Providers\DomainEventServiceProvider`, registers every listener: it discovers the `Listeners` folders of Core (`CoreApi::listenerFolders()`) and of each domain, and `App\Domains\Support\ListenerPolicy` checks each event and listener pair. A listener on an event its owner does not export, on an event of a domain its own domain does not require, or on something that is not a concrete event stops the application with `InvalidListener`, naming the listener, the event and its owner. The same check runs when `php artisan event:cache` writes the cache and when a cached boot reads it, so a cache cannot let a private pair through. A cache written before a declaration change is refused with the instruction to run `php artisan event:cache` again; restart long-lived workers (`php artisan octane:reload`, `php artisan queue:restart`) after a declaration change. A listener registered by hand (`Event::listen` on a project event, a wildcard, a subscriber or a `listen` property) is refused by the architecture suite; the one exception is each domain's state types answering `StateTypesRequested` through the `RegisterStates` bootstrapper.
 
 A listener whose writes the command's transaction requires carries `#[App\Attributes\InCommandTransaction]`. The policy takes it out of the dispatcher's map into `App\Domains\Support\RequiredListenerRegistry`, built from the same discovered or cached map, each event's listeners in the order of their full names; availability still gates a domain's listener, and no failure logging wraps it, so its failure rolls the command back. Boot is refused, naming the event and the listener, when a required listener is queued, broadcasts or handles events after the commit, is registered twice, or belongs to a domain other than the event's owner while the event does not name it with `#[App\Attributes\RequiresListener]`; ordinary subscription rights never grant that. The cache carries the lanes' version, so a cache written before them is refused: run `php artisan event:cache` again and restart long-lived workers after this change.
 

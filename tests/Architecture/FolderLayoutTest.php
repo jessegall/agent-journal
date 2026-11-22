@@ -16,15 +16,15 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Every class sits in the folder of its type. A domain root holds only its Domain class and a Core area root nothing;
+ * Every class sits in the folder of its type. A domain root holds only its Domain class beside its role folders;
  * service providers sit in Providers, and a type folder such as States or Readers holds only classes of that type;
  * what helps a type without being of it sits in that folder's Support subfolder.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of the project.')]
 final class FolderLayoutTest extends TestCase
 {
-    private const string MISPLACED_ROOTS = 'app and a package src hold role folders, their root files and old areas '
-        .'the layout manifest still moves; a class loose in an old area moves into the folder of its type.';
+    private const string MISPLACED_ROOTS = 'app and a package src hold only role folders and their root files; '
+        .'a class moves into the folder of its type.';
 
     private const string ACTIONS_FOLDER = 'A domain write is a command with a handler (doc 19); '
         .'only Access keeps the Actions Fortify calls.';
@@ -32,13 +32,13 @@ final class FolderLayoutTest extends TestCase
     private const string LOOSE_ENUMS = 'These enums sit outside an Enums folder; '
         .'move each into the Enums folder of its domain or Core area.';
 
-    public function test_app_and_each_package_src_hold_only_role_folders_their_root_files_and_pending_areas(): void
+    public function test_app_and_each_package_src_hold_only_role_folders_and_their_root_files(): void
     {
-        $misplaced = self::misplacedUnder(app_path(), LayoutRoots::core(base_path()), LayoutRoots::coreRootFiles(), areasHoldNoLooseClass: true);
+        $misplaced = self::misplacedUnder(app_path(), LayoutRoots::core(), LayoutRoots::coreRootFiles());
 
         foreach (glob(base_path('domain/*/src'), GLOB_ONLYDIR) ?: [] as $source) {
             $name = basename(dirname($source));
-            $misplaced = [...$misplaced, ...self::misplacedUnder($source, LayoutRoots::package(base_path(), $name), ["{$name}Domain.php"], areasHoldNoLooseClass: false)];
+            $misplaced = [...$misplaced, ...self::misplacedUnder($source, LayoutRoots::package(), ["{$name}Domain.php"])];
         }
 
         $this->assertSame([], $misplaced, self::MISPLACED_ROOTS);
@@ -46,7 +46,7 @@ final class FolderLayoutTest extends TestCase
 
     public function test_a_new_old_area_folder_is_reported_and_its_move_to_a_role_clears_it(): void
     {
-        $roots = LayoutRoots::core(base_path());
+        $roots = LayoutRoots::core();
 
         $this->assertSame(['Gardening'], $roots->misplaced(['Models', 'Gardening'], [], []));
         $this->assertSame([], $roots->misplaced(['Models'], [], []));
@@ -54,26 +54,18 @@ final class FolderLayoutTest extends TestCase
     }
 
     /**
-     * The misplaced folders and files under one root and, for Core, the classes loose at a pending area's own root;
-     * a package's old folders are role folders of their own until its batch moves them.
+     * The misplaced folders and files under one root.
      *
      * @param  list<string>  $rootFiles
      * @return list<string>
      */
-    private static function misplacedUnder(string $root, LayoutRoots $roots, array $rootFiles, bool $areasHoldNoLooseClass): array
+    private static function misplacedUnder(string $root, LayoutRoots $roots, array $rootFiles): array
     {
         $folders = array_map(basename(...), glob("{$root}/*", GLOB_ONLYDIR) ?: []);
         $files = array_map(basename(...), glob("{$root}/*.php") ?: []);
         $relative = substr($root, strlen(base_path()) + 1);
-        $misplaced = array_map(fn (string $name) => "{$relative}/{$name}", $roots->misplaced($folders, $files, $rootFiles));
 
-        foreach ($areasHoldNoLooseClass ? array_filter($folders, $roots->isPending(...)) : [] as $area) {
-            foreach (glob("{$root}/{$area}/*.php") ?: [] as $file) {
-                $misplaced[] = substr($file, strlen(base_path()) + 1);
-            }
-        }
-
-        return $misplaced;
+        return array_map(fn (string $name) => "{$relative}/{$name}", $roots->misplaced($folders, $files, $rootFiles));
     }
 
     public function test_no_domain_keeps_an_actions_folder_but_access(): void

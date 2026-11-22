@@ -14,10 +14,8 @@ use App\Enums\CommandEntry;
 use App\Exceptions\CommandDeclarationInvalid;
 use App\Exceptions\CommandHandlerMissing;
 use App\Exceptions\CommandListedTwice;
-use App\Exceptions\CommandOperationListedTwice;
 use App\Exceptions\MiddlewareDeclarationInvalid;
 use App\Exceptions\MiddlewareListedTwice;
-use App\Support\CommandName;
 use App\Support\CommandOwner;
 use App\Support\CommandRegistry;
 use App\Support\CommandScope;
@@ -31,9 +29,7 @@ use Tests\Fixtures\Bus\Garden\Commands\Water\WaterCommand;
 use Tests\Fixtures\Bus\Garden\Commands\Water\WaterHandler;
 use Tests\Fixtures\Bus\Layouts\Commands\Plant\PlantCommand as FinalPlantCommand;
 use Tests\Fixtures\Bus\Layouts\Commands\Plant\PlantHandler as FinalPlantHandler;
-use Tests\Fixtures\Bus\Layouts\Garden\Commands\Plant\PlantCommand as AreaPlantCommand;
 use Tests\Fixtures\Bus\Layouts\Garden\Commands\Prune\PruneCommand;
-use Tests\Fixtures\Bus\Layouts\Garden\Commands\Prune\PruneHandler;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 use Tests\Fixtures\Bus\Shop\CommandMiddleware\CheckStock;
 use Tests\Fixtures\Bus\Shop\CommandMiddleware\LogShop;
@@ -126,27 +122,17 @@ final class CommandRegistryTest extends TestCase
         $this->registryOf([$this->shop([AddItemCommand::class, AddItemCommand::class])]);
     }
 
-    public function test_core_reads_a_pair_in_its_final_folder_and_one_in_an_area_with_their_operation_names(): void
+    public function test_core_reads_a_pair_in_its_commands_folder(): void
     {
-        $registry = $this->registryOf([$this->layouts([FinalPlantCommand::class, PruneCommand::class])]);
+        $registry = $this->registryOf([$this->layouts([FinalPlantCommand::class])]);
 
         $this->assertSame(FinalPlantHandler::class, $registry->handlerOf(FinalPlantCommand::class));
-        $this->assertSame(PruneHandler::class, $registry->handlerOf(PruneCommand::class));
-        $this->assertSame(CommandOwner::CORE, $registry->ownerOf(PruneCommand::class));
+        $this->assertSame(CommandOwner::CORE, $registry->ownerOf(FinalPlantCommand::class));
     }
 
-    public function test_a_pair_in_both_core_layouts_is_refused_by_its_operation_name(): void
+    public function test_a_core_pair_in_an_old_area_folder_is_refused(): void
     {
-        $this->assertThrows(
-            fn () => $this->registryOf([$this->layouts([FinalPlantCommand::class, AreaPlantCommand::class])]),
-            CommandOperationListedTwice::class,
-            CommandOperationListedTwice::for(
-                CommandOwner::CORE,
-                CommandName::of(FinalPlantCommand::class),
-                FinalPlantCommand::class,
-                AreaPlantCommand::class,
-            )->getMessage(),
-        );
+        $this->refusedWith(CommandDeclarationInvalid::class, 'Commands folder', [$this->layouts([PruneCommand::class])]);
     }
 
     public function test_a_command_outside_its_commands_folder_is_refused(): void

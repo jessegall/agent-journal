@@ -5,7 +5,7 @@ with Chat switched off every command and read below still works.
 
 ## Desks and seats
 
-A desk (`App\Desks\Models\DeskRecord`) is a place work and messages are sent to: it owns one inbox and a number of
+A desk (`App\Models\DeskRecord`) is a place work and messages are sent to: it owns one inbox and a number of
 seats (`DeskSeat`). Sitting at a desk is a Core assignment on the seat (`SeatingWriter::seat`, `replace`, `release`),
 so who sits where is read like any other holding. A desk is never an actor.
 
@@ -19,7 +19,7 @@ so who sits where is read like any other holding. A desk is never an actor.
 
 ## Inboxes and providers
 
-An inbox (`App\Communication\Contracts\Inbox`, row `InboxRecord`) belongs to a provider registered on
+An inbox (`App\Contracts\Inbox`, row `InboxRecord`) belongs to a provider registered on
 `InboxRegistration` with an `InboxAccess`: shared and exclusive guards, the membership of one actor, all members, and
 the inboxes an actor sits at. Desks are one provider (`DeskInboxAccess`); the registry (`RegisteredInboxes`) combines
 every provider, so visibility and pending work never assume desks. `InboxDestinationResolver` turns an assignee into
@@ -27,7 +27,7 @@ the inbox to write to: its forwarding desk (main for the agent at main), else it
 
 ## Messages
 
-A message (`App\Communication\Models\Message`) goes from a source inbox the sender sits at to a destination inbox.
+A message (`App\Models\Message`) goes from a source inbox the sender sits at to a destination inbox.
 Anyone sees it only through an inbox they sit at, or because they wrote it (`MessageVisibility`).
 
 | Command | What it does |
@@ -63,7 +63,7 @@ ends.
 
 ## Entries
 
-HTTP: `app/Communication/Routes/communication.php` (`/communication` for people, `/agent/communication` for signed
+HTTP: `routes/communication/communication.php` (`/communication` for people, `/agent/communication` for signed
 agents). CLI: `message:send`, `ask`, `reply`, `require-answer`, `read`, `take-next`, `dismiss`, `show`, `history`,
 `counts`. MCP: `messages_send`, `messages_ask`, `messages_reply`, `messages_read`, `messages_take_next`,
 `messages_dismiss`, `messages_show`, `inbox_history`, `inbox_counts`.

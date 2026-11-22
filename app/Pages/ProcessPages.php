@@ -212,7 +212,7 @@ final class ProcessPages implements NativePartProvider, PageProvider, TypeProvid
      */
     public function declarations(): DomainUi
     {
-        return DomainUi::of($this, 'Processes', 'App\\Processes', dirname(__DIR__, 2).'/resources/js/processes');
+        return DomainUi::of($this, 'Processes', 'App', dirname(__DIR__, 2).'/resources/js/processes');
     }
 
     private function listPage(): Page

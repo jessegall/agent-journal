@@ -7326,6 +7326,7 @@ constant	LayoutLimits::PART_LIMIT
 constant	LayoutLimits::ROW_LIMIT
 constant	LayoutPartData::TONES
 constant	LayoutRoots::CORE_ROOT_FILES
+constant	LayoutRoots::ROLE_FOLDERS
 constant	LayoutSplitData::LIST_WIDTH
 constant	LibraryWindowResolver::SHARING_NOTICE
 constant	LimitMcpMessage::BYTE_LIMIT
@@ -15812,11 +15813,8 @@ method	LayoutRefused::unknownStyle()
 method	LayoutRequest::layoutName()
 method	LayoutRequest::rules()
 method	LayoutRequest::shape()
-method	LayoutRoots::__construct()
 method	LayoutRoots::core()
 method	LayoutRoots::coreRootFiles()
-method	LayoutRoots::fromManifest()
-method	LayoutRoots::isPending()
 method	LayoutRoots::misplaced()
 method	LayoutRoots::package()
 method	LayoutRowData::__construct()
@@ -28468,7 +28466,6 @@ parameter	$rewrite
 parameter	$rewrites
 parameter	$right
 parameter	$role
-parameter	$roles
 parameter	$rollBack
 parameter	$room
 parameter	$root
@@ -33314,8 +33311,6 @@ property	LayoutProgressData::$label
 property	LayoutProgressData::$max
 property	LayoutProgressData::$unit
 property	LayoutProgressData::$value
-property	LayoutRoots::$pending
-property	LayoutRoots::$roles
 property	LayoutRowData::$detail
 property	LayoutRowData::$fact
 property	LayoutRowData::$href

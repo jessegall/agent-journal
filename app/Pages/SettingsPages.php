@@ -107,6 +107,6 @@ final class SettingsPages implements NavigationProvider, PageProvider, TypeProvi
      */
     public function declarations(): DomainUi
     {
-        return DomainUi::of($this, 'Settings', 'App\\Settings', dirname(__DIR__, 2).'/resources/js/settings');
+        return DomainUi::of($this, 'Settings', 'App', dirname(__DIR__, 2).'/resources/js/settings');
     }
 }

@@ -153,6 +153,6 @@ final class SharingPages implements NativePartProvider, PageProvider, TypeProvid
      */
     public function declarations(): DomainUi
     {
-        return DomainUi::of($this, 'Sharing', 'App\\Sharing', dirname(__DIR__, 2).'/resources/js/sharing');
+        return DomainUi::of($this, 'Sharing', 'App', dirname(__DIR__, 2).'/resources/js/sharing');
     }
 }

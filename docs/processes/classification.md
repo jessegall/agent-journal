@@ -17,7 +17,7 @@ the runner unhidden and a proven reader must read it (see [admission.md](admissi
 
 ## Rules and scopes
 
-A `CommandRule` (`app/Processes/Values/CommandRule.php`) names its program spellings, its subcommands, its argument
+A `CommandRule` (`app/Values/CommandRule.php`) names its program spellings, its subcommands, its argument
 grammar (operands and the options it accepts), its classes, its purpose, its binding to an executable and, for a
 check, its verification contracts. Rules come in three scopes (`ScopeType`):
 
@@ -62,7 +62,7 @@ the registry in the `module` scope.
 
 ## Shipped readers
 
-Core ships proven readers for the tools it knows (`app/Processes/Rules/ShippedReaders.php`), each bound to the
+Core ships proven readers for the tools it knows (`app/Support/Rules/ShippedReaders.php`), each bound to the
 version its samples came from (`app/Processes/Rules/Proofs/<tool>/<version>`). `process:install-shipped-readers`
 approves them, as the owner, for every tool whose installed version in `composer.lock` or `package-lock.json`
 matches; a tool at another version stays `reader-required`.

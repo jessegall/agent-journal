@@ -87,6 +87,6 @@ final class ScriptsPages implements PageProvider, TypeProvider
      */
     public function declarations(): DomainUi
     {
-        return DomainUi::of($this, 'Scripts', 'App\\Scripts', dirname(__DIR__, 2).'/resources/js/scripts');
+        return DomainUi::of($this, 'Scripts', 'App', dirname(__DIR__, 2).'/resources/js/scripts');
     }
 }

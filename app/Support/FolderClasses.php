@@ -12,7 +12,7 @@ namespace App\Support;
 final readonly class FolderClasses
 {
     /**
-     * Every class of the type declared directly in one of the folders, a folder pattern such as app/*\/Commands
+     * Every class of the type declared directly in one of the folders, a folder pattern such as domain/*\/src/Commands
      * included, by class name. The folders are absolute, as a class names them from __DIR__.
      *
      * @template T of object

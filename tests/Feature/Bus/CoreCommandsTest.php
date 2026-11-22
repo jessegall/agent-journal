@@ -128,7 +128,7 @@ final class CoreCommandsTest extends CommandBusTestCase
         $this->installCommandModules();
         $registry = $this->app->make(CommandRegistry::class);
 
-        $commandFiles = glob(app_path('*/Commands/*/*Command.php')) ?: [];
+        $commandFiles = glob(app_path('Commands/*/*Command.php')) ?: [];
 
         $this->assertCount(
             count($commandFiles),

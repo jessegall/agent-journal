@@ -5,9 +5,9 @@ place. Domains opt in on their model; everything else is Core.
 
 ## Two opt-ins
 
-- **Comments about the whole record.** The model implements `App\Comments\Contracts\Commentable` and uses
-  `App\Comments\Support\HasComments`. Nothing else is needed. The Notes fixture's `Note` is the example.
-- **Comments about a place in the text too.** The model also implements `App\Text\Contracts\TextContent`:
+- **Comments about the whole record.** The model implements `App\Contracts\Commentable` and uses
+  `App\Concerns\HasComments`. Nothing else is needed. The Notes fixture's `Note` is the example.
+- **Comments about a place in the text too.** The model also implements `App\Contracts\TextContent`:
   `textVersion(?string $version): TextVersion` returns the named version (or the current one) and refuses an
   unknown one with `TextVersionUnavailable`. Documents (each closed revision is a version) and reports (version 1 only)
   do this, and so does the Notes fixture's `NotePage`. A record with only `TextContent` can be read but takes no
@@ -38,7 +38,7 @@ record without text are refused, and so is `--lines` when locating a whole-recor
 
 ## The public contract exception
 
-`HasComments::comments()` is the one public member allowed to name the private `App\Comments\Models\Comment` model,
+`HasComments::comments()` is the one public member allowed to name the private `App\Models\Comment` model,
 as the relation it returns (`tests/Architecture/Support/PublicContracts.php`). Domains read comments only through
 `CommentReader` and post them only through `PostComment` and `PostTextComment`.
 

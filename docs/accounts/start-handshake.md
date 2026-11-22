@@ -113,7 +113,7 @@ protected arrangement is shown no start is spawned, and a pending start is not a
 ### The recipe a claim carries
 
 `ClaimStart` asks the program's adapter for the start's account settings (`AccountSettingsRequested`, answered by
-`App\Hooks\Listeners\SupplyAccountSettings`); Agents itself knows no program. The adapter reads the program's
+`App\Listeners\SupplyAccountSettings`); Agents itself knows no program. The adapter reads the program's
 `ProgramCompatibility` and refuses the claim with `ProgramArrangementUnproven` (409, the start stays pending) unless
 the real program showed its arrangement; the recipe also names the build and arrangement it holds for, so the host
 refuses a different binary. The recipe never names a host path but the account folder; the host writes the per-launch

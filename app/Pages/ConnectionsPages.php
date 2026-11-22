@@ -109,6 +109,6 @@ final class ConnectionsPages implements NavigationProvider, PageProvider, TypePr
      */
     public function declarations(): DomainUi
     {
-        return DomainUi::of($this, 'Connections', 'App\\Connections', dirname(__DIR__, 2).'/resources/js/connections');
+        return DomainUi::of($this, 'Connections', 'App', dirname(__DIR__, 2).'/resources/js/connections');
     }
 }

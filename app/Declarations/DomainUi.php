@@ -201,12 +201,12 @@ final readonly class DomainUi
     }
 
     /**
-     * Whether the class belongs to this owner: a package's own namespace, or anywhere under App for Core, which is one
-     * owner laid out by role (doc 107).
+     * Whether the class is in this owner's namespace: App for Core's page owners, laid out by role (doc 107), or the
+     * package's own.
      */
     public function owns(string $className): bool
     {
-        return str_starts_with($className, str_starts_with($this->namespace, 'App\\') ? 'App\\' : $this->namespace.'\\');
+        return str_starts_with($className, $this->namespace.'\\');
     }
 
     /**
