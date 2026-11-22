@@ -3319,10 +3319,13 @@ class	HelperProfilesUnavailable
 class	HelperPurpose
 class	HelperReceipt
 class	HelperReceiptData
+class	HelperRecordFactSender
 class	HelperRecords
+class	HelperReportedOnRecord
 class	HelperRequestConflict
 class	HelperRetired
 class	HelperSendCommand
+class	HelperSentOnRecord
 class	HelperStartCommand
 class	HelperStarts
 class	HelperSteerCommand
@@ -5322,6 +5325,7 @@ class	ReviewMergeAdmission
 class	ReviewRequest
 class	ReviewResponses
 class	ReviewRuleRequest
+class	ReviewersOutData
 class	ReviewingPlanState
 class	ReviewingPlanStateFactory
 class	ReviewingPlanStateReference
@@ -8312,6 +8316,7 @@ interface	Files
 interface	GroupDeclaration
 interface	GuardedCommandBus
 interface	HelperCommitImport
+interface	HelperRecordFacts
 interface	HookAnswerer
 interface	HookInput
 interface	HostCalls
@@ -8338,7 +8343,6 @@ interface	JournalAssignmentWriter
 interface	JournalCall
 interface	JournalCommands
 interface	JournalToolNames
-interface	KeepsOwnValues
 interface	LaunchCandidates
 interface	LinkRecordProvider
 interface	Listener
@@ -8379,6 +8383,7 @@ interface	OperationResolver
 interface	OptionSetting
 interface	OutputRecorder
 interface	OverviewContribution
+interface	OwnValuesState
 interface	OwnerCommands
 interface	OwnerPolicy
 interface	PageOption
@@ -13791,6 +13796,7 @@ method	EngineServiceProvider::boot()
 method	EngineServiceProvider::register()
 method	EngineSettings::__construct()
 method	EngineStacks::__construct()
+method	EngineStacks::keepValues()
 method	EngineStacks::popExposed()
 method	EngineStacks::push()
 method	EngineTargetAccess::assertTargetGranted()
@@ -14259,6 +14265,7 @@ method	Fingerprint::of()
 method	Fingerprint::ofLink()
 method	FinishCertifiedJob::__construct()
 method	FinishCertifiedJob::handle()
+method	FinishCertifiedJob::tellParent()
 method	FinishHelperJobCommand::__construct()
 method	FinishHelperJobHandler::handle()
 method	FinishPlanCall::__construct()
@@ -14675,15 +14682,24 @@ method	HelperPurpose::free()
 method	HelperPurpose::ofParent()
 method	HelperPurpose::sameAs()
 method	HelperPurpose::start()
+method	HelperPurpose::subjectRecord()
+method	HelperPurpose::subjectRecordOf()
 method	HelperReceipt::__construct()
 method	HelperReceiptData::__construct()
 method	HelperReceiptData::fromHelperReceipt()
+method	HelperRecordFactSender::__construct()
+method	HelperRecordFactSender::reported()
+method	HelperRecordFactSender::sent()
+method	HelperRecordFacts::reported()
+method	HelperRecordFacts::sent()
 method	HelperRecords::__construct()
 method	HelperRecords::receiptOf()
+method	HelperReportedOnRecord::__construct()
 method	HelperRequestConflict::forRequest()
 method	HelperRetired::forIdentity()
 method	HelperRetired::withUnfinishedJob()
 method	HelperSendCommand::handle()
+method	HelperSentOnRecord::__construct()
 method	HelperStartCommand::handle()
 method	HelperStarts::__construct()
 method	HelperStarts::continueCommand()
@@ -15465,8 +15481,6 @@ method	KeepsCleanupTries::resetCleanupTries()
 method	KeepsNewestReading::inCurrentGenerationOf()
 method	KeepsNewestReading::isOlderThan()
 method	KeepsNewestReading::saveReading()
-method	KeepsOwnValues::ownValues()
-method	KeepsOwnValues::restoreOwnValues()
 method	KeptDigest::__construct()
 method	KeptFile::__construct()
 method	KeptFile::size()
@@ -17270,6 +17284,8 @@ method	OwnMemories::__construct()
 method	OwnMemories::cardOf()
 method	OwnMemories::memory()
 method	OwnMemories::own()
+method	OwnValuesState::ownValues()
+method	OwnValuesState::restoreOwnValues()
 method	OwnerAdmission::__construct()
 method	OwnerAdmission::admits()
 method	OwnerAdmission::owner()
@@ -20838,10 +20854,18 @@ method	ReviewResponses::__construct()
 method	ReviewResponses::run()
 method	ReviewRuleRequest::ruleId()
 method	ReviewRuleRequest::rules()
+method	ReviewersOutData::__construct()
+method	ReviewersOutData::adding()
+method	ReviewersOutData::removing()
 method	ReviewingPlanState::__construct()
 method	ReviewingPlanState::instruction()
+method	ReviewingPlanState::isAbout()
 method	ReviewingPlanState::isFinished()
+method	ReviewingPlanState::onHelperReportedOnRecord()
+method	ReviewingPlanState::onHelperSentOnRecord()
 method	ReviewingPlanState::onStop()
+method	ReviewingPlanState::ownValues()
+method	ReviewingPlanState::restoreOwnValues()
 method	ReviewingPlanState::reviewText()
 method	ReviewingPlanStateFactory::schemaVersion()
 method	ReviewingPlanStateFactory::sessionTransfer()
@@ -23733,7 +23757,6 @@ method	StateEventScope::during()
 method	StateEventScope::isCurrent()
 method	StateEventScope::withinAudience()
 method	StateEventStacks::__construct()
-method	StateEventStacks::keepValues()
 method	StateEventStacks::restoreActive()
 method	StateEvents::__construct()
 method	StateEvents::cacheEntries()
@@ -26637,6 +26660,7 @@ parameter	$enforced
 parameter	$engine
 parameter	$engineFrame
 parameter	$engineListeners
+parameter	$engineStacks
 parameter	$enrolled
 parameter	$enter
 parameter	$entered
@@ -26916,6 +26940,8 @@ parameter	$heldForReader
 parameter	$heldRefusals
 parameter	$help
 parameter	$helper
+parameter	$helperAgentId
+parameter	$helperFacts
 parameter	$helperJobId
 parameter	$helpers
 parameter	$hereDocument
@@ -32174,6 +32200,7 @@ property	Fingerprint::$inode
 property	Fingerprint::$modifiedAt
 property	Fingerprint::$realPath
 property	Fingerprint::$size
+property	FinishCertifiedJob::$helperFacts
 property	FinishCertifiedJob::$journal
 property	FinishHelperJobCommand::$jobId
 property	FinishHelperJobCommand::$reference
@@ -32379,6 +32406,7 @@ property	HelperDispatch::$admission
 property	HelperDispatch::$callingDriver
 property	HelperDispatch::$candidates
 property	HelperDispatch::$commands
+property	HelperDispatch::$helperFacts
 property	HelperDispatch::$profiles
 property	HelperDispatch::$purposes
 property	HelperDispatch::$records
@@ -32422,9 +32450,17 @@ property	HelperReceiptData::$requestedModel
 property	HelperReceiptData::$requestedModelType
 property	HelperReceiptData::$resolvedModel
 property	HelperReceiptData::$state
+property	HelperRecordFactSender::$eventScope
+property	HelperRecordFactSender::$events
+property	HelperRecordFactSender::$facts
+property	HelperRecordFactSender::$transaction
 property	HelperRecords::$starts
+property	HelperReportedOnRecord::$helperAgentId
+property	HelperReportedOnRecord::$subject
 property	HelperSendCommand::$description
 property	HelperSendCommand::$signature
+property	HelperSentOnRecord::$helperAgentId
+property	HelperSentOnRecord::$subject
 property	HelperStartCommand::$description
 property	HelperStartCommand::$signature
 property	HelperStarts::$starts
@@ -36378,7 +36414,9 @@ property	ReviewMergeAdmission::$admission
 property	ReviewMergeAdmission::$config
 property	ReviewResponses::$commands
 property	ReviewResponses::$redirect
+property	ReviewersOutData::$agentIds
 property	ReviewingPlanState::$plan
+property	ReviewingPlanState::$reviewersOut
 property	ReviseProposalCall::$declaration
 property	ReviseProposalCall::$expectedRevision
 property	ReviseProposalCall::$proposal
@@ -38042,6 +38080,7 @@ property	StateEventDelivery::$activity
 property	StateEventDelivery::$commands
 property	StateEventDelivery::$declarations
 property	StateEventDelivery::$effects
+property	StateEventDelivery::$engineStacks
 property	StateEventDelivery::$log
 property	StateEventDelivery::$selector
 property	StateEventDelivery::$stacks
@@ -38080,7 +38119,6 @@ property	StateEventScope::$audiences
 property	StateEventScope::$dispatches
 property	StateEventScope::$session
 property	StateEventStacks::$restorer
-property	StateEventStacks::$types
 property	StateEvents::$byEvent
 property	StateLabel::$key
 property	StateLabel::$text
@@ -40002,6 +40040,7 @@ variable	$exposure
 variable	$extended
 variable	$extra
 variable	$facade
+variable	$fact
 variable	$factory
 variable	$facts
 variable	$failed

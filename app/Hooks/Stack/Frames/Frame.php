@@ -6,7 +6,7 @@ namespace App\Hooks\Stack\Frames;
 
 use App\Contracts\Event;
 use App\Hooks\Contracts\ConditionalState;
-use App\Hooks\Contracts\KeepsOwnValues;
+use App\Hooks\Contracts\OwnValuesState;
 use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\References\StateReference;
 use App\Hooks\States\AgentState;
@@ -34,7 +34,7 @@ final readonly class Frame
      */
     public static function restored(FrameRecord $record, AgentState $state, bool $typeEnabled = true): self
     {
-        if ($state instanceof KeepsOwnValues && $record->values !== []) {
+        if ($state instanceof OwnValuesState && $record->values !== []) {
             $state->restoreOwnValues($record->values);
         }
 
@@ -57,7 +57,7 @@ final readonly class Frame
             $this->bottom,
             $this->schemaVersion,
             $this->enteredAt,
-            $this->state instanceof KeepsOwnValues ? $this->state->ownValues()->toArray() : [],
+            $this->state instanceof OwnValuesState ? $this->state->ownValues()->toArray() : [],
         );
     }
 

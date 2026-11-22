@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Events\HelperCompletionCertified;
+use App\Hooks\Events\HelperReportedOnRecord;
+use App\Hooks\Events\HelperSentOnRecord;
 use App\Hooks\Events\HelperStopHeld;
 use App\Hooks\Events\HookCommandAnswered;
 use App\Hooks\Events\StateTypesRequested;
@@ -28,6 +30,20 @@ return [
         'migrated' => false,
         'producers' => [
             'app/Hooks/Support/StopCertification.php',
+        ],
+    ],
+    HelperSentOnRecord::class => [
+        'role' => EventRole::CommandFact,
+        'migrated' => false,
+        'producers' => [
+            'app/Hooks/Actions/HelperRecordFactSender.php',
+        ],
+    ],
+    HelperReportedOnRecord::class => [
+        'role' => EventRole::CommandFact,
+        'migrated' => false,
+        'producers' => [
+            'app/Hooks/Actions/HelperRecordFactSender.php',
         ],
     ],
     HelperStopHeld::class => [

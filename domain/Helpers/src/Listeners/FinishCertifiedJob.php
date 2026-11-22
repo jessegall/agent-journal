@@ -7,9 +7,13 @@ namespace Domain\Helpers\Listeners;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
 use App\Contracts\Listener;
+use App\Hooks\Contracts\HelperRecordFacts;
 use App\Hooks\Events\HelperCompletionCertified;
+use App\Records\Support\RecordIdentity;
 use Domain\Helpers\Commands\FinishHelperJob\FinishHelperJobCommand;
+use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
+use Domain\Helpers\Models\HelperPurpose;
 use Domain\Helpers\Support\HelperLifecycleEntry;
 use Domain\Helpers\Support\JobStopEvidence;
 
@@ -19,7 +23,7 @@ use Domain\Helpers\Support\JobStopEvidence;
  */
 final readonly class FinishCertifiedJob implements Listener
 {
-    public function __construct(private JournalCommands $journal) {}
+    public function __construct(private JournalCommands $journal, private HelperRecordFacts $helperFacts) {}
 
     public function handle(HelperCompletionCertified $event): void
     {
@@ -31,6 +35,25 @@ final readonly class FinishCertifiedJob implements Listener
             CommandEntry::Application,
             HelperLifecycleEntry::NAME,
             new FinishHelperJobCommand($event->work->id, JobStopEvidence::referenceOf($event->attempt)),
+        );
+
+        $job = HelperJob::query()->whereKey($event->work->id)->first();
+
+        if ($job !== null) {
+            $this->tellParent($job);
+        }
+    }
+
+    /**
+     * Tells the parent's states that the helper it sent on a record reported back, once its job is finished.
+     */
+    private function tellParent(HelperJob $job): void
+    {
+        $purpose = HelperPurpose::query()->findOrFail($job->helper_purpose_id);
+        $helper = HelperIdentity::query()->findOrFail($job->helper_identity_id)->helperActor();
+
+        $purpose->subject_record->forAll(
+            fn (RecordIdentity $subject) => $this->helperFacts->reported($job->actor(), $subject, $helper->id),
         );
     }
 }

@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Unit\States;
 
 use App\Hooks\Decisions\Denied;
+use App\Hooks\Events\HelperReportedOnRecord;
+use App\Hooks\Events\HelperSentOnRecord;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\Values\HookIdentity;
 use App\Hooks\Inputs\Values\StopDetails;
+use App\Records\Support\RecordIdentity;
 use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Models\Plan;
 use Domain\Plans\States\ReviewingPlanState;
 use Domain\Plans\Support\PlanWork;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -37,20 +41,62 @@ final class ReviewingPlanStateTest extends TestCase
     {
         $state = $this->reviewing(PlanState::Reviewing);
 
-        $decision = $state->onStop(new StopRequested(
-            new HookIdentity(TestIds::of(1), TestIds::of(2), 'hook-1', 'digest'),
-            new StopDetails('turn-1', false),
-        ));
+        $decision = $state->onStop($this->stop());
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
         $this->assertSame($state->instruction()->get(), $decision->refusalReason());
         $this->assertFalse($state->isFinished());
     }
 
+    public function test_with_a_reviewer_out_the_stop_passes_to_the_states_below(): void
+    {
+        $state = $this->reviewing(PlanState::Reviewing);
+
+        $state->onHelperSentOnRecord(new HelperSentOnRecord($this->plan(), TestIds::of(7)));
+
+        $this->assertNull($state->onStop($this->stop()));
+        $this->assertSame([TestIds::of(7)], $state->ownValues()->agentIds);
+    }
+
+    public function test_a_report_back_removes_that_reviewer_and_the_review_holds_the_stop_again(): void
+    {
+        $state = $this->reviewing(PlanState::Reviewing);
+        $state->onHelperSentOnRecord(new HelperSentOnRecord($this->plan(), TestIds::of(7)));
+        $state->onHelperSentOnRecord(new HelperSentOnRecord($this->plan(), TestIds::of(8)));
+
+        $state->onHelperReportedOnRecord(new HelperReportedOnRecord($this->plan(), TestIds::of(7)));
+        $this->assertSame([TestIds::of(8)], $state->ownValues()->agentIds);
+
+        $state->onHelperReportedOnRecord(new HelperReportedOnRecord($this->plan(), TestIds::of(8)));
+        $this->assertInstanceOf(Denied::class, $state->onStop($this->stop())?->answer);
+    }
+
+    public function test_a_helper_on_another_record_is_not_counted(): void
+    {
+        $state = $this->reviewing(PlanState::Reviewing);
+
+        $state->onHelperSentOnRecord(new HelperSentOnRecord(new RecordIdentity(Plan::LINK_TYPE, TestIds::of(6)), TestIds::of(7)));
+
+        $this->assertSame([], $state->ownValues()->agentIds);
+    }
+
     #[DataProvider('statesAfterReview')]
     public function test_the_state_is_finished_once_the_plan_is_no_longer_under_review(PlanState $after): void
     {
         $this->assertTrue($this->reviewing($after)->isFinished());
+    }
+
+    private function stop(): StopRequested
+    {
+        return new StopRequested(
+            new HookIdentity(TestIds::of(1), TestIds::of(2), 'hook-1', 'digest'),
+            new StopDetails('turn-1', false),
+        );
+    }
+
+    private function plan(): RecordIdentity
+    {
+        return new RecordIdentity(Plan::LINK_TYPE, TestIds::of(5));
     }
 
     private function reviewing(PlanState $state): ReviewingPlanState

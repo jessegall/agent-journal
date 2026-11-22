@@ -11,6 +11,7 @@ use App\Bus\Exceptions\CommandNotRegistered;
 use App\Bus\Support\CommandRegistry;
 use App\Contracts\Event;
 use App\Contracts\ListenerFailureLog;
+use App\Hooks\Actions\EngineStacks;
 use App\Hooks\Declarations\Exceptions\StateEventMethodUnregistered;
 use App\Hooks\Declarations\StateEvents;
 use App\Hooks\Declarations\StateMethod;
@@ -44,6 +45,7 @@ final readonly class StateEventDelivery
     public function __construct(
         private StackTransaction $transaction,
         private StateEventStacks $stacks,
+        private EngineStacks $engineStacks,
         private StateMethodSelector $selector,
         private StateEvents $declarations,
         private CommandRegistry $commands,
@@ -113,7 +115,7 @@ final readonly class StateEventDelivery
             $listenerResults[] = $this->invoke($dispatch, $target, $selection);
         }
 
-        $this->stacks->keepValues($target, $stack->get());
+        $this->engineStacks->keepValues($target, $stack->get());
 
         return new StateEventResults($target, $listenerResults);
     }

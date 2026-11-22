@@ -21,6 +21,7 @@ use App\Agents\Values\ModelSelection;
 use App\Assignments\Contracts\ResponsibilityWriter;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
+use App\Hooks\Contracts\HelperRecordFacts;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Enums\InstancePolicy;
@@ -28,6 +29,7 @@ use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSelection;
 use App\Profiles\Values\StartProfileAuthority;
+use App\Records\Support\RecordIdentity;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperBusy;
 use Domain\Helpers\Exceptions\HelperJobUnfinished;
@@ -74,6 +76,7 @@ final readonly class HelperDispatch
         private HelperRecords $records,
         private CommandBus $commands,
         private JournalAdmission $admission,
+        private HelperRecordFacts $helperFacts,
     ) {}
 
     public function start(DispatchRequest $request): HelperReceipt
@@ -376,6 +379,10 @@ final readonly class HelperDispatch
         );
 
         $this->responsibilities->assign($job->assignmentIdentity(), AssigneeIdentity::ofActorIdentity($helper));
+
+        $purpose->subject_record->forAll(
+            fn (RecordIdentity $subject) => $this->helperFacts->sent($subject, $helper->id),
+        );
 
         $start = $this->commands->run(new StartOwnedAgentCommand(new OwnerStartRequest(
             $job->id,

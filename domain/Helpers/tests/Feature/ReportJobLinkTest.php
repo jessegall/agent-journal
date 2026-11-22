@@ -129,6 +129,8 @@ final class ReportJobLinkTest extends TestCase
             ConversationModeType::New,
             StartDisposition::Started,
             (string) Str::ulid(),
+            null,
+            null,
         );
     }
 

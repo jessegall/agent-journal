@@ -11,6 +11,7 @@ use App\Hooks\Contracts\EngineTargetAccess;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Mutations\StatePush;
 use App\Hooks\References\StateReference;
+use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\Support\StackTransaction;
@@ -63,5 +64,19 @@ final readonly class EngineStacks
         }
 
         $row->saveFrames($after->records(), $this->types->ticking());
+    }
+
+    /**
+     * Saves the stack's frames again when a listener changed a state's own values, under the caller's stack
+     * transaction, so the next restore hands them back.
+     */
+    public function keepValues(StackTarget $target, AgentStack $stack): void
+    {
+        $this->transaction->assertOpen($target);
+        $after = $stack->records();
+
+        AgentStackRow::lockActiveAuthorizedFor($target)
+            ->filter(fn (AgentStackRow $row) => ! $row->frames->hasSameValuesAs($after))
+            ->forAll(fn (AgentStackRow $row) => $row->saveFrames($after, $this->types->ticking()));
     }
 }

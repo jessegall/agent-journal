@@ -808,9 +808,11 @@ use App\Hooks\Contracts\Answer;
 use App\Hooks\Contracts\ConditionalState;
 use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\CurrentState;
+use App\Hooks\Contracts\HelperRecordFacts;
 use App\Hooks\Contracts\IncomingWork;
 use App\Hooks\Contracts\IncomingWorkRegistration;
 use App\Hooks\Contracts\OperationPolicy;
+use App\Hooks\Contracts\OwnValuesState;
 use App\Hooks\Contracts\ReminderContribution;
 use App\Hooks\Contracts\StackEditor;
 use App\Hooks\Contracts\StackTransactionRunner;
@@ -830,6 +832,8 @@ use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Events\HelperCompletionCertified;
+use App\Hooks\Events\HelperReportedOnRecord;
+use App\Hooks\Events\HelperSentOnRecord;
 use App\Hooks\Events\HelperStopHeld;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\HookAnswerRefused;
@@ -1456,6 +1460,8 @@ final class CoreApi
                 MessageClaimReleased::class,
                 ContextStarted::class,
                 HelperCompletionCertified::class,
+                HelperSentOnRecord::class,
+                HelperReportedOnRecord::class,
                 HelperStopHeld::class,
                 StateTypesRequested::class,
                 AssignmentsChanged::class,
@@ -1562,6 +1568,8 @@ final class CoreApi
                 RecordVisibility::class,
                 RuntimeResolver::class,
                 AgentStack::class,
+                HelperRecordFacts::class,
+                OwnValuesState::class,
                 UserStack::class,
                 StackTransactionRunner::class,
                 StateLoader::class,

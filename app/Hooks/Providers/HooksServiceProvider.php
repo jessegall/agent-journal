@@ -17,6 +17,7 @@ use App\Bus\Support\OperationDeadline;
 use App\Contracts\StartTransaction;
 use App\Hooks\Actions\AgentStacks;
 use App\Hooks\Actions\CurrentStates;
+use App\Hooks\Actions\HelperRecordFactSender;
 use App\Hooks\Actions\UserStacks;
 use App\Hooks\Actions\WorkStackPushes;
 use App\Hooks\Admission\AdvisoryStackAdmission;
@@ -27,6 +28,7 @@ use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Contracts\DriverCompatibilities;
+use App\Hooks\Contracts\HelperRecordFacts;
 use App\Hooks\Contracts\IncomingWorkRegistration;
 use App\Hooks\Contracts\StackTransaction as StackTransactionContract;
 use App\Hooks\Contracts\StackTransactionRunner;
@@ -97,6 +99,7 @@ final class HooksServiceProvider extends ServiceProvider
         Event::clearResolvedInstance('events');
 
         $this->app->bind(AgentStack::class, AgentStacks::class);
+        $this->app->bind(HelperRecordFacts::class, HelperRecordFactSender::class);
         $this->app->bind(CurrentState::class, CurrentStates::class);
         $this->app->bind(StackTransactionRunner::class, StackTransaction::class);
         $this->app->bind(UserStack::class, UserStacks::class);

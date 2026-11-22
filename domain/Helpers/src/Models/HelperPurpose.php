@@ -15,9 +15,13 @@ use Domain\Helpers\Enums\PurposeType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * What a parent keeps a helper of one profile for: one record, or free work. A parent has at most one purpose per
@@ -28,6 +32,7 @@ use Illuminate\Support\Str;
  * @property PurposeType $purpose_type
  * @property string|null $subject_type
  * @property string|null $subject_id
+ * @property-read Option<RecordIdentity> $subject_record
  * @property string $label
  */
 #[Table('helper_purposes')]
@@ -113,7 +118,31 @@ final class HelperPurpose extends Model implements ReadableModel
             : $same->where('subject_type', $purpose->subject_type)->where('subject_id', $purpose->subject_id);
     }
 
+    // ----------[ Accessors ]----------
+
+    /**
+     * The record the purpose is about, such as a plan to review; none for a free purpose.
+     *
+     * @return Attribute<Option<RecordIdentity>, never>
+     */
+    protected function subjectRecord(): Attribute
+    {
+        return Attribute::get(fn (): Option => $this->subjectRecordOf($this->subject_type, $this->subject_id));
+    }
+
     // ----------[ Internals ]----------
+
+    /**
+     * @return Option<RecordIdentity>
+     */
+    private function subjectRecordOf(string|null $type, string|null $id): Option
+    {
+        if ($type === null || $id === null) {
+            return None::create();
+        }
+
+        return new Some(new RecordIdentity($type, $id));
+    }
 
     private static function start(
         ActorIdentity $parent,
