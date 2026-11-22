@@ -36,6 +36,11 @@ type Frame struct {
 	// frame until ExpiresAt.
 	Proof     uint64    `json:"proof"`
 	ExpiresAt time.Time `json:"expires_at"`
+	// InputOwner is who holds the program's input as every viewer sees it, with a take still being settled and the
+	// prompt revision a browser writer's input names; the grant's own id never leaves for viewers.
+	InputOwner     string `json:"input_owner"`
+	TakePending    bool   `json:"take_pending"`
+	PromptRevision uint64 `json:"prompt_revision"`
 }
 
 // FrameLimit is the most bytes of JSON one frame may take.

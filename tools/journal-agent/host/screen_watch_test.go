@@ -3,6 +3,7 @@ package host
 import (
 	"context"
 	"errors"
+	"io"
 	"reflect"
 	"sync"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"journal-agent/client"
 	"journal-agent/screen"
 	"journal-agent/screen/contracts"
+	inputs "journal-agent/terminal"
 )
 
 // sentFrame is one report the fake journal took.
@@ -77,7 +79,13 @@ func (readers *fakeReaders) ScreenFor(runtimeID string) (RuntimeScreen, bool) {
 	readers.mutex.Lock()
 	defer readers.mutex.Unlock()
 	reader, found := readers.readers[runtimeID]
-	return RuntimeScreen{Reader: reader, Layout: passwordLayout}, found
+	if !found {
+		return RuntimeScreen{}, false
+	}
+	composer := screen.FencedRow{Label: "composer", Marker: ">"}
+	gate := inputs.NewInputGate(io.Discard, reader, composer, time.Now)
+
+	return RuntimeScreen{Reader: reader, Layout: passwordLayout, Gate: gate}, true
 }
 
 func (readers *fakeReaders) run(t *testing.T, runtimeID, text string) *screen.EmulatorReader {

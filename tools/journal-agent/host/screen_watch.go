@@ -13,6 +13,7 @@ import (
 	"journal-agent/client"
 	"journal-agent/screen"
 	"journal-agent/screen/contracts"
+	inputs "journal-agent/terminal"
 )
 
 // signOfLife is how long an unchanged screen goes without a frame before one is sent anyway.
@@ -35,11 +36,12 @@ type ScreenReaders interface {
 	ScreenFor(runtimeID string) (RuntimeScreen, bool)
 }
 
-// RuntimeScreen is the screen of a program the host runs and the layout of its driver, which says whether the screen
-// may leave the host.
+// RuntimeScreen is the screen of a program the host runs, the layout of its driver, which says whether the screen
+// may leave the host, and the input gate, which says who holds the input.
 type RuntimeScreen struct {
 	Reader *screen.EmulatorReader
 	Layout screen.Layout
+	Gate   *inputs.InputGate
 }
 
 // ScreenWatcher sends the screens of the runtimes the journal says are watched, each at its own interval, only when
@@ -279,6 +281,9 @@ func (sender *screenSender) read(now time.Time) (screen.Frame, bool) {
 	sender.lastCapture = &capture
 
 	frame := reader.ExportFrame(runtimeScreen.Layout, sender.watcher.epoch, sender.sequence+1, now)
+	grant := runtimeScreen.Gate.GrantState()
+	frame.InputOwner, frame.TakePending = string(grant.Owner), grant.PendingTake != ""
+	frame.PromptRevision = grant.PromptRevision
 
 	return frame.Bounded(screen.FrameLimit), true
 }

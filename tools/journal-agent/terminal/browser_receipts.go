@@ -16,8 +16,9 @@ import (
 type OperationKind string
 
 const (
-	TextOperation   OperationKind = "text"
-	EnterOperation  OperationKind = "enter"
+	TextOperation  OperationKind = "text"
+	EnterOperation OperationKind = "enter"
+	// CheckOperation reconciles a fenced stream against a fresh screen; it takes no sequence and writes nothing.
 	CheckOperation  OperationKind = "check"
 	ChoiceOperation OperationKind = "choice"
 )
@@ -101,12 +102,19 @@ func newGrantReceipts() (*grantReceipts, error) {
 // digestOf is the keyed digest of the whole operation, content included.
 func (receipts *grantReceipts) digestOf(operation BrowserOperation) []byte {
 	mac := hmac.New(sha256.New, receipts.key)
-	for _, part := range []string{operation.GrantID, operation.Attachment, string(operation.Kind), operation.Text,
-		string(operation.Choice)} {
+	parts := []string{
+		operation.GrantID,
+		operation.Attachment,
+		string(operation.Kind),
+		operation.Text,
+		string(operation.Choice),
+	}
+	for _, part := range parts {
 		_ = binary.Write(mac, binary.BigEndian, uint32(len(part)))
 		mac.Write([]byte(part))
 	}
-	_ = binary.Write(mac, binary.BigEndian, [3]uint64{operation.Sequence, operation.Generation, operation.PromptRevision})
+	numbers := [3]uint64{operation.Sequence, operation.Generation, operation.PromptRevision}
+	_ = binary.Write(mac, binary.BigEndian, numbers)
 
 	return mac.Sum(nil)
 }
@@ -170,16 +178,16 @@ func (gate *InputGate) applyLocked(
 		return BrowserReceipt{Sequence: operation.Sequence, Outcome: Expired}, nil
 	}
 	receipts := gate.browser.receipts
+	if operation.Kind == CheckOperation {
+		receipts.uncertain = false
+
+		return BrowserReceipt{Sequence: operation.Sequence, Outcome: Applied}, nil
+	}
 	if operation.Sequence <= receipts.highWater {
 		return receipts.retained(operation), nil
 	}
 	if operation.Sequence != receipts.highWater+1 {
 		return BrowserReceipt{Sequence: operation.Sequence, Outcome: Gap, Expected: receipts.highWater + 1}, nil
-	}
-	if operation.Kind == CheckOperation {
-		receipts.uncertain = false
-
-		return receipts.keep(operation, BrowserReceipt{Sequence: operation.Sequence, Outcome: Applied}), nil
 	}
 	if receipts.uncertain {
 		return BrowserReceipt{Sequence: operation.Sequence, Outcome: Uncertain}, nil

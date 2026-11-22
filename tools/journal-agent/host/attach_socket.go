@@ -169,7 +169,7 @@ func (socket *AttachSocket) ScreenFor(runtimeID string) (RuntimeScreen, bool) {
 	if !found {
 		return RuntimeScreen{}, false
 	}
-	return RuntimeScreen{Reader: terminal.reader, Layout: terminal.layout}, true
+	return RuntimeScreen{Reader: terminal.reader, Layout: terminal.layout, Gate: terminal.gate}, true
 }
 
 // forget drops the runtime's terminal once its program ended, unless a relaunch already put a new one in its place.

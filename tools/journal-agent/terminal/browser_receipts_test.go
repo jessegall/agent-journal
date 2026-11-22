@@ -109,9 +109,9 @@ func TestAShortWriteFencesTheStreamUntilAScreenCheck(t *testing.T) {
 
 	short := gate.ApplyBrowser(textAt(grant, 1, "ls -la"), layout, "")
 	fenced := gate.ApplyBrowser(textAt(grant, 2, "pwd"), layout, "")
-	check := BrowserOperation{GrantID: grant.ID, Sequence: 2, Generation: 1, Attachment: "attachment-1", Kind: CheckOperation}
+	check := BrowserOperation{GrantID: grant.ID, Generation: 1, Attachment: "attachment-1", Kind: CheckOperation}
 	checked := gate.ApplyBrowser(check, layout, "")
-	after := gate.ApplyBrowser(textAt(grant, 3, "p"), layout, "")
+	after := gate.ApplyBrowser(textAt(grant, 2, "p"), layout, "")
 
 	if short.Outcome != Uncertain || short.BytesWritten != 1 {
 		t.Fatalf("a short write was %+v", short)

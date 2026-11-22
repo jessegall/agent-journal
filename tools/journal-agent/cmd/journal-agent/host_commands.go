@@ -142,6 +142,11 @@ func serve(arguments []string) error {
 	}
 	defer listener.Close()
 	journal := client.New(enrollment).WithArrangement(string(arrangement))
+	if !arrangement.IsContained() {
+		// A local host carries out browser writers' operations on its terminal drivers; a contained one waits for its
+		// attachments to have identities of their own.
+		journal = journal.WithBrowserInput()
+	}
 	opener := runtimeOpener{stateFolder: *stateFolder, installationFolder: *installationFolder,
 		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(), hookCommand: *hookCommand, socket: socket,
 		declared: combinationsOf(arrangement)}
@@ -517,6 +522,7 @@ func terminalDriverOf(profile contracts.DriverProfile, opened host.Terminal, gen
 		Classifier:        classifier,
 		Gate:              opened.Gate,
 		Composer:          layout.Composer.Name(),
+		Layout:            layout,
 		Generation:        opened.Reader.Generation,
 		Scripts:           scripts.Registered(),
 		Runner:            keyscripts.NewRunner(opened.Gate, classifier, clock, view, driver, relay.Report),

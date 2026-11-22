@@ -51,6 +51,52 @@ type ClaimedRequest struct {
 	ProcessGeneration int     `json:"processGeneration"`
 }
 
+// browserControlOperations are the operations a browser writer's grant sends, App\Agents\Enums\DriverOperation's
+// terminalControl().
+var browserControlOperations = []string{
+	"take_control",
+	"cancel_take",
+	"release_control",
+	"terminal_input",
+	"draft_choice",
+	"check_screen",
+}
+
+// IsBrowserControl is whether the operation is one a browser writer's grant sends.
+func IsBrowserControl(operation string) bool {
+	for _, control := range browserControlOperations {
+		if control == operation {
+			return true
+		}
+	}
+
+	return false
+}
+
+// BrowserControlFields are the fields a browser writer's operation carries in its message, as
+// App\Agents\Support\TerminalControls writes them.
+type BrowserControlFields struct {
+	TakeID         string `json:"take_id"`
+	GrantID        string `json:"grant_id"`
+	Renew          bool   `json:"renew"`
+	Sequence       uint64 `json:"sequence"`
+	ScreenRevision uint64 `json:"screen_revision"`
+	Text           string `json:"text"`
+	Enter          bool   `json:"enter"`
+	Choice         string `json:"choice"`
+}
+
+// BrowserControl reads the fields of a browser writer's operation from the request's message.
+func (request ClaimedRequest) BrowserControl() (BrowserControlFields, error) {
+	var fields BrowserControlFields
+	if request.Message == nil {
+		return fields, errors.New("the browser operation carries no fields")
+	}
+	err := json.Unmarshal([]byte(*request.Message), &fields)
+
+	return fields, err
+}
+
 // NavigationRound mirrors App\Agents\Values\NavigationRound: the row version and screen generation a round of the
 // main agent answers, and exactly one of keys, a label to choose, a seen label to confirm, a goal parameter to type,
 // or a proof with what it completes.
@@ -302,6 +348,8 @@ type Client struct {
 	arrangement string
 	// protocol is the host protocol version every call says it speaks: HostProtocolVersion unless set.
 	protocol int
+	// browserInput is whether every claim says this host carries out browser control of its terminals.
+	browserInput bool
 }
 
 // New returns a client for the enrollment.
@@ -326,6 +374,12 @@ func (client *Client) WithArrangement(arrangement string) *Client {
 	return client
 }
 
+// WithBrowserInput makes every claim say this host carries out browser writers' operations on its terminals.
+func (client *Client) WithBrowserInput() *Client {
+	client.browserInput = true
+	return client
+}
+
 // Watch is one runtime somebody watches in the journal, and how often its screen is captured.
 type Watch struct {
 	RuntimeID  string `json:"runtime_id"`
@@ -347,6 +401,9 @@ func (client *Client) Claim(ctx context.Context, limit, waitSeconds, watchedVers
 		"&watched_version=" + strconv.Itoa(watchedVersion)
 	if client.arrangement != "" {
 		target += "&arrangement=" + url.QueryEscape(client.arrangement)
+	}
+	if client.browserInput {
+		target += "&browser_input=1"
 	}
 	return answerOf[Claim](ctx, client, target, nil)
 }

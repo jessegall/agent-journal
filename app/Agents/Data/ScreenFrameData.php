@@ -17,7 +17,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * or no terminal on the host; a plain frame dropped its styles to fit. A shielded frame stands for a screen its host
  * would not export, and the privacy revision rises each time the runtime's screen turns from public to shielded. The
  * stream names the sender that sent it, and its proof, rising per stream, proves the host alive until it expires; an
- * older host sends neither, and its frames prove nothing.
+ * older host sends neither, and its frames prove nothing. Who holds the input, whether a take is being settled and
+ * the prompt revision a browser writer's input must name come with every frame; a grant's own id never does.
  */
 #[TypeScript]
 #[MapInputName(SnakeCaseMapper::class)]
@@ -44,5 +45,8 @@ final class ScreenFrameData extends Data
         public readonly ?string $stream = null,
         public readonly int $proof = 0,
         public readonly ?string $expiresAt = null,
+        public readonly ?string $inputOwner = null,
+        public readonly bool $takePending = false,
+        public readonly int $promptRevision = 0,
     ) {}
 }

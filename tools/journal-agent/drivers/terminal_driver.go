@@ -37,13 +37,14 @@ const pollInterval = 50 * time.Millisecond
 const turnStartDeadline = 10 * time.Second
 
 // TerminalRuntime is what the terminal driver drives: the screen read from the program, the gate every key passes,
-// the program build's registered key scripts, the clock its waits run on, the process generation its reports carry
-// and the relay its key scripts report their steps through.
+// the program build's registered key scripts, the clock its waits run on, the process generation its reports carry,
+// the relay its key scripts report their steps through, and the layout a browser writer's prompt is classified by.
 type TerminalRuntime struct {
 	Profile           string
 	Classifier        *screen.Classifier
 	Gate              *terminal.InputGate
 	Composer          string
+	Layout            screen.Layout
 	Generation        func(region string) uint64
 	Scripts           *keyscripts.Registry
 	Runner            *keyscripts.Runner

@@ -20,6 +20,9 @@ function frameOf(epoch: string, sequence: number, stream: string | null = 's1'):
         stream,
         proof: 0,
         expiresAt: null,
+        inputOwner: null,
+        takePending: false,
+        promptRevision: 0,
     };
 }
 
