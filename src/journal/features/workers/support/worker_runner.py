@@ -271,6 +271,7 @@ class WorkerRunner:
 
     def inner_worktrees(self, worker: Worker, names: tuple[str, ...]) -> tuple[str, ...]:
         repositories = self.inner_added(worker, names)
+        self.branch.skills_linked(worker)
         self.libraries.placed(worker.with_(repositories=repositories))
         return repositories
 
