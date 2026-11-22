@@ -34,6 +34,8 @@ type ScreenReporter interface {
 // ScreenReaders finds the screen of a runtime's program, with the layout it is classified by, while the host runs it.
 type ScreenReaders interface {
 	ScreenFor(runtimeID string) (RuntimeScreen, bool)
+	// LostConnection is whether a runtime with no screen lost its contained attachment while its container runs.
+	LostConnection(runtimeID string) bool
 }
 
 // RuntimeScreen is the screen of a program the host runs, the layout of its driver, which says whether the screen
@@ -47,6 +49,9 @@ type RuntimeScreen struct {
 	// Incarnation rises each time a verified public redraw replaced the screen after private entry; a sender that
 	// sees it change starts a new stream.
 	Incarnation uint64
+	// Attachment and ContainerInstance name this attachment and the verified container it attaches to, if any.
+	Attachment        string
+	ContainerInstance string
 }
 
 // ScreenWatcher sends the screens of the runtimes the journal says are watched, each at its own interval, only when
@@ -267,7 +272,8 @@ func (sender *screenSender) read(now time.Time) (screen.Frame, bool) {
 	if !found {
 		sender.lastCapture = nil
 		marker := sender.marker(now)
-		marker.NoTerminal = true
+		marker.ConnectionLost = sender.watcher.readers.LostConnection(sender.runtimeID)
+		marker.NoTerminal = !marker.ConnectionLost
 		return marker, true
 	}
 
@@ -289,6 +295,7 @@ func (sender *screenSender) read(now time.Time) (screen.Frame, bool) {
 	sender.lastCapture = &capture
 
 	frame := sender.export(runtimeScreen, now)
+	frame.Attachment, frame.ContainerInstance = runtimeScreen.Attachment, runtimeScreen.ContainerInstance
 	grant := runtimeScreen.Gate.GrantState()
 	frame.InputOwner, frame.TakePending = string(grant.Owner), grant.PendingTake != ""
 	frame.PromptRevision = grant.PromptRevision

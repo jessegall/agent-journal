@@ -39,6 +39,9 @@ type AttachRequest struct {
 	ReadFiles []string `json:"read_files"`
 	Rows      uint16   `json:"rows"`
 	Columns   uint16   `json:"columns"`
+	// ContainerInstance is the verified id of the session container the command attaches to; empty for a program
+	// the host runs itself.
+	ContainerInstance string `json:"container_instance"`
 }
 
 // TerminalStarter starts the program of a runtime the host does not run yet; it returns the PTY.
@@ -52,6 +55,11 @@ type AttachSocket struct {
 	Layout    LayoutFinder
 	mutex     sync.Mutex
 	terminals map[string]*hostTerminal
+	// InstanceRuns says whether a container instance still runs; with it, a contained attachment that ended while its
+	// container runs is a lost connection rather than an end. Nil on a host that runs no containers.
+	InstanceRuns func(instance string) bool
+	// lost names the container instance of each runtime whose attachment ended, until the runtime opens again.
+	lost map[string]string
 }
 
 // LayoutFinder gives the screen layout of the program a request starts, from its profile.
@@ -81,6 +89,10 @@ type hostTerminal struct {
 	cleared      bool
 	// incarnation rises each time the fresh parser is promoted, so the watcher starts a new stream.
 	incarnation uint64
+	// attachment names this attachment of the runtime, new for every one, and containerInstance the verified
+	// container it attaches to; a grant is scoped to both.
+	attachment        string
+	containerInstance string
 }
 
 // privateNotice is what a local terminal is told when its keys, resize or attach meet private entry; it carries no
@@ -108,6 +120,7 @@ func (socket *AttachSocket) Listen() (net.Listener, error) {
 		return nil, err
 	}
 	socket.terminals = map[string]*hostTerminal{}
+	socket.lost = map[string]string{}
 	go func() {
 		for {
 			connection, err := listener.Accept()
@@ -190,7 +203,20 @@ func (socket *AttachSocket) terminalFor(request AttachRequest) (*hostTerminal, e
 	}
 	gate := inputs.NewInputGate(file, reader, layout.Composer, time.Now)
 	barrier := inputs.NewCaptureBarrier()
-	terminal := &hostTerminal{pty: file, reader: reader, layout: layout, gate: gate, barrier: barrier}
+	attachment, err := randomName()
+	if err != nil {
+		return nil, err
+	}
+	terminal := &hostTerminal{
+		pty:               file,
+		reader:            reader,
+		layout:            layout,
+		gate:              gate,
+		barrier:           barrier,
+		attachment:        attachment,
+		containerInstance: request.ContainerInstance,
+	}
+	delete(socket.lost, request.RuntimeID)
 	gate.ResizeWith(terminal.resizeForBrowser)
 	barrier.Register("local mirror", inputs.CaptureSinkFunc(terminal.silenceMirror))
 	// The screen watcher asks the barrier before every capture and exports only the shield while it is closed.
@@ -216,24 +242,43 @@ func (socket *AttachSocket) ScreenFor(runtimeID string) (RuntimeScreen, bool) {
 	incarnation := terminal.incarnation
 	terminal.mutex.Unlock()
 	runtimeScreen := RuntimeScreen{
-		Reader:      terminal.reader,
-		Layout:      terminal.layout,
-		Gate:        terminal.gate,
-		Barrier:     terminal.barrier,
-		Incarnation: incarnation,
+		Reader:            terminal.reader,
+		Layout:            terminal.layout,
+		Gate:              terminal.gate,
+		Barrier:           terminal.barrier,
+		Incarnation:       incarnation,
+		Attachment:        terminal.attachment,
+		ContainerInstance: terminal.containerInstance,
 	}
 
 	return runtimeScreen, true
 }
 
-// forget drops the runtime's terminal once its program ended, unless a relaunch already put a new one in its place.
+// forget drops the runtime's terminal once its program ended, unless a relaunch already put a new one in its place;
+// a contained attachment that ended is remembered as lost, with its container instance.
 func (socket *AttachSocket) forget(runtimeID string, ended *hostTerminal) {
 	socket.mutex.Lock()
 	defer socket.mutex.Unlock()
-	if socket.terminals[runtimeID] == ended {
-		delete(socket.terminals, runtimeID)
+	if socket.terminals[runtimeID] != ended {
+		return
+	}
+	delete(socket.terminals, runtimeID)
+	if ended.containerInstance != "" {
+		socket.lost[runtimeID] = ended.containerInstance
 	}
 }
+
+// LostConnection is whether the runtime's contained attachment ended while its container instance still runs: a
+// lost terminal connection, not the end of the session. It only looks; nothing starts or repairs a container.
+func (socket *AttachSocket) LostConnection(runtimeID string) bool {
+	socket.mutex.Lock()
+	instance, lost := socket.lost[runtimeID]
+	runs := socket.InstanceRuns
+	socket.mutex.Unlock()
+
+	return lost && runs != nil && runs(instance)
+}
+
 
 // resize gives the program's terminal and the screen read from it the size of the attached window, so the screen
 // keeps the grid the program draws on; a size the reader refuses leaves the reader as it was.
@@ -275,6 +320,8 @@ type Terminal struct {
 	// ConfirmPrivateEnd is the driver's word that it ended, after which only a verified public redraw reopens it.
 	EnterPrivate      func() bool
 	ConfirmPrivateEnd func()
+	// Attachment names this attachment, which a browser grant is scoped to.
+	Attachment string
 }
 
 // Open starts the runtime's program on a PTY the host owns, or finds the one it already runs under the runtime's id,
@@ -288,6 +335,7 @@ func (socket *AttachSocket) Open(request AttachRequest) (Terminal, error) {
 	return Terminal{
 		Reader:            terminal.reader,
 		Gate:              terminal.gate,
+		Attachment:        terminal.attachment,
 		Hangup:            terminal.pty.Close,
 		EnterPrivate:      terminal.enterPrivate,
 		ConfirmPrivateEnd: terminal.confirmPrivateEnd,

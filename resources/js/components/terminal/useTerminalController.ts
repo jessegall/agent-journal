@@ -81,6 +81,7 @@ function stateLineOf(screen: TerminalScreen, ageSeconds: number): string {
         last_reported: `Last reported at ${lastUpdate}; this host does not show a live screen`,
         preview_unavailable: 'Terminal preview unavailable',
         not_reporting: `The agent's host stopped reporting; the screen was last updated at ${lastUpdate}`,
+        connection_lost: 'Terminal connection lost; the session still runs. Retry checks whether it is back.',
         ended: `Session ended at ${timeOfDay(screen.endedAt)}`,
     }[screen.state];
 }

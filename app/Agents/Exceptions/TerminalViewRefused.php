@@ -42,7 +42,7 @@ final class TerminalViewRefused extends RuntimeException implements CodedRefusal
     public static function processDriver(): self
     {
         return new self(
-            'This agent runs without a terminal (process driver); there is nothing to watch.',
+            'This driver has no terminal; there is nothing to watch.',
             TerminalViewRefusal::ProcessDriver,
         );
     }

@@ -345,3 +345,34 @@ func TestALocalKeyDuringPrivateEntryIsDiscardedAndRetiresTheBrowserGrant(t *test
 		t.Fatal("the local key reopened the barrier")
 	}
 }
+
+func TestALostContainedAttachmentWhoseContainerRunsIsALostConnectionNotAnEnd(t *testing.T) {
+	socket, programs := listeningSocket(t)
+	running := true
+	socket.InstanceRuns = func(instance string) bool { return instance == "container-1" && running }
+	connection, err := net.Dial("unix", socket.Path())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { connection.Close() })
+	request := AttachRequest{RuntimeID: "runtime-1", Rows: 24, Columns: 80, ContainerInstance: "container-1"}
+	if err := WriteAttachRequest(connection, request); err != nil {
+		t.Fatal(err)
+	}
+	terminalOf(t, socket, "runtime-1")
+
+	(<-programs).Close()
+	waitUntilTerminalGone(t, socket, "runtime-1")
+
+	if !socket.LostConnection("runtime-1") {
+		t.Fatal("a lost attachment with its container running did not count as a lost connection")
+	}
+	sender := &screenSender{watcher: &ScreenWatcher{epoch: "epoch", readers: socket}, runtimeID: "runtime-1"}
+	if marker, _ := sender.read(time.Now()); !marker.ConnectionLost || marker.NoTerminal {
+		t.Fatalf("the watcher reported %+v for a lost connection", marker)
+	}
+	running = false
+	if socket.LostConnection("runtime-1") {
+		t.Fatal("a stopped container still counted as a lost connection")
+	}
+}

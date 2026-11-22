@@ -49,6 +49,7 @@ type TerminalRuntime struct {
 	Hangup            func() error
 	EnterPrivate      func() bool
 	ConfirmPrivateEnd func()
+	Attachment        string
 	Generation        func(region string) uint64
 	Scripts           *keyscripts.Registry
 	Runner            *keyscripts.Runner

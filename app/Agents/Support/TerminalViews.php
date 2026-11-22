@@ -179,9 +179,19 @@ final readonly class TerminalViews implements TerminalViewCloser
             'epoch' => $received->identity->epoch,
             'stream' => $received->identity->stream,
             'privacyRevision' => $received->identity->privacyRevision,
+            'attachment' => $received->frame->attachment,
+            'containerInstance' => $received->frame->containerInstance,
         ]);
         $liveForMs = $received->liveForMs($now);
         $proof = $liveForMs === null ? [] : ['liveForMs' => $liveForMs];
+
+        if ($received->frame->connectionLost) {
+            return TerminalFrameData::from([
+                'state' => TerminalFrameState::ConnectionLost,
+                'identity' => $identity,
+                'receivedAt' => $received->receivedAt,
+            ]);
+        }
 
         if ($received->frame->shielded) {
             return TerminalFrameData::from([

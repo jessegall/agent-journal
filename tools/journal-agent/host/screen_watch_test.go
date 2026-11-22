@@ -88,6 +88,8 @@ func (readers *fakeReaders) ScreenFor(runtimeID string) (RuntimeScreen, bool) {
 	return RuntimeScreen{Reader: reader, Layout: passwordLayout, Gate: gate, Barrier: inputs.NewCaptureBarrier()}, true
 }
 
+func (readers *fakeReaders) LostConnection(string) bool { return false }
+
 func (readers *fakeReaders) run(t *testing.T, runtimeID, text string) *screen.EmulatorReader {
 	t.Helper()
 	reader, err := screen.NewEmulatorReader(20, 3, screen.DefaultLimits, nil)

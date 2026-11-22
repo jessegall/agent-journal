@@ -37,6 +37,7 @@ export type TerminalScreenState =
     | 'last_reported'
     | 'preview_unavailable'
     | 'not_reporting'
+    | 'connection_lost'
     | 'ended';
 
 /**
@@ -79,7 +80,8 @@ function isSameStream(first: TerminalScreenIdentityData, second: TerminalScreenI
         first.sessionId === second.sessionId &&
         first.processGeneration === second.processGeneration &&
         first.epoch === second.epoch &&
-        first.stream === second.stream
+        first.stream === second.stream &&
+        first.attachment === second.attachment
     );
 }
 
@@ -279,8 +281,8 @@ export class TerminalSubscription {
         if (answer.state === 'unchanged') {
             return;
         }
-        if (answer.state === 'preview_unavailable') {
-            this.publish(blank('preview_unavailable', this.now()));
+        if (answer.state === 'preview_unavailable' || answer.state === 'connection_lost') {
+            this.publish(blank(answer.state, this.now()));
 
             return;
         }

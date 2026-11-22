@@ -108,10 +108,13 @@ func (driver *TerminalDriver) take(control contracts.BrowserControl) (contracts.
 	}, nil
 }
 
-// grantScope is what a grant of this driver is for: its process generation; a local program has no attachment
-// incarnation of its own.
+// grantScope is what a grant of this driver is for: its process generation and the attachment it drives, so a
+// replaced attachment's grant can no longer write.
 func (driver *TerminalDriver) grantScope() terminal.GrantScope {
-	return terminal.GrantScope{Generation: uint64(driver.runtime.ProcessGeneration)}
+	return terminal.GrantScope{
+		Generation: uint64(driver.runtime.ProcessGeneration),
+		Attachment: driver.runtime.Attachment,
+	}
 }
 
 // operationOf is the gate's operation for an input, a draft choice or a screen check.
@@ -120,6 +123,7 @@ func (driver *TerminalDriver) operationOf(control contracts.BrowserControl) term
 		GrantID:        control.GrantID,
 		Sequence:       control.Sequence,
 		Generation:     control.Generation,
+		Attachment:     driver.runtime.Attachment,
 		PromptRevision: control.PromptRevision,
 		Kind:           terminal.TextOperation,
 		Text:           control.Text,

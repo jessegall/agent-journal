@@ -18,7 +18,9 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * would not export, and the privacy revision rises each time the runtime's screen turns from public to shielded. The
  * stream names the sender that sent it, and its proof, rising per stream, proves the host alive until it expires; an
  * older host sends neither, and its frames prove nothing. Who holds the input, whether a take is being settled and
- * the prompt revision a browser writer's input must name come with every frame; a grant's own id never does.
+ * the prompt revision a browser writer's input must name come with every frame; a grant's own id never does. A
+ * contained runtime's frames name their attachment and verified container, and a lost attachment whose container
+ * still runs says so instead of ending.
  */
 #[TypeScript]
 #[MapInputName(SnakeCaseMapper::class)]
@@ -48,5 +50,8 @@ final class ScreenFrameData extends Data
         public readonly ?string $inputOwner = null,
         public readonly bool $takePending = false,
         public readonly int $promptRevision = 0,
+        public readonly ?string $attachment = null,
+        public readonly ?string $containerInstance = null,
+        public readonly bool $connectionLost = false,
     ) {}
 }

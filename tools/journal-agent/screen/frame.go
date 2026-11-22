@@ -41,6 +41,11 @@ type Frame struct {
 	InputOwner     string `json:"input_owner"`
 	TakePending    bool   `json:"take_pending"`
 	PromptRevision uint64 `json:"prompt_revision"`
+	// Attachment and ContainerInstance name the attachment the screen was read through and its verified container;
+	// ConnectionLost is a marker of a contained attachment that ended while its container runs.
+	Attachment        string `json:"attachment"`
+	ContainerInstance string `json:"container_instance"`
+	ConnectionLost    bool   `json:"connection_lost"`
 }
 
 // FrameLimit is the most bytes of JSON one frame may take.

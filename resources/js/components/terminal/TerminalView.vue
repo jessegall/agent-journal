@@ -46,7 +46,8 @@ const announcement = computed(
             last_reported: 'The terminal shows its last reported screen',
             preview_unavailable: 'Terminal preview unavailable',
             not_reporting: '',
-            ended: 'The session ended',
+            connection_lost: 'Terminal connection lost',
+            ended: 'Session ended',
         })[screen.value.state],
 );
 const alert = computed(() => {
