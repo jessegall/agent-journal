@@ -42,7 +42,7 @@ type ProfileFile struct {
 	Executable bool
 }
 
-// Provider is a pinned agent program the profile runs, shipped apart from the core files and never taken from PATH.
+// Provider is a pinned agent driver the profile runs, shipped apart from the core files and never taken from PATH.
 type Provider struct {
 	Name        string `json:"name"`
 	Build       string `json:"build"`
@@ -79,14 +79,14 @@ var RemoteProject = Profile{
 }
 
 // officialInstall is a provider the release does not redistribute: it is imported from the official install.
-func officialInstall(name string, profile contracts.ProgramProfile) Provider {
+func officialInstall(name string, profile contracts.DriverProfile) Provider {
 	return Provider{
 		Name:        name,
 		Build:       profile.Build(),
 		Acquisition: OfficialInstallImport,
 		Check: fmt.Sprintf("the official %s install reports build %s, and each file imported from it has the SHA-256 "+
 			"and size this manifest records for the target; until the manifest records them the driver stays off",
-			profile.Program(), profile.Build()),
+			profile.Driver(), profile.Build()),
 	}
 }
 
@@ -123,7 +123,7 @@ func (file RepositoryFile) write(sources Sources, _ Target, path string) error {
 // HookTemplate is the settings file a provider's start profile writes with every native hook running the hook
 // adapter, its path left as HookEntryPlaceholder.
 type HookTemplate struct {
-	Profile contracts.ProgramProfile
+	Profile contracts.DriverProfile
 	File    string
 }
 
@@ -139,5 +139,5 @@ func (template HookTemplate) write(_ Sources, _ Target, path string) error {
 		}
 	}
 
-	return fmt.Errorf("the %s profile writes no %s", template.Profile.Program(), template.File)
+	return fmt.Errorf("the %s profile writes no %s", template.Profile.Driver(), template.File)
 }

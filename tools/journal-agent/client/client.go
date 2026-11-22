@@ -445,8 +445,8 @@ type RuntimeStart struct {
 	Effort            *string `json:"effort"`
 }
 
-// ProgramBuild is the build of the program the grant starts.
-func (grant Grant) ProgramBuild() string {
+// DriverBuild is the build of the program the grant starts.
+func (grant Grant) DriverBuild() string {
 	return grant.Runtime.DriverBuild
 }
 

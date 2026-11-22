@@ -1,6 +1,6 @@
 {
-  "program": "codex",
-  "program_version": "codex-cli 0.165.0",
+  "driver": "codex",
+  "driver_version": "codex-cli 0.165.0",
   "profile": "codex@0.165.0",
   "mode": "terminal",
   "geometry": {

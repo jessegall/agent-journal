@@ -51,7 +51,7 @@ func TestAContainedHostNamesBothImagesByDigest(t *testing.T) {
 }
 
 func TestOnlyACodexStartOnAContainedHostIsRefused(t *testing.T) {
-	if err := Contained.AssertContainable("codex"); !errors.Is(err, ErrProgramNotContainable) {
+	if err := Contained.AssertContainable("codex"); !errors.Is(err, ErrDriverNotContainable) {
 		t.Fatalf("a contained Codex start gave %v", err)
 	}
 

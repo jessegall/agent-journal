@@ -9,7 +9,7 @@ import (
 func TestReplayWritesTheRecordedChunksInOrderOnTheFakeClock(t *testing.T) {
 	start := time.Date(2026, 11, 18, 12, 0, 0, 0, time.UTC)
 	clock := NewFakeClock(start)
-	recorder := NewRecorder(Fixture{Program: "claude", Mode: TerminalMode}, clock.Now)
+	recorder := NewRecorder(Fixture{Driver: "claude", Mode: TerminalMode}, clock.Now)
 
 	recorder.Output("terminal", []byte("welcome\r\n"))
 	clock.Sleep(250 * time.Millisecond)
@@ -32,7 +32,7 @@ func TestReplayWritesTheRecordedChunksInOrderOnTheFakeClock(t *testing.T) {
 }
 
 func TestSecretInputKeepsOnlyItsLengthThroughSaveAndLoad(t *testing.T) {
-	recorder := NewRecorder(Fixture{Program: "codex", Mode: ProcessMode}, time.Now)
+	recorder := NewRecorder(Fixture{Driver: "codex", Mode: ProcessMode}, time.Now)
 	recorder.Input([]byte("hunter2"), true)
 	recorder.Input([]byte("hello"), false)
 	folder := t.TempDir()

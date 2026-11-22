@@ -29,9 +29,9 @@ const (
 // run it yet.
 type AttachRequest struct {
 	RuntimeID string `json:"runtime_id"`
-	// Program is the profile name of the program the command runs, which its screen layout belongs to; the command
+	// Driver is the profile name of the driver the command runs, which its screen layout belongs to; the command
 	// itself may be another, such as a docker attach to a contained session.
-	Program   string   `json:"program"`
+	Driver    string   `json:"driver"`
 	Command   []string `json:"command"`
 	Folder    string   `json:"folder"`
 	Env       []string `json:"env"`

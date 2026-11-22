@@ -70,7 +70,7 @@ func TestEveryRecordingReadsTheSameWhenSplitAtEveryByte(t *testing.T) {
 		}
 
 		if !reflect.DeepEqual(whole.Snapshot(), bytewise.Snapshot()) {
-			t.Fatalf("%s %s: a byte-by-byte replay reads a different screen", fixture.Program, fixture.Profile)
+			t.Fatalf("%s %s: a byte-by-byte replay reads a different screen", fixture.Driver, fixture.Profile)
 		}
 	}
 }

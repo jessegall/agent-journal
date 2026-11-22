@@ -45,7 +45,7 @@ var egressVariables = []string{"HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "http_pr
 func (opener runtimeOpener) containedTerminalRuntime(
 	runtimeID string,
 	prepared host.PreparedStart,
-	profile contracts.ProgramProfile,
+	profile contracts.DriverProfile,
 	manifest host.ContainerManifest,
 ) (serving.Runtime, error) {
 	conversationID, err := newConversationID()
@@ -81,7 +81,7 @@ func (opener runtimeOpener) containedTerminalRuntime(
 	}
 
 	opened, err := opener.socket.Open(host.AttachRequest{
-		RuntimeID: runtimeID, Program: profile.Program(), Command: attach, Folder: opener.stateFolder,
+		RuntimeID: runtimeID, Driver: profile.Driver(), Command: attach, Folder: opener.stateFolder,
 		Env: []string{"PATH=" + os.Getenv("PATH")}, Rows: defaultRows, Columns: defaultColumns,
 	})
 	if err != nil {
@@ -104,7 +104,7 @@ func (opener runtimeOpener) containedTerminalRuntime(
 func (opener runtimeOpener) containedHeadlessRuntime(
 	runtimeID string,
 	prepared host.PreparedStart,
-	profile contracts.ProgramProfile,
+	profile contracts.DriverProfile,
 	manifest host.ContainerManifest,
 ) (serving.Runtime, error) {
 	conversationID, err := newConversationID()
@@ -135,7 +135,7 @@ func (opener runtimeOpener) containedHeadlessRuntime(
 // folder must hold that no argument can carry; any other start writes nothing.
 func (opener runtimeOpener) writeProtectedAccountFiles(
 	ctx context.Context,
-	profile contracts.ProgramProfile,
+	profile contracts.DriverProfile,
 	manifest host.ContainerManifest,
 ) error {
 	needs, needsFiles := profile.(contracts.ProtectedAccountFiles)
@@ -175,7 +175,7 @@ func (opener runtimeOpener) sessionContainer(
 type containedTurns struct {
 	container  host.SessionContainer
 	manifest   host.ContainerManifest
-	profile    contracts.ProgramProfile
+	profile    contracts.DriverProfile
 	journalURL string
 	prepared   host.PreparedStart
 	runtimeID  string
@@ -198,7 +198,7 @@ func (turns containedTurns) TurnCommand(start contracts.Start, generation int) (
 // host: the account recipe's settings with the account folder at the account home, the start's credential and
 // generation, its pinned profile and the egress proxy.
 func containedProcessOf(
-	profile contracts.ProgramProfile,
+	profile contracts.DriverProfile,
 	journalURL string,
 	prepared host.PreparedStart,
 	runtimeID string,
@@ -233,7 +233,7 @@ func containedProcessOf(
 	environment = append(environment, egressOf(inherited)...)
 
 	return host.ContainerProcess{
-		Command:     append([]string{profile.Program()}, inlineSettings(arguments, containerSettingsFolder, files)...),
+		Command:     append([]string{profile.Driver()}, inlineSettings(arguments, containerSettingsFolder, files)...),
 		Environment: environment,
 	}, nil
 }

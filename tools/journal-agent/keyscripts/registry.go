@@ -42,8 +42,8 @@ func (registry *Registry) Find(profile, name string) (KeyScript, error) {
 	newest, found := KeyScript{}, false
 	for registered, scripts := range registry.scripts {
 		script, has := scripts[name]
-		registeredProgram, build, _ := strings.Cut(registered, "@")
-		if !has || registeredProgram != program {
+		registeredDriver, build, _ := strings.Cut(registered, "@")
+		if !has || registeredDriver != program {
 			continue
 		}
 		_, newestBuild, _ := strings.Cut(newest.Profile, "@")

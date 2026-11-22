@@ -207,7 +207,7 @@ function protected_host_items(string|null $hostAgent, string|null $hostState, st
         return [item('protected-host', 'missing', 'name the protected host with --host=<journal-agent>', 'task 258')];
     }
 
-    $command = [$hostAgent, 'protection', '--program', $program, '--build', $build];
+    $command = [$hostAgent, 'protection', '--driver', $program, '--build', $build];
 
     if ($hostState !== null) {
         array_push($command, '--state', $hostState);

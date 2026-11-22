@@ -496,7 +496,7 @@ func (loop *Loop) runtimeOf(ctx context.Context, runtimeID string) (*liveRuntime
 		return nil, err
 	}
 	runtime := &liveRuntime{
-		id: runtimeID, driver: driver, build: prepared.ProgramBuild(), hold: contracts.HoldNone,
+		id: runtimeID, driver: driver, build: prepared.DriverBuild(), hold: contracts.HoldNone,
 	}
 	loop.mutex.Lock()
 	loop.runtimes[runtimeID] = runtime

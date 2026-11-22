@@ -43,7 +43,7 @@ type HeadlessRuntime struct {
 	SettingsFolder      string
 	WorkingFolder       string
 	HookCommand         string
-	Profile             profilecontracts.ProgramProfile
+	Profile             profilecontracts.DriverProfile
 	// Environment is the prepared start's clean environment the child starts from; the host's own never reaches it.
 	Environment []string
 	// ReadFiles are the files the host opens for each turn's program to read, the first on descriptor 3.
@@ -246,7 +246,7 @@ func (driver *HeadlessDriver) command(start profilecontracts.Start) (*exec.Cmd, 
 	if err != nil {
 		return nil, err
 	}
-	command := exec.Command(profile.Program(), arguments...)
+	command := exec.Command(profile.Driver(), arguments...)
 	if driver.runtime.Executable != "" {
 		command.Path, command.Args[0] = driver.runtime.Executable, driver.runtime.Executable
 	}
@@ -280,7 +280,7 @@ func (driver *HeadlessDriver) command(start profilecontracts.Start) (*exec.Cmd, 
 // claudeAccountStart is whether the runtime runs Claude Code on a saved account, whose sign-in and turn results the
 // driver checks itself.
 func (driver *HeadlessDriver) claudeAccountStart() bool {
-	return driver.runtime.Account != nil && driver.runtime.Profile.Program() == "claude"
+	return driver.runtime.Account != nil && driver.runtime.Profile.Driver() == "claude"
 }
 
 // checkSignIn refuses the first turn of a Claude account start whose account is not signed in to claude.ai in its
@@ -323,7 +323,7 @@ func (driver *HeadlessDriver) resultOf(command *exec.Cmd) (<-chan error, error) 
 // containedClaudeStart is whether the runtime runs Claude Code in its session's container, where the container
 // process holds the account.
 func (driver *HeadlessDriver) containedClaudeStart() bool {
-	return driver.runtime.Container != nil && driver.runtime.Profile.Program() == "claude"
+	return driver.runtime.Container != nil && driver.runtime.Profile.Driver() == "claude"
 }
 
 // usage is the observer of the start's usage; a start nobody reads usage of has one that ignores it.

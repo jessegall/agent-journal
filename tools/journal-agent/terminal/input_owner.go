@@ -1,4 +1,4 @@
-// Package terminal guards what is written to an agent program's terminal: the user's keys and the journal's lines
+// Package terminal guards what is written to an agent driver's terminal: the user's keys and the journal's lines
 // pass one gate, so neither overwrites the other.
 package terminal
 

@@ -71,11 +71,11 @@ type ProtectedAccountFiles interface {
 	ProtectedAccountFiles() []SettingsFile
 }
 
-// ProgramProfile is how the host starts one pinned build of one agent program with its native subagents off
+// DriverProfile is how the host starts one pinned build of one agent driver with its native subagents off
 // (rule 36). Both programs implement it; nothing above it checks which program it has.
-type ProgramProfile interface {
-	// Program names the agent program, such as claude or codex.
-	Program() string
+type DriverProfile interface {
+	// Driver names the agent driver, such as claude or codex.
+	Driver() string
 
 	// Build is the one build this profile is proven against.
 	Build() string

@@ -1,5 +1,5 @@
 // Package contracts holds the one interface every agent driver implements: the six operations the journal asks of a
-// running program, each carrying the identity of the request and attempt it answers.
+// running agent, each carrying the identity of the request and attempt it answers.
 package contracts
 
 import (
@@ -18,38 +18,38 @@ type RequestIdentity struct {
 	Attempt   int
 }
 
-// Delivery is content to hand the program as a new prompt.
+// Delivery is content to hand the agent as a new prompt.
 type Delivery struct {
 	Request RequestIdentity
 	Message string
 }
 
-// WakeRequest asks an idle program to look for waiting work.
+// WakeRequest asks an idle agent to look for waiting work.
 type WakeRequest struct{ Request RequestIdentity }
 
-// ModelChange asks the program to use another model.
+// ModelChange asks the agent to use another model.
 type ModelChange struct {
 	Request RequestIdentity
 	Model   string
 }
 
-// EffortChange asks the program to use another reasoning effort.
+// EffortChange asks the agent to use another reasoning effort.
 type EffortChange struct {
 	Request RequestIdentity
 	Effort  string
 }
 
-// InterruptRequest asks the program to stop the turn it was bound to when the host accepted it; Turn is zero when no
+// InterruptRequest asks the agent to stop the turn it was bound to when the host accepted it; Turn is zero when no
 // turn was admitted then, so the interrupt can never reach a later turn.
 type InterruptRequest struct {
 	Request RequestIdentity
 	Turn    int
 }
 
-// StopRequest asks the program to end.
+// StopRequest asks the agent to end.
 type StopRequest struct{ Request RequestIdentity }
 
-// KeyScriptRequest asks the program to run one registered maintenance key script with its parameters, from its
+// KeyScriptRequest asks the agent to run one registered maintenance key script with its parameters, from its
 // first step, or from the step a stopped attempt reached when ResumeStep is set.
 type KeyScriptRequest struct {
 	Request RequestIdentity
@@ -122,7 +122,7 @@ const (
 )
 
 // StartRefused is the failure of an operation the host refused for an allowlisted reason before it created any process
-// of the program; only code that knows the program was never started returns it.
+// of the agent; only code that knows the agent was never started returns it.
 type StartRefused struct {
 	Reason RefusalReason
 	Cause  error
@@ -136,7 +136,7 @@ func (refused StartRefused) Unwrap() error {
 	return refused.Cause
 }
 
-// RefuseStart names why the program was never started, so the report carries the reason and that no process exists.
+// RefuseStart names why the agent was never started, so the report carries the reason and that no process exists.
 func RefuseStart(reason RefusalReason, cause error) error {
 	return StartRefused{Reason: reason, Cause: cause}
 }
@@ -151,7 +151,7 @@ func StartRefusalOf(err error) (StartRefused, bool) {
 
 // OperationResult is what a driver reports for one attempt: its progress, the binding it actually used, how it ended
 // and why the runtime is held, if it is. A refusal for an allowlisted reason names it, and NoProcessCreated is true
-// only when the driver knows the program was never started.
+// only when the driver knows the agent was never started.
 type OperationResult struct {
 	Request          RequestIdentity
 	Progress         Progress
@@ -165,12 +165,12 @@ type OperationResult struct {
 	Script *keyscripts.Result
 }
 
-// IsHeld is whether the driver holds the program after the operation, waiting on the user or a menu.
+// IsHeld is whether the driver holds the agent after the operation, waiting on the user or a menu.
 func (result OperationResult) IsHeld() bool {
 	return result.Hold != "" && result.Hold != HoldNone
 }
 
-// AgentDriver carries out the six operations on one running program. Starting a program is the driver factory's job,
+// AgentDriver carries out the six operations on one running agent. Starting a agent is the driver factory's job,
 // never a seventh operation.
 type AgentDriver interface {
 	Deliver(ctx context.Context, delivery Delivery) (OperationResult, error)

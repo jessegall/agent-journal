@@ -168,7 +168,7 @@ func (state ConnectionState) RelayIsRunning() bool {
 	return false
 }
 
-// StartRelay starts the binding's relay detached with the journal-agent program given, as this user, its output in
+// StartRelay starts the binding's relay detached with the journal-agent driver given, as this user, its output in
 // the private state folder.
 func StartRelay(program string, stateFolder string, bindingID string) error {
 	logPath := filepath.Join(stateFolder, "relay-"+bindingID+".log")

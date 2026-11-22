@@ -40,8 +40,8 @@ type Uncertainty struct {
 	HostRows []string
 }
 
-// Program is the program build a runner drives, as an uncertainty names it: its name and the layout it draws with.
-type Program struct {
+// Driver is the driver build a runner drives, as an uncertainty names it: its name and the layout it draws with.
+type Driver struct {
 	Name   string
 	Layout screen.Layout
 }

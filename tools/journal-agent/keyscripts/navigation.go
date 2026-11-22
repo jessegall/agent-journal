@@ -75,7 +75,7 @@ type RoundResult struct {
 func (runner *Runner) Navigate(round Round, epoch uint64, stalled Uncertainty, values map[string]string) RoundResult {
 	seen, _ := runner.waitFor(AnyScreen, roundDeadline, values)
 	snapshot := runner.screen.Snapshot()
-	if !runner.program.Layout.Exportable(snapshot) {
+	if !runner.driver.Layout.Exportable(snapshot) {
 		return RoundResult{Refusal: RefusedSecretScreen}
 	}
 	if seen.Generation != round.Generation || runner.gate.UserInputs() != epoch {
@@ -110,7 +110,7 @@ func (runner *Runner) pressKeys(keys []string, values map[string]string) RoundRe
 	for _, name := range keys {
 		bytes, movement := movementKeys[name]
 		if !movement {
-			if _, onMenu := runner.program.Layout.OptionRegion(runner.screen.Snapshot()); onMenu {
+			if _, onMenu := runner.driver.Layout.OptionRegion(runner.screen.Snapshot()); onMenu {
 				result.Refusal = RefusedKeyOnMenu
 				return result
 			}
@@ -200,7 +200,7 @@ func (runner *Runner) stoppedRound(result RoundResult, err error) RoundResult {
 func (runner *Runner) after(result RoundResult, values map[string]string) RoundResult {
 	seen, _ := runner.waitFor(AnyScreen, roundDeadline, values)
 	snapshot := runner.screen.Snapshot()
-	if !runner.program.Layout.Exportable(snapshot) {
+	if !runner.driver.Layout.Exportable(snapshot) {
 		result.Refusal = RefusedSecretScreen
 		return result
 	}
@@ -214,8 +214,8 @@ func (runner *Runner) after(result RoundResult, values map[string]string) RoundR
 func (runner *Runner) record(action ActionRecord) ActionRecord {
 	reading := runner.screen.Classify(runner.clock.Now())
 	action.Fingerprint, action.Replayable = screen.FingerprintOf(
-		runner.program.Layout,
-		runner.program.Name,
+		runner.driver.Layout,
+		runner.driver.Name,
 		runner.screen.Snapshot(),
 		reading.Menu,
 	)

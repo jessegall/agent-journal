@@ -75,7 +75,7 @@ func drawnRun(t *testing.T, drawing string) (*Runner, *bytes.Buffer) {
 	program := &bytes.Buffer{}
 	gate := terminal.NewInputGate(program, reader, layout.Composer, clock.Now)
 	view := screen.NewView(layout, reader)
-	runner := NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, Program{Name: "claude", Layout: layout},
+	runner := NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, Driver{Name: "claude", Layout: layout},
 		func(Progress) {})
 
 	return runner, program

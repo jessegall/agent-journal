@@ -70,8 +70,8 @@ func newRunWith(t *testing.T, layout screen.Layout) *run {
 	gate := terminal.NewInputGate(menu, reader, layout.Composer, clock.Now)
 	result := &run{gate: gate, menu: menu, clock: clock}
 	view := optionsView{reader: reader, options: options}
-	program := Program{Name: "claude", Layout: layout}
-	result.runner = NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, program, func(step Progress) {
+	driver := Driver{Name: "claude", Layout: layout}
+	result.runner = NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, driver, func(step Progress) {
 		result.steps = append(result.steps, step)
 	})
 

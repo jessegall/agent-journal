@@ -126,7 +126,7 @@ func (session Session) environment(home string) []string {
 }
 
 // writeSettings writes the profile's settings files into the session home, readable by the user alone.
-func writeSettings(profile contracts.ProgramProfile, start contracts.Start) error {
+func writeSettings(profile contracts.DriverProfile, start contracts.Start) error {
 	files, err := profile.SettingsFiles(start)
 	if err != nil {
 		return err

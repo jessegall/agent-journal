@@ -27,9 +27,9 @@ type PreparedStart struct {
 	BrokerSocket string
 }
 
-// ProgramBuild is the build of the program the grant starts.
-func (prepared PreparedStart) ProgramBuild() string {
-	return prepared.Grant.ProgramBuild()
+// DriverBuild is the build of the program the grant starts.
+func (prepared PreparedStart) DriverBuild() string {
+	return prepared.Grant.DriverBuild()
 }
 
 func (prepared PreparedStart) Runtime() client.RuntimeStart {

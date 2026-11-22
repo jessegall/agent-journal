@@ -83,7 +83,7 @@ type Runner struct {
 	screen  Screen
 	clock   Clock
 	view    View
-	program Program
+	driver Driver
 	report  func(Progress)
 }
 
@@ -109,10 +109,10 @@ func NewRunner(
 	screen Screen,
 	clock Clock,
 	view View,
-	program Program,
+	driver Driver,
 	report func(Progress),
 ) *Runner {
-	return &Runner{gate: gate, screen: screen, clock: clock, view: view, program: program, report: report}
+	return &Runner{gate: gate, screen: screen, clock: clock, view: view, driver: driver, report: report}
 }
 
 // Run starts the script from its first step with the given parameter values.
@@ -190,7 +190,7 @@ func (runner *Runner) navigation(
 	seen screen.Classification,
 ) (Result, bool) {
 	snapshot := runner.screen.Snapshot()
-	if !runner.program.Layout.Exportable(snapshot) {
+	if !runner.driver.Layout.Exportable(snapshot) {
 		return Result{}, false
 	}
 	uncertainty := runner.uncertainty(reason, index, step, seen, snapshot)
@@ -220,7 +220,7 @@ func (runner *Runner) Reread(stalled Uncertainty) (fresh Uncertainty, readable b
 	runner.screen.Forget()
 	seen := runner.screen.Classify(runner.clock.Now())
 	snapshot := runner.screen.Snapshot()
-	if !runner.program.Layout.Exportable(snapshot) {
+	if !runner.driver.Layout.Exportable(snapshot) {
 		return Uncertainty{}, false
 	}
 
@@ -235,7 +235,7 @@ func (runner *Runner) uncertainty(
 	seen screen.Classification,
 	snapshot contracts.Snapshot,
 ) Uncertainty {
-	layout := runner.program.Layout
+	layout := runner.driver.Layout
 	highlight := -1
 	if options, listed := layout.OptionRegion(snapshot); listed {
 		highlight = options.Entries.Highlighted
@@ -249,7 +249,7 @@ func (runner *Runner) uncertainty(
 		Reason:      reason,
 		Step:        index,
 		StepName:    step.Name,
-		Fingerprint: screen.Fingerprint(layout, runner.program.Name, snapshot, seen.Menu),
+		Fingerprint: screen.Fingerprint(layout, runner.driver.Name, snapshot, seen.Menu),
 		Rows:        rows,
 		HostRows:    snapshot.Rows,
 		Highlight:   highlight,
@@ -260,7 +260,7 @@ func (runner *Runner) uncertainty(
 
 // fingerprint is the live screen's fingerprint, read as the reading names its menu.
 func (runner *Runner) fingerprint(reading screen.Classification) string {
-	return screen.Fingerprint(runner.program.Layout, runner.program.Name, runner.screen.Snapshot(), reading.Menu)
+	return screen.Fingerprint(runner.driver.Layout, runner.driver.Name, runner.screen.Snapshot(), reading.Menu)
 }
 
 // waitFor reads the screen until it is the expected one or the deadline passes; it never sleeps without reading.

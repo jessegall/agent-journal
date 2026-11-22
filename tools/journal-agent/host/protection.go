@@ -51,8 +51,8 @@ type ProtectionCapability struct {
 	Available bool             `json:"available"`
 }
 
-// ErrUnknownProgram is returned for a program the host has no protection specification for.
-var ErrUnknownProgram = errors.New("no protection specification for this program")
+// ErrUnknownDriver is returned for a program the host has no protection specification for.
+var ErrUnknownDriver = errors.New("no protection specification for this program")
 
 // NativeEvidence is the evidence the private native procedures recorded on this host: per program, build and
 // platform, the identifier of the run that showed each item hold.
@@ -107,7 +107,7 @@ func InspectProtection(
 ) (ProtectionCapability, error) {
 	mechanisms, known := platform.Mechanisms[program]
 	if !known {
-		return ProtectionCapability{}, ErrUnknownProgram
+		return ProtectionCapability{}, ErrUnknownDriver
 	}
 	capability := ProtectionCapability{Platform: platform.Name, Driver: program, Build: build, Available: true}
 	for _, item := range BoundaryItems {
