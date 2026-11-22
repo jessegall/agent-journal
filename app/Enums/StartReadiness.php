@@ -14,6 +14,7 @@ enum StartReadiness: string
     case Ready = 'ready';
     case Refused = 'refused';
     case Uncertain = 'uncertain';
+    case Cancelled = 'cancelled';
 
     /**
      * Whether messages sent to the start wait until its conversation is verified.
@@ -24,10 +25,11 @@ enum StartReadiness: string
     }
 
     /**
-     * Whether a report of its bootstrap still changes it; a refused start takes none.
+     * Whether a report of its bootstrap still changes it; a refused or cancelled start takes none, so a ready report
+     * that arrives after Cancel binds nothing and keeps no mode.
      */
     public function takesReadiness(): bool
     {
-        return $this !== self::Refused;
+        return $this !== self::Refused && $this !== self::Cancelled;
     }
 }

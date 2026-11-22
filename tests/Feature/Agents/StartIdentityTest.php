@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
+use App\Commands\CancelLaunch\CancelLaunchCommand;
 use App\Commands\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\ReportRequestProgress\ReportRequestProgressCommand;
 use App\Enums\ConversationModeType;
@@ -111,6 +112,22 @@ final class StartIdentityTest extends TestCase
     /**
      * @return array{EnrolledHost, OpenedRuntime, DriverRequest, StartRecord}
      */
+    public function test_a_ready_report_after_the_start_was_cancelled_changes_nothing(): void
+    {
+        [$host, $opened, $wake, $record] = $this->startWithMessage();
+        $this->claimedIds($host);
+        $this->asOwner(new CancelLaunchCommand(
+            AgentSession::query()->findOrFail($opened->sessionId)->agent_id,
+            $opened->sessionId,
+            'cancel-1',
+        ));
+
+        $this->reportApplied($host, $wake, self::CONVERSATION);
+
+        $this->assertSame([StartReadiness::Cancelled, null], [$record->refresh()->readiness, $record->native_id]);
+        $this->assertNotContains($opened->firstRequestId, $this->claimedIds($host));
+    }
+
     private function startWithMessage(): array
     {
         [$host, $opened] = $this->openRuntime(firstMessage: 'Start with the plan.');

@@ -365,6 +365,19 @@ final class StartRecord extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * The owner cancelled the start while its session was not yet verified: no later report makes it ready.
+     */
+    public function cancelVerification(): void
+    {
+        if (! $this->readiness->takesReadiness() || $this->readiness === StartReadiness::Ready) {
+            return;
+        }
+
+        $this->readiness = StartReadiness::Cancelled;
+        $this->save();
+    }
+
     public function startedAs(AgentSession $session): void
     {
         $this->session_id = $session->id;
