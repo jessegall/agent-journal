@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Models;
 
+use App\Communication\Exceptions\InboxUnavailable;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $id
  * @property string $provider_key
  * @property string $provider_id
+ * @property int $next_sequence
  */
 #[Table('inboxes')]
 #[Fillable(['provider_key', 'provider_id'])]
@@ -30,6 +32,14 @@ final class InboxRecord extends Model implements ReadableModel
 
     // ----------[ Constructors ]----------
 
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['next_sequence' => 'integer'];
+    }
+
     public static function create(string $providerKey, string $providerId): self
     {
         $inbox = new self([
@@ -40,5 +50,22 @@ final class InboxRecord extends Model implements ReadableModel
         $inbox->save();
 
         return $inbox;
+    }
+
+    // ----------[ Mutations ]----------
+
+    /**
+     * Takes the inbox's next timeline position under its row lock: the one allocator for chat messages and
+     * membership events, so two writers on one inbox never get the same number.
+     *
+     * @throws InboxUnavailable
+     */
+    public static function lockForSequence(string $id): int
+    {
+        $inbox = self::query()->whereKey($id)->lockForUpdate()->firstOr(fn () => throw InboxUnavailable::forId($id));
+        $inbox->next_sequence++;
+        $inbox->save();
+
+        return $inbox->next_sequence;
     }
 }
