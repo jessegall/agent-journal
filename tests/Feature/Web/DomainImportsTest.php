@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
+use App\Ui\Support\UiDeclarations;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Process\Process;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -12,7 +13,8 @@ use Tests\TestCase;
 
 /**
  * The browser import check: a domain's component may import its own files, @kit, its own generated types and routes
- * and packages; another domain's component, the shell and an import whose path is not written out are refused.
+ * and packages; another domain's component, the shell and an import whose path is not written out are refused. The
+ * check also runs over every domain of the project with the tests, so a refused import fails before a push.
  */
 final class DomainImportsTest extends TestCase
 {
@@ -75,6 +77,29 @@ final class DomainImportsTest extends TestCase
         $this->assertStringContainsString(self::THE_SHELL, $process->getErrorOutput());
         $this->assertStringContainsString(self::RELATIVE_PATH, $process->getErrorOutput());
         $this->assertStringContainsString(self::UNPROVEN_IMPORT, $process->getErrorOutput());
+    }
+
+    #[TimeLimit(10, 'It starts the node import check over every domain of the project.')]
+    public function test_every_domain_of_the_project_imports_only_what_it_may(): void
+    {
+        $owners = [];
+
+        foreach ($this->app->make(UiDeclarations::class)->owners() as $owner) {
+            $folder = realpath($owner->scriptFolder);
+
+            if ($folder !== false && is_dir($folder)) {
+                $owners[$owner->key] = ltrim(str_replace(base_path(), '', $folder), '/');
+            }
+        }
+
+        File::put("{$this->root}/project-roots.json", (string) json_encode(['owners' => $owners]));
+        $process = new Process(
+            ['node', base_path('scripts/check-domain-imports.mjs'), "{$this->root}/project-roots.json", base_path()],
+            base_path(),
+        );
+        $process->run();
+
+        $this->assertSame(0, $process->getExitCode(), $process->getErrorOutput());
     }
 
     private function check(): Process
