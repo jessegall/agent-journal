@@ -259,7 +259,7 @@ onBeforeUnmount(() => {
             <div ref="header" tabindex="-1" class="focus-visible:outline-2 focus-visible:outline-focus">
                 <TerminalHeader
                 :agent-name="agent.name"
-                :driver="agent.sessionDriver"
+                :driver="agent.sessionDriverLabel"
                 :owner="ownerLabel"
                 :location="locationLabel"
                 :placement="placementLabel"

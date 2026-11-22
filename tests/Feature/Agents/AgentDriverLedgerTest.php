@@ -1353,6 +1353,17 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame(RequestProgress::DeliveryUncertain, $original->fresh()?->progress);
     }
 
+    public function test_an_agent_names_its_running_session_by_the_label_it_launched_on(): void
+    {
+        [, $opened] = $this->openRuntime();
+        $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
+
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+        $option = $this->app->make(AgentDirectory::class)->visibleAgent($this->agentIdOf($opened));
+
+        $this->assertSame($runtime->driver_label, $option->sessionDriverLabel);
+    }
+
     private function numberedReport(string $hostId, string $requestId, RequestProgress $progress, int $sequence): void
     {
         $request = DriverRequest::query()->findOrFail($requestId);
