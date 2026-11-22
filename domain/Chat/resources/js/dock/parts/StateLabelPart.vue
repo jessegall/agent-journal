@@ -1,21 +1,13 @@
 <script setup lang="ts">
 import type { StateLabelNode } from '@kit/dockCards';
+import ToneLabel from '@kit/ToneLabel';
 
 /**
- * A short state word in its tone.
+ * A short state word in its tone: the dock's adapter onto the kit's shared tone label.
  */
 defineProps<{ node: StateLabelNode }>();
-
-const tones: Record<StateLabelNode['tone'], string> = {
-    neutral: 'bg-chip text-text-2',
-    good: 'text-tone-good',
-    warn: 'text-tone-warn',
-    danger: 'text-danger',
-    note: 'bg-chip text-text-2',
-    muted: 'text-text-4',
-};
 </script>
 
 <template>
-    <span class="w-fit rounded-control px-1.5 text-caption" :class="tones[node.tone]">{{ node.text }}</span>
+    <ToneLabel :text="node.text" :tone="node.tone" />
 </template>
