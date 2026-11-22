@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import ActionsMenu from '@kit/ActionsMenu';
-import ActionsMenuItem from '@kit/ActionsMenuItem';
+import Menu from '@kit/Menu';
+import MenuItem from '@kit/MenuItem';
+import MenuItemLabel from '@kit/MenuItemLabel';
 import CountedProgress from '@kit/CountedProgress';
 import Icon from '@kit/Icon';
 import StateBadge from '@kit/StateBadge';
@@ -105,33 +106,39 @@ const linkName = computed(() =>
                 >
             </template>
         </Link>
-        <ActionsMenu :label="`Actions for ${name}`" class="shrink-0">
+        <Menu :label="`Actions for ${name}`" class="shrink-0">
             <template v-if="card.start">
                 <StartPlanForm
                     :key="card.start.planId"
                     :start="card.start"
                 >
                     <template #default="{ pending }">
-                        <ActionsMenuItem type="submit" :pending="pending">
-                            <Icon name="start" :size="12" />
-                            <span>Start plan</span>
-                        </ActionsMenuItem>
+                        <MenuItem type="submit" :pending="pending">
+                            <template #leading>
+                                <Icon name="start" :size="14" />
+                            </template>
+                            <MenuItemLabel>Start plan</MenuItemLabel>
+                        </MenuItem>
                     </template>
                     <template #unknown="{ check }">
                         <p class="px-2 py-1 text-small text-text-2">
                             Outcome unknown
                         </p>
-                        <ActionsMenuItem @click="check">
-                            <Icon name="search" :size="12" />
-                            <span>Check plan</span>
-                        </ActionsMenuItem>
+                        <MenuItem @click="check">
+                            <template #leading>
+                                <Icon name="search" :size="14" />
+                            </template>
+                            <MenuItemLabel>Check plan</MenuItemLabel>
+                        </MenuItem>
                     </template>
                 </StartPlanForm>
             </template>
-            <ActionsMenuItem :href="href" preserve-scroll>
-                <Icon name="arrow" :size="12" />
-                <span>Open plan</span>
-            </ActionsMenuItem>
-        </ActionsMenu>
+            <MenuItem :href="href" preserve-scroll>
+                <template #leading>
+                    <Icon name="arrow" :size="14" />
+                </template>
+                <MenuItemLabel>Open plan</MenuItemLabel>
+            </MenuItem>
+        </Menu>
     </div>
 </template>

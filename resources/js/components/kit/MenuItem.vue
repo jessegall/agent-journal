@@ -1,24 +1,30 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import Icon from './Icon.vue';
+import Spinner from './Spinner.vue';
 
 /**
  * One row of a Menu: a leading slot (an Icon at 14, an Avatar sm, or nothing), the label and subline in the default
- * slot, and a trailing slot (a bare Kbd). A ticked item (checked is true or false) is a menuitemcheckbox, or a
- * menuitemradio when it is one of a choice, and draws a tick while it is checked. It runs on a click, Enter or Space
- * and never when it is disabled; the Menu above it moves focus between items and skips a disabled one.
+ * slot, and a trailing slot (a bare Kbd). It is a link when it has an href, otherwise a button that a form around it
+ * may submit, and the caller listens to its click. A ticked item (checked is true or false) is a menuitemcheckbox, or
+ * a menuitemradio when it is one of a choice, and draws a tick while it is checked. A pending item shows a spinner and
+ * cannot be chosen twice. The Menu above it moves focus between items and skips a disabled one.
  */
 const props = withDefaults(
     defineProps<{
+        href?: string;
+        type?: 'button' | 'submit';
         checked?: boolean;
         radio?: boolean;
+        pending?: boolean;
         disabled?: boolean;
         active?: boolean;
     }>(),
-    { checked: undefined, radio: false, disabled: false, active: false },
+    { href: undefined, type: 'button', checked: undefined, radio: false, pending: false, disabled: false, active: false },
 );
 
-const emit = defineEmits<{ run: [event: Event] }>();
+const isLink = computed(() => props.href !== undefined && !props.disabled);
 
 const role = computed(() => {
     if (props.checked === undefined) {
@@ -28,37 +34,29 @@ const role = computed(() => {
     return props.radio ? 'menuitemradio' : 'menuitemcheckbox';
 });
 
-function run(event: Event): void {
-    if (props.disabled) {
-        return;
-    }
-
-    emit('run', event);
-}
-
-function runOnKey(event: KeyboardEvent): void {
-    if (event.key !== 'Enter' && event.key !== ' ') {
+function clickLinkOnSpace(event: KeyboardEvent): void {
+    if (!isLink.value || event.key !== ' ') {
         return;
     }
 
     event.preventDefault();
-    run(event);
+    (event.currentTarget as HTMLElement).click();
 }
 </script>
 
 <template>
-    <div
+    <component
+        :is="isLink ? Link : 'button'"
+        :href="isLink ? href : undefined"
+        :type="isLink ? undefined : type"
+        :disabled="isLink ? undefined : disabled || pending"
         :role="role"
         :aria-checked="checked === undefined ? undefined : checked"
-        :aria-disabled="disabled || undefined"
+        :aria-busy="pending || undefined"
         tabindex="-1"
-        class="flex w-full cursor-pointer items-center gap-[9px] rounded-control px-2 py-1.5 text-left text-small text-text-2 outline-none hover:bg-hover hover:text-text focus-visible:bg-sel focus-visible:text-text focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus"
-        :class="[
-            active && 'bg-sel text-text ring-2 ring-inset ring-focus',
-            disabled && 'cursor-default opacity-45 hover:bg-transparent hover:text-text-2',
-        ]"
-        @click="run"
-        @keydown="runOnKey"
+        class="flex w-full items-center gap-[9px] rounded-control px-2 py-1.5 text-left text-small text-text-2 outline-none hover:bg-hover hover:text-text focus-visible:bg-sel focus-visible:text-text focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus disabled:cursor-default disabled:opacity-45 disabled:hover:bg-transparent disabled:hover:text-text-2"
+        :class="{ 'bg-sel text-text ring-2 ring-inset ring-focus': active }"
+        @keydown="clickLinkOnSpace"
     >
         <span v-if="$slots.leading" class="flex shrink-0 items-center">
             <slot name="leading" />
@@ -69,8 +67,9 @@ function runOnKey(event: KeyboardEvent): void {
         <span v-if="checked" class="flex shrink-0 items-center">
             <Icon name="tick" :size="14" />
         </span>
+        <Spinner v-if="pending" />
         <span v-if="$slots.trailing" class="flex shrink-0 items-center">
             <slot name="trailing" />
         </span>
-    </div>
+    </component>
 </template>
