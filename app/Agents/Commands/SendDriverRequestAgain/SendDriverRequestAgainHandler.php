@@ -42,6 +42,7 @@ final readonly class SendDriverRequestAgainHandler implements CommandHandler
             $key,
             DriverRequestPayload::message((string) $original->message),
         );
+
         $again->accept();
         $again->markPossibleDuplicateOf($original);
 

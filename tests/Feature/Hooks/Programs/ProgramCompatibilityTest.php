@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks\Drivers;
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Hooks\Compatibility\DriverCompatibility;
 use App\Hooks\Compatibility\Exceptions\DriverArrangementUnproven;
 use App\Hooks\Enums\AuthenticationArrangement;
@@ -24,17 +24,17 @@ final class ProgramCompatibilityTest extends TestCase
     ];
 
     /**
-     * @return iterable<string, array{HookDriver}>
+     * @return iterable<string, array{string}>
      */
     public static function drivers(): iterable
     {
-        foreach (HookDriver::cases() as $driver) {
-            yield $driver->value => [$driver];
+        foreach (DefaultDrivers::familyKeys() as $driver) {
+            yield $driver => [$driver];
         }
     }
 
     #[DataProvider('drivers')]
-    public function test_the_pinned_build_is_the_captured_one(HookDriver $driver): void
+    public function test_the_pinned_build_is_the_captured_one(string $driver): void
     {
         $capture = $this->captureOf($driver);
         $compatibility = $this->compatibilityOf($driver);
@@ -47,22 +47,22 @@ final class ProgramCompatibilityTest extends TestCase
 
     public function test_every_claude_start_flag_exists_in_the_captured_build(): void
     {
-        $captured = $this->captureOf(HookDriver::ClaudeCode)['flags_present'];
-        $relied = $this->compatibilityOf(HookDriver::ClaudeCode)->startFlags;
+        $captured = $this->captureOf(DefaultDrivers::CLAUDE_CODE)['flags_present'];
+        $relied = $this->compatibilityOf(DefaultDrivers::CLAUDE_CODE)->startFlags;
 
         $this->assertSame([], array_values(array_diff($relied, $captured)));
     }
 
     public function test_codex_keeps_its_sign_in_in_the_account_file_under_one_owner(): void
     {
-        $compatibility = $this->compatibilityOf(HookDriver::Codex);
+        $compatibility = $this->compatibilityOf(DefaultDrivers::CODEX);
 
         $this->assertSame(['cli_auth_credentials_store' => 'file'], $compatibility->settings);
         $this->assertSame(AuthenticationArrangement::SharedOwner, $compatibility->arrangement);
     }
 
     #[DataProvider('drivers')]
-    public function test_an_arrangement_not_shown_on_the_real_program_refuses_the_start(HookDriver $driver): void
+    public function test_an_arrangement_not_shown_on_the_real_program_refuses_the_start(string $driver): void
     {
         $compatibility = $this->compatibilityOf($driver);
 
@@ -84,10 +84,10 @@ final class ProgramCompatibilityTest extends TestCase
 
     private function withEvidence(DriverEvidence $evidence): DriverCompatibility
     {
-        return $this->compatibilityOf(HookDriver::Codex)->withEvidence($evidence, 'this test');
+        return $this->compatibilityOf(DefaultDrivers::CODEX)->withEvidence($evidence, 'this test');
     }
 
-    private function compatibilityOf(HookDriver $driver): DriverCompatibility
+    private function compatibilityOf(string $driver): DriverCompatibility
     {
         return DriverCompatibility::pinned($driver);
     }
@@ -95,9 +95,9 @@ final class ProgramCompatibilityTest extends TestCase
     /**
      * @return array<string, mixed>
      */
-    private function captureOf(HookDriver $driver): array
+    private function captureOf(string $driver): array
     {
-        $text = (string) file_get_contents(base_path(self::CAPTURES[$driver->value]));
+        $text = (string) file_get_contents(base_path(self::CAPTURES[$driver]));
 
         return json_decode($text, true, flags: JSON_THROW_ON_ERROR);
     }

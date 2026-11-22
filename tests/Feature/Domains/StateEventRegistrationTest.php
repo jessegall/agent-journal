@@ -53,7 +53,11 @@ final class StateEventRegistrationTest extends TestCase
         ]);
 
         $this->assertContains($expected, $events['@state-events']);
-        $this->assertCount(4, $events[DomainEventServiceProvider::STATE_EVENTS]);
+        // Installed domains declare state events of their own; the Notes fixture declares four.
+        $this->assertCount(4, array_filter(
+            $events[DomainEventServiceProvider::STATE_EVENTS],
+            fn (string $entry) => str_ends_with($entry, '|Notes'),
+        ));
         $path = (string) tempnam(sys_get_temp_dir(), 'state-event-cache-');
         $this->useEventCachePath($path);
         $this->app->instance('events.cached', true);

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Agents\Values;
 
 use App\Agents\Enums\DriverVariant;
-use App\Drivers\Enums\HookDriver;
 
 /**
  * What a profile decides about a start, as plain values from its owner: its driver (pinned or open), its default
@@ -19,7 +18,7 @@ final readonly class ProfileDefaults
     public function __construct(
         public string $key,
         public int $revision,
-        public HookDriver|null $driver,
+        public string|null $driver,
         public bool $driverPinned,
         public string|null $defaultModel,
         public array $allowedModels,

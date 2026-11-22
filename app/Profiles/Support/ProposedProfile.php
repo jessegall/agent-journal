@@ -6,7 +6,6 @@ namespace App\Profiles\Support;
 
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Values\StopCondition;
-use App\Drivers\Enums\HookDriver;
 use App\Profiles\Enums\InstancePolicy;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
@@ -34,7 +33,7 @@ final readonly class ProposedProfile
         public ProfileBase $base,
         public string $instructions,
         public string $model,
-        public HookDriver|null $driver,
+        public string|null $driver,
         public bool $driverPinned,
         public array $allowedModels,
         public array|null $skillAllowlist,

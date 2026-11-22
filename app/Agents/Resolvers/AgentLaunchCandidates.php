@@ -41,7 +41,7 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
             ->get();
 
         $exactAgents = $this->agentsLastOnModel(
-            $purposeConversations->where('resume_protocol', $query->driver->value)->all(),
+            $purposeConversations->where('resume_protocol', $query->driver)->all(),
             $query->model,
         );
 

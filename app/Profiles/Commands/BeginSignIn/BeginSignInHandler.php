@@ -6,7 +6,6 @@ namespace App\Profiles\Commands\BeginSignIn;
 
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
-use App\Drivers\Enums\HookDriver;
 use App\Profiles\Exceptions\SignInMethodMissing;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\ActiveAccount;
@@ -31,10 +30,10 @@ final readonly class BeginSignInHandler implements CommandHandler
 
     public function handle(BeginSignInCommand $command): SignInStarted
     {
-        $driver = HookDriver::from($command->driver);
+        $driver = $command->driver;
 
-        if (! $this->protocols->supports($driver->value, $command->method)) {
-            throw SignInMethodMissing::for($driver->value, $command->method->value);
+        if (! $this->protocols->supports($driver, $command->method)) {
+            throw SignInMethodMissing::for($driver, $command->method->value);
         }
 
         ActiveAccount::lockedFor($driver);

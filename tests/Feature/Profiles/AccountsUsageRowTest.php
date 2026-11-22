@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Http\Data\Profiles\AccountMonthCostData;
 use App\Http\Data\Profiles\AccountRowData;
 use App\Http\Data\Profiles\AccountThreadTokensData;
@@ -100,7 +100,7 @@ final class AccountsUsageRowTest extends TestCase
         $this->assertSame(3, $this->usageQueriesOfOneRead());
 
         foreach (['Home', 'Spare', 'Travel'] as $label) {
-            Account::create(HookDriver::Codex, AccountLabel::from($label), '/journal/accounts/'.strtolower($label));
+            Account::create(DefaultDrivers::CODEX, AccountLabel::from($label), '/journal/accounts/'.strtolower($label));
         }
 
         $this->assertSame(3, $this->usageQueriesOfOneRead());

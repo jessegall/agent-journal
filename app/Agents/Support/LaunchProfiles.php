@@ -10,7 +10,6 @@ use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\HostCapabilityType;
 use App\Agents\Enums\LaunchProfileType;
 use App\Agents\Values\SelectedAccount;
-use App\Drivers\Enums\HookDriver;
 
 /**
  * Which launch profile a contained session starts with: a signed-in start uses the protected-account profile once its
@@ -19,7 +18,7 @@ use App\Drivers\Enums\HookDriver;
 final readonly class LaunchProfiles
 {
     /**
-     * @param  list<HookDriver>  $trialDrivers
+     * @param  list<string>  $trialDrivers
      */
     public function __construct(
         private ArrangementSetting $arrangement,
@@ -30,17 +29,14 @@ final readonly class LaunchProfiles
     /**
      * The drivers a comma list names, such as claude-code,codex.
      *
-     * @return list<HookDriver>
+     * @return list<string>
      */
     public static function trialOf(string $drivers): array
     {
-        return array_values(array_map(
-            HookDriver::from(...),
-            array_filter(array_map(trim(...), explode(',', $drivers))),
-        ));
+        return array_values(array_filter(array_map(trim(...), explode(',', $drivers))));
     }
 
-    public function for(HookDriver $driver, SelectedAccount|null $account): LaunchProfileType
+    public function for(string $driver, SelectedAccount|null $account): LaunchProfileType
     {
         if ($account === null) {
             return LaunchProfileType::Standard;
@@ -53,7 +49,7 @@ final readonly class LaunchProfiles
      * The launch profile a signed-in start of the driver uses, which is the one whose protection decides whether the
      * driver may start contained at all.
      */
-    public function forSignedIn(HookDriver $driver): LaunchProfileType
+    public function forSignedIn(string $driver): LaunchProfileType
     {
         if (! $this->arrangement->arrangement->isContained()) {
             return LaunchProfileType::Standard;

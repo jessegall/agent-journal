@@ -77,6 +77,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
             ModelSelection::fromInput($command->model),
             null,
             null,
+            $this->drivers,
         );
 
         $this->arrangement->assertContainable(

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Readers;
 
-use App\Drivers\Enums\HookDriver;
 use App\Records\Support\RecordIdentity;
 use Domain\Helpers\Models\HelperPurpose;
 
@@ -18,7 +17,7 @@ final readonly class CandidateQuery
         public string $profileKey,
         public string $profileBase,
         public HelperPurpose $purpose,
-        public HookDriver $driver,
+        public string $driver,
         public string $model,
         public bool $independent,
     ) {}

@@ -6,7 +6,6 @@ namespace App\Profiles\Resolvers;
 
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Values\SelectedAccount;
-use App\Drivers\Enums\HookDriver;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 
@@ -16,12 +15,12 @@ use App\Profiles\Models\ActiveAccount;
  */
 final readonly class ActiveAccountRecords implements ActiveAccountReader
 {
-    public function forStart(HookDriver $driver): SelectedAccount
+    public function forStart(string $driver): SelectedAccount
     {
         return ActiveAccount::lockedAccountForStart($driver)->selectedForStart();
     }
 
-    public function chosenForStart(HookDriver $driver, string $accountId, int $reviewedSignIn): SelectedAccount
+    public function chosenForStart(string $driver, string $accountId, int $reviewedSignIn): SelectedAccount
     {
         return Account::lockedChosenForStart($driver, $accountId, $reviewedSignIn)->selectedForStart();
     }

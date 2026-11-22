@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Drivers;
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Skills\Contracts\DriverSkills;
 use App\Skills\Enums\SkillReload;
 use App\Skills\Values\PublishedSkill;
@@ -24,7 +24,7 @@ final readonly class ClaudeCodeSkills implements DriverSkills
 
     public function skillProtocol(): string
     {
-        return HookDriver::ClaudeCode->value;
+        return DefaultDrivers::CLAUDE_CODE;
     }
 
     public function skillFile(SkillKey $key): string

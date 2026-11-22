@@ -11,7 +11,7 @@ use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\StopCondition;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\RefusalCode;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Enums\PolicyOriginType;
@@ -66,7 +66,7 @@ final class ProfileResolverTest extends TestCase
 
         $this->assertSame(ProfileBase::readOnlyHelper()->key, $snapshot->base->key);
         $start = $snapshot->start;
-        $this->assertSame(HookDriver::Codex, $start->driver);
+        $this->assertSame(DefaultDrivers::CODEX, $start->driver);
         $this->assertFalse($start->driverPinned);
         $this->assertSame(['opus', 'sonnet'], $start->allowedModels);
         $this->assertSame([], $start->stopConditions->conditions);

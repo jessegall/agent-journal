@@ -6,7 +6,7 @@ namespace Tests\Feature\Profiles;
 
 use App\Agents\Enums\DriverVariant;
 use App\Drivers\Contracts\DriverCatalogue;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Models\Account;
 use App\Profiles\Values\AccountLabel;
 use Tests\Support\CommitsHookRows;
@@ -24,11 +24,11 @@ final class AccountProtocolTest extends TestCase
 
     public function test_an_account_made_for_claude_code_is_found_by_its_terminal_and_headless_drivers(): void
     {
-        $account = Account::create(HookDriver::ClaudeCode, AccountLabel::from('Work'), '/journal/accounts/work');
+        $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Work'), '/journal/accounts/work');
         $drivers = $this->app->make(DriverCatalogue::class);
 
         foreach ([DriverVariant::Terminal, DriverVariant::Headless] as $mode) {
-            $protocol = $drivers->pinned(HookDriver::ClaudeCode->value, $mode)->registration->accountProtocol;
+            $protocol = $drivers->pinned(DefaultDrivers::CLAUDE_CODE, $mode)->registration->accountProtocol;
 
             $this->assertSame(
                 [$account->id],

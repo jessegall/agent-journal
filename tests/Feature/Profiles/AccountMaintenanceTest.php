@@ -22,7 +22,6 @@ use App\Agents\Models\ProcessStart;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Contracts\CommandBus;
-use App\Drivers\Enums\HookDriver;
 use App\Hooks\Compatibility\DriverCompatibility;
 use App\Hooks\Contracts\DriverCompatibilities;
 use App\Hooks\Enums\DriverEvidence;
@@ -83,7 +82,7 @@ final class AccountMaintenanceTest extends TestCase
         $this->account = $this->chooseActiveAccounts()['claude-code'];
         $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
         {
-            public function for(HookDriver $driver): DriverCompatibility
+            public function for(string $driver): DriverCompatibility
             {
                 $pinned = DriverCompatibility::pinned($driver);
 

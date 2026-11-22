@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Agents\Values;
 
 use App\Agents\Enums\LaunchProfileType;
-use App\Drivers\Enums\HookDriver;
 
 /**
  * What a contained host found of a driver's protected arrangement in the agent image (journal-agent protection),
@@ -21,7 +20,7 @@ final readonly class ProtectionReport
      * @param  list<ProtectedItem>  $items
      */
     public function __construct(
-        public HookDriver $driver,
+        public string $driver,
         public string $build,
         public string $platform,
         public array $items,
@@ -30,7 +29,7 @@ final readonly class ProtectionReport
     /**
      * The report of a driver, build and platform no contained host has reported on.
      */
-    public static function unreported(HookDriver $driver, string $build, string $platform): self
+    public static function unreported(string $driver, string $build, string $platform): self
     {
         return new self($driver, $build, $platform, []);
     }
@@ -41,7 +40,7 @@ final readonly class ProtectionReport
     public static function fromStored(array $stored): self
     {
         return new self(
-            HookDriver::from($stored['driver']),
+            $stored['driver'],
             $stored['build'],
             $stored['platform'],
             array_map(ProtectedItem::fromStored(...), $stored['items']),
@@ -52,11 +51,11 @@ final readonly class ProtectionReport
      * The key a host keeps a report under, one per driver, build and platform; the standard container's keeps the
      * key reports had before protected starts had their own.
      */
-    public static function keyOf(HookDriver $driver, string $build, string $platform): string
+    public static function keyOf(string $driver, string $build, string $platform): string
     {
         return $platform === LaunchProfileType::Standard->protectionPlatform()
-            ? "{$driver->value}@{$build}"
-            : "{$driver->value}@{$build}/{$platform}";
+            ? "{$driver}@{$build}"
+            : "{$driver}@{$build}/{$platform}";
     }
 
     /**
@@ -73,7 +72,7 @@ final readonly class ProtectionReport
     public function stored(): array
     {
         return [
-            'driver' => $this->driver->value,
+            'driver' => $this->driver,
             'build' => $this->build,
             'platform' => $this->platform,
             'items' => array_map(fn (ProtectedItem $item): array => $item->stored(), $this->items),
@@ -102,7 +101,7 @@ final readonly class ProtectionReport
     public function shortfall(): string
     {
         if ($this->items === []) {
-            return "no contained host has reported the protection of {$this->driver->value} {$this->build} in the "
+            return "no contained host has reported the protection of {$this->driver} {$this->build} in the "
                 ."agent image for {$this->platform} (journal-agent protection --arrangement=contained)";
         }
 

@@ -9,16 +9,15 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Models\ConversationVisit;
 use App\Agents\Models\DriverConversation;
 use App\Agents\Support\DriverConversationSummary;
-use App\Drivers\Enums\HookDriver;
 
 /**
  * Reads an agent's native conversations with the model and time of each one's last visit, in two bounded reads.
  */
 final readonly class DriverConversationRecords implements DriverConversationResolver
 {
-    public function conversations(string $agentId, HookDriver $driver, string|null $contextReference): array
+    public function conversations(string $agentId, string $driver, string|null $contextReference): array
     {
-        $conversations = DriverConversation::query()->ownedBy($agentId)->where('resume_protocol', $driver->value)->where(
+        $conversations = DriverConversation::query()->ownedBy($agentId)->where('resume_protocol', $driver)->where(
             'context_reference',
             $contextReference,
         )

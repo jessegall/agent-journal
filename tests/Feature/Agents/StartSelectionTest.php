@@ -17,7 +17,8 @@ use App\Agents\Exceptions\ModelUnavailable;
 use App\Agents\Values\ModelSelection;
 use App\Agents\Values\ProfileDefaults;
 use App\Agents\Values\SelectedDriver;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Contracts\DriverCatalogue;
+use App\Drivers\Support\DefaultDrivers;
 use Tests\TestCase;
 
 /**
@@ -49,11 +50,12 @@ final class StartSelectionTest extends TestCase
             ModelSelection::fromInput('default'),
             $this->profile(defaultModel: 'gpt-5-codex'),
             null,
+            $this->app->make(DriverCatalogue::class),
         );
 
         $this->assertSame(ModelSelectionType::ProfileDefault, $selected->requested->type);
         $this->assertSame('gpt-5-codex', $selected->model);
-        $this->assertSame(HookDriver::Codex, $selected->driver);
+        $this->assertSame(DefaultDrivers::CODEX, $selected->driver);
         $this->assertSame(
             [DriverSourceType::Profile, 'journal-researcher', 4],
             [$selected->source->driverSource, $selected->source->profileKey, $selected->source->profileRevision],
@@ -62,10 +64,10 @@ final class StartSelectionTest extends TestCase
 
     public function test_a_main_start_with_an_explicit_program_records_no_profile(): void
     {
-        $selected = SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null);
+        $selected = SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null, $this->app->make(DriverCatalogue::class));
 
         $this->assertSame(
-            [HookDriver::ClaudeCode, 'claude-opus-5-5', ModelSelectionType::Named],
+            [DefaultDrivers::CLAUDE_CODE, 'claude-opus-5-5', ModelSelectionType::Named],
             [$selected->driver, $selected->model, $selected->requested->type],
         );
         $this->assertSame(
@@ -81,20 +83,21 @@ final class StartSelectionTest extends TestCase
             ModelSelection::named('m'),
             $this->profile(driver: null),
             'claude-code',
+            $this->app->make(DriverCatalogue::class),
         );
 
         $this->assertSame(
-            [HookDriver::ClaudeCode, DriverSourceType::ParentSession],
+            [DefaultDrivers::CLAUDE_CODE, DriverSourceType::ParentSession],
             [$selected->driver, $selected->source->driverSource],
         );
     }
 
     public function test_a_supplied_program_wins_over_an_open_profile_program(): void
     {
-        $selected = SelectedDriver::resolve('claude-code', ModelSelection::named('m'), $this->profile(), null);
+        $selected = SelectedDriver::resolve('claude-code', ModelSelection::named('m'), $this->profile(), null, $this->app->make(DriverCatalogue::class));
 
         $this->assertSame(
-            [HookDriver::ClaudeCode, DriverSourceType::Explicit],
+            [DefaultDrivers::CLAUDE_CODE, DriverSourceType::Explicit],
             [$selected->driver, $selected->source->driverSource],
         );
     }
@@ -105,13 +108,13 @@ final class StartSelectionTest extends TestCase
             DefaultUnavailable::class,
             StartRefusalType::DefaultUnavailable,
             DefaultUnavailable::forStart()->getMessage(),
-            fn () => SelectedDriver::resolve('codex', ModelSelection::profileDefault(), null, null),
+            fn () => SelectedDriver::resolve('codex', ModelSelection::profileDefault(), null, null, $this->app->make(DriverCatalogue::class)),
         );
         $this->assertRefused(
             DriverRequired::class,
             StartRefusalType::DriverRequired,
             DriverRequired::forStart()->getMessage(),
-            fn () => SelectedDriver::resolve(null, ModelSelection::named('m'), null, null),
+            fn () => SelectedDriver::resolve(null, ModelSelection::named('m'), null, null, $this->app->make(DriverCatalogue::class)),
         );
         $this->assertRefused(
             DriverConflict::class,
@@ -122,6 +125,7 @@ final class StartSelectionTest extends TestCase
                 ModelSelection::named('m'),
                 $this->profile(pinned: true),
                 null,
+                $this->app->make(DriverCatalogue::class),
             ),
         );
         $this->assertRefused(
@@ -133,13 +137,14 @@ final class StartSelectionTest extends TestCase
                 ModelSelection::named('gpt-4'),
                 $this->profile(allowedModels: ['gpt-5-codex']),
                 null,
+                $this->app->make(DriverCatalogue::class),
             ),
         );
         $this->assertRefused(
             DriverUnsupported::class,
             StartRefusalType::DriverUnsupported,
             DriverUnsupported::for('gemini')->getMessage(),
-            fn () => SelectedDriver::resolve('gemini', ModelSelection::named('m'), null, null),
+            fn () => SelectedDriver::resolve('gemini', ModelSelection::named('m'), null, null, $this->app->make(DriverCatalogue::class)),
         );
     }
 
@@ -161,7 +166,7 @@ final class StartSelectionTest extends TestCase
      * @param  list<string>  $allowedModels
      */
     private function profile(
-        HookDriver|null $driver = HookDriver::Codex,
+        string|null $driver = DefaultDrivers::CODEX,
         bool $pinned = false,
         string|null $defaultModel = null,
         array $allowedModels = [],

@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Agents\Enums\StartUnavailableReason;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Models\Account;
 use App\Profiles\Support\EligibleAccounts;
@@ -36,10 +36,10 @@ final class EligibleAccountsTest extends TestCase
     public function test_the_owner_sees_each_codex_account_with_its_state_revision_and_default_and_no_secret(): void
     {
         $default = $this->chooseActiveAccounts()['codex'];
-        $signedOut = Account::create(HookDriver::Codex, AccountLabel::from('Signed out'), '/journal/accounts/out');
+        $signedOut = Account::create(DefaultDrivers::CODEX, AccountLabel::from('Signed out'), '/journal/accounts/out');
         $signedOut->applyCheck($signedOut->sign_in_generation, AccountCheckResult::SignedOut, CarbonImmutable::now());
 
-        $eligible = $this->app->make(EligibleAccounts::class)->forDriver(HookDriver::Codex)->toArray();
+        $eligible = $this->app->make(EligibleAccounts::class)->forDriver(DefaultDrivers::CODEX)->toArray();
         $rows = array_column($eligible['accounts'], null, 'id');
 
         $this->assertSame([$signedOut->id, $default->id], array_keys($rows));
@@ -68,6 +68,6 @@ final class EligibleAccountsTest extends TestCase
 
         $this->expectException(ActorNotAllowed::class);
 
-        $this->app->make(EligibleAccounts::class)->forDriver(HookDriver::Codex);
+        $this->app->make(EligibleAccounts::class)->forDriver(DefaultDrivers::CODEX);
     }
 }

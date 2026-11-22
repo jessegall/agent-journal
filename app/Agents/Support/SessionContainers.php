@@ -12,7 +12,6 @@ use App\Agents\Exceptions\WorkspaceSourceMissing;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Values\SelectedAccount;
-use App\Drivers\Enums\HookDriver;
 
 /**
  * The container a runtime's session runs in, compiled when the host takes its start grant: its frozen policy's image,
@@ -60,7 +59,7 @@ final readonly class SessionContainers
             $this->arrangement->sessionContainerName($runtime->agent_session_id),
             $rules,
             null,
-            $this->launchProfiles->for(HookDriver::from($runtime->family), $account),
+            $this->launchProfiles->for($runtime->family, $account),
         );
     }
 

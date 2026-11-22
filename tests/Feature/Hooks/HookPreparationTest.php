@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Files\Values\FilePath;
@@ -138,7 +138,7 @@ final class HookPreparationTest extends TestCase
             $this->bypassLog,
         );
 
-        return $this->app->make(HookRelay::class)->relay(HookDriver::ClaudeCode, $payload, $settings);
+        return $this->app->make(HookRelay::class)->relay(DefaultDrivers::CLAUDE_CODE, $payload, $settings);
     }
 
     /**

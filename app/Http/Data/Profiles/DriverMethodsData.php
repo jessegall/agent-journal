@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Profiles;
 
-use App\Drivers\Enums\HookDriver;
 use App\Profiles\Enums\SignInMethod;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -28,10 +27,10 @@ final class DriverMethodsData extends Data
     /**
      * @param  list<SignInMethod>  $methods
      */
-    public static function fromMethods(HookDriver $driver, array $methods): self
+    public static function fromMethods(string $driver, array $methods): self
     {
         return new self(
-            $driver->value,
+            $driver,
             array_map(fn (SignInMethod $method) => SignInMethodData::fromMethod($driver, $method), $methods),
         );
     }

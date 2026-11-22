@@ -75,7 +75,7 @@ final readonly class StartAgentHandler implements CommandHandler
 
         $record = StartRecord::accept(
             $request,
-            $this->drivers->pinned($request->selection->driver->value, $request->variant, $request->neededCapabilities()),
+            $this->drivers->pinned($request->selection->driver, $request->variant, $request->neededCapabilities()),
             $dispatcher,
             $this->replyInboxes->replyInboxIdFor($dispatcher),
         );
@@ -156,9 +156,9 @@ final readonly class StartAgentHandler implements CommandHandler
         return new RuntimeIntent(
             $host->id,
             $host->startFolder(),
-            $driver->value,
+            $driver,
             $build,
-            $driver->value,
+            $driver,
             $request->variant,
             $request->selection->model,
             null,
@@ -194,7 +194,7 @@ final readonly class StartAgentHandler implements CommandHandler
             $newSession,
             $request->conversationMode,
             StartReceipt::ACTUAL_MODEL_NOT_REPORTED,
-            $this->adapters->for($selection->driver->value)->modelArguments($selection->model),
+            $this->adapters->for($selection->driver)->modelArguments($selection->model),
         );
     }
 }

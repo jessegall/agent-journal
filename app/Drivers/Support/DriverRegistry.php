@@ -154,6 +154,14 @@ final class DriverRegistry implements DriverCatalogue
         return array_values($this->families->all());
     }
 
+    /**
+     * @return list<string>
+     */
+    public function familyKeys(): array
+    {
+        return array_map(fn (DriverFamily $family) => $family->key, $this->families());
+    }
+
     public function revision(): int
     {
         return $this->revision;

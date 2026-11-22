@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Requests;
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Contracts\DriverCatalogue;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
+use Illuminate\Validation\Rules\In;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -19,15 +20,15 @@ use PhpOption\Some;
 final class ConversationRequest extends FormRequest
 {
     /**
-     * @return array<string, list<string|Enum>>
+     * @return array<string, list<string|Enum|In>>
      */
-    public function rules(): array
+    public function rules(DriverCatalogue $drivers): array
     {
         return [
             'agent' => ['nullable', 'string', 'ulid'],
             'inbox' => ['nullable', 'string', 'ulid'],
             'dock' => ['nullable', 'string', 'max:2048'],
-            'accountsFor' => ['nullable', Rule::enum(HookDriver::class)],
+            'accountsFor' => ['nullable', Rule::in($drivers->familyKeys())],
             'question' => ['nullable', 'string', 'ulid'],
         ];
     }
@@ -35,11 +36,11 @@ final class ConversationRequest extends FormRequest
     /**
      * The driver whose eligible accounts a start or switch form asked for, none or one.
      *
-     * @return list<HookDriver>
+     * @return list<string>
      */
     public function accountDrivers(): array
     {
-        return $this->filled('accountsFor') ? [$this->enum('accountsFor', HookDriver::class)] : [];
+        return $this->filled('accountsFor') ? [$this->string('accountsFor')->toString()] : [];
     }
 
     /**

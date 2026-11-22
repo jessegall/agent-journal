@@ -62,7 +62,7 @@ final readonly class RegisteredDriver implements Driver
 
     private function assertFor(StartRequest $request): void
     {
-        $requested = $request->selection->driver->value;
+        $requested = $request->selection->driver;
 
         if ($requested !== $this->registration->family || $request->variant !== $this->registration->mode) {
             throw DriverRequestMismatch::for((string) $this->registration->key, "{$requested} {$request->variant->value}");

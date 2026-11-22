@@ -159,6 +159,13 @@ final class StartRefusalCopyTest extends TestCase
                 'Check account-folder ownership on the host',
                 'Ask your host operator to check account-folder ownership on the host.',
             ],
+            'identity-mismatch' => [
+                HostRefusal::IdentityMismatch,
+                HostRefusal::IdentityMismatch->explanation(),
+                StartRemedyType::RetryStart,
+                'Start the agent again',
+                'Start the agent again',
+            ],
             'conversation-missing' => [
                 ResumeRefusal::ConversationMissing,
                 'This conversation is unavailable to resume.',

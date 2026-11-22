@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Enums;
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Exceptions\SignInMethodMissing;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -46,17 +46,17 @@ enum SignInMethod: string
      *
      * @throws SignInMethodMissing when the driver has no such sign-in
      */
-    public function billingNote(HookDriver $driver): string
+    public function billingNote(string $driver): string
     {
         $check = ' Checking it may send one small request with it.';
 
         return match ([$driver, $this]) {
-            [HookDriver::ClaudeCode, self::OAuth] => 'Your Claude subscription pays for what agents use.',
-            [HookDriver::ClaudeCode, self::ProviderToken] => 'Your Claude subscription pays for what agents use.'.$check,
-            [HookDriver::ClaudeCode, self::ApiKey] => 'Billed to the API key, apart from any subscription.'.$check,
-            [HookDriver::Codex, self::OAuth] => 'Your ChatGPT subscription pays for what agents use.',
-            [HookDriver::Codex, self::ApiKey] => 'Billed to the API key by what agents use.'.$check,
-            default => throw SignInMethodMissing::for($driver->value, $this->value),
+            [DefaultDrivers::CLAUDE_CODE, self::OAuth] => 'Your Claude subscription pays for what agents use.',
+            [DefaultDrivers::CLAUDE_CODE, self::ProviderToken] => 'Your Claude subscription pays for what agents use.'.$check,
+            [DefaultDrivers::CLAUDE_CODE, self::ApiKey] => 'Billed to the API key, apart from any subscription.'.$check,
+            [DefaultDrivers::CODEX, self::OAuth] => 'Your ChatGPT subscription pays for what agents use.',
+            [DefaultDrivers::CODEX, self::ApiKey] => 'Billed to the API key by what agents use.'.$check,
+            default => throw SignInMethodMissing::for($driver, $this->value),
         };
     }
 
@@ -73,14 +73,14 @@ enum SignInMethod: string
      *
      * @throws SignInMethodMissing when the driver has no such sign-in
      */
-    public function title(HookDriver $driver): string
+    public function title(string $driver): string
     {
         return match ([$driver, $this]) {
-            [HookDriver::ClaudeCode, self::OAuth] => 'Sign in with Claude',
-            [HookDriver::Codex, self::OAuth] => 'Sign in with ChatGPT',
-            [HookDriver::ClaudeCode, self::ProviderToken] => 'Setup token',
-            [HookDriver::ClaudeCode, self::ApiKey], [HookDriver::Codex, self::ApiKey] => 'API key',
-            default => throw SignInMethodMissing::for($driver->value, $this->value),
+            [DefaultDrivers::CLAUDE_CODE, self::OAuth] => 'Sign in with Claude',
+            [DefaultDrivers::CODEX, self::OAuth] => 'Sign in with ChatGPT',
+            [DefaultDrivers::CLAUDE_CODE, self::ProviderToken] => 'Setup token',
+            [DefaultDrivers::CLAUDE_CODE, self::ApiKey], [DefaultDrivers::CODEX, self::ApiKey] => 'API key',
+            default => throw SignInMethodMissing::for($driver, $this->value),
         };
     }
 
@@ -89,16 +89,16 @@ enum SignInMethod: string
      *
      * @throws SignInMethodMissing when the driver has no such sign-in
      */
-    public function description(HookDriver $driver): string
+    public function description(string $driver): string
     {
         return match ([$driver, $this]) {
-            [HookDriver::ClaudeCode, self::OAuth] => "Sign in on Claude's site, then paste the code it gives you.",
-            [HookDriver::ClaudeCode, self::ProviderToken] => 'Paste a token made with claude setup-token. '
+            [DefaultDrivers::CLAUDE_CODE, self::OAuth] => "Sign in on Claude's site, then paste the code it gives you.",
+            [DefaultDrivers::CLAUDE_CODE, self::ProviderToken] => 'Paste a token made with claude setup-token. '
                 .'Suits a server.',
-            [HookDriver::ClaudeCode, self::ApiKey] => 'Paste a key from the Anthropic Console.',
-            [HookDriver::Codex, self::OAuth] => "Enter a short code on OpenAI's site. The rest happens by itself.",
-            [HookDriver::Codex, self::ApiKey] => 'Paste a key from the OpenAI platform.',
-            default => throw SignInMethodMissing::for($driver->value, $this->value),
+            [DefaultDrivers::CLAUDE_CODE, self::ApiKey] => 'Paste a key from the Anthropic Console.',
+            [DefaultDrivers::CODEX, self::OAuth] => "Enter a short code on OpenAI's site. The rest happens by itself.",
+            [DefaultDrivers::CODEX, self::ApiKey] => 'Paste a key from the OpenAI platform.',
+            default => throw SignInMethodMissing::for($driver, $this->value),
         };
     }
 
@@ -107,16 +107,16 @@ enum SignInMethod: string
      *
      * @throws SignInMethodMissing when the driver has no such sign-in
      */
-    public function secretSource(HookDriver $driver): string|null
+    public function secretSource(string $driver): string|null
     {
         return match ([$driver, $this]) {
-            [HookDriver::ClaudeCode, self::OAuth], [HookDriver::Codex, self::OAuth] => null,
-            [HookDriver::ClaudeCode, self::ProviderToken] => 'On a computer where you are signed in to Claude '
+            [DefaultDrivers::CLAUDE_CODE, self::OAuth], [DefaultDrivers::CODEX, self::OAuth] => null,
+            [DefaultDrivers::CLAUDE_CODE, self::ProviderToken] => 'On a computer where you are signed in to Claude '
                 .'Code, run claude setup-token in a terminal and copy the token it prints.',
-            [HookDriver::ClaudeCode, self::ApiKey] => 'In the Anthropic Console, open API keys and create a key. Copy '
+            [DefaultDrivers::CLAUDE_CODE, self::ApiKey] => 'In the Anthropic Console, open API keys and create a key. Copy '
                 .'it right away: the Console shows it only once.',
-            [HookDriver::Codex, self::ApiKey] => 'On the OpenAI platform, open API keys and create a secret key.',
-            default => throw SignInMethodMissing::for($driver->value, $this->value),
+            [DefaultDrivers::CODEX, self::ApiKey] => 'On the OpenAI platform, open API keys and create a secret key.',
+            default => throw SignInMethodMissing::for($driver, $this->value),
         };
     }
 }

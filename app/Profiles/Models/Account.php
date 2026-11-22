@@ -9,7 +9,6 @@ use App\Agents\Exceptions\AccountUnavailable;
 use App\Agents\Values\SelectedAccount;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
-use App\Drivers\Enums\HookDriver;
 use App\Links\Support\Linkable;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\AccountState;
@@ -121,9 +120,9 @@ final class Account extends Model implements EventSource, ReadableModel
      * A new account a completed sign-in made, signed in, in the folder that sign-in wrote; it starts the account's
      * first sign-in generation.
      */
-    public static function create(HookDriver $driver, AccountLabel $label, string $directory): self
+    public static function create(string $driver, AccountLabel $label, string $directory): self
     {
-        $account = new self(['account_protocol' => $driver->value]);
+        $account = new self(['account_protocol' => $driver]);
         $account->name($label);
         $account->state = AccountState::SignedIn;
         $account->directory = $directory;
@@ -146,7 +145,7 @@ final class Account extends Model implements EventSource, ReadableModel
     /**
      * The first free label of the driver for a new account: the proposed one, else its numbered variants from 2.
      */
-    public static function freeLabel(HookDriver $driver, AccountLabel $proposed): AccountLabel
+    public static function freeLabel(string $driver, AccountLabel $proposed): AccountLabel
     {
         $label = $proposed;
 
@@ -161,7 +160,7 @@ final class Account extends Model implements EventSource, ReadableModel
      * The driver's account, not removed, that holds the principal a verified sign-in proved; none for a sign-in that
      * proved no subject.
      */
-    public static function holdingPrincipal(HookDriver $driver, SignInIdentity $identity): self|null
+    public static function holdingPrincipal(string $driver, SignInIdentity $identity): self|null
     {
         if ($identity->subject === null) {
             return null;
@@ -169,7 +168,7 @@ final class Account extends Model implements EventSource, ReadableModel
 
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('account_protocol', $driver->value)
+            ->where('account_protocol', $driver)
             ->where('subject', $identity->subject)
             ->where('state', '!=', AccountState::Removed->value)
             ->limit(20)
@@ -255,14 +254,14 @@ final class Account extends Model implements EventSource, ReadableModel
      *
      * @throws AccountUnavailable
      */
-    public static function lockedChosenForStart(HookDriver $driver, string $accountId, int $reviewedSignIn): self
+    public static function lockedChosenForStart(string $driver, string $accountId, int $reviewedSignIn): self
     {
         $account = self::query()
             ->whereKey($accountId)
             ->ofDriver($driver)
             ->lockForUpdate()
             ->firstOr(fn () => throw AccountUnavailable::forStart(
-                $driver->value,
+                $driver,
                 StartUnavailableReason::ChosenAccountMissing,
             ));
 
@@ -302,11 +301,11 @@ final class Account extends Model implements EventSource, ReadableModel
     /**
      * The driver of an account, for the journal's own maintenance or the host, read before its locks are taken.
      */
-    public static function driverForJournal(string $accountId): HookDriver
+    public static function driverForJournal(string $accountId): string
     {
         $driver = self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($accountId)->value('account_protocol');
 
-        return HookDriver::from((string) $driver);
+        return (string) $driver;
     }
 
     /**
@@ -314,7 +313,7 @@ final class Account extends Model implements EventSource, ReadableModel
      *
      * @throws AccountMissing
      */
-    public static function driverOf(string $accountId): HookDriver
+    public static function driverOf(string $accountId): string
     {
         $driver = self::query()->whereKey($accountId)->value('account_protocol');
 
@@ -322,7 +321,7 @@ final class Account extends Model implements EventSource, ReadableModel
             throw AccountMissing::for($accountId);
         }
 
-        return HookDriver::from($driver);
+        return $driver;
     }
 
     /**
@@ -791,11 +790,11 @@ final class Account extends Model implements EventSource, ReadableModel
 
     // ----------[ Internals ]----------
 
-    private static function labelIsTaken(HookDriver $driver, AccountLabel $label): bool
+    private static function labelIsTaken(string $driver, AccountLabel $label): bool
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('account_protocol', $driver->value)
+            ->where('account_protocol', $driver)
             ->where('label_key', $label->key())
             ->where('state', '!=', AccountState::Removed->value)
             ->exists();
@@ -813,8 +812,8 @@ final class Account extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofDriver(Builder $query, HookDriver $driver): void
+    protected function ofDriver(Builder $query, string $driver): void
     {
-        $query->where('account_protocol', $driver->value);
+        $query->where('account_protocol', $driver);
     }
 }

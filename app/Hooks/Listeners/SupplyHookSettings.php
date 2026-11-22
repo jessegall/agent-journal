@@ -6,7 +6,7 @@ namespace App\Hooks\Listeners;
 
 use App\Agents\Events\StartSettingsRequested;
 use App\Contracts\Listener;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Hooks\Drivers\Contracts\DriverAdapters;
 
 /**
@@ -15,17 +15,15 @@ use App\Hooks\Drivers\Contracts\DriverAdapters;
  */
 final readonly class SupplyHookSettings implements Listener
 {
-    public function __construct(private DriverAdapters $adapters) {}
+    public function __construct(private DriverAdapters $adapters, private DriverCatalogue $drivers) {}
 
     public function handle(StartSettingsRequested $event): void
     {
-        $driver = HookDriver::tryFrom($event->driver);
-
-        if ($driver === null) {
+        if (! $this->drivers->hasFamily($event->driver)) {
             return;
         }
 
-        $adapter = $this->adapters->for($driver->value);
+        $adapter = $this->adapters->for($event->driver);
 
         foreach ($adapter->nativeEvents() as $eventName) {
             $event->settings->addHook($eventName, $adapter->hookCommand());

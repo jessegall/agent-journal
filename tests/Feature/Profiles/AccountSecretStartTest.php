@@ -8,7 +8,7 @@ use App\Agents\Enums\TransportProfileType;
 use App\Agents\Events\AccountSettingsRequested;
 use App\Agents\Support\AccountStartRecipe;
 use App\Agents\Support\AccountStartSettings;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Hooks\Compatibility\DriverCompatibility;
 use App\Hooks\Contracts\DriverCompatibilities;
 use App\Hooks\Enums\DriverEvidence;
@@ -33,7 +33,7 @@ final class AccountSecretStartTest extends TestCase
 
         $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
         {
-            public function for(HookDriver $driver): DriverCompatibility
+            public function for(string $driver): DriverCompatibility
             {
                 return DriverCompatibility::pinned($driver)->withEvidence(DriverEvidence::NativeShown, 'this test');
             }
@@ -59,7 +59,7 @@ final class AccountSecretStartTest extends TestCase
     private function recipeFor(SignInMethod $method): AccountStartRecipe
     {
         $folder = '/journal/accounts/work';
-        $account = Account::create(HookDriver::ClaudeCode, AccountLabel::from('Work '.$method->value), $folder);
+        $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Work '.$method->value), $folder);
         $account->forceFill(['method' => $method])->save();
         $settings = new AccountStartSettings();
         $event = new AccountSettingsRequested('claude-code', $account->recordIdentity(), $folder, $settings);

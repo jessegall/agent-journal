@@ -11,6 +11,7 @@ use App\Agents\Values\ModelSelection;
 use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
+use App\Drivers\Contracts\DriverCatalogue;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -33,13 +34,14 @@ final class StartAgentRequest extends FormRequest
         ];
     }
 
-    public function command(): StartAgentCommand
+    public function command(DriverCatalogue $drivers): StartAgentCommand
     {
         $selection = SelectedDriver::resolve(
             $this->filled('driver') ? $this->string('driver')->toString() : null,
             ModelSelection::fromInput($this->filled('model') ? $this->string('model')->toString() : null),
             null,
             null,
+            $drivers,
         );
 
         return new StartAgentCommand(new StartRequest(

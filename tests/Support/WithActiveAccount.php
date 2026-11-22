@@ -7,7 +7,7 @@ namespace Tests\Support;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Values\AccountLabel;
@@ -32,11 +32,11 @@ trait WithActiveAccount
         );
         $chosen = [];
 
-        foreach (HookDriver::cases() as $driver) {
-            $directory = "/journal/accounts/{$driver->value}";
+        foreach (DefaultDrivers::familyKeys() as $driver) {
+            $directory = "/journal/accounts/{$driver}";
             $account = Account::create($driver, AccountLabel::from('Test account'), $directory);
             ActiveAccount::lockedFor($driver)->select($account);
-            $chosen[$driver->value] = $account;
+            $chosen[$driver] = $account;
         }
 
         return $chosen;

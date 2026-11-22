@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Profiles\Contracts;
 
-use App\Drivers\Enums\HookDriver;
 use App\Http\Data\Profiles\EligibleAccountsData;
 
 /**
@@ -13,11 +12,11 @@ use App\Http\Data\Profiles\EligibleAccountsData;
  */
 interface StartAccounts
 {
-    public function forDriver(HookDriver $driver): EligibleAccountsData;
+    public function forDriver(string $driver): EligibleAccountsData;
 
     /**
      * The accounts for a start of this driver from this profile, with the models the profile permits, its default
      * first.
      */
-    public function forProfileStart(HookDriver $driver, string $profileKey): EligibleAccountsData;
+    public function forProfileStart(string $driver, string $profileKey): EligibleAccountsData;
 }

@@ -57,7 +57,7 @@ final class HelperReceiptData extends Data
             'conversationReason' => $launch->conversationReason,
             'independent' => $launch->independent,
             'launchReference' => $start->launchReference,
-            'driver' => $selection->driver->value,
+            'driver' => $selection->driver,
             'requestedModelType' => $requested->type->value,
             'requestedModel' => $requested->model,
             'resolvedModel' => $selection->model,

@@ -14,7 +14,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Bus\Support\EntryDispatchers;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Commands\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Profiles\Commands\CancelSignIn\CancelSignInCommand;
 use App\Profiles\Commands\CheckAccount\CheckAccountCommand;
@@ -186,7 +186,7 @@ final class SignInAgainTest extends TestCase
     public function test_a_key_another_account_already_holds_ends_already_added(): void
     {
         $this->account->forceFill(['method' => SignInMethod::ApiKey, 'fingerprint' => 'old'])->save();
-        $other = Account::create(HookDriver::Codex, AccountLabel::from('Other'), '/journal/accounts/other');
+        $other = Account::create(DefaultDrivers::CODEX, AccountLabel::from('Other'), '/journal/accounts/other');
         $other->forceFill(['fingerprint' => 'shared'])->save();
         $saved = $this->account->directory;
         [$attemptId] = $this->waitingReconnect();

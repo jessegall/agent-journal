@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Support\SignInProtocols;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
+use Illuminate\Validation\Rules\In;
 use Illuminate\Validation\Validator;
 
 /**
@@ -21,12 +22,12 @@ use Illuminate\Validation\Validator;
 final class StartSignInRequest extends FormRequest
 {
     /**
-     * @return array<string, list<string|Enum>>
+     * @return array<string, list<string|Enum|In>>
      */
-    public function rules(): array
+    public function rules(DriverCatalogue $drivers): array
     {
         return [
-            'driver' => ['required', 'string', Rule::enum(HookDriver::class)],
+            'driver' => ['required', 'string', Rule::in($drivers->familyKeys())],
             'method' => ['required', 'string', Rule::enum(SignInMethod::class)],
         ];
     }

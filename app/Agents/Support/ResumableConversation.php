@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
-use App\Drivers\Enums\HookDriver;
 use Carbon\CarbonImmutable;
 
 /**
@@ -14,7 +13,7 @@ final readonly class ResumableConversation
 {
     public function __construct(
         public string $conversationId,
-        public HookDriver $driver,
+        public string $driver,
         public CarbonImmutable $startedAt,
     ) {}
 }

@@ -12,7 +12,7 @@ import { useStartRestoration } from './composables/useStartRestoration';
 import { useSwitchOperation } from './composables/useSwitchOperation';
 import type { AgentOptionData, ChatData, DriverChoiceData } from '@generated/types/chat';
 import type { WindowResult } from '@kit/PageTypes';
-import type { DriverVariant, HookDriver } from '@kit/CoreTypes';
+import type { DriverVariant } from '@kit/CoreTypes';
 import {
     accountsPage,
     cancelLaunch,
@@ -47,7 +47,7 @@ type SessionChoice = {
     requestId: string;
     agentId: string;
     model: string;
-    driver: HookDriver;
+    driver: string;
     variant: DriverVariant | null;
     saveVariant: boolean;
     accountId: string | undefined;
@@ -223,7 +223,7 @@ const chosenDriver = computed(() => {
         ?? available.find((choice) => choice.family === family)
         ?? available[0];
 });
-const driver = computed(() => (chosenDriver.value?.family ?? 'claude-code') as HookDriver);
+const driver = computed(() => chosenDriver.value?.family ?? 'claude-code');
 const variant = computed(() => (chosenDriver.value?.mode ?? 'headless') as DriverVariant);
 
 if (restored !== null) {
@@ -235,7 +235,7 @@ watch([driver, variant, model, accountId, conversationId, saveVariant, focusedFi
 /**
  * Asks the chat window, read again, for the driver's eligible accounts; they arrive as part of its data.
  */
-function readAccounts(chosen: HookDriver): void {
+function readAccounts(chosen: string): void {
     router.reload({
         only: [chatProp],
         data: ownPage ? { accountsFor: chosen } : { window: { 'chat.conversation': { accountsFor: chosen } } },

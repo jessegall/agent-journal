@@ -16,7 +16,7 @@ use App\Agents\Models\ConversationVisit;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
@@ -106,7 +106,7 @@ final class ConversationVisitTest extends TestCase
 
         $conversations = $this->app->make(DriverConversationResolver::class)->conversations(
             $this->agent->id,
-            HookDriver::ClaudeCode,
+            DefaultDrivers::CLAUDE_CODE,
             'helpers.job 1',
         );
 
@@ -118,7 +118,7 @@ final class ConversationVisitTest extends TestCase
             [],
             $this->app->make(DriverConversationResolver::class)->conversations(
                 $this->agent->id,
-                HookDriver::ClaudeCode,
+                DefaultDrivers::CLAUDE_CODE,
                 'helpers.job 2',
             ),
         );

@@ -49,6 +49,13 @@ interface DriverCatalogue
     public function families(): array;
 
     /**
+     * The keys of every registered family, such as claude-code and codex.
+     *
+     * @return list<string>
+     */
+    public function familyKeys(): array;
+
+    /**
      * The catalogue's revision, which rises with every registration, so a choice made against an older one can be told.
      */
     public function revision(): int;

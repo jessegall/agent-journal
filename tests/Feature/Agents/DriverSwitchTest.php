@@ -21,7 +21,7 @@ use App\Agents\Models\ProcessStart;
 use App\Agents\Values\ChosenAccount;
 use App\Agents\Values\DriverSwitchTarget;
 use App\Drivers\Contracts\DriverCatalogue;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
@@ -209,13 +209,13 @@ final class DriverSwitchTest extends TestCase
             $this->session,
             0,
             new DriverSwitchTarget(
-                HookDriver::Codex,
+                DefaultDrivers::CODEX,
                 DriverVariant::Headless,
                 new ChosenAccount(strtolower((string) Str::ulid()), 0),
                 null,
                 false,
             ),
-            $this->app->make(DriverCatalogue::class)->pinned(HookDriver::Codex->value, DriverVariant::Headless),
+            $this->app->make(DriverCatalogue::class)->pinned(DefaultDrivers::CODEX, DriverVariant::Headless),
             'owner',
         );
     }

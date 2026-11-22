@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Resolvers;
 
 use App\Agents\Contracts\AccountUses;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Http\Data\Profiles\AccountListData;
 use App\Http\Data\Profiles\AccountRowData;
 use App\Http\Data\Profiles\AccountUsageData;
@@ -80,11 +80,11 @@ final readonly class AccountsWindowResolver implements PageResolver
             'attempts' => SignInAttempt::recentFor($now),
             'pendingCleanups' => SignInAttempt::pendingCleanups(),
             'methods' => array_map(
-                fn (HookDriver $driver) => DriverMethodsData::fromMethods(
+                fn (string $driver) => DriverMethodsData::fromMethods(
                     $driver,
-                    $this->protocols->methodsOf($driver->value),
+                    $this->protocols->methodsOf($driver),
                 ),
-                HookDriver::cases(),
+                DefaultDrivers::familyKeys(),
             ),
         ]);
     }

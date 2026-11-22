@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Exceptions;
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Hooks\Compatibility\DriverCompatibility;
 use RuntimeException;
 
@@ -16,8 +16,9 @@ final class SignInMethodMissing extends RuntimeException
 {
     public static function for(string $driver, string $method): self
     {
-        $known = HookDriver::tryFrom($driver);
-        $build = $known === null ? 'no pinned build' : 'pinned build '.DriverCompatibility::pinned($known)->version;
+        $build = in_array($driver, DefaultDrivers::familyKeys(), true)
+            ? 'pinned build '.DriverCompatibility::pinned($driver)->version
+            : 'no pinned build';
 
         return new self("{$driver} has no {$method} sign-in on this host ({$build}).");
     }

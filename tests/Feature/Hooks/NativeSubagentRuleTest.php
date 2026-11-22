@@ -11,7 +11,7 @@ use App\Agents\Events\StartSettingsRequested;
 use App\Agents\Support\IsolatedHookSettings;
 use App\Agents\Values\StackTarget;
 use App\Drivers\Contracts\DriverCatalogue;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Hooks\Actions\StartStacks;
 use App\Hooks\Drivers\Contracts\DriverAdapters;
 use App\Hooks\Models\HookCall;
@@ -66,30 +66,30 @@ final class NativeSubagentRuleTest extends TestCase
         $drivers = $this->app->make(DriverCatalogue::class);
         $adapters = $this->app->make(DriverAdapters::class);
 
-        foreach (HookDriver::cases() as $family) {
-            $terminal = $drivers->forKey($drivers->keyFor($family->value, DriverVariant::Terminal))->descriptor();
-            $headless = $drivers->forKey($drivers->keyFor($family->value, DriverVariant::Headless))->descriptor();
+        foreach (DefaultDrivers::familyKeys() as $family) {
+            $terminal = $drivers->forKey($drivers->keyFor($family, DriverVariant::Terminal))->descriptor();
+            $headless = $drivers->forKey($drivers->keyFor($family, DriverVariant::Headless))->descriptor();
 
             $this->assertSame(
                 $adapters->for($terminal->hookProtocol),
                 $adapters->for($headless->hookProtocol),
-                $family->value,
+                $family,
             );
         }
     }
 
     public function test_rule_36_every_program_start_denies_each_native_child_tool(): void
     {
-        foreach (HookDriver::cases() as $driver) {
+        foreach (DefaultDrivers::familyKeys() as $driver) {
             $settings = new IsolatedHookSettings();
-            $this->app->make(Dispatcher::class)->dispatch(new StartSettingsRequested($driver->value, $settings));
+            $this->app->make(Dispatcher::class)->dispatch(new StartSettingsRequested($driver, $settings));
             $denied = json_decode($settings->content(), true, flags: JSON_THROW_ON_ERROR)['permissions']['deny'];
 
-            $childTools = $this->app->make(DriverAdapters::class)->for($driver->value)->nativeChildTools();
-            $this->assertNotSame([], $childTools, $driver->value);
+            $childTools = $this->app->make(DriverAdapters::class)->for($driver)->nativeChildTools();
+            $this->assertNotSame([], $childTools, $driver);
 
             foreach ($childTools as $toolName) {
-                $this->assertContains($toolName, $denied, "{$driver->value}/{$toolName}");
+                $this->assertContains($toolName, $denied, "{$driver}/{$toolName}");
             }
         }
     }

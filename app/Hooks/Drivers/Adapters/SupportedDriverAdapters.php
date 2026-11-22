@@ -27,4 +27,9 @@ final readonly class SupportedDriverAdapters implements DriverAdapters
     {
         return $this->adapters[$hookProtocol] ?? throw HookProtocolUnknown::for($hookProtocol);
     }
+
+    public function supports(string $hookProtocol): bool
+    {
+        return array_key_exists($hookProtocol, $this->adapters);
+    }
 }

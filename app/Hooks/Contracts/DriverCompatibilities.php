@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Hooks\Contracts;
 
-use App\Drivers\Enums\HookDriver;
 use App\Hooks\Compatibility\DriverCompatibility;
 
 /**
@@ -12,5 +11,5 @@ use App\Hooks\Compatibility\DriverCompatibility;
  */
 interface DriverCompatibilities
 {
-    public function for(HookDriver $driver): DriverCompatibility;
+    public function for(string $driver): DriverCompatibility;
 }

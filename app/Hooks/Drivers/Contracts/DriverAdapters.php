@@ -10,4 +10,6 @@ namespace App\Hooks\Drivers\Contracts;
 interface DriverAdapters
 {
     public function for(string $hookProtocol): DriverAdapter;
+
+    public function supports(string $hookProtocol): bool;
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Skills;
 
 use App\CoreApi;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Drivers\Values\DriverKey;
 use App\Drivers\Values\ProviderKey;
 use App\Skills\Support\StartDriver;
@@ -17,8 +18,8 @@ final class StartProgramTest extends TestCase
 {
     public function test_codex_and_claude_code_resolve_their_provider(): void
     {
-        $codex = StartDriver::of('codex');
-        $claude = StartDriver::of('claude-code');
+        $codex = StartDriver::of('codex', $this->app->make(DriverCatalogue::class));
+        $claude = StartDriver::of('claude-code', $this->app->make(DriverCatalogue::class));
 
         $this->assertSame('codex', $codex->driver?->key);
         $this->assertSame('openai', $codex->provider?->key);
@@ -28,11 +29,11 @@ final class StartProgramTest extends TestCase
 
     public function test_an_unknown_program_resolves_no_provider(): void
     {
-        $unknown = StartDriver::of('gemini-cli');
+        $unknown = StartDriver::of('gemini-cli', $this->app->make(DriverCatalogue::class));
 
         $this->assertSame('gemini-cli', $unknown->driver?->key);
         $this->assertNull($unknown->provider);
-        $this->assertNull(StartDriver::of(null)->driver);
+        $this->assertNull(StartDriver::of(null, $this->app->make(DriverCatalogue::class))->driver);
     }
 
     public function test_the_program_and_provider_keys_are_exported(): void

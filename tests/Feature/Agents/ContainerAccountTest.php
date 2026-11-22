@@ -23,7 +23,7 @@ use App\Agents\Models\ProcessStart;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Contracts\CommandBus;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Hooks\Compatibility\DriverCompatibility;
 use App\Hooks\Contracts\DriverCompatibilities;
 use App\Hooks\Enums\DriverEvidence;
@@ -81,7 +81,7 @@ final class ContainerAccountTest extends TestCase
         $this->first = $this->chooseActiveAccounts()['claude-code'];
         $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
         {
-            public function for(HookDriver $driver): DriverCompatibility
+            public function for(string $driver): DriverCompatibility
             {
                 return DriverCompatibility::pinned($driver)->withEvidence(DriverEvidence::NativeShown, 'this test');
             }
@@ -93,7 +93,7 @@ final class ContainerAccountTest extends TestCase
         $host = $this->enrollHost();
         $running = $this->open($host);
         $this->asSystem(new ClaimStartCommand($host->hostId, $running->sessionId));
-        $second = Account::create(HookDriver::ClaudeCode, AccountLabel::from('Second'), '/journal/accounts/second');
+        $second = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Second'), '/journal/accounts/second');
         $this->actAsOwner();
         $this->app->make(CommandBus::class)->run(new SwitchAccountCommand($second->id));
 
@@ -140,7 +140,7 @@ final class ContainerAccountTest extends TestCase
     {
         $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
         {
-            public function for(HookDriver $driver): DriverCompatibility
+            public function for(string $driver): DriverCompatibility
             {
                 return DriverCompatibility::pinned($driver)->withContainedShortfall('its protection report is missing');
             }

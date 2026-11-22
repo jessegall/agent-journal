@@ -501,8 +501,6 @@ case	HoldReason::UnknownScreen
 case	HoldReason::UpdateRequired
 case	HoldReason::UsageLimited
 case	HoldReason::UserInput
-case	HookDriver::ClaudeCode
-case	HookDriver::Codex
 case	HookEvent::PostToolUse
 case	HookEvent::PreToolUse
 case	HookEvent::SessionEnd
@@ -7113,6 +7111,8 @@ constant	DecimalSetting::MOST_DIGITS
 constant	DecimalSetting::MOST_FRACTIONAL_DIGITS
 constant	DeclaredPageRequest::COPY_LIMIT
 constant	DeclaredRouteKey::NAME
+constant	DefaultDrivers::CLAUDE_CODE
+constant	DefaultDrivers::CODEX
 constant	DefaultDrivers::PROTOCOL_VERSION
 constant	DeliverReportReadyNotification::REPORT_TARGET
 constant	DeliveredSkillsAccess::DELIVERED_SKILL
@@ -8032,7 +8032,6 @@ enum	GatewayOutcome
 enum	GenerationState
 enum	GroupAvailability
 enum	HoldReason
-enum	HookDriver
 enum	HookEvent
 enum	HostCapabilityType
 enum	HostProtocolVersion
@@ -12674,6 +12673,7 @@ method	DeclineChatQuestionHandler::handle()
 method	DeclineInput::__construct()
 method	DeclineQuestionController::__invoke()
 method	DefaultDrivers::families()
+method	DefaultDrivers::familyKeys()
 method	DefaultDrivers::registration()
 method	DefaultDrivers::registrations()
 method	DefaultUnavailable::forStart()
@@ -13551,6 +13551,7 @@ method	DriverAdapter::nativeEvents()
 method	DriverAdapter::renderShell()
 method	DriverAdapter::renderStop()
 method	DriverAdapters::for()
+method	DriverAdapters::supports()
 method	DriverArrangementUnproven::for()
 method	DriverArrangementUnproven::inContainer()
 method	DriverArrangementUnproven::refusalCode()
@@ -13570,6 +13571,7 @@ method	DriverCapabilityUnsupported::status()
 method	DriverCatalogue::catalogue()
 method	DriverCatalogue::families()
 method	DriverCatalogue::family()
+method	DriverCatalogue::familyKeys()
 method	DriverCatalogue::forKey()
 method	DriverCatalogue::hasFamily()
 method	DriverCatalogue::keyFor()
@@ -13631,6 +13633,7 @@ method	DriverRegistry::__construct()
 method	DriverRegistry::catalogue()
 method	DriverRegistry::families()
 method	DriverRegistry::family()
+method	DriverRegistry::familyKeys()
 method	DriverRegistry::forKey()
 method	DriverRegistry::hasFamily()
 method	DriverRegistry::keyFor()
@@ -24542,6 +24545,7 @@ method	SupportSnapshot::assertSupports()
 method	SupportSnapshot::supportOf()
 method	SupportedDriverAdapters::__construct()
 method	SupportedDriverAdapters::for()
+method	SupportedDriverAdapters::supports()
 method	SwitchAccountCommand::__construct()
 method	SwitchAccountHandler::__construct()
 method	SwitchAccountHandler::handle()
@@ -35004,6 +35008,7 @@ property	ProfileDraftSaveCommand::$description
 property	ProfileDraftSaveCommand::$signature
 property	ProfileDraftShowCommand::$description
 property	ProfileDraftShowCommand::$signature
+property	ProfileDrivers::$drivers
 property	ProfileDrivers::$profiles
 property	ProfileKey::$key
 property	ProfileLanguageCommand::$description
@@ -38840,9 +38845,11 @@ property	SupervisorTimer::$intervalSeconds
 property	SupervisorTimer::$work
 property	SupplyAccountSettings::$compatibilities
 property	SupplyAccountSettings::$config
+property	SupplyAccountSettings::$drivers
 property	SupplyHelperContext::$jobs
 property	SupplyHookContext::$rules
 property	SupplyHookSettings::$adapters
+property	SupplyHookSettings::$drivers
 property	SupplyMemories::$memories
 property	SupportRecordRowData::$action
 property	SupportRecordRowData::$actor

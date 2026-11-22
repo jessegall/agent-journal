@@ -9,7 +9,6 @@ use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
-use App\Drivers\Enums\HookDriver;
 use App\Links\Support\Linkable;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\CleanupProblem;
@@ -113,13 +112,13 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public static function create(
         ActorIdentity $starter,
-        Account|HookDriver $accountOrDriver,
+        Account|string $accountOrDriver,
         SignInMethod $method,
         string $directory,
         CarbonImmutable $expiresAt,
     ): self {
         $attempt = new self([
-            'account_protocol' => $accountOrDriver instanceof Account ? $accountOrDriver->account_protocol : $accountOrDriver->value,
+            'account_protocol' => $accountOrDriver instanceof Account ? $accountOrDriver->account_protocol : $accountOrDriver,
             'method' => $method,
             ...$starter->asColumns('actor'),
         ]);
@@ -166,7 +165,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      * The earliest attempt still signing in a new account of the driver, or this account, which a second start
      * rejoins instead of starting another writer.
      */
-    public static function liveFor(HookDriver $driver, Account|null $account): self|null
+    public static function liveFor(string $driver, Account|null $account): self|null
     {
         return self::query()
             ->ofDriver($driver)
@@ -217,7 +216,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      *
      * @throws SignInAttemptMissing
      */
-    public static function driverForJournal(string $attemptId): HookDriver
+    public static function driverForJournal(string $attemptId): string
     {
         $driver = self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($attemptId)->value('account_protocol');
 
@@ -225,7 +224,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
             throw SignInAttemptMissing::for($attemptId);
         }
 
-        return HookDriver::from($driver);
+        return $driver;
     }
 
     /**
@@ -653,8 +652,8 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofDriver(Builder $query, HookDriver $driver): void
+    protected function ofDriver(Builder $query, string $driver): void
     {
-        $query->where('account_protocol', $driver->value);
+        $query->where('account_protocol', $driver);
     }
 }

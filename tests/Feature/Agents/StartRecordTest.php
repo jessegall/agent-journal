@@ -22,7 +22,8 @@ use App\Agents\Values\ProfileDefaults;
 use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Contracts\DriverCatalogue;
+use App\Drivers\Support\DefaultDrivers;
 use Illuminate\Support\Facades\Schema;
 use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
@@ -78,8 +79,9 @@ final class StartRecordTest extends TestCase
         $selection = SelectedDriver::resolve(
             null,
             ModelSelection::fromInput('default'),
-            new ProfileDefaults('journal-researcher', 4, HookDriver::ClaudeCode, false, 'claude-sonnet-5-5', [], DriverVariant::Headless),
+            new ProfileDefaults('journal-researcher', 4, DefaultDrivers::CLAUDE_CODE, false, 'claude-sonnet-5-5', [], DriverVariant::Headless),
             null,
+            $this->app->make(DriverCatalogue::class),
         );
         $requestId = TestSelections::requestId();
 
@@ -94,7 +96,7 @@ final class StartRecordTest extends TestCase
             [$session->requested_model_type, $session->requested_model, $session->model, $session->start_request_id],
         );
         $this->assertSame(
-            [HookDriver::ClaudeCode, 'claude-sonnet-5-5', 'journal-researcher', 4],
+            [DefaultDrivers::CLAUDE_CODE, 'claude-sonnet-5-5', 'journal-researcher', 4],
             [
                 $session->selection()->driver,
                 $session->selection()->model,
@@ -189,7 +191,7 @@ final class StartRecordTest extends TestCase
         return new StartRequest(
             $requestId,
             $agent->id,
-            SelectedDriver::resolve('claude-code', $model, null, null),
+            SelectedDriver::resolve('claude-code', $model, null, null, $this->app->make(DriverCatalogue::class)),
             $origin,
             $owner,
             null,

@@ -7,7 +7,6 @@ namespace App\Hooks\Console;
 use App\AgentRequests\Contracts\StartTokenSource;
 use App\AgentRequests\Support\StartEnvironment;
 use App\Agents\Support\OfflineReplySeal;
-use App\Drivers\Enums\HookDriver;
 use App\Hooks\Relay\HookRelay;
 use App\Hooks\Relay\RelaySettings;
 use Illuminate\Console\Command;
@@ -28,7 +27,7 @@ final class RelayHookCommand extends Command
         OfflineReplySeal $seal,
     ): int {
         $settings = RelaySettings::forStart($credentials->forThisStart(), $start, $seal);
-        $driver = HookDriver::from((string) $this->argument('driver'));
+        $driver = (string) $this->argument('driver');
         $reply = $relay->relay($driver, (string) stream_get_contents(STDIN), $settings);
 
         $this->output->write($reply->stdout);

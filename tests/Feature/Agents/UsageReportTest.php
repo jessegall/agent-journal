@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Agents\Enums\AccountProcessRole;
 use App\Agents\Enums\ProcessStartState;
 use App\Agents\Support\EnrolledHost;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Events\AccountUsageChanged;
 use App\Profiles\Models\Account;
@@ -64,7 +64,7 @@ final class UsageReportTest extends TestCase
 
     public function test_reports_on_two_accounts_of_one_program_land_under_each_start_account(): void
     {
-        $other = Account::create(HookDriver::ClaudeCode, AccountLabel::from('Home'), '/journal/accounts/home');
+        $other = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Home'), '/journal/accounts/home');
         $first = $this->claimedStart($this->account);
         $second = $this->claimedStart($other);
 

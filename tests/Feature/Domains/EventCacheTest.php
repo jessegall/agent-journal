@@ -21,17 +21,12 @@ final class EventCacheTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->cachePath = (string) tempnam(sys_get_temp_dir(), 'events-cache-').'.php';
-        file_put_contents(
-            $this->cachePath,
-            '<?php return '.var_export([DomainEventServiceProvider::class => [
-                DomainEventServiceProvider::LANES => [DomainEventServiceProvider::LANES_VERSION],
-                DomainEventServiceProvider::STATE_EVENTS => [],
-            ]], true).';',
-        );
-        $this->useEventCachePath($this->cachePath);
-
         parent::setUp();
+
+        // The app boots uncached, since the installed domains' state events would make any hand-written cache stale.
+        $this->cachePath = (string) tempnam(sys_get_temp_dir(), 'events-cache-').'.php';
+        $this->useEventCachePath($this->cachePath);
+        $this->app->instance('events.cached', true);
     }
 
     protected function tearDown(): void

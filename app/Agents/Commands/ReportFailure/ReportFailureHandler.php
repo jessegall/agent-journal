@@ -24,7 +24,7 @@ final readonly class ReportFailureHandler implements CommandHandler
         }
 
         $session = AgentSession::query()->findOrFail($start->session_id);
-        $driver = $session->selection()->driver->value;
+        $driver = $session->selection()->driver;
 
         $this->facts->publishAfterCommit(new DriverFailed(
             $start->agent_id,

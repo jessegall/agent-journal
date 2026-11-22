@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Bus\Contracts\CommandBus;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Commands\SwitchAccount\SwitchAccountCommand;
 use App\Profiles\Models\Account;
 use App\Profiles\Values\AccountLabel;
@@ -77,7 +77,7 @@ final class PageChangeTest extends TestCase
 
     public function test_choosing_an_account_changes_the_accounts_page_once(): void
     {
-        $account = Account::create(HookDriver::Codex, AccountLabel::from('Work'), '/journal/accounts/work');
+        $account = Account::create(DefaultDrivers::CODEX, AccountLabel::from('Work'), '/journal/accounts/work');
 
         $this->app->make(CommandBus::class)->run(new SwitchAccountCommand($account->id));
         $this->app->make(CommandBus::class)->run(new SwitchAccountCommand($account->id));

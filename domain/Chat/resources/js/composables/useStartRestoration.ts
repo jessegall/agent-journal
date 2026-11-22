@@ -1,5 +1,5 @@
 import { forgetStored, keepStoredJson, readStoredJson } from '@kit/browserStorage';
-import type { DriverVariant, HookDriver } from '@kit/CoreTypes';
+import type { DriverVariant } from '@kit/CoreTypes';
 
 /**
  * What an open session dialog keeps for this tab, so a reload shows the same choices and the same start: the
@@ -7,7 +7,7 @@ import type { DriverVariant, HookDriver } from '@kit/CoreTypes';
  * token and no host screen text.
  */
 export type StartRestoration = {
-    driver: HookDriver;
+    driver: string;
     variant: DriverVariant | '';
     model: string | null;
     accountId: string | null;
@@ -17,7 +17,6 @@ export type StartRestoration = {
     requestId: string | null;
 };
 
-const drivers = ['claude-code', 'codex'];
 const variants = ['', 'terminal', 'headless'];
 
 function textOrNull(value: unknown): string | null {
@@ -31,12 +30,12 @@ function parse(decoded: unknown): StartRestoration | null {
 
     const kept = decoded as Record<string, unknown>;
 
-    if (!drivers.includes(String(kept.driver)) || !variants.includes(String(kept.variant))) {
+    if (typeof kept.driver !== 'string' || !variants.includes(String(kept.variant))) {
         return null;
     }
 
     return {
-        driver: kept.driver as HookDriver,
+        driver: kept.driver,
         variant: kept.variant as DriverVariant | '',
         model: textOrNull(kept.model),
         accountId: textOrNull(kept.accountId),

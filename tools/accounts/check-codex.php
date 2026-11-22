@@ -12,7 +12,7 @@ declare(strict_types=1);
  *       [--host=<journal-agent>] [--host-state=<its state folder>]
  */
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Hooks\Compatibility\DriverCompatibility;
 
 use function Tools\Accounts\empty_folder;
@@ -29,7 +29,7 @@ use function Tools\Accounts\run_program;
 require __DIR__.'/../../vendor/autoload.php';
 require __DIR__.'/native-evidence.php';
 
-$compatibility = DriverCompatibility::pinned(HookDriver::Codex);
+$compatibility = DriverCompatibility::pinned(DefaultDrivers::CODEX);
 $options = read_options(array_slice($argv, 1), 'codex');
 $program = $options['program'];
 $accountA = journal_account($options['accounts_root'], $options['account_a']);

@@ -30,6 +30,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\CommandEntrance;
 use App\Bus\Support\RequestKey;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EngineActor;
 use App\Hooks\Commands\CertifyPassedStops\CertifyPassedStopsCommand;
@@ -240,7 +241,7 @@ final class HelperCompletionTest extends TestCase
         $request = new StartRequest(
             TestSelections::requestId(),
             $session->agent_id,
-            SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null),
+            SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null, $this->app->make(DriverCatalogue::class)),
             StartOriginType::OwnerRequest,
             "{$work->type}:{$work->id}",
             null,

@@ -31,7 +31,6 @@ use App\Agents\Support\AgentStatusRules;
 use App\Agents\Support\LaunchOutcome;
 use App\Agents\Support\ResumableConversation;
 use App\Agents\Support\StartRemedyWords;
-use App\Drivers\Enums\HookDriver;
 use App\Operations\Enums\AccessType;
 use Illuminate\Support\Collection;
 use PhpOption\Option;
@@ -193,7 +192,7 @@ final readonly class AgentRecords implements AgentDirectory
         $resumable = array_values($conversations->take(self::CONVERSATIONS_SHOWN)->map(
             fn (DriverConversation $conversation) => new ResumableConversation(
                 $conversation->id,
-                HookDriver::from($conversation->resume_protocol),
+                $conversation->resume_protocol,
                 $conversation->created_at->toImmutable(),
             ),
         )->all());

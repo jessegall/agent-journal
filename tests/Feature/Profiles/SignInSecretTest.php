@@ -11,7 +11,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Commands\CompleteSignIn\CompleteSignInCommand;
 use App\Profiles\Commands\SubmitSignInCode\SubmitSignInCodeCommand;
 use App\Profiles\Enums\SignInMethod;
@@ -64,7 +64,7 @@ final class SignInSecretTest extends TestCase
     public function test_a_long_key_reaches_the_host_once_and_only_its_fingerprint_is_saved(): void
     {
         $key = str_repeat('k', 3000);
-        $attempt = $this->attempt(HookDriver::ClaudeCode, SignInMethod::ApiKey, 'request-1');
+        $attempt = $this->attempt(DefaultDrivers::CLAUDE_CODE, SignInMethod::ApiKey, 'request-1');
 
         $this->submit($attempt, " {$key} ");
 
@@ -83,7 +83,7 @@ final class SignInSecretTest extends TestCase
         $cases = [['claude-code', 'key-1'], ['claude-code', 'key-1'], ['codex', 'key-1'], ['claude-code', 'key-2']];
 
         foreach ($cases as $index => [$driver, $key]) {
-            $attempt = $this->attempt(HookDriver::from($driver), SignInMethod::ApiKey, "request-{$index}");
+            $attempt = $this->attempt($driver, SignInMethod::ApiKey, "request-{$index}");
             $this->submit($attempt, $key);
             $fingerprints[] = $attempt->refresh()->fingerprint;
         }
@@ -94,8 +94,8 @@ final class SignInSecretTest extends TestCase
 
     public function test_an_oauth_code_keeps_its_short_limit_and_a_control_character_is_refused_for_both(): void
     {
-        $oauth = $this->attempt(HookDriver::ClaudeCode, SignInMethod::OAuth, 'request-1');
-        $secret = $this->attempt(HookDriver::ClaudeCode, SignInMethod::ApiKey, 'request-2');
+        $oauth = $this->attempt(DefaultDrivers::CLAUDE_CODE, SignInMethod::OAuth, 'request-1');
+        $secret = $this->attempt(DefaultDrivers::CLAUDE_CODE, SignInMethod::ApiKey, 'request-2');
 
         $this->assertThrows(fn () => $this->submit($oauth, str_repeat('k', 3000)), SignInCodeInvalid::class);
         $this->assertThrows(fn () => $this->submit($oauth, "ab\u{0007}c"), SignInCodeInvalid::class);
@@ -110,7 +110,7 @@ final class SignInSecretTest extends TestCase
         $code = 'Ksaw83zu7MDwmacNrrJ8tHqQXm1P6Rs1n7KMTUjY2lKY1#DV0-PaIOKpbJKqe--nxwxE48';
 
         foreach ([SignInMethod::OAuth, SignInMethod::ProviderToken] as $index => $method) {
-            $attempt = $this->attempt(HookDriver::ClaudeCode, $method, "request-{$index}");
+            $attempt = $this->attempt(DefaultDrivers::CLAUDE_CODE, $method, "request-{$index}");
 
             $this->assertThrows(
                 fn () => $this->submit($attempt, $pasted),
@@ -130,7 +130,7 @@ final class SignInSecretTest extends TestCase
     public function test_an_answer_is_taken_only_while_the_attempt_waits_and_a_repeat_is_its_first_receipt(): void
     {
         $challenges = $this->app->make(SignInChallenges::class);
-        $attempt = $this->attempt(HookDriver::ClaudeCode, SignInMethod::OAuth, 'request-1');
+        $attempt = $this->attempt(DefaultDrivers::CLAUDE_CODE, SignInMethod::OAuth, 'request-1');
         $answer = fn (string $code, string $key) => $this->app->make(CommandBus::class)
             ->run(new SubmitSignInCodeCommand($attempt->id, $code, $key));
 
@@ -147,8 +147,8 @@ final class SignInSecretTest extends TestCase
 
     public function test_a_code_is_bounded_in_bytes_and_a_codex_device_sign_in_takes_no_answer(): void
     {
-        $oauth = $this->attempt(HookDriver::ClaudeCode, SignInMethod::OAuth, 'request-1');
-        $device = $this->attempt(HookDriver::Codex, SignInMethod::OAuth, 'request-2');
+        $oauth = $this->attempt(DefaultDrivers::CLAUDE_CODE, SignInMethod::OAuth, 'request-1');
+        $device = $this->attempt(DefaultDrivers::CODEX, SignInMethod::OAuth, 'request-2');
 
         $this->assertThrows(fn () => $this->submit($oauth, str_repeat('a', 513)), SignInCodeInvalid::class);
         $this->assertThrows(fn () => $this->submit($oauth, str_repeat('é', 257)), SignInCodeInvalid::class);
@@ -179,7 +179,7 @@ final class SignInSecretTest extends TestCase
     {
         $attempt = SignInAttempt::create(
             ActorIdentity::of(ActorContext::forUser(TestIds::of(1))),
-            HookDriver::ClaudeCode,
+            DefaultDrivers::CLAUDE_CODE,
             SignInMethod::ApiKey,
             '/journal/accounts/'.$requestKey,
             CarbonImmutable::now()->addMinutes(10),
@@ -195,7 +195,7 @@ final class SignInSecretTest extends TestCase
         return $attempt;
     }
 
-    private function attempt(HookDriver $driver, SignInMethod $method, string $requestKey): SignInAttempt
+    private function attempt(string $driver, SignInMethod $method, string $requestKey): SignInAttempt
     {
         return SignInAttempt::create(
             ActorIdentity::system(),

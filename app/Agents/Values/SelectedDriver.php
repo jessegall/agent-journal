@@ -10,7 +10,7 @@ use App\Agents\Exceptions\DriverConflict;
 use App\Agents\Exceptions\DriverRequired;
 use App\Agents\Exceptions\DriverUnsupported;
 use App\Agents\Exceptions\ModelUnavailable;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Contracts\DriverCatalogue;
 
 /**
  * The driver and concrete model a start runs, the model selection it asked for and where the driver came from.
@@ -18,7 +18,7 @@ use App\Drivers\Enums\HookDriver;
 final readonly class SelectedDriver
 {
     public function __construct(
-        public HookDriver $driver,
+        public string $driver,
         public string $model,
         public ModelSelection $requested,
         public SelectionSource $source,
@@ -49,15 +49,16 @@ final readonly class SelectedDriver
         ModelSelection $requested,
         ProfileDefaults|null $profile,
         string|null $parentDriver,
+        DriverCatalogue $drivers,
     ): self {
-        [$driver, $driverSource] = self::driver($driverKey, $profile, $parentDriver);
+        [$driver, $driverSource] = self::driver($driverKey, $profile, $parentDriver, $drivers);
         $source = new SelectionSource($driverSource, $profile?->key, $profile?->revision);
 
         return new self($driver, self::model($requested, $profile, $driver), $requested, $source);
     }
 
     /**
-     * @return array{0: HookDriver, 1: DriverSourceType}
+     * @return array{0: string, 1: DriverSourceType}
      *
      * @throws DriverRequired
      * @throws DriverConflict
@@ -67,12 +68,13 @@ final readonly class SelectedDriver
         string|null $driverKey,
         ProfileDefaults|null $profile,
         string|null $parentDriver,
+        DriverCatalogue $drivers,
     ): array {
         if ($driverKey !== null) {
-            $driver = self::supported($driverKey);
+            $driver = self::supported($driverKey, $drivers);
 
             if ($profile !== null && $profile->driverPinned && $profile->driver !== $driver) {
-                throw DriverConflict::for($profile->key, $driver->value);
+                throw DriverConflict::for($profile->key, $driver);
             }
 
             return [$driver, DriverSourceType::Explicit];
@@ -83,7 +85,7 @@ final readonly class SelectedDriver
         }
 
         if ($parentDriver !== null) {
-            return [self::supported($parentDriver), DriverSourceType::ParentSession];
+            return [self::supported($parentDriver, $drivers), DriverSourceType::ParentSession];
         }
 
         throw DriverRequired::forStart();
@@ -96,7 +98,7 @@ final readonly class SelectedDriver
     private static function model(
         ModelSelection $requested,
         ProfileDefaults|null $profile,
-        HookDriver $driver,
+        string $driver,
     ): string {
         $model = $requested->model;
 
@@ -105,7 +107,7 @@ final readonly class SelectedDriver
         }
 
         if ($profile !== null && ! $profile->allows($model)) {
-            throw ModelUnavailable::for($model, $driver->value);
+            throw ModelUnavailable::for($model, $driver);
         }
 
         return $model;
@@ -114,8 +116,12 @@ final readonly class SelectedDriver
     /**
      * @throws DriverUnsupported
      */
-    private static function supported(string $driverKey): HookDriver
+    private static function supported(string $driverKey, DriverCatalogue $drivers): string
     {
-        return HookDriver::tryFrom($driverKey) ?? throw DriverUnsupported::for($driverKey);
+        if (! $drivers->hasFamily($driverKey)) {
+            throw DriverUnsupported::for($driverKey);
+        }
+
+        return $driverKey;
     }
 }

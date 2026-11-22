@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles\Http;
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Values\AccountLabel;
@@ -109,6 +109,6 @@ final class AccountsPageTest extends TestCase
 
     private function account(string $label, string $directory): Account
     {
-        return Account::create(HookDriver::ClaudeCode, AccountLabel::from($label), $directory);
+        return Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from($label), $directory);
     }
 }

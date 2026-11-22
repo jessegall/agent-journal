@@ -169,6 +169,7 @@ use App\Agents\Commands\RetireAgent\RetireAgentCommand;
 use App\Agents\Commands\RetireMenuEntry\RetireMenuEntryCommand;
 use App\Agents\Commands\RetryDriverRequest\RetryDriverRequestCommand;
 use App\Agents\Commands\RunKeyScript\RunKeyScriptCommand;
+use App\Agents\Commands\SendDriverRequestAgain\SendDriverRequestAgainCommand;
 use App\Agents\Commands\SendTerminalInput\SendTerminalInputCommand;
 use App\Agents\Commands\SettleAccountUses\SettleAccountUsesCommand;
 use App\Agents\Commands\StartAgent\StartAgentCommand;
@@ -767,7 +768,6 @@ use App\Drivers\Contracts\DriverCapabilities;
 use App\Drivers\Contracts\DriverCatalogue;
 use App\Drivers\Enums\DriverCapability;
 use App\Drivers\Enums\DriverOutcome;
-use App\Drivers\Enums\HookDriver;
 use App\Drivers\Enums\SupportState;
 use App\Drivers\Exceptions\DriverCapabilityUnsupported;
 use App\Drivers\Exceptions\DriverKeyInvalid;
@@ -1889,7 +1889,6 @@ final class CoreApi
                 NextAction::class,
                 OverviewSection::class,
                 ListedPage::class,
-                HookDriver::class,
                 PreparedStart::class,
                 ExecutionReceipt::class,
                 ExecutionReference::class,
@@ -2522,6 +2521,7 @@ final class CoreApi
                 StopAgentCommand::class,
                 ImportHelperCommitsCommand::class,
                 RetryDriverRequestCommand::class,
+                SendDriverRequestAgainCommand::class,
                 CancelDriverRequestCommand::class,
                 ResolveDriverDeliveryCommand::class,
                 RepairDriverSettingsCommand::class,

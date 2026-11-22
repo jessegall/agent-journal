@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Agents\Events\StartSettingsRequested;
 use App\Agents\Support\IsolatedHookSettings;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Hooks\Drivers\Adapters\ClaudeCodeAdapter;
 use App\Hooks\Listeners\SupplyHookSettings;
 use Tests\Support\RefreshHookDatabase;
@@ -23,7 +23,7 @@ final class ClaudeMcpLaunchTest extends TestCase
 
     public function test_a_claude_launch_allows_only_the_journal_server_and_keeps_every_denial(): void
     {
-        $permissions = $this->permissionsOf(HookDriver::ClaudeCode);
+        $permissions = $this->permissionsOf(DefaultDrivers::CLAUDE_CODE);
 
         $this->assertSame(['mcp__journal__*'], $permissions['allow']);
         $this->assertSame(ClaudeCodeAdapter::NATIVE_CHILD_TOOLS, $permissions['deny']);
@@ -31,16 +31,16 @@ final class ClaudeMcpLaunchTest extends TestCase
 
     public function test_a_codex_launch_gets_no_allow_rule(): void
     {
-        $this->assertSame([], $this->permissionsOf(HookDriver::Codex)['allow']);
+        $this->assertSame([], $this->permissionsOf(DefaultDrivers::CODEX)['allow']);
     }
 
     /**
      * @return array{allow: list<string>, deny: list<string>}
      */
-    private function permissionsOf(HookDriver $driver): array
+    private function permissionsOf(string $driver): array
     {
         $settings = new IsolatedHookSettings();
-        $this->app->make(SupplyHookSettings::class)->handle(new StartSettingsRequested($driver->value, $settings));
+        $this->app->make(SupplyHookSettings::class)->handle(new StartSettingsRequested($driver, $settings));
 
         return json_decode($settings->content(), true, flags: JSON_THROW_ON_ERROR)['permissions'];
     }

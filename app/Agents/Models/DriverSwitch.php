@@ -13,7 +13,6 @@ use App\Agents\Values\ChosenAccount;
 use App\Agents\Values\DriverSwitchTarget;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
-use App\Drivers\Enums\HookDriver;
 use App\Drivers\Values\PinnedDriver;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
@@ -263,7 +262,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     public function target(): DriverSwitchTarget
     {
         return new DriverSwitchTarget(
-            HookDriver::from($this->target_family),
+            $this->target_family,
             $this->mode,
             new ChosenAccount($this->account_id, $this->account_revision),
             $this->conversation_id,

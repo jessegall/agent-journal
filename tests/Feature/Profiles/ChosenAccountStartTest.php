@@ -9,7 +9,7 @@ use App\Actors\Support\ActorContext;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Values\AccountLabel;
@@ -34,17 +34,17 @@ final class ChosenAccountStartTest extends TestCase
     public function test_a_start_on_the_chosen_account_runs_with_it_and_the_next_automatic_start_with_the_default(): void
     {
         $default = $this->chooseActiveAccounts()['codex'];
-        $chosen = Account::create(HookDriver::Codex, AccountLabel::from('Second account'), '/journal/accounts/second');
+        $chosen = Account::create(DefaultDrivers::CODEX, AccountLabel::from('Second account'), '/journal/accounts/second');
 
         $explicit = DB::transaction(fn () => $this->accounts()->chosenForStart(
-            HookDriver::Codex,
+            DefaultDrivers::CODEX,
             $chosen->id,
             $chosen->sign_in_generation,
         ));
-        $automatic = DB::transaction(fn () => $this->accounts()->forStart(HookDriver::Codex));
+        $automatic = DB::transaction(fn () => $this->accounts()->forStart(DefaultDrivers::CODEX));
 
         $this->assertSame([$chosen->id, $default->id], [$explicit->record->id, $automatic->record->id]);
-        $this->assertSame($default->id, ActiveAccount::lockedFor(HookDriver::Codex)->account_id);
+        $this->assertSame($default->id, ActiveAccount::lockedFor(DefaultDrivers::CODEX)->account_id);
     }
 
     public function test_a_chosen_account_whose_sign_in_changed_is_refused_for_review(): void
@@ -53,7 +53,7 @@ final class ChosenAccountStartTest extends TestCase
 
         $this->assertRefusedWith(
             StartUnavailableReason::ChosenAccountChanged,
-            fn () => $this->accounts()->chosenForStart(HookDriver::Codex, $chosen->id, $chosen->sign_in_generation + 1),
+            fn () => $this->accounts()->chosenForStart(DefaultDrivers::CODEX, $chosen->id, $chosen->sign_in_generation + 1),
         );
     }
 
@@ -65,11 +65,11 @@ final class ChosenAccountStartTest extends TestCase
 
         $this->assertRefusedWith(
             StartUnavailableReason::ChosenAccountMissing,
-            fn () => $this->accounts()->chosenForStart(HookDriver::Codex, (string) Str::ulid(), 0),
+            fn () => $this->accounts()->chosenForStart(DefaultDrivers::CODEX, (string) Str::ulid(), 0),
         );
         $this->assertRefusedWith(
             StartUnavailableReason::ChosenAccountMissing,
-            fn () => $this->accounts()->chosenForStart(HookDriver::Codex, $claude->id, $claude->sign_in_generation),
+            fn () => $this->accounts()->chosenForStart(DefaultDrivers::CODEX, $claude->id, $claude->sign_in_generation),
         );
 
         $agentId = (string) Str::ulid();
@@ -79,7 +79,7 @@ final class ChosenAccountStartTest extends TestCase
         );
         $this->assertRefusedWith(
             StartUnavailableReason::ChosenAccountMissing,
-            fn () => $this->accounts()->chosenForStart(HookDriver::Codex, $codex->id, $codex->sign_in_generation),
+            fn () => $this->accounts()->chosenForStart(DefaultDrivers::CODEX, $codex->id, $codex->sign_in_generation),
         );
     }
 

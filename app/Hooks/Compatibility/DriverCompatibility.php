@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Compatibility;
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Exceptions\DriverFamilyUnknown;
+use App\Drivers\Support\DefaultDrivers;
 use App\Hooks\Compatibility\Exceptions\DriverArrangementUnproven;
 use App\Hooks\Compatibility\Exceptions\DriverUnstartableInContainer;
 use App\Hooks\Enums\AuthenticationArrangement;
@@ -25,7 +26,7 @@ final readonly class DriverCompatibility
      *                                       a later report may lift, rather than a report this build fails
      */
     public function __construct(
-        public HookDriver $driver,
+        public string $driver,
         public string $version,
         public string $binaryDigest,
         public array $startFlags,
@@ -42,10 +43,13 @@ final readonly class DriverCompatibility
      * the account's directory; Codex runs one app-server that owns the sign-in and each start as a thread on it, its
      * working root an empty trusted folder. How either shares a sign-in needs a signed-in run.
      */
-    public static function pinned(HookDriver $driver): self
+    /**
+     * @throws DriverFamilyUnknown for a family no build is pinned for
+     */
+    public static function pinned(string $driver): self
     {
         return match ($driver) {
-            HookDriver::ClaudeCode => new self(
+            DefaultDrivers::CLAUDE_CODE => new self(
                 $driver,
                 '2.1.323',
                 '5432918d904a9b6afef7bb79d20df24d76052eabc1f41bceb84091d21f8889a7',
@@ -55,7 +59,7 @@ final readonly class DriverCompatibility
                 DriverEvidence::PrerequisiteMissing,
                 'the signed-in procedure of docs/accounts/claude-native-evidence.md',
             ),
-            HookDriver::Codex => new self(
+            DefaultDrivers::CODEX => new self(
                 $driver,
                 '0.165.0',
                 'a45099154d7fb4a5ed8a56f40966a95deb938e508bab23e6985035c709e9a85a',
@@ -65,6 +69,7 @@ final readonly class DriverCompatibility
                 DriverEvidence::PrerequisiteMissing,
                 'the signed-in procedure of docs/accounts/codex-native-evidence.md',
             ),
+            default => throw DriverFamilyUnknown::for($driver),
         };
     }
 
@@ -105,12 +110,12 @@ final readonly class DriverCompatibility
     public function assertStartable(): void
     {
         if ($this->containedShortfall !== null && ! $this->awaitsContainedReport) {
-            throw DriverUnstartableInContainer::for($this->driver->value, $this->version, $this->containedShortfall);
+            throw DriverUnstartableInContainer::for($this->driver, $this->version, $this->containedShortfall);
         }
 
         if ($this->containedShortfall !== null) {
             throw DriverArrangementUnproven::inContainer(
-                $this->driver->value,
+                $this->driver,
                 $this->version,
                 $this->containedShortfall,
             );
@@ -118,7 +123,7 @@ final readonly class DriverCompatibility
 
         if (! $this->arrangementEvidence->isNativeShown()) {
             throw DriverArrangementUnproven::for(
-                $this->driver->value,
+                $this->driver,
                 $this->version,
                 $this->arrangement,
                 $this->arrangementEvidence,

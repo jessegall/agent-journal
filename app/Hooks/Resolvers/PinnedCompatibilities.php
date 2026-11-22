@@ -8,7 +8,6 @@ use App\Agents\Enums\ArrangementType;
 use App\Agents\Models\Host;
 use App\Agents\Support\ArrangementSetting;
 use App\Agents\Support\LaunchProfiles;
-use App\Drivers\Enums\HookDriver;
 use App\Hooks\Compatibility\DriverCompatibility;
 use App\Hooks\Contracts\DriverCompatibilities;
 use App\Hooks\Enums\DriverEvidence;
@@ -22,7 +21,7 @@ final readonly class PinnedCompatibilities implements DriverCompatibilities
 {
     public function __construct(private ArrangementSetting $setting, private LaunchProfiles $launchProfiles) {}
 
-    public function for(HookDriver $driver): DriverCompatibility
+    public function for(string $driver): DriverCompatibility
     {
         $pinned = DriverCompatibility::pinned($driver);
 

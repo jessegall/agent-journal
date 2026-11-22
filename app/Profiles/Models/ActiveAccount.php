@@ -8,7 +8,6 @@ use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
-use App\Drivers\Enums\HookDriver;
 use App\Links\Support\Linkable;
 use App\Profiles\Events\AccountSwitched;
 use App\Profiles\Exceptions\AccountSelectionChanged;
@@ -64,7 +63,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
      * The driver's selection row, made when it is first needed and locked for the rest of the transaction; two
      * requests that make it at once end with the same one row.
      */
-    public static function lockedFor(HookDriver $driver): self
+    public static function lockedFor(string $driver): self
     {
         self::makeIfAbsent($driver);
 
@@ -77,7 +76,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
      *
      * @throws AccountUnavailable
      */
-    public static function lockedAccountForStart(HookDriver $driver): Account
+    public static function lockedAccountForStart(string $driver): Account
     {
         $selection = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -86,7 +85,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
             ->first();
 
         if ($selection === null || $selection->account_id === null) {
-            throw AccountUnavailable::forStart($driver->value, StartUnavailableReason::NoAccount);
+            throw AccountUnavailable::forStart($driver, StartUnavailableReason::NoAccount);
         }
 
         return Account::lockedForStart($selection->account_id);
@@ -96,7 +95,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
      * The driver's selection row for the journal's own maintenance or the host, made when first needed and locked;
      * whoever acts.
      */
-    public static function lockedForJournal(HookDriver $driver): self
+    public static function lockedForJournal(string $driver): self
     {
         self::makeIfAbsent($driver);
 
@@ -110,7 +109,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     /**
      * The account new starts of the driver use, none while the owner chose none; read under the owner's scope.
      */
-    public static function defaultAccountIdOf(HookDriver $driver): string|null
+    public static function defaultAccountIdOf(string $driver): string|null
     {
         return self::query()->ofDriver($driver)->value('account_id');
     }
@@ -219,19 +218,19 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofDriver(Builder $query, HookDriver $driver): void
+    protected function ofDriver(Builder $query, string $driver): void
     {
-        $query->where('account_protocol', $driver->value);
+        $query->where('account_protocol', $driver);
     }
 
     /**
      * Makes the driver's selection row when none exists yet; two requests that make it at once leave one row.
      */
-    private static function makeIfAbsent(HookDriver $driver): void
+    private static function makeIfAbsent(string $driver): void
     {
         $selection = new self();
         $selection->id = strtolower((string) Str::ulid());
-        $selection->account_protocol = $driver->value;
+        $selection->account_protocol = $driver;
         $selection->has_selected = false;
         $selection->change_number = 0;
         $selection->insertIfAbsent();

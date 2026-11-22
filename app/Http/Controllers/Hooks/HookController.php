@@ -14,6 +14,7 @@ use App\Hooks\Drivers\Contracts\DriverAdapters;
 use App\Hooks\Drivers\DriverReplies;
 use App\Hooks\Exceptions\HookDigestChanged;
 use App\Hooks\Exceptions\HookIdentityExpired;
+use App\Hooks\Exceptions\HookProtocolUnknown;
 use App\Hooks\Exceptions\IncomingWorkFailed;
 use App\Hooks\Exceptions\UnreadablePayload;
 use App\Hooks\Exceptions\UnsupportedHook;
@@ -26,6 +27,7 @@ use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Answers one native hook call: the adapter reads the payload, shell commands included, before the state machine
@@ -47,7 +49,12 @@ final readonly class HookController
      */
     public function __invoke(HookRequest $request, StackAccess $access, AgentStateMachine $machine): JsonResponse
     {
-        $adapter = $this->adapters->for($request->driver()->value);
+        // A hook address names a protocol no adapter reads: there is no such endpoint.
+        if (! $this->adapters->supports($request->driver())) {
+            throw new NotFoundHttpException(HookProtocolUnknown::for($request->driver())->getMessage());
+        }
+
+        $adapter = $this->adapters->for($request->driver());
 
         try {
             $hookInput = $request->payload();

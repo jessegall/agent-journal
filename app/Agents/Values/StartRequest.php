@@ -58,7 +58,7 @@ final readonly class StartRequest
 
         return hash('sha256', json_encode([
             $this->agentId,
-            $this->selection->driver->value,
+            $this->selection->driver,
             $this->selection->model,
             $requested->type->value,
             $requested->model,

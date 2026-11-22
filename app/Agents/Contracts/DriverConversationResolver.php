@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Agents\Contracts;
 
 use App\Agents\Support\DriverConversationSummary;
-use App\Drivers\Enums\HookDriver;
 
 /**
  * The native conversations an agent's starts entered for one driver and context, newest visit first, at most 20.
@@ -17,5 +16,5 @@ interface DriverConversationResolver
     /**
      * @return list<DriverConversationSummary>
      */
-    public function conversations(string $agentId, HookDriver $driver, string|null $contextReference): array;
+    public function conversations(string $agentId, string $driver, string|null $contextReference): array;
 }

@@ -7,7 +7,6 @@ namespace App\Connections\Commands\AssertBindingStart;
 use App\Bus\Attributes\Entry;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Drivers\Enums\HookDriver;
 
 /**
  * Refuses a binding's start before any grant unless the calling host is the binding's own, the root id and the
@@ -24,6 +23,6 @@ final readonly class AssertBindingStartCommand extends Command
         public string $rootId,
         public string $folder,
         public string $agentId,
-        public HookDriver $driver,
+        public string $driver,
     ) {}
 }

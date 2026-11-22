@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
-use App\Drivers\Enums\HookDriver;
 use App\Profiles\Enums\AccountNoticeReason;
 use App\Profiles\Models\AccountNotice;
 use App\Profiles\Models\ActiveAccount;
@@ -21,7 +20,7 @@ final readonly class AccountNotices
      */
     public function record(string $driver, AccountNoticeReason $reason): AccountNotice
     {
-        ActiveAccount::lockedForJournal(HookDriver::from($driver));
+        ActiveAccount::lockedForJournal($driver);
         $open = AccountNotice::lockedOpenFor($driver, $reason);
 
         if ($open === null) {
@@ -38,7 +37,7 @@ final readonly class AccountNotices
      */
     public function resolveOpen(string $driver, CarbonImmutable $now): void
     {
-        ActiveAccount::lockedForJournal(HookDriver::from($driver));
+        ActiveAccount::lockedForJournal($driver);
 
         foreach (AccountNotice::lockedOpenOf($driver) as $notice) {
             $notice->resolveAt($now);

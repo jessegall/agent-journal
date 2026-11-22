@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Drivers\Adapters;
 
 use App\Agents\Values\Operation;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Hooks\Actions\CheckProtectedResources;
 use App\Hooks\Actions\RecordDriverFailure;
 use App\Hooks\Compatibility\DriverCompatibility;
@@ -77,7 +77,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
 
     public function hookProtocol(): string
     {
-        return HookDriver::ClaudeCode->value;
+        return DefaultDrivers::CLAUDE_CODE;
     }
 
     public function journalToolRules(): array
@@ -135,7 +135,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
 
     public function compatibility(): DriverCompatibility
     {
-        return DriverCompatibility::pinned(HookDriver::ClaudeCode);
+        return DriverCompatibility::pinned(DefaultDrivers::CLAUDE_CODE);
     }
 
     public function modelArguments(string $model): array
@@ -172,7 +172,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
             ),
             HookEvent::StopFailure => new NotificationCall(
                 $hook,
-                new FailureDetails(HookDriver::ClaudeCode->value, $hookInput->driverFailure()),
+                new FailureDetails(DefaultDrivers::CLAUDE_CODE, $hookInput->driverFailure()),
                 $this->failures,
             ),
             HookEvent::SessionEnd => new JudgedCall(

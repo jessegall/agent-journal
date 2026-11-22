@@ -7,7 +7,6 @@ namespace App\Profiles\Casts;
 use App\Agents\Stored\StoredAccessPolicy;
 use App\Agents\Stored\StoredExecutionPolicy;
 use App\Agents\Stored\StoredStopConditions;
-use App\Drivers\Enums\HookDriver;
 use App\Profiles\Data\FieldOriginData;
 use App\Profiles\Exceptions\ProfileRevisionUnreadable;
 use App\Profiles\Values\FieldOrigin;
@@ -39,7 +38,7 @@ final class ProfileStartPolicyCast implements CastsAttributes
     {
         try {
             return new ProfileStartPolicy(
-                HookDriver::tryFrom((string) $attributes['driver']),
+                $attributes['driver'] === null ? null : (string) $attributes['driver'],
                 (bool) $attributes['driver_pinned'],
                 self::models((string) $attributes['allowed_models']),
                 StoredAccessPolicy::from((string) $attributes['access_policy'])->toAccessPolicy(),
@@ -63,7 +62,7 @@ final class ProfileStartPolicyCast implements CastsAttributes
     public function set(Model $model, string $key, mixed $value, array $attributes): array
     {
         return [
-            'driver' => $value->driver?->value,
+            'driver' => $value->driver,
             'driver_pinned' => $value->driverPinned,
             'allowed_models' => json_encode($value->allowedModels, JSON_THROW_ON_ERROR),
             'access_policy' => StoredAccessPolicy::fromAccessPolicy($value->access)->toJson(),

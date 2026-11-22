@@ -50,7 +50,7 @@ final readonly class AssertBindingStartHandler implements CommandHandler
             throw BindingStartRefused::notTheMainAgent($binding->id);
         }
 
-        $eligibility = $binding->eligibilityOf($this->drivers->family($command->driver->value));
+        $eligibility = $binding->eligibilityOf($this->drivers->family($command->driver));
 
         if (! $eligibility->isEligible()) {
             throw BindingStartRefused::providerUnavailable($binding->id, $eligibility->unavailableReason);

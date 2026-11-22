@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Hooks;
 
-use App\Drivers\Enums\HookDriver;
 use App\Hooks\Drivers\HookPayload;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -37,9 +36,9 @@ final class HookRequest extends FormRequest
         ];
     }
 
-    public function driver(): HookDriver
+    public function driver(): string
     {
-        return HookDriver::from((string) $this->route('driver'));
+        return (string) $this->route('driver');
     }
 
     /**

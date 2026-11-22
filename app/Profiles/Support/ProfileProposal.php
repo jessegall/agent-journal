@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Agents\Enums\ExecutionModeType;
-use App\Drivers\Enums\HookDriver;
 use App\Profiles\Data\PolicyOverrideData;
 use App\Profiles\Data\ProfileConfigurationData;
 use App\Profiles\Data\ProposedProfileData;
@@ -111,7 +110,7 @@ final readonly class ProfileProposal
             ProfileBase::of($fields->base),
             $fields->instructions,
             $fields->model,
-            $fields->driver === null ? null : HookDriver::from($fields->driver),
+            $fields->driver === null ? null : $fields->driver,
             $fields->driverPinned,
             $fields->allowedModels,
             $fields->skillAllowlist,

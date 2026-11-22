@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Actors\Contracts\CurrentAuthorizer;
-use App\Drivers\Enums\HookDriver;
 use App\Http\Data\Profiles\EligibleAccountsData;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Contracts\ProfileResolver;
@@ -27,7 +26,7 @@ final readonly class EligibleAccounts implements StartAccounts
         private ProfileResolver $profiles,
     ) {}
 
-    public function forProfileStart(HookDriver $driver, string $profileKey): EligibleAccountsData
+    public function forProfileStart(string $driver, string $profileKey): EligibleAccountsData
     {
         $accounts = $this->forDriver($driver);
         $profile = $this->profiles->snapshotFor(ProfileKey::from($profileKey));
@@ -39,14 +38,14 @@ final readonly class EligibleAccounts implements StartAccounts
         ]);
     }
 
-    public function forDriver(HookDriver $driver): EligibleAccountsData
+    public function forDriver(string $driver): EligibleAccountsData
     {
         $this->authorizer->authorize(ProfileAdministrationPolicy::class, Profile::class, AccessType::Create);
         $default = ActiveAccount::defaultAccountIdOf($driver);
-        $accounts = array_filter(Account::listed(), fn (Account $account) => $account->account_protocol === $driver->value);
+        $accounts = array_filter(Account::listed(), fn (Account $account) => $account->account_protocol === $driver);
 
         return EligibleAccountsData::from([
-            'driver' => $driver->value,
+            'driver' => $driver,
             'accounts' => array_values(array_map(
                 fn (Account $account) => EligibleAccountFactory::of($account, $account->id === $default),
                 $accounts,

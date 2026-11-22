@@ -15,7 +15,6 @@ use App\Agents\Exceptions\HostUnavailable;
 use App\Agents\Values\BrowserInputCapabilities;
 use App\Agents\Values\ProtectionReport;
 use App\Agents\Values\StartProposal;
-use App\Drivers\Enums\HookDriver;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -121,7 +120,7 @@ final class Host extends Model implements ReadableModel
      * The protection a contained host of this installation last reported for the driver's build on the platform a
      * launch profile names, or an unreported one when no contained host has.
      */
-    public static function containedProtectionOf(HookDriver $driver, string $build, string $platform): ProtectionReport
+    public static function containedProtectionOf(string $driver, string $build, string $platform): ProtectionReport
     {
         $host = self::query()
             ->where('arrangement', ArrangementType::Contained)
@@ -154,7 +153,7 @@ final class Host extends Model implements ReadableModel
      * @throws HostUnavailable
      */
     public static function runningStart(
-        HookDriver $driver,
+        string $driver,
         string $build,
         ExecutionModeType $placement,
         DriverVariant $variant,
@@ -272,10 +271,10 @@ final class Host extends Model implements ReadableModel
     /**
      * Whether the host enrolled this driver build as available, in its own arrangement, the placement and the mode.
      */
-    public function declaresRun(HookDriver $driver, string $build, ExecutionModeType $placement, DriverVariant $mode): bool
+    public function declaresRun(string $driver, string $build, ExecutionModeType $placement, DriverVariant $mode): bool
     {
         foreach ($this->availableDescriptors() as $descriptor) {
-            if ($descriptor['family'] === $driver->value
+            if ($descriptor['family'] === $driver
                 && $descriptor['mode'] === $mode->value
                 && $descriptor['build'] === $build
                 && $descriptor['arrangement'] === $this->arrangement->value
@@ -322,7 +321,7 @@ final class Host extends Model implements ReadableModel
         return $this->start_roots[0] ?? throw HostUnavailable::withoutStartFolder($this->id);
     }
 
-    public function protectionOf(HookDriver $driver, string $build, string $platform): ProtectionReport
+    public function protectionOf(string $driver, string $build, string $platform): ProtectionReport
     {
         $key = ProtectionReport::keyOf($driver, $build, $platform);
 

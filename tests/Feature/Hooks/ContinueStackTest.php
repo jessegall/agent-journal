@@ -16,6 +16,7 @@ use App\Agents\Values\StackTarget;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use App\Contracts\StartTransaction;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Hooks\Actions\StartStacks;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Exceptions\StateTransferUnknown;
@@ -107,7 +108,7 @@ final class ContinueStackTest extends TestCase
         $request = new StartRequest(
             TestSelections::requestId(),
             $old->agent->id,
-            SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null),
+            SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null, $this->app->make(DriverCatalogue::class)),
             StartOriginType::OwnerRequest,
             'helpers.job:01m7wgahp0n7766x1e1ta8ehew',
             null,

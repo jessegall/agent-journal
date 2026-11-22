@@ -16,7 +16,8 @@ use App\Agents\Support\StartReceipt;
 use App\Agents\Values\ModelSelection;
 use App\Agents\Values\ProfileDefaults;
 use App\Agents\Values\SelectedDriver;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Contracts\DriverCatalogue;
+use App\Drivers\Support\DefaultDrivers;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
@@ -42,8 +43,9 @@ final class SessionSelectionReadTest extends TestCase
         $selection = SelectedDriver::resolve(
             null,
             ModelSelection::fromInput('default'),
-            new ProfileDefaults('journal-researcher', 4, HookDriver::ClaudeCode, false, 'claude-sonnet-5-5', [], DriverVariant::Headless),
+            new ProfileDefaults('journal-researcher', 4, DefaultDrivers::CLAUDE_CODE, false, 'claude-sonnet-5-5', [], DriverVariant::Headless),
             null,
+            $this->app->make(DriverCatalogue::class),
         );
         $this->session = $this->app->make(StartSessions::class)->start(
             $agent,
@@ -58,7 +60,7 @@ final class SessionSelectionReadTest extends TestCase
         $option = $this->app->make(SessionResolver::class)->active()[0];
 
         $this->assertSame(
-            [HookDriver::ClaudeCode, 'claude-sonnet-5-5', ModelSelectionType::ProfileDefault, null],
+            [DefaultDrivers::CLAUDE_CODE, 'claude-sonnet-5-5', ModelSelectionType::ProfileDefault, null],
             [
                 $option->selection->driver,
                 $option->selection->model,

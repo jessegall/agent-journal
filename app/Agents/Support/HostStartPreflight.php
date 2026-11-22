@@ -53,7 +53,7 @@ final readonly class HostStartPreflight implements StartPreflight
      */
     private function runsContained(StartProposal $proposal): bool
     {
-        $key = $this->drivers->keyFor($proposal->driver->value, $proposal->variant);
+        $key = $this->drivers->keyFor($proposal->driver, $proposal->variant);
 
         return $this->drivers->forKey($key)
             ->capabilities(BoundTarget::beforePlacement())

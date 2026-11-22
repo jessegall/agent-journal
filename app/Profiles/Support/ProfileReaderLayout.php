@@ -43,7 +43,7 @@ final readonly class ProfileReaderLayout
                 : SettingsRow::chips('models', 'Models it may use', $models),
             ...($snapshot->start->driver === null
                 ? []
-                : [SettingsRow::value('driver', 'Driver', $snapshot->start->driver->value)]),
+                : [SettingsRow::value('driver', 'Driver', $snapshot->start->driver)]),
             SettingsRow::value('instances', 'How many run', str_replace('_', ' ', $snapshot->instances->value)),
             SettingsRow::value('rules', 'Rules it works under', 'Not available')->inBlock(),
         ];

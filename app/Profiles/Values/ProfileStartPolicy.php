@@ -12,7 +12,6 @@ use App\Agents\Values\ExecutionPolicy;
 use App\Agents\Values\Operation;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StopConditions;
-use App\Drivers\Enums\HookDriver;
 use App\Profiles\Enums\PolicyOriginType;
 
 /**
@@ -32,7 +31,7 @@ final readonly class ProfileStartPolicy
      * @param  list<string>  $allowedModels
      */
     public function __construct(
-        public HookDriver|null $driver,
+        public string|null $driver,
         public bool $driverPinned,
         public array $allowedModels,
         public AccessPolicy $access,
@@ -49,7 +48,7 @@ final readonly class ProfileStartPolicy
      */
     public static function defaultsFor(
         ProfileBase $type,
-        HookDriver|null $driver,
+        string|null $driver,
         bool $driverPinned,
         array $allowedModels,
         string $configurationHash,

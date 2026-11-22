@@ -13,7 +13,7 @@ use App\Agents\Exceptions\AccountUnavailable;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Bus\Support\EntryDispatchers;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Files\Contracts\Files;
 use App\Profiles\Commands\BeginSignIn\BeginSignInCommand;
 use App\Profiles\Commands\BeginSignInAgain\BeginSignInAgainCommand;
@@ -111,7 +111,7 @@ final class AccountRemovalTest extends TestCase
 
     public function test_removal_cancels_a_running_sign_in_and_leaves_no_replacement_chosen(): void
     {
-        Account::create(HookDriver::Codex, AccountLabel::from('Home'), '/journal/accounts/home');
+        Account::create(DefaultDrivers::CODEX, AccountLabel::from('Home'), '/journal/accounts/home');
         $this->asOwner(new BeginSignInAgainCommand($this->account->id));
         $generation = $this->account->refresh()->sign_in_generation;
 
@@ -127,7 +127,7 @@ final class AccountRemovalTest extends TestCase
             ActiveAccount::query()->withoutGlobalScopes()->where('account_protocol', 'codex')->value('account_id'),
         );
         $this->assertThrows(
-            fn () => ActiveAccount::lockedAccountForStart(HookDriver::Codex),
+            fn () => ActiveAccount::lockedAccountForStart(DefaultDrivers::CODEX),
             AccountUnavailable::class,
             self::NO_DEFAULT_ACCOUNT,
         );

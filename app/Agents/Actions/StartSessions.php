@@ -84,7 +84,7 @@ final readonly class StartSessions
      */
     private function settingsFor(SelectedDriver $selection): IsolatedHookSettings
     {
-        $driver = $selection->driver->value;
+        $driver = $selection->driver;
         $settings = new IsolatedHookSettings();
         $this->events->dispatch(new StartSettingsRequested($driver, $settings));
 
@@ -122,7 +122,7 @@ final readonly class StartSessions
             $session,
             $token,
             $settings->content(),
-            $this->adapters->for($selection->driver->value)->modelArguments($selection->model),
+            $this->adapters->for($selection->driver)->modelArguments($selection->model),
             $runtime,
             $firstRequest,
         );

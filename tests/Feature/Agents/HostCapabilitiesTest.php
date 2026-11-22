@@ -15,7 +15,7 @@ use App\Agents\Exceptions\CapabilityMatrixInvalid;
 use App\Agents\Exceptions\HostCapabilityUnsupported;
 use App\Agents\Resolvers\RecordedHostCapabilities;
 use App\Agents\Support\HostCapabilityQuery;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Files\Contracts\Files;
 use Tests\TestCase;
 
@@ -32,7 +32,7 @@ final class HostCapabilitiesTest extends TestCase
 
     public function test_every_client_states_its_account_transport_with_evidence_in_both_execution_modes(): void
     {
-        foreach (HookDriver::cases() as $driver) {
+        foreach (DefaultDrivers::familyKeys() as $driver) {
             foreach (ExecutionModeType::cases() as $mode) {
                 $this->assertRecorded($this->capabilityQuery(HostCapabilityType::AccountTransport, $driver, $mode));
             }
@@ -42,7 +42,7 @@ final class HostCapabilitiesTest extends TestCase
     public function test_every_container_capability_has_an_explicit_status_with_evidence_for_both_clients(): void
     {
         foreach (HostCapabilityType::cases() as $capability) {
-            foreach (HookDriver::cases() as $driver) {
+            foreach (DefaultDrivers::familyKeys() as $driver) {
                 $this->assertRecorded(
                     $this->capabilityQuery($capability, $driver, ExecutionModeType::RequiredContainer),
                 );
@@ -54,7 +54,7 @@ final class HostCapabilitiesTest extends TestCase
     {
         $capabilities = $this->app->make(HostCapabilities::class);
 
-        foreach (HookDriver::cases() as $driver) {
+        foreach (DefaultDrivers::familyKeys() as $driver) {
             $this->assertSame(
                 CapabilityStatusType::Supported,
                 $capabilities->capability(
@@ -68,7 +68,7 @@ final class HostCapabilitiesTest extends TestCase
         }
 
         foreach (HostCapabilityType::cases() as $capability) {
-            foreach (HookDriver::cases() as $driver) {
+            foreach (DefaultDrivers::familyKeys() as $driver) {
                 $row = $capabilities->capability(
                     $this->capabilityQuery($capability, $driver, ExecutionModeType::RequiredContainer),
                 );
@@ -87,7 +87,7 @@ final class HostCapabilitiesTest extends TestCase
         $capability = $this->app->make(HostCapabilities::class)->capability(
             $this->capabilityQuery(
                 HostCapabilityType::AccountTransport,
-                HookDriver::Codex,
+                DefaultDrivers::CODEX,
                 ExecutionModeType::ProtectedHost,
             ),
         );
@@ -106,7 +106,7 @@ final class HostCapabilitiesTest extends TestCase
         $capability = $this->app->make(HostCapabilities::class)->capability(
             $this->capabilityQuery(
                 HostCapabilityType::StopDeadline,
-                HookDriver::ClaudeCode,
+                DefaultDrivers::CLAUDE_CODE,
                 ExecutionModeType::RequiredContainer,
             ),
         );
@@ -141,7 +141,7 @@ final class HostCapabilitiesTest extends TestCase
         $capabilities->capability(
             $this->capabilityQuery(
                 HostCapabilityType::AccountTransport,
-                HookDriver::Codex,
+                DefaultDrivers::CODEX,
                 ExecutionModeType::ProtectedHost,
             ),
         )->assertSupported();
@@ -150,7 +150,7 @@ final class HostCapabilitiesTest extends TestCase
             $capabilities->capability(
                 $this->capabilityQuery(
                     HostCapabilityType::AccountTransport,
-                    HookDriver::ClaudeCode,
+                    DefaultDrivers::CLAUDE_CODE,
                     ExecutionModeType::ProtectedHost,
                 ),
             )->status,
@@ -182,7 +182,7 @@ final class HostCapabilitiesTest extends TestCase
         $capabilities->capability(
             $this->capabilityQuery(
                 HostCapabilityType::AccountTransport,
-                HookDriver::Codex,
+                DefaultDrivers::CODEX,
                 ExecutionModeType::ProtectedHost,
             ),
         );
@@ -198,7 +198,7 @@ final class HostCapabilitiesTest extends TestCase
 
     private function capabilityQuery(
         HostCapabilityType $capability,
-        HookDriver $driver,
+        string $driver,
         ExecutionModeType $mode,
     ): HostCapabilityQuery {
         return new HostCapabilityQuery($capability, $driver, AccountModeType::Subscription, $mode);

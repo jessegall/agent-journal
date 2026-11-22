@@ -78,7 +78,7 @@ use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StopConditions;
 use App\Bus\Contracts\CommandBus;
 use App\Drivers\Contracts\DriverCatalogue;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Values\AccountLabel;
@@ -377,8 +377,8 @@ final class AgentDriverLedgerTest extends TestCase
 
     public function test_a_contained_main_sessions_grant_carries_its_attachable_container(): void
     {
-        $account = Account::create(HookDriver::ClaudeCode, AccountLabel::from('Plain'), '/journal/accounts/01plain');
-        ActiveAccount::lockedFor(HookDriver::ClaudeCode)->select($account);
+        $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Plain'), '/journal/accounts/01plain');
+        ActiveAccount::lockedFor(DefaultDrivers::CLAUDE_CODE)->select($account);
         [$host, $opened] = $this->openRuntime();
         $this->app->instance(
             ArrangementSetting::class,

@@ -8,20 +8,19 @@ use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Agents\Values\SelectedAccount;
-use App\Drivers\Enums\HookDriver;
 
 /**
  * The account reader while nothing keeps accounts: every start is refused for want of one, never run on a guess.
  */
 final readonly class UnconfiguredAccounts implements ActiveAccountReader
 {
-    public function forStart(HookDriver $driver): SelectedAccount
+    public function forStart(string $driver): SelectedAccount
     {
-        throw AccountUnavailable::forStart($driver->value, StartUnavailableReason::NoAccount);
+        throw AccountUnavailable::forStart($driver, StartUnavailableReason::NoAccount);
     }
 
-    public function chosenForStart(HookDriver $driver, string $accountId, int $reviewedSignIn): SelectedAccount
+    public function chosenForStart(string $driver, string $accountId, int $reviewedSignIn): SelectedAccount
     {
-        throw AccountUnavailable::forStart($driver->value, StartUnavailableReason::ChosenAccountMissing);
+        throw AccountUnavailable::forStart($driver, StartUnavailableReason::ChosenAccountMissing);
     }
 }

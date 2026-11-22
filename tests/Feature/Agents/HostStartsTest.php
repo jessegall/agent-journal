@@ -21,7 +21,6 @@ use App\Agents\Support\OpenedRuntime;
 use App\Bus\Contracts\CommandBus;
 use App\Drivers\Capabilities\CodexTerminalCapabilities;
 use App\Drivers\Enums\DriverCapability;
-use App\Drivers\Enums\HookDriver;
 use App\Drivers\Exceptions\DriverCapabilityUnsupported;
 use App\Hooks\Compatibility\DriverCompatibility;
 use App\Hooks\Contracts\DriverCompatibilities;
@@ -78,7 +77,7 @@ final class HostStartsTest extends TestCase
         $this->chooseActiveAccounts();
         $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
         {
-            public function for(HookDriver $driver): DriverCompatibility
+            public function for(string $driver): DriverCompatibility
             {
                 $pinned = DriverCompatibility::pinned($driver);
 

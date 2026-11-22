@@ -29,7 +29,7 @@ final readonly class SwitchAccountHandler implements CommandHandler
 
         $account = Account::lockedForChange($command->accountId);
 
-        $this->notices->resolveOpen($driver->value, CarbonImmutable::now());
+        $this->notices->resolveOpen($driver, CarbonImmutable::now());
 
         $selection->switchTo($account);
     }

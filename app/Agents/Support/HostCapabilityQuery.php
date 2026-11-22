@@ -7,7 +7,6 @@ namespace App\Agents\Support;
 use App\Agents\Enums\AccountModeType;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\HostCapabilityType;
-use App\Drivers\Enums\HookDriver;
 
 /**
  * One capability a start would need, for a driver, how its account signs in and where it runs.
@@ -16,7 +15,7 @@ final readonly class HostCapabilityQuery
 {
     public function __construct(
         public HostCapabilityType $capability,
-        public HookDriver $driver,
+        public string $driver,
         public AccountModeType $accountMode,
         public ExecutionModeType $executionMode,
     ) {}
@@ -26,7 +25,7 @@ final readonly class HostCapabilityQuery
         return sprintf(
             '%s for %s with a %s account in %s mode',
             $this->capability->value,
-            $this->driver->value,
+            $this->driver,
             $this->accountMode->value,
             $this->executionMode->value,
         );

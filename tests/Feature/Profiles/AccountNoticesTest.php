@@ -17,7 +17,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Http\Data\Profiles\AccountNoticesData;
 use App\Profiles\Commands\DismissAccountNotice\DismissAccountNoticeCommand;
 use App\Profiles\Commands\SwitchAccount\SwitchAccountCommand;
@@ -90,7 +90,7 @@ final class AccountNoticesTest extends TestCase
         $codexNotice = AccountNotice::query()->where('driver', 'codex')->sole();
 
         $this->app->make(CommandBus::class)->run(new DismissAccountNoticeCommand($codexNotice->id));
-        $account = Account::create(HookDriver::ClaudeCode, AccountLabel::from('Work'), '/journal/accounts/work');
+        $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Work'), '/journal/accounts/work');
         $this->app->make(CommandBus::class)->run(new SwitchAccountCommand($account->id));
 
         $this->assertSame([], $this->section()->notices);

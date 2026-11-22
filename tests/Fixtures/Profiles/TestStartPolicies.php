@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileStartPolicy;
 
@@ -18,7 +18,7 @@ final class TestStartPolicies
     {
         return ProfileStartPolicy::defaultsFor(
             $type,
-            HookDriver::ClaudeCode,
+            DefaultDrivers::CLAUDE_CODE,
             true,
             ['opus', 'sonnet'],
             hash('sha256', "test defaults of {$type->key}"),

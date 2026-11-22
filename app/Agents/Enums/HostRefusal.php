@@ -33,7 +33,7 @@ enum HostRefusal: string
                 'Check account-folder ownership on the host',
             ),
             self::IdentityMismatch => StartRemedy::forEveryone(
-                StartRemedyType::OperatorInstruction,
+                StartRemedyType::RetryStart,
                 'Start the agent again',
             ),
             self::Unknown => StartRemedy::forEveryone(

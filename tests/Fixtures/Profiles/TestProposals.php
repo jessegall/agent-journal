@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Enums\InstancePolicy;
 use App\Profiles\Support\PolicyOverride;
 use App\Profiles\Support\ProfileProposal;
@@ -40,7 +40,7 @@ final class TestProposals
             $type,
             $instructions,
             $model,
-            HookDriver::Codex,
+            DefaultDrivers::CODEX,
             false,
             ['opus', 'sonnet'],
             $skillAllowlist,

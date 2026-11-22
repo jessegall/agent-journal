@@ -76,7 +76,7 @@ final readonly class SignInCompletion
         }
 
         if ($attempt->account_id === null) {
-            $fallback = $attempt->method->accountNameFor($this->drivers->family($driver->value)->label);
+            $fallback = $attempt->method->accountNameFor($this->drivers->family($driver)->label);
             $proposed = AccountLabel::proposedFrom($identity->display, $fallback);
             $account = Account::create($driver, Account::freeLabel($driver, $proposed), $staging);
             $attempt->completeWith($account);
@@ -100,7 +100,7 @@ final readonly class SignInCompletion
 
         $account->signedInAgain($attempt, $identity, $staging, $now);
         $selection->chooseFirst($account);
-        $this->notices->resolveOpen($driver->value, $now);
+        $this->notices->resolveOpen($driver, $now);
     }
 
     /**

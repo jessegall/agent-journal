@@ -10,7 +10,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Bus\Contracts\CommandBus;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Commands\RenameAccount\RenameAccountCommand;
 use App\Profiles\Commands\SwitchAccount\SwitchAccountCommand;
 use App\Profiles\Events\AccountsChanged;
@@ -82,7 +82,7 @@ final class AccountSwitchingTest extends TestCase
     public function test_a_refused_choice_leaves_the_other_programs_default_alone(): void
     {
         [$work, $home] = [$this->account('Work'), $this->account('Home')];
-        $codex = Account::create(HookDriver::Codex, AccountLabel::from('Codex'), '/journal/accounts/Codex');
+        $codex = Account::create(DefaultDrivers::CODEX, AccountLabel::from('Codex'), '/journal/accounts/Codex');
         $this->bus()->run(new SwitchAccountCommand($codex->id, 0));
         $this->bus()->run(new SwitchAccountCommand($work->id, 0));
 
@@ -159,7 +159,7 @@ final class AccountSwitchingTest extends TestCase
 
     private function account(string $label): Account
     {
-        return Account::create(HookDriver::ClaudeCode, AccountLabel::from($label), '/journal/accounts/'.$label);
+        return Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from($label), '/journal/accounts/'.$label);
     }
 
     private function actAsOwner(): void

@@ -6,7 +6,6 @@ namespace App\Agents\Models;
 
 use App\Agents\Enums\ResumeRefusal;
 use App\Agents\Exceptions\ResumeRefused;
-use App\Drivers\Enums\HookDriver;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -63,12 +62,12 @@ final class DriverConversation extends Model implements ReadableModel
      * The native id of the agent's latest conversation under this context in this driver, the one a resume
      * continues; none when it never had one there.
      */
-    public static function lastUnder(string $agentId, string $contextReference, HookDriver $driver): string|null
+    public static function lastUnder(string $agentId, string $contextReference, string $driver): string|null
     {
         $conversation = self::query()
             ->where('agent_id', $agentId)
             ->where('context_reference', $contextReference)
-            ->where('resume_protocol', $driver->value)
+            ->where('resume_protocol', $driver)
             ->latest()
             ->first();
 
@@ -84,7 +83,7 @@ final class DriverConversation extends Model implements ReadableModel
     public static function chosenFor(
         string $conversationId,
         string $agentId,
-        HookDriver $driver,
+        string $driver,
         string|null $contextReference,
     ): string {
         $conversation = self::query()->whereKey($conversationId)->firstOr(
@@ -101,11 +100,11 @@ final class DriverConversation extends Model implements ReadableModel
     /**
      * @throws ResumeRefused
      */
-    public function assertContinuableBy(string $agentId, HookDriver $driver, string|null $contextReference): void
+    public function assertContinuableBy(string $agentId, string $driver, string|null $contextReference): void
     {
         $refusal = match (true) {
             $this->agent_id !== $agentId => ResumeRefusal::OtherAgent,
-            $this->resume_protocol !== $driver->value => ResumeRefusal::OtherDriver,
+            $this->resume_protocol !== $driver => ResumeRefusal::OtherDriver,
             $this->context_reference !== $contextReference => ResumeRefusal::OtherContext,
             default => null,
         };

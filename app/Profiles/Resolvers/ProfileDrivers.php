@@ -7,6 +7,7 @@ namespace App\Profiles\Resolvers;
 use App\Agents\Values\ModelSelection;
 use App\Agents\Values\ProfileDefaults;
 use App\Agents\Values\SelectedDriver;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Values\ProfileKey;
@@ -18,7 +19,7 @@ use App\Profiles\Values\ProfileSelection;
  */
 final readonly class ProfileDrivers implements ProfileSelections
 {
-    public function __construct(private ProfileResolver $profiles) {}
+    public function __construct(private ProfileResolver $profiles, private DriverCatalogue $drivers) {}
 
     public function select(
         ProfileKey $profile,
@@ -40,7 +41,7 @@ final readonly class ProfileDrivers implements ProfileSelections
         );
 
         return new ProfileSelection(
-            SelectedDriver::resolve($driverKey, $requested, $defaults, $parentDriver),
+            SelectedDriver::resolve($driverKey, $requested, $defaults, $parentDriver, $this->drivers),
             $snapshot->base,
             $snapshot->revision,
             $start,

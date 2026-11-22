@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Drivers\Enums\HookDriver;
 use App\Http\Controllers\Hooks\BypassReportController;
 use App\Http\Controllers\Hooks\HookController;
 use App\Http\Controllers\Hooks\StackInspectionController;
@@ -14,7 +13,7 @@ Route::post('/hooks/bypasses', BypassReportController::class)
     ->name('hooks.bypasses');
 
 Route::post('/hooks/{driver}', HookController::class)
-    ->whereIn('driver', array_column(HookDriver::cases(), 'value'))
+    ->where('driver', '[a-z][a-z0-9-]*')
     ->middleware(AuthenticateAgent::class)
     ->name('hooks.answer');
 

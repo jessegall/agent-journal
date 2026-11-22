@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Agents\Values;
 
 use App\Agents\Enums\DriverVariant;
-use App\Drivers\Enums\HookDriver;
 
 /**
  * What a switch moves an agent to: the driver and variant, the chosen account at its reviewed sign-in, the
@@ -14,7 +13,7 @@ use App\Drivers\Enums\HookDriver;
 final readonly class DriverSwitchTarget
 {
     public function __construct(
-        public HookDriver $driver,
+        public string $driver,
         public DriverVariant $variant,
         public ChosenAccount $account,
         public string|null $conversationId,

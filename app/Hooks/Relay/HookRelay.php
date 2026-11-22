@@ -9,7 +9,6 @@ use App\AgentRequests\Exceptions\CallDeadlinePassed;
 use App\AgentRequests\Exceptions\JournalUnreachable;
 use App\AgentRequests\Support\AgentCallReply;
 use App\Agents\Values\LoggedBypass;
-use App\Drivers\Enums\HookDriver;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Hooks\Drivers\DriverReply;
@@ -53,12 +52,12 @@ final readonly class HookRelay
         private Repository $config,
     ) {}
 
-    public function relay(HookDriver $driver, string $json, RelaySettings $settings): DriverReply
+    public function relay(string $driver, string $json, RelaySettings $settings): DriverReply
     {
         $this->config->set(Place::HookRuntime->rootSetting(), $settings->runtimeFolder());
         $log = new BypassLog($this->files, $settings->bypassLog());
         $pending = new PendingEnvelopes($this->files, $settings->pendingEnvelopesFolder());
-        $envelope = CallbackEnvelope::forCallback($driver->value, $json, CarbonImmutable::now());
+        $envelope = CallbackEnvelope::forCallback($driver, $json, CarbonImmutable::now());
         $preparation = new PreparationState($this->files, $settings->preparationFile());
         $event = HookEvent::tryFrom(DriverEventName::of($json));
 

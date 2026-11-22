@@ -17,7 +17,6 @@ use App\Agents\Values\ModelSelection;
 use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\SelectionSource;
 use App\Agents\Values\StackTarget;
-use App\Drivers\Enums\HookDriver;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -299,7 +298,7 @@ final class AgentSession extends Model implements ReadableModel
             throw SessionSelectionFixed::forSession($this->id);
         }
 
-        $this->driver_key = $selection->driver->value;
+        $this->driver_key = $selection->driver;
         $this->model = $selection->model;
         $this->requested_model_type = $selection->requested->type;
         $this->requested_model = $selection->requested->model;
@@ -378,7 +377,7 @@ final class AgentSession extends Model implements ReadableModel
             : ModelSelection::profileDefault();
 
         return new SelectedDriver(
-            HookDriver::from((string) $this->driver_key),
+            (string) $this->driver_key,
             $this->model,
             $requested,
             new SelectionSource($this->driver_source, $this->profile_key, $this->profile_revision),
@@ -399,7 +398,7 @@ final class AgentSession extends Model implements ReadableModel
             $account,
             $this->id,
             $this->agent_id,
-            $this->selection()->driver->value,
+            $this->selection()->driver,
             AccountProcessRole::Execution,
             CarbonImmutable::instance($this->created_at),
             $this->ended_at,

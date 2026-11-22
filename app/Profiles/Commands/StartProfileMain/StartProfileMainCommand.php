@@ -51,7 +51,7 @@ final readonly class StartProfileMainCommand extends Command
             $agentId,
             $profile,
             ModelSelection::fromInput('default'),
-            $target->driver->value,
+            $target->driver,
             $target->variant,
             $target->saveVariant,
             $target->account,

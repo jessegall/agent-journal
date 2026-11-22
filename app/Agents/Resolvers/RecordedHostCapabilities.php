@@ -12,7 +12,6 @@ use App\Agents\Enums\HostCapabilityType;
 use App\Agents\Exceptions\CapabilityMatrixInvalid;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
-use App\Drivers\Enums\HookDriver;
 use App\Files\Contracts\Files;
 use App\Files\Exceptions\FileJsonInvalid;
 use App\Files\Exceptions\FileMissing;
@@ -72,7 +71,7 @@ final readonly class RecordedHostCapabilities implements HostCapabilities
             $rows[] = new HostCapability(
                 new HostCapabilityQuery(
                     $this->caseField($row, $number, 'capability', HostCapabilityType::class),
-                    $this->caseField($row, $number, 'driver', HookDriver::class),
+                    $this->field($row, $number, 'driver'),
                     $this->caseField($row, $number, 'account_mode', AccountModeType::class),
                     $this->caseField($row, $number, 'execution_mode', ExecutionModeType::class),
                 ),

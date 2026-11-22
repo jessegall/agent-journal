@@ -13,7 +13,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Commands\RecordAccountNotice\RecordAccountNoticeCommand;
 use App\Profiles\Commands\RenameAccount\RenameAccountCommand;
 use App\Profiles\Commands\SwitchAccount\SwitchAccountCommand;
@@ -118,7 +118,7 @@ final class AccountsProjectionTest extends TestCase
 
     private function account(string $label): Account
     {
-        return Account::create(HookDriver::ClaudeCode, AccountLabel::from($label), '/journal/accounts/'.$label);
+        return Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from($label), '/journal/accounts/'.$label);
     }
 
     private function bus(): CommandBus

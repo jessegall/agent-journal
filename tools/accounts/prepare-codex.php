@@ -15,7 +15,7 @@ declare(strict_types=1);
  */
 
 use App\Agents\Enums\TransportProfileType;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Hooks\Compatibility\DriverCompatibility;
 use App\Hooks\Drivers\AccountConfigurationWrite;
 use App\Hooks\Drivers\CodexFolderTrust;
@@ -42,7 +42,7 @@ if (! is_dir($root) && ! mkdir($root, 0o700)) {
 
 $settings = array_map(
     static fn (string $value): string => sprintf('"%s"', addcslashes($value, '"\\')),
-    DriverCompatibility::pinned(HookDriver::Codex)->settings,
+    DriverCompatibility::pinned(DefaultDrivers::CODEX)->settings,
 );
 new AccountConfigurationWrite()->prepare(
     (string) $request['account'],

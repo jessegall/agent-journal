@@ -8,7 +8,7 @@ use App\Agents\Commands\EnrollHost\EnrollHostCommand;
 use App\Agents\Enums\ArrangementType;
 use App\Agents\Support\ArrangementSetting;
 use App\Agents\Support\EnrolledHost;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Hooks\Compatibility\DriverCompatibility;
 use App\Hooks\Compatibility\Exceptions\DriverArrangementUnproven;
 use App\Hooks\Compatibility\Exceptions\DriverUnstartableInContainer;
@@ -48,8 +48,8 @@ final class ContainedProgramEvidenceTest extends TestCase
     public function test_the_local_arrangement_answers_the_pinned_compatibility_as_before(): void
     {
         $this->assertEquals(
-            DriverCompatibility::pinned(HookDriver::ClaudeCode),
-            $this->compatibility(HookDriver::ClaudeCode),
+            DriverCompatibility::pinned(DefaultDrivers::CLAUDE_CODE),
+            $this->compatibility(DefaultDrivers::CLAUDE_CODE),
         );
     }
 
@@ -60,7 +60,7 @@ final class ContainedProgramEvidenceTest extends TestCase
         $this->expectException(DriverArrangementUnproven::class);
         $this->expectExceptionMessage(self::NO_CLAUDE_REPORT);
 
-        $this->compatibility(HookDriver::ClaudeCode)->assertStartable();
+        $this->compatibility(DefaultDrivers::CLAUDE_CODE)->assertStartable();
     }
 
     public function test_a_report_with_unenforced_items_refuses_naming_them_and_why(): void
@@ -71,13 +71,13 @@ final class ContainedProgramEvidenceTest extends TestCase
         $this->report($this->containedHost(), 'claude-code', '2.1.323', $items)->assertNoContent();
 
         $this->assertThrows(
-            fn () => $this->compatibility(HookDriver::ClaudeCode)->assertStartable(),
+            fn () => $this->compatibility(DefaultDrivers::CLAUDE_CODE)->assertStartable(),
             DriverUnstartableInContainer::class,
             DriverUnstartableInContainer::for('claude-code', '2.1.323', sprintf(self::UNENFORCED, $reason))
                 ->getMessage(),
         );
         $this->assertThrows(
-            fn () => $this->compatibility(HookDriver::Codex)->assertStartable(),
+            fn () => $this->compatibility(DefaultDrivers::CODEX)->assertStartable(),
             DriverArrangementUnproven::class,
             DriverArrangementUnproven::inContainer('codex', '0.165.0', self::CODEX_SHORTFALL)->getMessage(),
         );
@@ -90,9 +90,9 @@ final class ContainedProgramEvidenceTest extends TestCase
         $this->report($host, 'claude-code', '2.1.323', $this->items(['keychain'], 'missing'))->assertNoContent();
         $this->report($host, 'claude-code', '2.1.323', $this->items([], ''))->assertNoContent();
 
-        $this->compatibility(HookDriver::ClaudeCode)->assertStartable();
+        $this->compatibility(DefaultDrivers::CLAUDE_CODE)->assertStartable();
 
-        $this->assertFalse($this->compatibility(HookDriver::Codex)->arrangementEvidence->isNativeShown());
+        $this->assertFalse($this->compatibility(DefaultDrivers::CODEX)->arrangementEvidence->isNativeShown());
     }
 
     public function test_a_driver_whose_signed_in_starts_run_protected_is_admitted_by_its_protected_report_only(): void
@@ -104,7 +104,7 @@ final class ContainedProgramEvidenceTest extends TestCase
         $this->report($host, 'claude-code', '2.1.323', $this->items(self::ITEMS, $reason))->assertNoContent();
 
         $this->assertThrows(
-            fn () => $this->compatibility(HookDriver::ClaudeCode)->assertStartable(),
+            fn () => $this->compatibility(DefaultDrivers::CLAUDE_CODE)->assertStartable(),
             DriverArrangementUnproven::class,
             self::PROTECTED_SHORTFALL,
         );
@@ -112,10 +112,10 @@ final class ContainedProgramEvidenceTest extends TestCase
         $this->report($host, 'claude-code', '2.1.323', $this->items([], ''), 'linux-container-protected')
             ->assertNoContent();
 
-        $this->compatibility(HookDriver::ClaudeCode)->assertStartable();
+        $this->compatibility(DefaultDrivers::CLAUDE_CODE)->assertStartable();
     }
 
-    private function compatibility(HookDriver $driver): DriverCompatibility
+    private function compatibility(string $driver): DriverCompatibility
     {
         return $this->app->make(DriverCompatibilities::class)->for($driver);
     }

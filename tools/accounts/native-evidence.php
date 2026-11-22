@@ -256,7 +256,7 @@ function installed_build(string $program, string $versionOutput): InstalledBuild
 function print_evidence(DriverCompatibility $compatibility, InstalledBuild $installed, array $items): void
 {
     echo json_encode([
-        'driver' => $compatibility->driver->value,
+        'driver' => $compatibility->driver,
         'version' => $installed->version,
         'binary_sha256' => $installed->digest,
         'arrangement' => $compatibility->arrangement->value,

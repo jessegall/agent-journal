@@ -31,8 +31,8 @@ use App\Bus\Contracts\CommandBus;
 use App\Drivers\Capabilities\CodexTerminalCapabilities;
 use App\Drivers\Contracts\DriverCatalogue;
 use App\Drivers\Enums\DriverCapability;
-use App\Drivers\Enums\HookDriver;
 use App\Drivers\Exceptions\DriverCapabilityUnsupported;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Profiles\Commands\StartProfileMain\StartProfileMainCommand;
 use App\Profiles\Commands\SwitchAgentDriver\SwitchAgentDriverCommand;
@@ -94,13 +94,13 @@ final class ProfileStartTest extends TestCase
 
     public function test_default_resolves_to_the_profiles_model_and_revision(): void
     {
-        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
         $revision = $this->currentRevision();
 
         $receipt = $this->start('default', null);
 
         $this->assertSame('opus', $receipt->selection->model);
-        $this->assertSame(HookDriver::ClaudeCode, $receipt->selection->driver);
+        $this->assertSame(DefaultDrivers::CLAUDE_CODE, $receipt->selection->driver);
         $source = $receipt->selection->source;
         $this->assertSame(DriverSourceType::Profile, $source->driverSource);
         $this->assertSame('journal-main', $source->profileKey);
@@ -109,7 +109,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_a_pinned_program_refuses_another(): void
     {
-        $this->activate(self::main('opus', HookDriver::ClaudeCode, true));
+        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, true));
 
         $this->expectException(DriverConflict::class);
 
@@ -127,23 +127,23 @@ final class ProfileStartTest extends TestCase
 
     public function test_a_later_activation_leaves_an_accepted_start_as_it_was(): void
     {
-        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
         $revision = $this->currentRevision();
         $receipt = $this->start('default', null);
 
-        $this->activate(self::main('sonnet', HookDriver::Codex, true));
+        $this->activate(self::main('sonnet', DefaultDrivers::CODEX, true));
 
         $session = AgentSession::query()->findOrFail($receipt->sessionId);
 
         $this->assertSame($revision, $session->profile_revision);
         $this->assertSame('opus', $session->model);
-        $this->assertSame(HookDriver::ClaudeCode->value, $session->driver_key);
+        $this->assertSame(DefaultDrivers::CLAUDE_CODE, $session->driver_key);
     }
 
     public function test_an_explicit_start_runs_the_chosen_account_and_variant_and_the_next_automatic_one_the_defaults(): void
     {
-        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
-        $chosen = Account::create(HookDriver::Codex, AccountLabel::from('Account B'), '/journal/accounts/b');
+        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
+        $chosen = Account::create(DefaultDrivers::CODEX, AccountLabel::from('Account B'), '/journal/accounts/b');
         $requestId = strtolower((string) Str::ulid());
 
         $explicit = $this->start('default', 'codex', $requestId, DriverVariant::Headless, $chosen);
@@ -153,18 +153,18 @@ final class ProfileStartTest extends TestCase
 
         $this->assertSame([$explicit->sessionId, false], [$repeated->sessionId, $repeated->newSession]);
         $this->assertSame(
-            [HookDriver::Codex->value, DriverVariant::Headless, true, $chosen->id],
+            [DefaultDrivers::CODEX, DriverVariant::Headless, true, $chosen->id],
             $this->recorded($explicit->requestId, $explicit->sessionId),
         );
         $this->assertSame(
-            [HookDriver::ClaudeCode->value, DriverVariant::Terminal, false, $this->accounts['claude-code']->id],
+            [DefaultDrivers::CLAUDE_CODE, DriverVariant::Terminal, false, $this->accounts['claude-code']->id],
             $this->recorded($automatic->requestId, $automatic->sessionId),
         );
     }
 
     public function test_an_automatic_codex_start_on_the_terminal_default_is_refused_with_its_reason(): void
     {
-        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
 
         $this->assertThrows(
             fn () => $this->start('default', 'codex'),
@@ -175,7 +175,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_a_start_the_host_cannot_run_is_refused_before_a_session(): void
     {
-        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
         Host::query()->update(['descriptors' => []]);
         $sessions = AgentSession::query()->count();
 
@@ -191,7 +191,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_a_switch_the_host_cannot_run_is_refused_and_keeps_the_old_session_and_a_repeat_answers_it(): void
     {
-        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
         $old = $this->start('default', null);
         Host::query()->update(['descriptors' => []]);
         $requestId = strtolower((string) Str::ulid());
@@ -207,7 +207,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_the_switch_route_answers_a_repeat_with_the_same_switch_and_its_stage_is_read_back(): void
     {
-        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
         $old = $this->start('default', null);
         Host::query()->update(['descriptors' => []]);
         $codex = $this->accounts['codex'];
@@ -216,7 +216,7 @@ final class ProfileStartTest extends TestCase
             'agentId' => $this->main->id,
             'expectedSessionId' => $old->sessionId,
             'expectedGeneration' => self::generationOf($old->sessionId),
-            'driver' => HookDriver::Codex->value,
+            'driver' => DefaultDrivers::CODEX,
             'variant' => DriverVariant::Headless->value,
             'accountId' => $codex->id,
             'accountRevision' => $codex->sign_in_generation,
@@ -235,7 +235,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_an_explicit_resume_continues_the_chosen_older_thread_and_a_foreign_one_is_refused(): void
     {
-        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
         $first = AgentSession::query()->findOrFail($this->start('default', null)->sessionId);
         $older = DriverConversation::create($first, 'settings', 'older-thread-0001', null);
         DriverConversation::create($first, 'settings', 'newer-thread-0002', null);
@@ -257,7 +257,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_a_switch_that_expects_another_session_is_stale(): void
     {
-        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
         $this->start('default', null);
 
         $this->expectException(DriverSwitchStale::class);
@@ -267,7 +267,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_a_switch_to_the_codex_terminal_is_refused_with_its_reason_before_any_switch_exists(): void
     {
-        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
         $session = $this->start('default', null)->sessionId;
 
         $this->assertThrows(
@@ -285,14 +285,14 @@ final class ProfileStartTest extends TestCase
 
     public function test_a_switch_keeps_the_registration_its_target_was_pinned_to(): void
     {
-        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
         $session = $this->start('default', null)->sessionId;
         $requestId = strtolower((string) Str::ulid());
 
         $this->switchTo($requestId, $session, $this->accounts['codex']);
 
         $switch = DriverSwitch::query()->where('request_id', $requestId)->sole();
-        $pin = $this->app->make(DriverCatalogue::class)->pinned(HookDriver::Codex->value, DriverVariant::Headless);
+        $pin = $this->app->make(DriverCatalogue::class)->pinned(DefaultDrivers::CODEX, DriverVariant::Headless);
         $this->assertSame(
             [(string) $pin->registration->key, $pin->registration->family, $pin->registration->protocolVersion],
             [$switch->target_driver_key, $switch->target_family, $switch->target_protocol_version],
@@ -301,7 +301,7 @@ final class ProfileStartTest extends TestCase
 
     public function test_after_a_proven_stop_the_replacement_starts_and_a_refused_one_fails_the_switch(): void
     {
-        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $this->activate(self::main('opus', DefaultDrivers::CLAUDE_CODE, false));
         $codex = $this->accounts['codex'];
 
         $started = $this->stoppedSwitch(new ChosenAccount($codex->id, $codex->sign_in_generation));
@@ -313,7 +313,7 @@ final class ProfileStartTest extends TestCase
         $this->assertSame(DriverSwitchStage::Starting, $started->stage);
         $this->assertNotSame($started->expected_session_id, $started->replacement_session_id);
         $this->assertSame(
-            [HookDriver::Codex->value, DriverVariant::Headless, true, $codex->id],
+            [DefaultDrivers::CODEX, DriverVariant::Headless, true, $codex->id],
             $this->recorded($started->request_id, (string) $started->replacement_session_id),
         );
         $this->assertSame(DriverSwitchStage::LaunchFailed, $failed->refresh()->stage);
@@ -355,7 +355,7 @@ final class ProfileStartTest extends TestCase
             $sessionId,
             self::generationOf($sessionId),
             new DriverSwitchTarget(
-                HookDriver::Codex,
+                DefaultDrivers::CODEX,
                 $mode,
                 new ChosenAccount($account->id, $account->sign_in_generation),
                 null,
@@ -377,8 +377,8 @@ final class ProfileStartTest extends TestCase
             strtolower((string) Str::ulid()),
             $session,
             0,
-            new DriverSwitchTarget(HookDriver::Codex, DriverVariant::Headless, $account, null, false),
-            $this->app->make(DriverCatalogue::class)->pinned(HookDriver::Codex->value, DriverVariant::Headless),
+            new DriverSwitchTarget(DefaultDrivers::CODEX, DriverVariant::Headless, $account, null, false),
+            $this->app->make(DriverCatalogue::class)->pinned(DefaultDrivers::CODEX, DriverVariant::Headless),
             'owner',
         );
         $switch->markPreflighted();
@@ -412,7 +412,7 @@ final class ProfileStartTest extends TestCase
         return [$record->family, $record->mode, $record->account_chosen, $account->id];
     }
 
-    private static function main(string $model, HookDriver $driver, bool $pinned): ProposedProfile
+    private static function main(string $model, string $driver, bool $pinned): ProposedProfile
     {
         return new ProposedProfile(
             ProfileKey::from('journal-main'),

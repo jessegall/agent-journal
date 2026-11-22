@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Drivers\Adapters;
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Hooks\Actions\CheckProtectedResources;
 use App\Hooks\Compatibility\DriverCompatibility;
 use App\Hooks\Drivers\Contracts\DriverAdapter;
@@ -72,7 +72,7 @@ final readonly class CodexAdapter implements DriverAdapter
 
     public function hookProtocol(): string
     {
-        return HookDriver::Codex->value;
+        return DefaultDrivers::CODEX;
     }
 
     public function journalToolRules(): array
@@ -131,7 +131,7 @@ final readonly class CodexAdapter implements DriverAdapter
 
     public function compatibility(): DriverCompatibility
     {
-        return DriverCompatibility::pinned(HookDriver::Codex);
+        return DriverCompatibility::pinned(DefaultDrivers::CODEX);
     }
 
     public function modelArguments(string $model): array

@@ -11,7 +11,7 @@ use App\Agents\Enums\DriverFailure;
 use App\Agents\Events\DriverFailed;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Files\Contracts\Files;
 use App\Profiles\Commands\CheckAccount\CheckAccountCommand;
 use App\Profiles\Enums\AccountCheckResult;
@@ -61,8 +61,8 @@ final class AccountChecksTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
-        $this->account = Account::create(HookDriver::Codex, AccountLabel::from('Work'), '/journal/accounts/work');
-        ActiveAccount::lockedFor(HookDriver::Codex)->select($this->account);
+        $this->account = Account::create(DefaultDrivers::CODEX, AccountLabel::from('Work'), '/journal/accounts/work');
+        ActiveAccount::lockedFor(DefaultDrivers::CODEX)->select($this->account);
     }
 
     public function test_only_a_rejected_sign_in_of_the_current_generation_asks_for_a_check(): void

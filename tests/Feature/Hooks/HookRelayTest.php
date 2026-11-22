@@ -7,7 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Models\StartBypass;
 use App\Agents\Values\StackTarget;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Files\Values\FilePath;
@@ -265,7 +265,7 @@ final class HookRelayTest extends TestCase
             accounts: new ProtectedAccounts(['/journal/accounts']),
         );
 
-        return $this->app->make(HookRelay::class)->relay(HookDriver::ClaudeCode, $payload, $settings);
+        return $this->app->make(HookRelay::class)->relay(DefaultDrivers::CLAUDE_CODE, $payload, $settings);
     }
 
     /**

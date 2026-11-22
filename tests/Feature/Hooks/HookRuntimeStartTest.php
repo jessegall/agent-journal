@@ -7,7 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\Contracts\StartTransaction;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Hooks\Drivers\Adapters\ClaudeCodeAdapter;
 use App\Hooks\Drivers\Adapters\CodexAdapter;
 use App\Hooks\Drivers\Contracts\DriverAdapters;
@@ -57,53 +57,53 @@ final class HookRuntimeStartTest extends TestCase
     ];
 
     /**
-     * @return iterable<string, array{HookDriver, string}>
+     * @return iterable<string, array{string, string}>
      */
     public static function programEvents(): iterable
     {
         $events = [
-            [HookDriver::ClaudeCode, ClaudeCodeAdapter::NATIVE_EVENTS],
-            [HookDriver::Codex, CodexAdapter::NATIVE_EVENTS],
+            [DefaultDrivers::CLAUDE_CODE, ClaudeCodeAdapter::NATIVE_EVENTS],
+            [DefaultDrivers::CODEX, CodexAdapter::NATIVE_EVENTS],
         ];
 
         foreach ($events as [$driver, $nativeEvents]) {
             foreach ($nativeEvents as $event) {
-                yield "{$driver->value} {$event}" => [$driver, $event];
+                yield "{$driver} {$event}" => [$driver, $event];
             }
         }
     }
 
     /**
-     * @return iterable<string, array{HookDriver}>
+     * @return iterable<string, array{string}>
      */
     public static function drivers(): iterable
     {
-        foreach (HookDriver::cases() as $driver) {
-            yield $driver->value => [$driver];
+        foreach (DefaultDrivers::familyKeys() as $driver) {
+            yield $driver => [$driver];
         }
     }
 
     #[DataProvider('drivers')]
     public function test_each_program_has_its_endpoint_and_an_adapter_mapping_only_real_hooks(
-        HookDriver $driver,
+        string $driver,
     ): void {
-        $capabilities = $this->app->make(DriverAdapters::class)->for($driver->value)->capabilities();
+        $capabilities = $this->app->make(DriverAdapters::class)->for($driver)->capabilities();
 
         $this->assertTrue(Route::has('hooks.answer'));
-        $this->assertSame("/hooks/{$driver->value}", route('hooks.answer', ['driver' => $driver->value], false));
+        $this->assertSame("/hooks/{$driver}", route('hooks.answer', ['driver' => $driver], false));
         $this->assertSame([], array_values(array_diff($capabilities->hookMethods, $this->hookMethods())));
     }
 
     #[DataProvider('programEvents')]
     public function test_every_event_the_isolated_settings_register_is_mapped_by_the_adapter(
-        HookDriver $driver,
+        string $driver,
         string $event,
     ): void {
         $payload = HookPayload::from(
-            ['session_id' => 'session-1', 'hook_event_name' => $event, ...self::EVENT_FIELDS[$driver->value][$event]],
+            ['session_id' => 'session-1', 'hook_event_name' => $event, ...self::EVENT_FIELDS[$driver][$event]],
         );
 
-        $call = $this->app->make(DriverAdapters::class)->for($driver->value)->callFor(
+        $call = $this->app->make(DriverAdapters::class)->for($driver)->callFor(
             $payload,
             TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', $event)),
         );

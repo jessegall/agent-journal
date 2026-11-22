@@ -6,7 +6,6 @@ namespace App\Agents\Exceptions;
 
 use App\Agents\Enums\DriverVariant;
 use App\Contracts\CommandRefusal;
-use App\Drivers\Enums\HookDriver;
 use RuntimeException;
 
 /**
@@ -19,10 +18,10 @@ final class HostUnavailable extends RuntimeException implements CommandRefusal
         return new self("The host {$hostId} is not available to run agents.");
     }
 
-    public static function forStart(HookDriver $driver, DriverVariant $variant): self
+    public static function forStart(string $driver, DriverVariant $variant): self
     {
         return new self(
-            "No connected host runs {$driver->value} as a {$variant->value} start. Connect a host that runs it, then start again.",
+            "No connected host runs {$driver} as a {$variant->value} start. Connect a host that runs it, then start again.",
         );
     }
 

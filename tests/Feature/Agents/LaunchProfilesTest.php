@@ -12,7 +12,7 @@ use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\LaunchProfiles;
 use App\Agents\Values\SelectedAccount;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Models\Account;
 use App\Records\Support\RecordIdentity;
 use Tests\TestCase;
@@ -27,28 +27,28 @@ final class LaunchProfilesTest extends TestCase
     {
         $account = new SelectedAccount(new RecordIdentity(Account::LINK_TYPE, '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', '/srv/journal/accounts/a1', 1);
 
-        $this->assertSame(LaunchProfileType::Standard, $this->profiles('contained', CapabilityStatusType::Unverified, [])->for(HookDriver::ClaudeCode, $account));
-        $this->assertSame(LaunchProfileType::ProtectedAccount, $this->profiles('contained', CapabilityStatusType::Unverified, [HookDriver::ClaudeCode])->for(HookDriver::ClaudeCode, $account));
-        $this->assertSame(LaunchProfileType::Standard, $this->profiles('contained', CapabilityStatusType::Unverified, [HookDriver::ClaudeCode])->for(HookDriver::Codex, $account));
-        $this->assertSame(LaunchProfileType::ProtectedAccount, $this->profiles('contained', CapabilityStatusType::Supported, [])->for(HookDriver::Codex, $account));
+        $this->assertSame(LaunchProfileType::Standard, $this->profiles('contained', CapabilityStatusType::Unverified, [])->for(DefaultDrivers::CLAUDE_CODE, $account));
+        $this->assertSame(LaunchProfileType::ProtectedAccount, $this->profiles('contained', CapabilityStatusType::Unverified, [DefaultDrivers::CLAUDE_CODE])->for(DefaultDrivers::CLAUDE_CODE, $account));
+        $this->assertSame(LaunchProfileType::Standard, $this->profiles('contained', CapabilityStatusType::Unverified, [DefaultDrivers::CLAUDE_CODE])->for(DefaultDrivers::CODEX, $account));
+        $this->assertSame(LaunchProfileType::ProtectedAccount, $this->profiles('contained', CapabilityStatusType::Supported, [])->for(DefaultDrivers::CODEX, $account));
     }
 
     public function test_a_start_without_an_account_or_a_local_start_stays_standard(): void
     {
         $account = new SelectedAccount(new RecordIdentity(Account::LINK_TYPE, '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', '/journal/accounts/a1', 1);
 
-        $this->assertSame(LaunchProfileType::Standard, $this->profiles('contained', CapabilityStatusType::Supported, [HookDriver::ClaudeCode])->for(HookDriver::ClaudeCode, null));
-        $this->assertSame(LaunchProfileType::Standard, $this->profiles('local', CapabilityStatusType::Supported, [HookDriver::ClaudeCode])->for(HookDriver::ClaudeCode, $account));
+        $this->assertSame(LaunchProfileType::Standard, $this->profiles('contained', CapabilityStatusType::Supported, [DefaultDrivers::CLAUDE_CODE])->for(DefaultDrivers::CLAUDE_CODE, null));
+        $this->assertSame(LaunchProfileType::Standard, $this->profiles('local', CapabilityStatusType::Supported, [DefaultDrivers::CLAUDE_CODE])->for(DefaultDrivers::CLAUDE_CODE, $account));
     }
 
     public function test_the_trial_names_its_drivers_as_a_comma_list(): void
     {
-        $this->assertSame([HookDriver::ClaudeCode, HookDriver::Codex], LaunchProfiles::trialOf(' claude-code , codex '));
+        $this->assertSame([DefaultDrivers::CLAUDE_CODE, DefaultDrivers::CODEX], LaunchProfiles::trialOf(' claude-code , codex '));
         $this->assertSame([], LaunchProfiles::trialOf(''));
     }
 
     /**
-     * @param  list<HookDriver>  $trial
+     * @param  list<string>  $trial
      */
     private function profiles(string $arrangement, CapabilityStatusType $isolation, array $trial): LaunchProfiles
     {

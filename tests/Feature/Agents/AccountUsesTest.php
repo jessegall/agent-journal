@@ -30,7 +30,7 @@ use App\Agents\Values\SelectedAccount;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandTransaction;
 use App\Bus\Exceptions\CommandTransactionMissing;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\LinkTypeRegistry;
 use App\Profiles\Resolvers\ActiveAccountRecords;
@@ -187,7 +187,7 @@ final class AccountUsesTest extends TestCase
         $this->assertInstanceOf(ActiveAccountRecords::class, $this->app->make(ActiveAccountReader::class));
 
         try {
-            new UnconfiguredAccounts()->forStart(HookDriver::ClaudeCode);
+            new UnconfiguredAccounts()->forStart(DefaultDrivers::CLAUDE_CODE);
             $this->fail('Core alone gave a start an account.');
         } catch (AccountUnavailable $refused) {
             $this->assertSame('claude-code', $refused->driver);

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Profiles;
 
-use App\Drivers\Enums\HookDriver;
 use App\Profiles\Enums\SignInMethod;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -27,7 +26,7 @@ final class SignInMethodData extends Data
         public readonly string|null $secretSource,
     ) {}
 
-    public static function fromMethod(HookDriver $driver, SignInMethod $method): self
+    public static function fromMethod(string $driver, SignInMethod $method): self
     {
         return SignInMethodData::from([
             'method' => $method,

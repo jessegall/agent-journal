@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Http\Data\Profiles\SignInMethodData;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Exceptions\SignInMethodMissing;
@@ -58,11 +58,11 @@ final class SignInMethodsTest extends TestCase
                 'Billed to the API key by what agents use. Checking it may send one small request with it.',
             ],
             array_map(fn (array $pair) => $pair[1]->billingNote($pair[0]), [
-                [HookDriver::ClaudeCode, SignInMethod::OAuth],
-                [HookDriver::ClaudeCode, SignInMethod::ProviderToken],
-                [HookDriver::ClaudeCode, SignInMethod::ApiKey],
-                [HookDriver::Codex, SignInMethod::OAuth],
-                [HookDriver::Codex, SignInMethod::ApiKey],
+                [DefaultDrivers::CLAUDE_CODE, SignInMethod::OAuth],
+                [DefaultDrivers::CLAUDE_CODE, SignInMethod::ProviderToken],
+                [DefaultDrivers::CLAUDE_CODE, SignInMethod::ApiKey],
+                [DefaultDrivers::CODEX, SignInMethod::OAuth],
+                [DefaultDrivers::CODEX, SignInMethod::ApiKey],
             ]),
         );
     }
@@ -72,11 +72,11 @@ final class SignInMethodsTest extends TestCase
         $cards = array_map(
             fn (array $pair) => SignInMethodData::fromMethod(...$pair)->toArray(),
             [
-                [HookDriver::ClaudeCode, SignInMethod::OAuth],
-                [HookDriver::ClaudeCode, SignInMethod::ProviderToken],
-                [HookDriver::ClaudeCode, SignInMethod::ApiKey],
-                [HookDriver::Codex, SignInMethod::OAuth],
-                [HookDriver::Codex, SignInMethod::ApiKey],
+                [DefaultDrivers::CLAUDE_CODE, SignInMethod::OAuth],
+                [DefaultDrivers::CLAUDE_CODE, SignInMethod::ProviderToken],
+                [DefaultDrivers::CLAUDE_CODE, SignInMethod::ApiKey],
+                [DefaultDrivers::CODEX, SignInMethod::OAuth],
+                [DefaultDrivers::CODEX, SignInMethod::ApiKey],
             ],
         );
         $shown = array_map(
@@ -130,6 +130,6 @@ final class SignInMethodsTest extends TestCase
     {
         $this->expectException(SignInMethodMissing::class);
 
-        SignInMethod::ProviderToken->title(HookDriver::Codex);
+        SignInMethod::ProviderToken->title(DefaultDrivers::CODEX);
     }
 }

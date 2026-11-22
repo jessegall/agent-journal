@@ -12,7 +12,8 @@ use App\Agents\Models\ConversationVisit;
 use App\Agents\Models\DriverConversation;
 use App\Agents\Values\ModelSelection;
 use App\Agents\Values\SelectedDriver;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Contracts\DriverCatalogue;
+use App\Drivers\Support\DefaultDrivers;
 use App\Records\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Models\HelperIdentity;
@@ -59,15 +60,15 @@ final class HelperSelectionTest extends TestCase
 
     public function test_a_codex_follow_up_picks_the_codex_reviewer_even_when_the_other_finished_later(): void
     {
-        $codex = $this->helperWhoReviewed(HookDriver::Codex, self::LUNA, CarbonImmutable::parse('2026-11-19 10:00'));
+        $codex = $this->helperWhoReviewed(DefaultDrivers::CODEX, self::LUNA, CarbonImmutable::parse('2026-11-19 10:00'));
 
         $claude = $this->helperWhoReviewed(
-            HookDriver::ClaudeCode,
+            DefaultDrivers::CLAUDE_CODE,
             TestSelections::MODEL,
             CarbonImmutable::parse('2026-11-19 12:00'),
         );
 
-        $candidates = $this->candidates(HookDriver::Codex, self::LUNA);
+        $candidates = $this->candidates(DefaultDrivers::CODEX, self::LUNA);
 
         $this->assertSame([$codex->id, $claude->id], $this->identityIds($candidates));
         $this->assertSame(LaunchCandidateRank::ExactConversation, $candidates[0]->rank);
@@ -81,24 +82,24 @@ final class HelperSelectionTest extends TestCase
         $helpers = [$this->helperWithJob($finish), $this->helperWithJob($finish)];
         usort($helpers, fn (HelperIdentity $a, HelperIdentity $b) => $a->helper_actor_id <=> $b->helper_actor_id);
 
-        $candidates = $this->candidates(HookDriver::Codex, self::LUNA);
+        $candidates = $this->candidates(DefaultDrivers::CODEX, self::LUNA);
 
         $this->assertSame([$helpers[0]->id, $helpers[1]->id], $this->identityIds($candidates));
     }
 
     public function test_an_independent_review_skips_every_helper_that_saw_the_subject(): void
     {
-        $this->helperWhoReviewed(HookDriver::Codex, self::LUNA, CarbonImmutable::parse('2026-11-19 10:00'));
+        $this->helperWhoReviewed(DefaultDrivers::CODEX, self::LUNA, CarbonImmutable::parse('2026-11-19 10:00'));
 
         $this->helperWhoReviewed(
-            HookDriver::ClaudeCode,
+            DefaultDrivers::CLAUDE_CODE,
             TestSelections::MODEL,
             CarbonImmutable::parse('2026-11-19 12:00'),
         );
 
         $fresh = $this->declareHelper('read-only-helper');
 
-        $candidates = $this->candidates(HookDriver::Codex, self::LUNA, independent: true);
+        $candidates = $this->candidates(DefaultDrivers::CODEX, self::LUNA, independent: true);
 
         $this->assertSame([$fresh->id], $this->identityIds($candidates));
         $this->assertFalse($candidates[0]->resumesConversation);
@@ -113,7 +114,7 @@ final class HelperSelectionTest extends TestCase
             'writing-helper',
             'writing-helper',
             $this->review,
-            HookDriver::Codex,
+            DefaultDrivers::CODEX,
             self::LUNA,
             false,
         ));
@@ -134,13 +135,13 @@ final class HelperSelectionTest extends TestCase
             self::launchFor('request-busy'),
         );
 
-        $this->assertSame([], $this->candidates(HookDriver::Codex, self::LUNA));
+        $this->assertSame([], $this->candidates(DefaultDrivers::CODEX, self::LUNA));
     }
 
     /**
      * @return list<HelperCandidate>
      */
-    private function candidates(HookDriver $driver, string $model, bool $independent = false): array
+    private function candidates(string $driver, string $model, bool $independent = false): array
     {
         return $this->app->make(HelperCandidates::class)->candidatesFor(new CandidateQuery(
             'read-only-helper',
@@ -156,7 +157,7 @@ final class HelperSelectionTest extends TestCase
      * A helper that finished a review of the plan in a conversation on the program and model.
      */
     private function helperWhoReviewed(
-        HookDriver $driver,
+        string $driver,
         string $model,
         CarbonImmutable $finishedAt,
     ): HelperIdentity {
@@ -165,7 +166,7 @@ final class HelperSelectionTest extends TestCase
 
         $session = $this->app->make(StartSessions::class)->start(
             $agent,
-            SelectedDriver::resolve($driver->value, ModelSelection::named($model), null, null),
+            SelectedDriver::resolve($driver, ModelSelection::named($model), null, null, $this->app->make(DriverCatalogue::class)),
             TestSelections::requestId(),
         )->session;
 

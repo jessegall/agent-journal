@@ -13,7 +13,6 @@ use App\Agents\Support\HostDescriptorEnrollment;
 use App\Agents\Values\EnrolledDescriptor;
 use App\Agents\Values\HostDescriptor;
 use App\Drivers\Contracts\DriverCatalogue;
-use App\Drivers\Enums\HookDriver;
 use App\Drivers\Support\DefaultDrivers;
 use App\Hooks\Compatibility\DriverCompatibility;
 
@@ -29,10 +28,10 @@ trait ServesEveryCombination
         $drivers = $this->app->make(DriverCatalogue::class);
         $descriptors = [];
 
-        foreach (HookDriver::cases() as $driver) {
+        foreach (DefaultDrivers::familyKeys() as $driver) {
             foreach (DriverVariant::cases() as $variant) {
                 $descriptors[] = new HostDescriptor(
-                    $drivers->keyFor($driver->value, $variant),
+                    $drivers->keyFor($driver, $variant),
                     DriverCompatibility::pinned($driver)->version,
                     DefaultDrivers::PROTOCOL_VERSION,
                     ArrangementType::Local,

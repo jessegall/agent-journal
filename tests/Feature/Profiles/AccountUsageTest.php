@@ -7,7 +7,7 @@ namespace Tests\Feature\Profiles;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use App\Profiles\Enums\UsageWindowSlot;
 use App\Profiles\Exceptions\UsageCostConflict;
 use App\Profiles\Exceptions\UsdAmountInvalid;
@@ -48,7 +48,7 @@ final class AccountUsageTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
-        $this->account = Account::create(HookDriver::ClaudeCode, AccountLabel::from('Work'), '/journal/accounts/work');
+        $this->account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Work'), '/journal/accounts/work');
     }
 
     public function test_a_newer_window_replaces_every_field_and_an_older_or_replayed_one_changes_nothing(): void
@@ -105,7 +105,7 @@ final class AccountUsageTest extends TestCase
 
     public function test_month_totals_sum_each_accounts_costs_of_the_utc_month_across_sign_ins(): void
     {
-        $other = Account::create(HookDriver::ClaudeCode, AccountLabel::from('Home'), '/journal/accounts/home');
+        $other = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Home'), '/journal/accounts/home');
         $this->addCost($this->account, 1, 'a', '1.25', '2026-11-01T00:00:00Z');
         $this->addCost($this->account, 2, 'b', '0.75', '2026-11-30T23:59:59Z');
         $this->addCost($this->account, 1, 'c', '9', '2026-10-31T23:59:59Z');

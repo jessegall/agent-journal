@@ -6,7 +6,9 @@ namespace App\Hooks\Listeners;
 
 use App\Agents\Events\AccountSettingsRequested;
 use App\Contracts\Listener;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Contracts\DriverCatalogue;
+use App\Drivers\Exceptions\DriverFamilyUnknown;
+use App\Drivers\Support\DefaultDrivers;
 use App\Hooks\Contracts\DriverCompatibilities;
 use App\Hooks\Drivers\ClaudeAccountSettings;
 use App\Hooks\Drivers\CodexAccountSettings;
@@ -21,13 +23,14 @@ final class SupplyAccountSettings implements Listener
     public function __construct(
         private DriverCompatibilities $compatibilities,
         private Repository $config,
+        private DriverCatalogue $drivers,
     ) {}
 
     public function handle(AccountSettingsRequested $event): void
     {
-        $driver = HookDriver::tryFrom($event->driver);
+        $driver = $event->driver;
 
-        if ($driver === null) {
+        if (! $this->drivers->hasFamily($driver)) {
             return;
         }
 
@@ -41,19 +44,20 @@ final class SupplyAccountSettings implements Listener
         );
 
         match ($driver) {
-            HookDriver::ClaudeCode => ClaudeAccountSettings::fill(
+            DefaultDrivers::CLAUDE_CODE => ClaudeAccountSettings::fill(
                 $event->settings,
                 $event->directory,
                 $this->config->string('accounts.root'),
                 $compatibility->startFlags,
             ),
-            HookDriver::Codex => CodexAccountSettings::fill(
+            DefaultDrivers::CODEX => CodexAccountSettings::fill(
                 $event->settings,
                 $event->directory,
                 $this->config->string('accounts.root'),
                 $compatibility->startFlags,
                 $compatibility->settings,
             ),
+            default => throw DriverFamilyUnknown::for($driver),
         };
     }
 }

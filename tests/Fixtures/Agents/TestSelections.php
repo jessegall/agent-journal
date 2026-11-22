@@ -13,7 +13,7 @@ use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\ExecutionPolicy;
 use App\Agents\Values\ModelSelection;
 use App\Agents\Values\SelectedDriver;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Support\DefaultDrivers;
 use Illuminate\Support\Str;
 
 /**
@@ -25,7 +25,7 @@ final class TestSelections
 
     public static function of(string $driver = 'claude-code'): SelectedDriver
     {
-        return SelectedDriver::resolve($driver, ModelSelection::named(self::MODEL), null, null);
+        return SelectedDriver::resolve($driver, ModelSelection::named(self::MODEL), null, null, app(DriverCatalogue::class));
     }
 
     public static function requestId(): string
@@ -39,7 +39,7 @@ final class TestSelections
     public static function pinOf(StartRequest $request): PinnedDriver
     {
         return Container::getInstance()->make(DriverCatalogue::class)
-            ->pinned($request->selection->driver->value, $request->variant, $request->neededCapabilities());
+            ->pinned($request->selection->driver, $request->variant, $request->neededCapabilities());
     }
 
     /**
@@ -47,10 +47,10 @@ final class TestSelections
      *
      * @return array<string, string|int>
      */
-    public static function sessionColumns(HookDriver $driver = HookDriver::ClaudeCode): array
+    public static function sessionColumns(string $driver = DefaultDrivers::CLAUDE_CODE): array
     {
         return [
-            'driver_key' => $driver->value,
+            'driver_key' => $driver,
             'model' => self::MODEL,
             'requested_model_type' => 'named',
             'requested_model' => self::MODEL,
