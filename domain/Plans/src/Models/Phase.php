@@ -171,22 +171,6 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
     // ----------[ Answers ]----------
 
     /**
-     * How far the tasks placed in it have got, from the tallies kept on the row; no task is read.
-     *
-     * @return Attribute<PlanProgress, never>
-     */
-    protected function progress(): Attribute
-    {
-        return Attribute::get(fn () => new PlanProgress(
-            $this->finished_tasks,
-            $this->cancelled_tasks,
-            $this->blocked_tasks,
-            $this->started_tasks,
-            $this->total_tasks,
-        ));
-    }
-
-    /**
      * Refuses a change made against a revision of the phase that is no longer current.
      *
      * @throws PhaseRevisionChanged
@@ -250,6 +234,24 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
     public function withTasks(array $ids): PlanPhaseTasks
     {
         return new PlanPhaseTasks($this->id, $this->number, $this->title, $this->revision, $ids);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * How far the tasks placed in it have got, from the tallies kept on the row; no task is read.
+     *
+     * @return Attribute<PlanProgress, never>
+     */
+    protected function progress(): Attribute
+    {
+        return Attribute::get(fn () => new PlanProgress(
+            $this->finished_tasks,
+            $this->cancelled_tasks,
+            $this->blocked_tasks,
+            $this->started_tasks,
+            $this->total_tasks,
+        ));
     }
 
     // ----------[ Relations ]----------

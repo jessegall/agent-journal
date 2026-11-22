@@ -110,6 +110,16 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
     // ----------[ Answers ]----------
 
     /**
+     * The lines of one task in their order; the table has no updated_at.
+     */
+    public function defaultReadOrder(): ReadOrder
+    {
+        return ReadOrder::by(['task_log_entries.task_id', 'task_log_entries.sequence'], 'task_log_entries.id');
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
      * The line as Tasks' log read gives it, no model leaving the domain.
      *
      * @return Attribute<TaskLogLine, never>
@@ -125,13 +135,5 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
             $this->sequence,
             CarbonImmutable::parse($this->created_at),
         ));
-    }
-
-    /**
-     * The lines of one task in their order; the table has no updated_at.
-     */
-    public function defaultReadOrder(): ReadOrder
-    {
-        return ReadOrder::by(['task_log_entries.task_id', 'task_log_entries.sequence'], 'task_log_entries.id');
     }
 }
