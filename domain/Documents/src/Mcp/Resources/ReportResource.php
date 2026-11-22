@@ -7,7 +7,7 @@ namespace Domain\Documents\Mcp\Resources;
 use App\Contracts\Authorization\ReadGrant;
 use App\Mcp\Contracts\JobPermissionReader;
 use App\Values\ReadRequest;
-use Domain\Documents\Contracts\ReportReader;
+use Domain\Documents\Contracts\Reports\ReportReader;
 use Domain\Documents\Mcp\Tools\ReadReportTool;
 use Domain\Documents\Resolvers\ReportPages;
 use Laravel\Mcp\Request;

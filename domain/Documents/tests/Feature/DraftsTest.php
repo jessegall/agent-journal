@@ -14,7 +14,7 @@ use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\EditDocument\EditDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Commands\ReplaceDocumentText\ReplaceDocumentTextCommand;
-use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Exceptions\DraftHeld;
 use Domain\Documents\Exceptions\DraftMissing;

@@ -8,7 +8,7 @@ use App\Contracts\Authorization\ReadGrant;
 use App\Mcp\Contracts\JobPermissionReader;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Values\ReadRequest;
-use Domain\Documents\Contracts\DocumentReader;
+use Domain\Documents\Contracts\Documents\DocumentReader;
 use Domain\Documents\Mcp\Tools\ReadDocumentTool;
 use Domain\Documents\Resolvers\DocumentPages;
 use Laravel\Mcp\Request;

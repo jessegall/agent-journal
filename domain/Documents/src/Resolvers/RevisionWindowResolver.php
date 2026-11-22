@@ -10,7 +10,7 @@ use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBodyData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\PublicationPage;
-use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\Http\Requests\RevisionPageRequest;
 
 /**

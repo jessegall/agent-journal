@@ -6,7 +6,7 @@ namespace Domain\Documents\Resolvers;
 
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\AccessType;
-use Domain\Documents\Contracts\DraftResolver;
+use Domain\Documents\Contracts\Drafts\DraftResolver;
 use Domain\Documents\Data\DraftState;
 use Domain\Documents\Data\DraftView;
 use Domain\Documents\Enums\EditingState;

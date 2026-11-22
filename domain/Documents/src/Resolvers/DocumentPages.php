@@ -12,7 +12,7 @@ use App\Mcp\Support\ToolArguments;
 use App\Support\MarkdownText;
 use App\Support\RecordIdentity;
 use App\Support\TextPreview;
-use Domain\Documents\Contracts\DocumentReader;
+use Domain\Documents\Contracts\Documents\DocumentReader;
 use Domain\Documents\Enums\PublicationView;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;

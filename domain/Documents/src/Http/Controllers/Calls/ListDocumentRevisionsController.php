@@ -7,7 +7,7 @@ namespace Domain\Documents\Http\Controllers\Calls;
 use App\Support\RecordReference;
 use Domain\Documents\Calls\ListDocumentRevisionsCall;
 use Domain\Documents\Calls\RevisionList;
-use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Contracts\Documents\DocumentResolver;
 
 /**
  * Answers one page of a document's revisions.

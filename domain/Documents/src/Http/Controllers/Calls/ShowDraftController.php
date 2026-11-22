@@ -6,7 +6,7 @@ namespace Domain\Documents\Http\Controllers\Calls;
 
 use App\Support\RecordReference;
 use Domain\Documents\Calls\ShowDraftCall;
-use Domain\Documents\Contracts\DraftResolver;
+use Domain\Documents\Contracts\Drafts\DraftResolver;
 use Domain\Documents\Data\DraftView;
 
 /**

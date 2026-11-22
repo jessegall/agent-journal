@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Documents\Contracts;
+namespace Domain\Documents\Contracts\Drafts;
 
 use Domain\Documents\Data\DraftState;
 use Domain\Documents\Data\DraftView;

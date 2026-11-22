@@ -10,7 +10,7 @@ use App\Contracts\Sessions\SessionProvenance;
 use App\Enums\AccessType;
 use App\Values\Operation;
 use App\Values\ResourceRequest;
-use Domain\Documents\Contracts\DraftReader;
+use Domain\Documents\Contracts\Drafts\DraftReader;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\RetainedDraft;

@@ -7,7 +7,7 @@ namespace Domain\Documents\Support\Mcp;
 use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\OverviewSection;
-use Domain\Documents\Contracts\ReportResolver;
+use Domain\Documents\Contracts\Reports\ReportResolver;
 use Domain\Documents\Enums\AttentionFilter;
 
 final readonly class OpenReportsOverview implements OverviewContribution

@@ -6,8 +6,8 @@ namespace Domain\Documents\Resolvers;
 
 use App\Contracts\Records\RecordResolver;
 use App\Support\TextSelection;
-use Domain\Documents\Contracts\DocumentResolver;
-use Domain\Documents\Contracts\DraftResolver;
+use Domain\Documents\Contracts\Documents\DocumentResolver;
+use Domain\Documents\Contracts\Drafts\DraftResolver;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\DocumentView;
 use Domain\Documents\Data\PublicationList;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Documents\Contracts;
+namespace Domain\Documents\Contracts\Drafts;
 
 use Domain\Documents\Values\RetainedDraftView;
 

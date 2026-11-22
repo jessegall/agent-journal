@@ -25,7 +25,7 @@ use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Commands\RecoverDocument\RecoverDocumentCommand;
 use Domain\Documents\Commands\ReplaceDocumentText\ReplaceDocumentTextCommand;
 use Domain\Documents\Commands\SettleDocument\SettleDocumentCommand;
-use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\Data\DraftView;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Enums\CloseCause;

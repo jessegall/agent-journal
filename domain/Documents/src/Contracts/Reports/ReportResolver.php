@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Documents\Contracts;
+namespace Domain\Documents\Contracts\Reports;
 
 use App\Data\RecordCard;
 use App\Exceptions\SectionMissing;

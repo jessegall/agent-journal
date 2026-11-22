@@ -13,7 +13,7 @@ use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
 use Domain\Documents\Commands\DiscardUpload\DiscardUploadCommand;
-use Domain\Documents\Contracts\SealedUploads;
+use Domain\Documents\Contracts\Attachments\SealedUploads;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Exceptions\UploadChunkConflict;
 use Domain\Documents\Exceptions\UploadExpired;

@@ -6,7 +6,7 @@ namespace Domain\Documents\Http\Controllers\Calls;
 
 use App\Support\RecordReference;
 use Domain\Documents\Calls\ShowDocumentRevisionCall;
-use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\Data\RevisionView;
 
 /**

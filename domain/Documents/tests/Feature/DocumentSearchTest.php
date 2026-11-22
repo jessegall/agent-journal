@@ -23,7 +23,7 @@ use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\EditDocument\EditDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
-use Domain\Documents\Contracts\DocumentReader;
+use Domain\Documents\Contracts\Documents\DocumentReader;
 use Domain\Documents\Support\DocumentSearchAccess;
 use Domain\Documents\Support\DocumentSearchProvider;
 use Domain\Documents\Tests\TestCase;

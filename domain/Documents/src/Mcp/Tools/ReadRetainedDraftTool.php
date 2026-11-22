@@ -11,7 +11,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\Continuation;
 use App\Mcp\Support\ToolArguments;
-use Domain\Documents\Contracts\DraftReader;
+use Domain\Documents\Contracts\Drafts\DraftReader;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;

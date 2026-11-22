@@ -6,7 +6,7 @@ namespace Domain\Documents\Http\Controllers\Calls;
 
 use App\Support\RecordReference;
 use Domain\Documents\Calls\InspectReportCall;
-use Domain\Documents\Contracts\ReportResolver;
+use Domain\Documents\Contracts\Reports\ReportResolver;
 use Domain\Documents\Data\RecordInspection;
 
 /**

@@ -11,7 +11,7 @@ use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
-use Domain\Documents\Contracts\ReportResolver;
+use Domain\Documents\Contracts\Reports\ReportResolver;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Models\Report;

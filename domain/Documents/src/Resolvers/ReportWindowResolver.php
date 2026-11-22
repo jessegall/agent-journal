@@ -22,7 +22,7 @@ use App\Support\Layout\PublicationPage;
 use App\Support\Layout\PublicationTab;
 use App\Support\RecordIdentity;
 use App\Support\RecordReference;
-use Domain\Documents\Contracts\ReportResolver;
+use Domain\Documents\Contracts\Reports\ReportResolver;
 use Domain\Documents\Data\RecordCommentsPartData;
 use Domain\Documents\Data\RecordLinksPartData;
 use Domain\Documents\Data\RecordSharePartData;

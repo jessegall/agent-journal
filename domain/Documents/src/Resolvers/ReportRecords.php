@@ -6,7 +6,7 @@ namespace Domain\Documents\Resolvers;
 
 use App\Contracts\Records\RecordResolver;
 use App\Support\TextSelection;
-use Domain\Documents\Contracts\ReportResolver;
+use Domain\Documents\Contracts\Reports\ReportResolver;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\PublicationList;
 use Domain\Documents\Data\RecordInspection;

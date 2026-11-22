@@ -11,7 +11,7 @@ use App\Mcp\Support\Continuation;
 use App\Mcp\Support\ToolArguments;
 use App\Support\MarkdownText;
 use App\Support\RecordIdentity;
-use Domain\Documents\Contracts\ReportReader;
+use Domain\Documents\Contracts\Reports\ReportReader;
 use Domain\Documents\Enums\PublicationView;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Support\Mcp\PublicationChunks;

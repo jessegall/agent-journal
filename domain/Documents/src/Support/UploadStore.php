@@ -7,7 +7,7 @@ namespace Domain\Documents\Support;
 use App\Contracts\Bus\CommandTransaction;
 use App\Contracts\Sessions\SessionProvenance;
 use Carbon\CarbonImmutable;
-use Domain\Documents\Contracts\SealedUploads;
+use Domain\Documents\Contracts\Attachments\SealedUploads;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Exceptions\UploadLimitReached;
 use Domain\Documents\Models\TextUpload;

@@ -11,7 +11,7 @@ use App\Support\ReflectedParameter;
 use App\Support\Reflector;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
-use Domain\Documents\Contracts\DraftResolver;
+use Domain\Documents\Contracts\Drafts\DraftResolver;
 use Domain\Documents\Enums\EditingState;
 use Domain\Documents\Events\DocumentCreated;
 use Domain\Documents\Models\Document;

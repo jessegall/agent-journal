@@ -6,7 +6,7 @@ namespace Domain\Documents\Mcp\Tools;
 
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Documents\Contracts\AttachmentReader;
+use Domain\Documents\Contracts\Attachments\AttachmentReader;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
