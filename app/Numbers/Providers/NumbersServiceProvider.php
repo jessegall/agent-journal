@@ -6,7 +6,6 @@ namespace App\Numbers\Providers;
 
 use App\Links\Support\LinkTypeRegistry;
 use App\Numbers\Console\InstallNumbersCommand;
-use App\Numbers\Contracts\NumberedModelRegistration;
 use App\Numbers\Models\GlobalGroup;
 use App\Numbers\Models\NumberGroup;
 use App\Numbers\Support\LockingNumberAllocator;
@@ -21,7 +20,6 @@ final class NumbersServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(NumberedTypeRegistry::class);
-        $this->app->alias(NumberedTypeRegistry::class, NumberedModelRegistration::class);
         $this->app->scoped(LockingNumberAllocator::class);
     }
 

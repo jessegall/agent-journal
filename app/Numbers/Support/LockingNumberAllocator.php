@@ -30,7 +30,7 @@ final readonly class LockingNumberAllocator
             $this->transaction->assertRunning($record->getConnection());
         }
 
-        $this->types->requireDeclared($record->getMorphClass());
+        $this->types->requireNumbered($record->getMorphClass());
         $holder = $record->numberHolder();
 
         if (! $holder->exists) {

@@ -7,12 +7,9 @@ namespace Domain\Rules;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyDefinition;
 use App\Bus\Contracts\CommandProvider;
-use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
-use App\Numbers\Contracts\NumberedModelProvider;
-use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
 use App\Ui\Contracts\NavigationProvider;
@@ -45,7 +42,6 @@ use Domain\Rules\Mcp\RuleReadTool;
 use Domain\Rules\Mcp\RuleSearch;
 use Domain\Rules\Mcp\RulesListTool;
 use Domain\Rules\Mcp\RulesResource;
-use Domain\Rules\Models\Rule;
 use Domain\Rules\Policies\RulePolicy;
 use Domain\Rules\Resolvers\RulesWindowResolver;
 use Domain\Rules\Skills\RulesSkill;
@@ -54,13 +50,10 @@ final class RulesDomain extends Domain implements
     CommandProvider,
     McpToolProvider,
     NavigationProvider,
-    NumberedModelProvider,
     PageProvider,
     PolicyProvider,
     SkillProvider
 {
-    use HasNumberedModels;
-
     public function description(): string
     {
         return 'The standing project rules every agent is told.';
@@ -125,11 +118,6 @@ final class RulesDomain extends Domain implements
     public function navigation(): array
     {
         return [NavigationItem::page('list', 'Rules', Icon::Rules, group: 'web.agents', position: 30)];
-    }
-
-    public function numberedModels(): array
-    {
-        return [NumberedModel::global(Rule::class)];
     }
 
     public function mcpTools(): array

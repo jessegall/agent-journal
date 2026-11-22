@@ -8,7 +8,6 @@ use App\Assignments\Contracts\AutoAssignmentProvider;
 use App\Domains\Bootstrappers\LoadMigrations;
 use App\Domains\Bootstrappers\RegisterScriptDefinitions;
 use App\Domains\Concerns\HasAssignables;
-use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\AssignableContributor;
 use App\Domains\Contracts\AssigneeContributor;
@@ -21,7 +20,6 @@ use App\Domains\Exceptions\CapabilityWithoutTrait;
 use App\Exports\Support\Exports;
 use App\Mcp\Support\McpToolDirectory;
 use App\Mcp\Tools\JournalTool;
-use App\Numbers\Contracts\NumberedModelProvider;
 use App\Reflection\Support\Reflector;
 
 /**
@@ -40,7 +38,6 @@ abstract class Domain
         AutoAssignmentProvider::class => HasAssignables::class,
         InternalAssignableContributor::class => HasAssignables::class,
         StateProvider::class => HasStates::class,
-        NumberedModelProvider::class => HasNumberedModels::class,
     ];
 
     abstract public function description(): string;

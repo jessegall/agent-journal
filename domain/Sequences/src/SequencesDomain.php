@@ -7,17 +7,13 @@ namespace Domain\Sequences;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyDefinition;
 use App\Bus\Contracts\CommandProvider;
-use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\StateProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Numbers\Contracts\NumberedModelProvider;
-use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
 use Domain\Sequences\Commands\StartSequence;
-use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Policies\SequencePolicy;
 use Domain\Sequences\Skills\SequencesSkill;
 use Domain\Sequences\States\Support\FollowingSequenceStateFactory;
@@ -25,12 +21,10 @@ use Domain\Sequences\States\Support\FollowingSequenceStateReference;
 
 final class SequencesDomain extends Domain implements
     CommandProvider,
-    NumberedModelProvider,
     PolicyProvider,
     SkillProvider,
     StateProvider
 {
-    use HasNumberedModels;
     use HasStates;
 
     public function description(): string
@@ -73,11 +67,6 @@ final class SequencesDomain extends Domain implements
     public function states(): array
     {
         return [FollowingSequenceStateReference::TYPE_KEY => FollowingSequenceStateFactory::class];
-    }
-
-    public function numberedModels(): array
-    {
-        return [NumberedModel::global(SequenceRun::class)];
     }
 
     public function skills(): array

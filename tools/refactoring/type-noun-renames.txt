@@ -21,7 +21,6 @@ App\Domains\Contracts\ProvidesInternalAssignables InternalAssignableContributor
 App\Domains\Contracts\ProvidesLinkRecords LinkRecordProvider
 App\Mcp\Contracts\ProvidesMcpTools McpToolProvider
 App\Ui\Contracts\ProvidesNavigation NavigationProvider
-App\Numbers\Contracts\ProvidesNumberedModels NumberedModelProvider
 App\Ui\Contracts\ProvidesPages PageProvider
 App\Actors\Contracts\ProvidesPolicies PolicyProvider
 App\Ui\Contracts\ProvidesSections SectionProvider

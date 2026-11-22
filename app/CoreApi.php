@@ -863,10 +863,8 @@ use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Numbers\Commands\InstallNumbers;
 use App\Numbers\Contracts\Numbered;
-use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Exceptions\InvalidRecordReference;
 use App\Numbers\Support\HasNumber;
-use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\RecordReference;
 use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ProfileAudience;
@@ -1583,7 +1581,6 @@ final class CoreApi
                 AssignmentResolver::class,
                 AssignmentRegistration::class,
                 Numbered::class,
-                NumberedModelProvider::class,
                 AssigneeResolver::class,
                 AssignmentWriter::class,
                 AssignmentTransaction::class,
@@ -2078,7 +2075,6 @@ final class CoreApi
                 AssignmentOutcomeType::class,
                 AssignmentData::class,
                 RecordHolderData::class,
-                NumberedModel::class,
                 RecordReference::class,
                 Exports::class,
                 ExportBuilder::class,

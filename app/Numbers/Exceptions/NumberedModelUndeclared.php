@@ -7,12 +7,12 @@ namespace App\Numbers\Exceptions;
 use LogicException;
 
 /**
- * A record was to be numbered though no owner declared its model as numbered.
+ * A record was to be numbered though its link type names no model that implements Numbered.
  */
 final class NumberedModelUndeclared extends LogicException
 {
     public static function for(string $linkType): self
     {
-        return new self("No owner declares {$linkType} as numbered; list its model in the owner's numberedModels().");
+        return new self("No model with the link type {$linkType} implements Numbered, so its records cannot be numbered.");
     }
 }

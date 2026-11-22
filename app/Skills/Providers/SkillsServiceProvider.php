@@ -9,13 +9,10 @@ use App\Actors\Values\PolicyDefinition;
 use App\Autoload\Support\FolderClasses;
 use App\Files\Enums\Place;
 use App\Hooks\Contracts\FileAccessPolicy;
-use App\Numbers\Contracts\NumberedModelRegistration;
-use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\MarkdownParts as MarkdownPartsContract;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Contracts\SkillResolver;
-use App\Skills\Models\Skill;
 use App\Skills\Policies\SkillAuthoringPolicy;
 use App\Skills\Policies\SkillPolicy;
 use App\Skills\Resolvers\CatalogueOnFirstRead;
@@ -82,7 +79,7 @@ final class SkillsServiceProvider extends ServiceProvider
         ));
     }
 
-    public function boot(NumberedModelRegistration $numbers, PolicyCatalogue $policies): void
+    public function boot(PolicyCatalogue $policies): void
     {
         $policies->register('Core', new PolicyDefinition(
             SkillPolicy::class,
@@ -93,8 +90,6 @@ final class SkillsServiceProvider extends ServiceProvider
             SkillAuthoringPolicy::class,
             [AccessType::Create, AccessType::Edit],
         ));
-
-        $numbers->register(NumberedModel::global(Skill::class));
 
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
             $schedule->command('skill:resume')->everyMinute()->withoutOverlapping();
