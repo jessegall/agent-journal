@@ -346,6 +346,7 @@ case	DriverCapability::PrivateEntry
 case	DriverCapability::Resize
 case	DriverCapability::Run
 case	DriverCapability::RunContained
+case	DriverCapability::SharedAccount
 case	DriverCapability::SignIn
 case	DriverCapability::TurnEffort
 case	DriverCapability::TurnModel
@@ -1221,6 +1222,7 @@ case	StartPreflightRefusal::HostProtocolOutdated
 case	StartPreflightRefusal::ModelNotAllowed
 case	StartPreflightRefusal::NoHost
 case	StartReadiness::Accepted
+case	StartReadiness::Cancelled
 case	StartReadiness::PreparingIdentity
 case	StartReadiness::Ready
 case	StartReadiness::Refused
@@ -1621,6 +1623,7 @@ class	AccountSelectionChanged
 class	AccountSelectionData
 class	AccountSessions
 class	AccountSettingsRequested
+class	AccountSharing
 class	AccountSignedIn
 class	AccountSignedOut
 class	AccountStartData
@@ -1640,6 +1643,7 @@ class	AccountUse
 class	AccountUseChanged
 class	AccountUseCounts
 class	AccountUseMissing
+class	AccountWriterTaken
 class	AccountsChanged
 class	AccountsLayout
 class	AccountsPageRequest
@@ -7254,6 +7258,7 @@ constant	CodexSignIn::ACCOUNT_REQUEST
 constant	CodexSignIn::LOGIN_REQUEST
 constant	CodexSkills::FOLDER
 constant	CodexTerminalCapabilities::NOT_PROVEN
+constant	CodexTerminalCapabilities::RUNS_ALONE
 constant	CommandFrame::FIRST
 constant	CommandFrame::INSIDE
 constant	CommandFrame::TRANSACTION
@@ -9192,6 +9197,8 @@ method	AccountSessions::__construct()
 method	AccountSessions::all()
 method	AccountSettingsFiller::fill()
 method	AccountSettingsRequested::__construct()
+method	AccountSharing::__construct()
+method	AccountSharing::assertMayStart()
 method	AccountSignedIn::__construct()
 method	AccountSignedIn::driver()
 method	AccountSignedIn::subjectId()
@@ -9264,6 +9271,9 @@ method	AccountUseMissing::status()
 method	AccountUses::accountOf()
 method	AccountUses::counts()
 method	AccountUses::history()
+method	AccountWriterTaken::__construct()
+method	AccountWriterTaken::heldBy()
+method	AccountWriterTaken::inUseBy()
 method	AccountsChanged::__construct()
 method	AccountsLayout::actionsOf()
 method	AccountsLayout::form()
@@ -9755,6 +9765,7 @@ method	AgentRuntime::casts()
 method	AgentRuntime::claimStartGrant()
 method	AgentRuntime::closeAfterExit()
 method	AgentRuntime::create()
+method	AgentRuntime::driverKeysOfSessions()
 method	AgentRuntime::existsForSession()
 method	AgentRuntime::generationStartOfSession()
 method	AgentRuntime::hasEnded()
@@ -24643,6 +24654,7 @@ method	StartRecord::accept()
 method	StartRecord::assertDigest()
 method	StartRecord::assertNotRefused()
 method	StartRecord::bindIdentity()
+method	StartRecord::cancelVerification()
 method	StartRecord::casts()
 method	StartRecord::conversationTargetOf()
 method	StartRecord::forAgent()
@@ -27152,6 +27164,7 @@ parameter	$accountOrDriver
 parameter	$accountProtocol
 parameter	$accountReference
 parameter	$accountSettings
+parameter	$accountSharing
 parameter	$accountSource
 parameter	$accountState
 parameter	$accountType
@@ -28974,6 +28987,7 @@ parameter	$ownerHash
 parameter	$ownerId
 parameter	$ownerReference
 parameter	$ownerScope
+parameter	$ownerSessionId
 parameter	$ownerUserId
 parameter	$owners
 parameter	$ownership
@@ -30398,6 +30412,7 @@ property	AccountSettingsRequested::$account
 property	AccountSettingsRequested::$directory
 property	AccountSettingsRequested::$driver
 property	AccountSettingsRequested::$settings
+property	AccountSharing::$drivers
 property	AccountSignedIn::$accountId
 property	AccountSignedIn::$driver
 property	AccountSignedOut::$accountId
@@ -30458,6 +30473,7 @@ property	AccountUse::$sessionId
 property	AccountUse::$startedAt
 property	AccountUseChanged::$account
 property	AccountUseCounts::$runningByAccount
+property	AccountWriterTaken::$ownerSessionId
 property	AccountsChanged::$accountId
 property	AccountsChanged::$driver
 property	AccountsWindowResolver::$layout
@@ -35318,6 +35334,7 @@ property	OpenAgentRuntimeCommand::$model
 property	OpenAgentRuntimeCommand::$profile
 property	OpenAgentRuntimeCommand::$saveVariant
 property	OpenAgentRuntimeCommand::$variant
+property	OpenAgentRuntimeHandler::$accountSharing
 property	OpenAgentRuntimeHandler::$accounts
 property	OpenAgentRuntimeHandler::$arrangement
 property	OpenAgentRuntimeHandler::$builtInProfiles
@@ -39622,6 +39639,7 @@ property	StartAccountWindowResolver::$uses
 property	StartAdditions::$folders
 property	StartAdditions::$offlineReply
 property	StartAgentCommand::$request
+property	StartAgentHandler::$accountSharing
 property	StartAgentHandler::$accounts
 property	StartAgentHandler::$adapters
 property	StartAgentHandler::$builds
@@ -41812,6 +41830,7 @@ variable	$draftKey
 variable	$drafts
 variable	$driver
 variable	$driverEnvelope
+variable	$driverKey
 variable	$driverReply
 variable	$driverSource
 variable	$drivers
