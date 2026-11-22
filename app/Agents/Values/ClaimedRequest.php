@@ -6,7 +6,8 @@ namespace App\Agents\Values;
 
 /**
  * One request handed to a host: which runtime, which request and attempt, and what to do, with the key script to run
- * and the step it stopped at when it is one.
+ * and the step it stopped at when it is one, and the session, supervised start and process generation the claim
+ * binds the host's report to.
  */
 final readonly class ClaimedRequest
 {
@@ -28,6 +29,8 @@ final readonly class ClaimedRequest
         public int|null $scriptStep,
         public string|null $navigationRequestId,
         public NavigationRound|null $navigationRound,
+        public string $sessionId,
+        public string|null $processStartId,
+        public int $processGeneration,
     ) {}
-
 }

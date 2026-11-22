@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
+use App\Agents\Contracts\StartRefusal;
 use App\Agents\Enums\StartRefusalType;
-use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
  * A required container start whose image is not the verified agent image.
  */
-final class ImageUnverified extends RuntimeException implements CommandRefusal
+final class ImageUnverified extends RuntimeException implements StartRefusal
 {
     public static function because(string $reason): self
     {

@@ -37,7 +37,7 @@ final readonly class MergeAskNotificationTarget implements NotificationTargetRes
     {
         $reader = ActorIdentity::of($this->actors->actor());
 
-        return Option::fromValue(Ask::query()->acrossActors()->whereKey($targetId)->first())
+        return Ask::query()->acrossActors()->whereKey($targetId)->firstOption()
             ->filter(fn (Ask $ask) => AskHop::latestHolderOf($ask->id)
                 ->map(fn (ActorIdentity $holder) => $holder->type === $reader->type && $holder->id === $reader->id)
                 ->getOrElse(false))

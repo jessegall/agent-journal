@@ -54,7 +54,7 @@ final readonly class SwitchAgentDriverHandler implements CommandHandler
 
         if ($refusals === []) {
             $switch->markPreflighted();
-            $switch->beginStopping();
+            $switch->beginStopping(AgentRuntime::ofSession($session->id));
             $this->commands->run(new StopAgent($agent->id, $session->id, $command->requestId));
         } else {
             $switch->refuse($refusals[0]->value);

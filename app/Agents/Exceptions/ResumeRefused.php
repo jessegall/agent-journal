@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
+use App\Agents\Contracts\StartRefusal;
 use App\Agents\Enums\ResumeRefusal;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
-use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
  * A start that chose a conversation it may not continue, refused before anything starts.
  */
-final class ResumeRefused extends RuntimeException implements CodedRefusal, CommandRefusal
+final class ResumeRefused extends RuntimeException implements CodedRefusal, StartRefusal
 {
     use RendersRefusal;
 
@@ -26,6 +26,11 @@ final class ResumeRefused extends RuntimeException implements CodedRefusal, Comm
     public static function because(ResumeRefusal $refusal): self
     {
         return new self($refusal);
+    }
+
+    public function reason(): ResumeRefusal
+    {
+        return $this->refusal;
     }
 
     public function refusalCode(): RefusalCode

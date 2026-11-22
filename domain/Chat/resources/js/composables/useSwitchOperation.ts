@@ -19,6 +19,8 @@ export function useSwitchOperation(agent: () => AgentOptionData) {
     const state = ref<SwitchState>('idle');
     const progress = ref<string | null>(null);
     const refusal = ref<string | null>(null);
+    // The form field a refused switch belongs to, such as its model or account; null for the whole switch.
+    const refusalField = ref<string | null>(null);
     const switchBefore = agent().switchId;
     let isOpen = true;
     let following: { stop: () => void } | undefined;
@@ -30,8 +32,9 @@ export function useSwitchOperation(agent: () => AgentOptionData) {
         progress.value = 'Switch requested';
         keyedPost(url, choice, requestId, {
             onAccepted: () => follow(),
-            onRefused: (reason) => {
+            onRefused: (reason, field) => {
                 refusal.value = reason;
+                refusalField.value = field === 'command' ? null : field;
                 state.value = 'refused';
             },
             onUncertain: () => {
@@ -103,6 +106,22 @@ export function useSwitchOperation(agent: () => AgentOptionData) {
         following = followPage(showSwitch);
     }
 
+    /**
+     * Follows the agent's switch that is already under way, as a dialog opened again does: by its id, never sending
+     * anything.
+     */
+    function resume(): void {
+        const shown = agent();
+
+        if (shown.switchId === null || shown.isSwitchOver) {
+            return;
+        }
+
+        followedSwitchId = shown.switchId;
+        state.value = 'following';
+        follow();
+    }
+
     function stop(): void {
         isOpen = false;
         following?.stop();
@@ -110,5 +129,5 @@ export function useSwitchOperation(agent: () => AgentOptionData) {
 
     onBeforeUnmount(stop);
 
-    return { state, progress, refusal, begin, retry, isOut, stop };
+    return { state, progress, refusal, refusalField, begin, retry, resume, isOut, stop };
 }

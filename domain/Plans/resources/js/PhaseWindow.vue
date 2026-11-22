@@ -11,7 +11,8 @@ import { usePhasePages } from './usePhasePages';
 /**
  * One phase of a plan on its own page: the same counted progress the card and the plan show, the Current phase
  * marker in words, whether the caller may run checks now and the phase's latest check receipt, then its tasks in
- * their order, a page at a time, the same first page the plan's outline shows. A link leads back to the plan.
+ * their order, a page at a time, the same first page the plan's outline shows. A link leads back to the plan, and an
+ * empty phase keeps its title and leads back to its plan.
  */
 const props = defineProps<{ data: PhaseReaderData }>();
 
@@ -84,6 +85,13 @@ const { phases: pages, loadMore, retry } = usePhasePages(
                         @retry="retry(data.number)"
                     />
                 </template>
+            </template>
+            <template v-if="data.totalTasks === 0">
+                <Link
+                    :href="planRoute.url({ plan: data.planNumber })"
+                    class="mt-2 text-small underline"
+                    >Back to its plan</Link
+                >
             </template>
         </div>
     </Reader>

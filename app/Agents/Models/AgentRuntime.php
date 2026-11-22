@@ -53,6 +53,7 @@ use PhpOption\Option;
  * @property int $process_generation
  * @property CarbonImmutable|null $generation_started_at
  * @property CarbonImmutable|null $last_observed_at
+ * @property int $observation_sequence
  * @property Carbon $updated_at
  * @property int $row_version
  */
@@ -262,6 +263,7 @@ final class AgentRuntime extends Model implements ReadableModel
         $this->hold_reason = $hold;
         $this->process_generation = $processGeneration;
         $this->last_observed_at = $at;
+        $this->observation_sequence++;
         $this->row_version++;
         $this->save();
 
@@ -439,6 +441,16 @@ final class AgentRuntime extends Model implements ReadableModel
     public function isAssignedTo(string $hostId): bool
     {
         return $this->host_id === $hostId;
+    }
+
+    /**
+     * Whether the host reported this runtime running after the boundary: an observation counted later than it, of a
+     * process that is not stopping or stopped. A delayed report counted before the boundary proves nothing.
+     */
+    public function isObservedRunningAfter(int $boundary): bool
+    {
+        return $this->observation_sequence > $boundary
+            && ! in_array($this->activity, [RuntimeActivity::Stopping, RuntimeActivity::Stopped], true);
     }
 
     public function isAtGeneration(int $processGeneration): bool

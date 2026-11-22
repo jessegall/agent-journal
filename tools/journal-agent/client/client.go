@@ -44,6 +44,11 @@ type ClaimedRequest struct {
 	// NavigationRequestID and NavigationRound are the main agent's round a navigate request carries.
 	NavigationRequestID *string          `json:"navigationRequestId"`
 	NavigationRound     *NavigationRound `json:"navigationRound"`
+	// SessionID, ProcessStartID and ProcessGeneration bind the host's report of this request to the session, its
+	// supervised start (nil when the journal supervises none) and the process generation the claim was made for.
+	SessionID         string  `json:"sessionId"`
+	ProcessStartID    *string `json:"processStartId"`
+	ProcessGeneration int     `json:"processGeneration"`
 }
 
 // NavigationRound mirrors App\Agents\Values\NavigationRound: the row version and screen generation a round of the
@@ -80,6 +85,14 @@ type RequestReport struct {
 	OperationKey string `json:"operation_key,omitempty"`
 	// Navigation is what the host saw after a round of the main agent; nil for any other request.
 	Navigation *NavigationReport `json:"navigation,omitempty"`
+	// RefusalReason is the allowlisted reason the host refused the request for, and NoProcessCreated whether it knows
+	// no process of the program was made; both empty for every other failure.
+	RefusalReason    *string `json:"refusal_reason,omitempty"`
+	NoProcessCreated bool    `json:"no_process_created,omitempty"`
+	// SessionID, ProcessStartID and ProcessGeneration are the claim's binding the report answers.
+	SessionID         string  `json:"session_id,omitempty"`
+	ProcessStartID    *string `json:"process_start_id,omitempty"`
+	ProcessGeneration int     `json:"process_generation,omitempty"`
 }
 
 // NavigationReport mirrors App\Http\Data\Agents\NavigationRoundReportData: the screen after a round, its rows

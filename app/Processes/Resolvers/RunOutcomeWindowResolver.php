@@ -29,7 +29,7 @@ final readonly class RunOutcomeWindowResolver implements PageResolver
         return new RunOutcomePageData(
             $runId,
             $this->summaries->summaryOf($runId)
-                ->map(fn (RunOutcomeSummaryData $summary): RunOutcomeSummaryData|Optional => $summary)
+                ->map(fn (RunOutcomeSummaryData $summary) => $summary)
                 ->getOrElse(Optional::create()),
         );
     }

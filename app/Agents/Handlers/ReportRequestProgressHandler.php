@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
-use App\Agents\Actions\StartHeartbeats;
 use App\Agents\Commands\ReportRequestProgress;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Exceptions\HostReportRefused;
-use App\Agents\Models\AgentRuntime;
-use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
-use App\Agents\Models\ProcessStart;
 use App\Agents\Support\HostRuntimes;
+use App\Agents\Support\InitialWakeSettlement;
 use App\Agents\Support\NavigationRoundReports;
 use App\Contracts\CommandHandler;
 
@@ -23,7 +20,7 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
     public function __construct(
         private HostRuntimes $runtimes,
         private NavigationRoundReports $navigationReports,
-        private StartHeartbeats $heartbeats,
+        private InitialWakeSettlement $initialWakes,
     ) {}
 
     public function handle(ReportRequestProgress $command): void
@@ -49,6 +46,10 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
             ),
         };
 
+        if ($command->refusal !== null) {
+            $request->recordRefusal($command->refusal, $command->noProcessCreated);
+        }
+
         if ($command->script !== null) {
             $request->recordScriptProgress($command->script);
         }
@@ -57,25 +58,10 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
             $this->navigationReports->apply($request, $command->navigation);
         }
 
-        // A wake that failed or was unavailable wrote nothing, which is the request's own word for may-retry.
+        // Only the start's initial wake, proved never to have made a process, settles its launch; any other refused wake
+        // keeps its own failure and leaves the session as it is.
         if ($request->operation === DriverOperation::Wake && $request->canRetry()) {
-            $this->endRefusedWake($runtime, ($command->outcome ?? RequestOutcome::Refused)->value);
+            $this->initialWakes->settle($request, $runtime, $command);
         }
-    }
-
-    /**
-     * A wake the host refused, such as a session container it could not create, ends the start, its session and
-     * runtime the way a proven exit ends them, so the agent can start again.
-     */
-    private function endRefusedWake(AgentRuntime $runtime, string $evidence): void
-    {
-        $session = AgentSession::query()->findOrFail($runtime->agent_session_id);
-        $start = ProcessStart::latestOfSession($session->id);
-
-        if ($start === null) {
-            return;
-        }
-
-        $this->heartbeats->endStart($start, $session, "the host could not wake it ({$evidence})");
     }
 }

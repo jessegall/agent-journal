@@ -1,0 +1,233 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Agents;
+
+use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
+use App\Agents\Commands\StartAgent;
+use App\Agents\Contracts\DockerImageVerifier;
+use App\Agents\Contracts\HostCapabilities;
+use App\Agents\Contracts\StartRecordResolver;
+use App\Agents\Enums\CapabilityStatusType;
+use App\Agents\Enums\ConversationModeType;
+use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Enums\StartDisposition;
+use App\Agents\Enums\StartOriginType;
+use App\Agents\Enums\StartRefusalType;
+use App\Agents\Exceptions\CapacityUnavailable;
+use App\Agents\Exceptions\StartRecordMissing;
+use App\Agents\Exceptions\StartRefusalReplayed;
+use App\Agents\Exceptions\StartRequestConflict;
+use App\Agents\Models\Agent;
+use App\Agents\Models\AgentSession;
+use App\Agents\Models\CapacityReservation;
+use App\Agents\Models\StartRecord;
+use App\Agents\Support\HostCapability;
+use App\Agents\Support\HostCapabilityQuery;
+use App\Agents\Support\StartReceipt;
+use App\Agents\Values\ExecutionBudgets;
+use App\Agents\Values\ExecutionPolicy;
+use App\Agents\Values\HostCapacity;
+use App\Agents\Values\StartPolicy;
+use App\Agents\Values\StartRequest;
+use App\Bus\Contracts\CommandBus;
+use Domain\Access\Models\User;
+use PhpOption\None;
+use Tests\Fixtures\Agents\CountingImageVerifier;
+use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\StartsAgentRequests;
+use Tests\Support\WithActiveAccount;
+use Tests\TestCase;
+
+/**
+ * A start keeps its intent before admission and its typed refusal after the rollback, on the record under its request
+ * id: a replay answers the kept refusal without admitting again, changed input under the key stays refused, an intent
+ * interrupted before its receipt resumes once, and the receipt is read by its requester only.
+ */
+final class StartReceiptTest extends TestCase
+{
+    use CommitsHookRows;
+    use StartsAgentRequests;
+    use WithActiveAccount;
+
+    private const array TABLES = [
+        'users',
+        'agents',
+        'agent_sessions',
+        'accounts',
+        'active_accounts',
+        'start_records',
+        'capacity_reservations',
+        'process_starts',
+        'session_policies',
+        'start_tokens',
+        'agent_runtimes',
+        'driver_requests',
+        'agent_stacks',
+        'links',
+        'command_receipts',
+        'settings_records',
+    ];
+
+    private const string IMAGE = 'registry.example/journal-helper@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+
+    private string $ownerId;
+
+    private string $agentId;
+
+    private CountingImageVerifier $images;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->chooseActiveAccounts();
+        $this->ownerId = User::factory()->create()->id;
+        $this->startUserRequestAs($this->ownerId);
+        $this->agentId = Agent::create('Builder', 'writing-helper')->id;
+        $this->proveTheHost();
+    }
+
+    public function test_a_capacity_refusal_keeps_its_receipt_after_the_rollback(): void
+    {
+        $this->app->instance(HostCapacity::class, new HostCapacity(0, 0, 0));
+        $request = $this->containerRequest(TestSelections::requestId());
+
+        $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
+
+        $record = StartRecord::query()->where('request_id', $request->requestId)->sole();
+        $this->assertSame(
+            [StartDisposition::Refused, StartRefusalType::CapacityUnavailable->value, null],
+            [$record->disposition, $record->refusal_reason, $record->session_id],
+        );
+        $this->assertNotNull($record->refused_at);
+        $this->assertSame(0, AgentSession::query()->where('agent_id', $this->agentId)->count());
+        $this->assertSame(0, CapacityReservation::query()->count());
+    }
+
+    public function test_a_replay_answers_the_kept_refusal_without_a_second_admission(): void
+    {
+        $this->app->instance(HostCapacity::class, new HostCapacity(0, 0, 0));
+        $request = $this->containerRequest(TestSelections::requestId());
+        $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
+        $checksAtRefusal = $this->images->checks;
+        $this->app->instance(HostCapacity::class, new HostCapacity(64, 256 * 1024 ** 3, 1024 ** 4));
+
+        try {
+            $this->start($request);
+            $this->fail('A refused start ran again under its request id.');
+        } catch (StartRefusalReplayed $replayed) {
+            $this->assertSame(StartRefusalType::CapacityUnavailable->value, $replayed->reason);
+        }
+
+        $this->assertSame($checksAtRefusal, $this->images->checks);
+        $this->assertSame(0, CapacityReservation::query()->count());
+        $this->assertSame(0, AgentSession::query()->where('agent_id', $this->agentId)->count());
+    }
+
+    public function test_changed_input_under_a_refused_key_is_refused_as_a_conflict(): void
+    {
+        $this->app->instance(HostCapacity::class, new HostCapacity(0, 0, 0));
+        $request = $this->containerRequest(TestSelections::requestId());
+        $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
+
+        $this->assertThrows(
+            fn () => $this->start($this->containerRequest($request->requestId, 'helpers.job 2')),
+            StartRequestConflict::class,
+        );
+        $this->assertSame(
+            StartDisposition::Refused,
+            StartRecord::query()->where('request_id', $request->requestId)->sole()->disposition,
+        );
+    }
+
+    public function test_an_intent_interrupted_before_its_receipt_resumes_once(): void
+    {
+        $this->app->instance(HostCapacity::class, new HostCapacity(64, 256 * 1024 ** 3, 1024 ** 4));
+        $request = $this->containerRequest(TestSelections::requestId());
+        StartRecord::accept($request, ActorIdentity::of(ActorContext::forUser($this->ownerId)), None::create());
+
+        $resumed = $this->start($request);
+        $replayed = $this->start($request);
+
+        $record = StartRecord::query()->where('request_id', $request->requestId)->sole();
+        $this->assertSame(
+            [StartDisposition::Started, $resumed->sessionId, $resumed->sessionId, true, false],
+            [
+                $record->disposition,
+                $record->session_id,
+                $replayed->sessionId,
+                $resumed->newSession,
+                $replayed->newSession,
+            ],
+        );
+        $this->assertSame(1, CapacityReservation::query()->where('start_request_id', $request->requestId)->count());
+        $this->assertSame(1, AgentSession::query()->where('agent_id', $this->agentId)->count());
+    }
+
+    public function test_the_requester_reads_a_sessionless_refused_receipt_and_another_agent_finds_none(): void
+    {
+        $this->app->instance(HostCapacity::class, new HostCapacity(0, 0, 0));
+        $request = $this->containerRequest(TestSelections::requestId());
+        $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
+
+        $receipt = $this->app->make(StartRecordResolver::class)->receipt($request->requestId);
+
+        $this->assertSame(
+            [StartDisposition::Refused, StartRefusalType::CapacityUnavailable->value, null],
+            [$receipt->disposition, $receipt->refusalReason, $receipt->sessionId],
+        );
+        $this->startRequestAs(Agent::create('Reader', 'writing-helper')->id, TestSelections::requestId());
+        $this->assertThrows(
+            fn () => $this->app->make(StartRecordResolver::class)->receipt($request->requestId),
+            StartRecordMissing::class,
+        );
+    }
+
+    private function proveTheHost(): void
+    {
+        $this->app->instance(HostCapabilities::class, new class implements HostCapabilities
+        {
+            public function capability(HostCapabilityQuery $query): HostCapability
+            {
+                return new HostCapability(
+                    $query,
+                    CapabilityStatusType::Supported,
+                    'docs/x.md',
+                    'Proven for this test.',
+                );
+            }
+        });
+        $this->images = new CountingImageVerifier;
+        $this->app->instance(DockerImageVerifier::class, $this->images);
+    }
+
+    private function containerRequest(string $requestId, string $ownerReference = 'helpers.job 1'): StartRequest
+    {
+        return new StartRequest(
+            $requestId,
+            $this->agentId,
+            TestSelections::of(),
+            StartOriginType::OwnerRequest,
+            $ownerReference,
+            null,
+            ConversationModeType::New,
+            null,
+            StartPolicy::withoutProfile(ExecutionPolicy::make(
+                ExecutionModeType::RequiredContainer,
+                self::IMAGE,
+                'helper-7',
+                ExecutionBudgets::defaults(),
+                [],
+            )),
+        );
+    }
+
+    private function start(StartRequest $request): StartReceipt
+    {
+        return $this->app->make(CommandBus::class)->run(new StartAgent($request));
+    }
+}

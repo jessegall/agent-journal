@@ -144,6 +144,9 @@ function disable(revision: GatewayRevisionData): void {
                             >
                         </div>
                     </template>
+                    <template v-if="revision.dependentShares.length === 0 && confirmingDisable !== revision.id">
+                        <p class="text-small text-text-3">No share uses this gateway.</p>
+                    </template>
                     <template v-if="confirmingDisable === revision.id">
                         <div
                             class="flex flex-col gap-1"

@@ -18,7 +18,7 @@ function statusOf(card: AskInbox['cards'][number]): string {
     <main class="mx-auto flex max-w-3xl flex-col gap-5 p-6">
         <h1 class="text-lg font-semibold">Asks</h1>
         <template v-if="data.cards.length === 0">
-            <p class="text-text-3">No asks to show.</p>
+            <p class="text-text-3">No questions waiting.</p>
         </template>
         <ul class="flex flex-col gap-3">
             <template v-for="card in data.cards" :key="card.id">

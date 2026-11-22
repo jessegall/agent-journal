@@ -15,10 +15,13 @@ use Domain\Documents\Http\Requests\RevisionPageRequest;
 
 /**
  * One revision of a document as a publication, read-only: its title, which revision of which document it is, marked
- * historical with a way to the current text when a later one exists, its abstract and its text once.
+ * historical with a way to the current text when a later one exists, when it was saved, its abstract and its text
+ * once; an empty text says so.
  */
 final readonly class RevisionWindowResolver implements PageResolver
 {
+    private const string NO_TEXT = '_This revision has no text._';
+
     public function __construct(private RevisionPageRequest $request, private DocumentResolver $documents) {}
 
     public function read(): DeclaredLayoutData
@@ -26,6 +29,7 @@ final readonly class RevisionWindowResolver implements PageResolver
         $revision = $this->documents->revision($this->request->documentNumber(), $this->request->revisionNumber());
         $metadata = [
             LayoutPartData::text('label', "doc {$revision->documentNumber}, revision {$revision->number}", 'code'),
+            LayoutPartData::text('saved', "Saved {$revision->closedAt}", 'muted'),
         ];
 
         if ($revision->historical) {
@@ -38,7 +42,7 @@ final readonly class RevisionWindowResolver implements PageResolver
             $revision->title,
             $metadata,
             $revision->abstract,
-            fn () => LayoutBodyData::fromMarkdown($revision->body),
+            fn () => LayoutBodyData::fromMarkdown(trim($revision->body) === '' ? self::NO_TEXT : $revision->body),
             [],
         )->layout('');
     }

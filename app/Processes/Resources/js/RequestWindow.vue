@@ -104,6 +104,9 @@ const refusal = computed(() => page.props.errors.review ?? '');
         </template>
         <section aria-label="Samples">
             <h2>Samples</h2>
+            <template v-if="data.samples.length === 0">
+                <p class="text-text-3">No samples</p>
+            </template>
             <template v-for="sample in data.samples" :key="sample.permitId">
                 <article>
                     <p>

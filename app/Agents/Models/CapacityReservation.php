@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
+use App\Agents\Enums\CapacityResource;
 use App\Agents\Enums\ReservationState;
 use App\Agents\Exceptions\CapacityUnavailable;
 use App\Agents\Values\ExecutionBudgets;
@@ -64,9 +65,7 @@ final class CapacityReservation extends Model implements ReadableModel
             return $existing;
         }
 
-        if ($capacity->isGuarded) {
-            self::assertFits($budgets, $capacity);
-        }
+        self::assertFits($budgets, $capacity);
 
         return self::query()->create(
             [
@@ -80,6 +79,28 @@ final class CapacityReservation extends Model implements ReadableModel
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The resource these budgets would not fit in beside every reservation still held, none when they fit or the
+     * host's capacity is not guarded. It reads only and reserves nothing; admission asks it again under its lock.
+     */
+    public static function shortageOf(ExecutionBudgets $budgets, HostCapacity $capacity): CapacityResource|null
+    {
+        if (! $capacity->isGuarded) {
+            return null;
+        }
+
+        $held = self::query()->where('state', ReservationState::Reserved);
+
+        return match (true) {
+            (int) $held->clone()->sum('cpu_cores') + $budgets->cpuCores > $capacity->cpuCores => CapacityResource::Cpu,
+            (int) $held->clone()->sum('memory_bytes') + $budgets->memoryBytes > $capacity->memoryBytes
+                => CapacityResource::Memory,
+            (int) $held->clone()->sum('disk_bytes') + $budgets->workspaceBytes > $capacity->diskBytes
+                => CapacityResource::Disk,
+            default => null,
+        };
+    }
 
     public static function isHeldFor(string $startRequestId): bool
     {
@@ -98,20 +119,12 @@ final class CapacityReservation extends Model implements ReadableModel
      */
     private static function assertFits(ExecutionBudgets $budgets, HostCapacity $capacity): void
     {
-        $held = self::query()->where('state', ReservationState::Reserved);
+        $shortage = self::shortageOf($budgets, $capacity);
 
-        if ((int) $held->clone()->sum('cpu_cores') + $budgets->cpuCores > $capacity->cpuCores) {
-            throw CapacityUnavailable::because(
-                "{$budgets->cpuCores} more cores do not fit the host's {$capacity->cpuCores}.",
-            );
+        if ($shortage === null) {
+            return;
         }
 
-        if ((int) $held->clone()->sum('memory_bytes') + $budgets->memoryBytes > $capacity->memoryBytes) {
-            throw CapacityUnavailable::because('its memory does not fit what the host has left.');
-        }
-
-        if ((int) $held->clone()->sum('disk_bytes') + $budgets->workspaceBytes > $capacity->diskBytes) {
-            throw CapacityUnavailable::because('its workspace does not fit the disk the host has left.');
-        }
+        throw CapacityUnavailable::because($shortage, $shortage->shortage());
     }
 }

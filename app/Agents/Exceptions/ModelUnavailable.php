@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
+use App\Agents\Contracts\StartRefusal;
 use App\Agents\Enums\StartRefusalType;
-use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
 
 /**
  * A named model the profile does not allow for the program.
  */
-final class ModelUnavailable extends InvalidArgumentException implements CommandRefusal
+final class ModelUnavailable extends InvalidArgumentException implements StartRefusal
 {
     public static function for(string $model, string $driver): self
     {

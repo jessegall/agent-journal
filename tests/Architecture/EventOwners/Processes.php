@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Processes\Enums\RunLogicalResult;
 use App\Processes\Events\BundleActivated;
 use App\Processes\Events\EvidenceInvalid;
 use App\Processes\Events\OutputChunkCommitted;
@@ -9,7 +10,6 @@ use App\Processes\Events\RuleActivated;
 use App\Processes\Events\RuleRejected;
 use App\Processes\Events\RuleRetired;
 use App\Processes\Events\RunChanged;
-use App\Processes\Enums\RunLogicalResult;
 use App\Processes\Events\RunOutcomeRecorded;
 use Tests\Architecture\Support\EventRole;
 

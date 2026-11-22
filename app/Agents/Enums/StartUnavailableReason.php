@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Enums;
 
+use App\Agents\Support\StartRemedy;
+
 /**
  * Why no account could start a start of a program, safe to tell the agent that asked.
  * It stays apart from AccountNoticeReason on purpose: an agent may learn only these, never a rejected sign-in
@@ -25,6 +27,37 @@ enum StartUnavailableReason: string
             self::Maintenance => 'its account is being signed in again or removed',
             self::ChosenAccountMissing => 'the chosen account is not one you can start it with',
             self::ChosenAccountChanged => 'the chosen account changed since you reviewed it; review it again',
+        };
+    }
+
+    /**
+     * The public explanation of a start no account could run.
+     */
+    public function explanation(): string
+    {
+        return match ($this) {
+            self::NoAccount => 'No account is chosen for this program.',
+            self::NeedsSignIn => 'This account needs to sign in again.',
+            self::Maintenance => 'This account is being signed in again or removed.',
+            self::ChosenAccountMissing => 'The chosen account is unavailable.',
+            self::ChosenAccountChanged => 'The chosen account changed since you reviewed it.',
+        };
+    }
+
+    public function remedy(): StartRemedy
+    {
+        return match ($this) {
+            self::NoAccount => StartRemedy::forEveryone(StartRemedyType::ChooseAccount, 'Choose an account'),
+            self::NeedsSignIn => StartRemedy::forEveryone(StartRemedyType::ChooseAccount, 'Sign in'),
+            self::Maintenance => StartRemedy::forEveryone(StartRemedyType::RetryStart, 'Retry start when eligible'),
+            self::ChosenAccountMissing => StartRemedy::forEveryone(
+                StartRemedyType::ChooseAccount,
+                'Choose another account',
+            ),
+            self::ChosenAccountChanged => StartRemedy::forEveryone(
+                StartRemedyType::ChooseAccount,
+                'Review the account',
+            ),
         };
     }
 }

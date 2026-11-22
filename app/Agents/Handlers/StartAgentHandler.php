@@ -18,6 +18,7 @@ use App\Agents\Events\StartAccepted;
 use App\Agents\Exceptions\AgentBusy;
 use App\Agents\Exceptions\HostUnavailable;
 use App\Agents\Exceptions\StartRefused;
+use App\Agents\Exceptions\StartRefusalReplayed;
 use App\Agents\Exceptions\StartRequestConflict;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -28,6 +29,7 @@ use App\Agents\Models\StartRecord;
 use App\Agents\Resolvers\Support\PendingStartSecrets;
 use App\Agents\Support\AgentWakes;
 use App\Agents\Support\ContainerAdmission;
+use App\Agents\Support\InitialWakeSettlement;
 use App\Agents\Support\StartedAgent;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Values\RuntimeIntent;
@@ -37,9 +39,10 @@ use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
 
 /**
- * Starts inside the command's transaction: the request's record first, so a repeat finds its start; then the
- * session under the agent's shared lifecycle lock, which a retirement waits for; the host is told after the
- * commit and receives its token and settings through its own read, never through the receipt.
+ * Starts inside the command's transaction: the request's record first, locked, which KeepStartReceipt committed as
+ * the intent, so a repeat finds its start or its refusal; then the session under the agent's shared lifecycle lock,
+ * which a retirement waits for; the host is told after the commit and receives its token and settings through its
+ * own read, never through the receipt.
  */
 final readonly class StartAgentHandler implements CommandHandler
 {
@@ -58,6 +61,7 @@ final readonly class StartAgentHandler implements CommandHandler
 
     /**
      * @throws StartRequestConflict
+     * @throws StartRefusalReplayed
      * @throws StartRefused
      * @throws AgentBusy
      */
@@ -67,6 +71,8 @@ final readonly class StartAgentHandler implements CommandHandler
         $dispatcher = ActorIdentity::of($command->dispatchedBy());
         $record = StartRecord::accept($request, $dispatcher, $this->replyInboxes->replyInboxIdFor($dispatcher));
 
+        // A replay of a start interrupted before its receipt resumes from the evidence its key holds: a session it
+        // started, else a reservation the admission finds.
         if ($record->session_id !== null) {
             return self::receiptOf($request, AgentSession::query()->findOrFail($record->session_id), false);
         }
@@ -162,7 +168,7 @@ final readonly class StartAgentHandler implements CommandHandler
 
         $this->wakes->wake(
             new StackTarget($started->session->agent_id, $started->session->id),
-            'start-'.$started->session->id,
+            InitialWakeSettlement::keyOf($started->session->id),
         );
     }
 
