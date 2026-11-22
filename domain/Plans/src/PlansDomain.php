@@ -68,7 +68,11 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
+use Domain\Plans\Http\Controllers\ApprovePlanReviewPageController;
+use Domain\Plans\Http\Controllers\RequestPlanChangesPageController;
+use Domain\Plans\Http\Controllers\RequestPlanReviewPageController;
 use Domain\Plans\Http\Controllers\StartPlanController;
+use Domain\Plans\Http\Controllers\WithdrawPlanReviewPageController;
 use Domain\Plans\Mcp\HeldPlansOverview;
 use Domain\Plans\Mcp\PlanResource;
 use Domain\Plans\Mcp\PlanSearch;
@@ -239,6 +243,24 @@ final class PlansDomain extends Domain implements
             Page::make('plan', 'Plan', Icon::Plan, PlanWindowResolver::class, 'PlanWindow.vue')
                 ->at('{plan}')
                 ->inInspector()
+                ->actions(
+                    ActionRoute::post('{plan}/review', RequestPlanReviewPageController::class, 'request-review'),
+                    ActionRoute::post(
+                        '{plan}/review/withdraw',
+                        WithdrawPlanReviewPageController::class,
+                        'withdraw-review',
+                    ),
+                    ActionRoute::post(
+                        '{plan}/review/approve',
+                        ApprovePlanReviewPageController::class,
+                        'approve-review',
+                    ),
+                    ActionRoute::post(
+                        '{plan}/review/changes',
+                        RequestPlanChangesPageController::class,
+                        'request-changes',
+                    ),
+                )
                 ->slots(Slot::record('inspector', 'plan', 'plan')),
             Page::make('phase', 'Phase', Icon::Plan, PhaseWindowResolver::class, 'PhaseWindow.vue')
                 ->at('{plan}/phases/{phase}'),
