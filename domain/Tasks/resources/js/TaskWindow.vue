@@ -6,7 +6,7 @@ import Button from '@kit/Button';
 import { keyedPost } from '@kit/keyedPost';
 import CommentsPanel from '@kit/CommentsPanel';
 import { commentThreadOf } from '@kit/commentThreads';
-import { useHostProp } from '@/framework/hostProp';
+import { useHostProp } from '@kit/hostProp';
 import FactsList from '@kit/FactsList';
 import Reader from '@kit/Reader';
 import SlotSections from '@kit/SlotSections';

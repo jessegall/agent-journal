@@ -2,7 +2,7 @@
 import { router, useForm } from '@inertiajs/vue3';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { DraftEditorPartData } from '@generated/types/documents';
-import { useHostProp } from '@/framework/hostProp';
+import { useHostProp } from '@kit/hostProp';
 import Button from '@kit/Button';
 import FormErrors from '@kit/FormErrors';
 import { formSendingHooks } from '@kit/usePageChanges';

@@ -6,7 +6,7 @@ import { approveReview, requestChanges, requestReview, withdrawReview } from '@g
 import type { PlanReviewData, PlanState } from '@generated/types/plans';
 import PlanEndDialog from './PlanEndDialog.vue';
 import PlanWorkDialog from './PlanWorkDialog.vue';
-import { useHostProp } from '@/framework/hostProp';
+import { useHostProp } from '@kit/hostProp';
 
 /**
  * A plan's review in its reader: Request review or Withdraw review when offered; while it is reviewed, the frozen

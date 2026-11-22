@@ -6,7 +6,7 @@ import Modal from '@kit/Modal';
 import { useWindowReload } from '@kit/useWindowQuery';
 import { addWait, removeWait, waiveWait } from '@generated/routes/tasks';
 import type { TaskWaitChoiceData } from '@generated/types/tasks';
-import { useHostProp } from '@/framework/hostProp';
+import { useHostProp } from '@kit/hostProp';
 
 /**
  * One change of a task's waits in a dialog that names the task and the effect: adding a prerequisite chosen by a
