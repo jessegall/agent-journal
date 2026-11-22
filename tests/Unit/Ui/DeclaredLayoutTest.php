@@ -199,4 +199,26 @@ final class DeclaredLayoutTest extends TestCase
 
         DeclaredLayoutData::of(LayoutPartData::collection('rows', 'list', $rows));
     }
+
+    public function test_a_skeleton_carries_its_placeholder_rows_and_a_plain_notice_may_not_claim_that_style(): void
+    {
+        $skeleton = LayoutPartData::skeleton('loading', 3, 'Loading tasks');
+
+        $this->assertSame(1, $skeleton->assertWithinCatalogue());
+        $this->assertSame(3, $skeleton->placeholders);
+        $this->assertSame('skeleton', $skeleton->style);
+
+        $this->expectException(LayoutRefused::class);
+
+        DeclaredLayoutData::of(LayoutPartData::notice('loading', 'skeleton', 'Loading tasks'));
+    }
+
+    public function test_a_stale_notice_holds_its_reason_in_the_notice_style_of_that_name(): void
+    {
+        $stale = LayoutPartData::stale('stale', 'Offline');
+
+        $this->assertSame(1, $stale->assertWithinCatalogue());
+        $this->assertSame('stale', $stale->style);
+        $this->assertSame('Offline', $stale->text);
+    }
 }

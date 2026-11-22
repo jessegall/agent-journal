@@ -48,7 +48,7 @@ enum LayoutTag: string
             self::Box => ['stack', 'row', 'section', 'card', 'panel', 'header', 'group', 'divider', 'split'],
             self::Text => ['plain', 'heading', 'muted', 'badge', 'code', 'keyHint', 'paragraph', 'time'],
             self::Collection => ['list', 'facts', 'choices'],
-            self::Notice => ['info', 'success', 'warning', 'error', 'empty', 'refusal'],
+            self::Notice => ['info', 'success', 'warning', 'error', 'empty', 'refusal', 'skeleton', 'stale'],
             self::Action => ['bordered', 'ghost', 'primary', 'danger'],
             self::Field => ['search', 'text'],
             self::Form => ['stack', 'inline'],

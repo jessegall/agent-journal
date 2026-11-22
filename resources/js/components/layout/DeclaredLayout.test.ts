@@ -340,4 +340,45 @@ describe('a declared layout', () => {
         view.unmount();
         visit.mockRestore();
     });
+
+    it('draws placeholder rows under one busy line, and a stale notice that reads only its own prop again', async () => {
+        const reload = vi
+            .spyOn(router, 'reload')
+            .mockImplementation(() => undefined);
+        const view = mount(DeclaredLayout, {
+            props: {
+                data: {
+                    root: part({
+                        tag: 'box',
+                        key: 'root',
+                        style: 'stack',
+                        children: [
+                            part({
+                                tag: 'notice',
+                                key: 'loading',
+                                style: 'skeleton',
+                                text: 'Loading tasks',
+                                placeholders: 4,
+                            }),
+                            part({
+                                tag: 'notice',
+                                key: 'stale',
+                                style: 'stale',
+                                text: 'Offline',
+                            }),
+                        ],
+                    }),
+                },
+            },
+        });
+
+        expect(view.find('[aria-busy="true"]').exists()).toBe(true);
+        expect(view.findAll('[aria-hidden="true"]')).toHaveLength(4);
+        expect(view.find('[role="status"]').text()).toBe('Loading tasks');
+
+        await view.findAll('button').at(-1)?.trigger('click');
+        expect(reload).toHaveBeenCalledWith({ only: ['page'] });
+        view.unmount();
+        reload.mockRestore();
+    });
 });

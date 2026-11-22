@@ -49,6 +49,7 @@ final class LayoutPartData extends Data
         public readonly LayoutBodyData|Optional $body = new Optional(),
         public readonly LayoutNativeData|Optional $native = new Optional(),
         public readonly LayoutMenuData|Optional $menu = new Optional(),
+        public readonly int|Optional $placeholders = new Optional(),
     ) {}
 
     public static function box(string $key, string $style, LayoutPartData ...$children): self
@@ -80,6 +81,23 @@ final class LayoutPartData extends Data
     public static function notice(string $key, string $style, string $title, string|null $detail = null): self
     {
         return new self(LayoutTag::Notice, $key, null, $style, $title, $detail, [], []);
+    }
+
+    /**
+     * The placeholder rows a list shows while its first read is pending, announced once by their label.
+     */
+    public static function skeleton(string $key, int $rows, string $label): self
+    {
+        return new self(LayoutTag::Notice, $key, null, 'skeleton', $label, null, [], [], placeholders: $rows);
+    }
+
+    /**
+     * The list's earlier rows stay under this notice when a refresh failed: the reason and its own Retry, which reads
+     * only the failed address again.
+     */
+    public static function stale(string $key, string $reason): self
+    {
+        return new self(LayoutTag::Notice, $key, null, 'stale', $reason, null, [], []);
     }
 
     /**
@@ -251,6 +269,7 @@ final class LayoutPartData extends Data
             || ($this->tag === LayoutTag::Native) === $this->native instanceof Optional
             || ($this->tag === LayoutTag::Menu) === $this->menu instanceof Optional
             || ($this->tag === LayoutTag::Tabs) === ($this->tabs === [])
+            || ($this->style === 'skeleton') === $this->placeholders instanceof Optional
         ) {
             throw LayoutRefused::bindingMismatch($path, $this->tag);
         }
