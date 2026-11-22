@@ -148,6 +148,24 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
+     * The driver of each agent's newest running session, keyed by agent id; an agent with none running is left out.
+     *
+     * @param  list<string>  $agentIds
+     * @return array<string, string>
+     */
+    public static function runningDriversOf(array $agentIds): array
+    {
+        return self::query()
+            ->whereIn('agent_id', $agentIds)
+            ->running()
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get(['agent_id', 'driver'])
+            ->pluck('driver', 'agent_id')
+            ->all();
+    }
+
+    /**
      * The agent's most recent session, or null when it never started.
      */
     public static function latestOf(string $agentId): self|null

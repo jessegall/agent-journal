@@ -11,7 +11,7 @@ use RuntimeException;
 
 /**
  * A change to who is in a chat that its rules refuse: only its owner changes the roster, the target must be eligible,
- * a chat holds at most a hundred members, an agent chat stays a pair, and the last owner hands over before it leaves.
+ * a chat holds at most a hundred members, and the last owner hands over before it leaves.
  */
 final class ChatMembershipRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
@@ -33,16 +33,6 @@ final class ChatMembershipRefused extends RuntimeException implements CodedRefus
     public static function rosterFull(string $inboxId, int $limit): self
     {
         return new self("Chat {$inboxId} already holds {$limit} members.");
-    }
-
-    public static function agentChat(string $inboxId): self
-    {
-        return new self("Chat {$inboxId} is a chat with an agent and stays between its two members.");
-    }
-
-    public static function agentInUserGroup(string $inboxId): self
-    {
-        return new self("An agent cannot be added to the user group chat {$inboxId}.");
     }
 
     public static function notMember(string $inboxId): self

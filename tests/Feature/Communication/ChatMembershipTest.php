@@ -6,6 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Actors\Enums\ChatPermission;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Support\AgentChatAccess;
 use App\Communication\Commands\PostChatMessage;
 use App\Communication\Enums\IntervalRole;
 use App\Communication\Enums\TimelineEventType;
@@ -28,7 +29,7 @@ use Tests\Support\OpensPairChats;
 
 /**
  * Ada runs her user chat: she adds Bea and Cy, adding Bea twice makes one join, Bea cannot add anyone, the owner role
- * passes to Bea in one commit, a removed member can no longer post, and an agent chat takes nobody else.
+ * passes to Bea in one commit, a removed member can no longer post, and both agents join beside Bea.
  */
 final class ChatMembershipTest extends MessagingTestCase
 {
@@ -87,13 +88,31 @@ final class ChatMembershipTest extends MessagingTestCase
         $this->runOnBus(new PostChatMessage($this->chat->inbox_id, 'Still here?', 'cy-post'));
     }
 
-    public function test_an_agent_chat_takes_nobody_else(): void
+    public function test_the_owner_adds_both_agents_beside_a_user_and_an_agent_keeps_its_other_chat(): void
     {
-        $pair = $this->pairChat(ActorIdentity::of($this->owner), $this->actorOf($this->builder));
-        $this->asOwner();
+        $access = $this->app->make(AgentChatAccess::class);
+        foreach ([$this->builder, $this->reviewer] as $agent) {
+            $access->allow($agent->agent_id, null, [$this->owner->id], ActorIdentity::system(), CarbonImmutable::now());
+        }
+        $desk = $this->pairChat(ActorIdentity::of($this->owner), $this->actorOf($this->builder));
 
-        $this->expectException(ChatMembershipRefused::class);
-        $this->runOnBus(new AddChatParticipant($pair->inbox_id, $this->keyOf($this->bea)));
+        $this->asOwner();
+        $this->runOnBus(new AddChatParticipant($this->chat->inbox_id, $this->keyOf($this->bea)));
+        $this->runOnBus(new AddChatParticipant($this->chat->inbox_id, "agent:{$this->builder->agent_id}"));
+        $this->runOnBus(new AddChatParticipant($this->chat->inbox_id, "agent:{$this->reviewer->agent_id}"));
+
+        $chats = $this->app->make(ChatInboxes::class);
+        $release = new ChatInbox($this->chat->inbox_id, 'Release');
+        $members = [
+            ActorIdentity::of($this->owner),
+            ActorIdentity::of($this->bea),
+            $this->actorOf($this->builder),
+            $this->actorOf($this->reviewer),
+        ];
+        foreach ($members as $member) {
+            $this->assertTrue($chats->isActiveMember($release, $member));
+        }
+        $this->assertTrue($chats->isActiveMember(new ChatInbox($desk->inbox_id, 'Desk'), $this->actorOf($this->builder)));
     }
 
     private function grantedUser(string $name): User

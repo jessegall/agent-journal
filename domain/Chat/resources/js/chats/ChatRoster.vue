@@ -8,7 +8,7 @@ import ParticipantRow from './ParticipantRow.vue';
 
 /**
  * Who is in the chat and, offered only where the server's capabilities allow, the owner's controls: add an eligible
- * user, remove a member, hand the chat over, close it; any member may leave. Each change posts and reloads the room,
+ * user or agent, remove a member, hand the chat over, close it; any member may leave. Each change posts and reloads the room,
  * and the server checks it again.
  */
 const props = defineProps<{ conversation: ConversationData; conversationProp: string; chosenAgentId?: string | null }>();
@@ -72,7 +72,12 @@ function findCandidates(): void {
                 <ul class="flex flex-col gap-0.5">
                     <template v-for="candidate in found" :key="candidate.actor">
                         <li class="flex items-center justify-between text-body">
-                            <span>{{ candidate.label }}</span>
+                            <span>
+                                {{ candidate.label }}
+                                <template v-if="candidate.driver !== null">
+                                    <span class="text-small text-text-3">{{ candidate.driver }}</span>
+                                </template>
+                            </span>
                             <button type="button" class="underline" @click="post(addMember().url, { participant: candidate.actor })">
                                 Add
                             </button>

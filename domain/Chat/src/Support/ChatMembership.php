@@ -25,14 +25,10 @@ use Illuminate\Support\Str;
 /**
  * Who is in a chat, changed under its locks: the target's admission first, then the chat inbox; every rule is checked
  * again once both are held. Only the owner adds, removes, hands over and closes; any member may leave, except the
- * owner while others remain. A chat with an agent stays a pair of the agent and one user.
+ * owner while others remain. Users and agents mix freely, up to a hundred members.
  */
 final readonly class ChatMembership
 {
-    /**
-     * A chat with an agent holds its agent and one user, until larger agent chats are opened.
-     */
-    private const int AGENT_CHAT_SIZE = 2;
 
     public function __construct(
         private ChatEligibility $eligibility,
@@ -87,15 +83,6 @@ final readonly class ChatMembership
         }
 
         $members = $this->chats->activeIntervals($inbox);
-        $holdsAgent = array_any($members, fn (ChatInterval $member) => $member->actor->type->isAgent());
-
-        if ($holdsAgent && count($members) >= self::AGENT_CHAT_SIZE) {
-            throw ChatMembershipRefused::agentChat($inboxId);
-        }
-
-        if ($target->type->isAgent() && count($members) >= self::AGENT_CHAT_SIZE) {
-            throw ChatMembershipRefused::agentInUserGroup($inboxId);
-        }
 
         if (count($members) >= InboxMembers::LIMIT) {
             throw ChatMembershipRefused::rosterFull($inboxId, InboxMembers::LIMIT);

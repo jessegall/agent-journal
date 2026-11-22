@@ -8,8 +8,8 @@ use App\Actors\Contracts\ActorLabels;
 use App\Actors\Contracts\ChatEligibility;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Enums\ChatPermission;
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Support\AgentDrivers;
 use App\Agents\Support\AgentOption;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\InboxResolver;
@@ -31,7 +31,7 @@ use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\DockProjection;
 
 /**
- * The chat window's conversation with one agent, read at the pair's chat inbox: its members with their names and
+ * The chat window's conversation at one chat inbox, a pair or a group: its members with their names and
  * drivers, its newest rows by speaker from the timeline, the viewer's unread count and what is docked there.
  */
 final readonly class ChatConversations
@@ -44,16 +44,16 @@ final readonly class ChatConversations
         private ActorLabels $labels,
         private DockProjection $dock,
         private ChatEligibility $eligibility,
+        private AgentDrivers $agentDrivers,
     ) {}
 
     public function pageFor(AgentOption|null $agent, string $inboxId, string|null $dockToken): ConversationData
     {
         $viewer = ActorIdentity::of($this->actors->actor());
         $intervals = $this->chats->activeIntervals($this->inboxes->resolve($inboxId));
-        $names = $this->labels->labelsFor(array_map(fn (ChatInterval $interval) => $interval->actor, $intervals));
-        $drivers = $agent === null
-            ? []
-            : [self::keyOf(new ActorIdentity(ActorType::Agent, $agent->agentId)) => $agent->sessionDriver];
+        $members = array_map(fn (ChatInterval $interval) => $interval->actor, $intervals);
+        $names = $this->labels->labelsFor($members);
+        $drivers = $this->agentDrivers->driversOf($members);
         $conversation = Conversation::forInbox($inboxId);
         $capabilities = $this->capabilitiesOf($viewer, $conversation, $intervals);
         $page = $this->messages->timeline($inboxId, null, MessagePage::DEFAULT_LIMIT);
@@ -102,8 +102,8 @@ final readonly class ChatConversations
     }
 
     /**
-     * The membership actions the viewer is offered: the owner's controls when it may manage members, adding only to a
-     * chat without an agent, and leaving for anyone but an owner others still depend on.
+     * The membership actions the viewer is offered: the owner's controls when it may manage members, and leaving
+     * for anyone but an owner others still depend on.
      *
      * @param  list<ChatInterval>  $intervals
      */
@@ -115,13 +115,12 @@ final readonly class ChatConversations
         $isOwner = $conversation->isOpen() && $conversation->isOwnedBy($viewer);
         $manages = $isOwner
             && $this->eligibility->holds($viewer, ChatPermission::ManageMembers, $conversation->environment_id);
-        $hasAgent = array_any($intervals, fn (ChatInterval $interval) => $interval->actor->type->isAgent());
         $hasOthers = count($intervals) > 1;
 
         return ChatCapabilitiesData::from([
-            'add' => $manages && ! $hasAgent,
-            'remove' => $manages && $hasOthers && ! $hasAgent,
-            'transfer' => $isOwner && $hasOthers && ! $hasAgent,
+            'add' => $manages,
+            'remove' => $manages && $hasOthers,
+            'transfer' => $isOwner && $hasOthers,
             'leave' => $conversation->isOpen() && (! $isOwner || ! $hasOthers),
             'close' => $isOwner,
         ]);

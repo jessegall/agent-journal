@@ -285,6 +285,7 @@ use App\Agents\Exceptions\StartRequestConflict;
 use App\Agents\Exceptions\StopConditionsInvalid;
 use App\Agents\Support\AccountUseCounts;
 use App\Agents\Support\AgentChatAdmission;
+use App\Agents\Support\AgentDrivers;
 use App\Agents\Support\AgentLabel;
 use App\Agents\Support\AgentOption;
 use App\Agents\Support\AgentStatus;
@@ -2092,6 +2093,7 @@ final class CoreApi
                 PresentationBatchData::class,
                 PresentationItemData::class,
                 AgentChatAdmission::class,
+                AgentDrivers::class,
                 ChatTimeline::class,
                 ChatEventPage::class,
                 ChatEventView::class,
