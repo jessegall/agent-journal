@@ -102,6 +102,13 @@ export class TerminalSubscription {
     }
 
     /**
+     * The read interest the subscription reads through now; empty while it opens or after it stopped.
+     */
+    readInterest(): string {
+        return this.interest;
+    }
+
+    /**
      * Starts a fresh subscription: the old one is retired and its interest closed first.
      */
     open(): void {

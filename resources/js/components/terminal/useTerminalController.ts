@@ -12,6 +12,7 @@ import type { Ref } from 'vue';
 import { computed, onBeforeUnmount, onMounted, shallowRef, watch } from 'vue';
 import type { TerminalClient, TerminalFailure, TerminalScreen } from './terminalSubscription';
 import { TerminalSubscription } from './terminalSubscription';
+import { useTerminalControl } from './useTerminalControl';
 
 /**
  * How often the view reads its frame, renews its interest and checks the screen's lifetime.
@@ -204,5 +205,7 @@ export function useTerminalController(agentId: Ref<string>, isShown: Ref<boolean
         }
     }
 
-    return { presentation, retry };
+    const control = useTerminalControl(agentId, () => subscription.readInterest(), screen, isShown);
+
+    return { presentation, retry, control };
 }
