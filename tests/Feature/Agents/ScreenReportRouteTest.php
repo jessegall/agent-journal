@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Actors\Contracts\ServerClock;
+use App\Actors\Support\ActorIdentity;
+use App\Agents\Data\ScreenFrameData;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\RuntimeScreen;
+use App\Agents\Support\ScreenRegistration;
+use App\Agents\Support\TerminalViews;
 use Carbon\CarbonImmutable;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
@@ -22,7 +26,8 @@ use Tests\TestCase;
 
 /**
  * A host's screen frame is kept only for a runtime it runs and somebody watches, within the size bound and four
- * frames a second; every refusal answers refused and keeps nothing.
+ * frames a second, and only for the runtime's current screen identity; every refusal answers refused and keeps
+ * nothing, and a refused delayed frame reaches neither a watcher nor a view opened after it.
  */
 #[TimeLimit(seconds: 3, reason: 'It commits real rows on the hook database and empties its tables around each test.')]
 final class ScreenReportRouteTest extends TestCase
@@ -52,7 +57,8 @@ final class ScreenReportRouteTest extends TestCase
 
         $this->report($host, $runtime, 1)->assertOk()->assertExactJson(['status' => 'stored']);
 
-        $this->assertSame(1, $this->app->make(RuntimeScreen::class)->latest($runtime->id)?->frame->sequence);
+        $latest = $this->app->make(RuntimeScreen::class)->latest(ScreenRegistration::of($runtime));
+        $this->assertSame(1, $latest?->frame->sequence);
     }
 
     public function test_a_runtime_another_host_runs_is_refused(): void
@@ -91,7 +97,62 @@ final class ScreenReportRouteTest extends TestCase
 
         $this->report($host, $runtime, 5)->assertExactJson(['status' => 'refused', 'reason' => 'too_fast']);
         $this->report($host, $runtime, 6)->assertExactJson(['status' => 'refused', 'reason' => 'too_fast']);
-        $this->assertSame(4, $this->app->make(RuntimeScreen::class)->latest($runtime->id)?->frame->sequence);
+        $latest = $this->app->make(RuntimeScreen::class)->latest(ScreenRegistration::of($runtime));
+        $this->assertSame(4, $latest?->frame->sequence);
+    }
+
+    public function test_a_delayed_report_from_before_the_host_restarted_is_refused_for_every_view(): void
+    {
+        $host = $this->enrolledHost();
+        $runtime = $this->watchedRuntimeOn($host);
+        $this->report($host, $runtime, 7, frame: ['epoch' => 'epoch-1', 'stream' => 'stream-1']);
+        $this->report($host, $runtime, 1, 'after restart', ['epoch' => 'epoch-2', 'stream' => 'stream-1']);
+
+        $delayed = $this->report($host, $runtime, 8, 'before restart', ['epoch' => 'epoch-1', 'stream' => 'stream-1']);
+
+        $delayed->assertExactJson(['status' => 'refused', 'reason' => 'retired']);
+        $this->assertSame(['after restart', 'after restart'], $this->textsSeenBy($runtime));
+    }
+
+    public function test_a_delayed_public_report_from_before_a_shield_is_refused_and_a_newer_one_shows(): void
+    {
+        $host = $this->enrolledHost();
+        $runtime = $this->watchedRuntimeOn($host);
+        $this->report($host, $runtime, 2, 'secret', ['shielded' => true, 'rows' => [], 'privacy_revision' => 1]);
+
+        $delayed = $this->report($host, $runtime, 1, 'before shield', ['privacy_revision' => 0]);
+
+        $delayed->assertExactJson(['status' => 'refused', 'reason' => 'retired']);
+        $this->assertSame([null, null], $this->textsSeenBy($runtime));
+
+        $newer = $this->report($host, $runtime, 3, 'public again', ['privacy_revision' => 1]);
+
+        $newer->assertExactJson(['status' => 'stored']);
+        $this->assertSame(['public again', 'public again'], $this->textsSeenBy($runtime));
+    }
+
+    /**
+     * The first row's text the runtime's existing watcher sees, then what a view opened only now sees; null for a
+     * frame with no rows.
+     *
+     * @return list<string|null>
+     */
+    private function textsSeenBy(AgentRuntime $runtime): array
+    {
+        $views = $this->app->make(TerminalViews::class);
+        $agentId = $runtime->session->agent_id;
+        $now = CarbonImmutable::now();
+        $views->open($agentId, TestActors::userIdentity(2), 500, $now);
+
+        return array_map(function (ActorIdentity $viewer) use ($views, $agentId, $now): string|null {
+            $frame = $views->frame($agentId, $viewer, '', 0, $now)->get()->frame;
+
+            if (! $frame instanceof ScreenFrameData || $frame->rows === []) {
+                return null;
+            }
+
+            return $frame->rows[0]->runs[0]->text;
+        }, [TestActors::userIdentity(1), TestActors::userIdentity(2)]);
     }
 
     private function watchedRuntimeOn(EnrolledHost $host): AgentRuntime
@@ -102,15 +163,19 @@ final class ScreenReportRouteTest extends TestCase
         return $runtime;
     }
 
+    /**
+     * @param  array<string, mixed>  $frame  the frame fields that differ from an ordinary public frame
+     */
     private function report(
         EnrolledHost $host,
         AgentRuntime $runtime,
         int $sequence,
         string $text = 'hello',
+        array $frame = [],
     ): TestResponse {
         return $this->hostCall($host, '/host/reports/screen', [
             'runtime_id' => $runtime->id,
-            'frame' => [
+            'frame' => [...[
                 'epoch' => 'epoch-1',
                 'sequence' => $sequence,
                 'captured' => '2026-11-19T12:00:00Z',
@@ -122,13 +187,13 @@ final class ScreenReportRouteTest extends TestCase
                 'too_large' => false,
                 'unreadable' => false,
                 'no_terminal' => false,
-            ],
+            ], ...$frame],
         ]);
     }
 
     private function assertRefused(TestResponse $response, string $reason, AgentRuntime $runtime): void
     {
         $response->assertOk()->assertExactJson(['status' => 'refused', 'reason' => $reason]);
-        $this->assertNull($this->app->make(RuntimeScreen::class)->latest($runtime->id));
+        $this->assertNull($this->app->make(RuntimeScreen::class)->latest(ScreenRegistration::of($runtime)));
     }
 }

@@ -9,8 +9,8 @@ use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Cache\Repository;
 
 /**
- * The latest frame of each runtime's screen, kept only in the cache and gone a minute after the last frame; a frame
- * is never written to the database or a log.
+ * The latest frame of each runtime's screen with the identity it was admitted under, kept only in the cache and gone a
+ * minute after the last frame; a frame is never written to the database or a log.
  */
 final readonly class RuntimeScreen
 {
@@ -22,24 +22,50 @@ final readonly class RuntimeScreen
     public function __construct(private Repository $cache) {}
 
     /**
-     * Keeps the frame as the runtime's latest unless the stored one is from the same host process and not older.
+     * Keeps the frame as the runtime's latest when its identity is the current one or newer, and says whether it did.
+     * The caller holds the runtime's row lock, so registration changes and admissions of one runtime never interleave;
+     * a shield frame replaces the stored public one with no rows.
      */
-    public function put(string $runtimeId, ScreenFrameData $frame, CarbonImmutable $receivedAt): void
+    public function admit(ScreenRegistration $registration, ScreenFrameData $frame, CarbonImmutable $receivedAt): bool
     {
-        $stored = $this->latest($runtimeId);
+        $arriving = ScreenIdentity::ofReport($registration, $frame);
+        $screen = new ReceivedScreen($frame, $receivedAt);
+        $slot = $this->slotOf($registration->runtimeId);
 
-        if ($stored !== null && ! $frame->supersedes($stored->frame)) {
-            return;
+        if ($slot === null) {
+            $this->keep($registration->runtimeId, ScreenSlot::first($arriving, $screen));
+
+            return true;
         }
 
-        $this->cache->put($this->key($runtimeId), new ReceivedScreen($frame, $receivedAt), self::KEEP_SECONDS);
+        if (! $slot->admits($arriving, $frame->sequence)) {
+            return false;
+        }
+
+        $this->keep($registration->runtimeId, $slot->replacedBy($arriving, $screen));
+
+        return true;
     }
 
-    public function latest(string $runtimeId): ReceivedScreen|null
+    /**
+     * The runtime's latest screen when it was admitted under the registration the reader expects; a runtime that
+     * ended keeps only its own last frame, and any other registration sees nothing.
+     */
+    public function latest(ScreenRegistration $expected): ReceivedScreen|null
+    {
+        return $this->slotOf($expected->runtimeId)?->screenFor($expected);
+    }
+
+    private function slotOf(string $runtimeId): ScreenSlot|null
     {
         $stored = $this->cache->get($this->key($runtimeId));
 
-        return $stored instanceof ReceivedScreen ? $stored : null;
+        return $stored instanceof ScreenSlot ? $stored : null;
+    }
+
+    private function keep(string $runtimeId, ScreenSlot $slot): void
+    {
+        $this->cache->put($this->key($runtimeId), $slot, self::KEEP_SECONDS);
     }
 
     private function key(string $runtimeId): string

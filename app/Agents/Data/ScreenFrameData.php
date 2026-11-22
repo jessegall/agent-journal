@@ -45,12 +45,4 @@ final class ScreenFrameData extends Data
         public readonly int $proof = 0,
         public readonly ?string $expiresAt = null,
     ) {}
-
-    /**
-     * Whether this frame comes after the other: from another host process, or later in the same one.
-     */
-    public function supersedes(self $other): bool
-    {
-        return $this->epoch !== $other->epoch || $this->sequence > $other->sequence;
-    }
 }

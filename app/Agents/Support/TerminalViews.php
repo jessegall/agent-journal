@@ -122,7 +122,7 @@ final readonly class TerminalViews implements TerminalViewCloser
             return Some::create(TerminalFrameData::from(['state' => TerminalFrameState::Restarted]));
         }
 
-        $received = $this->screens->latest($runtime->id);
+        $received = $this->screens->latest(ScreenRegistration::of($runtime));
 
         if ($runtime->hasEnded()) {
             return Some::create($this->ended($received, $runtime->updated_at->toImmutable()));
@@ -156,13 +156,16 @@ final readonly class TerminalViews implements TerminalViewCloser
      */
     private function endedView(string $agentId, ActorIdentity $viewer, CarbonImmutable $now): TerminalFrameData
     {
-        $last = TerminalView::query()->ownedBy($viewer)->ofAgent($agentId)->latest('closed_at')->first();
+        $last = TerminalView::query()->with('runtime')->ownedBy($viewer)->ofAgent($agentId)
+            ->latest('closed_at')->first();
 
         if ($last === null) {
             return TerminalFrameData::from(['state' => TerminalFrameState::Ended, 'endedAt' => $now]);
         }
 
-        return $this->ended($this->screens->latest($last->agent_runtime_id), $last->closed_at ?? $now);
+        $received = $this->screens->latest(ScreenRegistration::of($last->runtime));
+
+        return $this->ended($received, $last->closed_at ?? $now);
     }
 
     private function ended(ReceivedScreen|null $received, CarbonImmutable $endedAt): TerminalFrameData

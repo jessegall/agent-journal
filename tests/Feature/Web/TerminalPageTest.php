@@ -18,6 +18,7 @@ use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
 use App\Agents\Support\DriverRequestEndings;
 use App\Agents\Support\RuntimeScreen;
+use App\Agents\Support\ScreenRegistration;
 use App\Agents\Support\TerminalFrames;
 use App\Agents\Values\RuntimeIntent;
 use App\Http\Middleware\Web\HandleInertiaRequests;
@@ -221,7 +222,7 @@ final class TerminalPageTest extends TestCase
             'unreadable' => false,
             'no_terminal' => false,
         ]);
-        $this->app->make(RuntimeScreen::class)->put($runtime->id, $frame, CarbonImmutable::now());
+        $this->app->make(RuntimeScreen::class)->admit(ScreenRegistration::of($runtime), $frame, CarbonImmutable::now());
     }
 
     private function viewerOf(User $user): ActorIdentity
