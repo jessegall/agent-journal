@@ -33,6 +33,9 @@ func (claims claimServing) run(ctx context.Context, claimed func()) error {
 	defer startListener.Close()
 	go startSocket.Serve(ctx, startListener)
 	loop := serving.NewLoop(claims.journal, claims.preparation, claims.open)
+	if err := loop.KeepUnsentReports(ctx, claims.startSocketFolder); err != nil {
+		log.Printf("the request reports kept from before could not all be sent yet: %v", err)
+	}
 	watcher, err := host.NewScreenWatcher(ctx, claims.journal, claims.socket)
 	if err != nil {
 		return err

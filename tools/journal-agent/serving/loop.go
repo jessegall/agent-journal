@@ -48,7 +48,9 @@ type Preparer interface {
 
 // Loop carries out claimed requests, one runtime at a time in its accepted order.
 type Loop struct {
-	journal   Journal
+	journal Journal
+	// unsent keeps the reports the journal has not acknowledged, when the host gave the loop a folder for them.
+	unsent    *host.RequestReports
 	prepare   Preparer
 	open      Opener
 	scheduler *host.Scheduler
@@ -267,13 +269,19 @@ func (loop *Loop) startTurn(ctx context.Context, runtime *liveRuntime, admission
 		loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressApplying})
 	}
 	loop.activity(ctx, runtime, "running")
-	go loop.awaitTurn(ctx, runtime)
+	go loop.awaitTurn(ctx, runtime, runtime.driver.Finished(), requests)
 }
 
-// awaitTurn waits for the turn's program to end, reports its requests applied, or uncertain when the program ended
-// with an error, and the runtime idle, and runs what waited behind the turn.
-func (loop *Loop) awaitTurn(ctx context.Context, runtime *liveRuntime) {
-	ended := <-runtime.driver.Finished()
+// awaitTurn waits for this turn's program to end, on the channel of the turn it started, and reports this turn's
+// requests applied, or uncertain when the program ended with an error, and the runtime idle; a turn that ends late
+// settles only its own requests, never those of a turn started after it.
+func (loop *Loop) awaitTurn(
+	ctx context.Context,
+	runtime *liveRuntime,
+	turnEnd <-chan error,
+	turnRequests []client.ClaimedRequest,
+) {
+	ended := <-turnEnd
 	result := contracts.OperationResult{
 		Progress:      contracts.ProgressApplied,
 		Outcome:       contracts.OutcomeConfirmed,
@@ -285,9 +293,12 @@ func (loop *Loop) awaitTurn(ctx context.Context, runtime *liveRuntime) {
 	}
 
 	loop.mutex.Lock()
-	finished := append(runtime.running, runtime.staged...)
+	finished := append(append([]client.ClaimedRequest{}, turnRequests...), runtime.staged...)
 	interrupts := runtime.interrupts
-	runtime.running, runtime.staged, runtime.interrupts = nil, nil, nil
+	if sameRequests(runtime.running, turnRequests) {
+		runtime.running = nil
+	}
+	runtime.staged, runtime.interrupts = nil, nil
 	loop.mutex.Unlock()
 
 	for _, request := range finished {
@@ -651,8 +662,8 @@ func (loop *Loop) report(ctx context.Context, request client.ClaimedRequest, res
 		outcome := string(result.Outcome)
 		report.Outcome = &outcome
 	}
-	if err := loop.journal.ReportRequest(ctx, report); err != nil {
-		log.Printf("%s request %s (attempt %d) could not be reported: %v", request.Operation, request.RequestID, request.Attempt, err)
+	if err := loop.sendReport(ctx, report); err != nil {
+		log.Printf("%s request %s (attempt %d) could not be reported yet: %v", request.Operation, request.RequestID, request.Attempt, err)
 	}
 }
 
@@ -694,4 +705,32 @@ func wakePrompt(wakes []client.ClaimedRequest) string {
 		}
 	}
 	return ""
+}
+
+// sameRequests says whether the two lists hold the same requests in the same order.
+func sameRequests(first, second []client.ClaimedRequest) bool {
+	if len(first) != len(second) {
+		return false
+	}
+	for index := range first {
+		if first[index].RequestID != second[index].RequestID || first[index].Attempt != second[index].Attempt {
+			return false
+		}
+	}
+	return true
+}
+
+// KeepUnsentReports keeps every request report the journal has not acknowledged in the folder and sends the ones a
+// restart left there, so no outcome is lost to an outage or a restart.
+func (loop *Loop) KeepUnsentReports(ctx context.Context, folder string) error {
+	loop.unsent = &host.RequestReports{Folder: folder}
+	return loop.unsent.Replay(ctx, loop.journal)
+}
+
+// sendReport sends the report, through the kept reports when the loop keeps them.
+func (loop *Loop) sendReport(ctx context.Context, report client.RequestReport) error {
+	if loop.unsent == nil {
+		return loop.journal.ReportRequest(ctx, report)
+	}
+	return loop.unsent.Report(ctx, loop.journal, report)
 }

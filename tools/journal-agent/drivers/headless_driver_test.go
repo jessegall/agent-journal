@@ -113,3 +113,31 @@ func TestAConfinedChildTurnRunsUnderItsConfinementInPlaceOfTheSessionSandbox(t *
 		t.Fatalf("a session sandbox was written beside the confinement: %v", err)
 	}
 }
+
+func TestADelayedEndOfChildAKeepsChildBAndSettlesOnlyAsTurn(t *testing.T) {
+	childA := exec.Command("true")
+	if err := childA.Start(); err != nil {
+		t.Fatal(err)
+	}
+	childB := exec.Command("true")
+	driver := &HeadlessDriver{}
+	driver.child = childB
+	endOfA, endOfB := make(chan error, 1), make(chan error, 1)
+	driver.finished = endOfB
+
+	driver.wait(childA, nil, endOfA)
+
+	if driver.child != childB {
+		t.Fatal("the late end of child A cleared child B")
+	}
+	select {
+	case <-endOfA:
+	default:
+		t.Fatal("child A's end did not reach A's own turn")
+	}
+	select {
+	case <-endOfB:
+		t.Fatal("child A's end settled B's turn")
+	default:
+	}
+}

@@ -351,7 +351,9 @@ func (driver *HeadlessDriver) wait(command *exec.Cmd, result <-chan error, finis
 		err = turnFailure
 	}
 	driver.mutex.Lock()
-	driver.child = nil
+	if driver.child == command {
+		driver.child = nil
+	}
 	driver.mutex.Unlock()
 	finished <- err
 }
