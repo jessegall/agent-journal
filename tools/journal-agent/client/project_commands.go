@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -130,11 +131,15 @@ func ReadProjectCommandStatus(
 	return status, json.NewDecoder(response.Body).Decode(&status)
 }
 
+// ErrJournalUnreachable is returned when no connection to the journal could be made: nothing was sent, so the verb
+// did not run and its outcome is known.
+var ErrJournalUnreachable = errors.New("the journal could not be reached; nothing was sent")
+
 // readFrames sends the request and hands each frame of its answer to write in sequence, until the exit frame.
 func readFrames(transport *http.Client, request *http.Request, write func(CommandFrame) error) (int, error) {
 	response, err := transport.Do(request)
 	if err != nil {
-		return 0, errors.Join(ErrUncertain, err)
+		return 0, sendFailure(err)
 	}
 	defer response.Body.Close()
 
@@ -223,4 +228,15 @@ func StartGrantFrom(lookup func(string) (string, bool)) (StartGrant, bool) {
 	grant.ProfileRevision = number
 
 	return grant, true
+}
+
+// sendFailure says what a failed send means: a connection that was never made sent nothing, so the verb did not
+// run; any later failure may have reached the journal, so its outcome is unknown.
+func sendFailure(err error) error {
+	var operation *net.OpError
+	if errors.As(err, &operation) && operation.Op == "dial" {
+		return errors.Join(ErrJournalUnreachable, err)
+	}
+
+	return errors.Join(ErrUncertain, err)
 }
