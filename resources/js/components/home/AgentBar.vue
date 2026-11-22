@@ -63,10 +63,11 @@ function deskEdges(): DeskEdges {
         role="region"
         aria-label="Agent"
     >
-        <template v-if="!isHidden">
-            <slot />
-        </template>
-        <span class="flex-1"></span>
+        <div class="flex min-w-0 flex-1 items-center gap-2.5">
+            <template v-if="!isHidden">
+                <slot />
+            </template>
+        </div>
         <Button
             variant="icon"
             aria-label="Layouts"
