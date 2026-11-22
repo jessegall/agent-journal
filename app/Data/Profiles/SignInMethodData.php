@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Profiles;
 
+use App\Contracts\SignInProtocol;
 use App\Enums\SignInMethod;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -26,16 +27,18 @@ final class SignInMethodData extends Data
         public readonly string|null $secretSource,
     ) {}
 
-    public static function fromMethod(string $driver, SignInMethod $method): self
+    public static function fromProtocol(SignInMethod $method, SignInProtocol $protocol): self
     {
+        $card = $protocol->card();
+
         return SignInMethodData::from([
             'method' => $method,
             'isSecret' => $method->isSecret(),
-            'billingNote' => $method->billingNote($driver),
-            'title' => $method->title($driver),
-            'description' => $method->description($driver),
+            'billingNote' => $card->billingNote,
+            'title' => $card->title,
+            'description' => $card->description,
             'billingLabel' => $method->billingLabel(),
-            'secretSource' => $method->secretSource($driver),
+            'secretSource' => $card->secretSource,
         ]);
     }
 }

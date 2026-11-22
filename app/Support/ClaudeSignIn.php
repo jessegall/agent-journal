@@ -8,6 +8,7 @@ use App\Contracts\Files;
 use App\Contracts\SignInProtocol;
 use App\Enums\Place;
 use App\Exceptions\SignInCodeInvalid;
+use App\Values\SignInCard;
 use App\Values\SignInChallenge;
 use App\Values\SignInCode;
 use App\Values\SignInHosts;
@@ -106,5 +107,15 @@ final readonly class ClaudeSignIn implements SignInProtocol
     public function submitCode(PrivateAccountProcess $process, string $code): void
     {
         $process->send(SignInCode::from($code)->code);
+    }
+
+    public function card(): SignInCard
+    {
+        return new SignInCard(
+            'Sign in with Claude',
+            "Sign in on Claude's site, then paste the code it gives you.",
+            'Your Claude subscription pays for what agents use.',
+            null,
+        );
     }
 }

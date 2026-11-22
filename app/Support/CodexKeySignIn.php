@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\SignInProtocol;
+use App\Values\SignInCard;
 use App\Values\SignInChallenge;
 use App\Values\SignInHosts;
 use App\Values\SignInIdentity;
@@ -78,5 +79,15 @@ final readonly class CodexKeySignIn implements SignInProtocol
     public function signOut(string $directory): void
     {
         $this->codex->signOut($directory);
+    }
+
+    public function card(): SignInCard
+    {
+        return new SignInCard(
+            'API key',
+            'Paste a key from the OpenAI platform.',
+            'Billed to the API key by what agents use.'.SignInCard::CHECK_SENDS_A_REQUEST,
+            'On the OpenAI platform, open API keys and create a secret key.',
+        );
     }
 }

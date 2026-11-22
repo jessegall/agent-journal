@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts;
 
 use App\Support\PrivateAccountProcess;
+use App\Values\SignInCard;
 use App\Values\SignInChallenge;
 use App\Values\SignInHosts;
 use App\Values\SignInVerification;
@@ -15,6 +16,11 @@ use App\Values\SignInVerification;
  */
 interface SignInProtocol
 {
+    /**
+     * What the method's card says about this sign-in, in the driver's own words.
+     */
+    public function card(): SignInCard;
+
     /**
      * The provider hosts this sign-in's pages live on, the only links a sign-in shows the user.
      */

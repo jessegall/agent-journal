@@ -66,6 +66,7 @@ final readonly class AccountsWindowResolver implements PageResolver
 
         return AccountListData::from([
             'rows' => array_map(fn (Account $account) => AccountRowData::fromAccount(
+                $this->protocols,
                 $account,
                 in_array($account->id, $chosen, true),
                 $counts->runningFor($account->recordIdentity()),
@@ -80,10 +81,7 @@ final readonly class AccountsWindowResolver implements PageResolver
             'attempts' => SignInAttempt::recentFor($now),
             'pendingCleanups' => SignInAttempt::pendingCleanups(),
             'methods' => array_map(
-                fn (string $driver) => DriverMethodsData::fromMethods(
-                    $driver,
-                    $this->protocols->methodsOf($driver),
-                ),
+                fn (string $driver) => DriverMethodsData::fromProtocols($driver, $this->protocols),
                 DefaultDrivers::familyKeys(),
             ),
         ]);

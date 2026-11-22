@@ -7,6 +7,7 @@ namespace App\Data\Profiles;
 use App\Enums\AccountState;
 use App\Enums\CleanupProblem;
 use App\Models\Account;
+use App\Support\SignInProtocols;
 use App\Values\AccountUse;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -50,6 +51,7 @@ final class AccountRowData extends Data
      * @param  list<AccountUse>  $recentUses
      */
     public static function fromAccount(
+        SignInProtocols $protocols,
         Account $account,
         bool $isActive,
         int $runningCount,
@@ -61,7 +63,7 @@ final class AccountRowData extends Data
             $account->account_protocol,
             $account->label,
             $account->name_revision,
-            SignInMethodData::fromMethod($account->account_protocol, $account->method),
+            SignInMethodData::fromProtocol($account->method, $protocols->for($account->account_protocol, $account->method)),
             $account->state,
             $account->identity,
             $account->workspace,

@@ -6130,6 +6130,7 @@ class	SignInAttemptMissing
 class	SignInAttemptReleased
 class	SignInAttemptStale
 class	SignInAttemptStarted
+class	SignInCard
 class	SignInChallenge
 class	SignInChallengeController
 class	SignInChallengeRefused
@@ -7993,6 +7994,7 @@ constant	ShellOperations::SURFACE
 constant	ShellOperations::UNKNOWN
 constant	ShellWordScanner::WORD_ENDS
 constant	SignInAttempt::LINK_TYPE
+constant	SignInCard::CHECK_SENDS_A_REQUEST
 constant	SignInCode::LIMIT
 constant	SignInSecret::LIMIT
 constant	SignInVerification::MOST_REFUSAL_CHARACTERS
@@ -11737,6 +11739,7 @@ method	ClaudeDriver::modelRefusal()
 method	ClaudeDriver::start()
 method	ClaudeDriver::status()
 method	ClaudeKeySignIn::authMethod()
+method	ClaudeKeySignIn::card()
 method	ClaudeKeySignIn::install()
 method	ClaudeKeySignIn::readFiles()
 method	ClaudeKeySignIn::saveSettings()
@@ -11768,6 +11771,7 @@ method	ClaudeSignIn::acceptCode()
 method	ClaudeSignIn::addressFrom()
 method	ClaudeSignIn::begin()
 method	ClaudeSignIn::canTakeAnswer()
+method	ClaudeSignIn::card()
 method	ClaudeSignIn::challengeFrom()
 method	ClaudeSignIn::hasFinished()
 method	ClaudeSignIn::prove()
@@ -11781,6 +11785,7 @@ method	ClaudeStatus::isSignedInBy()
 method	ClaudeStatus::reads()
 method	ClaudeStatusData::__construct()
 method	ClaudeTokenSignIn::authMethod()
+method	ClaudeTokenSignIn::card()
 method	ClaudeTokenSignIn::install()
 method	ClaudeTokenSignIn::readFiles()
 method	ClaudeTokenSignIn::secretFile()
@@ -11945,6 +11950,7 @@ method	CodexKeySignIn::__construct()
 method	CodexKeySignIn::acceptCode()
 method	CodexKeySignIn::begin()
 method	CodexKeySignIn::canTakeAnswer()
+method	CodexKeySignIn::card()
 method	CodexKeySignIn::challengeFrom()
 method	CodexKeySignIn::hasFinished()
 method	CodexKeySignIn::prove()
@@ -11961,6 +11967,7 @@ method	CodexSignIn::accountIn()
 method	CodexSignIn::answerIn()
 method	CodexSignIn::begin()
 method	CodexSignIn::canTakeAnswer()
+method	CodexSignIn::card()
 method	CodexSignIn::challengeFrom()
 method	CodexSignIn::completionIn()
 method	CodexSignIn::deviceCodeFrom()
@@ -14030,7 +14037,7 @@ method	DriverKey::from()
 method	DriverKey::isSameAs()
 method	DriverKeyInvalid::for()
 method	DriverMethodsData::__construct()
-method	DriverMethodsData::fromMethods()
+method	DriverMethodsData::fromProtocols()
 method	DriverModeAmbiguous::for()
 method	DriverNotContainable::because()
 method	DriverNotContainable::reason()
@@ -23815,6 +23822,7 @@ method	SignInAttemptStale::status()
 method	SignInAttemptStarted::__construct()
 method	SignInAttemptStarted::driver()
 method	SignInAttemptStarted::subjectId()
+method	SignInCard::__construct()
 method	SignInChallenge::__construct()
 method	SignInChallengeController::__invoke()
 method	SignInChallengeRefused::refusalCode()
@@ -23866,13 +23874,9 @@ method	SignInIdentity::shown()
 method	SignInIdentity::unproved()
 method	SignInMethod::accountNameFor()
 method	SignInMethod::billingLabel()
-method	SignInMethod::billingNote()
-method	SignInMethod::description()
 method	SignInMethod::isSecret()
-method	SignInMethod::secretSource()
-method	SignInMethod::title()
 method	SignInMethodData::__construct()
-method	SignInMethodData::fromMethod()
+method	SignInMethodData::fromProtocol()
 method	SignInMethodMissing::for()
 method	SignInMethodMissing::forKey()
 method	SignInPoll::__construct()
@@ -23880,6 +23884,7 @@ method	SignInPoll::ended()
 method	SignInProtocol::acceptCode()
 method	SignInProtocol::begin()
 method	SignInProtocol::canTakeAnswer()
+method	SignInProtocol::card()
 method	SignInProtocol::challengeFrom()
 method	SignInProtocol::hasFinished()
 method	SignInProtocol::prove()
@@ -39304,6 +39309,10 @@ property	SignInAttemptReleased::$driver
 property	SignInAttemptStarted::$accountId
 property	SignInAttemptStarted::$attemptId
 property	SignInAttemptStarted::$driver
+property	SignInCard::$billingNote
+property	SignInCard::$description
+property	SignInCard::$secretSource
+property	SignInCard::$title
 property	SignInChallenge::$address
 property	SignInChallenge::$code
 property	SignInChallenges::$cache

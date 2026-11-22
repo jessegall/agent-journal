@@ -8,6 +8,7 @@ use App\Enums\Permissions;
 use App\Enums\Place;
 use App\Exceptions\FileJsonInvalid;
 use App\Values\FilePath;
+use App\Values\SignInCard;
 use stdClass;
 
 /**
@@ -81,5 +82,16 @@ final readonly class ClaudeKeySignIn extends ClaudeSecretSignIn
     private function settingsFile(string $directory): FilePath
     {
         return $this->files->pathIn(Place::Accounts, $directory)->child('settings.json');
+    }
+
+    public function card(): SignInCard
+    {
+        return new SignInCard(
+            'API key',
+            'Paste a key from the Anthropic Console.',
+            'Billed to the API key, apart from any subscription.'.SignInCard::CHECK_SENDS_A_REQUEST,
+            'In the Anthropic Console, open API keys and create a key. Copy it right away: the Console shows it only '
+                .'once.',
+        );
     }
 }

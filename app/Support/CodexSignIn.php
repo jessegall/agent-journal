@@ -9,6 +9,7 @@ use App\Data\CodexAccountReadData;
 use App\Data\CodexLoginCompletedData;
 use App\Data\CodexLoginStartData;
 use App\Data\CodexMessageData;
+use App\Values\SignInCard;
 use App\Values\SignInChallenge;
 use App\Values\SignInHosts;
 use App\Values\SignInIdentity;
@@ -225,5 +226,15 @@ final readonly class CodexSignIn implements SignInProtocol
     private static function message(array $fields): string
     {
         return (string) json_encode($fields, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+    }
+
+    public function card(): SignInCard
+    {
+        return new SignInCard(
+            'Sign in with ChatGPT',
+            "Enter a short code on OpenAI's site. The rest happens by itself.",
+            'Your ChatGPT subscription pays for what agents use.',
+            null,
+        );
     }
 }

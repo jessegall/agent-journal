@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Profiles;
 
 use App\Enums\SignInMethod;
+use App\Support\SignInProtocols;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -25,13 +26,16 @@ final class DriverMethodsData extends Data
     ) {}
 
     /**
-     * @param  list<SignInMethod>  $methods
+     * The driver's methods as its registered sign-ins describe them, in the order the form lists them.
      */
-    public static function fromMethods(string $driver, array $methods): self
+    public static function fromProtocols(string $driver, SignInProtocols $protocols): self
     {
         return new self(
             $driver,
-            array_map(fn (SignInMethod $method) => SignInMethodData::fromMethod($driver, $method), $methods),
+            array_map(
+                fn (SignInMethod $method) => SignInMethodData::fromProtocol($method, $protocols->for($driver, $method)),
+                $protocols->methodsOf($driver),
+            ),
         );
     }
 }

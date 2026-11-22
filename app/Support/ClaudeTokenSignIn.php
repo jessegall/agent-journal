@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Values\SignInCard;
+
 /**
  * Claude Code signed in by a long-lived provider token (`claude setup-token`): the token's file is opened for the
  * driver on its own descriptor, named by CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR, and the status says oauth_token.
@@ -45,5 +47,16 @@ final readonly class ClaudeTokenSignIn extends ClaudeSecretSignIn
     protected function readFiles(string $directory): array
     {
         return [self::TOKEN_DESCRIPTOR => $this->secretFile($directory)];
+    }
+
+    public function card(): SignInCard
+    {
+        return new SignInCard(
+            'Setup token',
+            'Paste a token made with claude setup-token. Suits a server.',
+            'Your Claude subscription pays for what agents use.'.SignInCard::CHECK_SENDS_A_REQUEST,
+            'On a computer where you are signed in to Claude Code, run claude setup-token in a terminal and copy the '
+                .'token it prints.',
+        );
     }
 }

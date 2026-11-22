@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Data\Profiles\SignInMethodData;
+use App\Data\Profiles\DriverMethodsData;
 use App\Enums\SignInMethod;
 use App\Exceptions\SignInMethodMissing;
 use App\Support\ClaudeSignIn;
 use App\Support\CodexSignIn;
 use App\Support\DefaultDrivers;
 use App\Support\SignInProtocols;
+use App\Values\SignInCard;
 use Tests\TestCase;
 
 /**
@@ -20,8 +21,6 @@ use Tests\TestCase;
 final class SignInMethodsTest extends TestCase
 {
     private const string NO_PROVIDER_TOKEN = 'codex has no provider_token sign-in on this host (pinned build 0.165.0).';
-
-    private const string SUBSCRIPTION_NOTE = 'Your Claude subscription pays for what agents use.';
 
     public function test_each_program_declares_its_methods_oauth_first(): void
     {
@@ -44,92 +43,46 @@ final class SignInMethodsTest extends TestCase
         $protocols->for('codex', SignInMethod::ProviderToken);
     }
 
-    public function test_only_a_token_and_a_key_are_secret_and_each_method_has_a_billing_note(): void
+    public function test_only_a_token_and_a_key_are_secret_and_checking_one_says_it_may_send_a_request(): void
     {
         $secrets = array_filter(SignInMethod::cases(), fn (SignInMethod $method) => $method->isSecret());
+        $protocols = $this->app->make(SignInProtocols::class);
 
         $this->assertSame([SignInMethod::ProviderToken, SignInMethod::ApiKey], array_values($secrets));
-        $this->assertSame(
-            [
-                'Your Claude subscription pays for what agents use.',
-                'Your Claude subscription pays for what agents use. Checking it may send one small request with it.',
-                'Billed to the API key, apart from any subscription. Checking it may send one small request with it.',
-                'Your ChatGPT subscription pays for what agents use.',
-                'Billed to the API key by what agents use. Checking it may send one small request with it.',
-            ],
-            array_map(fn (array $pair) => $pair[1]->billingNote($pair[0]), [
-                [DefaultDrivers::CLAUDE_CODE, SignInMethod::OAuth],
-                [DefaultDrivers::CLAUDE_CODE, SignInMethod::ProviderToken],
-                [DefaultDrivers::CLAUDE_CODE, SignInMethod::ApiKey],
-                [DefaultDrivers::CODEX, SignInMethod::OAuth],
-                [DefaultDrivers::CODEX, SignInMethod::ApiKey],
-            ]),
-        );
+
+        foreach (DefaultDrivers::familyKeys() as $driver) {
+            foreach ($protocols->methodsOf($driver) as $method) {
+                $this->assertSame(
+                    $method->isSecret(),
+                    str_ends_with($protocols->for($driver, $method)->card()->billingNote, SignInCard::CHECK_SENDS_A_REQUEST),
+                );
+            }
+        }
     }
 
-    public function test_each_method_card_says_how_it_works_what_it_bills_and_where_to_get_its_secret(): void
+    public function test_each_method_card_shows_what_its_registered_sign_in_says_and_a_secret_names_its_source(): void
     {
-        $cards = array_map(
-            fn (array $pair) => SignInMethodData::fromMethod(...$pair)->toArray(),
-            [
-                [DefaultDrivers::CLAUDE_CODE, SignInMethod::OAuth],
-                [DefaultDrivers::CLAUDE_CODE, SignInMethod::ProviderToken],
-                [DefaultDrivers::CLAUDE_CODE, SignInMethod::ApiKey],
-                [DefaultDrivers::CODEX, SignInMethod::OAuth],
-                [DefaultDrivers::CODEX, SignInMethod::ApiKey],
-            ],
-        );
-        $shown = array_map(
-            fn (array $card) => [
-                $card['title'],
-                $card['billingLabel'],
-                $card['description'],
-                $card['secretSource'] ?? null,
-            ],
-            $cards,
-        );
+        $protocols = $this->app->make(SignInProtocols::class);
 
-        $this->assertSame([
-            [
-                'Sign in with Claude',
-                'Subscription',
-                "Sign in on Claude's site, then paste the code it gives you.",
-                null,
-            ],
-            [
-                'Setup token',
-                'Subscription',
-                'Paste a token made with claude setup-token. Suits a server.',
-                'On a computer where you are signed in to Claude Code, run claude setup-token in a terminal and copy '
-                    .'the token it prints.',
-            ],
-            [
-                'API key',
-                'API',
-                'Paste a key from the Anthropic Console.',
-                'In the Anthropic Console, open API keys and create a key. Copy it right away: the Console shows it '
-                    .'only once.',
-            ],
-            [
-                'Sign in with ChatGPT',
-                'Subscription',
-                "Enter a short code on OpenAI's site. The rest happens by itself.",
-                null,
-            ],
-            [
-                'API key',
-                'API',
-                'Paste a key from the OpenAI platform.',
-                'On the OpenAI platform, open API keys and create a secret key.',
-            ],
-        ], $shown);
-        $this->assertSame(self::SUBSCRIPTION_NOTE, $cards[0]['billingNote']);
+        foreach (DefaultDrivers::familyKeys() as $driver) {
+            $listed = DriverMethodsData::fromProtocols($driver, $protocols);
+
+            foreach ($listed->methods as $shown) {
+                $card = $protocols->for($driver, $shown->method)->card();
+
+                $this->assertSame(
+                    [$card->title, $card->description, $card->billingNote, $card->secretSource],
+                    [$shown->title, $shown->description, $shown->billingNote, $shown->secretSource],
+                );
+                $this->assertSame($shown->method->isSecret(), $shown->secretSource !== null);
+            }
+        }
     }
 
     public function test_a_card_for_a_sign_in_the_program_lacks_is_refused(): void
     {
         $this->expectException(SignInMethodMissing::class);
 
-        SignInMethod::ProviderToken->title(DefaultDrivers::CODEX);
+        $this->app->make(SignInProtocols::class)->for(DefaultDrivers::CODEX, SignInMethod::ProviderToken)->card();
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
+use App\Values\SignInCard;
 use App\Values\SignInHosts;
 use App\Contracts\SignInProtocol;
 use App\Support\PrivateAccountProcess;
@@ -20,6 +21,11 @@ final readonly class LingeringProtocol implements SignInProtocol
     public function signInHosts(): SignInHosts
     {
         return SignInHosts::anthropic();
+    }
+
+    public function card(): SignInCard
+    {
+        return new SignInCard('Test sign-in', 'A sign-in the tests drive.', 'Nothing is billed.', null);
     }
 
     public function begin(string $directory): PrivateAccountProcess
