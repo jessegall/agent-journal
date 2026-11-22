@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Contracts;
 
 use App\Support\ActorContext;
-use App\Values\ReadRequest;
 use App\Values\AdmittedConstraints;
 use App\Values\OpenAction;
+use App\Values\ReadRequest;
 use App\Values\RecordLocation;
 use App\Values\SearchReader;
 

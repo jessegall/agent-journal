@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Contracts\CodedRefusal;
-use App\Enums\RefusalCode;
 use App\Concerns\RendersRefusal;
+use App\Contracts\CodedRefusal;
 use App\Contracts\CommandRefusal;
+use App\Enums\RefusalCode;
 use InvalidArgumentException;
 
 /**

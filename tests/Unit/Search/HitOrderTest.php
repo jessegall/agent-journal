@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Search;
 
-use App\Support\RecordIdentity;
 use App\Enums\ScoreTier;
+use App\Support\RecordIdentity;
 use App\Values\HitIdentity;
 use App\Values\RecordLocation;
 use App\Values\SearchResult;

@@ -13,7 +13,7 @@ use Domain\Sequences\Models\SequenceRun;
 /**
  * A sequence run started for an agent and session, raised inside the transaction that started it.
  */
-final readonly class SequenceStarted implements Event, ChatLineSource
+final readonly class SequenceStarted implements ChatLineSource, Event
 {
     public function __construct(
         public string $runId,

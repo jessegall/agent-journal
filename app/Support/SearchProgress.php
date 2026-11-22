@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Values\SearchWords;
-use App\Values\HitIdentity;
-use App\Values\BufferedHit;
 use App\Exceptions\SearchWordsInvalid;
 use App\Support\Stored\StoredSearchProgress;
+use App\Values\BufferedHit;
+use App\Values\HitIdentity;
+use App\Values\SearchWords;
 
 /**
  * The private state of one search between calls: its words and scope, the sources fixed at its start with their

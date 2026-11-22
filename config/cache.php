@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Support\Stored\StoredSearch;
+use App\Support\Stored\StoredSearchPosition;
 use Illuminate\Support\Str;
 
 return [
@@ -126,8 +128,8 @@ return [
     */
 
     'serializable_classes' => [
-        App\Support\Stored\StoredSearch::class,
-        App\Support\Stored\StoredSearchPosition::class,
+        StoredSearch::class,
+        StoredSearchPosition::class,
     ],
 
 ];

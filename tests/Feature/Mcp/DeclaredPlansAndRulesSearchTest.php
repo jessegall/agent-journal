@@ -50,7 +50,6 @@ final class DeclaredPlansAndRulesSearchTest extends TestCase
         $proposer = ActorContext::forAgent(TestIds::of(70));
         $rule = Rule::create('Keep every driver small.', 'Drivers grew.', null, $proposer);
 
-
         $declaredPlans = $this->idsOf('result.structuredContent.hits', ['query' => 'driver', 'within' => 'plans.plan']);
         $declaredRules = $this->idsOf('result.structuredContent.hits', ['query' => 'driver', 'within' => 'rules.rule']);
 

@@ -13,7 +13,7 @@ use Domain\Sequences\Models\SequenceRun;
 /**
  * A sequence run ended, finished after its last step or cancelled, in the state it ended in.
  */
-final readonly class SequenceEnded implements Event, ChatLineSource
+final readonly class SequenceEnded implements ChatLineSource, Event
 {
     public function __construct(
         public string $runId,

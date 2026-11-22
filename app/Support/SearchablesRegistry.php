@@ -37,7 +37,7 @@ final class SearchablesRegistry
      */
     public static function publishing(array $declarationsByOwner): self
     {
-        $registry = new self;
+        $registry = new self();
         $registry->publish($declarationsByOwner);
 
         return $registry;

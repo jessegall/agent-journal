@@ -23,7 +23,7 @@ final class SearchValueInvalid extends LogicException
 
     public static function forPositionField(string $name): self
     {
-        return new self("A source position field is named in lower case letters and _, holds a whole number or at "
+        return new self('A source position field is named in lower case letters and _, holds a whole number or at '
             ."most 64 bytes of text; {$name} is not one.");
     }
 

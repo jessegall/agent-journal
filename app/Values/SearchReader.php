@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Support\ActorContext;
 use App\Enums\SearchSurface;
+use App\Support\ActorContext;
 
 /**
  * Who reads the results of a search and where: the authenticated actor and the surface that asked.

@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\BatchOutcome;
-use App\Values\SourcePosition;
 use App\Values\BufferedHit;
+use App\Values\SourcePosition;
+
 /**
  * Where one source of a search stands: the position to ask it from next, whether its range is exhausted, the
  * certified hits it returned that are not shown yet, and how many calls in a row it timed out or stood still.
