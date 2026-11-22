@@ -10,7 +10,7 @@ import { keepStoredJson, readStoredJson } from '@/composables/browserStorage';
 import type { ComputedRef, InjectionKey, Ref } from 'vue';
 import {
     arrangementFrom,
-    defaultArrangement,
+    designPresets,
     firstWindowOnly,
     keptOnScreen,
     sameArrangement,
@@ -20,6 +20,7 @@ import type {
     Arrangement,
     DetachedWindow,
     DropTarget,
+    Preset,
     Screen,
 } from '@/components/panes/arrangement';
 import { originalKeyOf } from '@/components/panes/paneLayout';
@@ -38,7 +39,6 @@ export type WindowDrag = {
     target: DropTarget | 'detach' | null;
 };
 
-export type Preset = { name: string; arrangement: Arrangement };
 
 export type PaneLayoutStore = {
     arrangement: Ref<Arrangement>;
@@ -72,21 +72,15 @@ export function providePaneLayout(
     );
     const firstArrangement = (): Arrangement =>
         firstWindowOnly(knownWindows.value[0]);
-    const sideBySide = (): Arrangement => {
-        const [first, ...others] = knownWindows.value;
-
-        return defaultArrangement(first, others);
-    };
     const arrangement = ref<Arrangement>(firstArrangement());
     const screen = (): Screen => ({
         width: window.innerWidth,
         height: window.innerHeight,
     });
 
-    const presets = computed<Preset[]>(() => [
-        { name: 'Default', arrangement: firstArrangement() },
-        { name: 'Side by side', arrangement: sideBySide() },
-    ]);
+    const presets = computed<Preset[]>(() =>
+        designPresets(knownWindows.value, screen()),
+    );
 
     const store: PaneLayoutStore = {
         arrangement,

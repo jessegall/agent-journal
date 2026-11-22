@@ -122,6 +122,62 @@ export function dropWindow(
     };
 }
 
+/** A layout the layouts menu offers, by the name the design gives it. */
+export type Preset = { name: string; arrangement: Arrangement };
+
+/**
+ * Two parts side by side (a row) or one above the other (a column); a part Home lacks drops out and leaves the other.
+ */
+function splitOf(
+    axis: 'row' | 'column',
+    ratio: number,
+    first: LayoutNode | null,
+    second: LayoutNode | null,
+): LayoutNode | null {
+    if (first === null || second === null) {
+        return first ?? second;
+    }
+
+    return { type: 'split', id: `split-${windowsIn(first)[0]}`, axis, ratio, first, second };
+}
+
+/** A pane holding one window, or nothing when Home does not have that window. */
+function paneOf(windowKey: string | undefined): LayoutNode | null {
+    return windowKey === undefined ? null : pane([windowKey], `pane-${windowKey}`);
+}
+
+/**
+ * The design's layouts, built from Home's windows in the order the domains declare them, the chat first: Just the
+ * chat; A first window, the next one floating; Docked, two windows docked right while the chat keeps its reading width;
+ * Windows only, the other windows in a grid. A layout that would repeat an earlier one is left out.
+ */
+export function designPresets(windowKeys: string[], screen: Screen): Preset[] {
+    const [chat, second, third, fourth] = windowKeys;
+    const dayOne = firstWindowOnly(chat);
+    const chatPane = dayOne.grid;
+    const docked = splitOf('row', 0.64, chatPane, splitOf('column', 0.36, paneOf(second), paneOf(third)));
+    const windowsOnly = splitOf('row', 0.55, paneOf(second), splitOf('column', 0.55, paneOf(third), paneOf(fourth)));
+    const candidates: Preset[] = [
+        { name: 'Just the chat', arrangement: dayOne },
+        ...(second === undefined
+            ? []
+            : [
+                  {
+                      name: 'A first window',
+                      arrangement: floatNewWindow(dayOne, second, screen, { top: DETACHED_START, right: screen.width }),
+                  },
+              ]),
+        ...(docked === null ? [] : [{ name: 'Docked', arrangement: { grid: docked, detached: [] } }]),
+        ...(windowsOnly === null ? [] : [{ name: 'Windows only', arrangement: { grid: windowsOnly, detached: [] } }]),
+    ];
+
+    return candidates.filter((preset, index) =>
+        candidates
+            .slice(0, index)
+            .every((earlier) => !sameArrangement(earlier.arrangement, preset.arrangement)),
+    );
+}
+
 /**
  * Where the desk starts and ends on screen: below the bars, and at Home's right edge.
  */
