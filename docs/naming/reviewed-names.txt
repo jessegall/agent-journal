@@ -4281,6 +4281,7 @@ class	PinMessageCommand
 class	PinMessageHandler
 class	PinnableMessages
 class	PinnedCompatibilities
+class	PinnedDriver
 class	PinnedDriverBuilds
 class	PipedCommands
 class	PipedCommandsToParse
@@ -9412,6 +9413,7 @@ method	AgentRuntime::terminalViews()
 method	AgentRuntime::watcherCount()
 method	AgentRuntime::withWatchers()
 method	AgentRuntimeReassigned::__construct()
+method	AgentRuntimes::__construct()
 method	AgentRuntimes::open()
 method	AgentScope::__construct()
 method	AgentScope::apply()
@@ -10535,6 +10537,8 @@ method	BooleanSetting::type()
 method	BooleanValueData::__construct()
 method	BottomStateCannotFinish::for()
 method	BoundTarget::__construct()
+method	BoundTarget::beforePlacement()
+method	BoundTarget::onHost()
 method	BoundaryChecker::__construct()
 method	BoundaryChecker::compositionViolations()
 method	BoundaryChecker::domainHolding()
@@ -13500,9 +13504,12 @@ method	DriverCapabilities::finalAnswer()
 method	DriverCapabilities::supports()
 method	DriverCapabilityUnsupported::__construct()
 method	DriverCapabilityUnsupported::for()
+method	DriverCapabilityUnsupported::refusalCode()
+method	DriverCapabilityUnsupported::status()
 method	DriverCatalogue::catalogue()
 method	DriverCatalogue::forKey()
 method	DriverCatalogue::keyFor()
+method	DriverCatalogue::pinned()
 method	DriverCatalogue::revision()
 method	DriverCompatibilities::for()
 method	DriverCompatibility::__construct()
@@ -13554,6 +13561,7 @@ method	DriverRegistry::__construct()
 method	DriverRegistry::catalogue()
 method	DriverRegistry::forKey()
 method	DriverRegistry::keyFor()
+method	DriverRegistry::pinned()
 method	DriverRegistry::register()
 method	DriverRegistry::revision()
 method	DriverReplies::allowTool()
@@ -15575,6 +15583,7 @@ method	JudgedCall::replyWith()
 method	KeepNavigationAnswer::handle()
 method	KeepStartReceipt::__construct()
 method	KeepStartReceipt::handle()
+method	KeepStartReceipt::pinOf()
 method	KeepStartReceipt::startInOpenTransaction()
 method	KeepStartReceipt::startInOwnTransaction()
 method	KeepsCleanupTries::hasUsedEveryCleanupTry()
@@ -17758,6 +17767,7 @@ method	PinnableMessages::requireIn()
 method	PinnedBuilds::versionOf()
 method	PinnedCompatibilities::__construct()
 method	PinnedCompatibilities::for()
+method	PinnedDriver::__construct()
 method	PinnedDriverBuilds::versionOf()
 method	PipedCommands::__construct()
 method	PipedCommands::command()
@@ -26326,6 +26336,7 @@ parameter	$caseCount
 parameter	$cases
 parameter	$catalogue
 parameter	$catalogueDigest
+parameter	$catalogueRevision
 parameter	$category
 parameter	$cause
 parameter	$ceiling
@@ -29521,6 +29532,7 @@ property	AgentRuntimeReassigned::$proof
 property	AgentRuntimeReassigned::$reason
 property	AgentRuntimeReassigned::$runtimeId
 property	AgentRuntimeReassigned::$toHostId
+property	AgentRuntimes::$drivers
 property	AgentScope::$currentContext
 property	AgentScope::$visibility
 property	AgentSessionCounter::$window
@@ -30575,7 +30587,6 @@ property	ClaimStartCommand::$sessionId
 property	ClaimStartGrantCommand::$hostId
 property	ClaimStartGrantCommand::$runtimeId
 property	ClaimStartGrantHandler::$containers
-property	ClaimStartGrantHandler::$drivers
 property	ClaimStartGrantHandler::$extensions
 property	ClaimStartGrantHandler::$runtimes
 property	ClaimStartGrantHandler::$seal
@@ -33009,6 +33020,7 @@ property	JsonRpcReplyData::$result
 property	JudgedCall::$input
 property	JudgedCall::$render
 property	KeepStartReceipt::$databases
+property	KeepStartReceipt::$drivers
 property	KeepStartReceipt::$heldRefusals
 property	KeepStartReceipt::$locks
 property	KeepStartReceipt::$replyInboxes
@@ -34372,6 +34384,8 @@ property	PinMessageHandler::$pinnable
 property	PinnableMessages::$messages
 property	PinnedCompatibilities::$launchProfiles
 property	PinnedCompatibilities::$setting
+property	PinnedDriver::$catalogueRevision
+property	PinnedDriver::$registration
 property	PipedCommands::$commands
 property	PipedCommands::$start
 property	PipedCommandsToParse::$negationStart
@@ -38020,6 +38034,7 @@ property	StartAgentCommand::$request
 property	StartAgentHandler::$accounts
 property	StartAgentHandler::$builds
 property	StartAgentHandler::$containers
+property	StartAgentHandler::$drivers
 property	StartAgentHandler::$facts
 property	StartAgentHandler::$pendingSecrets
 property	StartAgentHandler::$pendingStarts

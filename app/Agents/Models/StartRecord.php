@@ -20,6 +20,7 @@ use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\StartRefusalReplayed;
 use App\Agents\Exceptions\StartRequestConflict;
 use App\Agents\Values\StartRequest;
+use App\Drivers\Values\PinnedDriver;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -44,6 +45,10 @@ use PhpOption\Option;
  * @property string $actor_type
  * @property string $actor_id
  * @property string $driver_key
+ * @property string $family
+ * @property string|null $driver_label
+ * @property int|null $protocol_version
+ * @property int|null $catalogue_revision
  * @property string $model
  * @property ModelSelectionType $requested_model_type
  * @property string|null $requested_model
@@ -74,6 +79,10 @@ use PhpOption\Option;
     'actor_type',
     'actor_id',
     'driver_key',
+    'family',
+    'driver_label',
+    'protocol_version',
+    'catalogue_revision',
     'model',
     'requested_model_type',
     'requested_model',
@@ -131,8 +140,12 @@ final class StartRecord extends Model implements ReadableModel
      * @throws StartRequestConflict
      * @throws StartRefusalReplayed
      */
-    public static function accept(StartRequest $request, ActorIdentity $requester, Option $replyInboxId): self
-    {
+    public static function accept(
+        StartRequest $request,
+        PinnedDriver $pin,
+        ActorIdentity $requester,
+        Option $replyInboxId,
+    ): self {
         $existing = self::query()->where('request_id', $request->requestId)->lockForUpdate()->first();
 
         if ($existing !== null) {
@@ -151,7 +164,11 @@ final class StartRecord extends Model implements ReadableModel
             'agent_id' => $request->agentId,
             'actor_type' => $requester->type->value,
             'actor_id' => $requester->id,
-            'driver_key' => $selection->driver->value,
+            'driver_key' => (string) $pin->registration->key,
+            'family' => $pin->registration->family,
+            'driver_label' => $pin->registration->label,
+            'protocol_version' => $pin->registration->protocolVersion,
+            'catalogue_revision' => $pin->catalogueRevision,
             'model' => $selection->model,
             'requested_model_type' => $requested->type,
             'requested_model' => $requested->model,

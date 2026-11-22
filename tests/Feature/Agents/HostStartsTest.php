@@ -12,13 +12,17 @@ use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ProcessStartState;
 use App\Agents\Models\Agent;
+use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Models\SessionPolicy;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Contracts\CommandBus;
+use App\Drivers\Capabilities\CodexTerminalCapabilities;
+use App\Drivers\Enums\DriverCapability;
 use App\Drivers\Enums\HookDriver;
+use App\Drivers\Exceptions\DriverCapabilityUnsupported;
 use App\Hooks\Compatibility\DriverCompatibility;
 use App\Hooks\Contracts\DriverCompatibilities;
 use App\Hooks\Enums\DriverEvidence;
@@ -176,6 +180,30 @@ final class HostStartsTest extends TestCase
         $this->assertSame(DriverVariant::Headless, $agent->variantFor(null, DriverVariant::Terminal));
     }
 
+    public function test_an_opened_runtime_keeps_the_driver_it_was_pinned_to(): void
+    {
+        [, $opened] = $this->openRuntime();
+
+        $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
+
+        $this->assertSame(
+            ['claude-code-headless', 'claude-code', 'Claude Code headless', '2.1.323'],
+            [$runtime->driver_key, $runtime->family, $runtime->driver_label, $runtime->driver_build],
+        );
+    }
+
+    public function test_a_codex_terminal_start_is_refused_before_anything_is_accepted(): void
+    {
+        $runtimes = AgentRuntime::query()->count();
+
+        $this->assertThrows(
+            fn () => $this->openRuntime(driver: 'codex', variant: DriverVariant::Terminal),
+            DriverCapabilityUnsupported::class,
+            DriverCapabilityUnsupported::for(DriverCapability::Run, CodexTerminalCapabilities::NOT_PROVEN)->getMessage(),
+        );
+        $this->assertSame($runtimes, AgentRuntime::query()->count());
+    }
+
     public function test_an_opened_runtime_freezes_its_agents_profile_policy(): void
     {
         [, $opened] = $this->openRuntime();
@@ -237,8 +265,11 @@ final class HostStartsTest extends TestCase
     /**
      * @return array{EnrolledHost, OpenedRuntime}
      */
-    private function openRuntime(bool $saveVariant = false): array
-    {
+    private function openRuntime(
+        bool $saveVariant = false,
+        string $driver = 'claude-code',
+        DriverVariant $variant = DriverVariant::Headless,
+    ): array {
         $host = $this->enrollHost();
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $agent = Agent::create('Started agent '.Str::random(6), 'main-agent');
@@ -246,10 +277,10 @@ final class HostStartsTest extends TestCase
             $agent->id,
             $host->hostId,
             self::FOLDER,
-            'claude-code',
+            $driver,
             '2.1.323',
             'claude',
-            DriverVariant::Headless,
+            $variant,
             'claude-opus-5-5',
             saveVariant: $saveVariant,
         );

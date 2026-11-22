@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Agents;
 
+use Illuminate\Container\Container;
+use App\Drivers\Values\PinnedDriver;
+use App\Drivers\Contracts\DriverCatalogue;
+use App\Agents\Values\StartRequest;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\ExecutionPolicy;
@@ -27,6 +31,15 @@ final class TestSelections
     public static function requestId(): string
     {
         return strtolower((string) Str::ulid());
+    }
+
+    /**
+     * The driver pin a start record of the request keeps, as the journal's catalogue gives it.
+     */
+    public static function pinOf(StartRequest $request): PinnedDriver
+    {
+        return Container::getInstance()->make(DriverCatalogue::class)
+            ->pinned($request->selection->driver->value, $request->variant);
     }
 
     /**

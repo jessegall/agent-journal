@@ -27,7 +27,7 @@ final readonly class RuntimeStatuses
             'runtimeId' => $runtime->id,
             'agentId' => $runtime->session->agent_id,
             'sessionId' => $runtime->agent_session_id,
-            'driver' => $runtime->driver_key,
+            'driver' => $runtime->family,
             'activity' => $runtime->activity,
             'hold' => $runtime->hold_reason,
             'model' => RuntimeSetting::ofStates(

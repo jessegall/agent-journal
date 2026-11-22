@@ -103,7 +103,7 @@ final class RuntimeLeaseTest extends TestCase
         $intent = new RuntimeIntent(
             $binding->host_id,
             $binding->canonical_root,
-            'claude',
+            'claude-code',
             '1.0.0',
             'default',
             DriverVariant::Terminal,

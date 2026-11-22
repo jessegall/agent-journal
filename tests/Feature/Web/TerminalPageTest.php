@@ -209,7 +209,7 @@ final class TerminalPageTest extends TestCase
         $intent = new RuntimeIntent(
             'host-1',
             base_path(),
-            'claude',
+            'claude-code',
             '1.0.0',
             'default',
             DriverVariant::Terminal,

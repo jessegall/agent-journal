@@ -356,10 +356,10 @@ final class AgentDriverLedgerTest extends TestCase
 
         $grant = $this->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
 
-        $this->assertSame(
-            (string) $this->app->make(DriverCatalogue::class)->keyFor($runtime->driver_key, $runtime->mode),
-            $grant->runtime->driverKey,
-        );
+        $key = $this->app->make(DriverCatalogue::class)->keyFor($runtime->family, $runtime->mode);
+        $label = $this->app->make(DriverCatalogue::class)->forKey($key)->descriptor()->label;
+
+        $this->assertSame([(string) $key, (string) $key, $label], [$grant->runtime->driverKey, $runtime->driver_key, $runtime->driver_label]);
     }
 
     public function test_a_start_grant_of_a_session_on_the_protected_host_carries_no_container(): void

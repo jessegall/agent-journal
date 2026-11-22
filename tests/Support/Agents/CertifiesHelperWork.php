@@ -23,6 +23,7 @@ use Illuminate\Process\Factory;
 use Illuminate\Support\Facades\File;
 use PhpOption\None;
 use Symfony\Component\Process\Process;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 
 /**
@@ -90,7 +91,7 @@ trait CertifiesHelperWork
             null,
             new StartPolicy($policy->access, $policy->stopConditions, $execution, null, null, null, $requiresReview),
         );
-        $start = StartRecord::accept($request, ActorIdentity::system(), None::create());
+        $start = StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
         $start->startedAs($launch->session);
         SessionPolicy::create($launch->session, $request->policy);
 

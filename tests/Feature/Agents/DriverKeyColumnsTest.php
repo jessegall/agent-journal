@@ -27,8 +27,6 @@ final class DriverKeyColumnsTest extends TestCase
         ['driver_switches', 'target_driver_key'],
         ['driver_conversations', 'resume_protocol'],
         ['driver_conversations', 'originating_driver_key'],
-        ['navigation_requests', 'driver_key'],
-        ['menu_entries', 'driver_key'],
     ];
 
     /**

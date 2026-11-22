@@ -10,6 +10,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Values\DriverRequestPayload;
 use App\Agents\Values\RuntimeIntent;
+use App\Drivers\Contracts\DriverCatalogue;
 use Illuminate\Support\Str;
 
 /**
@@ -18,12 +19,15 @@ use Illuminate\Support\Str;
  */
 final readonly class AgentRuntimes
 {
+    public function __construct(private DriverCatalogue $drivers) {}
+
     /**
      * @return array{0: AgentRuntime, 1: DriverRequest|null}
      */
     public function open(AgentSession $session, RuntimeIntent $intent, string $startToken): array
     {
-        $runtime = AgentRuntime::create($session, $intent);
+        $pin = $this->drivers->pinned($intent->driver, $intent->variant);
+        $runtime = AgentRuntime::create($session, $intent, $pin->registration);
         $runtime->begin();
         $runtime->holdStartGrant($startToken);
 

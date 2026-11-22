@@ -9,11 +9,14 @@ use App\Bus\Contracts\CommandBus;
 use App\Drivers\Contracts\Driver;
 use App\Drivers\Contracts\DriverCapabilities;
 use App\Drivers\Contracts\DriverCatalogue;
+use App\Drivers\Exceptions\DriverCapabilityUnsupported;
 use App\Drivers\Exceptions\DriverModeAmbiguous;
 use App\Drivers\Exceptions\DriverRegisteredTwice;
 use App\Drivers\Exceptions\DriverUnknown;
+use App\Drivers\Values\BoundTarget;
 use App\Drivers\Values\DriverKey;
 use App\Drivers\Values\DriverRegistration;
+use App\Drivers\Values\PinnedDriver;
 use App\Registries\Support\Registry;
 use Illuminate\Contracts\Container\Container;
 
@@ -87,6 +90,19 @@ final class DriverRegistry implements DriverCatalogue
         }
 
         throw DriverUnknown::for("{$family} {$mode->value}");
+    }
+
+    /**
+     * @throws DriverUnknown
+     * @throws DriverCapabilityUnsupported
+     */
+    public function pinned(string $family, DriverVariant $mode): PinnedDriver
+    {
+        $driver = $this->forKey($this->keyFor($family, $mode));
+        $registration = $driver->descriptor();
+        $driver->capabilities(BoundTarget::beforePlacement())->assertSupports($registration->profileRequirements);
+
+        return new PinnedDriver($registration, $this->revision);
     }
 
     /**

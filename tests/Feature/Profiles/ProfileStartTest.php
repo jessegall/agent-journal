@@ -28,7 +28,10 @@ use App\Agents\Values\ChosenAccount;
 use App\Agents\Values\DriverSwitchTarget;
 use App\Agents\Values\ModelSelection;
 use App\Bus\Contracts\CommandBus;
+use App\Drivers\Capabilities\CodexTerminalCapabilities;
+use App\Drivers\Enums\DriverCapability;
 use App\Drivers\Enums\HookDriver;
+use App\Drivers\Exceptions\DriverCapabilityUnsupported;
 use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Profiles\Commands\StartProfileMain\StartProfileMainCommand;
 use App\Profiles\Commands\SwitchAgentDriver\SwitchAgentDriverCommand;
@@ -145,7 +148,7 @@ final class ProfileStartTest extends TestCase
         $explicit = $this->start('default', 'codex', $requestId, DriverVariant::Headless, $chosen);
         $repeated = $this->start('default', 'codex', $requestId, DriverVariant::Headless, $chosen);
         $this->main = Agent::create('Second main', 'main-agent');
-        $automatic = $this->start('default', 'codex');
+        $automatic = $this->start('default', 'claude-code');
 
         $this->assertSame([$explicit->sessionId, false], [$repeated->sessionId, $repeated->newSession]);
         $this->assertSame(
@@ -153,8 +156,19 @@ final class ProfileStartTest extends TestCase
             $this->recorded($explicit->requestId, $explicit->sessionId),
         );
         $this->assertSame(
-            [HookDriver::Codex->value, DriverVariant::Terminal, false, $this->accounts['codex']->id],
+            [HookDriver::ClaudeCode->value, DriverVariant::Terminal, false, $this->accounts['claude-code']->id],
             $this->recorded($automatic->requestId, $automatic->sessionId),
+        );
+    }
+
+    public function test_an_automatic_codex_start_on_the_terminal_default_is_refused_with_its_reason(): void
+    {
+        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+
+        $this->assertThrows(
+            fn () => $this->start('default', 'codex'),
+            DriverCapabilityUnsupported::class,
+            DriverCapabilityUnsupported::for(DriverCapability::Run, CodexTerminalCapabilities::NOT_PROVEN)->getMessage(),
         );
     }
 
@@ -355,7 +369,7 @@ final class ProfileStartTest extends TestCase
         $record = StartRecord::query()->where('request_id', $requestId)->sole();
         $account = $this->app->make(AccountUses::class)->accountOf($sessionId, Account::LINK_TYPE);
 
-        return [$record->driver_key, $record->mode, $record->account_chosen, $account->id];
+        return [$record->family, $record->mode, $record->account_chosen, $account->id];
     }
 
     private static function main(string $model, HookDriver $driver, bool $pinned): ProposedProfile

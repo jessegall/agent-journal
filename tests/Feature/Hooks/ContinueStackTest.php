@@ -115,7 +115,7 @@ final class ContinueStackTest extends TestCase
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
         );
-        StartRecord::accept($request, ActorIdentity::system(), None::create())->startedAs($session);
+        StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($session);
         $target = new StackTarget($old->agent->id, $session->id);
         $this->app->make(StartTransaction::class)->runForSession(
             $session->id,

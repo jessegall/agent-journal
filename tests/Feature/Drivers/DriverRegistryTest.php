@@ -81,7 +81,7 @@ final class DriverRegistryTest extends TestCase
 
     public function test_the_codex_terminal_reports_itself_unavailable_with_its_reason(): void
     {
-        $support = $this->registry()->forKey(DriverKey::from('codex'))->capabilities(new BoundTarget('host-1'));
+        $support = $this->registry()->forKey(DriverKey::from('codex'))->capabilities(BoundTarget::onHost('host-1'));
         $run = $support->supportOf(DriverCapability::Run);
 
         $this->assertSame(SupportState::TemporarilyUnavailable, $run->state);
@@ -95,7 +95,7 @@ final class DriverRegistryTest extends TestCase
 
     public function test_a_headless_driver_runs_but_has_no_terminal(): void
     {
-        $support = $this->registry()->forKey(DriverKey::from('codex-headless'))->capabilities(new BoundTarget('host-1'));
+        $support = $this->registry()->forKey(DriverKey::from('codex-headless'))->capabilities(BoundTarget::onHost('host-1'));
 
         $this->assertTrue($support->supportOf(DriverCapability::Run)->isAllowed());
         $this->assertSame(HeadlessCapabilities::NO_TERMINAL, $support->supportOf(DriverCapability::Watch)->reason);

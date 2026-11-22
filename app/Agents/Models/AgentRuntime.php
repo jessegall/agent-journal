@@ -13,6 +13,7 @@ use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Support\RuntimeStatuses;
 use App\Agents\Values\RuntimeIntent;
+use App\Drivers\Values\DriverRegistration;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -37,6 +38,8 @@ use PhpOption\Option;
  * @property DriverVariant $mode
  * @property bool $remember
  * @property string $driver_key
+ * @property string $family
+ * @property string|null $driver_label
  * @property string $driver_build
  * @property string $profile
  * @property string $canonical_folder
@@ -87,14 +90,16 @@ final class AgentRuntime extends Model implements ReadableModel
         ];
     }
 
-    public static function create(AgentSession $session, RuntimeIntent $intent): self
+    public static function create(AgentSession $session, RuntimeIntent $intent, DriverRegistration $registration): self
     {
         $runtime = new self();
         $runtime->agent_session_id = $session->id;
         $runtime->host_id = $intent->hostId;
         $runtime->mode = $intent->variant;
         $runtime->remember = $intent->savesVariant;
-        $runtime->driver_key = $intent->driver;
+        $runtime->driver_key = (string) $registration->key;
+        $runtime->family = $registration->family;
+        $runtime->driver_label = $registration->label;
         $runtime->driver_build = $intent->driverBuild;
         $runtime->profile = $intent->profile;
         $runtime->canonical_folder = $intent->folder;

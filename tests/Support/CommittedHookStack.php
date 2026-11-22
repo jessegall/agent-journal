@@ -129,7 +129,7 @@ trait CommittedHookStack
         $intent = new RuntimeIntent(
             TestIds::of(30),
             base_path(),
-            'claude',
+            'claude-code',
             '1.0.0',
             'default',
             DriverVariant::Headless,

@@ -36,6 +36,7 @@ use App\Agents\Values\StackTarget;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
+use App\Drivers\Contracts\DriverCatalogue;
 
 /**
  * Starts inside the command's transaction: the request's record first, locked, which KeepStartReceipt committed as
@@ -56,6 +57,7 @@ final readonly class StartAgentHandler implements CommandHandler
         private CommandFacts $facts,
         private AgentWakes $wakes,
         private PinnedBuilds $builds,
+        private DriverCatalogue $drivers,
     ) {}
 
     /**
@@ -68,7 +70,13 @@ final readonly class StartAgentHandler implements CommandHandler
     {
         $request = $command->request;
         $dispatcher = ActorIdentity::of($command->dispatchedBy());
-        $record = StartRecord::accept($request, $dispatcher, $this->replyInboxes->replyInboxIdFor($dispatcher));
+
+        $record = StartRecord::accept(
+            $request,
+            $this->drivers->pinned($request->selection->driver->value, $request->variant),
+            $dispatcher,
+            $this->replyInboxes->replyInboxIdFor($dispatcher),
+        );
 
         // A replay of a start interrupted before its receipt resumes from the evidence its key holds: a session it
         // started, else a reservation the admission finds.

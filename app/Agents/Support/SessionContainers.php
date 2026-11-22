@@ -60,7 +60,7 @@ final readonly class SessionContainers
             $this->arrangement->sessionContainerName($runtime->agent_session_id),
             $rules,
             null,
-            $this->launchProfiles->for(HookDriver::from($runtime->driver_key), $account),
+            $this->launchProfiles->for(HookDriver::from($runtime->family), $account),
         );
     }
 
@@ -78,7 +78,7 @@ final readonly class SessionContainers
 
         return new SelectedAccount(
             $start->accountIdentity(),
-            $runtime->driver_key,
+            $runtime->family,
             $start->directory,
             $start->account_generation,
         );

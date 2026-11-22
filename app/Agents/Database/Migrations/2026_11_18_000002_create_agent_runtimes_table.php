@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('mode', 16);
             $table->boolean('remember')->default(false);
             $table->string('driver_key', 128);
+            $table->string('family', 64);
             $table->string('driver_label', 64)->nullable();
             $table->ulid('binding_id')->nullable();
             $table->unsignedInteger('binding_generation')->default(0);

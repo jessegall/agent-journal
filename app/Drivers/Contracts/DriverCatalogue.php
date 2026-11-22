@@ -7,6 +7,7 @@ namespace App\Drivers\Contracts;
 use App\Agents\Enums\DriverVariant;
 use App\Drivers\Values\DriverKey;
 use App\Drivers\Values\DriverRegistration;
+use App\Drivers\Values\PinnedDriver;
 
 /**
  * The drivers this journal can start: a lookup by key is the only way one is selected.
@@ -19,6 +20,12 @@ interface DriverCatalogue
      * The key of the one driver registered for a family in a mode, as a start form or the command line names it.
      */
     public function keyFor(string $family, DriverVariant $mode): DriverKey;
+
+    /**
+     * The registration a start of the family in the mode runs on, refused before anything is accepted when the driver
+     * cannot do what every profile on it needs, such as the Codex terminal before it is proven.
+     */
+    public function pinned(string $family, DriverVariant $mode): PinnedDriver;
 
     /**
      * @return list<DriverRegistration>

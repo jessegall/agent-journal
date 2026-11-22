@@ -781,6 +781,7 @@ use App\Drivers\Values\DriverKey;
 use App\Drivers\Values\DriverRegistration;
 use App\Drivers\Values\DriverResult;
 use App\Drivers\Values\OperationSupport;
+use App\Drivers\Values\PinnedDriver;
 use App\Drivers\Values\ProviderKey;
 use App\Drivers\Values\SupportSnapshot;
 use App\Engine\Commands\EndTerminalViews\EndTerminalViewsCommand;
@@ -2002,6 +2003,7 @@ final class CoreApi
                 ResumableConversation::class,
                 StackTarget::class,
                 DriverRegistration::class,
+                PinnedDriver::class,
                 SupportSnapshot::class,
                 OperationSupport::class,
                 BoundTarget::class,

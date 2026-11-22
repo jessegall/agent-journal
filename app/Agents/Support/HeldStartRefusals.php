@@ -8,6 +8,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\StartRefusal;
 use App\Agents\Models\StartRecord;
 use App\Agents\Values\StartRequest;
+use App\Drivers\Values\PinnedDriver;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
 use PhpOption\Option;
@@ -29,11 +30,12 @@ final class HeldStartRefusals
      */
     public function hold(
         StartRequest $request,
+        PinnedDriver $pin,
         ActorIdentity $requester,
         Option $replyInboxId,
         StartRefusal $refusal,
     ): void {
-        $this->refusals[] = fn () => StartRecord::accept($request, $requester, $replyInboxId)->refuse($refusal);
+        $this->refusals[] = fn () => StartRecord::accept($request, $pin, $requester, $replyInboxId)->refuse($refusal);
     }
 
     /**

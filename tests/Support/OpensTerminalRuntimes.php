@@ -40,7 +40,7 @@ trait OpensTerminalRuntimes
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         );
-        $intent = new RuntimeIntent($hostId, base_path(), 'claude', '1.0.0', 'default', $driver, null, null, null);
+        $intent = new RuntimeIntent($hostId, base_path(), 'claude-code', '1.0.0', 'default', $driver, null, null, null);
         [$runtime] = $this->app->make(AgentRuntimes::class)->open($started->session, $intent, 'start-token');
         $runtime->load('session');
 

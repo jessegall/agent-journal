@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Models\AgentRuntime;
-use App\Drivers\Values\DriverKey;
 
 /**
  * What a host needs to start a runtime's driver: its driver type, the session it runs, the driver and the build it
@@ -25,13 +24,13 @@ final readonly class RuntimeStart
         public string|null $effort,
     ) {}
 
-    public static function of(AgentRuntime $runtime, DriverKey $registration): self
+    public static function of(AgentRuntime $runtime): self
     {
         return new self(
             $runtime->mode->value,
             $runtime->agent_session_id,
+            $runtime->family,
             $runtime->driver_key,
-            (string) $registration,
             $runtime->driver_build,
             $runtime->canonical_folder,
             $runtime->process_generation,

@@ -14,6 +14,9 @@ use App\Agents\Support\StartRequestLock;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Support\CommandCall;
+use App\Drivers\Contracts\DriverCatalogue;
+use App\Drivers\Exceptions\DriverCapabilityUnsupported;
+use App\Drivers\Values\PinnedDriver;
 use Closure;
 use Illuminate\Database\DatabaseManager;
 use PhpOption\Option;
@@ -31,6 +34,7 @@ final readonly class KeepStartReceipt implements CommandMiddleware
         private StartRequestLock $locks,
         private ReplyInboxes $replyInboxes,
         private HeldStartRefusals $heldRefusals,
+        private DriverCatalogue $drivers,
     ) {}
 
     public function handle(CommandCall $call, Closure $next): mixed
@@ -67,7 +71,7 @@ final readonly class KeepStartReceipt implements CommandMiddleware
         Option $replyInboxId,
         Closure $start,
     ): mixed {
-        $intent = StartRecord::accept($request, $requester, $replyInboxId);
+        $intent = StartRecord::accept($request, $this->pinOf($request), $requester, $replyInboxId);
 
         try {
             return $start();
@@ -95,10 +99,19 @@ final readonly class KeepStartReceipt implements CommandMiddleware
         try {
             return $start();
         } catch (StartRefusal $refusal) {
-            StartRecord::accept($request, $requester, $replyInboxId)->refuse($refusal);
-            $this->heldRefusals->hold($request, $requester, $replyInboxId, $refusal);
+            $pin = $this->pinOf($request);
+            StartRecord::accept($request, $pin, $requester, $replyInboxId)->refuse($refusal);
+            $this->heldRefusals->hold($request, $pin, $requester, $replyInboxId, $refusal);
 
             throw $refusal;
         }
+    }
+
+    /**
+     * @throws DriverCapabilityUnsupported
+     */
+    private function pinOf(StartRequest $request): PinnedDriver
+    {
+        return $this->drivers->pinned($request->selection->driver->value, $request->variant);
     }
 }
