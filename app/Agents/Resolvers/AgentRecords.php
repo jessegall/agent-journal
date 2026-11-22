@@ -194,7 +194,7 @@ final readonly class AgentRecords implements AgentDirectory
         $resumable = array_values($conversations->take(self::CONVERSATIONS_SHOWN)->map(
             fn (DriverConversation $conversation) => new ResumableConversation(
                 $conversation->id,
-                HookDriver::from($conversation->driver),
+                HookDriver::from($conversation->resume_protocol),
                 $conversation->created_at->toImmutable(),
             ),
         )->all());
@@ -208,13 +208,13 @@ final readonly class AgentRecords implements AgentDirectory
             AgentPresence::of($agent->isRetired(), $session !== null, $switch?->stage, $startRefusal !== null),
             $session?->id,
             $runtime === null ? 0 : $runtime->process_generation,
-            $runtime?->variant === DriverVariant::Terminal,
+            $runtime?->mode === DriverVariant::Terminal,
             $switch?->id,
             $switch?->stage,
             AgentAction::offeredFor(
                 $agent->isRetired(),
                 $session !== null,
-                $runtime?->variant === DriverVariant::Terminal,
+                $runtime?->mode === DriverVariant::Terminal,
                 $resumable !== [],
                 $switch?->stage,
             ),
@@ -225,7 +225,7 @@ final readonly class AgentRecords implements AgentDirectory
                 $facts->evidence($agent->isRetired(), $resumable !== [], $canStop, $this->clock->now()),
                 $this->remedyWords,
             ),
-            $session?->driver,
+            $session?->driver_key,
             $runtime === null ? HoldReason::None : $runtime->hold_reason,
         );
     }

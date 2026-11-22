@@ -37,7 +37,7 @@ final class TestSelections
     public static function sessionColumns(HookDriver $driver = HookDriver::ClaudeCode): array
     {
         return [
-            'driver' => $driver->value,
+            'driver_key' => $driver->value,
             'model' => self::MODEL,
             'requested_model_type' => 'named',
             'requested_model' => self::MODEL,

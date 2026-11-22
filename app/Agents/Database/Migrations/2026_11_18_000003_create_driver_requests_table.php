@@ -14,6 +14,9 @@ return new class extends Migration
         Schema::create('driver_requests', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->ulid('agent_runtime_id');
+            $table->ulid('binding_id')->nullable();
+            $table->unsignedInteger('expected_generation')->nullable();
+            $table->string('turn_id', 64)->nullable();
             $table->unsignedBigInteger('sequence');
             $table->string('operation', 32);
             $table->string('idempotency_key');

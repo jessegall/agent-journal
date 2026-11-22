@@ -14,9 +14,12 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->ulid('agent_session_id')->unique();
             $table->ulid('host_id')->index();
-            $table->string('variant', 16);
-            $table->boolean('saves_variant')->default(false);
-            $table->string('driver', 32);
+            $table->string('mode', 16);
+            $table->boolean('remember')->default(false);
+            $table->string('driver_key', 128);
+            $table->string('driver_label', 64)->nullable();
+            $table->ulid('binding_id')->nullable();
+            $table->unsignedInteger('binding_generation')->default(0);
             $table->string('driver_build', 64);
             $table->string('profile', 64);
             $table->text('canonical_folder');

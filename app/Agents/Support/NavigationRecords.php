@@ -43,7 +43,7 @@ final readonly class NavigationRecords implements NavigationReader
 
         return $menuEntries->mapWithKeys(fn (MenuEntry $entry) => [$entry->id => [
             'id' => $entry->id,
-            'driver' => $entry->driver,
+            'driver' => $entry->driver_key,
             'goal' => $entry->goal_script,
             'parameters' => $entry->goal_parameters,
             'builds' => array_values(array_map(
@@ -69,7 +69,7 @@ final readonly class NavigationRecords implements NavigationReader
 
         return [
             'id' => $entry->id,
-            'driver' => $entry->driver,
+            'driver' => $entry->driver_key,
             'goal' => $entry->goal_script,
             'parameters' => $entry->goal_parameters,
             'steps' => array_map(fn (MenuStep $step) => $step->toStored(), $entry->steps()),
@@ -110,7 +110,7 @@ final readonly class NavigationRecords implements NavigationReader
         return [
             'request' => $navigation->id,
             'agent' => $runtime->session->agent->name,
-            'driver' => $navigation->driver,
+            'driver' => $navigation->driver_key,
             'build' => $navigation->build,
             'goal' => ['script' => $navigation->goal_script, 'parameters' => $navigation->goal_parameters],
             'stalled_step' => $navigation->stalled_step,

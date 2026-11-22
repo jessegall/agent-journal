@@ -200,7 +200,7 @@ final class StartSkillsTest extends TestCase
     {
         $session = new AgentSession([
             ...TestSelections::sessionColumns(),
-            'driver' => $driver,
+            'driver_key' => $driver,
             'profile_key' => $profileRevision === null ? 'main-agent' : 'journal-reviewer',
             'profile_revision' => $profileRevision ?? 1,
         ]);

@@ -53,7 +53,7 @@ final class NavigationRequestTest extends TestCase
             $navigation->driver_request_id,
             $navigation->agent_runtime_id,
         ]);
-        $this->assertSame(['claude-code', '2.1.323'], [$navigation->driver, $navigation->build]);
+        $this->assertSame(['claude-code', '2.1.323'], [$navigation->driver_key, $navigation->build]);
         $this->assertEquals($stalled->scriptGoal(), $navigation->goal());
         $this->assertSame(['Model: GPT-5', '❯ GPT-6'], $navigation->fresh()?->screen->rows);
         $this->assertSame(['Model: GPT-5', '❯ GPT-6'], $navigation->raise_rows);

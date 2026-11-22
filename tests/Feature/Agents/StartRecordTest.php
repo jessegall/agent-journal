@@ -55,7 +55,7 @@ final class StartRecordTest extends TestCase
             'agent_id',
             'actor_type',
             'actor_id',
-            'driver',
+            'driver_key',
             'model',
             'requested_model_type',
             'requested_model',

@@ -14,7 +14,9 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->ulid('agent_id')->index();
             $table->ulid('parent_session_id')->nullable()->index();
-            $table->string('driver', 32)->nullable();
+            $table->string('driver_key', 128)->nullable();
+            $table->string('driver_label', 64)->nullable();
+            $table->string('driver_build', 64)->nullable();
             $table->string('model', 128);
             $table->string('requested_model_type', 16);
             $table->string('requested_model', 128)->nullable();

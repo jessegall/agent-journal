@@ -43,7 +43,7 @@ use PhpOption\Option;
  * @property string $agent_id
  * @property string $actor_type
  * @property string $actor_id
- * @property string $driver
+ * @property string $driver_key
  * @property string $model
  * @property ModelSelectionType $requested_model_type
  * @property string|null $requested_model
@@ -55,9 +55,9 @@ use PhpOption\Option;
  * @property string|null $context_reference
  * @property ConversationModeType $conversation_mode
  * @property string|null $conversation_target
- * @property DriverVariant $variant
+ * @property DriverVariant $mode
  * @property bool $account_chosen
- * @property bool $saves_variant
+ * @property bool $remember
  * @property bool|null $conversation_resumed
  * @property string $payload_digest
  * @property StartDisposition $disposition
@@ -73,7 +73,7 @@ use PhpOption\Option;
     'agent_id',
     'actor_type',
     'actor_id',
-    'driver',
+    'driver_key',
     'model',
     'requested_model_type',
     'requested_model',
@@ -85,9 +85,9 @@ use PhpOption\Option;
     'context_reference',
     'conversation_mode',
     'conversation_target',
-    'variant',
+    'mode',
     'account_chosen',
-    'saves_variant',
+    'remember',
     'conversation_resumed',
     'payload_digest',
     'disposition',
@@ -114,9 +114,9 @@ final class StartRecord extends Model implements ReadableModel
             'origin_type' => StartOriginType::class,
             'conversation_mode' => ConversationModeType::class,
             'conversation_resumed' => 'boolean',
-            'variant' => DriverVariant::class,
+            'mode' => DriverVariant::class,
             'account_chosen' => 'boolean',
-            'saves_variant' => 'boolean',
+            'remember' => 'boolean',
             'disposition' => StartDisposition::class,
             'refused_at' => 'datetime',
         ];
@@ -151,7 +151,7 @@ final class StartRecord extends Model implements ReadableModel
             'agent_id' => $request->agentId,
             'actor_type' => $requester->type->value,
             'actor_id' => $requester->id,
-            'driver' => $selection->driver->value,
+            'driver_key' => $selection->driver->value,
             'model' => $selection->model,
             'requested_model_type' => $requested->type,
             'requested_model' => $requested->model,
@@ -163,9 +163,9 @@ final class StartRecord extends Model implements ReadableModel
             'context_reference' => $request->contextReference,
             'conversation_mode' => $request->conversationMode,
             'conversation_target' => $request->conversationTarget,
-            'variant' => $request->variant,
+            'mode' => $request->variant,
             'account_chosen' => $request->chosenAccount !== null,
-            'saves_variant' => $request->savesVariant,
+            'remember' => $request->savesVariant,
             'payload_digest' => $request->digest(),
             'disposition' => StartDisposition::Accepted,
             'reply_inbox_id' => $replyInboxId->getOrElse(null),
@@ -202,9 +202,9 @@ final class StartRecord extends Model implements ReadableModel
      */
     public static function savedVariantOf(string $sessionId): DriverVariant|null
     {
-        $record = self::query()->where('session_id', $sessionId)->where('saves_variant', true)->first();
+        $record = self::query()->where('session_id', $sessionId)->where('remember', true)->first();
 
-        return $record?->variant;
+        return $record?->mode;
     }
 
     /**

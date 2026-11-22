@@ -39,8 +39,8 @@ final readonly class ReportRunningHandler implements CommandHandler
     {
         $runtime = AgentRuntime::ofSession($sessionId);
 
-        if ($runtime !== null && $runtime->saves_variant) {
-            return $runtime->variant;
+        if ($runtime !== null && $runtime->remember) {
+            return $runtime->mode;
         }
 
         return StartRecord::savedVariantOf($sessionId);

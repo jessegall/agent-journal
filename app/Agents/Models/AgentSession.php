@@ -40,7 +40,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $agent_id
  * @property string|null $parent_session_id
- * @property string|null $driver
+ * @property string|null $driver_key
  * @property string|null $current_conversation_id
  * @property string $model
  * @property ModelSelectionType $requested_model_type
@@ -62,7 +62,7 @@ use Illuminate\Support\Carbon;
  * @property-read StartToken|null $startToken
  */
 #[Fillable([
-    'driver',
+    'driver_key',
     'current_conversation_id',
     'discovered_at',
     'model',
@@ -160,8 +160,8 @@ final class AgentSession extends Model implements ReadableModel
             ->running()
             ->orderBy('created_at')
             ->orderBy('id')
-            ->get(['agent_id', 'driver'])
-            ->pluck('driver', 'agent_id')
+            ->get(['agent_id', 'driver_key'])
+            ->pluck('driver_key', 'agent_id')
             ->all();
     }
 
@@ -298,7 +298,7 @@ final class AgentSession extends Model implements ReadableModel
             throw SessionSelectionFixed::forSession($this->id);
         }
 
-        $this->driver = $selection->driver->value;
+        $this->driver_key = $selection->driver->value;
         $this->model = $selection->model;
         $this->requested_model_type = $selection->requested->type;
         $this->requested_model = $selection->requested->model;
@@ -367,7 +367,7 @@ final class AgentSession extends Model implements ReadableModel
             : ModelSelection::profileDefault();
 
         return new SelectedDriver(
-            HookDriver::from((string) $this->driver),
+            HookDriver::from((string) $this->driver_key),
             $this->model,
             $requested,
             new SelectionSource($this->driver_source, $this->profile_key, $this->profile_revision),

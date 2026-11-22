@@ -164,14 +164,14 @@ final class HostStartsTest extends TestCase
     {
         [$host, $opened] = $this->openRuntime(saveVariant: true);
         $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
-        $this->assertNull($agent->variant_preference);
+        $this->assertNull($agent->mode_preference);
 
         $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
             ->json('start_key');
         $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1'])->assertNoContent();
 
         $agent->refresh();
-        $this->assertSame(DriverVariant::Headless, $agent->variant_preference);
+        $this->assertSame(DriverVariant::Headless, $agent->mode_preference);
         $this->assertSame(DriverVariant::Terminal, $agent->variantFor(DriverVariant::Terminal, DriverVariant::Headless));
         $this->assertSame(DriverVariant::Headless, $agent->variantFor(null, DriverVariant::Terminal));
     }
@@ -194,7 +194,7 @@ final class HostStartsTest extends TestCase
         $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1'])->assertNoContent();
 
         $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
-        $this->assertNull($agent->variant_preference);
+        $this->assertNull($agent->mode_preference);
         $this->assertSame(DriverVariant::Terminal, $agent->variantFor(null, DriverVariant::Terminal));
     }
 

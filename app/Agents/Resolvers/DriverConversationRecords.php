@@ -18,7 +18,7 @@ final readonly class DriverConversationRecords implements DriverConversationReso
 {
     public function conversations(string $agentId, HookDriver $driver, string|null $contextReference): array
     {
-        $conversations = DriverConversation::query()->ownedBy($agentId)->where('driver', $driver->value)->where(
+        $conversations = DriverConversation::query()->ownedBy($agentId)->where('resume_protocol', $driver->value)->where(
             'context_reference',
             $contextReference,
         )

@@ -55,7 +55,7 @@ final readonly class AgentFacts
             $this->launch,
             $resumable,
             $session !== null && $isOwnerStart && $launchInProgress,
-            $this->runtime?->variant === DriverVariant::Terminal,
+            $this->runtime?->mode === DriverVariant::Terminal,
             $canStop && $session !== null,
             $this->waitsOnHelpers,
             $canStop,

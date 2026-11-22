@@ -33,7 +33,7 @@ use PhpOption\Some;
  * @property string $id
  * @property string|null $current_session_id
  * @property int $runtime_generation
- * @property DriverVariant|null $variant_preference
+ * @property DriverVariant|null $mode_preference
  * @property string $name
  * @property string $profile_key
  * @property Carbon|null $retired_at
@@ -54,7 +54,7 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
      */
     protected function casts(): array
     {
-        return ['retired_at' => 'datetime', 'variant_preference' => DriverVariant::class];
+        return ['retired_at' => 'datetime', 'mode_preference' => DriverVariant::class];
     }
 
     /**
@@ -106,7 +106,7 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
      */
     public function preferVariant(DriverVariant $variant): void
     {
-        $this->variant_preference = $variant;
+        $this->mode_preference = $variant;
         $this->save();
     }
 
@@ -143,7 +143,7 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
      */
     public function variantFor(DriverVariant|null $named, DriverVariant $profileDefault): DriverVariant
     {
-        return $named ?? $this->variant_preference ?? $profileDefault;
+        return $named ?? $this->mode_preference ?? $profileDefault;
     }
 
     public function isCurrentRuntime(AgentSession $session): bool

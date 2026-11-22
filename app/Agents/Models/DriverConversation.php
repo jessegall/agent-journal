@@ -22,7 +22,7 @@ use Illuminate\Support\Carbon;
  * bound to that start's context reference.
  *
  * @property string $id
- * @property string $driver
+ * @property string $resume_protocol
  * @property string $settings_identity
  * @property string $native_id
  * @property string $agent_id
@@ -30,7 +30,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['driver', 'settings_identity', 'native_id', 'agent_id', 'context_reference'])]
+#[Fillable(['resume_protocol', 'settings_identity', 'native_id', 'agent_id', 'context_reference'])]
 final class DriverConversation extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -49,7 +49,7 @@ final class DriverConversation extends Model implements ReadableModel
         string|null $context,
     ): self {
         return self::query()->create([
-            'driver' => $session->driver,
+            'resume_protocol' => $session->driver_key,
             'settings_identity' => $settingsIdentity,
             'native_id' => $nativeId,
             'agent_id' => $session->agent_id,
@@ -68,7 +68,7 @@ final class DriverConversation extends Model implements ReadableModel
         $conversation = self::query()
             ->where('agent_id', $agentId)
             ->where('context_reference', $contextReference)
-            ->where('driver', $driver->value)
+            ->where('resume_protocol', $driver->value)
             ->latest()
             ->first();
 
@@ -105,7 +105,7 @@ final class DriverConversation extends Model implements ReadableModel
     {
         $refusal = match (true) {
             $this->agent_id !== $agentId => ResumeRefusal::OtherAgent,
-            $this->driver !== $driver->value => ResumeRefusal::OtherDriver,
+            $this->resume_protocol !== $driver->value => ResumeRefusal::OtherDriver,
             $this->context_reference !== $contextReference => ResumeRefusal::OtherContext,
             default => null,
         };
@@ -140,7 +140,7 @@ final class DriverConversation extends Model implements ReadableModel
     #[Scope]
     protected function native(Builder $query, string $driver, string $settingsIdentity, string $nativeId): void
     {
-        $query->where('driver', $driver)->where(
+        $query->where('resume_protocol', $driver)->where(
             'settings_identity',
             $settingsIdentity,
         )->where('native_id', $nativeId);

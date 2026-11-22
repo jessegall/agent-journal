@@ -126,7 +126,7 @@ final readonly class SkillContextResolver
 
     private function contextOf(Agent $agent, AgentSession $session, StartProfile $profile): SkillContext
     {
-        $driver = StartDriver::of($session->driver);
+        $driver = StartDriver::of($session->driver_key);
 
         return new SkillContext(
             actor: new ActorIdentity(ActorType::Agent, $agent->id),

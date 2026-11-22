@@ -26,9 +26,9 @@ final readonly class RuntimeStart
     public static function of(AgentRuntime $runtime): self
     {
         return new self(
-            $runtime->variant->value,
+            $runtime->mode->value,
             $runtime->agent_session_id,
-            $runtime->driver,
+            $runtime->driver_key,
             $runtime->driver_build,
             $runtime->canonical_folder,
             $runtime->process_generation,

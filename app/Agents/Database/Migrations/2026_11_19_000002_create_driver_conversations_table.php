@@ -12,14 +12,18 @@ return new class extends Migration
     {
         Schema::create('driver_conversations', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('driver', 32);
+            $table->string('resume_protocol', 128);
+            $table->string('originating_driver_key', 128)->nullable();
+            $table->unsignedInteger('account_generation')->nullable();
+            $table->string('workspace_identity', 128)->nullable();
+            $table->ulid('writer_binding_id')->nullable()->unique();
             $table->string('settings_identity', 128);
             $table->string('native_id');
             $table->ulid('agent_id')->index();
             $table->string('context_reference', 128)->nullable();
             $table->timestampsTz();
 
-            $table->unique(['driver', 'settings_identity', 'native_id']);
+            $table->unique(['resume_protocol', 'settings_identity', 'native_id']);
         });
     }
 

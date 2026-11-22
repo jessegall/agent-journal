@@ -31,12 +31,12 @@ use Illuminate\Support\Carbon;
  * @property string $agent_id
  * @property string $expected_session_id
  * @property int $expected_generation
- * @property HookDriver $driver
- * @property DriverVariant $variant
+ * @property string $target_driver_key
+ * @property DriverVariant $mode
  * @property string $account_id
  * @property int $account_revision
  * @property string|null $conversation_id
- * @property bool $save_variant
+ * @property bool $remember
  * @property string $requested_by
  * @property string|null $replacement_session_id
  * @property DriverSwitchStage $stage
@@ -50,12 +50,12 @@ use Illuminate\Support\Carbon;
     'agent_id',
     'expected_session_id',
     'expected_generation',
-    'driver',
-    'variant',
+    'target_driver_key',
+    'mode',
     'account_id',
     'account_revision',
     'conversation_id',
-    'save_variant',
+    'remember',
     'requested_by',
     'replacement_session_id',
     'stage',
@@ -76,11 +76,10 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'driver' => HookDriver::class,
-            'variant' => DriverVariant::class,
+            'mode' => DriverVariant::class,
             'expected_generation' => 'integer',
             'account_revision' => 'integer',
-            'save_variant' => 'boolean',
+            'remember' => 'boolean',
             'stage' => DriverSwitchStage::class,
         ];
     }
@@ -100,12 +99,12 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
         $switch->agent_id = $session->agent_id;
         $switch->expected_session_id = $session->id;
         $switch->expected_generation = $generation;
-        $switch->driver = $target->driver;
-        $switch->variant = $target->variant;
+        $switch->target_driver_key = $target->driver->value;
+        $switch->mode = $target->variant;
         $switch->account_id = $target->account->accountId;
         $switch->account_revision = $target->account->reviewedSignIn;
         $switch->conversation_id = $target->conversationId;
-        $switch->save_variant = $target->saveVariant;
+        $switch->remember = $target->saveVariant;
         $switch->requested_by = $requestedBy;
         $switch->stage = DriverSwitchStage::Requested;
         $switch->save();
@@ -256,11 +255,11 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     public function target(): DriverSwitchTarget
     {
         return new DriverSwitchTarget(
-            $this->driver,
-            $this->variant,
+            HookDriver::from($this->target_driver_key),
+            $this->mode,
             new ChosenAccount($this->account_id, $this->account_revision),
             $this->conversation_id,
-            $this->save_variant,
+            $this->remember,
         );
     }
 

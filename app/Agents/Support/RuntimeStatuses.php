@@ -27,7 +27,7 @@ final readonly class RuntimeStatuses
             'runtimeId' => $runtime->id,
             'agentId' => $runtime->session->agent_id,
             'sessionId' => $runtime->agent_session_id,
-            'driver' => $runtime->driver,
+            'driver' => $runtime->driver_key,
             'activity' => $runtime->activity,
             'hold' => $runtime->hold_reason,
             'model' => RuntimeSetting::ofStates(
@@ -46,7 +46,7 @@ final readonly class RuntimeStatuses
             'isStale' => $runtime->isStale($now),
             'processGeneration' => $runtime->process_generation,
             'canReleaseHold' => $runtime->canReleaseHold(),
-            'variant' => $runtime->variant,
+            'variant' => $runtime->mode,
             'watchers' => $runtime->watcherCount(),
         ]);
     }

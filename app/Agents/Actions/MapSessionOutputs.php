@@ -30,7 +30,7 @@ final readonly class MapSessionOutputs
         $granted = SessionOutputGrant::heldBy($session->id) ?: $this->continuedFrom($session);
 
         $paths = $transcriptPath === null ? null : SessionOutputPaths::verified(
-            HookDriver::from((string) $session->driver),
+            HookDriver::from((string) $session->driver_key),
             $start->directory,
             $conversation->native_id,
             $transcriptPath,

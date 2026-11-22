@@ -34,9 +34,9 @@ use PhpOption\Option;
  * @property string $id
  * @property string $agent_session_id
  * @property string $host_id
- * @property DriverVariant $variant
- * @property bool $saves_variant
- * @property string $driver
+ * @property DriverVariant $mode
+ * @property bool $remember
+ * @property string $driver_key
  * @property string $driver_build
  * @property string $profile
  * @property string $canonical_folder
@@ -57,7 +57,7 @@ use PhpOption\Option;
  * @property Carbon $updated_at
  * @property int $row_version
  */
-#[Fillable(['agent_session_id', 'host_id', 'variant', 'driver', 'driver_build', 'profile', 'canonical_folder'])]
+#[Fillable(['agent_session_id', 'host_id', 'mode', 'driver_key', 'driver_build', 'profile', 'canonical_folder'])]
 final class AgentRuntime extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -77,7 +77,7 @@ final class AgentRuntime extends Model implements ReadableModel
     protected function casts(): array
     {
         return [
-            'variant' => DriverVariant::class,
+            'mode' => DriverVariant::class,
             'start_grant' => 'encrypted',
             'activity' => RuntimeActivity::class,
             'hold_reason' => HoldReason::class,
@@ -92,9 +92,9 @@ final class AgentRuntime extends Model implements ReadableModel
         $runtime = new self();
         $runtime->agent_session_id = $session->id;
         $runtime->host_id = $intent->hostId;
-        $runtime->variant = $intent->variant;
-        $runtime->saves_variant = $intent->savesVariant;
-        $runtime->driver = $intent->driver;
+        $runtime->mode = $intent->variant;
+        $runtime->remember = $intent->savesVariant;
+        $runtime->driver_key = $intent->driver;
         $runtime->driver_build = $intent->driverBuild;
         $runtime->profile = $intent->profile;
         $runtime->canonical_folder = $intent->folder;
@@ -365,7 +365,7 @@ final class AgentRuntime extends Model implements ReadableModel
      */
     public function hasScreen(): bool
     {
-        return $this->variant === DriverVariant::Terminal;
+        return $this->mode === DriverVariant::Terminal;
     }
 
     /**

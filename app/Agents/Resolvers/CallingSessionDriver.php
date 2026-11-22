@@ -21,6 +21,6 @@ final readonly class CallingSessionDriver implements CallingDriver
             return null;
         }
 
-        return AgentSession::query()->findOrFail($this->sessions->sessionId())->driver;
+        return AgentSession::query()->findOrFail($this->sessions->sessionId())->driver_key;
     }
 }

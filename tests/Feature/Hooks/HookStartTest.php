@@ -90,7 +90,7 @@ final class HookStartTest extends TestCase
 
         $this->assertNotSame($first->session->id, $second->session->id);
         $this->assertNotSame($first->token, $second->token);
-        $this->assertSame('claude-code', $first->session->fresh()?->driver);
+        $this->assertSame('claude-code', $first->session->fresh()?->driver_key);
         $this->assertSame(
             $second->session->id,
             $this->app->make(CredentialLookup::class)->sessionFor($second->token)->id,

@@ -46,7 +46,7 @@ final readonly class RefreshSessionSkills implements Listener
     public function handle(ContextStarted $event): void
     {
         $session = AgentSession::byId($event->target->sessionId);
-        $driver = StartDriver::of($session->driver)->driver;
+        $driver = StartDriver::of($session->driver_key)->driver;
         $generation = SkillGeneration::latestReady();
 
         if ($driver === null || ! $this->adapters->supports($driver) || $generation === null) {

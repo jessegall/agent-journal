@@ -133,7 +133,7 @@ final class ProfileStartTest extends TestCase
 
         $this->assertSame($revision, $session->profile_revision);
         $this->assertSame('opus', $session->model);
-        $this->assertSame(HookDriver::ClaudeCode->value, $session->driver);
+        $this->assertSame(HookDriver::ClaudeCode->value, $session->driver_key);
     }
 
     public function test_an_explicit_start_runs_the_chosen_account_and_variant_and_the_next_automatic_one_the_defaults(): void
@@ -355,7 +355,7 @@ final class ProfileStartTest extends TestCase
         $record = StartRecord::query()->where('request_id', $requestId)->sole();
         $account = $this->app->make(AccountUses::class)->accountOf($sessionId, Account::LINK_TYPE);
 
-        return [$record->driver, $record->variant, $record->account_chosen, $account->id];
+        return [$record->driver_key, $record->mode, $record->account_chosen, $account->id];
     }
 
     private static function main(string $model, HookDriver $driver, bool $pinned): ProposedProfile

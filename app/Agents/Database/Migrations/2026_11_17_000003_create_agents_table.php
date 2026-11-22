@@ -17,7 +17,7 @@ return new class extends Migration
             $table->timestampTz('retired_at')->nullable();
             $table->ulid('current_session_id')->nullable();
             $table->unsignedInteger('runtime_generation')->default(0);
-            $table->string('variant_preference', 16)->nullable();
+            $table->string('mode_preference', 16)->nullable();
             $table->timestampsTz();
         });
     }
