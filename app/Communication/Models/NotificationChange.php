@@ -90,7 +90,7 @@ final class NotificationChange extends Model implements ReadableModel
             ->where('version', '>', $afterVersion)
             ->where('version', '<=', $throughVersion)
             ->orderBy('version')
-            ->readLimit($limit)
+            ->readUpTo($limit)
             ->get()
             ->all());
     }

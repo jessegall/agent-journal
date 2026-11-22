@@ -71,7 +71,7 @@ final class LaunchOutcomeTest extends TestCase
                 );
             }
         });
-        $this->app->instance(DockerImageVerifier::class, new CountingImageVerifier);
+        $this->app->instance(DockerImageVerifier::class, new CountingImageVerifier());
     }
 
     public function test_a_sessionless_capacity_refusal_is_the_agents_last_launch_outcome(): void

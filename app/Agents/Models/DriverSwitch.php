@@ -244,8 +244,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
 
         match (true) {
             $waitsForStop && $reported === ProcessStartState::Stopped => $this->markStopped(),
-            $waitsForStop && $reported === ProcessStartState::Running && $this->isSourceSeenAfterStop($source)
-                => $this->cancel('the old session still runs'),
+            $waitsForStop && $reported === ProcessStartState::Running && $this->isSourceSeenAfterStop($source) => $this->cancel('the old session still runs'),
             $waitsForStart && $reported === ProcessStartState::Running => $this->confirm(),
             $waitsForStart && $reported === ProcessStartState::Stopped => $this->failLaunch('the new session ended'),
             default => null,

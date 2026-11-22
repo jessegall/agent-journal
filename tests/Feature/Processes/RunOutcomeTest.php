@@ -44,7 +44,7 @@ final class RunOutcomeTest extends TestCase
 
     public function test_an_admitted_run_keeps_its_intent_responsible_actor_and_an_attempt(): void
     {
-        $run = $this->run();
+        $run = $this->admittedRun();
 
         $this->assertSame(RunRequestIntent::ExplicitRequest, $run->request_intent);
         $this->assertSame(TestActors::agentIdentity(3)->id, $run->responsible_id);
@@ -59,7 +59,7 @@ final class RunOutcomeTest extends TestCase
 
     public function test_a_lost_attempt_is_unknown_until_a_signed_result_corrects_the_same_row(): void
     {
-        $run = $this->run();
+        $run = $this->admittedRun();
         $outcomes = $this->app->make(RunOutcomes::class);
 
         $outcomes->record($run, RunLogicalResult::Unknown, RunResultSource::Provisional);
@@ -75,7 +75,7 @@ final class RunOutcomeTest extends TestCase
 
     public function test_a_second_signed_result_that_disagrees_keeps_the_first_and_records_the_conflict(): void
     {
-        $run = $this->run();
+        $run = $this->admittedRun();
         $outcomes = $this->app->make(RunOutcomes::class);
 
         $outcomes->record($run, RunLogicalResult::Failed, RunResultSource::Signed);
@@ -102,7 +102,7 @@ final class RunOutcomeTest extends TestCase
 
     public function test_a_signed_root_status_is_recorded_once_and_a_replay_adds_nothing(): void
     {
-        $run = $this->run();
+        $run = $this->admittedRun();
 
         foreach ([1, 1] as $sequence) {
             RunEvent::from(['sequence' => $sequence, 'type' => RunEventType::RunFinished, 'code' => 0])
@@ -117,7 +117,7 @@ final class RunOutcomeTest extends TestCase
 
     public function test_a_failed_requested_run_gives_its_owner_one_receipt_and_a_correction_none_more(): void
     {
-        $run = $this->run();
+        $run = $this->admittedRun();
         $notify = $this->app->make(NotifyRunOutcome::class);
 
         $notify->handle(new RunOutcomeRecorded($run->id, $run->attempt_id, RunLogicalResult::Unknown, false));
@@ -142,7 +142,7 @@ final class RunOutcomeTest extends TestCase
             RunLogicalResult::Succeeded,
             false,
         ));
-        $requested = $this->run();
+        $requested = $this->admittedRun();
         $notify->handle(
             new RunOutcomeRecorded($requested->id, $requested->attempt_id, RunLogicalResult::Stopped, false),
         );
@@ -167,7 +167,7 @@ final class RunOutcomeTest extends TestCase
 
         $this->assertSame('Run failed', $summary->label);
         $this->assertSame(substr($run->attempt_id, -8), $summary->attemptReference);
-        $this->assertFalse($summary->mayOpenFullRun);
+        $this->assertTrue($summary->mayOpenFullRun);
         $this->assertSame(2, NotificationReceipt::query()->count());
 
         $this->actAs($atlas);
@@ -192,7 +192,7 @@ final class RunOutcomeTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->set($context, new OwnerAuthority('test'));
     }
 
-    private function run(): ProcessRun
+    private function admittedRun(): ProcessRun
     {
         return ProcessRun::create(TestActors::agentIdentity(3), TestRunAdmissions::of());
     }

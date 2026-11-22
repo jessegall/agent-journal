@@ -97,6 +97,7 @@
     --color-brand: var(--brand);
     --color-brand-text: var(--brand-text);
     --color-brand-dim: var(--brand-dim);
+    --color-on-brand: var(--on-brand);
     --color-asks: var(--asks);
     --color-progress: var(--progress);
     --color-read-tick: var(--read-tick);
@@ -119,8 +120,8 @@
 
 :root {
     --inset: 16px;
-    /* The ring a focused control shows, apart from the one accent so focus never reads as a selection. */
-    --focus: #7a2f55;
+    /* The ring a focused control shows, the strongest stone, as the accent is. */
+    --focus: #262422;
 
     --side: #f6f5f3;
     --bg: #ffffff;
@@ -144,10 +145,11 @@
     --text-3: #625c56;
     --text-4: #6f6962;
 
-    --brand: #8c3a62;
-    --brand-text: #7a2f55;
-    --brand-dim: #f3e4ec;
-    --asks: #7a2f55;
+    --brand: #262422;
+    --brand-text: #201f1e;
+    --brand-dim: #f7f6f5;
+    --on-brand: #ffffff;
+    --asks: #201f1e;
     --progress: #2f6cc9;
     --read-tick: #1e7fd0;
     --tone-good: #2e8a4e;
@@ -199,7 +201,7 @@
 }
 
 .dark {
-    --focus: #e3a6c3;
+    --focus: #e8e6e3;
     --side: #0e0d0c;
     --bg: #141312;
     --bg-2: #11100f;
@@ -222,10 +224,11 @@
     --text-3: #a09a93;
     --text-4: #9a948d;
 
-    --brand: #a04f77;
-    --brand-text: #e3a6c3;
-    --brand-dim: #3b2230;
-    --asks: #e3a6c3;
+    --brand: #e8e6e3;
+    --brand-text: #e8e6e3;
+    --brand-dim: #272421;
+    --on-brand: #100f0e;
+    --asks: #e8e6e3;
     --progress: #5b8def;
     --read-tick: #5aa9f5;
     --tone-good: #63b37c;

@@ -18,6 +18,7 @@ final readonly class ReportRunningHandler implements CommandHandler
     public function handle(ReportRunning $command): void
     {
         $start = ProcessStart::claimedBy($command->hostId, $command->startKey);
+
         // Only this report moving the replacement's start to running confirms its switch; a delayed one after the
         // replacement ended confirms nothing.
         if ($start->recordRunning($command->executionId)) {

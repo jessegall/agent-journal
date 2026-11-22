@@ -26,11 +26,11 @@ trait CommitsHookRows
      */
     protected function setUpCommitsHookRows(): void
     {
-        $this->emptyTables(...self::TABLES);
+        $this->emptyTables(...static::TABLES);
     }
 
     protected function tearDownCommitsHookRows(): void
     {
-        $this->emptyTables(...self::TABLES);
+        $this->emptyTables(...static::TABLES);
     }
 }

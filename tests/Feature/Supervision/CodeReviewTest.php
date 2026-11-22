@@ -58,6 +58,7 @@ final class CodeReviewTest extends TestCase
         'start_records', 'ask_hops', 'asks', 'ask_requesters', 'supervisor_changes', 'supervisor_links',
         'assignments', 'command_receipts', 'start_tokens', 'agent_sessions', 'agents', 'profile_revisions', 'profiles',
         'agent_stacks', 'pending_agent_messages', 'driver_requests', 'tasks', 'users',
+        'notification_changes',
         'notification_receipts', 'notification_scopes', 'notification_occurrences',
     ];
 

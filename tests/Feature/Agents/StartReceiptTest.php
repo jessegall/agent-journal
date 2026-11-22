@@ -201,7 +201,7 @@ final class StartReceiptTest extends TestCase
                 );
             }
         });
-        $this->images = new CountingImageVerifier;
+        $this->images = new CountingImageVerifier();
         $this->app->instance(DockerImageVerifier::class, $this->images);
     }
 

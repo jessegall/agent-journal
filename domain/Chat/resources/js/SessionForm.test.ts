@@ -1,9 +1,8 @@
 // @vitest-environment happy-dom
 import { flushPromises, mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { reactive } from 'vue';
+import { defineComponent, reactive } from 'vue';
 import type { AgentOptionData } from '@generated/types/chat';
-
 
 const posted: { url: string; body: Record<string, unknown> }[] = [];
 type PostOptions = {
@@ -14,12 +13,31 @@ type PostOptions = {
 const postOptions: PostOptions[] = [];
 
 // The chat window's prop on Home; asking it for a driver's accounts answers them as part of its data.
-const shownPage = reactive<{ component: string; props: Record<string, unknown> }>({ component: 'Home', props: {} });
+const shownPage = reactive<{
+    component: string;
+    props: Record<string, unknown>;
+}>({ component: 'Home', props: {} });
 const accountsAnswer = {
     driver: 'claude-code',
     accounts: [
-        { id: 'expired', label: 'Old account', unavailableReason: 'needs-sign-in', unavailableSentence: 'its account needs to sign in again', expiresAt: null, signInRevision: 1, isDefault: true },
-        { id: 'ready', label: 'Work account', unavailableReason: null, unavailableSentence: null, expiresAt: null, signInRevision: 4, isDefault: false },
+        {
+            id: 'expired',
+            label: 'Old account',
+            unavailableReason: 'needs-sign-in',
+            unavailableSentence: 'its account needs to sign in again',
+            expiresAt: null,
+            signInRevision: 1,
+            isDefault: true,
+        },
+        {
+            id: 'ready',
+            label: 'Work account',
+            unavailableReason: null,
+            unavailableSentence: null,
+            expiresAt: null,
+            signInRevision: 4,
+            isDefault: false,
+        },
     ],
     modelChoices: ['claude-opus-5-5', 'claude-sonnet-5-5'],
 };
@@ -32,7 +50,10 @@ vi.mock('@inertiajs/vue3', () => ({
     usePage: () => shownPage,
     useHttp: () => ({ requestId: '', get: vi.fn(), post: vi.fn() }),
     router: {
-        reload: (options: { only: string[]; onError?: (errors: Record<string, string>) => void }) => {
+        reload: (options: {
+            only: string[];
+            onError?: (errors: Record<string, string>) => void;
+        }) => {
             if (readFailures.count > 0) {
                 readFailures.count--;
                 options.onError?.({ page: 'The accounts could not be read.' });
@@ -40,10 +61,19 @@ vi.mock('@inertiajs/vue3', () => ({
                 return;
             }
 
-            shownPage.props = { [options.only[0]]: { state: 'ready', data: { eligibleAccounts: { ...accountsAnswer } } } };
+            shownPage.props = {
+                [options.only[0]]: {
+                    state: 'ready',
+                    data: { eligibleAccounts: { ...accountsAnswer } },
+                },
+            };
         },
         on: () => () => undefined,
-        post: (url: string, body: Record<string, unknown>, options: PostOptions) => {
+        post: (
+            url: string,
+            body: Record<string, unknown>,
+            options: PostOptions,
+        ) => {
             posted.push({ url, body });
             postOptions.push(options);
             options.onFinish?.();
@@ -55,9 +85,13 @@ vi.mock('@kit/Modal', () => ({
 }));
 vi.mock('@kit/sessionStarts', () => ({
     accountsPage: { url: () => '/accounts' },
-    cancelLaunch: { url: () => '/agents/main/sessions/session-1/cancel-launch' },
+    cancelLaunch: {
+        url: () => '/agents/main/sessions/session-1/cancel-launch',
+    },
     startMain: { url: (profile: string) => `/profiles/${profile}/start-main` },
-    startReceipt: { url: (requestId: string) => `/profiles/starts/${requestId}` },
+    startReceipt: {
+        url: (requestId: string) => `/profiles/starts/${requestId}`,
+    },
     switchMethod: { url: (profile: string) => `/profiles/${profile}/switch` },
 }));
 
@@ -98,22 +132,37 @@ describe('SessionForm', () => {
     beforeEach(() => window.sessionStorage.clear());
 
     it('chooses the ready account over an expired default, says why the other is unavailable, and sends one request id twice', async () => {
-        const form = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
+        const form = mount(SessionForm, {
+            props: { agent: idle, mode: 'start' },
+        });
         await flushPromises();
 
         const options = form.findAll('select[id$="-account"] option');
-        expect(options.map((option) => [option.text(), option.attributes('disabled') !== undefined])).toEqual([
+        expect(
+            options.map((option) => [
+                option.text(),
+                option.attributes('disabled') !== undefined,
+            ]),
+        ).toEqual([
             ['Old account: its account needs to sign in again', true],
             ['Work account', false],
         ]);
-        expect(form.text()).toContain('Starts Claude Code as its default variant, on Work account.');
+        expect(form.text()).toContain(
+            'Starts Claude Code as its default variant, on Work account.',
+        );
 
         await form.find('form').trigger('submit');
         await flushPromises();
         await form.find('form').trigger('submit');
         await flushPromises();
 
-        expect(posted.map((sent) => [sent.url, sent.body.accountId, sent.body.accountRevision])).toEqual([
+        expect(
+            posted.map((sent) => [
+                sent.url,
+                sent.body.accountId,
+                sent.body.accountRevision,
+            ]),
+        ).toEqual([
             ['/profiles/journal-main/start-main', 'ready', 4],
             ['/profiles/journal-main/start-main', 'ready', 4],
         ]);
@@ -124,11 +173,15 @@ describe('SessionForm', () => {
     it('disables Start and points to Accounts when every account is unavailable', async () => {
         const all = accountsAnswer.accounts;
         accountsAnswer.accounts = [all[0]];
-        const form = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
+        const form = mount(SessionForm, {
+            props: { agent: idle, mode: 'start' },
+        });
         await flushPromises();
 
         expect(form.text()).toContain('None of its accounts can start now.');
-        const start = form.findAll('button').find((candidate) => candidate.text() === 'Start session');
+        const start = form
+            .findAll('button')
+            .find((candidate) => candidate.text() === 'Start session');
         expect(start?.attributes('disabled')).toBeDefined();
         accountsAnswer.accounts = all;
         form.unmount();
@@ -136,11 +189,16 @@ describe('SessionForm', () => {
 
     it('offers Retry when the accounts could not be read', async () => {
         readFailures.count = 1;
-        const form = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
+        const form = mount(SessionForm, {
+            props: { agent: idle, mode: 'start' },
+        });
         await flushPromises();
 
         expect(form.text()).toContain('The accounts could not be read.');
-        await form.findAll('button').find((candidate) => candidate.text() === 'Retry')!.trigger('click');
+        await form
+            .findAll('button')
+            .find((candidate) => candidate.text() === 'Retry')!
+            .trigger('click');
         await flushPromises();
 
         expect(form.findAll('select[id$="-account"] option')).toHaveLength(2);
@@ -148,43 +206,81 @@ describe('SessionForm', () => {
     });
 
     it('shows Starting at once and Ready only once the session the start answered with runs', async () => {
-        const form = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
+        const form = mount(SessionForm, {
+            props: { agent: idle, mode: 'start' },
+        });
         await flushPromises();
         await form.find('form').trigger('submit');
         expect(form.text()).toContain('Starting');
 
         await form.setProps({
-            agent: { ...idle, presence: 'working', sessionId: 'session-2', status: { ...idle.status, isProcessConfirmed: true } },
+            agent: {
+                ...idle,
+                presence: 'working',
+                sessionId: 'session-2',
+                status: { ...idle.status, isProcessConfirmed: true },
+            },
         });
-        postOptions.at(-1)?.onSuccess({ flash: { startedSessionId: 'session-1' } });
+        postOptions
+            .at(-1)
+            ?.onSuccess({ flash: { startedSessionId: 'session-1' } });
         await flushPromises();
-        expect(form.text()).toContain('Another session is running; this start is not confirmed yet');
+        expect(form.text()).toContain(
+            'Another session is running; this start is not confirmed yet',
+        );
 
         await form.setProps({
-            agent: { ...idle, sessionId: 'session-1', status: { ...idle.status, sessionState: 'idle', isProcessConfirmed: true } },
+            agent: {
+                ...idle,
+                sessionId: 'session-1',
+                status: {
+                    ...idle.status,
+                    sessionState: 'idle',
+                    isProcessConfirmed: true,
+                },
+            },
         });
-        postOptions.at(-1)?.onSuccess({ flash: { startedSessionId: 'session-1' } });
+        postOptions
+            .at(-1)
+            ?.onSuccess({ flash: { startedSessionId: 'session-1' } });
         await flushPromises();
         expect(form.text()).toContain('Ready');
         form.unmount();
     });
 
-    it('offers the profile's models, default first, and shows a model refusal under Model with the focus there', async () => {
-        const form = mount(SessionForm, { props: { agent: idle, mode: 'start' }, attachTo: document.body });
+    it("offers the profile's models, default first, and shows a model refusal under Model with the focus there", async () => {
+        const form = mount(SessionForm, {
+            props: { agent: idle, mode: 'start' },
+            attachTo: document.body,
+        });
         await flushPromises();
 
-        const models = form.findAll('select[id$="-model"] option').map((option) => option.text());
-        expect(models).toEqual(['claude-opus-5-5 (default)', 'claude-sonnet-5-5']);
+        const models = form
+            .findAll('select[id$="-model"] option')
+            .map((option) => option.text());
+        expect(models).toEqual([
+            'claude-opus-5-5 (default)',
+            'claude-sonnet-5-5',
+        ]);
 
         await form.find('form').trigger('submit');
-        postOptions.at(-1)?.onError({ model: 'This profile does not allow that model.' });
+        postOptions
+            .at(-1)
+            ?.onError({ model: 'This profile does not allow that model.' });
         await flushPromises();
 
         const model = form.find('select[id$="-model"]');
-        expect(model.attributes('aria-describedby')).toBe(`${model.attributes('id')}-description`);
-        expect(form.find(`#${model.attributes('id')}-description`).text()).toBe('This profile does not allow that model.');
+        expect(model.attributes('aria-describedby')).toBe(
+            `${model.attributes('id')}-description`,
+        );
+        expect(form.find(`#${model.attributes('id')}-description`).text()).toBe(
+            'This profile does not allow that model.',
+        );
         expect(document.activeElement?.id).toBe(model.attributes('id'));
-        expect((form.find('select[id$="-account"]').element as HTMLSelectElement).value).toBe('ready');
+        expect(
+            (form.find('select[id$="-account"]').element as HTMLSelectElement)
+                .value,
+        ).toBe('ready');
         form.unmount();
     });
 
@@ -192,40 +288,67 @@ describe('SessionForm', () => {
         const all = accountsAnswer.accounts;
         accountsAnswer.accounts = [
             { ...all[1], id: 'first', label: 'First account', isDefault: true },
-            { ...all[1], id: 'second', label: 'Second account', isDefault: false },
+            {
+                ...all[1],
+                id: 'second',
+                label: 'Second account',
+                isDefault: false,
+            },
         ];
-        const form = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
+        const form = mount(SessionForm, {
+            props: { agent: idle, mode: 'start' },
+        });
         await flushPromises();
 
         await form.find('select[id$="-account"]').setValue('second');
-        shownPage.props = { window_chat_conversation: { state: 'ready', data: { eligibleAccounts: { ...accountsAnswer } } } };
+        shownPage.props = {
+            window_chat_conversation: {
+                state: 'ready',
+                data: { eligibleAccounts: { ...accountsAnswer } },
+            },
+        };
         await flushPromises();
 
-        expect((form.find('select[id$="-account"]').element as HTMLSelectElement).value).toBe('second');
+        expect(
+            (form.find('select[id$="-account"]').element as HTMLSelectElement)
+                .value,
+        ).toBe('second');
         accountsAnswer.accounts = all;
         form.unmount();
     });
 
     it('gives two open dialogs their own field ids', async () => {
-        const first = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
-        const second = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
+        const both = mount(
+            defineComponent({
+                components: { SessionForm },
+                setup: () => ({ agent: idle }),
+                template:
+                    '<div><SessionForm :agent="agent" mode="start" /><SessionForm :agent="agent" mode="start" /></div>',
+            }),
+        );
         await flushPromises();
 
-        expect(first.find('select[id$="-model"]').attributes('id')).not.toBe(
-            second.find('select[id$="-model"]').attributes('id'),
-        );
-        first.unmount();
-        second.unmount();
+        const ids = both
+            .findAll('select[id$="-model"]')
+            .map((field) => field.attributes('id'));
+
+        expect(ids).toHaveLength(2);
+        expect(ids[0]).not.toBe(ids[1]);
+        both.unmount();
     });
 
     it('keeps the sent start for this tab and shows it again after a reload without posting again', async () => {
-        const form = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
+        const form = mount(SessionForm, {
+            props: { agent: idle, mode: 'start' },
+        });
         await flushPromises();
         await form.find('form').trigger('submit');
         const sentCount = posted.length;
         form.unmount();
 
-        const reloaded = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
+        const reloaded = mount(SessionForm, {
+            props: { agent: idle, mode: 'start' },
+        });
         await flushPromises();
 
         expect(reloaded.text()).toContain('Starting');
@@ -234,9 +357,14 @@ describe('SessionForm', () => {
     });
 
     it('forgets the tab record when the dialog is closed', async () => {
-        const form = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
+        const form = mount(SessionForm, {
+            props: { agent: idle, mode: 'start' },
+        });
         await flushPromises();
-        await form.findAll('button').find((candidate) => candidate.text() === 'Close')!.trigger('click');
+        await form
+            .findAll('button')
+            .find((candidate) => candidate.text() === 'Close')!
+            .trigger('click');
 
         expect(window.sessionStorage.length).toBe(0);
         form.unmount();

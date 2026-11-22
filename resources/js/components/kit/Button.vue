@@ -33,7 +33,7 @@ const look = computed(
             bordered:
                 'border-border-2 text-text-2 hover:bg-hover hover:text-text',
             primary:
-                'border-brand bg-brand-dim text-brand-text hover:bg-brand hover:text-white',
+                'border-brand bg-brand-dim text-brand-text hover:bg-brand hover:text-on-brand',
             danger: 'border-[color-mix(in_srgb,var(--danger)_55%,var(--border-2))] text-danger hover:bg-[color-mix(in_srgb,var(--danger)_12%,transparent)]',
             icon: 'size-6 justify-center p-0 text-text-3 hover:bg-[color-mix(in_srgb,var(--border-3)_70%,transparent)] hover:text-text',
         })[props.variant],

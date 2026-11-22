@@ -14,6 +14,10 @@ vi.mock('@inertiajs/vue3', () => ({
         post: (_url: string, body: Record<string, unknown>) => reads.push(body),
     },
 }));
+vi.mock('@kit/notifications', () => ({
+    LEASE_MILLISECONDS: 30_000,
+    useNotifications: () => ({ markQuestionRead: async () => undefined }),
+}));
 vi.mock('@kit/protectedView', () => ({
     isRevealed: (prop: string) => revealedProps.value.has(prop),
     onPurge: (purger: () => void) => {
