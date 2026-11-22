@@ -33,4 +33,30 @@ final readonly class ClaimedRequest
         public string|null $processStartId,
         public int $processGeneration,
     ) {}
+
+    /**
+     * The same claim carrying the prompt its wake presents, such as a batch of chat text to show.
+     */
+    public function withMessage(string $message): self
+    {
+        return new self(
+            $this->runtimeId,
+            $this->requestId,
+            $this->sequence,
+            $this->attempt,
+            $this->operation,
+            $message,
+            $this->model,
+            $this->effort,
+            $this->script,
+            $this->scriptVersion,
+            $this->scriptParameters,
+            $this->scriptStep,
+            $this->navigationRequestId,
+            $this->navigationRound,
+            $this->sessionId,
+            $this->processStartId,
+            $this->processGeneration,
+        );
+    }
 }

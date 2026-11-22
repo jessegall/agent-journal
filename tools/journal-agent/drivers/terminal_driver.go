@@ -131,7 +131,7 @@ func (driver *TerminalDriver) Deliver(
 
 // Wake types the standard pending-work prompt, unless an interrupt holds the runtime: a held runtime does no work.
 func (driver *TerminalDriver) Wake(_ context.Context, wake contracts.WakeRequest) (contracts.OperationResult, error) {
-	return driver.prompt(wake.Request, pendingWorkPrompt)
+	return driver.prompt(wake.Request, wake.PromptOr(pendingWorkPrompt))
 }
 
 // ChangeModel stays staged: the recorded model picker reaches the wanted entry, but no recording shows a confirmed

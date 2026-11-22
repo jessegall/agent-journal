@@ -211,7 +211,7 @@ func (loop *Loop) startTurn(ctx context.Context, runtime *liveRuntime, admission
 		}
 		result, err = runtime.driver.Deliver(ctx, contracts.Delivery{Request: first, Message: strings.Join(messages, "\n\n")})
 	} else {
-		result, err = runtime.driver.Wake(ctx, contracts.WakeRequest{Request: first})
+		result, err = runtime.driver.Wake(ctx, contracts.WakeRequest{Request: first, Prompt: wakePrompt(admission.Wakes)})
 	}
 	if err != nil || result.Progress != contracts.ProgressApplying {
 		for _, request := range requests {
@@ -628,4 +628,15 @@ func whole(number *int) int {
 	}
 
 	return *number
+}
+
+// wakePrompt answers the first prompt the server attached to one of the wakes, such as a batch of chat messages to
+// present, or none so the driver sends its generic pending-work prompt.
+func wakePrompt(wakes []client.ClaimedRequest) string {
+	for _, wake := range wakes {
+		if prompt := text(wake.Message); prompt != "" {
+			return prompt
+		}
+	}
+	return ""
 }
