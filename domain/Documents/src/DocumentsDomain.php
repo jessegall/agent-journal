@@ -302,19 +302,20 @@ final class DocumentsDomain extends Domain implements
     }
 
     /**
-     * The native parts a record's layout mounts: its comments, its links and its share control.
+     * The native parts the record layouts mount: a record's comments, its links and its share control, and the form
+     * that files a new one.
      *
      * @return list<string>
      */
     public function nativeParts(): array
     {
-        return ['RecordComments.vue', 'RecordLinks.vue', 'RecordShare.vue', 'ReportReceipt.vue'];
+        return ['CreateRecordForm.vue', 'RecordComments.vue', 'RecordLinks.vue', 'RecordShare.vue', 'ReportReceipt.vue'];
     }
 
     public function pages(): array
     {
         return [
-            Page::make('library', 'Documents', Icon::Docs, LibraryWindowResolver::class, 'LibraryWindow.vue')
+            Page::layout('library', 'Documents', Icon::Docs, LibraryWindowResolver::class)
                 ->at('')
                 ->actions(
                     ActionRoute::post('docs', CreateDocumentPageController::class, 'create-document'),

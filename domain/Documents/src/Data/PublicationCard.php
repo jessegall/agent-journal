@@ -24,4 +24,16 @@ final class PublicationCard extends Data
         public readonly string|Optional $snippet = new Optional(),
         public readonly string|Optional $foundIn = new Optional(),
     ) {}
+
+    /**
+     * The line a list shows under the title: where a search found it and what it found, else its abstract.
+     */
+    public function summaryLine(): string
+    {
+        if (is_string($this->snippet) && is_string($this->foundIn)) {
+            return "{$this->foundIn}: {$this->snippet}";
+        }
+
+        return $this->abstract;
+    }
 }

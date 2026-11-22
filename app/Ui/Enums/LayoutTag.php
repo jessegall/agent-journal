@@ -46,7 +46,7 @@ enum LayoutTag: string
         return match ($this) {
             self::Box => ['stack', 'row', 'section', 'card', 'panel', 'header', 'group', 'divider', 'split'],
             self::Text => ['plain', 'heading', 'muted', 'badge', 'code', 'keyHint', 'paragraph'],
-            self::Collection => ['list', 'facts'],
+            self::Collection => ['list', 'facts', 'choices'],
             self::Notice => ['info', 'success', 'warning', 'error', 'empty', 'refusal'],
             self::Action => ['bordered', 'ghost', 'primary', 'danger'],
             self::Field => ['search', 'text'],

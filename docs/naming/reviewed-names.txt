@@ -528,6 +528,9 @@ case	LayoutTag::Native
 case	LayoutTag::Notice
 case	LayoutTag::Tabs
 case	LayoutTag::Text
+case	LibraryTypeFilter::All
+case	LibraryTypeFilter::Documents
+case	LibraryTypeFilter::Reports
 case	LifecycleStage::Enter
 case	LifecycleStage::Event
 case	LifecycleStage::Exit
@@ -2286,6 +2289,7 @@ class	CreatePlanCall
 class	CreatePlanController
 class	CreatePlanHandler
 class	CreatePlanTool
+class	CreateRecordPartData
 class	CreateRecordRequest
 class	CreateReport
 class	CreateReportHandler
@@ -3229,7 +3233,6 @@ class	LegacyDockableProvider
 class	LexedLine
 class	LexerCursor
 class	LexerScan
-class	LibraryData
 class	LibraryEntryAnswer
 class	LibraryWindowResolver
 class	LifecycleAnswer
@@ -7176,6 +7179,7 @@ enum	KeywordCategory
 enum	LaunchCandidateRank
 enum	LaunchProfileType
 enum	LayoutTag
+enum	LibraryTypeFilter
 enum	LifecycleStage
 enum	LifecycleState
 enum	MenuEntryState
@@ -9235,6 +9239,7 @@ method	AttachWordToSimpleCommand::produces()
 method	AttachmentPages::__construct()
 method	AttachmentPages::attachment()
 method	AttachmentReader::attachment()
+method	AttentionFilter::label()
 method	AttentionFilter::state()
 method	AttentionOrigin::__construct()
 method	AttentionOrigin::agentMessages()
@@ -11096,6 +11101,7 @@ method	CreatePlanHandler::handle()
 method	CreatePlanTool::command()
 method	CreatePlanTool::present()
 method	CreatePlanTool::writeSchema()
+method	CreateRecordPartData::__construct()
 method	CreateRecordRequest::about()
 method	CreateRecordRequest::abstract()
 method	CreateRecordRequest::body()
@@ -14227,10 +14233,16 @@ method	LexerCursor::tokens()
 method	LexerScan::__construct()
 method	LexerScan::nextPipe()
 method	LexerScan::tokens()
-method	LibraryData::__construct()
 method	LibraryEntryAnswer::__construct()
+method	LibraryTypeFilter::isForDocuments()
+method	LibraryTypeFilter::isForReports()
+method	LibraryTypeFilter::label()
 method	LibraryWindowResolver::__construct()
+method	LibraryWindowResolver::choicesOf()
+method	LibraryWindowResolver::emptyOf()
+method	LibraryWindowResolver::isEmpty()
 method	LibraryWindowResolver::read()
+method	LibraryWindowResolver::sectionOf()
 method	LifecycleAnswer::__construct()
 method	LifecycleAnswers::__construct()
 method	LifecycleAnswers::add()
@@ -14371,6 +14383,7 @@ method	ListProposalsController::__invoke()
 method	ListRead::__construct()
 method	ListRecordsRequest::filters()
 method	ListRecordsRequest::rules()
+method	ListRecordsRequest::typeFilter()
 method	ListReportsCall::__construct()
 method	ListReportsController::__invoke()
 method	ListTextSectionsCall::__construct()
@@ -17090,6 +17103,7 @@ method	PublicationArguments::source()
 method	PublicationArguments::sources()
 method	PublicationArguments::target()
 method	PublicationCard::__construct()
+method	PublicationCard::summaryLine()
 method	PublicationChunks::__construct()
 method	PublicationChunks::chunk()
 method	PublicationChunks::page()
@@ -23589,6 +23603,7 @@ parameter	$cascade
 parameter	$case
 parameter	$caseClauses
 parameter	$caseCount
+parameter	$cases
 parameter	$catalogue
 parameter	$catalogueDigest
 parameter	$category
@@ -24535,6 +24550,7 @@ parameter	$linkIds
 parameter	$linkType
 parameter	$linked
 parameter	$links
+parameter	$list
 parameter	$listCursor
 parameter	$listName
 parameter	$listRead
@@ -25517,7 +25533,6 @@ parameter	$sharedFolder
 parameter	$sharedFolders
 parameter	$shares
 parameter	$sharing
-parameter	$sharingNotice
 parameter	$shortName
 parameter	$shortfall
 parameter	$shown
@@ -27829,6 +27844,8 @@ property	CreatePlanCall::$brief
 property	CreatePlanCall::$requestKey
 property	CreatePlanCall::$title
 property	CreatePlanCall::$type
+property	CreateRecordPartData::$action
+property	CreateRecordPartData::$label
 property	CreateReport::$abstract
 property	CreateReport::$body
 property	CreateReport::$relatedRecords
@@ -29592,6 +29609,8 @@ property	LayoutPartData::$tabs
 property	LayoutPartData::$tag
 property	LayoutPartData::$text
 property	LayoutPartData::$tone
+property	LayoutRowData::$detail
+property	LayoutRowData::$href
 property	LayoutRowData::$isCurrent
 property	LayoutRowData::$key
 property	LayoutRowData::$label
@@ -29617,11 +29636,6 @@ property	LexerCursor::$source
 property	LexerCursor::$steps
 property	LexerCursor::$tokens
 property	LexerScan::$runner
-property	LibraryData::$attention
-property	LibraryData::$documents
-property	LibraryData::$query
-property	LibraryData::$reports
-property	LibraryData::$sharingNotice
 property	LibraryEntryAnswer::$completes
 property	LibraryEntryAnswer::$driver
 property	LibraryEntryAnswer::$goal
