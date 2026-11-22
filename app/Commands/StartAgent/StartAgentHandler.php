@@ -132,6 +132,7 @@ final readonly class StartAgentHandler implements CommandHandler
             $request->agentId,
             $started->session->id,
             $request->authorizedSource,
+            $parent?->agent_id,
         ));
 
         return $this->receiptOf($request, $started->session, true);

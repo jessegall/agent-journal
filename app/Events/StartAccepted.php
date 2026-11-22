@@ -18,5 +18,7 @@ final readonly class StartAccepted implements Event
         public string $agentId,
         public string $sessionId,
         public RecordIdentity|null $authorizedSource = null,
+        // The agent that started it as its helper, none for a start of its own.
+        public string|null $parentAgentId = null,
     ) {}
 }
