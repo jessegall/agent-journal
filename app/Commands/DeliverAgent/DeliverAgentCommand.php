@@ -6,11 +6,12 @@ namespace App\Commands\DeliverAgent;
 
 use App\Attributes\Authorize;
 use App\Contracts\AgentStackCommand;
+use App\Contracts\MessagePart;
+use App\Data\MessagePartData;
 use App\Enums\AccessType;
 use App\Policies\AgentPolicy;
 use App\Support\Command;
 use App\Values\DriverReceipt;
-use App\Values\MessagePart;
 use App\Values\StackTarget;
 
 /**
@@ -36,7 +37,7 @@ final readonly class DeliverAgentCommand extends Command implements AgentStackCo
      */
     public static function text(string $agentId, string $sessionId, string $idempotencyKey, string $text): self
     {
-        return new self($agentId, $sessionId, $idempotencyKey, [MessagePart::text($text)]);
+        return new self($agentId, $sessionId, $idempotencyKey, [MessagePartData::forText($text)]);
     }
 
     /**
@@ -44,7 +45,7 @@ final readonly class DeliverAgentCommand extends Command implements AgentStackCo
      */
     public function textBytes(): int
     {
-        return array_sum(array_map(fn (MessagePart $part): int => strlen($part->text), $this->parts));
+        return array_sum(array_map(fn (MessagePart $part): int => strlen($part->text()), $this->parts));
     }
 
     public function target(): StackTarget

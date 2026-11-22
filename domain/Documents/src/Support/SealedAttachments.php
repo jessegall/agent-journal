@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Documents\Support;
 
 use App\Contracts\AttachmentReferences;
+use App\Contracts\MessagePart;
 use App\Contracts\SessionProvenance;
 use App\Exceptions\DriverRequestRefused;
-use App\Values\MessagePart;
 use Domain\Documents\Exceptions\UploadExpired;
 use Domain\Documents\Models\TextUpload;
 
@@ -22,13 +22,13 @@ final readonly class SealedAttachments implements AttachmentReferences
     public function assertReadable(MessagePart $part, string $recipientSessionId): void
     {
         try {
-            $upload = TextUpload::sealedFor($this->sessions, $recipientSessionId, $part->attachmentId);
+            $upload = TextUpload::sealedFor($this->sessions, $recipientSessionId, $part->attachmentId());
         } catch (UploadExpired) {
-            throw DriverRequestRefused::attachmentMissing($part->attachmentId);
+            throw DriverRequestRefused::attachmentMissing($part->attachmentId());
         }
 
-        if (! hash_equals($upload->digest, $part->digest)) {
-            throw DriverRequestRefused::attachmentChanged($part->attachmentId);
+        if (! hash_equals($upload->digest, $part->digest())) {
+            throw DriverRequestRefused::attachmentChanged($part->attachmentId());
         }
     }
 }

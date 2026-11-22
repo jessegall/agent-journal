@@ -6,8 +6,10 @@ namespace App\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Contracts\MessagePart;
 use App\Contracts\ReadableModel;
 use App\Data\DriverRequestStatus;
+use App\Data\MessagePartData;
 use App\Enums\DriverOperation;
 use App\Enums\ExpectedTiming;
 use App\Enums\HoldReason;
@@ -20,7 +22,6 @@ use App\Support\RuntimeStatuses;
 use App\Values\ClaimedRequest;
 use App\Values\DriverReceipt;
 use App\Values\DriverRequestPayload;
-use App\Values\MessagePart;
 use App\Values\NavigationRound;
 use App\Values\ScriptGoal;
 use App\Values\ScriptParameter;
@@ -501,7 +502,7 @@ final class DriverRequest extends Model implements ReadableModel
      */
     public function partList(): array
     {
-        return MessagePart::listOf($this->parts ?? []);
+        return MessagePartData::listOf($this->parts ?? []);
     }
 
     /**

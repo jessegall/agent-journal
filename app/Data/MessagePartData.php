@@ -2,16 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Values;
+namespace App\Data;
 
+use App\Contracts\MessagePart;
 use App\Enums\MessagePartType;
 use Spatie\LaravelData\Data;
 
 /**
- * One part of a delivery to an agent, in its place among the others: a text, or an attachment named by its id, the
- * digest of the version sent and its label. The agent reads an attachment through the journal, never from a path.
+ * A message part as it is stored on a delivery and sent to the host: a text, or an attachment by its id, digest and
+ * label. It fills itself from its stored array.
  */
-final class MessagePart extends Data
+final class MessagePartData extends Data implements MessagePart
 {
     public function __construct(
         public readonly MessagePartType $type,
@@ -21,12 +22,12 @@ final class MessagePart extends Data
         public readonly string $label,
     ) {}
 
-    public static function text(string $text): self
+    public static function forText(string $text): self
     {
         return new self(MessagePartType::Text, $text, '', '', '');
     }
 
-    public static function attachment(string $attachmentId, string $digest, string $label): self
+    public static function forAttachment(string $attachmentId, string $digest, string $label): self
     {
         return new self(MessagePartType::Attachment, '', $attachmentId, $digest, $label);
     }
@@ -35,11 +36,36 @@ final class MessagePart extends Data
      * The parts as stored or sent.
      *
      * @param  list<array<string, mixed>>  $stored
-     * @return list<self>
+     * @return list<MessagePart>
      */
     public static function listOf(array $stored): array
     {
         return array_values(self::collect($stored));
+    }
+
+    public function type(): MessagePartType
+    {
+        return $this->type;
+    }
+
+    public function text(): string
+    {
+        return $this->text;
+    }
+
+    public function attachmentId(): string
+    {
+        return $this->attachmentId;
+    }
+
+    public function digest(): string
+    {
+        return $this->digest;
+    }
+
+    public function label(): string
+    {
+        return $this->label;
     }
 
     public function isAttachment(): bool

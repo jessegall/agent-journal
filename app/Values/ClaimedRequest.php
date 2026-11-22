@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Contracts\MessagePart;
+
 /**
  * One request handed to a host: which runtime, which request and attempt, and what to do, with the key script to run
  * and the step it stopped at when it is one, and the session, supervised start and process generation the claim

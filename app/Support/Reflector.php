@@ -419,19 +419,6 @@ final class Reflector implements ReflectedType
         );
     }
 
-    /**
-     * The properties this class declares itself, without those a parent or a parent's traits declare.
-     *
-     * @return list<ReflectedProperty>
-     */
-    public function ownProperties(): array
-    {
-        return array_values(array_filter(
-            $this->properties(),
-            fn (ReflectedProperty $property) => $property->declaringClass()->name() === $this->name(),
-        ));
-    }
-
     public function hasProperty(string $name): bool
     {
         return $this->type->hasProperty($name);

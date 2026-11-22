@@ -343,6 +343,7 @@ use App\Contracts\MarkdownParts;
 use App\Contracts\MembershipEvidence;
 use App\Contracts\MenuProvider;
 use App\Contracts\MessageCommand;
+use App\Contracts\MessagePart;
 use App\Contracts\MessageRecipient;
 use App\Contracts\MessageSearch;
 use App\Contracts\MessageSender;
@@ -486,6 +487,7 @@ use App\Data\IntegerValueData;
 use App\Data\InvalidValueData;
 use App\Data\MessageClaimHolder;
 use App\Data\MessagePage;
+use App\Data\MessagePartData;
 use App\Data\MessageReadBatch;
 use App\Data\MessageReader;
 use App\Data\MessageReadResult;
@@ -1365,7 +1367,6 @@ use App\Values\LibraryEntryAnswer;
 use App\Values\MarkdownPart;
 use App\Values\Measurement;
 use App\Values\MenuStep;
-use App\Values\MessagePart;
 use App\Values\ModelSelection;
 use App\Values\MoreOutcome;
 use App\Values\NamedCommand;
@@ -1567,6 +1568,7 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                MessagePart::class,
                 WorkAllowance::class,
                 AttachmentReferences::class,
                 TieredSearch::class,
@@ -2517,7 +2519,7 @@ final class CoreApi
                 OperationRule::class,
                 ProfileChangeType::class,
                 SignInMethod::class,
-                MessagePart::class,
+                MessagePartData::class,
                 MessagePartType::class,
                 FieldOrigin::class,
                 PolicyOriginType::class,

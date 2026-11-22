@@ -33,7 +33,9 @@ use App\Contracts\AttachmentReferences;
 use App\Contracts\CommandBus;
 use App\Contracts\CurrentActorSetter;
 use App\Contracts\DriverCatalogue;
+use App\Contracts\MessagePart;
 use App\Contracts\RuntimeResolver;
+use App\Data\MessagePartData;
 use App\Enums\DriverOperation;
 use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
@@ -79,7 +81,6 @@ use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
 use App\Values\ExecutionBudgets;
 use App\Values\ExecutionPolicy;
-use App\Values\MessagePart;
 use App\Values\OwnerAuthority;
 use App\Values\ProfileBase;
 use App\Values\ProfileStartPolicy;
@@ -182,7 +183,7 @@ final class AgentDriverLedgerTest extends TestCase
     {
         $this->app->scoped(AttachmentReferences::class, fn (): AttachmentReferences => $this->attachmentsExcept('gone'));
         [$host, $opened] = $this->openRuntime();
-        $parts = [MessagePart::attachment('01JNOTES', 'digest-1', 'notes.md'), MessagePart::text('Read it first.')];
+        $parts = [MessagePartData::forAttachment('01JNOTES', 'digest-1', 'notes.md'), MessagePartData::forText('Read it first.')];
 
         $receipt = $this->asOwner(new DeliverAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'parts', $parts));
 
@@ -194,7 +195,7 @@ final class AgentDriverLedgerTest extends TestCase
     {
         $this->app->scoped(AttachmentReferences::class, fn (): AttachmentReferences => $this->attachmentsExcept('gone'));
         [, $opened] = $this->openRuntime();
-        $parts = [MessagePart::text('Here it is.'), MessagePart::attachment('gone', 'digest-1', 'old.md')];
+        $parts = [MessagePartData::forText('Here it is.'), MessagePartData::forAttachment('gone', 'digest-1', 'old.md')];
 
         $this->assertThrows(
             fn () => $this->asOwner(new DeliverAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'mixed', $parts)),
@@ -208,7 +209,7 @@ final class AgentDriverLedgerTest extends TestCase
     {
         $this->app->scoped(AttachmentReferences::class, fn (): AttachmentReferences => $this->attachmentsExcept('gone'));
         [, $opened] = $this->openRuntime();
-        $parts = [MessagePart::attachment('01JNOTES', 'digest-1', 'notes.md')];
+        $parts = [MessagePartData::forAttachment('01JNOTES', 'digest-1', 'notes.md')];
         $send = fn (): DriverReceipt => $this->asOwner(
             new DeliverAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'same', $parts),
         );
@@ -1439,8 +1440,8 @@ final class AgentDriverLedgerTest extends TestCase
 
             public function assertReadable(MessagePart $part, string $recipientSessionId): void
             {
-                if ($part->attachmentId === $this->missing) {
-                    throw DriverRequestRefused::attachmentMissing($part->attachmentId);
+                if ($part->attachmentId() === $this->missing) {
+                    throw DriverRequestRefused::attachmentMissing($part->attachmentId());
                 }
             }
         };

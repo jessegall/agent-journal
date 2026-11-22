@@ -39,7 +39,6 @@ use Tests\Fixtures\Bus\Shop\Commands\AddItem\AddItemHandler;
 use Tests\Fixtures\Bus\Shop\Commands\ArrayResultItem\ArrayResultItemCommand;
 use Tests\Fixtures\Bus\Shop\Commands\BaselessItem\BaselessItemCommand;
 use Tests\Fixtures\Bus\Shop\Commands\ClosureItem\ClosureItemCommand;
-use Tests\Fixtures\Bus\Shop\Commands\DataLabeledItem\DataLabeledItemCommand;
 use Tests\Fixtures\Bus\Shop\Commands\EnumLimitedItem\EnumLimitedItemCommand;
 use Tests\Fixtures\Bus\Shop\Commands\LimitedItem\LimitedItemCommand;
 use Tests\Fixtures\Bus\Shop\Commands\LookupItem\LookupItemCommand;
@@ -48,6 +47,7 @@ use Tests\Fixtures\Bus\Shop\Commands\MisnamedFieldItem\MisnamedFieldItemCommand;
 use Tests\Fixtures\Bus\Shop\Commands\MutableLabeledItem\MutableLabeledItemCommand;
 use Tests\Fixtures\Bus\Shop\Commands\NoHandlerItem\NoHandlerItemCommand;
 use Tests\Fixtures\Bus\Shop\Commands\OpenItem\OpenItemCommand;
+use Tests\Fixtures\Bus\Shop\Commands\PartsItem\PartsItemCommand;
 use Tests\Fixtures\Bus\Shop\Commands\QueuedItem\QueuedItemCommand;
 use Tests\Fixtures\Bus\Shop\Commands\RemoveItem\RemoveItemCommand;
 use Tests\Fixtures\Bus\Shop\Commands\RemoveItem\RemoveItemHandler;
@@ -270,16 +270,16 @@ final class CommandRegistryTest extends TestCase
         ]);
     }
 
-    public function test_a_carried_data_value_whose_properties_are_readonly_is_accepted(): void
+    public function test_a_list_typed_on_a_contract_is_accepted(): void
     {
-        $registry = $this->registryOf([$this->shop([DataLabeledItemCommand::class])]);
+        $registry = $this->registryOf([$this->shop([PartsItemCommand::class])]);
 
-        $this->assertSame([], $registry->rulesFor(DataLabeledItemCommand::class));
+        $this->assertSame([], $registry->rulesFor(PartsItemCommand::class));
     }
 
     public function test_a_carried_value_with_a_property_that_can_change_is_refused(): void
     {
-        $this->refusedWith(CommandDeclarationInvalid::class, 'text is not readonly', [
+        $this->refusedWith(CommandDeclarationInvalid::class, 'final readonly', [
             $this->shop([MutableLabeledItemCommand::class]),
         ]);
     }

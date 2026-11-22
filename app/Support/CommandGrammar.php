@@ -32,13 +32,9 @@ final readonly class CommandGrammar
      */
     public function problemWithProperties(string $class, array $seen = []): string|null
     {
-        foreach (Reflector::of($class)->ownProperties() as $property) {
+        foreach (Reflector::of($class)->properties() as $property) {
             if (! $property->isPublic() || ! $property->isPromoted()) {
                 return "{$property->name()} is not a public constructor property";
-            }
-
-            if (! $property->isReadOnly()) {
-                return "{$property->name()} is not readonly";
             }
 
             $problem = $this->problemWithType($property->type(), $property, [...$seen, $class]);
@@ -93,6 +89,10 @@ final readonly class CommandGrammar
                 : "is the enum {$name}, which has no values";
         }
 
+        if ($this->isContract($name)) {
+            return $this->problemWithContract($name);
+        }
+
         return $this->problemWithValue($name, $seen);
     }
 
@@ -128,6 +128,12 @@ final readonly class CommandGrammar
             return $item->get()->implements(BackedEnum::class)
                 ? null
                 : "is a list of the enum {$class}, which has no values";
+        }
+
+        if ($this->isContract($class)) {
+            $problem = $this->problemWithContract($class);
+
+            return $problem === null ? null : "is a list whose item {$problem}";
         }
 
         $problem = $item->filter(fn (Reflector $type) => $type->isClass())->isDefined() ? $this->problemWithValue(
@@ -181,6 +187,21 @@ final readonly class CommandGrammar
     }
 
     /**
+     * Whether the type is an interface of a Contracts namespace, which a command may carry without knowing the class
+     * behind it, as long as its owner may name it.
+     */
+    private function isContract(string $name): bool
+    {
+        return str_contains($name, '\\Contracts\\')
+            && Reflector::find($name)->filter(fn (Reflector $type) => $type->isInterface())->isDefined();
+    }
+
+    private function problemWithContract(string $name): string|null
+    {
+        return ($this->mayName)($name) ? null : "holds {$name}, which the owner neither owns nor has exported to it";
+    }
+
+    /**
      * @param  list<string>  $seen
      */
     private function problemWithValue(string $name, array $seen): string|null
@@ -193,8 +214,8 @@ final readonly class CommandGrammar
 
         $declaration = $found->get();
 
-        if (! $declaration->isFinal()) {
-            return "holds {$name}, which is not a final value";
+        if (! $declaration->isFinal() || ! $declaration->isReadOnly()) {
+            return "holds {$name}, which is not a final readonly value";
         }
 
         if (! ($this->mayName)($name)) {
