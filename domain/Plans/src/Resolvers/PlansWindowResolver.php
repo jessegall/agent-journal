@@ -11,6 +11,7 @@ use Domain\Plans\Data\PlanListData;
 use Domain\Plans\Data\PlanReaderData;
 use Domain\Plans\Http\Requests\PlansRequest;
 use Domain\Plans\Support\PlanOutline;
+use Domain\Plans\Support\PlanReviewView;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -23,6 +24,7 @@ final readonly class PlansWindowResolver implements PageResolver
         private PlansRequest $request,
         private PlanResolver $records,
         private PlanOutline $outline,
+        private PlanReviewView $review,
     ) {}
 
     public function read(): PlanListData
@@ -43,7 +45,11 @@ final readonly class PlansWindowResolver implements PageResolver
                 'total' => $planPage->total,
             ],
             'selectionMissing' => $planPage->selection->isMissing(),
-            'selected' => PlanReaderData::ofSelection($planPage->selection, $outline),
+            'selected' => PlanReaderData::ofSelection(
+                $planPage->selection,
+                $outline,
+                $card === null ? Optional::create() : $this->review->of($card->id),
+            ),
         ]);
     }
 }

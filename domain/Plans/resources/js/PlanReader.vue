@@ -14,6 +14,7 @@ import {
     typeIcon,
 } from './planLooks';
 import PhaseOutline from './PhaseOutline.vue';
+import PlanReviewPanel from './PlanReviewPanel.vue';
 import StartPlanForm from './StartPlanForm.vue';
 
 /**
@@ -79,6 +80,9 @@ const paragraphs = computed(() =>
                     />
                 </template>
             </section>
+            <template v-if="reader.review">
+                <PlanReviewPanel :review="reader.review" :number="reader.card.number" />
+            </template>
             <template v-if="reader.card.phase === undefined">
                 <p class="mt-4 text-small text-text-3">No phases yet</p>
             </template>

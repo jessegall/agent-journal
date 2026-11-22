@@ -116,6 +116,23 @@ final class PlanReviewEdition extends Model implements ReadableModel
     }
 
     /**
+     * The plan's latest edition, whatever its state, if any.
+     */
+    public static function latestOf(string $planId): self|null
+    {
+        return self::query()->where('plan_id', $planId)->orderByDesc('number')->first();
+    }
+
+    /**
+     * The plan's latest approved edition, current or historical, if any.
+     */
+    public static function latestApprovalOf(string $planId): self|null
+    {
+        return self::query()->where('plan_id', $planId)->where('state', PlanReviewState::Approved)
+            ->orderByDesc('number')->first();
+    }
+
+    /**
      * The plan's latest approved edition that still matches the plan, if any.
      */
     public static function currentApprovalOf(string $planId): self|null

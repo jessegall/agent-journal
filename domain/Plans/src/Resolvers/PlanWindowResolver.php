@@ -10,6 +10,7 @@ use Domain\Plans\Data\PlanReaderData;
 use Domain\Plans\Http\Requests\PlanRequest;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanOutline;
+use Domain\Plans\Support\PlanReviewView;
 use Spatie\LaravelData\Optional;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -24,6 +25,7 @@ final readonly class PlanWindowResolver implements PageResolver
         private PlanRequest $request,
         private PlanRecords $records,
         private PlanOutline $outline,
+        private PlanReviewView $review,
     ) {}
 
     public function read(): PlanReaderData
@@ -34,6 +36,7 @@ final readonly class PlanWindowResolver implements PageResolver
         $reader = PlanReaderData::ofSelection(
             PlanSelection::found($card, true, $plan->brief),
             $this->outline->of($plan->id, $card->currentPhase, $this->request->outlinePageAsk()),
+            $this->review->of($plan->id),
         );
 
         return $reader instanceof Optional ? throw new NotFoundHttpException() : $reader;
