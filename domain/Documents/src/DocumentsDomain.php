@@ -80,7 +80,6 @@ use Domain\Documents\Data\RecordReadsData;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Data\RevisionCard;
-use Domain\Documents\Data\RevisionPageData;
 use Domain\Documents\Data\RevisionView;
 use Domain\Documents\Data\SettlementCard;
 use Domain\Documents\Enums\AttentionFilter;
@@ -170,7 +169,6 @@ final class DocumentsDomain extends Domain implements
                 CloseCard::class,
                 RecordInspection::class,
                 SettlementCard::class,
-                RevisionPageData::class,
                 RecordText::class,
                 EditingState::class,
                 DraftState::class,
@@ -332,7 +330,7 @@ final class DocumentsDomain extends Domain implements
                     ActionRoute::post('docs/{document}/recover', RecoverDocumentPageController::class, 'recover-draft'),
                 )
                 ->slots(Slot::record('inspector', 'document', 'doc')),
-            Page::make('revision', 'Revision', Icon::Docs, RevisionWindowResolver::class, 'RevisionWindow.vue')
+            Page::layout('revision', 'Revision', Icon::Docs, RevisionWindowResolver::class)
                 ->at('docs/{document}/revisions/{revision}'),
             Page::layout('report', 'Report', Icon::Docs, ReportWindowResolver::class)
                 ->at('reports/{report}')

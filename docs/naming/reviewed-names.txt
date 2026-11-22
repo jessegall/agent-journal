@@ -4788,7 +4788,6 @@ class	RevisionCard
 class	RevisionFence
 class	RevisionImmutable
 class	RevisionList
-class	RevisionPageData
 class	RevisionPageRequest
 class	RevisionView
 class	RevisionWindowResolver
@@ -18901,7 +18900,6 @@ method	RevisionImmutable::proposal()
 method	RevisionImmutable::reader()
 method	RevisionImmutable::rule()
 method	RevisionList::__construct()
-method	RevisionPageData::__construct()
 method	RevisionPageRequest::documentNumber()
 method	RevisionPageRequest::revisionNumber()
 method	RevisionPageRequest::rules()
@@ -32708,12 +32706,6 @@ property	RevisionCard::$closedAt
 property	RevisionCard::$number
 property	RevisionCard::$title
 property	RevisionList::$revisions
-property	RevisionPageData::$abstract
-property	RevisionPageData::$bodyHtml
-property	RevisionPageData::$documentNumber
-property	RevisionPageData::$historical
-property	RevisionPageData::$number
-property	RevisionPageData::$title
 property	RevisionView::$abstract
 property	RevisionView::$authorId
 property	RevisionView::$authorType
@@ -36285,6 +36277,7 @@ variable	$messageId
 variable	$messageResponse
 variable	$messages
 variable	$meta
+variable	$metadata
 variable	$meter
 variable	$method
 variable	$methods
