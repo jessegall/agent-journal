@@ -3,6 +3,7 @@ import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import GuidedChatDialog from '@/components/creation/GuidedChatDialog.vue';
 import CommandPalette from '@/components/shell/CommandPalette.vue';
+import SearchPalette from '@/components/shell/SearchPalette.vue';
 import KeyboardHelp from '@/components/shell/KeyboardHelp.vue';
 import AppSidebar from '@/components/shell/AppSidebar.vue';
 import AppTopbar from '@/components/shell/AppTopbar.vue';
@@ -41,6 +42,7 @@ const title = computed(() => (typeof page.props.title === 'string' ? page.props.
         <ToastRegion />
         <GuidedChatDialog />
         <CommandPalette />
+        <SearchPalette />
         <KeyboardHelp />
         <div id="overlay-layer" class="contents"></div>
     </div>

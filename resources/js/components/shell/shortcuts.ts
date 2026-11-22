@@ -7,7 +7,7 @@ export const shortcutGroups: { title: string; shortcuts: Shortcut[] }[] = [
     {
         title: 'Anywhere',
         shortcuts: [
-            { keys: ['Ctrl', 'K'], does: 'Open the command palette' },
+            { keys: ['Ctrl', 'K'], does: 'Search records and passages' },
             { keys: ['?'], does: 'Open this help' },
             { keys: ['Esc'], does: 'Close a dialog, menu or list and return to where you were' },
         ],
