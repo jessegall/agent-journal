@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Web\Types;
 
 use App\Reflection\Support\Reflector;
+use App\Ui\Contracts\PresentsLayout;
 use App\Ui\Declarations\RegisteredPage;
 use App\Ui\Enums\PageDestination;
-use App\Ui\Layout\PresentsLayout;
 use App\Ui\Support\UiDeclarations;
 use Illuminate\Support\Str;
 

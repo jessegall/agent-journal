@@ -80,6 +80,18 @@ function retryAccountCleanup(): void {
     });
 }
 
+/**
+ * A click anywhere on the row opens its settings, as the settings button does; a click on a control inside the row,
+ * or inside the open dialog, keeps to that control.
+ */
+function openFromRow(event: MouseEvent): void {
+    if (isStale.value || (event.target instanceof Element && event.target.closest('button, a, input, dialog'))) {
+        return;
+    }
+
+    isOpen.value = true;
+}
+
 const rechecking = useForm({});
 
 /**
@@ -97,7 +109,9 @@ function recheckAccount(): void {
     <li
         :data-account-row="account.id"
         tabindex="-1"
-        class="flex items-center gap-3 border-b border-line py-[11px] pr-3 pl-4 last:border-b-0 hover:bg-hover"
+        class="flex items-center gap-3 border-b border-line py-[11px] pr-3 pl-4 transition-colors duration-150 last:border-b-0 hover:bg-hover"
+        :class="{ 'cursor-pointer': !isStale }"
+        @click="openFromRow"
     >
         <DriverIcon :driver="driverIcon(account.driver)" :size="16" />
         <div class="flex min-w-0 flex-1 flex-col gap-0.5">

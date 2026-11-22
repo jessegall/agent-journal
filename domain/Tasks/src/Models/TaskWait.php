@@ -8,6 +8,7 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Domain\Tasks\Api\Events\TaskWaitChanged;
@@ -41,6 +42,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     // ----------[ Constructors ]----------
@@ -119,12 +121,12 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     /**
      * The given tasks that wait on any task.
      *
-     * @param  list<string>  $dependentIds
+     * @param  list<string>  $ids
      * @return list<string>
      */
-    public static function dependentIdsAmong(array $dependentIds): array
+    public static function dependentIdsAmong(array $ids): array
     {
-        return array_values(array_map(strval(...), self::query()->whereIn('dependent_task_id', $dependentIds)
+        return array_values(array_map(strval(...), self::query()->whereIn('dependent_task_id', $ids)
             ->readAll('the waiting tasks among a page')->distinct()->pluck('dependent_task_id')->all()));
     }
 

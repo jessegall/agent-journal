@@ -31,7 +31,7 @@ final readonly class RecordTaskHistory implements Listener
         $task = Task::query()->whereKey($event->taskId)->sole();
         $actor = $event instanceof TaskStarted ? $event->actor : ActorIdentity::of($this->actors->actor());
 
-        TaskHistoryEntry::append(
+        TaskHistoryEntry::recordChange(
             $event->historyEntryId,
             $task,
             $task->run_number === 0 ? null : TaskRun::ofTask($task, $task->run_number),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Models;
 
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -27,6 +28,7 @@ final class PlanReviewPhase extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     public $timestamps = false;
 

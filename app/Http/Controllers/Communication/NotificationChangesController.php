@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Communication;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
-use App\Communication\Resolvers\NotificationChanges;
+use App\Communication\Resolvers\Support\NotificationChanges;
 use App\Http\Requests\Communication\NotificationChangesRequest;
 use Illuminate\Http\JsonResponse;
 

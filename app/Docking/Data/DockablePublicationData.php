@@ -6,8 +6,8 @@ namespace App\Docking\Data;
 
 use App\Docking\Cards\DockIdentity;
 use App\Docking\Sources\Contracts\DockableWindow;
+use App\Ui\Contracts\PresentsLayout;
 use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\PresentsLayout;
 use PhpOption\Option;
 use PhpOption\Some;
 use Spatie\LaravelData\Data;

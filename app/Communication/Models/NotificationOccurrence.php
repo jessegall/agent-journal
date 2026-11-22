@@ -7,6 +7,7 @@ namespace App\Communication\Models;
 use App\Communication\Data\NotificationTarget;
 use App\Communication\Enums\NotificationSourceType;
 use App\Contracts\Support\InsertsAbsentRows;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -35,6 +36,7 @@ final class NotificationOccurrence extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids;
     use InsertsAbsentRows;
+    use Linkable;
 
     public const ?string UPDATED_AT = null;
 
@@ -94,11 +96,11 @@ final class NotificationOccurrence extends Model implements ReadableModel
      * Occurrences of one target type whose target id the query lists.
      *
      * @param  Builder<self>  $query
-     * @param  Builder<*>  $targetIds
+     * @param  Builder<*>  $ids
      */
     #[Scope]
-    protected function targeting(Builder $query, string $key, Builder $targetIds): void
+    protected function targeting(Builder $query, string $key, Builder $ids): void
     {
-        $query->where('target_key', $key)->whereIn('target_id', $targetIds);
+        $query->where('target_key', $key)->whereIn('target_id', $ids);
     }
 }

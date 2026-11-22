@@ -6,9 +6,10 @@ namespace Domain\Tasks\Models;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
-use App\Reads\Support\ReadOrder;
+use App\Reads\Values\ReadOrder;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Api\TaskTransition;
 use Domain\Tasks\Enums\TaskState;
@@ -53,6 +54,7 @@ final class TaskHistoryEntry extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     public const null UPDATED_AT = null;
 
@@ -77,7 +79,7 @@ final class TaskHistoryEntry extends Model implements ReadableModel
      * Appends the task's change under the id its fact names, after the task's last entry; the caller holds the task's
      * row, so two changes of one task never take the same place.
      */
-    public static function append(
+    public static function recordChange(
         string $id,
         Task $task,
         TaskRun|null $run,

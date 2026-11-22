@@ -23,7 +23,7 @@ final readonly class WaiveTaskWaitHandler implements CommandHandler
      *
      * @throws TaskWaitRefused
      */
-    public function handle(WaiveTaskWait $command, Task $subject): void
+    public function handle(WaiveTaskWait $command): void
     {
         [$dependent] = $this->lock->lock($command->dependentTaskId, $command->prerequisiteTaskId);
 

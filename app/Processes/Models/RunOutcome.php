@@ -6,6 +6,7 @@ namespace App\Processes\Models;
 
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Links\Support\Linkable;
 use App\Processes\Enums\RunLogicalResult;
 use App\Processes\Enums\RunResultSource;
 use App\Processes\Events\RunOutcomeRecorded;
@@ -37,6 +38,7 @@ final class RunOutcome extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     // ----------[ Constructors ]----------

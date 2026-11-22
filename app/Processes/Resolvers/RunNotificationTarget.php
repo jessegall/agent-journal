@@ -30,11 +30,11 @@ final readonly class RunNotificationTarget implements NotificationTargetResolver
     /**
      * A page holds few of these, so each is read on its own.
      */
-    public function linksFor(array $targetIds): array
+    public function linksFor(array $ids): array
     {
         $links = [];
 
-        foreach ($targetIds as $targetId) {
+        foreach ($ids as $targetId) {
             $this->linkFor($targetId)->forAll(function (NotificationLink $link) use (&$links, $targetId): void {
                 $links[$targetId] = $link;
             });

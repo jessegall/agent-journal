@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import StateBadge from '@/components/kit/StateBadge.vue';
 import SwitchCase from '@/components/kit/SwitchCase.vue';
 import type { LayoutPartData } from '@/generated/types/core';
+import { dateTime } from '@/kit/format';
 
 // A line of text of a declared layout, drawn by its style.
 const props = defineProps<{ part: LayoutPartData }>();
@@ -30,6 +31,14 @@ const badgeTone = computed(() => (props.part.tone ?? 'quiet') as BadgeTone);
         </template>
         <template #code>
             <code class="font-mono text-field">{{ part.text }}</code>
+        </template>
+        <template #time>
+            <span data-layout-text="time" class="text-text-3"
+                >{{ part.text }}
+                <time :datetime="part.detail ?? ''">{{
+                    dateTime(part.detail ?? '')
+                }}</time></span
+            >
         </template>
         <template #muted>
             <span data-layout-text="muted" class="text-text-3">{{

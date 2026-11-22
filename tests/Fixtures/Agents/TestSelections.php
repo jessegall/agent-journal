@@ -26,7 +26,7 @@ final class TestSelections
 
     public static function requestId(): string
     {
-        return (string) Str::ulid();
+        return strtolower((string) Str::ulid());
     }
 
     /**

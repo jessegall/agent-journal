@@ -24,6 +24,7 @@ use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -31,7 +32,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
@@ -62,11 +62,11 @@ use PhpOption\Option;
  * @property string $payload_digest
  * @property StartDisposition $disposition
  * @property string|null $refusal_reason
- * @property Carbon|null $refused_at
+ * @property CarbonImmutable|null $refused_at
  * @property string|null $session_id
  * @property string|null $reply_inbox_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  */
 #[Fillable([
     'request_id',
@@ -298,7 +298,7 @@ final class StartRecord extends Model implements ReadableModel
     ): void {
         $this->disposition = StartDisposition::Refused;
         $this->refusal_reason = $reason->value;
-        $this->refused_at = Carbon::now();
+        $this->refused_at = CarbonImmutable::now();
         $this->save();
     }
 

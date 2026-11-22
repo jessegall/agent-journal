@@ -154,13 +154,13 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
      * The id of each of these sessions' latest supervised start, by session; a session the journal does not supervise
      * is not in it. A host's claim binds its report to it.
      *
-     * @param  list<string>  $sessionIds
+     * @param  list<string>  $ids
      * @return array<string, string>
      */
-    public static function latestIdsOfSessions(array $sessionIds): array
+    public static function latestIdsOfSessions(array $ids): array
     {
         return self::supervised()
-            ->whereIn('session_id', $sessionIds)
+            ->whereIn('session_id', $ids)
             ->whereNotExists(fn (QueryBuilder $newer) => $newer->from('process_starts', 'newer')
                 ->whereColumn('newer.session_id', 'process_starts.session_id')
                 ->where(fn (QueryBuilder $later) => $later
@@ -168,7 +168,7 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
                     ->orWhere(fn (QueryBuilder $sameTime) => $sameTime
                         ->whereColumn('newer.created_at', 'process_starts.created_at')
                         ->whereColumn('newer.id', '>', 'process_starts.id'))))
-            ->readExactly(count($sessionIds))
+            ->readExactly(count($ids))
             ->pluck('id', 'session_id')
             ->all();
     }

@@ -83,15 +83,15 @@ final class StartReceiptReadTest extends TestCase
             ->assertJsonPath('sessionId', $session->id);
     }
 
-    public function test_another_users_key_answers_unavailable(): void
+    public function test_a_user_the_journal_does_not_admit_is_refused_before_any_key_is_read(): void
     {
         $request = $this->request();
         StartRecord::accept($request, $this->ownerIdentity(), None::create());
         $member = User::factory()->create();
 
         $this->actingAs($member)->getJson(route('profiles.start-receipt', $request->requestId))
-            ->assertNotFound()
-            ->assertExactJson(['message' => 'This item is unavailable.']);
+            ->assertForbidden()
+            ->assertDontSee($request->requestId);
     }
 
     private function ownerIdentity(): ActorIdentity

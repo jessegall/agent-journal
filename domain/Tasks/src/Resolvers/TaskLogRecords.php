@@ -48,7 +48,7 @@ final readonly class TaskLogRecords implements TaskLogResolver
         return new TaskLogPage(
             array_values($lines->map(fn (TaskLogEntry $entry) => $entry->line)->all()),
             null,
-            $lines->last()?->sequence ?? $sequence,
+            $lines->isEmpty() ? $sequence : $lines->last()->sequence,
         );
     }
 

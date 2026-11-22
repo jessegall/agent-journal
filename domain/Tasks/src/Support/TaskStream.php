@@ -124,6 +124,8 @@ final readonly class TaskStream
 
         $parts = array_pad(explode(',', $before, 2), 2, 'n');
 
-        return array_map(fn (string $part) => $part === 'n' ? null : max(0, (int) $part), $parts);
+        [$first, $second] = array_map(fn (string $part) => $part === 'n' ? null : max(0, (int) $part), $parts);
+
+        return [$first, $second];
     }
 }

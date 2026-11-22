@@ -11,9 +11,9 @@ use App\Bus\Contracts\CommandBus;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Documents\Commands\CreateDocument;
+use Domain\Documents\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
-use Tests\TestCase;
 
 /**
  * A numbered revision of a document is reached by its own address and shown as a publication: which revision of
@@ -60,7 +60,9 @@ final class RevisionPageTest extends TestCase
                 ->component('layout/DeclaredLayout')
                 ->where('page.data.root.children.0.children.0.text', 'Design')
                 ->where('page.data.root.children.0.children.1.children.0.text', 'doc 1, revision 1')
-                ->missing('page.data.root.children.0.children.1.children.1')
+                ->where('page.data.root.children.0.children.1.children.1.style', 'time')
+                ->where('page.data.root.children.0.children.1.children.1.text', 'Saved')
+                ->missing('page.data.root.children.0.children.1.children.2')
                 ->where('page.data.root.children.0.children.2.text', 'What we build')
                 ->where('page.data.root.children.1.tag', 'body'));
     }

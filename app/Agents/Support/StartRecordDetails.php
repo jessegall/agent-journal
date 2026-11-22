@@ -9,7 +9,7 @@ use App\Agents\Enums\DriverSourceType;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StartOriginType;
-use Illuminate\Support\Carbon;
+use Carbon\CarbonImmutable;
 
 /**
  * One start request as its readers see it: the agent, the selection, its origin and where it stands; a refused one
@@ -31,6 +31,6 @@ final readonly class StartRecordDetails
         public StartDisposition $disposition,
         public string|null $sessionId,
         public string|null $refusalReason,
-        public Carbon|null $refusedAt,
+        public CarbonImmutable|null $refusedAt,
     ) {}
 }

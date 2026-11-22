@@ -41,7 +41,7 @@ enum StatusActionType: string
             self::SignIn => 'Sign in',
             self::Dismiss => 'Dismiss',
             self::CancelStart => 'Cancel start',
-            self::RecheckSwitch => 'Check and continue switch',
+            self::RecheckSwitch => 'Check and switch',
             self::OpenTerminal => 'Open the program',
             self::Stop => 'Stop session',
             self::Interrupt => 'Interrupt',

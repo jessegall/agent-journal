@@ -257,6 +257,28 @@ describe('an account row', () => {
 });
 
 describe('the settings dialog', () => {
+    it('opens from a click anywhere on the row, but not from a button inside it', async () => {
+        const shown = row({
+            account: account({
+                isHeldForCheck: true,
+                isCheckInconclusive: true,
+            }),
+        });
+
+        await button(shown, 'Recheck')?.trigger('click');
+        await flushPromises();
+        expect(shown.find('dialog').attributes('open')).toBeUndefined();
+
+        await shown.find('[data-account-row]').trigger('click');
+        await flushPromises();
+        expect(shown.find('dialog').attributes('open')).toBeDefined();
+
+        await shown.find('dialog h3').trigger('click');
+        await flushPromises();
+        expect(shown.find('dialog').attributes('open')).toBeDefined();
+        shown.unmount();
+    });
+
     it('shows the facts the row leaves out', async () => {
         const shown = row({
             account: account({

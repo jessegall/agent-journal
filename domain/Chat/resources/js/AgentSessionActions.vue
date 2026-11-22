@@ -22,7 +22,7 @@ import StopConfirmation from './StopConfirmation.vue';
 
 /**
  * What the chosen agent's status offers now, from the server's projection: each action maps to its route or dialog.
- * Start and Resume open the session form, Switch its switch form; Retry and Check and continue switch follow the
+ * Start and Resume open the session form, Switch its switch form; Retry and Check and switch follow the
  * switch; Check status reads the agent again; Check capacity reads the host's room without reserving; Sign in opens
  * Accounts; Dismiss hides the launch outcome for this viewer; Cancel start cancels the launch.
  */

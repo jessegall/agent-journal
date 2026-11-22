@@ -126,7 +126,7 @@ function quiet(event: Event): void {
                     </div>
                 </template>
                 <button type="button" class="self-end text-small text-text-3 underline" @click="quiet">
-                    Quiet toasts this session
+                    Hide pop-ups for now
                 </button>
             </section>
         </template>

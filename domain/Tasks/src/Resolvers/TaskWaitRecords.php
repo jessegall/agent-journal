@@ -33,10 +33,10 @@ final readonly class TaskWaitRecords implements TaskWaitResolver
         $this->visibility->requireVisible($taskId);
         $waits = TaskWait::waitsOf($taskId, self::MOST_WAITS_SHOWN);
         $holds = TaskWait::holdersOf($taskId, self::MOST_WAITS_SHOWN);
-        $others = self::tasksOf([
+        $others = self::tasksOf(array_values([
             ...array_map(strval(...), $waits->pluck('prerequisite_task_id')->all()),
             ...array_map(strval(...), $holds->pluck('dependent_task_id')->all()),
-        ]);
+        ]));
         $self = Task::ofId($taskId);
 
         return new TaskWaits(
@@ -55,17 +55,17 @@ final readonly class TaskWaitRecords implements TaskWaitResolver
         );
     }
 
-    public function withWaitsAmong(array $taskIds): array
+    public function withWaitsAmong(array $ids): array
     {
         $this->actors->actor();
 
-        return TaskWait::dependentIdsAmong($taskIds);
+        return TaskWait::dependentIdsAmong($ids);
     }
 
-    public function readyAmong(array $taskIds): array
+    public function readyAmong(array $ids): array
     {
         $this->actors->actor();
-        $waits = TaskWait::waitsOfTasks($taskIds);
+        $waits = TaskWait::waitsOfTasks($ids);
         $prerequisites = self::tasksOf(
             array_values(array_map(strval(...), $waits->pluck('prerequisite_task_id')->all())),
         );
@@ -77,7 +77,7 @@ final readonly class TaskWaitRecords implements TaskWaitResolver
             }
         }
 
-        return array_values(array_filter($taskIds, fn (string $id) => ! isset($blocked[$id])));
+        return array_values(array_filter($ids, fn (string $id) => ! isset($blocked[$id])));
     }
 
     /**

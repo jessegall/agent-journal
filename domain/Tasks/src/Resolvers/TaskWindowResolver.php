@@ -65,6 +65,7 @@ final readonly class TaskWindowResolver implements PageResolver
     {
         try {
             $taskId = $this->request->taskId();
+
             return TaskReaderData::fromDetails(
                 $this->details->details($taskId, ReadView::Context),
                 $this->actionsOf($taskId),

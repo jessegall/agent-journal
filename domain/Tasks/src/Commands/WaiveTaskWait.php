@@ -6,7 +6,6 @@ namespace Domain\Tasks\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\RequiresRequestKey;
-use App\Bus\Contracts\RecordCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 use Domain\Tasks\Models\Task;
@@ -21,7 +20,7 @@ use Spatie\LaravelData\Attributes\Validation\Min;
  */
 #[Authorize(TaskPolicy::class, AccessType::Admin)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
-final readonly class WaiveTaskWait extends Command implements RecordCommand
+final readonly class WaiveTaskWait extends Command
 {
     public function __construct(
         public string $dependentTaskId,
@@ -31,8 +30,4 @@ final readonly class WaiveTaskWait extends Command implements RecordCommand
         public string $reason,
     ) {}
 
-    public function subject(): Task
-    {
-        return Task::ofId($this->dependentTaskId);
-    }
 }

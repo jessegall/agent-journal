@@ -9,6 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Communication\Events\NotificationsChanged;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -43,6 +44,7 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     // ----------[ Constructors ]----------

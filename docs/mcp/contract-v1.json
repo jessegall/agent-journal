@@ -2576,6 +2576,43 @@
                 "outputSchema": null,
                 "title": "Cancel Task Tool"
             },
+            "tasks_check": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "operation": {
+                            "maxLength": 200,
+                            "type": "string"
+                        },
+                        "process_run_id": {
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "run_number": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "task_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "task_id",
+                        "run_number",
+                        "process_run_id",
+                        "operation",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_check",
+                "outputSchema": null,
+                "title": "Run Task Check Tool"
+            },
             "tasks_create": {
                 "inputSchema": {
                     "additionalProperties": false,
@@ -2712,6 +2749,39 @@
                 "name": "tasks_list",
                 "outputSchema": null,
                 "title": "Tasks List Tool"
+            },
+            "tasks_log": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "run_number": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "task_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "text": {
+                            "maxLength": 8000,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "task_id",
+                        "run_number",
+                        "text",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_log",
+                "outputSchema": null,
+                "title": "Log Task Tool"
             },
             "tasks_read": {
                 "inputSchema": {

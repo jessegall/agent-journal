@@ -179,6 +179,38 @@ body.dk .win.float{box-shadow:0 14px 36px rgba(0,0,0,.55),0 1px 3px rgba(0,0,0,.
 .tr .cv.open{transform:rotate(90deg)}
 .tr .sp{width:12px;flex:none}
 .tr .lb{overflow:hidden;text-overflow:ellipsis}
+/* Project's view switch is flat like the tabs. */
+.pseg{display:flex;padding:0 8px;border-bottom:1px solid var(--line);height:30px;align-items:stretch}
+.pseg button{font:inherit;font-size:12px;border:0;background:transparent;color:var(--text-3);padding:0 8px;cursor:pointer}
+.pseg button[aria-pressed=true]{color:var(--text);font-weight:500;box-shadow:inset 0 -2px 0 var(--plum)}
+.pseg button:focus-visible{outline:2px solid var(--ring);outline-offset:-2px}
+/* Code: monochrome highlighting by weight and shade, as the house style tells things apart. */
+.code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:12px;line-height:20px;padding:8px 0 8px;color:var(--text-2);min-width:max-content}
+.lnr{display:flex;position:relative;min-height:20px}
+.lnr.sel{background:color-mix(in srgb,var(--ring) 11%,transparent)}
+.gut{width:48px;flex:none;text-align:right;padding-right:14px;color:var(--text-4);user-select:none;cursor:pointer;position:relative;touch-action:none}
+.gut:hover{color:var(--text-2)}
+.lnr.sel .gut{color:var(--text)}
+.gut.has::before{content:"";position:absolute;left:10px;top:7px;width:6px;height:6px;border-radius:50%;background:var(--plum)}
+.src{white-space:pre;padding-right:140px}
+.code .k,.code .tg{color:var(--text);font-weight:600}.code .ty{color:var(--text)}.code .s,.code .nu{color:var(--text-3)}.code .cm{color:var(--text-3);font-style:italic}
+.cbtn{position:absolute;right:16px;top:-2px;z-index:3;font-family:-apple-system,'Segoe UI',system-ui,sans-serif}
+.cbar,.cthread,.codefoot{font-family:-apple-system,'Segoe UI',system-ui,sans-serif;font-size:12.5px;line-height:1.45;white-space:normal}
+.cbar,.cthread{margin:6px 16px 10px 48px;max-width:640px}
+.cbar{border:1px solid var(--border-3);border-radius:10px;background:var(--raised);padding:8px 10px}
+.cbar textarea{display:block;width:100%;min-height:54px;border:0;outline:0;resize:vertical;background:transparent;color:var(--text);font:inherit;margin:6px 0}
+.cbar textarea::placeholder{color:var(--text-4)}
+.cbh{color:var(--text-3);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cbf{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cbf small{color:var(--text-3);font-size:11.5px}
+.cthread{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--bg)}
+.cth{display:flex;align-items:center;gap:8px;color:var(--text-3);font-size:11.5px}
+.ctq{margin:4px 0;color:var(--text)}
+.crep{margin:4px 0 0;padding-top:4px;border-top:1px solid var(--line);color:var(--text-2)}
+.crep b{color:var(--text);font-weight:500}
+.cta{display:flex;gap:6px;margin-top:6px}
+.codefoot{font-size:11.5px;color:var(--text-4);padding:10px 16px 24px 48px}
+.codeq{font-size:11.5px;color:var(--text-3);display:flex;align-items:center;gap:5px;margin-bottom:2px}
 .act{font-size:12px;padding:4px 0}
 .act div{display:flex;gap:10px;padding:3px 12px;color:var(--text-2)}
 .act time{color:var(--text-4);font-variant-numeric:tabular-nums;width:38px;flex:none}
@@ -268,7 +300,7 @@ body.dk .qm,body.dk .ctx,body.dk .hm,body.dk .keys{box-shadow:0 18px 50px rgba(0
 </div></div>
 
 <div class="wrap">
-  <p class="lead">One Home with two ends. On day one it is a plain chat anyone understands at first sight; step by step it grows, if the user wants, into something like an IDE: a Project tree, an editor with tabs, an Activity panel, a status bar with shortcuts and notifications. Every step is the same mechanism. Press <kbd>Space</kbd> (or <kbd>⌘K</kbd>) to add a window. Drag it to a side, corner or the top edge to snap it flush, or drag it away to float it again. Double-click a bar to fill or restore it, and right-click anything for its menu. Fold the sidebar (<kbd>⌘B</kbd>) or hide the agent bar (<kbd>⌘⇧B</kbd>) for room, and press <kbd>?</kbd> for every shortcut. Round 2 builds on A, the floating desk; B, C and D stay to compare.</p>
+  <p class="lead">One Home with two ends. On day one it is a plain chat anyone understands at first sight; step by step it grows, if the user wants, into something like an IDE: a Project tree, an editor with tabs, an Activity panel, a status bar with shortcuts and notifications. Every step is the same mechanism. Press <kbd>Space</kbd> (or <kbd>⌘K</kbd>) to add a window. Drag it to a side, corner or the top edge to snap it flush, or drag it away to float it again. Double-click a bar to fill or restore it, and right-click anything for its menu. Fold the sidebar (<kbd>⌘B</kbd>) or hide the agent bar (<kbd>⌘⇧B</kbd>) for room, and press <kbd>?</kbd> for every shortcut. The chat is always one of two things: the plain centred conversation with no frame, or a proper window with its own bar. Tabs are flat, with a line under the active one. In step 6, open a file from Project, select lines and press Comment to talk to any agent about that code. Rounds 2 and 3 build on A, the floating desk; B, C and D stay to compare.</p>
   <div class="vhead"><h2 id="vName"></h2><p id="vLine"></p></div>
   <p class="sline" id="sLine"></p>
   <div class="stage"><div class="app" id="app">
@@ -278,6 +310,122 @@ body.dk .qm,body.dk .ctx,body.dk .hm,body.dk .keys{box-shadow:0 18px 50px rgba(0
   </div></div>
   <div class="notes" id="notes"></div>
 </div>
+
+<!-- The first lines of real project files, for the code browser in step 6 (copied from this worktree). -->
+<textarea hidden class="srcfile" data-path="resources/js/components/panes/arrangement.ts" data-lang="ts">
+import {
+    addPaneAtRight,
+    closeWindow,
+    defaultLayout,
+    moveWindow,
+    originalKeyOf,
+    pane,
+    panesIn,
+    splitPane,
+    windowsIn,
+} from './paneLayout';
+import type { DropZone, LayoutNode } from './paneLayout';
+
+/**
+ * Everything Home shows: the pane grid and the windows detached from it, floating over it in the order they are
+ * stacked, the last on top. Version 5 keeps both in one layout (windows/layoutStore.js); a saved layout is this shape.
+ * Every function returns a new arrangement and leaves the one it was given unchanged.
+ */
+export type DetachedWindow = {
+    key: string;
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    isMinimised: boolean;
+};
+
+export type Arrangement = {
+    grid: LayoutNode;
+    detached: DetachedWindow[];
+};
+
+export type Screen = { width: number; height: number };
+
+/** Version 5's sizes of a detached window (composables/detached.js). */
+export const DETACHED_SIZE = { width: 480, height: 360 };
+export const SMALLEST_DETACHED = { width: 260, height: 180 };
+export const DETACHED_START = 80;
+</textarea>
+<textarea hidden class="srcfile" data-path="resources/js/components/panes/paneLayout.ts" data-lang="ts">
+import type { IconName } from '@/components/kit/Icon.vue';
+
+/**
+ * Home lays out windows in a tree. Leaves are panes that hold windows as tabs. Each split divides the available
+ * space between its two children at a ratio.
+ */
+export type Pane = {
+    type: 'pane';
+    id: string;
+    windows: string[];
+    active: string | null;
+    limitWidth: boolean;
+};
+
+export type Split = {
+    type: 'split';
+    id: string;
+    axis: 'row' | 'column';
+    ratio: number;
+    first: LayoutNode;
+    second: LayoutNode;
+};
+
+export type LayoutNode = Pane | Split;
+
+/** Whether the node is the pane with that id. */
+function isPane(node: LayoutNode, paneId: string): node is Pane {
+    return node.type === 'pane' &amp;&amp; node.id === paneId;
+}
+
+/** Whether the node is the split with that id. */
+function isSplit(node: LayoutNode, splitId: string): node is Split {
+    return node.type === 'split' &amp;&amp; node.id === splitId;
+}
+</textarea>
+<textarea hidden class="srcfile" data-path="resources/js/components/panes/PaneAddBar.vue" data-lang="vue">
+&lt;script setup lang="ts">
+import Icon from '@/components/kit/Icon.vue';
+import type { PaneWindow } from './paneLayout';
+
+/**
+ * Version 5's add bar (windows/PaneAddBar.vue): under the tab strip, every window not open yet as a small button;
+ * a click adds it to this pane, a drag places it.
+ */
+defineProps&lt;{ windows: PaneWindow[] }>();
+
+const emit = defineEmits&lt;{ grab: [event: PointerEvent, key: string] }>();
+&lt;/script>
+
+&lt;template>
+    &lt;div
+        role="menu"
+        class="absolute top-[34px] right-[5px] left-[5px] z-6 flex flex-wrap gap-1 rounded-field border border-border-2 bg-raised p-1.5 shadow-[0_8px_24px_rgba(0,0,0,.4)]"
+    >
+        &lt;template v-for="window in windows" :key="window.key">
+            &lt;button
+                type="button"
+                role="menuitem"
+                :title="window.title"
+                class="inline-flex h-6 items-center gap-1.5 rounded-control border border-border-2 px-2 text-small text-text-2 hover:bg-hover hover:text-text"
+                @pointerdown="emit('grab', $event, window.key)"
+            >
+                &lt;Icon :name="window.icon" :size="12" />{{ window.title }}
+            &lt;/button>
+        &lt;/template>
+        &lt;template v-if="!windows.length">
+            &lt;span class="px-1.5 py-1 text-small text-text-3"
+                >Every window is open&lt;/span
+            >
+        &lt;/template>
+    &lt;/div>
+&lt;/template>
+</textarea>
 
 <script>
 /* ---------- Stone mono tokens (doc 100) ---------- */
@@ -320,7 +468,7 @@ const PEOPLE=()=>[...(helpersOn?[['helper:262','Helper 262','Designing the notif
 const row=(ref,inner)=>`<div class="lrow" data-item="${ref}">${inner}</div>`;
 const BODY={
   tasks:()=>TASKS.map(([n,t,s])=>row('task:'+n,`<span class="num">${n}</span><span class="t ${s==='done'?'dim':''}">${t}</span>${ST[s]}`)).join(''),
-  asks:()=>`<div style="padding:10px"><div class="rowcard you">${I('ask')}<div class="t">Which save behaviour for the name?<small>Question · Agent 1 · 13:44</small></div><button class="btn sm primary">Answer</button></div></div><div style="padding:0 12px 10px;color:var(--text-3);font-size:12px">Nothing else waits on you.</div>`,
+  asks:()=>`<div style="padding:10px"><div class="rowcard">${I('ask')}<div class="t">Which save behaviour for the name?<small>Question · Agent 1 · 13:44</small></div><button class="btn sm primary">Answer</button></div></div><div style="padding:0 12px 10px;color:var(--text-3);font-size:12px">Nothing else waits on you.</div>`,
   plans:()=>PLANS.map(([n,t,p,ph])=>`<div class="plan" data-item="plan:${n}"><div class="ph"><span style="color:var(--text-4);font-size:11.5px">Plan ${n}</span><b>${t}</b><span style="font-size:11.5px;color:var(--text-3)">${p}%</span></div><div style="padding:0 12px 6px"><div class="meter"><i style="width:${p}%"></i></div></div>${ph.map(([a,s])=>`<div class="phase"><span class="t">${a}</span>${ST[s]}</div>`).join('')}</div>`).join(''),
   docs:()=>DOCS.map(([n,t,m])=>row('doc:'+n,`<span class="num">${n}</span><span class="t">${t}</span><span style="color:var(--text-4);font-size:11.5px">${m}</span>`)).join(''),
   helpers:()=>PEOPLE().map(([ref,n,t,s])=>row(ref,`<span class="t">${n}<span style="color:var(--text-3)"> · ${t}</span></span>${ST[s]}`)).join('')+`<div style="padding:8px 12px;color:var(--text-4);font-size:11.5px">Right-click a row to chat with it.</div>`,
@@ -362,7 +510,8 @@ function chatHtml(conv){const c=CONV[conv];return c.msgs.map(m=>m[0]==='day'?`<d
   :m[0]==='ag'?`<div class="ag"><div class="m">${conv==='main'?CLAUDE('s14'):I('users','s14')}${c.name} · ${m[1]}</div>${m[2]}</div>`
   :m[0]==='sugg'?suggHtml(m[1])
   :m[1]==='task'?`<div class="rowcard" data-item="task:1702">${I('todos')}<div class="t">Account settings dialog: Save inside the name field<small>Task 1702 · Worker 3 · 2 of 5 steps</small></div>${ST.work}</div>`
-  :`<div class="rowcard you">${I('ask')}<div class="t">Which save behaviour for the name?<small>Question · asked 13:44</small></div><span class="chip plum">Waits on you</span><button class="btn sm primary">Answer</button></div>`).join('')}
+  :m[0]==='code'?codeCardHtml(m[1])
+  :`<div class="rowcard">${I('ask')}<div class="t">Which save behaviour for the name?<small>Question · asked 13:44</small></div><button class="btn sm primary">Answer</button></div>`).join('')}
 /* The journal's own suggestion, not the agent's words: dashed, marked J, one button, dismissable. */
 function suggHtml(conv){const s=SUGG[conv]||'offered',n=CONV[conv].name;
   if(s==='accepted')return `<div class="sugg"><span class="jm" title="From the journal">J</span><div class="t">${n} has its own window<small>Close it any time; its chat keeps every message.</small></div><button class="btn sm" data-sugg="show:${conv}">Show it</button></div>`;

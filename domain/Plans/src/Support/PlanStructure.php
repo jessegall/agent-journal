@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
+use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Exceptions\PhaseRevisionChanged;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
-use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
 use Domain\Tasks\Contracts\TaskProgressCounter;

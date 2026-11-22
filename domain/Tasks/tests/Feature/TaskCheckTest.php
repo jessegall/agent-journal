@@ -120,7 +120,8 @@ final class TaskCheckTest extends TestCase
      */
     private function callersAre(array $callers): void
     {
-        $this->app->instance(ProcessRunCallers::class, new readonly class ($callers) implements ProcessRunCallers {
+        $this->app->instance(ProcessRunCallers::class, new readonly class($callers) implements ProcessRunCallers
+        {
             /**
              * @param  array<string, ActorIdentity>  $callers
              */
@@ -138,7 +139,8 @@ final class TaskCheckTest extends TestCase
      */
     private function receiptsAre(array $receipts): void
     {
-        $this->app->instance(ResultReceipts::class, new readonly class ($receipts) implements ResultReceipts {
+        $this->app->instance(ResultReceipts::class, new readonly class($receipts) implements ResultReceipts
+        {
             /**
              * @param  array<string, PublishedResult>  $receipts
              */
@@ -149,7 +151,7 @@ final class TaskCheckTest extends TestCase
                 return isset($this->receipts[$receiptId]) ? Some::create($this->receipts[$receiptId]) : None::create();
             }
 
-            public function forPart(string $partRunId): Option
+            public function forPart(string $runId): Option
             {
                 return None::create();
             }

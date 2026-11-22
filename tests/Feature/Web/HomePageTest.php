@@ -126,8 +126,9 @@ final class HomePageTest extends TestCase
                 ->where('window_plans_list.data.filters.q', 'release')
                 ->where('window_rules_list.data.root.children.0.children.1.field.value', 'phase')
                 ->where('window_rules_list.data.root.children.0.children.0.text', 'Rules (1)')
+                ->where('window_rules_list.data.root.children.1.children.0.children.0.text', 'No rules awaiting review')
                 ->where(
-                    'window_rules_list.data.root.children.1.children.0.children.0.rows.0.label',
+                    'window_rules_list.data.root.children.1.children.0.children.1.rows.0.label',
                     'Every phase ends with its tests.',
                 )));
     }

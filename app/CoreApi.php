@@ -871,8 +871,8 @@ use App\Processes\Commands\WithdrawCommandRequest;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\CommandRuleProvider;
 use App\Processes\Contracts\FactOrigin;
-use App\Processes\Contracts\ProgramClassifier;
 use App\Processes\Contracts\ProcessRunCallers;
+use App\Processes\Contracts\ProgramClassifier;
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Contracts\ServedEnvironment;
 use App\Processes\Contracts\ShellCommandParser;
@@ -908,6 +908,7 @@ use App\Processes\Enums\SummaryRule;
 use App\Processes\Enums\ToolType;
 use App\Processes\Enums\UnresolvedType;
 use App\Processes\Enums\WordSegmentType;
+use App\Processes\Events\RunChanged;
 use App\Processes\Exceptions\CommandRuleConflict;
 use App\Processes\Exceptions\CommandRuleInvalid;
 use App\Processes\Exceptions\ShellNodeMissing;
@@ -1299,6 +1300,7 @@ use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageOption;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\PageResolver;
+use App\Ui\Contracts\PresentsLayout;
 use App\Ui\Contracts\SectionProvider;
 use App\Ui\Contracts\SectionResolver;
 use App\Ui\Contracts\SlotSections;
@@ -1331,7 +1333,6 @@ use App\Ui\Layout\LayoutNativeData;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
 use App\Ui\Layout\LayoutTabData;
-use App\Ui\Layout\PresentsLayout;
 use App\Ui\Layout\PublicationPage;
 use App\Ui\Layout\PublicationTab;
 use App\Web\Commands\RecordUserHeartbeat;
@@ -1386,6 +1387,7 @@ final class CoreApi
                 DriverFailed::class,
                 AccountUseChanged::class,
                 AccountsChanged::class,
+                RunChanged::class,
                 EngineTicked::class,
                 SettingsChanged::class,
                 ShareRequested::class,

@@ -6,6 +6,7 @@ namespace Domain\Helpers\Models;
 
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -35,6 +36,7 @@ final class ReportJobLink extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     public const ?string UPDATED_AT = null;

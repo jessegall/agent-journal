@@ -32,11 +32,11 @@ final readonly class QuestionNotificationTarget implements NotificationTargetRes
         return "question:{$messageId}";
     }
 
-    public function linksFor(array $targetIds): array
+    public function linksFor(array $ids): array
     {
         $links = [];
 
-        foreach (Message::query()->whereKey($targetIds)->readExactly(count($targetIds))->get() as $message) {
+        foreach (Message::query()->whereKey($ids)->readExactly(count($ids))->get() as $message) {
             $links[$message->id] = new NotificationLink(
                 $message->firstLine(),
                 $this->pages->addressOf(self::CHAT_PAGE, ['question' => $message->id]),

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Models;
 
 use App\Contracts\Support\InsertsAbsentRows;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -37,6 +38,7 @@ final class NotificationReceipt extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids;
     use InsertsAbsentRows;
+    use Linkable;
 
     public const ?string UPDATED_AT = null;
 
@@ -97,13 +99,13 @@ final class NotificationReceipt extends Model implements ReadableModel
     /**
      * The scope's visible receipts of one target type whose target id the query lists, at most the given number.
      *
-     * @param  Builder<*>  $targetIds
+     * @param  Builder<*>  $ids
      * @return list<self>
      */
     public static function visibleWithTargetIn(
         string $scopeId,
         string $targetKey,
-        Builder $targetIds,
+        Builder $ids,
         int $limit,
     ): array {
         return array_values(self::query()
@@ -111,7 +113,7 @@ final class NotificationReceipt extends Model implements ReadableModel
             ->whereNull('hidden_at')
             ->whereIn(
                 'occurrence_id',
-                NotificationOccurrence::query()->targeting($targetKey, $targetIds)->select('id'),
+                NotificationOccurrence::query()->targeting($targetKey, $ids)->select('id'),
             )
             ->readUpTo($limit)
             ->get()

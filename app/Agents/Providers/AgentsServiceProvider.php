@@ -313,7 +313,7 @@ final class AgentsServiceProvider extends ServiceProvider
 
         $policies->register('Core', new PolicyDefinition(
             AgentPolicy::class,
-            [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete],
+            [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete, AccessType::Admin],
         ));
 
         $policies->register('Core', new PolicyDefinition(

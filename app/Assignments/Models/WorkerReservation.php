@@ -6,6 +6,7 @@ namespace App\Assignments\Models;
 
 use App\Assignments\Exceptions\WorkerAlreadyAssigned;
 use App\Assignments\Support\AssigneeIdentity;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
@@ -32,6 +33,7 @@ final class WorkerReservation extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 

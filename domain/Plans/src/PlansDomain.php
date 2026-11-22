@@ -49,10 +49,10 @@ use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Api\PhaseDetails;
 use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanDetails;
+use Domain\Plans\Api\PlanEditionChanges;
 use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Api\PlanList;
 use Domain\Plans\Api\PlanPhaseTasks;
-use Domain\Plans\Api\PlanEditionChanges;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Api\PlanSelection;
 use Domain\Plans\Assignments\PlanTaskPoolFactory;
@@ -72,8 +72,8 @@ use Domain\Plans\Http\Controllers\ApprovePlanReviewPageController;
 use Domain\Plans\Http\Controllers\AssignPlanWorkPageController;
 use Domain\Plans\Http\Controllers\CancelPlanPageController;
 use Domain\Plans\Http\Controllers\FinishPlanPageController;
-use Domain\Plans\Http\Controllers\RequestPlanChangesPageController;
 use Domain\Plans\Http\Controllers\ReassignPlanWorkPageController;
+use Domain\Plans\Http\Controllers\RequestPlanChangesPageController;
 use Domain\Plans\Http\Controllers\RequestPlanReviewPageController;
 use Domain\Plans\Http\Controllers\StartPlanController;
 use Domain\Plans\Http\Controllers\WithdrawPlanReviewPageController;
@@ -248,10 +248,10 @@ final class PlansDomain extends Domain implements
                 ->at('{plan}')
                 ->inInspector()
                 ->actions(
-                    ActionRoute::post('{plan}/cancel', CancelPlanPageController::class, 'cancel'),
+                    ActionRoute::post('{plan}/cancel', CancelPlanPageController::class, 'cancel-plan'),
                     ActionRoute::post('{plan}/work', AssignPlanWorkPageController::class, 'assign-work'),
                     ActionRoute::post('{plan}/work/reassign', ReassignPlanWorkPageController::class, 'reassign-work'),
-                    ActionRoute::post('{plan}/finish', FinishPlanPageController::class, 'finish'),
+                    ActionRoute::post('{plan}/finish', FinishPlanPageController::class, 'finish-plan'),
                     ActionRoute::post('{plan}/review', RequestPlanReviewPageController::class, 'request-review'),
                     ActionRoute::post(
                         '{plan}/review/withdraw',

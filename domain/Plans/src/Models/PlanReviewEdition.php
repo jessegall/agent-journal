@@ -6,6 +6,7 @@ namespace Domain\Plans\Models;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Domain\Plans\Enums\PlanReviewState;
@@ -56,6 +57,7 @@ final class PlanReviewEdition extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 

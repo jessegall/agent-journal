@@ -61,6 +61,14 @@ final class LayoutPartData extends Data
     }
 
     /**
+     * A label and the moment it names, such as Saved and when; the browser shows the moment in the viewer's own zone.
+     */
+    public static function time(string $key, string $label, string $moment): self
+    {
+        return new self(LayoutTag::Text, $key, 'normal', 'time', $label, $moment, [], []);
+    }
+
+    /**
      * @param  list<LayoutRowData>  $rows
      */
     public static function collection(string $key, string $style, array $rows): self

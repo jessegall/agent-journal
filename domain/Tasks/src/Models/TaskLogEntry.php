@@ -8,9 +8,10 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
-use App\Reads\Support\ReadOrder;
+use App\Reads\Values\ReadOrder;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Api\Events\TaskLogged;
 use Domain\Tasks\Api\TaskLogLine;
@@ -41,6 +42,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     public const null UPDATED_AT = null;
@@ -88,19 +90,19 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
      *
      * @return Collection<int, self>
      */
-    public static function pageAfter(string $taskId, int $afterSequence, int $limit): Collection
+    public static function pageAfter(string $taskId, int $sequence, int $limit): Collection
     {
-        return self::query()->where('task_id', $taskId)->where('sequence', '>', $afterSequence)
+        return self::query()->where('task_id', $taskId)->where('sequence', '>', $sequence)
             ->orderBy('sequence')->orderBy('id')->limit($limit)->get();
     }
 
     /**
      * @return Collection<int, self>
      */
-    public static function pageBefore(string $taskId, int|null $beforeSequence, int $limit): Collection
+    public static function pageBefore(string $taskId, int|null $sequence, int $limit): Collection
     {
         return self::query()->where('task_id', $taskId)
-            ->when($beforeSequence !== null, fn (Builder $query) => $query->where('sequence', '<', $beforeSequence))
+            ->when($sequence !== null, fn (Builder $query) => $query->where('sequence', '<', $sequence))
             ->orderByDesc('sequence')->orderByDesc('id')->limit($limit)->get();
     }
 

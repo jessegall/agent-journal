@@ -7,12 +7,12 @@ namespace App\Ui\Declarations;
 use App\Reflection\Support\Reflector;
 use App\Ui\Contracts\PageOption;
 use App\Ui\Contracts\PageResolver;
+use App\Ui\Contracts\PresentsLayout;
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\PageDestination;
 use App\Ui\Enums\PageSkeleton;
 use App\Ui\Exceptions\InvalidPageDeclaration;
-use App\Ui\Layout\PresentsLayout;
 use Spatie\LaravelData\Data;
 
 /**

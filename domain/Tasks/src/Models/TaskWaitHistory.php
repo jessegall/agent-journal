@@ -6,6 +6,7 @@ namespace Domain\Tasks\Models;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Domain\Tasks\Enums\TaskWaitChange;
@@ -42,6 +43,7 @@ final class TaskWaitHistory extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     public const null UPDATED_AT = null;
 

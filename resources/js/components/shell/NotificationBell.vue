@@ -130,7 +130,7 @@ function followed(receiptId: string): void {
                 />
                 <template v-if="isQuiet">
                     <button type="button" class="px-2 pt-1 text-small text-text-3 underline" @click="resumeForUser">
-                        Resume toasts
+                        Show pop-ups again
                     </button>
                 </template>
             </div>
@@ -157,7 +157,7 @@ function followed(receiptId: string): void {
                 />
                 <template v-if="isQuiet">
                     <button type="button" class="text-small text-text-3 underline" @click="resumeForUser">
-                        Resume toasts
+                        Show pop-ups again
                     </button>
                 </template>
             </Sheet>

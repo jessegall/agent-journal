@@ -201,12 +201,12 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
     /**
      * The ids of the messages sent to any inbox outside the given ones, as a query to read them by.
      *
-     * @param  Builder<*>  $inboxIds
+     * @param  Builder<*>  $ids
      * @return Builder<self>
      */
-    public static function idsOutsideInboxes(Builder $inboxIds): Builder
+    public static function idsOutsideInboxes(Builder $ids): Builder
     {
-        return self::query()->acrossInboxes()->whereNotIn('destination_inbox_id', $inboxIds)->select('id');
+        return self::query()->acrossInboxes()->whereNotIn('destination_inbox_id', $ids)->select('id');
     }
 
     // ----------[ Mutations ]----------

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Models;
 
+use App\Links\Support\Linkable;
 use App\Processes\Enums\RunLogicalResult;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -29,6 +30,7 @@ final class RunResultConflict extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     public const ?string UPDATED_AT = null;
 

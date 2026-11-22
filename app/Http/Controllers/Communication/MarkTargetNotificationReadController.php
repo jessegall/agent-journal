@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Communication;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Bus\Contracts\CommandBus;
-use App\Communication\Resolvers\NotificationFeed;
+use App\Communication\Resolvers\Support\NotificationFeed;
 use App\Http\Requests\Communication\MarkTargetNotificationReadRequest;
 use Illuminate\Http\JsonResponse;
 

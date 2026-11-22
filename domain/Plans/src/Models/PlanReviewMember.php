@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Models;
 
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Domain\Tasks\Api\TaskReviewText;
@@ -31,6 +32,7 @@ final class PlanReviewMember extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     public $timestamps = false;
 

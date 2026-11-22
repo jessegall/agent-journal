@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Communication\Resolvers;
+namespace App\Communication\Resolvers\Support;
 
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Data\NotificationChangeItem;
@@ -16,6 +16,7 @@ use App\Communication\Support\NotificationChangeCursor;
 use App\Communication\Support\NotificationScopes;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
+use App\Communication\Resolvers\Support\NotificationFeed;
 
 /**
  * Reads the actor's changes after a cursor in pages of twenty, through one upper version pinned when the scan began,

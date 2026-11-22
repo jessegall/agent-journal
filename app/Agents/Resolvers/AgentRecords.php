@@ -155,12 +155,12 @@ final readonly class AgentRecords implements AgentDirectory
      * The latest launch outcome of each agent, by agent, unless the viewer dismissed that version of it; an older
      * outcome never stands in for a dismissed newer one.
      *
-     * @param  list<string>  $agentIds
+     * @param  list<string>  $ids
      * @return array<string, LaunchOutcome>
      */
-    private function launchOutcomesOf(array $agentIds): array
+    private function launchOutcomesOf(array $ids): array
     {
-        $launches = StartRecord::latestOf($agentIds)->map(fn (StartRecord $record) => LaunchOutcome::of($record));
+        $launches = StartRecord::latestOf($ids)->map(fn (StartRecord $record) => LaunchOutcome::of($record));
         $dismissed = LaunchOutcomeDismissal::dismissedKeysOf(
             ActorIdentity::of($this->actors->actor()),
             array_values($launches->map(fn (LaunchOutcome $launch) => $launch->requestId)->all()),

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Models;
 
 use App\Communication\Enums\NotificationMutationType;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -32,6 +33,7 @@ final class NotificationChange extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     public const ?string UPDATED_AT = null;
 

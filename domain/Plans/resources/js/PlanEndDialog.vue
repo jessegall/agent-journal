@@ -4,7 +4,7 @@ import Button from '@kit/Button';
 import { keyedPost } from '@kit/keyedPost';
 import Modal from '@kit/Modal';
 import { useWindowReload } from '@kit/useWindowQuery';
-import { cancel as cancelRoute, finish as finishRoute } from '@generated/routes/plans';
+import { cancelPlan as cancelRoute, finishPlan as finishRoute } from '@generated/routes/plans';
 import type { PlanState } from '@generated/types/plans';
 import { useHostProp } from '@/framework/hostProp';
 

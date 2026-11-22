@@ -34,7 +34,7 @@ final class PlanWorkRequest extends FormRequest
         ];
     }
 
-    public function root(): RecordIdentity
+    public function workRoot(): RecordIdentity
     {
         $planId = Plan::idOfNumber($this->routeNumber('plan')) ?? throw new NotFoundHttpException();
 

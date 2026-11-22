@@ -14,7 +14,7 @@ final readonly class AssignPlanWorkPageController
 {
     public function __invoke(PlanWorkRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $commands->run(new AssignPlanWork($request->root(), $request->recipient()));
+        $commands->run(new AssignPlanWork($request->workRoot(), $request->recipient()));
 
         return $redirect->back(303);
     }

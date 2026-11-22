@@ -31,8 +31,7 @@ final class PlanReaderData extends Data
         PlanSelection $selection,
         PlanOutlineData|Optional $outline,
         PlanReviewData|Optional $review,
-    ): self|Optional
-    {
+    ): self|Optional {
         $card = $selection->card;
 
         if ($card === null || $outline instanceof Optional) {

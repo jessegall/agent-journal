@@ -51,7 +51,6 @@ final class TaskReaderData extends Data
         public readonly string|Optional $cancelReason = new Optional(),
     ) {}
 
-
     /**
      * The reader of a task read with its texts, with the sections other domains add and the tabs it was asked for.
      *

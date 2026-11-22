@@ -6,10 +6,8 @@ namespace Domain\Tasks\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\RequiresRequestKey;
-use App\Bus\Contracts\RecordCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
 
 /**
@@ -19,7 +17,7 @@ use Domain\Tasks\Policies\TaskPolicy;
  */
 #[Authorize(TaskPolicy::class, AccessType::Edit)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
-final readonly class AddTaskWait extends Command implements RecordCommand
+final readonly class AddTaskWait extends Command
 {
     public function __construct(
         public string $dependentTaskId,
@@ -27,8 +25,4 @@ final readonly class AddTaskWait extends Command implements RecordCommand
         public string $requestKey,
     ) {}
 
-    public function subject(): Task
-    {
-        return Task::ofId($this->dependentTaskId);
-    }
 }

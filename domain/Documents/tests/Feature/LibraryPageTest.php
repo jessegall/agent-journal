@@ -12,9 +12,9 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
-use Tests\TestCase;
 
 /**
  * The library page is a declared layout: each record opens its own page, the type and attention choices mark the

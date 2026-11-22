@@ -149,13 +149,13 @@ final class CodeReviewTest extends TestCase
         $this->app->forgetScopedInstances();
         $this->merger->startRequest($this->app);
         $detail = $this->app->make(AskReader::class)->detail($merge->reference());
-        $link = $this->app->make(MergeAskNotificationTarget::class)->linkFor($merge->id)->get();
+        $link = $this->app->make(MergeAskNotificationTarget::class)->linksFor([$merge->id])[$merge->id];
 
         $this->assertSame($merge->version, $detail->version);
         $this->assertSame(AskResult::Open, $detail->result);
         $this->assertTrue($detail->canApproveMerge);
         $this->assertSame(ReviewDecision::query()->sole()->id, $detail->mergeDecisionId);
-        $this->assertSame("/asks/{$merge->id}", $link->url);
+        $this->assertSame("/web/asks/{$merge->id}", $link->url);
         $this->assertTrue($merge->refresh()->open);
     }
 

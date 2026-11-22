@@ -24,14 +24,14 @@ final class PhaseTaskData extends Data
         public readonly bool $hasWaits,
     ) {}
 
-    public static function ofSummary(TaskSummary $summary, bool $hasWaits): self
+    public static function ofSummary(TaskSummary $summary, bool $waits): self
     {
         return new self(
             (string) $summary->number,
             $summary->title,
             $summary->state,
             $summary->state->stateLabel()->text,
-            $hasWaits,
+            $waits,
         );
     }
 }

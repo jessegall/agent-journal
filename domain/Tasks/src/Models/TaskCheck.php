@@ -8,10 +8,11 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Links\Support\Linkable;
 use App\Processes\Values\PublishedResult;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
-use App\Reads\Support\ReadOrder;
+use App\Reads\Values\ReadOrder;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Api\Events\TaskCheckRecorded;
 use Domain\Tasks\Api\TaskProof;
@@ -46,6 +47,7 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     public const null UPDATED_AT = null;
@@ -93,9 +95,9 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
     /**
      * The check bound to the process run, if any.
      */
-    public static function ofProcessRun(string $processRunId): self|null
+    public static function ofProcessRun(string $runId): self|null
     {
-        return self::query()->where('process_run_id', $processRunId)->first();
+        return self::query()->where('process_run_id', $runId)->first();
     }
 
     /**

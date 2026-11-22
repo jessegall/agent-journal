@@ -29,7 +29,7 @@ final readonly class RevisionWindowResolver implements PageResolver
         $revision = $this->documents->revision($this->request->documentNumber(), $this->request->revisionNumber());
         $metadata = [
             LayoutPartData::text('label', "doc {$revision->documentNumber}, revision {$revision->number}", 'code'),
-            LayoutPartData::text('saved', "Saved {$revision->closedAt}", 'muted'),
+            LayoutPartData::time('saved', 'Saved', $revision->closedAt),
         ];
 
         if ($revision->historical) {

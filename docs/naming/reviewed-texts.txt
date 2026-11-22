@@ -1,4 +1,5 @@
 ${diagnostic.code}: ${diagnostic.message}
+${gathered.length} new outcomes
 ${node.line}: ${node.label}
 ${option.description} ${option.billingNote}
 (on an older version): open where it was
@@ -29,14 +30,18 @@ Agent journal
 Agent terminal, read only
 Agents
 Alias
+All caught up
 Allow one sample run of this exact line
 Any
 Approve
 Approve a terminal
+Approve merge
 Approve only when the terminal shows this same code.
 Approve proposal {{ proposal.number }}
 Approve revision {{ proposal.currentRevision }}
+Ask
 Asks
+Attempt
 Audit
 Back
 Back to Accounts
@@ -47,12 +52,18 @@ Build
 Cancel
 Cancel script
 Cancel sign-in
+Cancel start
 Cancelled
 Cancelling the sign-in…
+Check and switch
+Check capacity
+Check comment
+Check status
 Checked reader revision
 Checking
 Checking the new session
 Checking the sign-in with {{ driverName(driver) }}…
+Checking your notifications again…
 Choose a chat
 Choose a way to sign in to continue.
 Choose all on {{ machine }}
@@ -90,6 +101,9 @@ Copy failed. Select the link below and copy it yourself.
 Copy link
 Copy the code the page shows when you are done.
 Could not reach the journal for this sign-in. It keeps waiting on the host.
+Couldn't load notifications
+Couldn't load {{ subject }}
+Couldn't refresh notifications
 Dark
 Default
 Delete
@@ -133,6 +147,9 @@ Gateway
 Gateway runtime
 Gateways
 Generate install line
+Go back
+Held by
+Hide pop-ups for now
 Home
 How to sign in
 Idle
@@ -143,6 +160,8 @@ Install line
 Install line issued
 Install line replaced
 Install line revoked
+Interrupt
+Interrupting
 Invalid settings
 It arrived
 It has no email, so give it a name you'll recognise.
@@ -169,9 +188,13 @@ Link to Claude's sign-in page
 Linked
 Linked records
 Listener port
-Loading
+Load older
+Loading notifications…
 Make default
 Make it the default once it is ready
+Mark all read
+Mark read
+Merged
 Mermaid
 Module bundles waiting
 Move to ${titleOf(other)}
@@ -184,9 +207,10 @@ Needs an update
 Needs sign-in
 Network
 New compared with the rule in use: {{ revision.addedClasses.join(', ') || 'none' }}
+New notifications
 No
-No agent runtime is open.
-No asks to show.
+No active runtimes.
+No capacity
 No connected host runs agents in this place.
 No connected projects
 No endpoint is serving this share.
@@ -195,7 +219,11 @@ No install line was issued in the last 30 days.
 No linked record can be shared with it.
 No linked record is shared with it.
 No module bundle is waiting.
+No notifications yet
+No output yet. Status {{ part.lifecycle }}, ended by {{ part.end }}.
 No project is connected yet, so there is nothing to join.
+No questions waiting.
+No samples
 No saved accounts yet
 No share uses this gateway.
 No terminal signed in to this folder yet.
@@ -204,6 +232,7 @@ Not in contact yet
 Not run yet.
 Not shared yet
 Nothing is open in this pane.
+Notifications
 Off
 Offline
 Offline: start the sharing service.
@@ -213,15 +242,22 @@ On the whole record: open record
 On {{ text.anchor.versionLabel }}, lines {{ text.anchor.firstLine }}–{{ text.anchor.lastLine }}
 One piece of text, without spaces.
 Only one new {{ driverName(shownDriver) }} account signs in at a time. Resume this one, or cancel it and choose again.
+Open
 Open Claude's sign-in page and sign in.
 Open OpenAI's page and sign in with ChatGPT.
 Open a copy
+Open a window
+Open full run
+Open the program
 Open {{ record.target.label }}
 Open ↗
 Opening the comment's place…
 Opening the terminal…
 Ordinary
 Other ways to write it: {{ revision.spellings.join(', ') || 'none' }}
+Outcome
+Outcome unknown: your comment may or may not have been posted.
+Outcomes
 Output removed
 Output {{ part.capture }}, after {{ part.elapsedSeconds }} seconds: {{ JSON.stringify(part.bytes) }} bytes
 Over capacity
@@ -261,9 +297,12 @@ Reconnecting to the sign-in…
 Reconnecting…
 Record
 Record type
+Recorded
+Refresh visible windows
 Refused
 Reject
 Release hold
+Reload {{ subject }}
 Remove account
 Remove stored output ({{ storedBytes }} bytes)
 Removed
@@ -292,6 +331,7 @@ Revoked on the server
 Rule in use: {{ data.activeRevision === 0 ? 'none yet' : `revision ${data.activeRevision}` }}
 Rules
 Run a project on your own computer and keep its tasks, plans and decisions on {{ data.serverName }} ({{ data.origin }}).
+Run outcome
 Run permitted commands as you in {{ data.projectLabel }} for up to 12 hours
 Run {{ sample.runId }}: {{ sample.parts.join('; ') }}
 Runs
@@ -307,6 +347,7 @@ Saved
 Secrets
 Send code
 Setting up
+Settled
 Setup token
 Share
 Share for
@@ -314,12 +355,17 @@ Share gateways
 Share {{ share.number }} ({{ share.state }})
 Shared with it
 Shares
+Shell actions
+Show in notifications
 Show its connection
 Show more comments
 Show more folders
 Show older attempts
 Show or hide the sidebar
+Show pop-ups again
 Show the account
+Showing earlier results. {{ reason }}
+Showing the last update.
 Side by side
 Sign in
 Sign in first to make it the default
@@ -339,17 +385,25 @@ Split this pane in two?
 Stacked
 Start
 Start again
+Start refused
+Start session
 Started
+Starting
 Starting the new session
 State
 Status
+Status unknown
 Status: {{ part.lifecycle }}, ended by {{ part.end }}
 Still to do: {{ data.steps.join('; ') }}
+Stop session
+Stopped
+Stopping
 Stopping the old session
 Stops after {{ sample.byteCap }} bytes or {{ sample.secondsCap }} seconds
 Suits a server.
 Support record
 Support record of {{ binding.projectLabel }} on {{ binding.machineLabel }}
+Switch
 Switched
 Switching
 System
@@ -376,17 +430,15 @@ The source holds Markdown marks (such as ** or a link) that the page shows as fo
 The version that runs here
 This account must sign in again.
 This browser did not let the journal copy the line. Select the line above and copy it with your keyboard.
-This is not available.
+This item is unavailable
 This journal is not issuing install lines.
 This machine and the share service must keep running for the link to work.
-This page could not be refreshed.
 This profile does not allow that model.
 This profile runs only its own driver.
 This release cannot do {{ release.missingCapabilities.join(', ') }} yet.
 This server can direct an agent to read and change files in your project. A line works once, for ten minutes.
 This sign-in is already running
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
-This window could not be refreshed. It shows what it last loaded.
 To renew it, choose Sign in again on the account.
 Turning off traffic inspection does not hide the content from the provider.
 Unfinished sign-ins
@@ -397,10 +449,12 @@ Use
 Use these lines
 Used for {{ revision.purpose }}; its output is {{ revision.outputRequirement }}
 Verification pending
+Version
 Version control
 Version {{ location.anchor.versionLabel }}, lines {{ location.anchor.firstLine }}–{{ location.anchor.lastLine }}
 Version {{ version }}, lines {{ firstLine }}–{{ lastLine }}
 Waiting
+Waiting for sign-in
 Waiting for the host to confirm the start
 Waiting for the host to confirm the stop
 Waiting for you to finish on OpenAI's page…
@@ -423,7 +477,6 @@ Write a comment
 You can approve once the request is ready for review; a check first needs a checked reader.
 You can change it later from the list.
 You can close this window: the sign-in keeps waiting on the host. Resume it from the Accounts header.
-You don't have access to this.
 Your last answer did not arrive. Paste it again.
 Your last code did not arrive. Paste it again.
 a file the user names on the command line, wherever it lies
@@ -481,6 +534,7 @@ updated {{ seconds(ageSeconds()) }} ago
 {{ rule.ruleId }} ({{ rule.owner }}) revision {{ rule.revision }}: {{ rule.state }} - {{ rule.reason }}
 {{ runtime.isHealthy ? 'Running' : 'Not answering: no sign of life in the last 45 seconds' }}. Version {{ runtime.endpointVersion }}, last seen {{ runtime.lastHealthAt ?? 'never' }}.
 {{ status.watchers }} watching
+{{ summary.length }} more outcomes
 {{ target.name }} is not offered yet, because it does not run {{ target.missingProviders.join(' or ') }}.
 {{ target.name }} is not offered yet: its size was not measured.
 {{ target.name }}: {{ size(target.bytes) }} to download and install. Needs {{ target.prerequisites.join(', ') }}.
