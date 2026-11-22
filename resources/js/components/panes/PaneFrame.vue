@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
 import { usePaneLayout } from '@/components/panes/usePaneLayout';
@@ -60,10 +60,38 @@ function titleOf(pane: Pane): string {
     return store.windowOf(pane.active)?.title ?? 'the empty pane';
 }
 
+/**
+ * The least a pane may measure on the axis a split would divide, so neither half ends up unreadable.
+ */
+const SMALLEST_SPLITTABLE = 280;
+
+const refusal = ref('');
+const frame = ref<HTMLElement | null>(null);
+
 function split(key: string | null, side: SplitSide): void {
-    if (key) {
-        store.change(splitPane(store.layout.value, props.pane.id, key, side));
+    if (!key) {
+        return;
     }
+
+    const box = frame.value;
+    const space = side === 'left' || side === 'right' ? box?.offsetWidth : box?.offsetHeight;
+
+    if (space !== undefined && space < SMALLEST_SPLITTABLE) {
+        refusal.value = 'This pane is too narrow to split.';
+
+        return;
+    }
+
+    refusal.value = '';
+    store.change(splitPane(store.layout.value, props.pane.id, key, side));
+}
+
+/**
+ * Closes a tab and gives the focus to the pane's new active tab, or its next window, instead of losing it.
+ */
+function closeTab(key: string): void {
+    store.change(closeWindow(store.layout.value, key));
+    void nextTick(() => frame.value?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus());
 }
 
 function add(key: string): void {
@@ -128,8 +156,8 @@ const menuEntries = computed<MenuEntry[]>(() => {
     const isAlone = props.pane.windows.length < 2;
     const active = props.pane.active;
     const moves: MenuEntry[] = otherPanes.value.map((other, place) => ({
-        label: `Move to ${titleOf(other)}`,
-        groupLabel: place === 0 ? 'Move' : undefined,
+        label: `Join ${titleOf(other)}`,
+        groupLabel: place === 0 ? 'Join pane' : undefined,
         disabled: active === null,
         run: () => {
             if (active !== null) {
@@ -163,16 +191,10 @@ const menuEntries = computed<MenuEntry[]>(() => {
     }
 
     return [
-        {
-            label: 'Split right',
-            disabled: isAlone,
-            run: () => split(props.pane.active, 'right'),
-        },
-        {
-            label: 'Split below',
-            disabled: isAlone,
-            run: () => split(props.pane.active, 'below'),
-        },
+        { label: 'Dock left', disabled: isAlone, run: () => split(props.pane.active, 'left') },
+        { label: 'Dock right', disabled: isAlone, run: () => split(props.pane.active, 'right') },
+        { label: 'Dock above', disabled: isAlone, run: () => split(props.pane.active, 'above') },
+        { label: 'Dock below', disabled: isAlone, run: () => split(props.pane.active, 'below') },
         {
             label: 'Detach',
             disabled: props.pane.active === null,
@@ -193,6 +215,7 @@ const menuEntries = computed<MenuEntry[]>(() => {
 
 <template>
     <section
+        ref="frame"
         class="@container relative flex h-full min-h-0 min-w-0 flex-col overflow-hidden bg-bg"
         :aria-label="`Pane with ${titleOf(pane)}`"
         :data-pane-id="pane.id"
@@ -214,7 +237,7 @@ const menuEntries = computed<MenuEntry[]>(() => {
                 (key) =>
                     store.change(activate(store.layout.value, pane.id, key))
             "
-            @close="(key) => store.change(closeWindow(store.layout.value, key))"
+            @close="closeTab"
             @split="split"
         >
             <Button
@@ -272,6 +295,11 @@ const menuEntries = computed<MenuEntry[]>(() => {
                 </div>
             </template>
         </div>
+        <template v-if="refusal !== ''">
+            <p role="alert" class="absolute right-2 bottom-2 rounded-field border border-border-2 bg-raised px-2 py-1 text-small text-text-2">
+                {{ refusal }}
+            </p>
+        </template>
         <template v-if="compassZone">
             <DropCompass :zone="compassZone" />
         </template>

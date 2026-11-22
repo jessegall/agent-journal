@@ -68,6 +68,29 @@ function resizeBy(event: PointerEvent): void {
     }));
 }
 
+const SMALL_STEP = 12;
+const LARGE_STEP = 48;
+
+/**
+ * Option or Alt with an arrow resizes the window from the keyboard: 12 px, or 48 px with Shift.
+ */
+function resizeByKey(event: KeyboardEvent): void {
+    const step = event.shiftKey ? LARGE_STEP : SMALL_STEP;
+    const changes: Record<string, { width?: number; height?: number }> = {
+        ArrowRight: { width: props.window.width + step },
+        ArrowLeft: { width: props.window.width - step },
+        ArrowDown: { height: props.window.height + step },
+        ArrowUp: { height: props.window.height - step },
+    };
+
+    if (!event.altKey || !(event.key in changes)) {
+        return;
+    }
+
+    event.preventDefault();
+    change(changes[event.key]);
+}
+
 function front(): void {
     store.apply(bringToFront(store.arrangement.value, props.window.key));
 }
@@ -92,6 +115,7 @@ function dock(): void {
         }"
         :aria-label="shown?.title"
         @pointerdown="front"
+        @keydown="resizeByKey"
     >
         <div
             class="flex h-[34px] flex-none cursor-grab touch-none items-center gap-2 bg-float-bar pr-[5px] pl-3 text-small text-text"
