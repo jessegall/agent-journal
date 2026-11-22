@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use Tests\Architecture\Support\FormerPaths;
 use Tests\Architecture\Support\CallScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -71,8 +72,16 @@ final class CommandBypassTest extends TestCase
     {
         $found = [];
 
-        foreach (ScanCache::findingsInFolders(new CallScan(), array_map(base_path(...), $folders)) as $path => $calls) {
+        // Core's checked areas are judged by the folders their files had before plan 62 moved them to their roles.
+        $coreAreas = array_map(fn (string $folder) => "{$folder}/", array_filter($folders, fn (string $folder) => str_starts_with($folder, 'app/')));
+        $scanned = [...array_filter($folders, fn (string $folder) => ! str_starts_with($folder, 'app/')), ...($coreAreas === [] ? [] : ['app'])];
+
+        foreach (ScanCache::findingsInFolders(new CallScan(), array_map(base_path(...), $scanned)) as $path => $calls) {
             $file = substr($path, strlen(base_path()) + 1);
+
+            if (str_starts_with($file, 'app/') && ! FormerPaths::wasIn($file, $coreAreas)) {
+                continue;
+            }
 
             if ($file === self::BUS) {
                 continue;

@@ -33,7 +33,7 @@ final class FilesServiceTest extends TestCase
 
     public function test_code_reads_through_files_are_the_process_code_reads(): void
     {
-        $pattern = FilePath::in(Place::Project, 'app/Files/Contracts/*.php');
+        $pattern = FilePath::in(Place::Project, 'app/Contracts/*.php');
 
         $this->assertSame(CodeFiles::ofProcess()->folder($pattern), $this->app->make(Files::class)->codeFolder($pattern));
     }

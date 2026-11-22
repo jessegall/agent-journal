@@ -95,7 +95,7 @@ final class PlaceRootsTest extends TestCase
     {
         $this->assertEquals(
             FilePath::in(Place::Project, 'app/Values/FilePath.php'),
-            $this->roots()->filePathOf(base_path('app/Files/../Files/Values/FilePath.php')),
+            $this->roots()->filePathOf(base_path('app/Support/../Values/FilePath.php')),
         );
         $this->assertEquals(
             FilePath::in(Place::Project, 'notes-not-written-yet.md'),

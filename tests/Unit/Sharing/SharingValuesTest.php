@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Sharing;
 
+use Tests\Architecture\Support\FormerPaths;
 use App\Enums\ShareAuditType;
 use App\Enums\ShareRelationType;
 use App\Enums\ShareState;
@@ -113,10 +114,8 @@ final class SharingValuesTest extends TestCase
     public function test_every_sharing_value_fits_the_bus_grammar(string $class): void
     {
         $grammar = new CommandGrammar(
-            static fn (string $name): bool => str_starts_with(
-                $name,
-                'App\\Sharing\\',
-            ) || $name === RecordIdentity::class,
+            static fn (string $name): bool => FormerPaths::classWasIn($name, ['app/Sharing/'])
+                || $name === RecordIdentity::class,
         );
 
         $this->assertNull($grammar->problemWithProperties($class));

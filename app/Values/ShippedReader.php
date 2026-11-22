@@ -27,7 +27,7 @@ final readonly class ShippedReader
 
     public function proofFolder(): string
     {
-        return dirname(__DIR__)."/Processes/Rules/Proofs/{$this->tool}/{$this->version}";
+        return dirname(__DIR__)."/Support/Rules/Proofs/{$this->tool}/{$this->version}";
     }
 
     /**

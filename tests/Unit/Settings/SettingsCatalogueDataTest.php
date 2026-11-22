@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
+use Tests\Architecture\Support\FormerPaths;
 use App\Data\BooleanValueData;
 use App\Data\DecimalConstraintsData;
 use App\Data\DecimalValueData;
@@ -114,8 +115,9 @@ final class SettingsCatalogueDataTest extends TestCase
 
     public function test_no_catalogue_property_is_mixed_or_an_untyped_array(): void
     {
-        foreach (glob(app_path('Settings/Data/*.php')) ?: [] as $file) {
-            $class = Reflector::of('App\\Settings\\Data\\'.basename($file, '.php'));
+        // The catalogue's data classes by the folder they had before plan 62 moved them to app/Data.
+        foreach (FormerPaths::filesFrom(['app/Settings/Data/']) as $file) {
+            $class = Reflector::of('App\\'.str_replace('/', '\\', substr($file, 4, -4)));
             $this->assertTrue($class->isFinal(), $class->name());
 
             $ownProperties = array_filter(

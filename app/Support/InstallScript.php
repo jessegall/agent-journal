@@ -12,12 +12,12 @@ use App\Exceptions\TicketMalformed;
 use App\Values\FilePath;
 
 /**
- * The shell script an install line pipes into sh: Resources/install.sh with this server's canonical origin, the
+ * The shell script an install line pipes into sh: resources/connections/install.sh with this server's canonical origin, the
  * current release, the digest of its second-stage installer and the one-time ticket filled in.
  */
 final readonly class InstallScript
 {
-    private const string TEMPLATE = 'app/Connections/Resources/install.sh';
+    private const string TEMPLATE = 'resources/connections/install.sh';
 
     private const string SECOND_STAGE = 'scripts/install-relay.sh';
 

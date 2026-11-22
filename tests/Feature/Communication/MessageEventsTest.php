@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
+use Tests\Architecture\Support\FormerPaths;
 use App\Commands\SendMessage\SendMessageCommand;
 use App\Events\MessageSent;
 use App\Exceptions\InboxUnavailable;
@@ -68,8 +69,9 @@ final class MessageEventsTest extends MessagingTestCase
 
     public function test_no_message_fact_carries_a_body_or_a_model(): void
     {
-        foreach (glob(app_path('Communication/Events/*.php')) ?: [] as $file) {
-            $parameters = Reflector::of('App\\Communication\\Events\\'.basename($file, '.php'))->constructor()
+        // The message facts by the folder they had before plan 62 moved them to app/Events.
+        foreach (FormerPaths::filesFrom(['app/Communication/Events/']) as $file) {
+            $parameters = Reflector::of('App\\Events\\'.basename($file, '.php'))->constructor()
                 ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
                 ->getOrElse([]);
 
