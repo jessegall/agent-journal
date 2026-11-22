@@ -111,7 +111,7 @@ final class WorkListToolsTest extends TestCase
 
         $this->assertSame('Release', $card['title']);
         $this->assertSame($plan->state->value, $card['state']);
-        $this->assertSame([0, 0], [$card['doneTasks'], $card['totalTasks']]);
+        $this->assertSame([0, 0], [$card['finishedTasks'], $card['totalTasks']]);
     }
 
     public function test_plans_list_refuses_per_page(): void

@@ -8,10 +8,13 @@ use App\Actors\Contracts\ReplyInboxes;
 use App\Actors\Support\ActorIdentity;
 use App\Bus\Contracts\CommandFacts;
 use App\Desks\Contracts\RunClaims;
+use Domain\Tasks\Api\TaskWaitLink;
 use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunTaken;
+use Domain\Tasks\Exceptions\TaskWaitsUnmet;
 use Domain\Tasks\Handlers\Support\TaskCommandHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
@@ -27,19 +30,26 @@ final readonly class StartTaskHandler extends TaskCommandHandler
         private CommandFacts $facts,
         private RunClaims $claims,
         private ReplyInboxes $replyInboxes,
+        private TaskWaitResolver $waits,
     ) {}
 
     /**
      * Starts the run for whoever acts, a user or an agent alike, and claims it for them; another actor's standing
-     * claim on a started task is not taken.
+     * claim on a started task is not taken. A fresh start, of an open or a blocked task, waits until every task it
+     * waits for is finished or waived; a repeat start of a started task keeps its run.
      *
      * @throws TaskRestartRefused
      * @throws TaskRunTaken
+     * @throws TaskWaitsUnmet
      */
     public function handle(StartTask $command, Task $task): int
     {
         $actor = ActorIdentity::of($command->dispatchedBy());
         $this->requireRunNotTaken($task, $actor);
+
+        if ($task->state !== TaskState::Started) {
+            $this->assertWaitsMet($task);
+        }
 
         $this->facts->holdUntilReturn(function () use ($task, $actor): void {
             $task->start($actor);
@@ -50,6 +60,26 @@ final readonly class StartTaskHandler extends TaskCommandHandler
         $this->facts->applyRequired();
 
         return $task->run_number;
+    }
+
+    /**
+     * @throws TaskWaitsUnmet
+     */
+    private function assertWaitsMet(Task $task): void
+    {
+        $unmet = array_values(array_filter(
+            $this->waits->waitsOf($task->id)->waitsFor,
+            fn (TaskWaitLink $link) => ! $link->isSatisfied,
+        ));
+
+        if ($unmet === []) {
+            return;
+        }
+
+        throw TaskWaitsUnmet::forTask($task->number, array_map(
+            fn (TaskWaitLink $link) => $link->number === null ? 'a removed task' : "task {$link->number}",
+            $unmet,
+        ));
     }
 
     /**

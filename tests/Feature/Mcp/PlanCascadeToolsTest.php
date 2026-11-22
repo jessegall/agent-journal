@@ -133,7 +133,7 @@ final class PlanCascadeToolsTest extends TestCase
             ->assertJsonPath('result.isError', true)
             ->assertJsonPath(
                 'result.structuredContent.message',
-                'One command covers at most 1000 records; this one would cover 1001.',
+                'This work unit exceeds the 1,000-record limit: it would cover 1001 records.',
             );
         $this->assertSame(0, AssignmentRecord::query()->count());
     }

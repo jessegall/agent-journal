@@ -37,6 +37,7 @@ use App\Processes\Console\RunProcessCommand;
 use App\Processes\Contracts\AliasResolver;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\OutputRecorder;
+use App\Processes\Contracts\ProcessRunCallers;
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Contracts\ServedEnvironment;
 use App\Processes\Contracts\ShellAdmission;
@@ -71,6 +72,7 @@ use App\Processes\Support\OutputDocking;
 use App\Processes\Support\ProgramClassifiers;
 use App\Processes\Support\ProjectKey;
 use App\Processes\Support\ProjectReceipts;
+use App\Processes\Support\ProjectRunCallers;
 use App\Processes\Support\ProjectRules;
 use App\Processes\Support\ReceiptPublisher;
 use App\Processes\Support\RequiredServices;
@@ -103,6 +105,7 @@ final class ProcessesServiceProvider extends ServiceProvider
         $this->app->scoped(VerificationTiming::class, OpenTiming::class);
         $this->app->scoped(ReceiptPublisher::class);
         $this->app->scoped(ResultReceipts::class, ProjectReceipts::class);
+        $this->app->scoped(ProcessRunCallers::class, ProjectRunCallers::class);
 
         $this->app->when(TreeClassifier::class)
             ->needs(CommandRuleRegistry::class)

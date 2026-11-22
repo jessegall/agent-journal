@@ -24,10 +24,16 @@ use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Web\Listeners\BroadcastPageChange;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Api\Events\PlanStarted;
+use Domain\Plans\Listeners\CountPhaseTaskStates;
 use Domain\Plans\Listeners\SamplePlanOfStartedTask;
 use Domain\Sequences\Events\SequenceStarted;
+use Domain\Tasks\Api\Events\TaskBlocked;
+use Domain\Tasks\Api\Events\TaskCancelled;
+use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Events\TaskStarted;
+use Domain\Tasks\Listeners\AnnounceTaskStart;
 use Domain\Tasks\Listeners\PushTaskState;
+use Domain\Tasks\Listeners\RecordTaskHistory;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Tests\Fixtures\Boundary\Events\Chat\ChatDomain;
 use Tests\Fixtures\Boundary\Events\Plans\Listeners\RequiredClaimListener;
@@ -70,6 +76,9 @@ final class RequiredListenerLaneTest extends TestCase
         $this->assertEqualsCanonicalizing(
             [
                 TaskStarted::class,
+                TaskFinished::class,
+                TaskBlocked::class,
+                TaskCancelled::class,
                 PlanStarted::class,
                 SignInAttemptFinished::class,
                 SequenceStarted::class,
@@ -82,7 +91,13 @@ final class RequiredListenerLaneTest extends TestCase
             $registry->events(),
         );
         $this->assertSame(
-            [SamplePlanOfStartedTask::class, PushTaskState::class],
+            [
+                CountPhaseTaskStates::class,
+                SamplePlanOfStartedTask::class,
+                AnnounceTaskStart::class,
+                PushTaskState::class,
+                RecordTaskHistory::class,
+            ],
             array_map(
                 fn (mixed $listener) => explode('@', $listener instanceof AvailableListener ? $listener->listener : '')[0],
                 $registry->listenersOf(TaskStarted::class),

@@ -42,6 +42,9 @@ use Domain\Plans\Api\AssignedPlanList;
 use Domain\Plans\Api\Events\PlanCancelled;
 use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Api\Events\PlanProgressChanged;
+use Domain\Plans\Api\Events\PlanReviewDecided;
+use Domain\Plans\Api\Events\PlanReviewRequested;
+use Domain\Plans\Api\Events\PlanReviewWithdrawn;
 use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Api\PhaseDetails;
 use Domain\Plans\Api\PlanCard;
@@ -49,6 +52,7 @@ use Domain\Plans\Api\PlanDetails;
 use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Api\PlanList;
 use Domain\Plans\Api\PlanPhaseTasks;
+use Domain\Plans\Api\PlanEditionChanges;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Api\PlanSelection;
 use Domain\Plans\Assignments\PlanTaskPoolFactory;
@@ -58,12 +62,21 @@ use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Commands\UnassignPlanWork;
 use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Contracts\PlanResolver;
+use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
+use Domain\Plans\Http\Controllers\ApprovePlanReviewPageController;
+use Domain\Plans\Http\Controllers\AssignPlanWorkPageController;
+use Domain\Plans\Http\Controllers\CancelPlanPageController;
+use Domain\Plans\Http\Controllers\FinishPlanPageController;
+use Domain\Plans\Http\Controllers\RequestPlanChangesPageController;
+use Domain\Plans\Http\Controllers\ReassignPlanWorkPageController;
+use Domain\Plans\Http\Controllers\RequestPlanReviewPageController;
 use Domain\Plans\Http\Controllers\StartPlanController;
+use Domain\Plans\Http\Controllers\WithdrawPlanReviewPageController;
 use Domain\Plans\Mcp\HeldPlansOverview;
 use Domain\Plans\Mcp\PlanResource;
 use Domain\Plans\Mcp\PlanSearch;
@@ -74,6 +87,7 @@ use Domain\Plans\Resolvers\OpenPlansCount;
 use Domain\Plans\Resolvers\PhaseWindowResolver;
 use Domain\Plans\Resolvers\PlansWindowResolver;
 use Domain\Plans\Resolvers\PlanWindowResolver;
+use Domain\Plans\Resolvers\TaskPlanSection;
 use Domain\Plans\Resolvers\WaitingPlansCount;
 use Domain\Plans\Resolvers\WaitingPlansSection;
 use Domain\Plans\Skills\PlanSkill;
@@ -123,7 +137,15 @@ final class PlansDomain extends Domain implements
     public function exports(): Exports
     {
         return Exports::make()
-            ->events(PlanStarted::class, PlanFinished::class, PlanCancelled::class, PlanProgressChanged::class)
+            ->events(
+                PlanStarted::class,
+                PlanFinished::class,
+                PlanCancelled::class,
+                PlanProgressChanged::class,
+                PlanReviewRequested::class,
+                PlanReviewWithdrawn::class,
+                PlanReviewDecided::class,
+            )
             ->contracts(PlanResolver::class, PlanDetailsResolver::class)
             ->values(
                 PlanFilters::class,
@@ -133,6 +155,8 @@ final class PlansDomain extends Domain implements
                 AssignedPlanFilters::class,
                 AssignedPlanList::class,
                 PlanProgress::class,
+                PlanEditionChanges::class,
+                PlanReviewState::class,
                 PlanType::class,
                 PlanState::class,
                 PlanDetails::class,
@@ -195,7 +219,7 @@ final class PlansDomain extends Domain implements
         return [
             new PolicyDefinition(
                 PlanPolicy::class,
-                [AccessType::Read, AccessType::Create, AccessType::Edit],
+                [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Admin],
             ),
         ];
     }
@@ -223,6 +247,28 @@ final class PlansDomain extends Domain implements
             Page::make('plan', 'Plan', Icon::Plan, PlanWindowResolver::class, 'PlanWindow.vue')
                 ->at('{plan}')
                 ->inInspector()
+                ->actions(
+                    ActionRoute::post('{plan}/cancel', CancelPlanPageController::class, 'cancel'),
+                    ActionRoute::post('{plan}/work', AssignPlanWorkPageController::class, 'assign-work'),
+                    ActionRoute::post('{plan}/work/reassign', ReassignPlanWorkPageController::class, 'reassign-work'),
+                    ActionRoute::post('{plan}/finish', FinishPlanPageController::class, 'finish'),
+                    ActionRoute::post('{plan}/review', RequestPlanReviewPageController::class, 'request-review'),
+                    ActionRoute::post(
+                        '{plan}/review/withdraw',
+                        WithdrawPlanReviewPageController::class,
+                        'withdraw-review',
+                    ),
+                    ActionRoute::post(
+                        '{plan}/review/approve',
+                        ApprovePlanReviewPageController::class,
+                        'approve-review',
+                    ),
+                    ActionRoute::post(
+                        '{plan}/review/changes',
+                        RequestPlanChangesPageController::class,
+                        'request-changes',
+                    ),
+                )
                 ->slots(Slot::record('inspector', 'plan', 'plan')),
             Page::make('phase', 'Phase', Icon::Plan, PhaseWindowResolver::class, 'PhaseWindow.vue')
                 ->at('{plan}/phases/{phase}'),
@@ -239,6 +285,14 @@ final class PlansDomain extends Domain implements
                 SlotContextType::Session,
                 WaitingPlansSection::class,
                 'WaitingPlansSection.vue',
+            ),
+            Section::make(
+                'task-plan',
+                'Plan',
+                'tasks.inspector',
+                SlotContextType::Record,
+                TaskPlanSection::class,
+                'TaskPlanSection.vue',
             ),
         ];
     }

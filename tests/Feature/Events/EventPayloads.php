@@ -67,6 +67,9 @@ use Domain\Documents\Api\Events\ReportFiled;
 use Domain\Plans\Api\Events\PlanCancelled;
 use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Api\Events\PlanProgressChanged;
+use Domain\Plans\Api\Events\PlanReviewDecided;
+use Domain\Plans\Api\Events\PlanReviewRequested;
+use Domain\Plans\Api\Events\PlanReviewWithdrawn;
 use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Rules\Api\Events\RuleApproved;
 use Domain\Rules\Api\Events\RuleDenied;
@@ -74,7 +77,11 @@ use Domain\Rules\Api\Events\RuleRemoved;
 use Domain\Sequences\Events\SequenceStarted;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
+use Domain\Tasks\Api\Events\TaskCheckRecorded;
 use Domain\Tasks\Api\Events\TaskFinished;
+use Domain\Tasks\Api\Events\TaskLogged;
+use Domain\Tasks\Api\Events\TaskStartCommitted;
+use Domain\Tasks\Api\Events\TaskWaitChanged;
 use Domain\Tasks\Events\TaskStarted;
 
 /**
@@ -484,6 +491,28 @@ final class EventPayloads
                     'finishedBy' => 'App\Actors\Support\ActorContext',
                 ],
             ],
+            PlanReviewDecided::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'planId' => 'string',
+                    'editionId' => 'string',
+                    'decision' => 'Domain\Plans\Enums\PlanReviewState',
+                ],
+            ],
+            PlanReviewRequested::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'planId' => 'string',
+                    'editionId' => 'string',
+                ],
+            ],
+            PlanReviewWithdrawn::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'planId' => 'string',
+                    'editionId' => 'string',
+                ],
+            ],
             PlanStarted::class => [
                 'afterCommit' => true,
                 'fields' => [
@@ -520,18 +549,47 @@ final class EventPayloads
                 'afterCommit' => true,
                 'fields' => [
                     'taskId' => 'string',
+                    'previousState' => 'Domain\Tasks\Enums\TaskState',
+                    'historyEntryId' => 'string',
                 ],
             ],
             TaskCancelled::class => [
                 'afterCommit' => true,
                 'fields' => [
                     'taskId' => 'string',
+                    'previousState' => 'Domain\Tasks\Enums\TaskState',
+                    'historyEntryId' => 'string',
                 ],
             ],
             TaskFinished::class => [
                 'afterCommit' => true,
                 'fields' => [
                     'taskId' => 'string',
+                    'previousState' => 'Domain\Tasks\Enums\TaskState',
+                    'historyEntryId' => 'string',
+                ],
+            ],
+            TaskCheckRecorded::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'taskId' => 'string',
+                    'checkId' => 'string',
+                ],
+            ],
+            TaskLogged::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'taskId' => 'string',
+                    'entryId' => 'string',
+                ],
+            ],
+            TaskWaitChanged::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'waitId' => 'string',
+                    'dependentTaskId' => 'string',
+                    'prerequisiteTaskId' => 'string',
+                    'change' => 'Domain\Tasks\Enums\TaskWaitChange',
                 ],
             ],
             TaskStarted::class => [
@@ -539,6 +597,8 @@ final class EventPayloads
                 'fields' => [
                     'taskId' => 'string',
                     'actor' => 'App\Actors\Support\ActorIdentity',
+                    'previousState' => 'Domain\Tasks\Enums\TaskState',
+                    'historyEntryId' => 'string',
                 ],
             ],
         ];
@@ -564,6 +624,7 @@ final class EventPayloads
             AccountsChanged::class => 'projection',
             PageChanged::class => 'projection',
             PlanProgressChanged::class => 'projection',
+            TaskStartCommitted::class => 'projection',
         ];
     }
 }

@@ -11,9 +11,12 @@ use App\Operations\Enums\AccessType;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskRunPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Regex;
 
 /**
- * Cancels a task with a reason: the user or a main agent any task, another agent only its own run.
+ * Cancels an open, started or blocked task with a reason that is not blank: the user or a main agent any task, another
+ * agent only its own run. A caller that read the task names the revision and latest run it read, and a task that moved
+ * on since is refused with its current state.
  *
  * @extends Command<null>
  */
@@ -22,8 +25,10 @@ final readonly class CancelTask extends Command implements RecordCommand
 {
     public function __construct(
         public string $taskId,
-        #[Max(Task::NOTE_CHARACTER_LIMIT)]
+        #[Max(Task::NOTE_CHARACTER_LIMIT), Regex('/\S/')]
         public string $reason,
+        public int|null $expectedRevision = null,
+        public int|null $expectedRunNumber = null,
     ) {}
 
     public function subject(): Task

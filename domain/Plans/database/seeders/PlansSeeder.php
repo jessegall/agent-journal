@@ -20,9 +20,12 @@ final class PlansSeeder extends Seeder
      * @param  list<string>  $startingTaskIds  the tasks of the starting phase
      * @param  list<string>  $reproducingTaskIds  the tasks of the reproducing phase
      */
-    public function run(array $readingTaskIds = [], array $startingTaskIds = [], array $reproducingTaskIds = []): void
-    {
-        $structure = new PlanStructure();
+    public function run(
+        PlanStructure $structure,
+        array $readingTaskIds = [],
+        array $startingTaskIds = [],
+        array $reproducingTaskIds = [],
+    ): void {
         $build = Plan::factory()->create(['title' => 'Build the plans page', 'type' => PlanType::Build]);
         $structure->addTasks($structure->addPhase($build, 'Read the plans'), $readingTaskIds);
         $structure->addTasks($structure->addPhase($build, 'Start a plan'), $startingTaskIds);

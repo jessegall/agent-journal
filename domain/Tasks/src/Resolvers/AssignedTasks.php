@@ -11,7 +11,6 @@ use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\References\StateReference;
-use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
@@ -63,10 +62,7 @@ final readonly class AssignedTasks implements AssignedTaskResolver
             return new TaskList(
                 array_values(
                     $tasks->map(
-                        fn (Task $task) => new TaskCard(
-                            $task->id,
-                            $task->title,
-                            $task->state,
+                        fn (Task $task) => $task->card(
                             $holders->forRecord($task->assignmentIdentity()),
                             $executions[$task->id],
                         ),

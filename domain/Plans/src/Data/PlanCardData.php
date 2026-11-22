@@ -13,7 +13,9 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One plan card (doc 4, 7.3). The id travels as a decimal string so a bigint keeps its precision.
+ * One plan card (doc 4, 7.3), with its task counts, whether a started plan has no unfinished task left (Ready to
+ * finish; FinishPlan decides when asked), and the start when the server offers it. The id travels as a decimal string so a
+ * bigint keeps its precision.
  *
  * @method static static from(PlanCard|array<string, mixed> $payload)
  * @method static array<int, static> collect(list<PlanCard> $cards)
@@ -28,14 +30,18 @@ final class PlanCardData extends Data
         public readonly PlanType $type,
         public readonly PlanState $state,
         public readonly bool $focused,
-        public readonly int $doneTasks,
+        public readonly int $finishedTasks,
+        public readonly int $cancelledTasks,
         public readonly int $totalTasks,
+        public readonly bool $readyToFinish,
         public readonly string|Optional $phase = new Optional(),
         public readonly AssignmentData|Optional $holder = new Optional(),
+        public readonly StartPlanData|Optional $start = new Optional(),
     ) {}
 
     /**
-     * The card as the browser gets it; a plan without phases has no phase key, a plan nobody holds no holder key.
+     * The card as the browser gets it; a plan without phases has no phase key, a plan nobody holds no holder key and
+     * a plan that may not start now no start key.
      */
     public static function fromPlanCard(PlanCard $card): self
     {
@@ -46,10 +52,15 @@ final class PlanCardData extends Data
             'type' => $card->type,
             'state' => $card->state,
             'focused' => $card->focused,
-            'doneTasks' => $card->progress->done,
+            'finishedTasks' => $card->progress->finished,
+            'cancelledTasks' => $card->progress->cancelled,
             'totalTasks' => $card->progress->total,
+            'readyToFinish' => $card->state === PlanState::Started && $card->progress->unfinished() === 0,
             'phase' => $card->currentPhase === null ? null : (string) $card->currentPhase,
             'holder' => $card->holder->map(AssignmentData::ofHolder(...))->getOrElse(null),
+            'start' => $card->canStart
+                ? StartPlanData::from(['planId' => (string) $card->id, 'planNumber' => (string) $card->number])
+                : null,
         ], fn (mixed $fieldValue) => $fieldValue !== null));
     }
 }

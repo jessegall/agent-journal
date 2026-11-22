@@ -12,9 +12,12 @@ use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
+use Domain\Tasks\Commands\FinishTask;
+use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Models\Task;
 use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -26,32 +29,42 @@ final class PlanDetailsResolverTest extends TestCase
     use ActsAsTestUser;
     use CommitsHookRows;
 
-    private const array TABLES = ['plans', 'phases', 'phase_tasks', 'tasks'];
+    private const array TABLES = [
+        'plans',
+        'phases',
+        'phase_tasks',
+        'tasks',
+        'task_runs',
+        'agent_stacks',
+        'claim_authorizations',
+        'command_receipts',
+    ];
 
     public function test_progress_equals_the_web_lists_and_a_finishing_task_shows_on_the_next_read(): void
     {
         $plan = Plan::factory()->create(['title' => 'Counted plan', 'brief' => 'Count it.']);
         $tasks = Task::factory()->count(3)->create();
+        $tasks[0]->finish('Done.');
 
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($plan, 'Work'),
             array_values($tasks->modelKeys()),
         );
 
-        $tasks[0]->finish('Done.');
         $resolver = $this->app->make(PlanDetailsResolver::class);
 
         $details = $resolver->plan($plan->id, ReadView::Context);
         $card = $this->app->make(PlanResolver::class)->list(new PlanFilters(search: 'Counted plan'))->cards[0];
 
         $this->assertEquals($card->progress, $details->progress);
-        $this->assertSame([1, 3], [$details->progress->done, $details->progress->total]);
+        $this->assertSame([1, 3], [$details->progress->finished, $details->progress->total]);
         $this->assertSame('Count it.', $details->brief);
         $this->assertNull($resolver->plan($plan->id, ReadView::Summary)->brief);
 
-        $tasks[1]->finish('Done.');
+        $this->runAs(TestActors::user(7), new StartTask($tasks[1]->id));
+        $this->runAs(TestActors::user(7), new FinishTask($tasks[1]->id, 1, 'Done.'));
 
-        $this->assertSame(2, $resolver->plan($plan->id, ReadView::Summary)->progress->done);
+        $this->assertSame(2, $resolver->plan($plan->id, ReadView::Summary)->progress->finished);
     }
 
     #[TimeLimit(seconds: 5, reason: 'It builds 120 tasks in one plan and reads them in three pages.')]

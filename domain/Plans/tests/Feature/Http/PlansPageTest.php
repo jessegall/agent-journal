@@ -73,15 +73,17 @@ final class PlansPageTest extends TestCase
             ->where('page.data.filters.q', 'release')
             ->where('page.data.filters.plan', (string) $this->release->number)
             ->count('page.data.rows', 1)
+            ->where('page.data.rows.0.start.planNumber', (string) $this->release->number)
             ->where('page.data.selected.card.title', 'Build the release page')
             ->where('page.data.selected.insideResults', true)
-            ->where('page.data.selected.start.planId', (string) $this->release->id));
+            ->where('page.data.selected.brief', $this->release->brief)
+            ->where('page.data.selected.card.start.planId', (string) $this->release->id));
 
         $this->actingAs($this->owner)->get(
             "/plans?q=release&plan={$this->paused->number}",
         )->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.selected.insideResults', false)
-            ->missing('page.data.selected.start'));
+            ->missing('page.data.selected.card.start'));
     }
 
     public function test_a_selection_that_cannot_be_read_shows_no_title(): void
@@ -155,8 +157,16 @@ final class PlansPageTest extends TestCase
             ->where('page.data.planNumber', (string) $this->release->number)
             ->where('page.data.number', '1')
             ->where('page.data.title', 'Read')
-            ->where('page.data.tasks.0.number', (string) $task->number)
-            ->where('page.data.tasks.0.title', 'List the plans'));
+            ->where('page.data.tasks.rows.0.number', (string) $task->number)
+            ->where('page.data.tasks.rows.0.title', 'List the plans')
+            ->where('page.data.tasks.revision', 2)
+            ->missing('page.data.tasks.nextAfter')
+            ->where('page.data.finishedTasks', 0)
+            ->where('page.data.cancelledTasks', 0)
+            ->where('page.data.totalTasks', 1)
+            ->where('page.data.isCurrent', true)
+            ->where('page.data.canRunChecks', true)
+            ->missing('page.data.checkReceipt'));
 
         $this->actingAs($this->owner)->get("/plans/{$this->paused->number}/phases/1")->assertNotFound();
         $this->actingAs($this->owner)->get("/plans/{$this->release->number}/phases/2")->assertNotFound();

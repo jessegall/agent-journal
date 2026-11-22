@@ -23,6 +23,7 @@ use App\Agents\Values\StackTarget;
 use App\Assignments\Contracts\AssignmentFactPublisher;
 use App\Assignments\Contracts\AssignmentStorage;
 use App\Assignments\Enums\AssignmentReason;
+use App\Assignments\Models\WorkerReservation;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentResult;
 use App\Bus\Contracts\CommandFacts;
@@ -64,6 +65,10 @@ final readonly class RetireAgentHandler implements CommandHandler
 
         foreach ($this->cancelPendingOfAgent($target->id) as $account) {
             $this->commandFacts->publishAfterCommit(new AccountUseChanged($account));
+        }
+
+        foreach (WorkerReservation::lockedFor([AssigneeIdentity::of($target)]) as $reservation) {
+            $reservation->releaseAll();
         }
 
         $released = $this->store->releaseAll(AssigneeIdentity::of($target));

@@ -27,6 +27,14 @@ final readonly class TaskCounts implements TaskProgressCounter
     {
         $this->actors->actor();
 
+        return $this->progressOfPlaced($ids);
+    }
+
+    /**
+     * @param  list<string>  $ids
+     */
+    public function progressOfPlaced(array $ids): TaskProgress
+    {
         $states = Task::query()->whereKey($ids)->readExactly(count($ids))->pluck('state')->countBy(
             fn (TaskState $state) => $state->value,
         );

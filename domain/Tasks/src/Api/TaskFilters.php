@@ -8,8 +8,7 @@ use App\Assignments\Support\NumberedPage;
 use Domain\Tasks\Enums\TaskState;
 
 /**
- * Which of the tasks the calling agent holds to list: a title search, the states to keep (none means every state) and
- * the page.
+ * Which tasks to list: a title search, the states to keep (none means every state), who holds them, and the page.
  */
 final readonly class TaskFilters
 {
@@ -22,5 +21,6 @@ final readonly class TaskFilters
         public array $states = [],
         public NumberedPage $page = new NumberedPage(),
         public array $environmentIds = [],
+        public TaskHolderFilter $holder = TaskHolderFilter::Any,
     ) {}
 }

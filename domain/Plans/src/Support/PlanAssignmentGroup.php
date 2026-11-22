@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
+use App\Assignments\Exceptions\AssignmentGroupTooLarge;
 use App\Assignments\Support\AssignmentGroup;
 use App\Bus\Values\RecoveryCall;
 use App\Records\Exceptions\RecordUnavailable;
@@ -35,6 +36,7 @@ final readonly class PlanAssignmentGroup
     private function forPlan(RecordIdentity $root): AssignmentGroup
     {
         $plan = Plan::lockStructure($root->id);
+        self::assertWithinLimit(1 + $plan->phases()->count() + $plan->total_tasks);
 
         $phases = Phase::query()->where(
             'plan_id',
@@ -51,6 +53,7 @@ final readonly class PlanAssignmentGroup
     {
         $phase = Phase::query()->findOr($root->id, fn () => throw RecordUnavailable::for($root));
         Plan::lockStructure($phase->plan_id);
+        self::assertWithinLimit(1 + $phase->total_tasks);
 
         return $this->group($root, $phase->plan_id, $this->tasks->records($this->taskIdsOf(new Collection([$phase]))));
     }
@@ -82,5 +85,18 @@ final readonly class PlanAssignmentGroup
                     ->all(),
             ),
         );
+    }
+
+    /**
+     * Refuses a unit larger than the one limit before any of its records is read: the count comes from the plan's and
+     * phases' task tallies and one count of the plan's phases.
+     *
+     * @throws AssignmentGroupTooLarge
+     */
+    private static function assertWithinLimit(int $records): void
+    {
+        if ($records > AssignmentGroup::LARGEST) {
+            throw AssignmentGroupTooLarge::for($records);
+        }
     }
 }

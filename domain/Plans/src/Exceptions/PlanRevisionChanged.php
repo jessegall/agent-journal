@@ -12,7 +12,7 @@ use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * An edit made against a revision of the plan that is no longer its latest; the newer text stays.
+ * An edit made against a revision or a state of the plan that is no longer its latest; the newer plan stays.
  */
 final class PlanRevisionChanged extends RuntimeException implements CodedRefusal, CommandRefusal
 {
@@ -28,6 +28,11 @@ final class PlanRevisionChanged extends RuntimeException implements CodedRefusal
                 $expected,
             ),
         );
+    }
+
+    public static function inState(int $number, string $state): self
+    {
+        return new self("Plan {$number} changed since you read it: it is now {$state}; read it again to decide.");
     }
 
     public function refusalCode(): RefusalCode

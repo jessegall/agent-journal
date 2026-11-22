@@ -64,7 +64,7 @@ final class PlanToolsTest extends TestCase
         $check->finish('Done.');
 
         $read = $this->callMcpTool($this->caller, 'plans_read', ['plan_id' => $id, 'view' => 'context'])
-            ->assertJsonPath('result.structuredContent.progress.done', 2)
+            ->assertJsonPath('result.structuredContent.progress.finished', 2)
             ->assertJsonPath('result.structuredContent.progress.total', 2)
             ->assertJsonPath('result.structuredContent.phases.0.phase_id', $first)
             ->assertJsonPath('result.structuredContent.phases.1.phase_id', $second)
@@ -93,7 +93,7 @@ final class PlanToolsTest extends TestCase
             ->assertJsonPath('result.structuredContent.code', 'forbidden')
             ->assertJsonPath(
                 'result.structuredContent.message',
-                'This plan is cancelled and cannot start; only a planned plan starts.',
+                "Plan {$plan->number} is cancelled and cannot start; only a planned plan starts.",
             );
         $this->assertSame(PlanState::Cancelled, $plan->refresh()->state);
     }

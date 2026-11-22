@@ -86,7 +86,11 @@ final class TaskCommandsTest extends TestCase
 
         $task->finish('Done.');
 
-        $this->assertEquals([new TaskFinished($task->id)], $task->takeRaisedEvents());
+        $raised = $task->takeRaisedEvents();
+
+        $this->assertCount(1, $raised);
+        $this->assertInstanceOf(TaskFinished::class, $raised[0]);
+        $this->assertSame([$task->id, TaskState::Open], [$raised[0]->taskId, $raised[0]->previousState]);
         Event::assertNotDispatched(TaskFinished::class);
     }
 

@@ -17,6 +17,7 @@ use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Commands\FinishTask;
+use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Event;
@@ -101,7 +102,7 @@ final class PageChangeTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->app->make(ConnectionInterface::class)->transaction(function () use ($task): void {
-                $this->app->make('events')->dispatch(new TaskFinished($task->id));
+                $this->app->make('events')->dispatch(new TaskFinished($task->id, TaskState::Started, 'entry'));
 
                 throw SimulatedFailure::of('The change fails.');
             }),

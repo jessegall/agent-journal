@@ -11,16 +11,32 @@ import SourcePane from '@/components/text/SourcePane.vue';
 import TextComposer from '@/components/text/TextComposer.vue';
 import { describeRange, subjectFields, type CommentSubject, type TextRangeChoice } from '@/components/text/textRange';
 import { renderedLineRange } from '@/components/text/useRenderedSelection';
+import { clearCommentThread, type CommentThread } from './commentThreads';
 
 /**
  * Writes one comment on a record. It is about the whole record unless the reader chooses a place in the text: a
  * section, the lines of selected paragraphs, or an exact quote confirmed in the source. A record without text (no
  * version) offers no such choice. A retry of the same draft keeps its submission key; a failed post keeps the text and
- * the chosen place.
+ * the chosen place. Given a pane's thread, the draft and its key live there, so they last across tabs; a post whose
+ * answer is lost is frozen as it was sent and can only be checked by replaying it under its key, after which Send as
+ * new comment takes a fresh key; a refusal (403) clears the draft, the attempt and the key.
  */
-const props = defineProps<{ target: string; version?: string; reads?: RecordReadsData }>();
+const props = defineProps<{ target: string; version?: string; reads?: RecordReadsData; thread?: CommentThread }>();
 
-const form = useForm({ target: props.target, body: '', submission_key: crypto.randomUUID() });
+const form = useForm({
+    target: props.target,
+    body: props.thread?.draft.body ?? '',
+    submission_key: props.thread?.draft.key ?? crypto.randomUUID(),
+});
+
+watch(
+    () => form.body,
+    (body) => {
+        if (props.thread !== undefined) {
+            props.thread.draft.body = body;
+        }
+    },
+);
 const subject = ref<CommentSubject>({ type: 'record' });
 const sourceWindow = ref<{ firstLine: number; lastLine: number } | null>(null);
 const sectionList = ref<Section[]>([]);
@@ -57,21 +73,92 @@ function loadSections(): void {
     router.reload({ only: ['page'], data: { sectionsVersion: props.version ?? '' } });
 }
 
-function send(): void {
-    const sending = formSendingHooks();
+function freshKey(): void {
+    form.submission_key = crypto.randomUUID();
 
-    form.transform((fields) => ({ ...fields, ...subjectFields(subject.value) })).post(post.url(), {
+    if (props.thread !== undefined) {
+        props.thread.draft.key = form.submission_key;
+    }
+}
+
+function freeze(fields: Record<string, unknown>): boolean {
+    if (props.thread !== undefined) {
+        props.thread.attempt = { fields, key: form.submission_key };
+        props.thread.isChecked = false;
+    }
+
+    return false;
+}
+
+function refuse(response: { status: number }): boolean {
+    if (props.thread !== undefined && response.status === 403) {
+        clearCommentThread(props.thread);
+        form.body = '';
+        form.submission_key = props.thread.draft.key;
+
+        return false;
+    }
+
+    return props.thread === undefined;
+}
+
+function check(): void {
+    const thread = props.thread;
+    const attempt = thread?.attempt;
+
+    if (thread === undefined || attempt === null || attempt === undefined) {
+        return;
+    }
+
+    const generation = thread.generation;
+    router.post(post.url(), attempt.fields as Record<string, string>, {
         preserveScroll: true,
         onSuccess: () => {
+            if (thread.generation !== generation) {
+                return;
+            }
+
+            thread.attempt = null;
+            thread.isChecked = true;
+            freshKey();
+        },
+        onNetworkError: () => false,
+        onHttpException: refuse,
+    });
+}
+
+function send(): void {
+    const sending = formSendingHooks();
+    const fields = {
+        target: form.target,
+        body: form.body,
+        submission_key: form.submission_key,
+        ...subjectFields(subject.value),
+    };
+    const generation = props.thread?.generation ?? 0;
+
+    form.transform((formFields) => ({ ...formFields, ...subjectFields(subject.value) })).post(post.url(), {
+        preserveScroll: true,
+        onNetworkError: () => freeze(fields),
+        onHttpException: refuse,
+        onSuccess: () => {
+            if (props.thread !== undefined && props.thread.generation !== generation) {
+                return;
+            }
+
             form.reset('body');
-            form.submission_key = crypto.randomUUID();
+            freshKey();
             subject.value = { type: 'record' };
+
+            if (props.thread !== undefined) {
+                props.thread.isChecked = false;
+            }
         },
         onStart: sending.onStart,
         onFinish: () => {
             sending.onFinish();
 
-            if (!form.wasSuccessful && !form.hasErrors) {
+            if (!form.wasSuccessful && !form.hasErrors && props.thread === undefined) {
                 router.reload();
             }
         },
@@ -80,7 +167,21 @@ function send(): void {
 </script>
 
 <template>
-    <TextComposer v-model="form.body" :pending="form.processing" :errors="form.errors" placeholder="Write a comment" send-label="Post comment" @send="send">
+    <template v-if="thread?.attempt">
+        <p role="status" class="flex flex-wrap items-center gap-2 text-small text-text-2">
+            <span>Outcome unknown: your comment may or may not have been posted.</span>
+            <Button variant="bordered" @click="check">Check comment</Button>
+        </p>
+    </template>
+    <TextComposer
+        v-model="form.body"
+        :pending="form.processing"
+        :errors="form.errors"
+        placeholder="Write a comment"
+        :send-label="thread?.isChecked ? 'Send as new comment' : 'Post comment'"
+        :send-disabled="thread?.attempt !== null && thread?.attempt !== undefined"
+        @send="send"
+    >
         <template #before>
             <p class="text-small text-text-3" aria-live="polite">
                 <SwitchItem :item="subject" by="type">

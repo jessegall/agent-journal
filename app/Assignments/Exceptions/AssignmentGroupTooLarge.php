@@ -11,6 +11,6 @@ final class AssignmentGroupTooLarge extends RuntimeException implements CommandR
 {
     public static function for(int $count): self
     {
-        return new self("One command covers at most 1000 records; this one would cover {$count}.");
+        return new self("This work unit exceeds the 1,000-record limit: it would cover {$count} records.");
     }
 }

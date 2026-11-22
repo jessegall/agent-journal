@@ -4,9 +4,18 @@ import FormErrors from '@/components/kit/FormErrors.vue';
 
 /**
  * A text box with its send button, pending state and field errors. It knows nothing of what the text is for, so a
- * comment form and a chat can both use it.
+ * comment form and a chat can both use it. Its caller may hold the send back, such as while an earlier post is unknown.
  */
-defineProps<{ pending: boolean; errors: Record<string, string>; placeholder: string; sendLabel: string }>();
+withDefaults(
+    defineProps<{
+        pending: boolean;
+        errors: Record<string, string>;
+        placeholder: string;
+        sendLabel: string;
+        sendDisabled?: boolean;
+    }>(),
+    { sendDisabled: false },
+);
 
 defineEmits<{ send: [] }>();
 
@@ -19,7 +28,7 @@ const text = defineModel<string>({ required: true });
         <textarea v-model="text" class="input" rows="3" :placeholder="placeholder" />
         <div class="flex flex-wrap gap-2">
             <slot name="actions" />
-            <Button type="submit" variant="primary" :pending="pending" :disabled="pending">{{ sendLabel }}</Button>
+            <Button type="submit" variant="primary" :pending="pending" :disabled="pending || sendDisabled">{{ sendLabel }}</Button>
         </div>
         <slot name="after" />
         <FormErrors :errors="errors" />

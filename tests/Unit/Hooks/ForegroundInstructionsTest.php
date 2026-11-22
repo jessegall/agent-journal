@@ -28,7 +28,7 @@ final class ForegroundInstructionsTest extends TestCase
 
     public function test_a_plan_frame_names_its_plan_and_the_counts_it_was_read_with(): void
     {
-        $progress = new PlanProgress(done: 2, started: 1, blocked: 0, total: 4);
+        $progress = new PlanProgress(finished: 2, cancelled: 0, blocked: 0, started: 1, total: 4);
         $state = new WorkingOnPlanState(new PlanWork('plan-7', 7, PlanState::Started), fn () => $progress);
 
         $this->assertSame(

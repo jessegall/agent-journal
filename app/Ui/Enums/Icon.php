@@ -12,6 +12,7 @@ enum Icon: string
     case Home = 'home';
     case Chat = 'chat';
     case Plan = 'plan';
+    case Tasks = 'todos';
     case Rules = 'rules';
     case Docs = 'docs';
     case Activity = 'activity';

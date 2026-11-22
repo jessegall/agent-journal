@@ -7,6 +7,7 @@ namespace Tests\Feature\Mcp;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Models\TaskLogEntry;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
@@ -22,7 +23,7 @@ final class TaskToolsTest extends TestCase
     use SendsSignedCalls;
 
     private const array TABLES = [
-        'users', 'tasks', 'task_runs', 'agents', 'agent_sessions', 'start_tokens', 'agent_stacks',
+        'users', 'tasks', 'task_runs', 'task_log_entries', 'agents', 'agent_sessions', 'start_tokens', 'agent_stacks',
         'hook_calls', 'links', 'assignments', 'claim_authorizations', 'command_receipts',
     ];
 
@@ -105,6 +106,37 @@ final class TaskToolsTest extends TestCase
         $this->callMcpTool($this->caller, 'tasks_read', ['task_id' => $task->id, 'view' => 'context'])
             ->assertJsonPath('result.structuredContent.block_reason', 'Needs a decision.')
             ->assertJsonPath('result.structuredContent.cancel_reason', 'Work was superseded.');
+    }
+
+    public function test_a_worker_logs_twice_in_its_run_and_a_caller_without_that_run_is_refused(): void
+    {
+        $task = Task::factory()->create();
+        $run = $this->start($task);
+
+        foreach (['Read the schema.', 'Wrote the migration.'] as $offset => $text) {
+            $this->callMcpTool($this->caller, 'tasks_log', [
+                'task_id' => $task->id,
+                'run_number' => $run,
+                'text' => $text,
+                'request_key' => "log-{$offset}",
+            ])->assertJsonPath('result.isError', false);
+        }
+
+        $this->assertSame(
+            [[$run, 'Read the schema.', 1], [$run, 'Wrote the migration.', 2]],
+            array_map(
+                fn (TaskLogEntry $entry) => [$entry->run_number, $entry->text, $entry->sequence],
+                TaskLogEntry::query()->where('task_id', $task->id)->orderBy('sequence')->get()->all(),
+            ),
+        );
+
+        $this->callMcpTool($this->caller, 'tasks_log', [
+            'task_id' => $task->id,
+            'run_number' => $run + 1,
+            'text' => 'Not my run.',
+            'request_key' => 'log-other-run',
+        ])->assertJsonPath('result.isError', true);
+        $this->assertSame(2, TaskLogEntry::query()->where('task_id', $task->id)->count());
     }
 
     public function test_the_resource_and_tool_return_the_same_context_and_continuation_page(): void

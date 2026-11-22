@@ -1,22 +1,30 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 import Button from '@kit/Button';
+import EmptyState from '@kit/EmptyState';
+import { useHostProp } from '@/framework/hostProp';
 import ListReaderLayout from '@kit/ListReaderLayout';
 import PageHeader from '@kit/PageHeader';
+import StaleListNotice from '@kit/StaleListNotice';
+import { useFilteredReads } from '@kit/useFilteredReads';
 import type { PlanFiltersData, PlanListData } from '@generated/types/plans';
+import { rememberOpenedPlan, takeOpenedPlan } from './openedPlans';
 import PlanCard from './PlanCard.vue';
 import PlanReader from './PlanReader.vue';
 
 /**
  * The plans slice: a search, the card grid, paging and the reader. It takes the slice alone, so Home can reuse it; the
- * page that shows it says where a link to other filters goes, the plans page by default.
+ * page that shows it says where a link to other filters goes, the plans page by default. A read that gets no answer
+ * keeps the rows it had, says so and offers Retry of that same read; closing the reader gives the focus back to the
+ * row that opened it, on the page it was on.
  */
 const props = defineProps<{
     plans: PlanListData;
     urlForFilters: (filters: PlanFiltersData) => string;
 }>();
 
+const windowProp = useHostProp();
+const list = useTemplateRef<HTMLElement>('list');
 const search = ref(props.plans.filters.q);
 watch(
     () => props.plans.filters.q,
@@ -28,22 +36,59 @@ const pagination = computed(() => props.plans.pagination);
 const pageText = computed(
     () => `Page ${pagination.value.page} of ${pagination.value.lastPage}`,
 );
+const isFiltered = computed(
+    () => filters.value.q !== '' || filters.value.state !== undefined,
+);
+const emptyTitle = computed(() =>
+    filters.value.q === ''
+        ? 'No plans match this filter'
+        : `No plans match "${filters.value.q}"`,
+);
+const isReaderOpen = computed(
+    () => props.plans.selected !== undefined || props.plans.selectionMissing,
+);
+const { read, retry, isStale } = useFilteredReads();
 
 function urlFor(changes: Partial<PlanFiltersData>): string {
     return props.urlForFilters({ ...filters.value, ...changes });
 }
 
 function submitSearch(): void {
-    router.get(
-        urlFor({ q: search.value, page: 1, plan: undefined }),
-        {},
-        { preserveScroll: true },
-    );
+    read(urlFor({ q: search.value, page: 1, plan: undefined }));
 }
+
+function clearFilters(): void {
+    read(urlFor({ q: '', state: undefined, page: 1, plan: undefined }));
+}
+
+async function followSelection(plan: string | undefined): Promise<void> {
+    if (plan !== undefined) {
+        rememberOpenedPlan(windowProp, plan);
+
+        return;
+    }
+
+    const opened = takeOpenedPlan(windowProp);
+
+    if (opened === undefined) {
+        return;
+    }
+
+    await nextTick();
+    list.value
+        ?.querySelector<HTMLElement>(`[data-plan-number="${opened}"] a`)
+        ?.focus();
+}
+
+onMounted(() => followSelection(filters.value.plan));
+watch(() => filters.value.plan, followSelection);
 </script>
 
 <template>
-    <ListReaderLayout>
+    <ListReaderLayout
+        :narrow-shows="isReaderOpen ? 'reader' : 'list'"
+        :back="{ href: urlFor({ plan: undefined }), label: 'Back to plans' }"
+    >
         <template #top>
             <PageHeader title="Plans" :count="pagination.total" />
             <form
@@ -64,16 +109,37 @@ function submitSearch(): void {
                     pageText
                 }}</span>
             </form>
+            <template v-if="isStale">
+                <StaleListNotice
+                    reason="The plans could not be read."
+                    @retry="retry"
+                />
+            </template>
         </template>
         <template #list>
-            <div class="@container p-3">
-                <template v-if="plans.rows.length === 0 && (filters.q || filters.state)">
-                    <p class="p-3 text-empty text-text-3">
-                        No plans match these filters.
-                    </p>
-                </template>
-                <template v-else-if="plans.rows.length === 0">
-                    <p class="p-3 text-empty text-text-3">No plans yet</p>
+            <div ref="list" class="@container p-3">
+                <template v-if="plans.rows.length === 0">
+                    <template v-if="isFiltered">
+                        <EmptyState
+                            icon="search"
+                            :title="emptyTitle"
+                            text="Clear the filters to see every plan."
+                        >
+                            <Button
+                                variant="bordered"
+                                size="small"
+                                @click="clearFilters"
+                                >Clear</Button
+                            >
+                        </EmptyState>
+                    </template>
+                    <template v-else>
+                        <EmptyState
+                            icon="plan"
+                            title="No plans yet"
+                            text="A plan shows here once someone writes one."
+                        />
+                    </template>
                 </template>
                 <div
                     class="grid grid-cols-1 gap-2.5 @[600px]:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]"
@@ -83,6 +149,7 @@ function submitSearch(): void {
                             :card="card"
                             :href="urlFor({ plan: card.number })"
                             :selected="filters.plan === card.number"
+                            :data-plan-number="card.number"
                         />
                     </template>
                 </div>
@@ -91,7 +158,7 @@ function submitSearch(): void {
                         <Button
                             size="small"
                             variant="bordered"
-                            :href="urlFor({ page: pagination.page - 1 })"
+                            @click="read(urlFor({ page: pagination.page - 1 }))"
                             >Previous</Button
                         >
                     </template>
@@ -100,7 +167,7 @@ function submitSearch(): void {
                             size="small"
                             variant="bordered"
                             class="ml-auto"
-                            :href="urlFor({ page: pagination.page + 1 })"
+                            @click="read(urlFor({ page: pagination.page + 1 }))"
                             >Next</Button
                         >
                     </template>

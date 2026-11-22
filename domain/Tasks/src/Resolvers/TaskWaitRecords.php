@@ -1,0 +1,122 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Tasks\Resolvers;
+
+use App\Actors\Contracts\CurrentActor;
+use App\Actors\Support\ActorIdentity;
+use Carbon\CarbonImmutable;
+use Domain\Tasks\Api\TaskWaitLink;
+use Domain\Tasks\Api\TaskWaits;
+use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskWaitResolver;
+use Domain\Tasks\Models\Task;
+use Domain\Tasks\Models\TaskWait;
+use Illuminate\Database\Eloquent\Collection;
+
+/**
+ * Reads the waits between tasks with a fixed number of queries: the waits, then the other tasks of the page in one
+ * batch; each wait is judged by TaskWait's one rule.
+ */
+final readonly class TaskWaitRecords implements TaskWaitResolver
+{
+    public const int MOST_WAITS_SHOWN = 100;
+
+    public function __construct(
+        private CurrentActor $actors,
+        private TaskResolver $visibility,
+    ) {}
+
+    public function waitsOf(string $taskId): TaskWaits
+    {
+        $this->visibility->requireVisible($taskId);
+        $waits = TaskWait::waitsOf($taskId, self::MOST_WAITS_SHOWN);
+        $holds = TaskWait::holdersOf($taskId, self::MOST_WAITS_SHOWN);
+        $others = self::tasksOf([
+            ...array_map(strval(...), $waits->pluck('prerequisite_task_id')->all()),
+            ...array_map(strval(...), $holds->pluck('dependent_task_id')->all()),
+        ]);
+        $self = Task::ofId($taskId);
+
+        return new TaskWaits(
+            array_values($waits->map(fn (TaskWait $wait) => self::linkOf(
+                $wait,
+                $others[$wait->prerequisite_task_id] ?? null,
+                $wait->prerequisite_task_id,
+                $others[$wait->prerequisite_task_id] ?? null,
+            ))->all()),
+            array_values($holds->map(fn (TaskWait $wait) => self::linkOf(
+                $wait,
+                $others[$wait->dependent_task_id] ?? null,
+                $wait->dependent_task_id,
+                $self,
+            ))->all()),
+        );
+    }
+
+    public function withWaitsAmong(array $taskIds): array
+    {
+        $this->actors->actor();
+
+        return TaskWait::dependentIdsAmong($taskIds);
+    }
+
+    public function readyAmong(array $taskIds): array
+    {
+        $this->actors->actor();
+        $waits = TaskWait::waitsOfTasks($taskIds);
+        $prerequisites = self::tasksOf(
+            array_values(array_map(strval(...), $waits->pluck('prerequisite_task_id')->all())),
+        );
+        $blocked = [];
+
+        foreach ($waits as $wait) {
+            if (! $wait->isSatisfiedBy(($prerequisites[$wait->prerequisite_task_id] ?? null)?->state)) {
+                $blocked[$wait->dependent_task_id] = true;
+            }
+        }
+
+        return array_values(array_filter($taskIds, fn (string $id) => ! isset($blocked[$id])));
+    }
+
+    /**
+     * The link to the other task of the wait; the wait is judged by its prerequisite, whichever side is shown.
+     */
+    private static function linkOf(
+        TaskWait $wait,
+        Task|null $other,
+        string $otherId,
+        Task|null $prerequisite,
+    ): TaskWaitLink {
+        return new TaskWaitLink(
+            $otherId,
+            $other?->number,
+            $other?->title,
+            $other?->state,
+            $wait->isSatisfiedBy($prerequisite?->state),
+            $wait->waive_reason,
+            $wait->waived_at === null ? null : CarbonImmutable::parse($wait->waived_at),
+            $wait->waived_by_type === null || $wait->waived_by_id === null
+                ? null
+                : new ActorIdentity($wait->waived_by_type, $wait->waived_by_id),
+        );
+    }
+
+    /**
+     * @param  list<string>  $ids
+     * @return array<string, Task>
+     */
+    private static function tasksOf(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        /** @var Collection<int, Task> $tasks */
+        $tasks = Task::query()->whereKey(array_values(array_unique($ids)))
+            ->readExactly(count(array_unique($ids)))->get(['id', 'number', 'title', 'state']);
+
+        return $tasks->keyBy('id')->all();
+    }
+}

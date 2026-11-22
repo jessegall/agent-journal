@@ -872,6 +872,7 @@ use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\CommandRuleProvider;
 use App\Processes\Contracts\FactOrigin;
 use App\Processes\Contracts\ProgramClassifier;
+use App\Processes\Contracts\ProcessRunCallers;
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Contracts\ServedEnvironment;
 use App\Processes\Contracts\ShellCommandParser;
@@ -1542,6 +1543,7 @@ final class CoreApi
                 ProgramClassifier::class,
                 FactOrigin::class,
                 ResultReceipts::class,
+                ProcessRunCallers::class,
                 ServedEnvironment::class,
                 EnvironmentTasks::class,
                 VerificationTiming::class,

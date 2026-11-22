@@ -12,6 +12,8 @@ use App\Assignments\Contracts\Assignable;
 use App\Assignments\Enums\PoolMembersType;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\AssignmentHolder;
+use App\Comments\Contracts\Commentable;
+use App\Comments\Support\HasComments;
 use App\Assignments\Support\OrderedRecordIds;
 use App\Assignments\Support\PoolMembers;
 use App\Contracts\EventSource;
@@ -29,6 +31,7 @@ use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Api\TaskDetails;
+use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Api\TaskType;
@@ -48,10 +51,12 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -71,6 +76,7 @@ use PhpOption\Some;
  * @property TaskState $state
  * @property int $run_number
  * @property string|null $result_note
+ * @property-read string|null $stateText
  * @property string|null $block_reason
  * @property string|null $cancel_reason
  * @property string|null $environment_id
@@ -91,10 +97,11 @@ use PhpOption\Some;
     'cancel_reason',
     'environment_id',
 ])]
-final class Task extends Model implements Assignable, EventSource, Numbered, ReadableModel
+final class Task extends Model implements Assignable, Commentable, EventSource, Numbered, ReadableModel
 {
     use AssignableListing;
     use BoundedReads;
+    use HasComments;
 
     /**
      * @use HasFactory<TaskFactory>
@@ -177,6 +184,47 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     /**
+     * Holds the lock of the graph of waits of each environment, in order, to the end of the transaction; every change
+     * of a wait and every fresh start takes it before any task row.
+     *
+     * @param  list<string>  $environments  '' for the tasks made here
+     */
+    public static function lockWaitGraphs(array $environments): void
+    {
+        $environments = array_values(array_unique($environments));
+        sort($environments);
+
+        foreach ($environments as $environment) {
+            self::query()->getConnection()->select('select pg_advisory_xact_lock(hashtext(?))', [
+                "task-waits:{$environment}",
+            ]);
+        }
+    }
+
+    /**
+     * The task locked for a start: the graph of waits of its environment first, then its own row, so a start and a
+     * change of its waits never check against each other's stale state.
+     *
+     * @throws TaskMissing
+     */
+    public static function lockedForStart(string $id): self
+    {
+        self::lockWaitGraphs([(string) self::query()->whereKey($id)->value('environment_id')]);
+
+        return self::lockedById($id);
+    }
+
+    /**
+     * The task with this id, unlocked; none is refused as missing.
+     *
+     * @throws TaskMissing
+     */
+    public static function ofId(string $id): self
+    {
+        return self::query()->whereKey($id)->firstOr(fn () => throw TaskMissing::forId($id));
+    }
+
+    /**
      * The task read under its row lock, for a change that must happen once.
      */
     public static function lockedById(string $id): self
@@ -208,7 +256,8 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
             return new OrderedRecordIds([]);
         }
 
-        $query = self::query()->where('state', TaskState::Open)->whereNotIn('id', $assignedIds);
+        $query = self::query()->where('state', TaskState::Open)->outsideSelectedIds($assignedIds)
+            ->outsideSelectedIds(TaskWait::unmetDependentIds());
 
         $ordered = match ($members->type) {
             PoolMembersType::All => $query->orderBy('id'),
@@ -247,36 +296,56 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
             $this->run_number++;
         }
 
+        $previousState = $this->state;
         $this->state = TaskState::Started;
         $this->assertSaved($this->save());
-        $this->raise(new TaskStarted($this->id, $actor));
+        $this->raise(new TaskStarted($this->id, $actor, $previousState, (string) Str::ulid()));
     }
 
     public function finish(string $note): void
     {
+        $previousState = $this->state;
         $this->state = TaskState::Finished;
         $this->result_note = $note;
         $this->assertSaved($this->save());
-        $this->raise(new TaskFinished($this->id));
+        $this->raise(new TaskFinished($this->id, $previousState, (string) Str::ulid()));
     }
 
     public function block(string $reason): void
     {
+        $previousState = $this->state;
         $this->state = TaskState::Blocked;
         $this->block_reason = $reason;
         $this->assertSaved($this->save());
-        $this->raise(new TaskBlocked($this->id));
+        $this->raise(new TaskBlocked($this->id, $previousState, (string) Str::ulid()));
     }
 
     public function cancel(string $reason): void
     {
+        $previousState = $this->state;
         $this->state = TaskState::Cancelled;
         $this->cancel_reason = $reason;
         $this->assertSaved($this->save());
-        $this->raise(new TaskCancelled($this->id));
+        $this->raise(new TaskCancelled($this->id, $previousState, (string) Str::ulid()));
     }
 
     // ----------[ Answers ]----------
+
+    /**
+     * The words the task's current state was entered with: the finish note, the block reason or the cancel reason;
+     * none for an open or started task.
+     *
+     * @return Attribute<string|null, never>
+     */
+    protected function stateText(): Attribute
+    {
+        return Attribute::get(fn () => match ($this->state) {
+            TaskState::Finished => $this->result_note,
+            TaskState::Blocked => $this->block_reason,
+            TaskState::Cancelled => $this->cancel_reason,
+            TaskState::Open, TaskState::Started => null,
+        });
+    }
 
     public function isOpenForAssignment(): bool
     {
@@ -289,9 +358,10 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     /**
-     * Who works on the task's latest run, with the runner's label when the caller may see it.
+     * Who works on the task's latest run, with the runner's label when the caller may see it; it runs now while the
+     * task is started and a claim on that run is live.
      */
-    public function executionBy(ActorIdentity $runner, ActorLabelSet $labels): TaskExecution
+    public function executionBy(ActorIdentity $runner, ActorLabelSet $labels, bool $isClaimed): TaskExecution
     {
         return new TaskExecution(
             $runner->type,
@@ -299,6 +369,7 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
             $labels->nameOf($runner),
             $this->run_number,
             $this->state,
+            $isClaimed && $this->state === TaskState::Started,
         );
     }
 
@@ -334,6 +405,16 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     /**
+     * The task as a list shows it, with the holder and run its list read for the whole page.
+     *
+     * @param  Option<AssignmentHolder>  $holder
+     */
+    public function card(Option $holder, TaskExecution|null $execution): TaskCard
+    {
+        return new TaskCard($this->id, $this->number, $this->title, $this->state, $holder, $execution);
+    }
+
+    /**
      * The task as a read shows it, without its long texts.
      *
      * @param  Option<AssignmentHolder>  $holder
@@ -357,6 +438,28 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     // ----------[ Scopes ]----------
+
+    /**
+     * Tasks whose ids the subquery selects, such as the ids an actor holds.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function amongSelectedIds(Builder $query, QueryBuilder $ids): void
+    {
+        $query->whereIn('id', $ids);
+    }
+
+    /**
+     * Tasks whose ids the subquery does not select, such as the ids anyone holds.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function outsideSelectedIds(Builder $query, QueryBuilder $ids): void
+    {
+        $query->whereNotIn('id', $ids);
+    }
 
     /**
      * Tasks whose work is not over: open, started or blocked.

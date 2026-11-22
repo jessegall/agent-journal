@@ -85,6 +85,21 @@ final class PhaseTask extends Pivot implements ReadableModel
         return $taskIds;
     }
 
+    /**
+     * At most limit task ids of the phase placed after the position, in the phase's order, keyed by position; the
+     * phase's other places are never read.
+     *
+     * @return array<int, string>
+     */
+    public static function pageOf(string $phaseId, int $afterPosition, int $limit): array
+    {
+        return self::query()->where('phase_id', $phaseId)->where('position', '>', $afterPosition)
+            ->orderBy('position')->orderBy('task_id')->limit($limit)
+            ->pluck('task_id', 'position')
+            ->map(fn (mixed $taskId) => (string) $taskId)
+            ->all();
+    }
+
     // ----------[ Answers ]----------
 
     /**

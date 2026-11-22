@@ -70,7 +70,7 @@ final class PlanRecordsTest extends TestCase
         $build = $this->cardOf($cards, $this->build);
         $empty = $this->cardOf($cards, $this->empty);
 
-        $this->assertSame([1, 2, 2], [$build->progress->done, $build->progress->total, $build->currentPhase]);
+        $this->assertSame([1, 2, 2], [$build->progress->finished, $build->progress->total, $build->currentPhase]);
         $this->assertTrue($build->holder->isEmpty());
         $this->assertSame([0, null], [$empty->progress->total, $empty->currentPhase]);
     }

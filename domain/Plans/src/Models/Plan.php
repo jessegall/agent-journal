@@ -26,21 +26,27 @@ use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRelationSet;
 use Domain\Plans\Api\Events\PlanCancelled;
 use Domain\Plans\Api\Events\PlanFinished;
+use Domain\Plans\Api\Events\PlanReviewDecided;
+use Domain\Plans\Api\Events\PlanReviewRequested;
+use Domain\Plans\Api\Events\PlanReviewWithdrawn;
 use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanDetails;
 use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Database\Factories\PlanFactory;
+use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanTextLimit;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PhaseMissing;
+use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Exceptions\StartDenied;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -62,6 +68,12 @@ use PhpOption\Option;
  * @property string|null $finish_note
  * @property string|null $cancel_reason
  * @property PlanState $state
+ * @property int $total_tasks
+ * @property int $finished_tasks
+ * @property int $cancelled_tasks
+ * @property int $blocked_tasks
+ * @property int $started_tasks
+ * @property-read PlanProgress $progress
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -105,7 +117,15 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     /**
      * @var array<string, mixed>
      */
-    protected $attributes = ['state' => 'planned', 'revision' => 1];
+    protected $attributes = [
+        'state' => 'planned',
+        'revision' => 1,
+        'total_tasks' => 0,
+        'finished_tasks' => 0,
+        'cancelled_tasks' => 0,
+        'blocked_tasks' => 0,
+        'started_tasks' => 0,
+    ];
 
     // ----------[ Constructors ]----------
 
@@ -119,6 +139,11 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
             'state' => PlanState::class,
             'creator_type' => ActorType::class,
             'revision' => 'integer',
+            'total_tasks' => 'integer',
+            'finished_tasks' => 'integer',
+            'cancelled_tasks' => 'integer',
+            'blocked_tasks' => 'integer',
+            'started_tasks' => 'integer',
         ];
     }
 
@@ -205,7 +230,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         }
 
         if (! $this->state->canStart()) {
-            throw StartDenied::inState($this->state->value);
+            throw StartDenied::inState($this->number, $this->state->value);
         }
 
         $this->state = PlanState::Started;
@@ -215,7 +240,84 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         return true;
     }
 
+    /**
+     * Puts the planned plan up for review with its frozen edition; any other state refuses.
+     *
+     * @throws PlanReviewRefused
+     */
+    public function requestReview(string $editionId): void
+    {
+        if ($this->state !== PlanState::Planned) {
+            throw PlanReviewRefused::notPlanned($this->number, $this->state->value);
+        }
+
+        $this->state = PlanState::Reviewing;
+        $this->assertSaved($this->save());
+        $this->raise(new PlanReviewRequested($this->id, $editionId));
+    }
+
+    /**
+     * Takes the reviewing plan back to Planned after its review was withdrawn; any other state refuses.
+     *
+     * @throws PlanReviewRefused
+     */
+    public function withdrawReview(string $editionId): void
+    {
+        if ($this->state !== PlanState::Reviewing) {
+            throw PlanReviewRefused::notReviewing($this->number, $this->state->value);
+        }
+
+        $this->state = PlanState::Planned;
+        $this->assertSaved($this->save());
+        $this->raise(new PlanReviewWithdrawn($this->id, $editionId));
+    }
+
+    /**
+     * Takes the reviewing plan back to Planned with its review decided, approved or sent back for changes.
+     *
+     * @throws PlanReviewRefused
+     */
+    public function settleReview(string $editionId, PlanReviewState $decision): void
+    {
+        if ($this->state !== PlanState::Reviewing) {
+            throw PlanReviewRefused::notReviewing($this->number, $this->state->value);
+        }
+
+        $this->state = PlanState::Planned;
+        $this->assertSaved($this->save());
+        $this->raise(new PlanReviewDecided($this->id, $editionId, $decision));
+    }
+
+    /**
+     * Keeps the tallies of the tasks in the plan's phases, changed in the transaction that placed or moved one of them.
+     */
+    public function recordProgress(PlanProgress $progress): void
+    {
+        $this->total_tasks = $progress->total;
+        $this->finished_tasks = $progress->finished;
+        $this->cancelled_tasks = $progress->cancelled;
+        $this->blocked_tasks = $progress->blocked;
+        $this->started_tasks = $progress->started;
+        $this->assertSaved($this->save());
+    }
+
     // ----------[ Answers ]----------
+
+    /**
+     * How far the tasks in the plan's phases have got, from the tallies kept on the row; no task is read.
+     *
+     * @return Attribute<PlanProgress, never>
+     */
+    protected function progress(): Attribute
+    {
+        return Attribute::get(fn () => new PlanProgress(
+            $this->finished_tasks,
+            $this->cancelled_tasks,
+            $this->blocked_tasks,
+            $this->started_tasks,
+            $this->total_tasks,
+        ));
+    }
 
     /**
      * Whether the plan is being worked: started, and neither finished nor cancelled.
@@ -282,23 +384,14 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     /**
-     * The card of this plan from the progress of each phase, keyed by the phase's number. The current phase is the
-     * first one with unfinished tasks, or the last phase once every task is done; a plan without phases has none.
+     * The card of this plan with its own tallies and its current phase's number, none for a plan without phases.
      *
-     * @param  array<int, PlanProgress>  $progressOfPhase
      * @param  Option<AssignmentHolder>  $holder
      * @param  bool  $focused  whether this is the plan the caller's stack works on now
      */
-    public function card(array $progressOfPhase, Option $holder, bool $focused): PlanCard
+    public function card(int|null $currentPhase, Option $holder, bool $focused): PlanCard
     {
-        $progress = array_reduce(
-            $progressOfPhase,
-            fn (PlanProgress $combinedProgress, PlanProgress $phase) => $combinedProgress->plus($phase),
-            PlanProgress::none(),
-        );
-
-        $unfinished = array_keys(array_filter($progressOfPhase, fn (PlanProgress $phase) => ! $phase->isComplete()));
-        $currentPhase = $unfinished[0] ?? array_key_last($progressOfPhase);
+        $progress = $this->progress;
 
         return new PlanCard(
             $this->id,

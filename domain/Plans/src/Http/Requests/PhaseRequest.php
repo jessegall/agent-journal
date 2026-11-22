@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Http\Requests;
 
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
+use Domain\Plans\Http\Requests\Concerns\ReadsOutlinePages;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
@@ -17,6 +18,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class PhaseRequest extends FormRequest
 {
+    use ReadsOutlinePages;
     use ReadsRouteNumber;
 
     /**
@@ -24,7 +26,7 @@ final class PhaseRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [];
+        return $this->outlinePageRules();
     }
 
     public function phase(): Phase

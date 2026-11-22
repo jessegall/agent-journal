@@ -1,5 +1,6 @@
-import { usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { inject, provide } from 'vue';
+import { useHostProp } from './hostProp';
 
 const WINDOW_KEY = Symbol('journal.window');
 
@@ -69,4 +70,27 @@ export function useWindowQueryChange(): (
 
         return `${url.pathname}${url.search}`;
     };
+}
+
+/**
+ * Asks the server again for this window's prop alone, with extra query values for this window only, such as the
+ * cursor of a list's next page: on Home inside its own window[<key>] part, on its own page plainly. The answer
+ * replaces the prop; the window keeps what it already shows.
+ */
+export function useWindowReload(): (
+    values: Record<string, string>,
+    callbacks: {
+        onNetworkError: () => boolean;
+        onHttpException: (response: { status: number }) => boolean;
+    },
+) => void {
+    const key = inject<string | null>(WINDOW_KEY, null);
+    const prop = useHostProp();
+
+    return (values, callbacks) =>
+        router.reload({
+            only: [prop],
+            data: key === null ? values : { window: { [key]: values } },
+            ...callbacks,
+        });
 }

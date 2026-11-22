@@ -11,9 +11,11 @@ use App\Operations\Enums\AccessType;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskRunPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Regex;
 
 /**
- * Blocks the caller's current run of a task with the reason it waits; the task's work ends on every stack.
+ * Blocks the caller's current started run of a task with the reason it waits, not blank; the task's work ends on every
+ * stack. A blocked task is not blocked a second time.
  *
  * @extends Command<null>
  */
@@ -23,7 +25,7 @@ final readonly class BlockTask extends Command implements RecordCommand
     public function __construct(
         public string $taskId,
         public int $runNumber,
-        #[Max(Task::NOTE_CHARACTER_LIMIT)]
+        #[Max(Task::NOTE_CHARACTER_LIMIT), Regex('/\S/')]
         public string $reason,
     ) {}
 
