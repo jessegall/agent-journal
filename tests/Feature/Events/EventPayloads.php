@@ -25,6 +25,7 @@ use App\Communication\Events\ChatMemberJoined;
 use App\Communication\Events\ChatMemberLeft;
 use App\Communication\Events\ChatMessageAccepted;
 use App\Communication\Events\ChatReceiptPresented;
+use App\Communication\Events\ChatRoleChanged;
 use App\Communication\Events\MessageAnswered;
 use App\Communication\Events\MessageAnswerRequired;
 use App\Communication\Events\MessageClaimReleased;
@@ -284,6 +285,15 @@ final class EventPayloads
                     'inboxId' => 'string',
                     'member' => 'App\Actors\Support\ActorIdentity',
                     'reason' => 'App\Communication\Enums\LeaveReason',
+                ],
+            ],
+            ChatRoleChanged::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'intervalId' => 'string',
+                    'inboxId' => 'string',
+                    'member' => 'App\Actors\Support\ActorIdentity',
+                    'role' => 'App\Communication\Enums\IntervalRole',
                 ],
             ],
             ChatReceiptPresented::class => [

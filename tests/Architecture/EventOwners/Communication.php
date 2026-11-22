@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Enums\DismissalType;
+use App\Communication\Enums\IntervalRole;
 use App\Communication\Enums\LeaveReason;
 use App\Communication\Enums\ReceiptDeliveryState;
 use App\Communication\Enums\SpeechOpportunityState;
@@ -12,6 +13,7 @@ use App\Communication\Events\ChatMemberJoined;
 use App\Communication\Events\ChatMemberLeft;
 use App\Communication\Events\ChatMessageAccepted;
 use App\Communication\Events\ChatReceiptPresented;
+use App\Communication\Events\ChatRoleChanged;
 use App\Communication\Events\MessageAnswered;
 use App\Communication\Events\MessageAnswerRequired;
 use App\Communication\Events\MessageClaimReleased;
@@ -56,6 +58,18 @@ return [
             'inbox',
             new ActorIdentity(ActorType::Agent, 'agent'),
             LeaveReason::Left,
+        ),
+    ],
+    ChatRoleChanged::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'InboxInterval::takeRole',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ChatRoleChanged(
+            'interval',
+            'inbox',
+            new ActorIdentity(ActorType::User, 'user'),
+            IntervalRole::Owner,
         ),
     ],
     ChatReceiptPresented::class => [

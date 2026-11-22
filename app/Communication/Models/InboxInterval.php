@@ -10,6 +10,7 @@ use App\Communication\Enums\IntervalRole;
 use App\Communication\Enums\LeaveReason;
 use App\Communication\Events\ChatMemberJoined;
 use App\Communication\Events\ChatMemberLeft;
+use App\Communication\Events\ChatRoleChanged;
 use App\Communication\Exceptions\ChatStateConflict;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
@@ -118,6 +119,7 @@ final class InboxInterval extends Model implements EventSource, ReadableModel
 
         $this->role = $role;
         $this->assertSaved($this->save());
+        $this->raise(new ChatRoleChanged($this->id, $this->inbox_id, $this->actor, $role));
     }
 
     // ----------[ Answers ]----------

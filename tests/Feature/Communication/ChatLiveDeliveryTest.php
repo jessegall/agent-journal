@@ -1,0 +1,66 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Communication;
+
+use App\Actors\Enums\ChatPermission;
+use App\Actors\Support\ActorIdentity;
+use App\Communication\Enums\LeaveReason;
+use App\Communication\Events\ChatMemberLeft;
+use App\Communication\Events\ChatMessageAccepted;
+use App\Web\Events\ChatAccessEnded;
+use App\Web\Events\PageChanged;
+use App\Web\Listeners\BroadcastPageChange;
+use App\Web\Support\UserChannel;
+use Carbon\CarbonImmutable;
+use Domain\Access\Models\EnvironmentUserGrant;
+use Domain\Access\Models\User;
+use Domain\Chat\Commands\CreateGroupChat;
+use Domain\Chat\Commands\RemoveChatParticipant;
+use Illuminate\Support\Facades\Event;
+use Tests\Support\MessagingTestCase;
+
+/**
+ * A chat fact reaches each active member's channel, a member who leaves gets one access-ended notice, and nothing
+ * about the chat reaches it after that.
+ */
+final class ChatLiveDeliveryTest extends MessagingTestCase
+{
+    public function test_a_post_reaches_the_members_and_a_removed_member_hears_nothing_more(): void
+    {
+        $bea = User::factory()->create(['name' => 'Bea']);
+        EnvironmentUserGrant::grant(
+            $bea,
+            null,
+            [ChatPermission::ReceiveInvitations],
+            ActorIdentity::of($this->owner),
+            CarbonImmutable::now(),
+        );
+        $this->inboxOf(ActorIdentity::of($bea));
+        $this->asOwner();
+        $inboxId = $this->runOnBus(new CreateGroupChat('Design', [$bea->id]));
+        $listener = $this->app->make(BroadcastPageChange::class);
+        $owner = ActorIdentity::of($this->owner);
+
+        $this->assertTrue($this->app->make(UserChannel::class)->join($bea, $bea->id));
+
+        Event::fake([PageChanged::class, ChatAccessEnded::class]);
+        $listener->handle(new ChatMessageAccepted('message', $owner, $inboxId));
+        Event::assertDispatched(
+            PageChanged::class,
+            fn (PageChanged $change) => in_array($bea->id, $change->userIds, true),
+        );
+
+        $this->runOnBus(new RemoveChatParticipant($inboxId, "user:{$bea->id}"));
+        Event::fake([PageChanged::class, ChatAccessEnded::class]);
+        $listener->handle(new ChatMemberLeft('interval', $inboxId, ActorIdentity::of($bea), LeaveReason::Removed));
+        $listener->handle(new ChatMessageAccepted('later', $owner, $inboxId));
+
+        Event::assertDispatchedTimes(ChatAccessEnded::class, 1);
+        Event::assertNotDispatched(
+            PageChanged::class,
+            fn (PageChanged $change) => in_array($bea->id, $change->userIds, true),
+        );
+    }
+}

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Events;
 
 use App\Actors\Support\ActorIdentity;
+use App\Communication\Contracts\InboxScopedFact;
 use App\Communication\Enums\LeaveReason;
 use App\Contracts\Event;
 use App\Ui\Contracts\UserInterfaceUpdater;
@@ -12,7 +13,7 @@ use App\Ui\Contracts\UserInterfaceUpdater;
 /**
  * An actor's interval in a chat inbox ended, for the reason given.
  */
-final readonly class ChatMemberLeft implements Event, UserInterfaceUpdater
+final readonly class ChatMemberLeft implements Event, InboxScopedFact, UserInterfaceUpdater
 {
     public function __construct(
         public string $intervalId,
@@ -20,4 +21,9 @@ final readonly class ChatMemberLeft implements Event, UserInterfaceUpdater
         public ActorIdentity $member,
         public LeaveReason $reason,
     ) {}
+
+    public function scopedInboxId(): string
+    {
+        return $this->inboxId;
+    }
 }

@@ -64,6 +64,11 @@ export function connectUser(userId: string, handlers: LiveHandlers): UserConnect
             traceLive('signal received');
             handlers.onChange();
         })
+        // A chat the user left, was removed from or saw closed: the page is read again without it.
+        .listen('.chat.access-ended', () => {
+            traceLive('chat access ended');
+            handlers.onChange();
+        })
         .listen('.view.protected-invalidated', handlers.onProtectedViewInvalidated)
         .listen('.notifications.changed', handlers.onNotificationsChanged);
     echo.connector.pusher.connection.bind(
