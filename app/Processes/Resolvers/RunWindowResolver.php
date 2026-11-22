@@ -14,6 +14,9 @@ use App\Processes\Models\ProcessRun;
 use App\Processes\Resolvers\Support\RunSnapshotResolver;
 use App\Processes\Support\StoredOutput;
 use App\Ui\Contracts\PageResolver;
+use App\Ui\Layout\DeclaredLayoutData;
+use App\Ui\Layout\LayoutNativeData;
+use App\Ui\Layout\LayoutPartData;
 
 /**
  * One run of the current project for its page: the live snapshot, the escaped tail of every stream of every part and
@@ -29,18 +32,25 @@ final readonly class RunWindowResolver implements PageResolver
         private StoredOutput $output,
     ) {}
 
-    public function read(): RunWindowData
+    public function read(): DeclaredLayoutData
     {
         $snapshot = $this->snapshots->snapshot($this->page->runId());
         $run = ProcessRun::query()->forActor()->whereKey($snapshot->runId)->firstOrFail();
         $parts = $run->parts()->readLimit(500)->get();
 
-        return new RunWindowData(
+        $detail = new RunWindowData(
             $snapshot,
             $parts->mapWithKeys(fn (PartRun $part) => [$part->id => $this->outputsOf($part)])->all(),
             $parts->mapWithKeys(fn (PartRun $part) => [$part->id => $this->problemsOf($part)])->all(),
             $run->stop_reason,
         );
+
+        return DeclaredLayoutData::of(LayoutPartData::box(
+            'run',
+            'stack',
+            LayoutPartData::box('header', 'header', LayoutPartData::text('title', "Run {$snapshot->runId}", 'heading')),
+            LayoutPartData::native('detail', LayoutNativeData::of('processes/RunView', $detail)),
+        ));
     }
 
     /**

@@ -29,13 +29,15 @@ final class RunPageTest extends TestCase
         $part = $this->normalRun(0, "error: disk full\n".self::PASSED_OUTPUT);
 
         $this->page("/processes/runs/{$part->process_run_id}")->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('processes/RunView')
-            ->where('page.data.snapshot.parts.0.operation', 'acme verify')
-            ->where('page.data.snapshot.parts.0.receiptId', null)
-            ->where("page.data.outputs.{$part->id}.0.stream", 'stdout'));
+            ->component('layout/DeclaredLayout')
+            ->where('page.data.root.children.1.native.component', 'processes/RunView')
+            ->where('page.data.root.children.1.native.props.snapshot.parts.0.operation', 'acme verify')
+            ->where('page.data.root.children.1.native.props.snapshot.parts.0.receiptId', null)
+            ->where("page.data.root.children.1.native.props.outputs.{$part->id}.0.stream", 'stdout'));
         $this->page('/processes/runs')->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('processes/RunsWindow')
-            ->where('page.data.runs.0.id', $part->process_run_id));
+            ->component('layout/DeclaredLayout')
+            ->where('page.data.root.children.1.rows.0.key', $part->process_run_id)
+            ->where('page.data.root.children.1.rows.0.href', "/processes/runs/{$part->process_run_id}"));
     }
 
     public function test_the_owner_stops_a_running_run_and_another_project_sees_nothing(): void

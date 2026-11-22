@@ -31,14 +31,14 @@ final class RequestReviewPageTest extends TestCase
     public function test_the_list_shows_the_projects_requests_and_nothing_of_another_project(): void
     {
         $this->listPage()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('processes/RequestsWindow')
-            ->where('page.data.requests.0.id', $this->requestId)
-            ->where('page.data.requests.0.state', RequestState::AwaitingSampleApproval->value));
+            ->component('layout/DeclaredLayout')
+            ->where('page.data.root.children.2.children.1.rows.0.key', $this->requestId)
+            ->where('page.data.root.children.2.children.1.rows.0.value', RequestState::AwaitingSampleApproval->value));
 
         config(['processes.project_key' => 'another-project']);
 
         $this->listPage()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.requests', []));
+            ->where('page.data.root.children.2.children.1.tag', 'notice'));
         $this->actingAs($this->owner)->get("/processes/requests/{$this->requestId}")->assertNotFound();
     }
 
@@ -46,10 +46,11 @@ final class RequestReviewPageTest extends TestCase
     {
         $this->actingAs($this->owner)->get("/processes/requests/{$this->requestId}")->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->component('processes/RequestWindow')
-                ->where('page.data.proposals.0.revisions.0.operation', 'acme verify')
-                ->where('page.data.proposals.0.revisions.0.classes', ['read'])
-                ->where('page.data.lineDigest', $this->request()->source_digest));
+                ->component('layout/DeclaredLayout')
+                ->where('page.data.root.children.1.native.component', 'processes/RequestWindow')
+                ->where('page.data.root.children.1.native.props.proposals.0.revisions.0.operation', 'acme verify')
+                ->where('page.data.root.children.1.native.props.proposals.0.revisions.0.classes', ['read'])
+                ->where('page.data.root.children.1.native.props.lineDigest', $this->request()->source_digest));
 
         $this->actingAs($this->owner)->post("/processes/requests/{$this->requestId}/sample-approval", [
             'expected_revision' => 1,
@@ -74,7 +75,7 @@ final class RequestReviewPageTest extends TestCase
 
         $this->assertSame(RequestState::Rejected, $this->request()->state);
         $this->listPage()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.requests.0.state', RequestState::Rejected->value));
+            ->where('page.data.root.children.2.children.1.rows.0.value', RequestState::Rejected->value));
     }
 
     public function test_a_waiting_module_bundle_is_activated_from_the_list(): void
@@ -84,7 +85,7 @@ final class RequestReviewPageTest extends TestCase
         $bundle = $registry->bundles()[0];
 
         $this->listPage()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.bundles.0.digest', $bundle->digest()));
+            ->where('page.data.root.children.4.native.props.bundles.0.digest', $bundle->digest()));
 
         $this->actingAs($this->owner)->post('/processes/bundles/approval', [
             'module' => $bundle->module,
