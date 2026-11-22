@@ -1,11 +1,13 @@
 import { reactive, watch } from 'vue';
 import type { TaskLogsData, TaskStreamEntryData } from '@generated/types/tasks';
+import { onReconnected } from '@kit/retainedPages';
 import { useWindowReload } from '@kit/useWindowQuery';
 
 /**
  * A task's Logs as the reader holds them: the entries oldest first, the cursor of the older page, and how the last
  * read went. Each read asks again for the newest page; what arrived since is added at once, unless older entries are
- * on screen, when it waits behind a New entries count until the reader shows it. A refused read clears the rows.
+ * on screen, when it waits behind a New entries count until the reader shows it. A refused read clears the rows. After
+ * a reconnect the newest page is read again and what arrived meanwhile is taken once by id.
  */
 export function useTaskLogs(incoming: () => TaskLogsData | undefined) {
     const reload = useWindowReload();
@@ -98,6 +100,12 @@ export function useTaskLogs(incoming: () => TaskLogsData | undefined) {
     function retry(): void {
         ask(logs.askedBefore === '' ? {} : { logs_before: logs.askedBefore });
     }
+
+    onReconnected(() => {
+        if (logs.status !== 'idle') {
+            ask({});
+        }
+    });
 
     return { logs, open, showOlder, revealWaiting, retry };
 }

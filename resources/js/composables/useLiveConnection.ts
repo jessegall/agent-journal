@@ -49,6 +49,11 @@ const state = new LiveConnectionState();
 
 export const liveStage = readonly(state.stage);
 
+/**
+ * How many times the channel was signed in to; it grows by one at every reconnect.
+ */
+export const liveGeneration = readonly(state.generation);
+
 let reconnect: (() => void) | undefined;
 
 /**

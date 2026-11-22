@@ -17,7 +17,7 @@ const props = defineProps<{ outline: PlanOutlineData }>();
 
 const idPrefix = useId();
 const reload = useWindowReload();
-const { phases: pages, open, loadMore, retry } = usePhasePages(
+const { phases: pages, open, loadMore, retry, announcement } = usePhasePages(
     () => props.outline.phaseTasks,
     true,
 );
@@ -92,6 +92,7 @@ function loadMorePhases(): void {
 
 <template>
     <section class="mt-4 flex flex-col gap-3" aria-label="Phases">
+        <p role="status" class="sr-only">{{ announcement.text }}</p>
         <ol class="flex flex-col gap-3">
             <template v-for="heading in headings" :key="heading.number">
                 <li class="flex flex-col gap-1.5 border-t border-border pt-3">

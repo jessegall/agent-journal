@@ -8,6 +8,7 @@ import CommentComposer from './CommentComposer.vue';
 import CommentItem from './CommentItem.vue';
 import CommentLocation from './CommentLocation.vue';
 import { clearCommentThread, type CommentThread } from './commentThreads';
+import { onReconnected } from '@/composables/retainedPages';
 
 /**
  * A record's comments, oldest first, read on a page at a time, and the form that writes one. The record's version is
@@ -39,7 +40,11 @@ watch(
         const freshIds = new Set(fresh.items.map((item) => item.comment.id));
         const laterPages = items.value.filter((item) => !freshIds.has(item.comment.id));
 
-        if (isReadingMore) {
+        if (isReplacingAfterReconnect) {
+            items.value = [...fresh.items];
+            nextAfter.value = fresh.nextAfter;
+            isReplacingAfterReconnect = false;
+        } else if (isReadingMore) {
             items.value = [...items.value, ...fresh.items.filter((item) => !shownIds.has(item.comment.id))];
             nextAfter.value = fresh.nextAfter;
         } else {
@@ -55,6 +60,14 @@ watch(
  * Reads the next comments as the page itself: the page is read again with the comment to go on after, and only the
  * page's own prop comes back.
  */
+// After a reconnect the page's catch-up read brings the first page again; the pages read after it are dropped then,
+// since an allowed first page does not vouch for older rows.
+let isReplacingAfterReconnect = false;
+
+onReconnected(() => {
+    isReplacingAfterReconnect = true;
+});
+
 function readMore(): void {
     isReadingMore = true;
     failure.value = '';

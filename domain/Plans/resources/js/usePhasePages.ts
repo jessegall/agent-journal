@@ -1,5 +1,6 @@
 import { reactive, watch } from 'vue';
 import type { PhaseTaskData, PhaseTaskPageData } from '@generated/types/plans';
+import { onReconnected } from '@kit/retainedPages';
 import { useWindowReload } from '@kit/useWindowQuery';
 
 /**
@@ -20,7 +21,8 @@ export type PhasePages = {
  * The task pages of each phase a reader opened, each phase with its own cursor. A page is asked for through a reload
  * of the window's own prop; the answer for the cursor asked appends once and keeps the earlier rows, an answer for a
  * phase that changed revision starts that phase over, a refreshed page already shown replaces its own rows in place,
- * and a failed page keeps the rows and retries the same cursor.
+ * and a failed page keeps the rows and retries the same cursor. After a reconnect every opened phase reads its first
+ * window again under the current authorisation, and a phase that had to start over is announced once.
  * The phase's own number goes along when the page is a plan's outline; a phase page names its phase by its route.
  */
 export function usePhasePages(
@@ -29,6 +31,7 @@ export function usePhasePages(
 ) {
     const reload = useWindowReload();
     const phases = reactive(new Map<string, PhasePages>());
+    const announcement = reactive({ text: '' });
 
     function ask(phase: string, after: string, revision: number): void {
         const pages = phases.get(phase);
@@ -98,6 +101,10 @@ export function usePhasePages(
             return;
         }
 
+        if (page.isRevisionChanged) {
+            announcement.text = `The tasks of phase ${page.phase} were reloaded.`;
+        }
+
         const isFresh = page.isRevisionChanged || page.after === '0';
         pages.firstNewRow = isFresh ? 0 : pages.rows.length;
         pages.rows = isFresh ? [...page.rows] : [...pages.rows, ...page.rows];
@@ -162,5 +169,13 @@ export function usePhasePages(
         ask(phase, pages.askedAfter, pages.revision);
     }
 
-    return { phases, open, loadMore, retry };
+    onReconnected(() => {
+        for (const [phase, pages] of phases) {
+            pages.rows = [];
+            pages.pageStarts = [];
+            ask(phase, '0', pages.revision);
+        }
+    });
+
+    return { phases, open, loadMore, retry, announcement };
 }
