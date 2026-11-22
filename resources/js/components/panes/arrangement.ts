@@ -32,8 +32,9 @@ export type Arrangement = {
 
 export type Screen = { width: number; height: number };
 
-/** Version 5's sizes of a detached window (composables/detached.js). */
-export const DETACHED_SIZE = { width: 480, height: 360 };
+/** A floating window's size when it opens, the size the design gives the Tasks window. */
+export const DETACHED_SIZE = { width: 420, height: 330 };
+/** The smallest a floating window is resized to. */
 export const SMALLEST_DETACHED = { width: 260, height: 180 };
 export const DETACHED_START = 80;
 
@@ -57,7 +58,10 @@ export function defaultArrangement(
  * bar and opens floating where it is opened.
  */
 export function firstWindowOnly(firstWindow: string): Arrangement {
-    return { grid: { ...pane([firstWindow], 'pane-chat'), limitWidth: true }, detached: [] };
+    return {
+        grid: { ...pane([firstWindow], 'pane-chat'), limitWidth: true },
+        detached: [],
+    };
 }
 
 export function sameArrangement(one: Arrangement, other: Arrangement): boolean {
@@ -119,18 +123,35 @@ export function dropWindow(
 }
 
 /**
- * Opens a window that was not shown as a floating window near Home's top right edge, each further one a step down and
- * to the left, as the design floats a window where it was opened.
+ * Where the desk starts and ends on screen: below the bars, and at Home's right edge.
  */
-export function floatNewWindow(arrangement: Arrangement, windowKey: string, screen: Screen): Arrangement {
-    const step = arrangement.detached.length * 24;
-    const width = Math.min(DETACHED_SIZE.width, screen.width - 16);
+export type DeskEdges = { top: number; right: number };
 
-    return detachWindow(arrangement, windowKey, { left: screen.width - width - 24 - step, top: 20 + step }, screen);
+/** How far a new floating window keeps from the desk's edges, and how far each further one steps in. */
+const FLOAT_MARGIN = 24;
+
+/**
+ * Opens a window that was not shown as a floating window at the desk's top right, under the bars, each further one a
+ * step down and to the left, as the design floats a window where it was opened.
+ */
+export function floatNewWindow(
+    arrangement: Arrangement,
+    windowKey: string,
+    screen: Screen,
+    desk: DeskEdges,
+): Arrangement {
+    const step = arrangement.detached.length * FLOAT_MARGIN;
+    const width = Math.min(DETACHED_SIZE.width, screen.width - 16);
+    const place = {
+        left: desk.right - width - FLOAT_MARGIN - step,
+        top: desk.top + FLOAT_MARGIN + step,
+    };
+
+    return detachWindow(arrangement, windowKey, place, screen);
 }
 
 /**
- * Takes a window out of the grid and floats it at the given place, at version 5's size, on top of the others.
+ * Takes a window out of the grid and floats it at the given place, at the opening size, on top of the others.
  */
 export function detachWindow(
     arrangement: Arrangement,

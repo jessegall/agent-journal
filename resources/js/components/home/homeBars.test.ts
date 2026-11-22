@@ -43,7 +43,7 @@ describe('the agent bar', () => {
 });
 
 describe('the information bar', () => {
-    it('is not there without a floating window and lists each floating window with Restore over the desk', async () => {
+    it('is not there without a floating window and is a row of chips, one for each floating window, above the desk', async () => {
         const empty = mount(harness(InformationBar));
 
         expect(empty.find('[aria-label="Floating windows"]').exists()).toBe(false);
@@ -58,7 +58,7 @@ describe('the information bar', () => {
         );
 
         const bar = view.get('[aria-label="Floating windows"]');
-        expect(bar.classes()).toContain('absolute');
+        expect(bar.classes()).not.toContain('absolute');
         expect(bar.text()).toContain('Tasks');
 
         await view.get('[aria-label="Restore Tasks"]').trigger('click');

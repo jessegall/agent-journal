@@ -70,7 +70,8 @@ export function providePaneLayout(
     const knownWindows = computed(() =>
         windowList.value.map((each) => each.key),
     );
-    const firstArrangement = (): Arrangement => firstWindowOnly(knownWindows.value[0]);
+    const firstArrangement = (): Arrangement =>
+        firstWindowOnly(knownWindows.value[0]);
     const sideBySide = (): Arrangement => {
         const [first, ...others] = knownWindows.value;
 

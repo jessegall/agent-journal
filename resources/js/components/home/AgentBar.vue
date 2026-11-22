@@ -5,6 +5,7 @@ import LayoutPicker from '@/components/panes/LayoutPicker.vue';
 import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
 import { floatNewWindow } from '@/components/panes/arrangement';
+import type { DeskEdges } from '@/components/panes/arrangement';
 import { usePaneLayout } from '@/components/panes/usePaneLayout';
 import type { LayoutData } from '@/types/generated';
 
@@ -21,18 +22,43 @@ const isHidden = ref(false);
 const isLayoutMenuOpen = ref(false);
 const isAdding = ref(false);
 const addButton = ref<{ $el: HTMLElement } | null>(null);
+const agentBar = ref<HTMLElement | null>(null);
 const addAnchor = computed(() => addButton.value?.$el ?? null);
+
+/** The information bar's height: it shows under this bar as soon as a window floats. */
+const INFORMATION_BAR_HEIGHT = 30;
 
 /**
  * A window added from the bar floats where it opened; it docks once it is dragged to an edge or onto a pane.
  */
 function add(key: string): void {
-    store.apply(floatNewWindow(store.arrangement.value, key, store.screen()));
+    isAdding.value = false;
+    store.apply(
+        floatNewWindow(
+            store.arrangement.value,
+            key,
+            store.screen(),
+            deskEdges(),
+        ),
+    );
+}
+
+/**
+ * Where the desk below the bars starts and ends on screen, so a new floating window opens inside it.
+ */
+function deskEdges(): DeskEdges {
+    const bar = agentBar.value?.getBoundingClientRect();
+
+    return {
+        top: (bar?.bottom ?? 0) + INFORMATION_BAR_HEIGHT,
+        right: window.innerWidth,
+    };
 }
 </script>
 
 <template>
     <div
+        ref="agentBar"
         class="relative flex min-h-[54px] flex-none items-center gap-2.5 border-b border-border px-4 text-body max-[760px]:flex-wrap max-[760px]:py-2"
         role="region"
         aria-label="Agent"

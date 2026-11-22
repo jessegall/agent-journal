@@ -159,6 +159,7 @@ Failed
 Find a window
 Finish signing in
 Fixed public address
+Floating
 Floating windows
 Folder connected
 Follow the system color scheme
@@ -362,7 +363,6 @@ Resize
 Resize panes
 Resolve
 Restarted
-Restore
 Resume
 Retired
 Retry
