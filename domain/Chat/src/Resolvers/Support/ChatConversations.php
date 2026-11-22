@@ -13,10 +13,12 @@ use App\Agents\Support\AgentDrivers;
 use App\Agents\Support\AgentOption;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\InboxResolver;
+use App\Communication\Data\DeliveryView;
 use App\Communication\Data\InboxView;
 use App\Communication\Data\MessagePage;
 use App\Communication\Data\MessageView;
 use App\Communication\Enums\MessageState;
+use App\Communication\Resolvers\ChatDeliveries;
 use App\Communication\Support\ChatInboxes;
 use App\Communication\Support\ChatInterval;
 use Domain\Chat\Data\ChatCapabilitiesData;
@@ -24,6 +26,7 @@ use Domain\Chat\Data\ChatMessageData;
 use Domain\Chat\Data\ChatRowsPageData;
 use Domain\Chat\Data\ChatSummaryData;
 use Domain\Chat\Data\ConversationData;
+use Domain\Chat\Data\DeliveryData;
 use Domain\Chat\Data\ParticipantData;
 use Domain\Chat\Data\QuestionActionsData;
 use Domain\Chat\Data\ReplyTargetData;
@@ -46,6 +49,7 @@ final readonly class ChatConversations
         private DockProjection $dock,
         private ChatEligibility $eligibility,
         private AgentDrivers $agentDrivers,
+        private ChatDeliveries $deliveries,
     ) {}
 
     public function pageFor(AgentOption|null $agent, string $inboxId, string|null $dockToken): ConversationData
@@ -58,7 +62,7 @@ final readonly class ChatConversations
         $conversation = Conversation::forInbox($inboxId);
         $capabilities = $this->capabilitiesOf($viewer, $conversation, $intervals);
         $page = $this->messages->timeline($inboxId, null, MessagePage::DEFAULT_LIMIT);
-        $rows = array_map(fn (MessageView $message) => self::rowOf($message, $drivers, $viewer), $page->messages);
+        $rows = $this->rowsOf($page->messages, $drivers, $viewer);
 
         return ConversationData::from([
             'inboxId' => $inboxId,
@@ -93,7 +97,7 @@ final readonly class ChatConversations
         $members = array_map(fn (ChatInterval $interval) => $interval->actor, $intervals);
         $drivers = $this->agentDrivers->driversOf($members);
         $page = $this->messages->timeline($inboxId, $olderCursor, MessagePage::DEFAULT_LIMIT);
-        $rows = array_map(fn (MessageView $message) => self::rowOf($message, $drivers, $viewer), $page->messages);
+        $rows = $this->rowsOf($page->messages, $drivers, $viewer);
 
         return ChatRowsPageData::from([
             'messages' => $rows,
@@ -147,10 +151,56 @@ final readonly class ChatConversations
     }
 
     /**
+     * The rows by speaker; the rows the viewer wrote, or every row for an operator, carry how far each woken
+     * recipient got, and an operator is offered the retry of one given up.
+     *
+     * @param  list<MessageView>  $messages
      * @param  array<string, string|null>  $drivers
+     * @return list<ChatMessageData>
      */
-    private static function rowOf(MessageView $message, array $drivers, ActorIdentity $viewer): ChatMessageData
+    private function rowsOf(array $messages, array $drivers, ActorIdentity $viewer): array
     {
+        $operates = $this->actors->authority()->mayRunApplicationCommands();
+        $tracked = array_values(array_map(
+            fn (MessageView $message) => $message->id,
+            array_filter(
+                $messages,
+                fn (MessageView $message) => $operates
+                    || "{$message->authorType}:{$message->authorId}" === self::keyOf($viewer),
+            ),
+        ));
+        $deliveries = $this->deliveries->forMessages($tracked);
+        $recipients = array_merge([], ...array_map(
+            fn (array $views) => array_map(fn (DeliveryView $view) => $view->recipient, $views),
+            array_values($deliveries),
+        ));
+        $names = $this->labels->labelsFor($recipients);
+
+        return array_map(fn (MessageView $message) => self::rowOf(
+            $message,
+            $drivers,
+            $viewer,
+            array_map(fn (DeliveryView $view) => DeliveryData::from([
+                'recipient' => self::keyOf($view->recipient),
+                'label' => $names->nameOf($view->recipient) ?? self::keyOf($view->recipient),
+                'state' => $view->state,
+                'reason' => $view->reason,
+                'pendingFrom' => $view->pendingFrom,
+                'rangeId' => $operates ? $view->exhaustedRangeId : null,
+            ]), $deliveries[$message->id] ?? []),
+        ), $messages);
+    }
+
+    /**
+     * @param  array<string, string|null>  $drivers
+     * @param  list<DeliveryData>  $deliveries
+     */
+    private static function rowOf(
+        MessageView $message,
+        array $drivers,
+        ActorIdentity $viewer,
+        array $deliveries,
+    ): ChatMessageData {
         $speaker = "{$message->authorType}:{$message->authorId}";
         $respondent = $message->respondentType === null
             ? null
@@ -174,10 +224,15 @@ final readonly class ChatConversations
             'state' => $message->state,
             'stateVersion' => $message->stateVersion,
             'respondent' => $respondent,
-            'actions' => QuestionActionsData::from(['answer' => $settles, 'decline' => $settles]),
+            'actions' => QuestionActionsData::from([
+                'answer' => $settles,
+                'decline' => $settles,
+                'retryDelivery' => array_any($deliveries, fn (DeliveryData $delivery) => $delivery->rangeId !== null),
+            ]),
             'readByMe' => $message->shownToViewer,
             'sentAt' => $message->sentAt,
             'requestKey' => $message->requestKey,
+            'deliveries' => $deliveries,
         ]);
     }
 

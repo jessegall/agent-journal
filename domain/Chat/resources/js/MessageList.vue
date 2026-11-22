@@ -3,13 +3,15 @@ import { Link } from '@inertiajs/vue3';
 import type { ChatMessageData, ParticipantData } from '@generated/types/chat';
 import type { ConversationIntent } from './composables/useConversationIntents';
 import type { RecoveryEntry } from './composables/useMessageDrafts';
+import MessageDeliveries from './MessageDeliveries.vue';
 import PendingMessage from './PendingMessage.vue';
 import RefusedSend from './RefusedSend.vue';
 
 /**
  * The rows of one chat in timeline order: the viewer's own on the right, everyone else's on the left with the name of
  * whoever wrote it and, for an agent, the driver it runs through; for each incoming row whether the viewer has not
- * read it yet, and for a question whether it still waits. After them
+ * read it yet, for a question whether it still waits, and for the author or an operator which recipients were not
+ * reached yet or were given up. After them
  * come the user's own sends still settling, and the refused ones to restore or discard. Bodies are shown as text,
  * never as HTML.
  */
@@ -24,6 +26,8 @@ const props = defineProps<{
     participants: ParticipantData[];
     // The address that opens one question passively, as a notification opens it.
     questionUrl: (messageId: string) => string;
+    // The page prop a retry reads again.
+    conversationProp: string;
 }>();
 
 const emit = defineEmits<{
@@ -117,6 +121,9 @@ function stateOf(message: ChatMessageData): string | null {
                         </Link>
                     </template>
                 </span>
+                <template v-if="message.deliveries.some((delivery) => delivery.state !== 'accepted')">
+                    <MessageDeliveries :message="message" :conversation-prop="conversationProp" />
+                </template>
             </div>
         </template>
         <template v-for="intent in pending" :key="intent.key">

@@ -571,6 +571,7 @@ use App\Communication\Data\AgentMessageCard;
 use App\Communication\Data\AgentMessageDetails;
 use App\Communication\Data\ChatEventPage;
 use App\Communication\Data\ChatEventView;
+use App\Communication\Data\DeliveryView;
 use App\Communication\Data\InboxCounts;
 use App\Communication\Data\InboxView;
 use App\Communication\Data\MessageClaimHolder;
@@ -584,6 +585,7 @@ use App\Communication\Data\NotificationTarget;
 use App\Communication\Data\PresentationBatchData;
 use App\Communication\Data\PresentationItemData;
 use App\Communication\Data\WakeStatus;
+use App\Communication\Enums\WakeState;
 use App\Communication\Enums\AgentInboxState;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\IntervalRole;
@@ -605,6 +607,7 @@ use App\Communication\Exceptions\MessageBodyTooLong;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Exceptions\MessageToSelf;
+use App\Communication\Resolvers\ChatDeliveries;
 use App\Communication\Resolvers\ChatTimeline;
 use App\Communication\Support\ChatDepartures;
 use App\Communication\Support\ChatInboxes;
@@ -2095,6 +2098,9 @@ final class CoreApi
                 AgentChatAdmission::class,
                 AgentDrivers::class,
                 ChatTimeline::class,
+                ChatDeliveries::class,
+                DeliveryView::class,
+                WakeState::class,
                 ChatEventPage::class,
                 ChatEventView::class,
                 IntervalRole::class,

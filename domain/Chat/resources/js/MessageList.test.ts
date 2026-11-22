@@ -69,10 +69,11 @@ describe('MessageList', () => {
             state: 'waiting_for_answer',
             stateVersion: 0,
             respondent: 'user:bea',
-            actions: { answer, decline: answer },
+            actions: { answer, decline: answer, retryDelivery: false },
             readByMe: true,
             sentAt: '',
             requestKey: null,
+            deliveries: [],
         });
         const participants = [
             { actor: 'user:ada', label: 'Ada', driver: null, role: 'owner' },
@@ -91,5 +92,45 @@ describe('MessageList', () => {
         expect(asBea.text()).toContain('Decline');
         expect(asCy.text()).toContain('Reply');
         expect(asCy.text()).not.toContain('Decline');
+    });
+
+    it('shows which recipient was given up from which character, and the retry only when the server offers it', () => {
+        const row = (retryDelivery: boolean) => ({
+            id: 'm1',
+            sequence: 1,
+            rootId: null,
+            speaker: { actor: 'user:ada', label: 'Ada', driver: null },
+            addressedTo: null,
+            replyTo: null,
+            body: 'Plan?',
+            state: 'sent',
+            stateVersion: 0,
+            respondent: null,
+            actions: { answer: false, decline: false, retryDelivery },
+            readByMe: true,
+            sentAt: '',
+            requestKey: null,
+            deliveries: [
+                { recipient: 'agent:claude', label: 'Claude', state: 'accepted', reason: null, pendingFrom: null, rangeId: null },
+                {
+                    recipient: 'agent:codex',
+                    label: 'Codex',
+                    state: 'exhausted',
+                    reason: 'The driver did not answer.',
+                    pendingFrom: 8000,
+                    rangeId: retryDelivery ? 'range-1' : null,
+                },
+            ],
+        });
+        const props = { pending: [], refused: [], viewer: 'user:ada', participants: [], questionUrl: () => '#', conversationProp: 'chat' };
+        const operator = mount(MessageList, { props: { ...props, messages: [row(true)] } as never });
+        const sender = mount(MessageList, { props: { ...props, messages: [row(false)] } as never });
+
+        expect(operator.text()).toContain('Codex: Not delivered');
+        expect(operator.text()).toContain('from character 8000');
+        expect(operator.text()).not.toContain('Claude:');
+        expect(operator.findAll('button').map((button) => button.text())).toContain('Retry');
+        expect(sender.text()).toContain('Codex: Not delivered');
+        expect(sender.text()).not.toContain('Retry');
     });
 });

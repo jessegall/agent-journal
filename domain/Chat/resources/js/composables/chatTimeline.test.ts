@@ -14,10 +14,11 @@ function row(sequence: number, readByMe = false): ChatMessageData {
         state: 'sent',
         stateVersion: 1,
         respondent: null,
-        actions: { answer: false, decline: false },
+        actions: { answer: false, decline: false, retryDelivery: false },
         readByMe,
         sentAt: '2026-11-22T10:00:00Z',
         requestKey: null,
+        deliveries: [],
     } as ChatMessageData;
 }
 

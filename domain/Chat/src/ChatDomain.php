@@ -40,6 +40,7 @@ use Domain\Chat\Http\Controllers\Membership\RemoveParticipantController;
 use Domain\Chat\Http\Controllers\Membership\TransferChatController;
 use Domain\Chat\Http\Controllers\ReadShownController;
 use Domain\Chat\Http\Controllers\ReplyController;
+use Domain\Chat\Http\Controllers\RetryDeliveryController;
 use Domain\Chat\Http\Controllers\RequestOutcomeController;
 use Domain\Chat\Http\Controllers\SendMessageController;
 use Domain\Chat\Http\Controllers\TakeNextController;
@@ -116,6 +117,7 @@ final class ChatDomain extends Domain implements
                     ActionRoute::post('messages/read', ReadShownController::class, 'read'),
                     ActionRoute::post('messages/reply', ReplyController::class, 'reply'),
                     ActionRoute::post('messages/decline', DeclineQuestionController::class, 'decline'),
+                    ActionRoute::post('messages/retry-delivery', RetryDeliveryController::class, 'retry-delivery'),
                     ActionRoute::get('messages/outcome', RequestOutcomeController::class, 'outcome'),
                     ActionRoute::get('events', ChatEventsController::class, 'events'),
                     ActionRoute::get('messages/rows', ChatRowsController::class, 'rows'),
