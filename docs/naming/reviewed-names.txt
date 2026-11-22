@@ -2410,6 +2410,7 @@ class	CodexDriver
 class	CodexErrorData
 class	CodexEventData
 class	CodexFolderTrust
+class	CodexHeadlessCapabilities
 class	CodexJournalServer
 class	CodexKeySignIn
 class	CodexLoginCompletedData
@@ -7036,6 +7037,7 @@ constant	CodexAccountSettings::OTHER_CREDENTIALS
 constant	CodexAdapter::DRIVER
 constant	CodexAdapter::PATCH_FILE_LINE
 constant	CodexAdapter::PATCH_MOVED_FILE
+constant	CodexHeadlessCapabilities::NO_EXACT_RESUME
 constant	CodexJournalServer::HEADER
 constant	CodexJournalServer::PASSED_VARIABLES
 constant	CodexJournalServer::STARTUP_TIMEOUT_SECONDS
@@ -11528,6 +11530,7 @@ method	CodexEventData::__construct()
 method	CodexFolderTrust::__construct()
 method	CodexFolderTrust::forWorkingRoot()
 method	CodexFolderTrust::tomlTable()
+method	CodexHeadlessCapabilities::capabilities()
 method	CodexJournalServer::__construct()
 method	CodexJournalServer::isFixedPath()
 method	CodexJournalServer::of()
@@ -14676,6 +14679,7 @@ method	HasNumber::numberHolder()
 method	HasStates::bootstrappersHasStates()
 method	HasWorkColumns::work()
 method	HeadlessCapabilities::capabilities()
+method	HeadlessCapabilities::unsupportedWithoutTerminal()
 method	HeartbeatEvidence::__construct()
 method	HeartbeatReportController::__invoke()
 method	HeldAccountUses::__construct()
@@ -23743,6 +23747,7 @@ method	StartReportRequest::stoppedStartKeys()
 method	StartRequest::__construct()
 method	StartRequest::digest()
 method	StartRequest::execution()
+method	StartRequest::neededCapabilities()
 method	StartRequestConflict::forRequest()
 method	StartRequestLock::__construct()
 method	StartRequestLock::hold()
@@ -27632,6 +27637,7 @@ parameter	$navigationLinks
 parameter	$navigationReports
 parameter	$navigationRequestId
 parameter	$navigationRound
+parameter	$neededCapabilities
 parameter	$needle
 parameter	$needsAttention
 parameter	$needsNewSession

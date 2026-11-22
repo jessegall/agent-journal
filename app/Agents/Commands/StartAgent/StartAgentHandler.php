@@ -73,7 +73,7 @@ final readonly class StartAgentHandler implements CommandHandler
 
         $record = StartRecord::accept(
             $request,
-            $this->drivers->pinned($request->selection->driver->value, $request->variant),
+            $this->drivers->pinned($request->selection->driver->value, $request->variant, $request->neededCapabilities()),
             $dispatcher,
             $this->replyInboxes->replyInboxIdFor($dispatcher),
         );

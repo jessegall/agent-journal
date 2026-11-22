@@ -112,6 +112,6 @@ final readonly class KeepStartReceipt implements CommandMiddleware
      */
     private function pinOf(StartRequest $request): PinnedDriver
     {
-        return $this->drivers->pinned($request->selection->driver->value, $request->variant);
+        return $this->drivers->pinned($request->selection->driver->value, $request->variant, $request->neededCapabilities());
     }
 }

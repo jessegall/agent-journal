@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Drivers\Contracts;
 
 use App\Agents\Enums\DriverVariant;
+use App\Drivers\Enums\DriverCapability;
 use App\Drivers\Values\DriverKey;
 use App\Drivers\Values\DriverRegistration;
 use App\Drivers\Values\PinnedDriver;
@@ -25,7 +26,10 @@ interface DriverCatalogue
      * The registration a start of the family in the mode runs on, refused before anything is accepted when the driver
      * cannot do what every profile on it needs, such as the Codex terminal before it is proven.
      */
-    public function pinned(string $family, DriverVariant $mode): PinnedDriver;
+    /**
+     * @param  list<DriverCapability>  $neededCapabilities  what this start needs of the driver beyond its profiles' requirements
+     */
+    public function pinned(string $family, DriverVariant $mode, array $neededCapabilities = []): PinnedDriver;
 
     /**
      * @return list<DriverRegistration>

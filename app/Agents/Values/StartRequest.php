@@ -7,6 +7,7 @@ namespace App\Agents\Values;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\StartOriginType;
+use App\Drivers\Enums\DriverCapability;
 use App\Records\Support\RecordIdentity;
 
 /**
@@ -31,6 +32,16 @@ final readonly class StartRequest
         public ChosenAccount|null $chosenAccount = null,
         public bool $savesVariant = false,
     ) {}
+
+    /**
+     * What the start needs of its driver beyond its profiles' requirements: a resume needs the exact conversation.
+     *
+     * @return list<DriverCapability>
+     */
+    public function neededCapabilities(): array
+    {
+        return $this->conversationMode === ConversationModeType::Resume ? [DriverCapability::ExactResume] : [];
+    }
 
     public function execution(): ExecutionPolicy
     {

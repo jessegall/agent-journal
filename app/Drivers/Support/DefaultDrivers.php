@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Drivers\Support;
 
 use App\Agents\Enums\DriverVariant;
+use App\Drivers\Capabilities\CodexHeadlessCapabilities;
 use App\Drivers\Capabilities\CodexTerminalCapabilities;
 use App\Drivers\Capabilities\HeadlessCapabilities;
 use App\Drivers\Capabilities\TerminalCapabilities;
@@ -32,7 +33,7 @@ final readonly class DefaultDrivers
             self::registration('claude-code', HookDriver::ClaudeCode, DriverVariant::Terminal, 'Claude Code', TerminalCapabilities::class),
             self::registration('claude-code-headless', HookDriver::ClaudeCode, DriverVariant::Headless, 'Claude Code headless', HeadlessCapabilities::class),
             self::registration('codex', HookDriver::Codex, DriverVariant::Terminal, 'Codex', CodexTerminalCapabilities::class),
-            self::registration('codex-headless', HookDriver::Codex, DriverVariant::Headless, 'Codex headless', HeadlessCapabilities::class),
+            self::registration('codex-headless', HookDriver::Codex, DriverVariant::Headless, 'Codex headless', CodexHeadlessCapabilities::class),
         ];
     }
 

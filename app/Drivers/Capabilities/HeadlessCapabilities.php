@@ -19,15 +19,25 @@ final readonly class HeadlessCapabilities implements DriverCapabilities
 
     public function capabilities(BoundTarget $target): SupportSnapshot
     {
+        return SupportSnapshot::allowingAllBut(self::unsupportedWithoutTerminal());
+    }
+
+    /**
+     * What no headless driver can do, for having no terminal.
+     *
+     * @return list<array{DriverCapability, OperationSupport}>
+     */
+    public static function unsupportedWithoutTerminal(): array
+    {
         $noTerminal = OperationSupport::unsupported(self::NO_TERMINAL);
 
-        return SupportSnapshot::allowingAllBut([
+        return [
             [DriverCapability::Watch, $noTerminal],
             [DriverCapability::Type, $noTerminal],
             [DriverCapability::Paste, $noTerminal],
             [DriverCapability::Resize, $noTerminal],
             [DriverCapability::PrivateEntry, $noTerminal],
             [DriverCapability::KeyScripts, $noTerminal],
-        ]);
+        ];
     }
 }

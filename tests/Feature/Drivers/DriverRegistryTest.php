@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Drivers;
 
 use App\Agents\Enums\DriverVariant;
+use App\Drivers\Capabilities\CodexHeadlessCapabilities;
 use App\Drivers\Capabilities\CodexTerminalCapabilities;
 use App\Drivers\Capabilities\HeadlessCapabilities;
 use App\Drivers\Contracts\Driver;
@@ -77,6 +78,29 @@ final class DriverRegistryTest extends TestCase
         foreach ([str_repeat('a', DriverKey::CHARACTER_LIMIT + 1), 'Acme/Reader', 'a//b', 'a/b/c', '-a'] as $text) {
             $this->assertThrows(fn () => DriverKey::from($text), DriverKeyInvalid::class);
         }
+    }
+
+    public function test_a_codex_headless_resume_is_refused_with_its_reason_and_a_claude_headless_one_is_pinned(): void
+    {
+        $registry = $this->registry();
+
+        $this->assertThrows(
+            fn () => $registry->pinned('codex', DriverVariant::Headless, [DriverCapability::ExactResume]),
+            DriverCapabilityUnsupported::class,
+            DriverCapabilityUnsupported::for(
+                DriverCapability::ExactResume,
+                CodexHeadlessCapabilities::NO_EXACT_RESUME,
+            )->getMessage(),
+        );
+        $this->assertSame(
+            'codex-headless',
+            (string) $registry->pinned('codex', DriverVariant::Headless)->registration->key,
+        );
+        $this->assertSame(
+            'claude-code-headless',
+            (string) $registry->pinned('claude-code', DriverVariant::Headless, [DriverCapability::ExactResume])
+                ->registration->key,
+        );
     }
 
     public function test_the_codex_terminal_reports_itself_unavailable_with_its_reason(): void

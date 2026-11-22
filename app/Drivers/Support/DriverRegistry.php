@@ -96,11 +96,12 @@ final class DriverRegistry implements DriverCatalogue
      * @throws DriverUnknown
      * @throws DriverCapabilityUnsupported
      */
-    public function pinned(string $family, DriverVariant $mode): PinnedDriver
+    public function pinned(string $family, DriverVariant $mode, array $neededCapabilities = []): PinnedDriver
     {
         $driver = $this->forKey($this->keyFor($family, $mode));
         $registration = $driver->descriptor();
-        $driver->capabilities(BoundTarget::beforePlacement())->assertSupports($registration->profileRequirements);
+        $driver->capabilities(BoundTarget::beforePlacement())
+            ->assertSupports([...$registration->profileRequirements, ...$neededCapabilities]);
 
         return new PinnedDriver($registration, $this->revision);
     }
