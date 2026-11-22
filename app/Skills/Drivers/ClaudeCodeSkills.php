@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Drivers;
 
+use App\Drivers\Enums\HookDriver;
 use App\Skills\Contracts\DriverSkills;
 use App\Skills\Enums\SkillReload;
 use App\Skills\Values\PublishedSkill;
@@ -20,6 +21,11 @@ final readonly class ClaudeCodeSkills implements DriverSkills
     public const string PLUGIN_NAME = 'journal-session-skills';
 
     public const string FOLDER = 'journal-skills';
+
+    public function skillProtocol(): string
+    {
+        return HookDriver::ClaudeCode->value;
+    }
 
     public function skillFile(SkillKey $key): string
     {

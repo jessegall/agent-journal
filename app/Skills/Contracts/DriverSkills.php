@@ -16,6 +16,11 @@ use App\Skills\Values\SkillKey;
 interface DriverSkills
 {
     /**
+     * The skill protocol this adapter writes and installs, which every driver registration of its family names.
+     */
+    public function skillProtocol(): string;
+
+    /**
      * The path of a skill's SKILL.md inside the driver's target folder.
      */
     public function skillFile(SkillKey $key): string;

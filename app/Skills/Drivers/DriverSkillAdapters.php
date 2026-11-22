@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Skills\Drivers;
 
-use App\Drivers\Enums\HookDriver;
 use App\Drivers\Values\DriverKey;
 use App\Skills\Contracts\DriverSkills;
 use App\Skills\Exceptions\DriverSkillsUnsupported;
@@ -14,25 +13,26 @@ use App\Skills\Exceptions\DriverSkillsUnsupported;
  */
 final readonly class DriverSkillAdapters
 {
-    public function __construct(
-        private ClaudeCodeSkills $claudeCode,
-        private CodexSkills $codex,
-    ) {}
-
     /**
-     * @throws DriverSkillsUnsupported for a driver with no adapter
+     * @var array<string, DriverSkills>
      */
-    public function for(DriverKey $driver): DriverSkills
+    private array $adapters;
+
+    public function __construct(ClaudeCodeSkills $claudeCode, CodexSkills $codex)
     {
-        return match (HookDriver::tryFrom($driver->key)) {
-            HookDriver::ClaudeCode => $this->claudeCode,
-            HookDriver::Codex => $this->codex,
-            null => throw DriverSkillsUnsupported::for($driver),
-        };
+        $this->adapters = [$claudeCode->skillProtocol() => $claudeCode, $codex->skillProtocol() => $codex];
     }
 
-    public function supports(DriverKey $driver): bool
+    /**
+     * @throws DriverSkillsUnsupported for a skill protocol no adapter writes
+     */
+    public function for(DriverKey $protocol): DriverSkills
     {
-        return HookDriver::tryFrom($driver->key) !== null;
+        return $this->adapters[$protocol->key] ?? throw DriverSkillsUnsupported::for($protocol);
+    }
+
+    public function supports(DriverKey $protocol): bool
+    {
+        return array_key_exists($protocol->key, $this->adapters);
     }
 }

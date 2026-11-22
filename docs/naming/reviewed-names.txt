@@ -11344,6 +11344,7 @@ method	ClaudeCodeSkills::delivery()
 method	ClaudeCodeSkills::instruction()
 method	ClaudeCodeSkills::reloadMode()
 method	ClaudeCodeSkills::skillFile()
+method	ClaudeCodeSkills::skillProtocol()
 method	ClaudeCodeSkills::supportFiles()
 method	ClaudeCodeTool::canReadResources()
 method	ClaudeCodeTool::changesFiles()
@@ -11595,6 +11596,7 @@ method	CodexSkills::delivery()
 method	CodexSkills::instruction()
 method	CodexSkills::reloadMode()
 method	CodexSkills::skillFile()
+method	CodexSkills::skillProtocol()
 method	CodexSkills::supportFiles()
 method	CodexStatus::__construct()
 method	CodexStatus::signedInAs()
@@ -13752,6 +13754,7 @@ method	DriverSkills::delivery()
 method	DriverSkills::instruction()
 method	DriverSkills::reloadMode()
 method	DriverSkills::skillFile()
+method	DriverSkills::skillProtocol()
 method	DriverSkills::supportFiles()
 method	DriverSkillsUnsupported::for()
 method	DriverSkillsUnsupported::refusalCode()
@@ -32026,8 +32029,7 @@ property	DriverResult::$outcome
 property	DriverResult::$reason
 property	DriverRuntimeStops::$requests
 property	DriverSettings::$requests
-property	DriverSkillAdapters::$claudeCode
-property	DriverSkillAdapters::$codex
+property	DriverSkillAdapters::$adapters
 property	DriverSwitchReceipt::$failureReason
 property	DriverSwitchReceipt::$stage
 property	DriverSwitchReceipt::$switchId

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Drivers;
 
+use App\Drivers\Enums\HookDriver;
 use App\Skills\Contracts\DriverSkills;
 use App\Skills\Enums\SkillReload;
 use App\Skills\Values\PublishedSkill;
@@ -18,6 +19,11 @@ use App\Skills\Values\SkillKey;
 final readonly class CodexSkills implements DriverSkills
 {
     public const string FOLDER = 'skills';
+
+    public function skillProtocol(): string
+    {
+        return HookDriver::Codex->value;
+    }
 
     public function skillFile(SkillKey $key): string
     {
