@@ -787,7 +787,7 @@ const MEMS={a1:[[9,'Stone mono is the house style; the accent is the strongest s
 const MEM={you:{name:'You',kind:'you'},
   a1:{name:'Agent 1',kind:'agent',prog:'claude',role:'Claude Code · main agent'},
   cx1:{name:'Codex 1',kind:'agent',prog:'codex',role:'Codex agent'},
-  h262:{name:'Helper 262',kind:'agent',prog:'claude',role:'Claude Code · helper'},
+  h262:{name:'Designer 262',kind:'agent',prog:'claude',role:'Claude Code · designer'},
   w3:{name:'Worker 3',kind:'agent',prog:'claude',role:'Claude Code · worker'},
   sam:{name:'Sam',kind:'person',ini:'S',role:'Teammate · online'},
   noor:{name:'Noor',kind:'person',ini:'N',role:'Teammate · away'}};
@@ -797,7 +797,7 @@ const BASE=()=>[['day','Today'],['me','Can you tidy up the account settings dial
   ['ag','13:42','I\'ve asked a designer; the work is <a class="lk">task 1702</a>. The design for Home is ready for you to read.',{doc:101}],
   ['card','ask'],['me','Inside the field, Enter saves. Go.'],['act','x3'],['ag','13:47','Done. Worker 3 is on it; I\'ll tell you when it\'s ready to test.']];
 function freshConvs(){CONV={main:{name:'Agent 1',msgs:BASE()},
-  h262:{name:'Helper 262',sub:'Designing the notifications bell',origin:'Started by Agent 1 for plan 54 · 14:01 · supervised by Agent 1',msgs:[['ag','14:02','I\'m reading the bell and toast code first.'],['ag','14:05','One question before I draw: should the bell count only what waits on you, or every unread line?']]},
+  h262:{name:'Designer 262',sub:'Designing the notifications bell',origin:'Started by Agent 1 for plan 54 · 14:01 · supervised by Agent 1',msgs:[['ag','14:02','I\'m reading the bell and toast code first.'],['ag','14:05','One question before I draw: should the bell count only what waits on you, or every unread line?']]},
   w3:{name:'Worker 3',sub:'Task 1702 · 2 of 5 steps',origin:'Started by Agent 1 for task 1702 · 13:47 · supervised by Agent 1',msgs:[['ag','13:50','Save now sits inside the name field. Writing the test for Enter next.']]},
   g1:{name:'Bell design',members:['you','a1','cx1','sam'],origin:'You started this chat with Agent 1 and Codex 1 · everyone in it receives every message',msgs:[
     ['day','Today'],
@@ -807,7 +807,7 @@ function freshConvs(){CONV={main:{name:'Agent 1',msgs:BASE()},
     ['say','a1','14:11','Good catch. I\'ll add the filter to the task.',3],
     ['sys','Sam joined'],
     ['say','sam','14:14','From the support side: the count should only include what waits on you, not every unread line.'],
-    ['say','cx1','14:15','That matches Helper 262\'s question. I\'ll make the count filter on waits-on-you.',6]]}}}
+    ['say','cx1','14:15','That matches Designer 262\'s question. I\'ll make the count filter on waits-on-you.',6]]}}}
 const STATE={main:'Working on task 1702',h262:'Designing the notifications bell',w3:'Writing the test for Enter',g1:'Agent 1 working · Codex 1 reading'};
 const REPLY={a1:'On it. I\'ll fold that into the plan.',cx1:'Checked against the code: that works with what is there.',h262:'Noted for the bell design.',w3:'I\'ll cover that in task 1702.',sam:'Sounds right to me.'};
 const COMMENT_ON={a1:'Agreeing with Codex 1 here; I\'ll keep it.',cx1:'One addition to Agent 1\'s point: it needs a test.'};
@@ -873,7 +873,7 @@ const BODY={
   asks:()=>`<div style="padding:10px"><div class="rowcard">${I('question')}<div class="t">Which save behaviour for the name?<small>Question · Agent 1 · 13:44</small></div><button class="btn sm bordered">Answer</button></div></div>`,
   plans:()=>PLANS.map(([n,t,p])=>row('plan:'+n,`<span class="num">${n}</span><span class="t">${t}</span><span style="width:80px" class="meter"><i style="width:${p}%"></i></span><span class="meta">${p}%</span>`)).join(''),
   docs:()=>DOCS.map(([n,t,m])=>row('doc:'+n,`<span class="num">${n}</span><span class="t">${t}</span><span class="meta">${m}</span>`)).join(''),
-  helpers:()=>[...(helpersOn?[['helper:262','Helper 262','Designing the notifications bell','work']]:[]),['worker:3','Worker 3','Task 1702 · 2 of 5 steps','work'],['helper:258','Helper 258','Reviewed plan 54','done']]
+  helpers:()=>[...(helpersOn?[['helper:262','Designer 262','Designing the notifications bell','work']]:[]),['worker:3','Worker 3','Task 1702 · 2 of 5 steps','work'],['helper:258','Reviewer 258','Reviewed plan 54','done']]
     .map(([ref,n,t,s])=>row(ref,`<span class="t">${n}<span style="color:var(--text-3)"> · ${t}</span></span>${ST[s]}`)).join(''),
   reminders:()=>`<div class="empty"><b>No reminders</b>Ask the agent to remind you of something.</div>`,
   activity:()=>activityView(),
@@ -882,7 +882,7 @@ function itemOf(ref){const [k,id]=ref.split(':'),n=+id;
   if(k==='task'){const t=TASKS.find(x=>x[0]===n)||[n,'Task '+n,'open','—',56];return {t:'Task '+n,ic:'todos',conv:t[3]==='Worker 3'?'w3':null,body:taskReader(t)}}
   if(k==='doc'){const d=DOCS.find(x=>x[0]===n)||[n,'Doc '+n,'','',1];return {t:'Doc '+n,ic:'docs',body:docReader(d)}}
   if(k==='plan'){const p=PLANS.find(x=>x[0]===n);return {t:'Plan '+n,ic:'plan',body:planReader(p,false)}}
-  const P={'helper:262':['Helper 262','Designing the notifications bell','work','h262'],'worker:3':['Worker 3','Task 1702 · 2 of 5 steps','work','w3'],'helper:258':['Helper 258','Reviewed plan 54','done',null]}[ref]||[ref,'','open',null];
+  const P={'helper:262':['Designer 262','Designing the notifications bell','work','h262'],'worker:3':['Worker 3','Task 1702 · 2 of 5 steps','work','w3'],'helper:258':['Reviewer 258','Reviewed plan 54','done',null]}[ref]||[ref,'','open',null];
   return {t:P[0],ic:'users',conv:P[3],body:`<div class="reader"><h2>${P[0]}</h2><div class="meta">${P[1]}</div><div style="margin-top:6px">${ST[P[2]]}</div>${P[3]?`<button class="btn sm bordered" style="margin-top:12px" data-openconv="${P[3]}">${I('chat','s14')}Open its chat</button>`:''}</div>`}}
 function waitsOf(n){const g=PLANS.map(p=>p[3]).flat().find(x=>x[0]===n);return g?(GRAPH.applied&&SUGGEST[n]?SUGGEST[n]:g[4]):[]}
 function holdsOf(n){return PLANS.map(p=>p[3]).flat().filter(x=>waitsOf(x[0]).includes(n)).map(x=>x[0])}
@@ -997,8 +997,8 @@ function addMember(c,id){const cv=CONV[c];if(!cv.members)cv.members=['you',OWN[c
   render()}
 function removeMember(c,id){const cv=CONV[c];cv.members=members(c).filter(m=>m!==id);cv.msgs.push(['sys',`You removed ${MEM[id].name} · they no longer receive messages`]);render()}
 function startHelperScript(){helpersOn=true;const m=CONV.main.msgs;
-  m.push(['me','Can someone design the notifications bell?'],['ag','14:01','I\'ve asked Helper 262 to design the bell, and Worker 3 keeps going on task 1702. Both report back here.',{chip:['h262']}]);
-  addAct('a1','dispatch',3,'started Helper 262 on the notifications bell');
+  m.push(['me','Can someone design the notifications bell?'],['ag','14:01','I\'ve asked Designer 262 to design the bell, and Worker 3 keeps going on task 1702. Both report back here.',{chip:['h262']}]);
+  addAct('a1','dispatch',3,'started Designer 262 on the notifications bell');
   addAct('h262','search',1,'searched “NotificationBell” · 3 found',{found:['resources/js/components/shell/NotificationBell.vue','resources/js/components/shell/NotificationList.vue','Doc 95 · Notifications plan']})}
 /* Handing a document to an agent: it arrives as your message with the document's bar, and the agent reads it. */
 function handDoc(c,n){sendMessage(c,'Read this, please.',{doc:n})}
@@ -1164,10 +1164,10 @@ const STEPS={
   first:['2 · A first window','Tasks floats where it opened. Push it past the right edge of Home to dock it there, or drag it onto the chat\'s compass (the cross of five squares in the middle of a pane).'],
   docked:['3 · Docked','Asks and Tasks docked on the right; the chat keeps its reading width in the space left. Drag the shared edges, or focus one and use the arrow keys.'],
   bare:['4 · Without the chat','Tasks, Plans and Asks fill Home in a grid. The chat comes back from the + or ⌘K.'],
-  helper:['5 · A helper starts','The agent dispatched Helper 262. The journal\'s offer rides on the agent\'s own message as one quiet chip: open Helper 262\'s chat. It docks on the right. The dispatch is an important activity, so it is one quiet line; everything else is in Activity (⌥2).'],
+  helper:['5 · A helper starts','The agent dispatched Designer 262. The journal\'s offer rides on the agent\'s own message as one quiet chip: open Designer 262\'s chat. It docks on the right. The dispatch is an important activity, so it is one quiet line; everything else is in Activity (⌥2).'],
   ide:['6 · Like an IDE','Built by hand from the same pieces: sidebar folded to icons, Project on the left (⌥1), a file in the editor, Activity below it (⌥2), and the chat docked on the right as a tool window. Select lines in the file, then Comment.'],
   group:['7 · A group chat','You, Agent 1 (Claude), Codex 1 (Codex) and Sam in one chat. Everyone receives every message, and agents answer and comment on each other. Hover a message to Reply. Add someone with the person-plus; see who is in it with “4 in this chat”.'],
-  docs:['8 · Hand a document over','Doc 101 sits in the chat as a bar. Drag it and it shrinks into a chip. Hold it over the agent\'s name and the list opens. Rest on Helper 262 and its chat opens. Let go, and Helper 262 has the document. Or press Play to watch.']};
+  docs:['8 · Hand a document over','Doc 101 sits in the chat as a bar. Drag it and it shrinks into a chip. Hold it over the agent\'s name and the list opens. Rest on Designer 262 and its chat opens. Let go, and Designer 262 has the document. Or press Play to watch.']};
 function layoutFor(s){const P=(t,x)=>pane(t,x);
   if(s==='first')return {grid:P(['chat']),floats:[{key:'tasks',x:W()-444,y:24,w:420,h:330,min:false}]};
   if(s==='docked')return {grid:split('row',P(['chat']),split('col',P(['asks']),P(['tasks']),.36),.64),floats:[]};
@@ -1186,7 +1186,7 @@ function load(){own=false;menu=null;addpop=null;pal=null;keysOpen=false;quiet=tr
   if(step==='ide'){CHIP.h262='opened';
     COMMENTS=[{id:'cm0',path:'resources/js/components/panes/arrangement.ts',a:19,b:26,to:'h262',text:'Should a docked window keep these fields, or does it need a type of its own?',replies:[{from:'h262',text:ANCHOR_REPLY.h262}],read:true}];
     CONV.h262.msgs.push(['code','cm0'],['ag','14:07',ANCHOR_REPLY.h262]);
-    NOTES=[{t:'Helper 262 answered your comment',sub:'arrangement.ts · lines 19–26 · 14:07',read:false,run:()=>showAnchor(COMMENTS[0])}]}
+    NOTES=[{t:'Designer 262 answered your comment',sub:'arrangement.ts · lines 19–26 · 14:07',read:false,run:()=>showAnchor(COMMENTS[0])}]}
   LAYOUTS=[['start','Just the chat'],['first','A first window'],['docked','Docked'],['bare','Windows only'],['ide','IDE']].map(([id,name])=>({id,name}));
   LOADERS.forEach(f=>f());
   render()}
@@ -1466,9 +1466,9 @@ async function playDocFlow(){if(playing)return;playing=true;step='docs';page='ho
   await say('2 · Drag it, and it shrinks into a chip.',150);bar=$('[data-docbar="101"]');if(!bar){playing=false;return}bar.classList.add('lifting');const p0=at(bar);app.appendChild(chip);await move(p0,{x:p0.x,y:p0.y-80},700);
   await say('3 · Hold it over the agent\'s name, and the list of chats opens.',100);const who=$('[data-convmenu]');await move({x:p0.x,y:p0.y-80},at(who),900);
   openMenu(convMenuItems().filter(it=>it.dropconv||it.head==='Conversations'),who,'convmenu',{drop:true});$('[data-convmenu]').classList.add('drop');await sleep(1100);
-  caption='4 · Rest on Helper 262, and its chat opens behind the list.';render();let item=$('[data-dropconv="h262"]');if(item){await move(at(who),at(item),700)}
+  caption='4 · Rest on Designer 262, and its chat opens behind the list.';render();let item=$('[data-dropconv="h262"]');if(item){await move(at(who),at(item),700)}
   A.mainConv='h262';render();item=$('[data-dropconv="h262"]');if(item)item.classList.add('on');await sleep(1400);
-  menu=null;caption='5 · Let go, and Helper 262 has the document and starts reading.';chip.remove();handDoc('h262',101);await sleep(2600);caption=null;playing=false;render()}
+  menu=null;caption='5 · Let go, and Designer 262 has the document and starts reading.';chip.remove();handDoc('h262',101);await sleep(2600);caption=null;playing=false;render()}
 
 /* The Comment button sits beside the selection, over the content, so nothing moves and the text stays copyable. */
 function placeCommentButton(sel){$$('.cfloat').forEach(x=>x.remove());const s=sel||SEL;if(!s)return;
@@ -1535,7 +1535,7 @@ function wire(){const on=(s,fn)=>$$(s).forEach(fn),app=$('#app');
     if(b.classList.contains('actline')){ACTOPEN=e.id;ACTFILTER=1;openWin('activity',{dock:A.grid?'below':undefined});return}
     ACTOPEN=ACTOPEN===e.id?null:e.id;render();focusFk('act:'+e.id)});
   on('[data-actf]',b=>b.onclick=()=>{ACTFILTER=+b.dataset.actf;render();focusFk('actf:'+ACTFILTER)});
-  on('[data-chatlevel]',b=>b.onclick=()=>openMenu([{head:'Activities shown in the chat'},...[[4,'Nothing','everything stays in this panel'],[3,'Only what is important','agents started, memories written, tasks finished'],[2,'Important and normal','also tasks in hand, memories loaded, documents read']].map(([l,t,s])=>({label:t,sub:s,tick:CHATLEVEL===l,run:()=>{CHATLEVEL=l}})),{sep:1},{label:'Choose per kind in Settings',ic:'cog',run:()=>{page='settings';return false}}],b));
+  on('[data-chatlevel]',b=>b.onclick=()=>openMenu([{head:'Activities shown in the chat'},...[[4,'Nothing','everything stays in this panel'],[3,'Only what is important','agents started, memories written, tasks finished'],[2,'Important and normal','also tasks in hand, memories loaded, documents read']].map(([l,t,s])=>({label:t,sub:s,tick:CHATLEVEL===l,run:()=>{CHATLEVEL=l}}))],b));
   /* Lists and trees */
   on('#desk [data-item]',r=>{r.ondblclick=()=>openItem(r.dataset.item);r.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();openItem(r.dataset.item)}}});
   on('[data-pview]',b=>b.onclick=()=>{PVIEW=b.dataset.pview;TREE_SEL=null;render();focusFk('pview:'+PVIEW)});
@@ -1693,7 +1693,7 @@ const SEQS=[{id:9,name:'Ship a task',about:'From a finished change to a merged o
     {t:'Check the document',when:'a document is filed',done:'each ## heading is a section'},
     {t:'Tell the user',when:'the document reads as intended',done:'the user has its number'}]}];
 let RUNS=[],SEQSEL=9,SEQRUN=null,SEQEDIT=null;
-const freshRuns=()=>RUNS=[{id:41,seq:9,task:1702,by:'Agent 1',at:0,state:'running',since:'14:20'},{id:40,seq:9,task:1699,by:'Worker 1',at:4,state:'done',since:'13:10',took:'1 h 10 min'},{id:39,seq:6,task:null,by:'Helper 261',at:1,state:'running',since:'14:22'}];
+const freshRuns=()=>RUNS=[{id:41,seq:9,task:1702,by:'Agent 1',at:0,state:'running',since:'14:20'},{id:40,seq:9,task:1699,by:'Worker 1',at:4,state:'done',since:'13:10',took:'1 h 10 min'},{id:39,seq:6,task:null,by:'Designer 261',at:1,state:'running',since:'14:22'}];
 const runWord=r=>{const s=SEQS.find(x=>x.id===r.seq);return r.state==='done'?'finished':r.state==='waits'?`waits at step ${r.at+1} for ${s.steps[r.at].wait||'a check'}`:`at step ${r.at+1} of ${s.steps.length}`};
 /* A sequence's line in the chat: plain, one line, opening the viewer at that run. */
 EXTRA_KIND.seq=(c,m)=>{const r=RUNS.find(x=>x.id===m[1]),s=SEQS.find(x=>x.id===r.seq);return `<button class="actline seqline" data-seqopen="${s.id}:${r.id}" title="Open the sequence">${I('seq','s14')}<span><b>${esc(s.name)}</b> · ${m[2]}</span></button>`};
@@ -1753,7 +1753,7 @@ let DOCKED={},FOLD={},JUSTDOCKED=null;
 function dockTitle(d){if(d.kind==='task'){const t=TASKS.find(x=>x[0]===d.ref)||[d.ref,'Account settings dialog: Save inside the name field','work','Worker 3'];return {ic:'todos',t:`Task ${d.ref} · ${t[1]}`,sub:`${t[3]} · step 2 of 5`,prog:40,state:ST[t[2]]||ST.work,open:()=>openItem('task:'+d.ref)}}
   if(d.kind==='plan'){const p=PLANS.find(x=>x[0]===d.ref);return {ic:'plan',t:`Plan ${p[0]} · ${p[1]}`,sub:`${p[3].filter(t=>t[2]==='done').length} of ${p[3].length} tasks done`,prog:p[2],open:()=>{page='plans';SELP.plans=p[0]}}}
   if(d.kind==='question')return {ic:'question',t:'Which save behaviour for the name?',sub:'Question · Agent 1 · 13:44',answer:true,open:()=>{}};
-  return {ic:'docs',t:'Report 307 · Critique of Home v6, round 3',sub:'Interaction review · helper 313',open:()=>toast('Report 307 opens in the reader',()=>render())}}
+  return {ic:'docs',t:'Report 307 · Critique of Home v6, round 3',sub:'Interaction review · Reviewer 313',open:()=>toast('Report 307 opens in the reader',()=>render())}}
 function dcardHtml(d){const x=dockTitle(d);return `<div class="dcard" data-dcard="${d.id}" data-fk="dcard:${d.id}" tabindex="0" aria-label="${esc(x.t)}, docked">${I(x.ic)}<div class="t"><b>${esc(x.t)}</b><small>${esc(x.sub)}</small>${x.prog!=null?`<span class="meter" style="width:140px;margin-top:4px"><i style="width:${x.prog}%"></i></span>`:''}</div>
   ${x.answer?'<button class="btn sm bordered">Answer</button>':x.state||''}<button class="ib" data-dopen="${d.id}" title="Open" aria-label="Open ${esc(x.t)}">${I('arrow','s14')}</button><button class="ib" data-undock="${d.id}" title="Undock" aria-label="Undock ${esc(x.t)}">${I('close','s14')}</button></div>`}
 /* Under the conversation the cards stack; with more than one they fold to the newest, with its edges showing. */
@@ -1989,12 +1989,13 @@ LOADERS.push(()=>{SRCOPEN=new Set();SRCFOUND=null;SOURCES={
     {kind:'memory',t:'4 memories',sub:'Agent 1',who:'a1'},{kind:'doc',t:'Doc 101 · Design: Home, version 6',sub:'revision 4',ref:101},{kind:'doc',t:'Doc 96 · Accounts review',sub:'revision 2',ref:96},
     {kind:'file',t:'AccountSettingsDialog.vue',sub:'accounts',ref:'resources/js/components/accounts/AccountSettingsDialog.vue'},{kind:'file',t:'arrangement.ts',sub:'panes',ref:'resources/js/components/panes/arrangement.ts'}],
   'g1:3':[{kind:'search',t:'Searched for “NotificationBell”',sub:'3 found',found:['NotificationBell.vue','NotificationList.vue','Doc 95 · Notifications plan']},{kind:'file',t:'NotificationBell.vue',sub:'shell',ref:'resources/js/components/shell/NotificationBell.vue'}],
-  'h262:1':[{kind:'search',t:'Searched for “bell count”',sub:'2 found',found:['Doc 95 · Notifications plan','Task 1695 · Sign-in check on a slow host']},{kind:'memory',t:'2 memories',sub:'Helper 262',who:'h262'}]}});
+  'h262:1':[{kind:'search',t:'Searched for “bell count”',sub:'2 found',found:['Doc 95 · Notifications plan','Task 1695 · Sign-in check on a slow host']},{kind:'memory',t:'2 memories',sub:'Designer 262',who:'h262'}]}});
 
 /* =====================================================================================================================
    Accounts: usage at a glance. A subscription shows this week's and this session's use, each with when it resets; an
    API account shows what is left to spend, when the provider tells, and what was spent over a period.
    ===================================================================================================================== */
+/* Claude Code reports two windows: the last five hours and the last seven days. */
 const USAGE={'Work (Max)':{week:72,weekReset:'on Monday at 09:00',session:30,sessionReset:'in 3 hours'},'Personal':{week:96,weekReset:'on Monday at 09:00',session:91,sessionReset:'in 40 minutes'},
   'Codex team key':{left:'$41.20',spent:{today:['$1.90','410,000 tokens'],week:['$8.80','1.9 million tokens'],month:['$31.40','6.8 million tokens']}}};
 let SPENDP='week';
@@ -2005,7 +2006,7 @@ function useGroup(name){const u=USAGE[name];if(!u)return '';
   if(u.left){const s=u.spent[SPENDP];return `<div class="sec">Spending</div><div class="sgroup"><div class="srow"><div class="t">Left to spend<small>The balance Codex reports for this key.</small></div><b>${u.left}</b></div>
     <div class="srow"><div class="t">Spent<small>${s[0]}, or ${s[1]}, ${SPENDP==='today'?'today':'this '+SPENDP}.</small></div><div class="segc" role="group" aria-label="Period">${[['today','Today'],['week','This week'],['month','This month']].map(([k,t])=>`<button aria-pressed="${SPENDP===k}" data-spendp="${k}">${t}</button>`).join('')}</div></div></div>`}
   const bar=(label,p,reset)=>`<div class="srow"><div class="t">${label}<small>${useWord(p)}. Resets ${reset}.</small><div class="ubar"><span class="meter"><i style="width:${p}%"></i></span><span class="use ${p>=90?'low':''}">${p}% used</span></div></div></div>`;
-  return `<div class="sec">Usage</div><div class="sgroup">${bar('This week',u.week,u.weekReset)}${bar('This session',u.session,u.sessionReset)}</div>`}
+  return `<div class="sec">Usage</div><div class="sgroup">${bar('These 7 days',u.week,u.weekReset)}${bar('These 5 hours',u.session,u.sessionReset)}</div>`}
 WIRE_EXTRA.push(on=>on('[data-spendp]',b=>b.onclick=()=>{SPENDP=b.dataset.spendp;render()}));
 
 /* =====================================================================================================================
@@ -2027,6 +2028,62 @@ AFTER_RENDER.push(()=>{if(!GRAPH.sel)return;const w=$('[data-gwrap]');if(!w)retu
   const fitX=x1-x0<w.clientWidth,fitY=y1-y0<w.clientHeight;
   if(x0<w.scrollLeft||x1>w.scrollLeft+w.clientWidth)w.scrollTo({left:fitX?Math.max(0,x0-(w.clientWidth-(x1-x0))/2):Math.max(0,x0-16),behavior:CALM.matches?'auto':'smooth'});
   if(y0<w.scrollTop||y1>w.scrollTop+w.clientHeight)w.scrollTo({top:fitY?Math.max(0,y0-(w.clientHeight-(y1-y0))/2):Math.max(0,y0-16),behavior:CALM.matches?'auto':'smooth'})});
+/* =====================================================================================================================
+   Settings, from the groups the backend declares (app/Settings/Support/CoreSettings: General, Connected projects, and
+   one switch per domain). Each group: a head with a plain sentence, its settings, a switch when it can be turned off,
+   and Reset. Nothing invented: what has no backing is not here.
+   ===================================================================================================================== */
+const DOMAINS=[['tasks','Tasks','Turned off, the Tasks page and its windows are hidden. Nothing is deleted.'],['plans','Plans','Turned off, plans and their graphs are hidden.'],['documents','Documents','Turned off, documents and the reader are hidden.'],
+  ['sequences','Sequences','Turned off, no sequence starts and their lines leave the chat.'],['memory','Memory','Turned off, agents keep no memories between compactions.'],['reminders','Reminders','Turned off, no reminder fires.'],['helpers','Helpers','Turned off, the main agent starts no helpers.']];
+let SET={},CONN=null;
+const freshSet=()=>{SET={display_name:'Journal',remote_projects:true,...Object.fromEntries(DOMAINS.map(([k])=>[k,true]))};CONN={state:'idle',shown:false,token:'jrn_7Hq2-Lm9x-Kc4w',expires:30,projects:[['laptop','~/projects/shop','Connected','2 agents running'],['build box','/srv/journal-ci','Offline','Last seen yesterday at 18:40']]}};
+function settingsHtml(){const grp=(id,t,line,body,toggle,changed)=>`<div class="sec" style="display:flex;align-items:center;gap:10px"><span style="flex:1">${t}</span>${changed?`<button class="btn sm" data-setreset="${id}">Reset</button>`:''}${toggle!=null?`<button class="toggle" role="switch" aria-checked="${toggle}" data-settog="${id}" aria-label="${t}"></button>`:''}</div><p style="margin:-4px 0 8px;color:var(--text-3);font-size:var(--text-small)">${line}</p>${body?`<div class="sgroup">${body}</div>`:''}`;
+  const nameBad=!SET.display_name.trim();
+  return `<div class="pghead"><h3>Settings</h3></div><div style="flex:1;overflow:auto" data-keepscroll="settings"><div class="reader" style="max-width:720px">
+    ${grp('general','General','How this journal names itself.',`<div class="srow"><div class="t">Journal name<small>Shown in the topbar and in the browser's tab.</small></div><div><input class="field ${nameBad?'bad':''}" data-setname value="${esc(SET.display_name)}" aria-label="Journal name" ${nameBad?'aria-invalid="true" aria-describedby="nameerr"':''}>${nameBad?'<div class="errtext" id="nameerr">A name needs at least one character.</div>':''}</div></div>`,null,SET.display_name!=='Journal')}
+    ${grp('connected_projects','Connected projects','Projects on other machines that report to this journal.',SET.remote_projects?connectHtml():'',SET.remote_projects,false)}
+    ${DOMAINS.map(([k,t,l])=>grp(k,t,l,'',SET[k],false)).join('')}</div></div>`}
+/* Connecting a project (doc 92): copy one command with its token, run it on the other machine, and it appears here. */
+function connectHtml(){const C=CONN,tok=C.shown?C.token:'jrn_••••-••••-••••',cmd=`journal connect https://journal.transport.app --token ${tok}`;
+  return `<div class="srow" style="display:block"><div class="t">Connect a project<small>Run this one line on the machine with the project. It connects within a minute.</small></div>
+    <div style="display:flex;gap:6px;margin-top:8px;align-items:center"><code class="field" style="flex:1;width:auto;font-family:var(--font-mono);font-size:var(--text-small);overflow:hidden;white-space:nowrap" aria-label="Command">${esc(cmd)}</code>
+    <button class="btn sm" data-conshow aria-pressed="${C.shown}">${C.shown?'Hide':'Show'}</button><button class="btn sm bordered" data-concopy>${I('copy','s14')}Copy</button></div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:8px;font-size:var(--text-small);color:var(--text-3)">${C.state==='waiting'?'<span class="st" style="color:var(--text-2)"><span class="spin"></span>Waiting for the command to run…</span>':C.state==='connected'?`<span class="st strong">${I('tick','s14')}Connected: ${esc(C.projects[0][0])}</span>`:`<span>The token works once and expires in ${C.expires} minutes.</span>`}<span style="flex:1"></span><button class="btn sm" data-connew>Make a new one</button></div></div>
+    ${C.projects.length?C.projects.map(([m,p,s,l],i)=>`<div class="srow"><div class="t">${esc(m)} · <code>${esc(p)}</code><small>${s==='Connected'?l:`${s}. ${l}.`}</small></div><span class="st ${s==='Connected'?'':''}">${s==='Connected'?'<span class="dot solid"></span>':'<span class="dot hollow"></span>'}${s}</span><button class="btn sm" data-condrop="${i}">Disconnect</button></div>`).join('')
+      :`<div class="srow"><div class="t">No projects connected yet<small>Run the command above on the machine with the project.</small></div></div>`}`}
+const basePageHtml=pageHtml;
+pageHtml=function(){return page==='settings'?settingsHtml():basePageHtml()};
+WIRE_EXTRA.push(on=>{
+  on('[data-setname]',i=>{i.oninput=()=>{SET.display_name=i.value};i.onchange=()=>render()});
+  on('[data-settog]',b=>b.onclick=()=>{const k=b.dataset.settog;SET[k]=!SET[k];render();focusFk&&b.blur()});
+  on('[data-setreset]',b=>b.onclick=()=>{const before=SET.display_name;SET.display_name='Journal';render();toast('General is back to its defaults',()=>{SET.display_name=before;render()})});
+  on('[data-conshow]',b=>b.onclick=()=>{CONN.shown=!CONN.shown;render()});
+  on('[data-concopy]',b=>b.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(`journal connect https://journal.transport.app --token ${CONN.token}`);CONN.state='waiting';render();
+    setTimeout(()=>{if(CONN.state!=='waiting')return;CONN.projects.unshift(['studio mac','~/code/journal-site','Connected','Joined just now']);CONN.state='connected';render()},3200)});
+  on('[data-connew]',b=>b.onclick=()=>{CONN.token='jrn_'+Math.random().toString(36).slice(2,6)+'-'+Math.random().toString(36).slice(2,6)+'-'+Math.random().toString(36).slice(2,6);CONN.state='idle';CONN.expires=30;render()});
+  on('[data-condrop]',b=>b.onclick=()=>{const i=+b.dataset.condrop,before=clone(CONN.projects);CONN.projects.splice(i,1);render();toast('Disconnected',()=>{CONN.projects=before;render()})})});
+PAL_EXTRA.push(C=>{C('Connect a project','plus',()=>{page='settings';SET.remote_projects=true;return false});C('Profiles','users',()=>{page='profiles';return false})});
+
+/* =====================================================================================================================
+   Profiles: what kinds of helper there are, read from the profile declarations (app/Profiles: base program, model and
+   allowed models, driver, instructions, required skills, commands it may not run, stop conditions, instances), and
+   whom each answers to. Helpers are titled by their profile: Designer 262, Reviewer 258, Worker 3.
+   ===================================================================================================================== */
+const PROFILES=[['designer','Designer','Claude Code','Opus',['Opus','Sonnet'],'Terminal driver, pinned','Agent 1','One per job',['artifact-design','journal-documents'],['git push','npm publish'],['Stops when its design is saved and reported'],'before-stop: the document reads as intended','Designs one screen or flow and makes it as a page.'],
+  ['reviewer','Reviewer','Claude Code','Opus',['Opus'],'Any driver','Agent 1','Reused between jobs',['journal-documents'],['any file change'],['Stops when its report is filed'],'',"Reads a change or a design and files what it finds."],
+  ['planner','Planner','Claude Code','Opus',['Opus','Sonnet'],'Any driver','Agent 1','One at a time',['journal-tasks'],['any file change'],['Stops when the plan is filed'],'',"Turns a request into a plan of phases and tasks."],
+  ['worker','Worker','Claude Code or Codex','Sonnet',['Sonnet','Opus','Codex'],'Terminal driver','Agent 1','One per job',['commandments'],['git push to main'],['Stops when its task is ready to test'],'after-edit: run the commandments judge','Writes the code for one task and tests it.']];
+let PROFSEL='designer';
+function profilesHtml(){const sel=PROFILES.find(p=>p[0]===PROFSEL),row2=(t,line,v)=>`<div class="srow"><div class="t">${t}<small>${line}</small></div><div style="text-align:right;max-width:280px">${v}</div></div>`,chips=a=>a.map(x=>`<span class="chip faint">${esc(x)}</span>`).join(' ');
+  return shell('Profiles','',String(PROFILES.length),'',PROFILES.map(([id,t,prog,model])=>row('prof:'+id,`${I('users','s14')}<span class="t">${t}<span style="color:var(--text-3)"> · ${prog} · ${model}</span></span>`,PROFSEL===id)).join(''),
+    `<div class="reader"><h2>${sel[1]}</h2><p class="ab">${esc(sel[12])}</p><div class="sgroup">
+      ${row2('Program','What it runs on.',esc(sel[2]))}${row2('Model','The model it starts with.',esc(sel[3]))}${row2('Models it may use','Others can be chosen when it starts.',chips(sel[4]))}
+      ${row2('Driver','How the journal runs it.',esc(sel[5]))}${row2('Answers to','Its supervisor, who gets its reports and questions.',esc(sel[6]))}${row2('How many run','Whether one is reused or a new one starts for each job.',esc(sel[7]))}</div>
+      <div class="sec">Rules it works under</div><div class="sgroup">${row2('Skills it must read','Loaded before it starts.',chips(sel[8]))}${row2('Commands it may not run','Refused when it tries.',chips(sel[9]))}${row2('When it stops','Its job ends when this holds.',sel[10].map(esc).join('<br>'))}
+      ${row2('Scripts','Its own checks, run at set moments.',sel[11]?`<code>${esc(sel[11])}</code>`:'None')}</div></div>`)}
+PAGES_EXTRA.push({id:'profiles',t:'Profiles',ic:'users',line:'the kinds of helper: each with its program and models, driver, supervisor, rules and scripts.',html:profilesHtml});
+WIRE_EXTRA.push(on=>on('#main .pglist [data-item^="prof:"]',r=>r.onclick=()=>{PROFSEL=r.dataset.item.split(':')[1];render();focusFk('row:'+r.dataset.item)}));
+LOADERS.push(freshSet);
 /* A plan made a moment ago has no tasks yet: its graph says so instead of drawing nothing. */
 const baseGraphView=graphView;
 graphView=function(plan){const P=PLANS.find(p=>p[0]===plan);if(!P||!P[3].length)return `<div class="empty"><b>No tasks in this plan yet</b>Its tasks, and what each waits on, show here.</div>`;return baseGraphView(plan)};
@@ -2050,7 +2107,7 @@ function startChrome(){
   $$('#steps button').forEach(b=>b.onclick=()=>{step=b.dataset.k;page='home';load()});
   $('#widths').innerHTML=[1100,1440,1920].map(w=>`<button data-w="${w}">${w}</button>`).join('');
   $$('#widths button').forEach(b=>b.onclick=()=>{frameW=+b.dataset.w;load()});
-  $('#simHelper').onclick=()=>{page='home';if(CONV.main.msgs.some(m=>m[3]&&m[3].chip)){toast('Helper 262 is already running',()=>render());return}startHelperScript();A.mainConv='main';changed()};
+  $('#simHelper').onclick=()=>{page='home';if(CONV.main.msgs.some(m=>m[3]&&m[3].chip)){toast('Designer 262 is already running',()=>render());return}startHelperScript();A.mainConv='main';changed()};
   $('#emptyBtn').onclick=()=>{showEmpty=!showEmpty;render()};
   $('#mL').onclick=()=>setMode('light');$('#mD').onclick=()=>setMode('dark');
   $('#notes').innerHTML=NOTE_CARDS.map(([t,x])=>`<div><b>${t}</b>${x}</div>`).join('');
