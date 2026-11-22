@@ -145,16 +145,22 @@ func assertNoUnfinishedDisconnect(folder project.Folder, state host.ConnectionSt
 }
 
 // ask puts the question on the controlling terminal and goes on only for the expected answer; with no terminal it
-// says how to go on and uses nothing.
+// says how to go on and uses nothing. The answer is read through its own handle and the question appended through
+// another, so writing the question never moves or overwrites what is read.
 func (target targetFolder) ask(question string, expected string, refusal error) error {
-	terminal, err := os.OpenFile(terminalPath, os.O_RDWR, 0)
+	answers, err := os.Open(terminalPath)
 	if err != nil {
 		return fmt.Errorf("%w: open a terminal in %s and run the install line there", errNoTerminal, target.root)
 	}
-	defer terminal.Close()
+	defer answers.Close()
+	prompt, err := os.OpenFile(terminalPath, os.O_WRONLY|os.O_APPEND, 0)
+	if err != nil {
+		return fmt.Errorf("%w: open a terminal in %s and run the install line there", errNoTerminal, target.root)
+	}
+	defer prompt.Close()
 
-	fmt.Fprint(terminal, question)
-	answer, _ := bufio.NewReader(terminal).ReadString('\n')
+	fmt.Fprint(prompt, question)
+	answer, _ := bufio.NewReader(answers).ReadString('\n')
 	if strings.ToLower(strings.TrimSpace(answer)) != expected {
 		return refusal
 	}
