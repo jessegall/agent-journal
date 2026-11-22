@@ -81,7 +81,12 @@ final readonly class StartAgentHandler implements CommandHandler
             throw StartPreviewStale::since($request->previewRevision, $this->drivers->revision());
         }
 
-        $pinned = $this->drivers->pinned($request->selection->driver, $request->variant, $request->neededCapabilities());
+        $pinned = $this->drivers->pinned(
+            $request->selection->driver,
+            $request->variant,
+            $request->neededCapabilities(),
+        );
+
         $record = StartRecord::accept(
             $request,
             $pinned,

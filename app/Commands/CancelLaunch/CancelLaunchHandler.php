@@ -24,7 +24,8 @@ final readonly class CancelLaunchHandler implements CommandHandler
     public function handle(CancelLaunchCommand $command): bool
     {
         $hasRuntime = AgentRuntime::existsForSession($command->sessionId);
-        StartRecord::lockedLatestOf($command->sessionId)->forAll(fn (StartRecord $start) => $start->cancelVerification());
+        StartRecord::lockedLatestOf($command->sessionId)
+            ->forAll(fn (StartRecord $start) => $start->cancelVerification());
 
         if ($hasRuntime) {
             $this->requests->stop($command->target(), $command->idempotencyKey);

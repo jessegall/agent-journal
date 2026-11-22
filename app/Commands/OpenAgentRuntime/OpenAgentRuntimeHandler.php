@@ -91,7 +91,9 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         $policy = $this->builtInProfiles->policyFor($agent->profile_key);
 
         // A connected folder's relay runs its agents on the user's own machine, never in this journal's containers.
-        if ($policy->execution->mode === ExecutionModeType::RequiredContainer && $host->runsPlacement($policy->execution->mode)) {
+        $mode = $policy->execution->mode;
+
+        if ($mode === ExecutionModeType::RequiredContainer && $host->runsPlacement($mode)) {
             $this->containers->admit($requestId, $selection->driver, $policy->execution);
         }
 

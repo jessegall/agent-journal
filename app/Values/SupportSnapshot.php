@@ -39,6 +39,14 @@ final readonly class SupportSnapshot
         return new self($capabilities);
     }
 
+    /**
+     * Whether the driver allows the operation now.
+     */
+    public function allows(DriverCapability $capability): bool
+    {
+        return $this->supportOf($capability)->isAllowed();
+    }
+
     public function supportOf(DriverCapability $capability): OperationSupport
     {
         return $this->capabilities[$capability->value] ?? OperationSupport::unsupported(self::NOT_REPORTED);

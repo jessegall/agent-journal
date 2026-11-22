@@ -33,14 +33,15 @@ final readonly class AccountSharing
             return;
         }
 
-        if (! $driver->support->supportOf(DriverCapability::SharedAccount)->isAllowed()) {
+        if (! $driver->support->allows(DriverCapability::SharedAccount)) {
             throw AccountWriterTaken::inUseBy($sessionIds[0]);
         }
 
         foreach (AgentRuntime::driverKeysOfSessions($sessionIds) as $sessionId => $driverKey) {
-            $support = $this->drivers->forKey(DriverKey::from($driverKey))->capabilities(BoundTarget::beforePlacement());
+            $support = $this->drivers->forKey(DriverKey::from($driverKey))
+                ->capabilities(BoundTarget::beforePlacement());
 
-            if (! $support->supportOf(DriverCapability::SharedAccount)->isAllowed()) {
+            if (! $support->allows(DriverCapability::SharedAccount)) {
                 throw AccountWriterTaken::heldBy($sessionId);
             }
         }
