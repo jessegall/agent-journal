@@ -12,6 +12,8 @@ use App\Assignments\Contracts\Assignable;
 use App\Assignments\Enums\PoolMembersType;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\AssignmentHolder;
+use App\Comments\Contracts\Commentable;
+use App\Comments\Support\HasComments;
 use App\Assignments\Support\OrderedRecordIds;
 use App\Assignments\Support\PoolMembers;
 use App\Contracts\EventSource;
@@ -95,10 +97,11 @@ use PhpOption\Some;
     'cancel_reason',
     'environment_id',
 ])]
-final class Task extends Model implements Assignable, EventSource, Numbered, ReadableModel
+final class Task extends Model implements Assignable, Commentable, EventSource, Numbered, ReadableModel
 {
     use AssignableListing;
     use BoundedReads;
+    use HasComments;
 
     /**
      * @use HasFactory<TaskFactory>

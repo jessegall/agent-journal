@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Http\Requests;
 
+use App\Assignments\Support\Page;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
+use App\Reads\Values\PageSize;
 use Domain\Tasks\Models\Task;
 use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -26,6 +28,7 @@ final class TaskRequest extends FormRequest
             'section' => ['nullable', 'string', 'in:logs,proofs'],
             'logs_before' => ['nullable', 'string', 'regex:/^(n|[0-9]{1,10}),(n|[0-9]{1,10})$/'],
             'proofs_after' => ['nullable', 'string', 'max:26'],
+            'commentsAfter' => ['nullable', 'string', 'max:26'],
         ];
     }
 
@@ -59,6 +62,16 @@ final class TaskRequest extends FormRequest
     public function proofsAfter(): string
     {
         return $this->string('proofs_after')->toString();
+    }
+
+    /**
+     * The page of the task's comments the reader asks for: after a comment, or from the first.
+     */
+    public function commentsPage(): Page
+    {
+        $after = $this->filled('commentsAfter') ? $this->string('commentsAfter')->toString() : null;
+
+        return new Page($after, PageSize::from(null)->rows);
     }
 
     public function taskId(): string

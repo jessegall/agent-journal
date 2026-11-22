@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
+use App\Comments\Contracts\CommentResolver;
 use App\Reads\Enums\ReadView;
+use App\Records\Support\RecordIdentity;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\SlotSections;
 use Domain\Tasks\Api\TaskProof;
@@ -16,6 +18,7 @@ use Domain\Tasks\Http\Data\TaskProofData;
 use Domain\Tasks\Http\Data\TaskProofsData;
 use Domain\Tasks\Http\Data\TaskReaderData;
 use Domain\Tasks\Http\Requests\TaskRequest;
+use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskStream;
 use Spatie\LaravelData\Optional;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -36,6 +39,7 @@ final readonly class TaskWindowResolver implements PageResolver
         private SlotSections $slots,
         private TaskStream $stream,
         private TaskProofResolver $proofs,
+        private CommentResolver $comments,
     ) {}
 
     public function read(): TaskReaderData
@@ -44,6 +48,7 @@ final readonly class TaskWindowResolver implements PageResolver
             $taskId = $this->request->taskId();
             return TaskReaderData::fromDetails(
                 $this->details->details($taskId, ReadView::Context),
+                $this->comments->list(new RecordIdentity(Task::LINK_TYPE, $taskId), $this->request->commentsPage()),
                 $this->slots->sectionsIn('tasks.task', 'inspector'),
                 $this->logsOf($taskId),
                 $this->proofsOf($taskId),

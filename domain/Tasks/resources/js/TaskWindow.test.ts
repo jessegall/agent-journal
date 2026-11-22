@@ -6,6 +6,7 @@ import type { TaskReaderData } from '@generated/types/tasks';
 vi.mock('@inertiajs/vue3', () => ({ Link: { template: '<a><slot /></a>' } }));
 vi.mock('@generated/routes/tasks', () => ({ list: { url: () => '/tasks' } }));
 vi.mock('@kit/SlotSections', () => ({ default: { template: '<div />' } }));
+vi.mock('@kit/CommentsPanel', () => ({ default: { template: '<div />' } }));
 
 const { default: TaskWindow } = await import('./TaskWindow.vue');
 
@@ -18,6 +19,8 @@ function reader(changes: Partial<TaskReaderData> = {}): TaskReaderData {
         brief: 'First part.\n\nSecond part,\nwith a line.',
         latestRun: 4,
         sections: [],
+        label: 'task 31',
+        comments: { items: [], nextAfter: null },
         ...changes,
     } as TaskReaderData;
 }

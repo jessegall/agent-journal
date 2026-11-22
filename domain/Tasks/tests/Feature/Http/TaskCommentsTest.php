@@ -1,0 +1,73 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Tasks\Tests\Feature\Http;
+
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Bus\Contracts\CommandBus;
+use App\Comments\Commands\PostComment;
+use App\Records\Support\RecordIdentity;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
+use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\TestCase;
+use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\StartsAgentRequests;
+
+/**
+ * A task takes comments through Core's comments alone: one the caller may read gets a comment that its page reads
+ * back, and a caller with no access writes nothing and sees nothing of the task.
+ */
+final class TaskCommentsTest extends TestCase
+{
+    use CommitsHookRows;
+    use StartsAgentRequests;
+
+    private const array TABLES = ['comments', 'users', 'tasks', 'agents', 'command_receipts'];
+
+    private User $owner;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+    }
+
+    public function test_a_comment_on_a_task_is_read_back_on_its_page(): void
+    {
+        $task = Task::factory()->create();
+        $this->startUserRequestAs($this->owner->id);
+
+        $this->app->make(CommandBus::class)->run(new PostComment(
+            new RecordIdentity(Task::LINK_TYPE, $task->id),
+            'Is the schema settled?',
+            (string) Str::uuid(),
+        ));
+
+        $taskPage = $this->actingAs($this->owner)->get("/tasks/{$task->number}")->assertOk();
+        $taskPage->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.data.label', "task {$task->number}")
+            ->where('page.data.comments.items.0.comment.body', 'Is the schema settled?'));
+    }
+
+    public function test_a_caller_with_no_access_writes_nothing_and_sees_nothing(): void
+    {
+        $task = Task::factory()->create();
+        $this->app->make(CurrentActorSetter::class)->clear();
+
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new PostComment(
+                new RecordIdentity(Task::LINK_TYPE, $task->id),
+                'Sneaking in.',
+                (string) Str::uuid(),
+            )),
+        );
+        $this->get("/tasks/{$task->number}")->assertRedirect('/login');
+        $this->assertSame(0, $task->comments()->count());
+    }
+}

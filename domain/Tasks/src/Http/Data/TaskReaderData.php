@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Http\Data;
 
 use App\Assignments\Support\AssignmentData;
+use App\Comments\Data\CommentList;
 use App\Ui\Data\SlotSectionData;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Api\TaskText;
@@ -18,7 +19,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * One task's reader: its number, title, state and revision, and three separate facts: the standing holder, the latest
  * run's number, and who runs it now, each absent when there is none; the sections other domains add beside the facts,
  * such as Plans' plan of the task; then its brief, never its result note in its place, and the Logs and Proofs the
- * reader asked for.
+ * reader asked for, and its comments under the label they are written against.
  */
 #[TypeScript]
 final class TaskReaderData extends Data
@@ -32,6 +33,8 @@ final class TaskReaderData extends Data
         public readonly TaskState $state,
         public readonly int $revision,
         public readonly string $brief,
+        public readonly string $label,
+        public readonly CommentList $comments,
         #[DataCollectionOf(SlotSectionData::class)]
         public readonly array $sections,
         public readonly AssignmentData|Optional $holder = new Optional(),
@@ -49,6 +52,7 @@ final class TaskReaderData extends Data
      */
     public static function fromDetails(
         TaskDetails $details,
+        CommentList $comments,
         array $sections,
         TaskLogsData|Optional $logs,
         TaskProofsData|Optional $proofs,
@@ -61,6 +65,8 @@ final class TaskReaderData extends Data
             'state' => $details->state,
             'revision' => $details->revision,
             'brief' => $details->text instanceof TaskText ? $details->text->brief : '',
+            'label' => "task {$details->number}",
+            'comments' => $comments,
             'sections' => $sections,
             'holder' => $details->holder->map(AssignmentData::ofHolder(...))->getOrElse(null),
             'latestRun' => $execution?->runNumber,

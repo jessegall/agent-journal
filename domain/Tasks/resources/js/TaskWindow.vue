@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
 import Button from '@kit/Button';
+import CommentsPanel from '@kit/CommentsPanel';
 import FactsList from '@kit/FactsList';
 import Reader from '@kit/Reader';
 import SlotSections from '@kit/SlotSections';
@@ -17,7 +18,7 @@ import { taskStateLook } from './taskLooks';
  * labelled apart (the holder, the latest run and who runs it now, then what other domains add, such as Plans' plan of
  * the task), and its sections as
  * tabs: Brief, the brief's paragraphs in order as text, or No brief yet, never the result note instead; Logs and Proofs,
- * each read only once its tab is chosen.
+ * each read only once its tab is chosen; and Comments, Core's thread on the task.
  * Back returns to the tasks list it was opened from, with its query, or to the tasks list.
  */
 const props = defineProps<{ data: TaskReaderData }>();
@@ -29,6 +30,7 @@ const tabs = [
     { key: 'brief', label: 'Brief' },
     { key: 'logs', label: 'Logs' },
     { key: 'proofs', label: 'Proofs' },
+    { key: 'comments', label: 'Comments' },
 ];
 
 const facts = computed(() => [
@@ -108,6 +110,13 @@ function back(): void {
                         <template v-if="opened.has('logs')">
                             <TaskLogsTab :logs="data.logs" />
                         </template>
+                    </template>
+                    <template #comments>
+                        <CommentsPanel
+                            :comments="data.comments"
+                            :target="data.label"
+                            :version="String(data.revision)"
+                        />
                     </template>
                     <template #proofs>
                         <template v-if="opened.has('proofs')">
