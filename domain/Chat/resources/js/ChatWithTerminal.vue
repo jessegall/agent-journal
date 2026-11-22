@@ -6,7 +6,7 @@ import type { PaneTab } from '@kit/PaneTabs';
 import TerminalHeader from '@kit/TerminalHeader';
 import type { TerminalHeaderAction } from '@kit/TerminalHeader';
 import type { AgentOptionData } from '@generated/types/chat';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue';
 import { closeTerminalBesideChat, terminalDock } from './composables/useTerminalDock';
 import DockedTerminal from './DockedTerminal.vue';
 import {
@@ -27,7 +27,12 @@ import type { TerminalPlacement } from './terminalPlacement';
  */
 const props = defineProps<{ agents: AgentOptionData[]; selectedAgentId: string | undefined }>();
 
+const root = ref<HTMLElement | null>(null);
 const space = ref<HTMLElement | null>(null);
+const chatPanel = ref<HTMLElement | null>(null);
+const header = ref<HTMLElement | null>(null);
+const terminalPanel = ref<HTMLElement | null>(null);
+const isHelpShown = ref(false);
 const width = ref(0);
 const chatShare = ref(readStoredJson('local', SPLIT_STORAGE_KEY, storedShare) ?? DEFAULT_CHAT_SHARE);
 const isFullScreen = ref(false);
@@ -64,15 +69,23 @@ const chatStyle = computed(() =>
         ? { flex: `0 0 ${boundedChatShare(chatShare.value, width.value, remPixels()) * 100}%` }
         : { flex: '1 1 0%' },
 );
+const panelIds = { chat: useId(), terminal: useId() };
+const terminalLabel = computed(() => `Terminal for ${agent.value?.name ?? ''}`);
 const tabs = computed<PaneTab[]>(() => [
-    { key: 'chat', title: 'Chat', icon: 'chat', isActive: chosenTab.value === 'chat' },
+    { key: 'chat', title: 'Chat', icon: 'chat', isActive: chosenTab.value === 'chat', panelId: panelIds.chat },
     {
         key: 'terminal',
-        title: `Terminal for ${agent.value?.name ?? ''}`,
+        title: terminalLabel.value,
         icon: 'term',
         isActive: chosenTab.value === 'terminal',
+        panelId: panelIds.terminal,
     },
 ]);
+const panelRole = computed(() => (isOpen.value && placement.value === 'tabs' ? 'tabpanel' : 'region'));
+const splitLimits = computed(() => ({
+    minimum: boundedChatShare(0, width.value, remPixels()),
+    maximum: boundedChatShare(1, width.value, remPixels()),
+}));
 
 const placementLabel = computed(
     () => ({ dock: 'Beside chat', tabs: 'In a tab', 'full-screen': 'Full screen' })[placement.value],
@@ -92,7 +105,58 @@ const enterFullScreen: TerminalHeaderAction = {
     },
 };
 const mainAction = computed(() => (isFullScreen.value ? exitFullScreen : closeAction));
-const secondaryActions = computed(() => (isFullScreen.value ? [closeAction] : [enterFullScreen]));
+const keyboardHelp: TerminalHeaderAction = {
+    key: 'keyboard-help',
+    label: 'Keyboard help',
+    run: () => (isHelpShown.value = !isHelpShown.value),
+};
+const secondaryActions = computed(() =>
+    isFullScreen.value ? [closeAction, keyboardHelp] : [enterFullScreen, keyboardHelp],
+);
+
+/**
+ * F6 moves the focus on to the chat, the terminal's header and the terminal's screen in turn, Shift+F6 back; a part
+ * that is not shown is passed over.
+ */
+function cycleFocus(event: KeyboardEvent): void {
+    if (event.key !== 'F6' || !isOpen.value) {
+        return;
+    }
+
+    const stops = [chatPanel.value, header.value, terminalPanel.value].filter(
+        (stop): stop is HTMLElement => stop !== null && stop.offsetParent !== null,
+    );
+
+    if (stops.length === 0) {
+        return;
+    }
+
+    event.preventDefault();
+    const current = stops.findIndex((stop) => stop.contains(document.activeElement));
+    const next = (current + (event.shiftKey ? stops.length - 1 : 1)) % stops.length;
+    stops[current === -1 ? 0 : next].focus();
+}
+
+/**
+ * When a change of placement hides the part that had the focus, the focus goes to the chosen tab, or to the part
+ * still shown.
+ */
+async function keepFocus(): Promise<void> {
+    const focused = document.activeElement;
+
+    if (!(focused instanceof HTMLElement) || !root.value?.contains(focused)) {
+        return;
+    }
+
+    await nextTick();
+
+    if (focused.offsetParent !== null) {
+        return;
+    }
+
+    const chosen = root.value.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
+    (chosen ?? (showsTerminal.value ? terminalPanel.value : chatPanel.value))?.focus();
+}
 
 async function leaveFullScreen(): Promise<void> {
     isFullScreen.value = false;
@@ -155,8 +219,11 @@ watch(
     },
 );
 
+watch(placement, () => void keepFocus());
+
 onMounted(() => {
     terminalDock.mountedWindows++;
+    document.addEventListener('keydown', cycleFocus);
     watcher = new ResizeObserver(([entry]) => (width.value = entry.contentRect.width));
 
     if (space.value) {
@@ -167,12 +234,14 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     terminalDock.mountedWindows--;
+    document.removeEventListener('keydown', cycleFocus);
     watcher?.disconnect();
 });
 </script>
 
 <template>
     <div
+        ref="root"
         class="flex min-h-0 flex-col"
         :class="isFullScreen ? 'fixed inset-0 z-40 bg-bg' : 'h-full'"
     >
@@ -180,28 +249,56 @@ onBeforeUnmount(() => {
             <PaneTabs :tabs="tabs" @pick="pickTab" @close="closeTab" />
         </template>
         <template v-if="isOpen && agent">
-            <TerminalHeader
+            <div ref="header" tabindex="-1" class="focus-visible:outline-2 focus-visible:outline-focus">
+                <TerminalHeader
                 :agent-name="agent.name"
                 :driver="agent.sessionDriver"
                 owner="Watching"
                 :placement="placementLabel"
                 :main="mainAction"
                 :secondary="secondaryActions"
-            />
+                />
+            </div>
+            <template v-if="isHelpShown">
+                <p class="px-3 pb-1 text-small text-text-2">
+                    F6 moves between the chat, this header and the terminal; Shift+F6 goes back. On the divider, the
+                    arrow keys resize, Home and End reach the limits. In the tabs, Left and Right switch.
+                </p>
+            </template>
         </template>
         <div ref="space" class="flex min-h-0 flex-1 flex-row">
-            <div v-show="showsChat" class="min-w-0" :style="chatStyle">
+            <div
+                :id="panelIds.chat"
+                ref="chatPanel"
+                v-show="showsChat"
+                tabindex="-1"
+                :role="panelRole"
+                aria-label="Chat"
+                class="min-w-0 focus-visible:outline-2 focus-visible:outline-focus"
+                :style="chatStyle"
+            >
                 <slot />
             </div>
             <template v-if="isOpen && placement === 'dock'">
-                <PaneSplitter axis="row" :ratio="chatShare" @move="moveSplit" @reset="resetSplit" />
+                <PaneSplitter
+                    axis="row"
+                    :ratio="boundedChatShare(chatShare, width, remPixels())"
+                    :minimum="splitLimits.minimum"
+                    :maximum="splitLimits.maximum"
+                    :step="0.01"
+                    @move="moveSplit"
+                    @reset="resetSplit"
+                />
             </template>
             <template v-if="isOpen && agent">
                 <div
+                    :id="panelIds.terminal"
+                    ref="terminalPanel"
                     v-show="showsTerminal"
-                    class="min-w-0 flex-1 overflow-auto"
-                    :aria-label="`Terminal for ${agent.name}`"
-                    role="region"
+                    tabindex="-1"
+                    class="min-w-0 flex-1 overflow-auto focus-visible:outline-2 focus-visible:outline-focus"
+                    :aria-label="terminalLabel"
+                    :role="panelRole"
                 >
                     <DockedTerminal :agent-id="agent.id" :is-shown="showsTerminal" @back-to-chat="close" />
                 </div>

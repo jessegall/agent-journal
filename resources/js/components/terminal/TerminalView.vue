@@ -1,17 +1,57 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, useId, watch } from 'vue';
+import Button from '@/components/kit/Button.vue';
 import TerminalRow from './TerminalRow.vue';
 import type { TerminalPresentation } from './useTerminalController';
 
 /**
  * An agent's terminal, drawn only: the line saying what the screen is, the notices about it, the actions its window
  * offers for that state, and the screen as the driver draws it, with its colours and cursor, at the driver's own size.
- * Only the screen is monospaced. It reads nothing itself.
+ * Only the screen is monospaced. Read screen opens a plain-text snapshot of the rows that holds still until Refresh,
+ * and goes together with the pixels when the screen clears. A change of state is announced once, a failure as an
+ * alert; frames are never announced. It reads nothing itself.
  */
 const props = defineProps<{ presentation: TerminalPresentation }>();
 
 const screen = computed(() => props.presentation.screen);
 const drawn = computed(() => screen.value.frame);
+
+const readerId = useId();
+const snapshot = ref<string | null>(null);
+
+function snapshotText(): string {
+    return (drawn.value?.rows ?? []).map((row) => row.runs.map((run) => run.text).join('')).join('\n');
+}
+
+function readScreen(): void {
+    snapshot.value = snapshotText();
+}
+
+function closeReader(): void {
+    snapshot.value = null;
+}
+
+watch(drawn, (frame) => {
+    if (frame === null) {
+        closeReader();
+    }
+});
+
+const announcement = computed(
+    () =>
+        ({
+            opening: '',
+            refused: '',
+            live: 'Watching the terminal',
+            last_reported: 'The terminal shows its last reported screen',
+            preview_unavailable: 'Terminal preview unavailable',
+            not_reporting: '',
+            ended: 'The session ended',
+        })[screen.value.state],
+);
+const alert = computed(() =>
+    screen.value.state === 'refused' || screen.value.state === 'not_reporting' ? props.presentation.stateLine : '',
+);
 
 const cursorStyle = computed(() => {
     const cursor = drawn.value?.cursor;
@@ -30,9 +70,28 @@ const cursorStyle = computed(() => {
         <template v-for="notice in presentation.notices" :key="notice">
             <p class="text-small text-warn">{{ notice }}</p>
         </template>
+        <p role="status" aria-live="polite" class="sr-only">{{ announcement }}</p>
+        <p role="alert" class="sr-only">{{ alert }}</p>
         <div class="flex flex-wrap gap-1.5">
             <slot name="actions" :state="screen.state" />
+            <template v-if="drawn !== null">
+                <Button variant="bordered" size="sm" :aria-controls="readerId" @click="readScreen">Read screen</Button>
+            </template>
         </div>
+        <template v-if="snapshot !== null">
+            <section :id="readerId" class="flex flex-col gap-1.5" aria-label="Terminal screen as text">
+                <div class="flex gap-1.5">
+                    <Button variant="bordered" size="sm" @click="readScreen">Refresh</Button>
+                    <Button variant="ghost" size="sm" @click="closeReader">Close reader</Button>
+                </div>
+                <textarea
+                    class="max-h-[40vh] min-h-24 w-full resize-y rounded border border-border-2 bg-bg p-2 font-mono text-small"
+                    readonly
+                    :value="snapshot"
+                    aria-label="Terminal screen as text"
+                ></textarea>
+            </section>
+        </template>
         <template v-if="drawn !== null">
             <div class="terminal max-h-[70vh] max-w-full overflow-auto rounded">
                 <pre

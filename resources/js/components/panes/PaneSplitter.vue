@@ -5,9 +5,13 @@ import { KEYBOARD_STEP } from './paneLayout';
 /**
  * Version 5's splitter (panes/ResizeHandle.vue): a 7 px hit area over the border between two panes, its 1 px line
  * showing on hover and turning accent while it rests in the middle. A drag moves it, a double-click puts it back in
- * the middle and the arrow keys move it by a step. It measures the split it sits in, its parent element.
+ * the middle, the arrow keys move it by a step within its limits and Home and End reach them; the separator says its
+ * limits and its value. It measures the split it sits in, its parent element.
  */
-const props = defineProps<{ axis: 'row' | 'column'; ratio: number }>();
+const props = withDefaults(
+    defineProps<{ axis: 'row' | 'column'; ratio: number; minimum?: number; maximum?: number; step?: number }>(),
+    { minimum: 0, maximum: 1, step: KEYBOARD_STEP },
+);
 
 const emit = defineEmits<{
     move: [ratio: number, spaceSize: number];
@@ -58,20 +62,34 @@ function startDrag(event: PointerEvent): void {
     window.addEventListener('pointerup', stopDrag);
 }
 
-function moveByKey(event: KeyboardEvent): void {
+function bounded(ratio: number): number {
+    return Math.min(Math.max(ratio, props.minimum), props.maximum);
+}
+
+function targetOf(event: KeyboardEvent): number | undefined {
+    if (event.key === 'Home') {
+        return props.minimum;
+    }
+
+    if (event.key === 'End') {
+        return props.maximum;
+    }
+
     const step = keySteps[props.axis][event.key];
 
-    if (step === undefined) {
+    return step === undefined ? undefined : bounded(props.ratio + step * props.step);
+}
+
+function moveByKey(event: KeyboardEvent): void {
+    const target = targetOf(event);
+
+    if (target === undefined) {
         return;
     }
 
     event.preventDefault();
     const space = spaceOf();
-    emit(
-        'move',
-        props.ratio + step * KEYBOARD_STEP,
-        props.axis === 'row' ? space.width : space.height,
-    );
+    emit('move', target, props.axis === 'row' ? space.width : space.height);
 }
 </script>
 
@@ -82,8 +100,8 @@ function moveByKey(event: KeyboardEvent): void {
         tabindex="0"
         :aria-orientation="axis === 'row' ? 'vertical' : 'horizontal'"
         :aria-valuenow="Math.round(ratio * 100)"
-        aria-valuemin="0"
-        aria-valuemax="100"
+        :aria-valuemin="Math.round(minimum * 100)"
+        :aria-valuemax="Math.round(maximum * 100)"
         title="Drag to resize; double-click to reset"
         class="group relative z-3 flex-none touch-none focus-visible:outline-none"
         :class="
