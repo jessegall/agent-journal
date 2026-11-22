@@ -24,7 +24,7 @@ final class TeamRoster
     public function join(string $inboxId, ActorIdentity $actor): void
     {
         $reference = new AssignmentReference((string) Str::ulid(), AssigneeIdentity::ofActorIdentity($actor));
-        $this->members[$inboxId][] = new InboxMembership($actor, $reference);
+        $this->members[$inboxId][] = InboxMembership::atDeskSeat($actor, $reference);
     }
 
     /**

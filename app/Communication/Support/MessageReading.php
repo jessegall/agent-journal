@@ -119,7 +119,7 @@ final readonly class MessageReading
         }
 
         $claim = $this->responsibilities->assign($record, AssigneeIdentity::ofActorIdentity($membership->actor));
-        ClaimAuthorization::forInbox($claim->reference, $membership->seatReference);
+        ClaimAuthorization::forInbox($claim->reference, $membership->deskSeat());
         $this->facts->publishAfterCommit(new MessageTakenUp($message->id, $membership->actor));
     }
 }

@@ -238,7 +238,7 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         $this->read_at = $at;
         $this->read_by_type = $reader->type->value;
         $this->read_by_id = $reader->id;
-        $this->read_participation_assignment_id = $membership->seatReference->id;
+        $this->read_participation_assignment_id = $membership->deskSeat()->id;
         $this->assertSaved($this->save());
         $this->raise(new MessageRead($this->id, $this->destination_inbox_id, $reader));
 

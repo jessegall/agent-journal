@@ -50,8 +50,8 @@ final class InboxMessageSchemaTest extends TestCase
     public function test_acknowledging_twice_keeps_the_first_reader(): void
     {
         $message = $this->ask();
-        $first = new InboxMembership($this->author, new AssignmentReference(TestIds::of(1), $this->holder()));
-        $second = new InboxMembership(
+        $first = InboxMembership::atDeskSeat($this->author, new AssignmentReference(TestIds::of(1), $this->holder()));
+        $second = InboxMembership::atDeskSeat(
             TestActors::agentIdentity(8),
             new AssignmentReference(TestIds::of(2), $this->holder()),
         );

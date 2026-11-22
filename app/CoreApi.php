@@ -574,8 +574,11 @@ use App\Communication\Exceptions\MessageBodyTooLong;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Exceptions\MessageToSelf;
+use App\Communication\Support\ChatIntervalEvidence;
+use App\Communication\Support\DeskSeatEvidence;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
+use App\Communication\Support\MembershipEvidence;
 use App\Connections\Commands\ApproveDeviceGrant;
 use App\Connections\Commands\AssertBindingStart;
 use App\Connections\Commands\AssignBindingEnvironment;
@@ -2016,6 +2019,9 @@ final class CoreApi
                 AssignmentPurpose::class,
                 SeatChangeResult::class,
                 InboxMembership::class,
+                MembershipEvidence::class,
+                DeskSeatEvidence::class,
+                ChatIntervalEvidence::class,
                 InboxMembers::class,
                 ActorLabelSet::class,
                 UnrestrictedAuthorizer::class,
