@@ -141,12 +141,11 @@ func serve(arguments []string) error {
 		return err
 	}
 	defer listener.Close()
-	journal := client.New(enrollment).WithArrangement(string(arrangement))
-	if !arrangement.IsContained() {
-		// A local host carries out browser writers' operations on its terminal drivers; a contained one waits for its
-		// attachments to have identities of their own.
-		journal = journal.WithBrowserInput()
-	}
+	// Every host carries out browser writers' text, keys, pastes and resizes on its terminal drivers: a contained
+	// one through its docker attach, whose attachment the grant is scoped to; Ctrl+C goes as its byte, never a
+	// signal, the gate writes in order with the PTY's own backpressure, and docker attach gives the outer PTY's size
+	// to the container's terminal. No host offers private entry.
+	journal := client.New(enrollment).WithArrangement(string(arrangement)).WithBrowserInput()
 	opener := runtimeOpener{stateFolder: *stateFolder, installationFolder: *installationFolder,
 		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(), hookCommand: *hookCommand, socket: socket,
 		declared: combinationsOf(arrangement)}
