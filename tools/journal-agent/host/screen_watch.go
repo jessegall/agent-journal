@@ -37,11 +37,13 @@ type ScreenReaders interface {
 }
 
 // RuntimeScreen is the screen of a program the host runs, the layout of its driver, which says whether the screen
-// may leave the host, and the input gate, which says who holds the input.
+// may leave the host, the input gate, which says who holds the input, and the capture barrier, which shields the
+// screen while it is closed.
 type RuntimeScreen struct {
-	Reader *screen.EmulatorReader
-	Layout screen.Layout
-	Gate   *inputs.InputGate
+	Reader  *screen.EmulatorReader
+	Layout  screen.Layout
+	Gate    *inputs.InputGate
+	Barrier *inputs.CaptureBarrier
 }
 
 // ScreenWatcher sends the screens of the runtimes the journal says are watched, each at its own interval, only when
@@ -280,12 +282,22 @@ func (sender *screenSender) read(now time.Time) (screen.Frame, bool) {
 	}
 	sender.lastCapture = &capture
 
-	frame := reader.ExportFrame(runtimeScreen.Layout, sender.watcher.epoch, sender.sequence+1, now)
+	frame := sender.export(runtimeScreen, now)
 	grant := runtimeScreen.Gate.GrantState()
 	frame.InputOwner, frame.TakePending = string(grant.Owner), grant.PendingTake != ""
 	frame.PromptRevision = grant.PromptRevision
 
 	return frame.Bounded(screen.FrameLimit), true
+}
+
+// export reads the frame to send: the shield while the capture barrier is closed, otherwise the screen as its layout
+// lets it leave.
+func (sender *screenSender) export(runtimeScreen RuntimeScreen, now time.Time) screen.Frame {
+	if runtimeScreen.Barrier.IsClosed() {
+		return runtimeScreen.Reader.ShieldFrame(sender.watcher.epoch, sender.sequence+1, now)
+	}
+
+	return runtimeScreen.Reader.ExportFrame(runtimeScreen.Layout, sender.watcher.epoch, sender.sequence+1, now)
 }
 
 // marker is a frame with no screen in it, which says why by the flag the caller sets.

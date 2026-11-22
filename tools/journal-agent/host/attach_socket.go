@@ -69,6 +69,9 @@ type hostTerminal struct {
 	// close detaches it.
 	connection     uint64
 	lastConnection uint64
+	// barrier closes every output sink of this program before private entry; the local mirror is one of them.
+	barrier        *inputs.CaptureBarrier
+	mirrorSilenced bool
 }
 
 // Path is where the socket listens.
@@ -158,8 +161,12 @@ func (socket *AttachSocket) terminalFor(request AttachRequest) (*hostTerminal, e
 		return nil, err
 	}
 	gate := inputs.NewInputGate(file, reader, layout.Composer, time.Now)
-	terminal := &hostTerminal{pty: file, reader: reader, layout: layout, gate: gate}
+	barrier := inputs.NewCaptureBarrier()
+	terminal := &hostTerminal{pty: file, reader: reader, layout: layout, gate: gate, barrier: barrier}
 	gate.ResizeWith(terminal.resizeForBrowser)
+	barrier.Register("local mirror", inputs.CaptureSinkFunc(terminal.silenceMirror))
+	// The screen watcher asks the barrier before every capture and exports only the shield while it is closed.
+	barrier.Register("screen watcher", inputs.CaptureSinkFunc(func() bool { return true }))
 	socket.terminals[request.RuntimeID] = terminal
 	go func() {
 		terminal.copyOut()
@@ -177,7 +184,14 @@ func (socket *AttachSocket) ScreenFor(runtimeID string) (RuntimeScreen, bool) {
 	if !found {
 		return RuntimeScreen{}, false
 	}
-	return RuntimeScreen{Reader: terminal.reader, Layout: terminal.layout, Gate: terminal.gate}, true
+	runtimeScreen := RuntimeScreen{
+		Reader:  terminal.reader,
+		Layout:  terminal.layout,
+		Gate:    terminal.gate,
+		Barrier: terminal.barrier,
+	}
+
+	return runtimeScreen, true
 }
 
 // forget drops the runtime's terminal once its program ended, unless a relaunch already put a new one in its place.
@@ -275,8 +289,9 @@ func (terminal *hostTerminal) copyOut() {
 		count, err := terminal.pty.Read(buffer)
 		if count > 0 {
 			_ = terminal.reader.Feed(buffer[:count])
+			terminal.closeOnSecretEcho()
 			terminal.mutex.Lock()
-			if terminal.attached != nil {
+			if terminal.attached != nil && !terminal.mirrorSilenced {
 				writeFrame(terminal.attached, frameData, buffer[:count])
 			}
 			terminal.mutex.Unlock()
@@ -285,6 +300,25 @@ func (terminal *hostTerminal) copyOut() {
 			return
 		}
 	}
+}
+
+// closeOnSecretEcho closes the capture barrier at its source when the screen asks for a secret nobody announced,
+// before the chunk that drew it leaves through any sink.
+func (terminal *hostTerminal) closeOnSecretEcho() {
+	if terminal.barrier.IsClosed() || !terminal.layout.AsksForSecret(terminal.reader.Snapshot()) {
+		return
+	}
+	terminal.barrier.Close()
+}
+
+// silenceMirror stops forwarding output to the attached local client; it confirms once no chunk is being written.
+func (terminal *hostTerminal) silenceMirror() bool {
+	terminal.mutex.Lock()
+	defer terminal.mutex.Unlock()
+
+	terminal.mirrorSilenced = true
+
+	return true
 }
 
 // WriteAttachRequest, WriteKeys and WriteResize are the client's side of the protocol.

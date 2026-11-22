@@ -85,7 +85,7 @@ func (readers *fakeReaders) ScreenFor(runtimeID string) (RuntimeScreen, bool) {
 	composer := screen.FencedRow{Label: "composer", Marker: ">"}
 	gate := inputs.NewInputGate(io.Discard, reader, composer, time.Now)
 
-	return RuntimeScreen{Reader: reader, Layout: passwordLayout, Gate: gate}, true
+	return RuntimeScreen{Reader: reader, Layout: passwordLayout, Gate: gate, Barrier: inputs.NewCaptureBarrier()}, true
 }
 
 func (readers *fakeReaders) run(t *testing.T, runtimeID, text string) *screen.EmulatorReader {

@@ -79,18 +79,31 @@ func (reader *EmulatorReader) ExportFrame(layout Layout, epoch string, sequence 
 	defer reader.lock.Unlock()
 
 	if !layout.Exportable(reader.snapshot()) {
-		return Frame{
-			Epoch:    epoch,
-			Sequence: sequence,
-			Captured: now,
-			Columns:  reader.terminal.Width(),
-			Rows:     [][]Run{},
-			Buffer:   reader.buffer(),
-			Shielded: true,
-		}
+		return reader.shieldFrame(epoch, sequence, now)
 	}
 
 	return reader.frame(epoch, sequence, now)
+}
+
+// ShieldFrame is the placeholder that stands for the screen while a capture barrier is closed: no rows, no cursor.
+func (reader *EmulatorReader) ShieldFrame(epoch string, sequence uint64, now time.Time) Frame {
+	reader.lock.Lock()
+	defer reader.lock.Unlock()
+
+	return reader.shieldFrame(epoch, sequence, now)
+}
+
+// shieldFrame is the placeholder frame; the caller holds the lock.
+func (reader *EmulatorReader) shieldFrame(epoch string, sequence uint64, now time.Time) Frame {
+	return Frame{
+		Epoch:    epoch,
+		Sequence: sequence,
+		Captured: now,
+		Columns:  reader.terminal.Width(),
+		Rows:     [][]Run{},
+		Buffer:   reader.buffer(),
+		Shielded: true,
+	}
 }
 
 // frame reads the grid with its styles; the caller holds the lock.

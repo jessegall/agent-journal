@@ -32,6 +32,18 @@ type RuntimeRecording struct {
 	bytes    int
 	paused   bool
 	cut      string
+	// suppressed is a recording a capture barrier stopped before private entry: it keeps no bytes, length or time.
+	suppressed bool
+}
+
+// Suppress stops the recording for private entry; it confirms at once, as nothing is kept from now on.
+func (rec *RuntimeRecording) Suppress() bool {
+	rec.mutex.Lock()
+	defer rec.mutex.Unlock()
+
+	rec.suppressed = true
+
+	return rec.recorder.Suppress()
 }
 
 // StartRecording begins a recording of the runtime, to be saved in its own folder under the host's state folder.
@@ -53,7 +65,7 @@ func (rec *RuntimeRecording) Output(stream string, bytes []byte) {
 	rec.mutex.Lock()
 	defer rec.mutex.Unlock()
 
-	if rec.cut != "" {
+	if rec.cut != "" || rec.suppressed {
 		return
 	}
 	if rec.bytes+len(bytes) > rec.bounds.MaxBytes {

@@ -247,3 +247,28 @@ func TestABrowserResizeIsBoundedAndReportsTheAchievedSize(t *testing.T) {
 	}
 	waitForSize(t, socket, "runtime-1", 40, screen.DefaultLimits.MaxColumns)
 }
+
+func TestAClosedCaptureBarrierStopsTheLocalMirrorAndTheWatcherShieldsTheScreen(t *testing.T) {
+	socket, programs := listeningSocket(t)
+	connection := attached(t, socket, "runtime-1", 24, 80)
+	terminal := terminalOf(t, socket, "runtime-1")
+	program := <-programs
+	waitForSize(t, socket, "runtime-1", 24, 80)
+
+	if !terminal.barrier.Close() {
+		t.Fatal("the barrier was not ready after every sink confirmed")
+	}
+	if _, err := program.Write([]byte("hunter2\r\n")); err != nil {
+		t.Fatal(err)
+	}
+
+	connection.SetReadDeadline(time.Now().Add(200 * time.Millisecond))
+	if _, _, err := readFrame(connection); err == nil {
+		t.Fatal("output reached the local mirror after the barrier closed")
+	}
+	runtimeScreen, _ := socket.ScreenFor("runtime-1")
+	sender := &screenSender{watcher: &ScreenWatcher{epoch: "epoch"}, runtimeID: "runtime-1"}
+	if frame := sender.export(runtimeScreen, time.Now()); !frame.Shielded || len(frame.Rows) != 0 {
+		t.Fatalf("the watcher exported %+v while the barrier was closed", frame)
+	}
+}
