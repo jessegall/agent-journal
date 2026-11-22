@@ -474,6 +474,39 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .dstack{position:relative;padding-bottom:8px}
 .dstack::before,.dstack::after{content:"";position:absolute;left:10px;right:10px;height:8px;border:1px solid var(--line);border-top:0;border-radius:0 0 var(--radius-card) var(--radius-card);background:var(--raised)}
 .dstack::before{bottom:4px;left:6px;right:6px}.dstack::after{bottom:0;left:12px;right:12px;opacity:.7}
+/* Split create button: the main part is the plain way; the chevron offers the agent way. */
+.splitb{display:inline-flex;align-items:stretch}
+.splitb .btn{border-color:var(--border-2);background:var(--bg);color:var(--text)}
+.splitb .main{border-radius:var(--radius-button) 0 0 var(--radius-button)}
+.splitb .more{border-radius:0 var(--radius-button) var(--radius-button) 0;border-left:0;padding:0 6px}
+.splitb .btn:hover{background:var(--hover)}
+/* The create dialogs: a plain form, and a short guided chat that drafts the same form. */
+.cdlg{position:absolute;left:50%;top:64px;transform:translateX(-50%);width:540px;max-height:calc(100% - 96px);display:flex;flex-direction:column;background:var(--raised);border:1px solid var(--border-2);border-radius:var(--radius-card);box-shadow:var(--shadow-window);z-index:170;overflow:hidden}
+.cdlg header{display:flex;align-items:center;gap:10px;height:48px;flex:none;padding:0 8px 0 16px;border-bottom:1px solid var(--line)}
+.cdlg header b{font-weight:600;flex:1}
+.cdlg .cbody{flex:1;min-height:0;overflow:auto;padding:14px 16px}
+.cdlg footer{display:flex;align-items:center;gap:8px;padding:10px 12px 10px 16px;border-top:1px solid var(--line)}
+.cdlg footer .gap{flex:1}
+.fld{display:block;margin:0 0 12px}
+.fld span{display:block;font-size:var(--text-badge);color:var(--text-3);margin-bottom:4px}
+.fld input,.fld textarea{width:100%;border:1px solid var(--border-2);border-radius:var(--radius-field);background:var(--bg);color:var(--text);font:inherit;font-size:var(--text-field);padding:6px 10px}
+.fld input{height:30px}.fld textarea{min-height:70px;resize:vertical}
+.fld input:focus,.fld textarea:focus{outline:2px solid var(--focus);outline-offset:1px}
+.drafted{display:flex;align-items:center;gap:8px;margin:0 0 12px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius-field);font-size:var(--text-small);color:var(--text-2)}
+.seqhead+.drafted,.drafted.inseq{margin:4px 20px 6px}
+.gdots{display:flex;gap:5px}.gdots i{width:6px;height:6px;border-radius:50%;background:var(--border-3)}.gdots i.on{background:var(--brand)}
+.gchat{display:flex;flex-direction:column;gap:12px}
+.gq{display:flex;gap:8px;align-items:flex-start;max-width:92%}
+.gq .tx{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-bubble);padding:8px 12px}
+.ga{align-self:flex-end;background:var(--bubble);border-radius:var(--radius-bubble) var(--radius-bubble) 4px var(--radius-bubble);padding:8px 12px;max-width:80%}
+.gchips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 0 34px}
+.gchip{height:28px;padding:0 12px;border-radius:999px;border:1px solid var(--border-2);background:var(--bg);font:inherit;font-size:var(--text-small);color:var(--text);cursor:pointer}
+.gchip:hover,.gchip:focus-visible{border-color:var(--border-3);background:var(--hover);outline:0}
+.gdraft{border:1px solid var(--border-3);border-radius:var(--radius-card);background:var(--bg);padding:10px 12px;margin-left:34px}
+.gdraft ol{margin:6px 0 0;padding-left:18px}.gdraft li{margin:4px 0}.gdraft small{display:block;color:var(--text-3);font-size:var(--text-badge)}
+.ginput{display:flex;gap:6px;margin:12px 0 0 34px}
+.ginput input{flex:1;height:30px;border:1px solid var(--border-2);border-radius:var(--radius-field);background:var(--bg);color:var(--text);font:inherit;font-size:var(--text-field);padding:0 10px}
+.ginput input:focus{outline:2px solid var(--focus);outline-offset:1px}
 /* The folded stack shows its layers: each card behind the top one peeks out below it, on a lighter surface and edge. */
 .dstack2{position:relative;padding-bottom:12px;cursor:pointer}
 .dstack2 .dcard{position:relative;z-index:3;border-color:var(--border-3)}
@@ -1199,19 +1232,19 @@ function pageHtml(){const E=showEmpty,xp=PAGES_EXTRA.find(p=>p.id===page);if(xp)
     const rows=TASKS.filter(t=>TASKF==='all'||(TASKF==='open'?['work','you','open','failed'].includes(t[2]):TASKF===t[2]));
     const list=E?`<div class="empty"><b>No tasks yet</b>Tasks appear here when an agent starts work.</div>`:rows.length?rows.map(([n,t,s])=>row('ptask:'+n,`<span class="num">${n}</span><span class="t ${s==='done'?'dim':''}">${t}</span>${ST[s]}`,SELP.tasks===n)).join(''):`<div class="empty"><b>No ${TASKF} tasks</b><button class="btn sm bordered" data-taskf="all">Show all tasks</button></div>`;
     const sel=TASKS.find(t=>t[0]===SELP.tasks);
-    return shell('Tasks',views,E?'0':String(TASKS.length),`<button class="btn sm bordered">${I('plus','s14')}New task</button>`,
+    return shell('Tasks',views,E?'0':String(TASKS.length),splitBtn('task'),
       `<div class="filters" role="tablist">${[['open','Open'],['testing','Testing'],['done','Done'],['all','All']].map(([k,t])=>`<button class="ftab" role="tab" data-taskf="${k}" data-fk="taskf:${k}" aria-selected="${TASKF===k}">${t}</button>`).join('')}</div>${list}`,
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose a task to read it here.</div>`:taskReader(sel))}
   if(page==='plans'){const sel=PLANS.find(p=>p[0]===SELP.plans);
-    return shell('Plans','',E?'0':'2',`<button class="btn sm bordered">${I('plus','s14')}New plan</button>`,
+    return shell('Plans','',E?'0':'2',splitBtn('plan'),
       E?`<div class="empty"><b>No plans yet</b>Ask the agent to plan bigger work.</div>`:PLANS.map(([n,t,p])=>row('pplan:'+n,`<span class="num">${n}</span><span class="t">${t}</span><span style="width:80px" class="meter"><i style="width:${p}%"></i></span><span class="meta">${p}%</span>`,SELP.plans===n)).join(''),
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose a plan to see its tasks.</div>`:planReader(sel,true))}
   if(page==='docs'){const sel=DOCS.find(d=>d[0]===SELP.docs);
-    return shell('Documents','',E?'0':String(DOCS.length),`<span class="field" style="width:200px;color:var(--text-4)">${I('search','s14')}&nbsp;Search documents</span>`,
+    return shell('Documents','',E?'0':String(DOCS.length),`<span class="field" style="width:200px;color:var(--text-4)">${I('search','s14')}&nbsp;Search documents</span>${splitBtn('document')}`,
       E?`<div class="empty"><b>No documents yet</b>Designs, plans and notes the agents write appear here.</div>`:DOCS.map(([n,t,m])=>row('pdoc:'+n,`<span class="num">${n}</span><span class="t">${t}</span><span class="meta">${m}</span>`,SELP.docs===n)).join(''),
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose a document to read it.</div>`:docReader(sel))}
   if(page==='accounts'){const sel=ACCOUNTS.find(a=>a[1]===SELP.accounts);
-    return shell('Accounts','',E?'0':'3',`<button class="btn sm primary">${I('plus','s14')}Add account</button>`,
+    return shell('Accounts','',E?'0':'3',splitBtn('account'),
       E?`<div class="empty"><b>No accounts</b>Add a Claude or Codex account so agents can run.</div>`:ACCOUNTS.map(([p,n,k,s,x,d])=>row('pacc:'+n,`${p==='claude'?CLAUDE():CODEX()}<span class="t">${n}<span style="color:var(--text-3)"> · ${k}</span></span>${d?'<span class="chip faint">Default</span>':''}${s==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':'<span class="st">Needs sign-in</span>'}`,SELP.accounts===n)).join(''),
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose an account to change it.</div>`:`<div class="reader"><h2>${sel[1]}</h2><div class="meta">${sel[2]}${sel[4]?' · '+sel[4]:''}</div>
         <div class="sgroup" style="margin-top:16px"><div class="srow"><div class="t">Name<small>Shown in the account list and the agent bar.</small></div><input class="field" value="${esc(sel[1])}" aria-label="Name"></div>
@@ -1635,7 +1668,7 @@ const runWord=r=>{const s=SEQS.find(x=>x.id===r.seq);return r.state==='done'?'fi
 /* A sequence's line in the chat: plain, one line, opening the viewer at that run. */
 EXTRA_KIND.seq=(c,m)=>{const r=RUNS.find(x=>x.id===m[1]),s=SEQS.find(x=>x.id===r.seq);return `<button class="actline seqline" data-seqopen="${s.id}:${r.id}" title="Open the sequence">${I('seq','s14')}<span><b>${esc(s.name)}</b> · ${m[2]}</span></button>`};
 function seqList(inWindow){const rows=SEQS.map(s=>row('seq:'+s.id,`${I('seq','s14')}<span class="t">${esc(s.name)}<span style="color:var(--text-3)"> · ${s.steps.length} steps</span></span><span class="meta">${RUNS.filter(r=>r.seq===s.id&&r.state!=='done').length} running</span>`,!inWindow&&SEQSEL===s.id)).join('');
-  return showEmpty?`<div class="empty"><b>No sequences yet</b>A sequence is a list of steps an agent follows, each with when it runs and when it is done.<br><button class="btn sm bordered" data-newseq>New sequence</button></div>`:rows}
+  return showEmpty?`<div class="empty"><b>No sequences yet</b>A sequence is a list of steps an agent follows, each with when it runs and when it is done.<br><span style="display:inline-flex;margin-top:12px">${splitBtn('sequence')}</span></div>`:rows}
 function seqView(id){const s=SEQS.find(x=>x.id===id),runs=RUNS.filter(r=>r.seq===id),cur=runs.find(r=>r.id===SEQRUN)||runs.find(r=>r.state!=='done')||runs[0];
   if(SEQEDIT&&SEQEDIT.id===id)return seqEditor(s);
   return `<div class="seqhead"><div style="display:flex;align-items:center;gap:8px"><h2>${esc(s.name)}</h2><span style="flex:1"></span><button class="btn sm bordered" data-seqedit="${id}" data-fk="seqedit:${id}">Edit steps</button></div><div class="meta" style="color:var(--text-3);font-size:var(--text-small)">${esc(s.about)}</div></div>
@@ -1653,7 +1686,7 @@ function seqEditor(s){const E=SEQEDIT;return `<div class="seqhead"><div style="d
     <div class="ops"><button class="ib" data-smove="${i}:-1" aria-label="Move step ${i+1} up" ${i===0?'disabled':''} style="transform:rotate(180deg)">${I('caret','s14')}</button><button class="ib" data-smove="${i}:1" aria-label="Move step ${i+1} down" ${i===E.steps.length-1?'disabled':''}>${I('caret','s14')}</button><button class="ib" data-sdel="${i}" aria-label="Remove step ${i+1}">${I('close','s14')}</button></div></div>`).join('')}
   <button class="btn sm bordered" style="margin-top:12px" data-sadd data-fk="sadd">${I('plus','s14')}Add a step</button></div>`}
 PAGES_EXTRA.push({id:'sequences',t:'Sequences',ic:'seq',line:'its list, a sequence with its steps and where each run is, and Edit steps to add, reorder and change them.',
-  html:()=>shell('Sequences','',showEmpty?'0':String(SEQS.length),`<button class="btn sm bordered" data-newseq>${I('plus','s14')}New sequence</button>`,seqList(false),showEmpty?`<div class="empty"><b>Nothing selected</b>Choose a sequence to see its steps.</div>`:seqView(SEQSEL))});
+  html:()=>shell('Sequences','',showEmpty?'0':String(SEQS.length),splitBtn('sequence'),seqList(false),showEmpty?`<div class="empty"><b>Nothing selected</b>Choose a sequence to see its steps.</div>`:seqView(SEQSEL))});
 function seqEvent(run,text){CONV.main.msgs.push(['seq',run.id,text]);render()}
 async function runSequenceDemo(){const r=RUNS.find(x=>x.id===41),s=SEQS[0];
   seqEvent(r,`started for task 1702 by Agent 1`);await sleep(900);r.at=0;seqEvent(r,`step 1 of 4 · ${s.steps[0].t}`);await sleep(1200);
@@ -1839,7 +1872,81 @@ WIRE_EXTRA.push(on=>{
   on('[data-fold]',b=>b.onclick=()=>{const c=b.dataset.fold;FOLD[c]===false?foldIn(c):fanOut(c)});
   on('[data-stack]',s=>s.onclick=ev=>{if(ev.target.closest('button'))return;fanOut(s.dataset.stack)});
   on('[data-undock]',b=>b.onclick=ev=>{ev.stopPropagation();undockAnimated(b.dataset.undock)})});
-const SECTION_NOTES=[['Panels inside the chat','An agent\'s memories and a sequence open in a panel that slides over the chat from its right edge: click through them, then close it. They belong to the chat; windows are for what you keep on Home.'],['Sequences','The chat says, one plain line each, when a sequence starts, which step runs, when a step waits or ends, and when it finishes. The viewer shows the steps and where each run is; the editor adds, reorders and changes steps with their guards and checks.'],
+/* =====================================================================================================================
+   Creating anything: the plain way, or with an agent. Every create action is a split button: the main part opens
+   the plain form or editor; its chevron offers a short guided chat in which an agent asks three questions, each
+   with ready answers, and drafts the same form for you to accept or change.
+   ===================================================================================================================== */
+const CREATE={
+  task:{noun:'task',title:'New task',plain:'Write it yourself',agent:'Plan it with an agent',fields:[['title','Title','input'],['plan','Plan','input'],['waits','Waits for (task numbers)','input'],['notes','Done when','textarea']],
+    qs:[['What should get done?',['Show the task graph on the Plans page','Fix the sign-in check on a slow host','Write the docs for docking']],['Which plan does it belong to?',['Plan 56 · Home, version 6','Plan 54 · Notifications','No plan']],['Does it wait on anything?',['Task 1711, the pane grid','Nothing, it can start now']]],
+    draft:a=>({title:a[0],plan:a[1].startsWith('No')?'':a[1].split(' · ')[0],waits:a[2].startsWith('Task')?'1711':'',notes:`${a[0]} works, and its tests pass.`})},
+  plan:{noun:'plan',title:'New plan',plain:'Write it yourself',agent:'Plan it with an agent',fields:[['title','Title','input'],['goal','Goal','textarea'],['phases','Phases, one per line','textarea']],
+    qs:[['What should the plan achieve?',['Ship group chats','Make every sidebar page work','Move the agents to the terminal driver']],['How big is it?',['About a week','About a month']],['What must be true when it is done?',['People and agents talk in one chat','Every page has a list, an item and an empty state']]],
+    draft:a=>({title:a[0],goal:a[2]+'.',phases:(a[1].includes('week')?['Design','Build','Test']:['Design','Backend','Frontend','Test','Release']).map((p,i)=>`Phase ${i+1} · ${p}`).join('\n')})},
+  document:{noun:'document',title:'New document',plain:'Write it yourself',agent:'Write it with an agent',fields:[['title','Title','input'],['abstract','One line about it','input'],['body','Text','textarea']],
+    qs:[['What is the document about?',['How docking works on Home','A review of the accounts pages','Release notes for version 6']],['Who will read it?',['The user','The workers who build it','Both']],['How long should it be?',['One screen','A full design with sections']]],
+    draft:a=>({title:a[0],abstract:`${a[0]}, for ${a[1]==='Both'?'the user and the workers':a[1].toLowerCase()}.`,body:a[2]==='One screen'?`### ${a[0]}\nWhat it is in one paragraph, and what to do next.`:`### What it is\nIn short, ${a[0].toLowerCase()}.\n### How it works\nStep by step.\n### What could go wrong\nThe risks, and what to do about each.`})},
+  account:{noun:'account',title:'Add account',plain:'Add it yourself',agent:'Set it up with an agent',fields:[['program','Program (Claude Code or Codex)','input'],['name','Name','input'],['kind','Kind (subscription or API key)','input']],
+    qs:[['Which program is the account for?',['Claude Code','Codex']],['How does it sign in?',['A subscription, in the browser','An API key']],['What should it be called?',['Work','Personal','Team key']]],
+    draft:a=>({program:a[0],name:a[2],kind:a[1].startsWith('A sub')?'Subscription':'API key'})},
+  sequence:{noun:'sequence',title:'New sequence',plain:'Write the steps yourself',agent:'Build it with an agent',
+    qs:[['What should the sequence do?',['Ship a finished task','Review a document before it is shared','Release a version']],['When does it start?',['When a task is held','When a document is filed','When I start it']],['Does anyone approve a step?',['A reviewer approves','I approve it myself','No approval']]],
+    draft:a=>{const appr=!a[2].startsWith('No'),who=a[2].startsWith('I ')?'you':'a reviewer',start=a[1]==='When I start it'?'you start it':a[1].replace(/^When /,'').replace(/^a /,'a ');
+      return {name:a[0],steps:[{t:'Do the work',when:start,done:'the work is committed'},{t:'Run the checks',when:'the work is committed',done:'every check passes'},...(appr?[{t:'Ask for approval',when:'the checks pass',done:`${who} approves`,wait:who}]:[]),{t:'Finish and tell the chat',when:appr?`${who} approves`:'the checks pass',done:'the result is in the chat'}]}}}};
+let FORM=null,GUIDE=null;
+function splitBtn(kind){const k=CREATE[kind];return `<span class="splitb"><button class="btn sm main" data-create="${kind}" data-fk="create:${kind}" title="${k.plain}">${I('plus','s14')}${k.title}</button><button class="btn sm more" data-createmenu="${kind}" data-fk="createmenu:${kind}" aria-haspopup="menu" aria-label="More ways to create a ${k.noun}" title="More ways">${I('caret','s14')}</button></span>`}
+function createPlain(kind,values,drafted){menu=null;if(kind==='sequence'){newSequence(values,drafted);return}FORM={kind,values:{...(values||{})},drafted:!!drafted,focus:true};GUIDE=null;render()}
+function newSequence(d,drafted){const id=Math.max(...SEQS.map(s=>s.id))+1,steps=d&&d.steps?d.steps:[{t:'',when:'',done:''}];SEQS.push({id,name:d&&d.name||'New sequence',about:'Steps an agent follows.',steps:clone(steps)});
+  SEQSEL=id;SEQEDIT={id,steps:clone(steps),drafted:!!drafted};GUIDE=null;showEmpty=false;page='sequences';render()}
+function startGuide(kind){GUIDE={kind,answers:[],text:'',drafting:false,draft:null,focus:true};FORM=null;menu=null;render()}
+function answerGuide(t){if(!t||!t.trim())return;const g=GUIDE,k=CREATE[g.kind];g.answers.push(t.trim());g.text='';g.focus=true;
+  if(g.answers.length>=k.qs.length){g.drafting=true;render();setTimeout(()=>{if(GUIDE!==g)return;g.drafting=false;g.draft=k.draft(g.answers);g.focus=true;render()},900)}else render()}
+function closeCreate(){const t=(FORM||GUIDE)&&('createmenu:'+(FORM||GUIDE).kind);FORM=null;GUIDE=null;render();if(t)focusFk(t)}
+function makeFromForm(){const f=FORM,v=f.values,kind=f.kind;let undo,done;
+  if(kind==='task'){const n=Math.max(...TASKS.map(t=>t[0]))+1;TASKS.push([n,v.title||'Untitled task','open','—',+String(v.plan||'').replace(/\D/g,'')||56]);SELP.tasks=n;TASKF='all';TASKVIEW='list';page='tasks';done=`Created task ${n}`;undo=()=>{TASKS.splice(TASKS.findIndex(t=>t[0]===n),1);render()}}
+  if(kind==='plan'){const n=Math.max(...PLANS.map(p=>p[0]))+1;PLANS.push([n,v.title||'Untitled plan',0,[]]);SELP.plans=n;PLANTAB='phases';page='plans';done=`Created plan ${n}`;undo=()=>{PLANS.splice(PLANS.findIndex(p=>p[0]===n),1);render()}}
+  if(kind==='document'){const n=Math.max(...DOCS.map(d=>d[0]))+1;DOCS.unshift([n,v.title||'Untitled document','just now',v.abstract||'',1]);DOCTEXT[n]=v.body||'';SELP.docs=n;DOCTAB='text';page='docs';done=`Created doc ${n}`;undo=()=>{DOCS.splice(DOCS.findIndex(d=>d[0]===n),1);render()}}
+  if(kind==='account'){const nm=v.name||'New account';ACCOUNTS.push([/codex/i.test(v.program||'')?'codex':'claude',nm,`${/codex/i.test(v.program||'')?'Codex':'Claude Code'} ${(v.kind||'subscription').toLowerCase()}`,'Needs sign-in','',false]);SELP.accounts=nm;page='accounts';done=`Added ${nm}`;undo=()=>{ACCOUNTS.splice(ACCOUNTS.findIndex(a=>a[1]===nm),1);render()}}
+  FORM=null;showEmpty=false;render();toast(done,undo)}
+function draftSummary(kind,d){if(kind==='sequence')return `<b>${esc(d.name)}</b><ol>${d.steps.map(s=>`<li>${esc(s.t)}<small>Runs when ${esc(s.when)} · done when ${esc(s.done)}</small></li>`).join('')}</ol>`;
+  return CREATE[kind].fields.map(([n,l])=>d[n]?`<div><small>${l}</small>${esc(d[n]).replace(/\n/g,'<br>')}</div>`:'').join('')}
+AFTER_RENDER.push(()=>{if(!FORM&&!GUIDE)return;const host=$('#main');
+  if(FORM){const k=CREATE[FORM.kind];
+    host.insertAdjacentHTML('beforeend',`<div class="scrim" data-cclose></div><div class="cdlg" id="cdlg" role="dialog" aria-label="${k.title}"><header><b>${k.title}</b><button class="ib" data-cclose aria-label="Close">${I('close','s14')}</button></header>
+      <div class="cbody">${FORM.drafted?`<div class="drafted">${avatar('a1')}<span>Drafted by Agent 1 from your answers. Change anything, then ${FORM.kind==='account'?'add it':'create it'}.</span></div>`:''}
+      ${k.fields.map(([n,l,t])=>`<label class="fld"><span>${l}</span>${t==='textarea'?`<textarea data-ff="${n}" data-fk="ff:${n}" rows="${n==='body'?7:3}">${esc(FORM.values[n]||'')}</textarea>`:`<input data-ff="${n}" data-fk="ff:${n}" value="${esc(FORM.values[n]||'')}">`}</label>`).join('')}</div>
+      <footer>${FORM.drafted?'':`<button class="btn sm" data-toguide="${FORM.kind}">${I('chat','s14')}${k.agent} instead</button>`}<span class="gap"></span><button class="btn sm" data-cclose>Cancel</button><button class="btn sm primary" data-cmake>${FORM.kind==='account'?'Add account':'Create '+k.noun}</button></footer></div>`);
+    $$('[data-ff]',host).forEach(i=>i.oninput=()=>{FORM.values[i.dataset.ff]=i.value});$('[data-cmake]',host).onclick=makeFromForm;
+    const tg=$('[data-toguide]',host);if(tg)tg.onclick=()=>startGuide(tg.dataset.toguide);
+    if(FORM.focus){FORM.focus=false;requestAnimationFrame(()=>{const f=$('#cdlg [data-ff]');if(f)f.focus()})}}
+  else{const g=GUIDE,k=CREATE[g.kind],q=k.qs,n=g.answers.length,me=avatar('a1');
+    const past=g.answers.map((a,i)=>`<div class="gq">${me}<div class="tx">${q[i][0]}</div></div><div class="ga">${esc(a)}</div>`).join('');
+    const now=n<q.length?`<div class="gq">${me}<div class="tx">${n===0?`I'll draft the ${k.noun} for you; three short questions. `:''}${q[n][0]}</div></div><div class="gchips" role="group" aria-label="Suggested answers">${q[n][1].map(c=>`<button class="gchip" data-gans="${esc(c)}">${esc(c)}</button>`).join('')}</div>
+      <div class="ginput"><input data-gtext data-fk="gtext" value="${esc(g.text)}" placeholder="Or say it in your own words" aria-label="Your answer"><button class="btn sm bordered" data-gsend>Answer</button></div>`
+      :g.drafting?`<div class="gq">${me}<div class="tx"><span class="st"><span class="spin"></span>Drafting the ${k.noun}…</span></div></div>`
+      :`<div class="gq">${me}<div class="tx">Here is a draft. Open it to change anything before it is made.</div></div><div class="gdraft">${draftSummary(g.kind,g.draft)}</div>`;
+    host.insertAdjacentHTML('beforeend',`<div class="scrim" data-cclose></div><div class="cdlg" id="cdlg" role="dialog" aria-label="${k.agent}"><header>${me}<b>${k.agent}</b><span class="gdots" aria-label="Question ${Math.min(n+1,q.length)} of ${q.length}">${q.map((_,i)=>`<i class="${i<=n?'on':''}"></i>`).join('')}<i class="${g.draft?'on':''}"></i></span><button class="ib" data-cclose aria-label="Close">${I('close','s14')}</button></header>
+      <div class="cbody"><div class="gchat" aria-live="polite">${past}${now}</div></div>
+      <footer>${n?`<button class="btn sm" data-gback>${I('reply','s14')}Change the last answer</button>`:`<button class="btn sm" data-gplain>${k.plain} instead</button>`}<span class="gap"></span><button class="btn sm" data-cclose>Cancel</button>${g.draft?`<button class="btn sm primary" data-gopen>${g.kind==='sequence'?'Open in the editor':'Open the draft'}</button>`:''}</footer></div>`);
+    $$('[data-gans]',host).forEach(b=>b.onclick=()=>answerGuide(b.dataset.gans));
+    const ti=$('[data-gtext]',host);if(ti){ti.oninput=()=>{g.text=ti.value};ti.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();answerGuide(ti.value)}}}
+    const gs=$('[data-gsend]',host);if(gs)gs.onclick=()=>answerGuide(g.text);
+    const gb=$('[data-gback]',host);if(gb)gb.onclick=()=>{g.answers.pop();g.draft=null;g.drafting=false;g.focus=true;render()};
+    const gp=$('[data-gplain]',host);if(gp)gp.onclick=()=>createPlain(g.kind);
+    const go=$('[data-gopen]',host);if(go)go.onclick=()=>createPlain(g.kind,g.draft,true);
+    const body=$('#cdlg .cbody');body.scrollTop=body.scrollHeight;
+    if(g.focus){g.focus=false;requestAnimationFrame(()=>{const f=$('#cdlg [data-gopen]')||$('#cdlg .gchip');if(f)f.focus()})}}
+  $$('[data-cclose]',host).forEach(b=>b.onclick=closeCreate);
+  $('#cdlg').onkeydown=ev=>{if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();closeCreate()}}});
+const baseSeqEditor=seqEditor;
+seqEditor=function(s){const h=baseSeqEditor(s);if(!SEQEDIT||!SEQEDIT.drafted)return h;return h.replace('<div style="padding:0 20px 20px" data-seqlist>',`<div class="drafted inseq">${avatar('a1')}<span>Drafted by Agent 1 from your answers: each step has its guard and its check. Change anything, then Save.</span></div><div style="padding:0 20px 20px" data-seqlist>`)};
+WIRE_EXTRA.push(on=>{
+  on('[data-create]',b=>b.onclick=()=>createPlain(b.dataset.create));
+  on('[data-createmenu]',b=>b.onclick=()=>{const kind=b.dataset.createmenu,k=CREATE[kind];openMenu([{head:k.title},{label:k.plain,ic:'plus',run:()=>{createPlain(kind);return false}},{label:k.agent,sub:'Agent 1 asks three short questions and drafts it',ic:'chat',run:()=>{startGuide(kind);return false}}],b)})});
+PAL_EXTRA.push(C=>Object.entries(CREATE).forEach(([kind,k])=>{C(k.title,'plus',()=>{createPlain(kind);return false});C(`${k.agent}: ${k.noun}`,'chat',()=>{startGuide(kind);return false})}));
+LOADERS.push(()=>{FORM=null;GUIDE=null});
+const SECTION_NOTES=[['Creating anything','Every create action is a split button. The main part is the plain way (a form, or the sequence editor); the chevron offers the agent way: a short guided chat where Agent 1 asks three questions with ready answers and drafts the same form for you to accept or change.'],['Panels inside the chat','An agent\'s memories and a sequence open in a panel that slides over the chat from its right edge: click through them, then close it. They belong to the chat; windows are for what you keep on Home.'],['Sequences','The chat says, one plain line each, when a sequence starts, which step runs, when a step waits or ends, and when it finishes. The viewer shows the steps and where each run is; the editor adds, reorders and changes steps with their guards and checks.'],
   ['Docked cards and commands','A task, plan, report or question docks under the conversation (folded into a stack) or beside the composer. A command runs as a process card: its state, its time, its last lines, and its full output when opened.'],
   ['The terminal','A terminal-driven agent\'s chat opens its live terminal beside it. Type to send keys, Ctrl+C to interrupt; its size follows the pane; connecting, restarting and ended each say so plainly.']];
 
