@@ -1,0 +1,114 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Requests\Agents;
+
+use App\Agents\Commands\CancelTerminalTake;
+use App\Agents\Commands\CheckTerminalScreen;
+use App\Agents\Commands\ChooseTerminalDraft;
+use App\Agents\Commands\ReleaseTerminalControl;
+use App\Agents\Commands\RenewTerminalControl;
+use App\Agents\Commands\SendTerminalInput;
+use App\Agents\Commands\TakeTerminalControl;
+use App\Agents\Enums\TerminalDraftChoice;
+use App\Agents\Support\TerminalInput;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+/**
+ * A browser writer's control action on the agent's terminal named in the route: a take through their read interest,
+ * a cancel by its take id, or a renewal, give back, input, draft choice, screen check or receipt through the grant id
+ * their tab holds. Typed text is a field of its own and is never logged.
+ */
+final class TerminalControlRequest extends FormRequest
+{
+    /**
+     * The most characters one input may carry.
+     */
+    public const int TEXT_LIMIT = 16_384;
+
+    /**
+     * @return array<string, list<mixed>>
+     */
+    public function rules(): array
+    {
+        return [
+            'interest' => ['sometimes', 'string', 'max:64'],
+            'takeId' => ['sometimes', 'string', 'max:64'],
+            'grantId' => ['sometimes', 'string', 'max:64'],
+            'text' => ['sometimes', 'string', 'max:'.self::TEXT_LIMIT],
+            'enter' => ['sometimes', 'boolean'],
+            'sequence' => ['sometimes', 'integer', 'min:1'],
+            'screenRevision' => ['sometimes', 'integer', 'min:0'],
+            'choice' => ['sometimes', Rule::enum(TerminalDraftChoice::class)],
+            'actor' => ['prohibited'],
+            'session' => ['prohibited'],
+        ];
+    }
+
+    public function takeCommand(): TakeTerminalControl
+    {
+        return new TakeTerminalControl($this->agentId(), $this->string('interest')->toString(), $this->takeId());
+    }
+
+    public function cancelCommand(): CancelTerminalTake
+    {
+        return new CancelTerminalTake($this->agentId(), $this->takeId());
+    }
+
+    public function renewCommand(): RenewTerminalControl
+    {
+        return new RenewTerminalControl($this->agentId(), $this->grantId());
+    }
+
+    public function releaseCommand(): ReleaseTerminalControl
+    {
+        return new ReleaseTerminalControl($this->agentId(), $this->grantId());
+    }
+
+    public function inputCommand(): SendTerminalInput
+    {
+        $input = new TerminalInput(
+            $this->string('text')->toString(),
+            $this->boolean('enter'),
+            $this->sequence(),
+            $this->integer('screenRevision'),
+        );
+
+        return new SendTerminalInput($this->agentId(), $this->grantId(), $input);
+    }
+
+    public function chooseCommand(): ChooseTerminalDraft
+    {
+        $this->validate(['choice' => ['required', Rule::enum(TerminalDraftChoice::class)]]);
+        $choice = TerminalDraftChoice::from($this->string('choice')->toString());
+
+        return new ChooseTerminalDraft($this->agentId(), $this->grantId(), $choice, $this->sequence());
+    }
+
+    public function checkCommand(): CheckTerminalScreen
+    {
+        return new CheckTerminalScreen($this->agentId(), $this->grantId());
+    }
+
+    public function agentId(): string
+    {
+        return strtolower((string) $this->route('agent'));
+    }
+
+    public function takeId(): string
+    {
+        return $this->string('takeId')->toString();
+    }
+
+    public function grantId(): string
+    {
+        return $this->string('grantId')->toString();
+    }
+
+    public function sequence(): int
+    {
+        return $this->integer('sequence');
+    }
+}

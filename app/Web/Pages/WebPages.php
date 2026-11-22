@@ -23,9 +23,17 @@ use App\Web\Http\Controllers\Runtimes\ReleaseRuntimeHoldController;
 use App\Web\Http\Controllers\Runtimes\ResolveRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\ResumeScriptRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\RetryRuntimeRequestController;
+use App\Web\Http\Controllers\Terminal\CancelTerminalTakeController;
+use App\Web\Http\Controllers\Terminal\CheckTerminalScreenController;
+use App\Web\Http\Controllers\Terminal\ChooseTerminalDraftController;
 use App\Web\Http\Controllers\Terminal\CloseTerminalController;
 use App\Web\Http\Controllers\Terminal\OpenTerminalController;
+use App\Web\Http\Controllers\Terminal\ReleaseTerminalControlController;
+use App\Web\Http\Controllers\Terminal\RenewTerminalControlController;
 use App\Web\Http\Controllers\Terminal\RenewTerminalController;
+use App\Web\Http\Controllers\Terminal\SendTerminalInputController;
+use App\Web\Http\Controllers\Terminal\TakeTerminalControlController;
+use App\Web\Http\Controllers\Terminal\TerminalControlReceiptController;
 use App\Web\Http\Controllers\Terminal\TerminalFrameController;
 use App\Web\Resolvers\AskDetailResolver;
 use App\Web\Resolvers\AskInboxResolver;
@@ -125,6 +133,46 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
                         'close-terminal-interest',
                     ),
                     ActionRoute::get('agents/{agent}/terminal/frame', TerminalFrameController::class, 'terminal-frame'),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/control/take',
+                        TakeTerminalControlController::class,
+                        'take-terminal-control',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/control/cancel',
+                        CancelTerminalTakeController::class,
+                        'cancel-terminal-take',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/control/renew',
+                        RenewTerminalControlController::class,
+                        'renew-terminal-control',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/control/release',
+                        ReleaseTerminalControlController::class,
+                        'release-terminal-control',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/control/input',
+                        SendTerminalInputController::class,
+                        'send-terminal-input',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/control/draft',
+                        ChooseTerminalDraftController::class,
+                        'choose-terminal-draft',
+                    ),
+                    ActionRoute::post(
+                        'agents/{agent}/terminal/control/check',
+                        CheckTerminalScreenController::class,
+                        'check-terminal-screen',
+                    ),
+                    ActionRoute::get(
+                        'agents/{agent}/terminal/control',
+                        TerminalControlReceiptController::class,
+                        'terminal-control',
+                    ),
                 ),
         ];
     }

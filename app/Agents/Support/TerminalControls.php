@@ -9,6 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Data\TerminalControlData;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\TerminalDraftChoice;
+use App\Agents\Enums\TerminalReceiptOutcome;
 use App\Agents\Exceptions\TerminalControlRefused;
 use App\Agents\Exceptions\TerminalViewRefused;
 use App\Agents\Models\Agent;
@@ -225,6 +226,37 @@ final readonly class TerminalControls
     }
 
     /**
+     * The writer's take as it stands, the grant the host issued once it did, and what became of the input at the
+     * sequence when one is asked for.
+     *
+     * @throws TerminalControlRefused
+     */
+    public function receipt(
+        ActorIdentity $writer,
+        string $takeId,
+        int $sequence,
+        CarbonImmutable $now,
+    ): TerminalControlData {
+        $this->assertMayControl();
+        $grant = $this->takeOf($writer, $takeId);
+
+        if ($sequence === 0 || $grant->grant_id === null) {
+            return $this->answerOf($grant, $now);
+        }
+
+        $sent = DriverRequest::query()->where('agent_runtime_id', $grant->agent_runtime_id)
+            ->where('idempotency_key', "input:{$grant->grant_id}:{$sequence}")->first();
+        $outcome = $sent === null
+            ? TerminalReceiptOutcome::Unknown
+            : TerminalReceiptOutcome::ofProgress($sent->progress);
+
+        return TerminalControlData::from([
+            ...$this->fieldsOf($grant, $now),
+            'receipt' => ['sequence' => $sequence, 'outcome' => $outcome],
+        ]);
+    }
+
+    /**
      * Retires every grant the viewer holds on the agent, as when they may no longer inspect it, and fences each at
      * its host.
      */
@@ -358,12 +390,20 @@ final readonly class TerminalControls
 
     private function answerOf(TerminalGrant $grant, CarbonImmutable $now): TerminalControlData
     {
-        return TerminalControlData::from([
+        return TerminalControlData::from($this->fieldsOf($grant, $now));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function fieldsOf(TerminalGrant $grant, CarbonImmutable $now): array
+    {
+        return [
             'takeId' => $grant->take_id,
             'grantId' => $grant->grant_id,
             'state' => $grant->state,
             'expiresInSeconds' => max(0, (int) $now->diffInSeconds($grant->expires_at, false)),
             'nextSequence' => $grant->next_sequence,
-        ]);
+        ];
     }
 }

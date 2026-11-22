@@ -9,15 +9,17 @@ use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Data\TerminalControlData;
 use App\Agents\Data\TerminalFrameData;
+use App\Agents\Exceptions\TerminalControlRefused;
 use App\Agents\Exceptions\TerminalViewRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Policies\AgentMaintenancePolicy;
 use App\Operations\Enums\AccessType;
 
 /**
- * The current viewer's read of an agent's terminal frames, with inspect decided on every read as the view commands
- * decide it.
+ * The current viewer's reads of an agent's terminal, its frames and their control of it, with inspect decided on
+ * every read as the view commands decide it.
  */
 final readonly class TerminalFrames
 {
@@ -25,6 +27,7 @@ final readonly class TerminalFrames
         private CurrentActor $actor,
         private CurrentAuthorizer $authorizer,
         private TerminalViews $views,
+        private TerminalControls $controls,
         private ServerClock $clock,
     ) {}
 
@@ -37,6 +40,17 @@ final readonly class TerminalFrames
     public function after(string $agentId, HeldFrame $held): TerminalFrameData
     {
         return $this->views->frame($agentId, $this->inspectingViewer(), $held, $this->clock->now());
+    }
+
+    /**
+     * The current viewer's take of the agent's terminal and what became of the input at the sequence, when asked.
+     *
+     * @throws ActorNotAllowed
+     * @throws TerminalControlRefused
+     */
+    public function control(string $takeId, int $sequence): TerminalControlData
+    {
+        return $this->controls->receipt($this->inspectingViewer(), $takeId, $sequence, $this->clock->now());
     }
 
     /**
