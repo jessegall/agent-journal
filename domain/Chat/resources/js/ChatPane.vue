@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch } from 'vue';
+import { arrivalAnnouncement } from './composables/arrivalAnnouncement';
 import { useChatTimeline } from './composables/useChatTimeline';
 import { useChosenAgent } from './composables/useChosenAgent';
 import { useConversationIntents } from './composables/useConversationIntents';
@@ -107,6 +108,30 @@ const refused = computed(() =>
 
 // A read that returned the user's own sends settles them.
 watch(timeline.messages, (messages) => owner.value?.settle(messages));
+
+/**
+ * Each new post by someone else, said once in the polite region; a chat opened afresh starts quiet.
+ */
+const arrival = ref<string | null>(null);
+function freshAnnouncer(): ReturnType<typeof arrivalAnnouncement> {
+    return arrivalAnnouncement(
+        () => conversation.value?.viewer ?? '',
+        (actor) => conversation.value?.participants.find((member) => member.actor === actor)?.label ?? 'someone who left',
+    );
+}
+
+let announceArrivals = freshAnnouncer();
+watch(
+    () => conversation.value?.inboxId,
+    () => (announceArrivals = freshAnnouncer()),
+);
+watch(timeline.messages, (messages) => {
+    const said = announceArrivals(messages);
+
+    if (said !== null) {
+        arrival.value = said;
+    }
+});
 const unreadShown = timeline.unreadShown;
 
 /**
@@ -252,7 +277,7 @@ function retryFocused(): void {
                     @restore="(intentKey) => owner?.restore(intentKey)"
                     @discard="(intentKey) => owner?.discardRecovery(intentKey)"
                 />
-                <p role="status" aria-live="polite" class="sr-only">{{ owner?.announcement.value }}</p>
+                <p role="status" aria-live="polite" class="sr-only">{{ owner?.announcement.value }} {{ arrival }}</p>
                 <template v-if="unreadShown.length > 0">
                     <p class="flex items-center gap-2 text-small text-text-3">
                         <button type="button" class="underline" @click="readShown">

@@ -11,7 +11,8 @@ import RefusedSend from './RefusedSend.vue';
  * The rows of one chat in timeline order: the viewer's own on the right, everyone else's on the left with the name of
  * whoever wrote it and, for an agent, the driver it runs through; for each incoming row whether the viewer has not
  * read it yet, for a question whether it still waits, and for the author or an operator which recipients were not
- * reached yet or were given up. After them
+ * reached yet or were given up. Each row is reached by keyboard in order and named by its speaker and addressee; a
+ * reply's link names its original and moves the focus there, and a hidden original is only words. After them
  * come the user's own sends still settling, and the refused ones to restore or discard. Bodies are shown as text,
  * never as HTML.
  */
@@ -54,6 +55,38 @@ function labelOf(actor: string): string {
     return props.participants.find((member) => member.actor === actor)?.label ?? 'someone who left';
 }
 
+/**
+ * What a screen reader says for a row: who wrote it, with the driver for an agent, and whom it addresses.
+ */
+function rowLabel(message: ChatMessageData): string {
+    const speaker = isOwn(message) ? 'You' : speakerOf(message);
+    const addressee = message.addressedTo === null ? '' : ` to ${labelOf(message.addressedTo)}`;
+
+    return `${speaker}${addressee}`;
+}
+
+/**
+ * What the reply link says: the original's speaker and its first words, when this view holds it.
+ */
+function originalLabel(message: ChatMessageData): string {
+    const original = props.messages.find((shown) => shown.id === message.replyTo?.id);
+
+    return original === undefined
+        ? 'Go to the original message'
+        : `Go to the original from ${original.speaker.label}: ${original.body.slice(0, 80)}`;
+}
+
+/**
+ * Follows a reply to its original and gives the original the focus, so the keyboard continues from there.
+ */
+function goToOriginal(originalId: string | null): void {
+    if (originalId === null) {
+        return;
+    }
+
+    document.getElementById(`message-${originalId}`)?.focus();
+}
+
 function stateOf(message: ChatMessageData): string | null {
     if (message.state === 'waiting_for_answer') {
         return isOwn(message) ? 'Waiting for an answer' : 'Waiting for your answer';
@@ -64,7 +97,7 @@ function stateOf(message: ChatMessageData): string | null {
 </script>
 
 <template>
-    <div class="flex flex-1 flex-col gap-2.5 overflow-y-auto pt-4.5 pb-2">
+    <div class="flex flex-1 flex-col gap-2.5 overflow-y-auto pt-4.5 pb-2" role="feed" aria-label="Messages">
         <template v-if="messages.length === 0 && pending.length === 0 && refused.length === 0">
             <div class="m-auto flex flex-col items-center gap-1 text-center">
                 <p class="text-empty text-text-2">No messages yet</p>
@@ -79,10 +112,12 @@ function stateOf(message: ChatMessageData): string | null {
             </button>
         </template>
         <template v-for="message in messages" :key="message.id">
-            <div
+            <article
                 :id="`message-${message.id}`"
+                tabindex="0"
+                :aria-label="rowLabel(message)"
                 :class="[
-                    'flex max-w-[85%] flex-col gap-0.5',
+                    'flex max-w-[85%] flex-col gap-0.5 rounded-control focus-visible:outline-2 focus-visible:outline-brand',
                     isOwn(message) ? 'ml-auto items-end' : 'mr-auto items-start',
                 ]"
             >
@@ -91,7 +126,12 @@ function stateOf(message: ChatMessageData): string | null {
                     <template v-if="message.addressedTo !== null"> → {{ labelOf(message.addressedTo) }}</template>
                 </span>
                 <template v-if="message.replyTo !== null && message.replyTo.visible">
-                    <a :href="`#message-${message.replyTo.id}`" class="text-small text-text-3 underline">
+                    <a
+                        :href="`#message-${message.replyTo.id}`"
+                        class="text-small text-text-3 underline"
+                        :aria-label="originalLabel(message)"
+                        @click.prevent="goToOriginal(message.replyTo.id)"
+                    >
                         Replying to an earlier message
                     </a>
                 </template>
@@ -124,7 +164,7 @@ function stateOf(message: ChatMessageData): string | null {
                 <template v-if="message.deliveries.some((delivery) => delivery.state !== 'accepted')">
                     <MessageDeliveries :message="message" :conversation-prop="conversationProp" />
                 </template>
-            </div>
+            </article>
         </template>
         <template v-for="intent in pending" :key="intent.key">
             <PendingMessage :intent="intent" @check-again="(shown) => emit('checkAgain', shown)" />

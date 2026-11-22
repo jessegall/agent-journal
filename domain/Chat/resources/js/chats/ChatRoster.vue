@@ -23,11 +23,25 @@ const isOwner = computed(() => props.conversation.participants.some(
 const search = useHttp<{ inboxId: string }, { candidates: SpeakerData[] }>({ inboxId: props.conversation.inboxId });
 const found = ref<SpeakerData[]>([]);
 
+const membersList = ref<HTMLElement | null>(null);
+
 function post(url: string, data: Record<string, string>): void {
     router.post(url, { inboxId: props.conversation.inboxId, ...data }, {
         preserveScroll: true,
         preserveState: true,
         only: [props.conversationProp],
+    });
+}
+
+/**
+ * Removes a member; the focus then rests on the members list, since the row that held it is gone.
+ */
+function remove(participant: string): void {
+    router.post(removeMember().url, { inboxId: props.conversation.inboxId, participant }, {
+        preserveScroll: true,
+        preserveState: true,
+        only: [props.conversationProp],
+        onFinish: () => membersList.value?.focus(),
     });
 }
 
@@ -40,7 +54,7 @@ function findCandidates(): void {
 
 <template>
     <section class="flex flex-col gap-1.5" aria-label="Members">
-        <ul class="flex flex-col gap-1">
+        <ul ref="membersList" class="flex flex-col gap-1" tabindex="-1" aria-label="Members of this chat">
             <template v-for="participant in conversation.participants" :key="participant.actor">
                 <ParticipantRow :participant="participant">
                     <template v-if="participant.actor.startsWith('agent:')">
@@ -56,7 +70,12 @@ function findCandidates(): void {
                         </button>
                     </template>
                     <template v-if="participant.actor !== conversation.viewer && capabilities.remove">
-                        <button type="button" class="underline" @click="post(removeMember().url, { participant: participant.actor })">
+                        <button
+                            type="button"
+                            class="underline"
+                            :aria-label="`Remove ${participant.label}`"
+                            @click="remove(participant.actor)"
+                        >
                             Remove
                         </button>
                     </template>

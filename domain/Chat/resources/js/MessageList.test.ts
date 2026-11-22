@@ -88,6 +88,9 @@ describe('MessageList', () => {
 
         expect(asBea.text()).toContain('Ada → Bea');
         expect(asBea.text()).toContain('Original unavailable');
+        expect(asBea.find('article').attributes('aria-label')).toBe('Ada to Bea');
+        expect(asBea.find('article').attributes('tabindex')).toBe('0');
+        expect(asBea.find('a[href^="#message-"]').exists()).toBe(false);
         expect(asBea.text()).toContain('Answer');
         expect(asBea.text()).toContain('Decline');
         expect(asCy.text()).toContain('Reply');
