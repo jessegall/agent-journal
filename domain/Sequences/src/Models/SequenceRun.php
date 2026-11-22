@@ -195,6 +195,7 @@ final class SequenceRun extends Model implements Dockable, EventSource, Numbered
             new Subtitle("step-{$index}-text", ($index + 1).' · '.$step),
             $this->stepLabel($index + 1),
         ), $this->steps, array_keys($this->steps));
+
         $started = CarbonImmutable::instance($this->created_at ?? CarbonImmutable::now());
         $ended = $this->state->needsWork() ? null : CarbonImmutable::instance($this->updated_at ?? $started);
 

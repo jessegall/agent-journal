@@ -48,6 +48,7 @@ final readonly class SentMessageAnswer
         $query = $agentId === null
             ? ConversationRequest::queryForInbox($inboxId)
             : ConversationRequest::queryFor($agentId);
+
         $home = $this->redirect->getUrlGenerator()->route('home', $query, false);
 
         $this->inertia->flash([self::SENT_MESSAGE => $messageId, self::REQUEST_KEY => $this->key->key()]);

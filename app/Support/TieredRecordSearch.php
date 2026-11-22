@@ -185,6 +185,7 @@ final readonly class TieredRecordSearch implements TieredSearch
 
         $examinedWholeBlock = $block->isEmpty() || $lastExamined === (string) $block->last()->getKey();
         $tierFinished = $examinedWholeBlock && $block->count() < $blockSize;
+
         $next = $tierFinished
             ? self::afterTier($tier, $highWater, $referenceId, $source)
             : self::titlePosition($tier, $lastExamined, $highWater, $referenceId);

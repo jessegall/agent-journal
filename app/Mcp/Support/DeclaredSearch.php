@@ -132,6 +132,7 @@ final readonly class DeclaredSearch
             'search_status' => $answer->status->value,
             'hits' => array_map(fn (EmittedHit $hit) => $hit->toArray(), $answer->hits),
         ];
+
         $next = [];
 
         if ($answer->directOpen !== null) {
@@ -157,6 +158,7 @@ final readonly class DeclaredSearch
                 fn (DeclaredSearchable $source) => self::sourceOf($source),
                 $answer->scope->sources,
             );
+
             $next[] = new NextAction(self::TOOL, ScopeResolution::DISCOVERY_ACTION);
         }
 

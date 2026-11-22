@@ -20,6 +20,7 @@ final class SequencesServiceProvider extends ServiceProvider
         $links->register([
             SequenceRun::LINK_TYPE => SequenceRun::class,
         ]);
+
         $docks->register(SequenceRun::LINK_TYPE, SequenceRun::class, SequenceRunDocking::class);
     }
 }

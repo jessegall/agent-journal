@@ -177,6 +177,7 @@ final readonly class SearchStates
     private function admitActive(SearchOwner $owner, string $searchId): void
     {
         $active = $this->cache->get(self::principalKey($owner), []);
+
         $active = array_values(array_filter(
             is_array($active) ? $active : [],
             fn (mixed $id): bool => is_string($id) && $this->cache->has(self::searchKey($id)),

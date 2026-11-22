@@ -38,10 +38,12 @@ final class SequenceRunPageTest extends TestCase
         $sequence = Sequence::define('Release', 'Ship a version', [
             new SequenceStep(...['id' => 'tests', 'title' => 'Tests', 'runsWhen' => 'held', 'doneWhen' => 'green']),
         ]);
+
         $run = SequenceRun::create('Release', ['Run the tests']);
         $run->sequence()->associate($sequence)->save();
 
         $this->actingAs($this->owner)->get('/sequences')->assertOk()->assertSee($sequence->id);
+
         $this->actingAs($this->owner)
             ->get("/sequences/{$sequence->id}")
             ->assertOk()

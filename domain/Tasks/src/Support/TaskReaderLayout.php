@@ -81,6 +81,7 @@ final readonly class TaskReaderLayout
     {
         $fixed = ['revision' => $reader->revision, 'run' => $reader->actions->runNumber];
         $address = fn (string $name) => route("tasks.{$name}", ['task' => $reader->number], false);
+
         $post = fn (string $name) => LayoutFormData::from([
             'method' => ActionMethod::Post,
             'href' => $address($name),
@@ -91,6 +92,7 @@ final readonly class TaskReaderLayout
         $startRefusal = $reader->actions->startReason instanceof Optional
             ? 'You may not start this task.'
             : $reader->actions->startReason;
+
         $parts = [
             $reader->actions->mayStart
                 ? LayoutPartData::form(

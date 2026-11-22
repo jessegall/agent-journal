@@ -48,6 +48,7 @@ final readonly class SettingsLayout
             $this->catalogue->everyOwner(),
             fn (SettingsCatalogueData $catalogue) => $catalogue->declaresSettings(),
         );
+
         $groups = array_map(
             fn (SettingsCatalogueData $catalogue) => [$this->rank($catalogue->owner), $this->groupOf($catalogue)],
             array_values($declaring),

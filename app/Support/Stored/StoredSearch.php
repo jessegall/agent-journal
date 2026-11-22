@@ -62,6 +62,7 @@ final readonly class StoredSearch
             $positionId => $this->position($positionId)->answered($page, $successorId),
             $successorId => new StoredSearchPosition($successorState),
         ];
+
         $order = [...$this->order, $successorId];
 
         while (count($order) > $retainedLimit) {

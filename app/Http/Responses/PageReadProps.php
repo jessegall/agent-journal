@@ -156,6 +156,7 @@ final readonly class PageReadProps
         $route = new Route([$method->value], $action->uri, []);
         $names = $action->path->parameters;
         $parameters = array_map(fn (string $name) => $this->routeParameterOf($action, $query, $name), $names);
+
         $address = strtr(
             $action->uri,
             array_combine(array_map(fn (string $name) => '{'.$name.'}', $action->path->parameters), $parameters),

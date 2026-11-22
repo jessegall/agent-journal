@@ -105,6 +105,7 @@ final class TaskBriefPassageTest extends TestCase
     private function briefHit(): SearchResult
     {
         $provider = $this->app->make(TaskSearchProvider::class);
+
         $query = new SearchQuery(
             new SearchReader(ActorContext::forUser(self::USER_ID), SearchSurface::Palette),
             SearchWords::fromInput(self::PHRASE),
@@ -113,6 +114,7 @@ final class TaskBriefPassageTest extends TestCase
             10,
             WorkBudget::forBatch(150),
         );
+
         $batch = $provider->search($query);
 
         for ($call = 0; $call < 10 && $batch->hits === [] && ! $batch->isExhausted(); $call++) {

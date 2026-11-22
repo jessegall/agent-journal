@@ -266,6 +266,7 @@ final readonly class SearchCoordinator implements RecordSearch
     ): bool {
         $source = $progress->sources[$declared->qualifiedKey];
         $milliseconds = min(self::SOURCE_MILLISECONDS, self::remainingMilliseconds($deadline));
+
         $query = new SearchQuery(
             $reader,
             $progress->words,
@@ -623,6 +624,7 @@ final readonly class SearchCoordinator implements RecordSearch
             array_keys($sources),
             fn (string $key): bool => $key !== $stalledKey && ! $progress->sources[$key]->isDone(),
         ));
+
         $narrower = count($sources) > 1 && $progress->within === null ? $others : [];
 
         return new SearchAnswer(

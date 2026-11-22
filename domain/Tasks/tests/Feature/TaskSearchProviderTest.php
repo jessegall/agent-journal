@@ -113,6 +113,7 @@ final class TaskSearchProviderTest extends TestCase
         Task::query()->whereKey($kept->id)->update(['title' => self::EDITED_TITLE]);
 
         $agent = new SearchReader(ActorContext::forAgent(self::AGENT_ID), SearchSurface::AgentTool);
+
         $refresh = self::searchQuery('deploy notes', $agent)->refreshing([
             new HitIdentity(self::SOURCE_KEY, Task::LINK_TYPE, $kept->id),
             new HitIdentity(self::SOURCE_KEY, Task::LINK_TYPE, $revoked->id),

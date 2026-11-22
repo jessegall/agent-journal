@@ -39,10 +39,12 @@ final class TaskReferenceSearchTest extends TestCase
 
         DB::enableQueryLog();
         $batch = $this->search("  TASK {$task->number} ", self::user());
+
         $lookups = array_filter(
             DB::getQueryLog(),
             fn (array $entry): bool => str_contains($entry['query'], 'number_group_id'),
         );
+
         DB::disableQueryLog();
 
         $this->assertCount(1, $lookups);

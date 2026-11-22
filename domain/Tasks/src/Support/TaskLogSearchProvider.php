@@ -137,6 +137,7 @@ final readonly class TaskLogSearchProvider implements SearchProvider
         $query->budget()->chargePolicyChecks(count($entryIds));
 
         $milliseconds = $query->budget()->remainingMilliseconds();
+
         $lines = $this->deadline->within($milliseconds, fn () => $this->lines($constraints)
             ->whereKey($entryIds)
             ->readExactly(count($entryIds))

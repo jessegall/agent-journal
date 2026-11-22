@@ -215,6 +215,7 @@ final readonly class ChatConversations
         ));
 
         $names = $this->labels->labelsFor($recipients);
+
         $reactions = self::reactionsByMessage(
             MessageReaction::toMessages(array_map(fn (MessageView $message) => $message->id, $messages)),
             $viewer,
@@ -299,6 +300,7 @@ final readonly class ChatConversations
 
         foreach ($reactions as $reaction) {
             $held = $grouped[$reaction->message_id][$reaction->emoji] ?? ['count' => 0, 'isMine' => false];
+
             $grouped[$reaction->message_id][$reaction->emoji] = [
                 'count' => $held['count'] + 1,
                 'isMine' => $held['isMine'] || $reaction->owningActor()->isSameAs($viewer),

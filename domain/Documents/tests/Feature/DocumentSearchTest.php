@@ -64,6 +64,7 @@ final class DocumentSearchTest extends TestCase
         $this->assertSame(5, $open->arguments['line_start']);
 
         $fields = ['view', 'revision', 'section', 'line_start', 'line_end', 'character_offset', 'continuation'];
+
         $read = $this->app->make(DocumentReader::class)->document(
             $number,
             ToolArguments::read('docs_read', new Request(array_diff_key($open->arguments, ['doc_id' => 1])), $fields),
@@ -78,6 +79,7 @@ final class DocumentSearchTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
         $number = $bus->run(new CreateDocumentCommand('Guide', 'About keys.', "# Guide\nPublished words.\n"))->number;
         $draft = $bus->run(new OpenDocumentCommand((string) $number));
+
         $bus->run(new EditDocumentCommand(
             new DraftTarget((string) $number, $draft->token, $draft->version),
             '1',
@@ -92,6 +94,7 @@ final class DocumentSearchTest extends TestCase
     public function test_a_document_reference_comes_first(): void
     {
         TestStart::start()->startRequest($this->app);
+
         $number = $this->app->make(CommandBus::class)->run(
             new CreateDocumentCommand('One search across domain declarations', 'About search.', "# Search\nText.\n"),
         )->number;
@@ -114,6 +117,7 @@ final class DocumentSearchTest extends TestCase
     private function hitFor(string $words): SearchResult|null
     {
         $provider = $this->app->make(DocumentSearchProvider::class);
+
         $query = new SearchQuery(
             new SearchReader(ActorContext::forUser(self::USER_ID), SearchSurface::Palette),
             SearchWords::fromInput($words),
@@ -122,6 +126,7 @@ final class DocumentSearchTest extends TestCase
             10,
             WorkBudget::forBatch(150),
         );
+
         $batch = $provider->search($query);
 
         for ($call = 0; $call < 10 && $batch->hits === [] && ! $batch->isExhausted(); $call++) {
