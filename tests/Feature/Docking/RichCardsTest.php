@@ -19,12 +19,12 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Support\OpensPairChats;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
 use Tests\Fixtures\Modules\Notes\Support\ReleaseReview;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsNotesModule;
+use Tests\Support\OpensPairChats;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WritesInboxMessages;
@@ -38,9 +38,9 @@ use Tests\TestCase;
 #[TimeLimit(8, 'Docks four kinds of source through MCP and reads the projected cards.')]
 final class RichCardsTest extends TestCase
 {
-    use OpensPairChats;
     use CommitsHookRows;
     use InstallsNotesModule;
+    use OpensPairChats;
     use SendsMcpFrames;
     use WritesInboxMessages;
 

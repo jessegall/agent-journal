@@ -22,8 +22,8 @@ use Tests\Support\PresentsChatText;
  */
 final class AgentChatFlowTest extends MessagingTestCase
 {
-    use PresentsChatText;
     use OpensPairChats;
+    use PresentsChatText;
 
     private Conversation $chat;
 

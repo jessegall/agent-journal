@@ -10,8 +10,8 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Support\OpensPairChats;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\OpensPairChats;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -25,8 +25,8 @@ use Tests\TestCase;
 #[TimeLimit(5, 'Signed calls cover the dock tools, the journal list and a refused helper.')]
 final class DockToolsTest extends TestCase
 {
-    use OpensPairChats;
     use CommitsHookRows;
+    use OpensPairChats;
     use SendsMcpFrames;
     use SendsSignedCalls;
     use WritesInboxMessages;

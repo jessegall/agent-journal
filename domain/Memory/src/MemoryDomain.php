@@ -21,7 +21,6 @@ use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Mcp\MemoryResource;
-use Domain\Memory\Models\Memory;
 use Domain\Memory\Policies\MemoryPolicy;
 use Domain\Memory\Skills\MemorySkill;
 

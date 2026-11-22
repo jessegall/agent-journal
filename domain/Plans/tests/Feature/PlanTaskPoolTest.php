@@ -116,6 +116,7 @@ final class PlanTaskPoolTest extends TestCase
         );
 
         $this->expectException(AssignmentPoolTooLarge::class);
+
         $this->expectExceptionMessage(
             AssignmentPoolTooLarge::holding("Plan {$plan->number}", OrderedRecordIds::LARGEST)->getMessage(),
         );

@@ -26,12 +26,12 @@ use Domain\Chat\Support\DockProjection;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Support\OpensPairChats;
 use Tests\Fixtures\Modules\Notes\Events\NoteRemoved;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\InstallsNotesModule;
+use Tests\Support\OpensPairChats;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\TestRunAdmissions;
@@ -47,9 +47,9 @@ use Tests\TestCase;
 #[TimeLimit(8, 'Records one run, docks it through MCP and reads the projected cards.')]
 final class ProcessAndCleanupDockTest extends TestCase
 {
-    use OpensPairChats;
     use CommitsHookRows;
     use InstallsNotesModule;
+    use OpensPairChats;
     use SendsMcpFrames;
     use WritesInboxMessages;
 

@@ -36,6 +36,7 @@ final class DocumentsTest extends TestCase
         Ship it.
 
         TEXT;
+
     private const string FIRST_DOCUMENT = 'doc 1';
 
     private const string SECOND_DOCUMENT = 'doc 2';

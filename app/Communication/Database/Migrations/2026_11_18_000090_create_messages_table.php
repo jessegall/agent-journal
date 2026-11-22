@@ -32,11 +32,13 @@ return new class extends Migration
             $table->ulid('read_participation_assignment_id')->nullable();
             $table->ulid('origin_receipt_id');
             $table->ulid('reply_to_id')->nullable();
+
             $table->foreignUlid('timeline_event_id')
                 ->nullable()
                 ->unique()
                 ->constrained('inbox_timeline_events')
                 ->restrictOnDelete();
+
             $table->string('addressee_type', 16)->nullable();
             $table->string('addressee_id', 64)->nullable();
             $table->string('respondent_type', 16)->nullable();

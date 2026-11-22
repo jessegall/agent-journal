@@ -12,8 +12,8 @@ use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Support\OpensPairChats;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\OpensPairChats;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
@@ -25,8 +25,8 @@ use Tests\Support\WritesInboxMessages;
  */
 final class DockCommandsTest extends TestCase
 {
-    use OpensPairChats;
     use CommitsHookRows;
+    use OpensPairChats;
     use SendsSignedCalls;
     use StartsAgentRequests;
     use WritesInboxMessages;

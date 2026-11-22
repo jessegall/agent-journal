@@ -24,7 +24,6 @@ use App\Agents\Support\RuntimeScreen;
 use App\Agents\Support\ScreenRegistration;
 use App\Agents\Support\TerminalFrames;
 use App\Agents\Values\RuntimeIntent;
-use App\Bus\Enums\RefusalCode;
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;

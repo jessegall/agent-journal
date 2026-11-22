@@ -35,8 +35,8 @@ use Tests\Support\WritesInboxMessages;
  */
 final class DockAdmissionTest extends TestCase
 {
-    use OpensPairChats;
     use CommitsHookRows;
+    use OpensPairChats;
     use StartsAgentRequests;
     use StartsMainAgents;
     use WritesInboxMessages;

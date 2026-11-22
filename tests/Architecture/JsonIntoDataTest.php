@@ -21,7 +21,7 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of app/ and the domains.')]
 final class JsonIntoDataTest extends TestCase
 {
-    private const string HOW_TO_FIX = "These json_decode calls read JSON as a loose array; "
+    private const string HOW_TO_FIX = 'These json_decode calls read JSON as a loose array; '
         ."hand the result straight to a Data class's from():\n";
 
     private const array TAKERS = ['from', 'collect', 'validateAndCreate'];

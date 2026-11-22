@@ -49,6 +49,7 @@ final readonly class PresentationSweep
 
         $turnEnded = $batch->driver_turn_id !== null
             && DriverTurn::query()->whereKey($batch->driver_turn_id)->whereNotNull('finished_at')->exists();
+
         $leaseRanOut = $batch->last_progress_at->addSeconds(PresentationBatches::LEASE_SECONDS)->lessThan($at);
 
         if (! $turnEnded && ! $leaseRanOut) {

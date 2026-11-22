@@ -23,6 +23,7 @@ final readonly class PresentationPrompts
     public function promptFor(AgentRuntime $runtime, CarbonImmutable $at): string|null
     {
         $contextKey = self::contextOf($runtime);
+
         $batch = $this->batches->next(
             ActorIdentity::of($runtime->session->agent),
             $runtime->agent_session_id,
@@ -46,11 +47,14 @@ final readonly class PresentationPrompts
     private static function render(PresentationBatchData $batch, string $contextKey): string
     {
         $items = implode("\n\n", array_map(fn (PresentationItemData $item) => self::itemText($item), $batch->items));
+
         $handles = implode(' ', array_map(
             fn (PresentationItemData $item) => "--handle {$item->handle}",
             $batch->items,
         ));
+
         $more = $batch->more ? "\nMore messages wait in this chat; they come in the next batch." : '';
+
         $claim = $batch->claimGrant === null
             ? ''
             : "\nTo answer, claim your turn first: journal message claim {$batch->inboxId} <root> "
@@ -70,9 +74,11 @@ final readonly class PresentationPrompts
     private static function itemText(PresentationItemData $item): string
     {
         $label = $item->isReference ? "{$item->speakerLabel} (earlier, for context)" : $item->speakerLabel;
+
         $part = $item->endOffset < $item->bodyLength || $item->startOffset > 0
             ? " (characters {$item->startOffset} to {$item->endOffset} of {$item->bodyLength})"
             : '';
+
         $turn = $item->claimableRootId === null
             ? ''
             : "\nYou may answer this: claim your turn on {$item->claimableRootId}.";

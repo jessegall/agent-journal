@@ -22,11 +22,13 @@ return new class extends Migration
             $table->unsignedInteger('lease_version')->default(0);
             $table->char('claim_token_digest', 64)->nullable();
             $table->timestampTz('lease_expires_at')->nullable();
+
             $table->foreignUlid('contribution_message_id')
                 ->nullable()
                 ->unique()
                 ->constrained('messages')
                 ->restrictOnDelete();
+
             $table->timestampsTz();
 
             $table->unique(['user_root_id', 'actor_type', 'actor_id']);

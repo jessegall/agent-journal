@@ -30,8 +30,8 @@ use Tests\Support\WritesInboxMessages;
  */
 final class DockSectionTest extends TestCase
 {
-    use OpensPairChats;
     use CommitsHookRows;
+    use OpensPairChats;
     use StartsAgentRequests;
     use StartsMainAgents;
     use WritesInboxMessages;
@@ -96,6 +96,7 @@ final class DockSectionTest extends TestCase
             ActorIdentity::of($owner),
             new ActorIdentity(ActorType::Agent, $session->agent_id),
         )->inbox_id;
+
         $dock = ['inboxId' => $inboxId, 'type' => Message::LINK_TYPE, 'id' => $message->id];
 
         $this->actingAs($owner)->postJson('/chat/dock', $dock)->assertSuccessful()->assertJson(['outcome' => 'added']);

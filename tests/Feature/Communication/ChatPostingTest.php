@@ -14,8 +14,8 @@ use App\Communication\Models\MessageReceipt;
 use App\Communication\Models\TimelineEvent;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;
-use Tests\Support\PresentsChatText;
 use Tests\Support\OpensPairChats;
+use Tests\Support\PresentsChatText;
 
 /**
  * A chat message is one row both members of a pair see, at its own timeline position: a retry with the same key
@@ -23,8 +23,8 @@ use Tests\Support\OpensPairChats;
  */
 final class ChatPostingTest extends MessagingTestCase
 {
-    use PresentsChatText;
     use OpensPairChats;
+    use PresentsChatText;
 
     private Conversation $chat;
 

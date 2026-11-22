@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Enums;
 
-
 /**
  * What became of one input a browser writer sent: still on its way, written, refused, written or not with no way to
  * know, or unknown to the journal.

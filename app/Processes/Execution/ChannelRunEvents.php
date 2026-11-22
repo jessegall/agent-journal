@@ -151,6 +151,7 @@ final class ChannelRunEvents implements RunEvents
             $this->waitingToSend = false;
         } catch (CallFailed $failure) {
             $this->waitingToSend = true;
+
             $this->logger->warning('processes.run_events_not_sent', [
                 'run_id' => $this->runId,
                 'failure' => $failure::class,

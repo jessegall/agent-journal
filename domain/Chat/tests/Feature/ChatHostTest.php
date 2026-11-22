@@ -25,8 +25,8 @@ use Tests\Support\WritesInboxMessages;
  */
 final class ChatHostTest extends TestCase
 {
-    use OpensPairChats;
     use CommitsHookRows;
+    use OpensPairChats;
     use StartsMainAgents;
     use WritesInboxMessages;
 
@@ -53,10 +53,12 @@ final class ChatHostTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $session = $this->startedMainAgentSession();
+
         $chatInboxId = $this->pairChat(
             ActorIdentity::of($owner),
             new ActorIdentity(ActorType::Agent, $session->agent_id),
         )->inbox_id;
+
         $window = ConversationRequest::queryFor($session->agent_id);
 
         $this->actingAs($owner)

@@ -90,6 +90,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
             }
 
             $request->stage($now);
+
             $claimed[] = $this->privateValues->carriedBy(
                 $request,
                 $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null),

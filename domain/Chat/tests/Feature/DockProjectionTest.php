@@ -18,9 +18,9 @@ use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockProjection;
 use Domain\Chat\Tests\TestCase;
 use Tests\Fixtures\Docking\ProjectionDockable;
-use Tests\Support\OpensPairChats;
 use Tests\Fixtures\Docking\ProjectionDockableProvider;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\OpensPairChats;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\StartsMainAgents;
 use Tests\Support\WritesInboxMessages;
@@ -32,8 +32,8 @@ use Tests\Support\WritesInboxMessages;
  */
 final class DockProjectionTest extends TestCase
 {
-    use OpensPairChats;
     use CommitsHookRows;
+    use OpensPairChats;
     use StartsAgentRequests;
     use StartsMainAgents;
     use WritesInboxMessages;
@@ -69,6 +69,7 @@ final class DockProjectionTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $agentId = $this->startedMainAgentSession()->agent_id;
+
         $this->conversation = $this->pairChat(
             ActorIdentity::of($this->owner),
             new ActorIdentity(ActorType::Agent, $agentId),

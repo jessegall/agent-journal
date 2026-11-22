@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Communication\Models;
 
-use App\Communication\Support\ChatInterval;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Enums\IntervalRole;
@@ -13,6 +12,7 @@ use App\Communication\Events\ChatMemberJoined;
 use App\Communication\Events\ChatMemberLeft;
 use App\Communication\Events\ChatRoleChanged;
 use App\Communication\Exceptions\ChatStateConflict;
+use App\Communication\Support\ChatInterval;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;

@@ -10,6 +10,8 @@ use Tools\CodeStyle\BlankLineAroundMultilineStatementFixer;
 use Tools\CodeStyle\StandaloneAttributeFixer;
 
 // The project's own code-style fixers, run right after Pint (which cannot load them) by composer lint and lint:check.
+// It lives here, not as .php-cs-fixer.dist.php at the root, because Pint's parallel workers would read that file
+// without the project's autoloader and fail on these fixers.
 return new Config()
     ->setParallelConfig(ParallelConfigFactory::detect())
     ->registerCustomFixers([
@@ -24,4 +26,4 @@ return new Config()
     ])
     ->setUsingCache(true)
     ->setCacheFile('storage/framework/cache/php-cs-fixer.cache')
-    ->setFinder(new Finder()->in(['app', 'domain'])->exclude(['resources', 'node_modules']));
+    ->setFinder(new Finder()->in([dirname(__DIR__, 2).'/app', dirname(__DIR__, 2).'/domain'])->exclude(['resources', 'node_modules']));

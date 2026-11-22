@@ -25,7 +25,6 @@ use App\Ui\Layout\ListPage;
 use App\Ui\Layout\SettingsGroup;
 use App\Ui\Layout\SettingsRow;
 use Carbon\CarbonImmutable;
-use Spatie\LaravelData\Optional;
 
 /**
  * The accounts on the shared list and reader recipes: each account by its driver mark, name and type with its sign-in
@@ -115,6 +114,7 @@ final readonly class AccountsLayout
 
         if ($usage->monthCost instanceof AccountMonthCostData) {
             $month = CarbonImmutable::parse($usage->monthCost->monthStart)->format('F Y');
+
             $rows[] = SettingsRow::value(
                 'cost',
                 'Estimated cost this month (USD)',

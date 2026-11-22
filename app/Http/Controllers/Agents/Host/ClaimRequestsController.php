@@ -59,6 +59,7 @@ final readonly class ClaimRequestsController
             $request->boolean('browser_resize'),
             $request->boolean('browser_private'),
         );
+
         $claiming = new ClaimDriverRequests($host->hostId, $limit, $browserInput);
         $claim = fn (): ClaimedRequests => $commands->run($claiming);
         $version = fn (): int => $watched->version($host->hostId);
