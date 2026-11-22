@@ -75,6 +75,32 @@ final readonly class CodexAdapter implements DriverAdapter
         return HookDriver::Codex->value;
     }
 
+    public function journalToolRules(): array
+    {
+        return [];
+    }
+
+    public function hookCommand(): string
+    {
+        return 'journal-hook '.$this->hookProtocol();
+    }
+
+    /**
+     * Codex writes rollout-<time>-<session id>.jsonl.
+     */
+    public function namesTranscriptOf(string $fileName, string $nativeId): bool
+    {
+        return str_starts_with($fileName, 'rollout-') && str_ends_with($fileName, '-'.$nativeId.'.jsonl');
+    }
+
+    /**
+     * Codex keeps large tool outputs in the transcript.
+     */
+    public function keepsOutputsBesideTranscript(): bool
+    {
+        return false;
+    }
+
     public function nativeEvents(): array
     {
         return self::NATIVE_EVENTS;
@@ -110,7 +136,7 @@ final readonly class CodexAdapter implements DriverAdapter
 
     public function modelArguments(string $model): array
     {
-        return HookDriver::Codex->modelArguments($model);
+        return ['--model', $model];
     }
 
     public function callFor(HookPayload $hookInput, HookIdentity $hook): DriverCall

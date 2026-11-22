@@ -37,6 +37,7 @@ use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
 use App\Drivers\Contracts\DriverCatalogue;
+use App\Hooks\Drivers\Contracts\DriverAdapters;
 
 /**
  * Starts inside the command's transaction: the request's record first, locked, which KeepStartReceipt committed as
@@ -58,6 +59,7 @@ final readonly class StartAgentHandler implements CommandHandler
         private AgentWakes $wakes,
         private PinnedBuilds $builds,
         private DriverCatalogue $drivers,
+        private DriverAdapters $adapters,
     ) {}
 
     /**
@@ -81,7 +83,7 @@ final readonly class StartAgentHandler implements CommandHandler
         // A replay of a start interrupted before its receipt resumes from the evidence its key holds: a session it
         // started, else a reservation the admission finds.
         if ($record->session_id !== null) {
-            return self::receiptOf($request, AgentSession::query()->findOrFail($record->session_id), false);
+            return $this->receiptOf($request, AgentSession::query()->findOrFail($record->session_id), false);
         }
 
         // The agent's lifecycle and start reservation, then the host's capacity, then the driver's account, then
@@ -131,7 +133,7 @@ final readonly class StartAgentHandler implements CommandHandler
             $request->authorizedSource,
         ));
 
-        return self::receiptOf($request, $started->session, true);
+        return $this->receiptOf($request, $started->session, true);
     }
 
     /**
@@ -179,7 +181,7 @@ final readonly class StartAgentHandler implements CommandHandler
         );
     }
 
-    private static function receiptOf(StartRequest $request, AgentSession $session, bool $newSession): StartReceipt
+    private function receiptOf(StartRequest $request, AgentSession $session, bool $newSession): StartReceipt
     {
         $selection = $session->selection();
 
@@ -191,7 +193,7 @@ final readonly class StartAgentHandler implements CommandHandler
             $newSession,
             $request->conversationMode,
             StartReceipt::ACTUAL_MODEL_NOT_REPORTED,
-            $selection->driver->modelArguments($selection->model),
+            $this->adapters->for($selection->driver->value)->modelArguments($selection->model),
         );
     }
 }

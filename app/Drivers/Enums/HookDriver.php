@@ -15,21 +15,6 @@ enum HookDriver: string
     case ClaudeCode = 'claude-code';
     case Codex = 'codex';
 
-    /**
-     * The allow rules that let the driver call the journal's own MCP tools without a native prompt: the literal
-     * journal server prefix and never a wildcard for another server. Codex approves its journal entry in its account
-     * configuration instead.
-     *
-     * @return list<string>
-     */
-    public function journalToolRules(): array
-    {
-        return match ($this) {
-            self::ClaudeCode => ['mcp__journal__*'],
-            self::Codex => [],
-        };
-    }
-
     public function driverKey(): DriverKey
     {
         return DriverKey::from($this->value);
@@ -100,43 +85,6 @@ enum HookDriver: string
      * Codex scopes them per installation, not per thread, so it does not yet.
      */
     public function isolatesHooksPerSession(): bool
-    {
-        return $this === self::ClaudeCode;
-    }
-
-    public function hookCommand(): string
-    {
-        return "journal-hook {$this->value}";
-    }
-
-    /**
-     * The arguments that start this driver on the selected model: Claude Code 2.1.323 and codex-cli 0.165.0 both take
-     * --model (docs/hooks/driver-capabilities.md).
-     *
-     * @return list<string>
-     */
-    public function modelArguments(string $model): array
-    {
-        return ['--model', $model];
-    }
-
-    /**
-     * Whether a transcript file name is that of the native conversation: Claude Code writes <session id>.jsonl,
-     * Codex rollout-<time>-<session id>.jsonl.
-     */
-    public function namesTranscriptOf(string $fileName, string $nativeId): bool
-    {
-        return match ($this) {
-            self::ClaudeCode => $fileName === $nativeId.'.jsonl',
-            self::Codex => str_starts_with($fileName, 'rollout-') && str_ends_with($fileName, '-'.$nativeId.'.jsonl'),
-        };
-    }
-
-    /**
-     * Whether the driver saves a conversation's large tool outputs in a folder named for it beside its transcript;
-     * Claude Code does, Codex keeps them in the transcript.
-     */
-    public function keepsOutputsBesideTranscript(): bool
     {
         return $this === self::ClaudeCode;
     }

@@ -11325,9 +11325,13 @@ method	ClaudeCodeAdapter::callFor()
 method	ClaudeCodeAdapter::callsJournalTools()
 method	ClaudeCodeAdapter::capabilities()
 method	ClaudeCodeAdapter::compatibility()
+method	ClaudeCodeAdapter::hookCommand()
 method	ClaudeCodeAdapter::hookProtocol()
+method	ClaudeCodeAdapter::journalToolRules()
 method	ClaudeCodeAdapter::judgedTool()
+method	ClaudeCodeAdapter::keepsOutputsBesideTranscript()
 method	ClaudeCodeAdapter::modelArguments()
+method	ClaudeCodeAdapter::namesTranscriptOf()
 method	ClaudeCodeAdapter::nativeChildTools()
 method	ClaudeCodeAdapter::nativeEvents()
 method	ClaudeCodeAdapter::refusesCommand()
@@ -11523,8 +11527,12 @@ method	CodexAdapter::callFor()
 method	CodexAdapter::callsJournalTools()
 method	CodexAdapter::capabilities()
 method	CodexAdapter::compatibility()
+method	CodexAdapter::hookCommand()
 method	CodexAdapter::hookProtocol()
+method	CodexAdapter::journalToolRules()
+method	CodexAdapter::keepsOutputsBesideTranscript()
 method	CodexAdapter::modelArguments()
+method	CodexAdapter::namesTranscriptOf()
 method	CodexAdapter::nativeChildTools()
 method	CodexAdapter::nativeEvents()
 method	CodexAdapter::patchChanges()
@@ -13517,8 +13525,12 @@ method	Driver::start()
 method	DriverAdapter::callFor()
 method	DriverAdapter::capabilities()
 method	DriverAdapter::compatibility()
+method	DriverAdapter::hookCommand()
 method	DriverAdapter::hookProtocol()
+method	DriverAdapter::journalToolRules()
+method	DriverAdapter::keepsOutputsBesideTranscript()
 method	DriverAdapter::modelArguments()
+method	DriverAdapter::namesTranscriptOf()
 method	DriverAdapter::nativeChildTools()
 method	DriverAdapter::nativeEvents()
 method	DriverAdapter::renderShell()
@@ -14972,14 +14984,9 @@ method	HookDeadlineExpired::forCall()
 method	HookDigestChanged::forCall()
 method	HookDriver::displayName()
 method	HookDriver::driverKey()
-method	HookDriver::hookCommand()
 method	HookDriver::hostName()
 method	HookDriver::isSignInAddress()
 method	HookDriver::isolatesHooksPerSession()
-method	HookDriver::journalToolRules()
-method	HookDriver::keepsOutputsBesideTranscript()
-method	HookDriver::modelArguments()
-method	HookDriver::namesTranscriptOf()
 method	HookDriver::provider()
 method	HookEvent::isSessionStart()
 method	HookEvent::isToolCall()
@@ -16128,6 +16135,7 @@ method	ManifestMount::daemonBind()
 method	ManifestMount::existingVolume()
 method	ManifestMount::volume()
 method	ManifestRefused::because()
+method	MapSessionOutputs::__construct()
 method	MapSessionOutputs::continuedFrom()
 method	MapSessionOutputs::map()
 method	MapSessionOutputs::replaceFor()
@@ -33468,6 +33476,7 @@ property	ManifestMount::$source
 property	ManifestMount::$target
 property	ManifestMount::$type
 property	ManifestMount::$writable
+property	MapSessionOutputs::$adapters
 property	MappedRefusal::$code
 property	MappedRefusal::$details
 property	MappedRefusal::$message
@@ -38125,6 +38134,7 @@ property	StartAdditions::$folders
 property	StartAdditions::$offlineReply
 property	StartAgentCommand::$request
 property	StartAgentHandler::$accounts
+property	StartAgentHandler::$adapters
 property	StartAgentHandler::$builds
 property	StartAgentHandler::$containers
 property	StartAgentHandler::$drivers
@@ -38292,6 +38302,7 @@ property	StartSecrets::$token
 property	StartSequenceCommand::$sequenceRunId
 property	StartSequenceCommand::$sessionId
 property	StartSequenceHandler::$sessions
+property	StartSessions::$adapters
 property	StartSessions::$credentials
 property	StartSessions::$events
 property	StartSessions::$facts

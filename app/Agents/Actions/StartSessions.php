@@ -16,6 +16,7 @@ use App\Agents\Values\RuntimeIntent;
 use App\Agents\Values\SelectedDriver;
 use App\Bus\Contracts\CommandFacts;
 use App\Contracts\StartTransaction;
+use App\Hooks\Drivers\Contracts\DriverAdapters;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -32,6 +33,7 @@ final readonly class StartSessions
         private AgentRuntimes $runtimes,
         private Dispatcher $events,
         private CommandFacts $facts,
+        private DriverAdapters $adapters,
     ) {}
 
     /**
@@ -116,7 +118,7 @@ final readonly class StartSessions
             $session,
             $token,
             $settings->content(),
-            $selection->driver->modelArguments($selection->model),
+            $this->adapters->for($selection->driver->value)->modelArguments($selection->model),
             $runtime,
             $firstRequest,
         );

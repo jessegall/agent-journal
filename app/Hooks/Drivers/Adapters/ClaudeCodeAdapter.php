@@ -80,6 +80,29 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
         return HookDriver::ClaudeCode->value;
     }
 
+    public function journalToolRules(): array
+    {
+        return ['mcp__journal__*'];
+    }
+
+    public function hookCommand(): string
+    {
+        return 'journal-hook '.$this->hookProtocol();
+    }
+
+    /**
+     * Claude Code writes <session id>.jsonl.
+     */
+    public function namesTranscriptOf(string $fileName, string $nativeId): bool
+    {
+        return $fileName === $nativeId.'.jsonl';
+    }
+
+    public function keepsOutputsBesideTranscript(): bool
+    {
+        return true;
+    }
+
     public function nativeEvents(): array
     {
         return self::NATIVE_EVENTS;
@@ -117,7 +140,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
 
     public function modelArguments(string $model): array
     {
-        return HookDriver::ClaudeCode->modelArguments($model);
+        return ['--model', $model];
     }
 
     public function callFor(HookPayload $hookInput, HookIdentity $hook): DriverCall

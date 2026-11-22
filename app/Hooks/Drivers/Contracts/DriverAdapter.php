@@ -46,6 +46,29 @@ interface DriverAdapter
     public function compatibility(): DriverCompatibility;
 
     /**
+     * The allow rules that let the driver call the journal's own MCP tools without a native prompt: the literal
+     * journal server prefix and never a wildcard for another server.
+     *
+     * @return list<string>
+     */
+    public function journalToolRules(): array;
+
+    /**
+     * The command the driver's isolated settings run for each native hook event.
+     */
+    public function hookCommand(): string;
+
+    /**
+     * Whether a transcript file name is that of the native conversation.
+     */
+    public function namesTranscriptOf(string $fileName, string $nativeId): bool;
+
+    /**
+     * Whether the driver saves a conversation's large tool outputs in a folder named for it beside its transcript.
+     */
+    public function keepsOutputsBesideTranscript(): bool;
+
+    /**
      * The arguments that start this driver on the selected model.
      *
      * @return list<string>

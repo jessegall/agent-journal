@@ -10,7 +10,7 @@ use App\Agents\Models\ProcessStart;
 use App\Agents\Models\SessionOutputGrant;
 use App\Agents\Models\StartRecord;
 use App\Agents\Values\SessionOutputPaths;
-use App\Drivers\Enums\HookDriver;
+use App\Hooks\Drivers\Contracts\DriverAdapters;
 
 /**
  * A step of recording a conversation visit, in the hook's transaction under the session's lock: the session's current
@@ -20,6 +20,8 @@ use App\Drivers\Enums\HookDriver;
  */
 final readonly class MapSessionOutputs
 {
+    public function __construct(private DriverAdapters $adapters) {}
+
     public function map(
         AgentSession $session,
         DriverConversation $conversation,
@@ -30,7 +32,7 @@ final readonly class MapSessionOutputs
         $granted = SessionOutputGrant::heldBy($session->id) ?: $this->continuedFrom($session);
 
         $paths = $transcriptPath === null ? null : SessionOutputPaths::verified(
-            HookDriver::from((string) $session->driver_key),
+            $this->adapters->for((string) $session->driver_key),
             $start->directory,
             $conversation->native_id,
             $transcriptPath,

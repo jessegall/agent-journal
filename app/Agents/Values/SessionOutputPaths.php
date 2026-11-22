@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Values;
 
-use App\Drivers\Enums\HookDriver;
+use App\Hooks\Drivers\Contracts\DriverAdapter;
 
 /**
  * The exact files one native conversation of a session may read back: its transcript and, for a driver that saves
@@ -24,7 +24,7 @@ final readonly class SessionOutputPaths
      * folder and names that conversation; none for any other path, so a session never gains another's history.
      */
     public static function verified(
-        HookDriver $driver,
+        DriverAdapter $driver,
         string $accountDirectory,
         string $nativeId,
         string $transcriptPath,

@@ -28,14 +28,14 @@ final readonly class SupplyHookSettings implements Listener
         $adapter = $this->adapters->for($driver->value);
 
         foreach ($adapter->nativeEvents() as $eventName) {
-            $event->settings->addHook($eventName, $driver->hookCommand());
+            $event->settings->addHook($eventName, $adapter->hookCommand());
         }
 
         foreach ($adapter->nativeChildTools() as $toolName) {
             $event->settings->denyTool($toolName);
         }
 
-        foreach ($driver->journalToolRules() as $toolRule) {
+        foreach ($adapter->journalToolRules() as $toolRule) {
             $event->settings->allowTool($toolRule);
         }
     }
