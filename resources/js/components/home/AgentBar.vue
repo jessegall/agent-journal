@@ -4,7 +4,7 @@ import AddWindowPopover from '@/components/panes/AddWindowPopover.vue';
 import LayoutPicker from '@/components/panes/LayoutPicker.vue';
 import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
-import { moveWindow, panesIn } from '@/components/panes/paneLayout';
+import { floatNewWindow } from '@/components/panes/arrangement';
 import { usePaneLayout } from '@/components/panes/usePaneLayout';
 import type { LayoutData } from '@/types/generated';
 
@@ -23,12 +23,11 @@ const isAdding = ref(false);
 const addButton = ref<{ $el: HTMLElement } | null>(null);
 const addAnchor = computed(() => addButton.value?.$el ?? null);
 
+/**
+ * A window added from the bar floats where it opened; it docks once it is dragged to an edge or onto a pane.
+ */
 function add(key: string): void {
-    const first = panesIn(store.layout.value)[0];
-
-    if (first !== undefined) {
-        store.change(moveWindow(store.layout.value, key, first.id));
-    }
+    store.apply(floatNewWindow(store.arrangement.value, key, store.screen()));
 }
 </script>
 

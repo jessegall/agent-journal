@@ -14,9 +14,10 @@ import AgentBar from './AgentBar.vue';
 import InformationBar from './InformationBar.vue';
 
 /**
- * Home as version 5 draws it: the agent bar with the domains' bar sections, the information bar, then the pane grid with the windows the installed
- * domains offer, each loaded by its component name and fed by its own prop. A window's links change only its own part
- * of Home's query, window[<key>].
+ * Home: the agent bar with the domains' bar sections, the information bar, then the desk, which starts with the chat
+ * alone at the reading width; every other window the installed domains offer is added from the bar and floats where it
+ * opened, each loaded by its component name and fed by its own prop. A window's links change only its own part of
+ * Home's query, window[<key>].
  */
 const props = defineProps<{ home: HomeData }>();
 const pageProps = usePage().props;

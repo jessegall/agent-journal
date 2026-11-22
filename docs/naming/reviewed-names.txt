@@ -4209,6 +4209,7 @@ class	PageChanged
 class	PageController
 class	PagePropTypes
 class	PageProps
+class	PageReadParameterMissing
 class	PageReadProps
 class	PageSize
 class	PageVisibility
@@ -17595,6 +17596,7 @@ method	PageProps::pageResult()
 method	PageProps::sectionResult()
 method	PageProps::sectionsOf()
 method	PageProvider::pages()
+method	PageReadParameterMissing::for()
 method	PageReadProps::__construct()
 method	PageReadProps::answer()
 method	PageReadProps::argumentFor()
@@ -34396,6 +34398,8 @@ property	PageReadProps::$container
 property	PageReadProps::$declarations
 property	PageReadProps::$inertia
 property	PageReadProps::$owners
+property	PageReadProps::$redirector
+property	PageReadProps::$reflectors
 property	PageReadProps::$visibility
 property	PageSize::$rows
 property	PageVisibility::$actors
@@ -40665,6 +40669,7 @@ variable	$invalid
 variable	$invitation
 variable	$inviter
 variable	$inviters
+variable	$invoke
 variable	$isAccount
 variable	$isAction
 variable	$isAllowed

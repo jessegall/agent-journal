@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support\Web;
 
+use App\Contracts\ReflectorFactory;
 use App\Contracts\UiOwnerAvailability;
 use App\Declarations\RegisteredAction;
 use App\Enums\ActionMethod;
+use App\Exceptions\PageReadParameterMissing;
 use App\Support\ReflectedParameter;
-use App\Support\Reflector;
 use App\Support\UiDeclarations;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Http\FormRequest;
@@ -17,7 +18,6 @@ use Illuminate\Routing\Redirector;
 use Illuminate\Routing\Route;
 use Inertia\ResponseFactory;
 use Spatie\LaravelData\Data;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * The reads a page declares beside its own result (ActionRoute::get), each a shared prop read only by a partial reload
@@ -38,6 +38,8 @@ final readonly class PageReadProps
         private PageVisibility $visibility,
         private ResponseFactory $inertia,
         private Container $container,
+        private ReflectorFactory $reflectors,
+        private Redirector $redirector,
     ) {}
 
     /**
@@ -61,7 +63,8 @@ final readonly class PageReadProps
             }
 
             $prop = self::propName($action->routeName);
-            $props[$prop] = $this->inertia->optional(fn () => $this->answer($action, $request, $this->queryOf($request, $prop)));
+            $query = $this->queryOf($request, $prop);
+            $props[$prop] = $this->inertia->optional(fn () => $this->answer($action, $request, $query));
         }
 
         return $props;
@@ -78,14 +81,16 @@ final readonly class PageReadProps
     {
         $this->visibility->assertVisible($action->guard->key);
 
-        $controller = $this->container->make($action->action->controller);
+        $controller = $action->action->controller;
         $arguments = [];
 
-        foreach (Reflector::of($controller)->method('__invoke')->parameters() as $parameter) {
+        $invoke = $this->reflectors->make($controller)->method('__invoke');
+
+        foreach ($invoke->parameters() as $parameter) {
             $arguments = [...$arguments, ...$this->argumentFor($action, $parameter, $request, $query)];
         }
 
-        return $this->container->call([$controller, '__invoke'], $arguments);
+        return $this->container->call("{$controller}@__invoke", $arguments);
     }
 
     /**
@@ -100,12 +105,20 @@ final readonly class PageReadProps
     ): array {
         $type = $parameter->type()->map(fn ($declared) => $declared->name())->getOrElse('');
 
-        if (is_subclass_of($type, Data::class)) {
-            return [$parameter->name() => $type::validateAndCreate($query)];
+        if (! $this->reflectors->exists($type)) {
+            $name = $parameter->name();
+
+            return array_key_exists($name, $query) ? [$name => $query[$name]] : [];
         }
 
-        if (is_subclass_of($type, FormRequest::class)) {
-            return [$parameter->name() => $this->formRequestOf($type, $action, $request, $query)];
+        $declared = $this->reflectors->make($type);
+
+        if ($declared->isSubclassOf(Data::class)) {
+            return [$parameter->name() => $declared->name()::validateAndCreate($query)];
+        }
+
+        if ($declared->isSubclassOf(FormRequest::class)) {
+            return [$parameter->name() => $this->formRequestOf($declared->name(), $action, $request, $query)];
         }
 
         return array_key_exists($parameter->name(), $query) ? [$parameter->name() => $query[$parameter->name()]] : [];
@@ -125,7 +138,7 @@ final readonly class PageReadProps
         $form = $type::createFrom($request->duplicate($query));
         $route = $this->routeOf($action, $query);
         $form->setRouteResolver(fn () => $route);
-        $form->setContainer($this->container)->setRedirector($this->container->make(Redirector::class));
+        $form->setContainer($this->container)->setRedirector($this->redirector);
         $form->validateResolved();
 
         return $form;
@@ -138,8 +151,10 @@ final readonly class PageReadProps
      */
     private function routeOf(RegisteredAction $action, array $query): Route
     {
-        $route = new Route([$action->action->method->value], $action->uri, []);
-        $parameters = array_map(fn (string $name) => $this->routeParameterOf($action, $query, $name), $action->path->parameters);
+        $method = $action->action->method;
+        $route = new Route([$method->value], $action->uri, []);
+        $names = $action->path->parameters;
+        $parameters = array_map(fn (string $name) => $this->routeParameterOf($action, $query, $name), $names);
         $address = strtr(
             $action->uri,
             array_combine(array_map(fn (string $name) => '{'.$name.'}', $action->path->parameters), $parameters),
@@ -158,7 +173,7 @@ final readonly class PageReadProps
         $value = $query[$name] ?? null;
 
         if (! is_string($value) || $value === '') {
-            throw new NotFoundHttpException("The read {$action->routeName} names no {$name}.");
+            throw PageReadParameterMissing::for($action->routeName, $name);
         }
 
         return $value;

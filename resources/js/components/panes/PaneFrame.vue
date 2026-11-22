@@ -281,7 +281,7 @@ const menuEntries = computed<MenuEntry[]>(() => {
             <template v-if="pane.active">
                 <div
                     class="h-full"
-                    :class="{ 'mx-auto max-w-[860px]': pane.limitWidth }"
+                    :class="{ 'mx-auto max-w-[760px]': pane.limitWidth }"
                 >
                     <slot :window-key="pane.active" />
                 </div>

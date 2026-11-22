@@ -74,8 +74,8 @@ final readonly class NotificationProps
      */
     private function cursorIn(Request $request, string $parameter): string|null
     {
-        $cursor = $request->query($parameter);
+        $cursor = $request->string($parameter)->toString();
 
-        return is_string($cursor) && $cursor !== '' ? $cursor : null;
+        return $cursor === '' ? null : $cursor;
     }
 }

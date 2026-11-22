@@ -21,6 +21,8 @@ final class DraftReadsTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string TITLE = 'Ship-it';
+
     private User $owner;
 
     protected function setUp(): void
@@ -35,11 +37,11 @@ final class DraftReadsTest extends TestCase
     public function test_the_questions_and_the_drafted_record_are_read_by_partial_reload(): void
     {
         $questions = $this->pageRead('web.draft-questions', ['noun' => 'note'])->assertOk();
-        $record = $this->pageRead('web.draft-record', ['noun' => 'note', 'answers' => ['Ship it', 'Yes', 'No']])
+        $record = $this->pageRead('web.draft-record', ['noun' => 'note', 'answers' => [self::TITLE, 'Yes', 'No']])
             ->assertOk();
 
         $this->assertCount(3, $questions->json('props.read_web_draft_questions.questions'));
-        $this->assertSame('Ship it', $record->json('props.read_web_draft_record.fields.title'));
+        $this->assertSame(self::TITLE, $record->json('props.read_web_draft_record.fields.title'));
         $this->assertSame(StubDraftProducer::AGENT, $record->json('props.read_web_draft_record.agent'));
     }
 

@@ -29,6 +29,8 @@ final readonly class CheckDraftPageController
     ): RedirectResponse {
         $revision = ProfileDraft::of(ProfileKey::from($call->profile))->revision;
 
-        return $answers->backWith(self::CHECKED_DRAFT, $drafts->checked($call->profile, $revision, $call->scriptSource()));
+        $checked = $drafts->checked($call->profile, $revision, $call->scriptSource());
+
+        return $answers->backWith(self::CHECKED_DRAFT, $checked);
     }
 }

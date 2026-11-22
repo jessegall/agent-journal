@@ -53,10 +53,11 @@ export function defaultArrangement(
 }
 
 /**
- * Version 5's Chat only preset: the first window alone; the others wait in the add bar.
+ * Day one: the first window, the chat, alone and centred at the reading width; every other window waits in the add
+ * bar and opens floating where it is opened.
  */
 export function firstWindowOnly(firstWindow: string): Arrangement {
-    return { grid: pane([firstWindow], 'pane-chat'), detached: [] };
+    return { grid: { ...pane([firstWindow], 'pane-chat'), limitWidth: true }, detached: [] };
 }
 
 export function sameArrangement(one: Arrangement, other: Arrangement): boolean {
@@ -115,6 +116,17 @@ export function dropWindow(
         ),
         detached,
     };
+}
+
+/**
+ * Opens a window that was not shown as a floating window near Home's top right edge, each further one a step down and
+ * to the left, as the design floats a window where it was opened.
+ */
+export function floatNewWindow(arrangement: Arrangement, windowKey: string, screen: Screen): Arrangement {
+    const step = arrangement.detached.length * 24;
+    const width = Math.min(DETACHED_SIZE.width, screen.width - 16);
+
+    return detachWindow(arrangement, windowKey, { left: screen.width - width - 24 - step, top: 20 + step }, screen);
 }
 
 /**

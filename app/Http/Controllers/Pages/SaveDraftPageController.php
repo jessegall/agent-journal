@@ -34,6 +34,8 @@ final readonly class SaveDraftPageController
             $call->scriptSource(),
         ));
 
-        return $answers->backWith(self::SAVED_DRAFT, $drafts->checked($call->profile, $revision, $call->scriptSource()));
+        $checked = $drafts->checked($call->profile, $revision, $call->scriptSource());
+
+        return $answers->backWith(self::SAVED_DRAFT, $checked);
     }
 }
