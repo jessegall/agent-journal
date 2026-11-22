@@ -107,6 +107,19 @@ final class WorkBudget
         $this->spentBytes = self::charged('bytes', $this->spentBytes, $count, $this->bytes);
     }
 
+    /**
+     * The candidates examined and the bytes read so far, for diagnostics.
+     */
+    public function spentCandidates(): int
+    {
+        return $this->spentCandidates;
+    }
+
+    public function spentBytes(): int
+    {
+        return $this->spentBytes;
+    }
+
     public function remainingCandidates(): int
     {
         return max(0, $this->candidates - $this->spentCandidates);

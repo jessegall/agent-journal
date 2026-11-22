@@ -25,6 +25,7 @@ final class SearchProgress
         public array $delivered = [],
         public BufferedHit|null $frontier = null,
         public int $idleCalls = 0,
+        public int $calls = 0,
     ) {}
 
     /**
@@ -78,6 +79,7 @@ final class SearchProgress
             'delivered' => $this->delivered,
             'frontier' => $this->frontier?->toArray(),
             'idle_calls' => $this->idleCalls,
+            'calls' => $this->calls,
         ], JSON_THROW_ON_ERROR);
     }
 
@@ -102,6 +104,7 @@ final class SearchProgress
             $fields['delivered'],
             $fields['frontier'] === null ? null : BufferedHit::fromArray($fields['frontier']),
             $fields['idle_calls'],
+            $fields['calls'],
         );
     }
 }

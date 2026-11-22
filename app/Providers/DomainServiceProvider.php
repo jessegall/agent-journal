@@ -27,6 +27,7 @@ use App\Support\ExportValidator as ExportsCheck;
 use App\Support\Psr4ClassNames;
 use App\Support\RecordPolicyMappings;
 use App\Support\SearchablesRegistry;
+use App\Support\SearchDiagnostics;
 use App\Support\Rules\CoreRules;
 use App\Support\SettingRegistry;
 use App\Support\SettingsDomainAvailability;
@@ -93,6 +94,11 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(
             SearchablesRegistry::class,
             fn () => SearchablesRegistry::publishing($registry->searchableDeclarations()),
+        );
+
+        $this->app->bind(
+            SearchDiagnostics::class,
+            fn (Application $app): SearchDiagnostics => new SearchDiagnostics($app->make('log')->channel('search')),
         );
 
         $this->app->bind(SearchEntry::class, fn (Application $app): SearchEntry => $app->make(

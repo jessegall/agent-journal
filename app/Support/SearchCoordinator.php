@@ -23,6 +23,7 @@ use App\Values\FailedOutcome;
 use App\Values\MoreOutcome;
 use App\Values\ScanningOutcome;
 use App\Values\SearchAnswer;
+use App\Values\SearchCallMeter;
 use App\Values\SearchBatch;
 use App\Values\SearchOwner;
 use App\Values\SearchPosition;
@@ -65,6 +66,7 @@ final readonly class SearchCoordinator
         private SearchEligibility $eligibility,
         private SearchStates $states,
         private RecordResolver $records,
+        private SearchDiagnostics $diagnostics,
         private Container $container,
     ) {}
 
@@ -101,6 +103,8 @@ final readonly class SearchCoordinator
         }
 
         $progress = SearchProgress::starting($request->words, $within, $request->limit, array_keys($sources));
+        $progress->calls++;
+        $meter = new SearchCallMeter();
         $deadline = self::deadline();
         $fresh = [];
         $recognizing = $this->recognizing($sources, $progress);
@@ -113,15 +117,21 @@ final readonly class SearchCoordinator
 
         if ($recognizing !== []) {
             $source = reset($recognizing);
-            $this->ask($reader, $progress, $source, $deadline, $fresh);
+            $this->ask($reader, $progress, $source, $deadline, $meter, $fresh);
             $direct = $this->directHit($reader, $progress->sources[$source->qualifiedKey], $source, $fresh);
 
             if ($direct !== null) {
-                return $this->started($owner, new SearchAnswer(SearchStatus::More, directOpen: $direct), $progress);
+                $answer = $this->measured($progress, $meter, new SearchAnswer(SearchStatus::More, directOpen: $direct));
+
+                return $this->started($owner, $answer, $progress);
             }
         }
 
-        return $this->started($owner, $this->run($reader, $progress, $sources, $deadline, $fresh), $progress);
+        return $this->started(
+            $owner,
+            $this->measured($progress, $meter, $this->run($reader, $progress, $sources, $deadline, $meter, $fresh)),
+            $progress,
+        );
     }
 
     /**
@@ -143,8 +153,11 @@ final readonly class SearchCoordinator
             return $this->replay($reader, $progress, $sources, $position);
         }
 
+        $progress->calls++;
+        $meter = new SearchCallMeter();
         $fresh = $this->refreshBuffers($reader, $progress, $sources);
-        $answer = $this->run($reader, $progress, $sources, self::deadline(), $fresh);
+        $ran = $this->run($reader, $progress, $sources, self::deadline(), $meter, $fresh);
+        $answer = $this->measured($progress, $meter, $ran);
         $page = self::pageOf($answer);
 
         try {
@@ -173,6 +186,7 @@ final readonly class SearchCoordinator
         SearchProgress $progress,
         array $sources,
         int $deadline,
+        SearchCallMeter $meter,
         array $fresh,
     ): SearchAnswer {
         $emitted = [];
@@ -191,7 +205,7 @@ final readonly class SearchCoordinator
                 $batches++;
                 $asked++;
 
-                if ($this->ask($reader, $progress, $sources[$key], $deadline, $fresh)) {
+                if ($this->ask($reader, $progress, $sources[$key], $deadline, $meter, $fresh)) {
                     $source->stalls = 0;
 
                     continue;
@@ -224,6 +238,16 @@ final readonly class SearchCoordinator
     }
 
     /**
+     * Writes this call's diagnostic lines, one per source asked, and passes the answer on.
+     */
+    private function measured(SearchProgress $progress, SearchCallMeter $meter, SearchAnswer $answer): SearchAnswer
+    {
+        $this->diagnostics->record($progress->calls, $meter);
+
+        return $answer;
+    }
+
+    /**
      * The answer naming the sources that failed during the search, so the caller knows what it does not cover.
      */
     private static function withFailures(SearchProgress $progress, SearchAnswer $answer): SearchAnswer
@@ -245,6 +269,7 @@ final readonly class SearchCoordinator
         SearchProgress $progress,
         DeclaredSearchable $declared,
         int $deadline,
+        SearchCallMeter $meter,
         array &$fresh,
     ): bool {
         $source = $progress->sources[$declared->qualifiedKey];
@@ -263,25 +288,46 @@ final readonly class SearchCoordinator
 
         try {
             $batch = $declared->searchable->providerFrom($this->container)->search($query);
-        } catch (WorkBudgetSpent|StatementTimedOut) {
-            return false;
+        } catch (WorkBudgetSpent) {
+            return self::noted($meter, $declared, $started, $query, 'budget_spent', false);
+        } catch (StatementTimedOut) {
+            return self::noted($meter, $declared, $started, $query, 'statement_cancelled', false);
         } catch (SearchBatchInvalid|SearchValueInvalid) {
             $source->fail();
 
-            return true;
+            return self::noted($meter, $declared, $started, $query, 'invalid_batch', true);
         }
 
         if (hrtime(true) - $started > self::SOURCE_MILLISECONDS * 1_000_000) {
-            return false;
+            return self::noted($meter, $declared, $started, $query, 'timed_out', false);
         }
 
         if (self::byteSizeOf($batch) > WorkBudget::BYTE_LIMIT) {
             $source->fail();
 
-            return true;
+            return self::noted($meter, $declared, $started, $query, 'too_large', true);
         }
 
-        return $this->keep($source, $declared, $batch, $fresh);
+        $kept = $this->keep($source, $declared, $batch, $fresh);
+        self::noted($meter, $declared, $started, $query, $kept ? $batch->outcome->name() : 'stalled', $kept);
+
+        return $kept;
+    }
+
+    /**
+     * Adds the batch's work to the source's line for this call and passes on whether its answer was kept.
+     */
+    private static function noted(
+        SearchCallMeter $meter,
+        DeclaredSearchable $declared,
+        int $started,
+        SearchQuery $query,
+        string $outcome,
+        bool $kept,
+    ): bool {
+        $meter->add($declared->qualifiedKey, intdiv(hrtime(true) - $started, 1000), $query->budget, $outcome);
+
+        return $kept;
     }
 
     /**

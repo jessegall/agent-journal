@@ -15,6 +15,7 @@ use App\Support\RecordIdentity;
 use App\Support\Searchable;
 use App\Support\SearchablesRegistry;
 use App\Support\SearchCoordinator;
+use App\Support\SearchDiagnostics;
 use App\Support\SearchEligibility;
 use App\Support\SearchStates;
 use App\Values\SearchAnswer;
@@ -29,6 +30,7 @@ use Closure;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Search\ClosedSearchAccess;
+use Tests\Fixtures\Search\CollectingLogger;
 use Tests\Fixtures\Search\MutableReadGrant;
 use Tests\Fixtures\Search\OpenSearchAccess;
 use Tests\Fixtures\Search\SwitchedOffDomains;
@@ -50,6 +52,15 @@ final class SearchCoordinatorTest extends TestCase
     private const string RULE_C = '01ARZ3NDEKTSV4RRFFQ69G5FCC';
 
     private const string RULE_D = '01ARZ3NDEKTSV4RRFFQ69G5FDD';
+
+    private CollectingLogger $log;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->log = new CollectingLogger();
+    }
 
     public function test_a_task_reference_is_reached_in_one_search_and_one_open_beside_a_hanging_source(): void
     {
@@ -233,6 +244,35 @@ final class SearchCoordinatorTest extends TestCase
         $this->assertSame(SearchStatus::Complete, $answer->status);
     }
 
+    public function test_each_source_call_writes_one_diagnostic_line_without_the_words(): void
+    {
+        Task::factory()->create(['id' => '01arz3ndektsv4rrffq69g0001', 'title' => 'Secret driver plan']);
+        $grant = new MutableReadGrant(['01arz3ndektsv4rrffq69g0001']);
+        $coordinator = $this->coordinator($grant, ['notes' => [$this->fast('note')]]);
+
+        $coordinator->search(self::owner(), self::agent(), SearchRequest::parse(query: 'secret driver'));
+
+        $lines = array_filter($this->log->lines, fn (array $line) => $line['message'] === SearchDiagnostics::MESSAGE);
+        $sources = array_map(fn (array $line) => $line['context']['source'], $lines);
+
+        $this->assertContains('tasks.task', $sources);
+        $this->assertContains('notes.note', $sources);
+        $this->assertCount(count(array_unique(array_map(
+            fn (array $line) => $line['context']['source'].'#'.$line['context']['call'],
+            $lines,
+        ))), $lines);
+
+        $fields = ['source', 'call', 'elapsed_ms', 'rows_examined', 'bytes_read', 'outcome'];
+
+        foreach ($lines as $line) {
+            $this->assertSame($fields, array_keys($line['context']));
+        }
+
+        $written = json_encode($this->log->lines, JSON_THROW_ON_ERROR);
+        $this->assertStringNotContainsStringIgnoringCase('secret', $written);
+        $this->assertStringNotContainsStringIgnoringCase('driver', $written);
+    }
+
     /**
      * @return list<string>
      */
@@ -286,7 +326,13 @@ final class SearchCoordinatorTest extends TestCase
             $this->app,
         );
 
-        return new SearchCoordinator($eligibility, $this->app->make(SearchStates::class), $this->records(), $this->app);
+        return new SearchCoordinator(
+            $eligibility,
+            $this->app->make(SearchStates::class),
+            $this->records(),
+            new SearchDiagnostics($this->log),
+            $this->app,
+        );
     }
 
     /**
