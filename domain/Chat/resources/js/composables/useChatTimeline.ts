@@ -1,4 +1,4 @@
-import { xsrfToken } from '@/echo';
+import { xsrfToken } from '@kit/xsrfToken';
 import { events as eventsRoute, rows as rowsRoute } from '@generated/routes/chat';
 import type { ChatEventsPageData, ChatMessageData, ChatRowsPageData, ConversationData } from '@generated/types/chat';
 import { onChatAccessEnded } from '@kit/chatAccess';

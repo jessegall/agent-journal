@@ -38,7 +38,6 @@ final readonly class SettingsLayout
     ];
 
     public function __construct(
-        private SettingRegistry $registry,
         private SettingsCatalogue $catalogue,
         private CurrentActor $actors,
         private ConnectionsOwnerCheck $connections,
@@ -47,8 +46,8 @@ final readonly class SettingsLayout
     public function layout(): DeclaredLayoutData
     {
         $groups = array_map(
-            fn (string $owner) => [$this->rank($owner), $this->groupOf($this->catalogue->owner($owner))],
-            array_keys($this->registry->definitions()),
+            fn (SettingsCatalogueData $catalogue) => [$this->rank($catalogue->owner), $this->groupOf($catalogue)],
+            $this->catalogue->everyOwner(),
         );
 
         if ($this->connections->allows($this->actors->actor())) {

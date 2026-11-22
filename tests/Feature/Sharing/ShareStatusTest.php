@@ -143,7 +143,7 @@ final class ShareStatusTest extends TestCase
 
         $this->actingAs($this->owner)->get('/documents/docs/1')->assertOk()->assertInertia(
             fn (AssertableInertia $page) => $page
-                ->where('page.data.root.children.2.children.0.children.1.key', 'public'),
+                ->where('page.data.root.children.2.children.0.children.0.key', 'public'),
         );
     }
 }

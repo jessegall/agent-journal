@@ -21,4 +21,14 @@ interface SettingsCatalogue
      * @throws SettingsDocumentInvalid
      */
     public function owner(string $owner): SettingsCatalogueData;
+
+    /**
+     * Every owner's catalogue in the order the owners are declared, from one read of their records.
+     *
+     * @return list<SettingsCatalogueData>
+     *
+     * @throws SettingsAccessDenied
+     * @throws SettingsDocumentInvalid
+     */
+    public function everyOwner(): array;
 }

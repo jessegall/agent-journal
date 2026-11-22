@@ -277,7 +277,7 @@ final class TerminalPageTest extends TestCase
         ]);
 
         $this->app->make(RuntimeScreen::class)
-            ->admit(ScreenRegistration::of($runtime), $frame, CarbonImmutable::now());
+            ->admit(ScreenRegistration::of($runtime->refresh()), $frame, CarbonImmutable::now());
     }
 
     private function viewerOf(User $user): ActorIdentity

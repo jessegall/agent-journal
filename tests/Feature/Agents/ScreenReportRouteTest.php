@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
+use App\Agents\Support\HeldFrame;
 use App\Actors\Contracts\ServerClock;
 use App\Agents\Data\ScreenFrameData;
 use App\Agents\Data\TerminalFrameData;
@@ -16,7 +17,6 @@ use App\Agents\Support\TerminalViews;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
-use PhpOption\Option;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\FakeServerClock;
 use Tests\Support\OpensTerminalRuntimes;
@@ -145,20 +145,18 @@ final class ScreenReportRouteTest extends TestCase
         $agentId = $runtime->session->agent_id;
         $now = CarbonImmutable::now();
         $watcher = TerminalView::query()->ownedBy(TestActors::userIdentity(1))->live()->value('read_interest_id');
-        $opened = $views->open($agentId, TestActors::userIdentity(2), 500, (string) Str::ulid(), $now);
+        $openedId = $views->open($agentId, TestActors::userIdentity(2), 500, (string) Str::ulid(), $now);
+        $opened = $views->answerFor(TestActors::userIdentity(2), $openedId, $now)->readInterestId;
 
         return [
-            $this->firstRowText($views->frame($agentId, TestActors::userIdentity(1), $watcher, '', 0, $now)),
-            $this->firstRowText($views->frame($agentId, TestActors::userIdentity(2), $openedNow, '', 0, $now)),
+            $this->firstRowText($views->frame($agentId, TestActors::userIdentity(1), new HeldFrame($watcher, '', '', 0), $now)),
+            $this->firstRowText($views->frame($agentId, TestActors::userIdentity(2), new HeldFrame($opened, '', '', 0), $now)),
         ];
     }
 
-    /**
-     * @param  Option<TerminalFrameData>  $answer
-     */
-    private function firstRowText(Option $answer): string|null
+    private function firstRowText(TerminalFrameData $answer): string|null
     {
-        $frame = $answer->get()->frame;
+        $frame = $answer->frame;
 
         if (! $frame instanceof ScreenFrameData || $frame->rows === []) {
             return null;

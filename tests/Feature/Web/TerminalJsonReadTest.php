@@ -68,7 +68,7 @@ final class TerminalJsonReadTest extends TestCase
             ->assertJsonPath('state', TerminalFrameState::Unchanged->value)
             ->assertJsonPath('liveForMs', 11_000)
             ->assertJsonMissingPath('frame');
-        $this->assertSame('no-store', $live->headers->get('Cache-Control'));
+        $this->assertTrue($live->headers->hasCacheControlDirective('no-store'));
     }
 
     public function test_a_frame_kept_for_an_earlier_generation_shows_nothing_to_a_fresh_interest(): void

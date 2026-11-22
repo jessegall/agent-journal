@@ -21,6 +21,7 @@ use App\Settings\Enums\SettingAvailability;
 use App\Settings\Enums\SettingSource;
 use App\Settings\Exceptions\SettingsOwnerUnknown;
 use App\Settings\Exceptions\SettingStorageInvalid;
+use PhpOption\Option;
 use App\Settings\Models\SettingsRecord;
 use App\Settings\Storage\EncodedSetting;
 use App\Settings\Storage\EncodedToggle;
@@ -49,8 +50,23 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
             throw SettingsOwnerUnknown::for($owner);
         }
 
-        $record = SettingsRecord::sharedRuntimeForOwner($owner);
+        return $this->catalogueOf($owner, SettingsRecord::sharedRuntimeForOwner($owner));
+    }
 
+    public function everyOwner(): array
+    {
+        $this->gate->require();
+        $owners = array_keys($this->registry->definitions());
+        $records = SettingsRecord::sharedRuntimeForOwners($owners);
+
+        return array_map(fn (string $owner) => $this->catalogueOf($owner, Option::fromArraysValue($records, $owner)), $owners);
+    }
+
+    /**
+     * @param  Option<SettingsRecord>  $record
+     */
+    private function catalogueOf(string $owner, Option $record): SettingsCatalogueData
+    {
         $document = $record->map(
             fn (SettingsRecord $found) => $found->document,
         )->getOrCall(SettingsDocument::empty(...));

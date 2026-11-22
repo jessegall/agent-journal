@@ -15,7 +15,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->ulid('agent_runtime_id');
             $table->unsignedBigInteger('sequence');
-            $table->string('operation', 16);
+            $table->string('operation', 32);
             $table->string('idempotency_key');
             $table->char('payload_digest', 64);
             $table->text('message')->nullable();

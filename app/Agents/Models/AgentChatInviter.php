@@ -27,6 +27,13 @@ final class AgentChatInviter extends Pivot implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    /**
+     * A pivot opens every attribute by default; this one takes only its Fillable list.
+     *
+     * @var list<string>
+     */
+    protected $guarded = ['*'];
+
     // ----------[ Constructors ]----------
 
     /**

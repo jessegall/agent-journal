@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Data\ScreenFrameData;
+use App\Agents\Data\StoredScreenData;
+use Carbon\CarbonImmutable;
+
 /**
  * What the cache keeps of one runtime's screen: the newest admitted screen with its identity, and the streams it
  * replaced, whose delayed reports are never admitted again.
@@ -84,5 +88,38 @@ final readonly class ScreenSlot
         }
 
         return $this->screen;
+    }
+
+    /**
+     * The slot as the cache keeps it.
+     */
+    public function stored(): StoredScreenData
+    {
+        $registration = $this->screen->identity->registration;
+
+        return new StoredScreenData(
+            $registration->runtimeId,
+            $registration->hostId,
+            $registration->processGeneration,
+            $this->screen->frame->asReported(),
+            $this->screen->receivedAt->toIso8601ZuluString('microsecond'),
+            $this->retiredStreams,
+        );
+    }
+
+    /**
+     * The slot the cache kept.
+     */
+    public static function fromStored(StoredScreenData $stored): self
+    {
+        $registration = new ScreenRegistration($stored->runtimeId, $stored->hostId, $stored->processGeneration);
+        $frame = ScreenFrameData::from($stored->frame);
+        $screen = new ReceivedScreen(
+            $frame,
+            ScreenIdentity::ofReport($registration, $frame),
+            CarbonImmutable::parse($stored->receivedAt),
+        );
+
+        return new self($screen, $stored->retiredStreams);
     }
 }

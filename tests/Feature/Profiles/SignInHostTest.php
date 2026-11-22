@@ -189,12 +189,12 @@ final class SignInHostTest extends TestCase
         $this->signed($host, "/host/sign-ins/{$attemptId}/challenge", $challenge)->assertNoContent();
         $this->report($host, $attemptId, 'waiting')->assertNoContent();
 
-        $page = $this->actingAs($owner)->get('/accounts')->assertOk();
+        $page = $this->actingAs($owner)->get('/accounts?add=1')->assertOk();
         $read = $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/challenge")->assertOk();
         $this->actingAs($owner)->withHeader('Idempotency-Key', 'answer-1')
             ->post("/accounts/sign-ins/{$attemptId}/code", ['code' => ' 1234 '])->assertStatus(303);
 
-        $this->assertSame($attemptId, $page->viewData('page')['props']['page']['data']['root']['children'][1]['native']['props']['attempts'][0]['id']);
+        $this->assertSame($attemptId, $page->viewData('page')['props']['page']['data']['root']['children'][1]['children'][1]['native']['props']['attempts'][0]['id']);
         $this->assertStringNotContainsString('secret-state', (string) $page->getContent());
         $this->assertSame('https://claude.ai/oauth/authorize?secret-state', $read->json('address'));
         $this->assertStringContainsString('no-store', (string) $read->headers->get('Cache-Control'));

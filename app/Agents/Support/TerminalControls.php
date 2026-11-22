@@ -523,7 +523,7 @@ final readonly class TerminalControls
             'takeId' => $grant->take_id,
             'grantId' => $grant->grant_id,
             'state' => $grant->state,
-            'expiresInSeconds' => max(0, (int) $now->diffInSeconds($grant->expires_at, false)),
+            'expiresInSeconds' => max(0, (int) ceil($now->diffInSeconds($grant->expires_at, false))),
             'nextSequence' => $grant->next_sequence,
             'privateEntry' => Host::query()->whereKey($grant->host_id)->sole()
                 ->carriesOutBrowserInputOf(TerminalInputType::Private),

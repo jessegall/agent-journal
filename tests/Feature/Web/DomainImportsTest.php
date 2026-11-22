@@ -6,6 +6,7 @@ namespace Tests\Feature\Web;
 
 use App\Ui\Support\UiDeclarations;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use Symfony\Component\Process\Process;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\UsesTemporaryFolder;
@@ -88,7 +89,7 @@ final class DomainImportsTest extends TestCase
             $folder = realpath($owner->scriptFolder);
 
             if ($folder !== false && is_dir($folder)) {
-                $owners[$owner->key] = ltrim(str_replace(base_path(), '', $folder), '/');
+                $owners[$owner->key] = Str::after($folder, base_path().'/');
             }
         }
 

@@ -6334,6 +6334,7 @@ class	StoredRuleExample
 class	StoredRuleReference
 class	StoredRuleScope
 class	StoredScopedRead
+class	StoredScreenData
 class	StoredScriptBinding
 class	StoredSelectedTargetData
 class	StoredSettings
@@ -12440,7 +12441,9 @@ method	DatabaseAutoAssignments::unchangedMissing()
 method	DatabaseClock::__construct()
 method	DatabaseClock::now()
 method	DatabaseSettingsCatalogue::__construct()
+method	DatabaseSettingsCatalogue::catalogueOf()
 method	DatabaseSettingsCatalogue::configured()
+method	DatabaseSettingsCatalogue::everyOwner()
 method	DatabaseSettingsCatalogue::group()
 method	DatabaseSettingsCatalogue::identity()
 method	DatabaseSettingsCatalogue::owner()
@@ -21425,6 +21428,7 @@ method	ScopedReadMeter::withinSchedule()
 method	ScopedReadMeter::withoutQueries()
 method	ScreenCursorData::__construct()
 method	ScreenFrameData::__construct()
+method	ScreenFrameData::asReported()
 method	ScreenIdentity::__construct()
 method	ScreenIdentity::isSameHostProcessAs()
 method	ScreenIdentity::isSameStreamAs()
@@ -21447,8 +21451,10 @@ method	ScreenRunData::__construct()
 method	ScreenSlot::__construct()
 method	ScreenSlot::admits()
 method	ScreenSlot::first()
+method	ScreenSlot::fromStored()
 method	ScreenSlot::replacedBy()
 method	ScreenSlot::screenFor()
+method	ScreenSlot::stored()
 method	ScreenStyleData::__construct()
 method	ScriptBinding::__construct()
 method	ScriptBinding::fromJson()
@@ -21931,6 +21937,7 @@ method	SettingsAccessDenied::forActor()
 method	SettingsAccessGate::__construct()
 method	SettingsAccessGate::require()
 method	SettingsAccessPolicy::allows()
+method	SettingsCatalogue::everyOwner()
 method	SettingsCatalogue::owner()
 method	SettingsCatalogueData::__construct()
 method	SettingsChange::__construct()
@@ -21992,6 +21999,7 @@ method	SettingsRecord::makeEmptyFor()
 method	SettingsRecord::ownedBy()
 method	SettingsRecord::revise()
 method	SettingsRecord::sharedRuntimeForOwner()
+method	SettingsRecord::sharedRuntimeForOwners()
 method	SettingsResolver::boolean()
 method	SettingsResolver::choice()
 method	SettingsResolver::decimal()
@@ -24071,6 +24079,7 @@ method	StoredRuleScope::fromRuleScope()
 method	StoredRuleScope::toRuleScope()
 method	StoredScopedRead::__construct()
 method	StoredScopedRead::read()
+method	StoredScreenData::__construct()
 method	StoredScriptBinding::__construct()
 method	StoredScriptBinding::binding()
 method	StoredSelectedTargetData::__construct()
@@ -29256,6 +29265,7 @@ property	AgentCallReply::$status
 property	AgentCalls::$sender
 property	AgentChatAccess::$chats
 property	AgentChatAccess::$database
+property	AgentChatInviter::$guarded
 property	AgentChatPart::$claimableRootId
 property	AgentChatPart::$inboxId
 property	AgentChatPart::$receiver
@@ -37204,7 +37214,6 @@ property	SettingsGroup::$title
 property	SettingsLayout::$actors
 property	SettingsLayout::$catalogue
 property	SettingsLayout::$connections
-property	SettingsLayout::$registry
 property	SettingsOwnerCheck::$policy
 property	SettingsPage::$groups
 property	SettingsRow::$control
@@ -38338,6 +38347,12 @@ property	StoredRuleScope::$type
 property	StoredRuleScope::$version
 property	StoredScopedRead::$name
 property	StoredScopedRead::$target
+property	StoredScreenData::$frame
+property	StoredScreenData::$hostId
+property	StoredScreenData::$processGeneration
+property	StoredScreenData::$receivedAt
+property	StoredScreenData::$retiredStreams
+property	StoredScreenData::$runtimeId
 property	StoredScriptBinding::$digest
 property	StoredScriptBinding::$packageFile
 property	StoredScriptBinding::$script
@@ -38827,6 +38842,7 @@ property	TasksListTool::$reader
 property	TasksWindowResolver::$index
 property	TasksWindowResolver::$request
 property	TerminalAnswers::$actors
+property	TerminalAnswers::$clock
 property	TerminalAnswers::$commands
 property	TerminalAnswers::$controls
 property	TerminalAnswers::$views
@@ -39131,7 +39147,6 @@ property	UnassignRecordCommand::$description
 property	UnassignRecordCommand::$signature
 property	UnassignRecordHandler::$writer
 property	UnavailableWindow::$state
-property	UndockInput::$agent
 property	UndockInput::$id
 property	UndockInput::$inboxId
 property	UndockInput::$placementId

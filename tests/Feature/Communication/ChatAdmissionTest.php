@@ -49,8 +49,9 @@ final class ChatAdmissionTest extends MessagingTestCase
         $policy = $this->app->make(ChatAdmissionPolicy::class);
         $owner = ActorIdentity::of($this->owner);
 
-        $this->assertContains($this->bea->id, $policy->candidates($owner, $this->chat));
-        $this->assertNotContains($this->cy->id, $policy->candidates($owner, $this->chat));
+        $candidates = $policy->candidates($owner, $this->chat);
+        $this->assertContainsEquals(ActorIdentity::of($this->bea), $candidates);
+        $this->assertNotContainsEquals(ActorIdentity::of($this->cy), $candidates);
         $this->assertTrue($policy->mayAdd($owner, ActorIdentity::of($this->bea), $this->chat));
         $this->assertFalse($policy->mayAdd($owner, ActorIdentity::of($this->cy), $this->chat));
     }
@@ -61,11 +62,11 @@ final class ChatAdmissionTest extends MessagingTestCase
         $owner = ActorIdentity::of($this->owner);
 
         $this->bea->disable(CarbonImmutable::now());
-        $this->assertNotContains($this->bea->id, $policy->candidates($owner, $this->chat));
+        $this->assertNotContainsEquals(ActorIdentity::of($this->bea), $policy->candidates($owner, $this->chat));
 
         $this->bea->enable();
         EnvironmentUserGrant::query()->activeFor($this->bea->id, null)->sole()->revoke(CarbonImmutable::now());
-        $this->assertNotContains($this->bea->id, $policy->candidates($owner, $this->chat));
+        $this->assertNotContainsEquals(ActorIdentity::of($this->bea), $policy->candidates($owner, $this->chat));
     }
 
     public function test_a_member_without_the_manage_permission_invites_nobody(): void

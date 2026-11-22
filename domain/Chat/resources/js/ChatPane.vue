@@ -10,7 +10,7 @@ import type { AgentOptionData, ChatData } from '@generated/types/chat';
 import type { ReplyTarget } from './composables/useConversationIntents';
 import Button from '@kit/Button';
 import { isRevealed } from '@kit/protectedView';
-import { liveStage, retryLiveConnection } from '@/composables/useLiveConnection';
+import { liveStage, retryLiveConnection } from '@kit/liveConnection';
 import SlotSections from '@kit/SlotSections';
 import { decline as declineRoute, read as readRoute } from '@generated/routes/chat';
 import AgentPicker from './AgentPicker.vue';

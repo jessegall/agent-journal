@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Actors\Contracts\ServerClock;
+use App\Agents\Support\TerminalViews;
+use App\Agents\Support\TerminalControls;
+use App\Agents\Data\TerminalInterestData;
+use App\Agents\Data\TerminalControlData;
+use App\Agents\Commands\RenewTerminalView;
+use App\Agents\Commands\OpenTerminalView;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
@@ -41,16 +48,23 @@ trait OpensTerminalRuntimes
     }
 
     /**
-     * @template TResult
-     *
-     * @param  Command<TResult>  $command
-     * @return TResult
+     * Runs the command as the owner and answers what the browser is answered: a view's read interest after an open or
+     * renewal, the owner's control of the grant after a control command, and nothing after a close.
      */
-    private function asOwner(Command $command): mixed
+    private function asOwner(Command $command): TerminalInterestData|TerminalControlData|null
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+        $rowId = $this->app->make(CommandBus::class)->run($command);
 
-        return $this->app->make(CommandBus::class)->run($command);
+        return match (true) {
+            $command instanceof OpenTerminalView, $command instanceof RenewTerminalView => $this->app
+                ->make(TerminalViews::class)
+                ->answerFor($this->owner(), $rowId, $this->app->make(ServerClock::class)->now()),
+            is_string($rowId) => $this->app
+                ->make(TerminalControls::class)
+                ->answerFor($this->owner(), $rowId, $this->app->make(ServerClock::class)->now()),
+            default => null,
+        };
     }
 
     private function owner(): ActorIdentity

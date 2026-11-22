@@ -297,7 +297,7 @@ final readonly class TerminalViews implements TerminalViewCloser
             'readInterestId' => $view->read_interest_id,
             'runtimeId' => $view->agent_runtime_id,
             'intervalMs' => $view->interval_ms,
-            'expiresInSeconds' => max(0, (int) $now->diffInSeconds($view->expires_at, false)),
+            'expiresInSeconds' => max(0, (int) ceil($now->diffInSeconds($view->expires_at, false))),
             'live' => ! $view->hasEndedAt($now),
         ]);
     }

@@ -230,7 +230,7 @@ final class DeclaredLayoutTest extends TestCase
         $row = new LayoutRowData(
             'run-1',
             'Run 1',
-            leading: [LayoutPartData::text('driver', 'Claude', 'badge')],
+            leading: [LayoutPartData::text('driver', 'Claude', 'driver')],
             trailing: [LayoutPartData::badge('state', 'Running', 'busy')],
         );
 

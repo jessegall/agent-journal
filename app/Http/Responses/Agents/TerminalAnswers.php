@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Responses\Agents;
 
+use App\Actors\Contracts\ServerClock;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Data\TerminalControlData;
@@ -14,7 +15,6 @@ use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\RefusalCode;
 use App\Contracts\CommandRefusal;
-use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
@@ -31,6 +31,7 @@ final readonly class TerminalAnswers
         private CurrentActor $actors,
         private TerminalControls $controls,
         private TerminalViews $views,
+        private ServerClock $clock,
     ) {}
 
     /**
@@ -51,7 +52,7 @@ final readonly class TerminalAnswers
         return $this->answer(fn (): TerminalControlData => $this->controls->answerFor(
             ActorIdentity::of($this->actors->actor()),
             $this->commands->run($command),
-            CarbonImmutable::now(),
+            $this->clock->now(),
         ));
     }
 
@@ -65,7 +66,7 @@ final readonly class TerminalAnswers
         return $this->answer(fn (): TerminalInterestData => $this->views->answerFor(
             ActorIdentity::of($this->actors->actor()),
             $this->commands->run($command),
-            CarbonImmutable::now(),
+            $this->clock->now(),
         ));
     }
 

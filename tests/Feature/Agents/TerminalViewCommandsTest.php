@@ -318,7 +318,7 @@ final class TerminalViewCommandsTest extends TestCase
         );
         [$replacement] = $this->app->make(AgentRuntimes::class)->open($started->session, $intent, 'start-token-2');
 
-        return $replacement;
+        return $replacement->load('session');
     }
 
     private function assertRefused(OpenTerminalView $command, string $message, int $views = 0): void

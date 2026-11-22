@@ -55,4 +55,20 @@ final class ScreenFrameData extends Data
         public readonly bool $connectionLost = false,
         public readonly ScreenMenuData|null $menu = null,
     ) {}
+
+    /**
+     * The frame as the host reports it, each row the bare list of its runs, so from() reads it back the same.
+     *
+     * @return array<string, mixed>
+     */
+    public function asReported(): array
+    {
+        return [
+            ...$this->toArray(),
+            'rows' => array_map(
+                fn (ScreenRowData $row) => array_map(fn (ScreenRunData $run) => $run->toArray(), $row->runs),
+                $this->rows,
+            ),
+        ];
+    }
 }

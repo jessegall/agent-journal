@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Data\ScreenFrameData;
+use App\Agents\Data\StoredScreenData;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Cache\Repository;
 
@@ -59,12 +60,12 @@ final readonly class RuntimeScreen
     {
         $stored = $this->cache->get($this->key($runtimeId));
 
-        return $stored instanceof ScreenSlot ? $stored : null;
+        return is_array($stored) ? ScreenSlot::fromStored(StoredScreenData::from($stored)) : null;
     }
 
     private function keep(string $runtimeId, ScreenSlot $slot): void
     {
-        $this->cache->put($this->key($runtimeId), $slot, self::KEEP_SECONDS);
+        $this->cache->put($this->key($runtimeId), $slot->stored()->toArray(), self::KEEP_SECONDS);
     }
 
     private function key(string $runtimeId): string

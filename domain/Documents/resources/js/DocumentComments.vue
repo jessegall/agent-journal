@@ -9,7 +9,7 @@ import MenuItem from '@kit/MenuItem';
 import MenuTrigger from '@kit/MenuTrigger';
 import Button from '@kit/Button';
 import type { DocumentCommentsPartData } from '@generated/types/documents';
-import { post } from '@/routes/comments';
+import { postComment } from '@kit/commentRoutes';
 import { draftFor, forgetDraft } from './documentCommentDrafts';
 
 /**
@@ -51,7 +51,7 @@ function send(from: number, to: number, close: () => void): void {
 
     state.value = 'sending';
     router.post(
-        post.url(),
+        postComment.url(),
         {
             target: props.target,
             body: draft.text,

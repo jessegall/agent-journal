@@ -998,17 +998,17 @@ final class AgentDriverLedgerTest extends TestCase
         $this->asOwner(new StopAgent($this->agentIdOf($main), $main->sessionId, 'stop-main'));
 
         $this->assertSame(RuntimeActivity::Stopping, AgentRuntime::query()->findOrFail($helper->runtimeId)->activity);
-        $this->assertSame([], $this->asSystem(new ClaimDriverRequests($mainHost->hostId, 10))->requests);
+        $this->assertSame([], $this->asSystem(new ClaimDriverRequests($mainHost->hostId, 10, BrowserInputCapabilities::none()))->requests);
         $this->assertSame(RequestProgress::Accepted, $stopOf($main)->progress);
 
-        $helperClaim = $this->asSystem(new ClaimDriverRequests($helperHost->hostId, 10));
+        $helperClaim = $this->asSystem(new ClaimDriverRequests($helperHost->hostId, 10, BrowserInputCapabilities::none()));
         $this->assertSame(
             [DriverOperation::Stop->value],
             array_map(fn ($request) => $request->operation, $helperClaim->requests),
         );
         $this->reportExit($helperHost, $helper);
 
-        $mainClaim = $this->asSystem(new ClaimDriverRequests($mainHost->hostId, 10));
+        $mainClaim = $this->asSystem(new ClaimDriverRequests($mainHost->hostId, 10, BrowserInputCapabilities::none()));
         $this->assertSame(
             [DriverOperation::Stop->value],
             array_map(fn ($request) => $request->operation, $mainClaim->requests),
@@ -1028,7 +1028,7 @@ final class AgentDriverLedgerTest extends TestCase
         $this->asOwner(new InterruptAgent($this->agentIdOf($opened), $opened->sessionId, 'interrupt-1'));
         $this->asOwner(new StopAgent($this->agentIdOf($opened), $opened->sessionId, 'stop-1'));
 
-        $claimed = $this->asSystem(new ClaimDriverRequests($host->hostId, 5));
+        $claimed = $this->asSystem(new ClaimDriverRequests($host->hostId, 5, BrowserInputCapabilities::none()));
 
         $operations = array_map(fn ($request) => $request->operation, $claimed->requests);
         $this->assertContains(DriverOperation::Interrupt->value, $operations);

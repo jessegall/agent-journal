@@ -80,6 +80,17 @@ final class SettingsRecord extends Model implements ReadableModel
     }
 
     /**
+     * The records of the owners that stored an override, by owner, read at once for the whole installation.
+     *
+     * @param  list<string>  $owners
+     * @return array<string, self>
+     */
+    public static function sharedRuntimeForOwners(array $owners): array
+    {
+        return self::query()->whereIn('owner', $owners)->limit(count($owners))->get()->keyBy('owner')->all();
+    }
+
+    /**
      * The owner's record, locked until the transaction ends; insertIfAbsent runs first, so the record exists.
      */
     public static function lockedForOwner(string $owner): self
