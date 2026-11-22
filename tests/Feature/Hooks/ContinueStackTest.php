@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\DriverCatalogue;
-use App\Contracts\StartTransaction;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Sessions\StartTransaction;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverVariant;
 use App\Enums\NoSubject;

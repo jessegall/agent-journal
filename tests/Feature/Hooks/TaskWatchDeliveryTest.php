@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\ActorAttention;
-use App\Contracts\Event;
+use App\Contracts\Actors\ActorAttention;
+use App\Contracts\Events\Event;
 use App\Enums\AnswerType;
 use App\Models\HookCall;
 use App\Providers\DomainEventServiceProvider;

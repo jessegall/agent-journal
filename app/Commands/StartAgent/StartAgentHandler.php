@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Commands\StartAgent;
 
-use App\Contracts\ActiveAccountReader;
-use App\Contracts\CommandFacts;
-use App\Contracts\CommandHandler;
-use App\Contracts\DriverCatalogue;
-use App\Contracts\PinnedBuilds;
-use App\Contracts\ReplyInboxes;
+use App\Contracts\Accounts\ActiveAccountReader;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Chat\ReplyInboxes;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Drivers\PinnedBuilds;
 use App\Enums\ExecutionModeType;
 use App\Enums\StartOriginType;
 use App\Events\StartAccepted;

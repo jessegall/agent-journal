@@ -6,7 +6,7 @@ namespace App\Calls\Agents;
 
 use App\Attributes\Endpoint;
 use App\Casts\CallKeyCast;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Data\Assignments\AssignmentResultData;
 use App\Enums\CallEffect;
 use App\Enums\ReceiptOwner;

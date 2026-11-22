@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DriverCatalogue;
-use App\Contracts\StartPreflight;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Sessions\StartPreflight;
 use App\Enums\DriverCapability;
 use App\Enums\StartPreflightRefusal;
 use App\Exceptions\StartPreflightRefused;

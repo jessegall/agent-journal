@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Http\Controllers;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
 use Domain\Rules\Http\Requests\ReviewRuleRequest;
 use Illuminate\Http\RedirectResponse;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Resolvers;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use App\Support\NumberedPage;
 use Domain\Rules\Contracts\RuleResolver;
 use Domain\Rules\Models\Rule;

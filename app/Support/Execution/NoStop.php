@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Contracts\StopSignal;
+use App\Contracts\Processes\StopSignal;
 
 /**
  * The stop signal of a run nobody can stop from outside.

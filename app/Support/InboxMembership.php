@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\MembershipEvidence;
+use App\Contracts\Actors\MembershipEvidence;
 use App\Exceptions\MembershipEvidenceMismatch;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Keywords;
 
-use App\Contracts\ScriptTrigger;
+use App\Contracts\Scripts\ScriptTrigger;
 use App\Values\TriggerPolicy;
 
 final readonly class StopTrigger implements ScriptTrigger

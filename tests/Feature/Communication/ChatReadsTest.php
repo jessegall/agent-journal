@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\AcknowledgeChatMessages\AcknowledgeChatMessagesCommand;
 use App\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Contracts\ConversationResolver;
+use App\Contracts\Chat\ConversationResolver;
 use App\Exceptions\ChatInboxRefused;
 use App\Support\ActorIdentity;
 use App\Support\PendingInboxWork;

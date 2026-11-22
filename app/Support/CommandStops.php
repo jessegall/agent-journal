@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandStops as CommandStopsContract;
-use App\Contracts\StopTime;
+use App\Contracts\Bus\CommandStops as CommandStopsContract;
+use App\Contracts\Processes\StopTime;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
 use Psr\Log\LoggerInterface;

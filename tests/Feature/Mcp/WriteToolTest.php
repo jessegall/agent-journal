@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Mcp\Exceptions\McpCommandMissing;
 use App\Mcp\Support\McpCatalogue;
 use App\Support\CatalogueReflectorFactory;

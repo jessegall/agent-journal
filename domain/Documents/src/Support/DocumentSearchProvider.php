@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Contracts\SearchProvider;
-use App\Contracts\TieredSearch;
+use App\Contracts\Search\SearchProvider;
+use App\Contracts\Search\TieredSearch;
 use App\Enums\ScoreTier;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;

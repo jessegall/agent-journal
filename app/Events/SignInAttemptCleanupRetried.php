@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\ShownOnAccounts;
+use App\Contracts\Accounts\ShownOnAccounts;
 
 /**
  * The owner asked a sign-in attempt's failed cleanup to run again.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\UsageWindowSlot;
 use App\Exceptions\UsageCostConflict;
 use App\Exceptions\UsdAmountInvalid;

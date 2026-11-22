@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\RequestShare;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\RecordResolver;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Records\RecordResolver;
 use App\Enums\ShareAuditType;
 use App\Exceptions\ShareQuotaReached;
 use App\Models\Share;

@@ -6,7 +6,7 @@ Core exports.
 
 ## 1. The model is Shareable
 
-The model implements `App\Contracts\Shareable`:
+The model implements `App\Contracts\Sharing\Shareable`:
 
 - `shareIdentity(): RecordIdentity` returns the record by its link alias and ULID.
 - `static shareRelations(): ShareRelationSet` returns the relations fixed for the whole type:
@@ -19,7 +19,7 @@ with `ShareRelationInvalid`.
 
 ## 2. The provider
 
-The provider implements `App\Contracts\ShareRecordProvider`:
+The provider implements `App\Contracts\Sharing\ShareRecordProvider`:
 
 - `mayDisclose(RecordIdentity)`: whether the record may be public now, by the type's own policy.
 - `preview(ShareSelection, ShareBudget)`: the root's `ShareRecordCard` (identity, safe title, published version).
@@ -28,7 +28,7 @@ The provider implements `App\Contracts\ShareRecordProvider`:
 - `readRelated(ShareRelationRead, ShareBudget)`: one page of an owned relation, at most 100, with a continuation.
 - `content(ShareContentRead, ShareBudget)`: the published content, as `SharedContent`.
 
-Every call gets an `App\Contracts\ShareBudget`. Core runs each call inside it and counts its queries; the
+Every call gets an `App\Contracts\Sharing\ShareBudget`. Core runs each call inside it and counts its queries; the
 provider charges what it loads: `chargeText` for bodies, `chargeMetadata` for titles and excerpts, and
 `chargeRecords` and `chargeLinks` for what it reaches. Measure a large field before loading it:
 `DocumentShareProvider` reads a body's length with the database's `octet_length` and refuses a body over the limit
@@ -40,7 +40,7 @@ complete examples.
 
 ## 3. Registration
 
-The domain class implements `App\Contracts\ShareRecordContributor` and returns one `ShareRecordDefinition`
+The domain class implements `App\Contracts\Sharing\ShareRecordContributor` and returns one `ShareRecordDefinition`
 per type: the alias, the model class, the provider class and the capabilities the type advertises, such as
 `share-linked-record` for a record the owner may select as a linked record. Core's `SharingServiceProvider` registers
 every domain that declares it at boot.

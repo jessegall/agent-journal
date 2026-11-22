@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\MarkdownParts;
+use App\Contracts\Reads\MarkdownParts;
 use App\Exceptions\SkillSourceInvalid;
 
 /**

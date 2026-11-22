@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Resolvers;
 
-use App\Contracts\SectionResolver;
-use App\Contracts\SessionResolver;
+use App\Contracts\Navigation\SectionResolver;
+use App\Contracts\Sessions\SessionResolver;
 use App\Declarations\SlotContext;
 use App\Support\AssignmentData;
 use App\Support\Layout\DeclaredLayoutData;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\EngineListener;
+use App\Contracts\Events\EngineListener;
 
 /**
  * The listeners every engine pass delivers EngineTicked to, by class, in the order the areas added them.

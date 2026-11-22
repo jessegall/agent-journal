@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Stack;
 
-use App\Contracts\ConditionalStateType;
+use App\Contracts\Work\ConditionalStateType;
 use App\Declarations\StateMethods;
 use App\Exceptions\StackTooDeep;
 use App\Exceptions\StateSchemaUnknown;

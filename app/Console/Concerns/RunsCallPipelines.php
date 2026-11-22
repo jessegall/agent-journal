@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Console\Concerns;
 
 use App\Attributes\DecodesAnyJson;
-use App\Contracts\CallSender;
-use App\Contracts\JournalCall;
-use App\Contracts\PipelineDefinition;
+use App\Contracts\Bus\PipelineDefinition;
+use App\Contracts\Domains\CallSender;
+use App\Contracts\Domains\JournalCall;
 use App\Exceptions\CommandStopped;
 use App\Pipelines\RunSignedCallPipeline;
 use App\Support\CallKey;

@@ -7,7 +7,7 @@ namespace App\Models;
 use App\Casts\RuleScopeCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Enums\ClassificationState;
 use App\Exceptions\ClassificationRuleRefused;
 use App\Models\Support\NamedByRuleScope;

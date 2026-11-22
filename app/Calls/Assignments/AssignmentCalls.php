@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Assignments;
 
-use App\Contracts\CallSender;
+use App\Contracts\Domains\CallSender;
 use App\Data\Assignments\AssignmentResultData;
 use App\Data\Assignments\AutoAssignmentChangeData;
 use App\Data\Assignments\AutoAssignmentPageData;

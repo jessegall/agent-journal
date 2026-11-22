@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Calls;
 
 use App\Attributes\Endpoint;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Enums\CallEffect;
 use App\Values\CallAccepted;
 use Spatie\LaravelData\Attributes\Validation\Max;

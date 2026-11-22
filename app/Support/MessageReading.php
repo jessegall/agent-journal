@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AssignmentStorage;
-use App\Contracts\CommandFacts;
-use App\Contracts\Inbox;
-use App\Contracts\InboxResolver;
-use App\Contracts\ResponsibilityWriter;
+use App\Contracts\Assignments\AssignmentStorage;
+use App\Contracts\Assignments\ResponsibilityWriter;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Chat\Inbox;
+use App\Contracts\Chat\InboxResolver;
 use App\Data\MessageReadBatch;
 use App\Data\MessageReadResult;
 use App\Events\MessageTakenUp;

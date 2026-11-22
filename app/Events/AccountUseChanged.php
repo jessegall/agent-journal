@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Event;
-use App\Contracts\UserInterfaceUpdater;
+use App\Contracts\Events\Event;
+use App\Contracts\Navigation\UserInterfaceUpdater;
 use App\Support\RecordIdentity;
 
 /**

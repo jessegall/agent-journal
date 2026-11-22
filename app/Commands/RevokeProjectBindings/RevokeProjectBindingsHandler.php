@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RevokeProjectBindings;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\ProjectBinding;
 use App\Support\BindingRevocation;
 use App\Values\RevokedBindings;

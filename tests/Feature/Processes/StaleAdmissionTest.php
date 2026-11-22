@@ -6,7 +6,7 @@ namespace Tests\Feature\Processes;
 
 use App\Commands\RetireCommandRule\RetireCommandRuleCommand;
 use App\Commands\SaveCommandRule\SaveCommandRuleCommand;
-use App\Contracts\CommandClassifier;
+use App\Contracts\Bus\CommandClassifier;
 use App\Enums\ActorType;
 use App\Enums\CommandClass;
 use App\Enums\LifecycleState;

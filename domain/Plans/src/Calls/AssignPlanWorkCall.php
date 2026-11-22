@@ -7,7 +7,7 @@ namespace Domain\Plans\Calls;
 use App\Attributes\Endpoint;
 use App\Calls\Assignments\Concerns\NamesRecipient;
 use App\Casts\CallKeyCast;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Enums\ActorType;
 use App\Enums\CallEffect;
 use App\Enums\ReceiptOwner;

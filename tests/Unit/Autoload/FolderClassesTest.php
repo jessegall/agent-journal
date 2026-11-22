@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Autoload;
 
-use App\Contracts\Command;
+use App\Contracts\Bus\Command;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\OverviewReadTool;
 use App\Support\FolderClasses;

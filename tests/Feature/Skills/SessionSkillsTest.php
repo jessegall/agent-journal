@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Contracts\AgentStack;
+use App\Contracts\Work\AgentStack;
 use App\Enums\ContextStartType;
 use App\Enums\Place;
 use App\Events\ContextStarted;

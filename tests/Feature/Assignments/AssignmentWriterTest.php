@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\AssignmentWriter;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Assignments\AssignmentWriter;
 use App\Enums\AssignmentOutcomeType;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\AssigneeUnavailable;

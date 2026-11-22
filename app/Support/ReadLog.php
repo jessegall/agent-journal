@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReadLog as ReadLogContract;
+use App\Contracts\Reads\ReadLog as ReadLogContract;
 use App\Values\ReadCounts;
 use Psr\Log\LoggerInterface;
 

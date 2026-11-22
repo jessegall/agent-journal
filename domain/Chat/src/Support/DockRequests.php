@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Contracts\AgentDirectory;
-use App\Contracts\CurrentActor;
-use App\Contracts\InboxResolver;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Chat\InboxResolver;
+use App\Contracts\Sessions\AgentDirectory;
 use App\Exceptions\DockDefinitionInvalid;
 use App\Exceptions\DockSourceUnavailable;
 use App\Exceptions\StackTargetRefused;

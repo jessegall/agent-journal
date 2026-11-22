@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Contracts\ActorGuidance;
+use App\Contracts\Actors\ActorGuidance;
 use App\Models\WorkspaceRead;
 use App\Support\ActorIdentity;
 use App\Support\EnrolledHost;

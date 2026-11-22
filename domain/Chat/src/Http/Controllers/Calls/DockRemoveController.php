@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Calls;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Calls\DockRemoveCall;
 use Domain\Chat\Commands\UndockSource\UndockSourceCommand;
 use Domain\Chat\Data\DockAnswerData;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\StartTask;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\ReplyInboxes;
-use App\Contracts\RunClaims;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Chat\ReplyInboxes;
+use App\Contracts\Processes\RunClaims;
 use App\Support\ActorIdentity;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Contracts\TaskWaitResolver;

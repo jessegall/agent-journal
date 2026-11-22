@@ -6,7 +6,7 @@ namespace Tests\Feature\Bus;
 
 use App\CommandMiddleware\AdmitStack;
 use App\CommandMiddleware\BindDispatcher;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Exceptions\ActorContextMissing;
 use App\Exceptions\CommandDispatcherMissing;
 use App\Exceptions\CommandNotRegistered;

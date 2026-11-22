@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
 use App\Events\SessionClosed;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\CommandAdmissionRefused;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Contracts\ConditionalStateType;
+use App\Contracts\Work\ConditionalStateType;
 use App\Enums\ActorType;
 use App\Enums\NoSubject;
 use App\Enums\SessionTransferType;

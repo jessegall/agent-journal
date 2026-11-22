@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data;
 
-use App\Contracts\MessagePart;
+use App\Contracts\Drivers\MessagePart;
 use App\Enums\MessagePartType;
 use Spatie\LaravelData\Data;
 

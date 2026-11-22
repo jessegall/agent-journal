@@ -6,8 +6,8 @@ namespace Tests\Fixtures\Domains\BadSettings;
 
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\SettingsProvider;
-use App\Contracts\SettingsDefinition;
+use App\Contracts\Settings\SettingsProvider;
+use App\Contracts\Settings\SettingsDefinition;
 use App\Declarations\SettingGroup;
 use App\Declarations\StringSetting;
 use Tests\Fixtures\Settings\SettingsList;

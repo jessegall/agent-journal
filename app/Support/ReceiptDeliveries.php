@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActorAttention;
-use App\Contracts\CommandFacts;
+use App\Contracts\Actors\ActorAttention;
+use App\Contracts\Bus\CommandFacts;
 use App\Events\ReceiptDeliveriesScheduled;
 use App\Models\Message;
 use App\Models\MessageAttention;

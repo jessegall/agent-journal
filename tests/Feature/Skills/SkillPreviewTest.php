@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\SessionStatus;
 use App\Models\Agent;
 use App\Models\AgentSession;

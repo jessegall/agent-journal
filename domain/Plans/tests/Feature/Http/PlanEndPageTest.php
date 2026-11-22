@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature\Http;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;

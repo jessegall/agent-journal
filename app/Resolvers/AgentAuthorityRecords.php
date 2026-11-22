@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\AgentAuthority;
-use App\Contracts\TargetAuthorizer;
+use App\Contracts\Authorization\AgentAuthority;
+use App\Contracts\Authorization\TargetAuthorizer;
 use App\Enums\AccessType;
 use App\Enums\ActorType;
 use App\Exceptions\AgentNotAvailable;

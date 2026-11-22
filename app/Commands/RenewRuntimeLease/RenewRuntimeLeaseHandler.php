@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RenewRuntimeLease;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\LeaseRefused;
 use App\Models\AgentRuntime;
 use App\Models\AgentSession;

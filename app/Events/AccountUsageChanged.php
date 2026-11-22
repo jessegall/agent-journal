@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\ShownOnAccounts;
+use App\Contracts\Accounts\ShownOnAccounts;
 
 /**
  * A usage reading of a saved account changed: a newer limit window, a new cost or a newer thread token count.

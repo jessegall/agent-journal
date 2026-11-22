@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverVariant;
 use App\Events\StartSettingsRequested;
 use App\Models\HookCall;

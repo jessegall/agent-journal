@@ -8,8 +8,8 @@ use App\Calls\Comments\CommentPosted;
 use App\Calls\Comments\PostCommentCall;
 use App\Commands\PostComment\PostCommentCommand;
 use App\Commands\PostTextComment\PostTextCommentCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\RecordResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Records\RecordResolver;
 use App\Exceptions\CommentPlaceUnclear;
 use App\Support\RecordReference;
 

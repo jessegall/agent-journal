@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Inbox;
-use App\Contracts\InboxAccess;
-use App\Contracts\InboxProvider;
-use App\Contracts\InboxRegistration;
-use App\Contracts\InboxResolver;
-use App\Contracts\NamedInboxes;
+use App\Contracts\Chat\Inbox;
+use App\Contracts\Chat\InboxAccess;
+use App\Contracts\Chat\InboxProvider;
+use App\Contracts\Chat\InboxRegistration;
+use App\Contracts\Chat\InboxResolver;
+use App\Contracts\Chat\NamedInboxes;
 use App\Exceptions\InboxProviderInvalid;
 use App\Exceptions\InboxUnavailable;
 use App\Models\InboxRecord;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Plans\Models;
 
-use App\Contracts\EventSource;
+use App\Contracts\Events\EventSource;
 use App\Concerns\RaisesEvents;
 use Illuminate\Database\Eloquent\Model;
 

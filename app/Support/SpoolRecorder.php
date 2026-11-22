@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\Files;
-use App\Contracts\OutputRecorder;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Files\Files;
+use App\Contracts\Reads\OutputRecorder;
 use App\Enums\Permissions;
 use App\Enums\Place;
 use App\Events\OutputChunkCommitted;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Contracts\AssignmentTransaction;
+use App\Contracts\Assignments\AssignmentTransaction;
 use App\Enums\ActorType;
 use App\Exceptions\AssignmentRetryExhausted;
 use App\Exceptions\AssignmentTransactionRequired;

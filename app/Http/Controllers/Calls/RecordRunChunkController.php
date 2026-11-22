@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\ChunkStored;
 use App\Calls\Processes\RecordRunChunkCall;
 use App\Commands\RecordRunChunk\RecordRunChunkCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Models\ProcessRun;
 
 /**

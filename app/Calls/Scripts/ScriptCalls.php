@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Scripts;
 
-use App\Contracts\CallSender;
+use App\Contracts\Domains\CallSender;
 use App\Data\ProfileDraftData;
 use App\Data\ProfileLanguageData;
 use App\Data\ProfileRunData;

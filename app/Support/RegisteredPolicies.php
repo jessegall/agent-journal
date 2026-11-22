@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DomainAvailability;
-use App\Contracts\PolicyCatalogue;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Domains\DomainAvailability;
 use App\Enums\AccessType;
 use App\Exceptions\GrantNotRegistered;
 use App\Exceptions\PolicyDefinitionConflict;

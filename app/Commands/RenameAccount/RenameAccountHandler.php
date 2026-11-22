@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RenameAccount;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\Account;
 use App\Values\AccountLabel;
 

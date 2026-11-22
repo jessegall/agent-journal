@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\AccountUses;
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\IdentityLinks;
+use App\Contracts\Accounts\AccountUses;
+use App\Contracts\Actors\IdentityLinks;
+use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\AccessType;
 use App\Exceptions\AccountUseMissing;
 use App\Models\Agent;

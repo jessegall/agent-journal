@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Responses;
 
-use App\Contracts\ReflectorFactory;
-use App\Contracts\UiOwnerAvailability;
+use App\Contracts\Navigation\UiOwnerAvailability;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Declarations\RegisteredAction;
 use App\Enums\ActionMethod;
 use App\Exceptions\PageReadParameterMissing;

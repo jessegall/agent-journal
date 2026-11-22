@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\PageResolver;
-use App\Contracts\ReaderRequests as ReaderRequestsContract;
-use App\Contracts\ReflectorFactory;
-use App\Contracts\SectionResolver;
+use App\Contracts\Navigation\PageResolver;
+use App\Contracts\Navigation\SectionResolver;
+use App\Contracts\Reads\ReaderRequests as ReaderRequestsContract;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Declarations\ResolverDefinition;
 use App\Exceptions\UiResolverInvalid;
 use Illuminate\Contracts\Container\Container;

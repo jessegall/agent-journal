@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\InboxResolver;
-use App\Contracts\Listener;
+use App\Contracts\Chat\InboxResolver;
+use App\Contracts\Events\Listener;
 use App\Data\NotificationTarget;
 use App\Enums\NotificationSourceType;
 use App\Events\ChatMessageAccepted;

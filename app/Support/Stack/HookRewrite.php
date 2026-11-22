@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Stack;
 
-use App\Contracts\ShellCommandParser;
+use App\Contracts\Processes\ShellCommandParser;
 use App\Exceptions\RepeatedCommandRewrite;
 use App\Support\Inputs\ShellCommandRequested;
 

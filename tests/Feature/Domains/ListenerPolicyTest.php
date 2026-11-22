@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Contracts\PipelineRunner;
-use App\Contracts\UserInterfaceUpdater;
+use App\Contracts\Bus\PipelineRunner;
+use App\Contracts\Navigation\UserInterfaceUpdater;
 use App\CoreApi;
 use App\Exceptions\InvalidListener;
 use App\Listeners\BroadcastPageChange;

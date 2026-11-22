@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Profiles;
 
 use App\Commands\ClaimCleanup\ClaimCleanupCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;

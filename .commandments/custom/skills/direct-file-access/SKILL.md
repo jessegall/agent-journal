@@ -1,14 +1,14 @@
 ---
 name: DirectFileAccess
 description: Reading, listing, stating or writing a file in this project: a file_get_contents, file_put_contents, fopen, glob, scandir, is_file, is_dir, realpath, mkdir, unlink, rename, symlink, tempnam, hash_file or disk_free_space, Laravel's Filesystem or File facade, or Symfony's Finder. Read this before touching the disk, and when a direct-file-access finding points here.
-summary: Only app/Files touches the disk; every other file read, list, stat and write goes through App\Contracts\Files.
+summary: Only app/Files touches the disk; every other file read, list, stat and write goes through App\Contracts\Files\Files.
 tier: keep-in-mind
 languages: [php]
 ---
 
 # Only the Files area touches the disk
 
-Every file read, list, stat and write outside `app/Files` goes through `App\Contracts\Files` with a `FilePath`.
+Every file read, list, stat and write outside `app/Files` goes through `App\Contracts\Files\Files` with a `FilePath`.
 The funnel keeps a path inside its place, never follows a link out of it, never enters a closed folder, reads an
 unchanged file once per process, walks no deeper than the call asks and refuses a read started inside another read.
 `tests/Architecture/DirectFileAccessTest.php` fails on any direct file function outside `app/Files`, and the

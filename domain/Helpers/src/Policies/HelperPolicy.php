@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Policies;
 
-use App\Contracts\Policy;
+use App\Contracts\Authorization\Policy;
 use Domain\Helpers\Models\HelperJob;
 
 /**

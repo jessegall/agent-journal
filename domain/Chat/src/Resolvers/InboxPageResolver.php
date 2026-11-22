@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers;
 
-use App\Contracts\ConversationResolver;
-use App\Contracts\PageResolver;
+use App\Contracts\Chat\ConversationResolver;
+use App\Contracts\Navigation\PageResolver;
 use App\Data\InboxView;
 use App\Data\MessagePage;
 use App\Enums\ActionMethod;

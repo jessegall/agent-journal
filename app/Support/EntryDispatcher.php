@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Command;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\CommandEntry;
 use App\Exceptions\CommandNotRegistered;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Text;
 
-use App\Contracts\CallSender;
+use App\Contracts\Domains\CallSender;
 use App\Data\TextSections;
 use App\Data\TextVersionSummary;
 use App\Support\TextPart;

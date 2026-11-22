@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Contracts\AssignmentProviders;
+use App\Contracts\Assignments\AssignmentProviders;
 use App\Enums\PoolInputType;
 use App\Exceptions\AssignmentPoolTooLarge;
 use App\Exceptions\AssignmentPoolUnavailable;

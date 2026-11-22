@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\AssignRecordForMaintenance;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\MaintenanceAssignmentWriter;
+use App\Contracts\Assignments\MaintenanceAssignmentWriter;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\AssignmentResult;
 
 final readonly class AssignRecordForMaintenanceHandler implements CommandHandler

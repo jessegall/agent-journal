@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Contracts\CurrentUserResolver;
+use App\Contracts\Actors\CurrentUserResolver;
 use App\Http\Requests\Web\LayoutRequest;
 use App\Models\Layout;
 use Illuminate\Http\RedirectResponse;

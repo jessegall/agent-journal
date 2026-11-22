@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Types;
 
-use App\Contracts\Actor;
+use App\Contracts\Actors\Actor;
 use App\Exceptions\TypeOwnerRepeated;
 use App\Support\DomainRegistry;
 use App\Support\UiDeclarations;

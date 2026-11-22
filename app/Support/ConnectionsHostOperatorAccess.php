@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\HostOperatorAccess;
+use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Hosts\HostOperatorAccess;
 use App\Enums\AccessType;
 use App\Models\ProjectInvitation;
 use App\Policies\ConnectionsPolicy;

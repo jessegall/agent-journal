@@ -7,7 +7,7 @@ namespace App\Models;
 use App\Commands\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Enums\EvidenceSource;
 use App\Enums\OutputStream;
 use App\Enums\ProposalState;

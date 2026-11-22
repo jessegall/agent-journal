@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ClaimStartGrant;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Events\StartGrantRequested;
 use App\Exceptions\AccountFolderInvalid;
 use App\Exceptions\ManifestRefused;

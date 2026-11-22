@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\StateEvents;
 
-use App\Contracts\AgentCallContext;
-use App\Contracts\CurrentActor;
-use App\Contracts\Event;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Events\Event;
+use App\Contracts\Sessions\AgentCallContext;
 use App\Support\AgentContext;
 use App\Values\FrameGrant;
 use App\Values\StackTarget;

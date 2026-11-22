@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models\Concerns;
 
-use App\Contracts\Actor;
+use App\Contracts\Actors\Actor;
 use Domain\Documents\Data\SettlementCard;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Events\RecordSettled;

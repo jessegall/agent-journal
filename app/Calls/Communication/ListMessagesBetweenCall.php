@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Calls\Communication;
 
 use App\Attributes\Endpoint;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Data\MessagePage;
 use App\Enums\CallEffect;
 use Spatie\LaravelData\Attributes\MapName;

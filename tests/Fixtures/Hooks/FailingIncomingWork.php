@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Contracts\IncomingWork;
+use App\Contracts\Work\IncomingWork;
 use Tests\Support\Exceptions\SimulatedFailure;
 
 /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\ClaimStart;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\UnstartableDriver;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Drivers\UnstartableDriver;
 use App\Enums\ProcessStartState;
 use App\Events\AccountSettingsRequested;
 use App\Events\ChildCheckoutRequested;

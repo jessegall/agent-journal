@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\ContinueStartRequest;
 use Illuminate\Http\JsonResponse;
 

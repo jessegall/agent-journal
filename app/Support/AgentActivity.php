@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AutoAssignmentActivity;
+use App\Contracts\Assignments\AutoAssignmentActivity;
 use App\Models\Agent;
 use App\Models\AgentSession;
 

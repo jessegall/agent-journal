@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
-use App\Contracts\NativePartProvider;
-use App\Contracts\NavigationProvider;
-use App\Contracts\PageProvider;
-use App\Contracts\SectionProvider;
-use App\Contracts\TypeProvider;
+use App\Contracts\Drivers\NativePartProvider;
+use App\Contracts\Navigation\NavigationProvider;
+use App\Contracts\Navigation\PageProvider;
+use App\Contracts\Navigation\SectionProvider;
+use App\Contracts\Records\TypeProvider;
 use App\Data\Profiles\AccountListData;
 use App\Data\Profiles\AccountMonthCostData;
 use App\Data\Profiles\AccountNoticeData;

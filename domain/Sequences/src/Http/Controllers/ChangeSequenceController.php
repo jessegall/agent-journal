@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Http\Controllers;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Sequences\Commands\ChangeSequence\ChangeSequenceCommand;
 use Domain\Sequences\Http\Requests\SaveSequenceRequest;
 use Domain\Sequences\Http\Requests\SequenceRequest;

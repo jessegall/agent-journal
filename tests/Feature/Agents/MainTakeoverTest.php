@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Commands\InstallDesks\InstallDesksCommand;
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\MainSeatTakeover;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Chat\MainSeatTakeover;
 use App\Enums\CommandEntry;
 use App\Models\Agent;
 use App\Models\AgentSession;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\ProfileResolver;
-use App\Contracts\ProfileScripts;
+use App\Contracts\Scripts\ProfileScripts;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Exceptions\ProfileRetired;
 use App\Models\Profile;
 use App\Models\ProfileRevision;

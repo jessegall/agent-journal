@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\MonotonicClock;
-use App\Contracts\StopTime;
+use App\Contracts\Processes\StopTime;
+use App\Contracts\Time\MonotonicClock;
 
 /**
  * A stop time on the engine's monotonic clock: a fixed reading the work must end by.

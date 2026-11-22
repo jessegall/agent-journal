@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
-use App\Contracts\Event;
-use App\Contracts\EventSource;
-use App\Contracts\RowCapture;
+use App\Contracts\Events\Event;
+use App\Contracts\Events\EventSource;
+use App\Contracts\Reads\RowCapture;
 use App\Exceptions\RowWriteRefused;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;

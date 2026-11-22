@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipelines;
 
-use App\Contracts\PipelineDefinition;
+use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\Grammar\AddPipedCommandsNode;
 use App\Pipes\Grammar\NoteNegation;
 use App\Pipes\Grammar\ParseFirstPipedCommand;

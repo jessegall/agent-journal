@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Assignments;
 
-use App\Contracts\AssignmentProviders;
+use App\Contracts\Assignments\AssignmentProviders;
 use App\Data\Assignments\PoolDefinitionData;
 use App\Http\Requests\Assignments\AutoAssignmentPoolsRequest;
 use Illuminate\Http\JsonResponse;

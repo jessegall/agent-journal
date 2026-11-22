@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\CommandFacts;
-use App\Contracts\DriverCatalogue;
-use App\Contracts\Listener;
-use App\Contracts\SkillResolver;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Events\Listener;
+use App\Contracts\Skills\SkillResolver;
 use App\Events\SessionOpened;
 use App\Events\SessionSkillsIntended;
 use App\Exceptions\StartRefused;

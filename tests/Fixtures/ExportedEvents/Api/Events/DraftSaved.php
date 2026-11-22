@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\ExportedEvents\Api\Events;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * An event a fixture domain keeps in Api/Events without exporting it: the folder alone does not make it public.

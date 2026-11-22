@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Contracts;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * A legacy send of a handler, which has no row to raise on and goes through the stream.

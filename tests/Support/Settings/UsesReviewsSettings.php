@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Settings;
 
-use App\Contracts\SettingCommands;
+use App\Contracts\Settings\SettingCommands;
 use App\Support\ActorContext;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\CoreSettings;

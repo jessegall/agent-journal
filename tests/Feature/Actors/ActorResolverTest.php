@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Contracts\ActorProviderRegistration;
-use App\Contracts\ActorResolver;
+use App\Contracts\Actors\ActorProviderRegistration;
+use App\Contracts\Actors\ActorResolver;
 use App\Enums\ActorType;
 use App\Exceptions\ActorProviderRepeated;
 use App\Exceptions\ActorUnavailable;

@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Calls\Scripts\SaveProfileDraftCall;
 use App\Commands\SaveProfileDraft\SaveProfileDraftCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Data\ProfileDraftData;
 use App\Support\Readers\ProfileDraftReader;
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Contracts\CommandBus;
-use App\Contracts\RecordResolver;
-use App\Contracts\TextResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Reads\TextResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Exceptions\TextLineTooLong;
 use App\Exceptions\TextSelectionRefused;
 use App\Exceptions\TextVersionUnavailable;

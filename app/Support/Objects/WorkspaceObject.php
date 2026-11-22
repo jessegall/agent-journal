@@ -6,7 +6,7 @@ namespace App\Support\Objects;
 
 use App\Attributes\ScriptMember;
 use App\Attributes\ScriptObject;
-use App\Contracts\WorkspaceReader;
+use App\Contracts\Files\WorkspaceReader;
 use App\Values\ScriptContext;
 use App\Values\WorkspaceFacts;
 

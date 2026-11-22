@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Communication\AnswerChatQuestionCall;
 use App\Calls\Communication\MessageNamed;
 use App\Commands\AnswerChatQuestion\AnswerChatQuestionCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Answers a waiting chat question and closes it.

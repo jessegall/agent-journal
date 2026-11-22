@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Providers;
 
-use App\Contracts\ReadEntitlements;
-use App\Contracts\VerificationTiming;
+use App\Contracts\Authorization\ReadEntitlements;
+use App\Contracts\Time\VerificationTiming;
 use App\Support\FolderClasses;
 use App\Support\LinkTypeRegistry;
 use App\Support\Sources\Contracts\DockRegistration;

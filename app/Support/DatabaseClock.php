@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ServerClock;
+use App\Contracts\Time\ServerClock;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\ConnectionInterface;
 

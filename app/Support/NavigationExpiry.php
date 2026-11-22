@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\NavigationExpiry as NavigationExpiryContract;
+use App\Contracts\Navigation\NavigationExpiry as NavigationExpiryContract;
 use App\Enums\HoldReason;
 use App\Enums\NavigationState;
 use App\Enums\RequestOutcome;

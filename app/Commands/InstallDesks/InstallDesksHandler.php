@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\InstallDesks;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\BuiltInDesks;
 
 final readonly class InstallDesksHandler implements CommandHandler

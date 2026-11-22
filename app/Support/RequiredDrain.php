@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 use App\Exceptions\CausalDepthExceeded;
 use Illuminate\Contracts\Container\Container;
 

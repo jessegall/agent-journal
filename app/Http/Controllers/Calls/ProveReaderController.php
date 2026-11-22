@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\ProveReaderCall;
 use App\Calls\Processes\ReaderProofStarted;
 use App\Commands\ProveReader\ProveReaderCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Proves a reader over sample runs and answers its proof.

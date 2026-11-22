@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\NavigationChildren;
+use App\Contracts\Navigation\NavigationChildren;
 use App\Declarations\RegisteredNavigation;
 use Illuminate\Contracts\Container\Container;
 use Psr\Log\LoggerInterface;

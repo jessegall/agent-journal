@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Events;
 
 use App\Attributes\RequiresListener;
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * A task got a new title and brief, raised by the task inside the transaction that changed it, so Plans can refuse

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Concerns\RendersRefusal;
-use App\Contracts\CodedRefusal;
-use App\Contracts\CommandRefusal;
-use App\Contracts\ReceiptRefusal;
+use App\Contracts\Bus\CommandRefusal;
+use App\Contracts\Bus\ReceiptRefusal;
+use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;

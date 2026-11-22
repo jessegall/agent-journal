@@ -6,8 +6,8 @@ namespace App\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
-use App\Contracts\TargetedCommand;
+use App\Contracts\Bus\TargetedCommand;
+use App\Contracts\Records\ReadableModel;
 use App\Enums\ReceiptState;
 use App\Enums\RefusalCode;
 use App\Exceptions\RefusalReplayed;

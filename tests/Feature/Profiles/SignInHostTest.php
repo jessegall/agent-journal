@@ -6,8 +6,8 @@ namespace Tests\Feature\Profiles;
 
 use App\Commands\BeginSignIn\BeginSignInCommand;
 use App\Commands\EnrollHost\EnrollHostCommand;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\Files;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Files\Files;
 use App\Data\Profiles\SignInAttemptData;
 use App\Enums\SignInMethod;
 use App\Enums\SignInOutcome;

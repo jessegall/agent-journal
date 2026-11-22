@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Samples;
 
-use App\Contracts\ActorWorkStacks;
+use App\Contracts\Actors\ActorWorkStacks;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
 

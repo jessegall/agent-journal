@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Contracts\CurrentAuthorizer;
+use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\AccessType;
 use Domain\Tasks\Contracts\TaskGraphResolver;
 use Domain\Tasks\Contracts\TaskResolver;

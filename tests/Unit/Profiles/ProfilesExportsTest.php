@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Contracts\ProfileResolver;
+use App\Contracts\Sessions\ProfileResolver;
 use App\CoreApi;
 use App\Exceptions\ProfileKeyInvalid;
 use App\Exceptions\ProfileMissing;

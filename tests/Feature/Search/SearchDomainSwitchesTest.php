@@ -6,7 +6,7 @@ namespace Tests\Feature\Search;
 
 use App\Commands\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Commands\EnableSettingGroup\EnableSettingGroupCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\SearchStatus;
 use App\Enums\SearchSurface;
 use App\Support\SearchCoordinator;

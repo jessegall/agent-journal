@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Events\StateTypesRequested;
 use App\Models\Agent;
 use App\Models\AgentStackRow;

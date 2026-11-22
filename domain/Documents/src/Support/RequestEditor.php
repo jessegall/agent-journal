@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\SessionProvenance;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Sessions\SessionProvenance;
 use App\Support\ActorIdentity;
 use Domain\Documents\Models\DocumentDraft;
 use Illuminate\Container\Attributes\Scoped;

@@ -40,7 +40,7 @@ final class InvalidListener extends DomainDeclarationError
     {
         return new self(
             sprintf(
-                '%s listens to %s, which is not a concrete class implementing App\\Contracts\\Event; type the listener on the concrete event.',
+                '%s listens to %s, which is not a concrete class implementing App\\Contracts\\Events\\Event; type the listener on the concrete event.',
                 $listener,
                 $event,
             ),

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\SendMessage;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\MessageSending;
 
 final readonly class SendMessageHandler implements CommandHandler

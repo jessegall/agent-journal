@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Values\DriverKey;
 use App\Values\ProviderKey;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CatalogueConstraints;
-use App\Contracts\CatalogueValue;
+use App\Contracts\Settings\CatalogueConstraints;
+use App\Contracts\Settings\CatalogueValue;
 use App\Data\IntegerChoiceConstraintsData;
 use App\Data\IntegerChoiceOptionData;
 use App\Data\IntegerChoiceValueData;

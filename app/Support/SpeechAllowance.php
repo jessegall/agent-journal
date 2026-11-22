@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentSession;
-use App\Contracts\Inbox;
-use App\Contracts\InboxResolver;
+use App\Contracts\Chat\Inbox;
+use App\Contracts\Chat\InboxResolver;
+use App\Contracts\Sessions\CurrentSession;
 use App\Enums\SpeechOpportunityState;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\SpeechRefused;

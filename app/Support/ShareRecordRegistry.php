@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Shareable;
-use App\Contracts\ShareRecordProvider;
+use App\Contracts\Sharing\Shareable;
+use App\Contracts\Sharing\ShareRecordProvider;
 use App\Exceptions\InvalidRecordIdentity;
 use App\Exceptions\ShareRecordInvalid;
 use App\Exceptions\ShareRelationInvalid;

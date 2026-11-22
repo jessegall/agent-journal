@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Contracts\CommentResolver;
-use App\Contracts\TextResolver;
+use App\Contracts\Reads\TextResolver;
+use App\Contracts\Records\CommentResolver;
 use App\Support\RecordIdentity;
 use App\Support\TextSelection;
 use Domain\Documents\Data\RecordReadsData;

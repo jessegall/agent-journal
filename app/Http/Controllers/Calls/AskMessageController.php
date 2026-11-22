@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Communication\AskMessageCall;
 use App\Calls\Communication\MessageNamed;
 use App\Commands\AskMessage\AskMessageCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Sends a message that asks for an answer.

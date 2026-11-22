@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Contracts\DomainAvailability;
+use App\Contracts\Domains\DomainAvailability;
 use App\Events\StateTypesRequested;
 use App\Models\AgentStackRow;
 use App\Support\DomainStateType;

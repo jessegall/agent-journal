@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\ShownOnAccounts;
+use App\Contracts\Accounts\ShownOnAccounts;
 
 /**
  * The owner chose another saved account as the driver's active one.

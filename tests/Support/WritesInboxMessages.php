@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\ActorDesks;
-use App\Contracts\AssignmentTransaction;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Chat\ActorDesks;
 use App\Models\CommandReceipt;
 use App\Models\DeskRecord;
 use App\Models\Message;

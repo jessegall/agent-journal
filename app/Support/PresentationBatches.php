@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActorLabels;
-use App\Contracts\InboxResolver;
+use App\Contracts\Actors\ActorLabels;
+use App\Contracts\Chat\InboxResolver;
 use App\Data\PresentationBatchData;
 use App\Data\PresentationItemData;
 use App\Models\InboxInterval;

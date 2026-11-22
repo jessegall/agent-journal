@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Contracts\ReadLog;
-use App\Contracts\ReadMeter;
+use App\Contracts\Reads\ReadLog;
+use App\Contracts\Reads\ReadMeter;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Contracts\ActiveActorCounter;
-use App\Contracts\AdmittedRecipients;
-use App\Contracts\UserPresences;
+use App\Contracts\Actors\ActiveActorCounter;
+use App\Contracts\Chat\AdmittedRecipients;
+use App\Contracts\Chat\UserPresences;
 use App\Enums\ActorType;
 use Carbon\CarbonImmutable;
 

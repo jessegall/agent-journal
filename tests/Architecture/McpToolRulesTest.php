@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\AgentStack;
-use App\Contracts\Command;
-use App\Contracts\StackEditor;
-use App\Contracts\StackTransactionRunner;
+use App\Contracts\Bus\Command;
+use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\StackEditor;
+use App\Contracts\Work\StackTransactionRunner;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalReadTool;

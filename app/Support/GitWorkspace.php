@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\WorkspaceSource;
+use App\Contracts\Files\WorkspaceSource;
 use App\Values\WorkspaceClone;
 use App\Values\WorkspacePreparation;
 use Spatie\LaravelData\Attributes\MapInputName;

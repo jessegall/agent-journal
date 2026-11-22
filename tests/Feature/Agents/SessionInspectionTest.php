@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Commands\RecordStopResults\RecordStopResultsCommand;
-use App\Contracts\ProfileResolver;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\ExecutionModeType;
 use App\Enums\StopResultType;
 use App\Models\SessionPolicy;

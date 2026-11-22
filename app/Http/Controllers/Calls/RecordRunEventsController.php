@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\RecordRunEventsCall;
 use App\Calls\Processes\RunEventsAccepted;
 use App\Commands\RecordRunEvents\RecordRunEventsCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Models\ProcessRun;
 use App\Values\RunEventBatch;
 

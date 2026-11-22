@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\Authorizer;
-use App\Contracts\AuthorizerProvider;
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Authorization\Authorizer;
+use App\Contracts\Authorization\AuthorizerProvider;
 use App\Exceptions\ActorNotAllowed;
 use App\Values\TrustedEntryAuthority;
 

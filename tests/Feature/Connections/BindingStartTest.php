@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Commands\InstallDesks\InstallDesksCommand;
-use App\Contracts\AssignmentStorage;
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\MainSeatTakeover;
+use App\Contracts\Assignments\AssignmentStorage;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Chat\MainSeatTakeover;
 use App\Enums\CommandEntry;
 use App\Enums\HostProtocolVersion;
 use App\Models\Agent;

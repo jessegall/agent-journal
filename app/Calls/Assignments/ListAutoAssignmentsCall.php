@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Calls\Assignments;
 
 use App\Attributes\Endpoint;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Data\Assignments\AutoAssignmentPageData;
 use App\Enums\ActorType;
 use App\Enums\CallEffect;

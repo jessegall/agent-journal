@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Pipable;
+use App\Contracts\Bus\Pipable;
 use Closure;
 
 /**

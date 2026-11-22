@@ -7,7 +7,7 @@ namespace App\Calls\Assignments;
 use App\Attributes\Endpoint;
 use App\Calls\Assignments\Concerns\NamesAutoAssignment;
 use App\Casts\CallKeyCast;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Data\Assignments\AutoAssignmentChangeData;
 use App\Enums\ActorType;
 use App\Enums\CallEffect;

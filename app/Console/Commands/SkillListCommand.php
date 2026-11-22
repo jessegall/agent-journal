@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Contracts\SkillResolver;
+use App\Contracts\Skills\SkillResolver;
 use App\Exceptions\SkillConflict;
 use App\Exceptions\SkillDeclarationInvalid;
 use App\Exceptions\SkillSourceInvalid;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Sequences\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\AgentStack;
-use App\Contracts\Listener;
+use App\Contracts\Events\Listener;
+use App\Contracts\Work\AgentStack;
 use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Resolvers\Support\SequenceRecords;
 use Domain\Sequences\Support\States\Support\FollowingSequenceStateReference;

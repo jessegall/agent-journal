@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Assignee;
-use App\Contracts\AssignmentDestinationResolver;
+use App\Contracts\Assignments\Assignee;
+use App\Contracts\Assignments\AssignmentDestinationResolver;
 
 /**
  * The assignee side of a recipient's destinations.

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\SessionProvenance;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Sessions\SessionProvenance;
 use App\Support\RecordReference;
 use Domain\Documents\Concerns\RefusesOtherDrafts;
 use Domain\Documents\Enums\CloseCause;

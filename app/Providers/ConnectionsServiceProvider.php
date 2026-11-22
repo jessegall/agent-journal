@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\HostOperatorAccess;
-use App\Contracts\LocalProjectHosts;
-use App\Contracts\PolicyCatalogue;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Hosts\HostOperatorAccess;
+use App\Contracts\Hosts\LocalProjectHosts;
 use App\Enums\AccessType;
 use App\Policies\ConnectionsPolicy;
 use App\Support\BindingHosts;

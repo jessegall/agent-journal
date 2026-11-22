@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\PipelineRunner;
+use App\Contracts\Bus\PipelineRunner;
 use App\Declarations\DomainUi;
 use App\Declarations\ToggleGroup;
 use App\Exceptions\AlwaysOnDomainRequiresSwitchable;

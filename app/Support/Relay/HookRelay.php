@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Relay;
 
-use App\Contracts\AgentRequestClient;
-use App\Contracts\Files;
+use App\Contracts\Files\Files;
+use App\Contracts\Sessions\AgentRequestClient;
 use App\Enums\CallFailure;
 use App\Enums\HookEvent;
 use App\Enums\Place;

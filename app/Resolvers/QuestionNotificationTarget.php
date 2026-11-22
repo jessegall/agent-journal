@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\DeclaredPages;
-use App\Contracts\NotificationTargetResolver;
+use App\Contracts\Chat\NotificationTargetResolver;
+use App\Contracts\Navigation\DeclaredPages;
 use App\Data\NotificationLink;
 use App\Models\Message;
 

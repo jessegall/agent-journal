@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Files;
-use App\Contracts\SkillPublisher;
+use App\Contracts\Files\Files;
+use App\Contracts\Skills\SkillPublisher;
 use App\Enums\Permissions;
 use App\Enums\Place;
 use App\Exceptions\FileOutsidePlaces;

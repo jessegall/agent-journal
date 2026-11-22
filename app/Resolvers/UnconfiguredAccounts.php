@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\ActiveAccountReader;
+use App\Contracts\Accounts\ActiveAccountReader;
 use App\Enums\StartUnavailableReason;
 use App\Exceptions\AccountUnavailable;
 use App\Values\SelectedAccount;

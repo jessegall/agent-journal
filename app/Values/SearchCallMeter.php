@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\WorkAllowance;
+use App\Contracts\Work\WorkAllowance;
 
 /**
  * The work each source did in one search call, added up over its batches: the time, the rows examined, the bytes

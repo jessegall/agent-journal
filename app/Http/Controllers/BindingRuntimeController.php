@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Commands\RecordBindingStart\RecordBindingStartCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Data\Connections\BindingRuntimeRequestData;
 use App\Models\BindingStart;
 use App\Models\ProjectBinding;

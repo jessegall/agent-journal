@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Bus\CommandFacts;
 use App\Enums\RecoveryAction;
 use App\Events\DriverRequestRecovered;
 use App\Exceptions\DriverRequestRefused;

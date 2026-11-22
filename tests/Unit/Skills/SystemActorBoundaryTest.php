@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use App\Enums\ActorType;
 use App\Exceptions\InvalidActorText;
 use App\Support\ActorIdentity;

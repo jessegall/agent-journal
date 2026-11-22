@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\AssertBindingStart;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\ArrangementType;
 use App\Enums\BindingReadiness;
 use App\Exceptions\BindingStartRefused;

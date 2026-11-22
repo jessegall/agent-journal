@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers;
 
-use App\Contracts\AgentDirectory;
-use App\Contracts\CommandBus;
-use App\Contracts\ConversationResolver;
-use App\Contracts\CurrentActor;
-use App\Contracts\DriverCatalogue;
-use App\Contracts\PageResolver;
-use App\Contracts\SlotSections;
-use App\Contracts\StartAccounts;
+use App\Contracts\Accounts\StartAccounts;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Chat\ConversationResolver;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Navigation\PageResolver;
+use App\Contracts\Navigation\SlotSections;
+use App\Contracts\Sessions\AgentDirectory;
 use App\Data\Profiles\EligibleAccountsData;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\PrivateRecordMissing;

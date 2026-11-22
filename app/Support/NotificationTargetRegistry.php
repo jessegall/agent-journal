@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\NotificationTargetResolver;
-use App\Contracts\NotificationTargets;
+use App\Contracts\Chat\NotificationTargetResolver;
+use App\Contracts\Chat\NotificationTargets;
 use App\Exceptions\NotificationTargetUnregistered;
 use Illuminate\Container\Container;
 

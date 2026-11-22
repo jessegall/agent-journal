@@ -6,15 +6,15 @@ namespace App\Support;
 
 use App\Commands\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
 use App\Commands\ClaimAutoAssignment\ClaimAutoAssignmentCommand;
-use App\Contracts\AssignedWorkResolver;
-use App\Contracts\AssignmentProviders;
-use App\Contracts\AutoAssignmentResolver;
-use App\Contracts\AutoAssignmentTrigger;
-use App\Contracts\CommandBus;
-use App\Contracts\CommandStops;
-use App\Contracts\MaintenanceAdmission;
-use App\Contracts\StopTime;
-use App\Contracts\StopTimes;
+use App\Contracts\Admission\MaintenanceAdmission;
+use App\Contracts\Assignments\AssignedWorkResolver;
+use App\Contracts\Assignments\AssignmentProviders;
+use App\Contracts\Assignments\AutoAssignmentResolver;
+use App\Contracts\Assignments\AutoAssignmentTrigger;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandStops;
+use App\Contracts\Processes\StopTime;
+use App\Contracts\Processes\StopTimes;
 use Psr\Log\LoggerInterface;
 use Throwable;
 

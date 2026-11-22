@@ -6,7 +6,7 @@ namespace Tests\Feature\Bus;
 
 use App\Commands\AssignRecord\AssignRecordCommand;
 use App\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Contracts\ReadAdmission;
+use App\Contracts\Admission\ReadAdmission;
 use App\Enums\AccessRuleType;
 use App\Enums\CommandEffectType;
 use App\Enums\NoSubject;

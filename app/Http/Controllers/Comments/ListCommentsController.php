@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Comments;
 
-use App\Contracts\CommentResolver;
-use App\Contracts\RecordResolver;
+use App\Contracts\Records\CommentResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Http\Requests\Comments\ListCommentsRequest;
 use Illuminate\Http\JsonResponse;
 

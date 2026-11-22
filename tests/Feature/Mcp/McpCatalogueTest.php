@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Contracts\ToolDiscovery;
+use App\Contracts\Drivers\ToolDiscovery;
 use App\Mcp\Exceptions\McpClassInvalid;
 use App\Mcp\Exceptions\McpToolNameInvalid;
 use App\Mcp\Exceptions\McpToolNameTaken;

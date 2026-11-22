@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Support\Registry;
 
-use App\Contracts\Assignable;
-use App\Contracts\AssignableProvider;
-use App\Contracts\AssignedWorkProvider;
-use App\Contracts\AssigneeProvider;
-use App\Contracts\AssignmentPoolFactory;
-use App\Contracts\AssignmentProviders;
-use App\Contracts\AssignmentRegistration;
-use App\Contracts\AutoAssigner;
-use App\Contracts\AutoAssignmentActivity;
-use App\Contracts\JournalAssignableProvider;
+use App\Contracts\Assignments\Assignable;
+use App\Contracts\Assignments\AssignableProvider;
+use App\Contracts\Assignments\AssignedWorkProvider;
+use App\Contracts\Assignments\AssigneeProvider;
+use App\Contracts\Assignments\AssignmentPoolFactory;
+use App\Contracts\Assignments\AssignmentProviders;
+use App\Contracts\Assignments\AssignmentRegistration;
+use App\Contracts\Assignments\AutoAssigner;
+use App\Contracts\Assignments\AutoAssignmentActivity;
+use App\Contracts\Assignments\JournalAssignableProvider;
 use App\Enums\ActorType;
 use App\Enums\AssignmentPurpose;
 use App\Exceptions\AssigneeTypeRepeated;

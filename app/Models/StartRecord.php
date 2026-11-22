@@ -6,8 +6,8 @@ namespace App\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
-use App\Contracts\StartRefusal;
+use App\Contracts\Records\ReadableModel;
+use App\Contracts\Refusals\StartRefusal;
 use App\Enums\ActorType;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverSourceType;

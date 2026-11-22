@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AuthorizerProvider;
-use App\Contracts\AuthorizerProviderRegistration;
+use App\Contracts\Authorization\AuthorizerProvider;
+use App\Contracts\Authorization\AuthorizerProviderRegistration;
 use App\Enums\ActorType;
 use App\Exceptions\AuthorizerProviderMissing;
 use App\Exceptions\AuthorizerProviderRepeated;

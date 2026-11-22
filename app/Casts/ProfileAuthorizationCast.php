@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Casts;
 
 use App\Attributes\DecodesAnyJson;
-use App\Contracts\Command;
+use App\Contracts\Bus\Command;
 use App\Data\StoredPolicyGrant;
 use App\Data\StoredScopedRead;
 use App\Enums\AuthorizationType;

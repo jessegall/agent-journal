@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Commands\ResetSetting\ResetSettingCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\SettingsCatalogue;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Settings\SettingsCatalogue;
 use App\Data\SettingData;
 use App\Enums\SettingSource;
 use App\Http\Requests\Settings\SaveSettingsRequest;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActorDesks;
+use App\Contracts\Chat\ActorDesks;
 use App\Models\DeskPreference;
 use App\Models\DeskRecord;
 

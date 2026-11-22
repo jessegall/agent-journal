@@ -6,9 +6,9 @@ namespace Tests\Feature\Profiles;
 
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\SaveProfileDraft\SaveProfileDraftCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\DomainAvailability;
-use App\Contracts\ScriptChecks;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Domains\DomainAvailability;
+use App\Contracts\Scripts\ScriptChecks;
 use App\Models\Profile;
 use App\Models\ProfileRevision;
 use App\Support\KeywordRegistry;

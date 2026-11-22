@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CodedRefusal;
-use App\Contracts\PresentsLayout;
-use App\Contracts\ReflectorFactory;
-use App\Contracts\VisibilityCheck;
-use App\Contracts\WindowResults as WindowResultsContract;
+use App\Contracts\Authorization\VisibilityCheck;
+use App\Contracts\Navigation\PresentsLayout;
+use App\Contracts\Navigation\WindowResults as WindowResultsContract;
+use App\Contracts\Reflection\ReflectorFactory;
+use App\Contracts\Refusals\CodedRefusal;
 use App\Data\DeniedWindow;
 use App\Data\DockOfferData;
 use App\Data\FailedWindow;

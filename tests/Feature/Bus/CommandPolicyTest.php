@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Contracts\CommandAdmission;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandAdmission;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\CommandAdmissionStage;
 use App\Enums\RefusalCode;
 use App\Exceptions\CommandAdmissionRefused;

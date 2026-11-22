@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\AgentAuthority;
-use App\Contracts\AutoAssignmentAccess;
-use App\Contracts\JournalAdmission;
-use App\Contracts\TargetAuthorizer;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Assignments\AutoAssignmentAccess;
+use App\Contracts\Authorization\AgentAuthority;
+use App\Contracts\Authorization\TargetAuthorizer;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\ActorUnavailable;
 use App\Exceptions\AssignmentDenied;

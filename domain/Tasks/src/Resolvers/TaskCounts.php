@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;

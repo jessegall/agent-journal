@@ -6,7 +6,7 @@ namespace Tests\Architecture;
 
 use App\Attributes\JournalRoute;
 use App\Calls\Agents\RecordHeartbeatCall;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Enums\JournalRouteType;
 use App\Mcp\Servers\JournalServer;
 use App\Support\CallRoutes;

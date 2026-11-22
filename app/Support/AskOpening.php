@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AskType;
+use App\Contracts\Chat\AskType;
 use App\Enums\AskOriginType;
 use App\Models\Ask;
 use App\Values\ProfileKey;

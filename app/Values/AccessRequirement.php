@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\Policy;
+use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Authorization\Policy;
 use App\Enums\AccessType;
 
 /**

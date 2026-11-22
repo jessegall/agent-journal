@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ChatLines;
+use App\Contracts\Chat\ChatLines;
 use App\Enums\LineCardPlacement;
 use App\Enums\TimelineEventType;
 use App\Models\InboxInterval;

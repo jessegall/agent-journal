@@ -7,7 +7,7 @@ namespace Tests\Feature\Bus;
 use App\Commands\AssignRecord\AssignRecordCommand;
 use App\Commands\RetireAgent\RetireAgentCommand;
 use App\Commands\SendMessage\SendMessageCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\ActorType;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\CommandReplacementRefused;

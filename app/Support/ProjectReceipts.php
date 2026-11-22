@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ResultReceipts;
+use App\Contracts\Bus\ResultReceipts;
 use App\Models\ResultReceipt;
 use PhpOption\None;
 use PhpOption\Option;

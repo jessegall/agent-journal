@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ProposeCommandRule;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\RequestTransitionRefused;
 use App\Exceptions\RuleProposalRefused;
 use App\Models\CommandRequest;

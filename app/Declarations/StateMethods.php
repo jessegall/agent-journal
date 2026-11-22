@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Contracts\Event;
-use App\Contracts\TickableState;
+use App\Contracts\Events\Event;
+use App\Contracts\Work\TickableState;
 use App\Events\StateTypesRequested;
 use App\Exceptions\InvalidStateMethod;
 use App\Support\DeclaredType;

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Helpers;
 
 use App\Concerns\HasAssignables;
-use App\Contracts\CommandProvider;
-use App\Contracts\InternalAssignableContributor;
-use App\Contracts\PageProvider;
-use App\Contracts\PolicyProvider;
+use App\Contracts\Assignments\InternalAssignableContributor;
+use App\Contracts\Authorization\PolicyProvider;
+use App\Contracts\Bus\CommandProvider;
+use App\Contracts\Navigation\PageProvider;
 use App\Declarations\Page;
 use App\Enums\AccessType;
 use App\Enums\Icon;

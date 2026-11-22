@@ -7,7 +7,7 @@ namespace Domain\Helpers\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;

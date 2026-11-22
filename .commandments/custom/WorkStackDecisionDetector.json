@@ -23,7 +23,7 @@
                     {
                         "all": [
                             {"nameIn": ["current", "currentRecord", "pruneCurrent", "push", "pushFor", "offerFor"]},
-                            {"resolves": "App\\Contracts\\ActorWorkStacks", "of": "child:var"}
+                            {"resolves": "App\\Contracts\\Actors\\ActorWorkStacks", "of": "child:var"}
                         ]
                     }
                 ]

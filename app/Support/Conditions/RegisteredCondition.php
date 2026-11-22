@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Conditions;
 
-use App\Contracts\SkillCondition;
-use App\Contracts\SkillConditionEvaluator;
+use App\Contracts\Skills\SkillCondition;
+use App\Contracts\Skills\SkillConditionEvaluator;
 use App\Support\EvaluationGuard;
 use App\Values\ConditionResult;
 use App\Values\SkillContext;

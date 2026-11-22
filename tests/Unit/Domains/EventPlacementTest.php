@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 use App\Support\Exports as ExportList;
 use App\Support\ExportValidator;
 use App\Support\Reflector;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\DomainAvailability;
-use App\Contracts\PipelineRunner;
-use App\Contracts\PolicyCatalogue;
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Bus\PipelineRunner;
+use App\Contracts\Domains\DomainAvailability;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\CoreApi;
 use App\CoreCommands;
 use App\CoreMcpTools;

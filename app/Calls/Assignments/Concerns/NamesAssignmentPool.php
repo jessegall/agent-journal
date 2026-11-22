@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Assignments\Concerns;
 
-use App\Contracts\RecordResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Support\AutoAssignmentInput;
 use App\Support\PoolReference;
 use App\Support\RecordReference;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\AutoAssignmentAccess;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Assignments\AutoAssignmentAccess;
 use App\Exceptions\AutoAssignmentDenied;
 
 /**

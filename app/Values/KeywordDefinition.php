@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\ScriptKeywordDefinition;
-use App\Contracts\ScriptStatement;
-use App\Contracts\ScriptTrigger;
+use App\Contracts\Scripts\ScriptKeywordDefinition;
+use App\Contracts\Scripts\ScriptStatement;
+use App\Contracts\Scripts\ScriptTrigger;
 use App\Enums\KeywordCategory;
 use App\Enums\ScriptEffect;
 use App\Enums\SyntaxForm;

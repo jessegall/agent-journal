@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Assignments\WriteBoundary;
 
-use App\Contracts\AssignmentWriter;
+use App\Contracts\Assignments\AssignmentWriter;
 use App\Support\States\AgentState;
 
 /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Pipe;
-use App\Contracts\PipelineDefinition;
+use App\Contracts\Bus\Pipe;
+use App\Contracts\Bus\PipelineDefinition;
 
 /**
  * A pipe that runs another pipeline: it turns its own input into the inner pipeline's input, runs that pipeline, and

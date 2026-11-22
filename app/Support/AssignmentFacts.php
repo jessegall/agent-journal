@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AssignmentFactPublisher;
-use App\Contracts\CommandFacts;
+use App\Contracts\Assignments\AssignmentFactPublisher;
+use App\Contracts\Bus\CommandFacts;
 use App\Enums\AssignmentReason;
 use App\Events\AssignmentsChanged;
 use Carbon\CarbonImmutable;

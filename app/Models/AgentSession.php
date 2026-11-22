@@ -6,7 +6,7 @@ namespace App\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Enums\AccountProcessRole;
 use App\Enums\DriverSourceType;
 use App\Enums\ModelSelectionType;

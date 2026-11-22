@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RetryDelivery;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\OutstandingRange;
 use App\Models\ReceiptDelivery;
 use Carbon\CarbonImmutable;

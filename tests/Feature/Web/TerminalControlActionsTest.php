@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Contracts\CurrentAuthorizer;
+use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\RefusalCode;
 use App\Enums\TerminalControlRefusal;
 use App\Enums\TerminalGrantState;

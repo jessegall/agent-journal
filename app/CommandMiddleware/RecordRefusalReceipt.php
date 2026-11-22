@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\CommandMiddleware;
 
-use App\Contracts\CommandMiddleware;
-use App\Contracts\CommandRefusal;
-use App\Contracts\ReceiptRefusal;
-use App\Contracts\RefusalDetails;
+use App\Contracts\Bus\CommandMiddleware;
+use App\Contracts\Bus\CommandRefusal;
+use App\Contracts\Bus\ReceiptRefusal;
+use App\Contracts\Refusals\RefusalDetails;
 use App\Enums\RefusalCode;
 use App\Models\CommandReceipt;
 use App\Support\CommandCall;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\StopPreparer;
+use App\Contracts\Processes\StopPreparer;
 use App\Values\StopPreparation;
 use App\Values\StopPreparationRequest;
 

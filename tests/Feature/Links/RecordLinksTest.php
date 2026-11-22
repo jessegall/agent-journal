@@ -6,9 +6,9 @@ namespace Tests\Feature\Links;
 
 use App\Commands\LinkRecords\LinkRecordsCommand;
 use App\Commands\UnlinkRecords\UnlinkRecordsCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\RecordResolver;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Records\RecordResolver;
 use App\Exceptions\CommandInputInvalid;
 use App\Exceptions\InvalidRecordIdentity;
 use App\Exceptions\RecordUnavailable;

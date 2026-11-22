@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Contracts\HostCapabilities;
+use App\Contracts\Hosts\HostCapabilities;
 use App\Enums\CapabilityStatusType;
 use App\Enums\LaunchProfileType;
 use App\Models\Account;

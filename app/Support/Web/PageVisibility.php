@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Web;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\UiOwnerAvailability;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Navigation\UiOwnerAvailability;
 use App\Support\UiDeclarations;
 use Illuminate\Contracts\Container\Container;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;

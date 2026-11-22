@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Providers;
 
-use App\Contracts\ReadEntitlements;
+use App\Contracts\Authorization\ReadEntitlements;
 use App\Support\LinkTypeRegistry;
 use App\Values\ReadEntitlement;
 use Domain\Rules\Contracts\RuleDetailsResolver;

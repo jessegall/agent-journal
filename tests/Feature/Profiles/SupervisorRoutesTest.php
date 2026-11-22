@@ -6,9 +6,9 @@ namespace Tests\Feature\Profiles;
 
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\ChangeSupervisor\ChangeSupervisorCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\JournalAdmission;
-use App\Contracts\ProfileResolver;
+use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\OwnerRouteType;
 use App\Enums\SupervisorCoverageType;
 use App\Exceptions\ConsoleOwnerMissing;

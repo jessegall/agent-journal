@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Contracts\SkillResolver;
+use App\Contracts\Skills\SkillResolver;
 use App\Values\SkillKey;
 use Domain\Plans\Tests\TestCase;
 use Illuminate\Support\Facades\Artisan;

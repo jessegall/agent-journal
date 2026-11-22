@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverCapability;
 use App\Exceptions\AccountWriterTaken;
 use App\Models\AgentRuntime;

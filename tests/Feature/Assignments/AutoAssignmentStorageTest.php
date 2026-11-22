@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\AutoAssignmentResolver;
-use App\Contracts\AutoAssignmentWriter;
-use App\Contracts\ServerClock;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Assignments\AutoAssignmentResolver;
+use App\Contracts\Assignments\AutoAssignmentWriter;
+use App\Contracts\Time\ServerClock;
 use App\Enums\AutoAssignmentClaimType;
 use App\Exceptions\AssignmentTransactionRequired;
 use App\Exceptions\AutoAssignmentMissing;

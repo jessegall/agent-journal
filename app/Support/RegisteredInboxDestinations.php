@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Inbox;
-use App\Contracts\InboxDestinationResolver;
+use App\Contracts\Chat\Inbox;
+use App\Contracts\Chat\InboxDestinationResolver;
 
 /**
  * The inbox side of a recipient's destinations.

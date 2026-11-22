@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\CommandMiddleware;
 
 use App\Commands\StartAgent\StartAgentCommand;
-use App\Contracts\CommandMiddleware;
-use App\Contracts\DriverCatalogue;
-use App\Contracts\ReplyInboxes;
-use App\Contracts\StartRefusal;
+use App\Contracts\Bus\CommandMiddleware;
+use App\Contracts\Chat\ReplyInboxes;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Refusals\StartRefusal;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\StartRecord;
 use App\Support\ActorIdentity;

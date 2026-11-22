@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Pipelines;
 
-use App\Contracts\CommandReader;
-use App\Contracts\PipelineDefinition;
+use App\Contracts\Bus\CommandReader;
+use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\Grammar\AttachRedirectToSimpleCommand;
 use App\Pipes\Grammar\AttachWordToSimpleCommand;
 use App\Pipes\Grammar\CloseSimpleCommandNode;

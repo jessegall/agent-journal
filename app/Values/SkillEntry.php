@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\SkillCondition;
+use App\Contracts\Skills\SkillCondition;
 use App\Enums\SkillOrigin;
 
 /**

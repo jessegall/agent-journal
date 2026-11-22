@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Exceptions\CommandDeclarationInvalid;
 use Illuminate\Support\Arr;
 use Spatie\LaravelData\Attributes\Validation\ActiveUrl;

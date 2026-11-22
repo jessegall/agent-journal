@@ -6,7 +6,7 @@ namespace Domain\Chat\Tests\Feature;
 
 use App\Commands\AskMessage\AskMessageCommand;
 use App\Commands\CreateDesk\CreateDeskCommand;
-use App\Contracts\AssignmentTransaction;
+use App\Contracts\Assignments\AssignmentTransaction;
 use App\Models\DeskRecord;
 use App\Models\Message;
 use App\Support\ActorIdentity;

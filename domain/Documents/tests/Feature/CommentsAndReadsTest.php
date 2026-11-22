@@ -6,10 +6,10 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Commands\PostComment\PostCommentCommand;
 use App\Commands\PostTextComment\PostTextCommentCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CommentResolver;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\RecordResolver;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Records\CommentResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Data\RecordCommentView;
 use App\Data\TextCommentLocation;
 use App\Data\TextCommentView;

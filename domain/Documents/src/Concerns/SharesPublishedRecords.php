@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Concerns;
 
-use App\Contracts\ShareBudget;
+use App\Contracts\Sharing\ShareBudget;
 use App\Exceptions\RecordUnavailable;
 use App\Support\PublicComment;
 use App\Support\RecordIdentity;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Contracts\CommandBus;
-use App\Contracts\MonotonicClock;
-use App\Contracts\ServerClock;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Time\MonotonicClock;
+use App\Contracts\Time\ServerClock;
 use App\Enums\CommandEntry;
 use App\Events\StateTypesRequested;
 use App\Models\AgentStackRow;

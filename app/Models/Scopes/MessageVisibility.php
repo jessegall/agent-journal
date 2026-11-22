@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Scopes;
 
-use App\Contracts\ActorVisibility;
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentSession;
+use App\Contracts\Actors\ActorVisibility;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Sessions\CurrentSession;
 use App\Enums\MessageType;
 use App\Models\Message;
 use App\Support\ActorIdentity;

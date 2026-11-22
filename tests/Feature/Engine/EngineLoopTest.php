@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Contracts\MonotonicClock;
-use App\Contracts\Sleeper;
-use App\Contracts\Watchdog;
+use App\Contracts\Processes\Watchdog;
+use App\Contracts\Time\MonotonicClock;
+use App\Contracts\Time\Sleeper;
 use App\Support\AdvisoryEngineLock;
 use App\Support\EngineListenerSet;
 use App\Support\EngineLoop;

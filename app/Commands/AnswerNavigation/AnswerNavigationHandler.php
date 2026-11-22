@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\AnswerNavigation;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\NavigationState;
 use App\Exceptions\NavigationAnswerRefused;
 use App\Exceptions\NavigationRaiseRefused;

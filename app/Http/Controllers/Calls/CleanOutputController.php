@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\CleanOutputCall;
 use App\Calls\Processes\OutputCleaned;
 use App\Commands\CleanProcessOutput\CleanProcessOutputCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Cleans the named runs' output and answers what it removed.

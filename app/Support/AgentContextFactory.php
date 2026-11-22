@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\StartProfileAdmission;
+use App\Contracts\Admission\StartProfileAdmission;
 use App\Exceptions\CallProtocolUnsupported;
 use App\Exceptions\CallSignatureInvalid;
 use App\Exceptions\CredentialRejected;

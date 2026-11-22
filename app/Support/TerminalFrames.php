@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\ServerClock;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Time\ServerClock;
 use App\Data\TerminalControlData;
 use App\Data\TerminalFrameData;
 use App\Enums\AccessType;

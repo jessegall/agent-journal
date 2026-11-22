@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverVariant;
 use App\Enums\ModeSourceType;
 use App\Exceptions\DriverCapabilityUnsupported;

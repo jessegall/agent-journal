@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Delivery;
 
-use App\Contracts\Event;
-use App\Contracts\FactStaging;
+use App\Contracts\Events\Event;
+use App\Contracts\Events\FactStaging;
 use App\Support\StateEvents\StateEventDispatch;
 use App\Support\StateEvents\StateEventScope;
 use Illuminate\Contracts\Container\Container;

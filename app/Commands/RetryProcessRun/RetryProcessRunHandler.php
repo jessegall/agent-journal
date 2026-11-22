@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\RetryProcessRun;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\ShellAdmission;
+use App\Contracts\Admission\ShellAdmission;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\LifecycleState;
 use App\Exceptions\RetryRefused;
 use App\Models\ProcessRun;

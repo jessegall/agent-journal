@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Attributes\Authorize;
-use App\Contracts\AuthoritySource;
-use App\Contracts\Command;
+use App\Contracts\Authorization\AuthoritySource;
+use App\Contracts\Bus\Command;
 
 /**
  * An agent's authority: the admitted profile revision its session was started with.

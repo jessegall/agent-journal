@@ -6,10 +6,10 @@ namespace Tests\Feature\Settings;
 
 use App\Commands\EnableSettingGroup\EnableSettingGroupCommand;
 use App\Commands\SetIntegerSetting\SetIntegerSettingCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\EnabledSettingsGroup;
-use App\Contracts\SettingsResolver;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Settings\EnabledSettingsGroup;
+use App\Contracts\Settings\SettingsResolver;
 use App\Enums\SettingsOutcome;
 use App\Enums\SettingTarget;
 use App\Events\SettingsChanged;

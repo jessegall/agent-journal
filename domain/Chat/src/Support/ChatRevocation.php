@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Contracts\ChatDepartures;
-use App\Contracts\ChatEligibility;
-use App\Contracts\ChatParticipationEnding;
-use App\Contracts\InboxResolver;
+use App\Contracts\Chat\ChatDepartures;
+use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Chat\ChatParticipationEnding;
+use App\Contracts\Chat\InboxResolver;
 use App\Enums\ChatPermission;
 use App\Enums\LeaveReason;
 use App\Support\ActorIdentity;

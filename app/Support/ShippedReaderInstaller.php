@@ -13,7 +13,7 @@ use App\Commands\ProveReader\ProveReaderCommand;
 use App\Commands\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Commands\SettleSample\SettleSampleCommand;
 use App\Commands\StartSample\StartSampleCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Declarations\VerificationContract;
 use App\Enums\EvidenceSource;
 use App\Enums\OutputStream;

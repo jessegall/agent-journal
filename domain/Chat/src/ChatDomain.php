@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Chat;
 
-use App\Contracts\Command;
-use App\Contracts\CommandProvider;
-use App\Contracts\MessageSearch;
-use App\Contracts\NativePartProvider;
-use App\Contracts\PageProvider;
-use App\Contracts\PolicyProvider;
-use App\Contracts\SectionProvider;
-use App\Contracts\SkillProvider;
+use App\Contracts\Authorization\PolicyProvider;
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandProvider;
+use App\Contracts\Drivers\NativePartProvider;
+use App\Contracts\Navigation\PageProvider;
+use App\Contracts\Navigation\SectionProvider;
+use App\Contracts\Search\MessageSearch;
+use App\Contracts\Skills\SkillProvider;
 use App\Declarations\ActionRoute;
 use App\Declarations\Page;
 use App\Declarations\Section;

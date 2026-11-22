@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Contracts\ActorWorkStacks;
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\CommandBus;
-use App\Contracts\RunClaims;
-use App\Contracts\StackTransaction;
+use App\Contracts\Actors\ActorWorkStacks;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Processes\RunClaims;
+use App\Contracts\Work\StackTransaction;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\StackAlreadyClosed;
 use App\Models\AgentStackRow;

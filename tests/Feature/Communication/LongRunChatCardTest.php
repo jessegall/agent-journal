@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\RecordRunEvents\RecordRunEventsCommand;
-use App\Contracts\ChatLines;
-use App\Contracts\ShellAdmission;
+use App\Contracts\Admission\ShellAdmission;
+use App\Contracts\Chat\ChatLines;
 use App\Enums\ShellDialect;
 use App\Models\ProcessRun;
 use App\Support\ActorIdentity;

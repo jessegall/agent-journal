@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\SetIntegerSetting;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Declarations\IntegerSetting;
 use App\Enums\SettingType;
 use App\Support\SettingCodec;

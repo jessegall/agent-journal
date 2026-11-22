@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Calls\Hooks\AgentStateMachine;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\ShellCommandParser;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\DriverVariant;
 use App\Enums\NoSubject;
 use App\Enums\RewriteSupport;

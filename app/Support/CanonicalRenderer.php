@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Skill;
+use App\Contracts\Skills\Skill;
 use App\Exceptions\SkillDeclarationInvalid;
 use App\Values\RenderedSkill;
 use App\Values\SkillKey;

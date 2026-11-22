@@ -17,7 +17,7 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of app/ and the domains.')]
 final class DirectFileAccessTest extends TestCase
 {
-    private const string HOW_TO_FIX = "Read, list, stat and write files through App\\Contracts\\Files:\n";
+    private const string HOW_TO_FIX = "Read, list, stat and write files through App\\Contracts\\Files\\Files:\n";
 
     private const array FILES_PRIMITIVES = [
         'app/Support/CodeFiles.php',

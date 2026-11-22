@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Contracts\CallRegistrar;
+use App\Contracts\Domains\CallRegistrar;
 use Domain\Memory\Http\Controllers\Calls;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;

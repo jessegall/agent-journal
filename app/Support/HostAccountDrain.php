@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AccountOwnerDrain;
+use App\Contracts\Accounts\AccountOwnerDrain;
 use App\Data\DrainReplyData;
 use App\Data\FolderUseReplyData;
 use App\Enums\ArrangementType;

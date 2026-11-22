@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Processes;
 
-use App\Contracts\AliasResolver;
+use App\Contracts\Actors\AliasResolver;
 use App\Values\AliasLookup;
 
 /**

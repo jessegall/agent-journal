@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\ReadMeter;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Reads\ReadMeter;
 use App\Enums\ShareRelationType;
 use App\Exceptions\ContentTooLarge;
 use App\Exceptions\RecordUnavailable;

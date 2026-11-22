@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Contracts\CommandBus;
-use App\Contracts\JournalAdmission;
-use App\Contracts\SupervisorDispatch;
+use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Processes\SupervisorDispatch;
 use App\Enums\SupervisorDispatchOutcome;
 use App\Exceptions\ConsoleOwnerMissing;
 use App\Values\SupervisorRequest;

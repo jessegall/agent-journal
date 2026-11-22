@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\NoSubject;
 use App\Exceptions\SettingsUnavailable;
 use App\Models\AgentStackRow;

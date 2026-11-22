@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Contracts\CommandPermissionResolver;
+use App\Contracts\Bus\CommandPermissionResolver;
 use App\Enums\CommandClass;
 use App\Models\Agent;
 use App\Support\ActorIdentity;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\ServerClock;
-use App\Contracts\StartHeartbeats as StartHeartbeatsContract;
-use App\Contracts\StartTransaction;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Sessions\StartHeartbeats as StartHeartbeatsContract;
+use App\Contracts\Sessions\StartTransaction;
+use App\Contracts\Time\ServerClock;
 use App\Enums\ProcessStartState;
 use App\Enums\SessionStatus;
 use App\Events\SessionClosed;

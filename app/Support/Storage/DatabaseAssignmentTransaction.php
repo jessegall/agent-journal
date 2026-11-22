@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Storage;
 
-use App\Contracts\AssignmentTransaction;
+use App\Contracts\Assignments\AssignmentTransaction;
 use App\Exceptions\AssignmentRetryExhausted;
 use App\Exceptions\AssignmentTransactionRequired;
 use Closure;

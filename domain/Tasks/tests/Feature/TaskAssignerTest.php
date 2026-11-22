@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Contracts\AssignmentPool;
+use App\Contracts\Assignments\AssignmentPool;
 use App\Enums\ActorType;
 use App\Models\AssignmentRecord;
 use App\Support\ActorIdentity;

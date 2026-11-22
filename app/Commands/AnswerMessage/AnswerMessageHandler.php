@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\AnswerMessage;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\CurrentSession;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Sessions\CurrentSession;
 use App\Exceptions\MessageMissing;
 use App\Models\Message;
 use App\Support\ActorIdentity;

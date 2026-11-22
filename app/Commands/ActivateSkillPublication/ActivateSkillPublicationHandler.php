@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\ActivateSkillPublication;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\SkillPublisher;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Skills\SkillPublisher;
 use App\Exceptions\SkillPublicationFailed;
 use App\Exceptions\SkillPublicationStale;
 use App\Models\SkillPublication;

@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Boundary\Plans\Required;
 
 use App\Exceptions\RaisedOutsideUnit;
 use App\Exceptions\RowWriteRefused;
-use App\Contracts\CommandFacts;
+use App\Contracts\Bus\CommandFacts;
 use App\Attributes\InCommandTransaction;
 use App\Attributes\RequiresListener;
 

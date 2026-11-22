@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Pipelines;
 
-use App\Contracts\CommandReader;
-use App\Contracts\PipelineDefinition;
+use App\Contracts\Bus\CommandReader;
+use App\Contracts\Bus\PipelineDefinition;
 use App\Enums\TokenType;
 use App\Pipes\Grammar\ParseFunctionBody;
 use App\Pipes\Grammar\SkipNamedFunctionHeader;

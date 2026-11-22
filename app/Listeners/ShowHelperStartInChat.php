@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Contracts\ChatLines;
-use App\Contracts\Listener;
+use App\Contracts\Chat\ChatLines;
+use App\Contracts\Events\Listener;
 use App\Enums\ActorType;
 use App\Events\StartAccepted;
 use App\Models\Agent;

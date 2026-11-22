@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Command;
-use App\Contracts\CommandBus;
-use App\Contracts\JournalCommands;
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\JournalCommands;
 use App\Enums\CommandEntry;
 
 /**

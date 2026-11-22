@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Concerns\ReadsDeclaredAttributes;
-use App\Contracts\ReflectedType;
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Reflection\ReflectedType;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Exceptions\ClassMissing;
 use App\Exceptions\MethodMissing;
 use App\Exceptions\PropertyMissing;

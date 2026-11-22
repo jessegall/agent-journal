@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\CommandMiddleware;
 
-use App\Contracts\AgentStartCommand;
-use App\Contracts\CommandMiddleware;
+use App\Contracts\Bus\AgentStartCommand;
+use App\Contracts\Bus\CommandMiddleware;
 use App\Events\StartUnavailable;
 use App\Exceptions\AccountUnavailable;
 use App\Support\CommandCall;

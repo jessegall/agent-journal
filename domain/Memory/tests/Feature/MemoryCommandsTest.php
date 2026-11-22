@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Tests\Feature;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandInputInvalid;
 use App\Support\ActorIdentity;
 use Domain\Access\Models\User;

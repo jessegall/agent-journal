@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support\Readers;
 
-use App\Contracts\StartReceipts;
+use App\Contracts\Sessions\StartReceipts;
 use App\Exceptions\StartRecordMissing;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Models\HelperIdentity;

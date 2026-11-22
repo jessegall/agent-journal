@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Calls\Hooks\AgentStateMachine;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\RewriteSupport;
 use App\Enums\StackStatus;
 use App\Exceptions\CredentialRejected;

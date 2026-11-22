@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Desks;
 
 use App\Commands\SeatActor\SeatActorCommand;
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\CommandBus;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Bus\CommandBus;
 use App\Exceptions\SeatCapacityReached;
 use App\Exceptions\SeatConflict;
 use App\Exceptions\SecondForwardingSeat;

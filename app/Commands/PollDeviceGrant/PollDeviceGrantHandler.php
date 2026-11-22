@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\PollDeviceGrant;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\DeviceGrantRefused;
 use App\Models\DeviceGrant;
 use App\Values\DevicePollOutcome;

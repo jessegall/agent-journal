@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\DeliverAgent;
 
 use App\Attributes\Authorize;
-use App\Contracts\AgentStackCommand;
-use App\Contracts\MessagePart;
+use App\Contracts\Bus\AgentStackCommand;
+use App\Contracts\Drivers\MessagePart;
 use App\Data\MessagePartData;
 use App\Enums\AccessType;
 use App\Policies\AgentPolicy;

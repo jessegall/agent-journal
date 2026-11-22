@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\ContinueStart;
 
 use App\Attributes\Authorize;
-use App\Contracts\AgentStartCommand;
+use App\Contracts\Bus\AgentStartCommand;
 use App\Enums\AccessType;
 use App\Policies\AgentMaintenancePolicy;
 use App\Support\Command;

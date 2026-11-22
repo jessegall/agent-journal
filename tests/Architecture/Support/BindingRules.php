@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use App\Support\ActorContext;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;

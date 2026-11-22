@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Contracts\ShellAdmission;
-use App\Contracts\ShellCommandParser;
+use App\Contracts\Admission\ShellAdmission;
+use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\AnswerType;
 use App\Enums\CommandEffect;
 use App\Enums\CommandType;

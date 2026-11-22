@@ -6,7 +6,7 @@ namespace App\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Exceptions\ReaderDefinitionInvalid;
 use App\Exceptions\RevisionImmutable;
 use App\Support\ActorIdentity;

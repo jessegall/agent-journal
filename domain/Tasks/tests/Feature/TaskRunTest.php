@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\CommandBus;
-use App\Contracts\RunClaims;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Processes\RunClaims;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\CommandInputInvalid;
 use App\Models\Agent;

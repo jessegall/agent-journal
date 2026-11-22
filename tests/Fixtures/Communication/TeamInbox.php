@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Communication;
 
-use App\Contracts\Inbox;
+use App\Contracts\Chat\Inbox;
 
 final readonly class TeamInbox implements Inbox
 {

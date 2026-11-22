@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\ProposeReaderCall;
 use App\Calls\Processes\ReaderProposed;
 use App\Commands\ProposeReader\ProposeReaderCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Values\ReaderDefinition;
 
 /**

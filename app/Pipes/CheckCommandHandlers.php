@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Pipes;
 
 use App\Attributes\Authorize;
-use App\Contracts\Actor;
-use App\Contracts\Pipe;
-use App\Contracts\PolicyCatalogue;
-use App\Contracts\RecordCommand;
-use App\Contracts\RecordPolicy;
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Authorization\RecordPolicy;
+use App\Contracts\Bus\Pipe;
+use App\Contracts\Bus\RecordCommand;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Enums\AccessType;
 use App\Exceptions\CommandAuthorizationInvalid;
 use App\Exceptions\CommandDeclarationInvalid;

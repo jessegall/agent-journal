@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Commands\SettleFrameTimes\SettleFrameTimesCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\MonotonicClock;
-use App\Contracts\ServerClock;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Time\MonotonicClock;
+use App\Contracts\Time\ServerClock;
 use App\Enums\CommandEntry;
 use App\Models\EngineFrameTime;
 use App\Support\References\Exceptions\WorkOccurrenceStale;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
-use App\Contracts\ActorResolver;
+use App\Contracts\Actors\ActorResolver;
 use App\Models\Agent;
 use App\Support\ActorIdentity;
 use App\Values\RunningRuntime;

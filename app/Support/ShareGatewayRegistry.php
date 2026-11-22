@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReflectorFactory;
-use App\Contracts\ShareGateway;
+use App\Contracts\Reflection\ReflectorFactory;
+use App\Contracts\Sharing\ShareGateway;
 use App\Exceptions\ShareGatewayInvalid;
 use App\Exceptions\UnknownShareGateway;
 use App\Models\ShareGatewayConfiguration;

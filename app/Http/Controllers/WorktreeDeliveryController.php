@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Commands\SubmitWorktreeDelivery\SubmitWorktreeDeliveryCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Values\DeliverySubmission;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;

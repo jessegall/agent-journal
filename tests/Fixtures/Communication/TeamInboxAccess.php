@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Communication;
 
-use App\Contracts\Actor;
+use App\Contracts\Actors\Actor;
 use App\Support\ActorIdentity;
-use App\Contracts\Inbox;
-use App\Contracts\InboxAccess;
+use App\Contracts\Chat\Inbox;
+use App\Contracts\Chat\InboxAccess;
 use App\Exceptions\InboxUnavailable;
 use App\Models\InboxRecord;
 use App\Support\InboxMembers;

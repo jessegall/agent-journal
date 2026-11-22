@@ -17,7 +17,7 @@ A trait and an attribute keep verb names, since they say what the class using th
 ## The fix
 
 Name the role. A contract that stands for one class takes that class's name, and the class implements it through an
-alias: `use App\Contracts\PipelineRunner as PipelineRunnerContract`. Rename with
+alias: `use App\Contracts\Bus\PipelineRunner as PipelineRunnerContract`. Rename with
 `php tools/refactoring/move.php <Old> <New>` so every reference follows.
 
 ## Worked example

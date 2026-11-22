@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CallerReceipts;
+use App\Contracts\Bus\CallerReceipts;
 use App\Models\CommandReceipt;
 use App\Values\ReceiptAnswer;
 

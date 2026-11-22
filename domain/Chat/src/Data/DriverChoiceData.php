@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverCapability;
 use App\Enums\DriverVariant;
 use App\Values\BoundTarget;

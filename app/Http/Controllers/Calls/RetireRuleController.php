@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\RetireRuleCall;
 use App\Calls\Processes\RuleRetired;
 use App\Commands\RetireCommandRule\RetireCommandRuleCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Retires a rule.

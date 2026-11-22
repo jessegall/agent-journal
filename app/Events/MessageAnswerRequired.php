@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Event;
-use App\Contracts\ListenerFailureLog;
-use App\Contracts\UserInterfaceUpdater;
+use App\Contracts\Events\Event;
+use App\Contracts\Events\ListenerFailureLog;
+use App\Contracts\Navigation\UserInterfaceUpdater;
 
 /**
  * A message's author asked for an answer to it; it now waits at its destination inbox.

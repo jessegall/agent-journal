@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Membership;
 
-use App\Contracts\ActorLabels;
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\ActorLabels;
+use App\Contracts\Actors\CurrentActor;
 use App\Support\ActorIdentity;
 use App\Support\AgentDrivers;
 use Domain\Chat\Data\ChatInput;

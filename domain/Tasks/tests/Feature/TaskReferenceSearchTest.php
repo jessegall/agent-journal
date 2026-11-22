@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Contracts\ReadGrant;
+use App\Contracts\Authorization\ReadGrant;
 use App\Enums\ScoreTier;
 use App\Enums\SearchSurface;
 use App\Support\ActorContext;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ClaimRelease;
+use App\Contracts\Assignments\ClaimRelease;
 use App\Models\AssignmentRecord;
 
 /**

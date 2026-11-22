@@ -6,8 +6,8 @@ namespace Tests\Feature\Bus;
 
 use App\Attributes\Authorize;
 use App\Commands\RetireAgent\RetireAgentCommand;
-use App\Contracts\PipelineRunner;
-use App\Contracts\PolicyCatalogue;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Bus\PipelineRunner;
 use App\CoreCommands;
 use App\Enums\AccessType;
 use App\Enums\CommandEntry;

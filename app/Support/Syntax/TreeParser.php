@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax;
 
-use App\Contracts\PipelineRunner;
+use App\Contracts\Bus\PipelineRunner;
 use App\Enums\NodeType;
 use App\Enums\ShellDialect;
 use App\Exceptions\ShellGrammarStopped;

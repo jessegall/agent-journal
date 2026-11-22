@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\PostTextComment;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\CommentWriter;
 
 final readonly class PostTextCommentHandler implements CommandHandler

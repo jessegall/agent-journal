@@ -8,7 +8,7 @@ use App\Attributes\Authorize;
 use App\Attributes\Effect;
 use App\Attributes\RepeatableRead;
 use App\Attributes\RetainedActorRequestKey;
-use App\Contracts\MessageCommand;
+use App\Contracts\Bus\MessageCommand;
 use App\Enums\AccessType;
 use App\Enums\CommandEffectType;
 use App\Policies\MessagePolicy;

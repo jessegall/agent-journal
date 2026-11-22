@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Assignments\ReassignRecordCall;
 use App\Commands\ReassignRecord\ReassignRecordCommand;
-use App\Contracts\AssigneeResolver;
-use App\Contracts\CommandBus;
+use App\Contracts\Assignments\AssigneeResolver;
+use App\Contracts\Bus\CommandBus;
 use App\Data\Assignments\AssignmentResultData;
 
 /**

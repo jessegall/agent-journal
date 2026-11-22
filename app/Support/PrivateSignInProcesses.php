@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AccountFolders;
-use App\Contracts\AccountOwnerDrain;
-use App\Contracts\Files;
-use App\Contracts\SignInHost;
-use App\Contracts\SignInProtocol;
+use App\Contracts\Accounts\AccountFolders;
+use App\Contracts\Accounts\AccountOwnerDrain;
+use App\Contracts\Accounts\SignInHost;
+use App\Contracts\Accounts\SignInProtocol;
+use App\Contracts\Files\Files;
 use App\Enums\AccountCheckResult;
 use App\Enums\ArrangementType;
 use App\Enums\Place;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\EventCalls\Tasks\Events;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 final readonly class TaskClosed implements Event
 {

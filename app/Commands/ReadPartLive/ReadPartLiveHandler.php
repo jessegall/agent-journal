@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ReadPartLive;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\PartRun;
 use App\Models\ReaderPosition;
 use App\Support\DeclarativeReader;

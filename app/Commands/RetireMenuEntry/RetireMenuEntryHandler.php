@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\RetireMenuEntry;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\JournalAdmission;
+use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\MenuEntryRefused;
 use App\Models\MenuEntry;
 use App\Support\ActorIdentity;

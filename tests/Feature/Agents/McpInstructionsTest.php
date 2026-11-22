@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Contracts\CurrentAuthorizer;
+use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\AccessType;
 use App\Enums\ContextStartType;
 use App\Enums\RewriteSupport;

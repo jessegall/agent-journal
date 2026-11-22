@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes\Run;
 
-use App\Contracts\Pipe;
+use App\Contracts\Bus\Pipe;
 use App\Exceptions\AdmittedPlanChanged;
 use App\Support\Run\FetchedAdmission;
 

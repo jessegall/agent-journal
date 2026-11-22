@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\CommandMiddleware;
 
-use App\Contracts\Command;
-use App\Contracts\CommandMiddleware;
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandMiddleware;
 use App\Exceptions\CommandInputInvalid;
 use App\Support\CommandCall;
 use App\Support\CommandRegistry;

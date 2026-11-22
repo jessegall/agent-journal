@@ -10,7 +10,7 @@ use App\Casts\ProfileStartPolicyCast;
 use App\Casts\SupervisorRoutesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\InstancePolicy;
 use App\Exceptions\ProfileMissing;

@@ -6,8 +6,8 @@ namespace Tests\Feature\Profiles;
 
 use App\Commands\BeginSignIn\BeginSignInCommand;
 use App\Commands\ReconcileSignIns\ReconcileSignInsCommand;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\Files;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Files\Files;
 use App\Enums\CommandEntry;
 use App\Enums\SignInMethod;
 use App\Enums\SignInState;

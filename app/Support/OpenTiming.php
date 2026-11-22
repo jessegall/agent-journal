@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\VerificationTiming;
+use App\Contracts\Time\VerificationTiming;
 use App\Values\TimingVerdict;
 
 /**

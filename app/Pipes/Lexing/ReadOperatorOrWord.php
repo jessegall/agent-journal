@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes\Lexing;
 
-use App\Contracts\Pipe;
+use App\Contracts\Bus\Pipe;
 use App\Support\Syntax\LexerCursor;
 use App\Support\Syntax\ShellWordScanner;
 

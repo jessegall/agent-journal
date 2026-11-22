@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\WorkspaceSource;
+use App\Contracts\Files\WorkspaceSource;
 use App\Enums\MountType;
 use App\Enums\WorkspaceUse;
 use App\Exceptions\ManifestRefused;

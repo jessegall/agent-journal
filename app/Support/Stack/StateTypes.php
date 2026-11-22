@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Stack;
 
-use App\Contracts\WorkOccurrenceGuard;
+use App\Contracts\Work\WorkOccurrenceGuard;
 use App\Events\StateTypesRequested;
 use App\Support\StateCatalog\Contracts\StateTypes as StateTypesContract;
 use App\Support\StateCatalog\StateTypeRegistry;

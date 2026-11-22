@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Contracts\AssigneeResolver;
+use App\Contracts\Assignments\AssigneeResolver;
 use App\Enums\ActorType;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\NextAction;

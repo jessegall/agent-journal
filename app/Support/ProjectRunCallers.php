@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ProcessRunCallers;
+use App\Contracts\Processes\ProcessRunCallers;
 use App\Enums\ActorType;
 use App\Models\ProcessRun;
 use PhpOption\None;

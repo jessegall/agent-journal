@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AuthoritySource;
-use App\Contracts\ProfileResolver;
-use App\Contracts\StartProfileAdmission;
+use App\Contracts\Admission\StartProfileAdmission;
+use App\Contracts\Authorization\AuthoritySource;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Exceptions\CredentialRejected;
 use App\Exceptions\ProfileMissing;
 use App\Exceptions\ProfileRetired;

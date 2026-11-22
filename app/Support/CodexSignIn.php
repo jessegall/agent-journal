@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\SignInProtocol;
+use App\Contracts\Accounts\SignInProtocol;
 use App\Data\CodexAccountReadData;
 use App\Data\CodexLoginCompletedData;
 use App\Data\CodexLoginStartData;

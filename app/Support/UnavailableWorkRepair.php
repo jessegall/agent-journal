@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\WorkRepair;
+use App\Contracts\Work\WorkRepair;
 use App\Enums\WorkRepairOutcome;
 use App\Values\WorkRepairRequest;
 

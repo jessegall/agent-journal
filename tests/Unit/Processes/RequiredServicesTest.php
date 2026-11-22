@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Contracts\ShellCommandParser;
+use App\Contracts\Processes\ShellCommandParser;
 use App\Exceptions\ProcessesServiceMissing;
 use App\Support\RequiredServices;
 use Illuminate\Container\Container;

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support\Compatibility\Exceptions;
 
 use App\Concerns\RendersRefusal;
-use App\Contracts\CodedRefusal;
-use App\Contracts\CommandRefusal;
-use App\Contracts\UnstartableDriver;
+use App\Contracts\Bus\CommandRefusal;
+use App\Contracts\Drivers\UnstartableDriver;
+use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
 use RuntimeException;
 

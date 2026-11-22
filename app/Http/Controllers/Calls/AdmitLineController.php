@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\AdmitLineCall;
 use App\Calls\Processes\LineAdmitted;
-use App\Contracts\ShellAdmission;
+use App\Contracts\Admission\ShellAdmission;
 use App\Exceptions\LineRefused;
 use App\Values\AdmissionRefusal;
 use App\Values\ExecutionContext;

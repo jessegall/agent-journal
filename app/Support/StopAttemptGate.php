@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\SessionPolicyReader;
-use App\Contracts\StopEvidence;
-use App\Contracts\StopPreparer;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Processes\StopEvidence;
+use App\Contracts\Processes\StopPreparer;
+use App\Contracts\Sessions\SessionPolicyReader;
 use App\Enums\StopAttemptState;
 use App\Enums\StopPreparationState;
 use App\Events\HelperStopHeld;

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Ledger\Models;
 
 use App\Concerns\Linkable;
-use App\Contracts\Numbered;
+use App\Contracts\Records\Numbered;
 use App\Concerns\HasNumber;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Concerns\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;

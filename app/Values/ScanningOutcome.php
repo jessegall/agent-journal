@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\BatchOutcome;
+use App\Contracts\Bus\BatchOutcome;
 
 /**
  * The source has no hit it can publish yet and scans on from the next work position, which moved forward even when

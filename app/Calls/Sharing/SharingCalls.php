@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Sharing;
 
-use App\Contracts\CallSender;
+use App\Contracts\Domains\CallSender;
 use App\Data\Sharing\ShareProposalStatusData;
 use App\Support\CallKey;
 

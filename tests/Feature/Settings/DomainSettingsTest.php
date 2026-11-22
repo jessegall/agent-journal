@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Contracts\GroupDeclaration;
+use App\Contracts\Navigation\GroupDeclaration;
 use App\Exceptions\SettingDeclarationInvalid;
 use App\Support\CoreSettings;
 use App\Support\DomainRegistry;

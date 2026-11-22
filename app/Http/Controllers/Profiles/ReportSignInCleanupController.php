@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Profiles;
 
 use App\Commands\CleanSignInAttempt\CleanSignInAttemptCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\CleanupReportRequest;
 use App\Values\HostContext;
 use Illuminate\Http\Response;

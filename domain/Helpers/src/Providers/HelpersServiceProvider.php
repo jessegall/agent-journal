@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Providers;
 
-use App\Contracts\SupervisorDispatch;
-use App\Contracts\SystemEntryPolicies;
-use App\Contracts\WorkRepair;
+use App\Contracts\Authorization\SystemEntryPolicies;
+use App\Contracts\Processes\SupervisorDispatch;
+use App\Contracts\Work\WorkRepair;
 use App\Support\FolderClasses;
 use App\Support\LinkTypeRegistry;
 use Domain\Helpers\Models\HelperJob;

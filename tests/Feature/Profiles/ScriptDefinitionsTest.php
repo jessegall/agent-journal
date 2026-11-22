@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Contracts\DomainAvailability;
-use App\Contracts\WorkspaceReader;
+use App\Contracts\Domains\DomainAvailability;
+use App\Contracts\Files\WorkspaceReader;
 use App\Exceptions\ScriptDefinitionRefused;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\RecordMenus as RecordMenusContract;
+use App\Contracts\Navigation\RecordMenus as RecordMenusContract;
 use App\Declarations\RegisteredAction;
 use App\Declarations\RegisteredMenu;
 use App\Declarations\RegisteredMenuItem;

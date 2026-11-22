@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * An ask closed: answered, settled, withdrawn or closed unanswered. It names the ask and its type only.

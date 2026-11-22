@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Events;
 
-use App\Contracts\AnsweredAtOnce;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Chat\AnsweredAtOnce;
 use App\Support\ActorContext;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;

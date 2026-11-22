@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\CurrentState;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Work\CurrentState;
 use App\Models\AgentStackRow;
 use App\Support\ActorContext;
 use App\Support\Stack\Frames\Frame;

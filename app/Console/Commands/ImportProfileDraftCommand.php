@@ -6,8 +6,8 @@ namespace App\Console\Commands;
 
 use App\Attributes\DecodesAnyJson;
 use App\Commands\SaveProfileDraft\SaveProfileDraftCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\Files;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Files\Files;
 use App\Exceptions\FileMissing;
 use App\Exceptions\FileUnreadable;
 use App\Exceptions\ProfileDraftRefused;

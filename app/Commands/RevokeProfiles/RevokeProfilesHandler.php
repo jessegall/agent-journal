@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Commands\RevokeProfiles;
 
 use App\Commands\FenceProfileRevision\FenceProfileRevisionCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CommandFacts;
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Bus\CommandHandler;
 use App\Events\ProfileRevisionRevoked;
 use App\Models\Profile;
 use App\Models\ProfileRevision;

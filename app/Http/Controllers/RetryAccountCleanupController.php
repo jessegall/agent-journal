@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Commands\RetryAccountCleanup\RetryAccountCleanupCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Counting;
 
-use App\Contracts\OwnValuesState;
+use App\Contracts\Work\OwnValuesState;
 use App\Support\States\AgentState;
 
 /**

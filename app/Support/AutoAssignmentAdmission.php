@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AssignmentProviders;
-use App\Contracts\AutoAssignmentAccess;
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Assignments\AssignmentProviders;
+use App\Contracts\Assignments\AutoAssignmentAccess;
 use App\Exceptions\AssigneeUnavailable;
 use App\Exceptions\AssignmentDenied;
 use App\Exceptions\AssignmentTypeUnavailable;

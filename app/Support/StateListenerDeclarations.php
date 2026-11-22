@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Declarations\StateEventDeclaration;
 use App\Declarations\StateEvents;
 use App\Declarations\StateMethod;

@@ -6,7 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Commands\CreateSkill\CreateSkillCommand;
 use App\Commands\RefreshSkills\RefreshSkillsCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\GenerationState;
 use App\Enums\PublicationState;
 use App\Enums\SessionStatus;

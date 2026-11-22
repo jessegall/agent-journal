@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Access\Database\Seeders;
 
 use App\Commands\ProvisionActorDesk\ProvisionActorDeskCommand;
-use App\Contracts\JournalCommands;
+use App\Contracts\Bus\JournalCommands;
 use App\Enums\CommandEntry;
 use App\Support\ActorIdentity;
 use Domain\Access\Models\User;

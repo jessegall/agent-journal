@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Pipes;
 
-use App\Contracts\ListenerFailureLog;
-use App\Contracts\Pipe;
+use App\Contracts\Bus\Pipe;
+use App\Contracts\Events\ListenerFailureLog;
 use App\Exceptions\InvalidListener;
 use App\Support\AvailableListener;
 use App\Support\FailureLoggingListener;

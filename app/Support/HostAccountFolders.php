@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AccountFolders;
+use App\Contracts\Accounts\AccountFolders;
 use App\Data\AccountFolderReplyData;
 use App\Exceptions\AccountFolderRefused;
 use Illuminate\Support\Str;

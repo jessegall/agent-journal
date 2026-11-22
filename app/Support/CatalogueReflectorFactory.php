@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReflectedType;
-use App\Contracts\ReflectorFactory;
-use App\Contracts\TypeReflections;
+use App\Contracts\Reflection\ReflectedType;
+use App\Contracts\Reflection\ReflectorFactory;
+use App\Contracts\Reflection\TypeReflections;
 use PhpOption\Option;
 use PhpOption\Some;
 

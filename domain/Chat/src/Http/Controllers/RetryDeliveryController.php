@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Http\Controllers;
 
 use App\Commands\RetryDelivery\RetryDeliveryCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Data\RetryDeliveryInput;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

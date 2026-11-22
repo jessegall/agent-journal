@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Resolvers;
 
-use App\Contracts\CountResolver;
+use App\Contracts\Records\CountResolver;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Enums\PlanStateGroup;
 use Domain\Plans\Values\PlanFilters;

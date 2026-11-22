@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Resolvers;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use Domain\Rules\Contracts\RuleDetailsResolver;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Models\Rule;

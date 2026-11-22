@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Commands\RetireAgent\RetireAgentCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\AgentRetirementDenied;
 use App\Exceptions\CommandTransactionMismatch;

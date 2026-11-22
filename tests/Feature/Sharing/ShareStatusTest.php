@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\ShareStatusResolver;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Sharing\ShareStatusResolver;
 use App\Models\Share;
 use App\Models\ShareGatewayConfiguration;
 use App\Models\ShareMember;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Documents\Commands\SettleDocument\SettleDocumentCommand;
 use Domain\Documents\Http\Requests\SettleRecordRequest;
 use Illuminate\Http\RedirectResponse;

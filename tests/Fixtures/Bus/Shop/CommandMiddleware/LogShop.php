@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Shop\CommandMiddleware;
 
-use App\Contracts\CommandMiddleware;
+use App\Contracts\Bus\CommandMiddleware;
 use App\Support\CommandCall;
 use Closure;
 

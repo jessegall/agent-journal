@@ -12,7 +12,7 @@ use App\CommandMiddleware\RefuseWritesDuringEvaluation;
 use App\Commands\ContinueStart\ContinueStartCommand;
 use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\StartAgent\StartAgentCommand;
-use App\Contracts\Command;
+use App\Contracts\Bus\Command;
 use App\Support\CommandOwner;
 use App\Support\CommandScope;
 use App\Support\FolderClasses;

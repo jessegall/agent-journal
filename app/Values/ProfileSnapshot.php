@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Attributes\Authorize;
-use App\Contracts\Command;
-use App\Contracts\Policy;
+use App\Contracts\Authorization\Policy;
+use App\Contracts\Bus\Command;
 use App\Enums\AccessType;
 use App\Enums\InstancePolicy;
 use Spatie\LaravelData\Data;

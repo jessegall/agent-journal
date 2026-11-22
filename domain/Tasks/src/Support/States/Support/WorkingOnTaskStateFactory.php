@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support\States\Support;
 
-use App\Contracts\RunClaims;
+use App\Contracts\Processes\RunClaims;
 use App\Enums\SessionTransferType;
 use App\Support\ActorIdentity;
 use App\Support\Decisions\StateReferences;

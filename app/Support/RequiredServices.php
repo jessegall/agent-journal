@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandClassifier;
-use App\Contracts\ResultReceipts;
-use App\Contracts\ShellAdmission;
-use App\Contracts\ShellCommandParser;
+use App\Contracts\Admission\ShellAdmission;
+use App\Contracts\Bus\CommandClassifier;
+use App\Contracts\Bus\ResultReceipts;
+use App\Contracts\Processes\ShellCommandParser;
 use App\Exceptions\ProcessesServiceMissing;
 use Illuminate\Contracts\Container\Container;
 

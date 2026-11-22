@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\SettingsResolver;
+use App\Contracts\Settings\SettingsResolver;
 use Illuminate\Container\Container;
 
 /**

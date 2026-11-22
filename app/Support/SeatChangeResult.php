@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Desk;
+use App\Contracts\Chat\Desk;
 
 /**
  * The desk, its inbox and the seat of a seat change, and the exact assignment that seats the actor now.

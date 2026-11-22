@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\BeginSignInAgain;
 
-use App\Contracts\AccountUses;
-use App\Contracts\CommandHandler;
+use App\Contracts\Accounts\AccountUses;
+use App\Contracts\Bus\CommandHandler;
 use App\Jobs\SignInDeadline;
 use App\Models\Account;
 use App\Models\ActiveAccount;

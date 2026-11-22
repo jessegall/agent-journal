@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentAuthorizer;
+use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\AccessType;
 use App\Models\Agent;
 use App\Policies\AgentMaintenancePolicy;

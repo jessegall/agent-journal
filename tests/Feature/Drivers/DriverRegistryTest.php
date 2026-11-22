@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Drivers;
 
-use App\Contracts\Driver;
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\Driver;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverCapability;
 use App\Enums\DriverVariant;
 use App\Enums\SupportState;

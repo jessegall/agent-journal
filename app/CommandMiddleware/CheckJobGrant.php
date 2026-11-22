@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\CommandMiddleware;
 
-use App\Contracts\CommandAdmission;
-use App\Contracts\CommandMiddleware;
+use App\Contracts\Bus\CommandAdmission;
+use App\Contracts\Bus\CommandMiddleware;
 use App\Enums\CommandAdmissionStage;
 use App\Enums\CommandEntry;
 use App\Support\CommandCall;

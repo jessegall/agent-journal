@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\PageResolver;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Navigation\PageResolver;
 use App\Data\Sharing\ShareAuditData;
 use App\Data\Sharing\ShareControlsPartData;
 use App\Data\Sharing\ShareMemberData;

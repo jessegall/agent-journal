@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\SubmitSignInCode;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\SignInAnswerRefused;
 use App\Models\SignInAttempt;
 use App\Support\SignInChallenges;

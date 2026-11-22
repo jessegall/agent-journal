@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Events;
 
-use App\Contracts\Event;
-use App\Contracts\UserInterfaceUpdater;
+use App\Contracts\Events\Event;
+use App\Contracts\Navigation\UserInterfaceUpdater;
 
 /**
  * A task's start committed, so the pages that show the task read it again. It carries the task's id alone; the start

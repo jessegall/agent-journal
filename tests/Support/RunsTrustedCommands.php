@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\Command;
+use App\Contracts\Bus\Command;
 use App\Support\ActorStore;
 use App\Support\CommandRegistry;
 use App\Support\EntryDispatchers;

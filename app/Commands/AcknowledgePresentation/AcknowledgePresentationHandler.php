@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\AcknowledgePresentation;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\ActorIdentity;
 use App\Support\PresentationAcknowledgement;
 use Carbon\CarbonImmutable;

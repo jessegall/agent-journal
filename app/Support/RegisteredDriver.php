@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Commands\StartAgent\StartAgentCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\Driver;
-use App\Contracts\DriverCapabilities;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Drivers\Driver;
+use App\Contracts\Drivers\DriverCapabilities;
 use App\Enums\ConversationModeType;
 use App\Exceptions\DriverRequestMismatch;
 use App\Values\BoundTarget;

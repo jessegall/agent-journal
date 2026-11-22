@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Resolvers;
 
-use App\Contracts\PageResolver;
+use App\Contracts\Navigation\PageResolver;
 use App\Support\Layout\DeclaredLayoutData;
 use Domain\Plans\Http\Requests\PlansRequest;
 use Domain\Plans\Support\PlanIndexLayout;

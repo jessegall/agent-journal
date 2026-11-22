@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ClaimDriverRequests;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\DriverOperation;
 use App\Enums\RequestProgress;
 use App\Enums\RuntimeActivity;

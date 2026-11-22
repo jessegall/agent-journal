@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\CommandMiddleware;
 
-use App\Contracts\CommandMiddleware;
-use App\Contracts\CommandRefusal;
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Bus\CommandMiddleware;
+use App\Contracts\Bus\CommandRefusal;
 use App\Exceptions\ActorNotAllowed;
 use App\Support\CommandCall;
 use App\Support\CommandName;

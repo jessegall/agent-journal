@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\SessionPolicyReader;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Sessions\SessionPolicyReader;
 use App\Events\HelperCompletionCertified;
 use App\Models\CertifiedWork;
 use App\Models\StartRecord;

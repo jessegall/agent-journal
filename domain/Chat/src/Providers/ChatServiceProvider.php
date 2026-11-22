@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Providers;
 
-use App\Contracts\ChatMemberPolicies;
-use App\Contracts\ChatParticipationEnding;
-use App\Contracts\CommandRefusal;
-use App\Contracts\InboxRegistration;
-use App\Contracts\ReadEntitlements;
+use App\Contracts\Authorization\ReadEntitlements;
+use App\Contracts\Bus\CommandRefusal;
+use App\Contracts\Chat\ChatMemberPolicies;
+use App\Contracts\Chat\ChatParticipationEnding;
+use App\Contracts\Chat\InboxRegistration;
 use App\Exceptions\SessionOutdated;
 use App\Exceptions\StackTargetRefused;
 use App\Support\FolderClasses;

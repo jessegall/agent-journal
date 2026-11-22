@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\ModelWrites\Models;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * The event the foreign writer sends from inside the model.

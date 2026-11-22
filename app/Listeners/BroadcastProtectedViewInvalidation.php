@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Contracts\AdmittedRecipients;
-use App\Contracts\Listener;
+use App\Contracts\Chat\AdmittedRecipients;
+use App\Contracts\Events\Listener;
 use App\Events\ProtectedViewInvalidated;
 use App\Events\ShareRevoked;
 use Illuminate\Contracts\Events\Dispatcher;

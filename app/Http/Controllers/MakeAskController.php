@@ -6,8 +6,8 @@ namespace App\Http\Controllers;
 
 use App\Calls\Supervision\MakeAskCall;
 use App\Commands\AskSupervisor\AskSupervisorCommand;
-use App\Contracts\AskReader;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Chat\AskReader;
 use App\Data\AskCard;
 
 final readonly class MakeAskController

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\JournalAssignmentWriter;
-use App\Contracts\RuntimeStops;
+use App\Contracts\Assignments\JournalAssignmentWriter;
+use App\Contracts\Processes\RuntimeStops;
 use App\Enums\WorkChainEnding;
 use App\Models\Ask;
 use App\Models\AskHop;

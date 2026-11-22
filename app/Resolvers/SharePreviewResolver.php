@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\PageResolver;
-use App\Contracts\ReadMeter;
-use App\Contracts\RecordResolver;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Navigation\PageResolver;
+use App\Contracts\Reads\ReadMeter;
+use App\Contracts\Records\RecordResolver;
 use App\Data\Sharing\RootShareData;
 use App\Data\Sharing\SavedSharePreviewData;
 use App\Data\Sharing\ShareCandidateData;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\ProfileLanguage;
-use App\Contracts\ScriptChecks;
-use App\Contracts\ScriptCompilation;
-use App\Contracts\ScriptKeywordRegistration;
-use App\Contracts\ScriptObjectRegistration;
-use App\Contracts\StopPreparer;
+use App\Contracts\Processes\StopPreparer;
+use App\Contracts\Scripts\ScriptChecks;
+use App\Contracts\Scripts\ScriptCompilation;
+use App\Contracts\Scripts\ScriptKeywordRegistration;
+use App\Contracts\Scripts\ScriptObjectRegistration;
+use App\Contracts\Sessions\ProfileLanguage;
 use App\Enums\SyntaxForm;
 use App\Support\KeywordRegistry;
 use App\Support\Keywords\CheckKeyword;

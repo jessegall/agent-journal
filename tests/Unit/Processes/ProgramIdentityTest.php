@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Contracts\PipelineRunner as PipelineRunnerContract;
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Bus\PipelineRunner as PipelineRunnerContract;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Enums\ShellDialect;
 use App\Enums\UnresolvedType;
 use App\Support\CatalogueReflectorFactory;

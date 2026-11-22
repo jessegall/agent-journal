@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ReportRuntimeExit;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\AgentSession;
 use App\Support\DriverHeartbeatSource;
 use App\Support\HostRuntimes;

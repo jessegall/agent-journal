@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Console;
 
-use App\Contracts\StartTokenSource;
+use App\Contracts\Sessions\StartTokenSource;
 use App\Exceptions\CallDeadlinePassed;
 use App\Exceptions\JournalUnreachable;
 use App\Exceptions\StartSettingMissing;

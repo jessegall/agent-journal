@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Commands\RouteAsk\RouteAskCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\Listener;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Events\Listener;
 use App\Enums\AskOriginType;
 use App\Enums\CoreAskType;
 use App\Events\HelperStopHeld;

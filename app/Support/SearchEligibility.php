@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DomainAvailability;
-use App\Contracts\ReadGrant;
-use App\Contracts\SearchAccess;
-use App\Contracts\SearchSources;
+use App\Contracts\Authorization\ReadGrant;
+use App\Contracts\Domains\DomainAvailability;
+use App\Contracts\Search\SearchAccess;
+use App\Contracts\Search\SearchSources;
 use App\Exceptions\SearchableMissing;
 use App\Exceptions\SearchValueInvalid;
 use App\Values\DeclaredSearchable;

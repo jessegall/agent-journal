@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Contracts\AgentResolver;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\SessionResolver;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Sessions\AgentResolver;
+use App\Contracts\Sessions\SessionResolver;
 use App\Exceptions\ActorContextMissing;
 use App\Exceptions\StackTargetRefused;
 use App\Models\Agent;

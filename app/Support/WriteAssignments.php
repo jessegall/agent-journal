@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AssignmentProviders;
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\AssignmentWriter;
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\JournalAssignmentWriter;
-use App\Contracts\MaintenanceAssignmentWriter;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Assignments\AssignmentProviders;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Assignments\AssignmentWriter;
+use App\Contracts\Assignments\JournalAssignmentWriter;
+use App\Contracts\Assignments\MaintenanceAssignmentWriter;
+use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\AccessType;
 use App\Enums\ActorType;
 use App\Enums\AssignmentOutcomeType;

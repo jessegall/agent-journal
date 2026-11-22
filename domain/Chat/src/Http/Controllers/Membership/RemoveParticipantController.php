@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Membership;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Commands\RemoveChatParticipant\RemoveChatParticipantCommand;
 use Domain\Chat\Data\ParticipantInput;
 use Illuminate\Http\RedirectResponse;

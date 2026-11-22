@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Contracts\ChatLines;
+use App\Contracts\Chat\ChatLines;
 use App\Events\StartAccepted;
 use App\Listeners\ShowHelperStartInChat;
 use App\Models\Agent;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\ExecutionModeType;
 use App\Exceptions\HostStartRefused;
 use App\Support\ExecutionReference;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\ResumeTaskRun;
 
-use App\Contracts\ActorWorkStacks;
-use App\Contracts\RunClaims;
+use App\Contracts\Actors\ActorWorkStacks;
+use App\Contracts\Processes\RunClaims;
 use App\Exceptions\RunClaimRefused;
 use App\Support\ActorIdentity;
 use App\Support\References\SubjectReference;

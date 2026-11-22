@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ProfileScripts;
-use App\Contracts\ScriptChecks;
-use App\Contracts\StopPreparer;
+use App\Contracts\Processes\StopPreparer;
+use App\Contracts\Scripts\ProfileScripts;
+use App\Contracts\Scripts\ScriptChecks;
 use App\Enums\ProfileRunState;
 use App\Models\ProfileRun;
 use App\Models\ProfileStepResult;

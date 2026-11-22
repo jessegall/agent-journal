@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Asks;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\ApproveMergeAskRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

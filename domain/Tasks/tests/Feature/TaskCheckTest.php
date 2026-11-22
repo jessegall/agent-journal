@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Contracts\CommandBus;
-use App\Contracts\JournalCommands;
-use App\Contracts\ProcessRunCallers;
-use App\Contracts\ResultReceipts;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\JournalCommands;
+use App\Contracts\Bus\ResultReceipts;
+use App\Contracts\Processes\ProcessRunCallers;
 use App\Enums\ActorType;
 use App\Enums\AssessmentOutcome;
 use App\Enums\CommandEntry;

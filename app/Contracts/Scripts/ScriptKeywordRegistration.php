@@ -1,0 +1,13 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Contracts\Scripts;
+
+/**
+ * Registers a domain's script keywords under their owner.
+ */
+interface ScriptKeywordRegistration
+{
+    public function registerOwned(string $owner, ScriptKeywordDefinition $keyword): void;
+}

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\OperationPolicy;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Authorization\OperationPolicy;
 use App\Enums\AccessRuleType;
 use App\Values\AccessDecision;
 use App\Values\Operation;

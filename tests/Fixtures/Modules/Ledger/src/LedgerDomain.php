@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Ledger;
 
 use App\Enums\AccessType;
-use App\Contracts\PolicyProvider;
+use App\Contracts\Authorization\PolicyProvider;
 use App\Values\PolicyDefinition;
-use App\Contracts\CommandProvider;
+use App\Contracts\Bus\CommandProvider;
 use App\Support\Domain;
 use App\Support\Exports;
 use Tests\Fixtures\Modules\Ledger\Bootstrappers\RegisterLedgerLinkTypes;

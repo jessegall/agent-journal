@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Sources\Contracts;
 
-use App\Contracts\Actor;
+use App\Contracts\Actors\Actor;
 use App\Support\Cards\DockDestination;
 
 /**

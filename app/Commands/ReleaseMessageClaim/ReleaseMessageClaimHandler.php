@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Commands\ReleaseMessageClaim;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\CommandHandler;
-use App\Contracts\ResponsibilityWriter;
+use App\Contracts\Assignments\ResponsibilityWriter;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Bus\CommandHandler;
 use App\Events\MessageClaimReleased;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\MessageMissing;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Contracts\SkillPublisher;
+use App\Contracts\Skills\SkillPublisher;
 use App\Enums\PublicationState;
 use App\Models\SkillGeneration;
 use App\Models\SkillPublication;

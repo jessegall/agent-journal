@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
-use App\Contracts\RecordResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Support\TextSelection;
 use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\DocumentFilters;

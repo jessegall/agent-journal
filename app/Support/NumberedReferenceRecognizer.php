@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReferenceRecognizer;
+use App\Contracts\Records\ReferenceRecognizer;
 use App\Values\RecognizedReference;
 use App\Values\SearchWords;
 

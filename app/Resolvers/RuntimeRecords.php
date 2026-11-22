@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\RuntimeResolver;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Sessions\RuntimeResolver;
 use App\Data\RuntimeStatus;
 use App\Exceptions\StackTargetRefused;
 use App\Models\AgentRuntime;

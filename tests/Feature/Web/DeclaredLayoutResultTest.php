@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Contracts\PageResolver;
+use App\Contracts\Navigation\PageResolver;
 use App\Declarations\ResolverDefinition;
 use App\Support\ActorStore;
 use App\Support\DomainEntry;

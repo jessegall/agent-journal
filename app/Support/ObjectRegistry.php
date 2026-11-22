@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DomainAvailability;
-use App\Contracts\ScriptObjectRegistration;
+use App\Contracts\Domains\DomainAvailability;
+use App\Contracts\Scripts\ScriptObjectRegistration;
 use App\Exceptions\ScriptDefinitionRefused;
 use App\Values\ObjectDefinition;
 use App\Values\ScriptContext;

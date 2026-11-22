@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Assignments;
 
-use App\Contracts\AutoAssignmentAccess;
-use App\Contracts\AutoAssignmentResolver;
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Assignments\AutoAssignmentAccess;
+use App\Contracts\Assignments\AutoAssignmentResolver;
 use App\Data\Assignments\AutoAssignmentPageData;
 use App\Http\Requests\Assignments\ListAutoAssignmentsRequest;
 use Illuminate\Http\JsonResponse;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Shelves\Events;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 final readonly class BookShelved implements Event
 {

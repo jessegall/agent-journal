@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\PipelineRunner;
+use App\Contracts\Bus\PipelineRunner;
 use App\CoreApi;
 use App\Declarations\StateMethods;
 use App\Exceptions\InvalidListener;

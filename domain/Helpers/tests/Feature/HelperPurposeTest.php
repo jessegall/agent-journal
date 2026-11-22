@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\RecordVisibility;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Records\RecordVisibility;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;

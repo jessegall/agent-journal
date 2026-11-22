@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ReportEntryReplayed;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\HoldReason;
 use App\Exceptions\HostReportRefused;
 use App\Exceptions\NavigationRaiseRefused;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
-use App\Contracts\EventSource;
-use App\Contracts\RowCapture;
+use App\Contracts\Events\EventSource;
+use App\Contracts\Reads\RowCapture;
 use Illuminate\Container\Container;
 
 /**

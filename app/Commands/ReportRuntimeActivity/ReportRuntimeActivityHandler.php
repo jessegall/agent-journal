@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ReportRuntimeActivity;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\RuntimeActivity;
 use App\Enums\RuntimeEventType;
 use App\Exceptions\HostReportRefused;

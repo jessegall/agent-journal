@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Desks;
 
-use App\Contracts\InboxResolver;
+use App\Contracts\Chat\InboxResolver;
 use App\Exceptions\DeskSeatCountInvalid;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Agent;

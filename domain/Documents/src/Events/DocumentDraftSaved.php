@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Events;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * A draft was saved at a new version. It carries ids and the version, never the text.

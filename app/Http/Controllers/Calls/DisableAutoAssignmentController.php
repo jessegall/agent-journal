@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Assignments\DisableAutoAssignmentCall;
 use App\Commands\DisableAutoAssignment\DisableAutoAssignmentCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Data\Assignments\AutoAssignmentChangeData;
 
 /**

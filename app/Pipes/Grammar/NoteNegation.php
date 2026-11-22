@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes\Grammar;
 
-use App\Contracts\Pipe;
+use App\Contracts\Bus\Pipe;
 use App\Enums\TokenType;
 use App\Support\Grammar\NodeToParse;
 use App\Support\Grammar\PipedCommandsToParse;

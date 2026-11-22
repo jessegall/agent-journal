@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use App\Exceptions\ShareLinkRefused;
 use App\Http\Requests\Sharing\ShareRequest;
 use App\Http\Responses\PageActionAnswers;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Policies;
 
-use App\Contracts\WorkspacePolicy;
+use App\Contracts\Authorization\WorkspacePolicy;
 use Domain\Chat\Models\Conversation;
 
 /**

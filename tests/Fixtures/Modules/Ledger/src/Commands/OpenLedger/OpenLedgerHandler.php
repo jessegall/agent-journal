@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger\Commands\OpenLedger;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use Tests\Fixtures\Modules\Ledger\Commands\OpenLedger\OpenLedgerCommand;
 use Tests\Fixtures\Modules\Ledger\Models\Ledger;
 

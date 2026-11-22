@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ConditionalStateType;
-use App\Contracts\TickableState;
+use App\Contracts\Work\ConditionalStateType;
+use App\Contracts\Work\TickableState;
 use App\Exceptions\StateSchemaUnknown;
 use App\Exceptions\TickableStateMissing;
 use App\Models\AgentStackRow;

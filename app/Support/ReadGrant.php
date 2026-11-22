@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReadAdmission;
-use App\Contracts\ReadGrant as ReadGrantContract;
+use App\Contracts\Admission\ReadAdmission;
+use App\Contracts\Authorization\ReadGrant as ReadGrantContract;
 use App\Exceptions\ReadGrantRefused;
 use App\Values\AllowedNames;
 use App\Values\ReadRequest;

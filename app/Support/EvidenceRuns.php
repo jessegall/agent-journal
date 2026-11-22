@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandClassifier;
-use App\Contracts\CommandPermissionResolver;
-use App\Contracts\VerificationTiming;
+use App\Contracts\Bus\CommandClassifier;
+use App\Contracts\Bus\CommandPermissionResolver;
+use App\Contracts\Time\VerificationTiming;
 use App\Enums\ParseOutcome;
 use App\Enums\RunMode;
 use App\Enums\RunRequestIntent;

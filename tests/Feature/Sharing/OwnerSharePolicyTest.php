@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Contracts\Actor;
-use App\Contracts\AdmittedRecipients;
-use App\Contracts\JournalAdmission;
-use App\Contracts\SharePolicy;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Chat\AdmittedRecipients;
+use App\Contracts\Sharing\SharePolicy;
 use App\Exceptions\SharingNotAllowed;
 use App\Models\Share;
 use App\Models\ShareGatewayConfiguration;

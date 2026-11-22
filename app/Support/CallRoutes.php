@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CallRegistrar;
+use App\Contracts\Domains\CallRegistrar;
 use App\Exceptions\EndpointDeclarationInvalid;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;

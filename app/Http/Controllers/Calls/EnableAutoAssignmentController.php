@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Assignments\EnableAutoAssignmentCall;
 use App\Commands\EnableAutoAssignment\EnableAutoAssignmentCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\RecordResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Records\RecordResolver;
 use App\Data\Assignments\AutoAssignmentChangeData;
 
 /**

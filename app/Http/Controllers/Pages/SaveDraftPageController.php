@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Pages;
 
 use App\Calls\Scripts\SaveProfileDraftCall;
 use App\Commands\SaveProfileDraft\SaveProfileDraftCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Http\Responses\PageActionAnswers;
 use App\Support\Readers\ProfileDraftReader;
 use Illuminate\Http\RedirectResponse;

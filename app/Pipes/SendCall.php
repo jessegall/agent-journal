@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Pipes;
 
-use App\Contracts\CallSender;
-use App\Contracts\Pipe;
+use App\Contracts\Bus\Pipe;
+use App\Contracts\Domains\CallSender;
 use App\Values\CallAnswer;
 use App\Values\CallToSend;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ToolDiscovery;
+use App\Contracts\Drivers\ToolDiscovery;
 use App\Models\AgentRuntime;
 use App\Models\AgentSession;
 use Carbon\CarbonImmutable;

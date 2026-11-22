@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Console\Commands;
 
-use App\Contracts\OwnerCommands;
+use App\Contracts\Bus\OwnerCommands;
 use App\Enums\ChatPermission;
 use Domain\Access\Commands\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
 use Domain\Access\Commands\RevokeEnvironmentAccess\RevokeEnvironmentAccessCommand;

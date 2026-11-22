@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Domains\Errands;
 
 use App\Support\ActorIdentity;
-use App\Contracts\AssignmentPool;
-use App\Contracts\AssignmentPoolFactory;
+use App\Contracts\Assignments\AssignmentPool;
+use App\Contracts\Assignments\AssignmentPoolFactory;
 use App\Enums\PoolInputType;
 use App\Support\PoolDescription;
 use App\Support\PoolMembers;

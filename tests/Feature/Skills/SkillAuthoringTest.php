@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Contracts\SkillResolver;
+use App\Contracts\Skills\SkillResolver;
 use App\Support\CoreSkills;
 use App\Support\DomainRegistry;
 use App\Support\SkillRegistry;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\ReportRuntimeScreen;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\ServerClock;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Time\ServerClock;
 use App\Data\ScreenReportData;
 use App\Enums\ScreenReportRefusal;
 use App\Models\AgentRuntime;

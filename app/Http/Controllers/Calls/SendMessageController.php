@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Communication\MessageNamed;
 use App\Calls\Communication\SendMessageCall;
 use App\Commands\SendMessage\SendMessageCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Sends a message from one of your inboxes to another inbox.

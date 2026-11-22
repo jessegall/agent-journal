@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Contracts\CommandBus;
-use App\Contracts\OperationResolver;
+use App\Contracts\Authorization\OperationResolver;
+use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandInputInvalid;
 use App\Exceptions\CommandNotRegistered;
 use App\Exceptions\OperationUnavailable;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Bus;
 
 use App\Commands\AssignRecord\AssignRecordCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\OperationResolver;
+use App\Contracts\Authorization\OperationResolver;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\ReceiptState;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\NestedCommandFailureIgnored;

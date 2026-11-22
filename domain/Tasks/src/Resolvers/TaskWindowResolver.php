@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Contracts\CommentResolver;
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\PageResolver;
-use App\Contracts\SlotSections;
+use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Navigation\PageResolver;
+use App\Contracts\Navigation\SlotSections;
+use App\Contracts\Records\CommentResolver;
 use App\Enums\AccessType;
 use App\Enums\ReadView;
 use App\Support\Layout\DeclaredLayoutData;

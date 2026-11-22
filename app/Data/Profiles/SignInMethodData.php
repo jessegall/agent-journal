@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Profiles;
 
-use App\Contracts\SignInProtocol;
+use App\Contracts\Accounts\SignInProtocol;
 use App\Enums\SignInMethod;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

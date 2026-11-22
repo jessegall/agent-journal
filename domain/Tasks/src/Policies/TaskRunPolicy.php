@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Policies;
 
-use App\Contracts\Actor;
-use App\Contracts\RecordPolicy;
-use App\Contracts\RunClaims;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Authorization\RecordPolicy;
+use App\Contracts\Processes\RunClaims;
 use App\Enums\AccessType;
 use App\Support\ActorIdentity;
 use Domain\Tasks\Models\Task;

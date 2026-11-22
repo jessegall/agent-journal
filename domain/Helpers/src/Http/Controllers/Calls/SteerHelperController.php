@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Http\Controllers\Calls;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Helpers\Calls\SteerHelperCall;
 use Domain\Helpers\Commands\SteerHelper\SteerHelperCommand;
 use Domain\Helpers\Data\HelperSteerData;

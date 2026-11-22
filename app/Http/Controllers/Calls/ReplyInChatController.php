@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Communication\MessageNamed;
 use App\Calls\Communication\ReplyInChatCall;
 use App\Commands\ReplyInChat\ReplyInChatCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Replies to a message in one of your chats.

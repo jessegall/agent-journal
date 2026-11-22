@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\RecordScriptStepResult;
 
-use App\Contracts\ActorGuidance;
-use App\Contracts\CommandHandler;
+use App\Contracts\Actors\ActorGuidance;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\ProfileRun;
 use App\Models\ProfileStepResult;
 use App\Values\StepOutcome;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\ChatEligibility;
-use App\Contracts\JournalAdmission;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Chat\ChatEligibility;
 
 /**
  * The private channel of one user: only that signed-in user joins it, and only while Access lets them use the

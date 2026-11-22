@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * One fact in an event unit: the event, the chain of facts whose required listeners raised it, and the delivery

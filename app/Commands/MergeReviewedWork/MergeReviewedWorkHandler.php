@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Commands\MergeReviewedWork;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\CommandHandler;
-use App\Contracts\MergeAdmission;
+use App\Contracts\Admission\MergeAdmission;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Bus\CommandHandler;
 use App\Events\MergeOutcomeRecorded;
 use App\Models\MergeAttempt;
 use App\Support\ActorIdentity;

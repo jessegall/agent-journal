@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\EventProducers\Events;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 use Tests\Fixtures\EventProducers\Models\FixtureTask;
 
 /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\PageResolver;
-use App\Contracts\ProfileLanguage;
+use App\Contracts\Navigation\PageResolver;
+use App\Contracts\Sessions\ProfileLanguage;
 use App\Data\ProfileScriptPageData;
 use App\Support\Readers\ProfileDraftReader;
 use App\Values\ProfileKey;

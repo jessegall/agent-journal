@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Contracts\ToolDiscovery;
+use App\Contracts\Drivers\ToolDiscovery;
 use App\Enums\DriverVariant;
 use App\Enums\HoldReason;
 use App\Enums\RuntimeActivity;

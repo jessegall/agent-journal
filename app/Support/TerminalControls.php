@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentAuthorizer;
+use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Data\PrivateInputMessageData;
 use App\Data\TerminalControlData;
 use App\Enums\AccessType;

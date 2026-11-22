@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Scripts;
 
-use App\Contracts\ScriptStatement;
+use App\Contracts\Scripts\ScriptStatement;
 use App\Enums\ScriptEffect;
 use App\Enums\SyntaxForm;
 use App\Support\CompileContext;

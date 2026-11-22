@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\FactOrigin;
+use App\Contracts\Events\FactOrigin;
 
 /**
  * A fact that comes from a saved alias's body: the alias, its id and revision, beside the origin of the fact inside it.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Agents;
 
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Support\ActorContext;
 use App\Support\SignedCall;
 use App\Support\StartProfilePin;
@@ -17,7 +17,7 @@ use App\Models\AgentSession;
 use App\Support\AgentContext;
 use App\Values\RuntimeIntent;
 use App\Values\StackTarget;
-use App\Contracts\StartTransaction;
+use App\Contracts\Sessions\StartTransaction;
 use App\Support\StartStacks;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;

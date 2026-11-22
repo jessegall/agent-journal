@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Http\Controllers;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Http\Requests\TaskActionRequest;
 use Illuminate\Http\RedirectResponse;

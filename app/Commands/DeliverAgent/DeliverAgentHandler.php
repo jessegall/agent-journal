@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\DeliverAgent;
 
-use App\Contracts\AttachmentReferences;
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Drivers\AttachmentReferences;
 use App\Enums\DriverOperation;
 use App\Exceptions\DriverRequestRefused;
 use App\Support\DriverBudgets;

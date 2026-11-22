@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\GroupDeclaration;
-use App\Contracts\Setting;
-use App\Contracts\SettingsDefinition;
+use App\Contracts\Navigation\GroupDeclaration;
+use App\Contracts\Settings\Setting;
+use App\Contracts\Settings\SettingsDefinition;
 use App\Declarations\ToggleGroup;
 use App\Exceptions\SettingDeclarationInvalid;
 use App\Exceptions\SettingHandleUnknown;

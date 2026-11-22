@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\SkillConditionEvaluator;
+use App\Contracts\Skills\SkillConditionEvaluator;
 use Spatie\LaravelData\Data;
 
 /**

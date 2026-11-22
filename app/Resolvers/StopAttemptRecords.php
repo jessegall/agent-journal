@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\StopEvidence;
+use App\Contracts\Processes\StopEvidence;
 use App\Exceptions\StopAttemptMissing;
 use App\Models\StopAttempt;
 use App\Values\RelationRead;

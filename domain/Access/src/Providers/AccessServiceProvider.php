@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Access\Providers;
 
-use App\Contracts\ActiveActorRegistration;
-use App\Contracts\ActorProviderRegistration;
-use App\Contracts\AdmittedRecipients;
-use App\Contracts\AuthorizerProviderRegistration;
-use App\Contracts\ChatEligibility;
-use App\Contracts\CurrentUserResolver;
-use App\Contracts\JournalAdmission;
-use App\Contracts\TypeReflections;
+use App\Contracts\Actors\ActiveActorRegistration;
+use App\Contracts\Actors\ActorProviderRegistration;
+use App\Contracts\Actors\CurrentUserResolver;
+use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Authorization\AuthorizerProviderRegistration;
+use App\Contracts\Chat\AdmittedRecipients;
+use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Reflection\TypeReflections;
 use App\Enums\ActorType;
 use App\Support\FolderClasses;
 use Domain\Access\Actions\CreateNewUser;

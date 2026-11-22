@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews\States;
 
-use App\Contracts\ConditionalState;
+use App\Contracts\Work\ConditionalState;
 use App\Support\States\AgentState;
-use App\Contracts\EnabledSettingsGroup;
+use App\Contracts\Settings\EnabledSettingsGroup;
 use App\Support\DisabledSettingsGroup;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 

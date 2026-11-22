@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\ApproveProposalCall;
 use App\Calls\Processes\RuleApproved;
 use App\Commands\ApproveRuleProposal\ApproveRuleProposalCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Values\OwnerApproval;
 use App\Values\ReaderApproval;
 

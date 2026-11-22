@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\Authorizer;
-use App\Contracts\AuthorizerProvider;
-use App\Contracts\ChatEligibility;
-use App\Contracts\ChatMemberPolicies;
-use App\Contracts\CurrentActor;
-use App\Contracts\JournalAdmission;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Authorization\Authorizer;
+use App\Contracts\Authorization\AuthorizerProvider;
+use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Chat\ChatMemberPolicies;
 use App\Exceptions\ActorNotAllowed;
 use App\Support\ActorIdentity;
 use App\Support\UnrestrictedAuthorizer;

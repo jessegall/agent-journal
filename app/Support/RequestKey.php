@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\RequestKey as RequestKeyContract;
+use App\Contracts\Bus\RequestKey as RequestKeyContract;
 use App\Exceptions\RequestKeyInvalid;
 use App\Exceptions\RequestKeyMissing;
 use Closure;

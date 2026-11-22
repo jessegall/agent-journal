@@ -6,9 +6,9 @@ namespace Tests\Fixtures\UiDeclarations\Library;
 
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\NavigationProvider;
-use App\Contracts\PageProvider;
-use App\Contracts\SidebarGroupProvider;
+use App\Contracts\Navigation\NavigationProvider;
+use App\Contracts\Navigation\PageProvider;
+use App\Contracts\Navigation\SidebarGroupProvider;
 use App\Declarations\ActionRoute;
 use App\Declarations\NavigationItem;
 use App\Declarations\Page;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\ListMessagesBetweenCall;
-use App\Contracts\ConversationResolver;
+use App\Contracts\Chat\ConversationResolver;
 use App\Data\MessagePage;
 
 /**

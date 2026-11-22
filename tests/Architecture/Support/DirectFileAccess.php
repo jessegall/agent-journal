@@ -118,7 +118,7 @@ final readonly class DirectFileAccess
         $waiting = count($sites) - $exempt;
 
         return <<<TEXT
-        # The direct file access sites outside app/Files (plan 39): {$waiting} still waiting to move to App\\Contracts\\Files,
+        # The direct file access sites outside app/Files (plan 39): {$waiting} still waiting to move to App\\Contracts\\Files\\Files,
         # and {$exempt} exempt. One line per file and form, without line numbers. A task that moves a site removes its own
         # lines here, in the same task; the waiting part only shrinks. An 'exempt' line names a method marked
         # #[OutsideThePlaces(PlaceExemption::...)], for a reason the user settled (doc 69).

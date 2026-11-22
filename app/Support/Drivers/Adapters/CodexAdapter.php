@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers\Adapters;
 
-use App\Contracts\ShellCommandParser;
+use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\CodexTool;
 use App\Enums\FileAccess;
 use App\Enums\FileOperation;

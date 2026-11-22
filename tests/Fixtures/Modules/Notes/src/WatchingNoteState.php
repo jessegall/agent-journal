@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use App\Contracts\Command;
+use App\Contracts\Bus\Command;
 use App\Support\States\AgentState;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 

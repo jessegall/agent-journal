@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Communication\AskChatQuestionCall;
 use App\Calls\Communication\MessageNamed;
 use App\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Asks a question in one of your chats.

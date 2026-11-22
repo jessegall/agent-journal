@@ -6,8 +6,8 @@ namespace Tests\Feature\Engine;
 
 use App\Commands\MarkSilentSessions\MarkSilentSessionsCommand;
 use App\Commands\SettleFrameTimes\SettleFrameTimesCommand;
-use App\Contracts\MonotonicClock;
-use App\Contracts\ServerClock;
+use App\Contracts\Time\MonotonicClock;
+use App\Contracts\Time\ServerClock;
 use App\Events\StateTypesRequested;
 use App\Models\EngineFrameTime;
 use App\Support\EnginePass;

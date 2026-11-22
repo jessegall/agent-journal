@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\RevokeShare;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\SharePolicy;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Sharing\SharePolicy;
 use App\Models\Share;
 use App\Support\ActorIdentity;
 use App\Support\ShareEndings;

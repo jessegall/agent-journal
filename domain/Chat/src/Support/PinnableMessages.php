@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Contracts\ConversationResolver;
+use App\Contracts\Chat\ConversationResolver;
 use App\Data\MessageView;
 use App\Exceptions\MessageMissing;
 

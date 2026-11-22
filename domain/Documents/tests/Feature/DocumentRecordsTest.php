@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Contracts\CommandBus;
-use App\Contracts\IdentityLinks;
+use App\Contracts\Actors\IdentityLinks;
+use App\Contracts\Bus\CommandBus;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;

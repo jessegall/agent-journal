@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Admission;
 
-use App\Contracts\RuntimeResolver;
-use App\Contracts\ShellAdmission;
+use App\Contracts\Admission\ShellAdmission;
+use App\Contracts\Sessions\RuntimeResolver;
 use App\Enums\AdmissionRefusalCode;
 use App\Exceptions\StackTargetRefused;
 use App\Support\Decisions\Decision;

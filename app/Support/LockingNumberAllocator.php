@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandTransaction;
-use App\Contracts\Numbered;
+use App\Contracts\Bus\CommandTransaction;
+use App\Contracts\Records\Numbered;
 use App\Exceptions\NumberHolderUnsaved;
 use App\Models\NumberGroup;
 use Illuminate\Database\Eloquent\Model;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * The checked subscriptions of all installed states.

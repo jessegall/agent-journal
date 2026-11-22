@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Communication\MessageNamed;
 use App\Calls\Communication\ReleaseMessageClaimCall;
 use App\Commands\ReleaseMessageClaim\ReleaseMessageClaimCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 

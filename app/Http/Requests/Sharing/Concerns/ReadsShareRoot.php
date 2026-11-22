@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Sharing\Concerns;
 
-use App\Contracts\RecordResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Support\RecordIdentity;
 use App\Support\RecordReference;
 

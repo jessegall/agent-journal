@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ResolveMergeAttempt;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\MergeAttemptState;
 use App\Exceptions\AskRefused;
 use App\Models\MergeAttempt;

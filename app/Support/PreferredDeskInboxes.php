@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\ActorInboxResolver;
-use App\Contracts\Inbox;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Actors\ActorInboxResolver;
+use App\Contracts\Chat\Inbox;
 use App\Exceptions\InboxUnavailable;
 use App\Models\DeskRecord;
 

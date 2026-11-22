@@ -7,7 +7,7 @@ namespace Domain\Helpers\Calls;
 use App\Attributes\Endpoint;
 use App\Attributes\PresentList;
 use App\Casts\CallKeyCast;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Enums\CallEffect;
 use App\Enums\DriverVariant;
 use App\Enums\ReceiptOwner;

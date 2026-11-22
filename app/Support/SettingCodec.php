@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\OptionSetting;
-use App\Contracts\Setting;
+use App\Contracts\Settings\OptionSetting;
+use App\Contracts\Settings\Setting;
 use App\Declarations\BooleanSetting;
 use App\Declarations\ChoiceSetting;
 use App\Declarations\DecimalSetting;

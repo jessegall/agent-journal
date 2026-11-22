@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AgentStackCommand;
-use App\Contracts\CommandAdmission;
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentSession;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Bus\AgentStackCommand;
+use App\Contracts\Bus\CommandAdmission;
+use App\Contracts\Sessions\CurrentSession;
 use App\Enums\CommandAdmissionStage;
 use App\Enums\CommandEffectType;
 use App\Enums\RefusalCode;

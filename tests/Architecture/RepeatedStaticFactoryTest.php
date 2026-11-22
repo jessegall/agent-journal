@@ -19,7 +19,7 @@ final class RepeatedStaticFactoryTest extends TestCase
 {
     private const string REPEATED_ADVICE = 'Hold the first answer in a variable and ask it again:';
 
-    private const string INJECTABLE_ADVICE = 'Take App\Contracts\ReflectorFactory '
+    private const string INJECTABLE_ADVICE = 'Take App\Contracts\Reflection\ReflectorFactory '
         .'in the constructor and call make():';
 
     public function test_no_function_calls_one_static_factory_twice_with_the_same_arguments(): void

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\HelperCommitImport as HelperCommitImportContract;
+use App\Contracts\Work\HelperCommitImport as HelperCommitImportContract;
 use App\Exceptions\HelperImportFailed;
 use App\Exceptions\HelperWorkUncertified;
 use App\Models\CertifiedWork;

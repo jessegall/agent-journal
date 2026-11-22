@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Contracts\CatalogueConstraints;
-use App\Contracts\CatalogueValue;
-use App\Contracts\Setting;
+use App\Contracts\Settings\CatalogueConstraints;
+use App\Contracts\Settings\CatalogueValue;
+use App\Contracts\Settings\Setting;
 use App\Data\BooleanValueData;
 use App\Enums\SettingType;
 use App\Exceptions\SettingDeclarationInvalid;

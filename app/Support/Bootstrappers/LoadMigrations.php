@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Bootstrappers;
 
-use App\Contracts\DomainBootstrapper;
+use App\Contracts\Domains\DomainBootstrapper;
 use App\Support\DomainEntry;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\Migrator;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\ConfigureShareGateway;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\SharePolicy;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Sharing\SharePolicy;
 use App\Enums\ShareAuditType;
 use App\Exceptions\GatewayNotSetUp;
 use App\Exceptions\GatewaySecretRefused;

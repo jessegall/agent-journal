@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Commands\RequireMessageAnswer;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\InboxResolver;
-use App\Contracts\ResponsibilityWriter;
+use App\Contracts\Assignments\ResponsibilityWriter;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Chat\InboxResolver;
 use App\Exceptions\AnswerImpossible;
 use App\Exceptions\ChatMessageRefused;
 use App\Exceptions\MessageMissing;

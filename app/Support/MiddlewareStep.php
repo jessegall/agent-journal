@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandMiddleware;
+use App\Contracts\Bus\CommandMiddleware;
 use App\Exceptions\CommandReplacedWithOtherClass;
 use App\Exceptions\CommandReplacementRefused;
 use App\Exceptions\CommandResultChanged;

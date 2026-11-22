@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\SessionPolicyReader;
+use App\Contracts\Sessions\SessionPolicyReader;
 use App\Models\SessionPolicy;
 use App\Values\StartPolicy;
 

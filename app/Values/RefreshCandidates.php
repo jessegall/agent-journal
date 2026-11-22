@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\WorkAllowance;
+use App\Contracts\Work\WorkAllowance;
 use App\Exceptions\SearchBatchInvalid;
 
 /**

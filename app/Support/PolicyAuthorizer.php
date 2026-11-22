@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\Authorizer;
-use App\Contracts\PolicyCatalogue;
-use App\Contracts\RecordPolicy;
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Authorization\Authorizer;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Authorization\RecordPolicy;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Enums\AccessType;
 use App\Values\ProfileAuthorization;
 use Illuminate\Auth\Access\Response;

@@ -7,7 +7,7 @@ namespace App\Models;
 use App\Casts\SelectedTargetsCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Exceptions\SharePreviewRefused;
 use App\Models\Support\BelongsToOneRoot;
 use App\Support\RecordIdentity;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\ActorLabelProvider;
-use App\Contracts\AgentResolver;
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\ActorLabelProvider;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Sessions\AgentResolver;
 use App\Models\Agent;
 use App\Support\AgentInspection;
 use App\Support\AgentLabel;

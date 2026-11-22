@@ -8,7 +8,7 @@ use App\Commands\DeliverAgent\DeliverAgentCommand;
 use App\Commands\InterruptAgent\InterruptAgentCommand;
 use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\StopAgent\StopAgentCommand;
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverVariant;
 use App\Enums\HoldReason;
 use App\Enums\RequestProgress;

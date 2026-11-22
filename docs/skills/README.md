@@ -6,9 +6,9 @@ program reads are a projection of those sources, written by the journal.
 
 ## Declaring a skill in a domain or module
 
-- The owner's domain class implements `App\Contracts\SkillProvider` and lists its skill classes in `skills()`.
+- The owner's domain class implements `App\Contracts\Skills\SkillProvider` and lists its skill classes in `skills()`.
   Core lists its own in `App\Support\CoreSkills`.
-- A skill class implements `App\Contracts\Skill`: its key, name, description, condition and
+- A skill class implements `App\Contracts\Skills\Skill`: its key, name, description, condition and
   `sections(): SkillSections`. Keys are lowercase words joined by hyphens; `journal-*` is reserved for Core and the
   shipped domains, a registered module uses its own slug as prefix, and `user-*` is for stored skills.
 - A shipped skill names its file: `SkillSections::fromFile('core/shell.md')`, a file in the owner's `resources/skills`

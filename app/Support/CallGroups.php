@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Exceptions\EndpointDeclarationInvalid;
 use Illuminate\Support\Str;
 use UnitEnum;
@@ -38,7 +38,7 @@ final class CallGroups
 
         namespace {$namespace};
 
-        use App\\Contracts\\CallSender;
+        use App\\Contracts\\Domains\\CallSender;
         use App\\Support\\CallKey;
 
         /**

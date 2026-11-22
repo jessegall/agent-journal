@@ -6,9 +6,9 @@ namespace Tests\Feature\Assignments;
 
 use App\Commands\AssignRecord\AssignRecordCommand;
 use App\Commands\UnassignRecord\UnassignRecordCommand;
-use App\Contracts\ActorDesks;
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\CommandBus;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Chat\ActorDesks;
 use App\Exceptions\RequestKeyConflict;
 use App\Models\Agent;
 use App\Models\AssignmentRecord;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\ScriptExecution;
+use App\Contracts\Scripts\ScriptExecution;
 
 final readonly class RunContext
 {

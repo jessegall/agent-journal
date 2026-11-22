@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
-use App\Contracts\ChatTimeline;
-use App\Contracts\ConversationResolver;
-use App\Contracts\CurrentActor;
-use App\Contracts\InboxResolver;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Chat\ChatTimeline;
+use App\Contracts\Chat\ConversationResolver;
+use App\Contracts\Chat\InboxResolver;
 use App\Data\ChatEventPage;
 use App\Data\ChatEventView;
 use App\Data\MessagePage;

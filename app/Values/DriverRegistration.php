@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\DriverCapabilities;
+use App\Contracts\Drivers\DriverCapabilities;
 use App\Enums\DriverCapability;
 use App\Enums\DriverVariant;
 

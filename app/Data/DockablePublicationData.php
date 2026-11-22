@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data;
 
-use App\Contracts\PresentsLayout;
+use App\Contracts\Navigation\PresentsLayout;
 use App\Support\Cards\DockIdentity;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Sources\Contracts\DockableWindow;

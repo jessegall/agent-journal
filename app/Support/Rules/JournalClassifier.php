@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Rules;
 
 use App\Attributes\OutsideThePlaces;
-use App\Contracts\ProgramClassifier;
+use App\Contracts\Processes\ProgramClassifier;
 use App\Enums\CommandClass;
 use App\Enums\CommandType;
 use App\Enums\PlaceExemption;

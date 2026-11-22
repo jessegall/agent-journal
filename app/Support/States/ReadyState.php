@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\States;
 
-use App\Contracts\OperationPolicy;
+use App\Contracts\Authorization\OperationPolicy;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\MessageLine;
 use App\Support\Inputs\ContextCompacted;

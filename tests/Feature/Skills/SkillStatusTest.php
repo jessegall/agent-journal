@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\SkillPublisher;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Skills\SkillPublisher;
 use App\Enums\GenerationState;
 use App\Enums\Place;
 use App\Enums\PublicationState;

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Commands\RecordRunEvents;
 
 use App\Commands\AssessPartOutput\AssessPartOutputCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CommandHandler;
-use App\Contracts\OutputRecorder;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Reads\OutputRecorder;
 use App\Enums\RunEventType;
 use App\Models\PartRun;
 use App\Models\ProcessRun;

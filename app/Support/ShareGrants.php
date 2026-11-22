@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\ReadMeter;
-use App\Contracts\SharePolicy;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Reads\ReadMeter;
+use App\Contracts\Sharing\SharePolicy;
 use App\Enums\GatewayOperationType;
 use App\Enums\ShareAuditType;
 use App\Exceptions\ShareProposalUnavailable;

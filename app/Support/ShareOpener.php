@@ -7,8 +7,8 @@ namespace App\Support;
 use App\Commands\ApproveShareRequest\ApproveShareRequestCommand;
 use App\Commands\CreateShare\CreateShareCommand;
 use App\Commands\RefreshShareScope\RefreshShareScopeCommand;
-use App\Contracts\Command;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandBus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 

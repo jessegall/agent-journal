@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Commands\RecordAccountFailure\RecordAccountFailureCommand;
-use App\Contracts\JournalCommands;
-use App\Contracts\Listener;
+use App\Contracts\Bus\JournalCommands;
+use App\Contracts\Events\Listener;
 use App\Enums\CommandEntry;
 use App\Events\DriverFailed;
 use App\Models\Account;

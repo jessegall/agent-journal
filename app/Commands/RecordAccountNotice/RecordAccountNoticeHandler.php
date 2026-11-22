@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RecordAccountNotice;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\AccountNotices;
 
 final readonly class RecordAccountNoticeHandler implements CommandHandler

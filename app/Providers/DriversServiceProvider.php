@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Support\DefaultDrivers;
 use App\Support\DriverRegistry;
 use Illuminate\Support\ServiceProvider;

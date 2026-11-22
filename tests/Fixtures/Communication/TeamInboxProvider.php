@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Communication;
 
-use App\Contracts\Inbox;
-use App\Contracts\InboxProvider;
+use App\Contracts\Chat\Inbox;
+use App\Contracts\Chat\InboxProvider;
 
 /**
  * A second kind of inbox for the registration tests: a team that owns its own label.

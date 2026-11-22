@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Contracts\ActorRunner;
-use App\Contracts\GuardedCommandBus;
-use App\Contracts\Listener;
-use App\Contracts\StackAdmission;
+use App\Contracts\Actors\ActorRunner;
+use App\Contracts\Admission\StackAdmission;
+use App\Contracts\Bus\GuardedCommandBus;
+use App\Contracts\Events\Listener;
 use App\Enums\CommandEntry;
 use App\Enums\CommandOriginStatus;
 use App\Events\HookCommandAnswered;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Contracts\RecordSearch;
-use App\Contracts\SearchSources;
-use App\Contracts\ServedEnvironment;
+use App\Contracts\Hosts\ServedEnvironment;
+use App\Contracts\Search\RecordSearch;
+use App\Contracts\Search\SearchSources;
 use App\Enums\SearchSurface;
 use App\Mcp\Contracts\Continuations as ContinuationsContract;
 use App\Mcp\Data\NextAction;

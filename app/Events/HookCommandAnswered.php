@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\AuthoritySource;
-use App\Contracts\Command;
-use App\Contracts\Event;
+use App\Contracts\Authorization\AuthoritySource;
+use App\Contracts\Bus\Command;
+use App\Contracts\Events\Event;
 use App\Support\ActorContext;
 use App\Values\StackTarget;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Storage;
 
-use App\Contracts\AssignmentStorage;
+use App\Contracts\Assignments\AssignmentStorage;
 use App\Enums\AssignmentOutcomeType;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\AssignmentTransactionRequired;

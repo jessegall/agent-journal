@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\Pipe;
-use App\Contracts\PipelineDefinition;
+use App\Contracts\Bus\Pipe;
+use App\Contracts\Bus\PipelineDefinition;
 use App\Support\DeclaredType;
 use App\Support\PipelineAdapter;
 use App\Support\PipelineRunner;

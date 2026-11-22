@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\NavigationCompletion;
 use App\Enums\NavigationState;
 use App\Exceptions\NavigationTransitionRefused;

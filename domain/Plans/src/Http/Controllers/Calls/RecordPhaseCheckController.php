@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers\Calls;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Plans\Calls\PhaseCheckRecorded;
 use Domain\Plans\Calls\RecordPhaseCheckCall;
 use Domain\Plans\Commands\RecordPhaseCheck\RecordPhaseCheckCommand;

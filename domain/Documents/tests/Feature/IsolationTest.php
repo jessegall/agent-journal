@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Exceptions\ContentMissing;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedParameter;

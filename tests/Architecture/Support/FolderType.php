@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Contracts\CommandMiddleware as CommandMiddlewareContract;
+use App\Contracts\Bus\CommandMiddleware as CommandMiddlewareContract;
 use App\Support\Command;
 use App\Support\Reflector;
 use App\Support\States\AgentState;

@@ -6,9 +6,9 @@ namespace Tests\Feature\Comments;
 
 use App\Commands\PostComment\PostCommentCommand;
 use App\Commands\PostTextComment\PostTextCommentCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CommentResolver;
-use App\Contracts\TextResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Reads\TextResolver;
+use App\Contracts\Records\CommentResolver;
 use App\Data\RecordCommentView;
 use App\Data\TextCommentView;
 use App\Exceptions\TargetNotCommentable;

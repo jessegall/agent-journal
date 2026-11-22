@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Contracts\ShellCommandParser;
+use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\AnswerType;
 use App\Enums\NoSubject;
 use App\Enums\ShellDialect;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\StateEvents;
 
-use App\Contracts\Command;
-use App\Contracts\Event;
+use App\Contracts\Bus\Command;
+use App\Contracts\Events\Event;
 use App\Enums\CommandOriginStatus;
 use App\Values\StackTarget;
 use Psr\Log\LoggerInterface;

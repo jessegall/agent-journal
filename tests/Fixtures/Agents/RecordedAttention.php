@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Agents;
 
-use App\Contracts\ActorAttention;
+use App\Contracts\Actors\ActorAttention;
 use App\Support\ActorIdentity;
 use App\Support\AttentionOrigin;
 use App\Support\AttentionOutcome;

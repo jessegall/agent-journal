@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActorWorkStacks;
-use App\Contracts\CurrentActor;
-use App\Contracts\IncomingWork;
-use App\Contracts\StackTransaction;
+use App\Contracts\Actors\ActorWorkStacks;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Work\IncomingWork;
+use App\Contracts\Work\StackTransaction;
 use App\Models\AssignmentRecord;
 use App\Models\Message;
 use App\Support\States\Support\AnsweringMessageStateReference;

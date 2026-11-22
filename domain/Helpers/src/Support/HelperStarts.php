@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Contracts\StartRecordResolver;
+use App\Contracts\Sessions\StartRecordResolver;
 use App\Support\OwnerStartRequest;
 use App\Support\StartRecordDetails;
 use Domain\Helpers\Exceptions\HelperUnavailable;

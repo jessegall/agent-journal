@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
-use App\Contracts\AgentResolver;
-use App\Contracts\CurrentSession;
-use App\Contracts\DriverCatalogue;
-use App\Contracts\ProfileResolver;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Sessions\AgentResolver;
+use App\Contracts\Sessions\CurrentSession;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\ActorType;
 use App\Exceptions\SkillAgentHidden;
 use App\Exceptions\SkillContextUnavailable;

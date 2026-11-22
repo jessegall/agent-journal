@@ -7,7 +7,7 @@ namespace App\Commands\ReleaseMessageClaim;
 use App\Attributes\Authorize;
 use App\Attributes\RepeatableRead;
 use App\Attributes\RetainedActorRequestKey;
-use App\Contracts\MessageCommand;
+use App\Contracts\Bus\MessageCommand;
 use App\Enums\AccessType;
 use App\Policies\MessageAdministrationPolicy;
 use App\Support\AssignmentReference;

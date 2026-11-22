@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Providers;
 
-use App\Contracts\JournalToolNames;
+use App\Contracts\Domains\JournalToolNames;
 use App\Mcp\Console\ContractSnapshotCommand;
 use App\Mcp\Console\RelayCommand;
 use App\Mcp\Contracts\Continuations as ContinuationsContract;

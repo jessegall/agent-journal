@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\AccountUses;
-use App\Contracts\PageResolver;
+use App\Contracts\Accounts\AccountUses;
+use App\Contracts\Navigation\PageResolver;
 use App\Data\Profiles\AccountListData;
 use App\Data\Profiles\AccountRowData;
 use App\Data\Profiles\AccountUsageData;

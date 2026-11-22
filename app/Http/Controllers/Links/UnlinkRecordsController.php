@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Links;
 
 use App\Commands\UnlinkRecords\UnlinkRecordsCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\RecordResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Records\RecordResolver;
 use App\Http\Requests\Links\LinkRecordsRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\PageResolver;
+use App\Contracts\Navigation\PageResolver;
 use App\Data\Sharing\GatewayConfigurePartData;
 use App\Data\Sharing\GatewayRevisionData;
 use App\Data\Sharing\RootShareData;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Commands\AssignRecord\AssignRecordCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Models\CommandReceipt;
 use App\Support\ActorContext;
 use App\Support\AssigneeIdentity;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations;
 
-use App\Contracts\SectionResolver;
+use App\Contracts\Navigation\SectionResolver;
 use App\Declarations\SlotContext;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutPartData;

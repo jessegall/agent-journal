@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\BeginSignIn;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\SignInMethodMissing;
 use App\Jobs\SignInDeadline;
 use App\Models\ActiveAccount;

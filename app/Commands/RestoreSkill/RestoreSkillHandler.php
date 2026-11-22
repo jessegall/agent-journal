@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RestoreSkill;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\Skill;
 use App\Models\SkillRevision;
 use App\Resolvers\Support\SkillContextResolver;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\ActorVisibility;
+use App\Contracts\Actors\ActorVisibility;
 use App\Enums\AnswerType;
 use App\Enums\NoSubject;
 use App\Exceptions\AgentContextMissing;

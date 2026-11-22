@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\RunClaims;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Processes\RunClaims;
 use App\Exceptions\ActorNotAllowed;
 use App\Models\Agent;
 use App\Models\AgentSession;

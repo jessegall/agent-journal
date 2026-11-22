@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Event;
-use App\Contracts\ReflectorFactory;
-use App\Contracts\UserInterfaceUpdater;
+use App\Contracts\Events\Event;
+use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Exceptions\InvalidListener;
 use App\Support\Sources\Contracts\DockSourceChanged;
 use App\Support\Sources\Contracts\DockSourceDeleted;

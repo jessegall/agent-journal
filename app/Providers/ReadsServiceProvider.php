@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\ReadableModel;
-use App\Contracts\ReadLog as ReadLogContract;
-use App\Contracts\ReadMeter;
+use App\Contracts\Reads\ReadLog as ReadLogContract;
+use App\Contracts\Reads\ReadMeter;
+use App\Contracts\Records\ReadableModel;
 use App\Exceptions\ReadLimitInvalid;
 use App\Exceptions\ReadPolicyMissing;
 use App\Support\ReadLog;

@@ -6,7 +6,7 @@ namespace App\Calls\Processes;
 
 use App\Attributes\Endpoint;
 use App\Attributes\InPath;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Enums\CallEffect;
 use Spatie\LaravelData\Attributes\FromRouteParameter;
 use Spatie\LaravelData\Data;

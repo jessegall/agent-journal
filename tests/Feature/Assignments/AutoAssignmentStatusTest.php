@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\AutoAssignmentResolver;
-use App\Contracts\DomainAvailability;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Assignments\AutoAssignmentResolver;
+use App\Contracts\Domains\DomainAvailability;
 use App\Enums\AutoAssignmentState;
 use App\Models\Agent;
 use App\Models\AssignmentRecord;

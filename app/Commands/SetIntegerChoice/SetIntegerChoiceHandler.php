@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\SetIntegerChoice;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\OptionChanges;
 use App\Values\SettingsChange;
 

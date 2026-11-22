@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\ShellAdmission;
+use App\Contracts\Admission\ShellAdmission;
 use App\Enums\AnswerType;
 use App\Enums\NoSubject;
 use App\Enums\RewriteSupport;

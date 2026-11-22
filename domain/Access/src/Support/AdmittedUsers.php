@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Contracts\AdmittedRecipients;
+use App\Contracts\Chat\AdmittedRecipients;
 
 /**
  * The admitted audience: the configured owner, or nobody when none is configured.

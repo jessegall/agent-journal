@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\HostOperatorAccess;
+use App\Contracts\Hosts\HostOperatorAccess;
 
 /**
  * The words of a refused start's next step for whoever reads it: an actor who operates the hosts reads the operator's

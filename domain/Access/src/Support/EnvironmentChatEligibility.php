@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Contracts\ChatEligibility;
+use App\Contracts\Chat\ChatEligibility;
 use App\Enums\ChatPermission;
 use App\Support\ActorIdentity;
 use Domain\Access\Models\EnvironmentUserGrant;

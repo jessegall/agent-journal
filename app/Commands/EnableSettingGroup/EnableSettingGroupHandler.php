@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\EnableSettingGroup;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\SettingsWriter;
 use App\Support\SettingTargets;
 use App\Values\SettingsChange;

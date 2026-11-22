@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Commands\AssessPartOutput\AssessPartOutputCommand;
-use App\Contracts\ResultReceipts;
+use App\Contracts\Bus\ResultReceipts;
 use App\Enums\AssessmentOutcome;
 use App\Enums\ProblemCode;
 use App\Enums\RunMode;

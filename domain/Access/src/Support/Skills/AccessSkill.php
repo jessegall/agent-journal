@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support\Skills;
 
-use App\Contracts\Skill;
-use App\Contracts\SkillCondition;
+use App\Contracts\Skills\Skill;
+use App\Contracts\Skills\SkillCondition;
 use App\Support\Conditions\Conditions;
 use App\Values\SkillSections;
 

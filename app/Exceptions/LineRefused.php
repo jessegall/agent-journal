@@ -6,7 +6,7 @@ namespace App\Exceptions;
 
 use App\Calls\Processes\AdmissionRefusalDetails;
 use App\Concerns\RendersRefusal;
-use App\Contracts\CodedRefusal;
+use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
 use App\Values\AdmissionRefusal;
 use RuntimeException;

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Commands\DismissMessage;
 
 use App\Commands\DeclineChatQuestion\DeclineChatQuestionCommand;
-use App\Contracts\Actor;
-use App\Contracts\CommandHandler;
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\InboxResolver;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Chat\InboxResolver;
 use App\Enums\AccessType;
 use App\Enums\DismissalType;
 use App\Exceptions\MessageMissing;

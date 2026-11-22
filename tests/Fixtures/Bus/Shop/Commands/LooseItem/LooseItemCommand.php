@@ -8,7 +8,7 @@ use Tests\Fixtures\Bus\Policies\FixturePolicy;
 use App\Enums\AccessType;
 use App\Attributes\Authorize;
 use App\Support\ActorContext;
-use App\Contracts\Command;
+use App\Contracts\Bus\Command;
 use App\Exceptions\CommandDispatcherMissing;
 
 /**

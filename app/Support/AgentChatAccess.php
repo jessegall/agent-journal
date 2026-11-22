@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ChatParticipationEnding;
+use App\Contracts\Chat\ChatParticipationEnding;
 use App\Enums\ActorType;
 use App\Models\AgentChatInviter;
 use App\Models\AgentChatPermission;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Exceptions\FolderOutsideProject;
 use App\Http\Middleware\ResolveConnectedProject;
 use App\Models\Environment;

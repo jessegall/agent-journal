@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AssignmentStorage;
-use App\Contracts\MainSeatTakeover;
+use App\Contracts\Assignments\AssignmentStorage;
+use App\Contracts\Chat\MainSeatTakeover;
 use App\Models\Agent;
 use App\Models\DeskRecord;
 use App\Models\DeskSeat;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RefreshSkills;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\GenerationState;
 use App\Exceptions\SkillConflict;
 use App\Exceptions\SkillDeclarationInvalid;

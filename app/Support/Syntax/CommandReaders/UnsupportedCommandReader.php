@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax\CommandReaders;
 
-use App\Contracts\CommandReader;
-use App\Contracts\Pipe;
+use App\Contracts\Bus\CommandReader;
+use App\Contracts\Bus\Pipe;
 use App\Exceptions\ShellGrammarStopped;
 use App\Support\Grammar\CommandToParse;
 use App\Support\Grammar\NodeRead;

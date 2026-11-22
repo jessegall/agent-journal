@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Policy;
-use App\Contracts\SystemEntryPolicies as SystemEntryPoliciesContract;
+use App\Contracts\Authorization\Policy;
+use App\Contracts\Authorization\SystemEntryPolicies as SystemEntryPoliciesContract;
 
 /**
  * The policies the system may act on through each trusted entry: every entry starts with none, and the area whose

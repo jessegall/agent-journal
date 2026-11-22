@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DriverCatalogue;
-use App\Contracts\StartExecutor;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Sessions\StartExecutor;
 use App\Data\HostRefusalData;
 use App\Data\HostStartReplyData;
 use App\Data\HostStopReplyData;

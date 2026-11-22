@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Commands\ContinueStart;
 
 use App\Commands\StartAgent\StartAgentCommand;
-use App\Contracts\BuiltInStartProfiles;
-use App\Contracts\CommandBus;
-use App\Contracts\CommandHandler;
-use App\Contracts\SessionPolicyReader;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Sessions\BuiltInStartProfiles;
+use App\Contracts\Sessions\SessionPolicyReader;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;

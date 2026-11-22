@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Support\Connections;
 
 use App\Commands\SetBooleanSetting\SetBooleanSettingCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\HostProtocolVersion;
 use App\Models\InstallAttempt;
 use App\Models\ProjectInvitation;

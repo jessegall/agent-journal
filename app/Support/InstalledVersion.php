@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Files;
-use App\Contracts\InstalledVersion as InstalledVersionContract;
+use App\Contracts\Drivers\InstalledVersion as InstalledVersionContract;
+use App\Contracts\Files\Files;
 use App\Enums\Place;
 use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Process\Factory as ProcessFactory;

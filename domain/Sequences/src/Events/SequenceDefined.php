@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Events;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * A sequence was stored with its name, summary and steps.

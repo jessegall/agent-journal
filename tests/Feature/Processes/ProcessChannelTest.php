@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Calls\Processes\ProcessCalls;
-use App\Contracts\CommandClassifier;
-use App\Contracts\Files;
+use App\Contracts\Bus\CommandClassifier;
+use App\Contracts\Files\Files;
 use App\Enums\ActorType;
 use App\Enums\LifecycleState;
 use App\Enums\ShellDialect;

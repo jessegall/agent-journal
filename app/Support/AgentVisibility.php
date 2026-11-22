@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActorVisibilityProvider;
+use App\Contracts\Actors\ActorVisibilityProvider;
 use App\Enums\ActorType;
 use App\Exceptions\CrossOwnerReadRefused;
 use Closure;

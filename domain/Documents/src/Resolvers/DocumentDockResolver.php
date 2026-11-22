@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
-use App\Contracts\SectionResolver;
+use App\Contracts\Navigation\SectionResolver;
 use App\Declarations\SlotContext;
 use Domain\Documents\Data\DockData;
 use Domain\Documents\Enums\AttentionState;

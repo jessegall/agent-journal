@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\IntervalRole;
 use App\Models\CommandReceipt;
 use App\Models\GlobalGroup;

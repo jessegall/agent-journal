@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Pipes;
 
-use App\Contracts\CommandMiddleware;
-use App\Contracts\Pipe;
+use App\Contracts\Bus\CommandMiddleware;
+use App\Contracts\Bus\Pipe;
 use App\Enums\CommandScopeType;
 use App\Exceptions\MiddlewareDeclarationInvalid;
 use App\Exceptions\MiddlewareListedTwice;

@@ -70,6 +70,56 @@ final class MoveToolTest extends TestCase
         $this->assertSame(['AgentStacks', 'Hosts', 'Old'], $this->parameterTypesOfUser());
     }
 
+    public function test_a_docblock_that_names_a_moved_neighbour_bare_gets_its_import(): void
+    {
+        file_put_contents($this->tree.'/app/Contracts/Hosts.php', <<<'PHP'
+            <?php
+
+            namespace App\Contracts;
+
+            interface Hosts
+            {
+                /**
+                 * @return list<Stacks>
+                 */
+                public function stacks(): array;
+            }
+
+            PHP);
+        $this->git('add -A');
+        $this->git('-c user.name=test -c user.email=test@example.test commit -q -m docblock');
+
+        [$exit] = $this->move('App\\Contracts\\Stacks', 'App\\Contracts\\Agents\\Stacks');
+
+        preg_match_all('/^use ([^;]+);/m', (string) file_get_contents($this->tree.'/app/Contracts/Hosts.php'), $imports);
+        $this->assertSame([0, ['App\\Contracts\\Agents\\Stacks']], [$exit, $imports[1]]);
+    }
+
+    public function test_a_bare_name_in_a_docblock_follows_a_rename(): void
+    {
+        file_put_contents($this->tree.'/app/Contracts/Hosts.php', <<<'PHP'
+            <?php
+
+            namespace App\Contracts;
+
+            interface Hosts
+            {
+                /**
+                 * @return list<Stacks>
+                 */
+                public function stacks(): array;
+            }
+
+            PHP);
+        $this->git('add -A');
+        $this->git('-c user.name=test -c user.email=test@example.test commit -q -m docblock');
+
+        [$exit] = $this->move('App\\Contracts\\Stacks', 'AgentStacks');
+
+        preg_match('/@return list<(\\w+)>/', (string) file_get_contents($this->tree.'/app/Contracts/Hosts.php'), $type);
+        $this->assertSame([0, 'AgentStacks'], [$exit, $type[1]]);
+    }
+
     public function test_a_merge_repoints_every_reference_and_deletes_the_old_class(): void
     {
         [$exit] = $this->move('--replace', 'App\\Values\\Old', 'App\\Values\\Kept');

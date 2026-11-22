@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActiveActorCounter;
-use App\Contracts\ActiveActorRegistration;
+use App\Contracts\Actors\ActiveActorCounter;
+use App\Contracts\Actors\ActiveActorRegistration;
 use App\Enums\ActorType;
 use App\Exceptions\ActiveActorCounterMissing;
 use App\Exceptions\ActiveActorCounterRepeated;

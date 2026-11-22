@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\WorkspaceReader;
+use App\Contracts\Files\WorkspaceReader;
 use App\Exceptions\WorkspaceReadPending;
 use App\Models\WorkspaceRead;
 use App\Values\WorkReference;

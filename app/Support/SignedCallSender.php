@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CallSender;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\CallSender;
+use App\Contracts\Domains\JournalCall;
 use App\Data\RefusalAnswerData;
 use App\Exceptions\AnswerUnreadable;
 use App\Exceptions\CallTooLarge;

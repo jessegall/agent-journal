@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ReplayAssessment;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\LifecycleState;
 use App\Enums\RunMode;
 use App\Exceptions\ReplayRefused;

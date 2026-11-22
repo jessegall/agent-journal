@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AssigneeProvider;
+use App\Contracts\Assignments\AssigneeProvider;
 
 /**
  * Which provider answers for one registered type of assignee, an actor type or a desk, by its type text.

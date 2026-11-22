@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
-use App\Contracts\DraftProducers;
+use App\Contracts\Navigation\DraftProducers;
 use App\Enums\ActionMethod;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;

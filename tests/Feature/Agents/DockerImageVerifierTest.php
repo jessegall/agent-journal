@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Contracts\Files;
+use App\Contracts\Files\Files;
 use App\Support\DockerImageVerifier;
 use Tests\TestCase;
 

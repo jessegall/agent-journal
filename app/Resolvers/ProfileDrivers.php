@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\DriverCatalogue;
-use App\Contracts\ProfileResolver;
-use App\Contracts\ProfileSelections;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Sessions\ProfileResolver;
+use App\Contracts\Sessions\ProfileSelections;
 use App\Values\ModelSelection;
 use App\Values\ProfileDefaults;
 use App\Values\ProfileKey;

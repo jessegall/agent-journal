@@ -6,11 +6,11 @@ namespace Tests\Fixtures\Domains\Reviews;
 
 use App\Concerns\HasIncomingWork;
 use App\Concerns\HasStates;
-use App\Contracts\IncomingWorkProvider;
-use App\Contracts\StateProvider;
+use App\Contracts\Work\IncomingWorkProvider;
+use App\Contracts\Records\StateProvider;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\SettingsProvider;
+use App\Contracts\Settings\SettingsProvider;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Fixtures\Domains\Reviews\States\ReviewStateType;
 use Tests\Fixtures\Domains\Reviews\Work\ReviewInbox;

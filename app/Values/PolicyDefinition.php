@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\OwnerPolicy;
-use App\Contracts\Policy;
-use App\Contracts\RecordPolicy;
-use App\Contracts\RestrictedPolicy;
-use App\Contracts\WorkspacePolicy;
+use App\Contracts\Authorization\OwnerPolicy;
+use App\Contracts\Authorization\Policy;
+use App\Contracts\Authorization\RecordPolicy;
+use App\Contracts\Authorization\RestrictedPolicy;
+use App\Contracts\Authorization\WorkspacePolicy;
 use App\Enums\AccessType;
 use App\Support\Reflector;
 

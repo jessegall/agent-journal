@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Commands\CreateAgent\CreateAgentCommand;
-use App\Contracts\AgentResolver;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Sessions\AgentResolver;
 use App\Exceptions\CommandInputInvalid;
 use App\Models\Agent;
 use Tests\Support\RefreshHookDatabase;

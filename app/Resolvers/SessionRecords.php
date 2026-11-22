@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\SessionResolver;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Sessions\SessionResolver;
 use App\Enums\SessionStatus;
 use App\Exceptions\StackTargetRefused;
 use App\Models\Agent;

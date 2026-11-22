@@ -6,8 +6,8 @@ namespace App\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\MessagePart;
-use App\Contracts\ReadableModel;
+use App\Contracts\Drivers\MessagePart;
+use App\Contracts\Records\ReadableModel;
 use App\Data\DriverRequestStatus;
 use App\Data\MessagePartData;
 use App\Enums\DriverOperation;

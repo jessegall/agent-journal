@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers\Calls;
 
-use App\Contracts\AssigneeResolver;
-use App\Contracts\CommandBus;
-use App\Contracts\RecordResolver;
+use App\Contracts\Assignments\AssigneeResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Records\RecordResolver;
 use Domain\Plans\Calls\ReassignPlanWorkCall;
 use Domain\Plans\Commands\ReassignPlanWork\ReassignPlanWorkCommand;
 use Domain\Plans\Data\PlanWorkResultData;

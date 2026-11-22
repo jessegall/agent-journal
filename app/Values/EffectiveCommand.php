@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Attributes\Authorize;
-use App\Contracts\Command;
+use App\Contracts\Bus\Command;
 use App\Enums\CommandAdmissionStage;
 use App\Enums\CommandEffectType;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes\Answer;
 
-use App\Contracts\Pipe;
+use App\Contracts\Bus\Pipe;
 use App\Support\Admission\HookShellAdmission;
 use App\Support\CallStages\RestoredCall;
 use App\Support\CallStages\WalkedCall;

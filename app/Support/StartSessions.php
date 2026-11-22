@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\StartTransaction;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Sessions\StartTransaction;
 use App\Events\SessionClosed;
 use App\Events\SessionOpened;
 use App\Events\StartSettingsRequested;

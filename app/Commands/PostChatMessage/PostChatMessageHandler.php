@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\PostChatMessage;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\ChatPosting;
 
 final readonly class PostChatMessageHandler implements CommandHandler

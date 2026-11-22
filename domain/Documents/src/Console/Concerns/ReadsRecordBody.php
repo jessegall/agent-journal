@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Concerns;
 
-use App\Contracts\Files;
+use App\Contracts\Files\Files;
 use App\Exceptions\FileMissing;
 use App\Exceptions\FileUnreadable;
 

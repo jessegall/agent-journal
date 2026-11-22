@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\BindTaskCheck;
 
-use App\Contracts\ResultReceipts;
+use App\Contracts\Bus\ResultReceipts;
 use App\Enums\AssessmentOutcome;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Models\TaskCheck;

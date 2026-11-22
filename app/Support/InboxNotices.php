@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Commands\SendMessage\SendMessageCommand;
-use App\Contracts\Actor;
-use App\Contracts\ActorInboxResolver;
-use App\Contracts\AgentCallContext;
-use App\Contracts\CommandBus;
-use App\Contracts\Inbox;
-use App\Contracts\InboxNotices as InboxNoticesContract;
-use App\Contracts\InboxResolver;
-use App\Contracts\JournalAdmission;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Actors\ActorInboxResolver;
+use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Chat\Inbox;
+use App\Contracts\Chat\InboxNotices as InboxNoticesContract;
+use App\Contracts\Chat\InboxResolver;
+use App\Contracts\Sessions\AgentCallContext;
 use App\Enums\CommandEntry;
 use PhpOption\None;
 

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\ActorLabels;
-use App\Contracts\ConversationResolver;
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\InboxResolver;
+use App\Contracts\Actors\ActorLabels;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Chat\ConversationResolver;
+use App\Contracts\Chat\InboxResolver;
 use App\Data\InboxCounts;
 use App\Data\InboxView;
 use App\Data\MessageClaimHolder;

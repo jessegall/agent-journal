@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Concerns\ComparesTypeAndId;
-use App\Contracts\Actor;
+use App\Contracts\Actors\Actor;
 use App\Enums\ActorType;
 use App\Exceptions\InvalidActorText;
 

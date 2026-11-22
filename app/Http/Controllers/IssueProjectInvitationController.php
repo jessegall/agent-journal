@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Connections\IssueProjectInvitationRequest;
 use App\Http\Responses\PageActionAnswers;
 use App\Support\InstallLine;

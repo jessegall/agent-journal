@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Readers;
 
-use App\Contracts\AskReader;
-use App\Contracts\AssignmentResolver;
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Assignments\AssignmentResolver;
+use App\Contracts\Chat\AskReader;
 use App\Data\AskCard;
 use App\Data\AskDetail;
 use App\Data\AskInbox;

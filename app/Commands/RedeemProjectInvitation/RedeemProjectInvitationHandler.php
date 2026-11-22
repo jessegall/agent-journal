@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\RedeemProjectInvitation;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\JournalAdmission;
+use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\ArrangementType;
 use App\Enums\ConnectionAuditActor;
 use App\Enums\ConnectionAuditType;

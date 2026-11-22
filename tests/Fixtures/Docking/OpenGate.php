@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Docking;
 
-use App\Contracts\Actor;
+use App\Contracts\Actors\Actor;
 use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\Contracts\DestinationGate;
 use App\Support\GatedCardContext;

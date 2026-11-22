@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Support\ActorContext;
 use App\Values\OwnerAuthority;
 use Domain\Access\Support\AccessSettings;

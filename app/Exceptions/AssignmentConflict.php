@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Concerns\RendersRefusal;
-use App\Contracts\CodedRefusal;
-use App\Contracts\CommandRefusal;
-use App\Contracts\RefusalDetails;
+use App\Contracts\Bus\CommandRefusal;
+use App\Contracts\Refusals\CodedRefusal;
+use App\Contracts\Refusals\RefusalDetails;
 use App\Enums\RefusalCode;
 use App\Support\RecordIdentity;
 use App\Values\RecoveryCall;

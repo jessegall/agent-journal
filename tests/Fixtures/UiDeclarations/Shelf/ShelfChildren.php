@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Shelf;
 
-use App\Contracts\NavigationChildren;
+use App\Contracts\Navigation\NavigationChildren;
 use App\Declarations\NavigationItem;
 
 final readonly class ShelfChildren implements NavigationChildren

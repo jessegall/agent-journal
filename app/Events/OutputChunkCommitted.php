@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * A piece of a part's output was stored and its row committed, so a reader may read up to its end.

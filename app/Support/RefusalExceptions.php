@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CallRefusal;
+use App\Contracts\Refusals\CallRefusal;
 use App\Exceptions\CallCancelled;
 use App\Exceptions\CallConflict;
 use App\Exceptions\CallKeyConflict;

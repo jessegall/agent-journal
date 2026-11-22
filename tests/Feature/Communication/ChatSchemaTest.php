@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Contracts\Inbox;
+use App\Contracts\Chat\Inbox;
 use App\Models\CommandReceipt;
 use App\Models\GlobalGroup;
 use App\Models\InboxRecord;

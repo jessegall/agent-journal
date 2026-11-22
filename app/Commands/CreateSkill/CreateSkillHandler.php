@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\CreateSkill;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\SkillDeclarationInvalid;
 use App\Exceptions\SkillKeyTaken;
 use App\Models\Skill;

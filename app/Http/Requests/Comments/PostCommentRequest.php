@@ -6,7 +6,7 @@ namespace App\Http\Requests\Comments;
 
 use App\Commands\PostComment\PostCommentCommand;
 use App\Commands\PostTextComment\PostTextCommentCommand;
-use App\Contracts\RecordResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Enums\TextAnchorType;
 use App\Http\Requests\RecordTargetRequest;
 use App\Values\TextRange;

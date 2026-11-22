@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Links;
 
 use App\Concerns\ProvidesModelRecords;
-use App\Contracts\RecordProvider;
+use App\Contracts\Records\RecordProvider;
 use App\Data\RecordCard;
 use App\Models\Message;
 use App\Support\ReadBuilder;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\AnsweredAtOnce;
-use App\Contracts\ReminderContribution;
+use App\Contracts\Chat\AnsweredAtOnce;
+use App\Contracts\Work\ReminderContribution;
 use App\Enums\ContextStartType;
 use App\Values\StackTarget;
 

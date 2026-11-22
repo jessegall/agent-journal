@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Helpers\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\Listener;
-use App\Contracts\StartRecordResolver;
+use App\Contracts\Events\Listener;
+use App\Contracts\Sessions\StartRecordResolver;
 use App\Support\ActorIdentity;
 use App\Support\StartRecordDetails;
 use Domain\Documents\Events\ReportFiled;

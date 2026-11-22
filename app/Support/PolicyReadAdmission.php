@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentSession;
-use App\Contracts\ReadAdmission;
-use App\Contracts\ReadEntitlements;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Admission\ReadAdmission;
+use App\Contracts\Authorization\ReadEntitlements;
+use App\Contracts\Sessions\CurrentSession;
 use App\Enums\AccessRuleType;
 use App\Enums\CommandEffectType;
 use App\Enums\ReadEntitlementType;

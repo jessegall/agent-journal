@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Classification;
 
-use App\Contracts\AliasResolver;
-use App\Contracts\CommandClassifier;
+use App\Contracts\Actors\AliasResolver;
+use App\Contracts\Bus\CommandClassifier;
 use App\Enums\AnalysisLimit;
 use App\Enums\CommandClass;
 use App\Enums\CommandType;

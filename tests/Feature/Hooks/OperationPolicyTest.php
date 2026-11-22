@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\OperationPolicy;
+use App\Contracts\Authorization\OperationPolicy;
 use App\Enums\AccessType;
 use App\Enums\AnswerType;
 use App\Enums\FileOperation;

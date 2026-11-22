@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Domains\QuestionReminders\States;
 
 use App\Support\StateLoading\Contracts\TickableStateLoader;
-use App\Contracts\WorkOccurrenceGuard;
+use App\Contracts\Work\WorkOccurrenceGuard;
 use App\Support\References\StateReference;
 use App\Support\Decisions\StateReferences;
 use App\Support\StateLoading\StateSet;

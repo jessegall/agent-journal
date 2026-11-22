@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\PolicyCatalogue;
+use App\Contracts\Authorization\PolicyCatalogue;
 use App\Exceptions\PolicyDefinitionConflict;
 use App\Values\PolicyDefinition;
 use Illuminate\Contracts\Auth\Access\Gate;

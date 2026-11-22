@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\CoreApi;
 use App\Support\StartDriver;
 use App\Values\DriverKey;

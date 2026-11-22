@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Readers;
 
-use App\Contracts\WorkProgress;
+use App\Contracts\Work\WorkProgress;
 use App\Models\AgentStackRow;
 use App\Support\ActorIdentity;
 use App\Values\WorkReference;

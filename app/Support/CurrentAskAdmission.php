@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AskAdmission;
-use App\Contracts\AssignmentStorage;
-use App\Contracts\Command;
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Admission\AskAdmission;
+use App\Contracts\Assignments\AssignmentStorage;
+use App\Contracts\Bus\Command;
 use App\Exceptions\AskRefused;
 use App\Values\AdmittedAsk;
 use App\Values\AskReference;

@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Commands\ClaimAutoAssignment;
 
 use App\Commands\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
-use App\Contracts\AssignedWorkResolver;
-use App\Contracts\AssignmentProviders;
-use App\Contracts\AutoAssignmentWriter;
-use App\Contracts\CommandBus;
-use App\Contracts\CommandHandler;
-use App\Contracts\MaintenanceAdmission;
+use App\Contracts\Admission\MaintenanceAdmission;
+use App\Contracts\Assignments\AssignedWorkResolver;
+use App\Contracts\Assignments\AssignmentProviders;
+use App\Contracts\Assignments\AutoAssignmentWriter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentRoom;
 use App\Support\AutoAssignmentAvailability;

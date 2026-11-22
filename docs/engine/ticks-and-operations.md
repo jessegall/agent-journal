@@ -8,11 +8,11 @@ operator needs to run the engine.
 ## A ticking state
 
 A state type ticks when its loader carries the `App\Hooks\Contracts\TickableStateLoader` mark. Every state that loader
-builds must implement `App\Contracts\TickableState`. Loaders without the mark are never restored to look for
+builds must implement `App\Contracts\Work\TickableState`. Loaders without the mark are never restored to look for
 ticks. A marked loader that builds a state without `onTick` fails with `TickableStateMissing` when its batch is built.
 
 ```php
-use App\Contracts\TickableState;
+use App\Contracts\Work\TickableState;
 use App\Hooks\Contracts\TickableStateLoader;
 use App\Support\States\AgentState;
 use App\Support\Ticks\TickCommands;
@@ -114,7 +114,7 @@ public function handle(SendQuestionReminder $command): void
 }
 ```
 
-Use `App\Contracts\ServerClock` for times that are stored, never the PHP clock.
+Use `App\Contracts\Time\ServerClock` for times that are stored, never the PHP clock.
 
 ## Changing a stack from a handler
 
@@ -122,14 +122,14 @@ The engine's grant for a tick covers only that frame's target. In a handler:
 
 - `App\Hooks\Contracts\EngineStack::push($target, $reference)` pushes a state through the same push every caller uses.
   It refuses a target outside the grant (`EngineAccessRefused`) and a session that no longer runs.
-- `App\Contracts\AgentStack::popExposed($target)` pops the finished and switched-off frames exposed at the top,
+- `App\Contracts\Work\AgentStack::popExposed($target)` pops the finished and switched-off frames exposed at the top,
   with their exits; frames buried under a live one stay.
 
 Never change a stack from `onTick` itself.
 
 ## Periodic work: engine listeners
 
-Work that belongs to no frame, such as the start silence sweep, implements `App\Contracts\EngineListener`:
+Work that belongs to no frame, such as the start silence sweep, implements `App\Contracts\Events\EngineListener`:
 
 ```php
 final readonly class MarkSilentSessionsOnTick implements EngineListener

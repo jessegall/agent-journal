@@ -6,7 +6,7 @@ namespace App\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Enums\DeliveryOutcome;
 use App\Exceptions\DeliveryRefused;
 use App\Values\DeliveryReceipt;

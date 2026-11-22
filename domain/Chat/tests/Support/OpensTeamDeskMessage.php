@@ -6,7 +6,7 @@ namespace Domain\Chat\Tests\Support;
 
 use App\Commands\CreateDesk\CreateDeskCommand;
 use App\Commands\SendMessage\SendMessageCommand;
-use App\Contracts\AssignmentTransaction;
+use App\Contracts\Assignments\AssignmentTransaction;
 use App\Enums\ActorType;
 use App\Models\DeskRecord;
 use App\Models\DeskSeat;

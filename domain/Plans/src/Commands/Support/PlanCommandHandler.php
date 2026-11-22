@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\Support;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use Domain\Plans\Exceptions\PlanRevisionChanged;
 use Domain\Plans\Exceptions\PlanUnderReview;
 use Domain\Plans\Models\Plan;

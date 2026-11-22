@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DomainAvailability;
-use App\Contracts\UiOwnerAvailability as UiOwnerAvailabilityContract;
+use App\Contracts\Domains\DomainAvailability;
+use App\Contracts\Navigation\UiOwnerAvailability as UiOwnerAvailabilityContract;
 use App\Declarations\DomainUi;
 
 /**

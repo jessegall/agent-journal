@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Contracts\CommandBus;
-use App\Contracts\DriverCatalogue;
-use App\Contracts\HostCapabilities;
-use App\Contracts\StartReservations;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Hosts\HostCapabilities;
+use App\Contracts\Sessions\StartReservations;
 use App\Enums\CapabilityStatusType;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverVariant;

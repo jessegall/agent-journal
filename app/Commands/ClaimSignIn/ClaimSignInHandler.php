@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ClaimSignIn;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\SignInAttempt;
 use App\Values\ClaimedSignIn;
 use Carbon\CarbonImmutable;

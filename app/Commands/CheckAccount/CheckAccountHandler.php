@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\CheckAccount;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\AccountNoticeReason;
 use App\Models\Account;
 use App\Models\ActiveAccount;

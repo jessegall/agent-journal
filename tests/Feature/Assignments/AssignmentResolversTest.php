@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Contracts\AssigneeResolver;
-use App\Contracts\AssignmentResolver;
+use App\Contracts\Assignments\AssigneeResolver;
+use App\Contracts\Assignments\AssignmentResolver;
 use App\Enums\ActorType;
 use App\Exceptions\ActorContextMissing;
 use App\Exceptions\AssignmentTypeUnavailable;

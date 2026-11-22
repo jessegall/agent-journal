@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Contracts\ShellAdmission;
+use App\Contracts\Admission\ShellAdmission;
 use App\Enums\ShellDialect;
 use App\Values\Admission;
 use App\Values\ExecutionContext;

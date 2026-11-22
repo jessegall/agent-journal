@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DockerImageVerifier as DockerImageVerifierContract;
-use App\Contracts\Files;
+use App\Contracts\Files\Files;
+use App\Contracts\Hosts\DockerImageVerifier as DockerImageVerifierContract;
 use App\Data\DockerImageRecordData;
 use App\Exceptions\FileJsonInvalid;
 use App\Values\FilePath;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assignments\Concerns;
 
-use App\Contracts\RecordResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Enums\ActorType;
 use App\Support\ActorIdentity;
 use App\Support\AutoAssignmentInput;

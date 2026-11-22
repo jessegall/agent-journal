@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Storage;
 
-use App\Contracts\AssignmentQuery;
-use App\Contracts\SharedHolders;
+use App\Contracts\Assignments\AssignmentQuery;
+use App\Contracts\Sharing\SharedHolders;
 use App\Models\AssignmentRecord;
 use App\Models\Support\SignedInScope;
 use App\Support\AssigneeIdentity;

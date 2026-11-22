@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\Event;
-use App\Contracts\Listener;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Events\Event;
+use App\Contracts\Events\Listener;
 use App\Support\Reflector;
 use PhpOption\None;
 use PHPUnit\Framework\Attributes\DataProvider;

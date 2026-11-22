@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\StackAdmission;
-use App\Contracts\StackTransaction as StackTransactionContract;
-use App\Contracts\StackTransactionRunner;
-use App\Contracts\StartTransaction;
-use App\Contracts\UnitOwner;
+use App\Contracts\Admission\StackAdmission;
+use App\Contracts\Sessions\StartTransaction;
+use App\Contracts\Work\StackTransaction as StackTransactionContract;
+use App\Contracts\Work\StackTransactionRunner;
+use App\Contracts\Work\UnitOwner;
 use App\Exceptions\StackLockTimedOut;
 use App\Exceptions\StackTransactionRequired;
 use App\Support\StateEvents\StateEventScope;

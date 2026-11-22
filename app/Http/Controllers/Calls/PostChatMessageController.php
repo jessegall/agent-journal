@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Communication\MessageNamed;
 use App\Calls\Communication\PostChatMessageCall;
 use App\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Posts a message in one of your chats.

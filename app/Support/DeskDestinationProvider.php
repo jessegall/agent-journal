@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DestinationProvider;
-use App\Contracts\Destinations;
+use App\Contracts\Records\DestinationProvider;
+use App\Contracts\Records\Destinations;
 use App\Exceptions\AssigneeUnavailable;
 use App\Models\DeskRecord;
 

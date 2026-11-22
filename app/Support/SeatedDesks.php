@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\SharedHolders;
+use App\Contracts\Sharing\SharedHolders;
 use App\Models\DeskRecord;
 
 /**

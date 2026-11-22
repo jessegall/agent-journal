@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Contracts\RecordVisibility;
+use App\Contracts\Records\RecordVisibility;
 use App\Models\Agent;
 use App\Support\RecordIdentity;
 use Domain\Access\Models\User;

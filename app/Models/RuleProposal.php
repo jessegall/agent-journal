@@ -8,7 +8,7 @@ use App\Casts\RuleScopeCast;
 use App\Casts\StoredValuesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Enums\ProposalState;
 use App\Exceptions\RuleProposalRefused;
 use App\Support\ActorIdentity;

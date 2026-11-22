@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandTransaction;
+use App\Contracts\Bus\CommandTransaction;
 use App\Exceptions\CommandTransactionMissing;
 use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;

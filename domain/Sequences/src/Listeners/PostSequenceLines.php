@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Sequences\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\ChatLines;
-use App\Contracts\Listener;
+use App\Contracts\Chat\ChatLines;
+use App\Contracts\Events\Listener;
 use App\Enums\LineCardPlacement;
 use App\Support\Cards\DockIdentity;
 use Domain\Sequences\Events\SequenceEnded;

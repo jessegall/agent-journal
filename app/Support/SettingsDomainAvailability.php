@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DomainAvailability;
-use App\Contracts\SettingsSnapshot;
+use App\Contracts\Domains\DomainAvailability;
+use App\Contracts\Settings\SettingsSnapshot;
 use App\Declarations\ToggleGroup;
 use App\Exceptions\DomainNotFound;
 use App\Exceptions\SettingStorageInvalid;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Commentable;
-use App\Contracts\RecordResolver;
-use App\Contracts\TextContent;
-use App\Contracts\WorkStacks;
+use App\Contracts\Reads\TextContent;
+use App\Contracts\Records\Commentable;
+use App\Contracts\Records\RecordResolver;
+use App\Contracts\Work\WorkStacks;
 use App\Enums\WholeRecord;
 use App\Exceptions\SubmissionKeyConflict;
 use App\Exceptions\TargetHasNoText;

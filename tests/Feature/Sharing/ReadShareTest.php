@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Commands\ReadShare\ReadShareCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\ShareAuditType;
 use App\Enums\ShareState;
 use App\Exceptions\StackLockTimedOut;

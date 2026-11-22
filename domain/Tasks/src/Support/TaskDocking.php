@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
-use App\Contracts\AssigneeResolver;
-use App\Contracts\CurrentAuthorizer;
+use App\Contracts\Assignments\AssigneeResolver;
+use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\AccessType;
 use App\Exceptions\DockSourceUnavailable;
 use App\Support\AssignmentHolder;

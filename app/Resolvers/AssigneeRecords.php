@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\AssigneeResolver;
-use App\Contracts\AssignmentProviders;
-use App\Contracts\AssignmentResolver;
+use App\Contracts\Assignments\AssigneeResolver;
+use App\Contracts\Assignments\AssignmentProviders;
+use App\Contracts\Assignments\AssignmentResolver;
 use App\Support\AssigneeIdentity;
 use App\Support\AssigneeList;
 use App\Support\AssigneeName;

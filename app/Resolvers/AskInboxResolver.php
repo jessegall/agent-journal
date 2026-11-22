@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\AskReader;
-use App\Contracts\PageResolver;
+use App\Contracts\Chat\AskReader;
+use App\Contracts\Navigation\PageResolver;
 use App\Data\AskInbox;
 
 final readonly class AskInboxResolver implements PageResolver

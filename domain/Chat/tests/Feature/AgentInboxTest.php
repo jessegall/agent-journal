@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Chat\Tests\Feature;
 
 use App\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Contracts\AgentMessageReader;
-use App\Contracts\RequestSource;
+use App\Contracts\Bus\RequestSource;
+use App\Contracts\Chat\AgentMessageReader;
 use App\Enums\AgentInboxState;
 use App\Enums\ReadView;
 use App\Exceptions\MessageMissing;

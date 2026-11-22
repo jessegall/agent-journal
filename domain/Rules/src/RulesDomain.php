@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Domain\Rules;
 
 use App\Concerns\HasLinkRecords;
-use App\Contracts\CommandProvider;
-use App\Contracts\LinkRecordProvider;
-use App\Contracts\NavigationProvider;
-use App\Contracts\PageProvider;
-use App\Contracts\PolicyProvider;
-use App\Contracts\SkillProvider;
+use App\Contracts\Authorization\PolicyProvider;
+use App\Contracts\Bus\CommandProvider;
+use App\Contracts\Navigation\NavigationProvider;
+use App\Contracts\Navigation\PageProvider;
+use App\Contracts\Records\LinkRecordProvider;
+use App\Contracts\Skills\SkillProvider;
 use App\Declarations\ActionRoute;
 use App\Declarations\NavigationItem;
 use App\Declarations\Page;

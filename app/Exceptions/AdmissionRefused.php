@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Calls\Processes\AdmissionRefusalDetails;
-use App\Contracts\CallRefusal;
+use App\Contracts\Refusals\CallRefusal;
 
 /**
  * The journal refused the line at admission: nothing started. It prints why, the correction and, for a line held for

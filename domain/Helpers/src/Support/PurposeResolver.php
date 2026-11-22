@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Contracts\RecordVisibility;
+use App\Contracts\Records\RecordVisibility;
 use Domain\Helpers\Exceptions\PurposeConflict;
 use Domain\Helpers\Exceptions\PurposeRequired;
 use Domain\Helpers\Exceptions\SubjectUnavailable;

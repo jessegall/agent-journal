@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
-use App\Contracts\NativePartProvider;
-use App\Contracts\PageProvider;
-use App\Contracts\TypeProvider;
+use App\Contracts\Drivers\NativePartProvider;
+use App\Contracts\Navigation\PageProvider;
+use App\Contracts\Records\TypeProvider;
 use App\Data\Sharing\GatewayConfigurePartData;
 use App\Data\Sharing\GatewayRevisionData;
 use App\Data\Sharing\RootShareData;

@@ -6,9 +6,9 @@ namespace Tests\Feature\Processes;
 
 use App\Commands\RetryProcessRun\RetryProcessRunCommand;
 use App\Commands\StopSurvivors\StopSurvivorsCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\ShellAdmission;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Admission\ShellAdmission;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\CaptureState;
 use App\Enums\LifecycleState;
 use App\Enums\PartEndType;

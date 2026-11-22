@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Calls;
 
-use App\Contracts\CallSender;
+use App\Contracts\Domains\CallSender;
 use App\Support\CallKey;
 use Domain\Chat\Data\DockAnswerData;
 use Domain\Chat\Data\DockListData;

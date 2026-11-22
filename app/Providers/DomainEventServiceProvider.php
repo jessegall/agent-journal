@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\PipelineRunner;
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Bus\PipelineRunner;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\CoreApi;
 use App\Declarations\StateEvents;
 use App\Declarations\StateMethods;

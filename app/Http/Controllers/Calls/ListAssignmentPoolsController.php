@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Assignments\ListAssignmentPoolsCall;
 use App\Calls\Assignments\PoolList;
-use App\Contracts\AssignmentProviders;
+use App\Contracts\Assignments\AssignmentProviders;
 use App\Data\Assignments\PoolDefinitionData;
 
 /**

@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\CheckRestoredOutputCall;
 use App\Calls\Processes\RestoreChecked;
 use App\Commands\VerifyRestoredOutput\VerifyRestoredOutputCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Checks a run's restored output and answers each part's state.

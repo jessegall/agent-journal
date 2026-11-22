@@ -6,9 +6,9 @@ namespace Tests\Feature\Assignments;
 
 use App\Commands\AssignRecord\AssignRecordCommand;
 use App\Commands\ReassignRecord\ReassignRecordCommand;
-use App\Contracts\Actor;
-use App\Contracts\Assignee;
-use App\Contracts\CommandBus;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Assignments\Assignee;
+use App\Contracts\Bus\CommandBus;
 use App\Models\Agent;
 use App\Models\AssignmentRecord;
 use App\Support\AssigneeIdentity;

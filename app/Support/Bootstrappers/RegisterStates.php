@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Bootstrappers;
 
-use App\Contracts\DomainAvailability;
-use App\Contracts\DomainBootstrapper;
+use App\Contracts\Domains\DomainAvailability;
+use App\Contracts\Domains\DomainBootstrapper;
 use App\CoreApi;
 use App\Events\StateTypesRequested;
 use App\Exceptions\InvalidListener;

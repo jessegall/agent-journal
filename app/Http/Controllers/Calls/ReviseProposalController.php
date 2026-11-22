@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\ProposalReceived;
 use App\Calls\Processes\ReviseProposalCall;
 use App\Commands\ReviseRuleProposal\ReviseRuleProposalCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Declarations\RuleDeclarations;
 
 /**

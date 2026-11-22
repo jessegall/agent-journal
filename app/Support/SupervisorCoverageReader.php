@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AskType;
+use App\Contracts\Chat\AskType;
 use App\Enums\SupervisorCoverageType;
 use App\Values\SupervisorCoverage;
 use App\Values\SupervisorProfile;

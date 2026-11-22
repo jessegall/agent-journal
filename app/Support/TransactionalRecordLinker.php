@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandTransaction;
-use App\Contracts\RecordLinker;
-use App\Contracts\RecordResolver;
+use App\Contracts\Bus\CommandTransaction;
+use App\Contracts\Records\RecordLinker;
+use App\Contracts\Records\RecordResolver;
 use App\Models\Link;
 use Illuminate\Database\Eloquent\Model;
 

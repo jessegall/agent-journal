@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Docking;
 
-use App\Contracts\RecordResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Data\RecordCard;
 use App\Exceptions\DockDefinitionInvalid;
 use App\Models\Message;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
-use App\Contracts\AssignmentResolver;
-use App\Contracts\CurrentActor;
-use App\Contracts\EnvironmentTasks;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Assignments\AssignmentResolver;
+use App\Contracts\Work\EnvironmentTasks;
 use App\Support\AssigneeIdentity;
 use App\Values\EnvironmentTask;
 use App\Values\EnvironmentTaskList;

@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\CreateDesk\CreateDeskCommand;
 use App\Commands\ReadMessages\ReadMessagesCommand;
-use App\Contracts\AssignmentTransaction;
+use App\Contracts\Assignments\AssignmentTransaction;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\StackLockTimedOut;
 use App\Models\DeskRecord;

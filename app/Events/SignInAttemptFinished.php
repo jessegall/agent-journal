@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\ShownOnAccounts;
+use App\Contracts\Accounts\ShownOnAccounts;
 
 /**
  * A sign-in attempt ended without completing: cancelled, failed, interrupted or expired; the account it wrote, if

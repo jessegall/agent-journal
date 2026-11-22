@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Compatibility;
 
-use App\Contracts\AccountSettingsFiller;
+use App\Contracts\Accounts\AccountSettingsFiller;
 use App\Enums\AuthenticationArrangement;
 use App\Enums\DriverEvidence;
 use App\Exceptions\DriverFamilyUnknown;

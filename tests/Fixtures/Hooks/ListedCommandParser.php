@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Contracts\ShellCommandParser;
+use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\CommandEffect;
 use App\Enums\CommandType;
 use App\Enums\ParseOutcome;

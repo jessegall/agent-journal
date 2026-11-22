@@ -6,8 +6,8 @@ namespace Tests\Feature\Settings;
 
 use App\Commands\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Commands\EnableSettingGroup\EnableSettingGroupCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\DomainAvailability;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Domains\DomainAvailability;
 use App\Exceptions\DomainNotFound;
 use App\Exceptions\SettingStorageInvalid;
 use App\Models\SettingsRecord;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\AssignmentRegistration;
-use App\Contracts\MessageSearch;
-use App\Contracts\PipelineRunner as PipelineRunnerContract;
-use App\Contracts\RecordSearch;
-use App\Contracts\SearchSources;
-use App\Contracts\StatementDeadlines;
-use App\Contracts\TieredSearch;
+use App\Contracts\Assignments\AssignmentRegistration;
+use App\Contracts\Bus\PipelineRunner as PipelineRunnerContract;
+use App\Contracts\Processes\StatementDeadlines;
+use App\Contracts\Search\MessageSearch;
+use App\Contracts\Search\RecordSearch;
+use App\Contracts\Search\SearchSources;
+use App\Contracts\Search\TieredSearch;
 use App\Enums\AssignmentPurpose;
 use App\Mcp\Models\RetainedPage;
 use App\Models\Account;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\StartSwitchReplacement;
 
 use App\Commands\StartProfileMain\StartProfileMainCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\DriverSwitchStage;
 use App\Models\Agent;
 use App\Models\DriverSwitch;

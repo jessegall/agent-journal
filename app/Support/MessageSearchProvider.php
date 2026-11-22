@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\MessageSearch;
+use App\Contracts\Search\MessageSearch;
 use App\Enums\ScoreTier;
 use App\Models\Message;
 use App\Values\AdmittedConstraints;

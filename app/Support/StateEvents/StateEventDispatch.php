@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\StateEvents;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 use App\Exceptions\StackTargetRefused;
 use App\Values\StackTarget;
 use Illuminate\Support\Str;

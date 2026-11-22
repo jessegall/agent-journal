@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Documents\Support;
 
 use App\Commands\PostComment\PostCommentCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\RequestKey;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\RequestKey;
 use App\Support\RecordIdentity;
 
 final readonly class RecordComments

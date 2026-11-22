@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Contracts\CommandClassifier;
-use App\Contracts\StopSignal;
+use App\Contracts\Bus\CommandClassifier;
+use App\Contracts\Processes\StopSignal;
 use App\Enums\LifecycleState;
 use App\Enums\PartEndType;
 use App\Enums\ShellDialect;

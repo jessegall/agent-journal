@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Commands\RetireAgent;
 
-use App\Contracts\AssignmentFactPublisher;
-use App\Contracts\AssignmentStorage;
-use App\Contracts\ChatParticipationEnding;
-use App\Contracts\CommandFacts;
-use App\Contracts\CommandHandler;
-use App\Contracts\CurrentAuthorizer;
+use App\Contracts\Assignments\AssignmentFactPublisher;
+use App\Contracts\Assignments\AssignmentStorage;
+use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Chat\ChatParticipationEnding;
 use App\Enums\AccessType;
 use App\Enums\AssignmentReason;
 use App\Enums\ProcessStartState;

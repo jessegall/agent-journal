@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Command as CommandContract;
+use App\Contracts\Bus\Command as CommandContract;
 use App\Exceptions\CommandDispatcherMissing;
 
 /**

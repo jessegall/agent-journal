@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\SkillResolver;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Skills\SkillResolver;
 use App\Enums\PublicationState;
 use App\Enums\SkillReload;
 use App\Exceptions\SkillContextUnavailable;

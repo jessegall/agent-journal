@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\MainSeatTakeover;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Chat\MainSeatTakeover;
 use App\Enums\NavigationState;
 use App\Models\NavigationRequest;
 use App\Support\ActorContext;

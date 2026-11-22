@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\MessagePart;
+use App\Contracts\Drivers\MessagePart;
 
 /**
  * One request handed to a host: which runtime, which request and attempt, and what to do, with the key script to run

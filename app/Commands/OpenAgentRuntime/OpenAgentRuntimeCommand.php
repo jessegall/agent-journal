@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\OpenAgentRuntime;
 
 use App\Attributes\Authorize;
-use App\Contracts\AgentStartCommand;
+use App\Contracts\Bus\AgentStartCommand;
 use App\Enums\AccessType;
 use App\Enums\DriverVariant;
 use App\Policies\AgentPolicy;

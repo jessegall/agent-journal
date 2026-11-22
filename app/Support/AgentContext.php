@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
+use App\Contracts\Actors\Actor;
 use App\Enums\ActorType;
 use App\Models\AgentSession;
 use Carbon\CarbonImmutable;

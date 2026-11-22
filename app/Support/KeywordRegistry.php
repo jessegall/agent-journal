@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DomainAvailability;
-use App\Contracts\ReflectorFactory;
-use App\Contracts\ScriptKeywordDefinition;
-use App\Contracts\ScriptKeywordRegistration;
-use App\Contracts\ScriptStatement;
-use App\Contracts\ScriptTrigger;
+use App\Contracts\Domains\DomainAvailability;
+use App\Contracts\Reflection\ReflectorFactory;
+use App\Contracts\Scripts\ScriptKeywordDefinition;
+use App\Contracts\Scripts\ScriptKeywordRegistration;
+use App\Contracts\Scripts\ScriptStatement;
+use App\Contracts\Scripts\ScriptTrigger;
 use App\Enums\KeywordCategory;
 use App\Exceptions\ScriptDefinitionRefused;
 use App\Values\KeywordDefinition;

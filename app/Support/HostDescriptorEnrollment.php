@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Exceptions\HostDescriptorRepeated;
 use App\Models\DriverApproval;
 use App\Values\DriverRegistration;

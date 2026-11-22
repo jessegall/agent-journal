@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\AnswerChatQuestion\AnswerChatQuestionCommand;
 use App\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Contracts\ActorAttention;
+use App\Contracts\Actors\ActorAttention;
 use App\Enums\MessageState;
 use App\Exceptions\SpeechRefused;
 use App\Models\Message;

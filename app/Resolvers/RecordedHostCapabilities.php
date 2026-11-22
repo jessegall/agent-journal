@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Files;
-use App\Contracts\HostCapabilities;
+use App\Contracts\Files\Files;
+use App\Contracts\Hosts\HostCapabilities;
 use App\Enums\AccountModeType;
 use App\Enums\CapabilityStatusType;
 use App\Enums\ExecutionModeType;

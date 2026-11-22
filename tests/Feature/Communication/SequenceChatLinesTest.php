@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Contracts\ChatLines;
+use App\Contracts\Chat\ChatLines;
 use App\Enums\LineCardPlacement;
 use App\Support\ActorIdentity;
 use App\Values\ChatLine;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActorAttention;
-use App\Contracts\Inbox;
-use App\Contracts\InboxResolver;
+use App\Contracts\Actors\ActorAttention;
+use App\Contracts\Chat\Inbox;
+use App\Contracts\Chat\InboxResolver;
 use App\Models\MessageAttention;
 
 /**

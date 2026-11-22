@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Communication\DeclineChatQuestionCall;
 use App\Calls\Communication\MessageNamed;
 use App\Commands\DeclineChatQuestion\DeclineChatQuestionCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Declines a waiting chat question with a reason.

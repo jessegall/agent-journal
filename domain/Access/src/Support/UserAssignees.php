@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Contracts\AdmittedRecipients;
-use App\Contracts\Assignee;
-use App\Contracts\AssigneeProvider;
-use App\Contracts\CurrentActor;
-use App\Contracts\JournalAdmission;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Assignments\Assignee;
+use App\Contracts\Assignments\AssigneeProvider;
+use App\Contracts\Chat\AdmittedRecipients;
 use App\Enums\ActorType;
 use App\Exceptions\AssigneeUnavailable;
 use App\Support\AssigneeIdentity;

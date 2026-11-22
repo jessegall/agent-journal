@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\BatchOutcome;
+use App\Contracts\Bus\BatchOutcome;
 
 /**
  * The source reread the candidates it was asked about: each hit answers one of them, and one left out is dropped.

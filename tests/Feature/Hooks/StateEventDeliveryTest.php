@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\Event;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Events\Event;
 use App\Enums\NoSubject;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\StateEventReentry;

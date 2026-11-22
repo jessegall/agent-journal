@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Contracts\CommandClassifier;
+use App\Contracts\Bus\CommandClassifier;
 use App\Enums\CommandClass;
 use App\Enums\CommandType;
 use App\Enums\ShellDialect;

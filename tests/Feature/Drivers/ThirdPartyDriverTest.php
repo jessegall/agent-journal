@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Drivers;
 
 use App\Commands\ApproveDriver\ApproveDriverCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\ArrangementType;
 use App\Enums\DriverCapability;
 use App\Enums\DriverVariant;

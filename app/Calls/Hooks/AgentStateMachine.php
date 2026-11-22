@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Calls\Hooks;
 
-use App\Contracts\PipelineRunner;
+use App\Contracts\Bus\PipelineRunner;
 use App\Exceptions\HookDeadlineExpired;
 use App\Pipelines\AnswerHookPipeline;
 use App\Support\CallStages\HookCallStage;

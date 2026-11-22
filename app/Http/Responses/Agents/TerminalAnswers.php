@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Responses\Agents;
 
-use App\Contracts\Command;
-use App\Contracts\CommandBus;
-use App\Contracts\CommandRefusal;
-use App\Contracts\CurrentActor;
-use App\Contracts\ServerClock;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandRefusal;
+use App\Contracts\Time\ServerClock;
 use App\Data\TerminalControlData;
 use App\Data\TerminalInterestData;
 use App\Enums\RefusalCode;

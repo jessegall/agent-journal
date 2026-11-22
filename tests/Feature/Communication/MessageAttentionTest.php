@@ -6,8 +6,8 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\AskMessage\AskMessageCommand;
 use App\Commands\CreateDesk\CreateDeskCommand;
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\CommandBus;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Bus\CommandBus;
 use App\Models\Agent;
 use App\Models\DeskRecord;
 use App\Models\MessageAttention;

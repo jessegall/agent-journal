@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\CurrentSession;
-use App\Contracts\CurrentState;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Sessions\CurrentSession;
+use App\Contracts\Work\CurrentState;
 use App\Models\Agent;
 use App\Support\ActorContext;
 use App\Support\AssigneeIdentity;

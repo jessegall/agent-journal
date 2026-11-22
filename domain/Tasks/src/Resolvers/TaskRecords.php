@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Tasks\Resolvers;
 
 use App\Concerns\ProvidesModelRecords;
-use App\Contracts\CurrentActor;
-use App\Contracts\RecordProvider;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Records\RecordProvider;
 use App\Data\RecordCard;
 use App\Support\ReadBuilder;
 use Domain\Tasks\Models\Task;

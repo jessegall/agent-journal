@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Tests\Feature;
 
-use App\Contracts\JournalAdmission;
+use App\Contracts\Admission\JournalAdmission;
 use App\Enums\ActorType;
 use App\Models\Agent;
 use App\Support\ActorContext;

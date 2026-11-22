@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActorDesks;
-use App\Contracts\ActorProvisioning;
+use App\Contracts\Actors\ActorProvisioning;
+use App\Contracts\Chat\ActorDesks;
 
 /**
  * Gives every newly admitted actor its personal desk.

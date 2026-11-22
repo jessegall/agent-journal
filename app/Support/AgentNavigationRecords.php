@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\NavigationReader;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Navigation\NavigationReader;
 use App\Enums\MenuEntryState;
 use App\Exceptions\MenuEntryRefused;
 use App\Exceptions\NavigationRaiseRefused;

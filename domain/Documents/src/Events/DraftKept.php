@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Events;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 use App\Support\ActorContext;
 
 final readonly class DraftKept implements Event

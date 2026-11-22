@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Settings;
 
-use App\Contracts\SettingsDefinition;
+use App\Contracts\Settings\SettingsDefinition;
 use App\Declarations\SettingGroup;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Shelf;
 
-use App\Contracts\CountResolver;
+use App\Contracts\Records\CountResolver;
 use Tests\Support\Exceptions\SimulatedFailure;
 
 final class BrokenCount implements CountResolver

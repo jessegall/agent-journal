@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Commands\ReplyToAsk;
 
-use App\Contracts\AskAdmission;
-use App\Contracts\CommandHandler;
-use App\Contracts\JournalAssignmentWriter;
+use App\Contracts\Admission\AskAdmission;
+use App\Contracts\Assignments\JournalAssignmentWriter;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\CoreAskType;
 use App\Exceptions\AskRefused;
 use App\Models\Ask;

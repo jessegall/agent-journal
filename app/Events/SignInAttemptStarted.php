@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\ShownOnAccounts;
+use App\Contracts\Accounts\ShownOnAccounts;
 
 /**
  * A sign-in attempt started, for a new account or to sign a saved one in again.

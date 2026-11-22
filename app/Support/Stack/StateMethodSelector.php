@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Stack;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 use App\Declarations\StateMethods;
 use App\Support\Inputs\Contracts\HookInput;
 

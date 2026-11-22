@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\PolicyCatalogue;
-use App\Contracts\ShareGatewayProvider;
-use App\Contracts\SharePolicy;
-use App\Contracts\ShareRecordContributor;
-use App\Contracts\ShareStatusResolver;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Sharing\ShareGatewayProvider;
+use App\Contracts\Sharing\SharePolicy;
+use App\Contracts\Sharing\ShareRecordContributor;
+use App\Contracts\Sharing\ShareStatusResolver;
 use App\Enums\AccessType;
 use App\Policies\ShareRequestPolicy;
 use App\Policies\SharingPolicy;

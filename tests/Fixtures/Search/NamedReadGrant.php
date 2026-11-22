@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Search;
 
-use App\Contracts\ReadGrant;
+use App\Contracts\Authorization\ReadGrant;
 use App\Exceptions\ReadGrantRefused;
 use App\Values\AllowedNames;
 use App\Values\ReadRequest;

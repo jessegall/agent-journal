@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AssignedWorkResolver;
-use App\Contracts\AssignmentProviders;
-use App\Contracts\AutoAssignmentAccess;
-use App\Contracts\CurrentActor;
-use App\Contracts\DomainAvailability;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Assignments\AssignedWorkResolver;
+use App\Contracts\Assignments\AssignmentProviders;
+use App\Contracts\Assignments\AutoAssignmentAccess;
+use App\Contracts\Domains\DomainAvailability;
 use App\Enums\AutoAssignmentState;
 use App\Exceptions\AssignmentPoolTooLarge;
 use App\Exceptions\AssignmentPoolUnavailable;

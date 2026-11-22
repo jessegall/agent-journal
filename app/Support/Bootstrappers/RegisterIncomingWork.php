@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Bootstrappers;
 
-use App\Contracts\DomainBootstrapper;
-use App\Contracts\IncomingWorkRegistration;
+use App\Contracts\Domains\DomainBootstrapper;
+use App\Contracts\Work\IncomingWorkRegistration;
 use App\Support\DomainEntry;
 
 /**

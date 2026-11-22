@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Commands\SwitchAgentDriver;
 
 use App\Commands\StopAgent\StopAgentCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CommandHandler;
-use App\Contracts\DriverCatalogue;
-use App\Contracts\ProfileSelections;
-use App\Contracts\StartPreflight;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Sessions\ProfileSelections;
+use App\Contracts\Sessions\StartPreflight;
 use App\Exceptions\DriverSwitchStale;
 use App\Models\Agent;
 use App\Models\AgentRuntime;

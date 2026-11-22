@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Reminders;
 
-use App\Contracts\PageProvider;
-use App\Contracts\SkillProvider;
+use App\Contracts\Navigation\PageProvider;
+use App\Contracts\Skills\SkillProvider;
 use App\Declarations\Page;
 use App\Enums\Icon;
 use App\Support\Domain;

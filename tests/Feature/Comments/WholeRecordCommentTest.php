@@ -6,10 +6,10 @@ namespace Tests\Feature\Comments;
 
 use App\Commands\PostComment\PostCommentCommand;
 use App\Commands\PostTextComment\PostTextCommentCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CommentResolver;
-use App\Contracts\RecordResolver;
-use App\Contracts\TextResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Reads\TextResolver;
+use App\Contracts\Records\CommentResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Data\RecordCommentLocation;
 use App\Data\RecordCommentView;
 use App\Exceptions\TargetHasNoText;

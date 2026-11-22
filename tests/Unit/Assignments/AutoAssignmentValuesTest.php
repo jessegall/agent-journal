@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assignments;
 
-use App\Contracts\AssignedWorkProvider;
-use App\Contracts\AssignedWorkResolver;
-use App\Contracts\AssignmentPool;
-use App\Contracts\AssignmentPoolFactory;
-use App\Contracts\AssignmentQuery;
-use App\Contracts\AutoAssigner;
-use App\Contracts\AutoAssignmentProvider;
+use App\Contracts\Assignments\AssignedWorkProvider;
+use App\Contracts\Assignments\AssignedWorkResolver;
+use App\Contracts\Assignments\AssignmentPool;
+use App\Contracts\Assignments\AssignmentPoolFactory;
+use App\Contracts\Assignments\AssignmentQuery;
+use App\Contracts\Assignments\AutoAssigner;
+use App\Contracts\Assignments\AutoAssignmentProvider;
 use App\CoreApi;
 use App\Enums\PoolInputType;
 use App\Enums\PoolMembersType;

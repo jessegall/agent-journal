@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Middleware\Agents;
 
 use App\Commands\RecordHeartbeat\RecordHeartbeatCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CallProtocolUnsupported;
 use App\Exceptions\CallSignatureInvalid;
 use App\Exceptions\CredentialRejected;

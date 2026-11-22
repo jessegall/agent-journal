@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ProposeReader;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\RecordRole;
 use App\Exceptions\ReaderDefinitionInvalid;
 use App\Exceptions\ReaderProposalRefused;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\ChatEligibility;
-use App\Contracts\Inbox;
-use App\Contracts\InboxAccess;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Chat\Inbox;
+use App\Contracts\Chat\InboxAccess;
 use App\Exceptions\InboxUnavailable;
 use App\Support\ActorIdentity;
 use App\Support\ChatInboxes;

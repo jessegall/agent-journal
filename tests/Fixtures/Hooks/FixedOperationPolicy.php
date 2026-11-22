@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Hooks;
 use App\Enums\AccessRuleType;
 use App\Values\AccessDecision;
 use App\Values\Operation;
-use App\Contracts\OperationPolicy;
+use App\Contracts\Authorization\OperationPolicy;
 use App\Support\States\Contracts\StopConditionGate;
 use App\Support\StateLoading\Loaders\ReadyStateLoader;
 use App\Enums\AccessType;

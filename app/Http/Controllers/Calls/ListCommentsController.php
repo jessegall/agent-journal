@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Calls;
 
 use App\Calls\Comments\ListCommentsCall;
-use App\Contracts\CommentResolver;
-use App\Contracts\RecordResolver;
+use App\Contracts\Records\CommentResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Data\CommentList;
 use App\Support\Page;
 use App\Support\RecordReference;

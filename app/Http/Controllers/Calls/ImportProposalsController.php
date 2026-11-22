@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\ImportProposalsCall;
 use App\Calls\Processes\ProposalsImported;
 use App\Commands\ImportRuleProposals\ImportRuleProposalsCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Values\ProposalReceipt;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\StateLoading\Loaders;
 
-use App\Contracts\OperationPolicy;
+use App\Contracts\Authorization\OperationPolicy;
 use App\Enums\SessionTransferType;
 use App\Support\Decisions\StateReferences;
 use App\Support\StateLoading\Contracts\StateLoader;

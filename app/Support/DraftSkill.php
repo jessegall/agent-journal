@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Skill;
-use App\Contracts\SkillCondition;
+use App\Contracts\Skills\Skill;
+use App\Contracts\Skills\SkillCondition;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
 use App\Values\SkillSections;

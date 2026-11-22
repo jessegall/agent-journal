@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Domains\Pamphlets;
 
 use App\Support\RecordIdentity;
-use App\Contracts\Shareable;
+use App\Contracts\Sharing\Shareable;
 use App\Support\ShareRelationSet;
 
 final class PamphletNote implements Shareable

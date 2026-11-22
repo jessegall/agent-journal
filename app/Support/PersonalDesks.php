@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActorDesks;
-use App\Contracts\ResponsibilityWriter;
+use App\Contracts\Assignments\ResponsibilityWriter;
+use App\Contracts\Chat\ActorDesks;
 use App\Models\DeskSeat;
 
 /**

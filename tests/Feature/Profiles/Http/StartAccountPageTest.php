@@ -6,7 +6,7 @@ namespace Tests\Feature\Profiles\Http;
 
 use App\Commands\RemoveAccount\RemoveAccountCommand;
 use App\Commands\StartAgent\StartAgentCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;

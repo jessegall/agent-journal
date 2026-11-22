@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Support\Admission;
 
 use App\Commands\OpenCommandRequest\OpenCommandRequestCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CommandClassifier;
-use App\Contracts\CommandPermissionResolver;
-use App\Contracts\CurrentActor;
-use App\Contracts\ShellAdmission;
-use App\Contracts\VerificationTiming;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Admission\ShellAdmission;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandClassifier;
+use App\Contracts\Bus\CommandPermissionResolver;
+use App\Contracts\Time\VerificationTiming;
 use App\Enums\AdmissionRefusalCode;
 use App\Enums\OutputRequirement;
 use App\Enums\ParseOutcome;

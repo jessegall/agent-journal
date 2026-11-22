@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Resolvers;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use App\Support\ActorIdentity;
 use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Exceptions\MemoryUnavailable;

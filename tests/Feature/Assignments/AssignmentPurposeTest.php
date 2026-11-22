@@ -6,9 +6,9 @@ namespace Tests\Feature\Assignments;
 
 use App\Commands\AssignRecord\AssignRecordCommand;
 use App\Commands\EnableAutoAssignment\EnableAutoAssignmentCommand;
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\CommandBus;
-use App\Contracts\ResponsibilityWriter;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Assignments\ResponsibilityWriter;
+use App\Contracts\Bus\CommandBus;
 use App\Exceptions\AssignmentTypeInternal;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Models\AssignmentRecord;

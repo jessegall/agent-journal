@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Settings;
 
 use App\Commands\DisableSettingGroup\DisableSettingGroupCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\ConditionalStateType;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Work\ConditionalStateType;
 use App\Support\ActorContext;
 use App\Support\DomainStateType;
 use App\Support\DomainTickableStateType;

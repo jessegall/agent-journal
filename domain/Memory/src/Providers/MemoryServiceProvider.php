@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Providers;
 
-use App\Contracts\ReadEntitlements;
+use App\Contracts\Authorization\ReadEntitlements;
 use App\Support\LinkTypeRegistry;
 use App\Values\ReadEntitlement;
 use Domain\Memory\Console\Commands\MemoryEditCommand;

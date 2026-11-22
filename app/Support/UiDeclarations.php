@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DeclaredPages;
-use App\Contracts\SlotSections;
-use App\Contracts\VisibilityCheck;
+use App\Contracts\Authorization\VisibilityCheck;
+use App\Contracts\Navigation\DeclaredPages;
+use App\Contracts\Navigation\SlotSections;
 use App\Data\SlotSectionData;
 use App\Declarations\DomainUi;
 use App\Declarations\Menu;

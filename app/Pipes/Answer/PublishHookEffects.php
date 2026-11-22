@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Pipes\Answer;
 
-use App\Contracts\Command;
-use App\Contracts\CommandFacts;
-use App\Contracts\CurrentActor;
-use App\Contracts\Pipe;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Bus\Pipe;
 use App\Events\HookCommandAnswered;
 use App\Support\CallStages\SettledCall;
 use App\Support\CallStages\WalkedCall;

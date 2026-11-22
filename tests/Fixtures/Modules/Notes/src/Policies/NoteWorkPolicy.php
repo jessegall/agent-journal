@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Policies;
 
-use App\Contracts\Policy;
+use App\Contracts\Authorization\Policy;
 use Tests\Fixtures\Modules\Notes\Models\NotePage;
 
 /**

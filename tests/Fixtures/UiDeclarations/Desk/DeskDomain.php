@@ -6,7 +6,7 @@ namespace Tests\Fixtures\UiDeclarations\Desk;
 
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\SectionProvider;
+use App\Contracts\Navigation\SectionProvider;
 use App\Declarations\Section;
 use App\Enums\SlotContextType;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Library;
 
-use App\Contracts\PageResolver;
+use App\Contracts\Navigation\PageResolver;
 use Tests\Fixtures\UiDeclarations\RecentNotesData;
 
 final readonly class BooksResolver implements PageResolver

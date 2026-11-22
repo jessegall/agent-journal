@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ProveNavigation;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\NavigationCompletion;
 use App\Exceptions\NavigationAnswerRefused;
 use App\Exceptions\NavigationProofRefused;

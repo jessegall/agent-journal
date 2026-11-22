@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
-use App\Contracts\HostOperatorAccess;
+use App\Contracts\Hosts\HostOperatorAccess;
 use App\Data\DriverRequestStatus;
 use App\Enums\DriverOperation;
 use App\Enums\DriverSwitchStage;

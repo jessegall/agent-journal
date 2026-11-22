@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\MonotonicClock;
-use App\Contracts\ReadLog;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Reads\ReadLog;
+use App\Contracts\Time\MonotonicClock;
 use App\Enums\CommandEntry;
 use App\Values\TrustedEntryAuthority;
 use Illuminate\Contracts\Foundation\Application;

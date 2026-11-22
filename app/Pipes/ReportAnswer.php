@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes;
 
-use App\Contracts\Pipe;
+use App\Contracts\Bus\Pipe;
 use App\Values\CallAnswer;
 use App\Values\CommandReport;
 

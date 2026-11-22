@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActorAttention;
+use App\Contracts\Actors\ActorAttention;
 use App\Resolvers\Support\CurrentAgentRuntimes;
 
 /**

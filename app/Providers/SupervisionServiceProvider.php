@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\AskAdmission;
-use App\Contracts\AskReader;
-use App\Contracts\MergeAdmission;
-use App\Contracts\NotificationTargets;
-use App\Contracts\PolicyCatalogue;
-use App\Contracts\SupervisorDefinitions;
-use App\Contracts\SupervisorDispatch;
-use App\Contracts\WorkRepair;
+use App\Contracts\Admission\AskAdmission;
+use App\Contracts\Admission\MergeAdmission;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Chat\AskReader;
+use App\Contracts\Chat\NotificationTargets;
+use App\Contracts\Processes\SupervisorDefinitions;
+use App\Contracts\Processes\SupervisorDispatch;
+use App\Contracts\Work\WorkRepair;
 use App\Enums\AccessType;
 use App\Models\Ask;
 use App\Models\AskHop;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AgentCallContext;
+use App\Contracts\Sessions\AgentCallContext;
 use App\Exceptions\AgentContextMissing;
 use App\Exceptions\HookIdentityExpired;
 use App\Exceptions\StackTargetRefused;

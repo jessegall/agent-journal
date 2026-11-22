@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Delivery;
 
-use App\Contracts\AnsweredAtOnce;
-use App\Contracts\Event;
+use App\Contracts\Chat\AnsweredAtOnce;
+use App\Contracts\Events\Event;
 use App\Support\StateEvents\StateEventDispatch;
 use App\Support\StateEvents\StateEventPayload;
 use App\Support\StateEvents\StateEventScope;

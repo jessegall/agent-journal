@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\RevokeRunOutcomeAccess;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\Notifications;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Chat\Notifications;
 use App\Data\NotificationTarget;
 use App\Enums\ActorType;
 use App\Exceptions\RunOutcomeAccessRefused;

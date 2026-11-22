@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * A session's skill set is to be published, at its start or at a later boundary. Raised after the transaction

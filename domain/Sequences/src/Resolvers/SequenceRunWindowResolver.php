@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Resolvers;
 
-use App\Contracts\PageResolver;
+use App\Contracts\Navigation\PageResolver;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\DetailPage;
 use App\Support\Layout\LayoutPartData;

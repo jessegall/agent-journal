@@ -28,7 +28,7 @@ final class InvalidExports extends DomainDeclarationError
     {
         return new self(
             sprintf(
-                '%s exports %s under events, but it is not a final class implementing App\\Contracts\\Event; move it to the list it belongs in.',
+                '%s exports %s under events, but it is not a final class implementing App\\Contracts\\Events\\Event; move it to the list it belongs in.',
                 $owner,
                 $name,
             ),
@@ -55,7 +55,7 @@ final class InvalidExports extends DomainDeclarationError
     {
         return new self(
             sprintf(
-                '%s exports %s under commands, but it is not a final class implementing App\\Contracts\\Command; move it to the list it belongs in.',
+                '%s exports %s under commands, but it is not a final class implementing App\\Contracts\\Bus\\Command; move it to the list it belongs in.',
                 $owner,
                 $name,
             ),

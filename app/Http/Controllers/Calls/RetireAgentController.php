@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Agents\RetireAgentCall;
 use App\Commands\RetireAgent\RetireAgentCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Data\Assignments\AssignmentResultData;
 use App\Support\AssignmentHolders;
 

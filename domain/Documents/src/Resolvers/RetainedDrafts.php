@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\SessionProvenance;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Sessions\SessionProvenance;
 use App\Enums\AccessType;
 use App\Values\Operation;
 use App\Values\ResourceRequest;

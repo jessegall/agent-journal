@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\CallingDriver;
-use App\Contracts\CurrentSession;
+use App\Contracts\Drivers\CallingDriver;
+use App\Contracts\Sessions\CurrentSession;
 use App\Models\AgentSession;
 
 /**

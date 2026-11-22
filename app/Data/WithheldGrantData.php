@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data;
 
-use App\Contracts\Policy;
+use App\Contracts\Authorization\Policy;
 use App\Enums\AccessType;
 use App\Values\WithheldGrant;
 use Spatie\LaravelData\Data;

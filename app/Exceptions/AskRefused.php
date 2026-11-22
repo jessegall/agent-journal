@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Contracts\CodedRefusal;
-use App\Contracts\CommandRefusal;
+use App\Contracts\Bus\CommandRefusal;
+use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
 use App\Values\SubjectType;
 use RuntimeException;

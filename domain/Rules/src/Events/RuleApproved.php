@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Events;
 
-use App\Contracts\Event;
-use App\Contracts\UserInterfaceUpdater;
+use App\Contracts\Events\Event;
+use App\Contracts\Navigation\UserInterfaceUpdater;
 
 /**
  * The owner approved a proposed rule; it holds from now on. Raised once the change has committed.

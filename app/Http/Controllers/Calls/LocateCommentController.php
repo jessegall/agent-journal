@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Comments\CommentLocated;
 use App\Calls\Comments\LocateCommentCall;
-use App\Contracts\CommentResolver;
-use App\Contracts\RecordResolver;
+use App\Contracts\Records\CommentResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Support\RecordReference;
 use App\Support\TextSelection;
 

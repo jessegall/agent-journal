@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\VisibilityCheck;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Authorization\VisibilityCheck;
 use App\Enums\AccessType;
 use App\Models\ProjectInvitation;
 use App\Policies\ConnectionsPolicy;

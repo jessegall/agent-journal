@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\SkillResolver;
+use App\Contracts\Skills\SkillResolver;
 use App\Data\SkillRevisionRow;
 use App\Data\SkillRevisionView;
 use App\Data\SkillWriteReceipt;

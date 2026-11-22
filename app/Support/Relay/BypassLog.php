@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Relay;
 
-use App\Contracts\Files;
+use App\Contracts\Files\Files;
 use App\Values\BypassReport;
 use App\Values\FilePath;
 use App\Values\LoggedBypass;

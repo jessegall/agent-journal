@@ -9,7 +9,7 @@ use App\Attributes\PresentList;
 use App\Calls\Assignments\Concerns\NamesAssignmentPool;
 use App\Calls\Assignments\Concerns\NamesAutoAssignment;
 use App\Casts\CallKeyCast;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Data\Assignments\AutoAssignmentChangeData;
 use App\Enums\ActorType;
 use App\Enums\CallEffect;

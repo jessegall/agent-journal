@@ -6,7 +6,7 @@ namespace App\Pipes;
 
 use App\Attributes\InCommandTransaction;
 use App\Attributes\RequiresListener;
-use App\Contracts\Pipe;
+use App\Contracts\Bus\Pipe;
 use App\Exceptions\InvalidListener;
 use App\Support\ListenerDeclarations;
 use App\Support\Reflector;

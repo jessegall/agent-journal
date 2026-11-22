@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Connections;
 
-use App\Contracts\CommandRefusal;
+use App\Contracts\Bus\CommandRefusal;
 use App\Http\Controllers\IssueProjectInvitationController;
 use Inertia\Support\SessionKey;
 

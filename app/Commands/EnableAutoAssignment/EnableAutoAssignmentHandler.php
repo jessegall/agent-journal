@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\EnableAutoAssignment;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\AutoAssignmentAdmission;
 use App\Support\AutoAssignmentChange;
 use App\Support\Storage\DatabaseAutoAssignments;

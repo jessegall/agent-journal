@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Contracts\ActorAttention;
-use App\Contracts\AssignmentStorage;
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\MainSeatTakeover;
+use App\Contracts\Actors\ActorAttention;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Assignments\AssignmentStorage;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Chat\MainSeatTakeover;
 use App\Enums\NavigationAnswerer;
 use App\Models\Agent;
 use App\Models\AgentRuntime;

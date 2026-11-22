@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Contracts\GroupDeclaration;
-use App\Contracts\Setting;
+use App\Contracts\Navigation\GroupDeclaration;
+use App\Contracts\Settings\Setting;
 use App\Exceptions\SettingDeclarationInvalid;
 use App\Support\SettingKey;
 

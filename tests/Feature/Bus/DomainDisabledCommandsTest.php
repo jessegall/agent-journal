@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Contracts\CommandBus;
-use App\Contracts\DomainAvailability;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Domains\DomainAvailability;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\DomainDisabled;
 use App\Support\CommandScope;

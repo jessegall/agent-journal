@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers\Support;
 
-use App\Contracts\ActorLabels;
-use App\Contracts\RunClaims;
+use App\Contracts\Actors\ActorLabels;
+use App\Contracts\Processes\RunClaims;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Values\TaskExecution;

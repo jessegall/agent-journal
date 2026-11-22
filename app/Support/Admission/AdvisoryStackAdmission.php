@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support\Admission;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\EngineTargetAccess;
-use App\Contracts\StackAdmission;
-use App\Contracts\WorkStacks;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Admission\StackAdmission;
+use App\Contracts\Authorization\EngineTargetAccess;
+use App\Contracts\Work\WorkStacks;
 use App\Exceptions\StackLockTimedOut;
 use App\Support\OperationDeadline;
 use App\Support\StateEvents\StateEventScope;

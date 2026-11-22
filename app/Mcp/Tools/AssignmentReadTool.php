@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Contracts\AssigneeResolver;
-use App\Contracts\RecordResolver;
+use App\Contracts\Assignments\AssigneeResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;

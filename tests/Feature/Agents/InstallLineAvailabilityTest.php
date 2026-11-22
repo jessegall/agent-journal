@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Commands\SetBooleanSetting\SetBooleanSettingCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\SettingsResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Settings\SettingsResolver;
 use App\Data\Connections\ReleaseOfferData;
 use App\Enums\HostProtocolVersion;
 use App\Support\CoreSettings;

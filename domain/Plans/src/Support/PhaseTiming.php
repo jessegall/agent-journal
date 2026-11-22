@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use App\Contracts\AssignmentResolver;
-use App\Contracts\CurrentActor;
-use App\Contracts\VerificationTiming;
-use App\Contracts\WorkStacks;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Assignments\AssignmentResolver;
+use App\Contracts\Time\VerificationTiming;
+use App\Contracts\Work\WorkStacks;
 use App\Support\AssigneeIdentity;
 use App\Support\Page;
 use App\Values\TimingVerdict;

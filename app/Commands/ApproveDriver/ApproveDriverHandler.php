@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\ApproveDriver;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Exceptions\DriverUnknown;
 use App\Models\DriverApproval;
 

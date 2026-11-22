@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReadEntitlements;
+use App\Contracts\Authorization\ReadEntitlements;
 use App\Exceptions\ReadEntitlementMissing;
 use App\Values\ReadEntitlement;
 

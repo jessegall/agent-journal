@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Communication;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Communication\MarkAllNotificationsReadRequest;
 use App\Http\Responses\PageActionAnswers;
 use Illuminate\Http\RedirectResponse;

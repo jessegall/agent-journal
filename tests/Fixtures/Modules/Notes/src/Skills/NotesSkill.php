@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Notes\Skills;
 
 use App\Support\Conditions\Conditions;
-use App\Contracts\Skill;
-use App\Contracts\SkillCondition;
+use App\Contracts\Skills\Skill;
+use App\Contracts\Skills\SkillCondition;
 use App\Values\SkillSection;
 use App\Values\SkillSections;
 

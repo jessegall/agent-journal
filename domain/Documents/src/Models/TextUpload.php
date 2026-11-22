@@ -6,8 +6,8 @@ namespace Domain\Documents\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
-use App\Contracts\SessionProvenance;
+use App\Contracts\Records\ReadableModel;
+use App\Contracts\Sessions\SessionProvenance;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Exceptions\UploadChunkConflict;

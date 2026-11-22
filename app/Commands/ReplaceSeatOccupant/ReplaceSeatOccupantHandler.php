@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ReplaceSeatOccupant;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\DeskSeating;
 use App\Support\SeatChange;
 use App\Support\SeatChangeResult;

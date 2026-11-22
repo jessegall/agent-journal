@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ConditionalStateType;
-use App\Contracts\WorkOccurrenceGuard;
+use App\Contracts\Work\ConditionalStateType;
+use App\Contracts\Work\WorkOccurrenceGuard;
 use App\Enums\SessionTransferType;
 use App\Support\Decisions\StateReferences;
 use App\Support\StateLoading\Contracts\RecipientStateLoader;

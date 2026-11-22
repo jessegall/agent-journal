@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes\Grammar;
 
-use App\Contracts\Pipe;
+use App\Contracts\Bus\Pipe;
 use App\Enums\NodeType;
 use App\Enums\RedirectType;
 use App\Enums\TokenType;

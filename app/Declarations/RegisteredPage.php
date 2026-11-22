@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Contracts\PageResolver;
-use App\Contracts\VisibilityCheck;
+use App\Contracts\Authorization\VisibilityCheck;
+use App\Contracts\Navigation\PageResolver;
 use App\Exceptions\UiSlotMismatch;
 
 /**

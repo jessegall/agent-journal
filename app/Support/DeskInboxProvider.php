@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Inbox;
-use App\Contracts\InboxProvider;
-use App\Contracts\NamedInboxes;
+use App\Contracts\Chat\Inbox;
+use App\Contracts\Chat\InboxProvider;
+use App\Contracts\Chat\NamedInboxes;
 use App\Exceptions\InboxUnavailable;
 use App\Models\DeskRecord;
 use PhpOption\Option;

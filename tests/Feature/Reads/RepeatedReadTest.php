@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reads;
 
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\ReadMeter;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Reads\ReadMeter;
 use App\Exceptions\RepeatedReadRefused;
 use App\Support\ScopedReadMeter;
 use App\Values\OwnerAuthority;

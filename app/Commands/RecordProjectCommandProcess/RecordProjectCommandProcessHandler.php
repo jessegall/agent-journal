@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RecordProjectCommandProcess;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\ProjectCommandRun;
 
 final readonly class RecordProjectCommandProcessHandler implements CommandHandler

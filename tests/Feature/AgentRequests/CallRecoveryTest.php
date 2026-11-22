@@ -9,7 +9,7 @@ use App\Calls\Processes\AdmissionToStart;
 use App\Calls\Processes\ProcessCalls;
 use App\Calls\Processes\RunChunk;
 use App\Calls\Processes\RunPart;
-use App\Contracts\ShellAdmission;
+use App\Contracts\Admission\ShellAdmission;
 use App\Enums\OutputStream;
 use App\Enums\RunEventType;
 use App\Enums\ShellDialect;

@@ -6,7 +6,7 @@ namespace App\Console\Commands;
 
 use App\Commands\RetireSkill\RetireSkillCommand;
 use App\Console\Concerns\PrintsSkillRefusals;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Models\Skill;
 use App\Support\SkillAuthoring;
 use Illuminate\Console\Command;

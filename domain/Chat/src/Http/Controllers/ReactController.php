@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Commands\ToggleReaction\ToggleReactionCommand;
 use Domain\Chat\Data\ReactInput;
 use Illuminate\Http\RedirectResponse;

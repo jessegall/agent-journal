@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use App\Exceptions\InstallAttemptRefused;
 use App\Models\Environment;
 use App\Models\Project;

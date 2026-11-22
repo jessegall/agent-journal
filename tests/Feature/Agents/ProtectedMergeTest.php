@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Contracts\HelperCommitImport;
+use App\Contracts\Work\HelperCommitImport;
 use App\Enums\MergeAttemptState;
 use App\Enums\MergeRefusalReason;
 use App\Models\MergeAttempt;

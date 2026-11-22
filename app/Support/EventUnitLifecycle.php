@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\Event;
-use App\Contracts\FactStaging;
-use App\Contracts\UnitOwner;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Events\Event;
+use App\Contracts\Events\FactStaging;
+use App\Contracts\Work\UnitOwner;
 use App\Exceptions\EventUnitRefused;
 use Closure;
 use Illuminate\Database\ConnectionInterface;

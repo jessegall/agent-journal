@@ -6,8 +6,8 @@ namespace App\Mcp\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ActorVisibility;
-use App\Contracts\ReadableModel;
+use App\Contracts\Actors\ActorVisibility;
+use App\Contracts\Records\ReadableModel;
 use App\Models\Support\AgentSessionScope;
 use App\Support\AgentContext;
 use Carbon\CarbonImmutable;

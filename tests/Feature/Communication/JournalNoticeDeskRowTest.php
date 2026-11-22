@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\InstallDesks\InstallDesksCommand;
-use App\Contracts\InboxNotices;
+use App\Contracts\Chat\InboxNotices;
 use App\Enums\CommandEntry;
 use App\Enums\MessageType;
 use App\Models\Message;

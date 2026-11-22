@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * A stored skill gained a revision or was retired. Raised after the transaction committed, so a refresh reads the new

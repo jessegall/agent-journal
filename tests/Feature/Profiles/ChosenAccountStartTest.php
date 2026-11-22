@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Contracts\ActiveAccountReader;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Accounts\ActiveAccountReader;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\StartUnavailableReason;
 use App\Exceptions\AccountUnavailable;
 use App\Models\Account;

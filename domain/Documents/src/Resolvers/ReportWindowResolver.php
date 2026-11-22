@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
-use App\Contracts\CommentResolver;
-use App\Contracts\PageResolver;
-use App\Contracts\RecordResolver;
-use App\Contracts\ShareStatusResolver;
+use App\Contracts\Navigation\PageResolver;
+use App\Contracts\Records\CommentResolver;
+use App\Contracts\Records\RecordResolver;
+use App\Contracts\Sharing\ShareStatusResolver;
 use App\Data\DockablePublicationData;
 use App\Enums\ActionMethod;
 use App\Support\Cards\DockIdentity;

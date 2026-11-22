@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\AuthoritySource;
+use App\Contracts\Authorization\AuthoritySource;
 
 /**
  * The authority of a user the journal's access policy admitted as an owner of this journal.

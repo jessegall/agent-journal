@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ImportRuleProposals;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Declarations\RuleDeclarations;
 use App\Exceptions\DeclarationInvalid;
 use App\Exceptions\RuleProposalRefused;

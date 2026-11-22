@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Listeners;
 
-use App\Contracts\InboxNotices;
-use App\Contracts\Listener;
+use App\Contracts\Chat\InboxNotices;
+use App\Contracts\Events\Listener;
 use Domain\Documents\Events\DraftKept;
 
 final readonly class NoticeKeptDraft implements Listener

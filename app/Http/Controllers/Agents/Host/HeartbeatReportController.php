@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Agents\Host;
 
 use App\Commands\ReportRuntimeHeartbeat\ReportRuntimeHeartbeatCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\RuntimeLivenessReportData;
 use App\Values\HostContext;
 use Illuminate\Http\Response;

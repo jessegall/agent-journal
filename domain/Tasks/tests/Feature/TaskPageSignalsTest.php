@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Contracts\CommandBus;
-use App\Contracts\UserInterfaceUpdater;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Navigation\UserInterfaceUpdater;
 use App\Support\Reflector;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Events\TaskBlocked;

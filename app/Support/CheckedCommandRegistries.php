@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\PipelineRunner;
+use App\Contracts\Bus\PipelineRunner;
 
 /**
  * The command registries this process already checked, by the owners and commands they were built from. Reflecting

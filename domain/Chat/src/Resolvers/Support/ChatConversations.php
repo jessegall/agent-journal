@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers\Support;
 
-use App\Contracts\ActorLabels;
-use App\Contracts\ChatEligibility;
-use App\Contracts\ChatLines;
-use App\Contracts\ConversationResolver;
-use App\Contracts\CurrentActor;
-use App\Contracts\InboxResolver;
+use App\Contracts\Actors\ActorLabels;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Chat\ChatLines;
+use App\Contracts\Chat\ConversationResolver;
+use App\Contracts\Chat\InboxResolver;
 use App\Data\DeliveryView;
 use App\Data\InboxView;
 use App\Data\MessagePage;

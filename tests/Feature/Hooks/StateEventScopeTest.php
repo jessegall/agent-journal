@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\StackAdmission;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Admission\StackAdmission;
 use App\Support\Delivery\StateEventBridge;
 use App\Support\EngineAccess;
 use App\Support\EngineActor;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use Spatie\LaravelData\Data;
 
 /**

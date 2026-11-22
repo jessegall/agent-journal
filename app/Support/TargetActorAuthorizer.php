@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActorResolver;
-use App\Contracts\TargetAuthorizer;
+use App\Contracts\Actors\ActorResolver;
+use App\Contracts\Authorization\TargetAuthorizer;
 use App\Enums\AccessType;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandClassifier;
+use App\Contracts\Bus\CommandClassifier;
 use App\Data\ExplainedNodeData;
 use App\Data\ExplanationData;
 use App\Data\HeldPartData;

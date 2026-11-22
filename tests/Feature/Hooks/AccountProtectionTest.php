@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\SessionOutputAccess;
+use App\Contracts\Reads\SessionOutputAccess;
 use App\Support\CheckProtectedResources;
 use App\Support\Decisions\Decision;
 use App\Support\Drivers\Adapters\ClaudeCodeAdapter;

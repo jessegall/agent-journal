@@ -6,8 +6,8 @@ namespace Tests\Feature\Agents;
 
 use App\Commands\EnrollHost\EnrollHostCommand;
 use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\ArrangementType;
 use App\Enums\DriverVariant;
 use App\Exceptions\ArrangementUnknown;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews\Settings;
 
-use App\Contracts\SettingsDefinition;
+use App\Contracts\Settings\SettingsDefinition;
 use App\Declarations\BooleanSetting;
 use App\Declarations\ChoiceSetting;
 use App\Declarations\DecimalSetting;

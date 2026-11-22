@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\CallSender;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\CallSender;
+use App\Contracts\Domains\JournalCall;
 use App\Exceptions\CallRefused;
 use App\Exceptions\JournalUnreachable;
 use App\Support\SignedCallSender;

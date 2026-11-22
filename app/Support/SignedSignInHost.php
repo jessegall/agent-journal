@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\SignInHost;
+use App\Contracts\Accounts\SignInHost;
 use App\Enums\AccountCheckResult;
 use App\Enums\ArrangementType;
 use App\Enums\CleanupTarget;

@@ -1,6 +1,6 @@
 # Public events
 
-An event is any class that implements Core's marker interface `App\Contracts\Event`, Core's, a domain's or a module's, whatever folder it sits in; `EventMarkerTest` fails on a class in an `Events` folder that does not. An event is public only when its owner lists it under `events` in its exports:
+An event is any class that implements Core's marker interface `App\Contracts\Events\Event`, Core's, a domain's or a module's, whatever folder it sits in; `EventMarkerTest` fails on a class in an `Events` folder that does not. An event is public only when its owner lists it under `events` in its exports:
 
 ```php
 public function exports(): Exports
@@ -19,7 +19,7 @@ Every other event stays private to its owner. Another domain hears a public even
 
 A fact is captured where its change is made: a row fact is raised by the model method that saves the change, after
 that save succeeded, and a command-level fact is staged by the command's own code through
-`App\Contracts\CommandFacts::publishAfterCommit`. Both join the event unit of the transaction in save order.
+`App\Contracts\Bus\CommandFacts::publishAfterCommit`. Both join the event unit of the transaction in save order.
 The fact's required listeners run inside that transaction, before it commits; its public listeners hear it through
 Laravel's dispatcher only after the real commit, once no command of the request still runs. A rolled-back change
 releases nothing. Each fact carries plain values: ids, and Core values such as `StackTarget` or `ActorContext`.
@@ -40,7 +40,7 @@ sent anywhere else. `AssignmentsChanged` is staged once per command, never per r
 committed: an attempt the writer ran again after a serialization failure leaves no fact. A cascade over a plan raises
 one fact for all its changes.
 
-A fact that changes what users see also implements `App\Contracts\UserInterfaceUpdater`. Web's `BroadcastPageChange`
+A fact that changes what users see also implements `App\Contracts\Navigation\UserInterfaceUpdater`. Web's `BroadcastPageChange`
 listens for that marker, and the checked provider turns it into one listener for each exported event that implements
 it, so a new domain's or module's exported fact refreshes the open pages without any change to Web, while a fact
 nobody exports refreshes nothing; Core owns the marker and names no domain.

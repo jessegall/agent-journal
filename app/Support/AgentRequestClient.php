@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AgentRequestClient as AgentRequestClientContract;
+use App\Contracts\Sessions\AgentRequestClient as AgentRequestClientContract;
 use App\Exceptions\CallDeadlinePassed;
 use App\Exceptions\JournalUnreachable;
 use Carbon\CarbonImmutable;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\OperationResolver;
+use App\Contracts\Authorization\OperationResolver;
 use App\Exceptions\OperationUnavailable;
 use App\Models\CommandReceipt;
 use App\Support\Operation;

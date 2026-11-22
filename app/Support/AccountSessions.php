@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\IdentityLinks;
+use App\Contracts\Actors\IdentityLinks;
 use App\Models\AgentSession;
 
 /**

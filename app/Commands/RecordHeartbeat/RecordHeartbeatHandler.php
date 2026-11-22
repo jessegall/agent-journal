@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\RecordHeartbeat;
 
 use App\Concerns\RefusesUnusableSessions;
-use App\Contracts\CommandHandler;
-use App\Contracts\ServerClock;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Time\ServerClock;
 use App\Models\AgentSession;
 
 /**

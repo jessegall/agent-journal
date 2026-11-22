@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Processes\ExplainCommandCall;
 use App\Commands\OpenCommandRequest\OpenCommandRequestCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Data\ExplanationData;
 use App\Data\HeldPartData;
 use App\Enums\RequestHoldReason;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\IssueProjectInvitation;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\ConnectionAuditType;
 use App\Exceptions\InstallLinesUnavailable;
 use App\Models\ConnectionAudit;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Calls\Supervision;
 
 use App\Attributes\Endpoint;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Data\AskCard;
 use App\Enums\CallEffect;
 use Spatie\LaravelData\Attributes\Validation\Ulid;

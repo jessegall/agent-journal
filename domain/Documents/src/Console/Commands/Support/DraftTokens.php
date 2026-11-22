@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Commands\Support;
 
-use App\Contracts\Files;
+use App\Contracts\Files\Files;
 use App\Enums\Place;
 use App\Values\FilePath;
 

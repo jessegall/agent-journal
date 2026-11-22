@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\TakeSignInCode;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\SignInAttempt;
 use App\Support\SignInChallenges;
 use App\Values\SignInPoll;

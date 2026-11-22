@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\ReassignRecord;
 
-use App\Contracts\AssignmentWriter;
-use App\Contracts\CommandHandler;
+use App\Contracts\Assignments\AssignmentWriter;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\AssignmentResult;
 
 /**

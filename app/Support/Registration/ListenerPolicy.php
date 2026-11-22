@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Registration;
 
-use App\Contracts\PipelineRunner;
+use App\Contracts\Bus\PipelineRunner;
 use App\Pipes\CheckListenerPairs;
 use App\Pipes\ExpandUiUpdaterListeners;
 use App\Pipes\GateListenersByDomain;

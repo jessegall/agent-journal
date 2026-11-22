@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews\Messaging;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use App\Support\AssigneeIdentity;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Commands\AskMessage\AskMessageCommand;
-use App\Contracts\ActorInboxResolver;
-use App\Contracts\ConversationResolver;
-use App\Contracts\InboxDestinationResolver;
+use App\Contracts\Actors\ActorInboxResolver;
+use App\Contracts\Chat\ConversationResolver;
+use App\Contracts\Chat\InboxDestinationResolver;
 use App\Data\MessageView;
 
 /**

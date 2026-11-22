@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActorAttention;
-use App\Contracts\ActorWorkStacks;
-use App\Contracts\StackTransactionRunner;
+use App\Contracts\Actors\ActorAttention;
+use App\Contracts\Actors\ActorWorkStacks;
+use App\Contracts\Work\StackTransactionRunner;
 use App\Models\Ask;
 use App\Models\AskHop;
 use App\Support\States\AnsweringAskState;

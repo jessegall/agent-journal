@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Attributes\Authorize;
-use App\Contracts\Command;
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Bus\Command;
 use App\Enums\AccessRuleType;
 use App\Values\AccessDecision;
 use App\Values\StartProfileAuthority;

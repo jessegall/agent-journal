@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\SharePolicy;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Sharing\SharePolicy;
 use App\Models\Share;
 use PhpOption\None;
 use PhpOption\Option;

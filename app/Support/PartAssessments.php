@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandFacts;
+use App\Contracts\Bus\CommandFacts;
 use App\Events\EvidenceInvalid;
 use App\Models\OutputAssessment;
 use App\Models\PartRun;

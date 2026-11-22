@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Profiles\SwitchAgentDriverRequest;
 use App\Values\DriverSwitchReceipt;
 use Illuminate\Http\JsonResponse;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Commands\SaveSharePreview\SaveSharePreviewCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\ReadMeter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Reads\ReadMeter;
 use App\Exceptions\ShareGatewayUnavailable;
 use App\Exceptions\SharePreviewRefused;
 use App\Exceptions\SharingNotAllowed;

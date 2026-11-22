@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Communication\MessageNamed;
 use App\Calls\Communication\ReplyToMessageCall;
 use App\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Replies to a message as the state you read.

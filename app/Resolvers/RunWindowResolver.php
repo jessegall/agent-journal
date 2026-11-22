@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\PageResolver;
+use App\Contracts\Navigation\PageResolver;
 use App\Data\PartOutputData;
 use App\Data\ProblemData;
 use App\Data\RunWindowData;

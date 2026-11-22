@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Events;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 use App\Support\ActorIdentity;
 use Domain\Sequences\Contracts\ChatLineSource;
 use Domain\Sequences\Models\SequenceRun;

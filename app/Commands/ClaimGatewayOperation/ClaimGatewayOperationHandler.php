@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ClaimGatewayOperation;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\GatewayEndpointState;
 use App\Enums\GatewayOperationType;
 use App\Enums\GatewayOutcome;

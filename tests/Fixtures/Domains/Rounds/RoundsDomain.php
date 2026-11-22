@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Rounds;
 
-use App\Contracts\AutoAssignmentProvider;
+use App\Contracts\Assignments\AutoAssignmentProvider;
 use App\Support\PoolDefinition;
 use App\Concerns\HasAssignables;
 use App\Support\Domain;

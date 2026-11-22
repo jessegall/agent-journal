@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Commands\ApproveDriver\ApproveDriverCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Support\ConsoleOwner;
 use App\Values\DriverKey;
 use Illuminate\Console\Command;

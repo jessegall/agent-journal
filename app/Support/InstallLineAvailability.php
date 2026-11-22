@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\SettingsResolver;
+use App\Contracts\Settings\SettingsResolver;
 
 /**
  * Whether this server may issue install lines that connect a project on another machine: the owner switched remote

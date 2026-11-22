@@ -6,11 +6,11 @@ namespace App\Providers;
 
 use App\Console\Commands\LinkAddCommand;
 use App\Console\Commands\LinkRemoveCommand;
-use App\Contracts\IdentityLinks;
-use App\Contracts\PolicyCatalogue;
-use App\Contracts\RecordLinker;
-use App\Contracts\RecordProviderRegistration;
-use App\Contracts\RecordResolver;
+use App\Contracts\Actors\IdentityLinks;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Records\RecordLinker;
+use App\Contracts\Records\RecordProviderRegistration;
+use App\Contracts\Records\RecordResolver;
 use App\Enums\AccessType;
 use App\Models\Link;
 use App\Policies\RecordLinkPolicy;

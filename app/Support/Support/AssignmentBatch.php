@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Support;
 
-use App\Contracts\AssignmentProviders;
+use App\Contracts\Assignments\AssignmentProviders;
 use App\Enums\AssignmentOutcomeType;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentChange;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\JournalAssignmentWriter;
+use App\Contracts\Assignments\JournalAssignmentWriter;
 use App\Enums\MergeAttemptState;
 use App\Enums\WorkChainEnding;
 use App\Models\Ask;

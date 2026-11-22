@@ -6,7 +6,7 @@ namespace Domain\Plans\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Support\ActorIdentity;
 use Domain\Plans\Enums\PlanReviewState;

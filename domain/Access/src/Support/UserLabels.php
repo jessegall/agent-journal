@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Contracts\ActorLabelProvider;
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\ActorLabelProvider;
+use App\Contracts\Actors\CurrentActor;
 use Domain\Access\Models\User;
 
 /**

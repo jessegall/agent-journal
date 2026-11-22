@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Contracts\Listener;
+use App\Contracts\Events\Listener;
 use App\Enums\ContextStartType;
 use App\Events\ContextStarted;
 use App\Models\SkillContextEpoch;

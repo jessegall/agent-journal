@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandTransaction;
-use App\Contracts\IdentityLinks;
+use App\Contracts\Actors\IdentityLinks;
+use App\Contracts\Bus\CommandTransaction;
 use App\Models\Link;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;

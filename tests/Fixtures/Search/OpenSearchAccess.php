@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Search;
 
-use App\Contracts\SearchAccess;
+use App\Contracts\Search\SearchAccess;
 use App\Support\ActorContext;
 use App\Values\AdmittedConstraints;
 use App\Values\OpenAction;

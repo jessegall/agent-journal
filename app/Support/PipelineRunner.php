@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Pipable;
-use App\Contracts\PipelineDefinition;
-use App\Contracts\PipelineRunner as PipelineRunnerContract;
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Bus\Pipable;
+use App\Contracts\Bus\PipelineDefinition;
+use App\Contracts\Bus\PipelineRunner as PipelineRunnerContract;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Exceptions\StepOutOfOrder;
 use Closure;
 use Illuminate\Container\Attributes\Singleton;

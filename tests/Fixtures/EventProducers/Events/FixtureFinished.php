@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\EventProducers\Events;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * A migrated row fact: only FixtureTask::finish raises it.

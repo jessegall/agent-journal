@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Models\InstallAttempt;
 use App\Models\ProjectInvitation;
 use App\Support\ActorContext;

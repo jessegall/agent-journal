@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Agents;
 
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Enums\CallEffect;
 use App\Enums\ReceiptOwner;
 use App\Exceptions\KeyedWriteWithoutReceipt;

@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Domains\FalseSkills;
 
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\SkillProvider;
+use App\Contracts\Skills\SkillProvider;
 
 /**
  * A fixture domain that declares a class of its own that is no skill.

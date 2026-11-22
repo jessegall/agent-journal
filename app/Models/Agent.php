@@ -6,11 +6,11 @@ namespace App\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Assignee;
-use App\Contracts\MessageRecipient;
-use App\Contracts\MessageSender;
-use App\Contracts\ReadableModel;
-use App\Contracts\SeatedActor;
+use App\Contracts\Assignments\Assignee;
+use App\Contracts\Chat\MessageRecipient;
+use App\Contracts\Chat\MessageSender;
+use App\Contracts\Chat\SeatedActor;
+use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\DriverVariant;
 use App\Support\ActorIdentity;

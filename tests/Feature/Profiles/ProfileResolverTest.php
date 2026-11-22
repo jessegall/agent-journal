@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\ProfileResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
 use App\Enums\PolicyOriginType;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\AnsweredAtOnce;
+use App\Contracts\Chat\AnsweredAtOnce;
 use App\Support\ChildCheckoutSlot;
 
 /**

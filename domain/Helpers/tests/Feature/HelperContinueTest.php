@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Events\LaunchEnded;
 use App\Models\StartRecord;
 use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;

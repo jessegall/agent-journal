@@ -7,8 +7,8 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Records\AddLinkCall;
 use App\Calls\Records\LinkChanged;
 use App\Commands\LinkRecords\LinkRecordsCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\RecordResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Records\RecordResolver;
 use App\Support\RecordReference;
 
 /**

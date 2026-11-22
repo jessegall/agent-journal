@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Data\DeniedWindow;
 use App\Data\FailedWindow;
 use App\Data\ReadyWindow;

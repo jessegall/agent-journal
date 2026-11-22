@@ -6,8 +6,8 @@ namespace Tests\Feature\Profiles;
 
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\RevokeProfiles\RevokeProfilesCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\ProfileResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\ActorType;
 use App\Exceptions\ProfileMissing;
 use App\Exceptions\ProfileRetired;

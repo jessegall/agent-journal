@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReadEntitlements;
-use App\Contracts\ScriptChecks;
-use App\Contracts\ScriptCompilation;
+use App\Contracts\Authorization\ReadEntitlements;
+use App\Contracts\Scripts\ScriptChecks;
+use App\Contracts\Scripts\ScriptCompilation;
 use App\Enums\AccessType;
 use App\Enums\DiagnosticCode;
 use App\Enums\ReadEntitlementType;

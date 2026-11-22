@@ -6,10 +6,10 @@ namespace Tests\Feature\Profiles;
 
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\StartAgent\StartAgentCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\DockerImageVerifier;
-use App\Contracts\HostCapabilities;
-use App\Contracts\ProfileResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Hosts\DockerImageVerifier;
+use App\Contracts\Hosts\HostCapabilities;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\CapabilityStatusType;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverVariant;

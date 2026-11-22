@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Contracts\Inbox;
+use App\Contracts\Chat\Inbox;
 
 /**
  * A chat as an inbox: the chat inbox's id and the label its reader sees for it.

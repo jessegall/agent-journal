@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\CloseWorkChain;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\WorkChainEnding;
 use App\Exceptions\AskRefused;
 use App\Models\CodeReview;

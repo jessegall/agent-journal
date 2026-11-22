@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\CommandMiddleware;
 
-use App\Contracts\CommandMiddleware;
+use App\Contracts\Bus\CommandMiddleware;
 use App\Exceptions\CommandRetryExhausted;
 use App\Exceptions\CommandTransactionMismatch;
 use App\Exceptions\NestedCommandFailureIgnored;

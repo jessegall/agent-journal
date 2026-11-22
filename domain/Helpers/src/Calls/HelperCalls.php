@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Calls;
 
-use App\Contracts\CallSender;
+use App\Contracts\Domains\CallSender;
 use App\Enums\DriverVariant;
 use App\Support\CallKey;
 use Domain\Helpers\Data\HelperJobNamed;

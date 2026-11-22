@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Contracts\OutputRecorder;
-use App\Contracts\RunEvents;
+use App\Contracts\Events\RunEvents;
+use App\Contracts\Reads\OutputRecorder;
 use App\Enums\CaptureState;
 use App\Enums\OutputStream;
 use App\Enums\RunLogicalResult;

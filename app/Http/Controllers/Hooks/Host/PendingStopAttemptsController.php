@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hooks\Host;
 
-use App\Contracts\SessionPolicyReader;
+use App\Contracts\Sessions\SessionPolicyReader;
 use App\Data\Hooks\PendingStopAttemptData;
 use App\Models\ProcessStart;
 use App\Models\StopAttempt;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * Links were removed, raised inside the transaction that removed them, so whatever rested on those exact links ends

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\StateCatalog\Contracts;
 
-use App\Contracts\WorkOccurrenceGuard;
+use App\Contracts\Work\WorkOccurrenceGuard;
 use App\Support\StateCatalog\StateTypeRegistry;
 use App\Support\Ticks\TickingTypes;
 

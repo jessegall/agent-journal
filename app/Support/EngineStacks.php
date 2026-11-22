@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\EngineTargetAccess;
+use App\Contracts\Authorization\EngineTargetAccess;
 use App\Exceptions\StackTargetRefused;
 use App\Models\AgentSession;
 use App\Models\AgentStackRow;

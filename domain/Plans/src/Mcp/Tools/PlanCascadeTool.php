@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Mcp\Tools;
 
-use App\Contracts\RequestKey;
+use App\Contracts\Bus\RequestKey;
 use App\Enums\AssignmentOutcomeType;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\NextAction;

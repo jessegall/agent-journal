@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Chat\Tests\Feature;
 
 use App\Commands\AskMessage\AskMessageCommand;
-use App\Contracts\Actor;
-use App\Contracts\ActorInboxResolver;
-use App\Contracts\CommandBus;
-use App\Contracts\Inbox;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Actors\ActorInboxResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Chat\Inbox;
 use App\Enums\ActorType;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Agent;

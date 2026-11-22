@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Tasks\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\ActorWorkStacks;
-use App\Contracts\Listener;
+use App\Contracts\Actors\ActorWorkStacks;
+use App\Contracts\Events\Listener;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Resolvers\Support\TaskRecords;
 use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;

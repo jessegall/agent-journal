@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
-use App\Contracts\ResultReceipts;
+use App\Contracts\Bus\ResultReceipts;
 use App\Data\PartSnapshotData;
 use App\Data\RunSnapshotData;
 use App\Enums\PositionPurpose;

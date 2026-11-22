@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Commands\ReportWorkspaceRead;
 
-use App\Contracts\ActorGuidance;
-use App\Contracts\CommandHandler;
-use App\Contracts\ServerClock;
+use App\Contracts\Actors\ActorGuidance;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Time\ServerClock;
 use App\Models\WorkspaceRead;
 use App\Values\WorkspaceFacts;
 

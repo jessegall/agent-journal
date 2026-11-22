@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Cards;
 
 use App\Enums\AccessType;
-use App\Contracts\PolicyProvider;
+use App\Contracts\Authorization\PolicyProvider;
 use App\Values\PolicyDefinition;
-use App\Contracts\CommandMiddlewareProvider;
-use App\Contracts\CommandProvider;
+use App\Contracts\Bus\CommandMiddlewareProvider;
+use App\Contracts\Bus\CommandProvider;
 use App\Support\CommandScope;
 use App\Support\MiddlewareDeclaration;
 use App\Support\Domain;

@@ -15,7 +15,7 @@ use App\CommandMiddleware\RecordReceipt;
 use App\CommandMiddleware\RecordRefusalReceipt;
 use App\CommandMiddleware\RunInTransaction;
 use App\CommandMiddleware\ValidateCommand;
-use App\Contracts\CommandMiddleware;
+use App\Contracts\Bus\CommandMiddleware;
 
 /**
  * The core middleware frame around the module middleware and handler.

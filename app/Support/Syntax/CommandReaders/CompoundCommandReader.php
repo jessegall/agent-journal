@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax\CommandReaders;
 
-use App\Contracts\CommandReader;
+use App\Contracts\Bus\CommandReader;
 use App\Pipelines\ReadCompoundPipeline;
 use App\Support\Grammar\CommandToParse;
 use App\Support\Grammar\CompoundToParse;

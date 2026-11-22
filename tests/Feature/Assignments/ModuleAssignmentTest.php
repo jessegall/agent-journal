@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Commands\RetireAgent\RetireAgentCommand;
-use App\Contracts\AssignmentResolver;
-use App\Contracts\CommandBus;
+use App\Contracts\Assignments\AssignmentResolver;
+use App\Contracts\Bus\CommandBus;
 use App\Exceptions\ActorContextMissing;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\RecordUnavailable;

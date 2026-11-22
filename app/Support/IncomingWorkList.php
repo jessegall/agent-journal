@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\IncomingWork;
-use App\Contracts\IncomingWorkRegistration;
+use App\Contracts\Work\IncomingWork;
+use App\Contracts\Work\IncomingWorkRegistration;
 use App\Exceptions\IncomingWorkFailed;
 use App\Exceptions\IncomingWorkRepeated;
 use Illuminate\Contracts\Container\Container;

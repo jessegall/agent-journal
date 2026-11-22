@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\InstallBuiltInProfiles;
 
 use App\Commands\ActivateProfiles\ActivateProfilesHandler;
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\ProfilePolicyRefused;
 use App\Support\ProfileProposal;
 use App\Values\ProfileActivation;

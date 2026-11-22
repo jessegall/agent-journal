@@ -6,8 +6,8 @@ namespace Domain\Chat\Http\Controllers;
 
 use App\Commands\AskChatQuestion\AskChatQuestionCommand;
 use App\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Contracts\AgentDirectory;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Sessions\AgentDirectory;
 use Domain\Chat\Data\MessageInput;
 use Domain\Chat\Support\SentMessageAnswer;
 use Illuminate\Http\RedirectResponse;

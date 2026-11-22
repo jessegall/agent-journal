@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Commands\ReadShare;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\ReadMeter;
-use App\Contracts\ShareBudget;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Reads\ReadMeter;
+use App\Contracts\Sharing\ShareBudget;
 use App\Enums\ShareAuditType;
 use App\Enums\ShareRelationType;
 use App\Exceptions\ShareBudgetExceeded;

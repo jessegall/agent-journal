@@ -19,7 +19,7 @@ so who sits where is read like any other holding. A desk is never an actor.
 
 ## Inboxes and providers
 
-An inbox (`App\Contracts\Inbox`, row `InboxRecord`) belongs to a provider registered on
+An inbox (`App\Contracts\Chat\Inbox`, row `InboxRecord`) belongs to a provider registered on
 `InboxRegistration` with an `InboxAccess`: shared and exclusive guards, the membership of one actor, all members, and
 the inboxes an actor sits at. Desks are one provider (`DeskInboxAccess`); the registry (`RegisteredInboxes`) combines
 every provider, so visibility and pending work never assume desks. `InboxDestinationResolver` turns an assignee into

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Sharing\ConfigureShareGatewayRequest;
 use App\Support\Gateways\Support\GatewaySecrets;
 use Illuminate\Http\RedirectResponse;

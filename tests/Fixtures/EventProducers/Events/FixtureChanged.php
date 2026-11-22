@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\EventProducers\Events;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * An event not migrated yet, whose one listed producer is the forwarding support service.

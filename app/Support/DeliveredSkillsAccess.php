@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\FileAccessPolicy;
+use App\Contracts\Authorization\FileAccessPolicy;
 use App\Enums\FileAccess;
 use App\Models\AgentRuntime;
 use PhpOption\None;

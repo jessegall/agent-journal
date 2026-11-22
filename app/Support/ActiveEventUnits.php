@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\FactStaging;
+use App\Contracts\Events\FactStaging;
 use App\Exceptions\OverlappingTransactionOwner;
 use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;

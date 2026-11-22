@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AccountFolders;
-use App\Contracts\Files;
+use App\Contracts\Accounts\AccountFolders;
+use App\Contracts\Files\Files;
 use App\Enums\Permissions;
 use App\Enums\Place;
 use App\Values\Depth;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers\Adapters;
 
-use App\Contracts\FileAccessPolicy;
+use App\Contracts\Authorization\FileAccessPolicy;
 use App\Enums\FileAccess;
 use App\Support\Drivers\Contracts\DriverCall;
 use App\Support\Drivers\DriverReplies;

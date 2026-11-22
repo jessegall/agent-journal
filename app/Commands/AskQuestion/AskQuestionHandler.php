@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Commands\AskQuestion;
 
-use App\Contracts\ActorInboxResolver;
-use App\Contracts\CommandHandler;
-use App\Contracts\JournalAdmission;
-use App\Contracts\RecordResolver;
+use App\Contracts\Actors\ActorInboxResolver;
+use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Records\RecordResolver;
 use App\Models\Link;
 use App\Support\MessageSending;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Contracts\SkillCondition;
+use App\Contracts\Skills\SkillCondition;
 use App\Enums\SkillOrigin;
 use App\Exceptions\SkillSelectionConflict;
 use App\Support\BuiltInAuthorizations;

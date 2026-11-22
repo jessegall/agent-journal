@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Commentable;
-use App\Contracts\CommentResolver;
-use App\Contracts\RecordResolver;
-use App\Contracts\TextContent;
+use App\Contracts\Reads\TextContent;
+use App\Contracts\Records\Commentable;
+use App\Contracts\Records\CommentResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Data\CommentList;
 use App\Data\RecordCard;
 use App\Data\RecordCommentLocation;

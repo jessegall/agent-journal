@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Contracts\AssignmentProviders;
+use App\Contracts\Assignments\AssignmentProviders;
 use App\Enums\ActorType;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\InvalidActorText;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\StateEffects;
 
-use App\Contracts\CommandBus as Runner;
+use App\Contracts\Bus\CommandBus as Runner;
 use App\Support\Inputs\StopRequested;
 use App\Support\States\AgentState;
 use App\Commands\UnlinkRecords\UnlinkRecordsCommand;

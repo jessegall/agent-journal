@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers\Calls;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Support\RecordReference;
 use App\Values\CallAccepted;
 use Domain\Documents\Calls\SettleDocumentCall;

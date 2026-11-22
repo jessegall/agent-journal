@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Docking;
 
-use App\Contracts\RecordResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Exceptions\DockDefinitionInvalid;
 use App\Support\Sources\Contracts\FallbackDocks;
 use App\Support\Sources\DockDefinition;

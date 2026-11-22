@@ -6,9 +6,9 @@ namespace Tests\Feature\Agents;
 
 use App\Commands\EnrollHost\EnrollHostCommand;
 use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\DriverCompatibilities;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Drivers\DriverCompatibilities;
 use App\Enums\DriverCapability;
 use App\Enums\DriverEvidence;
 use App\Enums\DriverVariant;

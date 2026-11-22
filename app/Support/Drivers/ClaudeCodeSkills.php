@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers;
 
-use App\Contracts\DriverSkills;
+use App\Contracts\Skills\DriverSkills;
 use App\Enums\SkillReload;
 use App\Support\DefaultDrivers;
 use App\Values\PublishedSkill;

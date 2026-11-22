@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Commands\ContinueStart\ContinueStartCommand;
 use App\Commands\StartAgent\StartAgentCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;

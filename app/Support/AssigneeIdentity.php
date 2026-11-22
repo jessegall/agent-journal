@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Concerns\ComparesTypeAndId;
-use App\Contracts\Actor;
+use App\Contracts\Actors\Actor;
 
 /**
  * Who holds a record: the registered assignee type and its id. An actor is one kind of assignee; a desk is another.

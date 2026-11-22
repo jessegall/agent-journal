@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ScriptExecution;
+use App\Contracts\Scripts\ScriptExecution;
 use App\Values\AccessPolicy;
 use App\Values\BooleanOperand;
 use App\Values\NamedCommand;

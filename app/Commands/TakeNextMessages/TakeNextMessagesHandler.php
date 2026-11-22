@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\TakeNextMessages;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Data\MessageReadBatch;
 use App\Models\Message;
 use App\Support\MessageReading;

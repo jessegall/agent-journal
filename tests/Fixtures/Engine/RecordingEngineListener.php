@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Engine;
 
-use App\Contracts\EngineListener;
+use App\Contracts\Events\EngineListener;
 use App\Events\EngineTicked;
 use App\Support\EngineAccess;
 

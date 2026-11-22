@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Notes\Models;
 
 use App\Concerns\Linkable;
-use App\Contracts\Numbered;
+use App\Contracts\Records\Numbered;
 use App\Concerns\HasNumber;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Concerns\BoundedReads;
-use App\Contracts\TextContent;
+use App\Contracts\Reads\TextContent;
 use App\Values\TextVersion;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;

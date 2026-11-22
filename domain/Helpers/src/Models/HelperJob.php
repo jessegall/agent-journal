@@ -6,8 +6,8 @@ namespace Domain\Helpers\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Assignable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Assignments\Assignable;
+use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\ConversationModeType;
 use App\Models\Support\BelongsToOneActor;

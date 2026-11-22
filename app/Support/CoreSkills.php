@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Skill;
+use App\Contracts\Skills\Skill;
 use App\Support\Shipped\JournalSkill;
 use App\Support\Shipped\ProfilesSkill;
 use App\Support\Shipped\ShellSkill;

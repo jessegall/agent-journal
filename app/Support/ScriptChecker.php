@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ScriptChecks;
+use App\Contracts\Scripts\ScriptChecks;
 use App\Enums\DiagnosticCode;
 use App\Exceptions\ScriptSyntaxError;
 use App\Values\ObjectDefinition;

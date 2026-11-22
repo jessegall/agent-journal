@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\NavigationRecords as NavigationRecordsContract;
+use App\Contracts\Navigation\NavigationRecords as NavigationRecordsContract;
 use App\Data\NavigationCountsData;
 use App\Data\NavigationData;
 use App\Data\NavigationGroupData;

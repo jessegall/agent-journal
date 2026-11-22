@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\WorkStacks;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Work\WorkStacks;
 
 /**
  * Finds whose request keys a write or a read belongs to: an agent's keys live in the session of its signed call, a

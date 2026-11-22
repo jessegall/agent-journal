@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\AgentStack;
-use App\Contracts\StackTransactionRunner;
-use App\Contracts\UserStack;
+use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\StackTransactionRunner;
+use App\Contracts\Work\UserStack;
 use App\Support\AgentStacks;
 use App\Support\StackTransaction;
 use App\Support\UserStacks;

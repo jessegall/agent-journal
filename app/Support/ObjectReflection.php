@@ -6,8 +6,8 @@ namespace App\Support;
 
 use App\Attributes\ScriptMember;
 use App\Attributes\ScriptObject;
-use App\Contracts\OperationNames;
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Authorization\OperationNames;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Exceptions\ScriptDefinitionRefused;
 use App\Values\ObjectDefinition;
 use App\Values\ObjectMember;

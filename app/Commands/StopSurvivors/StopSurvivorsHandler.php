@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\StopSurvivors;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\RetryRefused;
 use App\Models\ProcessRun;
 

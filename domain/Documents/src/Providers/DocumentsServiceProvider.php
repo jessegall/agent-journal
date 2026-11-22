@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Providers;
 
-use App\Contracts\AttachmentReferences;
-use App\Contracts\CurrentSession;
-use App\Contracts\NotificationTargets;
-use App\Contracts\ReadEntitlements;
-use App\Contracts\SessionProvenance;
+use App\Contracts\Authorization\ReadEntitlements;
+use App\Contracts\Chat\NotificationTargets;
+use App\Contracts\Drivers\AttachmentReferences;
+use App\Contracts\Sessions\CurrentSession;
+use App\Contracts\Sessions\SessionProvenance;
 use App\Enums\AccessType;
 use App\Support\FolderClasses;
 use App\Support\LinkTypeRegistry;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Agents\Host;
 
 use App\Commands\ReportEntryReplayed\ReportEntryReplayedCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\EntryReplayedData;
 use App\Values\HostContext;
 use Illuminate\Http\Response;

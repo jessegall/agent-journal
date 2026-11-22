@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Compatibility;
 
-use App\Contracts\PinnedBuilds;
+use App\Contracts\Drivers\PinnedBuilds;
 
 /**
  * The pinned build of each driver, as its checked compatibility names it.

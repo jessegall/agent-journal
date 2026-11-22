@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Assignments;
 
-use App\Contracts\CommandBus;
-use App\Contracts\RecordResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Records\RecordResolver;
 use App\Data\Assignments\AutoAssignmentChangeData;
 use App\Http\Requests\Assignments\ChangeAutoAssignmentRequest;
 use Illuminate\Http\JsonResponse;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\ReadMessages\ReadMessagesCommand;
-use App\Contracts\ConversationResolver;
+use App\Contracts\Chat\ConversationResolver;
 use App\Data\MessageClaimHolder;
 use App\Data\MessageReader;
 use Spatie\LaravelData\Optional;

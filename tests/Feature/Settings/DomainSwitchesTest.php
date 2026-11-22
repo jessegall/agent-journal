@@ -6,8 +6,8 @@ namespace Tests\Feature\Settings;
 
 use App\Commands\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Commands\SetStringSetting\SetStringSettingCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\SettingsResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Settings\SettingsResolver;
 use App\Declarations\ToggleGroup;
 use App\Enums\SettingsOutcome;
 use App\Exceptions\SettingUnavailable;

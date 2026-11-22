@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Agents\Host;
 
 use App\Commands\ReportStopped\ReportStoppedCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\StartReportRequest;
 use App\Values\HostContext;
 use Illuminate\Http\Response;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Calls\Scripts\ReadProfileLanguageCall;
-use App\Contracts\ProfileLanguage;
+use App\Contracts\Sessions\ProfileLanguage;
 use App\Data\ProfileLanguageData;
 
 /**

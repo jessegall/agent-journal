@@ -7,7 +7,7 @@ namespace Domain\Plans\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Support\ActorIdentity;
 use App\Values\PublishedResult;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

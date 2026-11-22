@@ -7,7 +7,7 @@ namespace Domain\Tasks\Commands\ResumeTaskRun;
 use App\Attributes\Authorize;
 use App\Attributes\RepeatableRead;
 use App\Attributes\RetainedActorRequestKey;
-use App\Contracts\RecordCommand;
+use App\Contracts\Bus\RecordCommand;
 use App\Enums\AccessType;
 use App\Support\Command;
 use Domain\Tasks\Models\Task;

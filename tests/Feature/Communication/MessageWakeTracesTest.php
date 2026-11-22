@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\AskMessage\AskMessageCommand;
 use App\Commands\DisableSettingGroup\DisableSettingGroupCommand;
-use App\Contracts\ConversationResolver;
+use App\Contracts\Chat\ConversationResolver;
 use App\Enums\DriverOperation;
 use App\Enums\RequestProgress;
 use App\Models\AgentRuntime;

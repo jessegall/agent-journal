@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Support\AgentClientSettings;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;

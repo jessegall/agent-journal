@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\CreateAgent;
 
-use App\Contracts\ActorProvisioning;
-use App\Contracts\CommandHandler;
+use App\Contracts\Actors\ActorProvisioning;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\Agent;
 use App\Support\ActorIdentity;
 

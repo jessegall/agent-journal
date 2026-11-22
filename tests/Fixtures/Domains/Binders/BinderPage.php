@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Domains\Binders;
 
 use App\Support\RecordIdentity;
-use App\Contracts\Shareable;
+use App\Contracts\Sharing\Shareable;
 use App\Support\ShareRelationSet;
 
 final class BinderPage implements Shareable

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Contracts\Files;
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Files\Files;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Declarations\DomainUi;
 use App\Declarations\Page;
 use App\Enums\Icon;

@@ -6,8 +6,8 @@ namespace Tests\Feature\Profiles;
 
 use App\Commands\CompleteSignIn\CompleteSignInCommand;
 use App\Commands\SubmitSignInCode\SubmitSignInCodeCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\CommandEntry;
 use App\Enums\SignInMethod;
 use App\Enums\SignInState;

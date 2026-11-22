@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\CreateDesk\CreateDeskCommand;
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\ConversationResolver;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Chat\ConversationResolver;
 use App\Events\PageChanged;
 use App\Models\DeskRecord;
 use App\Models\DeskSeat;

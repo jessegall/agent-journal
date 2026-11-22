@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Desks;
 
-use App\Contracts\ActorDesks;
-use App\Contracts\AssignmentDestinationResolver;
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\InboxDestinationResolver;
-use App\Contracts\InboxResolver;
+use App\Contracts\Assignments\AssignmentDestinationResolver;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Chat\ActorDesks;
+use App\Contracts\Chat\InboxDestinationResolver;
+use App\Contracts\Chat\InboxResolver;
 use App\Models\Agent;
 use App\Models\DeskRecord;
 use App\Support\ActorIdentity;

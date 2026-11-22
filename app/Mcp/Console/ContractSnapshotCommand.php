@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Console;
 
-use App\Contracts\Files;
+use App\Contracts\Files\Files;
 use App\Enums\Place;
 use App\Exceptions\FileUnwritable;
 use App\Mcp\Support\ContractSnapshot;

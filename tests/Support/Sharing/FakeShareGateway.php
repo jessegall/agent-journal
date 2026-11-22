@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Sharing;
 
-use App\Contracts\ShareGateway;
+use App\Contracts\Sharing\ShareGateway;
 use App\Exceptions\GatewayOpenFailed;
 use App\Support\GatewayConfiguration;
 use App\Support\GatewayEndpoint;

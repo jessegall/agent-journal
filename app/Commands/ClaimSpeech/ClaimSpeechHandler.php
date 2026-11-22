@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ClaimSpeech;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\SpeechAllowance;
 use Carbon\CarbonImmutable;
 

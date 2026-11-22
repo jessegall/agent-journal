@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers\Support;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use App\Data\MessageView;
 use App\Exceptions\MessageMissing;
 use App\Support\ActorIdentity;

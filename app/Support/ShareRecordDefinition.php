@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Shareable;
-use App\Contracts\ShareRecordProvider;
+use App\Contracts\Sharing\Shareable;
+use App\Contracts\Sharing\ShareRecordProvider;
 
 /**
  * One shareable record type a domain registers: its link alias, its model, the provider that reads it and the

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ServerClock;
+use App\Contracts\Time\ServerClock;
 use App\Enums\ActorType;
 use App\Exceptions\ActiveActorsUnavailable;
 use App\Values\ActiveActorsSnapshot;

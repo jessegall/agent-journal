@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\SaveCommandRule;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\ProposalState;
 use App\Exceptions\ApprovalRefused;
 use App\Models\RuleRevision;

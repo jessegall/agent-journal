@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Plans\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\ActorWorkStacks;
-use App\Contracts\Listener;
+use App\Contracts\Actors\ActorWorkStacks;
+use App\Contracts\Events\Listener;
 use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Support\States\Support\WorkingOnPlanStateReference;
 

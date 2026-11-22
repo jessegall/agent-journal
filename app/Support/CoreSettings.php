@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\SettingsDefinition;
+use App\Contracts\Settings\SettingsDefinition;
 use App\Declarations\BooleanSetting;
 use App\Declarations\SettingGroup;
 use App\Declarations\StringSetting;

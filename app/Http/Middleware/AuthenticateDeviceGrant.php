@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Contracts\Actor;
-use App\Contracts\ActorResolver;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Actors\ActorResolver;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Exceptions\ActorUnavailable;
 use App\Exceptions\DeviceGrantRefused;
 use App\Models\DeviceGrant;

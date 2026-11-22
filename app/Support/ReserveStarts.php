@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\StartReservations;
+use App\Contracts\Sessions\StartReservations;
 use App\Exceptions\AgentNotAvailable;
 use App\Exceptions\AgentReservedForReview;
 use App\Models\Agent;

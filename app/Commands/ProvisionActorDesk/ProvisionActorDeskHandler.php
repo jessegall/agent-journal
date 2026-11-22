@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\ProvisionActorDesk;
 
-use App\Contracts\ActorProvisioning;
-use App\Contracts\CommandHandler;
+use App\Contracts\Actors\ActorProvisioning;
+use App\Contracts\Bus\CommandHandler;
 
 final readonly class ProvisionActorDeskHandler implements CommandHandler
 {

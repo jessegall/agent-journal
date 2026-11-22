@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Commands\RevokeProjectBindings\RevokeProjectBindingsCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Http\Responses\PageActionAnswers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

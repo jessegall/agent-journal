@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\AccountUses;
-use App\Contracts\PageResolver;
+use App\Contracts\Accounts\AccountUses;
+use App\Contracts\Navigation\PageResolver;
 use App\Data\Profiles\StartAccountData;
 use App\Exceptions\AccountUseMissing;
 use App\Http\Requests\Profiles\StartAccountPageRequest;

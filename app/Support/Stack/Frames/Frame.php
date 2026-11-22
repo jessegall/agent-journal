@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Stack\Frames;
 
-use App\Contracts\ConditionalState;
-use App\Contracts\Event;
-use App\Contracts\OwnValuesState;
+use App\Contracts\Events\Event;
+use App\Contracts\Work\ConditionalState;
+use App\Contracts\Work\OwnValuesState;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\References\StateReference;
 use App\Support\States\AgentState;

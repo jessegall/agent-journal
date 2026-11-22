@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Settings;
 
-use App\Contracts\Command;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandBus;
 use App\Models\SettingsRecord;
 use App\Values\SettingsChange;
 use Closure;

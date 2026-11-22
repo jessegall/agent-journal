@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Contracts\DriverCompatibilities;
+use App\Contracts\Drivers\DriverCompatibilities;
 use App\Enums\DriverEvidence;
 use App\Enums\SignInMethod;
 use App\Enums\TransportProfileType;

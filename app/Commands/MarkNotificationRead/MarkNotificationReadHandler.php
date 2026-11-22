@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\MarkNotificationRead;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\NotificationUnavailable;
 use App\Models\NotificationReceipt;
 use App\Support\ActorIdentity;

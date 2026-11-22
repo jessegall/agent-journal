@@ -6,7 +6,7 @@ namespace App\Calls\Assignments;
 
 use App\Attributes\Endpoint;
 use App\Calls\Assignments\Concerns\NamesAssignedRecord;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Data\Assignments\RecordHolderData;
 use App\Enums\CallEffect;
 use Spatie\LaravelData\Attributes\MapName;

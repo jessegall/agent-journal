@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Commands\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
-use App\Contracts\AssigneeLocks;
-use App\Contracts\AssignmentDestinationResolver;
-use App\Contracts\AssignmentProviders;
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\MaintenanceAdmission;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Admission\MaintenanceAdmission;
+use App\Contracts\Assignments\AssigneeLocks;
+use App\Contracts\Assignments\AssignmentDestinationResolver;
+use App\Contracts\Assignments\AssignmentProviders;
+use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Policies\AssignmentRecipientPolicy;
 
 /**

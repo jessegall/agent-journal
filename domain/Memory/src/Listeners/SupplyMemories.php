@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Listeners;
 
-use App\Contracts\Listener;
+use App\Contracts\Events\Listener;
 use App\Events\ContextStarted;
 use Domain\Memory\Support\AgentMemories;
 

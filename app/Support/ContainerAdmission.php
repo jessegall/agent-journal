@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DockerImageVerifier;
-use App\Contracts\HostCapabilities;
+use App\Contracts\Hosts\DockerImageVerifier;
+use App\Contracts\Hosts\HostCapabilities;
 use App\Enums\AccountModeType;
 use App\Enums\ExecutionModeType;
 use App\Enums\HostCapabilityType;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Contracts\PolicyCatalogue;
+use App\Contracts\Authorization\PolicyCatalogue;
 use App\Support\BuiltInAuthorizations;
 use App\Values\ProfileBase;
 use Tests\TestCase;

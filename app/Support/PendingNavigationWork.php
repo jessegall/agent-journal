@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\MainDesk;
-use App\Contracts\PendingWorkSource;
+use App\Contracts\Chat\MainDesk;
+use App\Contracts\Work\PendingWorkSource;
 
 /**
  * Counts the open navigation requests waiting for an actor: those the main desk holds, for the actor seated there.

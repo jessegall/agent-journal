@@ -120,7 +120,7 @@ The app shell (`AppSidebarLayout`) owns the tab's one connection through `useLiv
 
 ## Interfaces at the seams (task 122, rule 15)
 
-- **Actor.** `App\Contracts\Actor` (its type and id) is what the core talks to. The Access `User` is a user actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.
+- **Actor.** `App\Contracts\Actors\Actor` (its type and id) is what the core talks to. The Access `User` is a user actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.
 - **Access policy.** `AuthenticateUser` asks `JournalAccessPolicy::allows(Actor)`, bound to `JournalAccess` with `#[Bind]`. Only a user actor whose id is the owner's is let in.
 - **Task progress.** Plans reads progress through `Domain\Tasks\Contracts\TaskProgressCounter`, an interface Tasks exports and binds to `TaskCounts` with `#[Bind]`; Plans names no Tasks service class.
 
@@ -145,5 +145,5 @@ Plan 7 replaced the Web-owned pages described in the sections above (tasks 104, 
 - **Props.** A page of its own gets `page`, each section of its slots as a deferred `section_<slot>_<section>` prop, and `inspector` when `?inspect=<page key>` names a record page; Home gets one optional `window_<key>` prop per window. Each is a result (`ready` with the reader's Data, `failed` with a neutral message, `denied` with nothing) and runs its visibility checks before any reader, on full and partial requests alike.
 - **Queries.** A window's links change only its own part of Home's query, `window[<page key>][...]` (`useWindowQuery`); on its own page the query is plain. The chosen agent session is the top-level `session`, read by sections that take a session.
 - **Generated files.** `php artisan journal:ui-manifest` (first step of `npm run types:generate`) writes the component manifest, `tsconfig.domains.json`, `vite.domains.ts`, the Tailwind sources, the page prop types and checks, `domain-roots.json` and `bootstrap/cache/ui-components.php`; Wayfinder writes `resources/js/routes/<domain>`; `typescript:transform` writes each owner's types to `resources/js/generated/types/<owner>`.
-- **Live updates.** Every fact that changes what users see implements `App\Contracts\UserInterfaceUpdater`; Web's one listener turns it into `PageChanged`. The browser reloads only the props on screen, the navigation and its counts, and the inspector when open.
+- **Live updates.** Every fact that changes what users see implements `App\Contracts\Navigation\UserInterfaceUpdater`; Web's one listener turns it into `PageChanged`. The browser reloads only the props on screen, the navigation and its counts, and the inspector when open.
 - **Imports.** `npm run imports:check` (part of build, check and the type check) refuses a domain component that imports another domain's code, the shell or a path it cannot prove local.

@@ -7,7 +7,7 @@ namespace App\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Exceptions\ProfileDraftRefused;
 use App\Values\ProfileKey;
 use App\Values\ScriptSource;

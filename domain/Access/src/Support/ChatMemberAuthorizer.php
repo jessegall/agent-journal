@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\Authorizer;
-use App\Contracts\ChatMemberPolicies;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Authorization\Authorizer;
+use App\Contracts\Chat\ChatMemberPolicies;
 use App\Enums\AccessType;
 use Illuminate\Auth\Access\Response;
 

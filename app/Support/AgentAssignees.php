@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Assignee;
-use App\Contracts\AssigneeProvider;
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Assignments\Assignee;
+use App\Contracts\Assignments\AssigneeProvider;
 use App\Exceptions\AgentNotAvailable;
 use App\Exceptions\AssigneeUnavailable;
 use App\Models\Agent;

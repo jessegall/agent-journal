@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Contracts\ChatParticipationEnding;
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Chat\ChatParticipationEnding;
 use App\Enums\ChatPermission;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;

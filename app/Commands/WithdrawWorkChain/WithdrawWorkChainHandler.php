@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\WithdrawWorkChain;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\RecordResolver;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Records\RecordResolver;
 use App\Enums\WorkChainEnding;
 use App\Models\CodeReview;
 use App\Support\WorkChainEnd;

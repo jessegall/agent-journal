@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\ReferenceRecognizer;
-use App\Contracts\SearchProvider;
+use App\Contracts\Records\ReferenceRecognizer;
+use App\Contracts\Search\SearchProvider;
 use App\Support\Searchable;
 use Illuminate\Contracts\Container\Container;
 

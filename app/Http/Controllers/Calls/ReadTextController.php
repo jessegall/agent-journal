@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Calls;
 
 use App\Calls\Text\ReadTextCall;
-use App\Contracts\RecordResolver;
-use App\Contracts\TextResolver;
+use App\Contracts\Reads\TextResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Support\RecordReference;
 use App\Support\TextPart;
 

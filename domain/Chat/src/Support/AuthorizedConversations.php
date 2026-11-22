@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\InboxResolver;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Chat\InboxResolver;
 use App\Exceptions\InboxUnavailable;
 use Domain\Chat\Exceptions\ConversationUnavailable;
 use Domain\Chat\Models\Conversation;

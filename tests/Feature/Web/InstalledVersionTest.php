@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Contracts\InstalledVersion;
+use App\Contracts\Drivers\InstalledVersion;
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Support\InstalledVersion as CachedVersion;
 use Illuminate\Http\Request;

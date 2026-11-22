@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
-use App\Contracts\ActorLabels;
-use App\Contracts\DeclaredPages;
-use App\Contracts\NotificationTargetResolver;
+use App\Contracts\Actors\ActorLabels;
+use App\Contracts\Chat\NotificationTargetResolver;
+use App\Contracts\Navigation\DeclaredPages;
 use App\Data\NotificationLink;
 use App\Support\ActorIdentity;
 use Domain\Documents\Models\Report;

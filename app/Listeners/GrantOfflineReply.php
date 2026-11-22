@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Contracts\Listener;
-use App\Contracts\ProfileResolver;
+use App\Contracts\Events\Listener;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Events\StartGrantRequested;
 use App\Models\AgentSession;
 use App\Values\ProfileKey;

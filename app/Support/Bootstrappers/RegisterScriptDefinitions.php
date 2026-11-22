@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support\Bootstrappers;
 
-use App\Contracts\DomainBootstrapper;
-use App\Contracts\ScriptKeywordProvider;
-use App\Contracts\ScriptKeywordRegistration;
-use App\Contracts\ScriptObjectProvider;
-use App\Contracts\ScriptObjectRegistration;
+use App\Contracts\Domains\DomainBootstrapper;
+use App\Contracts\Scripts\ScriptKeywordProvider;
+use App\Contracts\Scripts\ScriptKeywordRegistration;
+use App\Contracts\Scripts\ScriptObjectProvider;
+use App\Contracts\Scripts\ScriptObjectRegistration;
 use App\Support\DomainEntry;
 
 final readonly class RegisterScriptDefinitions implements DomainBootstrapper

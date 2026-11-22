@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\RecordResolver;
-use App\Contracts\RecordSearch;
+use App\Contracts\Records\RecordResolver;
+use App\Contracts\Search\RecordSearch;
 use App\Enums\ScoreTier;
 use App\Enums\SearchStatus;
 use App\Exceptions\SearchBatchInvalid;

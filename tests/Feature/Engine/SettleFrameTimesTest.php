@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Engine;
 
 use App\Commands\SettleFrameTimes\SettleFrameTimesCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Exceptions\EngineAccessRefused;
 use App\Models\Agent;
 use App\Models\AgentStackRow;

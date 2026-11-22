@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax\CommandReaders;
 
-use App\Contracts\CommandReader;
+use App\Contracts\Bus\CommandReader;
 use App\Exceptions\ShellGrammarStopped;
 use App\Pipelines\ReadKeywordFunctionPipeline;
 use App\Pipelines\ReadNamedFunctionPipeline;

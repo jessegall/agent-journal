@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ProgramClassifier;
+use App\Contracts\Processes\ProgramClassifier;
 use App\Values\ProgramIdentity;
 
 /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Contracts\Command;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandInputInvalid;
 use Domain\Plans\Commands\AddPhase\AddPhaseCommand;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;

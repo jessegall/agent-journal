@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\ShellCommandParser;
-use App\Contracts\StartTransaction;
+use App\Contracts\Processes\ShellCommandParser;
+use App\Contracts\Sessions\StartTransaction;
 use App\Support\DefaultDrivers;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;

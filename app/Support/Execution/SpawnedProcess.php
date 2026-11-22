@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Contracts\StopSignal;
+use App\Contracts\Processes\StopSignal;
 use App\Enums\OutputStream;
 use App\Values\PartEnd;
 

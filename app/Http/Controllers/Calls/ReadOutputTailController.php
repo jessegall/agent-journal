@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\OutputTail;
 use App\Calls\Processes\ReadOutputTailCall;
 use App\Commands\RecordEvidenceReads\RecordEvidenceReadsCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\EvidenceSource;
 use App\Models\ProcessRun;
 use App\Support\StoredOutput;

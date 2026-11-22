@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support\Storage;
 
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\AutoAssignmentAccess;
-use App\Contracts\AutoAssignmentResolver;
-use App\Contracts\AutoAssignmentWriter;
-use App\Contracts\CurrentActor;
-use App\Contracts\ServerClock;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Assignments\AutoAssignmentAccess;
+use App\Contracts\Assignments\AutoAssignmentResolver;
+use App\Contracts\Assignments\AutoAssignmentWriter;
+use App\Contracts\Time\ServerClock;
 use App\Exceptions\AutoAssignmentMissing;
 use App\Exceptions\AutoAssignmentRevisionChanged;
 use App\Models\AutoAssignment;

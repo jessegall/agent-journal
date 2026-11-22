@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Contracts;
 
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 
 /**
  * The fact a RaisingRow raises when a required listener notes it.

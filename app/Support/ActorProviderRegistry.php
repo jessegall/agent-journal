@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\ActorLabelProvider;
-use App\Contracts\ActorLabels;
-use App\Contracts\ActorProvider;
-use App\Contracts\ActorProviderRegistration;
-use App\Contracts\ActorResolver;
-use App\Contracts\ActorVisibility;
-use App\Contracts\ActorVisibilityProvider;
-use App\Contracts\CurrentActor;
-use App\Contracts\WorkStackProvider;
-use App\Contracts\WorkStacks;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Actors\ActorLabelProvider;
+use App\Contracts\Actors\ActorLabels;
+use App\Contracts\Actors\ActorProvider;
+use App\Contracts\Actors\ActorProviderRegistration;
+use App\Contracts\Actors\ActorResolver;
+use App\Contracts\Actors\ActorVisibility;
+use App\Contracts\Actors\ActorVisibilityProvider;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Work\WorkStackProvider;
+use App\Contracts\Work\WorkStacks;
 use App\Enums\ActorType;
 use App\Exceptions\ActorProviderMissing;
 use App\Exceptions\ActorProviderRepeated;

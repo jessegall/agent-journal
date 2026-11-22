@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\RecordNoteEffect;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use Tests\Fixtures\Modules\Notes\Commands\RecordNoteEffect\RecordNoteEffectCommand;
 use Tests\Fixtures\Modules\Notes\Support\NoteEffects;
 

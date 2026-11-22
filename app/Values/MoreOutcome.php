@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\BatchOutcome;
+use App\Contracts\Bus\BatchOutcome;
 
 /**
  * The source certifies that every hit it returned precedes all hits it has left, and seeks on from the next seek.

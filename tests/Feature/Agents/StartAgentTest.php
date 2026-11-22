@@ -6,10 +6,10 @@ namespace Tests\Feature\Agents;
 
 use App\Commands\RetireAgent\RetireAgentCommand;
 use App\Commands\StartAgent\StartAgentCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\DriverCatalogue;
-use App\Contracts\ServerClock;
-use App\Contracts\StartHeartbeats;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Sessions\StartHeartbeats;
+use App\Contracts\Time\ServerClock;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverOperation;
 use App\Enums\DriverVariant;

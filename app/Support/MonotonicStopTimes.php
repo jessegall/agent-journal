@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\MonotonicClock;
-use App\Contracts\StopTime;
-use App\Contracts\StopTimes;
+use App\Contracts\Processes\StopTime;
+use App\Contracts\Processes\StopTimes;
+use App\Contracts\Time\MonotonicClock;
 
 final readonly class MonotonicStopTimes implements StopTimes
 {

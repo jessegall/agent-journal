@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Commands\HandOffCodeReview\HandOffCodeReviewCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\EngineListener;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Events\EngineListener;
 use App\Events\EngineTicked;
 use App\Models\WorkReservation;
 use Throwable;

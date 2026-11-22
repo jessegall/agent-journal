@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\AssignmentRegistration;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\ShellCommandParser;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Assignments\AssignmentRegistration;
+use App\Contracts\Processes\ShellCommandParser;
 use App\CoreApi;
 use App\Support\ActorStore;
 use App\Support\DomainRegistry;
@@ -43,8 +43,8 @@ final class BindingRulesTest extends TestCase
     private const array ACTOR_SITES = [
         'app/Support/ActorStore.php',
         'app/Providers/ActorsServiceProvider.php',
-        'app/Contracts/CurrentActor.php',
-        'app/Contracts/CurrentActorSetter.php',
+        'app/Contracts/Actors/CurrentActor.php',
+        'app/Contracts/Actors/CurrentActorSetter.php',
         'app/CoreApi.php',
         'app/Http/Middleware/Agents/AuthenticateAgent.php',
         'app/Http/Middleware/Agents/AuthenticateHost.php',
@@ -62,7 +62,7 @@ final class BindingRulesTest extends TestCase
      * the registry, Core's composition root and export list, its area providers, and the domain foundation.
      */
     private const array ASSIGNMENT_REGISTRATION_SITES = [
-        'app/Contracts/AssignmentRegistration.php',
+        'app/Contracts/Assignments/AssignmentRegistration.php',
         'app/Support/Registry/AssignmentRegistry.php',
         'app/Providers/AssignmentsServiceProvider.php',
         'app/Providers/AgentsServiceProvider.php',
@@ -104,7 +104,7 @@ final class BindingRulesTest extends TestCase
             'PlansServiceProvider.php:18 binds Tests\\Fixtures\\Bindings\\Plans\\Contracts\\PlanResolver, but Tests\\Fixtures\\Bindings\\Plans\\PlanNotes does not implement it',
             "PlansServiceProvider.php:19 binds Tests\\Fixtures\\Bindings\\Tasks\\Contracts\\TaskResolver, but Tasks owns it; only Core's public contracts are filled by another owner",
             'PlansServiceProvider.php:20 binds Tests\\Fixtures\\Bindings\\Plans\\Contracts\\PlanCounter, but the target Tests\\Fixtures\\Bindings\\Tasks\\TaskList belongs to Tasks',
-            'PlanCounts.php:11 binds Tests\\Fixtures\\Bindings\\Plans\\PlanCounts, but the singleton Tests\\Fixtures\\Bindings\\Plans\\PlanCounts keeps the per-request App\\Contracts\\CurrentActor beyond its request',
+            'PlanCounts.php:11 binds Tests\\Fixtures\\Bindings\\Plans\\PlanCounts, but the singleton Tests\\Fixtures\\Bindings\\Plans\\PlanCounts keeps the per-request App\\Contracts\\Actors\\CurrentActor beyond its request',
         ], array_map(
             fn (Violation $violation) => basename($violation->file).":{$violation->line} {$violation->reason()}",
             $violations,

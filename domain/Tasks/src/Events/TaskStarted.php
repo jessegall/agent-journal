@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Events;
 
 use App\Attributes\RequiresListener;
-use App\Contracts\Event;
+use App\Contracts\Events\Event;
 use App\Support\ActorIdentity;
 use Domain\Tasks\Enums\TaskState;
 

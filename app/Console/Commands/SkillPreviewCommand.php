@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Contracts\SkillResolver;
+use App\Contracts\Skills\SkillResolver;
 use App\Data\SkillAgentSelection;
 use App\Exceptions\SkillAgentHidden;
 use App\Exceptions\SkillConditionInvalid;

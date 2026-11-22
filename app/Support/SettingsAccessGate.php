@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\SettingsAccessPolicy;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Settings\SettingsAccessPolicy;
 use App\Exceptions\SettingsAccessDenied;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Exceptions\DockDefinitionInvalid;
 use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\Contracts\DockableProvider;

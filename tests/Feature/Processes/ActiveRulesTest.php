@@ -7,7 +7,7 @@ namespace Tests\Feature\Processes;
 use App\Commands\ApproveRuleBundle\ApproveRuleBundleCommand;
 use App\Commands\ApproveRuleProposal\ApproveRuleProposalCommand;
 use App\Commands\SaveCommandRule\SaveCommandRuleCommand;
-use App\Contracts\CommandClassifier;
+use App\Contracts\Bus\CommandClassifier;
 use App\Enums\CommandClass;
 use App\Enums\ShellDialect;
 use App\Exceptions\ApprovalRefused;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers\Adapters;
 
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Exceptions\HookProtocolUnknown;
 use App\Support\Drivers\Contracts\DriverAdapter;
 use App\Support\Drivers\Contracts\DriverAdapters;

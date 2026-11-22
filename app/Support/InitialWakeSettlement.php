@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Commands\ReportRequestProgress\ReportRequestProgressCommand;
-use App\Contracts\StartTransaction;
+use App\Contracts\Sessions\StartTransaction;
 use App\Enums\HostWakeRefusal;
 use App\Models\AgentRuntime;
 use App\Models\AgentSession;

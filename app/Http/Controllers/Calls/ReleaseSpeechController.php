@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Communication\MessageNamed;
 use App\Calls\Communication\ReleaseSpeechCall;
 use App\Commands\ReleaseSpeech\ReleaseSpeechCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Gives up your claim on a turn to speak.

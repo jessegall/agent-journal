@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\SubmitWorktreeDelivery;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\DeliveryRefused;
 use App\Models\ChildClaim;
 use App\Models\ProjectBinding;

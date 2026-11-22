@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Policies;
 
-use App\Contracts\Policy;
+use App\Contracts\Authorization\Policy;
 use Domain\Tasks\Models\Task;
 
 /**

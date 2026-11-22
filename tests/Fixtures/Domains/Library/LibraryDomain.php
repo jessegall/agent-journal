@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Domains\Library;
 
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\SettingsProvider;
+use App\Contracts\Settings\SettingsProvider;
 
 final class LibraryDomain extends Domain implements SettingsProvider
 {

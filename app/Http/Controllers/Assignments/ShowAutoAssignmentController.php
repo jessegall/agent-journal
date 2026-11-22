@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Assignments;
 
-use App\Contracts\AutoAssignmentResolver;
+use App\Contracts\Assignments\AutoAssignmentResolver;
 use App\Data\Assignments\AutoAssignmentStatusData;
 use App\Http\Requests\Assignments\ShowAutoAssignmentRequest;
 use Illuminate\Http\JsonResponse;

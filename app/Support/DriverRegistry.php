@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandBus;
-use App\Contracts\Driver;
-use App\Contracts\DriverCapabilities;
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Drivers\Driver;
+use App\Contracts\Drivers\DriverCapabilities;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverVariant;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverFamilyRegisteredTwice;

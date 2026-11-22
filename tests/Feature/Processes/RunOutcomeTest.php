@@ -6,7 +6,7 @@ namespace Tests\Feature\Processes;
 
 use App\Commands\RevokeRunOutcomeAccess\RevokeRunOutcomeAccessCommand;
 use App\Commands\RevokeRunOutcomeAccess\RevokeRunOutcomeAccessHandler;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\ActorType;
 use App\Enums\RunEventType;
 use App\Enums\RunLogicalResult;

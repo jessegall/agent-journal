@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\TypeReflections;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Reflection\TypeReflections;
 use App\Enums\AccessType;
 use App\Exceptions\ActorNotAllowed;
 use Domain\Documents\Models\Document;

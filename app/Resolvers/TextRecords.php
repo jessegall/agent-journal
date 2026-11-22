@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\RecordResolver;
-use App\Contracts\TextContent;
-use App\Contracts\TextResolver;
+use App\Contracts\Reads\TextContent;
+use App\Contracts\Reads\TextResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Data\TextSections;
 use App\Data\TextVersionSummary;
 use App\Exceptions\TargetHasNoText;

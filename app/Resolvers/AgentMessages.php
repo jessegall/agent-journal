@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\AgentMessageReader;
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentSession;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Chat\AgentMessageReader;
+use App\Contracts\Sessions\CurrentSession;
 use App\Data\AgentChatPart;
 use App\Data\AgentInbox;
 use App\Data\AgentInboxCounts;

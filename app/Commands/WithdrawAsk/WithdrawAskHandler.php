@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\WithdrawAsk;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\JournalAssignmentWriter;
+use App\Contracts\Assignments\JournalAssignmentWriter;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\AskRefused;
 use App\Support\ActorIdentity;
 use App\Support\AskRecords;

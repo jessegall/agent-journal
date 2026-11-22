@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Delivery;
 
-use App\Contracts\Command;
-use App\Contracts\Event;
-use App\Contracts\ListenerFailureLog;
+use App\Contracts\Bus\Command;
+use App\Contracts\Events\Event;
+use App\Contracts\Events\ListenerFailureLog;
 use App\Declarations\Exceptions\StateEventMethodUnregistered;
 use App\Declarations\StateEvents;
 use App\Declarations\StateMethod;

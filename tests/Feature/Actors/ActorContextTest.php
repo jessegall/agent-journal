@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\ActorType;
 use App\Exceptions\ActorContextMissing;
 use App\Support\ActorContext;

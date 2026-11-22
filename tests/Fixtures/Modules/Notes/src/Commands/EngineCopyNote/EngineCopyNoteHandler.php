@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote;
 
-use App\Contracts\CommandBus;
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandHandler;
 use Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote\EngineCopyNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 

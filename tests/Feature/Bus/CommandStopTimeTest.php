@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Bus;
 
 use App\CommandMiddleware\RunInTransaction;
-use App\Contracts\StopTime;
+use App\Contracts\Processes\StopTime;
 use App\Exceptions\StackLockTimedOut;
 use App\Support\CommandCall;
 use App\Support\CommandStops;

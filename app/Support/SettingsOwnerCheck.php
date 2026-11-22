@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\SettingsAccessPolicy;
-use App\Contracts\VisibilityCheck;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Authorization\VisibilityCheck;
+use App\Contracts\Settings\SettingsAccessPolicy;
 
 /**
  * Shows the settings page and its actions to the actor the settings access policy lets in, which is the owner.

@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Agents;
 
 use Illuminate\Container\Container;
 use App\Values\PinnedDriver;
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Values\StartRequest;
 use App\Enums\ExecutionModeType;
 use App\Values\ExecutionBudgets;

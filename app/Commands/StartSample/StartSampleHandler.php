@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\StartSample;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\RequestState;
 use App\Exceptions\EvidencePermitRefused;
 use App\Exceptions\RequestTransitionRefused;

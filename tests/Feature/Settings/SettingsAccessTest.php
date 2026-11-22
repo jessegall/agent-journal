@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Contracts\Actor;
-use App\Contracts\SettingsAccessPolicy;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Settings\SettingsAccessPolicy;
 use App\Exceptions\SettingsAccessDenied;
 use App\Models\Agent;
 use App\Providers\SettingsServiceProvider;

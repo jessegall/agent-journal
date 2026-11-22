@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\BatchOutcome;
+use App\Contracts\Bus\BatchOutcome;
 
 /**
  * The source examined the whole remaining range: the hits it returned are all it has left.

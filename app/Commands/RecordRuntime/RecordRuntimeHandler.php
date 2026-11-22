@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RecordRuntime;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\DriverRequests;
 use App\Values\DriverReceipt;
 use App\Values\DriverRequestPayload;

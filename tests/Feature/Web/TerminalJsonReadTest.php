@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Contracts\ServerClock;
+use App\Contracts\Time\ServerClock;
 use App\Data\ScreenFrameData;
 use App\Enums\RefusalCode;
 use App\Enums\TerminalFrameState;

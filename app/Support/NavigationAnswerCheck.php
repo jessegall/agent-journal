@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\JournalAdmission;
-use App\Contracts\MainDesk;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Chat\MainDesk;
 use App\Exceptions\NavigationAnswerRefused;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Models\NavigationRequest;

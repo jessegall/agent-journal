@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\CreateDocument;
 
-use App\Contracts\RecordLinker;
-use App\Contracts\SessionProvenance;
+use App\Contracts\Records\RecordLinker;
+use App\Contracts\Sessions\SessionProvenance;
 use App\Support\MarkdownText;
 use Domain\Documents\Commands\Support\DocumentCommandHandler;
 use Domain\Documents\Enums\UploadType;

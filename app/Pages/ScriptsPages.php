@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
-use App\Contracts\PageProvider;
-use App\Contracts\TypeProvider;
+use App\Contracts\Navigation\PageProvider;
+use App\Contracts\Records\TypeProvider;
 use App\Data\FlowEdgeData;
 use App\Data\FlowGraphData;
 use App\Data\FlowNodeData;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\AssignmentWriter;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Assignments\AssignmentWriter;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 use App\Support\AssignmentResult;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reflection;
 
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Exceptions\QuestionNotNegatable;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\Reflector;

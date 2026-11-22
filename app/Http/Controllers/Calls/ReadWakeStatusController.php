@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Communication\ReadWakeStatusCall;
 use App\Calls\Communication\WakeStatuses;
-use App\Contracts\ConversationResolver;
+use App\Contracts\Chat\ConversationResolver;
 use App\Data\WakeStatus;
 
 /**

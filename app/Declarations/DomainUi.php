@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Contracts\MenuProvider;
-use App\Contracts\NativePartProvider;
-use App\Contracts\NavigationProvider;
-use App\Contracts\PageProvider;
-use App\Contracts\SectionProvider;
-use App\Contracts\SidebarGroupProvider;
-use App\Contracts\TypeProvider;
+use App\Contracts\Drivers\NativePartProvider;
+use App\Contracts\Navigation\MenuProvider;
+use App\Contracts\Navigation\NavigationProvider;
+use App\Contracts\Navigation\PageProvider;
+use App\Contracts\Navigation\SectionProvider;
+use App\Contracts\Navigation\SidebarGroupProvider;
+use App\Contracts\Records\TypeProvider;
 use App\Enums\Place;
 use App\Exceptions\FileMissing;
 use App\Exceptions\FileOutsidePlaces;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Commands\ActivateProfiles;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\PolicyCatalogue;
-use App\Contracts\ProfileResolver;
-use App\Contracts\ScriptCompilation;
-use App\Contracts\SupervisorDefinitions;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Processes\SupervisorDefinitions;
+use App\Contracts\Scripts\ScriptCompilation;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\ExecutionModeType;
 use App\Enums\ProfileChangeType;
 use App\Exceptions\GrantNotRegistered;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
-use App\Contracts\PageResolver;
-use App\Contracts\RecordMenus;
+use App\Contracts\Navigation\PageResolver;
+use App\Contracts\Navigation\RecordMenus;
 use App\Enums\ActionMethod;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;

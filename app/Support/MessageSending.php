@@ -6,10 +6,10 @@ namespace App\Support;
 
 use App\Commands\AskMessage\AskMessageCommand;
 use App\Commands\SendMessage\SendMessageCommand;
-use App\Contracts\AgentDirectory;
-use App\Contracts\CurrentSession;
-use App\Contracts\Inbox;
-use App\Contracts\InboxResolver;
+use App\Contracts\Chat\Inbox;
+use App\Contracts\Chat\InboxResolver;
+use App\Contracts\Sessions\AgentDirectory;
+use App\Contracts\Sessions\CurrentSession;
 use App\Exceptions\AnswerImpossible;
 use App\Exceptions\ChatInboxRefused;
 use App\Exceptions\InboxUnavailable;

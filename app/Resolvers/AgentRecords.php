@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\AgentDirectory;
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\ServerClock;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Sessions\AgentDirectory;
+use App\Contracts\Time\ServerClock;
 use App\Enums\AccessType;
 use App\Enums\AgentAction;
 use App\Enums\AgentPresence;

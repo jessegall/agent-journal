@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Processes;
 
-use App\Contracts\RunEvents;
+use App\Contracts\Events\RunEvents;
 use App\Enums\OutputStream;
 use App\Models\ProcessRun;
 use App\Values\PartEnd;

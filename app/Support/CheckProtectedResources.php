@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\SessionOutputAccess;
+use App\Contracts\Reads\SessionOutputAccess;
 use App\Support\Inputs\ProtectedFileRead;
 
 /**

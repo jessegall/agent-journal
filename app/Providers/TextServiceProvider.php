@@ -7,7 +7,7 @@ namespace App\Providers;
 use App\Console\Commands\TextReadCommand;
 use App\Console\Commands\TextSectionsCommand;
 use App\Console\Commands\TextVersionCommand;
-use App\Contracts\TextResolver;
+use App\Contracts\Reads\TextResolver;
 use App\Resolvers\TextRecords;
 use Illuminate\Support\ServiceProvider;
 

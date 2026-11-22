@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\ActorRunner;
-use App\Contracts\AuthoritySource;
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Actors\ActorRunner;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Authorization\AuthoritySource;
 use App\Exceptions\ActorContextMissing;
 use App\Values\TrustedEntryAuthority;
 use Closure;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Calls;
 
 use App\Calls\Assignments\ShowAssignmentCall;
-use App\Contracts\AssigneeResolver;
+use App\Contracts\Assignments\AssigneeResolver;
 use App\Data\Assignments\RecordHolderData;
 
 /**

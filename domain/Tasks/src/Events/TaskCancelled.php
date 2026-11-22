@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Tasks\Events;
 
 use App\Attributes\RequiresListener;
-use App\Contracts\Event;
-use App\Contracts\UserInterfaceUpdater;
+use App\Contracts\Events\Event;
+use App\Contracts\Navigation\UserInterfaceUpdater;
 use App\Support\Sources\Contracts\DockSourceChanged;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Agents\Host;
 
 use App\Commands\ClaimStart\ClaimStartCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\StartReportRequest;
 use App\Values\ChildCheckout;
 use App\Values\HostContext;

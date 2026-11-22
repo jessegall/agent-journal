@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Contracts\StartTokenSource;
+use App\Contracts\Sessions\StartTokenSource;
 use App\Support\OfflineReplySeal;
 use App\Support\Relay\HookRelay;
 use App\Support\Relay\RelaySettings;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Tasks\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\CurrentActor;
-use App\Contracts\Listener;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Events\Listener;
 use App\Support\ActorIdentity;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;

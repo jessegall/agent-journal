@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReadGrant;
-use App\Contracts\SearchAccess;
+use App\Contracts\Authorization\ReadGrant;
+use App\Contracts\Search\SearchAccess;
 use App\Values\AdmittedConstraints;
 use App\Values\AllowedNames;
 use App\Values\OpenAction;

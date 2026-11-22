@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Contracts\EnabledSettingsGroup;
-use App\Contracts\SettingsResolver;
+use App\Contracts\Settings\EnabledSettingsGroup;
+use App\Contracts\Settings\SettingsResolver;
 use App\Declarations\IntegerSetting;
 use App\Exceptions\GroupSnapshotRequired;
 use App\Exceptions\SettingHandleUnknown;

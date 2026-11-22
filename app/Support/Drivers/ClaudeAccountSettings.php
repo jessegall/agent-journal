@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Drivers;
 
-use App\Contracts\AccountSettingsFiller;
+use App\Contracts\Accounts\AccountSettingsFiller;
 use App\Support\AccountStartSettings;
 use App\Support\Compatibility\DriverCompatibility;
 

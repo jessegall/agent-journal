@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers\Calls;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Plans\Calls\AddPhaseCall;
 use Domain\Plans\Calls\PhaseNamed;
 use Domain\Plans\Commands\AddPhase\AddPhaseCommand;

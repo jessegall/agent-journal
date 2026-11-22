@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\JournalAssignmentWriter;
-use App\Contracts\SupervisorDispatch;
+use App\Contracts\Assignments\JournalAssignmentWriter;
+use App\Contracts\Processes\SupervisorDispatch;
 use App\Enums\AskRouteStatus;
 use App\Enums\SupervisorDispatchOutcome;
 use App\Models\Ask;

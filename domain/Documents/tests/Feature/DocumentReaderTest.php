@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ContinuationStale;
 use App\Mcp\Support\ToolArguments;

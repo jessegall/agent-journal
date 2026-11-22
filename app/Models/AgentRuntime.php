@@ -6,7 +6,7 @@ namespace App\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Data\RuntimeStatus;
 use App\Enums\DriverOperation;
 use App\Enums\DriverVariant;

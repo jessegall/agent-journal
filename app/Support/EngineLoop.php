@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\MonotonicClock;
-use App\Contracts\Sleeper;
-use App\Contracts\Watchdog;
+use App\Contracts\Processes\Watchdog;
+use App\Contracts\Time\MonotonicClock;
+use App\Contracts\Time\Sleeper;
 use App\Events\EngineTicked;
 use App\Support\Ticks\ElapsedTime;
 use Carbon\CarbonImmutable;

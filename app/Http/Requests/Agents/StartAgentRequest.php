@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Requests\Agents;
 
 use App\Commands\StartAgent\StartAgentCommand;
-use App\Contracts\BuiltInStartProfiles;
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Sessions\BuiltInStartProfiles;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;

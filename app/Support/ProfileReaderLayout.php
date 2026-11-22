@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ProfileResolver;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Models\Profile;
 use App\Support\Layout\DetailPage;
 use App\Support\Layout\LayoutPartData;

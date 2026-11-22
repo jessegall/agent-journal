@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\PendingWorkSource;
+use App\Contracts\Work\PendingWorkSource;
 use App\Models\Message;
 
 /**

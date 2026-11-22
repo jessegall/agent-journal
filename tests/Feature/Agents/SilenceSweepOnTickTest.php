@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Commands\MarkSilentSessions\MarkSilentSessionsCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\SessionStatus;
 use App\Enums\StackStatus;
 use App\Events\EngineTicked;

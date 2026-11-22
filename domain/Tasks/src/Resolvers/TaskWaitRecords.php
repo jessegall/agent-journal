@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Contracts\TaskResolver;

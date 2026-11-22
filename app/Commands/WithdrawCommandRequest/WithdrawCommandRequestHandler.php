@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\WithdrawCommandRequest;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\RequestTransitionRefused;
 use App\Models\CommandRequest;
 use App\Support\ActorIdentity;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CatalogueValue;
-use App\Contracts\GroupDeclaration;
-use App\Contracts\Setting;
-use App\Contracts\SettingsCatalogue;
+use App\Contracts\Navigation\GroupDeclaration;
+use App\Contracts\Settings\CatalogueValue;
+use App\Contracts\Settings\Setting;
+use App\Contracts\Settings\SettingsCatalogue;
 use App\Data\InvalidValueData;
 use App\Data\PlainGroupAvailabilityData;
 use App\Data\SettingData;

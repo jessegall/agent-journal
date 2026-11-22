@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Contracts\ChatEligibility;
-use App\Contracts\InboxResolver;
+use App\Contracts\Chat\ChatEligibility;
+use App\Contracts\Chat\InboxResolver;
 use App\Enums\ActorType;
 use App\Enums\ChatPermission;
 use App\Support\ActorIdentity;

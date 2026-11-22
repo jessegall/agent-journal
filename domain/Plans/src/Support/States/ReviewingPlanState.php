@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support\States;
 
-use App\Contracts\OwnValuesState;
+use App\Contracts\Work\OwnValuesState;
 use App\Events\HelperReportedOnRecord;
 use App\Events\HelperSentOnRecord;
 use App\Support\Decisions\Decision;

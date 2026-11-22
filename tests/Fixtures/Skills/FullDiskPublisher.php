@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Skills;
 
-use App\Contracts\SkillPublisher;
+use App\Contracts\Skills\SkillPublisher;
 use App\Exceptions\SkillPublicationFailed;
 
 /**

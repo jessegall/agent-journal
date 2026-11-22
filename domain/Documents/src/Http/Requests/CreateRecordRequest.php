@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Requests;
 
-use App\Contracts\RecordResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Support\RecordIdentity;
 use App\Support\RecordReference;
 use Illuminate\Foundation\Http\FormRequest;

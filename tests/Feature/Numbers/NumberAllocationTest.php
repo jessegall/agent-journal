@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Numbers;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\CommandTransactionMissing;
 use App\Exceptions\NumberChanged;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentSession;
-use App\Contracts\IdentityLinks;
-use App\Contracts\SessionPolicyReader;
-use App\Contracts\SessionProvenance as SessionProvenanceContract;
+use App\Contracts\Actors\IdentityLinks;
+use App\Contracts\Sessions\CurrentSession;
+use App\Contracts\Sessions\SessionPolicyReader;
+use App\Contracts\Sessions\SessionProvenance as SessionProvenanceContract;
 use App\Models\AgentSession;
 use App\Models\Link;
 use App\Values\Operation;

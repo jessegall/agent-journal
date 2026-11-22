@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Assignable;
-use App\Contracts\AssignableProvider;
+use App\Contracts\Assignments\Assignable;
+use App\Contracts\Assignments\AssignableProvider;
 use App\Exceptions\RecordUnavailable;
 use App\Models\NavigationRequest;
 

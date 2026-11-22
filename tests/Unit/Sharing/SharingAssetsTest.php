@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Sharing;
 
-use App\Contracts\Files;
+use App\Contracts\Files\Files;
 use App\Enums\Place;
 use App\Http\Responses\Sharing\SharingAssets;
 use App\Values\FilePath;

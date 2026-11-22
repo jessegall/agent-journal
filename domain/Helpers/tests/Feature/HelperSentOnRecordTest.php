@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Contracts\CommandBus;
-use App\Contracts\RecordVisibility;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Records\RecordVisibility;
 use App\Events\HelperSentOnRecord;
 use App\Support\RecordIdentity;
 use Domain\Helpers\Commands\StartHelper\StartHelperCommand;

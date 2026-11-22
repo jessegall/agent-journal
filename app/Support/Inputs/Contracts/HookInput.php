@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Inputs\Contracts;
 
-use App\Contracts\ConversationVisits;
-use App\Contracts\NativeTurnRecords;
+use App\Contracts\Drivers\NativeTurnRecords;
+use App\Contracts\Sessions\ConversationVisits;
 use App\Enums\AnswerType;
 use App\Enums\ContextStartType;
 use App\Support\Inputs\Values\HookIdentity;

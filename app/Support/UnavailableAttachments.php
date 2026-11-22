@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AttachmentReferences;
-use App\Contracts\MessagePart;
+use App\Contracts\Drivers\AttachmentReferences;
+use App\Contracts\Drivers\MessagePart;
 use App\Exceptions\DriverRequestRefused;
 
 /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Calls\Text;
 
 use App\Attributes\Endpoint;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Enums\CallEffect;
 use App\Support\TextPart;
 use App\Support\TextSelection;

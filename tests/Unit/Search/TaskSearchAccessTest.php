@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Search;
 
-use App\Contracts\ReadGrant;
+use App\Contracts\Authorization\ReadGrant;
 use App\Enums\AuthorizationType;
 use App\Enums\SearchSurface;
 use App\Exceptions\ReadGrantRefused;

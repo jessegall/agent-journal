@@ -6,9 +6,9 @@ namespace App\Listeners;
 
 use App\Commands\FailDriverSwitchLaunch\FailDriverSwitchLaunchCommand;
 use App\Commands\StartSwitchReplacement\StartSwitchReplacementCommand;
-use App\Contracts\CommandRefusal;
-use App\Contracts\JournalCommands;
-use App\Contracts\Listener;
+use App\Contracts\Bus\CommandRefusal;
+use App\Contracts\Bus\JournalCommands;
+use App\Contracts\Events\Listener;
 use App\Enums\CommandEntry;
 use App\Events\DriverSwitchStopped;
 

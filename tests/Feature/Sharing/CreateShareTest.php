@@ -6,7 +6,7 @@ namespace Tests\Feature\Sharing;
 
 use App\Commands\CreateShare\CreateShareCommand;
 use App\Commands\SaveSharePreview\SaveSharePreviewCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\GatewayOperationType;
 use App\Enums\ShareAuditType;
 use App\Enums\ShareState;

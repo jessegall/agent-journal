@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\ActorLabels;
-use App\Contracts\DriverCatalogue;
-use App\Contracts\PageResolver;
+use App\Contracts\Actors\ActorLabels;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Navigation\PageResolver;
 use App\Data\Connections\BindingListData;
 use App\Data\Connections\ConnectProjectWindowData;
 use App\Data\Connections\InstallAttemptListData;

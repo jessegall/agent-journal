@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Communication\AnswerMessageCall;
 use App\Calls\Communication\MessageNamed;
 use App\Commands\AnswerMessage\AnswerMessageCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 final readonly class AnswerMessageController
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\ReadMeter;
+use App\Contracts\Reads\ReadMeter;
 use App\Values\ReadCounts;
 
 /**

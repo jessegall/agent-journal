@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Contracts\Listener;
+use App\Contracts\Events\Listener;
 use App\Events\AccountCleaned;
 use App\Events\AccountCleanupRetried;
 use App\Events\AccountHeldForMaintenance;

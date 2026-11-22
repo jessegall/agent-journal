@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\HelperCommitImport;
-use App\Contracts\WorkRepair;
+use App\Contracts\Work\HelperCommitImport;
+use App\Contracts\Work\WorkRepair;
 use App\Enums\AskOriginType;
 use App\Enums\CoreAskType;
 use App\Enums\RepairRequestState;

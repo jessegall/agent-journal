@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Exceptions;
 
-use App\Contracts\CommandRefusal;
+use App\Contracts\Bus\CommandRefusal;
 use RuntimeException;
 
 final class SequenceMissing extends RuntimeException implements CommandRefusal

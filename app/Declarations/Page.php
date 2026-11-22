@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Contracts\PageOption;
-use App\Contracts\PageResolver;
-use App\Contracts\PresentsLayout;
-use App\Contracts\VisibilityCheck;
+use App\Contracts\Authorization\VisibilityCheck;
+use App\Contracts\Navigation\PageOption;
+use App\Contracts\Navigation\PageResolver;
+use App\Contracts\Navigation\PresentsLayout;
 use App\Enums\Icon;
 use App\Enums\PageDestination;
 use App\Enums\PageSkeleton;

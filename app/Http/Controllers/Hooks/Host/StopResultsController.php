@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Hooks\Host;
 
 use App\Commands\RecordStopResults\RecordStopResultsCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Hooks\StopResultsRequest;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;

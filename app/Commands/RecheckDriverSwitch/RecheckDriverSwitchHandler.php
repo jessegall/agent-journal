@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RecheckDriverSwitch;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\DriverSwitchStage;
 use App\Models\AgentRuntime;
 use App\Models\DriverSwitch;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
-use App\Contracts\Setting;
+use App\Contracts\Settings\Setting;
 use App\Declarations\ChoiceSetting;
 use App\Exceptions\SettingStorageInvalid;
 use App\Exceptions\SettingValueInvalid;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Communication\Concerns;
 
-use App\Contracts\Command;
-use App\Contracts\CommandBus;
-use App\Contracts\MessageCommand;
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\MessageCommand;
 use Illuminate\Http\JsonResponse;
 
 /**

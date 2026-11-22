@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Commands\AskSupervisor;
 
 use App\Commands\RouteAsk\RouteAskCommand;
-use App\Contracts\ActorWorkStacks;
-use App\Contracts\CommandBus;
-use App\Contracts\CommandHandler;
+use App\Contracts\Actors\ActorWorkStacks;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\AskOriginType;
 use App\Exceptions\AskRefused;
 use App\Models\Ask;

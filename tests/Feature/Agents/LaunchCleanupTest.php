@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Commands\ReportCleanup\ReportCleanupCommand;
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\CapacityResource;
 use App\Enums\CleanupState;
 use App\Enums\CleanupStep;

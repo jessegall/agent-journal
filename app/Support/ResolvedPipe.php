@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Pipe;
+use App\Contracts\Bus\Pipe;
 use App\Exceptions\ClassMissing;
 use App\Exceptions\NotAPipelineStep;
 use App\Exceptions\StepOutOfOrder;

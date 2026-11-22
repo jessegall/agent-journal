@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\RestoreActorDesk;
 
-use App\Contracts\ActorDesks;
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Chat\ActorDesks;
 use App\Models\DeskRecord;
 use App\Models\DeskSeat;
 use App\Support\DeskSeating;

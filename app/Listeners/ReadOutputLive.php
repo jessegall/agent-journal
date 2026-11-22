@@ -6,8 +6,8 @@ namespace App\Listeners;
 
 use App\Attributes\InCommandTransaction;
 use App\Commands\ReadPartLive\ReadPartLiveCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\Listener;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Events\Listener;
 use App\Events\OutputChunkCommitted;
 use App\Models\PartRun;
 use App\Support\PartAssessments;

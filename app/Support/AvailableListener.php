@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DomainAvailability;
+use App\Contracts\Domains\DomainAvailability;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 

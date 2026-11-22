@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Search;
 
-use App\Contracts\ReadGrant;
-use App\Contracts\RecordResolver;
+use App\Contracts\Authorization\ReadGrant;
+use App\Contracts\Records\RecordResolver;
 use App\Data\RecordCard;
 use App\Enums\ScoreTier;
 use App\Enums\SearchStatus;

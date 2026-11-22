@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Commands\RunTaskCheck;
 
 use App\Attributes\Authorize;
-use App\Contracts\RecordCommand;
+use App\Contracts\Bus\RecordCommand;
 use App\Enums\AccessType;
 use App\Support\Command;
 use Domain\Tasks\Models\Task;

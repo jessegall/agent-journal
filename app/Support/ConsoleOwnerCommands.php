@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Command;
-use App\Contracts\CommandBus;
-use App\Contracts\OwnerCommands;
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\OwnerCommands;
 
 /**
  * Runs a console command's bus command as the configured owner, and ends the owner's turn when it is done.

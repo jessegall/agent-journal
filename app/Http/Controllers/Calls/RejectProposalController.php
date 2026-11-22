@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\ProposalStateChanged;
 use App\Calls\Processes\RejectProposalCall;
 use App\Commands\RejectRuleProposal\RejectRuleProposalCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Rejects a proposal.

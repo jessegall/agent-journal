@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Contracts\CountResolver;
-use App\Contracts\NavigationChildren;
-use App\Contracts\VisibilityCheck;
+use App\Contracts\Authorization\VisibilityCheck;
+use App\Contracts\Navigation\NavigationChildren;
+use App\Contracts\Records\CountResolver;
 use App\Exceptions\InvalidNavigationDeclaration;
 
 /**

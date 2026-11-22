@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ApproveCodeReview;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\ReviewDecisionType;
 use App\Support\ActorIdentity;
 use App\Support\CodeReviewDecisions;

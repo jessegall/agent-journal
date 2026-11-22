@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Access\Http\Middleware;
 
-use App\Contracts\Actor;
-use App\Contracts\AuthoritySource;
-use App\Contracts\ChatEligibility;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\JournalAdmission;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Authorization\AuthoritySource;
+use App\Contracts\Chat\ChatEligibility;
 use App\Support\ActorIdentity;
 use App\Values\ChatMemberAuthority;
 use App\Values\OwnerAuthority;

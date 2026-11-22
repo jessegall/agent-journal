@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ApproveShareRequest;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\ShareDuration;
 use App\Support\ShareGrants;
 use App\Support\ShareSummary;

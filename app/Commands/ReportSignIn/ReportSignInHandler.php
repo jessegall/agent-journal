@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\ReportSignIn;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\SignInOutcome;
 use App\Enums\SignInRefusal;
 use App\Enums\SignInState;

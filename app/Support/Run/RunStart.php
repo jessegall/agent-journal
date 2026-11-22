@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Run;
 
-use App\Contracts\PipelineDefinition;
+use App\Contracts\Bus\PipelineDefinition;
 use App\Pipelines\RunLinePipeline;
 use App\Pipelines\RunNamedAdmissionPipeline;
 use App\Pipelines\RunPermitPipeline;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Files;
 
-use App\Contracts\Files;
+use App\Contracts\Files\Files;
 use App\Enums\Place;
 use Illuminate\Support\Facades\File;
 

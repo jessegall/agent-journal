@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\StopAgent;
 
 use App\Attributes\Authorize;
-use App\Contracts\AgentStackCommand;
+use App\Contracts\Bus\AgentStackCommand;
 use App\Enums\AccessType;
 use App\Policies\AgentPolicy;
 use App\Support\Command;

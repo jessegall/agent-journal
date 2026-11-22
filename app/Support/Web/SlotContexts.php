@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Web;
 
-use App\Contracts\RecordResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Declarations\Slot;
 use App\Declarations\SlotContext;
 use App\Enums\SlotContextType;

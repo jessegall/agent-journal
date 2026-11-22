@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Communication\ClaimSpeechCall;
 use App\Calls\Communication\SpeechClaim;
 use App\Commands\ClaimSpeech\ClaimSpeechCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Claims your turn to speak on one user message of a chat.

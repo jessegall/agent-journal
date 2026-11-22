@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ChatDepartures;
-use App\Contracts\Inbox;
+use App\Contracts\Chat\ChatDepartures;
+use App\Contracts\Chat\Inbox;
 use App\Enums\DismissalType;
 use App\Enums\LeaveReason;
 use App\Exceptions\ChatStateConflict;

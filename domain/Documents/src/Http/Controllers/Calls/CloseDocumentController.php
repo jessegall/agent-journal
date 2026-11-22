@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers\Calls;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Documents\Calls\CloseDocumentCall;
 use Domain\Documents\Calls\DraftClosed;
 use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;

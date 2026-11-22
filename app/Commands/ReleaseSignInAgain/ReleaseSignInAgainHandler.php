@@ -6,9 +6,9 @@ namespace App\Commands\ReleaseSignInAgain;
 
 use App\Commands\CancelAccountUses\CancelAccountUsesCommand;
 use App\Commands\HoldAccountUses\HoldAccountUsesCommand;
-use App\Contracts\AccountUses;
-use App\Contracts\CommandBus;
-use App\Contracts\CommandHandler;
+use App\Contracts\Accounts\AccountUses;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\Account;
 use App\Models\SignInAttempt;
 use App\Support\RecordIdentity;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Http\Controllers;
 
 use App\Commands\ReplyInChat\ReplyInChatCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Data\ReplyInput;
 use Domain\Chat\Support\SentMessageAnswer;
 use Illuminate\Http\RedirectResponse;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\WithdrawRuleProposal;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\RuleProposalRefused;
 use App\Models\RuleProposal;
 use App\Support\ActorIdentity;

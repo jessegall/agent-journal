@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Domains\Errands;
 
 use App\Support\ActorIdentity;
-use App\Contracts\AssignmentPool;
-use App\Contracts\AutoAssigner;
+use App\Contracts\Assignments\AssignmentPool;
+use App\Contracts\Assignments\AutoAssigner;
 use App\Support\OrderedRecordIds;
 use App\Support\RecordIdentity;
 

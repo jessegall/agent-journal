@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand as ConfigureShareGateway;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Support\ConsoleOwner;
 use App\Support\Gateways\Support\GatewaySecrets;
 use Illuminate\Console\Command;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Sharing\GatewayActionRequest;
 use App\Models\ShareGatewayConfiguration;
 use Illuminate\Http\RedirectResponse;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\JournalAdmission;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Admission\JournalAdmission;
 use App\Exceptions\ConsoleOwnerMissing;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\CommandTransaction;
-use App\Contracts\Setting;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Bus\CommandTransaction;
+use App\Contracts\Settings\Setting;
 use App\Declarations\ToggleGroup;
 use App\Enums\SettingsOutcome;
 use App\Enums\SettingTarget;

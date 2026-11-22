@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support\Mcp;
 
-use App\Contracts\AgentMessageReader;
+use App\Contracts\Chat\AgentMessageReader;
 use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\OverviewSection;

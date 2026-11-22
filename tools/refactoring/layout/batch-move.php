@@ -15,8 +15,8 @@ declare(strict_types=1);
  * of a moved file; each import of a moved class, and an import of a class in the moved file's own new namespace goes;
  * each qualified name of a moved class; the short name where a move renames a class; an import, after the last import
  * node, for each class a file named bare through its namespace that is no longer beside it; and inside string and
- * comment nodes, a moved class's full name or old file path. Files that are not PHP get only the old file paths
- * rewritten. It fails, naming them, on a file that no longer parses or a node that still names an old class.
+ * comment nodes, a moved class's full name or old file path. Files that are not PHP, such as the docs, get the full
+ * class names and old file paths rewritten. It fails, naming them, on a file that no longer parses or a node that still names an old class.
  */
 
 use PhpParser\Comment;
@@ -151,7 +151,7 @@ $paths = array_column($moves, 'to', 'from');
 $movedFiles = $paths;
 $started = microtime(true);
 $listed = array_values(array_filter(explode("\n", (string) shell_exec(
-    'cd '.escapeshellarg($root).' && git ls-files -co --exclude-standard -- app domain tests tools config bootstrap routes database .commandments/custom phpstan.neon phpunit.xml',
+    'cd '.escapeshellarg($root).' && git ls-files -co --exclude-standard -- app domain tests tools config bootstrap routes database resources docs .ai .commandments/custom phpstan.neon phpunit.xml',
 )), fn (string $file) => $file !== '' && ! str_starts_with($file, 'tools/refactoring/layout/') && ! str_contains($file, '/vendor/') && is_file("{$root}/{$file}")));
 $parser = new ParserFactory()->createForNewestSupportedVersion();
 
@@ -208,14 +208,14 @@ foreach ($rewritten as $file => $result) {
     file_put_contents("{$root}/{$file}", $result);
 }
 
-// Files that are not PHP hold no tree; an old path written in one follows its file.
+// Files that are not PHP hold no tree; a full class name or an old path written in one follows its class or file.
 foreach ($listed as $file) {
     if (str_ends_with($file, '.php')) {
         continue;
     }
 
     $text = (string) file_get_contents("{$root}/{$file}");
-    $repathed = strtr($text, $paths);
+    $repathed = renamedText($text, $renames, $paths);
 
     if ($repathed !== $text) {
         file_put_contents("{$root}/{$file}", $repathed);
@@ -365,10 +365,31 @@ function rewriteFile(string $source, FileTree $tree, array $renames, array $path
     }
 
     foreach ($tree->comments as $comment) {
-        $renamed = renamedText($comment->getText(), $renames, $paths);
+        $renamed = renamedBareNames(
+            renamedText($comment->getText(), $renames, $paths),
+            $shortRenames,
+            $renames,
+            $oldNamespace,
+            $imported,
+        );
 
         if ($renamed !== $comment->getText()) {
             $edits[] = [$comment->getStartFilePos(), $comment->getEndFilePos(), $renamed];
+        }
+
+        // A docblock type that names a class bare through the file's own namespace needs an import once the class
+        // ends up in another namespace than the file, as a name in code does.
+        foreach (bareNamesIn($comment->getText()) as $written) {
+            $target = $renames[ltrim("{$oldNamespace}\\{$written}", '\\')] ?? null;
+            $local = strtolower($written);
+
+            if ($target === null || isset($imported[$local]) || in_array($written, $tree->declared, true)) {
+                continue;
+            }
+
+            if (namespaceOf($target) !== $newNamespace) {
+                $needed[$target] = true;
+            }
         }
     }
 
@@ -448,6 +469,42 @@ function renamedText(string $text, array $renames, array $paths): string
     }
 
     return $result;
+}
+
+/**
+ * The comment with each class it names bare given its new short name: a class imported under its own name, or one of
+ * the file's own namespace, that the batch renames. A name imported under an alias keeps the alias.
+ *
+ * @param  array<string, string>  $shortRenames  old short name, lowercase, to new short name, for the file's imports
+ * @param  array<string, string>  $renames
+ * @param  array<string, string>  $imported  alias, lowercase, to the class it names
+ */
+function renamedBareNames(string $text, array $shortRenames, array $renames, string $namespace, array $imported): string
+{
+    return (string) preg_replace_callback('/(?<![\\\\\\w$])[A-Z][A-Za-z0-9]*\\b/', function (array $match) use ($shortRenames, $renames, $namespace, $imported): string {
+        $written = $match[0];
+        $local = strtolower($written);
+
+        if (isset($shortRenames[$local])) {
+            return $shortRenames[$local];
+        }
+
+        $sibling = $renames[ltrim("{$namespace}\\{$written}", '\\')] ?? null;
+
+        return $sibling === null || isset($imported[$local]) ? $written : shortName($sibling);
+    }, $text);
+}
+
+/**
+ * The class names a comment writes bare, without a namespace: each capitalised word not preceded by a backslash.
+ *
+ * @return list<string>
+ */
+function bareNamesIn(string $text): array
+{
+    preg_match_all('/(?<![\\\\\\w$])[A-Z][A-Za-z0-9]*\\b/', $text, $matches);
+
+    return array_values(array_unique($matches[0]));
 }
 
 function isNamePart(string $character): bool

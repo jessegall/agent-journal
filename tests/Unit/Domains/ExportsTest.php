@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Contracts\Actor;
-use App\Contracts\Event;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Events\Event;
 use App\CoreApi;
 use App\Exceptions\AmbiguousDomainRoot;
 use App\Exceptions\InvalidExports;

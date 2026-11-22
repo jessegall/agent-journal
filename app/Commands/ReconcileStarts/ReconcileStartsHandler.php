@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\ReconcileStarts;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Bus\CommandHandler;
 use App\Events\AccountUseChanged;
 use App\Models\AgentSession;
 use App\Models\ProcessStart;

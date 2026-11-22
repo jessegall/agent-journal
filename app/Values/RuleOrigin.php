@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\FactOrigin;
+use App\Contracts\Events\FactOrigin;
 
 /**
  * A fact given by a declared command rule, at the revision that was in force.

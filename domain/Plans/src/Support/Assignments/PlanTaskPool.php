@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support\Assignments;
 
-use App\Contracts\AssignmentPool;
+use App\Contracts\Assignments\AssignmentPool;
 use App\Support\PoolMembers;
 
 /**

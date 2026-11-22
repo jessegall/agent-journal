@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\SetBooleanSetting;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Declarations\BooleanSetting;
 use App\Enums\SettingType;
 use App\Support\SettingCodec;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;

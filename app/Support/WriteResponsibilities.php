@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AssignmentProviders;
-use App\Contracts\ResponsibilityWriter;
+use App\Contracts\Assignments\AssignmentProviders;
+use App\Contracts\Assignments\ResponsibilityWriter;
 use App\Exceptions\AssignmentConflict;
 use App\Support\Storage\AssignmentStore;
 

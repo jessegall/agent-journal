@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Files;
-use App\Contracts\MarkdownParts as MarkdownPartsContract;
+use App\Contracts\Files\Files;
+use App\Contracts\Reads\MarkdownParts as MarkdownPartsContract;
 use App\Exceptions\ContentMissing;
 use App\Exceptions\ContentTooLarge;
 use App\Exceptions\FileMissing;

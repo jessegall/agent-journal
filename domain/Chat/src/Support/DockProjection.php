@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use App\Exceptions\DockCardInvalid;
 use App\Exceptions\DockDefinitionInvalid;
 use App\Exceptions\PartMapInvalid;

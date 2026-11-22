@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\StateLoading\Contracts;
 
-use App\Contracts\WorkOccurrenceGuard;
+use App\Contracts\Work\WorkOccurrenceGuard;
 
 /**
  * Marks a state loader whose states tick: every state it builds is a TickableState, which the engine calls about once a

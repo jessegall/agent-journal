@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Profiles;
 
 use App\Values\SignInCard;
 use App\Values\SignInHosts;
-use App\Contracts\SignInProtocol;
+use App\Contracts\Accounts\SignInProtocol;
 use App\Support\PrivateAccountProcess;
 use App\Values\SignInChallenge;
 use App\Values\SignInIdentity;

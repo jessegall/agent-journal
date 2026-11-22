@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\JournalAdmission;
-use App\Contracts\SettingsAccessPolicy;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Settings\SettingsAccessPolicy;
 
 /**
  * Lets into the settings exactly the actors who may use the journal: its configured owner.

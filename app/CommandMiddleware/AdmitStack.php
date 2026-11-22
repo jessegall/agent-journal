@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\CommandMiddleware;
 
-use App\Contracts\CommandMiddleware;
-use App\Contracts\StackAdmission;
+use App\Contracts\Admission\StackAdmission;
+use App\Contracts\Bus\CommandMiddleware;
 use App\Support\CommandCall;
 use App\Support\OperationDeadline;
 use Closure;

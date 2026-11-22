@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Modules\Handbook;
 
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\PageProvider;
+use App\Contracts\Navigation\PageProvider;
 use App\Declarations\Page;
 use App\Enums\Icon;
 use Tests\Fixtures\Modules\Handbook\Policies\ReadHandbook;

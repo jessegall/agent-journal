@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Concerns\HasNumber;
-use App\Contracts\Numbered;
+use App\Contracts\Records\Numbered;
 use App\Exceptions\NumberedModelInvalid;
 use App\Exceptions\NumberedModelUndeclared;
 use Illuminate\Database\Eloquent\Model;

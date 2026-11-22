@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentSession;
-use App\Contracts\RequestSource;
+use App\Contracts\Bus\RequestSource;
+use App\Contracts\Sessions\CurrentSession;
 use App\Models\AgentSession;
 use App\Models\Message;
 

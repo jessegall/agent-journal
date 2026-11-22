@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\StartDeviceGrant;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\DeviceGrantRefused;
 use App\Exceptions\PresenceRefused;
 use App\Models\DeviceGrant;

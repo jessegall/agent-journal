@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\SettingsCatalogue;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Settings\SettingsCatalogue;
 use App\Data\SettingData;
 use App\Data\SettingsCatalogueData;
 use App\Data\StringChoiceConstraintsData;

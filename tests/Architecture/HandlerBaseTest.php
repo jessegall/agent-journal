@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\Reflector;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\Finder;

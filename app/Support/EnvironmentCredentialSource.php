@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\StartTokenSource;
+use App\Contracts\Sessions\StartTokenSource;
 use App\Exceptions\StartSettingMissing;
 use App\Exceptions\StartTokenRefused;
 

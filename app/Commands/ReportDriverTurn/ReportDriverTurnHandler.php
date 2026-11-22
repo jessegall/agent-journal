@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ReportDriverTurn;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\HoldReason;
 use App\Enums\RuntimeActivity;
 use App\Exceptions\HostReportRefused;

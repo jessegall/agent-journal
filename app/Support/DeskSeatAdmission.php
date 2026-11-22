@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AssigneeLocks;
-use App\Contracts\AssignmentStorage;
+use App\Contracts\Assignments\AssigneeLocks;
+use App\Contracts\Assignments\AssignmentStorage;
 use App\Exceptions\SeatCapacityReached;
 use App\Exceptions\SeatConflict;
 use App\Exceptions\SecondForwardingSeat;

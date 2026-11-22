@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\RecordGatewayHealth;
 
 use App\Concerns\RefusesStaleGatewayRuns;
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\ShareGatewayEndpoint;
 use App\Models\ShareInstallation;
 

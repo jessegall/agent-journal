@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AssignmentStorage;
-use App\Contracts\ResponsibilityWriter;
-use App\Contracts\RunClaims;
+use App\Contracts\Assignments\AssignmentStorage;
+use App\Contracts\Assignments\ResponsibilityWriter;
+use App\Contracts\Processes\RunClaims;
 use App\Exceptions\RunClaimRefused;
 use App\Models\AssignmentRecord;
 use App\Models\ClaimAuthorization;

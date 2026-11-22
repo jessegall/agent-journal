@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActor;
-use App\Contracts\SettingsCatalogue;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Settings\SettingsCatalogue;
 use App\Exceptions\SettingsAccessDenied;
 use App\Exceptions\SettingsOwnerUnknown;
 use App\Models\SettingsRecord;

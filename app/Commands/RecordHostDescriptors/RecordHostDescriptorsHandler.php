@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RecordHostDescriptors;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\Host;
 use App\Support\HostDescriptorEnrollment;
 use App\Values\EnrolledDescriptor;

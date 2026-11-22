@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Contracts\RunEvents;
-use App\Contracts\StopSignal;
+use App\Contracts\Events\RunEvents;
+use App\Contracts\Processes\StopSignal;
 use App\Values\PartKey;
 
 /**

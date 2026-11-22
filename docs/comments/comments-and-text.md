@@ -5,9 +5,9 @@ place. Domains opt in on their model; everything else is Core.
 
 ## Two opt-ins
 
-- **Comments about the whole record.** The model implements `App\Contracts\Commentable` and uses
+- **Comments about the whole record.** The model implements `App\Contracts\Records\Commentable` and uses
   `App\Concerns\HasComments`. Nothing else is needed. The Notes fixture's `Note` is the example.
-- **Comments about a place in the text too.** The model also implements `App\Contracts\TextContent`:
+- **Comments about a place in the text too.** The model also implements `App\Contracts\Reads\TextContent`:
   `textVersion(?string $version): TextVersion` returns the named version (or the current one) and refuses an
   unknown one with `TextVersionUnavailable`. Documents (each closed revision is a version) and reports (version 1 only)
   do this, and so does the Notes fixture's `NotePage`. A record with only `TextContent` can be read but takes no

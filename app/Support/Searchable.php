@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReferenceRecognizer;
-use App\Contracts\SearchAccess;
-use App\Contracts\SearchProvider;
+use App\Contracts\Records\ReferenceRecognizer;
+use App\Contracts\Search\SearchAccess;
+use App\Contracts\Search\SearchProvider;
 use App\Exceptions\SearchableInvalid;
 use Closure;
 use Illuminate\Contracts\Container\Container;

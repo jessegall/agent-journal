@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests\Support;
 
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\DockerImageVerifier;
-use App\Contracts\HostCapabilities;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Hosts\DockerImageVerifier;
+use App\Contracts\Hosts\HostCapabilities;
 use App\Enums\CapabilityStatusType;
 use App\Enums\InstancePolicy;
 use App\Models\AgentSession;

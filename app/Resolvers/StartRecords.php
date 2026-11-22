@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\CurrentSession;
-use App\Contracts\StartRecordResolver;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Sessions\CurrentSession;
+use App\Contracts\Sessions\StartRecordResolver;
 use App\Enums\AccessType;
 use App\Exceptions\StartRecordMissing;
 use App\Models\Agent;

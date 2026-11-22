@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\TickableState;
+use App\Contracts\Work\TickableState;
 use App\Support\References\WorkOccurrence;
 use Carbon\CarbonImmutable;
 

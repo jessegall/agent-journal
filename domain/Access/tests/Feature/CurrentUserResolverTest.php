@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Tests\Feature;
 
-use App\Contracts\CurrentUserResolver;
+use App\Contracts\Actors\CurrentUserResolver;
 use App\Support\CurrentUser;
 use Domain\Access\Models\User;
 use Domain\Access\Tests\TestCase;

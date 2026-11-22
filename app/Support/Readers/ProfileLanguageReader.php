@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Readers;
 
-use App\Contracts\ProfileLanguage;
+use App\Contracts\Sessions\ProfileLanguage;
 use App\Data\ProfileLanguageData;
 use App\Data\ScriptKeywordData;
 use App\Data\ScriptObjectData;

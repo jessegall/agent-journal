@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\RecordGatewayOutcome;
 
 use App\Concerns\RefusesStaleGatewayRuns;
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\GatewayEndpointState;
 use App\Enums\GatewayOperationType;
 use App\Enums\GatewayOutcome;

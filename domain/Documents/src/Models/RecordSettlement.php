@@ -6,8 +6,8 @@ namespace Domain\Documents\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Actor;
-use App\Contracts\ReadableModel;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\SettlementCard;

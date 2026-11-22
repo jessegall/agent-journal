@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Models\Agent;
 use App\Models\AssignmentRecord;
 use App\Support\AssigneeIdentity;

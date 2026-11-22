@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Comments;
 
-use App\Contracts\CommandBus;
-use App\Contracts\RecordResolver;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Records\RecordResolver;
 use App\Http\Requests\Comments\PostCommentRequest;
 use App\Http\Responses\PageActionAnswers;
 use Illuminate\Http\RedirectResponse;

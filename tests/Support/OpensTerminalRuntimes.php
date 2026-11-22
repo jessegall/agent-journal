@@ -6,10 +6,10 @@ namespace Tests\Support;
 
 use App\Commands\OpenTerminalView\OpenTerminalViewCommand;
 use App\Commands\RenewTerminalView\RenewTerminalViewCommand;
-use App\Contracts\Command;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\ServerClock;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Time\ServerClock;
 use App\Data\TerminalControlData;
 use App\Data\TerminalInterestData;
 use App\Enums\DriverVariant;

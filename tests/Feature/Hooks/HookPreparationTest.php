@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\Files;
+use App\Contracts\Files\Files;
 use App\Enums\CallFailure;
 use App\Enums\Place;
 use App\Support\DefaultDrivers;

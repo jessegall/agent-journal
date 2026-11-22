@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ProveReader;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\ReaderProofFailed;
 use App\Exceptions\ReaderProposalRefused;
 use App\Exceptions\RequestTransitionRefused;

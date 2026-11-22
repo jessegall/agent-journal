@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\ScriptKeywordDefinition;
+use App\Contracts\Scripts\ScriptKeywordDefinition;
 
 final readonly class RegisteredKeyword
 {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
-use App\Contracts\SearchProvider;
-use App\Contracts\ServedEnvironment;
-use App\Contracts\StatementDeadlines;
+use App\Contracts\Hosts\ServedEnvironment;
+use App\Contracts\Processes\StatementDeadlines;
+use App\Contracts\Search\SearchProvider;
 use App\Enums\ScoreTier;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;

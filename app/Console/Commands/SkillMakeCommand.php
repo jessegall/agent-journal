@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Commands\CreateSkill\CreateSkillCommand;
 use App\Console\Concerns\PrintsSkillRefusals;
 use App\Console\Concerns\ReadsAudienceOptions;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Support\SkillAuthoring;
 use App\Values\SkillDraft;
 use Illuminate\Console\Command;

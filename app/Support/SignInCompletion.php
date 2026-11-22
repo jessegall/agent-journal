@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\DriverCatalogue;
-use App\Contracts\TargetAuthorizer;
+use App\Contracts\Authorization\TargetAuthorizer;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\AccessType;
 use App\Enums\SignInState;
 use App\Exceptions\ActorUnavailable;

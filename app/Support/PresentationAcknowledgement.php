@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentSession;
-use App\Contracts\InboxResolver;
+use App\Contracts\Chat\InboxResolver;
+use App\Contracts\Sessions\CurrentSession;
 use App\Exceptions\ChatStateConflict;
 use App\Models\InboxInterval;
 use App\Models\Message;

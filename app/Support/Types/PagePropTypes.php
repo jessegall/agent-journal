@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Types;
 
-use App\Contracts\PresentsLayout;
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Navigation\PresentsLayout;
+use App\Contracts\Reflection\ReflectorFactory;
 use App\Declarations\RegisteredPage;
 use App\Enums\PageDestination;
 use App\Support\UiDeclarations;

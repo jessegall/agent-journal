@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ScriptStatement;
+use App\Contracts\Scripts\ScriptStatement;
 use App\Enums\DiagnosticCode;
 use App\Exceptions\ScriptSyntaxError;
 use App\Values\BlockOperand;

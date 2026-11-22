@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Contracts\AssignableProvider;
-use App\Contracts\AssigneeProvider;
+use App\Contracts\Assignments\AssignableProvider;
+use App\Contracts\Assignments\AssigneeProvider;
 use App\Enums\ActorType;
 use App\Enums\AssignmentPurpose;
 use App\Exceptions\AssigneeTypeRepeated;

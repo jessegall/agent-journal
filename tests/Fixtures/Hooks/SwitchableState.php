@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Contracts\ConditionalState;
+use App\Contracts\Work\ConditionalState;
 use App\Support\States\AgentState;
 
 /**

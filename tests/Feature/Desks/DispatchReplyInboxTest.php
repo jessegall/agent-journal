@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Desks;
 
 use App\Commands\StartAgent\StartAgentCommand;
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\CommandBus;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;

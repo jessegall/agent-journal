@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\ReadGrant;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Authorization\ReadGrant;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Contracts\JobPermissionReader as JobPermissionReaderContract;
 use App\Mcp\Enums\DiscoveryProfile;

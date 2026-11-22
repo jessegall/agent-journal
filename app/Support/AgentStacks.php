@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AgentStack;
+use App\Contracts\Work\AgentStack;
 use App\Models\AgentStackRow;
 use App\Support\Mutations\StatePush;
 use App\Support\References\Exceptions\ActivationDeclined;

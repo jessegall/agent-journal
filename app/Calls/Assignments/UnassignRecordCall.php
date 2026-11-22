@@ -8,7 +8,7 @@ use App\Attributes\Endpoint;
 use App\Calls\Assignments\Concerns\NamesAssignedRecord;
 use App\Calls\Assignments\Concerns\NamesExpectedAssignment;
 use App\Casts\CallKeyCast;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Data\Assignments\AssignmentResultData;
 use App\Enums\ActorType;
 use App\Enums\CallEffect;

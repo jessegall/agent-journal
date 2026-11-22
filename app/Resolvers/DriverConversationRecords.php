@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\DriverConversationResolver;
+use App\Contracts\Drivers\DriverConversationResolver;
 use App\Models\AgentSession;
 use App\Models\ConversationVisit;
 use App\Models\DriverConversation;

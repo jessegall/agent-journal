@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReadMeter;
+use App\Contracts\Reads\ReadMeter;
 use App\Exceptions\QueryInValueRead;
 use App\Exceptions\RepeatedReadRefused;
 use App\Values\Measurement;

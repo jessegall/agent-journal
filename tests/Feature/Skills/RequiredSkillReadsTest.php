@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\ContextStartType;
 use App\Enums\SessionStatus;
 use App\Events\ContextStarted;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Agents\Host;
 
 use App\Commands\ReportWorkspaceRead\ReportWorkspaceReadCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Http\Requests\Agents\WorkspaceReadReportRequest;
 use App\Models\WorkspaceRead;
 use App\Values\HostContext;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AuthoritySource;
+use App\Contracts\Authorization\AuthoritySource;
 
 /**
  * An agent call that passed its credential, its signature and its profile pin: the context it acts in and the profile

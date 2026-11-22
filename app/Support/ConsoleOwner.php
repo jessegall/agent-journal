@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\JournalAdmission;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Admission\JournalAdmission;
 use App\Exceptions\ConsoleOwnerMissing;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;

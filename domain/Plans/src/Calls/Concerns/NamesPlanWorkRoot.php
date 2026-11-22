@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Calls\Concerns;
 
-use App\Contracts\RecordResolver;
+use App\Contracts\Records\RecordResolver;
 use App\Exceptions\InvalidRecordReference;
 use App\Support\RecordIdentity;
 use App\Support\RecordReference;

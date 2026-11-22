@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Contracts\VisibilityCheck;
+use App\Contracts\Authorization\VisibilityCheck;
 use App\Declarations\ActionRoute;
 use App\Declarations\NavigationItem;
 use App\Declarations\Page;

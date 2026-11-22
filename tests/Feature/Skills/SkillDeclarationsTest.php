@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Contracts\Skill;
+use App\Contracts\Skills\Skill;
 use App\Exceptions\SkillDeclarationRefused;
 use App\Support\CoreSkills;
 use App\Support\DomainRegistry;

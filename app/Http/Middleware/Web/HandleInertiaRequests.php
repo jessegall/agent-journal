@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Web;
 
-use App\Contracts\CommandRefusal;
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentUserResolver;
-use App\Contracts\InstalledVersion;
-use App\Contracts\NavigationRecords;
-use App\Contracts\SharePolicy;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Actors\CurrentUserResolver;
+use App\Contracts\Bus\CommandRefusal;
+use App\Contracts\Drivers\InstalledVersion;
+use App\Contracts\Navigation\NavigationRecords;
+use App\Contracts\Sharing\SharePolicy;
 use App\Data\CurrentUserData;
 use App\Data\SharedData;
 use App\Http\Responses\NotificationProps;

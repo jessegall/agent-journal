@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks\Drivers;
 
-use App\Contracts\ShellCommandParser;
+use App\Contracts\Processes\ShellCommandParser;
 use App\Models\AgentRuntime;
 use App\Support\Decisions\Decision;
 use App\Support\DeliveredSkillsAccess;

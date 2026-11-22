@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\FactOrigin;
+use App\Contracts\Events\FactOrigin;
 
 /**
  * A fact that comes from a line of a package script: the script binding beside the origin of the fact inside it.

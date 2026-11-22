@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\CommandMiddleware;
 
-use App\Contracts\CommandMiddleware;
+use App\Contracts\Bus\CommandMiddleware;
 use App\Exceptions\RequestKeyConflict;
 use App\Exceptions\RequestKeyMissing;
 use App\Models\CommandReceipt;

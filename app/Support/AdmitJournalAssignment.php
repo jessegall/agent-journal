@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AssigneeLocks;
-use App\Contracts\AssignmentProviders;
+use App\Contracts\Assignments\AssigneeLocks;
+use App\Contracts\Assignments\AssignmentProviders;
 
 final readonly class AdmitJournalAssignment
 {

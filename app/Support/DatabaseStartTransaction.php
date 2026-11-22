@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\StartTransaction;
+use App\Contracts\Sessions\StartTransaction;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
 

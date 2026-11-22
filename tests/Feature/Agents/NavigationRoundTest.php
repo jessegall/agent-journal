@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Contracts\ActorAttention;
-use App\Contracts\AssignmentTransaction;
+use App\Contracts\Actors\ActorAttention;
+use App\Contracts\Assignments\AssignmentTransaction;
 use App\Enums\HoldReason;
 use App\Enums\NavigationCompletion;
 use App\Enums\NavigationKey;

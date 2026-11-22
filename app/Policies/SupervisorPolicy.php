@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Contracts\Policy;
-use App\Contracts\RestrictedPolicy;
+use App\Contracts\Authorization\Policy;
+use App\Contracts\Authorization\RestrictedPolicy;
 use App\Enums\AccessType;
 use App\Enums\ProfileAudience;
 use App\Models\SupervisorLink;

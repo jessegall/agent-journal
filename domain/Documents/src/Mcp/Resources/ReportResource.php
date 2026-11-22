@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Mcp\Resources;
 
-use App\Contracts\ReadGrant;
+use App\Contracts\Authorization\ReadGrant;
 use App\Mcp\Contracts\JobPermissionReader;
 use App\Values\ReadRequest;
 use Domain\Documents\Contracts\ReportReader;

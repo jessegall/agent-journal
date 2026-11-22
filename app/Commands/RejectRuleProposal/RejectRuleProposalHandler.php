@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\RejectRuleProposal;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Bus\CommandHandler;
 use App\Events\RuleRejected;
 use App\Exceptions\RequestTransitionRefused;
 use App\Exceptions\RuleProposalRefused;

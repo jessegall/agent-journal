@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Commands\CheckAccount\CheckAccountCommand;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\Files;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Files\Files;
 use App\Enums\AccountCheckResult;
 use App\Enums\AccountNoticeReason;
 use App\Enums\AccountState;

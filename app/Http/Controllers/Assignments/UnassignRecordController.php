@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Assignments;
 
 use App\Commands\UnassignRecord\UnassignRecordCommand;
-use App\Contracts\AssigneeResolver;
-use App\Contracts\CommandBus;
+use App\Contracts\Assignments\AssigneeResolver;
+use App\Contracts\Bus\CommandBus;
 use App\Data\Assignments\AssignmentResultData;
 use App\Http\Requests\Assignments\UnassignRecordRequest;
 use Illuminate\Http\JsonResponse;

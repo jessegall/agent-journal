@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Contracts\ProfileSelections;
+use App\Contracts\Sessions\ProfileSelections;
 use App\Data\Agents\StartPreviewData;
 use App\Http\Requests\Agents\StartPreviewRequest;
 use App\Models\Agent;

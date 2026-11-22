@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Stack;
 
-use App\Contracts\ConditionalStateType;
-use App\Contracts\ServerClock;
+use App\Contracts\Time\ServerClock;
+use App\Contracts\Work\ConditionalStateType;
 use App\Support\Decisions\StateReferences;
 use App\Support\References\StateReference;
 use App\Support\Stack\Contracts\StateFactory;

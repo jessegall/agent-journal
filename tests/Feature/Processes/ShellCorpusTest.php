@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Contracts\AliasResolver;
-use App\Contracts\CommandClassifier;
+use App\Contracts\Actors\AliasResolver;
+use App\Contracts\Bus\CommandClassifier;
 use App\Enums\ParseOutcome;
 use App\Enums\ShellDialect;
 use App\Support\Syntax\TreeParser;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\StopAgent;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\ServerClock;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Time\ServerClock;
 use App\Exceptions\StopOutdated;
 use App\Support\DriverRequests;
 use App\Support\TerminalControls;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\EngineGrant;
-use App\Contracts\EngineTargetAccess;
-use App\Contracts\MaintenanceAdmission;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Admission\MaintenanceAdmission;
+use App\Contracts\Authorization\EngineGrant;
+use App\Contracts\Authorization\EngineTargetAccess;
 use App\Exceptions\EngineAccessRefused;
 use App\Values\FrameGrant;
 use App\Values\StackTarget;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\DismissLaunchOutcome;
 
-use App\Contracts\AgentDirectory;
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Sessions\AgentDirectory;
 use App\Exceptions\StartRecordMissing;
 use App\Models\LaunchOutcomeDismissal;
 use App\Models\StartRecord;

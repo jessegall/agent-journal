@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\SettleSample;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\RequestState;
 use App\Exceptions\RequestTransitionRefused;
 use App\Exceptions\SampleRefused;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\Listener;
+use App\Contracts\Events\Listener;
 use App\Events\SessionOpened;
 use App\Models\AgentSession;
 use App\Models\Message;

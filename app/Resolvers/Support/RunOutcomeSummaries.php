@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use App\Data\RunOutcomeSummaryData;
 use App\Models\ProcessRun;
 use App\Models\RunOutcome;

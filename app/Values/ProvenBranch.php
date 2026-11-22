@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\StoredValue;
+use App\Contracts\Settings\StoredValue;
 use App\Enums\Outcome;
 use App\Support\Stored\StoredProvenBranch;
 

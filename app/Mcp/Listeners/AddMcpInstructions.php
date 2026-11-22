@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Listeners;
 
-use App\Contracts\Listener;
+use App\Contracts\Events\Listener;
 use App\Enums\TransportProfileType;
 use App\Events\ContextStarted;
 use App\Mcp\Support\McpInstructions;

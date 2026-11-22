@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Responses;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\RecordResolver;
-use App\Contracts\RecordSearch;
-use App\Contracts\SearchSources;
-use App\Contracts\ServedEnvironment;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Hosts\ServedEnvironment;
+use App\Contracts\Records\RecordResolver;
+use App\Contracts\Search\RecordSearch;
+use App\Contracts\Search\SearchSources;
 use App\Data\PaletteHitData;
 use App\Data\PaletteSearchData;
 use App\Data\PaletteSourcesData;

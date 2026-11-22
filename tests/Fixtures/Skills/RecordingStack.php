@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Skills;
 
 use App\Values\StackTarget;
-use App\Contracts\AgentStack;
+use App\Contracts\Work\AgentStack;
 use App\Support\References\StateReference;
 
 /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ChatMemberPolicies;
-use App\Contracts\Policy;
+use App\Contracts\Authorization\Policy;
+use App\Contracts\Chat\ChatMemberPolicies;
 
 /**
  * The policies a chat member may be granted at all, each registered by the domain that owns it: reading, posting,

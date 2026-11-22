@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActorAttention;
-use App\Contracts\ActorGuidance;
+use App\Contracts\Actors\ActorAttention;
+use App\Contracts\Actors\ActorGuidance;
 use App\Models\PendingAgentMessage;
 
 /**

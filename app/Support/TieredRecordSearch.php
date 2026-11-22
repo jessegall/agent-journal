@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReferenceRecognizer;
-use App\Contracts\StatementDeadlines;
-use App\Contracts\TieredSearch;
+use App\Contracts\Processes\StatementDeadlines;
+use App\Contracts\Records\ReferenceRecognizer;
+use App\Contracts\Search\TieredSearch;
 use App\Enums\ScoreTier;
 use App\Exceptions\StatementTimedOut;
 use App\Exceptions\WorkBudgetSpent;

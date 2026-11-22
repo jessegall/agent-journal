@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews\Work;
 
-use App\Contracts\IncomingWork;
+use App\Contracts\Work\IncomingWork;
 
 /**
  * The reviews fixture's incoming work: it counts how often hooks accepted it, so a test sees it ran before the stack.

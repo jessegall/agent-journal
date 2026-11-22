@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandNestingTooDeep;
 use App\Exceptions\CommandNotRegistered;
 use App\Support\CommandNesting;

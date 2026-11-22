@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Domains\Binders;
 
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\ShareRecordContributor;
+use App\Contracts\Sharing\ShareRecordContributor;
 use App\Support\ShareRecordDefinition;
 
 final class BindersDomain extends Domain implements ShareRecordContributor

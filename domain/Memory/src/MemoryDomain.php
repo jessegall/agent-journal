@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Memory;
 
-use App\Contracts\CommandProvider;
-use App\Contracts\PolicyProvider;
-use App\Contracts\SkillProvider;
+use App\Contracts\Authorization\PolicyProvider;
+use App\Contracts\Bus\CommandProvider;
+use App\Contracts\Skills\SkillProvider;
 use App\Enums\AccessType;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Support\Domain;

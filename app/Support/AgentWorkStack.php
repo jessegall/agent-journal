@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentSession;
-use App\Contracts\WorkStackProvider;
+use App\Contracts\Sessions\CurrentSession;
+use App\Contracts\Work\WorkStackProvider;
 use App\Models\AgentSession;
 
 /**

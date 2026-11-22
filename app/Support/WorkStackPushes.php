@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActorWorkStacks;
-use App\Contracts\AgentStack;
-use App\Contracts\CurrentActor;
-use App\Contracts\CurrentState;
-use App\Contracts\WorkStacks;
+use App\Contracts\Actors\ActorWorkStacks;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\CurrentState;
+use App\Contracts\Work\WorkStacks;
 use App\Models\AgentStackRow;
 use App\Support\References\StateReference;
 use App\Values\StackTarget;

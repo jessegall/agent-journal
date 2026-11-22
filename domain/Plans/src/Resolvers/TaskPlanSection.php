@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Resolvers;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\SectionResolver;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Navigation\SectionResolver;
 use App\Declarations\SlotContext;
 use Domain\Plans\Data\TaskPlanData;
 use Domain\Plans\Models\Phase;

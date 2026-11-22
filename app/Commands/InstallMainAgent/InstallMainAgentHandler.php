@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\InstallMainAgent;
 
 use App\Commands\CreateAgent\CreateAgentCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\Agent;
 use App\Models\MainAgentDesignation;
 use App\Values\ProfileBase;

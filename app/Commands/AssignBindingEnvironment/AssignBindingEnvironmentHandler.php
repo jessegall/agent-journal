@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\AssignBindingEnvironment;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\Environment;
 use App\Models\ProjectBinding;
 

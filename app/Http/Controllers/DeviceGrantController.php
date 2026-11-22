@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Commands\PollDeviceGrant\PollDeviceGrantCommand;
 use App\Commands\StartDeviceGrant\StartDeviceGrantCommand;
-use App\Contracts\HostCalls;
+use App\Contracts\Hosts\HostCalls;
 use App\Enums\CommandEntry;
 use App\Enums\HostProtocolVersion;
 use App\Enums\RefusalCode;

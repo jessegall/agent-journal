@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\MarkdownParts;
+use App\Contracts\Reads\MarkdownParts;
 
 /**
  * One section of a skill: a stable key, its heading, and its Markdown written inline or taken from a Markdown part.

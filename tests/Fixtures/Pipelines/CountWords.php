@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Pipelines;
 
-use App\Contracts\Pipe;
+use App\Contracts\Bus\Pipe;
 
 /**
  * A fixture pipe that turns words into their count, and counts how often it is built.

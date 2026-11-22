@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\DraftProducer;
-use App\Contracts\DraftProducers;
+use App\Contracts\Navigation\DraftProducer;
+use App\Contracts\Navigation\DraftProducers;
 use App\Exceptions\DraftProducerMissing;
 use App\Exceptions\DraftProducerRepeated;
 use Illuminate\Container\Container;

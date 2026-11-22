@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Commands\StartProfileMain;
 
 use App\Commands\StartAgent\StartAgentCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CommandHandler;
-use App\Contracts\ProfileSelections;
-use App\Contracts\StartPreflight;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Sessions\ProfileSelections;
+use App\Contracts\Sessions\StartPreflight;
 use App\Enums\ConversationModeType;
 use App\Enums\StartOriginType;
 use App\Exceptions\ProfileCannotCoordinate;

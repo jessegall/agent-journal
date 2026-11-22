@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\ReadMessages\ReadMessagesCommand;
-use App\Contracts\ConversationResolver;
-use App\Contracts\InboxRegistration;
+use App\Contracts\Chat\ConversationResolver;
+use App\Contracts\Chat\InboxRegistration;
 use App\Exceptions\StackLockTimedOut;
 use App\Models\InboxRecord;
 use App\Models\Message;

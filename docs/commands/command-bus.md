@@ -48,7 +48,7 @@ final readonly class ProposeRuleCommand extends Command
 ```php
 namespace Domain\Rules\Commands\ProposeRule;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Models\Rule;
 
@@ -81,7 +81,7 @@ resolves). A handler returns nothing, one of those, or a final readonly value su
 
 Every command a person or an agent sends declares who may run it with one `#[Authorize(Policy::class,
 AccessType::Case)]`: the policy names the model it guards, so the declaration needs no subject. A command whose policy
-decides on one record implements `App\Contracts\RecordCommand` and returns that locked record from `subject()`,
+decides on one record implements `App\Contracts\Bus\RecordCommand` and returns that locked record from `subject()`,
 as `Domain\Tasks\Commands\BlockTask\BlockTaskCommand` does for `Domain\Tasks\Policies\TaskRunPolicy`; its handler takes the record as
 its second argument, as `Domain\Tasks\Commands\BlockTask\BlockTaskHandler::handle(BlockTask $command, Task $task)` does, so it
 loads it once. The bus checks the caller's profile grants before the subject is loaded and refuses with
@@ -96,11 +96,11 @@ One attribute changes how a command runs:
 
 - `#[RepeatableRead]` runs it in a repeatable-read transaction, as `App\Commands\AssignRecord\AssignRecordCommand` does.
 
-The owner lists its commands on its Domain class through `App\Contracts\CommandProvider`, and exports the ones other
-owners may run. Callers take `App\Contracts\CommandBus` as a method parameter and call `run`:
+The owner lists its commands on its Domain class through `App\Contracts\Bus\CommandProvider`, and exports the ones other
+owners may run. Callers take `App\Contracts\Bus\CommandBus` as a method parameter and call `run`:
 
 ```php
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 
 $commands->run(new FinishTask($taskId));
@@ -163,7 +163,7 @@ the old input.
 ## Middleware: scopes, stages and order
 
 A module watches or changes commands with middleware in its `CommandMiddleware` folder, declared on its Domain class
-through `App\Contracts\CommandMiddlewareProvider`:
+through `App\Contracts\Bus\CommandMiddlewareProvider`:
 
 ```php
 use App\Support\CommandScope;
@@ -189,13 +189,13 @@ public function commandMiddleware(): array
   order of `bootstrap/domains.php`, and each owner's middleware in its declaration order.
 
 `App\CommandMiddleware\BindDispatcher` runs right after `App\CommandMiddleware\CheckEntry`, before
-`App\CommandMiddleware\ValidateCommand`. It reads the request's actor from `App\Contracts\CurrentActor`
+`App\CommandMiddleware\ValidateCommand`. It reads the request's actor from `App\Contracts\Actors\CurrentActor`
 and passes on `$call->withDispatcher($actor)`, a call whose command is a copy bound to that actor; the caller's own
 object stays unbound. A call without an actor is refused there with `App\Exceptions\ActorContextMissing`, before
 the input check and stack admission. `replacedBy($command)` keeps its one argument and binds the replacement to the
 call's actor, so module middleware never binds a command itself.
 
-A middleware implements `App\Contracts\CommandMiddleware` and gets an `App\Support\CommandCall`. The contract,
+A middleware implements `App\Contracts\Bus\CommandMiddleware` and gets an `App\Support\CommandCall`. The contract,
 each break of it refused by name:
 
 | Rule | Refused with |
@@ -217,7 +217,7 @@ and is refused with `App\Exceptions\CommandTransactionMismatch` otherwise, as it
 open. A handler that opens a transaction itself is refused with `App\Exceptions\ExplicitTransactionInCommand`, and a
 handler that catches a failed inner command and goes on fails the whole command with
 `App\Exceptions\NestedCommandFailureIgnored`. An exception a caller may be shown implements
-`App\Contracts\CommandRefusal`.
+`App\Contracts\Bus\CommandRefusal`.
 
 ## Facts: raised, required, held and released
 

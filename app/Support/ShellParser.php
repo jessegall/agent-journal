@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandClassifier;
-use App\Contracts\ShellCommandParser;
+use App\Contracts\Bus\CommandClassifier;
+use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\CommandEffect;
 use App\Enums\CommandType;
 use App\Enums\ParseOutcome;

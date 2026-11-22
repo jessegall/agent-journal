@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ChangeSupervisor;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Support\ActorIdentity;
 use App\Support\SupervisorRouting;
 use App\Values\SupervisorChangeReceipt;

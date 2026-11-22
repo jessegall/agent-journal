@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\IdentityLinks;
+use App\Contracts\Actors\IdentityLinks;
+use App\Contracts\Bus\CommandFacts;
 use App\Enums\TransportProfileType;
 use App\Events\AccountUseChanged;
 use App\Models\AgentSession;

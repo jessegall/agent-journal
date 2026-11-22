@@ -6,9 +6,9 @@ namespace Tests\Feature\Skills;
 
 use App\Commands\CreateSkill\CreateSkillCommand;
 use App\Commands\ReviseSkill\ReviseSkillCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\SkillResolver;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Skills\SkillResolver;
 use App\Exceptions\ActorNotAllowed;
 use App\Models\SkillRevision;
 use App\Support\ActorContext;

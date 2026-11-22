@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Skills;
 
-use App\Contracts\SkillConditionEvaluator;
+use App\Contracts\Skills\SkillConditionEvaluator;
 use App\Values\ConditionResult;
 use App\Values\SkillContext;
 use Spatie\LaravelData\Data;

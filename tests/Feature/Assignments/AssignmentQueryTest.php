@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Contracts\AssignedWorkProvider;
-use App\Contracts\AssignedWorkResolver;
-use App\Contracts\AssignmentQuery;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Assignments\AssignedWorkProvider;
+use App\Contracts\Assignments\AssignedWorkResolver;
+use App\Contracts\Assignments\AssignmentQuery;
 use App\Enums\ActorType;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Models\AssignmentRecord;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use App\Exceptions\BindingRevoked;
 use App\Models\ProjectBinding;
 use App\Support\ConnectedProject;

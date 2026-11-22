@@ -9,7 +9,7 @@ use App\Commands\ReadMessages\ReadMessagesCommand;
 use App\Commands\ReleaseMessageClaim\ReleaseMessageClaimCommand;
 use App\Commands\ReplyToMessage\ReplyToMessageCommand;
 use App\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
-use App\Contracts\ConversationResolver;
+use App\Contracts\Chat\ConversationResolver;
 use App\Enums\MessageState;
 use App\Events\MessageAnswered;
 use App\Events\MessageAnswerRequired;

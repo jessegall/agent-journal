@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Event;
-use App\Contracts\EventSource;
-use App\Contracts\FactStaging;
+use App\Contracts\Events\Event;
+use App\Contracts\Events\EventSource;
+use App\Contracts\Events\FactStaging;
 use App\Exceptions\EventUnitRefused;
 use Throwable;
 

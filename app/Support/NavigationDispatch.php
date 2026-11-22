@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActorAttention;
-use App\Contracts\MainDesk;
+use App\Contracts\Actors\ActorAttention;
+use App\Contracts\Chat\MainDesk;
 use App\Enums\NavigationAnswerer;
 use App\Models\AgentRuntime;
 use App\Models\NavigationRequest;

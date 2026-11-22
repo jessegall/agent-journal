@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks\Drivers;
 
-use App\Contracts\JournalToolNames;
+use App\Contracts\Domains\JournalToolNames;
 use App\Exceptions\UnsupportedHook;
 use App\Mcp\Support\McpCatalogue;
 use App\Support\Drivers\Adapters\ClaudeCodeAdapter;

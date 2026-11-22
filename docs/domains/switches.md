@@ -28,7 +28,7 @@ There is no separate route, screen or command for switches.
 
 ## Configured and effective availability
 
-The switch is what the owner configured; availability is what the journal acts on. `App\Contracts\DomainAvailability`
+The switch is what the owner configured; availability is what the journal acts on. `App\Contracts\Domains\DomainAvailability`
 answers `isEnabled(string $owner)`: Core and a domain that cannot be switched off are always available, and a
 switchable domain is available while its switch is on and every domain it requires is available. One answer reads
 Core's settings once.

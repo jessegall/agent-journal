@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\ApproveSampleCall;
 use App\Calls\Processes\SampleApproved;
 use App\Commands\ApproveSample\ApproveSampleCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Approves a sample and answers its permit.

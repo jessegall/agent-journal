@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RepairDriverSettings;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\DriverOperation;
 use App\Enums\RecoveryAction;
 use App\Exceptions\DriverRequestRefused;

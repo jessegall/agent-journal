@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Sleeper;
+use App\Contracts\Time\Sleeper;
 
 final readonly class SystemSleeper implements Sleeper
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Watchdog;
+use App\Contracts\Processes\Watchdog;
 
 /**
  * The process alarm: SIGALRM keeps its default disposition, which terminates the process, because a PHP handler may

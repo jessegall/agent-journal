@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Contracts\AutoAssignmentAccess;
+use App\Contracts\Assignments\AutoAssignmentAccess;
 use App\Exceptions\AssignmentDenied;
 use App\Exceptions\AutoAssignmentDenied;
 use App\Models\Agent;

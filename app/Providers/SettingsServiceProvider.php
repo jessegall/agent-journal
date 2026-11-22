@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\PolicyCatalogue;
-use App\Contracts\SettingCommands;
-use App\Contracts\SettingsAccessPolicy;
-use App\Contracts\SettingsCatalogue;
-use App\Contracts\SettingsResolver;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Settings\SettingCommands;
+use App\Contracts\Settings\SettingsAccessPolicy;
+use App\Contracts\Settings\SettingsCatalogue;
+use App\Contracts\Settings\SettingsResolver;
 use App\Enums\AccessType;
 use App\Policies\SettingPolicy;
 use App\Support\ClosedSettingsAccess;

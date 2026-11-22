@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Calls;
 
 use App\Calls\Agents\RecordHeartbeatCall;
 use App\Commands\RecordHeartbeat\RecordHeartbeatCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Support\AgentContext;
 use App\Values\CallAccepted;
 

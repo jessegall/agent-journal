@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax;
 
-use App\Contracts\Pipe;
-use App\Contracts\PipelineRunner;
+use App\Contracts\Bus\Pipe;
+use App\Contracts\Bus\PipelineRunner;
 use App\Enums\ShellDialect;
 use App\Pipes\Lexing\CheckLexerBudget;
 use App\Pipes\Lexing\ReadHereDocumentBodies;

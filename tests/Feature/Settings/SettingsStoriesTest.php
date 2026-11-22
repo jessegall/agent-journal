@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\SettingCommands;
-use App\Contracts\SettingsCatalogue;
-use App\Contracts\SettingsDefinition;
-use App\Contracts\SettingsResolver;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Settings\SettingCommands;
+use App\Contracts\Settings\SettingsCatalogue;
+use App\Contracts\Settings\SettingsDefinition;
+use App\Contracts\Settings\SettingsResolver;
 use App\Declarations\IntegerSetting;
 use App\Declarations\SettingGroup;
 use App\Declarations\StringSetting;

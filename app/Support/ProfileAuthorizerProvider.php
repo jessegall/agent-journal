@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\Authorizer;
-use App\Contracts\AuthorizerProvider;
-use App\Contracts\CurrentActor;
-use App\Contracts\PolicyCatalogue;
-use App\Contracts\ProfileResolver;
-use App\Contracts\ReflectorFactory;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Authorization\Authorizer;
+use App\Contracts\Authorization\AuthorizerProvider;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Reflection\ReflectorFactory;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\AuthorizationType;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\AgentProfileMissing;

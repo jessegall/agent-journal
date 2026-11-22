@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ActorInboxResolver;
-use App\Contracts\ActorResolver;
-use App\Contracts\AssignmentProviders;
-use App\Contracts\DestinationProvider;
-use App\Contracts\Destinations;
-use App\Contracts\SeatedActor;
+use App\Contracts\Actors\ActorInboxResolver;
+use App\Contracts\Actors\ActorResolver;
+use App\Contracts\Assignments\AssignmentProviders;
+use App\Contracts\Chat\SeatedActor;
+use App\Contracts\Records\DestinationProvider;
+use App\Contracts\Records\Destinations;
 use App\Enums\ActorType;
 
 /**

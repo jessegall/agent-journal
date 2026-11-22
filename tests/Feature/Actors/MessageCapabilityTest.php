@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Contracts\MessageRecipient;
-use App\Contracts\MessageSender;
+use App\Contracts\Chat\MessageRecipient;
+use App\Contracts\Chat\MessageSender;
 use App\Models\Agent;
 use App\Support\SystemActor;
 use Domain\Access\Models\User;

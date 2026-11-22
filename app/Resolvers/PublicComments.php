@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\PublicCommentResolver;
+use App\Contracts\Records\PublicCommentResolver;
 use App\Models\Comment;
 use App\Support\PublicComment;
 use App\Support\PublicCommentPage;

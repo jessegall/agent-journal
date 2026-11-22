@@ -33,7 +33,7 @@ final readonly class ModelWriteScan implements FileScan
     /**
      * The contract and trait of a model that records the facts of its writes (plan 40, task 1578).
      */
-    public const string EVENT_SOURCE = 'App\Contracts\EventSource';
+    public const string EVENT_SOURCE = 'App\Contracts\Events\EventSource';
 
     public const string RAISES_EVENTS = 'App\Concerns\RaisesEvents';
 
@@ -108,7 +108,7 @@ final readonly class ModelWriteScan implements FileScan
      */
     private const array WRITING_SERVICES = [
         'Illuminate\Contracts\Events\Dispatcher', 'Illuminate\Events\Dispatcher', 'Illuminate\Contracts\Bus\Dispatcher',
-        'Illuminate\Bus\Dispatcher', 'App\Contracts\CommandBus', 'Illuminate\Contracts\Queue\Queue',
+        'Illuminate\Bus\Dispatcher', 'App\Contracts\Bus\CommandBus', 'Illuminate\Contracts\Queue\Queue',
         'Illuminate\Database\DatabaseManager', 'Illuminate\Database\ConnectionInterface',
         'Illuminate\Contracts\Filesystem\Filesystem', 'Illuminate\Filesystem\Filesystem', 'events', 'db', 'bus',
         'queue', 'files', 'filesystem',

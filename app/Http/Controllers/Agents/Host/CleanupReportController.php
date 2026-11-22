@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Agents\Host;
 
 use App\Commands\ReportCleanup\ReportCleanupCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\CleanupStep;
 use App\Http\Requests\Agents\CleanupReportRequest;
 use App\Models\CleanupOperation;

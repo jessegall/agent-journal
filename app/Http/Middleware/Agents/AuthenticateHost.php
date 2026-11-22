@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Agents;
 
-use App\Contracts\HostCalls;
-use App\Contracts\LocalProjectHosts;
+use App\Contracts\Hosts\HostCalls;
+use App\Contracts\Hosts\LocalProjectHosts;
 use App\Enums\CommandEntry;
 use App\Enums\HostProtocolVersion;
 use App\Exceptions\CallSignatureInvalid;

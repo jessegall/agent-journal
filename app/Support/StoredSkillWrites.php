@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentActor;
-use App\Contracts\SkillCondition;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Skills\SkillCondition;
 use App\Exceptions\SkillRequestReused;
 use App\Models\Skill;
 use App\Models\SkillRequest;

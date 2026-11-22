@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Contracts\Skill;
+use App\Contracts\Skills\Skill;
 use App\Support\CanonicalRenderer;
 use App\Support\MarkdownParts;
 use App\Support\Shipped\JournalSkill;

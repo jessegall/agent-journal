@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Attributes\Authorize;
-use App\Contracts\PipelineRunner;
+use App\Contracts\Bus\PipelineRunner;
 use App\Enums\CommandAdmissionStage;
 use App\Enums\CommandEffectType;
 use App\Enums\CommandEntry;

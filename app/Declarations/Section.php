@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Contracts\SectionResolver;
-use App\Contracts\VisibilityCheck;
+use App\Contracts\Authorization\VisibilityCheck;
+use App\Contracts\Navigation\SectionResolver;
 use App\Enums\SlotContextType;
 use App\Exceptions\InvalidSectionDeclaration;
 use App\Support\Layout\DeclaredLayoutData;

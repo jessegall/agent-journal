@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Contracts\CurrentState;
+use App\Contracts\Work\CurrentState;
 use App\Mcp\Data\ToolResult;
 use App\Support\AgentContext;
 use App\Support\References\StateReference;

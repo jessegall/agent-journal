@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReminderContribution;
+use App\Contracts\Work\ReminderContribution;
 
 /**
  * The reminders the owning domains give an agent when its context starts again: every required one first, then the

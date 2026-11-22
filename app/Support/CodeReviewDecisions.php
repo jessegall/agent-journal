@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AskAdmission;
-use App\Contracts\JournalAssignmentWriter;
+use App\Contracts\Admission\AskAdmission;
+use App\Contracts\Assignments\JournalAssignmentWriter;
 use App\Enums\AskOriginType;
 use App\Enums\CodeReviewState;
 use App\Enums\CoreAskType;

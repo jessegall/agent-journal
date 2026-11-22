@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Resolvers;
 
-use App\Contracts\NavigationChildren;
+use App\Contracts\Navigation\NavigationChildren;
 use App\Declarations\NavigationItem;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 

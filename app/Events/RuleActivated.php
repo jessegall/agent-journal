@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\ActiveRuleChange;
-use App\Contracts\Event;
+use App\Contracts\Events\ActiveRuleChange;
+use App\Contracts\Events\Event;
 use App\Models\RuleRevision;
 
 /**

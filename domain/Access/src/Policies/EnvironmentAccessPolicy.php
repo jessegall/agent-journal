@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Policies;
 
-use App\Contracts\OwnerPolicy;
+use App\Contracts\Authorization\OwnerPolicy;
 use Domain\Access\Models\EnvironmentUserGrant;
 
 /**

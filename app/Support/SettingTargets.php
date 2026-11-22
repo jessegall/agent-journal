@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReflectorFactory;
-use App\Contracts\Setting;
+use App\Contracts\Reflection\ReflectorFactory;
+use App\Contracts\Settings\Setting;
 use App\Declarations\ToggleGroup;
 use App\Enums\SettingType;
 use App\Exceptions\SettingsAccessDenied;

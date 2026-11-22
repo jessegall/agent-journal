@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Helpers\Listeners;
 
 use App\Attributes\InCommandTransaction;
-use App\Contracts\Listener;
-use App\Contracts\Notifications;
+use App\Contracts\Chat\Notifications;
+use App\Contracts\Events\Listener;
 use App\Data\NotificationTarget;
 use App\Enums\NotificationSourceType;
 use Domain\Helpers\Events\ReportJobLinked;

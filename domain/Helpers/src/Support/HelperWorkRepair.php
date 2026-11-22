@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Contracts\ActorGuidance;
-use App\Contracts\WorkRepair;
+use App\Contracts\Actors\ActorGuidance;
+use App\Contracts\Work\WorkRepair;
 use App\Enums\WorkRepairOutcome;
 use App\Values\WorkRepairRequest;
 use Domain\Helpers\Models\HelperJob;

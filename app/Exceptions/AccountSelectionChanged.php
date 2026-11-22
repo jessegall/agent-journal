@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Contracts\StaleRefusal;
+use App\Contracts\Refusals\StaleRefusal;
 use RuntimeException;
 
 /**

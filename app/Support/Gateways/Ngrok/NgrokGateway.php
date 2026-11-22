@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support\Gateways\Ngrok;
 
 use App\Attributes\OutsideThePlaces;
-use App\Contracts\Files;
-use App\Contracts\ShareGateway;
+use App\Contracts\Files\Files;
+use App\Contracts\Sharing\ShareGateway;
 use App\Enums\GatewayAddressCheck;
 use App\Enums\Permissions;
 use App\Enums\Place;

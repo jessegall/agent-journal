@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Agents\Host;
 
 use App\Commands\ReportRuntimeActivity\ReportRuntimeActivityCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Data\Agents\RuntimeActivityReportData;
 use App\Values\HostContext;
 use Illuminate\Http\Response;

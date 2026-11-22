@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Contracts\DomainAvailability;
+use App\Contracts\Domains\DomainAvailability;
 use App\Enums\NoSubject;
 use App\Support\Decisions\StateReferences;
 use App\Support\DomainStateType;

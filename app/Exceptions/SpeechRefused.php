@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Concerns\RendersRefusal;
-use App\Contracts\CodedRefusal;
-use App\Contracts\StaleRefusal;
+use App\Contracts\Refusals\CodedRefusal;
+use App\Contracts\Refusals\StaleRefusal;
 use App\Enums\RefusalCode;
 use RuntimeException;
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\StartAgent;
 
 use App\Attributes\Authorize;
-use App\Contracts\AgentStartCommand;
+use App\Contracts\Bus\AgentStartCommand;
 use App\Enums\AccessType;
 use App\Policies\AgentPolicy;
 use App\Support\Command;

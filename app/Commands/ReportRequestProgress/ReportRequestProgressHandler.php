@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ReportRequestProgress;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\DriverOperation;
 use App\Enums\RequestOutcome;
 use App\Enums\RequestProgress;

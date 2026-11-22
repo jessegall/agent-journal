@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Attributes\DecodesAnyJson;
-use App\Contracts\WorkspaceSource;
+use App\Contracts\Files\WorkspaceSource;
 use App\Exceptions\WorkspaceSourceMissing;
 use App\Exceptions\WorkspaceSourcesInvalid;
 use JsonException;

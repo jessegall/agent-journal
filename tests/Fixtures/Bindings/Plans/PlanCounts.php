@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bindings\Plans;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use Illuminate\Container\Attributes\Singleton;
 use Tests\Fixtures\Bindings\Plans\Contracts\PlanCounter;
 

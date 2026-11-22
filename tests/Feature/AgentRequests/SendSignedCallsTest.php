@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\AgentRequests;
 
-use App\Contracts\CallSender;
+use App\Contracts\Domains\CallSender;
 use App\Exceptions\AnswerUnreadable;
 use App\Exceptions\CallTooLarge;
 use App\Exceptions\JournalUnavailable;

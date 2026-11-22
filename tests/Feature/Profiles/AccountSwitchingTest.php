@@ -6,8 +6,8 @@ namespace Tests\Feature\Profiles;
 
 use App\Commands\RenameAccount\RenameAccountCommand;
 use App\Commands\SwitchAccount\SwitchAccountCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
 use App\Events\AccountsChanged;
 use App\Exceptions\AccountLabelInvalid;
 use App\Exceptions\AccountLabelTaken;

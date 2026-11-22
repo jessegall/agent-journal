@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Contracts\CommandClassifier;
+use App\Contracts\Bus\CommandClassifier;
 use App\Enums\ShellDialect;
 use App\Support\Admission\OutputPolicy;
 use App\Support\Syntax\TreeParser;

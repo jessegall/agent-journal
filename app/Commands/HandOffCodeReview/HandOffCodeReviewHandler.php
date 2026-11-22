@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Commands\HandOffCodeReview;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\HelperCommitImport;
-use App\Contracts\MaintenanceAdmission;
+use App\Contracts\Admission\MaintenanceAdmission;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Work\HelperCommitImport;
 use App\Enums\AskOriginType;
 use App\Enums\CoreAskType;
 use App\Exceptions\HelperImportFailed;

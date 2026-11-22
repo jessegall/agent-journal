@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Commands\StartAgent\StartAgentCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\SessionPolicyReader;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Sessions\SessionPolicyReader;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;

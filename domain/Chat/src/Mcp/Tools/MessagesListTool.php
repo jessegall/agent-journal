@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Mcp\Tools;
 
-use App\Contracts\AgentMessageReader;
+use App\Contracts\Chat\AgentMessageReader;
 use App\Enums\AgentInboxState;
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Data\ToolResult;

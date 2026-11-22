@@ -100,7 +100,7 @@ final class BoundaryCheckerTest extends TestCase
             new NameUse(
                 $this->fixtureFolder().'/Plans/UsesAllowed.php',
                 3,
-                'App\Contracts\Actor',
+                'App\Contracts\Actors\Actor',
                 NameType::Type,
             ),
             new NameUse(

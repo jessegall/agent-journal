@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\ReadMeter;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Reads\ReadMeter;
 use App\Models\Link;
 use App\Support\MeteredShareBudget;
 use App\Support\ShareContentRead;

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Commands\StartOwnedAgent;
 
 use App\Commands\StartAgent\StartAgentCommand;
-use App\Contracts\BuiltInStartProfiles;
-use App\Contracts\CommandBus;
-use App\Contracts\CommandHandler;
-use App\Contracts\CurrentSession;
-use App\Contracts\RequestSource;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Bus\RequestSource;
+use App\Contracts\Sessions\BuiltInStartProfiles;
+use App\Contracts\Sessions\CurrentSession;
 use App\Models\Agent;
 use App\Support\OwnerStartReceipt;
 use App\Support\StartPreviews;

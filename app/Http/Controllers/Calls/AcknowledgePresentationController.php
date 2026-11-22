@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Communication\AcknowledgePresentationCall;
 use App\Calls\Communication\PresentationAcknowledged;
 use App\Commands\AcknowledgePresentation\AcknowledgePresentationCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Confirms the pieces of a presentation batch your driver showed.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Contracts\ActorAttention;
+use App\Contracts\Actors\ActorAttention;
 use App\Enums\IntervalRole;
 use App\Enums\ReceiptDeliveryState;
 use App\Models\CommandReceipt;

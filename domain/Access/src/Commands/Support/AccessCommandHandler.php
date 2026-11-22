@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Commands\Support;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 
 /**
  * The base every command handler of Access extends.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Pipes\Run;
 
 use App\Calls\Processes\ProcessCalls;
-use App\Contracts\Pipe;
+use App\Contracts\Bus\Pipe;
 use App\Support\Run\PartResult;
 use App\Support\Run\SupervisedRun;
 use App\Values\CommandReport;

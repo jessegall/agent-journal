@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Domains\Errands;
 
 use App\Support\AssigneeIdentity;
-use App\Contracts\AssignedWorkProvider;
+use App\Contracts\Assignments\AssignedWorkProvider;
 
 /**
  * Counts no errand held by anyone.

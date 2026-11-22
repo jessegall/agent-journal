@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Drivers;
 
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Exceptions\DriverFamilyUnknown;
 use App\Support\DriverRegistry;
 use App\Values\DriverFamily;

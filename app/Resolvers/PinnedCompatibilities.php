@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\DriverCompatibilities;
+use App\Contracts\Drivers\DriverCompatibilities;
 use App\Enums\ArrangementType;
 use App\Enums\DriverEvidence;
 use App\Models\Host;

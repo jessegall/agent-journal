@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\DriverSourceType;
 use App\Exceptions\DefaultUnavailable;
 use App\Exceptions\DriverConflict;

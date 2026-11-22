@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AssignedWorkProvider;
-use App\Contracts\AutoAssigner;
+use App\Contracts\Assignments\AssignedWorkProvider;
+use App\Contracts\Assignments\AutoAssigner;
 
 /**
  * A domain's declaration of the auto-assigner and the work counter for one of its assignable types.

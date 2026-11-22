@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Providers;
 
-use App\Contracts\EnvironmentTasks;
-use App\Contracts\ReadEntitlements;
-use App\Contracts\SystemEntryPolicies;
+use App\Contracts\Authorization\ReadEntitlements;
+use App\Contracts\Authorization\SystemEntryPolicies;
+use App\Contracts\Work\EnvironmentTasks;
 use App\Support\LinkTypeRegistry;
 use App\Support\Sources\Contracts\DockRegistration;
 use App\Values\ReadEntitlement;

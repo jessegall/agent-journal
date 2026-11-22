@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Command;
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\RecordCommand;
+use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\RecordCommand;
 use App\Exceptions\ActorNotAllowed;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;

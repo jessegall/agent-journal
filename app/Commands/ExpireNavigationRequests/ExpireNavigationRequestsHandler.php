@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\ExpireNavigationRequests;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\NavigationExpiry;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Navigation\NavigationExpiry;
 use App\Support\EngineAccess;
 
 /**

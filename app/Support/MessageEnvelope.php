@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Inbox;
+use App\Contracts\Chat\Inbox;
 use App\Enums\MessageState;
 use App\Exceptions\MessageToSelf;
 

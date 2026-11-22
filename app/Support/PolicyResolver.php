@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Command;
-use App\Contracts\OperationNames;
-use App\Contracts\PolicyCatalogue;
+use App\Contracts\Authorization\OperationNames;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Bus\Command;
 use App\Enums\ExecutionModeType;
 use App\Enums\PolicyOriginType;
 use App\Exceptions\ProfilePolicyRefused;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\OpenBindingMainRuntime;
 
 use App\Commands\OpenAgentRuntime\OpenAgentRuntimeHandler;
-use App\Contracts\BuiltInStartProfiles;
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Sessions\BuiltInStartProfiles;
 use App\Models\Agent;
 use App\Support\OpenedRuntime;
 

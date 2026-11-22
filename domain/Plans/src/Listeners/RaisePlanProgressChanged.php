@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Listeners;
 
-use App\Contracts\Listener;
+use App\Contracts\Events\Listener;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Models\Phase;
 use Domain\Tasks\Events\TaskBlocked;

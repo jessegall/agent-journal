@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Commands\CreateDesk\CreateDeskCommand;
 use App\Commands\TakeNextMessages\TakeNextMessagesCommand;
-use App\Contracts\AssignmentTransaction;
+use App\Contracts\Assignments\AssignmentTransaction;
 use App\Data\MessageReadBatch;
 use App\Models\DeskRecord;
 use App\Support\DeskSeating;

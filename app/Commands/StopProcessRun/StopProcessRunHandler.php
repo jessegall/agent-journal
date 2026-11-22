@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\StopProcessRun;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\RunLogicalResult;
 use App\Enums\RunResultSource;
 use App\Exceptions\StopRefused;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Contracts\ActorWorkStacks;
-use App\Contracts\AssigneeResolver;
-use App\Contracts\AssignmentResolver;
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\ActorWorkStacks;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Assignments\AssigneeResolver;
+use App\Contracts\Assignments\AssignmentResolver;
+use App\Contracts\Assignments\AssignmentTransaction;
 use App\Support\AssigneeIdentity;
 use App\Support\References\StateReference;
 use Domain\Tasks\Contracts\AssignedTaskResolver;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\BuiltInStartProfiles;
+use App\Contracts\Sessions\BuiltInStartProfiles;
 use App\Exceptions\AgentBusy;
 use App\Exceptions\AgentNotAvailable;
 use App\Exceptions\StartRefused;

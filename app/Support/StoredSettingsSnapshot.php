@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\EnabledSettingsGroup;
-use App\Contracts\SettingsSnapshot;
+use App\Contracts\Settings\EnabledSettingsGroup;
+use App\Contracts\Settings\SettingsSnapshot;
 use App\Declarations\BooleanSetting;
 use App\Declarations\ChoiceSetting;
 use App\Declarations\DecimalSetting;

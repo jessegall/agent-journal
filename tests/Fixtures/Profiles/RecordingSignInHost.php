@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
-use App\Contracts\SignInHost;
+use App\Contracts\Accounts\SignInHost;
 use App\Enums\AccountCheckResult;
 use App\Enums\SignInOutcome;
 use App\Values\ClaimedAccountCheck;

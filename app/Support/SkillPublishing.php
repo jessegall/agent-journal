@@ -11,7 +11,7 @@ use App\Commands\PruneSkillPublications\PruneSkillPublicationsCommand;
 use App\Commands\PublishSkills\PublishSkillsCommand;
 use App\Commands\RefreshSkills\RefreshSkillsCommand;
 use App\Commands\RetrySkillPublication\RetrySkillPublicationCommand;
-use App\Contracts\Command;
+use App\Contracts\Bus\Command;
 use App\Enums\CommandEntry;
 use App\Enums\PublicationState;
 use App\Exceptions\SkillPublicationFailed;

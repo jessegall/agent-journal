@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\StateEvents;
 
-use App\Contracts\AuthoritySource;
+use App\Contracts\Authorization\AuthoritySource;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
 use App\Values\FrameGrant;

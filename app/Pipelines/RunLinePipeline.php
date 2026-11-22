@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipelines;
 
-use App\Contracts\PipelineDefinition;
+use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\Run\AdmitLine;
 
 /**

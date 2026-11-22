@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Cards;
 
-use App\Contracts\DeclaredPages;
+use App\Contracts\Navigation\DeclaredPages;
 
 /**
  * A page a card opens: the key of a declared page and its route arguments, never a written address.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\SignInProtocol;
+use App\Contracts\Accounts\SignInProtocol;
 use App\Enums\SignInMethod;
 use App\Exceptions\SignInMethodMissing;
 use Illuminate\Contracts\Container\Container;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Attributes;
 
-use App\Contracts\Command;
+use App\Contracts\Bus\Command;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS)]

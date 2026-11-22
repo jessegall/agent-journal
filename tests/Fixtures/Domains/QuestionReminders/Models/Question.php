@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\QuestionReminders\Models;
 
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Concerns\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

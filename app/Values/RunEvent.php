@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Calls\Processes\RunPart;
-use App\Contracts\RunEvents;
+use App\Contracts\Events\RunEvents;
 use App\Enums\PartEndType;
 use App\Enums\RunEventType;
 use Spatie\LaravelData\Data;

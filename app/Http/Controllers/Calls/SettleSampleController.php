@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\SampleSettled;
 use App\Calls\Processes\SettleSampleCall;
 use App\Commands\SettleSample\SettleSampleCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Settles a sample and answers where its request stands.

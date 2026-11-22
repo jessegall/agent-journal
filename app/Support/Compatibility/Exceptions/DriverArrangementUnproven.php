@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support\Compatibility\Exceptions;
 
 use App\Concerns\RendersRefusal;
-use App\Contracts\CodedRefusal;
-use App\Contracts\CommandRefusal;
+use App\Contracts\Bus\CommandRefusal;
+use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\AuthenticationArrangement;
 use App\Enums\DriverEvidence;
 use App\Enums\RefusalCode;

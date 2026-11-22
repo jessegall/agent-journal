@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Concerns;
 
-use App\Contracts\CommandRefusal;
+use App\Contracts\Bus\CommandRefusal;
 use App\Exceptions\ContentMissing;
 use App\Exceptions\ContentTooLarge;
 use App\Exceptions\MarkdownInvalid;

@@ -6,7 +6,7 @@ namespace Tests\Support;
 
 use App\Commands\AcknowledgePresentation\AcknowledgePresentationCommand;
 use App\Commands\ClaimSpeech\ClaimSpeechCommand;
-use App\Contracts\CurrentSession;
+use App\Contracts\Sessions\CurrentSession;
 use App\Data\PresentationItemData;
 use App\Enums\ActorType;
 use App\Models\AgentSession;

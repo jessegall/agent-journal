@@ -6,7 +6,7 @@ namespace Tests\Feature\Profiles;
 
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\SaveProfileDraft\SaveProfileDraftCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\CommandDirectory;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\InvalidScript;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Command;
-use App\Contracts\CommandAdmission;
-use App\Contracts\CommandMiddleware;
-use App\Contracts\CurrentActor;
-use App\Contracts\DomainAvailability;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandAdmission;
+use App\Contracts\Bus\CommandMiddleware;
+use App\Contracts\Domains\DomainAvailability;
 use App\Enums\CommandAdmissionStage;
 use App\Enums\CommandEntry;
 use App\Enums\MiddlewareStage;

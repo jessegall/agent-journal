@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Wire;
 
-use App\Contracts\DeclaredPages;
+use App\Contracts\Navigation\DeclaredPages;
 use App\Support\Cards\DockDestination;
 use App\Support\Cards\DockLink;
 

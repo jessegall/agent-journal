@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\EnvironmentTasks;
+use App\Contracts\Work\EnvironmentTasks;
 use App\Exceptions\VerbNotServed;
 use App\Models\Environment;
 use App\Models\ProjectBinding;

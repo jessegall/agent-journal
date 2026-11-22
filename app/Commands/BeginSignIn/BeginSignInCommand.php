@@ -6,7 +6,7 @@ namespace App\Commands\BeginSignIn;
 
 use App\Attributes\Authorize;
 use App\Attributes\RetainedActorRequestKey;
-use App\Contracts\TargetedCommand;
+use App\Contracts\Bus\TargetedCommand;
 use App\Enums\AccessType;
 use App\Enums\SignInMethod;
 use App\Policies\AccountPolicy;

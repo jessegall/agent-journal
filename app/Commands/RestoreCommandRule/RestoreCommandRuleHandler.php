@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RestoreCommandRule;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\ClassificationRuleRefused;
 use App\Exceptions\RuleProposalRefused;
 use App\Models\ClassificationRule;

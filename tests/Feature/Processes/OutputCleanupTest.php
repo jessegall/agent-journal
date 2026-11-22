@@ -6,7 +6,7 @@ namespace Tests\Feature\Processes;
 
 use App\Commands\CleanProcessOutput\CleanProcessOutputCommand;
 use App\Commands\VerifyRestoredOutput\VerifyRestoredOutputCommand;
-use App\Contracts\ShellAdmission;
+use App\Contracts\Admission\ShellAdmission;
 use App\Enums\AdmissionRefusalCode;
 use App\Enums\CaptureState;
 use App\Enums\ShellDialect;

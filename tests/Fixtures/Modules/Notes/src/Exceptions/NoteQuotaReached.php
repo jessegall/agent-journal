@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Exceptions;
 
-use App\Contracts\CodedRefusal;
+use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\RefusalCode;
-use App\Contracts\CommandRefusal;
+use App\Contracts\Bus\CommandRefusal;
 use RuntimeException;
 
 final class NoteQuotaReached extends RuntimeException implements CodedRefusal, CommandRefusal

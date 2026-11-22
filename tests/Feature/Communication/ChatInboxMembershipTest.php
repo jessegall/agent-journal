@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Contracts\ConversationResolver;
-use App\Contracts\InboxResolver;
+use App\Contracts\Chat\ConversationResolver;
+use App\Contracts\Chat\InboxResolver;
 use App\Data\InboxView;
 use App\Enums\LeaveReason;
 use App\Exceptions\InboxUnavailable;

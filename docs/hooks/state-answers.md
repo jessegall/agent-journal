@@ -64,7 +64,7 @@ under a live one stays buried. A push past `AgentStack::DEPTH_LIMIT` frames is r
 
 ## Current work is read from the stack
 
-No state stores which task or plan is current. `App\Contracts\CurrentState` answers it: the highest frame of a
+No state stores which task or plan is current. `App\Contracts\Work\CurrentState` answers it: the highest frame of a
 type whose work is not done, covered or not. `CurrentStates::record` reads the agent's work record from the top live
 state that names one in `workRecordType()`.
 

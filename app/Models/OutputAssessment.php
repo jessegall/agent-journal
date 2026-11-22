@@ -7,7 +7,7 @@ namespace App\Models;
 use App\Casts\StoredValuesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Enums\AssessmentOutcome;
 use App\Enums\InterpretationState;
 use App\Enums\ProblemCode;

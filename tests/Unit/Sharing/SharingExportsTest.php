@@ -34,8 +34,8 @@ final class SharingExportsTest extends TestCase
 
         $named = array_values(array_unique($named));
 
-        $this->assertContains('App\\Contracts\\Shareable', $named);
-        $this->assertContains('App\\Contracts\\ShareRecordContributor', $named);
+        $this->assertContains('App\\Contracts\\Sharing\\Shareable', $named);
+        $this->assertContains('App\\Contracts\\Sharing\\ShareRecordContributor', $named);
         $this->assertSame([], array_values(array_filter($named, fn (string $name) => ! $exports->has($name))));
     }
 

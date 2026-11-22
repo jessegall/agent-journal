@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Feature\Http;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Events\PageChanged;
 use App\Support\ActorContext;
 use App\Support\UserChannel;

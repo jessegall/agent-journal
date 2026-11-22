@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\RecordUserHeartbeat;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\ServerClock;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Time\ServerClock;
 use App\Models\UserPresence;
 
 final readonly class RecordUserHeartbeatHandler implements CommandHandler

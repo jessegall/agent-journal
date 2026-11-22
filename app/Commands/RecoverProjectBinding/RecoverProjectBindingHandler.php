@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RecoverProjectBinding;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Enums\ConnectionAuditActor;
 use App\Enums\ConnectionAuditType;
 use App\Models\ConnectionAudit;

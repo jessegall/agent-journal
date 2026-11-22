@@ -8,7 +8,7 @@ use App\Commands\CancelAccountUses\CancelAccountUsesCommand;
 use App\Commands\HoldAccountUses\HoldAccountUsesCommand;
 use App\Commands\MaintainAccount\MaintainAccountCommand;
 use App\Commands\SettleAccountUses\SettleAccountUsesCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Exceptions\AccountInUse;
 use App\Models\Account;
 use App\Values\MaintenanceProgress;

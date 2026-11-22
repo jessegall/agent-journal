@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Docking;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Events\PageChanged;
 use App\Support\ActorIdentity;
 use Domain\Access\Models\User;

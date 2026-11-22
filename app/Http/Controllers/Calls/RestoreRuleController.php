@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Calls;
 use App\Calls\Processes\ProposalReceived;
 use App\Calls\Processes\RestoreRuleCall;
 use App\Commands\RestoreCommandRule\RestoreCommandRuleCommand;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 
 /**
  * Proposes a rule revision again and answers the proposal.

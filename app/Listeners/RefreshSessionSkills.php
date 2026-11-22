@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Contracts\AgentStack;
-use App\Contracts\CommandFacts;
-use App\Contracts\DriverCatalogue;
-use App\Contracts\Listener;
-use App\Contracts\SkillResolver;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Events\Listener;
+use App\Contracts\Skills\SkillResolver;
+use App\Contracts\Work\AgentStack;
 use App\Enums\SkillReload;
 use App\Events\ContextStarted;
 use App\Events\SessionSkillsIntended;

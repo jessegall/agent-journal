@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Commands\InstallBuiltInProfiles\InstallBuiltInProfilesCommand;
-use App\Contracts\BuiltInStartProfiles;
-use App\Contracts\ProfileResolver;
+use App\Contracts\Sessions\BuiltInStartProfiles;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\CommandEntry;
 use App\Enums\DriverVariant;
 use App\Values\ProfileBase;

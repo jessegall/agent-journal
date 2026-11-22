@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipelines;
 
-use App\Contracts\PipelineDefinition;
+use App\Contracts\Bus\PipelineDefinition;
 use App\Pipes\Grammar\CompleteSubstitutions;
 use App\Pipes\Grammar\FindNextSubstitution;
 use App\Pipes\Grammar\ParseFoundSubstitution;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\RecordEvidenceReads;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\EvidenceRead;
 use App\Models\ProcessRun;
 use App\Support\ActorIdentity;

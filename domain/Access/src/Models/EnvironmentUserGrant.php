@@ -6,7 +6,7 @@ namespace Domain\Access\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\ReadableModel;
+use App\Contracts\Records\ReadableModel;
 use App\Enums\ChatPermission;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;

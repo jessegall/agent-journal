@@ -9,7 +9,7 @@ use App\Commands\CreateDesk\CreateDeskCommand;
 use App\Commands\ReleaseSeat\ReleaseSeatCommand;
 use App\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
 use App\Commands\SendMessage\SendMessageCommand;
-use App\Contracts\AssignmentTransaction;
+use App\Contracts\Assignments\AssignmentTransaction;
 use App\Models\DeskRecord;
 use App\Models\NotificationOccurrence;
 use App\Models\NotificationReceipt;

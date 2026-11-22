@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\FileAccessPolicy;
-use App\Contracts\MarkdownParts as MarkdownPartsContract;
-use App\Contracts\PolicyCatalogue;
-use App\Contracts\SkillPublisher;
-use App\Contracts\SkillResolver;
+use App\Contracts\Authorization\FileAccessPolicy;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Reads\MarkdownParts as MarkdownPartsContract;
+use App\Contracts\Skills\SkillPublisher;
+use App\Contracts\Skills\SkillResolver;
 use App\Enums\AccessType;
 use App\Enums\Place;
 use App\Policies\SkillAuthoringPolicy;

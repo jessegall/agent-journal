@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Responses;
 
-use App\Contracts\CurrentActor;
+use App\Contracts\Actors\CurrentActor;
 use App\Exceptions\NotificationCursorInvalid;
 use App\Resolvers\Support\NotificationChanges;
 use App\Resolvers\Support\NotificationFeed;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Contracts\UnitOwner;
+use App\Contracts\Work\UnitOwner;
 use App\Models\Agent;
 use App\Models\Link;
 use App\Models\Share;

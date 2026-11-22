@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CommandPermissionResolver;
-use App\Contracts\CurrentActor;
-use App\Contracts\ProfileResolver;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Bus\CommandPermissionResolver;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\ProfileMissing;
 use App\Exceptions\ProfileRetired;

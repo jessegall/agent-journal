@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\LocalProjectHosts;
+use App\Contracts\Hosts\LocalProjectHosts;
 use App\Models\ProjectBinding;
 
 /**

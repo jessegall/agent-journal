@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\EngineGrant;
+use App\Contracts\Authorization\EngineGrant;
 use App\Values\StackTarget;
 
 /**

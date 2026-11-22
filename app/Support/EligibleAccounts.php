@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\CurrentAuthorizer;
-use App\Contracts\ProfileResolver;
-use App\Contracts\StartAccounts;
+use App\Contracts\Accounts\StartAccounts;
+use App\Contracts\Authorization\CurrentAuthorizer;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Data\Profiles\EligibleAccountsData;
 use App\Enums\AccessType;
 use App\Models\Account;

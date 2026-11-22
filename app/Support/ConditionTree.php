@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Attributes\DecodesAnyJson;
-use App\Contracts\PolicyCatalogue;
-use App\Contracts\SkillCondition;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Skills\SkillCondition;
 use App\Enums\AccessType;
 use App\Exceptions\SkillConditionInvalid;
 use App\Support\Conditions\AllOf;

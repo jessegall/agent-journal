@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Pipes\Run;
 
 use App\Calls\Processes\ProcessCalls;
-use App\Contracts\Files;
-use App\Contracts\Pipe;
+use App\Contracts\Bus\Pipe;
+use App\Contracts\Files\Files;
 use App\Support\Execution\ChannelRunEvents;
 use App\Support\Execution\Supervisor;
 use App\Support\Run\FetchedAdmission;

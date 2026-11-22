@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\SelectMessage;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\CurrentSession;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Sessions\CurrentSession;
 use App\Exceptions\ChatMessageRefused;
 use App\Models\AgentSession;
 use App\Models\Message;

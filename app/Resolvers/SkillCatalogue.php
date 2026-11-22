@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Skill;
-use App\Contracts\SkillResolver;
+use App\Contracts\Skills\Skill;
+use App\Contracts\Skills\SkillResolver;
 use App\Enums\SkillOrigin;
 use App\Exceptions\SkillConditionInvalid;
 use App\Exceptions\SkillConflict;

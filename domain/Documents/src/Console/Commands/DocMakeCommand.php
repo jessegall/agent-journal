@@ -6,7 +6,7 @@ namespace Domain\Documents\Console\Commands;
 
 use App\Attributes\JournalRoute;
 use App\Console\Concerns\RunsCallPipelines;
-use App\Contracts\Files;
+use App\Contracts\Files\Files;
 use App\Enums\CommandClass;
 use App\Enums\JournalRouteType;
 use App\Values\CommandReport;

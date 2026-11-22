@@ -14,7 +14,7 @@ use App\Commands\SetIntegerChoice\SetIntegerChoiceCommand;
 use App\Commands\SetIntegerSetting\SetIntegerSettingCommand;
 use App\Commands\SetStringChoice\SetStringChoiceCommand;
 use App\Commands\SetStringSetting\SetStringSettingCommand;
-use App\Contracts\SettingCommands;
+use App\Contracts\Settings\SettingCommands;
 use App\Declarations\IntegerSetting;
 use App\Exceptions\SettingHandleUnknown;
 use App\Exceptions\SettingReferenceInvalid;

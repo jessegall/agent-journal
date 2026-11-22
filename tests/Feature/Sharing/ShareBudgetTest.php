@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Contracts\ReadMeter;
+use App\Contracts\Reads\ReadMeter;
 use App\Exceptions\ShareBudgetExceeded;
 use App\Support\MeteredShareBudget;
 use App\Support\ScopedReadMeter;

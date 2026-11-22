@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Exceptions;
 
-use App\Contracts\CommandRefusal;
+use App\Contracts\Bus\CommandRefusal;
 use RuntimeException;
 
 /**

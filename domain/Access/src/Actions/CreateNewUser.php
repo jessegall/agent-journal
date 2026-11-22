@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Access\Actions;
 
-use App\Contracts\ActorProvisioning;
-use App\Contracts\AssignmentTransaction;
+use App\Contracts\Actors\ActorProvisioning;
+use App\Contracts\Assignments\AssignmentTransaction;
 use App\Support\ActorIdentity;
 use Domain\Access\Concerns\PasswordValidationRules;
 use Domain\Access\Models\User;

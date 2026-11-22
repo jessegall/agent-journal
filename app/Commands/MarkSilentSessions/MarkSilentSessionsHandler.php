@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\MarkSilentSessions;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\StartHeartbeats;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Sessions\StartHeartbeats;
 use App\Support\EngineAccess;
 
 /**

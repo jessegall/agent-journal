@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support\Assignments;
 
-use App\Contracts\AssignmentPool;
-use App\Contracts\AssignmentPoolFactory;
+use App\Contracts\Assignments\AssignmentPool;
+use App\Contracts\Assignments\AssignmentPoolFactory;
 use App\Enums\PoolInputType;
 use App\Exceptions\AssignmentPoolTooLarge;
 use App\Exceptions\AssignmentPoolUnavailable;

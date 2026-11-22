@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\SettleMergeOutcomes;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\MaintenanceAdmission;
+use App\Contracts\Admission\MaintenanceAdmission;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\MergeAttempt;
 use App\Support\MergeSettlement;
 

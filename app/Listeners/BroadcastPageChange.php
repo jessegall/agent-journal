@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Contracts\AdmittedRecipients;
-use App\Contracts\InboxResolver;
-use App\Contracts\InboxScopedFact;
-use App\Contracts\Listener;
-use App\Contracts\UserInterfaceUpdater;
+use App\Contracts\Chat\AdmittedRecipients;
+use App\Contracts\Chat\InboxResolver;
+use App\Contracts\Events\InboxScopedFact;
+use App\Contracts\Events\Listener;
+use App\Contracts\Navigation\UserInterfaceUpdater;
 use App\Events\ChatAccessEnded;
 use App\Events\ChatMemberLeft;
 use App\Events\PageChanged;

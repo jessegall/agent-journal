@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\OptionSetting;
+use App\Contracts\Settings\OptionSetting;
 use App\Enums\SettingType;
 use App\Exceptions\SettingsAccessDenied;
 use App\Exceptions\SettingUnavailable;

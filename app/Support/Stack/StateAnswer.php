@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Stack;
 
-use App\Contracts\Command;
-use App\Contracts\Event;
+use App\Contracts\Bus\Command;
+use App\Contracts\Events\Event;
 use App\Enums\AnswerType;
 use App\Exceptions\HookAnswerRefused;
 use App\Support\Decisions\ContextLine;

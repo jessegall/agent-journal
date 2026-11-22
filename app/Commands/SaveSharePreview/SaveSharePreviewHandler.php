@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Commands\SaveSharePreview;
 
-use App\Contracts\CommandHandler;
-use App\Contracts\ReadMeter;
-use App\Contracts\SharePolicy;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Reads\ReadMeter;
+use App\Contracts\Sharing\SharePolicy;
 use App\Models\ShareGatewayConfiguration;
 use App\Models\SharePreview;
 use App\Support\MeteredShareBudget;

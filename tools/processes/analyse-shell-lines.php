@@ -12,7 +12,7 @@ declare(strict_types=1);
  *   php tools/processes/analyse-shell-lines.php < input.jsonl > results.jsonl
  */
 
-use App\Contracts\CommandClassifier;
+use App\Contracts\Bus\CommandClassifier;
 use App\Enums\ParseOutcome;
 use App\Enums\ShellDialect;
 use App\Processes\Contracts\AliasReader;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Feature\Http;
 
 use App\Commands\PostComment\PostCommentCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
 use App\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;

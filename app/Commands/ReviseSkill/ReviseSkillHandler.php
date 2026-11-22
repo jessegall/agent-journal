@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\ReviseSkill;
 
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandHandler;
 use App\Models\Skill;
 use App\Resolvers\Support\SkillContextResolver;
 use App\Support\StoredSkillWrites;

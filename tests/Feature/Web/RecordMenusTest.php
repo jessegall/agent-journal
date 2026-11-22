@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Contracts\RecordMenus;
+use App\Contracts\Navigation\RecordMenus;
 use App\Declarations\DomainUi;
 use App\Declarations\Menu;
 use App\Declarations\MenuItem;

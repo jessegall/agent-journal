@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\RecordProvider;
-use App\Contracts\RecordResolver;
+use App\Contracts\Records\RecordProvider;
+use App\Contracts\Records\RecordResolver;
 use App\Data\RecordCard;
 use App\Exceptions\RecordUnavailable;
 use App\Models\Comment;

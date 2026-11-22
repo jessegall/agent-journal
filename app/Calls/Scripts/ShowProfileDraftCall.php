@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Calls\Scripts;
 
 use App\Attributes\Endpoint;
-use App\Contracts\JournalCall;
+use App\Contracts\Domains\JournalCall;
 use App\Data\ProfileDraftData;
 use App\Enums\CallEffect;
 use App\Values\ProfileKey;

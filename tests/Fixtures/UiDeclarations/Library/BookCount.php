@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Library;
 
-use App\Contracts\CountResolver;
+use App\Contracts\Records\CountResolver;
 
 final class BookCount implements CountResolver
 {

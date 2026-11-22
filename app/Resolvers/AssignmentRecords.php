@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\AssignmentProviders;
-use App\Contracts\AssignmentResolver;
-use App\Contracts\CurrentActor;
-use App\Contracts\SharedHolders;
+use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Assignments\AssignmentProviders;
+use App\Contracts\Assignments\AssignmentResolver;
+use App\Contracts\Sharing\SharedHolders;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\InvalidAssignmentPage;
 use App\Models\AssignmentRecord;

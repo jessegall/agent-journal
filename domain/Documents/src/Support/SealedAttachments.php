@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Contracts\AttachmentReferences;
-use App\Contracts\MessagePart;
-use App\Contracts\SessionProvenance;
+use App\Contracts\Drivers\AttachmentReferences;
+use App\Contracts\Drivers\MessagePart;
+use App\Contracts\Sessions\SessionProvenance;
 use App\Exceptions\DriverRequestRefused;
 use Domain\Documents\Exceptions\UploadExpired;
 use Domain\Documents\Models\TextUpload;

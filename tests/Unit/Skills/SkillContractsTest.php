@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Contracts\DriverSkills;
-use App\Contracts\Skill;
-use App\Contracts\SkillCondition;
-use App\Contracts\SkillConditionProvider;
-use App\Contracts\SkillProvider;
-use App\Contracts\SkillPublisher;
-use App\Contracts\SkillResolver;
+use App\Contracts\Skills\DriverSkills;
+use App\Contracts\Skills\Skill;
+use App\Contracts\Skills\SkillCondition;
+use App\Contracts\Skills\SkillConditionProvider;
+use App\Contracts\Skills\SkillProvider;
+use App\Contracts\Skills\SkillPublisher;
+use App\Contracts\Skills\SkillResolver;
 use App\CoreApi;
 use App\Enums\ConditionOutcome;
 use App\Exceptions\SkillKeyInvalid;

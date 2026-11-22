@@ -7,7 +7,7 @@ namespace App\Enums;
 use App\Commands\ApproveCodeReview\ApproveCodeReviewCommand;
 use App\Commands\MergeReviewedWork\MergeReviewedWorkCommand;
 use App\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Contracts\Command;
+use App\Contracts\Bus\Command;
 use App\Values\AskTypeKey;
 use App\Values\SubjectType;
 

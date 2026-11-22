@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Commands\AdvanceAsk\AdvanceAskCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\EngineListener;
-use App\Contracts\ServerClock;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Events\EngineListener;
+use App\Contracts\Time\ServerClock;
 use App\Events\EngineTicked;
 use Throwable;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\PublishSignInChallenge;
 
-use App\Contracts\CommandFacts;
-use App\Contracts\CommandHandler;
+use App\Contracts\Bus\CommandFacts;
+use App\Contracts\Bus\CommandHandler;
 use App\Events\AccountsChanged;
 use App\Exceptions\SignInChallengeRefused;
 use App\Models\SignInAttempt;

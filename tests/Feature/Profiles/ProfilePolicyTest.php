@@ -6,9 +6,9 @@ namespace Tests\Feature\Profiles;
 
 use App\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\RevokeProfiles\RevokeProfilesCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\CurrentActorSetter;
-use App\Contracts\ProfileResolver;
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\AccessType;
 use App\Enums\PolicyOriginType;
 use App\Enums\ProfileChangeType;

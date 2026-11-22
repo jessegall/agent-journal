@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Commands\RunKeyScript\RunKeyScriptCommand as RunKeyScript;
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Models\AgentSession;
 use App\Support\ConsoleOwner;
 use App\Values\ScriptParameter;

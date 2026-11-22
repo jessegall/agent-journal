@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\StatementDeadlines;
+use App\Contracts\Processes\StatementDeadlines;
 use App\Exceptions\StatementTimedOut;
 use Closure;
 use Illuminate\Database\DatabaseManager;

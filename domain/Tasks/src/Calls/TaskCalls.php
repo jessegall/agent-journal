@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Calls;
 
-use App\Contracts\CallSender;
+use App\Contracts\Domains\CallSender;
 use App\Support\CallKey;
 use Domain\Tasks\Data\AssignedTaskListData;
 

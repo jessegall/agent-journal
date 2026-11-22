@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Commands\RecordStopResults\RecordStopResultsCommand;
-use App\Contracts\CommandBus;
-use App\Contracts\StopEvidence;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Processes\StopEvidence;
 use App\Enums\StopAttemptState;
 use App\Enums\StopResultType;
 use App\Exceptions\CommandNotRegistered;

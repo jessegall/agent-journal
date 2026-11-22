@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Listeners;
 
-use App\Contracts\JournalCommands;
-use App\Contracts\Listener;
+use App\Contracts\Bus\JournalCommands;
+use App\Contracts\Events\Listener;
 use App\Enums\CommandEntry;
 use App\Events\LaunchCancelled;
 use Domain\Helpers\Commands\CancelLaunchedHelperJob\CancelLaunchedHelperJobCommand;

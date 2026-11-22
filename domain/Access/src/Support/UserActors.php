@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Contracts\Actor;
-use App\Contracts\ActorProvider;
-use App\Contracts\JournalAdmission;
+use App\Contracts\Actors\Actor;
+use App\Contracts\Actors\ActorProvider;
+use App\Contracts\Admission\JournalAdmission;
 use App\Exceptions\ActorUnavailable;
 use App\Support\ActorIdentity;
 use Domain\Access\Models\User;

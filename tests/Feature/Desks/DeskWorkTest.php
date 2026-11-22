@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Desks;
 
-use App\Contracts\AssignmentResolver;
-use App\Contracts\AssignmentTransaction;
+use App\Contracts\Assignments\AssignmentResolver;
+use App\Contracts\Assignments\AssignmentTransaction;
 use App\Models\Agent;
 use App\Models\AssignmentRecord;
 use App\Support\ActorIdentity;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Contracts\AssignmentTransaction;
-use App\Contracts\CommandBus;
+use App\Contracts\Assignments\AssignmentTransaction;
+use App\Contracts\Bus\CommandBus;
 use App\Models\Agent;
 use App\Models\AssignmentRecord;
 use App\Support\ActorIdentity;

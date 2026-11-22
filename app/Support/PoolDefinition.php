@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AssignmentPoolFactory;
+use App\Contracts\Assignments\AssignmentPoolFactory;
 
 /**
  * A domain's declaration of one pool: its key, the assignable type it holds, the factory that opens it and its label.

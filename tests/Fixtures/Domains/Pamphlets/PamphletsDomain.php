@@ -6,8 +6,8 @@ namespace Tests\Fixtures\Domains\Pamphlets;
 
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\ShareGatewayProvider;
-use App\Contracts\ShareRecordContributor;
+use App\Contracts\Sharing\ShareGatewayProvider;
+use App\Contracts\Sharing\ShareRecordContributor;
 use App\Support\ShareRecordDefinition;
 
 final class PamphletsDomain extends Domain implements ShareGatewayProvider, ShareRecordContributor

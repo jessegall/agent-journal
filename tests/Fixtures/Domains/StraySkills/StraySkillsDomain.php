@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Domains\StraySkills;
 
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\SkillProvider;
+use App\Contracts\Skills\SkillProvider;
 use Tests\Fixtures\Modules\Notes\Skills\NotesSkill;
 
 /**

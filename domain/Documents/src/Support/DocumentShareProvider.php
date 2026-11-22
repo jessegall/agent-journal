@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Contracts\PublicCommentResolver;
-use App\Contracts\ShareBudget;
-use App\Contracts\ShareRecordProvider;
+use App\Contracts\Records\PublicCommentResolver;
+use App\Contracts\Sharing\ShareBudget;
+use App\Contracts\Sharing\ShareRecordProvider;
 use App\Exceptions\ContentTooLarge;
 use App\Exceptions\RecordUnavailable;
 use App\Support\MarkdownText;

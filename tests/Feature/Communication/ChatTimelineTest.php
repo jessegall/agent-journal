@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Contracts\ChatLines;
-use App\Contracts\ChatTimeline;
+use App\Contracts\Chat\ChatLines;
+use App\Contracts\Chat\ChatTimeline;
 use App\Enums\ChatPermission;
 use App\Exceptions\ChatCursorRefused;
 use App\Http\Responses\PageReadProps;

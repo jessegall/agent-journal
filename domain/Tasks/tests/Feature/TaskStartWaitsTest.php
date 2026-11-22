@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Contracts\AssignmentQuery;
+use App\Contracts\Assignments\AssignmentQuery;
 use App\Support\PoolMembers;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Leaky;
 
-use App\Contracts\Actor;
+use App\Contracts\Actors\Actor;
 use App\Support\Domain;
 use App\Support\Exports;
 

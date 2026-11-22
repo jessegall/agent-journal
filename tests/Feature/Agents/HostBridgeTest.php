@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Commands\StartAgent\StartAgentCommand;
-use App\Contracts\ActiveAccountReader;
-use App\Contracts\CommandBus;
-use App\Contracts\HostCapabilities;
-use App\Contracts\StartExecutor;
+use App\Contracts\Accounts\ActiveAccountReader;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Hosts\HostCapabilities;
+use App\Contracts\Sessions\StartExecutor;
 use App\Enums\CapabilityStatusType;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverVariant;

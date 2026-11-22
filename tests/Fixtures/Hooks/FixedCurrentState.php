@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Hooks;
 
 use App\Values\StackTarget;
-use App\Contracts\CurrentState;
+use App\Contracts\Work\CurrentState;
 use App\Support\References\StateReference;
 use PhpOption\None;
 use PhpOption\Option;

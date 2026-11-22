@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Calls;
 
-use App\Contracts\CallSender;
+use App\Contracts\Domains\CallSender;
 use App\Enums\ActorType;
 use App\Support\CallKey;
 use Domain\Plans\Data\AssignedPlanListData;

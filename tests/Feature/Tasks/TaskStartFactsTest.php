@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Tasks;
 
-use App\Contracts\CommandBus;
+use App\Contracts\Bus\CommandBus;
 use App\Models\Agent;
 use App\Models\AgentSession;
 use App\Models\AgentStackRow;

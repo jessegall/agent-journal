@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Commands\OpenAgentRuntime;
 
-use App\Contracts\ActiveAccountReader;
-use App\Contracts\BuiltInStartProfiles;
-use App\Contracts\CommandHandler;
-use App\Contracts\DriverCatalogue;
-use App\Contracts\WorkStacks;
+use App\Contracts\Accounts\ActiveAccountReader;
+use App\Contracts\Bus\CommandHandler;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Sessions\BuiltInStartProfiles;
+use App\Contracts\Work\WorkStacks;
 use App\Enums\DriverCapability;
 use App\Enums\ExecutionModeType;
 use App\Exceptions\HostUnavailable;

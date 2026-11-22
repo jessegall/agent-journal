@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations;
 
-use App\Contracts\DraftProducer;
+use App\Contracts\Navigation\DraftProducer;
 use App\Data\DraftedRecordData;
 use App\Data\DraftQuestionData;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\AskAdmission;
-use App\Contracts\MergeAdmission;
+use App\Contracts\Admission\AskAdmission;
+use App\Contracts\Admission\MergeAdmission;
 use App\Enums\CoreAskType;
 use App\Enums\ReviewDecisionType;
 use App\Exceptions\MergeRefused;

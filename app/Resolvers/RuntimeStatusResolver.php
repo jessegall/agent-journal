@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\PageResolver;
-use App\Contracts\RuntimeResolver;
+use App\Contracts\Navigation\PageResolver;
+use App\Contracts\Sessions\RuntimeResolver;
 use App\Data\RecoveryRefusalPartData;
 use App\Data\RuntimeEntryData;
 use App\Data\RuntimeStatus;

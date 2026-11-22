@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\BatchOutcome;
+use App\Contracts\Bus\BatchOutcome;
 use App\Values\BufferedHit;
 use App\Values\SourcePosition;
 

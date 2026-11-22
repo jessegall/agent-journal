@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support\Mcp;
 
-use App\Contracts\CommentResolver;
+use App\Contracts\Records\CommentResolver;
 use App\Mcp\Contracts\Continuations;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\Continuation;

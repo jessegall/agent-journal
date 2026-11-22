@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events;
 
-use App\Contracts\Event;
-use App\Contracts\UserInterfaceUpdater;
+use App\Contracts\Events\Event;
+use App\Contracts\Navigation\UserInterfaceUpdater;
 
 /**
  * A saved account of a driver changed what its owner sees: chosen, renamed, signed in or removed. It names the
