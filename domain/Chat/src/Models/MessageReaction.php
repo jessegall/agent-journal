@@ -86,9 +86,4 @@ final class MessageReaction extends Model implements ReadableModel
 
         return true;
     }
-
-    public function isBy(ActorIdentity $actor): bool
-    {
-        return $this->actor_type === $actor->type->value && $this->actor_id === $actor->id;
-    }
 }

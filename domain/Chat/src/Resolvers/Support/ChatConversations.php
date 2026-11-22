@@ -301,7 +301,7 @@ final readonly class ChatConversations
             $held = $grouped[$reaction->message_id][$reaction->emoji] ?? ['count' => 0, 'isMine' => false];
             $grouped[$reaction->message_id][$reaction->emoji] = [
                 'count' => $held['count'] + 1,
-                'isMine' => $held['isMine'] || $reaction->isBy($viewer),
+                'isMine' => $held['isMine'] || $reaction->owningActor()->isSameAs($viewer),
             ];
         }
 

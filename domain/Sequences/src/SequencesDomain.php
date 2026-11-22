@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences;
 
 use App\Concerns\HasStates;
+use App\Contracts\Command;
 use App\Contracts\CommandProvider;
 use App\Contracts\NativePartProvider;
 use App\Contracts\NavigationProvider;
@@ -12,25 +13,21 @@ use App\Contracts\PageProvider;
 use App\Contracts\PolicyProvider;
 use App\Contracts\SkillProvider;
 use App\Contracts\StateProvider;
+use App\Declarations\ActionRoute;
 use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Enums\AccessType;
 use App\Enums\Icon;
 use App\Support\Domain;
 use App\Support\Exports;
+use App\Support\FolderClasses;
 use App\Values\PolicyDefinition;
-use Domain\Sequences\Commands\AdvanceSequence\AdvanceSequenceCommand;
-use Domain\Sequences\Commands\CancelSequence\CancelSequenceCommand;
-use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
-use App\Declarations\ActionRoute;
-use Domain\Sequences\Commands\ChangeSequence\ChangeSequenceCommand;
-use Domain\Sequences\Commands\DefineSequence\DefineSequenceCommand;
 use Domain\Sequences\Http\Controllers\ChangeSequenceController;
 use Domain\Sequences\Http\Controllers\DefineSequenceController;
-use Domain\Sequences\Resolvers\NewSequenceResolver;
-use Domain\Sequences\Resolvers\SequenceEditorResolver;
 use Domain\Sequences\Policies\SequencePolicy;
 use Domain\Sequences\Policies\StoredSequencePolicy;
+use Domain\Sequences\Resolvers\NewSequenceResolver;
+use Domain\Sequences\Resolvers\SequenceEditorResolver;
 use Domain\Sequences\Resolvers\SequenceIndexResolver;
 use Domain\Sequences\Resolvers\SequenceRunWindowResolver;
 use Domain\Sequences\Resolvers\SequenceWindowResolver;
@@ -73,13 +70,7 @@ final class SequencesDomain extends Domain implements
      */
     public function commands(): array
     {
-        return [
-            StartSequenceCommand::class,
-            AdvanceSequenceCommand::class,
-            CancelSequenceCommand::class,
-            DefineSequenceCommand::class,
-            ChangeSequenceCommand::class,
-        ];
+        return FolderClasses::in(__DIR__.'/Commands/*', Command::class);
     }
 
     /**

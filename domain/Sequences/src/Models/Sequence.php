@@ -80,7 +80,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
      */
     public static function byId(string $id): self
     {
-        return self::query()->whereKey($id)->first() ?? throw SequenceMissing::forId($id);
+        return self::query()->whereKey($id)->firstOr(fn () => throw SequenceMissing::forId($id));
     }
 
     /**
@@ -90,7 +90,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
      */
     public static function lockedById(string $id): self
     {
-        return self::query()->whereKey($id)->lockForUpdate()->first() ?? throw SequenceMissing::forId($id);
+        return self::query()->whereKey($id)->lockForUpdate()->firstOr(fn () => throw SequenceMissing::forId($id));
     }
 
     /**
@@ -106,7 +106,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
      */
     public function stepList(): array
     {
-        return array_map(SequenceStepData::from(...), $this->steps);
+        return array_values(SequenceStepData::collect($this->steps));
     }
 
     // ----------[ Mutations ]----------

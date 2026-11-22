@@ -127,7 +127,7 @@ describe('MessageList', () => {
                 },
             ],
         });
-        const props = { lines: [], pending: [], refused: [], viewer: 'user:ada', participants: [], questionUrl: () => '#', conversationProp: 'chat' };
+        const props = { lines: [], pending: [], refused: [], viewer: 'user:ada', participants: [], questionUrl: () => '#', conversationProp: 'chat', inboxId: 'inbox' };
         const operator = mount(MessageList, { props: { ...props, messages: [row(true)] } as never });
         const sender = mount(MessageList, { props: { ...props, messages: [row(false)] } as never });
 
