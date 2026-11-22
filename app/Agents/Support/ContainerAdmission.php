@@ -26,12 +26,17 @@ final readonly class ContainerAdmission
 
     /**
      * A required container start needs a proven account transport, a proven container runtime and the verified image
-     * before it reserves its share of the host; it never falls back to the host.
+     * before it reserves its share of the host; it never falls back to the host. A start resumed under the same request
+     * id that already holds its reservation was admitted and is not admitted again.
      *
      * @throws ImageUnverified
      */
     public function admit(string $requestId, HookDriver $driver, ExecutionPolicy $execution): void
     {
+        if (CapacityReservation::isHeldFor($requestId)) {
+            return;
+        }
+
         $this->assertSupported($driver);
 
         if (! $this->images->isVerified((string) $execution->imageReference)) {

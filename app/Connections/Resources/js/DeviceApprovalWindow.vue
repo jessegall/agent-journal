@@ -18,6 +18,8 @@ const pending = ref(false);
 const refusal = ref<string | null>(null);
 
 const canApprove = computed(() => props.data.state === 'pending' && !props.data.isBindingRevoked);
+// A revoked request shows neither its code nor its device; an ended one cannot be approved from stale data.
+const isRevoked = computed(() => props.data.isBindingRevoked || props.data.state === 'revoked');
 
 const outcome = computed(() => {
     if (props.data.isBindingRevoked) {
@@ -29,7 +31,7 @@ const outcome = computed(() => {
         case 'issued':
             return 'Approved. Return to your terminal.';
         case 'expired':
-            return 'Expired. Run the journal command again in the terminal to get a new code.';
+            return 'Expired: this terminal can no longer be approved. Run the journal command again in the terminal to get a new code.';
         case 'revoked':
             return 'This terminal sign-in was revoked. Run the journal command again in the terminal to ask anew.';
         default:
@@ -61,7 +63,7 @@ function approveCode(): void {
     <div class="mx-auto flex w-full max-w-[560px] flex-col gap-4 sm:pt-4">
         <PageHeader title="Approve a terminal" />
         <section class="flex flex-col gap-3 px-4 sm:px-0">
-            <dl class="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-small">
+            <dl v-if="!isRevoked" class="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-small">
                 <dt class="text-muted">Project</dt>
                 <dd>{{ data.projectLabel }} / {{ data.environmentLabel }}</dd>
                 <dt class="text-muted">Device</dt>
@@ -75,16 +77,18 @@ function approveCode(): void {
                 <dt class="text-muted">Expires</dt>
                 <dd>{{ dateTimeWithZone(data.expiresAt) }}</dd>
             </dl>
-            <p class="text-small text-muted">
-                Approve only when the terminal shows this same code.
-            </p>
+            <template v-if="canApprove">
+                <p class="text-small text-muted">
+                    Approve only when the terminal shows this same code.
+                </p>
+            </template>
             <p class="text-small" role="status" aria-live="polite">{{ outcome ?? '' }}</p>
             <template v-if="canApprove">
                 <div>
                     <Button variant="primary" :pending="pending" @click="approveCode">Approve</Button>
                 </div>
             </template>
-            <template v-if="data.isBindingRevoked || data.state === 'expired'">
+            <template v-if="isRevoked || data.state === 'expired'">
                 <a href="/connections" class="text-small underline">Return to Settings</a>
             </template>
             <template v-if="refusal !== null">

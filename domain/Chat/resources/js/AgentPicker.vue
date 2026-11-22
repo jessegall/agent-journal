@@ -62,12 +62,12 @@ function focusableIndex(): number {
                     @keydown.up.prevent="move(index, -1)"
                 >
                     <span>{{ agent.name }}</span>
-                    <span class="text-text-3">{{ agent.presenceLabel }}</span>
+                    <span class="text-text-3">{{ agent.status.label }}</span>
                 </li>
             </template>
         </ul>
         <p class="sr-only" aria-live="polite">
-            <template v-if="selected">{{ selected.name }}, {{ selected.presenceLabel }}</template>
+            <template v-if="selected">{{ selected.name }}, {{ selected.status.label }}</template>
         </p>
     </div>
 </template>

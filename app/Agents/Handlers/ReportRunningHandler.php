@@ -18,8 +18,12 @@ final readonly class ReportRunningHandler implements CommandHandler
     public function handle(ReportRunning $command): void
     {
         $start = ProcessStart::claimedBy($command->hostId, $command->startKey);
-        $start->recordRunning($command->executionId);
-        DriverSwitch::startingOf($start->session_id)?->confirm();
+        // Only this report moving the replacement's start to running confirms its switch; a delayed one after the
+        // replacement ended confirms nothing.
+        if ($start->recordRunning($command->executionId)) {
+            DriverSwitch::startingOf($start->session_id)?->confirm();
+        }
+
         $saved = $this->variantToKeep($start->session_id);
 
         if ($saved !== null) {

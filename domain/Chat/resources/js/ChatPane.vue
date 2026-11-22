@@ -151,6 +151,9 @@ function retryFocused(): void {
                 <code>php artisan agents:install</code> to create it.
             </p>
         </template>
+        <template v-if="chat.setupNotice">
+            <p class="text-small text-text-2">{{ chat.setupNotice }}</p>
+        </template>
         <template v-if="conversation && key && selected">
             <template v-if="offersChoice">
                 <AgentSessionActions :agent="selected" />

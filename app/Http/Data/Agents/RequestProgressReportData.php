@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Agents;
 
+use App\Agents\Enums\HostWakeRefusal;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Values\NavigationRoundReport;
+use App\Agents\Values\RequestReportBinding;
 use App\Agents\Values\ScriptProgress;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
@@ -27,7 +29,32 @@ final class RequestProgressReportData extends Data
         public readonly RequestOutcome|null $outcome,
         public readonly ScriptProgressData|Optional $script = new Optional(),
         public readonly NavigationRoundReportData|Optional $navigation = new Optional(),
+        public readonly string|null $refusalReason = null,
+        public readonly bool $noProcessCreated = false,
+        public readonly string|null $sessionId = null,
+        public readonly string|null $processStartId = null,
+        public readonly int|null $processGeneration = null,
     ) {}
+
+    /**
+     * The allowlisted reason the host refused the request for; one outside the set is kept as unknown.
+     */
+    public function refusal(): HostWakeRefusal|null
+    {
+        return $this->refusalReason === null ? null : HostWakeRefusal::fromReport($this->refusalReason);
+    }
+
+    /**
+     * The claim's session, start and generation the report answers, when the host sent them.
+     */
+    public function binding(): RequestReportBinding|null
+    {
+        if ($this->sessionId === null || $this->processGeneration === null) {
+            return null;
+        }
+
+        return new RequestReportBinding($this->sessionId, $this->processStartId, $this->processGeneration);
+    }
 
     /**
      * What the host saw after a navigation round, when the request is one.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
+use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\StartSessions;
@@ -13,6 +14,9 @@ use App\Agents\Models\MainAgentDesignation;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
 use App\Communication\Commands\AskMessage;
+use App\Communication\Contracts\ActorInboxResolver;
+use App\Communication\Contracts\Inbox;
+use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Models\Message;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -107,7 +111,25 @@ final class ChatWindowTest extends TestCase
         $this->actingAs($this->owner)
             ->get('/chat?agent='.strtolower((string) Str::ulid()))
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('page.state', 'failed')
+                ->where('page.state', 'denied')
+                ->missing('page.data'));
+    }
+
+    public function test_a_missing_own_inbox_is_a_setup_notice_not_a_failure(): void
+    {
+        $this->app->instance(ActorInboxResolver::class, new class implements ActorInboxResolver
+        {
+            public function preferredFor(Actor $actor): Inbox
+            {
+                throw InboxUnavailable::forActor($actor->actorId());
+            }
+        });
+
+        $this->actingAs($this->owner)
+            ->get('/chat?agent='.$this->session->agent_id)
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('page.state', 'ready')
+                ->where('page.data.setupNotice', 'Ask the project administrator to restore your inbox.')
                 ->missing('page.data.conversation'));
     }
 

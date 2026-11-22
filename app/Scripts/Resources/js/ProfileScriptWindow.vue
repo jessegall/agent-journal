@@ -6,6 +6,7 @@ import type { ProfileDraftData, ProfileScriptPageData } from '@generated/types/s
 import Button from '@kit/Button';
 import PageHeader from '@kit/PageHeader';
 import { keyedPost } from '@kit/keyedPost';
+import { useIsStale } from '@kit/windowFreshness';
 import { checkDraft, saveDraft } from '@generated/routes/scripts';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { editorDiagnostics, scriptCompletion, scriptHighlighting, type ScriptVocabulary } from './scriptLanguage';
@@ -14,13 +15,18 @@ import ScriptFlowchart from './ScriptFlowchart.vue';
 /**
  * The owner's editor of one profile's shared script draft: highlighting and completion come from the language the
  * journal reports, diagnostics from its check of the text as it is now, and saving goes in at the revision read. A
- * check answered for older text is dropped, and a changed catalogue asks for the page to be read again.
+ * check answered for older text is dropped, and a changed catalogue asks for the page to be read again. The text typed
+ * stays through a refresh, also a failed one, while Save waits for a read that succeeds; 'No problems found' shows only
+ * once a check of the text answered.
  */
 const props = defineProps<{ data: ProfileScriptPageData }>();
 
 const draft = ref<ProfileDraftData>(props.data.draft);
 const revision = ref<number>(props.data.draft.revision);
 const notice = ref<string>('');
+// Whether a check answered for the text as it is now; before that the editor claims nothing about problems.
+const isChecked = ref(false);
+const isStale = useIsStale();
 const host = ref<HTMLElement | null>(null);
 const editor = shallowRef<EditorView | null>(null);
 
@@ -63,6 +69,7 @@ function check(): Promise<void> {
                     }
 
                     draft.value = { ...checked, source };
+                    isChecked.value = true;
                 },
                 onRefused: () => undefined,
                 onUncertain: () => undefined,
@@ -73,6 +80,10 @@ function check(): Promise<void> {
 }
 
 function save(): void {
+    if (isStale.value) {
+        return;
+    }
+
     const requestKey = crypto.randomUUID();
 
     keyedPost(
@@ -150,10 +161,12 @@ onBeforeUnmount(() => editor.value?.destroy());
         </template>
         <div ref="host" class="rounded border border-border font-mono text-sm" />
         <div class="flex items-center gap-2">
-            <Button @click="save">Save revision {{ revision + 1 }}</Button>
-            <span class="text-sm text-muted-foreground">
-                {{ draft.diagnostics.length === 0 ? 'No problems found.' : `${draft.diagnostics.length} problems.` }}
-            </span>
+            <Button :disabled="isStale" @click="save">Save revision {{ revision + 1 }}</Button>
+            <template v-if="isChecked">
+                <span class="text-sm text-muted-foreground">
+                    {{ draft.diagnostics.length === 0 ? 'No problems found.' : `${draft.diagnostics.length} problems.` }}
+                </span>
+            </template>
         </div>
         <template v-if="draft.flowchart !== undefined && draft.flowchart !== null">
             <ScriptFlowchart :flowchart="draft.flowchart" @select-line="selectLine" />

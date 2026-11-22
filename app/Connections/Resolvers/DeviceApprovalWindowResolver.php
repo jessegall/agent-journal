@@ -10,7 +10,9 @@ use App\Connections\Models\DeviceGrant;
 use App\Http\Data\Connections\DeviceApprovalData;
 use App\Http\Requests\Connections\DeviceApprovalPageRequest;
 use App\Ui\Contracts\PageResolver;
+use App\Web\Exceptions\PrivateRecordMissing;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 /**
  * The terminal request the owner checks before approving it, as the journal holds it now, so a reload or a second
@@ -20,9 +22,19 @@ final readonly class DeviceApprovalWindowResolver implements PageResolver
 {
     public function __construct(private DeviceApprovalPageRequest $page, private ServerOrigin $origin) {}
 
+    /**
+     * The approval a terminal asked for, read only: reading it never approves it or issues a code; a code that does not
+     * exist answers as a private record does.
+     *
+     * @throws PrivateRecordMissing
+     */
     public function read(): DeviceApprovalData
     {
-        $grant = DeviceGrant::ofUserCode($this->page->userCode());
+        try {
+            $grant = DeviceGrant::ofUserCode($this->page->userCode());
+        } catch (ModelNotFoundException) {
+            throw PrivateRecordMissing::forReader();
+        }
 
         return DeviceApprovalData::from([
             'userCode' => $grant->user_code,

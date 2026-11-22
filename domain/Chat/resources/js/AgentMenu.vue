@@ -76,7 +76,7 @@ async function focusOption(index: number): Promise<void> {
                         @keydown.up.prevent="focusOption(ordered.indexOf(agent) - 1)"
                     >
                         <span class="flex-1 truncate">{{ agent.name }}</span>
-                        <span class="text-text-3">{{ agent.presenceLabel }}</span>
+                        <span class="text-text-3">{{ agent.status.label }}</span>
                     </li>
                 </template>
             </template>

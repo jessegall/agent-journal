@@ -562,17 +562,41 @@ func (loop *Loop) failAll(ctx context.Context, admission host.Admission, progres
 func (loop *Loop) reportResult(ctx context.Context, request client.ClaimedRequest, result contracts.OperationResult, err error) {
 	if err != nil {
 		log.Printf("%s request %s (attempt %d) of runtime %s failed: %v", request.Operation, request.RequestID, request.Attempt, request.RuntimeID, err)
-		loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeRefused})
+		loop.report(ctx, request, refusalOf(err))
 
 		return
 	}
 	loop.report(ctx, request, result)
 }
 
-// report sends one request's progress with the attempt it answers; a confirmed outcome is the journal's default and
-// is not named.
+// refusalOf is the report of a failed attempt: a generic refusal, which names its reason and that no process was made
+// only when the error is an allowlisted refusal of a program that was never started.
+func refusalOf(err error) contracts.OperationResult {
+	failure := contracts.OperationResult{Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeRefused}
+	if refused, found := contracts.StartRefusalOf(err); found {
+		failure.RefusalReason = refused.Reason
+		failure.NoProcessCreated = true
+	}
+
+	return failure
+}
+
+// report sends one request's progress with the attempt, session, supervised start and process generation it answers;
+// a confirmed outcome is the journal's default and is not named.
 func (loop *Loop) report(ctx context.Context, request client.ClaimedRequest, result contracts.OperationResult) {
-	report := client.RequestReport{RequestID: request.RequestID, Attempt: request.Attempt, Progress: string(result.Progress)}
+	report := client.RequestReport{
+		RequestID:         request.RequestID,
+		Attempt:           request.Attempt,
+		Progress:          string(result.Progress),
+		SessionID:         request.SessionID,
+		ProcessStartID:    request.ProcessStartID,
+		ProcessGeneration: request.ProcessGeneration,
+		NoProcessCreated:  result.NoProcessCreated,
+	}
+	if result.RefusalReason != "" {
+		reason := string(result.RefusalReason)
+		report.RefusalReason = &reason
+	}
 	if result.ActualBinding != "" {
 		binding := result.ActualBinding
 		report.ActualBinding = &binding

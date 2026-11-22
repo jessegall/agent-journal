@@ -4,7 +4,7 @@ import type { ShareFiltersData, ShareListData } from '@generated/types/sharing';
 import { Link, router } from '@inertiajs/vue3';
 import PageHeader from '@kit/PageHeader';
 import RowsTable from '@kit/RowsTable';
-import { reactive } from 'vue';
+import { computed, reactive } from 'vue';
 
 /**
  * The owner's shares and proposals, newest first: filter by state, record type, gateway and expiry, and page on.
@@ -27,6 +27,9 @@ const filters = reactive({
     gateway: props.data.filters.gateway ?? '',
     expiresBefore: props.data.filters.expiresBefore ?? '',
 });
+
+// Whether the list is narrowed, so an empty one says no share matches rather than that none exists.
+const hasFilter = computed(() => Object.values(props.data.filters).some((value) => value !== null && value !== ''));
 
 function query(
     after: string | null,
@@ -84,7 +87,7 @@ function nextPage(): void {
             :headings="['Share', 'State', 'Record', 'Gateway', 'Expires']"
             :rows="data.rows"
             :row-key="(row) => row.id"
-            empty="No share matches."
+            :empty="hasFilter ? 'No share matches these filters.' : 'No shares yet.'"
         >
             <template #row="{ row }">
                 <td>

@@ -6,6 +6,7 @@ namespace App\Agents\Handlers;
 
 use App\Agents\Commands\RecheckDriverSwitch;
 use App\Agents\Enums\DriverSwitchStage;
+use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverSwitch;
 use App\Agents\Models\ProcessStart;
 use App\Contracts\CommandHandler;
@@ -21,6 +22,6 @@ final readonly class RecheckDriverSwitchHandler implements CommandHandler
             : $switch->replacement_session_id;
 
         $start = $session === null ? null : ProcessStart::latestOfSession($session);
-        $switch->recheck($start?->state);
+        $switch->recheck($start?->state, AgentRuntime::ofSession($switch->expected_session_id));
     }
 }

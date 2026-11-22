@@ -8,6 +8,7 @@ use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
+use App\Agents\Enums\HostWakeRefusal;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Exceptions\NavigationRaiseRefused;
@@ -43,6 +44,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $effort
  * @property RequestProgress $progress
  * @property RequestOutcome|null $outcome
+ * @property HostWakeRefusal|null $refusal_reason
+ * @property bool $no_process_created
  * @property ExpectedTiming $expected_timing
  * @property CarbonImmutable|null $expected_observed_at
  * @property CarbonImmutable|null $updated_at
@@ -101,6 +104,8 @@ final class DriverRequest extends Model implements ReadableModel
             'operation' => DriverOperation::class,
             'progress' => RequestProgress::class,
             'outcome' => RequestOutcome::class,
+            'refusal_reason' => HostWakeRefusal::class,
+            'no_process_created' => 'boolean',
             'expected_timing' => ExpectedTiming::class,
             'expected_observed_at' => 'immutable_datetime',
             'staged_at' => 'immutable_datetime',
@@ -361,6 +366,17 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
+     * Keeps why the host refused the request and whether it proved no process of the program was made; settling a
+     * launch on it is the start's own decision.
+     */
+    public function recordRefusal(HostWakeRefusal $reason, bool $noProcessCreated): void
+    {
+        $this->refusal_reason = $reason;
+        $this->no_process_created = $noProcessCreated;
+        $this->save();
+    }
+
+    /**
      * The host could not carry the request out at all, such as when its runtime could not be opened; a user may
      * send it again.
      */
@@ -390,9 +406,10 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
-     * The request as its host receives it to carry out.
+     * The request as its host receives it to carry out, bound to the runtime's session and process generation and the
+     * session's supervised start, if it has one.
      */
-    public function claimed(): ClaimedRequest
+    public function claimed(AgentRuntime $runtime, string|null $processStartId): ClaimedRequest
     {
         return new ClaimedRequest(
             $this->agent_runtime_id,
@@ -409,6 +426,9 @@ final class DriverRequest extends Model implements ReadableModel
             $this->script_step,
             $this->navigation_request_id,
             $this->navigationRound(),
+            $runtime->agent_session_id,
+            $processStartId,
+            $runtime->process_generation,
         );
     }
 

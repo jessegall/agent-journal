@@ -6,6 +6,7 @@ namespace App\Web\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyDefinition;
+use App\Agents\Contracts\StartRefusal;
 use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Bus\Support\RefusalReason;
 use App\Contracts\CommandRefusal;
@@ -139,6 +140,15 @@ final class WebServiceProvider extends ServiceProvider
      * request its code, message and fields with its status. Refused input and an expired sign-in answer a JSON caller
      * the same way. The text names no class and holds no trace.
      */
+    /**
+     * The form field a refusal is shown under: a start refusal's own next step names it, every other refusal is the
+     * whole command's.
+     */
+    private static function fieldOf(CommandRefusal $refusal): string
+    {
+        return $refusal instanceof StartRefusal ? $refusal->reason()->remedy()->type->field() : 'command';
+    }
+
     private function renderRefusals(ExceptionHandler $exceptions): void
     {
         if (! $exceptions instanceof Handler) {
@@ -156,7 +166,7 @@ final class WebServiceProvider extends ServiceProvider
                 ? $this->refusalAnswer($reason->code, $failure->getMessage(), [], $reason->status)
                 : $this->app->make(Redirector::class)
                     ->back(303)
-                    ->withErrors(['command' => $failure->getMessage()])
+                    ->withErrors([self::fieldOf($failure) => $failure->getMessage()])
                     ->with(CommandRefusal::CODE_FLASH_KEY, $reason->code);
         });
 

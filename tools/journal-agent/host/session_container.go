@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+
+	"journal-agent/drivers/contracts"
 )
 
 // SessionContainer is the one container a contained session's program runs in, as its own process, under the name
@@ -47,7 +49,10 @@ func (container SessionContainer) Open(
 	}
 
 	if _, err := container.Containers.Create(ctx, manifest, container.Name, container.Labels, process); err != nil {
-		return nil, fmt.Errorf("creating the session container %s failed: %w", container.Name, err)
+		return nil, contracts.RefuseStart(
+			contracts.RefusalContainerUnavailable,
+			fmt.Errorf("creating the session container %s failed: %w", container.Name, err),
+		)
 	}
 
 	if err := container.Containers.Start(ctx, container.Name); err != nil {
@@ -81,7 +86,10 @@ func (container SessionContainer) Turn(
 	}
 
 	if _, err := container.Containers.Create(ctx, manifest, container.Name, container.Labels, process); err != nil {
-		return nil, fmt.Errorf("creating the session container %s failed: %w", container.Name, err)
+		return nil, contracts.RefuseStart(
+			contracts.RefusalContainerUnavailable,
+			fmt.Errorf("creating the session container %s failed: %w", container.Name, err),
+		)
 	}
 
 	start := container.Containers.command(context.Background(), "start", "--attach", container.Name)

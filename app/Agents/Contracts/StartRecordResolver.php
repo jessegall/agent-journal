@@ -9,8 +9,8 @@ use App\Agents\Support\StartRecordDetails;
 use PhpOption\Option;
 
 /**
- * Reads start records: an agent its own, the owner of a job the starts made for it, and the owner's start of the
- * session calling now, the proof of which work that session was started for.
+ * Reads start records: an agent its own, the requester or a maintainer one receipt, the owner of a job the starts
+ * made for it, and the owner's start of the session calling now, the proof of which work that session was started for.
  */
 interface StartRecordResolver
 {
@@ -22,6 +22,14 @@ interface StartRecordResolver
      * @throws StartRecordMissing
      */
     public function own(string $requestId): StartRecordDetails;
+
+    /**
+     * The receipt kept under this request id, for the actor that asked for the start or an agent maintainer; to
+     * anyone else it answers as missing.
+     *
+     * @throws StartRecordMissing
+     */
+    public function receipt(string $requestId): StartRecordDetails;
 
     /**
      * The starts made for one owner reference, newest first, at most 50; the owner checks its own authority first.

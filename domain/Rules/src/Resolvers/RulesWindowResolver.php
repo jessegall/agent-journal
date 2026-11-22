@@ -15,6 +15,7 @@ use App\Ui\Layout\LayoutRowData;
 use Domain\Rules\Api\RuleList;
 use Domain\Rules\Api\RuleView;
 use Domain\Rules\Contracts\RuleResolver;
+use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Http\Requests\RulesRequest;
 
 /**
@@ -50,17 +51,36 @@ final readonly class RulesWindowResolver implements PageResolver
             LayoutPartData::box(
                 'split',
                 'split',
-                $this->listOf($page, is_string($selected) ? $selected : ''),
+                $this->listOf($page, is_string($selected) ? $selected : '', $filters->search),
                 $this->readerOf($page),
             ),
         ));
     }
 
-    private function listOf(RuleList $page, string $selected): LayoutPartData
+    /**
+     * The page of rules; an empty one says why: no rule exists yet, or the search matches none, which it offers to
+     * clear. Neither is a failure, so neither offers Retry, and the search stays above it.
+     */
+    private function listOf(RuleList $page, string $selected, string $search): LayoutPartData
     {
-        if ($page->rules === []) {
-            return LayoutPartData::notice('list', 'empty', 'No rules match these filters.');
+        if ($page->rules === [] && trim($search) === '') {
+            return LayoutPartData::notice('list', 'empty', 'No rules yet.');
         }
+
+        if ($page->rules === []) {
+            return LayoutPartData::box(
+                'list',
+                'stack',
+                LayoutPartData::notice('notice', 'empty', "No rules match \"{$search}\"."),
+                LayoutPartData::action(
+                    'clear',
+                    'Clear search',
+                    LayoutActionData::changing(['q' => '', 'page' => '', 'rule' => '']),
+                ),
+            );
+        }
+
+        $isAwaitingReview = array_any($page->rules, fn (RuleView $rule) => $rule->state === RuleState::Proposed);
 
         $rows = array_map(fn (RuleView $rule) => new LayoutRowData(
             $rule->id,
@@ -70,11 +90,15 @@ final readonly class RulesWindowResolver implements PageResolver
             $rule->id === $selected,
         ), $page->rules);
 
+        $review = $isAwaitingReview
+            ? []
+            : [LayoutPartData::text('review', 'No rules awaiting review', 'muted')];
+
         return LayoutPartData::box(
             'list',
             'stack',
-            LayoutPartData::collection('rows', 'list', $rows),
-            $this->pagerOf($page),
+            ...$review,
+            ...[LayoutPartData::collection('rows', 'list', $rows), $this->pagerOf($page)],
         );
     }
 

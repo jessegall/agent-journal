@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Enums;
 
+use App\Agents\Support\StartRemedy;
+
 /**
  * The stable reason code of a start refused before anything was created.
  */
@@ -21,4 +23,63 @@ enum StartRefusalType: string
     case ContainerUnavailable = 'container-unavailable';
     case ImageUnverified = 'image-unverified';
     case CapacityUnavailable = 'capacity-unavailable';
+
+    /**
+     * The public explanation of this refusal; a capacity refusal that names its resource says it through that resource.
+     */
+    public function explanation(): string
+    {
+        return match ($this) {
+            self::ModelRequired => 'Choose a model for this session.',
+            self::ModelUnavailable => 'The selected model is unavailable.',
+            self::DefaultUnavailable => 'The default model is unavailable.',
+            self::DriverRequired => 'Choose a program for this session.',
+            self::DriverConflict => 'The selected program conflicts with this configuration.',
+            self::DriverUnsupported => 'This program cannot run here.',
+            self::AccountContainerUnsupported => 'This account cannot run in this environment.',
+            self::CapabilityUnsupported => 'A required feature is unavailable with these settings.',
+            self::ContextFailed => 'The journal could not prepare this session.',
+            self::ContainerUnavailable => 'The host cannot provide a container.',
+            self::ImageUnverified => 'The host could not verify its agent image.',
+            self::CapacityUnavailable => 'The host lacks the required CPU, memory or disk.',
+        };
+    }
+
+    public function remedy(): StartRemedy
+    {
+        return match ($this) {
+            self::ModelRequired, self::DefaultUnavailable => StartRemedy::forEveryone(
+                StartRemedyType::ChooseModel,
+                'Choose model',
+            ),
+            self::ModelUnavailable => StartRemedy::forEveryone(StartRemedyType::ChooseModel, 'Choose another model'),
+            self::DriverRequired => StartRemedy::forEveryone(StartRemedyType::ChooseProgram, 'Choose program'),
+            self::DriverConflict => StartRemedy::forEveryone(StartRemedyType::ChooseProgram, 'Review program'),
+            self::DriverUnsupported => StartRemedy::forEveryone(
+                StartRemedyType::ChooseProgram,
+                'Choose a supported program',
+            ),
+            self::AccountContainerUnsupported => StartRemedy::forEveryone(
+                StartRemedyType::ChooseAccount,
+                'Choose a compatible account',
+            ),
+            self::CapabilityUnsupported => StartRemedy::forEveryone(
+                StartRemedyType::ReviewConfiguration,
+                'Review configuration',
+            ),
+            self::ContextFailed => StartRemedy::forEveryone(
+                StartRemedyType::RetryStart,
+                'Retry start when eligible; otherwise ask the operator to check setup',
+            ),
+            self::ContainerUnavailable => StartRemedy::forOperators(
+                StartRemedyType::OperatorInstruction,
+                'Restore container service',
+            ),
+            self::ImageUnverified => StartRemedy::forOperators(
+                StartRemedyType::OperatorInstruction,
+                'Verify the host image',
+            ),
+            self::CapacityUnavailable => StartRemedy::forOperators(StartRemedyType::CheckCapacity, 'Check capacity'),
+        };
+    }
 }

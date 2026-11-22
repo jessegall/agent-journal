@@ -4,6 +4,7 @@ package contracts
 
 import (
 	"context"
+	"errors"
 
 	"journal-agent/keyscripts"
 )
@@ -109,14 +110,56 @@ const (
 	HoldNavigationNeeded Hold = "navigation_needed"
 )
 
+// RefusalReason is why the host refused an operation, from the closed set the journal mirrors in
+// App\Agents\Enums\HostWakeRefusal; any other failure carries none and stays a generic refusal.
+type RefusalReason string
+
+const (
+	RefusalContainerUnavailable           RefusalReason = "container-unavailable"
+	RefusalImageUnverified                RefusalReason = "image-unverified"
+	RefusalCapacityUnavailable            RefusalReason = "capacity-unavailable"
+	RefusalProtectedAccountFolderRejected RefusalReason = "protected-account-folder-rejected"
+)
+
+// StartRefused is the failure of an operation the host refused for an allowlisted reason before it created any process
+// of the program; only code that knows the program was never started returns it.
+type StartRefused struct {
+	Reason RefusalReason
+	Cause  error
+}
+
+func (refused StartRefused) Error() string {
+	return string(refused.Reason) + ": " + refused.Cause.Error()
+}
+
+func (refused StartRefused) Unwrap() error {
+	return refused.Cause
+}
+
+// RefuseStart names why the program was never started, so the report carries the reason and that no process exists.
+func RefuseStart(reason RefusalReason, cause error) error {
+	return StartRefused{Reason: reason, Cause: cause}
+}
+
+// StartRefusalOf is the allowlisted refusal an error carries, if it carries one.
+func StartRefusalOf(err error) (StartRefused, bool) {
+	var refused StartRefused
+	found := errors.As(err, &refused)
+
+	return refused, found
+}
+
 // OperationResult is what a driver reports for one attempt: its progress, the binding it actually used, how it ended
-// and why the runtime is held, if it is.
+// and why the runtime is held, if it is. A refusal for an allowlisted reason names it, and NoProcessCreated is true
+// only when the driver knows the program was never started.
 type OperationResult struct {
-	Request       RequestIdentity
-	Progress      Progress
-	ActualBinding string
-	Outcome       Outcome
-	Hold          Hold
+	Request          RequestIdentity
+	Progress         Progress
+	ActualBinding    string
+	Outcome          Outcome
+	Hold             Hold
+	RefusalReason    RefusalReason
+	NoProcessCreated bool
 	// Script is where a key script run stopped, for the loop to report; nil for every other operation and for a
 	// driver that could not run the script at all.
 	Script *keyscripts.Result

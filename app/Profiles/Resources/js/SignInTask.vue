@@ -33,6 +33,13 @@ const direction = computed(() => codeDirection(props.driver));
 const isWaitingForAgents = computed(
     () => props.attempt?.isWaitingForAgents === true,
 );
+// An attempt that was completed, cancelled or expired stops its progress: nothing more happens on the host.
+const endedWords: Record<string, string> = {
+    complete: 'This sign-in is complete.',
+    cancelled: 'This sign-in was cancelled.',
+    expired: 'This sign-in expired. Start it again to continue.',
+};
+const endedText = computed(() => (props.attempt === undefined ? null : (endedWords[props.attempt.state] ?? null)));
 const isStarting = computed(
     () =>
         props.attempt === undefined ||
@@ -107,7 +114,12 @@ const openLink =
 
 <template>
     <ChosenSignIn :driver="driver" :method="method" />
-    <template v-if="actions.challengeRead.value === 'failed'">
+    <template v-if="endedText !== null">
+        <p class="flex flex-1 items-center justify-center pb-3 text-center text-field text-text-2" role="status">
+            {{ endedText }}
+        </p>
+    </template>
+    <template v-else-if="actions.challengeRead.value === 'failed'">
         <div
             class="flex flex-1 flex-col items-center justify-center gap-3 pb-3 text-center"
             role="alert"

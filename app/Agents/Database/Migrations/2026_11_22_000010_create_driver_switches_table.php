@@ -26,6 +26,8 @@ return new class extends Migration
             $table->string('requested_by', 64);
             $table->ulid('replacement_session_id')->nullable();
             $table->string('stage', 24);
+            // The source runtime's observation sequence when its stop was accepted; only a later one proves it runs.
+            $table->unsignedBigInteger('stop_boundary_sequence')->nullable();
             $table->string('failure_reason', 255)->nullable();
             $table->timestampsTz();
         });

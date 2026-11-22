@@ -6,11 +6,13 @@ namespace App\Connections\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyDefinition;
+use App\Agents\Contracts\HostOperatorAccess;
 use App\Agents\Contracts\LocalProjectHosts;
 use App\Bus\Support\EntryDispatchers;
 use App\Connections\Policies\ConnectionsPolicy;
 use App\Connections\Support\BindingHosts;
 use App\Connections\Support\CommandRunEvidence;
+use App\Connections\Support\ConnectionsHostOperatorAccess;
 use App\Connections\Support\ProjectCommands;
 use App\Operations\Enums\AccessType;
 use App\Processes\Support\JournalRoutes;
@@ -25,6 +27,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(LocalProjectHosts::class, BindingHosts::class);
+        $this->app->bind(HostOperatorAccess::class, ConnectionsHostOperatorAccess::class);
 
         $this->app->bind(ProjectCommands::class, fn () => new ProjectCommands(
             $this->app->make(JournalRoutes::class),

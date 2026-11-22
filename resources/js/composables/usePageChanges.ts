@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/vue3';
-import { onBeforeUnmount, onMounted, readonly, ref } from 'vue';
+import { onBeforeUnmount, onMounted, reactive, readonly, ref } from 'vue';
 import { login } from '@/routes';
 import { traceLive } from './liveTrace';
 import { purge, trackProtectedRead } from './protectedView';
@@ -200,6 +200,26 @@ export class PageReadScheduler {
 const reads = new PageReadScheduler();
 
 /**
+ * The props the last failed page read included: each keeps what it showed, read-only, until a read applies again.
+ * A prop the page did not read in that batch stays fresh.
+ */
+const staleProps = reactive(new Set<string>());
+
+/**
+ * Whether the prop was part of a page read that failed and has not been read since, whatever it last held.
+ */
+export function isPropStale(name: string): boolean {
+    return staleProps.has(name);
+}
+
+/**
+ * Whether any prop on screen waits for a read that failed, so the page shows its one notice.
+ */
+export function hasStaleProps(): boolean {
+    return staleProps.size > 0;
+}
+
+/**
  * Where the page's reads stand, for a host that shows Retry, and the dirty generation the last applied read covered.
  */
 export const pageReadStatus = readonly(reads.status);
@@ -232,6 +252,7 @@ export function retryPageRead(): void {
  */
 export function forgetPageChanges(): void {
     reads.forget();
+    staleProps.clear();
 }
 
 /**
@@ -279,10 +300,12 @@ export function useLiveReload(): void {
             onStart: () => traceLive('read started'),
             onSuccess: () => {
                 end = 'applied';
+                staleProps.clear();
                 traceLive('read applied');
             },
             onHttpException: (response) => {
                 end = 'failed';
+                only.forEach((name) => staleProps.add(name));
                 traceLive('read failed');
                 answerRefusedRead(response.status);
 
@@ -290,6 +313,7 @@ export function useLiveReload(): void {
             },
             onNetworkError: () => {
                 end = 'failed';
+                only.forEach((name) => staleProps.add(name));
                 traceLive('read failed');
 
                 return false;

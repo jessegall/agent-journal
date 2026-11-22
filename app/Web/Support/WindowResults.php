@@ -18,6 +18,7 @@ use App\Web\Data\DeniedWindow;
 use App\Web\Data\FailedWindow;
 use App\Web\Data\ReadyWindow;
 use App\Web\Data\UnavailableWindow;
+use App\Web\Exceptions\PrivateRecordMissing;
 use App\Web\Exceptions\ReaderDataMismatch;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
@@ -31,9 +32,10 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 /**
- * Turns one window, section or inspector into its result: denied without calling the reader when a check refuses,
- * ready with the reader's Data serialized inside this boundary, or failed with a neutral message while the error is
- * logged with the key. A sign-in, CSRF, validation or redirect response still reaches the browser as it is.
+ * Turns one window, section or inspector into its result: denied without calling the reader when a check refuses or
+ * the reader's record is private (missing and denied alike), ready with the reader's Data serialized inside this
+ * boundary (an authorized empty read is ready, never a result of its own), or failed with a neutral message while the
+ * error is logged with the key. A sign-in, CSRF, validation or redirect response still reaches the browser as it is.
  */
 final readonly class WindowResults implements WindowResultsContract
 {
@@ -79,6 +81,8 @@ final readonly class WindowResults implements WindowResultsContract
             |HttpExceptionInterface $control
         ) {
             throw $control;
+        } catch (PrivateRecordMissing) {
+            return DeniedWindow::make();
         } catch (CodedRefusal $refusal) {
             if ($refusal->refusalCode() !== RefusalCode::RecordUnavailable) {
                 return $this->failed($key, $refusal);

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
+use App\Agents\Contracts\StartRefusal;
 use App\Agents\Enums\StartRefusalType;
-use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
 
 /**
  * A start with no program from the caller, its profile or its parent session.
  */
-final class DriverRequired extends InvalidArgumentException implements CommandRefusal
+final class DriverRequired extends InvalidArgumentException implements StartRefusal
 {
     public static function forStart(): self
     {

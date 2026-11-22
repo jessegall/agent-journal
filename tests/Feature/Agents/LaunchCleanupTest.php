@@ -8,6 +8,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchLimits;
 use App\Agents\Actions\StartHeartbeats;
 use App\Agents\Commands\ReportCleanup;
+use App\Agents\Enums\CapacityResource;
 use App\Agents\Enums\CleanupState;
 use App\Agents\Enums\CleanupStep;
 use App\Agents\Enums\ConversationModeType;
@@ -114,6 +115,24 @@ final class LaunchCleanupTest extends TestCase
         $unguarded = new HostCapacity($budgets->cpuCores, $budgets->memoryBytes, $budgets->workspaceBytes, false);
         CapacityReservation::reserve('start-2', $budgets, $unguarded);
         $this->assertTrue(CapacityReservation::isHeldFor('start-2'));
+    }
+
+    public function test_check_capacity_names_the_shortage_while_held_and_fits_once_one_cleanup_releases_it(): void
+    {
+        $launch = $this->endedContainerLaunch();
+        $budgets = ExecutionBudgets::defaults();
+        $room = new HostCapacity($budgets->cpuCores, $budgets->memoryBytes, $budgets->workspaceBytes);
+
+        $this->assertSame(CapacityResource::Cpu, CapacityReservation::shortageOf($budgets, $room));
+        $this->assertSame(1, CapacityReservation::query()->count());
+
+        $this->report($launch, new CleanupReport(self::ALL_STEPS, null, null));
+        $this->assertNull(CapacityReservation::shortageOf($budgets, $room));
+
+        CapacityReservation::reserve('start-other', $budgets, $room);
+        $this->assertSame(CleanupState::Done, $this->report($launch, new CleanupReport(self::ALL_STEPS, null, null)));
+        $this->assertTrue(CapacityReservation::isHeldFor('start-other'));
+        $this->assertSame(ReservationState::Released, $this->reservationOf($launch)->state);
     }
 
     public function test_a_launch_past_its_wall_budget_is_stopped_and_a_younger_one_runs_on(): void

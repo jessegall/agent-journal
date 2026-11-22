@@ -1,0 +1,71 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Profiles;
+
+use App\Agents\Contracts\StartRecordResolver;
+use App\Agents\Enums\StartDisposition;
+use App\Agents\Exceptions\StartRecordMissing;
+use App\Agents\Models\AgentRuntime;
+use App\Agents\Support\StartRecordDetails;
+use App\Agents\Support\StartRefusalCodes;
+use App\Agents\Support\StartRemedyWords;
+use Illuminate\Http\JsonResponse;
+
+/**
+ * Where a submitted start stands, read by the request id the browser kept when its reply was lost: pending, accepted
+ * with its session and process generation, or refused with its reason code, explanation and one next step. Only the
+ * requester or an agent maintainer reads it; anyone else is told the item is unavailable, and nothing of the start.
+ */
+final readonly class StartReceiptController
+{
+    private const string UNAVAILABLE = 'This item is unavailable.';
+
+    public function __invoke(string $requestId, StartRecordResolver $records, StartRemedyWords $words): JsonResponse
+    {
+        try {
+            $receipt = $records->receipt(strtolower($requestId));
+        } catch (StartRecordMissing) {
+            return new JsonResponse(['message' => self::UNAVAILABLE], 404);
+        }
+
+        return new JsonResponse(match ($receipt->disposition) {
+            StartDisposition::Accepted => ['requestId' => $receipt->requestId, 'state' => 'pending'],
+            StartDisposition::Started => self::accepted($receipt),
+            StartDisposition::Refused, StartDisposition::Failed => self::refused($receipt, $words),
+        });
+    }
+
+    /**
+     * @return array{requestId: string, state: string, sessionId: string|null, generation: int|null}
+     */
+    private static function accepted(StartRecordDetails $receipt): array
+    {
+        return [
+            'requestId' => $receipt->requestId,
+            'state' => 'accepted',
+            'sessionId' => $receipt->sessionId,
+            'generation' => $receipt->sessionId === null
+                ? null
+                : AgentRuntime::ofSession($receipt->sessionId)?->process_generation,
+        ];
+    }
+
+    /**
+     * @return array{requestId: string, state: string, reasonCode: string, explanation: string, remedy: string}
+     */
+    private static function refused(StartRecordDetails $receipt, StartRemedyWords $words): array
+    {
+        $code = (string) $receipt->refusalReason;
+        $reason = StartRefusalCodes::reasonOf($code);
+
+        return [
+            'requestId' => $receipt->requestId,
+            'state' => 'refused',
+            'reasonCode' => $code,
+            'explanation' => $reason->explanation(),
+            'remedy' => $words->textOf($reason->remedy()),
+        ];
+    }
+}

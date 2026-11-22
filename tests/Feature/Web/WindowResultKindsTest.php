@@ -1,0 +1,81 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Web;
+
+use App\Actors\Support\ActorStore;
+use App\Domains\Support\DomainEntry;
+use App\Ui\Contracts\PageResolver;
+use App\Ui\Declarations\ResolverDefinition;
+use App\Ui\Layout\DeclaredLayoutData;
+use App\Ui\Layout\LayoutPartData;
+use App\Web\Data\FailedWindow;
+use App\Web\Exceptions\PrivateRecordMissing;
+use App\Web\Support\WindowResults;
+use Closure;
+use Psr\Log\LoggerInterface;
+use RuntimeException;
+use Spatie\LaravelData\Data;
+use Tests\Fixtures\UiDeclarations\Shelf\ShelfDomain;
+use Tests\Fixtures\UiDeclarations\ShelfLayoutResolver;
+use Tests\TestCase;
+
+/**
+ * A reader's private record answers the same whether it is missing or denied, an authorized empty read is ready, and
+ * a broken reader is logged and answers the neutral failure.
+ */
+final class WindowResultKindsTest extends TestCase
+{
+    public function test_a_missing_and_a_denied_private_record_answer_byte_for_byte_alike(): void
+    {
+        $missing = $this->resultOf(fn () => throw PrivateRecordMissing::forReader());
+        $denied = $this->resultOf(fn () => throw PrivateRecordMissing::forReader());
+
+        $this->assertSame(['state' => 'denied'], $missing->toArray());
+        $this->assertSame(json_encode($missing->toArray()), json_encode($denied->toArray()));
+    }
+
+    public function test_an_authorized_empty_read_is_ready(): void
+    {
+        $result = $this->resultOf(fn () => DeclaredLayoutData::of(LayoutPartData::collection('loans', 'list', [])));
+
+        $this->assertSame('ready', $result->toArray()['state']);
+    }
+
+    public function test_a_broken_reader_is_logged_and_answers_the_neutral_failure(): void
+    {
+        $log = $this->createMock(LoggerInterface::class);
+        $log->expects($this->once())->method('error');
+        $this->app->instance(LoggerInterface::class, $log);
+
+        $result = $this->resultOf(fn () => throw new RuntimeException('the table is gone'));
+
+        $this->assertSame(
+            ['state' => 'failed', 'message' => FailedWindow::MESSAGE, 'reason' => null],
+            $result->toArray(),
+        );
+    }
+
+    /**
+     * @param  Closure(): Data  $read
+     */
+    private function resultOf(Closure $read): Data
+    {
+        return $this->app->make(ActorStore::class)->actAsSystem(
+            'test',
+            fn (): Data => $this->app->make(WindowResults::class)->result('shelf.lent', [], $this->definition(), $read),
+        );
+    }
+
+    private function definition(): ResolverDefinition
+    {
+        return ResolverDefinition::of(
+            DomainEntry::fromClass(ShelfDomain::class)->declaring(pages: []),
+            'shelf.lent',
+            ShelfLayoutResolver::class,
+            PageResolver::class,
+            DeclaredLayoutData::class,
+        );
+    }
+}
