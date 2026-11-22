@@ -26,13 +26,6 @@ interface ReflectorFactory
     public function make(string|object $type): Reflector;
 
     /**
-     * Whether any autoloader can load a class, interface, trait or enum of this name.
-     *
-     * @phpstan-assert-if-true class-string $name
-     */
-    public function exists(string $name): bool;
-
-    /**
      * Whether the subject, a class name or an object, extends or implements this type as a strict subtype; false for
      * a name no autoloader can load.
      *

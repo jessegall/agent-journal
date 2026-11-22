@@ -11223,7 +11223,6 @@ method	CatalogueOnFirstRead::__construct()
 method	CatalogueOnFirstRead::all()
 method	CatalogueOnFirstRead::catalogue()
 method	CatalogueOnFirstRead::find()
-method	CatalogueReflectorFactory::exists()
 method	CatalogueReflectorFactory::found()
 method	CatalogueReflectorFactory::is()
 method	CatalogueReflectorFactory::isSubclassOf()
@@ -20726,7 +20725,6 @@ method	Reflector::shortName()
 method	Reflector::startLine()
 method	Reflector::traits()
 method	Reflector::uses()
-method	ReflectorFactory::exists()
 method	ReflectorFactory::is()
 method	ReflectorFactory::isSubclassOf()
 method	ReflectorFactory::make()
@@ -36859,7 +36857,6 @@ property	ReadRequestKey::$app
 property	ReadRequestKey::$failures
 property	ReadRequestKey::$key
 property	ReadRequestKey::$reads
-property	ReadRequestKey::$reflectors
 property	ReadRetainedDraftTool::$continuations
 property	ReadRetainedDraftTool::$drafts
 property	ReadRetainedDraftTool::$fields

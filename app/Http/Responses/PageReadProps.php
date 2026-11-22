@@ -10,6 +10,7 @@ use App\Declarations\RegisteredAction;
 use App\Enums\ActionMethod;
 use App\Exceptions\PageReadParameterMissing;
 use App\Support\ReflectedParameter;
+use App\Support\Reflector;
 use App\Support\UiDeclarations;
 use App\Support\Web\PageVisibility;
 use Illuminate\Contracts\Container\Container;
@@ -106,7 +107,7 @@ final readonly class PageReadProps
     ): array {
         $type = $parameter->type()->map(fn ($declared) => $declared->name())->getOrElse('');
 
-        if (! $this->reflectors->exists($type)) {
+        if (! Reflector::exists($type)) {
             $name = $parameter->name();
 
             return array_key_exists($name, $query) ? [$name => $query[$name]] : [];

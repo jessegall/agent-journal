@@ -93,7 +93,7 @@ final readonly class PropertyRules
     {
         $name = self::namedTypeOf($property);
 
-        if ($this->reflectors->exists($name) && $this->reflectors->make($name)->isEnum()) {
+        if (Reflector::exists($name) && $this->reflectors->make($name)->isEnum()) {
             $problem = sprintf(
                 '%s is the enum %s, whose cases already limit it; take its validation attributes off',
                 $property->name(),
@@ -212,7 +212,7 @@ final readonly class PropertyRules
     {
         $name = self::namedTypeOf($property);
 
-        if (! $this->reflectors->exists($name) || ! $this->reflectors->make($name)->isClass() || in_array($name, $seen, true)) {
+        if (! Reflector::exists($name) || ! $this->reflectors->make($name)->isClass() || in_array($name, $seen, true)) {
             return;
         }
 
