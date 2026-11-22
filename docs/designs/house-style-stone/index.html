@@ -35,7 +35,7 @@ code,pre,.mono{font-family:ui-monospace,'SF Mono',Menlo,monospace}
 .knobs span{padding:1px 7px;border-radius:5px;border:1px solid color-mix(in srgb,var(--page-text) 14%,transparent);opacity:.8}
 
 /* Accent strip: every variant's accent side by side */
-.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 @media (max-width:1100px){.strip{grid-template-columns:repeat(2,1fr)}}
 .sw{border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid color-mix(in srgb,var(--page-text) 12%,transparent)}
 .sw.on{outline:2px solid var(--page-text);outline-offset:2px}
@@ -283,7 +283,7 @@ pre.css{border:1px solid color-mix(in srgb,var(--page-text) 12%,transparent);bor
 </div></div>
 
 <div class="wrap">
-  <p class="lead">Round four, after user message 15186: the stone greys stay exactly as chosen (hue 30°, 3%, a 7% dark page, soft contrast), and only the accent changes. Five accents replace the pink mulberry, none pink or violet: deep teal, ink blue, moss green, ochre and rust. Mulberry stays as the last choice, only to compare. Each accent comes in the same shades (fill, hover, pressed, ring and a faint dim), and its contrast on buttons, focus rings, links and badges is computed below in the mode shown; switch Light and Dark to check both. Pick one at the top or in the strip, then click through the pages in the sidebar.</p>
+  <p class="lead">Round five, after user message 15205: the stone greys stay exactly as chosen (hue 30°, 3%, a 7% dark page, soft contrast), and only the accent changes. New first is Stone mono, no hue at all: a near-black stone in light mode, a warm stone white in dark mode. Then rust with four grades around it: brick (deeper), terracotta (softer), umber (browner) and muted rust. Round four's deep teal, ink blue, moss green and ochre follow, and mulberry stays last, only to compare. A dark fill always carries white text and a light fill the dark stone. Each accent comes in the same shades (fill, hover, pressed, ring and a faint dim), and its contrast on buttons, focus rings, links and badges is computed below in the mode shown; switch Light and Dark to check both. Pick one at the top or in the strip, then click through the pages in the sidebar.</p>
   <div class="rules">
     <div><b>Shades, not colours</b>The stone greys share one faint warm hue; the accent comes in shades (its fill, hover, pressed, ring and a faint dim). Nothing is told apart by a second hue.</div>
     <div><b>Icons may keep their colour</b>A program's own icon keeps its colour, such as the Claude spark in its orange. Text, badges and surfaces stay grey.</div>
@@ -318,14 +318,20 @@ function ratio(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min
 
 /* ---------- the variants ----------
    All share the chosen stone: g is the stone grey [hue, saturation], c the contrast (soft is -1), d the dark page's
-   lightness in %, and lp / dp the mulberry in light and dark as [hue, saturation, lightness].
-   The original, as chosen from round two: g [30,3], c -1, d 7, lp [330,32,37], dp [332,34,72]. */
+   lightness in %, and lp / dp the accent in light and dark as [hue, saturation, lightness]. lh / lpr and dh / dpr,
+   when given, set the hover and pressed lightness in light and dark instead of the usual steps.
+   A dark fill (every light-mode fill) carries white text; a light fill (every dark-mode fill) carries the dark stone. */
 const P = {
+  mono:{name:'Stone mono',line:'No colour at all: a deep, near-black stone in light mode and a warm stone white in dark mode. The primary button is the strongest grey on the page; what waits on you is told by weight and its dot, not by hue.',g:[30,3],c:-1,d:7,lp:[30,6,14],dp:[30,10,90],lh:22,lpr:8,dh:96,dpr:82,knobs:['hue 30 / 30','saturation 6 / 10','lightness 14 / 90','no hue','furthest from the red']},
+  rust:{name:'Rust',line:'Round four\'s burnt orange-brown, the starting point for the grades beside it. It sits fairly near the muted red, so an error leans on its icon and words as well.',g:[30,3],c:-1,d:7,lp:[22,52,36],dp:[22,50,66],knobs:['hue 22 / 22','saturation 52 / 50','lightness 36 / 66','round four','fairly near the red']},
+  brick:{name:'Brick',line:'Rust made deeper and redder, like fired brick. Of the rust family it is the closest to the error red: hue 10 against 6.',g:[30,3],c:-1,d:7,lp:[10,48,32],dp:[12,44,62],knobs:['hue 10 / 12','saturation 48 / 44','lightness 32 / 62','deeper, redder','near the red']},
+  terracotta:{name:'Terracotta',line:'Rust made softer and lighter, like an unglazed pot: friendlier, but its light-mode fill sits at almost the error red\'s lightness.',g:[30,3],c:-1,d:7,lp:[18,42,40],dp:[18,46,70],knobs:['hue 18 / 18','saturation 42 / 46','lightness 40 / 70','softer','near the red']},
+  umber:{name:'Umber',line:'Rust turned browner and darker, like burnt umber: earthy and calm, and the one rust grade that reads as brown rather than red.',g:[30,3],c:-1,d:7,lp:[26,36,30],dp:[28,32,62],knobs:['hue 26 / 28','saturation 36 / 32','lightness 30 / 62','browner','apart from the red']},
+  mutedrust:{name:'Muted rust',line:'Round four\'s rust with the colour taken down: a dusty rust that sits between the stone and the umber.',g:[30,3],c:-1,d:7,lp:[20,30,38],dp:[20,28,66],knobs:['hue 20 / 20','saturation 30 / 28','lightness 38 / 66','dusty','fairly apart']},
   teal:{name:'Deep teal',line:'A deep blue-green, cool against the warm stone: calm, and furthest from the muted red of an error.',g:[30,3],c:-1,d:7,lp:[184,46,28],dp:[178,32,62],knobs:['hue 184 / 178','saturation 46 / 32','lightness 28 / 62','cool']},
   ink:{name:'Ink blue',line:'The blue of fountain-pen ink: the most familiar accent for an action, softened so it does not shout.',g:[30,3],c:-1,d:7,lp:[214,44,34],dp:[212,48,74],knobs:['hue 214 / 212','saturation 44 / 48','lightness 34 / 74','cool, familiar']},
   moss:{name:'Moss green',line:'A dusty grey-green, the quietest choice here: it reads almost as a coloured stone.',g:[30,3],c:-1,d:7,lp:[96,22,30],dp:[90,24,64],knobs:['hue 96 / 90','saturation 22 / 24','lightness 30 / 64','quiet']},
   ochre:{name:'Ochre',line:'An earth yellow, warm like the stone: a deep mustard in light mode, a soft gold in dark mode.',g:[30,3],c:-1,d:7,lp:[38,64,30],dp:[40,56,62],knobs:['hue 38 / 40','saturation 64 / 56','lightness 30 / 62','warm']},
-  rust:{name:'Rust',line:'A burnt orange-brown, the warmest choice. It sits nearest the muted red, so an error must lean on its icon and words as well.',g:[30,3],c:-1,d:7,lp:[22,52,36],dp:[22,50,66],knobs:['hue 22 / 22','saturation 52 / 50','lightness 36 / 66','warm, near red']},
   original:{name:'Mulberry (for comparison)',line:'Round two\'s Stone and mulberry, unchanged: kept only to compare against.',g:[30,3],c:-1,d:7,lp:[330,32,37],dp:[332,34,72],knobs:['hue 330 / 332','saturation 32 / 34','lightness 37 / 72','as chosen before']},
 };
 
@@ -337,14 +343,14 @@ function make(p,mode){
     return {side:G(97),bg:'#ffffff',bg2:G(98.6),raised:G(98),hover:G(95.2),sel:G(92.6),chip:G(94),bubble:G(95.6),code:G(97.2),
       line:G(91.6-c*.8),border:G(90.6),inner:G(94.4),b2:G(86-c*2),b3:G(78-c*3),input:G(56-c*2),track:G(86),
       text:G(9-c*3),t2:G(30-c*3),t3:G(43),t4:G(58+c*2),
-      plum:t,plumHover:hsl(p.lp[0],p.lp[1],p.lp[2]-5),plumPress:hsl(p.lp[0],p.lp[1],p.lp[2]-9),onPlum:'#ffffff',
+      plum:t,plumHover:hsl(p.lp[0],p.lp[1],p.lh??p.lp[2]-5),plumPress:hsl(p.lp[0],p.lp[1],p.lpr??p.lp[2]-9),onPlum:'#ffffff',
       plumDim:hsl(p.lp[0],Math.max(8,p.lp[1]*.5),96.5),ring:t,danger:hsl(6,36,42),dangerHover:hsl(6,36,37),onDanger:'#ffffff'};
   }
   const d=p.d, t=hsl(...p.dp);
   return {side:G(Math.max(0,d-2)),bg:G(d),bg2:G(Math.max(0,d-1)),raised:G(d+3),hover:G(d+5.5),sel:G(d+8.5),chip:G(d+8),bubble:G(d+6),code:G(Math.max(0,d-1)),
     line:G(d+7+c),border:G(d+7.5),inner:G(d+5),b2:G(d+12+c*2),b3:G(d+18+c*2),input:G(d+32),track:G(d+14),
     text:G(91+c*3),t2:G(71+c*3),t3:G(Math.max(56,d+46)),t4:G(Math.max(43,d+34)),
-    plum:t,plumHover:hsl(p.dp[0],p.dp[1],Math.min(86,p.dp[2]+5)),plumPress:hsl(p.dp[0],p.dp[1],p.dp[2]-5),onPlum:G(6),
+    plum:t,plumHover:hsl(p.dp[0],p.dp[1],p.dh??Math.min(86,p.dp[2]+5)),plumPress:hsl(p.dp[0],p.dp[1],p.dpr??p.dp[2]-5),onPlum:G(6),
     plumDim:hsl(p.dp[0],Math.max(8,p.dp[1]*.4),d+7),ring:t,danger:hsl(6,38,64),dangerHover:hsl(6,38,69),onDanger:G(6)};
 }
 function tokens(k){
@@ -431,7 +437,7 @@ const PAGES={
    <div class="rr"><div class="reader"><h1>The journal's house style</h1><p class="ab">Stone and one accent: warm stone greys and a single accent colour, in light and dark.</p>
      <h2>The rule</h2><p>Things are told apart by shades of the stone grey and of the accent, not by colour. The accent marks the primary action, focus, the selection and what waits on you.</p>
      <blockquote>A program's own icon keeps its colour; text, badges and surfaces stay grey. The muted red appears only for an error.</blockquote>
-     <h2>Accents</h2><table><tr><th>Accent</th><th>Hue, light / dark</th><th>Dark page</th></tr><tr><td>Deep teal</td><td>184 / 178</td><td>7%</td></tr><tr><td>Ink blue</td><td>214 / 212</td><td>7%</td></tr><tr><td>Moss green</td><td>96 / 90</td><td>7%</td></tr><tr><td>Ochre</td><td>38 / 40</td><td>7%</td></tr><tr><td>Rust</td><td>22 / 22</td><td>7%</td></tr></table>
+     <h2>Accents</h2><table><tr><th>Accent</th><th>Hue, light / dark</th><th>Dark page</th></tr><tr><td>Stone mono</td><td>no hue, 14% / 90%</td><td>7%</td></tr><tr><td>Rust, brick, terracotta, umber, muted rust</td><td>22, 10, 18, 26, 20</td><td>7%</td></tr><tr><td>Deep teal</td><td>184 / 178</td><td>7%</td></tr><tr><td>Ink blue</td><td>214 / 212</td><td>7%</td></tr><tr><td>Moss green</td><td>96 / 90</td><td>7%</td></tr><tr><td>Ochre</td><td>38 / 40</td><td>7%</td></tr><tr><td>Rust</td><td>22 / 22</td><td>7%</td></tr></table>
      <p>The tokens live in <code>resources/css/app.css</code>. See <a class="lk">message 14216</a> for the choice.</p></div></div></div>`,
  accounts:()=>`<div class="bar"><h3>Accounts</h3><span class="sub">4</span><div class="r"><button class="btn sm primary" id="openAdd">${I('plus','s14')}Add account</button></div></div>
    <div class="scroll"><div class="acc"><div class="acccard">${[
@@ -483,7 +489,7 @@ function dialog(){return `<div class="dlg"><header><h3>Add an account</h3><span 
   <footer><button class="btn" id="cancelAdd">Cancel</button><span style="flex:1"></span><button class="btn primary">Continue${I('arrow','s14')}</button></footer></div>`}
 
 /* ---------- state and drawing ---------- */
-let cur='teal', mode='dark', taskOpen=false;
+let cur='mono', mode='dark', taskOpen=false;
 const app=document.getElementById('app');
 function palName(){const pb=document.querySelector('#palBtn span'); if(pb) pb.textContent=P[cur].name;}
 function apply(){
@@ -516,6 +522,7 @@ function contrast(k){
     ['Text-4 (meta, placeholders)','t4','bg',3,'incidental text only'],
     ['Button: label on the accent fill','onPlum','plum',4.5],['Button: label on accent hover','onPlum','plumHover',4.5],['Button: label on accent pressed','onPlum','plumPress',4.5],
     ['Focus ring against the page','ring','bg',3],['Focus ring against the sidebar','ring','side',3],['Focus ring against a selected row','ring','sel',3],['Focus ring against the accent button (2px gap shows the page)','ring','bg',3,'offset ring'],
+    ['Selection mark against the sidebar (nav)','plum','side',3],['Selection mark on a selected row (lists)','plum','sel',3],
     ['Link in the accent, on the page','plum','bg',4.5],['Link in the accent, on a raised card','plum','raised',4.5],['Link in the accent, on the sidebar','plum','side',4.5],
     ['Badge: accent outline or dot against the page','plum','bg',3],['Badge: accent outline on a raised card','plum','raised',3],['Badge: accent outline on a selected row','plum','sel',3],['Badge: accent text on the accent dim','plum','plumDim',4.5],
     ['Field edge against the page','input','bg',3],
