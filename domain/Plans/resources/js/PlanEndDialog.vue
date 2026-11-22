@@ -6,7 +6,7 @@ import Modal from '@kit/Modal';
 import { useWindowReload } from '@kit/useWindowQuery';
 import { cancelPlan as cancelRoute, finishPlan as finishRoute } from '@generated/routes/plans';
 import type { PlanState } from '@generated/types/plans';
-import { useHostProp } from '@/framework/hostProp';
+import { useHostProp } from '@kit/hostProp';
 
 /**
  * Cancels or finishes a plan in a dialog that names it: cancelling asks a reason and says its tasks and assignments

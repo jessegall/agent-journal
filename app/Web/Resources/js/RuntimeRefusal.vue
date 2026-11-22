@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
-import type { RecoveryRefusalPartData } from '@/types/generated';
+import type { RecoveryRefusalPartData } from '@generated/types/web';
 import { computed } from 'vue';
 
 /**

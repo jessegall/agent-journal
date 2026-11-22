@@ -6,7 +6,7 @@ import Modal from '@kit/Modal';
 import { useWindowReload } from '@kit/useWindowQuery';
 import { assignWork, reassignWork } from '@generated/routes/plans';
 import type { PlanWorkPreviewData } from '@generated/types/plans';
-import { useHostProp } from '@/framework/hostProp';
+import { useHostProp } from '@kit/hostProp';
 
 /**
  * Assigns or reassigns a plan's work in a dialog: the dispatcher chooses one of the eligible workers, then the preview

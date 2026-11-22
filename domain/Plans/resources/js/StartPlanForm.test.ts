@@ -29,7 +29,7 @@ vi.mock('@inertiajs/vue3', () => ({
     },
     router: { reload: (options: { only: string[] }) => reloads.push(options) },
 }));
-vi.mock('@/framework/hostProp', () => ({ useHostProp: () => 'plans' }));
+vi.mock('@kit/hostProp', () => ({ useHostProp: () => 'plans' }));
 vi.mock('@kit/usePageChanges', () => ({ formSendingHooks: () => ({}) }));
 vi.mock('@generated/routes/plans', () => ({
     start: ({ plan }: { plan: string }) => ({ url: `/plans/${plan}/start`, method: 'post' }),

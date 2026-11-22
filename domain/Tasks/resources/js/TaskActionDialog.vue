@@ -5,7 +5,7 @@ import { keyedPost } from '@kit/keyedPost';
 import Modal from '@kit/Modal';
 import { useWindowReload } from '@kit/useWindowQuery';
 import { block, cancel } from '@generated/routes/tasks';
-import { useHostProp } from '@/framework/hostProp';
+import { useHostProp } from '@kit/hostProp';
 
 /**
  * Blocks or cancels one task in a dialog that names it: a reason is required, a blank one keeps the dialog open with

@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 import Button from '@kit/Button';
 import EmptyState from '@kit/EmptyState';
-import { useHostProp } from '@/framework/hostProp';
+import { useHostProp } from '@kit/hostProp';
 import ListReaderLayout from '@kit/ListReaderLayout';
 import PageHeader from '@kit/PageHeader';
 import StaleListNotice from '@kit/StaleListNotice';
