@@ -51,7 +51,7 @@ final class TerminalControlActionsTest extends TestCase
         $agentId = $runtime->session->agent_id;
         $takeId = (string) Str::ulid();
 
-        $this->post($agentId, 'control/take', ['interest' => $this->openInterest($agentId), 'takeId' => $takeId])
+        $this->postAction($agentId, 'control/take', ['interest' => $this->openInterest($agentId), 'takeId' => $takeId])
             ->assertOk()
             ->assertJsonPath('state', TerminalGrantState::Taking->value)
             ->assertJsonPath('grantId', null);
@@ -61,15 +61,15 @@ final class TerminalControlActionsTest extends TestCase
             ->assertJsonPath('grantId', 'grant-1');
 
         $input = ['grantId' => 'grant-1', 'text' => 'ls', 'enter' => true, 'sequence' => 1];
-        $this->post($agentId, 'control/input', $input)
+        $this->postAction($agentId, 'control/input', $input)
             ->assertOk()
             ->assertJsonPath('nextSequence', 2);
         $this->receipt($agentId, ['takeId' => $takeId, 'sequence' => 1])
             ->assertJsonPath('receipt.outcome', TerminalReceiptOutcome::Pending->value);
-        $this->post($agentId, 'control/check', ['grantId' => 'grant-1'])->assertOk();
-        $this->post($agentId, 'control/renew', ['grantId' => 'grant-1'])->assertOk();
+        $this->postAction($agentId, 'control/check', ['grantId' => 'grant-1'])->assertOk();
+        $this->postAction($agentId, 'control/renew', ['grantId' => 'grant-1'])->assertOk();
 
-        $this->post($agentId, 'control/release', ['grantId' => 'grant-1'])
+        $this->postAction($agentId, 'control/release', ['grantId' => 'grant-1'])
             ->assertOk()
             ->assertJsonPath('state', TerminalGrantState::Releasing->value);
     }
@@ -82,7 +82,7 @@ final class TerminalControlActionsTest extends TestCase
         $this->app->instance(CurrentAuthorizer::class, new InspectOnlyAuthorizer());
         $refusal = TerminalControlRefusal::InspectOnly->code();
 
-        $this->post($agentId, 'control/take', ['interest' => $interest, 'takeId' => (string) Str::ulid()])
+        $this->postAction($agentId, 'control/take', ['interest' => $interest, 'takeId' => (string) Str::ulid()])
             ->assertStatus($refusal->status())
             ->assertJsonPath('code', $refusal->value);
     }
@@ -92,17 +92,17 @@ final class TerminalControlActionsTest extends TestCase
         $runtime = $this->controllableRuntime();
         $agentId = $runtime->session->agent_id;
         $takeId = (string) Str::ulid();
-        $this->post($agentId, 'control/take', ['interest' => $this->openInterest($agentId), 'takeId' => $takeId]);
+        $this->postAction($agentId, 'control/take', ['interest' => $this->openInterest($agentId), 'takeId' => $takeId]);
         TerminalGrant::query()->acrossActors()->sole()->issue('grant-1');
         $runtime->reassignTo($runtime->host_id, 'start-token-2');
         $refusal = TerminalControlRefusal::GrantEnded->code();
 
-        $this->post($agentId, 'control/input', ['grantId' => 'grant-1', 'text' => 'ls', 'sequence' => 1])
+        $this->postAction($agentId, 'control/input', ['grantId' => 'grant-1', 'text' => 'ls', 'sequence' => 1])
             ->assertStatus($refusal->status())
             ->assertJsonPath('code', $refusal->value);
-        $this->post($agentId, 'control/renew', ['grantId' => 'grant-1'])
+        $this->postAction($agentId, 'control/renew', ['grantId' => 'grant-1'])
             ->assertStatus($refusal->status());
-        $this->post($agentId, 'control/input', ['grantId' => 'unknown', 'sequence' => 1])
+        $this->postAction($agentId, 'control/input', ['grantId' => 'unknown', 'sequence' => 1])
             ->assertJsonPath('code', RefusalCode::StateBlocked->value);
     }
 
@@ -125,7 +125,7 @@ final class TerminalControlActionsTest extends TestCase
     /**
      * @param  array<string, mixed>  $body
      */
-    private function post(string $agentId, string $action, array $body): TestResponse
+    private function postAction(string $agentId, string $action, array $body): TestResponse
     {
         return $this->actingAs($this->owner)->postJson("/web/agents/{$agentId}/terminal/{$action}", $body);
     }
