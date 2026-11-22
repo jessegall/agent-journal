@@ -24,12 +24,12 @@ ARG CLAUDE_CODE_VERSION=2.1.323
 ARG CODEX_VERSION=0.165.0
 ARG TOOLCHAIN_PACKAGES=""
 
-RUN --mount=type=cache,target=/root/.npm \
-    apt-get update \
+RUN --mount=type=cache,target=/root/.npm --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean && apt-get update \
     && apt-get install -y --no-install-recommends git ca-certificates bash nodejs npm bubblewrap socat \
         ${TOOLCHAIN_PACKAGES} \
     && npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" "@openai/codex@${CODEX_VERSION}" \
-    && apt-get purge -y npm && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+    && apt-get purge -y npm && apt-get autoremove -y
 
 # The protected relay console: the hook and MCP relays and the transport-only artisan commands, with no .env and no
 # database; and the protected stop checks.

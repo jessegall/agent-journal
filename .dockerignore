@@ -6,10 +6,10 @@
 node_modules
 vendor
 frankenphp
-storage/logs/*
-storage/framework/cache/data/*
-storage/framework/sessions/*
-storage/framework/views/*
+# Everything a running journal writes under storage changes between builds; the image keeps only its folder
+# skeleton, which git holds as .gitignore files.
+storage/**
+!storage/**/.gitignore
 public/build
 public/hot
 corpus
@@ -17,3 +17,7 @@ tools/journal-agent/testdata
 tools/shell-oracle/bin
 # The saved agent and runner images (build.sh): loaded into the agent daemon, never part of another image.
 images
+# Build and browser-test output, rewritten by every local build or run and never part of an image.
+.build
+.playwright-mcp
+tools/journal-agent/bin

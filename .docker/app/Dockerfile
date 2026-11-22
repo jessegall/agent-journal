@@ -26,7 +26,8 @@ RUN curl -fsSL -o /tmp/tunler.tar.gz "https://codeload.github.com/jessegall/tunl
 FROM debian:bookworm-slim AS ngrok
 ARG TARGETARCH
 ARG NGROK_VERSION=3.39.13
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl && rm -rf /var/lib/apt/lists/* \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl \
     && case "${TARGETARCH}" in \
         amd64) url="https://bin.equinox.io/a/h2cqbjsNLj7/ngrok-v3-${NGROK_VERSION}-linux-amd64.tar.gz"; sum="233e0647849913e6404150c1e9c5e4f31c1368aefee330958d038d7afecb8f2e" ;; \
         arm64) url="https://bin.equinox.io/a/j83dYTwHiq9/ngrok-v3-${NGROK_VERSION}-linux-arm64.tar.gz"; sum="fb41ee8f251969f6e399ef03122f791ae537155dfd9ac4c0baf108aca95c17d7" ;; \
@@ -43,7 +44,8 @@ FROM dunglas/frankenphp:1-php8.5 AS php
 RUN install-php-extensions pcntl pdo_pgsql redis intl zip bcmath opcache
 
 # git for the journal-check executable and its tests, which build temporary repositories
-RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean && apt-get update && apt-get install -y --no-install-recommends git
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
@@ -140,11 +142,11 @@ FROM php AS runner-tools
 ARG CLAUDE_CODE_VERSION=2.1.323
 ARG CODEX_VERSION=0.165.0
 
-RUN --mount=type=cache,target=/root/.npm \
-    apt-get update \
+RUN --mount=type=cache,target=/root/.npm --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean && apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates nodejs npm \
     && npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" "@openai/codex@${CODEX_VERSION}" \
-    && apt-get purge -y npm && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+    && apt-get purge -y npm && apt-get autoremove -y
 
 # The Docker client the contained agent host starts containers with, on the agent daemon only.
 COPY --from=docker:28-cli /usr/local/bin/docker /usr/local/bin/docker
