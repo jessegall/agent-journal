@@ -83,6 +83,16 @@ final class Sequence extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * The sequence read under its row lock, for a change that must not cross another.
+     *
+     * @throws SequenceMissing
+     */
+    public static function lockedById(string $id): self
+    {
+        return self::query()->whereKey($id)->lockForUpdate()->first() ?? throw SequenceMissing::forId($id);
+    }
+
+    /**
      * @return HasMany<SequenceRun, $this>
      */
     public function runs(): HasMany

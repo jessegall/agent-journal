@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Tests\Feature;
 
+use Domain\Sequences\Commands\ChangeSequence\ChangeSequenceCommand;
+use Domain\Sequences\Commands\ChangeSequence\ChangeSequenceHandler;
 use Domain\Sequences\Data\SequenceStepData;
 use Domain\Sequences\Events\SequenceChanged;
 use Domain\Sequences\Events\SequenceDefined;
+use Domain\Sequences\Exceptions\SequenceChangedMeanwhile;
 use Domain\Sequences\Models\Sequence;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Policies\StoredSequencePolicy;
@@ -51,6 +54,18 @@ final class StoredSequenceTest extends TestCase
             SequenceChanged::class,
             fn (SequenceChanged $fact) => $fact->sequenceId === $sequence->id,
         );
+    }
+
+    public function test_a_change_from_an_older_version_is_refused(): void
+    {
+        $sequence = Sequence::define('Release', 'Ship a version', [self::step('tests')]);
+        $sequence->change('Release', 'Ship a version', [self::step('merge')]);
+
+        $this->expectException(SequenceChangedMeanwhile::class);
+
+        $stale = new ChangeSequenceCommand($sequence->id, 1, 'Release', [self::step('tests')]);
+
+        new ChangeSequenceHandler()->handle($stale);
     }
 
     public function test_the_policy_guards_the_stored_sequence(): void

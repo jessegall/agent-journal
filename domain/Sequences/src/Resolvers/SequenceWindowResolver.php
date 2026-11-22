@@ -7,6 +7,7 @@ namespace Domain\Sequences\Resolvers;
 use App\Contracts\PageResolver;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\DetailPage;
+use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use Domain\Sequences\Data\SequenceStepData;
@@ -41,6 +42,12 @@ final readonly class SequenceWindowResolver implements PageResolver
 
         $reader = DetailPage::make($sequence->name)
             ->above(LayoutPartData::text('version', "version {$sequence->version}", 'muted'))
+            ->withActions(LayoutPartData::action(
+                'edit-steps',
+                'Edit steps',
+                LayoutActionData::to(route('sequences.edit', ['sequence' => $sequence->id], false)),
+                'bordered',
+            ))
             ->withStanding(
                 LayoutPartData::text('steps-title', 'Steps', 'heading'),
                 LayoutPartData::collection('steps', 'list', $this->stepRows($sequence)),

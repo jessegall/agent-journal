@@ -22,6 +22,13 @@ use App\Values\PolicyDefinition;
 use Domain\Sequences\Commands\AdvanceSequence\AdvanceSequenceCommand;
 use Domain\Sequences\Commands\CancelSequence\CancelSequenceCommand;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
+use App\Declarations\ActionRoute;
+use Domain\Sequences\Commands\ChangeSequence\ChangeSequenceCommand;
+use Domain\Sequences\Commands\DefineSequence\DefineSequenceCommand;
+use Domain\Sequences\Http\Controllers\ChangeSequenceController;
+use Domain\Sequences\Http\Controllers\DefineSequenceController;
+use Domain\Sequences\Resolvers\NewSequenceResolver;
+use Domain\Sequences\Resolvers\SequenceEditorResolver;
 use Domain\Sequences\Policies\SequencePolicy;
 use Domain\Sequences\Policies\StoredSequencePolicy;
 use Domain\Sequences\Resolvers\SequenceIndexResolver;
@@ -66,7 +73,13 @@ final class SequencesDomain extends Domain implements
      */
     public function commands(): array
     {
-        return [StartSequenceCommand::class, AdvanceSequenceCommand::class, CancelSequenceCommand::class];
+        return [
+            StartSequenceCommand::class,
+            AdvanceSequenceCommand::class,
+            CancelSequenceCommand::class,
+            DefineSequenceCommand::class,
+            ChangeSequenceCommand::class,
+        ];
     }
 
     /**
@@ -98,8 +111,14 @@ final class SequencesDomain extends Domain implements
     public function pages(): array
     {
         return [
-            Page::layout('index', 'Sequences', Icon::Sequence, SequenceIndexResolver::class)->at(''),
-            Page::layout('sequence', 'Sequence', Icon::Sequence, SequenceWindowResolver::class)->at('{sequence}'),
+            Page::layout('index', 'Sequences', Icon::Sequence, SequenceIndexResolver::class)
+                ->at('')
+                ->actions(ActionRoute::post('create', DefineSequenceController::class, 'define-sequence')),
+            Page::layout('new', 'New sequence', Icon::Sequence, NewSequenceResolver::class)->at('new'),
+            Page::layout('edit', 'Edit steps', Icon::Sequence, SequenceEditorResolver::class)->at('{sequence}/edit'),
+            Page::layout('sequence', 'Sequence', Icon::Sequence, SequenceWindowResolver::class)
+                ->at('{sequence}')
+                ->actions(ActionRoute::patch('{sequence}', ChangeSequenceController::class, 'change-sequence')),
             Page::layout('run', 'Sequence run', Icon::Activity, SequenceRunWindowResolver::class)->at('runs/{run}'),
         ];
     }

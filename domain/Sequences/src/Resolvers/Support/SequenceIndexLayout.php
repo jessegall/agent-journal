@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Resolvers\Support;
 
 use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
@@ -37,6 +38,7 @@ final readonly class SequenceIndexLayout
             ListEmpty::informing('No sequences yet.', 'Sequences the agents follow appear here once one is written.'),
         )
             ->counting(count($sequences))
+            ->creating('New sequence', LayoutActionData::to(route('sequences.new', [], false)))
             ->withReader(new LayoutBackData(route('sequences.index', [], false), 'Sequences'), ...$reader)
             ->layout();
     }
