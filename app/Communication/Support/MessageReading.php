@@ -19,11 +19,13 @@ use App\Communication\Events\MessageTakenUp;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Models\Message;
+use App\Communication\Models\MessageReceipt;
 use Carbon\CarbonImmutable;
 
 /**
- * Reading an inbox's messages: the reader admitted under the inbox's shared guard, the first read of each message
- * kept, and each waiting message nobody validly holds taken up by the reader, proved by its seat.
+ * Reading an inbox's messages: the reader admitted under the inbox's shared guard; for desk mail the first read of
+ * each message kept and each waiting message nobody validly holds taken up by the reader, proved by its seat; for a
+ * chat the reader's own receipt of each message marked shown, once.
  */
 final readonly class MessageReading
 {
@@ -33,6 +35,7 @@ final readonly class MessageReading
         private AssignmentStorage $store,
         private ResponsibilityWriter $responsibilities,
         private CommandFacts $facts,
+        private SpeechAllowance $speech,
     ) {}
 
     /**
@@ -49,6 +52,36 @@ final readonly class MessageReading
         $access->lockShared($inbox);
 
         return [$inbox, $access->membership($inbox, $reader)];
+    }
+
+    /**
+     * Reads the named messages of one inbox as the reader, each locked, in the order named; a message the inbox does
+     * not hold is refused as missing.
+     *
+     * @param  list<string>  $messageIds
+     *
+     * @throws InboxUnavailable
+     * @throws MessageMissing
+     */
+    public function readInInbox(string $inboxId, ActorContext $reader, array $messageIds): MessageReadBatch
+    {
+        [$inbox, $membership] = $this->admit($inboxId, $reader);
+
+        $messages = Message::query()
+            ->whereKey($messageIds)
+            ->where('destination_inbox_id', $inbox->inboxId())
+            ->lockForUpdate()
+            ->readExactly(count($messageIds))
+            ->get()
+            ->keyBy('id');
+
+        $missing = array_diff($messageIds, $messages->keys()->all());
+
+        if ($missing !== []) {
+            throw MessageMissing::forId((string) reset($missing));
+        }
+
+        return $this->read($membership, array_map(fn (string $id) => $messages[$id], $messageIds));
     }
 
     public function recipientOf(string $messageId, ActorContext $actor): InboxMembership
@@ -95,6 +128,16 @@ final readonly class MessageReading
         CarbonImmutable $now,
         bool $held,
     ): MessageReadResult {
+        if ($membership->isChat()) {
+            // An agent's chat row is read only through a confirmed presentation of its whole body, never by id.
+            $shown = ! $membership->actor->type->isAgent()
+                && $this->present($message, $membership->interval(), $now);
+            $takenUp = $message->needsReply()
+                && $this->speech->claimOnTakeUp($message, $membership->actor, $membership->interval(), $now);
+
+            return new MessageReadResult($message->id, $shown, $takenUp);
+        }
+
         $firstRead = $message->acknowledge($membership, $now);
 
         $takenUp = $message->needsReply() && ! $held;
@@ -104,6 +147,16 @@ final readonly class MessageReading
         }
 
         return new MessageReadResult($message->id, $firstRead, $takenUp);
+    }
+
+    /**
+     * Marks the reader's own receipt of a chat message shown; a message its interval never received changes nothing.
+     */
+    private function present(Message $message, string $intervalId, CarbonImmutable $now): bool
+    {
+        $receipt = MessageReceipt::query()->where('message_id', $message->id)->ofInterval($intervalId)->first();
+
+        return $receipt !== null && $receipt->present($now);
     }
 
     /**
@@ -119,7 +172,7 @@ final readonly class MessageReading
         }
 
         $claim = $this->responsibilities->assign($record, AssigneeIdentity::ofActorIdentity($membership->actor));
-        ClaimAuthorization::forInbox($claim->reference, $membership->seatReference);
+        ClaimAuthorization::forInbox($claim->reference, $membership->deskSeat());
         $this->facts->publishAfterCommit(new MessageTakenUp($message->id, $membership->actor));
     }
 }

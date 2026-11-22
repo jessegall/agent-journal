@@ -23,10 +23,10 @@ use Domain\Chat\Listeners\RemoveDeletedSource;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockProjection;
-use Domain\Chat\Support\DockRequests;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\OpensPairChats;
 use Tests\Fixtures\Modules\Notes\Events\NoteRemoved;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
@@ -47,6 +47,7 @@ use Tests\TestCase;
 #[TimeLimit(8, 'Records one run, docks it through MCP and reads the projected cards.')]
 final class ProcessAndCleanupDockTest extends TestCase
 {
+    use OpensPairChats;
     use CommitsHookRows;
     use InstallsNotesModule;
     use SendsMcpFrames;
@@ -97,10 +98,7 @@ final class ProcessAndCleanupDockTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->agent = TestStart::start();
-        $this->conversation = Conversation::between(
-            $this->inboxOf(ActorIdentity::of($owner))->inboxId(),
-            $this->inboxOf(ActorIdentity::of($this->agent->agent))->inboxId(),
-        );
+        $this->conversation = $this->pairChat(ActorIdentity::of($owner), ActorIdentity::of($this->agent->agent));
     }
 
     protected function tearDown(): void
@@ -165,14 +163,14 @@ final class ProcessAndCleanupDockTest extends TestCase
         $note = new Note(['text' => 'Shared']);
         $note->saveFor($this->agent->agent->id);
         $this->dock(Note::LINK_TYPE, $note->id);
-        $elsewhere = Conversation::between(
-            $this->inboxOf(ActorIdentity::of($this->agent->agent))->inboxId(),
-            $this->inboxOf(new ActorIdentity(ActorType::Agent, 'another-agent'))->inboxId(),
+        $elsewhere = $this->pairChat(
+            ActorIdentity::of($this->agent->agent),
+            new ActorIdentity(ActorType::Agent, 'another-agent'),
         );
         $this->callMcpTool($this->agent, 'dock_add', [
             'type' => Note::LINK_TYPE,
             'id' => $note->id,
-            'chat' => $elsewhere->id,
+            'chat' => $elsewhere->inbox_id,
             'request_key' => 'dock-elsewhere',
         ])->assertJsonPath('result.structuredContent.outcome', 'added');
 
@@ -204,8 +202,7 @@ final class ProcessAndCleanupDockTest extends TestCase
     private function cards(): string
     {
         $this->agent->startRequest($this->app);
-        $requests = $this->app->make(DockRequests::class);
-        $page = $this->app->make(DockProjection::class)->page($requests->peersIn($this->conversation), null);
+        $page = $this->app->make(DockProjection::class)->page($this->conversation, null);
 
         return (string) json_encode($page->cards, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }

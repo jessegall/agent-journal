@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Web\Support;
 
 use App\Actors\Contracts\Actor;
+use App\Actors\Contracts\ChatEligibility;
 use App\Actors\Contracts\JournalAdmission;
+use App\Actors\Support\ActorIdentity;
 
 /**
  * The private channel of one user: only that signed-in user joins it, and only while Access lets them use the
@@ -15,7 +17,7 @@ final readonly class UserChannel
 {
     public const string PATTERN = 'journal.user.{userId}';
 
-    public function __construct(private JournalAdmission $admission) {}
+    public function __construct(private JournalAdmission $admission, private ChatEligibility $chats) {}
 
     public static function nameFor(string $userId): string
     {
@@ -24,6 +26,7 @@ final readonly class UserChannel
 
     public function join(Actor $user, string $userId): bool
     {
-        return (string) $user->actorId() === $userId && $this->admission->admits($user);
+        return (string) $user->actorId() === $userId
+            && ($this->admission->admits($user) || $this->chats->isAdmitted(ActorIdentity::of($user), null));
     }
 }

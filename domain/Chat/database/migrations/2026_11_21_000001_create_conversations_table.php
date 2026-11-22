@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -12,12 +13,23 @@ return new class extends Migration
     {
         Schema::create('conversations', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->foreignUlid('low_inbox_id')->constrained('inboxes')->cascadeOnDelete();
-            $table->foreignUlid('high_inbox_id')->constrained('inboxes')->cascadeOnDelete();
+            $table->foreignUlid('inbox_id')->unique()->constrained('inboxes')->restrictOnDelete();
+            $table->string('provider_id')->unique();
+            $table->string('title')->nullable();
+            $table->string('owner_type', 16)->nullable();
+            $table->string('owner_id', 64)->nullable();
+            $table->string('environment_id')->nullable()->index();
+            $table->string('state', 16);
+            $table->timestampTz('closed_at')->nullable();
+            $table->boolean('reconcile_pending')->default(false);
             $table->timestampsTz();
-
-            $table->unique(['low_inbox_id', 'high_inbox_id']);
         });
+
+        DB::statement(<<<'SQL'
+            ALTER TABLE conversations ADD CONSTRAINT conversations_open_has_owner CHECK (
+                state <> 'open' OR (owner_type IS NOT NULL AND owner_id IS NOT NULL)
+            )
+            SQL);
     }
 
     public function down(): void

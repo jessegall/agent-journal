@@ -9,7 +9,7 @@ use App\Communication\Data\MessageView;
 use App\Communication\Exceptions\MessageMissing;
 
 /**
- * Which messages the asker may pin: one it can read now, between exactly the two inboxes the conversation names.
+ * Which messages the asker may pin: one it can see now, posted in the chat it pins it in.
  */
 final readonly class PinnableMessages
 {
@@ -18,11 +18,11 @@ final readonly class PinnableMessages
     /**
      * @throws MessageMissing
      */
-    public function requireIn(ConversationPair $conversation, string $messageId): MessageView
+    public function requireIn(string $inboxId, string $messageId): MessageView
     {
         $message = $this->messages->detail($messageId);
 
-        if (! $conversation->holds($message->sourceInboxId, $message->destinationInboxId)) {
+        if ($message->destinationInboxId !== $inboxId) {
             throw MessageMissing::forId($messageId);
         }
 

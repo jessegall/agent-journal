@@ -20,6 +20,8 @@ use App\Actors\Contracts\AuthoritySource;
 use App\Actors\Contracts\Authorizer;
 use App\Actors\Contracts\AuthorizerProvider;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
+use App\Actors\Contracts\ChatEligibility;
+use App\Actors\Contracts\ChatParticipationEnding;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\CurrentAuthorizer;
@@ -42,6 +44,7 @@ use App\Actors\Contracts\WorkspacePolicy;
 use App\Actors\Contracts\WorkStackProvider;
 use App\Actors\Contracts\WorkStacks;
 use App\Actors\Enums\ActorType;
+use App\Actors\Enums\ChatPermission;
 use App\Actors\Enums\ReadEntitlementType;
 use App\Actors\Exceptions\ActiveActorCounterRepeated;
 use App\Actors\Exceptions\ActorContextMissing;
@@ -62,9 +65,11 @@ use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\ActorLabelSet;
+use App\Actors\Support\ChatMemberPolicies;
 use App\Actors\Support\CurrentUser;
 use App\Actors\Support\UnrestrictedAuthorizer;
 use App\Actors\Values\AccessRequirement;
+use App\Actors\Values\ChatMemberAuthority;
 use App\Actors\Values\OwnerAuthority;
 use App\Actors\Values\PolicyDefinition;
 use App\Actors\Values\ReadEntitlement;
@@ -279,6 +284,8 @@ use App\Agents\Exceptions\StartRefused;
 use App\Agents\Exceptions\StartRequestConflict;
 use App\Agents\Exceptions\StopConditionsInvalid;
 use App\Agents\Support\AccountUseCounts;
+use App\Agents\Support\AgentChatAdmission;
+use App\Agents\Support\AgentDrivers;
 use App\Agents\Support\AgentLabel;
 use App\Agents\Support\AgentOption;
 use App\Agents\Support\AgentStatus;
@@ -522,13 +529,23 @@ use App\Comments\Policies\CommentPolicy;
 use App\Comments\Support\HasComments;
 use App\Comments\Support\PublicComment;
 use App\Comments\Support\PublicCommentPage;
+use App\Communication\Commands\AcknowledgeChatMessages;
+use App\Communication\Commands\AcknowledgePresentation;
+use App\Communication\Commands\AnswerChatQuestion;
 use App\Communication\Commands\AnswerMessage;
+use App\Communication\Commands\AskChatQuestion;
 use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\AskQuestion;
+use App\Communication\Commands\ClaimSpeech;
+use App\Communication\Commands\DeclineChatQuestion;
 use App\Communication\Commands\DismissMessage;
+use App\Communication\Commands\PostChatMessage;
 use App\Communication\Commands\ReadMessages;
 use App\Communication\Commands\ReleaseMessageClaim;
+use App\Communication\Commands\ReleaseSpeech;
+use App\Communication\Commands\ReplyInChat;
 use App\Communication\Commands\ReplyToMessage;
+use App\Communication\Commands\RetryDelivery;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SelectMessage;
 use App\Communication\Commands\SendMessage;
@@ -547,10 +564,14 @@ use App\Communication\Contracts\MessageCommand;
 use App\Communication\Contracts\Notifications;
 use App\Communication\Contracts\NotificationTargetResolver;
 use App\Communication\Contracts\NotificationTargets;
+use App\Communication\Data\AgentChatPart;
 use App\Communication\Data\AgentInbox;
 use App\Communication\Data\AgentInboxCounts;
 use App\Communication\Data\AgentMessageCard;
 use App\Communication\Data\AgentMessageDetails;
+use App\Communication\Data\ChatEventPage;
+use App\Communication\Data\ChatEventView;
+use App\Communication\Data\DeliveryView;
 use App\Communication\Data\InboxCounts;
 use App\Communication\Data\InboxView;
 use App\Communication\Data\MessageClaimHolder;
@@ -561,9 +582,14 @@ use App\Communication\Data\MessageReadResult;
 use App\Communication\Data\MessageView;
 use App\Communication\Data\NotificationLink;
 use App\Communication\Data\NotificationTarget;
+use App\Communication\Data\PresentationBatchData;
+use App\Communication\Data\PresentationItemData;
 use App\Communication\Data\WakeStatus;
+use App\Communication\Enums\WakeState;
 use App\Communication\Enums\AgentInboxState;
 use App\Communication\Enums\DismissalType;
+use App\Communication\Enums\IntervalRole;
+use App\Communication\Enums\LeaveReason;
 use App\Communication\Enums\MessageState;
 use App\Communication\Enums\NotificationSourceType;
 use App\Communication\Events\MessageAnswered;
@@ -581,8 +607,18 @@ use App\Communication\Exceptions\MessageBodyTooLong;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Exceptions\MessageToSelf;
+use App\Communication\Resolvers\ChatDeliveries;
+use App\Communication\Resolvers\ChatTimeline;
+use App\Communication\Support\ChatDepartures;
+use App\Communication\Support\ChatInboxes;
+use App\Communication\Support\ChatInterval;
+use App\Communication\Support\ChatIntervalEvidence;
+use App\Communication\Support\DeskSeatEvidence;
+use App\Communication\Support\InboxIntervals;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
+use App\Communication\Support\MembershipEvidence;
+use App\Communication\Support\PresentationBatches;
 use App\Connections\Commands\ApproveDeviceGrant;
 use App\Connections\Commands\AssertBindingStart;
 use App\Connections\Commands\AssignBindingEnvironment;
@@ -1416,6 +1452,9 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                ChatParticipationEnding::class,
+                ChatEligibility::class,
+                MembershipEvidence::class,
                 TypeReflections::class,
                 ReflectedType::class,
                 StartAccounts::class,
@@ -1663,6 +1702,9 @@ final class CoreApi
                 SkillConditionEvaluator::class,
             )
             ->values(
+                ChatMemberAuthority::class,
+                ChatMemberPolicies::class,
+                ChatPermission::class,
                 SeenSession::class,
                 RefusalReason::class,
                 RevokedBindings::class,
@@ -1762,6 +1804,7 @@ final class CoreApi
                 AgentInboxCounts::class,
                 AgentInbox::class,
                 AgentMessageCard::class,
+                AgentChatPart::class,
                 AgentMessageDetails::class,
                 AgentInboxState::class,
                 ReadView::class,
@@ -2042,7 +2085,26 @@ final class CoreApi
                 AssignmentPurpose::class,
                 SeatChangeResult::class,
                 InboxMembership::class,
+                DeskSeatEvidence::class,
+                ChatIntervalEvidence::class,
                 InboxMembers::class,
+                ChatInboxes::class,
+                ChatInterval::class,
+                InboxIntervals::class,
+                ChatDepartures::class,
+                PresentationBatches::class,
+                PresentationBatchData::class,
+                PresentationItemData::class,
+                AgentChatAdmission::class,
+                AgentDrivers::class,
+                ChatTimeline::class,
+                ChatDeliveries::class,
+                DeliveryView::class,
+                WakeState::class,
+                ChatEventPage::class,
+                ChatEventView::class,
+                IntervalRole::class,
+                LeaveReason::class,
                 ActorLabelSet::class,
                 UnrestrictedAuthorizer::class,
                 StartProfileAuthority::class,
@@ -2332,6 +2394,16 @@ final class CoreApi
                 PostComment::class,
                 PostTextComment::class,
                 SendMessage::class,
+                PostChatMessage::class,
+                AskChatQuestion::class,
+                ReplyInChat::class,
+                AcknowledgeChatMessages::class,
+                AcknowledgePresentation::class,
+                RetryDelivery::class,
+                ClaimSpeech::class,
+                ReleaseSpeech::class,
+                AnswerChatQuestion::class,
+                DeclineChatQuestion::class,
                 SelectMessage::class,
                 AskQuestion::class,
                 AnswerMessage::class,

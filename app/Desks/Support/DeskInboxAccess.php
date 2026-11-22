@@ -74,7 +74,7 @@ final readonly class DeskInboxAccess implements InboxAccess
     {
         $assignment = $seat->toAssignment();
 
-        return new InboxMembership(SeatOccupant::of($assignment), $assignment->reference);
+        return InboxMembership::atDeskSeat(SeatOccupant::of($assignment), $assignment->reference);
     }
 
     public function memberInboxIds(ActorIdentity $actor): Builder

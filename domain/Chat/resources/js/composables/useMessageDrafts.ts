@@ -2,8 +2,8 @@ import { reactive } from 'vue';
 import { isStorageAvailable, keepStoredJson, readStoredJson } from '@kit/browserStorage';
 
 /**
- * Unsent message text per user and agent, so browsing other agents, a switch to another driver or reloading the page
- * keeps what was typed. Each agent has its own draft. The drafts live in this tab's session storage; when the
+ * Unsent message text per user and chat inbox, so browsing other chats, a switch to another driver or reloading the
+ * page keeps what was typed. Each chat has its own draft. The drafts live in this tab's session storage; when the
  * browser refuses storage they still last for as long as the page stays open.
  *
  * A send or reply the server refused, or whose answer never came, is kept as a recovery entry beside the drafts: its
@@ -15,7 +15,7 @@ const recoveryKey = 'journal.message-recovery';
 const RECOVERY_LIFETIME_MS = 24 * 60 * 60 * 1000;
 
 /**
- * One send or reply to recover: under its request key, in its draft's scope (user and agent), the text and the
+ * One send or reply to recover: under its request key, in its draft's scope (user and chat inbox), the text and the
  * message it replied to, the draft generation it left behind when it cleared the draft, and when it was kept.
  */
 export type RecoveryEntry = {
@@ -28,6 +28,15 @@ export type RecoveryEntry = {
 };
 
 const drafts = reactive(new Map<string, string>(storedDrafts()));
+
+/**
+ * The chats this tab lost: their drafts stay empty and no late send can restore into them.
+ */
+const lostChats = new Set<string>();
+
+function isLost(key: string): boolean {
+    return lostChats.has(key.slice(key.indexOf('/') + 1));
+}
 const recoveries = reactive(new Map<string, RecoveryEntry>(storedRecoveries()));
 
 /**
@@ -64,8 +73,11 @@ function generationOf(key: string): number {
     return generations.get(key) ?? 0;
 }
 
-export function draftKey(userId: string, agentId: string): string {
-    return `${userId}/${agentId}`;
+/**
+ * The scope of one draft: the viewer and the chat inbox it writes in.
+ */
+export function draftKey(userId: string, inboxId: string): string {
+    return `${userId}/${inboxId}`;
 }
 
 export function useMessageDrafts() {
@@ -74,6 +86,10 @@ export function useMessageDrafts() {
     }
 
     function write(key: string, body: string): void {
+        if (isLost(key)) {
+            return;
+        }
+
         if ((drafts.get(key) ?? '') !== body) {
             generations.set(key, generationOf(key) + 1);
         }
@@ -116,7 +132,11 @@ export function useMessageDrafts() {
     function restoreOrOffer(intentKey: string): 'restored' | 'offered' {
         const entry = recoveries.get(intentKey);
 
-        if (entry === undefined || generationOf(entry.draftKey) !== entry.generation || read(entry.draftKey) !== '') {
+        if (entry === undefined || isLost(entry.draftKey)) {
+            return 'offered';
+        }
+
+        if (generationOf(entry.draftKey) !== entry.generation || read(entry.draftKey) !== '') {
             return 'offered';
         }
 
@@ -143,10 +163,12 @@ export function useMessageDrafts() {
     }
 
     /**
-     * Removes the draft and the recovery entries of one user's conversation with an agent.
+     * Removes the draft and the recovery entries of a chat this browser lost, for whoever was signed in, and keeps it
+     * closed: nothing writes into it again in this tab.
      */
-    function purgeScope(userId: string, agentId: string): void {
-        removeWhere((key) => key === draftKey(userId, agentId));
+    function purgeChat(inboxId: string): void {
+        lostChats.add(inboxId);
+        removeWhere((key) => key.endsWith(`/${inboxId}`));
     }
 
     /**
@@ -183,7 +205,7 @@ export function useMessageDrafts() {
         restoreOrOffer,
         discard,
         confirm,
-        purgeScope,
+        purgeChat,
         purgeUser,
         recoveryEntries,
         storageAvailable: isStorageAvailable('session'),

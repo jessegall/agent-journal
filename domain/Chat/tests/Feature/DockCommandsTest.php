@@ -8,11 +8,11 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\OpensPairChats;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\StartsAgentRequests;
@@ -25,6 +25,7 @@ use Tests\Support\WritesInboxMessages;
  */
 final class DockCommandsTest extends TestCase
 {
+    use OpensPairChats;
     use CommitsHookRows;
     use SendsSignedCalls;
     use StartsAgentRequests;
@@ -64,10 +65,7 @@ final class DockCommandsTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->start = TestStart::start();
 
-        Conversation::between(
-            $this->inboxOf(ActorIdentity::of($owner))->inboxId(),
-            $this->inboxOf(ActorIdentity::of($this->start->agent))->inboxId(),
-        );
+        $this->pairChat(ActorIdentity::of($owner), ActorIdentity::of($this->start->agent));
 
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);
     }
@@ -101,10 +99,7 @@ final class DockCommandsTest extends TestCase
 
     public function test_an_agent_in_several_conversations_names_one_before_anything_is_docked(): void
     {
-        Conversation::between(
-            $this->inboxOf(ActorIdentity::of($this->start->agent))->inboxId(),
-            $this->inboxOf(new ActorIdentity(ActorType::Agent, 'another-agent'))->inboxId(),
-        );
+        $this->pairChat(ActorIdentity::of($this->start->agent), new ActorIdentity(ActorType::Agent, 'another-agent'));
 
         $this->runCommandsAs($this->start);
 

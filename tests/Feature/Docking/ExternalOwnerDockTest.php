@@ -9,11 +9,11 @@ use App\Bus\Contracts\CommandBus;
 use App\Docking\Support\DockDefinitions;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Documents\Commands\CreateReport;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\OpensPairChats;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
 use Tests\Fixtures\Modules\Notes\Support\NotesTally;
@@ -33,6 +33,7 @@ use Tests\TestCase;
 #[TimeLimit(8, 'Docks through the browser, signed calls and MCP, and reads a report page.')]
 final class ExternalOwnerDockTest extends TestCase
 {
+    use OpensPairChats;
     use CommitsHookRows;
     use InstallsNotesModule;
     use SendsMcpFrames;
@@ -80,10 +81,7 @@ final class ExternalOwnerDockTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->agent = TestStart::start();
-        Conversation::between(
-            $this->inboxOf(ActorIdentity::of($this->owner))->inboxId(),
-            $this->inboxOf(ActorIdentity::of($this->agent->agent))->inboxId(),
-        );
+        $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($this->agent->agent));
     }
 
     protected function tearDown(): void

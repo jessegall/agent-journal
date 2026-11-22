@@ -15,6 +15,8 @@ use App\Communication\Data\MessageReader;
 use App\Communication\Enums\AgentInboxState;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\MessageState;
+use App\Communication\Enums\MessageType;
+use App\Communication\Events\ChatMessageAccepted;
 use App\Communication\Events\MessageAnswered;
 use App\Communication\Events\MessageAnswerRequired;
 use App\Communication\Events\MessageDismissed;
@@ -24,6 +26,7 @@ use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Models\Scopes\MessageVisibility;
 use App\Communication\Support\AcceptedOperation;
+use App\Communication\Support\ChatEnvelope;
 use App\Communication\Support\InboxMembership;
 use App\Communication\Support\MessageEnvelope;
 use App\Communication\Support\RegisteredInboxes;
@@ -41,8 +44,10 @@ use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -50,6 +55,7 @@ use Spatie\LaravelData\Optional;
  * was closed. Every change that moves its state raises its state version, so a stale change is refused.
  *
  * @property string $id
+ * @property MessageType $message_type
  * @property string $number_group_id
  * @property int $number
  * @property string $source_inbox_id
@@ -69,6 +75,14 @@ use Spatie\LaravelData\Optional;
  * @property string $origin_receipt_id
  * @property string|null $reply_to_id
  * @property string|null $answer_message_id
+ * @property string|null $timeline_event_id
+ * @property string|null $addressee_type
+ * @property string|null $addressee_id
+ * @property string|null $respondent_type
+ * @property string|null $respondent_id
+ * @property string|null $user_root_id
+ * @property string|null $request_key
+ * @property string|null $request_digest
  * @property string|null $closed_by_type
  * @property string|null $closed_by_id
  * @property CarbonImmutable|null $closed_at
@@ -76,8 +90,10 @@ use Spatie\LaravelData\Optional;
  * @property string|null $dismissal_reason
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
+ * @property-read int $timeline_position
  */
 #[Fillable([
+    'message_type',
     'source_inbox_id',
     'destination_inbox_id',
     'sender_type',
@@ -90,6 +106,13 @@ use Spatie\LaravelData\Optional;
     'state_version',
     'origin_receipt_id',
     'reply_to_id',
+    'timeline_event_id',
+    'addressee_type',
+    'addressee_id',
+    'respondent_type',
+    'respondent_id',
+    'request_key',
+    'request_digest',
 ])]
 final class Message extends Model implements Assignable, EventSource, Numbered, ReadableModel
 {
@@ -109,6 +132,7 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
     protected function casts(): array
     {
         return [
+            'message_type' => MessageType::class,
             'state' => MessageState::class,
             'is_question' => 'boolean',
             'state_version' => 'integer',
@@ -141,6 +165,7 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         $author = $envelope->author;
 
         $message = new self([
+            'message_type' => MessageType::Desk,
             'source_inbox_id' => $envelope->source->inboxId(),
             'destination_inbox_id' => $envelope->destination->inboxId(),
             ...$author->asColumns('sender'),
@@ -171,7 +196,66 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         return $message;
     }
 
+    /**
+     * A new chat message at its timeline position, posted in and to the one chat inbox, under the bus receipt of the
+     * operation that posted it. A user's message starts its own user root; any other inherits the envelope's.
+     */
+    public static function createChat(
+        ChatEnvelope $envelope,
+        TimelineEvent $event,
+        AcceptedOperation $operation,
+        string|null $senderSessionId = null,
+    ): self {
+        $author = $envelope->author;
+        $inboxId = $envelope->inbox->inboxId();
+
+        $message = new self([
+            'message_type' => MessageType::Chat,
+            'source_inbox_id' => $inboxId,
+            'destination_inbox_id' => $inboxId,
+            ...$author->asColumns('sender'),
+            'sender_session_id' => $senderSessionId,
+            'body' => $envelope->body->text,
+            'state' => $envelope->state,
+            'is_question' => $envelope->state === MessageState::WaitingForAnswer,
+            'state_version' => 0,
+            'origin_receipt_id' => $operation->receiptId,
+            'reply_to_id' => $envelope->parent?->id,
+            'timeline_event_id' => $event->id,
+            'addressee_type' => $envelope->addressee?->type->value,
+            'addressee_id' => $envelope->addressee?->id,
+            'respondent_type' => $envelope->respondent?->type->value,
+            'respondent_id' => $envelope->respondent?->id,
+            'request_key' => $envelope->requestKey,
+            'request_digest' => $envelope->digest(),
+        ]);
+
+        $message->id = $message->newUniqueId();
+        $message->conversation_id = $envelope->parent === null ? $message->id : $envelope->parent->conversation_id;
+        $message->user_root_id = $author->type === ActorType::User ? $message->id : $envelope->userRootId;
+
+        $message->assertSaved($message->save());
+
+        $message->raise(new ChatMessageAccepted($message->id, $author, $inboxId));
+
+        return $message;
+    }
+
     // ----------[ Queries ]----------
+
+    /**
+     * The chat message the author already posted in the inbox under the request key, once there is one.
+     */
+    public static function postedUnderKey(string $inboxId, ActorIdentity $author, string $requestKey): self|null
+    {
+        return self::query()
+            ->acrossInboxes()
+            ->where('destination_inbox_id', $inboxId)
+            ->where('sender_type', $author->type->value)
+            ->where('sender_id', $author->id)
+            ->where('request_key', $requestKey)
+            ->first();
+    }
 
     /**
      * @return Builder<self>
@@ -225,7 +309,7 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         $this->read_at = $at;
         $this->read_by_type = $reader->type->value;
         $this->read_by_id = $reader->id;
-        $this->read_participation_assignment_id = $membership->seatReference->id;
+        $this->read_participation_assignment_id = $membership->deskSeat()->id;
         $this->assertSaved($this->save());
         $this->raise(new MessageRead($this->id, $this->destination_inbox_id, $reader));
 
@@ -306,6 +390,35 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         return $line === trim($this->body) || str_ends_with($preview, '…') ? $preview : $preview.'…';
     }
 
+    /**
+     * The timeline position a row read with its position carries.
+     *
+     * @return Attribute<int, never>
+     */
+    protected function timelinePosition(): Attribute
+    {
+        return Attribute::get(fn () => (int) $this->getAttribute('timeline_sequence'));
+    }
+
+    /**
+     * Whether the actor may settle this question: anyone may when it names no respondent, else only the one it names.
+     */
+    public function mayBeSettledBy(ActorIdentity $actor): bool
+    {
+        return $this->respondent_type === null
+            || ($this->respondent_type === $actor->type->value && $this->respondent_id === $actor->id);
+    }
+
+    public function isChat(): bool
+    {
+        return $this->message_type->isChat();
+    }
+
+    public function hasDigest(string $digest): bool
+    {
+        return $this->request_digest !== null && hash_equals($this->request_digest, $digest);
+    }
+
     public function isAtStateVersion(int $expected): bool
     {
         return $this->state_version === $expected;
@@ -381,6 +494,25 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         $this->closed_at = $at;
     }
 
+    /**
+     * The receipts of the outer message held by the reader's active interval, for a where-exists.
+     *
+     * @param  Builder<self>  $outer
+     */
+    private static function activeReceiptsOf(
+        QueryBuilder $receipts,
+        Builder $outer,
+        ActorIdentity $reader,
+    ): QueryBuilder {
+        return $receipts->selectRaw('1')
+            ->from('message_receipts')
+            ->join('inbox_intervals', 'inbox_intervals.id', '=', 'message_receipts.interval_id')
+            ->whereColumn('message_receipts.message_id', $outer->qualifyColumn('id'))
+            ->whereNull('inbox_intervals.left_at')
+            ->where('inbox_intervals.actor_type', $reader->type->value)
+            ->where('inbox_intervals.actor_id', $reader->id);
+    }
+
     // ----------[ Scopes ]----------
 
     /**
@@ -407,12 +539,10 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
      * @param  Builder<self>  $messages
      */
     #[Scope]
-    protected function forInboxState(Builder $messages, AgentInboxState $state): void
+    protected function forInboxState(Builder $messages, AgentInboxState $state, ActorIdentity $reader): void
     {
         match ($state) {
-            AgentInboxState::Pending => $messages->where(fn (Builder $pending) => $pending
-                ->where('state', MessageState::WaitingForAnswer)
-                ->orWhere(fn (Builder $unread) => $unread->whereNull('read_at')->where('state', MessageState::Sent))),
+            AgentInboxState::Pending => $messages->pendingFor($reader),
             AgentInboxState::Answered => $messages->where('state', MessageState::Answered),
             AgentInboxState::All => $messages,
         };
@@ -490,5 +620,130 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
             ->orWhere(fn (Builder $same) => $same
                 ->where('created_at', $cursor->created_at)
                 ->where('id', '<', $cursor->id)));
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofType(Builder $query, MessageType $type): void
+    {
+        $query->where($query->qualifyColumn('message_type'), $type);
+    }
+
+    /**
+     * Chat rows the reader holds a receipt of through the interval it is active in now.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function receivedNowBy(Builder $query, ActorIdentity $reader): void
+    {
+        $query->whereExists(fn ($receipts) => self::activeReceiptsOf($receipts, $query, $reader));
+    }
+
+    /**
+     * Chat rows the reader received through its active interval and has not been shown yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unpresentedTo(Builder $query, ActorIdentity $reader): void
+    {
+        $query->whereExists(fn ($receipts) => self::activeReceiptsOf($receipts, $query, $reader)
+            ->whereNull('message_receipts.presented_at'));
+    }
+
+    /**
+     * Chat questions whose answer is kept as the reader's open turn to speak.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function reservedTo(Builder $query, ActorIdentity $reader): void
+    {
+        $query->where($query->qualifyColumn('state'), MessageState::WaitingForAnswer)
+            ->whereIn($query->qualifyColumn('id'), SpeechOpportunity::query()
+                ->openFor($reader)
+                ->whereNotNull('reserved_question_id')
+                ->select('reserved_question_id'));
+    }
+
+    /**
+     * Messages the reader has not read: desk mail nobody read yet, and chat rows not yet shown to the reader.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unreadBy(Builder $query, ActorIdentity $reader): void
+    {
+        $query->where(fn (Builder $unread) => $unread
+            ->where(fn (Builder $desk) => $desk->ofType(MessageType::Desk)->whereNull('read_at'))
+            ->orWhere(fn (Builder $chat) => $chat->ofType(MessageType::Chat)->unpresentedTo($reader)));
+    }
+
+    /**
+     * Questions waiting on the reader: any desk question, and chat questions kept for the reader's turn.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function waitingFor(Builder $query, ActorIdentity $reader): void
+    {
+        $query->where(fn (Builder $waiting) => $waiting
+            ->where(fn (Builder $desk) => $desk
+                ->ofType(MessageType::Desk)
+                ->where('state', MessageState::WaitingForAnswer))
+            ->orWhere(fn (Builder $chat) => $chat->ofType(MessageType::Chat)->reservedTo($reader)));
+    }
+
+    /**
+     * What waits for the reader: what it has not read and the questions waiting on it.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function pendingFor(Builder $query, ActorIdentity $reader): void
+    {
+        $query->where(fn (Builder $pending) => $pending->unreadBy($reader)->orWhere(
+            fn (Builder $waiting) => $waiting->waitingFor($reader),
+        ));
+    }
+
+    /**
+     * Chat rows with the timeline position they were accepted at, read as timeline_sequence.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withTimelinePosition(Builder $query): void
+    {
+        $query
+            ->join('inbox_timeline_events', 'inbox_timeline_events.id', '=', $query->qualifyColumn('timeline_event_id'))
+            ->select($query->qualifyColumn('*'))
+            ->addSelect('inbox_timeline_events.sequence as timeline_sequence');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function beforePosition(Builder $query, int $sequence): void
+    {
+        $query->where('inbox_timeline_events.sequence', '<', $sequence);
+    }
+
+    /**
+     * The questions of an inbox still waiting for the named respondent.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function waitingOnRespondent(Builder $query, string $inboxId, ActorIdentity $respondent): void
+    {
+        $query->where('destination_inbox_id', $inboxId)
+            ->where('state', MessageState::WaitingForAnswer)
+            ->where('respondent_type', $respondent->type->value)
+            ->where('respondent_id', $respondent->id);
     }
 }

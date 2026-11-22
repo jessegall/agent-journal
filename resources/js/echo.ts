@@ -21,6 +21,7 @@ export type LiveHandlers = {
     onChange: () => void;
     onProtectedViewInvalidated: () => void;
     onNotificationsChanged: () => void;
+    onChatAccessEnded: (inboxId: string) => void;
     onSubscribed: () => void;
     onLost: () => void;
     onRefused: () => void;
@@ -62,6 +63,12 @@ export function connectUser(userId: string, handlers: LiveHandlers): UserConnect
         })
         .listen('.page.changed', () => {
             traceLive('signal received');
+            handlers.onChange();
+        })
+        // A chat the user left, was removed from or saw closed: the page is read again without it.
+        .listen('.chat.access-ended', (notice: { inboxId: string }) => {
+            traceLive('chat access ended');
+            handlers.onChatAccessEnded(notice.inboxId);
             handlers.onChange();
         })
         .listen('.view.protected-invalidated', handlers.onProtectedViewInvalidated)

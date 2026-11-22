@@ -58,7 +58,7 @@ final class DeskModelsTest extends TestCase
 
         $membership = $access->membership($desk, $seated);
 
-        $this->assertSame($held->id, $membership->seatReference->id);
+        $this->assertSame($held->id, $membership->deskSeat()->id);
         $this->assertSame($seated->id, $membership->actor->id);
         $this->assertCount(1, $access->members($desk)->memberships);
         $this->assertSame([$desk->id], DeskRecord::query()->occupiedBy($membership->actor)->pluck('id')->all());

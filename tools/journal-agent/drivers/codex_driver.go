@@ -45,7 +45,7 @@ func (driver *CodexDriver) Deliver(ctx context.Context, delivery contracts.Deliv
 }
 
 func (driver *CodexDriver) Wake(ctx context.Context, wake contracts.WakeRequest) (contracts.OperationResult, error) {
-	return driver.startTurn(ctx, wake.Request, pendingWorkPrompt)
+	return driver.startTurn(ctx, wake.Request, wake.PromptOr(pendingWorkPrompt))
 }
 
 // ChangeModel is staged for the next thread start; a thread keeps the model it started with.

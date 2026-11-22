@@ -19,7 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[Name('dock_add')]
 #[Dispatches(DockSource::class)]
-#[Description('Dock a record above your conversation, for both sides of it: give type and id, and chat when you take part in several conversations. Answers added or present with the placement id.')]
+#[Description('Dock a record above your conversation, for both sides of it: give type and id, and chat (the chat's inbox id) when you are in several chats. Answers added or present with the placement id.')]
 final class DockAddTool extends JournalWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array

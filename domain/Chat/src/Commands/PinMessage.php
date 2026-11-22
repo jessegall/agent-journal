@@ -9,7 +9,6 @@ use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 use Domain\Chat\Policies\MessagePinPolicy;
-use Domain\Chat\Support\ConversationPair;
 
 /**
  * Pins one readable message of a conversation for the user or agent asking.
@@ -21,13 +20,7 @@ use Domain\Chat\Support\ConversationPair;
 final readonly class PinMessage extends Command
 {
     public function __construct(
-        public string $sourceInboxId,
-        public string $destinationInboxId,
+        public string $inboxId,
         public string $messageId,
     ) {}
-
-    public function conversation(): ConversationPair
-    {
-        return new ConversationPair($this->sourceInboxId, $this->destinationInboxId);
-    }
 }

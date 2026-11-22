@@ -11,14 +11,14 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * A source to dock in the conversation with an agent: its type, its id and the presentation.
+ * A source to dock in one chat, named by its inbox: its type, its id and the presentation.
  */
 #[TypeScript]
 final class DockInput extends Data
 {
     public function __construct(
         #[Ulid]
-        public readonly string $agent,
+        public readonly string $inboxId,
         #[Max(64)]
         public readonly string $type,
         #[Max(255)]

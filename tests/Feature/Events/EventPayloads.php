@@ -21,6 +21,11 @@ use App\Agents\Events\StartSettingsRequested;
 use App\Agents\Events\StartUnavailable;
 use App\Assignments\Events\AssignmentsChanged;
 use App\Comments\Events\CommentPosted;
+use App\Communication\Events\ChatMemberJoined;
+use App\Communication\Events\ChatMemberLeft;
+use App\Communication\Events\ChatMessageAccepted;
+use App\Communication\Events\ChatReceiptPresented;
+use App\Communication\Events\ChatRoleChanged;
 use App\Communication\Events\MessageAnswered;
 use App\Communication\Events\MessageAnswerRequired;
 use App\Communication\Events\MessageClaimReleased;
@@ -28,6 +33,9 @@ use App\Communication\Events\MessageDismissed;
 use App\Communication\Events\MessageRead;
 use App\Communication\Events\MessageSent;
 use App\Communication\Events\MessageTakenUp;
+use App\Communication\Events\ReceiptDeliveriesScheduled;
+use App\Communication\Events\ReceiptDeliveryChanged;
+use App\Communication\Events\SpeechOpportunitySettled;
 use App\Engine\Events\EngineTicked;
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Events\HelperCompletionCertified;
@@ -252,6 +260,71 @@ final class EventPayloads
                 'fields' => [
                     'messageId' => 'string',
                     'claimant' => 'App\Actors\Support\ActorIdentity',
+                ],
+            ],
+            ChatMessageAccepted::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'messageId' => 'string',
+                    'author' => 'App\Actors\Support\ActorIdentity',
+                    'inboxId' => 'string',
+                ],
+            ],
+            ChatMemberJoined::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'intervalId' => 'string',
+                    'inboxId' => 'string',
+                    'member' => 'App\Actors\Support\ActorIdentity',
+                ],
+            ],
+            ChatMemberLeft::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'intervalId' => 'string',
+                    'inboxId' => 'string',
+                    'member' => 'App\Actors\Support\ActorIdentity',
+                    'reason' => 'App\Communication\Enums\LeaveReason',
+                ],
+            ],
+            ChatRoleChanged::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'intervalId' => 'string',
+                    'inboxId' => 'string',
+                    'member' => 'App\Actors\Support\ActorIdentity',
+                    'role' => 'App\Communication\Enums\IntervalRole',
+                ],
+            ],
+            ChatReceiptPresented::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'receiptId' => 'string',
+                    'messageId' => 'string',
+                    'intervalId' => 'string',
+                ],
+            ],
+            ReceiptDeliveriesScheduled::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'deliveryIds' => 'array',
+                ],
+            ],
+            ReceiptDeliveryChanged::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'deliveryId' => 'string',
+                    'receiptId' => 'string',
+                    'state' => 'App\Communication\Enums\ReceiptDeliveryState',
+                ],
+            ],
+            SpeechOpportunitySettled::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'opportunityId' => 'string',
+                    'userRootId' => 'string',
+                    'speaker' => 'App\Actors\Support\ActorIdentity',
+                    'state' => 'App\Communication\Enums\SpeechOpportunityState',
                 ],
             ],
             EngineTicked::class => [

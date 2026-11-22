@@ -12,6 +12,7 @@ use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\ReceiptCaller;
 use App\Bus\Support\ReceiptRetention;
 use App\Communication\Enums\MessageState;
+use App\Communication\Enums\MessageType;
 use App\Communication\Models\Message;
 use App\Communication\Support\AcceptedOperation;
 use App\Communication\Support\InboxMembership;
@@ -49,8 +50,8 @@ final class InboxMessageSchemaTest extends TestCase
     public function test_acknowledging_twice_keeps_the_first_reader(): void
     {
         $message = $this->ask();
-        $first = new InboxMembership($this->author, new AssignmentReference(TestIds::of(1), $this->holder()));
-        $second = new InboxMembership(
+        $first = InboxMembership::atDeskSeat($this->author, new AssignmentReference(TestIds::of(1), $this->holder()));
+        $second = InboxMembership::atDeskSeat(
             TestActors::agentIdentity(8),
             new AssignmentReference(TestIds::of(2), $this->holder()),
         );
@@ -79,6 +80,41 @@ final class InboxMessageSchemaTest extends TestCase
         );
         $this->assertThrows(
             fn () => DB::table('messages')->whereKey($reply->id)->update(['state' => 'dismissed']),
+            QueryException::class,
+        );
+    }
+
+    public function test_a_desk_row_is_typed_desk_and_a_chat_row_with_a_read_audit_is_refused(): void
+    {
+        $message = $this->ask();
+
+        $this->assertSame(MessageType::Desk, $message->refresh()->message_type);
+
+        $eventId = (string) str()->ulid();
+        DB::table('inbox_timeline_events')->insert([
+            'id' => $eventId,
+            'inbox_id' => $message->source_inbox_id,
+            'sequence' => 1,
+            'type' => 'message',
+            'actor_type' => $this->author->type->value,
+            'actor_id' => $this->author->id,
+            'created_at' => now(),
+        ]);
+
+        $this->assertThrows(
+            fn () => DB::table('messages')->whereKey($message->id)->update([
+                'message_type' => MessageType::Chat->value,
+                'destination_inbox_id' => $message->source_inbox_id,
+                'timeline_event_id' => $eventId,
+                'read_at' => now(),
+                'read_by_type' => $this->author->type->value,
+                'read_by_id' => $this->author->id,
+                'read_participation_assignment_id' => TestIds::of(1),
+            ]),
+            QueryException::class,
+        );
+        $this->assertThrows(
+            fn () => DB::table('messages')->whereKey($message->id)->update(['timeline_event_id' => $eventId]),
             QueryException::class,
         );
     }

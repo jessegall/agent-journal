@@ -10,7 +10,6 @@ use Domain\Chat\Data\DockListData;
 use Domain\Chat\Enums\DockedState;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\DockPlacement;
-use Domain\Chat\Support\ConversationPeers;
 use Domain\Chat\Support\DockProjection;
 
 /**
@@ -21,9 +20,9 @@ final readonly class DockListing
 {
     public function __construct(private DockProjection $projection) {}
 
-    public function of(Conversation $conversation, ConversationPeers $peers, int $limit): DockListData
+    public function of(Conversation $conversation, int $limit): DockListData
     {
-        $page = $this->projection->page($peers, null, $limit);
+        $page = $this->projection->page($conversation, null, $limit);
         $shown = [];
 
         foreach ($page->cards as $card) {

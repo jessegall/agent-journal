@@ -17,6 +17,37 @@ final readonly class CommunicationCalls
 {
     public function __construct(private CallSender $sender) {}
 
+    /**
+     * @param  list<string>  $handles
+     */
+    public function acknowledgePresentation(
+        string $batchId,
+        array $handles,
+        string $contextKey,
+        CallKey $requestKey = new CallKey(),
+    ): PresentationAcknowledged {
+        return $this->sender->send(AcknowledgePresentationCall::from([
+            'batchId' => $batchId,
+            'handles' => $handles,
+            'contextKey' => $contextKey,
+            'requestKey' => $requestKey,
+        ]));
+    }
+
+    public function answerChatQuestion(
+        string $questionId,
+        string $body,
+        CallKey $requestKey = new CallKey(),
+        string|null $claimToken = null,
+    ): MessageNamed {
+        return $this->sender->send(AnswerChatQuestionCall::from([
+            'questionId' => $questionId,
+            'body' => $body,
+            'requestKey' => $requestKey,
+            'claimToken' => $claimToken,
+        ]));
+    }
+
     public function answerMessage(
         string $messageId,
         string $replyId,
@@ -26,6 +57,22 @@ final readonly class CommunicationCalls
             'messageId' => $messageId,
             'replyId' => $replyId,
             'requestKey' => $requestKey,
+        ]));
+    }
+
+    public function askChatQuestion(
+        string $inboxId,
+        string $body,
+        CallKey $requestKey = new CallKey(),
+        string|null $respondent = null,
+        string|null $claimToken = null,
+    ): MessageNamed {
+        return $this->sender->send(AskChatQuestionCall::from([
+            'inboxId' => $inboxId,
+            'body' => $body,
+            'requestKey' => $requestKey,
+            'respondent' => $respondent,
+            'claimToken' => $claimToken,
         ]));
     }
 
@@ -51,11 +98,41 @@ final readonly class CommunicationCalls
         ]));
     }
 
+    public function claimSpeech(
+        string $inboxId,
+        string $rootId,
+        string $batchId,
+        string $grant,
+        CallKey $requestKey = new CallKey(),
+    ): SpeechClaim {
+        return $this->sender->send(ClaimSpeechCall::from([
+            'inboxId' => $inboxId,
+            'rootId' => $rootId,
+            'batchId' => $batchId,
+            'grant' => $grant,
+            'requestKey' => $requestKey,
+        ]));
+    }
+
     public function countInboxMessages(
         string $inboxId,
     ): InboxCounts {
         return $this->sender->send(CountInboxMessagesCall::from([
             'inboxId' => $inboxId,
+        ]));
+    }
+
+    public function declineChatQuestion(
+        string $questionId,
+        string $reason,
+        CallKey $requestKey = new CallKey(),
+        string|null $claimToken = null,
+    ): MessageNamed {
+        return $this->sender->send(DeclineChatQuestionCall::from([
+            'questionId' => $questionId,
+            'reason' => $reason,
+            'requestKey' => $requestKey,
+            'claimToken' => $claimToken,
         ]));
     }
 
@@ -80,6 +157,20 @@ final readonly class CommunicationCalls
             'firstInboxId' => $firstInboxId,
             'secondInboxId' => $secondInboxId,
             'page' => $page,
+        ]));
+    }
+
+    public function postChatMessage(
+        string $inboxId,
+        string $body,
+        CallKey $requestKey = new CallKey(),
+        string|null $claimToken = null,
+    ): MessageNamed {
+        return $this->sender->send(PostChatMessageCall::from([
+            'inboxId' => $inboxId,
+            'body' => $body,
+            'requestKey' => $requestKey,
+            'claimToken' => $claimToken,
         ]));
     }
 
@@ -131,6 +222,34 @@ final readonly class CommunicationCalls
             'holderId' => $holderId,
             'reason' => $reason,
             'requestKey' => $requestKey,
+        ]));
+    }
+
+    public function releaseSpeech(
+        string $inboxId,
+        string $rootId,
+        CallKey $requestKey = new CallKey(),
+    ): MessageNamed {
+        return $this->sender->send(ReleaseSpeechCall::from([
+            'inboxId' => $inboxId,
+            'rootId' => $rootId,
+            'requestKey' => $requestKey,
+        ]));
+    }
+
+    public function replyInChat(
+        string $parentId,
+        string $body,
+        CallKey $requestKey = new CallKey(),
+        string|null $inboxId = null,
+        string|null $claimToken = null,
+    ): MessageNamed {
+        return $this->sender->send(ReplyInChatCall::from([
+            'parentId' => $parentId,
+            'body' => $body,
+            'requestKey' => $requestKey,
+            'inboxId' => $inboxId,
+            'claimToken' => $claimToken,
         ]));
     }
 

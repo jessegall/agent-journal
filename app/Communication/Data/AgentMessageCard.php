@@ -28,5 +28,7 @@ final readonly class AgentMessageCard
         public string|null $replyToId,
         public string|null $answerId,
         public string|null $dismissalReason,
+        // Present only for a chat row: its inbox, its receiver and whether a turn to speak on it is open.
+        public AgentChatPart|null $chat = null,
     ) {}
 }

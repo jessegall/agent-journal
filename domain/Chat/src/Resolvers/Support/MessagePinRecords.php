@@ -38,7 +38,7 @@ final readonly class MessagePinRecords
 
         foreach ($pins as $pin) {
             try {
-                $views[] = $this->pinnable->requireIn($pin->conversation(), $pin->message_id);
+                $views[] = $this->pinnable->requireIn($pin->inbox_id, $pin->message_id);
             } catch (MessageMissing) {
                 continue;
             }

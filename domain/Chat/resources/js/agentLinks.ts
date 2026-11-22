@@ -19,6 +19,20 @@ export function agentUrl(pageUrl: string, agent: AgentOptionData): string {
 }
 
 /**
+ * The page's address with this chat chosen by its inbox, whether or not an agent is in it; the agent choice is
+ * dropped, since the chat names the room.
+ */
+export function chatUrl(pageUrl: string, inboxId: string): string {
+    const url = new URL(pageUrl, 'http://journal.local');
+    url.searchParams.delete('agent');
+    url.searchParams.delete('window[chat.conversation][agent]');
+    url.searchParams.delete('session');
+    url.searchParams.set('window[chat.conversation][inbox]', inboxId);
+
+    return `${url.pathname}${url.search}`;
+}
+
+/**
  * The page's address with this one question opened, as a notification opens it: passively, reading nothing else.
  * The rest of the page's query stays.
  */

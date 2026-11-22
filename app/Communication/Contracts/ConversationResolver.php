@@ -43,6 +43,11 @@ interface ConversationResolver
      */
     public function history(string $inboxId, string|null $olderCursor, int $limit): MessagePage;
 
+    /**
+     * A chat inbox's messages the reader holds receipts of, in timeline order, newest page first, fifty at most.
+     */
+    public function timeline(string $inboxId, string|null $olderCursor, int $limit): MessagePage;
+
     public function counts(string $inboxId): InboxCounts;
 
     /**

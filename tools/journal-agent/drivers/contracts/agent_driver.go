@@ -25,7 +25,20 @@ type Delivery struct {
 }
 
 // WakeRequest asks an idle agent to look for waiting work.
-type WakeRequest struct{ Request RequestIdentity }
+type WakeRequest struct {
+	Request RequestIdentity
+	// Prompt is the text the server asks the wake to present, such as a batch of chat messages; empty means the
+	// generic pending-work prompt.
+	Prompt string
+}
+
+// PromptOr answers the wake's own prompt, or the fallback when the server sent none.
+func (wake WakeRequest) PromptOr(fallback string) string {
+	if wake.Prompt == "" {
+		return fallback
+	}
+	return wake.Prompt
+}
 
 // ModelChange asks the agent to use another model.
 type ModelChange struct {

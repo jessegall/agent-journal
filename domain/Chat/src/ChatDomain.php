@@ -27,9 +27,20 @@ use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
 use Domain\Chat\Events\DockChanged;
 use Domain\Chat\Http\Controllers\CancelMessageController;
+use Domain\Chat\Http\Controllers\ChatEventsController;
+use Domain\Chat\Http\Controllers\ChatRowsController;
+use Domain\Chat\Http\Controllers\DeclineQuestionController;
 use Domain\Chat\Http\Controllers\DockController;
+use Domain\Chat\Http\Controllers\Membership\AddParticipantController;
+use Domain\Chat\Http\Controllers\Membership\ChatCandidatesController;
+use Domain\Chat\Http\Controllers\Membership\CloseChatController;
+use Domain\Chat\Http\Controllers\Membership\CreateGroupChatController;
+use Domain\Chat\Http\Controllers\Membership\LeaveChatController;
+use Domain\Chat\Http\Controllers\Membership\RemoveParticipantController;
+use Domain\Chat\Http\Controllers\Membership\TransferChatController;
 use Domain\Chat\Http\Controllers\ReadShownController;
 use Domain\Chat\Http\Controllers\ReplyController;
+use Domain\Chat\Http\Controllers\RetryDeliveryController;
 use Domain\Chat\Http\Controllers\RequestOutcomeController;
 use Domain\Chat\Http\Controllers\SendMessageController;
 use Domain\Chat\Http\Controllers\TakeNextController;
@@ -105,9 +116,20 @@ final class ChatDomain extends Domain implements
                     ActionRoute::post('messages', SendMessageController::class, 'send'),
                     ActionRoute::post('messages/read', ReadShownController::class, 'read'),
                     ActionRoute::post('messages/reply', ReplyController::class, 'reply'),
+                    ActionRoute::post('messages/decline', DeclineQuestionController::class, 'decline'),
+                    ActionRoute::post('messages/retry-delivery', RetryDeliveryController::class, 'retry-delivery'),
                     ActionRoute::get('messages/outcome', RequestOutcomeController::class, 'outcome'),
+                    ActionRoute::get('events', ChatEventsController::class, 'events'),
+                    ActionRoute::get('messages/rows', ChatRowsController::class, 'rows'),
                     ActionRoute::post('dock', DockController::class, 'dock'),
                     ActionRoute::post('dock/remove', UndockController::class, 'undock'),
+                    ActionRoute::post('chats', CreateGroupChatController::class, 'create-group'),
+                    ActionRoute::get('chats/candidates', ChatCandidatesController::class, 'candidates'),
+                    ActionRoute::post('chats/members', AddParticipantController::class, 'add-member'),
+                    ActionRoute::post('chats/members/remove', RemoveParticipantController::class, 'remove-member'),
+                    ActionRoute::post('chats/transfer', TransferChatController::class, 'transfer'),
+                    ActionRoute::post('chats/leave', LeaveChatController::class, 'leave'),
+                    ActionRoute::post('chats/close', CloseChatController::class, 'close'),
                 ),
             Page::layout('inbox', 'Inbox', Icon::Chat, InboxPageResolver::class)
                 ->at('inbox')

@@ -10,12 +10,15 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * A placement to undock from the conversation with an agent, named with the source it docks.
+ * A placement to undock from one chat, named by its inbox, with the source it docks; the agent shown keeps the
+ * window on the same chat.
  */
 #[TypeScript]
 final class UndockInput extends Data
 {
     public function __construct(
+        #[Ulid]
+        public readonly string $inboxId,
         #[Ulid]
         public readonly string $agent,
         #[Ulid]
