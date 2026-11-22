@@ -5,6 +5,7 @@ import { arrivalAnnouncement } from './composables/arrivalAnnouncement';
 import { useChatTimeline } from './composables/useChatTimeline';
 import { useChosenAgent } from './composables/useChosenAgent';
 import { useConversationIntents } from './composables/useConversationIntents';
+import { handOverText, useHandOver } from './composables/useHandOver';
 import { draftKey } from './composables/useMessageDrafts';
 import type { AgentOptionData, ChatData } from '@generated/types/chat';
 import type { ReplyTarget } from './composables/useConversationIntents';
@@ -130,6 +131,38 @@ const refused = computed(() =>
 
 // A read that returned the user's own sends settles them.
 watch(timeline.messages, (messages) => owner.value?.settle(messages));
+
+// A record let go on this chat's agent is sent here once the chat has opened, as the hand-over's message.
+const handOver = useHandOver();
+watch(
+    [owner, () => selected.value?.id ?? null],
+    ([sender, agentId]) => {
+        const opened = conversation.value;
+
+        if (sender === undefined || opened === undefined || key.value === undefined) {
+            return;
+        }
+
+        const handed = handOver.takeFor(agentId);
+
+        if (handed === null) {
+            return;
+        }
+
+        sender.submit(
+            sender.beginSend({
+                draftKey: key.value,
+                text: handOverText(handed),
+                agent: handed.agentId,
+                expectedSessionId: opened.sessionId,
+                expectedGeneration: opened.sessionGeneration,
+                inboxId: opened.inboxId,
+            }),
+            props.protectedProp,
+        );
+    },
+    { immediate: true },
+);
 
 /**
  * Each new post by someone else, said once in the polite region; a chat opened afresh starts quiet.

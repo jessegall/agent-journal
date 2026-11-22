@@ -8,6 +8,7 @@ import Icon from '@kit/Icon';
 import Status from '@kit/Status';
 import type { StatusState } from '@kit/Status';
 import { agentUrl } from './agentLinks';
+import { carriesRecord } from './composables/useHandOver';
 import AgentMenu from './AgentMenu.vue';
 import AgentSessionActions from './AgentSessionActions.vue';
 import { useStatusAnnouncement } from './composables/useStatusAnnouncement';
@@ -56,6 +57,8 @@ const subline = computed(() => selected.value?.sessionDriverLabel ?? selected.va
                 :aria-expanded="isMenuOpen"
                 title="Choose whom this chat talks to"
                 @click="isMenuOpen = !isMenuOpen"
+                @dragenter="carriesRecord($event) && (isMenuOpen = true)"
+                @dragover="carriesRecord($event) && $event.preventDefault()"
             >
                 <template v-if="selected">
                     <Avatar :participant="{ kind: 'agent', driver: selected.sessionDriver ?? '' }" size="lg" />
