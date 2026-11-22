@@ -105,7 +105,11 @@ class User extends Authenticatable implements
     {
         $owner = new self(['name' => $name, 'email' => $email, 'password' => $password]);
         $owner->setAttribute($owner->getKeyName(), $owner->newUniqueId());
-        $owner->insertIfAbsent();
+
+        // The inserted row is returned as it is, so its caller sees wasRecentlyCreated; an owner already there is read.
+        if ($owner->insertIfAbsent()) {
+            return $owner;
+        }
 
         return self::query()->where('email', $email)->sole();
     }

@@ -41,6 +41,7 @@ final readonly class ListenerOwnership
         private Exports $coreExports,
         private array $coreListenerFolders,
         private ReflectorFactory $reflectors,
+        private string $corePath,
     ) {}
 
     public function assertOwnership(
@@ -123,7 +124,7 @@ final readonly class ListenerOwnership
 
         $domain = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->holdsFile($file->get()));
 
-        if ($domain === null && ! str_starts_with($file->get(), dirname(__DIR__, 2).DIRECTORY_SEPARATOR)) {
+        if ($domain === null && ! str_starts_with($file->get(), $this->corePath.DIRECTORY_SEPARATOR)) {
             throw InvalidListener::unknownOwner($listener, $event);
         }
 

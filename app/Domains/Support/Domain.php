@@ -21,6 +21,7 @@ use App\Exports\Support\Exports;
 use App\Mcp\Support\McpToolDirectory;
 use App\Mcp\Tools\JournalTool;
 use App\Reflection\Support\Reflector;
+use Illuminate\Support\Str;
 
 /**
  * One domain of the application: what it owns, the domains it may use, and the steps its boot runs. Every domain loads
@@ -77,9 +78,17 @@ abstract class Domain
      */
     public function mcpTools(): array
     {
+        return McpToolDirectory::classesIn($this->mcpRoot('Tools'));
+    }
+
+    /**
+     * The folder this package's MCP classes of one role, Tools or Resources, are read from.
+     */
+    protected function mcpRoot(string $role): string
+    {
         $domainFile = Reflector::of($this)->fileName()->getOrElse('');
 
-        return McpToolDirectory::classesIn(dirname($domainFile).'/Mcp');
+        return McpToolDirectory::rootOf(dirname($domainFile), Str::beforeLast(class_basename($this), 'Domain'), $role);
     }
 
     /**

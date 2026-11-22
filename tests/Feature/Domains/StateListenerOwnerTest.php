@@ -26,7 +26,7 @@ final class StateListenerOwnerTest extends TestCase
     {
         $types = new StateTypeRegistry();
         $types->register('fixture.ownerless', new OwnerlessLoader());
-        $ownership = new ListenerOwnership($this->app->make(DomainRegistry::class), CoreApi::exports(), [], new CatalogueReflectorFactory());
+        $ownership = new ListenerOwnership($this->app->make(DomainRegistry::class), CoreApi::exports(), [], new CatalogueReflectorFactory(), app_path());
 
         $this->expectException(InvalidListener::class);
         $this->expectExceptionMessage(OwnerlessState::class.'@onPlanProgressChanged');

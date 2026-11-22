@@ -8,6 +8,7 @@ use App\Bus\Contracts\CommandMiddleware as CommandMiddlewareContract;
 use App\Bus\Support\Command;
 use App\Hooks\States\AgentState;
 use App\Reflection\Support\Reflector;
+use Illuminate\Console\Command as ArtisanCommand;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use Throwable;
@@ -31,16 +32,22 @@ enum FolderType: string
     case Handlers = 'Handlers';
     case CommandMiddleware = 'CommandMiddleware';
     case CommandPair = 'CommandPair';
+    case ArtisanCommands = 'ArtisanCommands';
 
     /**
      * The type a file's place asks for. A command and its handler share a folder named for them under Commands, so
      * Commands/CreateTask holds CreateTaskCommand and CreateTaskHandler and nothing else at its root; a file loose in
-     * Commands itself belongs to no pair. A Commands folder under Console holds Artisan commands and is not judged.
+     * Commands itself belongs to no pair. A Commands folder under Console holds Artisan adapters, and so does an
+     * area's own Console folder until plan 62 moves its adapters there.
      */
     public static function ofFile(string $file): self|null
     {
         $folder = dirname($file);
         $name = basename($file, '.php');
+
+        if (basename($folder) === 'Console' || (basename($folder) === 'Commands' && basename(dirname($folder)) === 'Console')) {
+            return self::ArtisanCommands;
+        }
 
         if (basename(dirname($folder)) === 'Console') {
             return null;
@@ -92,6 +99,7 @@ enum FolderType: string
                 && $class->method('handle')->isPublic(),
             self::CommandMiddleware => $class->implements(CommandMiddlewareContract::class),
             self::CommandPair => false,
+            self::ArtisanCommands => $class->isSubclassOf(ArtisanCommand::class) || ! str_ends_with($class->name(), 'Command'),
         };
 
         return $meetsFolderRequirement ? null : $this->requirement();
@@ -112,6 +120,7 @@ enum FolderType: string
             self::Commands => 'a command (a final readonly class extending App\Bus\Support\Command)',
             self::Handlers => 'a handler (a final class with a public handle method)',
             self::CommandMiddleware => 'a command middleware (it implements CommandMiddleware)',
+            self::ArtisanCommands => 'an Artisan command (it extends Illuminate\Console\Command)',
             self::CommandPair => 'a command or its handler named for its folder (Commands/<Name>/<Name>Command or <Name>Handler)',
         };
     }

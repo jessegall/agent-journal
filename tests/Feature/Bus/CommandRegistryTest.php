@@ -12,8 +12,10 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use App\Bus\Exceptions\CommandHandlerMissing;
 use App\Bus\Exceptions\CommandListedTwice;
+use App\Bus\Exceptions\CommandOperationListedTwice;
 use App\Bus\Exceptions\MiddlewareDeclarationInvalid;
 use App\Bus\Exceptions\MiddlewareListedTwice;
+use App\Bus\Support\CommandName;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\CommandScope;
@@ -27,6 +29,11 @@ use App\Pipelines\Contracts\PipelineRunner;
 use Tests\Fixtures\Bus\Garden\CommandMiddleware\Fence;
 use Tests\Fixtures\Bus\Garden\Commands\Water\WaterCommand;
 use Tests\Fixtures\Bus\Garden\Commands\Water\WaterHandler;
+use Tests\Fixtures\Bus\Layouts\Commands\Plant\PlantCommand as FinalPlantCommand;
+use Tests\Fixtures\Bus\Layouts\Commands\Plant\PlantHandler as FinalPlantHandler;
+use Tests\Fixtures\Bus\Layouts\Garden\Commands\Plant\PlantCommand as AreaPlantCommand;
+use Tests\Fixtures\Bus\Layouts\Garden\Commands\Prune\PruneCommand;
+use Tests\Fixtures\Bus\Layouts\Garden\Commands\Prune\PruneHandler;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 use Tests\Fixtures\Bus\Shop\CommandMiddleware\CheckStock;
 use Tests\Fixtures\Bus\Shop\CommandMiddleware\LogShop;
@@ -117,6 +124,29 @@ final class CommandRegistryTest extends TestCase
         $this->expectException(CommandListedTwice::class);
 
         $this->registryOf([$this->shop([AddItemCommand::class, AddItemCommand::class])]);
+    }
+
+    public function test_core_reads_a_pair_in_its_final_folder_and_one_in_an_area_with_their_operation_names(): void
+    {
+        $registry = $this->registryOf([$this->layouts([FinalPlantCommand::class, PruneCommand::class])]);
+
+        $this->assertSame(FinalPlantHandler::class, $registry->handlerOf(FinalPlantCommand::class));
+        $this->assertSame(PruneHandler::class, $registry->handlerOf(PruneCommand::class));
+        $this->assertSame(CommandOwner::CORE, $registry->ownerOf(PruneCommand::class));
+    }
+
+    public function test_a_pair_in_both_core_layouts_is_refused_by_its_operation_name(): void
+    {
+        $this->assertThrows(
+            fn () => $this->registryOf([$this->layouts([FinalPlantCommand::class, AreaPlantCommand::class])]),
+            CommandOperationListedTwice::class,
+            CommandOperationListedTwice::for(
+                CommandOwner::CORE,
+                CommandName::of(FinalPlantCommand::class),
+                FinalPlantCommand::class,
+                AreaPlantCommand::class,
+            )->getMessage(),
+        );
     }
 
     public function test_a_command_outside_its_commands_folder_is_refused(): void
@@ -307,6 +337,24 @@ final class CommandRegistryTest extends TestCase
      * @param  list<MiddlewareDeclaration>  $middleware
      * @param  list<class-string>  $exports  the commands it exports
      */
+    /**
+     * A Core-named owner over the layout fixture, whose pairs sit in its final Commands folder or in an area's.
+     *
+     * @param  list<class-string>  $commands
+     */
+    private function layouts(array $commands): CommandOwner
+    {
+        return new CommandOwner(
+            CommandOwner::CORE,
+            'Tests\\Fixtures\\Bus\\Layouts',
+            CommandOwner::CORE,
+            $commands,
+            [],
+            [],
+            Exports::make()->build(),
+        );
+    }
+
     private function shop(array $commands, array $middleware = [], array $exports = []): CommandOwner
     {
         return new CommandOwner(

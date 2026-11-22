@@ -28,7 +28,12 @@ final class CoreCommands
      */
     public static function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/*/Commands/*', Command::class);
+        // The area pairs (app/<Area>/Commands/<Stem>) are read until plan 62 phase 4 moves the last of them to
+        // app/Commands; remove the second read then.
+        return [
+            ...FolderClasses::in(__DIR__.'/Commands/*', Command::class),
+            ...FolderClasses::in(__DIR__.'/*/Commands/*', Command::class),
+        ];
     }
 
     /**

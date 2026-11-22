@@ -449,6 +449,7 @@ case	FlowNodeType::Policy
 case	FlowNodeType::Terminal
 case	FlowNodeType::Trigger
 case	FolderType::Actions
+case	FolderType::ArtisanCommands
 case	FolderType::CommandMiddleware
 case	FolderType::CommandPair
 case	FolderType::Commands
@@ -1840,7 +1841,6 @@ class	ApproveShareRequestController
 class	ApproveShareRequestHandler
 class	ApprovedHead
 class	ApprovedPair
-class	AreaCycles
 class	ArgumentGrammar
 class	ArithmeticCommandReader
 class	ArrangementSetting
@@ -2068,6 +2068,7 @@ class	BottomStateCannotFinish
 class	BoundTarget
 class	BoundaryChecker
 class	BoundaryReport
+class	BoundaryRoots
 class	BroadcastDockedSourceChange
 class	BroadcastNotificationChanges
 class	BroadcastPageChange
@@ -2446,6 +2447,7 @@ class	CommandNestingTooDeep
 class	CommandNotRegistered
 class	CommandOperand
 class	CommandOperation
+class	CommandOperationListedTwice
 class	CommandOriginCheck
 class	CommandOriginChecks
 class	CommandOwner
@@ -3663,6 +3665,7 @@ class	LayoutPartData
 class	LayoutProgressData
 class	LayoutRefused
 class	LayoutRequest
+class	LayoutRoots
 class	LayoutRowData
 class	LayoutSplitData
 class	LayoutTabData
@@ -6938,9 +6941,6 @@ constant	AnsweringMessageStateReference::TYPE_KEY
 constant	AnyOf::TYPE
 constant	AnyOf::VERSION
 constant	AppendUploadCommand::MAX_BYTES
-constant	AreaCycles::CORE
-constant	AreaCycles::CORE_ROOT
-constant	AreaCycles::ENTRY_AREA
 constant	ArrangementSetting::ENVIRONMENT
 constant	Ask::LIFETIME_HOURS
 constant	Ask::LINK_TYPE
@@ -6989,6 +6989,8 @@ constant	BindingRules::SINGLETON_METHODS
 constant	BindingStart::UPDATED_AT
 constant	BoundaryChecker::SHARED_NAMESPACES
 constant	BoundaryChecker::SHARED_PLACE
+constant	BoundaryRoots::CORE_FOLDERS
+constant	BoundaryRoots::PACKAGE_FOLDERS
 constant	BuiltInAuthorizations::ORIENTATION_READS
 constant	BuiltInDesks::MAIN
 constant	BuiltInDesks::SOURCES
@@ -7321,6 +7323,7 @@ constant	LayoutLimits::DEPTH_LIMIT
 constant	LayoutLimits::PART_LIMIT
 constant	LayoutLimits::ROW_LIMIT
 constant	LayoutPartData::TONES
+constant	LayoutRoots::CORE_ROOT_FILES
 constant	LayoutSplitData::LIST_WIDTH
 constant	LibraryWindowResolver::SHARING_NOTICE
 constant	LimitMcpMessage::BYTE_LIMIT
@@ -7342,6 +7345,7 @@ constant	McpCatalogue::SNAKE_CASE
 constant	McpInstructions::TOOLS
 constant	McpInstructions::USER_ONLY
 constant	McpServiceProvider::CALLS_PER_MINUTE
+constant	McpToolDirectory::FLAT_ROOT_OWNERS
 constant	MeasureReads::SECRET_PATH
 constant	Memory::HEAVIEST
 constant	Memory::LIGHTEST
@@ -9746,14 +9750,6 @@ method	ApproveShareRequestHandler::__construct()
 method	ApproveShareRequestHandler::handle()
 method	ApprovedHead::__construct()
 method	ApprovedPair::__construct()
-method	AreaCycles::__construct()
-method	AreaCycles::areaOfFile()
-method	AreaCycles::areaOfName()
-method	AreaCycles::cycles()
-method	AreaCycles::forbiddenUses()
-method	AreaCycles::ofEdges()
-method	AreaCycles::ofProject()
-method	AreaCycles::stronglyConnectedGroups()
 method	ArgumentGrammar::__construct()
 method	ArgumentGrammar::acceptingNumericOptions()
 method	ArgumentGrammar::check()
@@ -10590,6 +10586,9 @@ method	BoundaryChecker::violations()
 method	BoundaryChecker::violationsOf()
 method	BoundaryReport::of()
 method	BoundaryReport::relative()
+method	BoundaryRoots::__construct()
+method	BoundaryRoots::folders()
+method	BoundaryRoots::packageHolding()
 method	BoundedReads::all()
 method	BoundedReads::defaultReadLimit()
 method	BoundedReads::defaultReadOrder()
@@ -11501,7 +11500,9 @@ method	ClosedFolders::assertNotClosed()
 method	ClosedFolders::closedIn()
 method	ClosedSettingsAccess::allows()
 method	CodeFiles::__construct()
+method	CodeFiles::applicationRoot()
 method	CodeFiles::assertProject()
+method	CodeFiles::composerRoot()
 method	CodeFiles::counted()
 method	CodeFiles::file()
 method	CodeFiles::folder()
@@ -11727,6 +11728,7 @@ method	CommandOperand::__construct()
 method	CommandOperation::__construct()
 method	CommandOperation::isSameOperation()
 method	CommandOperation::name()
+method	CommandOperationListedTwice::for()
 method	CommandOriginCheck::__construct()
 method	CommandOriginCheck::permits()
 method	CommandOriginCheck::status()
@@ -13316,6 +13318,7 @@ method	Domain::bootstrappers()
 method	Domain::canDisable()
 method	Domain::description()
 method	Domain::exports()
+method	Domain::mcpRoot()
 method	Domain::mcpTools()
 method	Domain::requires()
 method	DomainAvailability::isEnabled()
@@ -15793,6 +15796,13 @@ method	LayoutRefused::unknownStyle()
 method	LayoutRequest::layoutName()
 method	LayoutRequest::rules()
 method	LayoutRequest::shape()
+method	LayoutRoots::__construct()
+method	LayoutRoots::core()
+method	LayoutRoots::coreRootFiles()
+method	LayoutRoots::fromManifest()
+method	LayoutRoots::isPending()
+method	LayoutRoots::misplaced()
+method	LayoutRoots::package()
 method	LayoutRowData::__construct()
 method	LayoutRowData::parts()
 method	LayoutSplitData::__construct()
@@ -16286,6 +16296,7 @@ method	McpSearchTypeTaken::between()
 method	McpServiceProvider::boot()
 method	McpServiceProvider::register()
 method	McpToolDirectory::classesIn()
+method	McpToolDirectory::rootOf()
 method	McpToolNameInvalid::missing()
 method	McpToolNameInvalid::notSnakeCase()
 method	McpToolNameTaken::for()
@@ -26206,7 +26217,6 @@ parameter	$answers
 parameter	$answersParent
 parameter	$any
 parameter	$app
-parameter	$appFolder
 parameter	$appKey
 parameter	$appName
 parameter	$apparmor
@@ -26661,6 +26671,7 @@ parameter	$coreDeclarations
 parameter	$coreExports
 parameter	$coreFolder
 parameter	$coreListenerFolders
+parameter	$corePath
 parameter	$coreRules
 parameter	$correction
 parameter	$correlationId
@@ -26821,7 +26832,6 @@ parameter	$documentation
 parameter	$documents
 parameter	$domain
 parameter	$domainClass
-parameter	$domainFolder
 parameter	$domainName
 parameter	$domainSwitches
 parameter	$domains
@@ -27015,6 +27025,7 @@ parameter	$expression
 parameter	$extended
 parameter	$extension
 parameter	$extensions
+parameter	$extraRoots
 parameter	$fact
 parameter	$factLimit
 parameter	$factory
@@ -27094,7 +27105,6 @@ parameter	$follower
 parameter	$following
 parameter	$followsGap
 parameter	$footer
-parameter	$forbidden
 parameter	$form
 parameter	$format
 parameter	$forward
@@ -27884,6 +27894,7 @@ parameter	$ownerUserId
 parameter	$owners
 parameter	$ownership
 parameter	$packageFile
+parameter	$packageName
 parameter	$packages
 parameter	$page
 parameter	$pageId
@@ -28436,9 +28447,11 @@ parameter	$rewrite
 parameter	$rewrites
 parameter	$right
 parameter	$role
+parameter	$roles
 parameter	$rollBack
 parameter	$room
 parameter	$root
+parameter	$rootFiles
 parameter	$rootId
 parameter	$rootMigrationFolder
 parameter	$rootPlan
@@ -28681,6 +28694,7 @@ parameter	$snippet
 parameter	$socket
 parameter	$source
 parameter	$sourceDigest
+parameter	$sourceFolder
 parameter	$sourceHash
 parameter	$sourceId
 parameter	$sourceInboxId
@@ -29806,7 +29820,6 @@ property	ApprovedHead::$work
 property	ApprovedPair::$contract
 property	ApprovedPair::$declaration
 property	ApprovedPair::$reader
-property	AreaCycles::$edges
 property	ArgumentGrammar::$acceptsNumericOptions
 property	ArgumentGrammar::$endsOptionsAtDoubleDash
 property	ArgumentGrammar::$minimumOperands
@@ -30257,7 +30270,10 @@ property	BooleanValueData::$type
 property	BoundTarget::$hostId
 property	BoundaryChecker::$coreExports
 property	BoundaryChecker::$entries
+property	BoundaryChecker::$extraRoots
 property	BoundaryChecker::$roots
+property	BoundaryRoots::$basePath
+property	BoundaryRoots::$entries
 property	BroadcastDockedSourceChange::$chats
 property	BroadcastDockedSourceChange::$docked
 property	BroadcastDockedSourceChange::$events
@@ -33273,6 +33289,8 @@ property	LayoutProgressData::$label
 property	LayoutProgressData::$max
 property	LayoutProgressData::$unit
 property	LayoutProgressData::$value
+property	LayoutRoots::$pending
+property	LayoutRoots::$roles
 property	LayoutRowData::$detail
 property	LayoutRowData::$fact
 property	LayoutRowData::$href
@@ -33442,6 +33460,7 @@ property	ListenerDeclarations::$ownership
 property	ListenerDeclarations::$required
 property	ListenerOwnership::$coreExports
 property	ListenerOwnership::$coreListenerFolders
+property	ListenerOwnership::$corePath
 property	ListenerOwnership::$reflectors
 property	ListenerOwnership::$registry
 property	ListenerPolicy::$ownership
@@ -39891,8 +39910,6 @@ variable	$approved
 variable	$approver
 variable	$approvers
 variable	$area
-variable	$areas
-variable	$areasOnStack
 variable	$argument
 variable	$arguments
 variable	$arms
@@ -40185,7 +40202,6 @@ variable	$currentDigest
 variable	$currentId
 variable	$currentPhaseOf
 variable	$cursor
-variable	$cycles
 variable	$data	app/Http/Responses/Agents/TerminalAnswers.php
 variable	$database
 variable	$deadline
@@ -40224,7 +40240,6 @@ variable	$denials
 variable	$denied
 variable	$deny
 variable	$dependency
-variable	$dependencyArea
 variable	$dependent
 variable	$depth
 variable	$descriptor
@@ -40353,7 +40368,6 @@ variable	$evidence
 variable	$exactAgents
 variable	$examined
 variable	$examinedUpTo
-variable	$exampleUse
 variable	$exceeded
 variable	$except
 variable	$excerpt
@@ -40801,7 +40815,6 @@ variable	$looksSecret
 variable	$loop
 variable	$lost
 variable	$low
-variable	$lowLinks
 variable	$made
 variable	$main
 variable	$mainAgent
@@ -40890,7 +40903,6 @@ variable	$name
 variable	$nameLength
 variable	$nameOperands
 variable	$nameStart
-variable	$nameUsesByFile
 variable	$named
 variable	$namedClasses
 variable	$names
@@ -40969,6 +40981,7 @@ variable	$operands
 variable	$operates
 variable	$operation
 variable	$operationId
+variable	$operationName
 variable	$operations
 variable	$operator
 variable	$operatorRange
@@ -41490,7 +41503,6 @@ variable	$sortedNames
 variable	$sortedParameters
 variable	$source
 variable	$sourceAdmitted
-variable	$sourceArea
 variable	$sourceClass
 variable	$sourceRoot
 variable	$sources
@@ -41752,7 +41764,6 @@ variable	$visibleRecords
 variable	$visibleRunIds
 variable	$visibleTargets
 variable	$visibleTaskIds
-variable	$visitArea
 variable	$visited
 variable	$vitest
 variable	$wait

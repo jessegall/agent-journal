@@ -69,9 +69,9 @@ $snapshots['artisan-signatures'] = sorted(array_keys(Artisan::all()));
 $snapshots['routes-normal'] = routesOf($app->make(Router::class));
 
 $catalogue = $app->make(McpCatalogue::class);
-$snapshots['mcp-tools'] = sorted(array_map(fn (string $tool) => new ReflectionClass($tool)->newInstanceWithoutConstructor()->name(), $catalogue->toolClasses()));
+$snapshots['mcp-tools'] = sorted(array_map(fn (string $tool) => \App\Reflection\Support\Reflector::of($tool)->newInstanceWithoutConstructor()->name(), $catalogue->toolClasses()));
 $snapshots['mcp-resources'] = sorted(array_map(
-    fn (string $resource) => new ReflectionClass($resource)->newInstanceWithoutConstructor()->uri(),
+    fn (string $resource) => \App\Reflection\Support\Reflector::of($resource)->newInstanceWithoutConstructor()->uri(),
     $catalogue->resourceClasses(),
 ));
 

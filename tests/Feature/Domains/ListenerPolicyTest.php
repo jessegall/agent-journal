@@ -84,7 +84,7 @@ final class ListenerPolicyTest extends TestCase
     {
         return new ListenerPolicy(
             $this->app->make(PipelineRunner::class),
-            new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders(), new CatalogueReflectorFactory()),
+            new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders(), new CatalogueReflectorFactory(), app_path()),
         );
     }
 }

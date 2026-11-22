@@ -51,12 +51,13 @@ final readonly class CommandOwner
      */
     public function holdsIn(string $folder, string $class): bool
     {
-        if ($this->name === self::CORE) {
-            // Core keeps each area's commands in that area, such as App\Assignments\Commands.
-            return preg_match(
-                '/^'.preg_quote($this->namespace, '/').'\\\\\w+\\\\'.preg_quote($folder, '/').'\\\\/',
-                $class,
-            ) === 1;
+        // Core's pairs sit in App\Commands, or, until plan 62 phase 4 moves the last area, in an area's own folder
+        // such as App\Assignments\Commands; remove the area form with the last area.
+        if ($this->name === self::CORE && preg_match(
+            '/^'.preg_quote($this->namespace, '/').'\\\\\w+\\\\'.preg_quote($folder, '/').'\\\\/',
+            $class,
+        ) === 1) {
+            return true;
         }
 
         return str_starts_with($class, "{$this->namespace}\\{$folder}\\");

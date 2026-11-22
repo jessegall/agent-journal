@@ -170,7 +170,7 @@ final class RequiredListenerLaneTest extends TestCase
     {
         return new ListenerPolicy(
             $this->app->make(PipelineRunner::class),
-            new ListenerOwnership($registry, CoreApi::exports(), [...CoreApi::listenerFolders(), base_path('tests/Fixtures/Listeners')], new CatalogueReflectorFactory()),
+            new ListenerOwnership($registry, CoreApi::exports(), [...CoreApi::listenerFolders(), base_path('tests/Fixtures/Listeners')], new CatalogueReflectorFactory(), app_path()),
         );
     }
 }

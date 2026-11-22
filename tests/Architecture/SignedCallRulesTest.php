@@ -6,6 +6,7 @@ namespace Tests\Architecture;
 
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Support\CallRoutes;
+use App\Agents\Calls\RecordHeartbeatCall;
 use App\Mcp\Servers\JournalServer;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
@@ -53,6 +54,7 @@ final class SignedCallRulesTest extends TestCase
 
     public function test_every_call_implements_the_answer_its_endpoint_declares(): void
     {
+        $this->assertContains(RecordHeartbeatCall::class, self::calls());
         $this->assertSame([], SignedCallRules::callsAnsweringOtherThanTheyImplement(self::calls()));
         $this->assertSame(
             [PlantedRetireCall::class],
@@ -76,6 +78,7 @@ final class SignedCallRulesTest extends TestCase
 
     public function test_a_command_that_only_reads_makes_no_write(): void
     {
+        $this->assertNotSame([], self::readCommands());
         $this->assertSame([], SignedCallRules::writesOfReadCommands(self::readCommands(), self::calls()));
         $this->assertNotSame([], SignedCallRules::writesOfReadCommands(
             ['PlantedCommand' => '$processes->admitLine($line);'],
@@ -148,7 +151,9 @@ final class SignedCallRulesTest extends TestCase
         $calls = [];
 
         $files = [
+            // An area's Calls folder until plan 62 phase 4 moves it to app/Calls/<Area>; remove the first glob then.
             ...glob(app_path('*/Calls/*Call.php')) ?: [],
+            ...glob(app_path('Calls/*/*Call.php')) ?: [],
             ...glob(base_path('domain/*/src/Calls/*Call.php')) ?: [],
         ];
 
@@ -173,8 +178,11 @@ final class SignedCallRulesTest extends TestCase
         $commands = [];
 
         $files = [
+            // An area's Console folder until plan 62 moves its adapters to Console/Commands; remove those globs then.
             ...glob(app_path('*/Console/*Command.php')) ?: [],
+            ...glob(app_path('Console/Commands/*Command.php')) ?: [],
             ...glob(base_path('domain/*/src/Console/*Command.php')) ?: [],
+            ...glob(base_path('domain/*/src/Console/Commands/*Command.php')) ?: [],
         ];
 
         foreach ($files as $file) {

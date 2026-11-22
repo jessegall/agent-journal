@@ -271,12 +271,12 @@ final class DocumentsDomain extends Domain implements
 
     public function mcpTools(): array
     {
-        return FolderClasses::in(__DIR__.'/Mcp', JournalTool::class);
+        return FolderClasses::in($this->mcpRoot('Tools'), JournalTool::class);
     }
 
     public function mcpResources(): array
     {
-        return FolderClasses::in(__DIR__.'/Mcp', JournalResource::class);
+        return FolderClasses::in($this->mcpRoot('Resources'), JournalResource::class);
     }
 
     public function overviewContributions(): array

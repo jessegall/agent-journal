@@ -31,6 +31,7 @@ final readonly class BoundaryChecker
         private array $entries,
         private ProjectRoots $roots,
         private Exports $coreExports,
+        private BoundaryRoots|null $extraRoots = null,
     ) {}
 
     /**
@@ -148,7 +149,9 @@ final readonly class BoundaryChecker
         foreach ($uses as $use) {
             $name = ltrim($use->name, '\\');
 
-            if (! $this->isShared($name) && ! $this->isDomainName($name)) {
+            // Every project class a composition file names is judged, Database\\Seeders as much as App and the
+            // packages, as Composer's project roots give them; framework and library names keep their treatment.
+            if (! $this->roots->startsWithProjectNamespace($name)) {
                 continue;
             }
 
@@ -282,7 +285,8 @@ final readonly class BoundaryChecker
      */
     private function domainHolding(string $path): DomainEntry|null
     {
-        return array_find($this->entries, fn (DomainEntry $entry) => $entry->holdsFile($path));
+        return array_find($this->entries, fn (DomainEntry $entry) => $entry->holdsFile($path))
+            ?? $this->extraRoots?->packageHolding($path);
     }
 
     private function isDomainName(string $name): bool

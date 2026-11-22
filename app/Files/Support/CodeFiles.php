@@ -11,7 +11,10 @@ use App\Files\Exceptions\FileUnreadable;
 use App\Files\Values\FilePath;
 use App\Files\Values\FolderEntries;
 use Closure;
+use Composer\InstalledVersions;
 use Illuminate\Config\Repository;
+use Illuminate\Container\Container;
+use Illuminate\Foundation\Application;
 
 /**
  * The project's own code as this process read it first: each folder listing and class file is read once and kept,
@@ -50,11 +53,24 @@ final class CodeFiles
     ) {}
 
     /**
-     * The code reads of this process, over the project this code lives in.
+     * The code reads of this process, over the base path bootstrap/app.php gave the application, or before the
+     * application exists, the root package Composer installed; never derived from where this class sits.
      */
     public static function ofProcess(): self
     {
-        return self::$process ??= self::over(dirname(__DIR__, 3));
+        return self::$process ??= self::over(self::applicationRoot());
+    }
+
+    private static function applicationRoot(): string
+    {
+        $container = Container::getInstance();
+
+        return $container instanceof Application ? $container->basePath() : self::composerRoot();
+    }
+
+    private static function composerRoot(): string
+    {
+        return (string) realpath(InstalledVersions::getRootPackage()['install_path']);
     }
 
     /**

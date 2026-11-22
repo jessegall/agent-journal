@@ -180,6 +180,7 @@ final class DomainEventServiceProvider extends EventServiceProvider
             CoreApi::exports(),
             $this->coreListenerFolders(),
             $this->app->make(ReflectorFactory::class),
+            $this->app->path(),
         );
     }
 

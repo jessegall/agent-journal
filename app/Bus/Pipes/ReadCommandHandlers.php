@@ -14,9 +14,11 @@ use App\Bus\Contracts\Command;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use App\Bus\Exceptions\CommandHandlerMissing;
 use App\Bus\Exceptions\CommandListedTwice;
+use App\Bus\Exceptions\CommandOperationListedTwice;
 use App\Bus\Support\Command as BaseCommand;
 use App\Bus\Support\CommandDeclarations;
 use App\Bus\Support\CommandGrammar;
+use App\Bus\Support\CommandName;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\DeclaredCommand;
 use App\Pipelines\Contracts\Pipe;
@@ -43,6 +45,7 @@ final readonly class ReadCommandHandlers implements Pipe
     public function handle(CommandDeclarations $declarations): CommandDeclarations
     {
         $commands = [];
+        $operations = [];
 
         foreach ($declarations->owners as $owner) {
             $grammar = $declarations->grammarFor($owner);
@@ -53,6 +56,21 @@ final readonly class ReadCommandHandlers implements Pipe
                 if (isset($commands[$key])) {
                     throw CommandListedTwice::for($command);
                 }
+
+                // One owner's operation keys stay unique across both layouts, as receipts and logs name commands by it.
+                $operationName = CommandName::of($command);
+                $operation = $owner->name.':'.strtolower($operationName);
+
+                if (isset($operations[$operation])) {
+                    throw CommandOperationListedTwice::for(
+                        $owner->name,
+                        $operationName,
+                        $operations[$operation],
+                        $command,
+                    );
+                }
+
+                $operations[$operation] = $command;
 
                 $handler = $this->handlerOf($grammar, $owner, $command);
                 $commands[$key] = DeclaredCommand::read($command, $owner, $handler);
