@@ -8,7 +8,6 @@ use App\Communication\Contracts\NotificationTargetResolver;
 use App\Communication\Data\NotificationLink;
 use App\Communication\Models\Message;
 use App\Ui\Contracts\DeclaredPages;
-use PhpOption\Option;
 
 /**
  * A question notification leads to the exact question in the chat, while the actor may still see the message: the
@@ -33,16 +32,18 @@ final readonly class QuestionNotificationTarget implements NotificationTargetRes
         return "question:{$messageId}";
     }
 
-    /**
-     * @return Option<NotificationLink>
-     */
-    public function linkFor(string $targetId): Option
+    public function linksFor(array $targetIds): array
     {
-        return Message::query()->whereKey($targetId)->firstOption()
-            ->map(fn (Message $message) => new NotificationLink(
+        $links = [];
+
+        foreach (Message::query()->whereKey($targetIds)->readExactly(count($targetIds))->get() as $message) {
+            $links[$message->id] = new NotificationLink(
                 $message->firstLine(),
                 $this->pages->addressOf(self::CHAT_PAGE, ['question' => $message->id]),
-            ));
+            );
+        }
+
+        return $links;
     }
 
     public function disclosesMissing(): bool

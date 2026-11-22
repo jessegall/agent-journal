@@ -175,8 +175,7 @@ final class RunOutcomeTest extends TestCase
             new RevokeRunOutcomeAccess($run->id)->withDispatcher(ActorContext::forAgent($atlas->id)),
         );
 
-        $this->actAs($kim);
-        $this->assertTrue($this->app->make(RunOutcomeSummaries::class)->summaryOf($run->id)->isEmpty());
+        $this->assertFalse($run->refresh()->hasOutcomeFor($kim));
         $this->assertSame(
             0,
             NotificationScope::query()->where('recipient_id', $kim->id)->sole()->unread_count,

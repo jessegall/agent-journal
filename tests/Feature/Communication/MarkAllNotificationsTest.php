@@ -14,6 +14,7 @@ use App\Communication\Support\NotificationReceipts;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -48,6 +49,7 @@ final class MarkAllNotificationsTest extends TestCase
         );
     }
 
+    #[TimeLimit(seconds: 6, reason: 'It delivers 450 notifications through the real delivery, one occurrence each.')]
     public function test_four_hundred_fifty_unread_clear_in_three_batches_and_an_interrupted_run_resumes(): void
     {
         $this->deliver(1, 450);

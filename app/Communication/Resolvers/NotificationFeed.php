@@ -55,7 +55,7 @@ final readonly class NotificationFeed
             $scope->unread_count,
             $hasOlder ? NotificationCursor::at($scope->id, $last->sequence)->text() : null,
             NotificationChanges::cursorAt($scope),
-            $this->itemsOf($receipts),
+            array_values($this->itemsOf($receipts)),
         );
     }
 
@@ -63,13 +63,14 @@ final readonly class NotificationFeed
      * The receipt as the actor may see it now, reauthorized against its target: none when it is hidden or its
      * target may not even be named, a generic unavailable item when the target is gone but may be.
      *
+     * @param  array<string, array<int|string, NotificationLink>>  $links  by target key, then target id
      * @return Option<NotificationItem>
      */
-    public function itemOf(NotificationReceipt $receipt): Option
+    private function itemOf(NotificationReceipt $receipt, array $links): Option
     {
         $occurrence = $receipt->occurrence;
         $resolver = $this->targets->resolverFor($occurrence->target_key);
-        $link = $resolver->linkFor($occurrence->target_id);
+        $link = Option::fromArraysValue($links[$occurrence->target_key] ?? [], $occurrence->target_id);
 
         if ($receipt->isHidden() || ($link->isEmpty() && ! $resolver->disclosesMissing())) {
             return None::create();
@@ -90,18 +91,30 @@ final readonly class NotificationFeed
     }
 
     /**
-     * The items the actor may see, in order.
+     * The items the actor may see, in order: each target's links read once for all the receipts that name it.
      *
      * @param  list<NotificationReceipt>  $receipts
-     * @return list<NotificationItem>
+     * @return array<string, NotificationItem> by receipt id
      */
-    private function itemsOf(array $receipts): array
+    public function itemsOf(array $receipts): array
     {
+        $idsByKey = [];
+
+        foreach ($receipts as $receipt) {
+            $idsByKey[$receipt->occurrence->target_key][] = $receipt->occurrence->target_id;
+        }
+
+        $links = [];
+
+        foreach ($idsByKey as $key => $ids) {
+            $links[$key] = $this->targets->resolverFor($key)->linksFor(array_values(array_unique($ids)));
+        }
+
         $items = [];
 
         foreach ($receipts as $receipt) {
-            $this->itemOf($receipt)->forAll(function (NotificationItem $item) use (&$items): void {
-                $items[] = $item;
+            $this->itemOf($receipt, $links)->forAll(function (NotificationItem $item) use (&$items, $receipt): void {
+                $items[$receipt->id] = $item;
             });
         }
 
