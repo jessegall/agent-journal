@@ -122,6 +122,16 @@ final class ListPage
     }
 
     /**
+     * The creation the viewer may use when it opens a dialog: the dialog part, whose opener stands in the header.
+     */
+    public function creatingWith(LayoutPartData $creation): self
+    {
+        $this->creation = $creation;
+
+        return $this;
+    }
+
+    /**
      * The creation the viewer may use when it is a menu, such as plain and guided entry.
      */
     public function creatingFromMenu(LayoutMenuData $menu): self

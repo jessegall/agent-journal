@@ -38,6 +38,8 @@ final class TasksPageTest extends TestCase
         'command_receipts',
     ];
 
+    private const string CONTENT = 'page.data.root.children.1.children.0.children.1.children';
+
     private User $owner;
 
     protected function setUp(): void
@@ -55,12 +57,11 @@ final class TasksPageTest extends TestCase
         $tasksPage = $this->actingAs($this->owner)->get('/tasks')->assertOk();
 
         $tasksPage->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('tasks/TasksWindow')
-            ->where('page.data.rows.0.number', (string) $task->number)
-            ->where('page.data.rows.0.title', 'Write the reader')
-            ->where('page.data.rows.0.state', 'open')
-            ->missing('page.data.rows.0.holder')
-            ->where('page.data.pagination.total', 1));
+            ->component('layout/DeclaredLayout')
+            ->where(self::CONTENT.'.0.rows.0.leading.0.text', (string) $task->number)
+            ->where(self::CONTENT.'.0.rows.0.label', 'Write the reader')
+            ->where(self::CONTENT.'.0.rows.0.trailing.0.key', 'state')
+            ->where('page.data.root.children.0.children.1.text', '1'));
     }
 
     public function test_the_unassigned_filter_counts_and_pages_in_the_database(): void
@@ -74,17 +75,18 @@ final class TasksPageTest extends TestCase
         $unassigned = $this->actingAs($this->owner)->get('/tasks?holder=unassigned');
 
         $unassigned->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.pagination.total', 23)
-            ->where('page.data.pagination.lastPage', 2)
-            ->count('page.data.rows', 20)
-            ->where('page.data.rows.0.number', (string) $tasks[2]->number)
-            ->where('page.data.filters.holder', 'unassigned'));
+            ->where('page.data.root.children.0.children.1.text', '23')
+            ->count(self::CONTENT.'.0.rows', 20)
+            ->where(self::CONTENT.'.1.children.2.key', 'position')
+            ->where(
+                self::CONTENT.'.0.rows.0.leading.0.text',
+                (string) $tasks[2]->number,
+            ));
 
         $mine = $this->actingAs($this->owner)->get('/tasks?holder=mine');
 
         $mine->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.pagination.total', 2)
-            ->where('page.data.rows.0.holder.name', $this->owner->name));
+            ->where('page.data.root.children.0.children.1.text', '2'));
     }
 
     public function test_holders_are_read_once_for_a_page_whatever_it_holds(): void

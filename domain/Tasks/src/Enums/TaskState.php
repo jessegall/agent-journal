@@ -33,6 +33,22 @@ enum TaskState: string
     }
 
     /**
+     * The word and tone a declared layout badge shows for this state.
+     *
+     * @return array{string, string}
+     */
+    public function badge(): array
+    {
+        return match ($this) {
+            self::Open => ['Open', 'quiet'],
+            self::Started => ['Started', 'busy'],
+            self::Blocked => ['Blocked', 'warn'],
+            self::Finished => ['Finished', 'good'],
+            self::Cancelled => ['Cancelled', 'quiet'],
+        };
+    }
+
+    /**
      * Whether the task's work is over: finished or cancelled.
      */
     public function hasEnded(): bool

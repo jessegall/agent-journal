@@ -105,9 +105,15 @@ final class DetailPage
      */
     public function layout(string $chosen = ''): DeclaredLayoutData
     {
-        return DeclaredLayoutData::of(
-            LayoutPartData::box('detail', 'reader', ...[...$this->head(), ...$this->body($chosen)]),
-        );
+        return DeclaredLayoutData::of($this->part($chosen));
+    }
+
+    /**
+     * The page as one part, to stand in the reader of a split beside its list.
+     */
+    public function part(string $chosen = ''): LayoutPartData
+    {
+        return LayoutPartData::box('detail', 'reader', ...[...$this->head(), ...$this->body($chosen)]);
     }
 
     /**

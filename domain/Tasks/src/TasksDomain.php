@@ -84,6 +84,7 @@ use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Http\Controllers\AddTaskWaitPageController;
 use Domain\Tasks\Http\Controllers\BlockTaskPageController;
 use Domain\Tasks\Http\Controllers\CancelTaskPageController;
+use Domain\Tasks\Http\Controllers\CreateTaskPageController;
 use Domain\Tasks\Http\Controllers\RemoveTaskWaitPageController;
 use Domain\Tasks\Http\Controllers\StartTaskPageController;
 use Domain\Tasks\Http\Controllers\WaiveTaskWaitPageController;
@@ -142,22 +143,23 @@ final class TasksDomain extends Domain implements
     }
 
     /**
-     * The native part a declared page mounts for a plan's tasks and the waits among them.
+     * The native parts a declared page mounts: a plan's task graph, and a task's Waits, Logs and Proofs tabs.
      *
      * @return list<string>
      */
     public function nativeParts(): array
     {
-        return ['TaskGraph.vue'];
+        return ['TaskGraph.vue', 'TaskLogsTab.vue', 'TaskProofsTab.vue', 'TaskWaitsTab.vue'];
     }
 
     public function pages(): array
     {
         return [
-            Page::make('list', 'Tasks', Icon::Tasks, TasksWindowResolver::class, 'TasksWindow.vue')
+            Page::layout('list', 'Tasks', Icon::Tasks, TasksWindowResolver::class)
                 ->at('')
-                ->onHome(25),
-            Page::make('task', 'Task', Icon::Tasks, TaskWindowResolver::class, 'TaskWindow.vue')
+                ->onHome(25)
+                ->actions(ActionRoute::post('create', CreateTaskPageController::class, 'create-task')),
+            Page::layout('task', 'Task', Icon::Tasks, TaskWindowResolver::class)
                 ->at('{task}')
                 ->inInspector()
                 ->actions(

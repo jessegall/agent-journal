@@ -43,6 +43,8 @@ final class TaskPageTest extends TestCase
         'command_receipts',
     ];
 
+    private const string READER = 'page.data.root.children.1.children.1.children';
+
     private User $owner;
 
     protected function setUp(): void
@@ -66,14 +68,13 @@ final class TaskPageTest extends TestCase
         $taskPage = $this->actingAs($this->owner)->get("/tasks/{$task->number}")->assertOk();
 
         $taskPage->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('tasks/TaskWindow')
-            ->where('page.data.number', (string) $task->number)
-            ->where('page.data.title', 'Prepare records')
-            ->where('page.data.state', 'open')
-            ->where('page.data.holder.name', $this->owner->name)
-            ->missing('page.data.latestRun')
-            ->missing('page.data.runningNow')
-            ->where('page.data.brief', "First part.\n\nSecond part."));
+            ->component('layout/DeclaredLayout')
+            ->where(self::READER.'.0.text', 'Prepare records')
+            ->where(self::READER.'.1.children.0.text', "Task {$task->number}")
+            ->where(self::READER.'.2.text', "First part.\n\nSecond part.")
+            ->where(self::READER.'.4.rows.0.value', 'Open')
+            ->where(self::READER.'.4.rows.1.value', fn (string $held) => str_contains($held, $this->owner->name))
+            ->missing(self::READER.'.4.rows.2'));
     }
 
     public function test_the_waits_tab_lists_the_prerequisite_and_the_holder_both_ways(): void
@@ -86,15 +87,15 @@ final class TaskPageTest extends TestCase
         $waiting = $this->actingAs($this->owner)->get("/tasks/{$second->number}?section=waits")->assertOk();
 
         $waiting->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.waits.waitsFor.0.number', (string) $first->number)
-            ->where('page.data.waits.waitsFor.0.state', 'open')
-            ->where('page.data.waits.waitsFor.0.isSatisfied', false)
-            ->count('page.data.waits.holdsUp', 0));
+            ->where(self::READER.'.5.children.0.native.props.waits.waitsFor.0.number', (string) $first->number)
+            ->where(self::READER.'.5.children.0.native.props.waits.waitsFor.0.state', 'open')
+            ->where(self::READER.'.5.children.0.native.props.waits.waitsFor.0.isSatisfied', false)
+            ->count(self::READER.'.5.children.0.native.props.waits.holdsUp', 0));
 
         $holding = $this->actingAs($this->owner)->get("/tasks/{$first->number}?section=waits")->assertOk();
 
         $holding->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.waits.holdsUp.0.number', (string) $second->number));
+            ->where(self::READER.'.5.children.0.native.props.waits.holdsUp.0.number', (string) $second->number));
     }
 
     public function test_an_editor_adds_a_prerequisite_from_the_page_and_a_cycle_or_a_missing_reason_is_refused(): void
@@ -105,8 +106,8 @@ final class TaskPageTest extends TestCase
         $offered = $this->actingAs($this->owner)->get("/tasks/{$second->number}?section=waits")->assertOk();
 
         $offered->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.waitActions.mayEdit', true)
-            ->where('page.data.waitActions.mayWaive', true));
+            ->where(self::READER.'.5.children.0.native.props.actions.mayEdit', true)
+            ->where(self::READER.'.5.children.0.native.props.actions.mayWaive', true));
 
         $this->actingAs($this->owner)->from("/tasks/{$second->number}")
             ->withHeader('Idempotency-Key', self::key())
@@ -117,7 +118,7 @@ final class TaskPageTest extends TestCase
         $holding = $this->actingAs($this->owner)->get("/tasks/{$first->number}?section=waits");
 
         $holding->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.waits.holdsUp.0.number', (string) $second->number));
+            ->where(self::READER.'.5.children.0.native.props.waits.holdsUp.0.number', (string) $second->number));
 
         $this->actingAs($this->owner)->from("/tasks/{$first->number}")
             ->withHeader('Idempotency-Key', self::key())
@@ -143,7 +144,7 @@ final class TaskPageTest extends TestCase
         $task = Task::factory()->create(['brief' => '']);
 
         $emptyPage = $this->actingAs($this->owner)->get("/tasks/{$task->number}")->assertOk();
-        $emptyPage->assertInertia(fn (AssertableInertia $page) => $page->where('page.data.brief', ''));
+        $emptyPage->assertInertia(fn (AssertableInertia $page) => $page->where(self::READER.'.2.text', ''));
 
         $this->actingAs($this->owner)->get('/tasks/'.TestIds::of(999999))->assertNotFound();
     }

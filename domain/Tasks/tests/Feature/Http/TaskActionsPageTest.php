@@ -27,6 +27,8 @@ final class TaskActionsPageTest extends TestCase
     use RefreshHookDatabase;
     use StartsAgentRequests;
 
+    private const string READER = 'page.data.root.children.1.children.1.children';
+
     private User $owner;
 
     private Task $task;
@@ -45,9 +47,9 @@ final class TaskActionsPageTest extends TestCase
         $offered = $this->actingAs($this->owner)->get("/tasks/{$this->task->number}")->assertOk();
 
         $offered->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.actions.mayStart', true)
-            ->where('page.data.actions.mayCancel', true)
-            ->where('page.data.actions.runNumber', 0));
+            ->where(self::READER.'.3.children.0.key', 'start')
+            ->where(self::READER.'.3.children.0.form.fixed.run', 0)
+            ->where(self::READER.'.3.children.1.key', 'cancel'));
 
         $this->act('start')->assertStatus(303)->assertSessionHasNoErrors();
         $this->act('block', ['run' => 1, 'reason' => '   '])->assertSessionHasErrors('reason');
