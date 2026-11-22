@@ -30,6 +30,12 @@ type Frame struct {
 	Shielded   bool             `json:"shielded"`
 	// PrivacyRevision is the runtime's privacy revision this frame was captured under.
 	PrivacyRevision uint64 `json:"privacy_revision"`
+	// Stream names the sender that sent the frame: a sender started over is a new stream, its sequence from one.
+	Stream string `json:"stream"`
+	// Proof rises with every report of the stream, an unchanged screen's included; the host is proven alive by the
+	// frame until ExpiresAt.
+	Proof     uint64    `json:"proof"`
+	ExpiresAt time.Time `json:"expires_at"`
 }
 
 // FrameLimit is the most bytes of JSON one frame may take.

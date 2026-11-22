@@ -369,3 +369,40 @@ func TestTurningFromPublicToShieldedRaisesThePrivacyRevision(t *testing.T) {
 		t.Fatalf("the privacy revisions were %v, not 0, 1, 1, 2", revisions)
 	}
 }
+
+func TestAQuietScreenProvesTheHostAliveWithARisingProofThatExpiresFifteenSecondsAfterCapture(t *testing.T) {
+	if signOfLife != 10*time.Second || proofLifetime != 15*time.Second {
+		t.Fatalf("a sign of life every %v proving the host for %v, not 10s and 15s", signOfLife, proofLifetime)
+	}
+	watcher, journal, readers := newWatcher(t, 30*time.Millisecond)
+	readers.run(t, "runtime-1", "quiet")
+
+	watcher.Set(watch("runtime-1"))
+	waitUntil(t, "three frames", func() bool { return len(journal.frames("runtime-1")) >= 3 })
+
+	frames := journal.frames("runtime-1")
+	for index, frame := range frames[:3] {
+		if frame.Proof != uint64(index+1) || frame.ExpiresAt.Sub(frame.Captured) != proofLifetime {
+			t.Fatalf("frame %d proves %d until %v after capture", index, frame.Proof, frame.ExpiresAt.Sub(frame.Captured))
+		}
+		if frame.Stream != frames[0].Stream || frame.Stream == "" {
+			t.Fatalf("frame %d is of stream %q, not %q", index, frame.Stream, frames[0].Stream)
+		}
+	}
+}
+
+func TestAChangedIntervalStartsANewStreamAtSequenceOne(t *testing.T) {
+	watcher, journal, readers := newWatcher(t, time.Hour)
+	readers.run(t, "runtime-1", "hello")
+	watcher.Set(watch("runtime-1"))
+	waitUntil(t, "the first frame", func() bool { return len(journal.frames("runtime-1")) == 1 })
+
+	watcher.Set([]client.Watch{{RuntimeID: "runtime-1", IntervalMs: 20}})
+	waitUntil(t, "the frame of the new stream", func() bool { return len(journal.frames("runtime-1")) == 2 })
+
+	first, second := journal.frames("runtime-1")[0], journal.frames("runtime-1")[1]
+	if second.Stream == first.Stream || second.Sequence != 1 || second.Proof != 1 {
+		t.Fatalf("after the interval changed: stream %q (was %q), sequence %d, proof %d",
+			second.Stream, first.Stream, second.Sequence, second.Proof)
+	}
+}

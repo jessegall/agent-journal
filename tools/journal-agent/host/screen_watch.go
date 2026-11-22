@@ -18,6 +18,10 @@ import (
 // signOfLife is how long an unchanged screen goes without a frame before one is sent anyway.
 const signOfLife = 10 * time.Second
 
+// proofLifetime is how long a frame proves the host alive after its capture: the sign of life's ten seconds, one
+// second for the browser's poll and four for transit and clock uncertainty.
+const proofLifetime = signOfLife + time.Second + 4*time.Second
+
 // failureLogInterval is how often a runtime's failed reports are logged at most.
 const failureLogInterval = time.Minute
 
@@ -70,20 +74,30 @@ type screenWatch struct {
 // NewScreenWatcher makes a watcher whose senders end with ctx; its epoch is new for every host process, so frames of
 // a restarted host are never taken for old ones.
 func NewScreenWatcher(ctx context.Context, reporter ScreenReporter, readers ScreenReaders) (*ScreenWatcher, error) {
-	random := make([]byte, 8)
-	if _, err := rand.Read(random); err != nil {
+	epoch, err := randomName()
+	if err != nil {
 		return nil, err
 	}
 	return &ScreenWatcher{
 		reporter:   reporter,
 		readers:    readers,
 		now:        time.Now,
-		epoch:      hex.EncodeToString(random),
+		epoch:      epoch,
 		signOfLife: signOfLife,
 		ctx:        ctx,
 		watching:   map[string]*screenWatch{},
 		privacy:    map[string]*screenPrivacy{},
 	}, nil
+}
+
+// randomName is a new random name of sixteen hex digits, for an epoch or a stream.
+func randomName() (string, error) {
+	random := make([]byte, 8)
+	if _, err := rand.Read(random); err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(random), nil
 }
 
 // Set makes the watched list the one the journal sent: a runtime that left it stops, a new one starts, and one whose
@@ -106,10 +120,15 @@ func (watcher *ScreenWatcher) Set(watched []client.Watch) {
 		if _, running := watcher.watching[runtimeID]; running || interval <= 0 {
 			continue
 		}
+		stream, err := randomName()
+		if err != nil {
+			log.Printf("the screen of runtime %s has no stream: %v", runtimeID, err)
+			continue
+		}
 		ctx, cancel := context.WithCancel(watcher.ctx)
 		watch := &screenWatch{interval: interval, cancel: cancel}
 		watcher.watching[runtimeID] = watch
-		sender := &screenSender{watcher: watcher, runtimeID: runtimeID}
+		sender := &screenSender{watcher: watcher, runtimeID: runtimeID, stream: stream}
 		go func() {
 			sender.run(ctx, interval)
 			watcher.stopped(runtimeID, watch)
@@ -156,11 +175,14 @@ func (capture screenCapture) isSameAs(other screenCapture) bool {
 	return capture.reader == other.reader && capture.version == other.version
 }
 
-// screenSender is one runtime's capture loop and what it last sent.
+// screenSender is one runtime's capture loop and what it last sent. Each start of a sender is a new stream, whose
+// sequence starts over at one, and every report it tries carries a newer proof.
 type screenSender struct {
 	watcher   *ScreenWatcher
 	runtimeID string
+	stream    string
 	sequence  uint64
+	proof     uint64
 	// lastCapture is the screen version last read and from which reader; nil until a capture reads, and after a
 	// failed send, so the next round reads again.
 	lastCapture  *screenCapture
@@ -198,6 +220,8 @@ func (sender *screenSender) tick(ctx context.Context) bool {
 	}
 
 	frame.Sequence = sender.sequence + 1
+	sender.proof++
+	frame.Stream, frame.Proof, frame.ExpiresAt = sender.stream, sender.proof, frame.Captured.Add(proofLifetime)
 	err := sender.watcher.reporter.ReportScreen(ctx, sender.runtimeID, frame)
 	var refused client.ScreenRefused
 	if errors.As(err, &refused) {
@@ -280,5 +304,7 @@ func (sender *screenSender) logFailure(now time.Time, err error) {
 func sameScreen(first, second screen.Frame) bool {
 	first.Epoch, first.Sequence, first.Captured = "", 0, time.Time{}
 	second.Epoch, second.Sequence, second.Captured = "", 0, time.Time{}
+	first.Stream, first.Proof, first.ExpiresAt = "", 0, time.Time{}
+	second.Stream, second.Proof, second.ExpiresAt = "", 0, time.Time{}
 	return reflect.DeepEqual(first, second)
 }

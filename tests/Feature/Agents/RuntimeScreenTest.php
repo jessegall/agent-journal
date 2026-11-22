@@ -47,6 +47,20 @@ final class RuntimeScreenTest extends TestCase
         $this->assertSame([false, 0], [$older->shielded, $older->privacyRevision]);
     }
 
+    public function test_a_frame_hydrates_its_stream_and_liveness_proof(): void
+    {
+        $frame = ScreenFrameData::from([
+            ...$this->payload('epoch-1', 1),
+            'stream' => 'stream-1',
+            'proof' => 4,
+            'expires_at' => '2026-11-19T12:00:15.123456789Z',
+        ]);
+        $older = $this->frame('epoch-1', 1);
+
+        $this->assertSame(['stream-1', 4, '2026-11-19T12:00:15.123456789Z'], [$frame->stream, $frame->proof, $frame->expiresAt]);
+        $this->assertSame([null, 0, null], [$older->stream, $older->proof, $older->expiresAt]);
+    }
+
     public function test_put_then_latest_gives_the_frame_and_a_late_frame_changes_nothing(): void
     {
         $screen = $this->app->make(RuntimeScreen::class);
