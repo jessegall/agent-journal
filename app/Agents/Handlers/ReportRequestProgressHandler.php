@@ -42,8 +42,8 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
             RequestProgress::Unavailable => $request->markUnavailable($command->outcome ?? RequestOutcome::Refused),
             RequestProgress::Accepted,
             RequestProgress::Staged,
-            RequestProgress::Superseded,
-            RequestProgress::Cancelled => $request->hold(
+            RequestProgress::Cancelled => $request->cancel(),
+            RequestProgress::Superseded => $request->hold(
                 $request->hold_reason,
             ),
         };
