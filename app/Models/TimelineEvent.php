@@ -10,6 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\EventSource;
 use App\Contracts\ReadableModel;
 use App\Enums\ActorType;
+use App\Enums\LineCardPlacement;
 use App\Enums\TimelineEventType;
 use App\Events\ChatLinePosted;
 use App\Support\ActorIdentity;
@@ -38,6 +39,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $line
  * @property string|null $line_source_type
  * @property string|null $line_source_id
+ * @property LineCardPlacement|null $line_card_placement
  * @property CarbonImmutable $created_at
  * @property-read ActorIdentity $actor
  */
@@ -68,6 +70,7 @@ final class TimelineEvent extends Model implements EventSource, ReadableModel
     {
         return [
             'type' => TimelineEventType::class,
+            'line_card_placement' => LineCardPlacement::class,
             'sequence' => 'integer',
             'created_at' => 'immutable_datetime',
         ];
@@ -107,6 +110,7 @@ final class TimelineEvent extends Model implements EventSource, ReadableModel
         string $subject,
         string $line,
         DockIdentity|null $source,
+        LineCardPlacement $placement,
     ): self {
         $event = new self([
             'inbox_id' => $inboxId,
@@ -119,6 +123,7 @@ final class TimelineEvent extends Model implements EventSource, ReadableModel
         $event->line = mb_substr($line, 0, self::LINE_CHARACTER_LIMIT);
         $event->line_source_type = $source?->type;
         $event->line_source_id = $source?->id;
+        $event->line_card_placement = $source === null ? null : $placement;
         $event->assertSaved($event->save());
         $event->raise(new ChatLinePosted($event->id, $inboxId, $sequence));
 

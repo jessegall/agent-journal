@@ -12,9 +12,23 @@ use App\Contracts\EventSource;
 use App\Contracts\Numbered;
 use App\Contracts\ReadableModel;
 use App\Enums\ActorType;
+use App\Enums\Alignment;
+use App\Enums\Tone;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
+use App\Support\Cards\DockCard;
+use App\Support\Cards\DockIdentity;
+use App\Support\Cards\Duration;
+use App\Support\Cards\Row;
+use App\Support\Cards\Stack;
+use App\Support\Cards\StateLabel;
+use App\Support\Cards\Subtitle;
+use App\Support\Cards\Title;
+use App\Support\Sources\Contracts\CardContext;
+use App\Support\Sources\Contracts\Dockable;
+use App\Support\Sources\DockDefinition;
 use App\Values\StackTarget;
+use Carbon\CarbonImmutable;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Events\SequenceEnded;
 use Domain\Sequences\Events\SequenceStarted;
@@ -45,7 +59,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'steps'])]
-final class SequenceRun extends Model implements EventSource, Numbered, ReadableModel
+final class SequenceRun extends Model implements Dockable, EventSource, Numbered, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
@@ -53,6 +67,9 @@ final class SequenceRun extends Model implements EventSource, Numbered, Readable
     use HasUlids;
     use Linkable;
     use RaisesEvents;
+
+    /** The run's stable name in links and in the chat lines that show it. */
+    public const string LINK_TYPE = 'sequences.sequence-run';
 
     /**
      * @var array<string, mixed>
@@ -157,6 +174,46 @@ final class SequenceRun extends Model implements EventSource, Numbered, Readable
     }
 
     // ----------[ Answers ]----------
+
+    public function identifyFor(DockDefinition $definition): DockIdentity
+    {
+        return $definition->identity($this->id);
+    }
+
+    /**
+     * Its card where the chat shows it: its name and where it stands, each step with whether it is done, runs now or
+     * waits, and how long it has run, frozen at its end.
+     */
+    public function composeDockCard(CardContext $context): DockCard
+    {
+        $steps = array_map(fn (string $step, int $index) => new Row(
+            "step-{$index}",
+            Alignment::Between,
+            new Subtitle("step-{$index}-text", ($index + 1).' · '.$step),
+            $this->stepLabel($index + 1),
+        ), $this->steps, array_keys($this->steps));
+        $started = CarbonImmutable::instance($this->created_at ?? CarbonImmutable::now());
+        $ended = $this->state->needsWork() ? null : CarbonImmutable::instance($this->updated_at ?? $started);
+
+        return DockCard::named($this->name, Stack::of(
+            'root',
+            new Title('title', $this->name),
+            new Duration('duration', $started, $ended),
+            ...$steps,
+        ));
+    }
+
+    /**
+     * Where a step stands: done, running now, or waiting for its turn, and how the run ended on its current step.
+     */
+    private function stepLabel(int $step): StateLabel
+    {
+        return match (true) {
+            $step < $this->current_step || $this->state === SequenceRunState::Finished => new StateLabel("step-{$step}-state", 'Done', Tone::Muted),
+            $step === $this->current_step && $this->state->needsWork() => new StateLabel("step-{$step}-state", 'Running', Tone::Note),
+            default => new StateLabel("step-{$step}-state", 'Waiting', Tone::Neutral),
+        };
+    }
 
     public function work(): SequenceWork
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Enums\LineCardPlacement;
 use App\Support\Cards\DockIdentity;
 use Carbon\CarbonImmutable;
 
@@ -18,6 +19,7 @@ final readonly class ChatLine
         public string $subject,
         public string $line,
         public DockIdentity|null $source,
+        public LineCardPlacement $cardPlacement,
         public CarbonImmutable $postedAt,
     ) {}
 }

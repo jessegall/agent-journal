@@ -43,7 +43,7 @@ export type ChatTimelineClient = {
 const LINE_EVENT = 'line';
 
 /** Whether a card's parts hold a time that has not ended, so what it shows still runs. */
-function isRunning(node: DockNode | null): boolean {
+export function isRunning(node: DockNode | null): boolean {
     if (node === null) {
         return false;
     }

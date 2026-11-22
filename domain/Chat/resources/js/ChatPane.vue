@@ -3,11 +3,13 @@ import { router, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { arrivalAnnouncement } from './composables/arrivalAnnouncement';
 import { useChatTimeline } from './composables/useChatTimeline';
+import { openedRecordOf, recordKey } from './recordPanel';
 import { useChosenAgent } from './composables/useChosenAgent';
 import { useConversationIntents } from './composables/useConversationIntents';
 import { handOverText, useHandOver } from './composables/useHandOver';
 import { draftKey } from './composables/useMessageDrafts';
 import type { AgentOptionData, ChatData } from '@generated/types/chat';
+import type { DockCardEnvelope } from '@kit/dockCards';
 import type { ReplyTarget } from './composables/useConversationIntents';
 import AvatarStack from '@kit/AvatarStack';
 import Button from '@kit/Button';
@@ -20,6 +22,7 @@ import { decline as declineRoute, read as readRoute } from '@generated/routes/ch
 import AgentPicker from './AgentPicker.vue';
 import AgentSessionActions from './AgentSessionActions.vue';
 import Composer from './Composer.vue';
+import RecordPanel from './RecordPanel.vue';
 import DockStack from './dock/DockStack.vue';
 import FocusedQuestion from './FocusedQuestion.vue';
 import MessageList from './MessageList.vue';
@@ -128,6 +131,30 @@ const refused = computed(() =>
         reason: owner.value?.refusalOf(entry.intentKey) ?? '',
     })),
 );
+
+/**
+ * The record a chat line names, open beside the chat: the one the user chose, else the newest that still runs, such as
+ * a sequence on its way; it closes when it ends, and stays closed once the user closes it.
+ */
+const chosenRecord = ref<string | null>(null);
+const closedRecords = ref<string[]>([]);
+const panelCards = computed(() =>
+    timeline.lines.value.flatMap((line) => (line.cardPlacement === 'panel' && line.card !== null ? [line.card] : [])),
+);
+const openedRecord = computed(() => openedRecordOf(panelCards.value, chosenRecord.value, closedRecords.value));
+
+function openRecord(card: DockCardEnvelope): void {
+    chosenRecord.value = recordKey(card);
+}
+
+function closeRecord(): void {
+    const shown = openedRecord.value;
+    chosenRecord.value = null;
+
+    if (shown !== null) {
+        closedRecords.value = [...closedRecords.value, recordKey(shown)];
+    }
+}
 
 // A read that returned the user's own sends settles them.
 watch(timeline.messages, (messages) => owner.value?.settle(messages));
@@ -357,7 +384,11 @@ function retryFocused(): void {
                     @check-again="(intent) => owner?.retry(intent, protectedProp)"
                     @restore="(intentKey) => owner?.restore(intentKey)"
                     @discard="(intentKey) => owner?.discardRecovery(intentKey)"
+                    @open-record="openRecord"
                 />
+                <template v-if="openedRecord !== null">
+                    <RecordPanel :card="openedRecord" @close="closeRecord" />
+                </template>
                 <p role="status" aria-live="polite" class="sr-only">{{ owner?.announcement.value }} {{ arrival }}</p>
                 <template v-if="unreadShown.length > 0">
                     <p class="flex items-center gap-2 text-small text-text-3">
