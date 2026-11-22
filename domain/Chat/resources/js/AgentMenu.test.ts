@@ -10,6 +10,7 @@ vi.mock('@inertiajs/vue3', () => ({
 }));
 
 const { default: AgentMenu } = await import('./AgentMenu.vue');
+const { HANDED_RECORD_TYPE, useHandOver } = await import('./composables/useHandOver');
 
 function agent(id: string, name: string, retired = false): AgentOptionData {
     return {
@@ -74,5 +75,21 @@ describe('AgentMenu', () => {
 
         expect(visited).toEqual(['/?agent=reviewer']);
         expect(found.emitted('close')).toHaveLength(1);
+    });
+
+    it('hands a record let go on an agent to that agent, whose chat opens', async () => {
+        visited.length = 0;
+        const record = { title: 'Doc 101', reference: '/documents/101' };
+        const dataTransfer = {
+            types: [HANDED_RECORD_TYPE],
+            getData: () => JSON.stringify(record),
+        };
+        const reviewer = menu().findAll('[role="option"]')[1];
+
+        await reviewer.trigger('drop', { dataTransfer });
+
+        expect(visited).toEqual(['/?agent=reviewer']);
+        expect(useHandOver().takeFor('reviewer')).toEqual({ ...record, agentId: 'reviewer' });
+        expect(useHandOver().takeFor('reviewer')).toBeNull();
     });
 });

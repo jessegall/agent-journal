@@ -2,10 +2,12 @@
 import { router } from '@inertiajs/vue3';
 import { computed, nextTick, ref } from 'vue';
 import type { AgentOptionData } from '@generated/types/chat';
+import { carriesRecord, droppedRecord, useHandOver } from './composables/useHandOver';
 
 /**
  * The agent picker's menu: a search that takes the focus, then the agents in Main, Helpers and Retired groups with
- * their state. The arrow keys move between them, Enter chooses one and Escape closes the menu.
+ * their state. The arrow keys move between them, Enter chooses one and Escape closes the menu. A record dragged here
+ * opens the chat of the agent it rests on, and let go on an agent it is handed to that agent.
  */
 const props = defineProps<{
     agents: AgentOptionData[];
@@ -39,6 +41,30 @@ const ordered = computed(() => groups.value.flatMap((group) => group.agents));
 function choose(agent: AgentOptionData): void {
     emit('close');
     router.visit(props.agentUrl(agent), { preserveScroll: true });
+}
+
+const handOver = useHandOver();
+// How long a dragged record rests on an agent before that agent's chat opens.
+const REST_MS = 700;
+let resting: ReturnType<typeof setTimeout> | undefined;
+
+function restOn(event: DragEvent, agent: AgentOptionData): void {
+    if (!carriesRecord(event)) {
+        return;
+    }
+
+    clearTimeout(resting);
+    resting = setTimeout(() => router.visit(props.agentUrl(agent), { preserveScroll: true }), REST_MS);
+}
+
+function clearRest(): void {
+    clearTimeout(resting);
+}
+
+function handTo(event: DragEvent, agent: AgentOptionData): void {
+    clearTimeout(resting);
+    handOver.hold({ ...droppedRecord(event), agentId: agent.id });
+    choose(agent);
 }
 
 async function focusOption(index: number): Promise<void> {
@@ -79,6 +105,10 @@ async function focusOption(index: number): Promise<void> {
                         class="flex cursor-pointer items-center gap-2 rounded-control px-2 py-1 text-small text-text outline-none hover:bg-hover focus-visible:bg-hover"
                         :class="{ 'bg-sel': agent.id === selectedAgentId }"
                         @click="choose(agent)"
+                        @dragenter="restOn($event, agent)"
+                        @dragover="carriesRecord($event) && $event.preventDefault()"
+                        @dragleave="clearRest"
+                        @drop.prevent="handTo($event, agent)"
                         @keydown.enter.prevent="choose(agent)"
                         @keydown.down.prevent="focusOption(ordered.indexOf(agent) + 1)"
                         @keydown.up.prevent="focusOption(ordered.indexOf(agent) - 1)"
