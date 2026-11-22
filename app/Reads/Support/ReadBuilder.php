@@ -81,6 +81,16 @@ class ReadBuilder extends Builder
     }
 
     /**
+     * At most this many rows, whatever their number: a page's limit() when a page holds them, else readLimit().
+     */
+    public function readUpTo(int $rows): static
+    {
+        $pageMax = Container::getInstance()->make('config')->integer('reads.page_max');
+
+        return $rows <= $pageMax ? $this->limit($rows) : $this->readLimit($rows);
+    }
+
+    /**
      * Exactly a known set, however many: the rows of the given ids, read as readExactly(count($ids)).
      *
      * @throws ReadLimitInvalid

@@ -89,7 +89,7 @@ final class NotificationReceipt extends Model implements ReadableModel
             ->when($beforeSequence !== null, fn (Builder $older) => $older->where('sequence', '<', $beforeSequence))
             ->orderByDesc('sequence')
             ->with('occurrence')
-            ->readLimit($limit)
+            ->readUpTo($limit)
             ->get()
             ->all());
     }
@@ -113,7 +113,7 @@ final class NotificationReceipt extends Model implements ReadableModel
                 'occurrence_id',
                 NotificationOccurrence::query()->targeting($targetKey, $targetIds)->select('id'),
             )
-            ->readLimit($limit)
+            ->readUpTo($limit)
             ->get()
             ->all());
     }
@@ -133,7 +133,7 @@ final class NotificationReceipt extends Model implements ReadableModel
             ->where('sequence', '>', $afterSequence)
             ->where('sequence', '<=', $through)
             ->orderBy('sequence')
-            ->readLimit($limit)
+            ->readUpTo($limit)
             ->get()
             ->all());
     }
@@ -177,7 +177,7 @@ final class NotificationReceipt extends Model implements ReadableModel
                 NotificationOccurrence::query()->where('target_key', $targetKey)->where('target_id', $targetId)
                     ->select('id'),
             )
-            ->readLimit($limit)
+            ->readUpTo($limit)
             ->get()
             ->all());
     }

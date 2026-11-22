@@ -21,6 +21,7 @@ final class NotificationFeedTest extends MessagingTestCase
 {
     protected const array TABLES = [
         ...parent::TABLES,
+        'notification_changes',
         'notification_receipts',
         'notification_scopes',
         'notification_occurrences',
