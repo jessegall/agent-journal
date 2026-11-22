@@ -578,6 +578,8 @@ use App\Communication\Data\MessageReadResult;
 use App\Communication\Data\MessageView;
 use App\Communication\Data\NotificationLink;
 use App\Communication\Data\NotificationTarget;
+use App\Communication\Data\PresentationBatchData;
+use App\Communication\Data\PresentationItemData;
 use App\Communication\Data\WakeStatus;
 use App\Communication\Enums\AgentInboxState;
 use App\Communication\Enums\DismissalType;
@@ -610,6 +612,7 @@ use App\Communication\Support\InboxIntervals;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
 use App\Communication\Support\MembershipEvidence;
+use App\Communication\Support\PresentationBatches;
 use App\Connections\Commands\ApproveDeviceGrant;
 use App\Connections\Commands\AssertBindingStart;
 use App\Connections\Commands\AssignBindingEnvironment;
@@ -2083,6 +2086,9 @@ final class CoreApi
                 ChatInterval::class,
                 InboxIntervals::class,
                 ChatDepartures::class,
+                PresentationBatches::class,
+                PresentationBatchData::class,
+                PresentationItemData::class,
                 AgentChatAdmission::class,
                 ChatTimeline::class,
                 ChatEventPage::class,
