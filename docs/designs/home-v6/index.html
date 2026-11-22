@@ -194,7 +194,9 @@ body.dk .win.float{box-shadow:0 14px 36px rgba(0,0,0,.55),0 1px 3px rgba(0,0,0,.
 .gut.has::before{content:"";position:absolute;left:10px;top:7px;width:6px;height:6px;border-radius:50%;background:var(--plum)}
 .src{white-space:pre;padding-right:140px}
 .code .k,.code .tg{color:var(--text);font-weight:600}.code .ty{color:var(--text)}.code .s,.code .nu{color:var(--text-3)}.code .cm{color:var(--text-3);font-style:italic}
-.cbtn{position:absolute;right:16px;top:-2px;z-index:3;font-family:-apple-system,'Segoe UI',system-ui,sans-serif}
+.cpick{display:flex;align-items:center;gap:8px;margin:4px 0 8px 48px;font-family:-apple-system,'Segoe UI',system-ui,sans-serif;font-size:11.5px;color:var(--text-3)}
+/* The quiet first line of a helper's or worker's chat: who started it, for what, who supervises it. Not a header. */
+.origin{align-self:stretch;display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3);padding:0 2px 8px;border-bottom:1px solid var(--line)}
 .cbar,.cthread,.codefoot{font-family:-apple-system,'Segoe UI',system-ui,sans-serif;font-size:12.5px;line-height:1.45;white-space:normal}
 .cbar,.cthread{margin:6px 16px 10px 48px;max-width:640px}
 .cbar{border:1px solid var(--border-3);border-radius:10px;background:var(--raised);padding:8px 10px}
@@ -529,7 +531,8 @@ const lines=(a,b)=>a===b?'line '+a:'lines '+a+'–'+b;
 function codeView(path){const f=FILES[path];if(!f)return `<div class="emptydesk"><span>${esc(path)} is not included in this design.</span></div>`;
   const st={inBlock:false},ls=f.text.split('\n');let h=`<div class="code" data-code="${path}" role="region" aria-label="${base(path)}">`;
   ls.forEach((ln,ix)=>{const n=ix+1,sel=CODESEL&&CODESEL.path===path&&n>=CODESEL.a&&n<=CODESEL.b,has=COMMENTS.some(c=>c.path===path&&n>=c.a&&n<=c.b);
-    h+=`<div class="lnr ${sel?'sel':''}" data-ln="${n}"><span class="gut ${has?'has':''}" data-gut="${n}" title="Select line ${n} · shift-click to extend">${n}</span><span class="src">${hlLine(ln,st,f.lang)}</span>${sel&&n===CODESEL.b&&!COMPOSE?`<button class="btn sm primary cbtn" data-comment>${I('ask','s14')}Comment</button>`:''}</div>`;
+    h+=`<div class="lnr ${sel?'sel':''}" data-ln="${n}"><span class="gut ${has?'has':''}" data-gut="${n}" title="Select line ${n} · shift-click to extend">${n}</span><span class="src">${hlLine(ln,st,f.lang)}</span></div>`;
+    if(sel&&n===CODESEL.b&&!COMPOSE)h+=`<div class="cpick"><button class="btn sm primary" data-comment>${I('ask','s14')}Comment</button><span>on ${lines(CODESEL.a,CODESEL.b)}${CODESEL.quote?' · the selected text':''}</span></div>`;
     if(COMPOSE&&COMPOSE.path===path&&n===COMPOSE.b)h+=cbarHtml();
     COMMENTS.filter(c=>c.path===path&&c.b===n).forEach(c=>h+=threadHtml(c))});
   return h+`<div class="codefoot">The first ${ls.length} lines of ${esc(path)}. Click or drag line numbers, or select text, then press Comment.</div></div>`}
@@ -561,11 +564,11 @@ const BASE=()=>[['day','Today'],['me','Can you tidy up the account settings dial
   ['card','task'],['card','ask'],['me','Inside the field, Enter saves. Go.'],['ag','13:47','Done. Worker 3 is on it; I\'ll tell you when it\'s ready to test.']];
 let CONV={};
 function freshConvs(){CONV={main:{name:'Agent 1',sub:'main agent',msgs:BASE()},
-  h262:{name:'Helper 262',sub:'Designing the notifications bell',msgs:[['ag','14:02','I\'m reading the bell and toast code first.'],['ag','14:05','One question before I draw: should the bell count only what waits on you, or every unread line?']]},
-  w3:{name:'Worker 3',sub:'Task 1702 · 2 of 5 steps',msgs:[['ag','13:50','Save now sits inside the name field. Writing the test for Enter next.']]}}}
+  h262:{name:'Helper 262',sub:'Designing the notifications bell',origin:'Started by Agent 1 for plan 54 · 14:01 · supervised by Agent 1',msgs:[['ag','14:02','I\'m reading the bell and toast code first.'],['ag','14:05','One question before I draw: should the bell count only what waits on you, or every unread line?']]},
+  w3:{name:'Worker 3',sub:'Task 1702 · 2 of 5 steps',origin:'Started by Agent 1 for task 1702 · 13:47 · supervised by Agent 1',msgs:[['ag','13:50','Save now sits inside the name field. Writing the test for Enter next.']]}}}
 let helpersOn=false, SUGG={};
 const activeConvs=()=>helpersOn?['main','h262','w3']:['main'];
-function chatHtml(conv){const c=CONV[conv];return c.msgs.map(m=>m[0]==='day'?`<div class="day">${m[1]}</div>`:m[0]==='me'?`<div class="me">${m[1]}</div>`
+function chatHtml(conv){const c=CONV[conv];return (c.origin?`<div class="origin">${I('users','s14')}<span>${c.origin}</span></div>`:'')+c.msgs.map(m=>m[0]==='day'?`<div class="day">${m[1]}</div>`:m[0]==='me'?`<div class="me">${m[1]}</div>`
   :m[0]==='ag'?`<div class="ag"><div class="m">${conv==='main'?CLAUDE('s14'):I('users','s14')}${c.name} · ${m[1]}</div>${m[2]}</div>`
   :m[0]==='sugg'?suggHtml(m[1])
   :m[1]==='task'?`<div class="rowcard" data-item="task:1702">${I('todos')}<div class="t">Account settings dialog: Save inside the name field<small>Task 1702 · Worker 3 · 2 of 5 steps</small></div>${ST.work}</div>`
@@ -1092,7 +1095,7 @@ addEventListener('keydown',ev=>{const t=ev.target,inField=t.closest&&t.closest('
   if(ev.key==='Escape'&&(hm||ctx||keysOpen)){hm=false;ctx=null;keysOpen=false;render();return}
   if(ev.key==='Escape'&&(COMPOSE||CODESEL)&&(!inField||t.id==='ctext')){COMPOSE=null;CODESEL=null;render()}});
 document.addEventListener('pointerdown',ev=>{const d=document.getElementById('desk');
-  if(ctx&&!ev.target.closest('#ctx')){ctx=null;if(!ev.target.closest('[data-convmenu],[data-bell]'))render()}
+  if(ctx&&!ev.target.closest('#ctx')){ctx=null;if(!ev.target.closest('[data-convmenu],[data-bell],[data-cto]'))render()}
   else if(hm&&!ev.target.closest('#hm,#homeBtn')){hm=false;render()}
   else if(keysOpen&&!ev.target.closest('#keys,[data-keys]')){keysOpen=false;render()}
   else if(qm&&d.contains(ev.target)&&!ev.target.closest('#qm')){qm=null;render()}});
