@@ -17,6 +17,7 @@ use App\Processes\Enums\RunEventType;
 use App\Processes\Values\PartEnd;
 use App\Processes\Values\PartKey;
 use App\Processes\Values\RunEvent;
+use Psr\Log\LoggerInterface;
 
 /**
  * The host's side of a run's event channel (doc 21 revision 6, section 53): every event and output piece is first
@@ -46,6 +47,7 @@ final class ChannelRunEvents implements RunEvents
         private readonly string $eventKey,
         private readonly FilePath $spoolFolder,
         private readonly Files $files,
+        private readonly LoggerInterface $logger,
     ) {}
 
     public function queued(PartKey $part): void
@@ -140,15 +142,21 @@ final class ChannelRunEvents implements RunEvents
 
     /**
      * Sends everything spooled and not yet accepted, events in order and output pieces in order; a failed send leaves
-     * it spooled for the next one.
+     * it spooled for the next one, and names its cause in the log.
      */
     public function flush(): void
     {
         try {
             $this->sendSpooled();
             $this->waitingToSend = false;
-        } catch (CallFailed) {
+        } catch (CallFailed $failure) {
             $this->waitingToSend = true;
+            $this->logger->warning('processes.run_events_not_sent', [
+                'run_id' => $this->runId,
+                'failure' => $failure::class,
+                'message' => $failure->getMessage(),
+                'exception' => $failure,
+            ]);
         }
     }
 

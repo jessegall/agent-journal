@@ -19,13 +19,16 @@ use App\Processes\Support\ExecutionPlanner;
 use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\PartKey;
+use Psr\Log\LoggerInterface;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RecordedCalls;
+use Tests\Support\RecordingLogger;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
+use Throwable;
 
 /**
  * process:run fetches its admission once and reports every part over the signed event channel; repeats change
@@ -93,6 +96,7 @@ final class ProcessChannelTest extends TestCase
             $eventKey,
             $files->filePathOf($this->folder.'/spool'),
             $files,
+            $this->app->make(LoggerInterface::class),
         );
         $part = new PartKey(1, 1, 'echo');
 
@@ -107,6 +111,31 @@ final class ProcessChannelTest extends TestCase
             LifecycleState::Running,
             PartRun::query()->where('process_run_id', $run->id)->firstOrFail()->lifecycle,
         );
+    }
+
+    public function test_a_send_that_fails_leaves_the_events_spooled_and_logs_why(): void
+    {
+        $run = $this->admit('echo hi');
+        $calls = new RecordedCalls();
+        $files = $this->app->make(Files::class);
+        $logger = new RecordingLogger();
+        $events = new ChannelRunEvents(
+            new ProcessCalls($calls),
+            $run->id,
+            'key',
+            $files->filePathOf($this->folder.'/spool-failing'),
+            $files,
+            $logger,
+        );
+
+        $events->queued(new PartKey(1, 1, 'echo'));
+        $events->flush();
+
+        $context = $logger->contextOf('processes.run_events_not_sent');
+        $this->assertTrue($events->isWaitingToSend());
+        $this->assertSame($run->id, $context['run_id']);
+        $this->assertArrayHasKey('failure', $context);
+        $this->assertInstanceOf(Throwable::class, $context['exception']);
     }
 
     private function admit(string $line): ProcessRun

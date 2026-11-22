@@ -16,7 +16,8 @@ use Throwable;
 
 /**
  * One MCP call of the signed agent: it runs the tool's or resource's answer, turns a failure into a refusal and logs
- * one line with who called, how long it took and its outcome, never the arguments or the body.
+ * one line with who called, how long it took and its outcome, never the arguments or the body; a failure also names
+ * its class and message and carries itself as the cause.
  */
 final readonly class LoggedMcpCall implements McpCall
 {
@@ -65,6 +66,7 @@ final readonly class LoggedMcpCall implements McpCall
     private function answer(string $type, string $subject, Closure $answer, Closure $refused): mixed
     {
         $started = hrtime(true);
+        $cause = [];
 
         try {
             $response = $answer();
@@ -73,6 +75,7 @@ final readonly class LoggedMcpCall implements McpCall
             $refusal = Refusal::of($this->refusals->refusal($failure, $subject, $this->agent->call->callId));
             $response = $refused($refusal);
             $outcome = $refusal->code->value;
+            $cause = ['failure' => $failure::class, 'message' => $failure->getMessage(), 'exception' => $failure];
         }
 
         $this->logger->info("mcp.{$type}", [
@@ -82,6 +85,7 @@ final readonly class LoggedMcpCall implements McpCall
             'correlation_id' => $this->agent->call->callId,
             'duration_ms' => intdiv(hrtime(true) - $started, 1_000_000),
             'outcome' => $outcome,
+            ...$cause,
         ]);
 
         return $response;

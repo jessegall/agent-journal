@@ -17,6 +17,7 @@ use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Throwable;
 
 // The share-only listener runs this same entry with JOURNAL_LISTENER=sharing in its own process; no request picks it.
 if (($_SERVER['JOURNAL_LISTENER'] ?? getenv('JOURNAL_LISTENER')) === 'sharing') {
@@ -57,6 +58,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // An install line's ticket, a relay's credential, a device code, a command's input and a sign-in's code, key
         // or token never reach a flashed session or an exception report.
         $exceptions->dontFlash(['ticket', 'hostCredential', 'deviceCode', 'stdin', 'code', 'value']);
+        // Every reported failure names its class and its message, whatever the page or the JSON answer says of it.
+        $exceptions->context(fn (Throwable $failure): array => [
+            'failure' => $failure::class,
+            'message' => $failure->getMessage(),
+        ]);
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );

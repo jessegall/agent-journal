@@ -113,7 +113,7 @@ final class RelayFrames
             return;
         }
 
-        $answer = self::jsonRpcReplyIn($reply->body);
+        $answer = $this->jsonRpcReplyIn($reply->body);
 
         if ($answer !== null && $answer->jsonrpc === '2.0') {
             $this->rememberNegotiatedVersion($frame, $answer);
@@ -132,7 +132,7 @@ final class RelayFrames
                 $frame,
                 RefusalCode::Busy,
                 'Too many calls; send it again after the wait.',
-                ['retry_after_seconds' => self::retryAfterIn($reply->body)],
+                ['retry_after_seconds' => $this->retryAfterIn($reply->body)],
             ),
             $reply->status === 413, $reply->status === 400 => $this->refuse(
                 $frame,
@@ -351,13 +351,18 @@ final class RelayFrames
     }
 
     /**
-     * The journal's answer as a JSON-RPC reply, or null when its body is not one, such as a refusal before the call.
+     * The journal's answer as a JSON-RPC reply, or null when its body is not one, such as a refusal before the call;
+     * why it is not one is written to the relay's diagnostics by class and message.
      */
-    private static function jsonRpcReplyIn(string $body): JsonRpcReplyData|null
+    private function jsonRpcReplyIn(string $body): JsonRpcReplyData|null
     {
         try {
             return JsonRpcReplyData::from(json_decode($body, true, 512, JSON_THROW_ON_ERROR));
-        } catch (JsonException|CannotCreateData|TypeError) {
+        } catch (JsonException|CannotCreateData|TypeError $failure) {
+            $this->diagnose(
+                "The journal's answer is not a JSON-RPC reply ({$failure::class}: {$failure->getMessage()}).",
+            );
+
             return null;
         }
     }
@@ -365,11 +370,13 @@ final class RelayFrames
     /**
      * The seconds a busy refusal asks the driver to wait, when its body says.
      */
-    private static function retryAfterIn(string $body): int|null
+    private function retryAfterIn(string $body): int|null
     {
         try {
             return BusyReplyData::from(json_decode($body, true, 512, JSON_THROW_ON_ERROR))->retryAfterSeconds;
-        } catch (JsonException|CannotCreateData|TypeError) {
+        } catch (JsonException|CannotCreateData|TypeError $failure) {
+            $this->diagnose("The busy answer names no wait ({$failure::class}: {$failure->getMessage()}).");
+
             return null;
         }
     }
