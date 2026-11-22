@@ -564,6 +564,8 @@ use App\Communication\Data\AgentInbox;
 use App\Communication\Data\AgentInboxCounts;
 use App\Communication\Data\AgentMessageCard;
 use App\Communication\Data\AgentMessageDetails;
+use App\Communication\Data\ChatEventPage;
+use App\Communication\Data\ChatEventView;
 use App\Communication\Data\InboxCounts;
 use App\Communication\Data\InboxView;
 use App\Communication\Data\MessageClaimHolder;
@@ -596,6 +598,7 @@ use App\Communication\Exceptions\MessageBodyTooLong;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Exceptions\MessageToSelf;
+use App\Communication\Resolvers\ChatTimeline;
 use App\Communication\Support\ChatDepartures;
 use App\Communication\Support\ChatInboxes;
 use App\Communication\Support\ChatInterval;
@@ -2077,6 +2080,9 @@ final class CoreApi
                 ChatInterval::class,
                 InboxIntervals::class,
                 ChatDepartures::class,
+                ChatTimeline::class,
+                ChatEventPage::class,
+                ChatEventView::class,
                 IntervalRole::class,
                 LeaveReason::class,
                 ActorLabelSet::class,
