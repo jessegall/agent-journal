@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('originating_driver_key', 128)->nullable();
             $table->unsignedInteger('account_generation')->nullable();
             $table->string('workspace_identity', 128)->nullable();
-            $table->ulid('writer_binding_id')->nullable()->unique();
             $table->string('settings_identity', 128);
             $table->string('native_id');
             $table->ulid('agent_id')->index();

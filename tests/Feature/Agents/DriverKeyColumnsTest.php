@@ -36,15 +36,22 @@ final class DriverKeyColumnsTest extends TestCase
         ['start_records', 'mode'],
         ['start_records', 'mode_intent'],
         ['start_records', 'remember'],
-        ['start_records', 'binding_id'],
         ['start_records', 'catalogue_revision'],
         ['agent_runtimes', 'mode'],
+        ['driver_switches', 'mode_intent'],
+        ['agents', 'mode_preference'],
+    ];
+
+    /**
+     * Binding columns nothing filled or read: the process generation fences a runtime and the start record keeps the
+     * confirmed native binding, so these were removed (task 2555).
+     */
+    private const array REMOVED_BINDING_COLUMNS = [
+        ['start_records', 'binding_id'],
         ['agent_runtimes', 'binding_id'],
         ['agent_runtimes', 'binding_generation'],
-        ['driver_switches', 'mode_intent'],
         ['driver_switches', 'source_binding_id'],
         ['driver_conversations', 'writer_binding_id'],
-        ['agents', 'mode_preference'],
     ];
 
     public function test_every_driver_key_column_holds_the_longest_key(): void
@@ -58,6 +65,13 @@ final class DriverKeyColumnsTest extends TestCase
     {
         foreach (self::BINDING_COLUMNS as [$table, $column]) {
             $this->assertTrue(DB::getSchemaBuilder()->hasColumn($table, $column), "{$table}.{$column}");
+        }
+    }
+
+    public function test_the_unused_binding_columns_are_gone(): void
+    {
+        foreach (self::REMOVED_BINDING_COLUMNS as [$table, $column]) {
+            $this->assertFalse(DB::getSchemaBuilder()->hasColumn($table, $column), "{$table}.{$column}");
         }
     }
 

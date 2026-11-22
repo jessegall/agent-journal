@@ -23,7 +23,6 @@ return new class extends Migration
             $table->string('driver_build', 64)->nullable();
             $table->ulid('host_id')->nullable();
             $table->unsignedInteger('proposed_generation')->nullable();
-            $table->ulid('binding_id')->nullable();
             $table->unsignedInteger('catalogue_revision')->nullable();
             $table->string('model', 128);
             $table->string('requested_model_type', 16);
