@@ -13,7 +13,7 @@ return new class extends Migration
         Schema::create('skill_publications', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->ulid('session_id');
-            $table->string('driver', 64);
+            $table->string('skill_protocol', 64);
             $table->string('target', 1024);
             $table->foreignUlid('generation_id')->constrained('skill_generations')->restrictOnDelete();
             $table->string('selection_digest', 64);

@@ -57,7 +57,7 @@ final readonly class SkillStatusResolver
         $delivered = SkillPublication::latestDeliveredOfSession($sessionId);
         $started = SkillPublication::firstOfSession($sessionId);
         $generation = SkillGeneration::latestReady();
-        $driver = DriverKey::from($started->driver);
+        $driver = DriverKey::from($started->skill_protocol);
 
         $reloadsAtNewSession = $this->adapters->supports($driver)
             && $this->adapters->for($driver)->reloadMode() === SkillReload::NewSession;

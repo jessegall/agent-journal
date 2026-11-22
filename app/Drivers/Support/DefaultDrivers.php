@@ -22,8 +22,6 @@ final readonly class DefaultDrivers
 {
     public const int PROTOCOL_VERSION = 1;
 
-    public const string SKILL_PROTOCOL = 'agent-skills';
-
     /**
      * @return list<DriverRegistration>
      */
@@ -56,7 +54,7 @@ final readonly class DefaultDrivers
             [],
             $family->value,
             $family->value,
-            self::SKILL_PROTOCOL,
+            $family->value,
             $capabilities,
             [DriverCapability::Run, DriverCapability::HookMethods],
         );

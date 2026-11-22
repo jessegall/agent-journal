@@ -34,7 +34,7 @@ final readonly class PublicationFiles
         SkillTargets $targets,
         DriverSkillAdapters $adapters,
     ): self {
-        $driver = $adapters->for(DriverKey::from($publication->driver));
+        $driver = $adapters->for(DriverKey::from($publication->skill_protocol));
         $generation = $publication->generation();
         $skills = [];
 
@@ -50,7 +50,7 @@ final readonly class PublicationFiles
             $generation->id,
             $publication->id,
             $publication->session_id,
-            $publication->driver,
+            $publication->skill_protocol,
             $publication->selection_digest,
             array_map(fn (string $bytes) => hash('sha256', $bytes), $skills),
         );

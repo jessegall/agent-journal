@@ -19,7 +19,7 @@ final readonly class DriverRegistration
      * @param  list<string>  $buildPins  the approved builds of the driver's executable; none pins no build
      * @param  string  $hookProtocol  the key of the native hook codec the driver's hooks speak
      * @param  string  $accountProtocol  the key of the account provider that signs the driver in
-     * @param  string  $skillProtocol  the key of the skill format the driver reads
+     * @param  string  $skillProtocol  the key of the skill format and installer the driver reads, one per family
      * @param  class-string<DriverCapabilities>  $capabilities
      * @param  list<DriverCapability>  $profileRequirements  the operations every profile on the driver needs
      */

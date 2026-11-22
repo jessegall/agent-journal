@@ -103,6 +103,19 @@ final class DriverRegistryTest extends TestCase
         );
     }
 
+    public function test_both_drivers_of_a_family_read_one_skill_protocol_and_the_families_differ(): void
+    {
+        $protocols = [];
+
+        foreach ($this->registry()->catalogue() as $registration) {
+            $protocols[$registration->family][] = $registration->skillProtocol;
+        }
+
+        foreach ($protocols as $family => $familyProtocols) {
+            $this->assertSame([$family, $family], $familyProtocols, $family);
+        }
+    }
+
     public function test_the_codex_terminal_reports_itself_unavailable_with_its_reason(): void
     {
         $support = $this->registry()->forKey(DriverKey::from('codex'))->capabilities(BoundTarget::onHost('host-1'));

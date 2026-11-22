@@ -41,7 +41,7 @@ final readonly class HandStartSkillsToHost implements Listener
             throw StartRefused::skillsNotReady($event->sessionId, $publication->error ?? $publication->state->value);
         }
 
-        $delivery = $this->adapters->for(DriverKey::from($publication->driver))->delivery();
+        $delivery = $this->adapters->for(DriverKey::from($publication->skill_protocol))->delivery();
         $files = PublicationFiles::of($publication, $this->targets, $this->adapters)->files;
 
         $event->additions->addFolder(new StartFolder(

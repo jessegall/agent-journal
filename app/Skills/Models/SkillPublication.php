@@ -29,7 +29,7 @@ use Illuminate\Support\Carbon;
  *
  * @property string $id
  * @property string $session_id
- * @property string $driver
+ * @property string $skill_protocol the skill format the publication is written for, which every driver of its family reads
  * @property string $target
  * @property string $generation_id
  * @property string $selection_digest
@@ -48,7 +48,7 @@ use Illuminate\Support\Carbon;
  */
 #[Fillable([
     'session_id',
-    'driver',
+    'skill_protocol',
     'target',
     'generation_id',
     'selection_digest',
@@ -96,7 +96,7 @@ final class SkillPublication extends Model implements ReadableModel
     ): self {
         return self::query()->create([
             'session_id' => $intent->sessionId,
-            'driver' => $intent->driver,
+            'skill_protocol' => $intent->driver,
             'target' => $intent->target,
             'generation_id' => $generation->id,
             'selection_digest' => $intent->selectionDigest,
