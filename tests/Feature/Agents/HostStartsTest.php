@@ -179,6 +179,19 @@ final class HostStartsTest extends TestCase
         $this->assertSame(DriverVariant::Headless, $agent->variantFor(null, DriverVariant::Terminal));
     }
 
+    public function test_a_running_report_that_comes_after_the_start_ended_keeps_no_mode(): void
+    {
+        [$host, $opened] = $this->openRuntime(saveVariant: true);
+        $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
+            ->json('start_key');
+
+        $this->signed($host, 'POST', "/host/starts/{$key}/stopped")->assertNoContent();
+        $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1']);
+
+        $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
+        $this->assertNull($agent->mode_preference);
+    }
+
     public function test_an_opened_runtime_keeps_the_driver_it_was_pinned_to(): void
     {
         [, $opened] = $this->openRuntime();

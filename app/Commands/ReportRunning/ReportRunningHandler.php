@@ -18,12 +18,13 @@ final readonly class ReportRunningHandler implements CommandHandler
     {
         $start = ProcessStart::claimedBy($command->hostId, $command->startKey);
 
-        // Only this report moving the replacement's start to running confirms its switch; a delayed one after the
-        // replacement ended confirms nothing.
-        if ($start->recordRunning($command->executionId)) {
-            DriverSwitch::startingOf($start->session_id)?->confirm();
+        // Only this report moving the start to running confirms its switch and keeps its mode; a delayed one after
+        // the start ended or was superseded confirms nothing and leaves the agent's saved mode as it was.
+        if (! $start->recordRunning($command->executionId)) {
+            return;
         }
 
+        DriverSwitch::startingOf($start->session_id)?->confirm();
         $saved = $this->variantToKeep($start->session_id);
 
         if ($saved !== null) {
