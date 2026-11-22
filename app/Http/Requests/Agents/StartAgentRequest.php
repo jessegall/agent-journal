@@ -11,6 +11,7 @@ use App\Enums\ConversationModeType;
 use App\Enums\DriverVariant;
 use App\Enums\StartOriginType;
 use App\Models\Agent;
+use App\Support\StartPreviews;
 use App\Values\ModelSelection;
 use App\Values\SelectedDriver;
 use App\Values\StartPolicy;
@@ -39,20 +40,24 @@ final class StartAgentRequest extends FormRequest
         ];
     }
 
-    public function command(DriverCatalogue $drivers, BuiltInStartProfiles $profiles): StartAgentCommand
-    {
+    public function command(
+        DriverCatalogue $drivers,
+        BuiltInStartProfiles $profiles,
+        StartPreviews $previews,
+    ): StartAgentCommand {
         $agent = Agent::query()->findOrFail(strtolower((string) $this->route('agent')));
-        $variant = $agent->variantFor(
-            $this->enum('mode', DriverVariant::class),
-            $profiles->defaultVariantOf($agent->profile_key),
-        );
-
         $selection = SelectedDriver::resolve(
             $this->filled('driver') ? $this->string('driver')->toString() : null,
             ModelSelection::fromInput($this->filled('model') ? $this->string('model')->toString() : null),
             null,
             null,
             $drivers,
+        );
+        [$variant] = $previews->modeFor(
+            $agent,
+            $selection->driver,
+            $this->enum('mode', DriverVariant::class),
+            $profiles->defaultVariantOf($agent->profile_key),
         );
 
         return new StartAgentCommand(new StartRequest(

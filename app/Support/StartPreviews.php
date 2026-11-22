@@ -34,7 +34,7 @@ final readonly class StartPreviews
     ): StartPreview {
         $selection = SelectedDriver::resolve($family, $model, $profile, $parentFamily, $this->drivers);
         $offered = $this->modesOf($selection->driver);
-        [$chosen, $source] = $this->modeOf($agent, $mode, $profile, $offered);
+        [$chosen, $source] = $this->modeFor($agent, $selection->driver, $mode, $profile->defaultVariant);
         $label = $this->drivers->family($selection->driver)->label;
 
         return new StartPreview(
@@ -50,11 +50,19 @@ final readonly class StartPreviews
     }
 
     /**
-     * @param  list<DriverVariant>  $offered
+     * The mode a start of the agent in this family runs, and where it came from: named, else the only one the family
+     * runs, else the agent's saved one, else the profile's. Every start resolves its mode here.
+     *
      * @return array{0: DriverVariant, 1: ModeSourceType}
      */
-    private function modeOf(Agent $agent, DriverVariant|null $mode, ProfileDefaults $profile, array $offered): array
-    {
+    public function modeFor(
+        Agent $agent,
+        string $family,
+        DriverVariant|null $mode,
+        DriverVariant $profileDefault,
+    ): array {
+        $offered = $this->modesOf($family);
+
         if ($mode !== null) {
             return [$mode, ModeSourceType::Explicit];
         }
@@ -67,7 +75,7 @@ final readonly class StartPreviews
             return [$agent->mode_preference, ModeSourceType::Saved];
         }
 
-        return [$profile->defaultVariant, ModeSourceType::Profile];
+        return [$profileDefault, ModeSourceType::Profile];
     }
 
     /**

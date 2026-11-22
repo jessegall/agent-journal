@@ -392,6 +392,7 @@ final readonly class HelperDispatch
             $profile->selection,
             $conversation->mode,
             $profile->startPolicy(),
+            $request->mode,
         )));
 
         return $job->receipt($profile->base->key, $start, true);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
+use App\Enums\DriverVariant;
 use App\Support\ActorIdentity;
 use Domain\Helpers\Values\HelperWork;
 
@@ -21,6 +22,7 @@ final readonly class DispatchRequest
         public string|null $driverKey,
         public HelperWork $work,
         public string|null $identityId,
+        public DriverVariant|null $mode = null,
     ) {}
 
     /**

@@ -9,6 +9,7 @@ use App\Attributes\PresentList;
 use App\Casts\CallKeyCast;
 use App\Contracts\JournalCall;
 use App\Enums\CallEffect;
+use App\Enums\DriverVariant;
 use App\Enums\ReceiptOwner;
 use App\Support\CallKey;
 use App\Support\Transformers\CallKeyTransformer;
@@ -46,5 +47,6 @@ final class StartHelperCall extends Data implements JournalCall
         #[PresentList]
         public array $sourceSubjects = [],
         public bool $independent = false,
+        public DriverVariant|null $mode = null,
     ) {}
 }

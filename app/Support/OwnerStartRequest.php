@@ -27,6 +27,8 @@ final readonly class OwnerStartRequest
         public SelectedDriver $selection,
         public ConversationModeType $conversationMode,
         public StartPolicy $policy,
+        // The mode named for this start, none to take the agent's saved one or its profile's.
+        public DriverVariant|null $mode = null,
     ) {}
 
     public function executionMode(): ExecutionModeType

@@ -12,6 +12,7 @@ use App\Contracts\CurrentSession;
 use App\Contracts\RequestSource;
 use App\Models\Agent;
 use App\Support\OwnerStartReceipt;
+use App\Support\StartPreviews;
 
 /**
  * Turns an owner's request into Core's StartAgentCommand with the calling session as its parent and runs it nested, so the
@@ -24,6 +25,7 @@ final readonly class StartOwnedAgentHandler implements CommandHandler
         private CommandBus $commands,
         private RequestSource $sources,
         private BuiltInStartProfiles $profiles,
+        private StartPreviews $previews,
     ) {}
 
     public function handle(StartOwnedAgentCommand $command): OwnerStartReceipt
@@ -31,7 +33,12 @@ final readonly class StartOwnedAgentHandler implements CommandHandler
         $request = $command->request;
         $parentSessionId = $this->sessions->hasSession() ? $this->sessions->sessionId() : null;
         $agent = Agent::query()->findOrFail($request->agent->id);
-        $variant = $agent->variantFor(null, $this->profiles->defaultVariantOf($agent->profile_key));
+        [$variant] = $this->previews->modeFor(
+            $agent,
+            $request->selection->driver,
+            $request->mode,
+            $this->profiles->defaultVariantOf($agent->profile_key),
+        );
 
         $receipt = $this->commands->run(
             new StartAgentCommand($request->startRequest($parentSessionId, $variant, $this->sources->selectedSource())),

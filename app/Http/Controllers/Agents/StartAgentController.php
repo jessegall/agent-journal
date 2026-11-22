@@ -8,6 +8,7 @@ use App\Contracts\BuiltInStartProfiles;
 use App\Contracts\CommandBus;
 use App\Contracts\DriverCatalogue;
 use App\Http\Requests\Agents\StartAgentRequest;
+use App\Support\StartPreviews;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -20,8 +21,9 @@ final readonly class StartAgentController
         CommandBus $commands,
         DriverCatalogue $drivers,
         BuiltInStartProfiles $profiles,
+        StartPreviews $previews,
     ): JsonResponse {
-        $receipt = $commands->run($request->command($drivers, $profiles));
+        $receipt = $commands->run($request->command($drivers, $profiles, $previews));
         $selection = $receipt->selection;
 
         return new JsonResponse([

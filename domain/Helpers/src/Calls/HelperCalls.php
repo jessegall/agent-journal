@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Calls;
 
 use App\Contracts\CallSender;
+use App\Enums\DriverVariant;
 use App\Support\CallKey;
 use Domain\Helpers\Data\HelperJobNamed;
 use Domain\Helpers\Data\HelperNoticeListData;
@@ -95,6 +96,7 @@ final readonly class HelperCalls
         CallKey $requestKey = new CallKey(),
         array $sourceSubjects = [],
         bool $independent = false,
+        DriverVariant|null $mode = null,
     ): HelperReceiptData {
         return $this->sender->send(StartHelperCall::from([
             'profileKey' => $profileKey,
@@ -107,6 +109,7 @@ final readonly class HelperCalls
             'requestKey' => $requestKey,
             'sourceSubjects' => $sourceSubjects,
             'independent' => $independent,
+            'mode' => $mode,
         ]));
     }
 

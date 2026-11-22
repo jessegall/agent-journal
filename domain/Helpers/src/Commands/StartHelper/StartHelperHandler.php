@@ -27,6 +27,7 @@ final readonly class StartHelperHandler extends HelperCommandHandler
             $command->driverKey,
             $command->work,
             null,
+            $command->mode,
         ));
     }
 }

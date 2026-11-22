@@ -15321,6 +15321,7 @@ method	HelperRetired::withUnfinishedJob()
 method	HelperSendCommand::handle()
 method	HelperSentOnRecord::__construct()
 method	HelperStartCommand::handle()
+method	HelperStartCommand::namedMode()
 method	HelperStarts::__construct()
 method	HelperStarts::continueCommand()
 method	HelperStarts::hasRequest()
@@ -24543,7 +24544,7 @@ method	StartPreviewRequest::model()
 method	StartPreviewRequest::rules()
 method	StartPreviewStale::since()
 method	StartPreviews::__construct()
-method	StartPreviews::modeOf()
+method	StartPreviews::modeFor()
 method	StartPreviews::modesOf()
 method	StartPreviews::preview()
 method	StartPreviews::unavailableReason()
@@ -32752,6 +32753,7 @@ property	DismissMessageHandler::$claims
 property	DismissMessageHandler::$inboxes
 property	DispatchRequest::$driverKey
 property	DispatchRequest::$identityId
+property	DispatchRequest::$mode
 property	DispatchRequest::$model
 property	DispatchRequest::$parent
 property	DispatchRequest::$profileKey
@@ -35456,6 +35458,7 @@ property	OwnerStartReceipts::$actors
 property	OwnerStartRequest::$agent
 property	OwnerStartRequest::$contextReference
 property	OwnerStartRequest::$conversationMode
+property	OwnerStartRequest::$mode
 property	OwnerStartRequest::$policy
 property	OwnerStartRequest::$requestId
 property	OwnerStartRequest::$selection
@@ -39587,6 +39590,7 @@ property	StartHeartbeats::$window
 property	StartHelperCall::$brief
 property	StartHelperCall::$driverKey
 property	StartHelperCall::$independent
+property	StartHelperCall::$mode
 property	StartHelperCall::$model
 property	StartHelperCall::$profileKey
 property	StartHelperCall::$purposeId
@@ -39595,6 +39599,7 @@ property	StartHelperCall::$requestKey
 property	StartHelperCall::$sourceSubjects
 property	StartHelperCall::$subject
 property	StartHelperCommand::$driverKey
+property	StartHelperCommand::$mode
 property	StartHelperCommand::$model
 property	StartHelperCommand::$profileKey
 property	StartHelperCommand::$requestId
@@ -39602,6 +39607,7 @@ property	StartHelperCommand::$work
 property	StartHelperHandler::$dispatch
 property	StartOwnedAgentCommand::$request
 property	StartOwnedAgentHandler::$commands
+property	StartOwnedAgentHandler::$previews
 property	StartOwnedAgentHandler::$profiles
 property	StartOwnedAgentHandler::$sessions
 property	StartOwnedAgentHandler::$sources

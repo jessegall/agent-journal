@@ -6,6 +6,7 @@ namespace Domain\Helpers\Console\Commands;
 
 use App\Attributes\JournalRoute;
 use App\Console\Concerns\RunsCallPipelines;
+use App\Enums\DriverVariant;
 use App\Enums\JournalRouteType;
 use App\Support\CallKey;
 use App\Values\CommandReport;
@@ -20,7 +21,7 @@ final class HelperStartCommand extends Command
     use PrintsHelperReceipts;
     use RunsCallPipelines;
 
-    protected $signature = 'helper:start {profile} {--brief= : The work} {--subject= : The record the work is about, as type:id} {--purpose= : An existing purpose id} {--purpose-text= : A purpose in words} {--source=* : Records given as the source, as type:id} {--independent : Independent of everything the helper saw} {--driver= : The driver, when the profile allows several} {--model= : The model, or default} {--key= : The request key, to retry the same request} {--json : Print the receipt as JSON}';
+    protected $signature = 'helper:start {profile} {--brief= : The work} {--subject= : The record the work is about, as type:id} {--purpose= : An existing purpose id} {--purpose-text= : A purpose in words} {--source=* : Records given as the source, as type:id} {--independent : Independent of everything the helper saw} {--driver= : The driver, when the profile allows several} {--headless : Run it headless} {--no-headless : Run it in a terminal} {--model= : The model, or default} {--key= : The request key, to retry the same request} {--json : Print the receipt as JSON}';
 
     protected $description = 'Start a helper for work';
 
@@ -45,6 +46,7 @@ final class HelperStartCommand extends Command
             'sourceSubjects' => array_values(array_map(strval(...), (array) $this->option('source'))),
             'independent' => $this->option('independent') === true,
             'requestKey' => CallKey::fromOption($this->textOption('key')),
+            'mode' => $this->namedMode(),
         ]);
 
         if ($this->option('json') === true) {
@@ -62,6 +64,19 @@ final class HelperStartCommand extends Command
             $call->requestKey,
             $call->sourceSubjects,
             $call->independent,
+            $call->mode,
         )));
+    }
+
+    /**
+     * The mode the flags name: headless, a terminal, or none to take the helper's saved mode or its profile's.
+     */
+    private function namedMode(): DriverVariant|null
+    {
+        return match (true) {
+            $this->option('headless') === true => DriverVariant::Headless,
+            $this->option('no-headless') === true => DriverVariant::Terminal,
+            default => null,
+        };
     }
 }

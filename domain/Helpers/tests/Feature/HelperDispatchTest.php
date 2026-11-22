@@ -107,6 +107,20 @@ final class HelperDispatchTest extends TestCase
         $this->send('request-2', $first->identityId, 'Review plan 8');
     }
 
+    public function test_a_helper_started_with_a_named_mode_runs_it_or_is_refused_never_swapped(): void
+    {
+        $this->expectException(DriverCapabilityUnsupported::class);
+
+        $this->app->make(CommandBus::class)->run(new StartHelperCommand(
+            'request-1',
+            'plan-reviewer',
+            'default',
+            null,
+            new HelperWork(null, null, 'Review plan 7', 'Review it.', [], false),
+            DriverVariant::Terminal,
+        ));
+    }
+
     private function keyOf(string $family, DriverVariant $mode): string
     {
         return (string) $this->app->make(DriverCatalogue::class)->keyFor($family, $mode);
