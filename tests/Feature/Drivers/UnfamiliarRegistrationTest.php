@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Tests\Feature\Drivers;
 
 use App\Commands\DeliverAgent\DeliverAgentCommand;
+use App\Commands\InterruptAgent\InterruptAgentCommand;
 use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\StopAgent\StopAgentCommand;
 use App\Contracts\DriverCatalogue;
 use App\Enums\DriverVariant;
+use App\Enums\HoldReason;
 use App\Enums\RequestProgress;
+use App\Exceptions\DriverRequestRefused;
 use App\Models\Account;
 use App\Models\ActiveAccount;
 use App\Models\AgentRuntime;
@@ -96,6 +100,35 @@ final class UnfamiliarRegistrationTest extends TestCase
                 $claimed['parts'][0]['text'],
                 DriverRequest::query()->findOrFail($receipt->requestId)->progress,
             ],
+        );
+    }
+
+    public function test_an_unfamiliar_registration_is_interrupted_and_stopped_through_the_standard_commands(): void
+    {
+        $this->register('example/echo');
+        ActiveAccount::lockedFor('example')->select(
+            Account::create('example', AccountLabel::from('Echo account'), '/journal/accounts/example'),
+        );
+        $agent = $this->agent();
+        $opened = $this->asOwner(new OpenAgentRuntimeCommand(
+            $agent->id,
+            $this->enrollHost()->hostId,
+            self::FOLDER,
+            'example',
+            '1.0.0',
+            'echo',
+            DriverVariant::Headless,
+            'echo-small',
+        ));
+
+        $this->asOwner(new InterruptAgentCommand($agent->id, $opened->sessionId, 'interrupt-1'));
+        $held = AgentRuntime::query()->findOrFail($opened->runtimeId)->hold_reason;
+        $this->asOwner(new StopAgentCommand($agent->id, $opened->sessionId, 'stop-1'));
+
+        $this->assertSame(HoldReason::Interrupted, $held);
+        $this->assertThrows(
+            fn () => $this->asOwner(DeliverAgentCommand::text($agent->id, $opened->sessionId, 'late', 'Too late')),
+            DriverRequestRefused::class,
         );
     }
 
