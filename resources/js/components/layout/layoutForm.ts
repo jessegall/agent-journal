@@ -1,7 +1,18 @@
+import type { Method } from '@inertiajs/core';
 import type { InertiaForm } from '@inertiajs/vue3';
 import { inject, provide } from 'vue';
 import type { InjectionKey } from 'vue';
-import type { LayoutPartData } from '@/generated/types/core';
+import type { ActionMethod, LayoutPartData } from '@/generated/types/core';
+
+/**
+ * The method Inertia sends for each method a registered action answers.
+ */
+export const inertiaMethods: Record<ActionMethod, Method> = {
+    GET: 'get',
+    POST: 'post',
+    PATCH: 'patch',
+    DELETE: 'delete',
+};
 
 export type LayoutFormValues = Record<string, string | number>;
 

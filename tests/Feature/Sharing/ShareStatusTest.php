@@ -126,7 +126,8 @@ final class ShareStatusTest extends TestCase
     public function test_the_document_page_reminds_the_owner_only_while_it_is_shared(): void
     {
         $this->actingAs($this->owner)->get('/documents/docs/1')->assertOk()->assertInertia(
-            fn (AssertableInertia $page) => $page->where('page.data.record.publiclyShared', false),
+            fn (AssertableInertia $page) => $page
+                ->where('page.data.root.children.2.children.0.children.1.key', 'comments'),
         );
 
         Share::create(
@@ -141,7 +142,8 @@ final class ShareStatusTest extends TestCase
         );
 
         $this->actingAs($this->owner)->get('/documents/docs/1')->assertOk()->assertInertia(
-            fn (AssertableInertia $page) => $page->where('page.data.record.publiclyShared', true),
+            fn (AssertableInertia $page) => $page
+                ->where('page.data.root.children.2.children.0.children.1.key', 'public'),
         );
     }
 }

@@ -1,19 +1,15 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import type { DraftView } from '@generated/types/documents';
+import type { RecoverDraftPartData } from '@generated/types/documents';
 import Button from '@kit/Button';
 import FormErrors from '@kit/FormErrors';
 import { formSendingHooks } from '@kit/usePageChanges';
 
 /**
- * A user recovers someone else's held draft: it shows who holds it, when it was last saved and the text that will
- * be kept, and closes it at the version shown with a required reason.
+ * A user recovers someone else's held draft, as a native part of the document's layout: it shows who holds it, when
+ * it was last saved and the text that will be kept, and closes it at the version shown with a required reason.
  */
-const props = defineProps<{
-    number: string;
-    holder: string;
-    held: DraftView;
-}>();
+const props = defineProps<RecoverDraftPartData>();
 
 const form = useForm({
     token: props.held.token,

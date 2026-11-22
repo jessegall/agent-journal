@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Domains\Support\DomainEntry;
+use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
+use App\Ui\Declarations\SidebarGroup;
 use App\Ui\Enums\Icon;
 use App\Ui\Support\UiDeclarations;
+use App\Web\Data\NavigationData;
+use App\Web\Data\NavigationGroupData;
 use App\Web\Data\NavigationItemData;
 use App\Web\Routes\DeclaredRoutes;
 use App\Web\Support\NavigationRecords;
@@ -17,7 +21,10 @@ use Illuminate\Routing\Router;
 use Tests\Fixtures\UiDeclarations\Library\BookCount;
 use Tests\Fixtures\UiDeclarations\Library\BooksResolver;
 use Tests\Fixtures\UiDeclarations\Library\LibraryDomain;
+use Tests\Fixtures\UiDeclarations\Library\ListedChildren;
+use Tests\Fixtures\UiDeclarations\Library\ListedNavigation;
 use Tests\Fixtures\UiDeclarations\Library\NobodySees;
+use Tests\Fixtures\UiDeclarations\Library\RevocableSight;
 use Tests\Fixtures\UiDeclarations\Library\ShelfItems;
 use Tests\Fixtures\UiDeclarations\Shelf\BrokenCount;
 use Tests\Fixtures\UiDeclarations\Shelf\CountedShelves;
@@ -30,8 +37,9 @@ use Tests\TestCase;
 
 /**
  * The navigation a signed-in user sees: static and record children at any depth with their URLs, the current item
- * with its ancestors, a hidden item left out before its children or count are read, and a failing count left out
- * without failing the rest.
+ * with its ancestors, a hidden item left out before its children or count are read, a failing count left out
+ * without failing the rest, listed items that collide dropped, empty headings pruned, and one order whatever the
+ * install order.
  */
 final class NavigationTest extends TestCase
 {
@@ -39,13 +47,17 @@ final class NavigationTest extends TestCase
 
     private ReaderCalls $calls;
 
+    private ListedNavigation $listed;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->calls = new ReaderCalls();
+        $this->listed = new ListedNavigation();
         $this->app->instance(ReaderCalls::class, $this->calls);
-        $declarations = $this->declarations();
+        $this->app->instance(ListedNavigation::class, $this->listed);
+        $declarations = UiDeclarations::check([$this->library(), $this->shelf()]);
         $this->app->instance(UiDeclarations::class, $declarations);
         $router = $this->app->make(Router::class);
         new DeclaredRoutes($declarations)->register($router);
@@ -103,6 +115,148 @@ final class NavigationTest extends TestCase
         $this->assertArrayNotHasKey('shelf.open', $counts->counts);
     }
 
+    public function test_a_listed_item_taking_a_declared_key_is_dropped_and_the_declared_one_stays(): void
+    {
+        $this->listed->children = [
+            NavigationItem::page('first-book', 'A copy', page: 'book', route: ['book' => '2']),
+            NavigationItem::page('second-book', 'Second book', page: 'book', route: ['book' => '2']),
+        ];
+
+        $tree = $this->navigation()->tree($this->requestTo('/library'));
+
+        $this->assertSame(['library.second-book'], $this->childKeys($tree, 'library.listed'));
+        $this->assertSame('/library/1', $this->item($tree->navigationLinks, 'library.books')->children[0]->url);
+    }
+
+    public function test_two_listed_items_with_one_key_are_both_dropped(): void
+    {
+        $this->listed->children = [
+            NavigationItem::page('twin', 'One twin', page: 'book', route: ['book' => '2']),
+            NavigationItem::page('twin', 'Other twin', page: 'book', route: ['book' => '3']),
+            NavigationItem::page('single', 'Single', page: 'book', route: ['book' => '4']),
+        ];
+
+        $tree = $this->navigation()->tree($this->requestTo('/library'));
+
+        $this->assertSame(['library.single'], $this->childKeys($tree, 'library.listed'));
+    }
+
+    public function test_a_listed_item_repeating_its_ancestor_is_dropped_without_reading_it_again(): void
+    {
+        $this->listed->children = [NavigationItem::heading('loop', 'Loop', childrenResolver: ListedChildren::class)];
+
+        $tree = $this->navigation()->tree($this->requestTo('/library'));
+
+        $this->assertSame(['library.books', 'shelf.open'], $this->rootKeys($tree));
+    }
+
+    public function test_a_heading_whose_last_child_is_hidden_disappears_with_it(): void
+    {
+        $this->listed->children = [
+            NavigationItem::page('hidden', 'Hidden', page: 'book', route: ['book' => '2'])
+                ->visibleWhen(NobodySees::class),
+        ];
+
+        $tree = $this->navigation()->tree($this->requestTo('/library'));
+
+        $this->assertSame(['library.books', 'shelf.open'], $this->rootKeys($tree));
+    }
+
+    public function test_a_listed_item_is_counted_and_a_revoked_grant_removes_it_from_the_next_read(): void
+    {
+        $this->listed->children = [
+            NavigationItem::page('counted', 'Counted', page: 'book', route: ['book' => '5'])
+                ->count(BookCount::class)
+                ->visibleWhen(RevocableSight::class),
+        ];
+
+        $this->assertSame(3, $this->navigation()->counts()->counts['library.counted']);
+        $this->assertSame(
+            ['library.listed', 'library.counted'],
+            $this->navigation()->tree($this->requestTo('/library/5'))->current,
+        );
+
+        $this->listed->isRevoked = true;
+
+        $this->assertArrayNotHasKey('library.counted', $this->navigation()->counts()->counts);
+        $tree = $this->navigation()->tree($this->requestTo('/library/5'));
+        $this->assertSame([], $tree->current);
+        $this->assertSame(['library.books', 'shelf.open'], $this->rootKeys($tree));
+    }
+
+    public function test_the_current_item_is_the_deeper_one_of_equal_matches_and_the_lower_key_of_tied_siblings(): void
+    {
+        $this->listed->children = [
+            NavigationItem::page('all-books', 'All books', page: 'books'),
+            NavigationItem::page('b-eighth', 'Eighth', page: 'book', route: ['book' => '8']),
+            NavigationItem::page('a-eighth', 'Eighth', page: 'book', route: ['book' => '8']),
+        ];
+
+        $this->assertSame(
+            ['library.listed', 'library.all-books'],
+            $this->navigation()->tree($this->requestTo('/library'))->current,
+        );
+        $this->assertSame(
+            ['library.listed', 'library.a-eighth'],
+            $this->navigation()->tree($this->requestTo('/library/8'))->current,
+        );
+        $this->assertSame(
+            ['library.books', 'library.shelves', 'library.shelf-1'],
+            $this->navigation()->tree($this->requestTo('/library/7'))->current,
+        );
+    }
+
+    public function test_two_domains_share_one_group_in_one_order_whatever_the_install_order(): void
+    {
+        $tree = $this->navigation()->tree($this->requestTo('/library'));
+        $this->app->instance(UiDeclarations::class, UiDeclarations::check([$this->shelf(), $this->library()]));
+        $reversed = $this->navigation()->tree($this->requestTo('/library'));
+
+        $this->assertSame(['library.books', 'shelf.open'], $this->rootKeys($tree));
+        $this->assertSame($this->rootKeys($tree), $this->rootKeys($reversed));
+        $this->assertEquals(
+            [NavigationGroupData::from(['key' => 'library.work', 'label' => 'Work'])],
+            $tree->groups,
+        );
+        $this->assertEquals($tree->groups, $reversed->groups);
+    }
+
+    public function test_two_groups_with_one_label_keep_their_own_keys_and_items(): void
+    {
+        $this->app->instance(
+            UiDeclarations::class,
+            UiDeclarations::check([$this->library(), $this->shelf(group: 'shelf.work')]),
+        );
+
+        $tree = $this->navigation()->tree($this->requestTo('/library'));
+
+        $this->assertSame(
+            [['library.work', 'Work'], ['shelf.work', 'Work']],
+            array_map(fn (NavigationGroupData $group) => [$group->key, $group->label], $tree->groups),
+        );
+        $this->assertSame('library.work', $this->item($tree->navigationLinks, 'library.books')->group);
+        $this->assertSame('shelf.work', $this->item($tree->navigationLinks, 'shelf.open')->group);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function rootKeys(NavigationData $tree): array
+    {
+        return array_map(fn (NavigationItemData $item) => $item->key, $tree->navigationLinks);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function childKeys(NavigationData $tree, string $key): array
+    {
+        return array_map(
+            fn (NavigationItemData $child) => $child->key,
+            $this->item($tree->navigationLinks, $key)->children,
+        );
+    }
+
     private function navigation(): NavigationRecords
     {
         return $this->app->make(NavigationRecords::class);
@@ -125,20 +279,31 @@ final class NavigationTest extends TestCase
         return array_values(array_filter($items, fn (NavigationItemData $item) => $item->key === $key))[0];
     }
 
-    private function declarations(): UiDeclarations
+    private function library(): DomainUi
     {
-        $library = DomainEntry::fromClass(LibraryDomain::class)->declaring(pages: [
+        return DomainEntry::fromClass(LibraryDomain::class)->declaring(pages: [
             Page::make('books', 'Books', Icon::Docs, BooksResolver::class, 'Books.vue')->at(''),
             Page::make('book', 'Book', Icon::Docs, BooksResolver::class, 'Book/Reader.vue')->at('{book}'),
         ], navigation: [
-            NavigationItem::page('books', 'Books', Icon::Docs, group: 'Work', position: 100)
+            NavigationItem::page('books', 'Books', Icon::Docs, group: 'library.work', position: 100)
                 ->count(BookCount::class)
                 ->children([
                     NavigationItem::page('first-book', 'First book', page: 'book', route: ['book' => '1']),
                     NavigationItem::heading('shelves', 'Shelves', childrenResolver: ShelfItems::class),
                 ]),
-        ]);
-        $shelf = DomainEntry::fromClass(ShelfDomain::class)->declaring(pages: [
+            NavigationItem::heading(
+                'listed',
+                'Listed',
+                childrenResolver: ListedChildren::class,
+                group: 'library.work',
+                position: 400,
+            ),
+        ], sidebarGroups: [SidebarGroup::make('work', 'Work')]);
+    }
+
+    private function shelf(string $group = 'library.work'): DomainUi
+    {
+        return DomainEntry::fromClass(ShelfDomain::class)->declaring(pages: [
             Page::make('shelves', 'Shelves', Icon::Docs, ShelfResolver::class, 'Shelf.vue')->at(''),
             Page::make('shelf', 'Shelf', Icon::Docs, ShelfResolver::class, 'Record/Reader.vue')->at('{shelf}'),
         ], navigation: [
@@ -147,15 +312,13 @@ final class NavigationTest extends TestCase
                 'Open',
                 Icon::Docs,
                 page: 'shelves',
-                group: 'Work',
+                group: $group,
                 position: 200,
             )->count(BrokenCount::class),
-            NavigationItem::page('secret', 'Secret', Icon::Docs, page: 'shelves', group: 'Work', position: 300)
+            NavigationItem::page('secret', 'Secret', Icon::Docs, page: 'shelves', group: $group, position: 300)
                 ->visibleWhen(NobodySees::class)
                 ->childrenFrom(ShelfChildren::class)
                 ->count(CountedShelves::class),
-        ]);
-
-        return UiDeclarations::check([$library, $shelf]);
+        ], sidebarGroups: [SidebarGroup::make('work', 'Work')]);
     }
 }

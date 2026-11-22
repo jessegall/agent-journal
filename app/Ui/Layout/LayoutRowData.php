@@ -11,7 +11,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 /**
  * One row of a declared collection, keyed by the record it shows: its label and its escaped value, the keys of its
  * window's query it sets when chosen, none for a row that leads nowhere, whether it is the row chosen now, a line
- * under its label, and the page of its own it opens, such as a record's.
+ * under its label, the page of its own it opens, such as a record's, and the actions menu of its record.
  */
 #[TypeScript]
 final class LayoutRowData extends Data
@@ -27,5 +27,6 @@ final class LayoutRowData extends Data
         public readonly bool $isCurrent = false,
         public readonly string|Optional $detail = new Optional(),
         public readonly string|Optional $href = new Optional(),
+        public readonly LayoutMenuData|Optional $menu = new Optional(),
     ) {}
 }

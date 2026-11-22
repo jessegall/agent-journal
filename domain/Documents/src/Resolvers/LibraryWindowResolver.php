@@ -5,18 +5,22 @@ declare(strict_types=1);
 namespace Domain\Documents\Resolvers;
 
 use App\Ui\Contracts\PageResolver;
+use App\Ui\Contracts\RecordMenus;
 use App\Ui\Layout\DeclaredLayoutData;
 use App\Ui\Layout\LayoutActionData;
 use App\Ui\Layout\LayoutFieldData;
+use App\Ui\Layout\LayoutMenuData;
 use App\Ui\Layout\LayoutNativeData;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
+use Closure;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\CreateRecordPartData;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Data\PublicationList;
+use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Enums\AttentionFilter;
 use Domain\Documents\Enums\LibraryTypeFilter;
 use Domain\Documents\Http\Requests\ListRecordsRequest;
@@ -34,6 +38,7 @@ final readonly class LibraryWindowResolver implements PageResolver
         private DocumentResolver $documents,
         private ReportResolver $reports,
         private ListRecordsRequest $request,
+        private RecordMenus $menus,
     ) {}
 
     public function read(): DeclaredLayoutData
@@ -63,11 +68,33 @@ final readonly class LibraryWindowResolver implements PageResolver
         }
 
         if ($documents !== null) {
-            $parts[] = $this->sectionOf('documents', 'Documents', 'doc', 'docs', $documents, $type, $filters);
+            $menuOf = fn (PublicationCard $card) => [
+                'menu' => $this->menus->onRecord(DocumentsDomain::DOCUMENT_ACTIONS, $card->number),
+            ];
+            $parts[] = $this->sectionOf(
+                'documents',
+                'Documents',
+                'doc',
+                'docs',
+                $documents,
+                $type,
+                $filters,
+                $menuOf,
+            );
         }
 
         if ($reports !== null) {
-            $parts[] = $this->sectionOf('reports', 'Reports', 'report', 'reports', $reports, $type, $filters);
+            $noMenu = fn (PublicationCard $card) => [];
+            $parts[] = $this->sectionOf(
+                'reports',
+                'Reports',
+                'report',
+                'reports',
+                $reports,
+                $type,
+                $filters,
+                $noMenu,
+            );
         }
 
         return DeclaredLayoutData::of(LayoutPartData::box('library', 'stack', ...$parts));
@@ -125,8 +152,10 @@ final readonly class LibraryWindowResolver implements PageResolver
     }
 
     /**
-     * One type's records, each opening its own page; past the first page, the next one, reached in the list of that
-     * type alone, since the two types do not share a cursor.
+     * One type's records, each opening its own page and carrying the actions menu its type has; past the first page,
+     * the next one, reached in the list of that type alone, since the two types do not share a cursor.
+     *
+     * @param  Closure(PublicationCard): array<string, LayoutMenuData>  $menuOf
      */
     private function sectionOf(
         string $key,
@@ -136,6 +165,7 @@ final readonly class LibraryWindowResolver implements PageResolver
         PublicationList $list,
         LibraryTypeFilter $type,
         DocumentFilters $filters,
+        Closure $menuOf,
     ): LayoutPartData {
         $rows = array_map(fn (PublicationCard $card) => LayoutRowData::from([
             'key' => $card->id,
@@ -143,6 +173,7 @@ final readonly class LibraryWindowResolver implements PageResolver
             'value' => $card->attention->value,
             'detail' => $card->summaryLine(),
             'href' => "/documents/{$path}/{$card->number}",
+            ...$menuOf($card),
         ]), $list->rows);
 
         $parts = [LayoutPartData::text('heading', $heading, 'heading')];

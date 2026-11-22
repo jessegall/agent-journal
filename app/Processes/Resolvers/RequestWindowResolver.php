@@ -24,6 +24,9 @@ use App\Processes\Values\CommandClassSet;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\ProvenBranch;
 use App\Ui\Contracts\PageResolver;
+use App\Ui\Layout\DeclaredLayoutData;
+use App\Ui\Layout\LayoutNativeData;
+use App\Ui\Layout\LayoutPartData;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -34,7 +37,7 @@ final readonly class RequestWindowResolver implements PageResolver
 {
     public function __construct(private RequestPageRequest $page, private ProjectKey $projects) {}
 
-    public function read(): RequestWindowData
+    public function read(): DeclaredLayoutData
     {
         $request = CommandRequest::query()
             ->ofProject($this->projects->current())
@@ -45,7 +48,7 @@ final readonly class RequestWindowResolver implements PageResolver
         $latest = $proposals->first()?->revisions()->orderByDesc('revision')->first()?->payload;
         $active = $this->activeRule($request, $latest);
 
-        return RequestWindowData::from([
+        $detail = RequestWindowData::from([
             'request' => RequestRowData::fromRequest($request),
             'steps' => $request->nextStep()->steps,
             'proposals' => array_values(
@@ -57,6 +60,17 @@ final readonly class RequestWindowResolver implements PageResolver
             'activeRevision' => $active === null ? 0 : $active->active_revision,
             'lineDigest' => $request->source_digest,
         ]);
+
+        return DeclaredLayoutData::of(LayoutPartData::box(
+            'request',
+            'stack',
+            LayoutPartData::box(
+                'header',
+                'header',
+                LayoutPartData::text('title', "Request: {$request->operation}", 'heading'),
+            ),
+            LayoutPartData::native('detail', LayoutNativeData::of('processes/RequestWindow', $detail)),
+        ));
     }
 
     private function activeRule(CommandRequest $request, CommandRule|null $declared): ClassificationRule|null

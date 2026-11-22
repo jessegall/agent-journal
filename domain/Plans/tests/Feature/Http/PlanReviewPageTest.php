@@ -51,20 +51,20 @@ final class PlanReviewPageTest extends TestCase
         $reviewing = $this->actingAs($this->owner)->get("/plans/{$this->plan->number}")->assertOk();
 
         $reviewing->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.review.edition.number', 1)
-            ->where('page.data.review.edition.phases.0.members.0.brief', 'Write the page.')
-            ->where('page.data.review.mayDecide', true)
-            ->missing('page.data.card.start'));
+            ->where('page.data.root.children.2.native.props.review.edition.number', 1)
+            ->where('page.data.root.children.2.native.props.review.edition.phases.0.members.0.brief', 'Write the page.')
+            ->where('page.data.root.children.2.native.props.review.mayDecide', true)
+            ->missing('page.data.root.children.2.native.props.card.start'));
 
         $this->postReview('review/approve', ['edition' => 1])->assertStatus(303)->assertSessionHasNoErrors();
 
         $approved = $this->actingAs($this->owner)->get("/plans/{$this->plan->number}")->assertOk();
 
         $approved->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.review.receipt.editionNumber', 1)
-            ->where('page.data.review.receipt.isHistorical', false)
-            ->where('page.data.review.receipt.decidedById', $this->owner->id)
-            ->where('page.data.card.start.planNumber', (string) $this->plan->number));
+            ->where('page.data.root.children.2.native.props.review.receipt.editionNumber', 1)
+            ->where('page.data.root.children.2.native.props.review.receipt.isHistorical', false)
+            ->where('page.data.root.children.2.native.props.review.receipt.decidedById', $this->owner->id)
+            ->where('page.data.root.children.2.native.props.card.start.planNumber', (string) $this->plan->number));
     }
 
     public function test_a_decision_after_a_member_changed_is_refused_and_approves_nothing(): void
@@ -77,8 +77,8 @@ final class PlanReviewPageTest extends TestCase
         $still = $this->actingAs($this->owner)->get("/plans/{$this->plan->number}")->assertOk();
 
         $still->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.review.edition.number', 1)
-            ->missing('page.data.review.receipt'));
+            ->where('page.data.root.children.2.native.props.review.edition.number', 1)
+            ->missing('page.data.root.children.2.native.props.review.receipt'));
     }
 
     /**

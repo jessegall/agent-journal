@@ -8,17 +8,20 @@ use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
+use App\Ui\Contracts\SidebarGroupProvider;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
+use App\Ui\Declarations\SidebarGroup;
 use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
 
 /**
- * A fixture domain with a list page, a record page offering a slot, an action and nested navigation.
+ * A fixture domain with a list page, a record page offering a slot, an action, nested navigation and its own sidebar
+ * group.
  */
-final class LibraryDomain extends Domain implements NavigationProvider, PageProvider
+final class LibraryDomain extends Domain implements NavigationProvider, PageProvider, SidebarGroupProvider
 {
     public function description(): string
     {
@@ -51,10 +54,15 @@ final class LibraryDomain extends Domain implements NavigationProvider, PageProv
         ];
     }
 
+    public function sidebarGroups(): array
+    {
+        return [SidebarGroup::make('work', 'Work')];
+    }
+
     public function navigation(): array
     {
         return [
-            NavigationItem::page('books', 'Books', Icon::Docs, group: 'Work', position: 100)
+            NavigationItem::page('books', 'Books', Icon::Docs, group: 'library.work', position: 100)
                 ->count(BookCount::class)
                 ->children([
                     NavigationItem::page('first-book', 'First book', page: 'book', route: ['book' => '1']),

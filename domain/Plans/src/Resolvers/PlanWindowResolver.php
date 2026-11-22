@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Resolvers;
 
+use App\Assignments\Support\AssignmentData;
 use App\Ui\Contracts\PageResolver;
+use App\Ui\Layout\DeclaredLayoutData;
+use App\Ui\Layout\LayoutNativeData;
+use App\Ui\Layout\LayoutPartData;
+use App\Ui\Layout\LayoutRowData;
 use Domain\Plans\Api\PlanSelection;
+use Domain\Plans\Data\PlanCardData;
 use Domain\Plans\Data\PlanReaderData;
 use Domain\Plans\Http\Requests\PlanRequest;
 use Domain\Plans\Models\Plan;
@@ -28,7 +34,7 @@ final readonly class PlanWindowResolver implements PageResolver
         private PlanReviewView $review,
     ) {}
 
-    public function read(): PlanReaderData
+    public function read(): DeclaredLayoutData
     {
         $plan = Plan::query()->find($this->request->planId()) ?? throw new NotFoundHttpException();
         $card = $this->records->cardOf($plan);
@@ -39,6 +45,51 @@ final readonly class PlanWindowResolver implements PageResolver
             $this->review->of($plan->id),
         );
 
-        return $reader instanceof Optional ? throw new NotFoundHttpException() : $reader;
+        if ($reader instanceof Optional) {
+            throw new NotFoundHttpException();
+        }
+
+        return DeclaredLayoutData::of(LayoutPartData::box(
+            'plan',
+            'stack',
+            LayoutPartData::box(
+                'header',
+                'header',
+                LayoutPartData::text('title', $reader->card->title, 'heading'),
+                LayoutPartData::box(
+                    'metadata',
+                    'row',
+                    LayoutPartData::text('label', "plan {$reader->card->number}", 'code'),
+                    LayoutPartData::text('state', $reader->card->state->value, 'muted'),
+                ),
+            ),
+            $this->factsOf($reader->card),
+            LayoutPartData::native('reader', LayoutNativeData::of('plans/PlanWindow', $reader)),
+        ));
+    }
+
+    /**
+     * The plan's read-only facts: its state, how far its tasks are, its current phase and who holds it.
+     */
+    private function factsOf(PlanCardData $card): LayoutPartData
+    {
+        $rows = [
+            new LayoutRowData('state', 'State', $card->state->value),
+            new LayoutRowData(
+                'tasks',
+                'Tasks',
+                "{$card->finishedTasks} of {$card->totalTasks} finished, {$card->cancelledTasks} cancelled",
+            ),
+        ];
+
+        if (is_string($card->phase)) {
+            $rows[] = new LayoutRowData('phase', 'Current phase', $card->phase);
+        }
+
+        if ($card->holder instanceof AssignmentData) {
+            $rows[] = new LayoutRowData('holder', 'Held by', $card->holder->name);
+        }
+
+        return LayoutPartData::collection('facts', 'facts', $rows);
     }
 }

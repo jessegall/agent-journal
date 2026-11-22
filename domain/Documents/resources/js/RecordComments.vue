@@ -12,7 +12,7 @@ defineProps<RecordCommentsPartData>();
     <CommentsPanel
         :comments="comments"
         :target="target"
-        version="1"
+        :version="version"
         :reads="reads"
     />
 </template>

@@ -14,6 +14,7 @@ use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
+use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\SectionProvider;
@@ -47,6 +48,7 @@ use Domain\Chat\Skills\ChatSkill;
 final class ChatDomain extends Domain implements
     CommandProvider,
     McpToolProvider,
+    NativePartProvider,
     NavigationProvider,
     PageProvider,
     PolicyProvider,
@@ -107,13 +109,23 @@ final class ChatDomain extends Domain implements
                     ActionRoute::post('dock', DockController::class, 'dock'),
                     ActionRoute::post('dock/remove', UndockController::class, 'undock'),
                 ),
-            Page::make('inbox', 'Inbox', Icon::Chat, InboxPageResolver::class, 'Inbox.vue')
+            Page::layout('inbox', 'Inbox', Icon::Chat, InboxPageResolver::class)
                 ->at('inbox')
                 ->actions(ActionRoute::post('inbox/take-next', TakeNextController::class, 'take-next')),
-            Page::make('history', 'History', Icon::Chat, HistoryPageResolver::class, 'History.vue')
+            Page::layout('history', 'History', Icon::Chat, HistoryPageResolver::class)
                 ->at('history')
                 ->actions(ActionRoute::post('history/cancel', CancelMessageController::class, 'cancel')),
         ];
+    }
+
+    /**
+     * The native part the Inbox layout mounts: one inbox's newest messages.
+     *
+     * @return list<string>
+     */
+    public function nativeParts(): array
+    {
+        return ['InboxMessages.vue'];
     }
 
     public function navigation(): array

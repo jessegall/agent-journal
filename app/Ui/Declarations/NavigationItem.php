@@ -22,7 +22,7 @@ final class NavigationItem
      * @param  array<string, string>  $queryValues
      * @param  list<NavigationItem>  $children
      * @param  class-string<NavigationChildren>|null  $childrenResolver  null when the item lists no records as children
-     * @param  string|null  $group  the sidebar group of a root item, or null for none
+     * @param  string|null  $group  the full key of a root item's sidebar group, such as web.agents, or null for none
      * @param  class-string<VisibilityCheck>|null  $visibility  null when everyone who sees its page sees the item
      * @param  class-string<CountResolver>|null  $count  null when the item shows no count
      */

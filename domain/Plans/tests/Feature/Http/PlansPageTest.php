@@ -133,16 +133,21 @@ final class PlansPageTest extends TestCase
         $this->actingAs($this->owner)->get(
             "/plans/{$this->release->number}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('plans/PlanWindow')
+            ->component('layout/DeclaredLayout')
+            ->where('page.data.root.children.2.native.component', 'plans/PlanWindow')
+            ->where('page.data.root.children.0.children.0.text', 'Build the release page')
             ->where('page.state', 'ready')
-            ->where('page.data.card.title', 'Build the release page'));
+            ->where('page.data.root.children.2.native.props.card.title', 'Build the release page'));
 
         $this->actingAs($this->owner)->get(
             "/plans?inspect=plans.plan&plan={$this->release->number}",
         )->assertInertia(fn (AssertableInertia $page) => $page
             ->reloadOnly(
                 'inspector',
-                fn (AssertableInertia $reload) => $reload->where('inspector.data.card.title', 'Build the release page'),
+                fn (AssertableInertia $reload) => $reload->where(
+                    'inspector.data.root.children.2.native.props.card.title',
+                    'Build the release page',
+                ),
             ));
     }
 

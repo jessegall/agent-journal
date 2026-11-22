@@ -1,20 +1,19 @@
 <script setup lang="ts">
 import type { RunWindowData } from '@generated/types/processes';
 import { router, usePage } from '@inertiajs/vue3';
-import PageHeader from '@kit/PageHeader';
 import { computed, ref } from 'vue';
 import PartCard from './PartCard.vue';
 
 /**
- * One run with every part as a card. The page is read again on every live change of the run, so what it shows is the
+ * One run with every part as a card, a native part of the run's layout page. The page is read again on every live change of the run, so what it shows is the
  * stored state, never a guess; a stop button ends the run's further parts.
  */
-const props = defineProps<{ data: RunWindowData }>();
+const data = defineProps<RunWindowData>();
 
 const page = usePage<{ errors: Record<string, string> }>();
 const refusal = computed(() => page.props.errors.review ?? '');
 const running = computed(
-    () => !['ended', 'stopped', 'lost'].includes(props.data.snapshot.lifecycle),
+    () => !['ended', 'stopped', 'lost'].includes(data.snapshot.lifecycle),
 );
 
 /**
@@ -23,7 +22,7 @@ const running = computed(
 const isStopAsked = ref(false);
 
 const storedBytes = computed(() =>
-    props.data.snapshot.parts.reduce(
+    data.snapshot.parts.reduce(
         (total, part) =>
             total +
             Object.values(part.bytes).reduce((sum, bytes) => sum + bytes, 0),
@@ -40,7 +39,7 @@ function clean(): void {
         return;
     }
     router.post(
-        `/processes/runs/${props.data.snapshot.runId}/clean`,
+        `/processes/runs/${data.snapshot.runId}/clean`,
         {},
         {
             headers: { 'Idempotency-Key': crypto.randomUUID() },
@@ -51,7 +50,7 @@ function clean(): void {
 
 function stop(): void {
     router.post(
-        `/processes/runs/${props.data.snapshot.runId}/stop`,
+        `/processes/runs/${data.snapshot.runId}/stop`,
         {},
         {
             headers: { 'Idempotency-Key': crypto.randomUUID() },
@@ -65,7 +64,6 @@ function stop(): void {
 
 <template>
     <div class="flex flex-col gap-4">
-        <PageHeader :title="`Run ${data.snapshot.runId}`" />
         <template v-if="data.snapshot.mode === 'evidence'">
             <p>
                 A sample run: it shows what the command does and gives no

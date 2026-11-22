@@ -66,13 +66,15 @@ final class AccountsPageTest extends TestCase
 
         $page = $this->actingAs($this->owner)->get('/accounts')->assertOk()->assertInertia(
             fn (AssertableInertia $page) => $page
-                ->component('accounts/AccountsWindow')
-                ->has('page.data.rows', 1)
-                ->where('page.data.rows.0.id', $work->id)
-                ->where('page.data.rows.0.label', 'Work')
-                ->where('page.data.rows.0.state', 'signed_in')
-                ->where('page.data.rows.0.isActive', false)
-                ->where('page.data.rows.0.runningCount', 0),
+                ->component('layout/DeclaredLayout')
+                ->where('page.data.root.children.1.key', 'accounts')
+                ->where('page.data.root.children.1.native.component', 'accounts/AccountsWindow')
+                ->has('page.data.root.children.1.native.props.rows', 1)
+                ->where('page.data.root.children.1.native.props.rows.0.id', $work->id)
+                ->where('page.data.root.children.1.native.props.rows.0.label', 'Work')
+                ->where('page.data.root.children.1.native.props.rows.0.state', 'signed_in')
+                ->where('page.data.root.children.1.native.props.rows.0.isActive', false)
+                ->where('page.data.root.children.1.native.props.rows.0.runningCount', 0),
         );
 
         $this->assertStringNotContainsString('private-work-folder', (string) $page->getContent());
@@ -88,10 +90,12 @@ final class AccountsPageTest extends TestCase
             ->assertStatus(303);
 
         $this->actingAs($this->owner)->get('/accounts')->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.rows.0.label', 'Office')
-            ->where('page.data.rows.0.isActive', true)
-            ->where('page.data.selections.0.accountId', $work->id)
-            ->where('page.data.selections.0.changeNumber', 1));
+            ->where('page.data.root.children.1.native.props.rows.0.label', 'Office')
+            ->where('page.data.root.children.1.native.props.rows.0.isActive', true)
+            ->where('page.data.root.children.1.native.props.selections.0.accountId', $work->id)
+            ->where('page.data.root.children.1.native.props.selections.0.changeNumber', 1)
+            ->where('page.data.root.children.0.key', 'starts')
+            ->where('page.data.root.children.1.key', 'accounts'));
     }
 
     public function test_another_user_can_neither_see_nor_change_accounts(): void

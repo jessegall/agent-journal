@@ -6,6 +6,7 @@ import LayoutBox from '@/components/layout/LayoutBox.vue';
 import LayoutCollection from '@/components/layout/LayoutCollection.vue';
 import LayoutField from '@/components/layout/LayoutField.vue';
 import LayoutForm from '@/components/layout/LayoutForm.vue';
+import LayoutMenu from '@/components/layout/LayoutMenu.vue';
 import LayoutNative from '@/components/layout/LayoutNative.vue';
 import LayoutNotice from '@/components/layout/LayoutNotice.vue';
 import LayoutTabs from '@/components/layout/LayoutTabs.vue';
@@ -27,6 +28,7 @@ const partComponents: Record<LayoutTag, Component> = {
     tabs: LayoutTabs,
     body: LayoutBody,
     native: LayoutNative,
+    menu: LayoutMenu,
 };
 </script>
 

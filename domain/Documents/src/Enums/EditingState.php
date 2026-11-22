@@ -15,4 +15,16 @@ enum EditingState: string
     case Free = 'free';
     case Yours = 'yours';
     case Held = 'held';
+
+    /**
+     * The word the Editing fact shows: free, held by you, or held by the one who holds it.
+     */
+    public function word(string $holder): string
+    {
+        return match ($this) {
+            self::Free => 'free',
+            self::Yours => 'held by you',
+            self::Held => "held by {$holder}",
+        };
+    }
 }

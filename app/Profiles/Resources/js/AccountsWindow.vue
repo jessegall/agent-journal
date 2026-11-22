@@ -25,25 +25,25 @@ import type { WizardRequest } from './signIn';
 import { useUsageClock } from './usageClock';
 
 /**
- * The owner's saved Claude Code and Codex accounts in one list: which one new starts of each driver use, choosing
+ * The owner's saved Claude Code and Codex accounts in one list, a native part of the Accounts layout: which one new starts of each driver use, choosing
  * or renaming one, and adding one through the add-account wizard. A sign-in still waiting on the host is resumed from
  * the header. The page reloads on every change; a reload that answers an older choice never takes back a newer one,
  * by each driver's change number. Each row's usage line is chosen again when a window resets, a UTC month begins
  * or the window gets focus. A live update keeps the list where it was scrolled, and while the list is the last read
  * kept after a failed refresh, nothing can be added.
  */
-const props = defineProps<{ data: AccountListData }>();
+const data = defineProps<AccountListData>();
 
-const selections = ref(props.data.selections);
-const now = useUsageClock(() => props.data.rows);
+const selections = ref(data.selections);
+const now = useUsageClock(() => data.rows);
 const request = ref<WizardRequest | null>(null);
 const isStale = useIsStale();
 const list = ref<HTMLElement | null>(null);
 
-useScrollAnchor(list, () => props.data.rows);
+useScrollAnchor(list, () => data.rows);
 
 watch(
-    () => props.data.selections,
+    () => data.selections,
     (arrived) =>
         (selections.value = newestSelections(selections.value, arrived)),
 );
@@ -52,7 +52,7 @@ watch(
  * The sign-in of a new account that still waits on the host, which the header offers to resume.
  */
 const waitingSignIn = computed(() =>
-    props.data.attempts.find(
+    data.attempts.find(
         (attempt) => isLive(attempt) && attempt.accountId === null,
     ),
 );
@@ -90,7 +90,7 @@ async function closeWizard(
  * left, or on Add account when none is.
  */
 watch(
-    () => props.data.rows.map((row) => row.id),
+    () => data.rows.map((row) => row.id),
     async (ids, before) => {
         if (before.every((id) => ids.includes(id))) {
             return;
@@ -114,7 +114,7 @@ watch(
 );
 
 function resumeOrAgain(row: AccountRowData): void {
-    const running = attemptToRejoin(props.data.attempts, row.driver, row.id);
+    const running = attemptToRejoin(data.attempts, row.driver, row.id);
 
     request.value =
         running === undefined
