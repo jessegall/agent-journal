@@ -14,7 +14,8 @@ import {
     splitPane,
     windowsIn,
 } from './paneLayout';
-import type { Split } from './paneLayout';
+import { designPresets } from './arrangement';
+import type { LayoutNode, Split } from './paneLayout';
 
 describe('the default layout', () => {
     it('puts the chat on the left and every other window as a tab on the right', () => {
@@ -158,6 +159,32 @@ describe('a layout thumbnail', () => {
             [0, 0, 0.5, 1],
             [0.5, 0, 0.5, 0.5],
             [0.5, 0.5, 0.5, 0.5],
+        ]);
+    });
+});
+
+describe('the design layouts', () => {
+    const screen = { width: 1440, height: 900 };
+    const shapeOf = (node: LayoutNode): unknown =>
+        node.type === 'pane' ? node.windows : [node.axis, node.ratio, shapeOf(node.first), shapeOf(node.second)];
+
+    it('builds Just the chat, A first window, Docked and Windows only from the windows in their declared order', () => {
+        const presets = designPresets(['chat', 'plans', 'tasks', 'rules'], screen);
+        const named = Object.fromEntries(presets.map((preset) => [preset.name, preset.arrangement]));
+
+        expect(presets.map((preset) => preset.name)).toEqual(['Just the chat', 'A first window', 'Docked', 'Windows only']);
+        expect(named['A first window'].detached.map((each) => each.key)).toEqual(['plans']);
+        expect(shapeOf(named['Docked'].grid)).toEqual(['row', 0.64, ['chat'], ['column', 0.36, ['plans'], ['tasks']]]);
+        expect(shapeOf(named['Windows only'].grid)).toEqual(['row', 0.55, ['plans'], ['column', 0.55, ['tasks'], ['rules']]]);
+    });
+
+    it('leaves out a window Home lacks, and a layout that would repeat an earlier one', () => {
+        expect(designPresets(['chat'], screen).map((preset) => preset.name)).toEqual(['Just the chat']);
+        expect(shapeOf(designPresets(['chat', 'plans'], screen)[2].arrangement.grid)).toEqual([
+            'row',
+            0.64,
+            ['chat'],
+            ['plans'],
         ]);
     });
 });
