@@ -50,7 +50,7 @@ enum LayoutTag: string
         return match ($this) {
             self::Box => [
                 'stack', 'row', 'section', 'card', 'panel', 'header', 'group', 'divider', 'split', 'bar', 'reader',
-                'settings-page', 'settings', 'settings-group', 'setting', 'setting-block',
+                'settings-page', 'settings', 'settings-group', 'setting', 'setting-block', 'page-head',
             ],
             self::Text => ['plain', 'heading', 'muted', 'badge', 'code', 'keyHint', 'paragraph', 'time', 'chip', 'icon', 'driver'],
             self::Collection => ['list', 'facts', 'choices'],

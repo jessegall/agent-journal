@@ -175,7 +175,7 @@ final readonly class ListPage
             }
         }
 
-        return LayoutPartData::box('header', 'bar', ...$parts);
+        return LayoutPartData::box('header', 'page-head', ...$parts);
     }
 
     private function content(): LayoutPartData
@@ -195,7 +195,9 @@ final readonly class ListPage
     private function shownParts(): array
     {
         if ($this->rows === []) {
-            return $this->empty->parts();
+            $empty = $this->creation === null ? $this->empty : $this->empty->informingOnly();
+
+            return $empty->parts();
         }
 
         return [

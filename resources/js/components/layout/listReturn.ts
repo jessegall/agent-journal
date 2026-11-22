@@ -32,7 +32,7 @@ export function restoreRow(list: HTMLElement, address: string): void {
     const row = [...list.querySelectorAll<HTMLElement>('[data-row-key]')].find(
         (candidate) => candidate.dataset.rowKey === remembered.rowKey,
     );
-    const heading = document.querySelector<HTMLElement>('[data-layout-box="bar"] h2');
+    const heading = document.querySelector<HTMLElement>('[data-layout-box="page-head"] h2');
 
     if (row !== undefined) {
         row.focus();

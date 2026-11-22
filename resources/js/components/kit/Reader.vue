@@ -1,13 +1,14 @@
 <script setup lang="ts">
 /**
- * The reader of a chosen row (doc 4, 7.1): a meta line, the title with its buttons, an abstract, then the body.
+ * The reader of a chosen row (doc 4, 7.1): a meta line, the title with its buttons, an abstract, then the body, padded
+ * 18 by 22 and at most 760 wide as the design draws it.
  */
 defineProps<{ title: string; abstract?: string }>();
 </script>
 
 <template>
-    <article class="flex flex-col">
-        <header class="border-b border-border px-4 pt-3.5 pb-3">
+    <article class="flex max-w-190 flex-col">
+        <header class="border-b border-border px-5.5 pt-4.5 pb-3">
             <div
                 class="flex min-h-[18px] items-center gap-2 text-small text-text-3"
             >
@@ -27,6 +28,6 @@ defineProps<{ title: string; abstract?: string }>();
                 <p class="mt-1 text-field text-text-3">{{ abstract }}</p>
             </template>
         </header>
-        <div class="px-4 pb-6"><slot /></div>
+        <div class="px-5.5 pb-4.5"><slot /></div>
     </article>
 </template>

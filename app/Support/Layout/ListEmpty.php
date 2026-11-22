@@ -37,6 +37,14 @@ final readonly class ListEmpty
     }
 
     /**
+     * The same empty state without its actions, for a page whose head already offers the creation.
+     */
+    public function informingOnly(): self
+    {
+        return self::informing($this->title, $this->detail);
+    }
+
+    /**
      * @return list<LayoutPartData>
      */
     public function parts(): array
