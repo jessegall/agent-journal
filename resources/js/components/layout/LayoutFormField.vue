@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue';
 import Field from '@/components/kit/Field.vue';
+import FieldError from '@/components/kit/FieldError.vue';
 import Toggle from '@/components/kit/Toggle.vue';
 import type { InertiaForm } from '@inertiajs/vue3';
 import type { LayoutFieldData, LayoutPartData } from '@/generated/types/core';
@@ -32,6 +33,20 @@ const value = computed({
 <template>
     <template v-if="part.style === 'toggle'">
         <Toggle v-model="isOn" :label="part.text ?? ''" />
+    </template>
+    <template v-else-if="part.style === 'choice'">
+        <label class="flex flex-col gap-1">
+            <span class="text-field text-text">{{ part.text }}</span>
+            <select v-model="value" class="input" :aria-invalid="form.errors[props.field.name] ? 'true' : undefined">
+                <option disabled value="">Choose one</option>
+                <template v-for="option in field.options" :key="option">
+                    <option :value="option">{{ option }}</option>
+                </template>
+            </select>
+            <template v-if="form.errors[props.field.name]">
+                <FieldError>{{ form.errors[props.field.name] }}</FieldError>
+            </template>
+        </label>
     </template>
     <template v-else>
         <Field

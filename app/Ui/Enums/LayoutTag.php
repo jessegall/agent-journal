@@ -56,7 +56,7 @@ enum LayoutTag: string
             self::Collection => ['list', 'facts', 'choices'],
             self::Notice => ['info', 'success', 'warning', 'error', 'empty', 'refusal', 'skeleton', 'stale'],
             self::Action => ['bordered', 'ghost', 'primary', 'danger'],
-            self::Field => ['search', 'text', 'secret', 'toggle', 'area'],
+            self::Field => ['search', 'text', 'secret', 'toggle', 'area', 'choice'],
             self::Form => ['stack', 'inline'],
             self::Tabs => ['tabs'],
             self::Body => ['prose'],
