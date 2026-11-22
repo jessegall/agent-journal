@@ -32,6 +32,7 @@ final class TaskRequest extends FormRequest
             'section' => ['nullable', 'string', 'in:logs,proofs,waits'],
             'tab' => ['nullable', 'string', 'in:logs,proofs,waits,comments,brief'],
             'passage' => ['nullable', 'string', 'max:64'],
+            'entry' => ['nullable', 'string', 'max:26'],
             'logs_before' => ['nullable', 'string', 'regex:/^(n|[0-9]{1,10}),(n|[0-9]{1,10})$/'],
             'proofs_after' => ['nullable', 'string', 'max:26'],
             'commentsAfter' => ['nullable', 'string', 'max:26'],
@@ -122,6 +123,22 @@ final class TaskRequest extends FormRequest
     public function asksForPassage(): bool
     {
         return $this->filled('passage');
+    }
+
+    /**
+     * Whether a search opened the Logs tab at one log line.
+     */
+    public function asksForEntry(): bool
+    {
+        return $this->filled('entry');
+    }
+
+    /**
+     * The log line a search opened the Logs tab at; ask asksForEntry() first.
+     */
+    public function entryId(): string
+    {
+        return $this->string('entry')->toString();
     }
 
     public function taskId(): string

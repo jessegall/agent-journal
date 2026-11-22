@@ -88,6 +88,8 @@ use Domain\Tasks\Support\Mcp\TaskSearch;
 use Domain\Tasks\Support\Skills\TasksSkill;
 use Domain\Tasks\Support\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
+use Domain\Tasks\Support\TaskLogSearchAccess;
+use Domain\Tasks\Support\TaskLogSearchProvider;
 use Domain\Tasks\Support\TaskReferenceRecognizer;
 use Domain\Tasks\Support\TaskSearchAccess;
 use Domain\Tasks\Support\TaskSearchProvider;
@@ -309,6 +311,7 @@ final class TasksDomain extends Domain implements
                 TaskSearchProvider::class,
                 TaskReferenceRecognizer::class,
             ),
+            Searchable::make('log', 'Task log lines', TaskLogSearchAccess::class, TaskLogSearchProvider::class),
         ];
     }
 

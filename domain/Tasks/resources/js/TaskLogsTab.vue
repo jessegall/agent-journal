@@ -9,7 +9,8 @@ import { useTaskLogs } from './useTaskLogs';
  * A task's Logs tab: its changes and its run's log lines in order, each with its time, who made it and its run or
  * Run unknown, the text shown as written. Show older reads the page before; while older entries are on screen, new
  * ones wait behind New entries with one announcement. It tells loading, an empty read, a failed read with the rows
- * it had, a refused read and the start of the history apart.
+ * it had, a refused read and the start of the history apart. A line a search opened the tab at stands first, or a
+ * notice says it is gone.
  */
 const props = defineProps<{ logs: TaskLogsData | undefined }>();
 
@@ -41,6 +42,26 @@ function changeText(entry: TaskStreamEntryData): string {
                     : ''
             }}
         </p>
+        <template v-if="props.logs?.selectedGone === true">
+            <p role="status" class="text-small text-text-3">
+                That log line is no longer available.
+            </p>
+        </template>
+        <template v-if="props.logs?.selected !== undefined">
+            <section
+                aria-label="Log line found by search"
+                class="flex flex-col gap-0.5 border-l-2 border-brand pl-2"
+            >
+                <span class="flex flex-wrap gap-x-2 text-small text-text-3">
+                    <span>Found by search</span>
+                    <span class="tabular-nums">{{ runText(props.logs.selected) }}</span>
+                </span>
+                <p
+                    class="text-body whitespace-pre-wrap text-text-2 [overflow-wrap:anywhere]"
+                    v-text="props.logs.selected.text"
+                />
+            </section>
+        </template>
         <template v-if="logs.status === 'restricted'">
             <p class="text-body text-text-3">You can't read this task's logs.</p>
         </template>
