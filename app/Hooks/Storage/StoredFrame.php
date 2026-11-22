@@ -33,6 +33,8 @@ final class StoredFrame extends Data
         #[WithCast(DateTimeInterfaceCast::class, format: self::TIME_FORMAT)]
         #[WithTransformer(DateTimeInterfaceTransformer::class, format: self::TIME_FORMAT)]
         public readonly CarbonImmutable $enteredAt,
+        /** @var array<string, mixed> */
+        public readonly array $values = [],
     ) {}
 
     public static function fromFrameRecord(FrameRecord $record): self
@@ -46,6 +48,7 @@ final class StoredFrame extends Data
             $record->isBottom,
             $subject === NoSubject::None ? null : StoredSubject::fromSubjectReference($subject),
             $record->enteredAt,
+            $record->values,
         );
     }
 
@@ -59,6 +62,7 @@ final class StoredFrame extends Data
             $this->isBottom,
             $this->schemaVersion,
             $this->enteredAt,
+            $this->values,
         );
     }
 }

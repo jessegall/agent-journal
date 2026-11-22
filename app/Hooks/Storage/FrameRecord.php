@@ -20,6 +20,8 @@ final readonly class FrameRecord
         public bool $isBottom,
         public int $schemaVersion,
         public CarbonImmutable $enteredAt,
+        /** @var array<string, mixed> the state's own values, none for a state that keeps none */
+        public array $values = [],
     ) {}
 
     public function isSameOccurrenceAs(self $other): bool
@@ -33,6 +35,14 @@ final readonly class FrameRecord
     /**
      * The frame named in words with the version it was stored in, for a message.
      */
+    /**
+     * Whether both hold the same values of their state.
+     */
+    public function hasSameValuesAs(self $other): bool
+    {
+        return $this->values === $other->values;
+    }
+
     public function description(): string
     {
         return "The frame {$this->id} of {$this->reference->typeKey} is stored in version {$this->schemaVersion}";

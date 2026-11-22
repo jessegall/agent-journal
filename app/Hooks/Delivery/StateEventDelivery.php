@@ -113,6 +113,8 @@ final readonly class StateEventDelivery
             $listenerResults[] = $this->invoke($dispatch, $target, $selection);
         }
 
+        $this->stacks->keepValues($target, $stack->get());
+
         return new StateEventResults($target, $listenerResults);
     }
 

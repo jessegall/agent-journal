@@ -8338,6 +8338,7 @@ interface	JournalAssignmentWriter
 interface	JournalCall
 interface	JournalCommands
 interface	JournalToolNames
+interface	KeepsOwnValues
 interface	LaunchCandidates
 interface	LinkRecordProvider
 interface	Listener
@@ -14382,11 +14383,13 @@ method	FrameLiveness::of()
 method	FrameProgress::enteredAt()
 method	FrameRecord::__construct()
 method	FrameRecord::description()
+method	FrameRecord::hasSameValuesAs()
 method	FrameRecord::isSameOccurrenceAs()
 method	FrameRecords::__construct()
 method	FrameRecords::all()
 method	FrameRecords::checkBottom()
 method	FrameRecords::entryFor()
+method	FrameRecords::hasSameValuesAs()
 method	FrameRecords::holdTicking()
 method	FrameRecordsCast::get()
 method	FrameRecordsCast::set()
@@ -15462,6 +15465,8 @@ method	KeepsCleanupTries::resetCleanupTries()
 method	KeepsNewestReading::inCurrentGenerationOf()
 method	KeepsNewestReading::isOlderThan()
 method	KeepsNewestReading::saveReading()
+method	KeepsOwnValues::ownValues()
+method	KeepsOwnValues::restoreOwnValues()
 method	KeptDigest::__construct()
 method	KeptFile::__construct()
 method	KeptFile::size()
@@ -23728,6 +23733,7 @@ method	StateEventScope::during()
 method	StateEventScope::isCurrent()
 method	StateEventScope::withinAudience()
 method	StateEventStacks::__construct()
+method	StateEventStacks::keepValues()
 method	StateEventStacks::restoreActive()
 method	StateEvents::__construct()
 method	StateEvents::cacheEntries()
@@ -28767,6 +28773,8 @@ parameter	$value	app/Ui/Layout/LayoutRowData.php
 parameter	$value	app/Ui/Layout/SettingsRow.php
 parameter	$valueClass
 parameter	$valueClasses
+parameter	$values	app/Hooks/Storage/FrameRecord.php
+parameter	$values	app/Hooks/Storage/StoredFrame.php
 parameter	$values	app/Web/Http/Controllers/Terminal/SubmitPrivateInputController.php
 parameter	$variable
 parameter	$variableText
@@ -32233,6 +32241,7 @@ property	FrameRecord::$id
 property	FrameRecord::$isBottom
 property	FrameRecord::$reference
 property	FrameRecord::$schemaVersion
+property	FrameRecord::$values
 property	FrameRecords::$records
 property	FrameSettlement::$frameId
 property	FrameSettlement::$settledAt
@@ -38071,6 +38080,7 @@ property	StateEventScope::$audiences
 property	StateEventScope::$dispatches
 property	StateEventScope::$session
 property	StateEventStacks::$restorer
+property	StateEventStacks::$types
 property	StateEvents::$byEvent
 property	StateLabel::$key
 property	StateLabel::$text
@@ -38256,6 +38266,7 @@ property	StoredFrame::$isBottom
 property	StoredFrame::$schemaVersion
 property	StoredFrame::$subject
 property	StoredFrame::$typeKey
+property	StoredFrame::$values
 property	StoredFrames::$frames
 property	StoredFrames::$version
 property	StoredGatewaySettings::$executableVersion

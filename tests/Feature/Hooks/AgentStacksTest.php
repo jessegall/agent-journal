@@ -22,6 +22,9 @@ use App\Hooks\Exceptions\StateTypeUnknown;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\References\StateReference;
 use App\Hooks\References\SubjectReference;
+use App\Hooks\Stack\AgentStack;
+use App\Hooks\Stack\StackRestorer;
+use App\Hooks\Stack\StateTypes;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 use App\Hooks\Storage\StoredFrames;
@@ -38,6 +41,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
+use Tests\Fixtures\Hooks\Counting\CountingState;
+use Tests\Fixtures\Hooks\Counting\CountingStateLoader;
 use Tests\Fixtures\Hooks\DomainWrite;
 use Tests\Fixtures\Hooks\InMemoryTaskLoader;
 use Tests\Fixtures\Hooks\SwitchableState;
@@ -78,6 +83,10 @@ final class AgentStacksTest extends TestCase
         Event::listen(
             StateTypesRequested::class,
             fn (StateTypesRequested $event) => $event->registry->register('test.tasks', $tasks),
+        );
+        Event::listen(
+            StateTypesRequested::class,
+            fn (StateTypesRequested $event) => $event->registry->register('test.counting', new CountingStateLoader()),
         );
     }
 
@@ -155,6 +164,26 @@ final class AgentStacksTest extends TestCase
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
         $this->assertSame(['task 42 started'], DomainWrite::names());
+    }
+
+    public function test_a_state_keeps_its_own_values_through_a_reload_of_its_stack(): void
+    {
+        $this->createStack();
+        $this->transaction()->run(
+            fn () => $this->stacks()->push($this->target, new StateReference('test.counting', NoSubject::None)),
+        );
+
+        $this->transaction()->run(function (): void {
+            $stack = $this->reloadedStack();
+            $this->countingStateOf($stack)->count();
+            $this->countingStateOf($stack)->count();
+            AgentStackRow::query()->forTarget($this->target)->sole()
+                ->saveFrames($stack->records(), $this->app->make(StateTypes::class)->ticking());
+        });
+
+        $this->assertSame(['count' => 2], $this->storedFrames()[1]->values);
+        $this->assertSame(2, $this->countingStateOf($this->reloadedStack())->counted());
+        $this->assertSame([], $this->storedFrames()[0]->values);
     }
 
     public function test_a_failed_push_rolls_the_domain_write_back(): void
@@ -372,6 +401,21 @@ final class AgentStacksTest extends TestCase
     private function task(int $number): StateReference
     {
         return new StateReference('test.tasks', new SubjectReference((string) $number, 1));
+    }
+
+    private function reloadedStack(): AgentStack
+    {
+        $row = AgentStackRow::query()->forTarget($this->target)->sole();
+
+        return $this->app->make(StackRestorer::class)->restore($row->frames, $row->target());
+    }
+
+    private function countingStateOf(AgentStack $stack): CountingState
+    {
+        $state = $stack->top()->state;
+        $this->assertInstanceOf(CountingState::class, $state);
+
+        return $state;
     }
 
     /**

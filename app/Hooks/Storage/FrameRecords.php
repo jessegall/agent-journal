@@ -48,6 +48,23 @@ final readonly class FrameRecords
     /**
      * Whether a frame of a ticking state type is among these frames.
      */
+    /**
+     * Whether every frame holds the same state values as its counterpart in the other list, frame for frame.
+     */
+    public function hasSameValuesAs(self $other): bool
+    {
+        $others = $other->all();
+
+        if (count($others) !== count($this->records)) {
+            return false;
+        }
+
+        return array_all(
+            $this->records,
+            fn (FrameRecord $record, int $position) => $record->hasSameValuesAs($others[$position]),
+        );
+    }
+
     public function holdTicking(TickingTypes $ticking): bool
     {
         foreach ($this->records as $record) {

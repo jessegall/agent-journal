@@ -6,6 +6,7 @@ namespace App\Hooks\Stack\Frames;
 
 use App\Contracts\Event;
 use App\Hooks\Contracts\ConditionalState;
+use App\Hooks\Contracts\KeepsOwnValues;
 use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\References\StateReference;
 use App\Hooks\States\AgentState;
@@ -33,6 +34,10 @@ final readonly class Frame
      */
     public static function restored(FrameRecord $record, AgentState $state, bool $typeEnabled = true): self
     {
+        if ($state instanceof KeepsOwnValues && $record->values !== []) {
+            $state->restoreOwnValues($record->values);
+        }
+
         return new self(
             $record->id,
             $record->reference,
@@ -46,7 +51,14 @@ final readonly class Frame
 
     public function record(): FrameRecord
     {
-        return new FrameRecord($this->id, $this->reference, $this->bottom, $this->schemaVersion, $this->enteredAt);
+        return new FrameRecord(
+            $this->id,
+            $this->reference,
+            $this->bottom,
+            $this->schemaVersion,
+            $this->enteredAt,
+            $this->state instanceof KeepsOwnValues ? $this->state->ownValues()->toArray() : [],
+        );
     }
 
     public function isBottom(): bool
