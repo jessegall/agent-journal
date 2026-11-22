@@ -47,12 +47,14 @@ final class DriverVariantBoundaryTest extends TestCase
     }
 
     /**
-     * Agents keeps a runtime's variant and Profiles declares and chooses the default a launch runs with.
+     * Agents keeps a runtime's variant, Profiles declares and chooses the default a launch runs with, and Drivers
+     * registers the mode each driver runs in (doc 103, section 3).
      */
     private static function mayNameVariant(string $path): bool
     {
         return str_starts_with($path, 'app/Agents/')
             || str_starts_with($path, 'app/Profiles/')
+            || str_starts_with($path, 'app/Drivers/')
             || in_array($path, self::ALLOWED, true);
     }
 }

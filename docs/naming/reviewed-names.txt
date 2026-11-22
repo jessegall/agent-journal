@@ -335,6 +335,20 @@ case	DockedState::Shown
 case	DockedState::Unavailable
 case	DockerImageName::Agent
 case	DockerImageName::Runner
+case	DriverCapability::Attachments
+case	DriverCapability::ExactResume
+case	DriverCapability::HookMethods
+case	DriverCapability::Interrupt
+case	DriverCapability::KeyScripts
+case	DriverCapability::Paste
+case	DriverCapability::PrivateEntry
+case	DriverCapability::Resize
+case	DriverCapability::Run
+case	DriverCapability::SignIn
+case	DriverCapability::TurnEffort
+case	DriverCapability::TurnModel
+case	DriverCapability::Type
+case	DriverCapability::Watch
 case	DriverEvidence::ContractPassed
 case	DriverEvidence::NativeShown
 case	DriverEvidence::PrerequisiteMissing
@@ -364,6 +378,13 @@ case	DriverOperation::StopRecording
 case	DriverOperation::TakeControl
 case	DriverOperation::TerminalInput
 case	DriverOperation::Wake
+case	DriverOutcome::AlreadyIdle
+case	DriverOutcome::Applied
+case	DriverOutcome::Failed
+case	DriverOutcome::Held
+case	DriverOutcome::StaleGeneration
+case	DriverOutcome::Unavailable
+case	DriverOutcome::Uncertain
 case	DriverPermission::Deny
 case	DriverSourceType::Explicit
 case	DriverSourceType::ParentSession
@@ -1237,6 +1258,9 @@ case	SupervisorCoverageType::Unknown
 case	SupervisorCoverageType::Unsupported
 case	SupervisorDispatchOutcome::Started
 case	SupervisorDispatchOutcome::Unavailable
+case	SupportState::Allowed
+case	SupportState::TemporarilyUnavailable
+case	SupportState::Unsupported
 case	SyntaxForm::Block
 case	SyntaxForm::CommandKey
 case	SyntaxForm::ElseBlock
@@ -2034,6 +2058,7 @@ class	BooleanOperand
 class	BooleanSetting
 class	BooleanValueData
 class	BottomStateCannotFinish
+class	BoundTarget
 class	BoundaryChecker
 class	BoundaryReport
 class	BroadcastDockedSourceChange
@@ -2385,6 +2410,7 @@ class	CodexMessageData
 class	CodexSignIn
 class	CodexSkills
 class	CodexStatus
+class	CodexTerminalCapabilities
 class	CollectListItems
 class	CombinationsReportController
 class	Command
@@ -2690,6 +2716,7 @@ class	DeclineChatQuestionHandler
 class	DeclineInput
 class	DeclineQuestionController
 class	DecodesAnyJson
+class	DefaultDrivers
 class	DefaultUnavailable
 class	DeferredCommandHandler
 class	DeliverAgentCommand
@@ -2940,6 +2967,7 @@ class	DrainReplyData
 class	DriverArrangementUnproven
 class	DriverBudgets
 class	DriverCapabilities
+class	DriverCapabilityUnsupported
 class	DriverCompatibility
 class	DriverConflict
 class	DriverConversation
@@ -2951,14 +2979,19 @@ class	DriverHeartbeatSource
 class	DriverKey
 class	DriverKeyInvalid
 class	DriverMethodsData
+class	DriverModeAmbiguous
 class	DriverNotContainable
 class	DriverReceipt
+class	DriverRegisteredTwice
+class	DriverRegistration
+class	DriverRegistry
 class	DriverReplies
 class	DriverReply
 class	DriverReplyData
 class	DriverReplyMalformed
 class	DriverRequest
 class	DriverRequestEndings
+class	DriverRequestMismatch
 class	DriverRequestPayload
 class	DriverRequestRecovered
 class	DriverRequestRecovery
@@ -2966,6 +2999,7 @@ class	DriverRequestRefused
 class	DriverRequestStatus
 class	DriverRequests
 class	DriverRequired
+class	DriverResult
 class	DriverRuntimeStops
 class	DriverSettings
 class	DriverSkillAdapters
@@ -2980,9 +3014,11 @@ class	DriverSwitchTarget
 class	DriverToolInput
 class	DriverTurn
 class	DriverTurnReportData
+class	DriverUnknown
 class	DriverUnstartableInContainer
 class	DriverUnsupported
 class	Drivers
+class	DriversServiceProvider
 class	Duration
 class	EditDocumentCall
 class	EditDocumentCommand
@@ -3275,6 +3311,7 @@ class	HandOffCodeReviewHandler
 class	HandOffCodeReviewsOnTick
 class	HandStartSkillsToHost
 class	HandleInertiaRequests
+class	HeadlessCapabilities
 class	HeartbeatEvidence
 class	HeartbeatReportController
 class	HeldAccountUses
@@ -4087,6 +4124,7 @@ class	OperationGrant
 class	OperationKey
 class	OperationResource
 class	OperationRule
+class	OperationSupport
 class	OperationUnavailable
 class	OperationsReadTool
 class	OperationsResolver
@@ -4969,6 +5007,7 @@ class	RegisteredAssignmentDestinations
 class	RegisteredChatMemberPolicies
 class	RegisteredCommand
 class	RegisteredCondition
+class	RegisteredDriver
 class	RegisteredInboxDestinations
 class	RegisteredInboxes
 class	RegisteredKeyword
@@ -6384,6 +6423,7 @@ class	SupplyHookContext
 class	SupplyHookSettings
 class	SupplyMemories
 class	SupportRecordRowData
+class	SupportSnapshot
 class	SupportedDriverAdapters
 class	SwitchAccountCommand
 class	SwitchAccountHandler
@@ -6542,6 +6582,7 @@ class	TasksServiceProvider
 class	TasksSkill
 class	TasksWindowResolver
 class	TerminalAnswers
+class	TerminalCapabilities
 class	TerminalControlData
 class	TerminalControlReceiptController
 class	TerminalControlRefused
@@ -6987,6 +7028,7 @@ constant	CodexJournalServer::TOOL_TIMEOUT_SECONDS
 constant	CodexSignIn::ACCOUNT_REQUEST
 constant	CodexSignIn::LOGIN_REQUEST
 constant	CodexSkills::FOLDER
+constant	CodexTerminalCapabilities::NOT_PROVEN
 constant	CommandFrame::FIRST
 constant	CommandFrame::INSIDE
 constant	CommandFrame::TRANSACTION
@@ -7040,6 +7082,8 @@ constant	DecimalSetting::MOST_DIGITS
 constant	DecimalSetting::MOST_FRACTIONAL_DIGITS
 constant	DeclaredPageRequest::COPY_LIMIT
 constant	DeclaredRouteKey::NAME
+constant	DefaultDrivers::PROTOCOL_VERSION
+constant	DefaultDrivers::SKILL_PROTOCOL
 constant	DeliverReportReadyNotification::REPORT_TARGET
 constant	DeliveredSkillsAccess::DELIVERED_SKILL
 constant	DeliveredSkillsAccess::OTHER_RUNTIME
@@ -7100,6 +7144,8 @@ constant	DomainUi::DECLARED_LAYOUT
 constant	DraftAnswersRequest::ANSWER_LIMIT
 constant	DraftTokens::FILE
 constant	DriverConversationResolver::MOST_CONVERSATIONS
+constant	DriverKey::CHARACTER_LIMIT
+constant	DriverKey::PATTERN
 constant	DriverReplies::PROTECTED_REASON
 constant	DriverReplies::REWRITE_REFUSAL
 constant	DriverSettings::EFFORTS
@@ -7177,6 +7223,7 @@ constant	Grants::VERSION
 constant	GuardShareRequest::METHODS
 constant	HandOffCodeReviewCommand::MAINTENANCE_SCOPE
 constant	HandOffCodeReviewsOnTick::PASS_LIMIT
+constant	HeadlessCapabilities::NO_TERMINAL
 constant	HelperCommitImport::SAFE_SETTINGS
 constant	HelperCommitImport::STEP_SECONDS_LIMIT
 constant	HelperDispatch::ADDRESSED_REASON
@@ -7751,6 +7798,7 @@ constant	SupervisorGraph::MAX_HOPS
 constant	SupervisorGraphLock::KEY
 constant	SupervisorLink::LINK_TYPE
 constant	SupervisorTarget::PROFILE_PREFIX
+constant	SupportSnapshot::NOT_REPORTED
 constant	SystemActor::ID
 constant	SystemSleeper::NANOSECONDS_PER_MICROSECOND
 constant	TableChecker::ROOT_MIGRATIONS
@@ -7916,9 +7964,11 @@ enum	DismissalType
 enum	DockOutcome
 enum	DockedState
 enum	DockerImageName
+enum	DriverCapability
 enum	DriverEvidence
 enum	DriverFailure
 enum	DriverOperation
+enum	DriverOutcome
 enum	DriverPermission
 enum	DriverSourceType
 enum	DriverStopDecision
@@ -8110,6 +8160,7 @@ enum	StreamUse
 enum	SummaryRule
 enum	SupervisorCoverageType
 enum	SupervisorDispatchOutcome
+enum	SupportState
 enum	SyntaxForm
 enum	TableType
 enum	TaskHolderFilter
@@ -8295,9 +8346,12 @@ interface	DraftProducer
 interface	DraftProducers
 interface	DraftReader
 interface	DraftResolver
+interface	Driver
 interface	DriverAdapter
 interface	DriverAdapters
 interface	DriverCall
+interface	DriverCapabilities
+interface	DriverCatalogue
 interface	DriverCompatibilities
 interface	DriverConversationResolver
 interface	DriverSkills
@@ -10474,6 +10528,7 @@ method	BooleanSetting::make()
 method	BooleanSetting::type()
 method	BooleanValueData::__construct()
 method	BottomStateCannotFinish::for()
+method	BoundTarget::__construct()
 method	BoundaryChecker::__construct()
 method	BoundaryChecker::compositionViolations()
 method	BoundaryChecker::domainHolding()
@@ -11490,6 +11545,7 @@ method	CodexSkills::skillFile()
 method	CodexSkills::supportFiles()
 method	CodexStatus::__construct()
 method	CodexStatus::signedInAs()
+method	CodexTerminalCapabilities::capabilities()
 method	CodexTool::canReadResources()
 method	CodexTool::discoversJournalTools()
 method	CodexTool::isShell()
@@ -12555,6 +12611,8 @@ method	DeclineChatQuestionHandler::__construct()
 method	DeclineChatQuestionHandler::handle()
 method	DeclineInput::__construct()
 method	DeclineQuestionController::__invoke()
+method	DefaultDrivers::registration()
+method	DefaultDrivers::registrations()
 method	DefaultUnavailable::forStart()
 method	DefaultUnavailable::reason()
 method	DeferredCommandHandler::__construct()
@@ -13411,6 +13469,10 @@ method	DraftView::__construct()
 method	DraftWriteTool::present()
 method	DraftedRecordData::__construct()
 method	DrainReplyData::__construct()
+method	Driver::capabilities()
+method	Driver::descriptor()
+method	Driver::resume()
+method	Driver::start()
 method	DriverAdapter::callFor()
 method	DriverAdapter::capabilities()
 method	DriverAdapter::compatibility()
@@ -13427,8 +13489,14 @@ method	DriverBudgets::fitsDelivery()
 method	DriverCall::replyWith()
 method	DriverCapabilities::__construct()
 method	DriverCapabilities::assertSupports()
+method	DriverCapabilities::capabilities()
 method	DriverCapabilities::finalAnswer()
 method	DriverCapabilities::supports()
+method	DriverCapabilityUnsupported::__construct()
+method	DriverCapabilityUnsupported::for()
+method	DriverCatalogue::catalogue()
+method	DriverCatalogue::forKey()
+method	DriverCatalogue::revision()
 method	DriverCompatibilities::for()
 method	DriverCompatibility::__construct()
 method	DriverCompatibility::assertStartable()
@@ -13461,15 +13529,25 @@ method	DriverHeartbeatSource::requireCurrent()
 method	DriverKey::__construct()
 method	DriverKey::__toString()
 method	DriverKey::from()
+method	DriverKey::isSameAs()
 method	DriverKeyInvalid::for()
 method	DriverMethodsData::__construct()
 method	DriverMethodsData::fromMethods()
+method	DriverModeAmbiguous::for()
 method	DriverNotContainable::codex()
 method	DriverNotContainable::reason()
 method	DriverOperation::control()
 method	DriverOperation::isTerminalControl()
 method	DriverOperation::terminalControl()
 method	DriverReceipt::__construct()
+method	DriverRegisteredTwice::for()
+method	DriverRegistration::__construct()
+method	DriverRegistration::sharesModeWith()
+method	DriverRegistry::__construct()
+method	DriverRegistry::catalogue()
+method	DriverRegistry::forKey()
+method	DriverRegistry::register()
+method	DriverRegistry::revision()
 method	DriverReplies::allowTool()
 method	DriverReplies::denyProtected()
 method	DriverReplies::denyTool()
@@ -13539,6 +13617,8 @@ method	DriverRequestEndings::closeAfterExit()
 method	DriverRequestEndings::expire()
 method	DriverRequestEndings::interrupt()
 method	DriverRequestEndings::settleAfterExit()
+method	DriverRequestMismatch::for()
+method	DriverRequestMismatch::notResume()
 method	DriverRequestPayload::__construct()
 method	DriverRequestPayload::digestFor()
 method	DriverRequestPayload::effort()
@@ -13580,6 +13660,7 @@ method	DriverRequests::stop()
 method	DriverRequests::supersedeEarlier()
 method	DriverRequired::forStart()
 method	DriverRequired::reason()
+method	DriverResult::__construct()
 method	DriverRuntimeStops::__construct()
 method	DriverRuntimeStops::stopAgent()
 method	DriverSettings::__construct()
@@ -13639,6 +13720,7 @@ method	DriverTurn::finish()
 method	DriverTurn::recordStart()
 method	DriverTurn::runtime()
 method	DriverTurnReportData::__construct()
+method	DriverUnknown::for()
 method	DriverUnstartableInContainer::for()
 method	DriverUnstartableInContainer::refusalCode()
 method	DriverUnstartableInContainer::status()
@@ -13648,6 +13730,7 @@ method	Drivers::__construct()
 method	Drivers::evaluate()
 method	Drivers::keyTexts()
 method	Drivers::toArray()
+method	DriversServiceProvider::register()
 method	Duration::__construct()
 method	Duration::children()
 method	Duration::key()
@@ -14557,6 +14640,7 @@ method	HasNumber::idOfNumber()
 method	HasNumber::numberHolder()
 method	HasStates::bootstrappersHasStates()
 method	HasWorkColumns::work()
+method	HeadlessCapabilities::capabilities()
 method	HeartbeatEvidence::__construct()
 method	HeartbeatReportController::__invoke()
 method	HeldAccountUses::__construct()
@@ -17140,6 +17224,11 @@ method	OperationResource::read()
 method	OperationResource::uriTemplate()
 method	OperationRule::__construct()
 method	OperationRule::grant()
+method	OperationSupport::__construct()
+method	OperationSupport::allowed()
+method	OperationSupport::isAllowed()
+method	OperationSupport::unavailable()
+method	OperationSupport::unsupported()
 method	OperationUnavailable::for()
 method	OperationUnavailable::refusalCode()
 method	OperationUnavailable::status()
@@ -20043,6 +20132,12 @@ method	RegisteredCommand::__construct()
 method	RegisteredCondition::__construct()
 method	RegisteredCondition::evaluate()
 method	RegisteredCondition::toArray()
+method	RegisteredDriver::__construct()
+method	RegisteredDriver::assertFor()
+method	RegisteredDriver::capabilities()
+method	RegisteredDriver::descriptor()
+method	RegisteredDriver::resume()
+method	RegisteredDriver::start()
 method	RegisteredInboxDestinations::__construct()
 method	RegisteredInboxDestinations::resolve()
 method	RegisteredInboxes::__construct()
@@ -24310,6 +24405,10 @@ method	SupplyMemories::__construct()
 method	SupplyMemories::handle()
 method	SupportRecordRowData::__construct()
 method	SupportRecordRowData::fromAudit()
+method	SupportSnapshot::__construct()
+method	SupportSnapshot::allowingAllBut()
+method	SupportSnapshot::assertSupports()
+method	SupportSnapshot::supportOf()
 method	SupportedDriverAdapters::__construct()
 method	SupportedDriverAdapters::for()
 method	SwitchAccountCommand::__construct()
@@ -24810,6 +24909,7 @@ method	TerminalAnswers::control()
 method	TerminalAnswers::interest()
 method	TerminalAnswers::run()
 method	TerminalAnswers::uncached()
+method	TerminalCapabilities::capabilities()
 method	TerminalControlData::__construct()
 method	TerminalControlReceiptController::__invoke()
 method	TerminalControlRefusal::code()
@@ -25863,6 +25963,7 @@ parameter	$accountId
 parameter	$accountLabel
 parameter	$accountMode
 parameter	$accountOrDriver
+parameter	$accountProtocol
 parameter	$accountReference
 parameter	$accountSettings
 parameter	$accountSource
@@ -26127,6 +26228,7 @@ parameter	$budget
 parameter	$budgets
 parameter	$buffer
 parameter	$build
+parameter	$buildPins
 parameter	$builder
 parameter	$builds
 parameter	$builtAt
@@ -26976,6 +27078,7 @@ parameter	$hookInput
 parameter	$hookJson
 parameter	$hookMethod
 parameter	$hookMethods
+parameter	$hookProtocol
 parameter	$hookSpecificOutput
 parameter	$hooks
 parameter	$hop
@@ -27816,6 +27919,7 @@ parameter	$profile
 parameter	$profileBase
 parameter	$profileDefault
 parameter	$profileKey
+parameter	$profileRequirements
 parameter	$profileRevision
 parameter	$profileType
 parameter	$profiles
@@ -28413,6 +28517,7 @@ parameter	$skillConditions
 parameter	$skillId
 parameter	$skillKey
 parameter	$skillKeys
+parameter	$skillProtocol
 parameter	$skills
 parameter	$skillsByKey
 parameter	$skipped
@@ -29994,6 +30099,7 @@ property	BooleanSetting::$key
 property	BooleanSetting::$label
 property	BooleanValueData::$enabled
 property	BooleanValueData::$type
+property	BoundTarget::$hostId
 property	BoundaryChecker::$coreExports
 property	BoundaryChecker::$entries
 property	BoundaryChecker::$roots
@@ -31700,6 +31806,8 @@ property	DriverCapabilities::$hookMethods
 property	DriverCapabilities::$reportsActualModel
 property	DriverCapabilities::$rewrites
 property	DriverCapabilities::$schemaContract
+property	DriverCapabilityUnsupported::$capability
+property	DriverCapabilityUnsupported::$reason
 property	DriverCompatibility::$arrangement
 property	DriverCompatibility::$arrangementEvidence
 property	DriverCompatibility::$awaitsContainedReport
@@ -31732,6 +31840,20 @@ property	DriverReceipt::$operation
 property	DriverReceipt::$progress
 property	DriverReceipt::$requestId
 property	DriverReceipt::$sequence
+property	DriverRegistration::$accountProtocol
+property	DriverRegistration::$buildPins
+property	DriverRegistration::$capabilities
+property	DriverRegistration::$family
+property	DriverRegistration::$hookProtocol
+property	DriverRegistration::$key
+property	DriverRegistration::$label
+property	DriverRegistration::$mode
+property	DriverRegistration::$profileRequirements
+property	DriverRegistration::$protocolVersion
+property	DriverRegistration::$skillProtocol
+property	DriverRegistry::$container
+property	DriverRegistry::$registrations
+property	DriverRegistry::$revision
 property	DriverReply::$exitCode
 property	DriverReply::$stderr
 property	DriverReply::$stdout
@@ -31768,6 +31890,8 @@ property	DriverRequestStatus::$script
 property	DriverRequestStatus::$scriptEvidence
 property	DriverRequestStatus::$scriptStep
 property	DriverRequestStatus::$sequence
+property	DriverResult::$outcome
+property	DriverResult::$reason
 property	DriverRuntimeStops::$requests
 property	DriverSettings::$requests
 property	DriverSkillAdapters::$claudeCode
@@ -33858,6 +33982,8 @@ property	OperationResource::$operations
 property	OperationResource::$reads
 property	OperationRule::$name
 property	OperationRule::$resources
+property	OperationSupport::$reason
+property	OperationSupport::$state
 property	OperationsReadTool::$meta
 property	OperationsReadTool::$operations
 property	OperationsResolver::$budget
@@ -35751,6 +35877,9 @@ property	RegisteredCondition::$key
 property	RegisteredCondition::$parameters
 property	RegisteredCondition::$version
 property	RegisteredCondition::$wireParameters
+property	RegisteredDriver::$capabilities
+property	RegisteredDriver::$commands
+property	RegisteredDriver::$registration
 property	RegisteredInboxDestinations::$destinations
 property	RegisteredInboxes::$providers
 property	RegisteredKeyword::$definition
@@ -38517,6 +38646,7 @@ property	SupportRecordRowData::$action
 property	SupportRecordRowData::$actor
 property	SupportRecordRowData::$at
 property	SupportRecordRowData::$projectId
+property	SupportSnapshot::$capabilities
 property	SupportedDriverAdapters::$claudeCode
 property	SupportedDriverAdapters::$codex
 property	SwitchAccountCommand::$accountId
@@ -40579,6 +40709,7 @@ variable	$nextRound
 variable	$nextStep
 variable	$nextTaskOffset
 variable	$noEmitOperands
+variable	$noTerminal
 variable	$node
 variable	$nodes
 variable	$none
@@ -41230,6 +41361,7 @@ variable	$suggestedCommand
 variable	$summaries
 variable	$summary
 variable	$summaryTotal
+variable	$support
 variable	$supportedTargets
 variable	$switch
 variable	$switchable

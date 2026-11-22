@@ -762,11 +762,27 @@ use App\Docking\Wire\Contracts\CardEncoder;
 use App\Docking\Wire\EncodedCard;
 use App\Domains\Contracts\IncomingWorkProvider;
 use App\Domains\Contracts\InternalAssignableContributor;
+use App\Drivers\Contracts\Driver;
+use App\Drivers\Contracts\DriverCapabilities;
+use App\Drivers\Contracts\DriverCatalogue;
+use App\Drivers\Enums\DriverCapability;
+use App\Drivers\Enums\DriverOutcome;
 use App\Drivers\Enums\HookDriver;
+use App\Drivers\Enums\SupportState;
+use App\Drivers\Exceptions\DriverCapabilityUnsupported;
 use App\Drivers\Exceptions\DriverKeyInvalid;
+use App\Drivers\Exceptions\DriverModeAmbiguous;
+use App\Drivers\Exceptions\DriverRegisteredTwice;
+use App\Drivers\Exceptions\DriverRequestMismatch;
+use App\Drivers\Exceptions\DriverUnknown;
 use App\Drivers\Exceptions\ProviderKeyInvalid;
+use App\Drivers\Values\BoundTarget;
 use App\Drivers\Values\DriverKey;
+use App\Drivers\Values\DriverRegistration;
+use App\Drivers\Values\DriverResult;
+use App\Drivers\Values\OperationSupport;
 use App\Drivers\Values\ProviderKey;
+use App\Drivers\Values\SupportSnapshot;
 use App\Engine\Commands\EndTerminalViews\EndTerminalViewsCommand;
 use App\Engine\Commands\EnforceLaunchLimits\EnforceLaunchLimitsCommand;
 use App\Engine\Commands\ExpireNavigationRequests\ExpireNavigationRequestsCommand;
@@ -1568,6 +1584,9 @@ final class CoreApi
                 RecordVisibility::class,
                 RuntimeResolver::class,
                 AgentStack::class,
+                Driver::class,
+                DriverCatalogue::class,
+                DriverCapabilities::class,
                 HelperRecordFacts::class,
                 OwnValuesState::class,
                 UserStack::class,
@@ -1982,6 +2001,14 @@ final class CoreApi
                 StatusOperation::class,
                 ResumableConversation::class,
                 StackTarget::class,
+                DriverRegistration::class,
+                SupportSnapshot::class,
+                OperationSupport::class,
+                BoundTarget::class,
+                DriverResult::class,
+                DriverCapability::class,
+                SupportState::class,
+                DriverOutcome::class,
                 Decision::class,
                 ContextLine::class,
                 MessageLine::class,
@@ -2841,6 +2868,11 @@ final class CoreApi
                 SkillDeclarationInvalid::class,
                 SkillKeyInvalid::class,
                 DriverKeyInvalid::class,
+                DriverCapabilityUnsupported::class,
+                DriverUnknown::class,
+                DriverRegisteredTwice::class,
+                DriverModeAmbiguous::class,
+                DriverRequestMismatch::class,
                 ProviderKeyInvalid::class,
                 SkillConditionInvalid::class,
                 SkillRevisionConflict::class,

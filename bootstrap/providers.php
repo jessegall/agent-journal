@@ -13,6 +13,7 @@ use App\Desks\Providers\DesksServiceProvider;
 use App\Docking\Providers\DockingServiceProvider;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Providers\DomainServiceProvider;
+use App\Drivers\Providers\DriversServiceProvider;
 use App\Engine\Providers\EngineServiceProvider;
 use App\Files\Providers\FilesServiceProvider;
 use App\Hooks\Providers\HooksServiceProvider;
@@ -59,6 +60,7 @@ return [
     AssignmentsServiceProvider::class,
     RecordsServiceProvider::class,
     DockingServiceProvider::class,
+    DriversServiceProvider::class,
     SharingServiceProvider::class,
     ConnectionsServiceProvider::class,
     CommunicationServiceProvider::class,
