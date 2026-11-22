@@ -10,7 +10,8 @@ use App\Values\AllowedNames;
 use App\Values\ReadRequest;
 
 /**
- * An agent's tasks_read grant scoped to the task ids it holds now; a test revokes one between two calls.
+ * An agent's tasks_read grant scoped to the task ids it holds now, allowing every other read; a test revokes a
+ * task between two calls.
  */
 final class MutableReadGrant implements ReadGrant
 {
@@ -26,6 +27,10 @@ final class MutableReadGrant implements ReadGrant
 
     public function allows(ReadRequest $request): bool
     {
+        if ($request->name !== 'tasks_read') {
+            return true;
+        }
+
         if ($request->discovery) {
             return $this->taskIds !== [];
         }
@@ -42,6 +47,6 @@ final class MutableReadGrant implements ReadGrant
 
     public function allowedTargets(string $name): AllowedNames
     {
-        return AllowedNames::only($this->taskIds);
+        return $name === 'tasks_read' ? AllowedNames::only($this->taskIds) : AllowedNames::all();
     }
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Search;
 
 use App\Contracts\ReadGrant;
+use App\Contracts\RecordResolver;
+use App\Data\RecordCard;
 use App\Enums\ScoreTier;
 use App\Enums\SearchStatus;
 use App\Enums\SearchSurface;
@@ -26,6 +28,7 @@ use App\Values\SourcePosition;
 use Closure;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Tests\Fixtures\Search\ClosedSearchAccess;
 use Tests\Fixtures\Search\MutableReadGrant;
 use Tests\Fixtures\Search\OpenSearchAccess;
 use Tests\Fixtures\Search\SwitchedOffDomains;
@@ -43,6 +46,10 @@ final class SearchCoordinatorTest extends TestCase
     private const string AGENT_ID = '01ARZ3NDEKTSV4RRFFQ69G5FZZ';
 
     private const string NOTE_ID = '01ARZ3NDEKTSV4RRFFQ69G5FAA';
+
+    private const string RULE_C = '01ARZ3NDEKTSV4RRFFQ69G5FCC';
+
+    private const string RULE_D = '01ARZ3NDEKTSV4RRFFQ69G5FDD';
 
     public function test_a_task_reference_is_reached_in_one_search_and_one_open_beside_a_hanging_source(): void
     {
@@ -140,6 +147,63 @@ final class SearchCoordinatorTest extends TestCase
         $this->assertSame($second->continuation, $replayed->continuation);
     }
 
+    public function test_heads_of_two_sources_merge_into_one_order_across_pages(): void
+    {
+        $taskA = Task::factory()->create(['id' => '01arz3ndektsv4rrffq69g0001', 'title' => 'Driver']);
+        $taskB = Task::factory()->create(['id' => '01arz3ndektsv4rrffq69g0002', 'title' => 'My driver notes']);
+        $grant = new MutableReadGrant([$taskA->id, $taskB->id]);
+        $coordinator = $this->coordinator($grant, ['rules' => [$this->rules()]]);
+
+        $first = $coordinator->search(self::owner(), self::agent(), SearchRequest::parse(query: 'driver', limit: 2));
+        $second = $this->resume($coordinator, $first);
+
+        $this->assertSame([$taskA->id, self::RULE_C], self::ids($first));
+        $this->assertSame([$taskB->id, self::RULE_D], self::ids($second));
+        $this->assertSame(SearchStatus::Complete, $second->status);
+    }
+
+    public function test_losing_a_source_grant_drops_its_hits_while_the_rest_continue(): void
+    {
+        $taskA = Task::factory()->create(['id' => '01arz3ndektsv4rrffq69g0001', 'title' => 'Driver']);
+        $taskB = Task::factory()->create(['id' => '01arz3ndektsv4rrffq69g0002', 'title' => 'My driver notes']);
+        $grant = new MutableReadGrant([$taskA->id, $taskB->id]);
+        $coordinator = $this->coordinator($grant, ['rules' => [$this->rules()]]);
+
+        $first = $coordinator->search(self::owner(), self::agent(), SearchRequest::parse(query: 'driver', limit: 2));
+        $grant->revoke($taskA->id);
+        $grant->revoke($taskB->id);
+        $second = $this->resume($coordinator, $first);
+
+        $this->assertSame([self::RULE_D], self::ids($second));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function ids(SearchAnswer $answer): array
+    {
+        return array_map(fn ($hit) => $hit->reference->id, $answer->hits);
+    }
+
+    /**
+     * A rules-like source whose hits are C at prefix tier 300 and D at body tier 100.
+     */
+    private function rules(): Searchable
+    {
+        $c = new RecordIdentity('fixtures.rule', self::RULE_C);
+        $d = new RecordIdentity('fixtures.rule', self::RULE_D);
+
+        return Searchable::make(
+            'rule',
+            'Rules',
+            ClosedSearchAccess::class,
+            fn (SearchQuery $query): SearchBatch => SearchBatch::exhausted('1', [
+                new SearchResult('Driver rule', 'Driver rule', $c, ScoreTier::TitlePrefix),
+                new SearchResult('Old rule', 'mentions the driver', $d, ScoreTier::BodyContains),
+            ]),
+        );
+    }
+
     private function resume(SearchCoordinator $coordinator, SearchAnswer $answer): SearchAnswer
     {
         $this->assertNotNull($answer->continuation);
@@ -166,7 +230,27 @@ final class SearchCoordinatorTest extends TestCase
             $this->app,
         );
 
-        return new SearchCoordinator($eligibility, $this->app->make(SearchStates::class), $this->app);
+        return new SearchCoordinator($eligibility, $this->app->make(SearchStates::class), $this->records(), $this->app);
+    }
+
+    /**
+     * Record checks that see every task and fixture record, as an owner with full access would.
+     */
+    private function records(): RecordResolver
+    {
+        $records = $this->createStub(RecordResolver::class);
+        $records->method('types')->willReturn(['tasks.task', 'fixtures.note', 'fixtures.rule']);
+        $records->method('visibleCards')->willReturnCallback(fn (array $identities): array => array_map(
+            self::cardOf(...),
+            $identities,
+        ));
+
+        return $records;
+    }
+
+    private static function cardOf(RecordIdentity $record): RecordCard
+    {
+        return new RecordCard($record->type, $record->id, '1', 'record', 'Title', null, null);
     }
 
     /**

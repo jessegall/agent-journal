@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\RecordResolver;
 use App\Enums\ScoreTier;
 use App\Enums\SearchStatus;
 use App\Exceptions\SearchHandleRefused;
@@ -52,6 +53,7 @@ final readonly class SearchCoordinator
     public function __construct(
         private SearchEligibility $eligibility,
         private SearchStates $states,
+        private RecordResolver $records,
         private Container $container,
     ) {}
 
@@ -163,6 +165,7 @@ final readonly class SearchCoordinator
     ): SearchAnswer {
         $emitted = [];
         $timedOut = false;
+        $visible = [];
 
         for ($round = 0; $round < self::ROUND_LIMIT; $round++) {
             foreach ($progress->sources as $key => $source) {
@@ -185,7 +188,8 @@ final readonly class SearchCoordinator
                 $timedOut = true;
             }
 
-            $this->emit($reader, $progress, $sources, $fresh, $emitted);
+            $this->markVisible($progress->sources, $visible);
+            $this->emit($reader, $progress, $sources, $fresh, $visible, $emitted);
 
             $pageFull = count($emitted) >= $progress->limit;
 
@@ -276,6 +280,7 @@ final readonly class SearchCoordinator
      *
      * @param  array<string, DeclaredSearchable>  $sources
      * @param  array<string, SearchResult>  $fresh
+     * @param  array<string, true>  $visible
      * @param  list<EmittedHit>  $emitted
      */
     private function emit(
@@ -283,6 +288,7 @@ final readonly class SearchCoordinator
         SearchProgress $progress,
         array $sources,
         array $fresh,
+        array $visible,
         array &$emitted,
     ): void {
         while (count($emitted) < $progress->limit) {
@@ -300,6 +306,10 @@ final readonly class SearchCoordinator
             $leader->dropHead();
 
             if ($head === null || $progress->wasDelivered($head->identity) || ! $progress->isPastFrontier($head)) {
+                continue;
+            }
+
+            if (! isset($visible[self::recordKey($head->identity->recordType, $head->identity->recordId)])) {
                 continue;
             }
 
@@ -345,6 +355,13 @@ final readonly class SearchCoordinator
         $head = $source->head();
 
         if ($head === null || $head->score !== ScoreTier::Reference) {
+            return null;
+        }
+
+        $visible = [];
+        $this->markVisible([$source], $visible);
+
+        if (! isset($visible[self::recordKey($head->identity->recordType, $head->identity->recordId)])) {
             return null;
         }
 
@@ -433,13 +450,15 @@ final readonly class SearchCoordinator
         }
 
         $current = [];
+        $visible = $this->visibleAmong(array_merge(...array_values($held)));
 
         foreach ($held as $key => $hits) {
             $batch = $this->refreshed($reader, $progress, $sources[$key], $hits);
 
             foreach ($hits as $hit) {
                 $match = $batch->currentMatch($hit->identity);
-                $current[$hit->identity->key()] = $this->shown($reader, $sources[$key], $match);
+                $seen = isset($visible[self::recordKey($hit->identity->recordType, $hit->identity->recordId)]);
+                $current[$hit->identity->key()] = $seen ? $this->shown($reader, $sources[$key], $match) : null;
             }
         }
 
@@ -576,6 +595,62 @@ final readonly class SearchCoordinator
             fn (DeclaredSearchable $source): bool => $source->searchable->recognizerFrom($this->container)
                 ?->recognize($progress->words->text) !== null,
         );
+    }
+
+    /**
+     * Checks every held record not checked yet in one batch: the records the reader may see, by type and id, through
+     * the owners' record providers. A record of a type no provider answers for is never visible.
+     *
+     * @param  array<string, SourceProgress>|list<SourceProgress>  $sources
+     * @param  array<string, true>  $visible
+     */
+    private function markVisible(array $sources, array &$visible): void
+    {
+        $held = [];
+
+        foreach ($sources as $source) {
+            foreach ($source->buffer as $hit) {
+                if (! isset($visible[self::recordKey($hit->identity->recordType, $hit->identity->recordId)])) {
+                    $held[] = $hit;
+                }
+            }
+        }
+
+        $visible = [...$visible, ...$this->visibleAmong($held)];
+    }
+
+    /**
+     * @param  list<BufferedHit>  $held
+     * @return array<string, true>
+     */
+    private function visibleAmong(array $held): array
+    {
+        $known = $this->records->types();
+        $records = [];
+
+        foreach ($held as $hit) {
+            if (in_array($hit->identity->recordType, $known, true)) {
+                $key = self::recordKey($hit->identity->recordType, $hit->identity->recordId);
+                $records[$key] = new RecordIdentity($hit->identity->recordType, $hit->identity->recordId);
+            }
+        }
+
+        if ($records === []) {
+            return [];
+        }
+
+        $visible = [];
+
+        foreach ($this->records->visibleCards(array_values($records)) as $card) {
+            $visible[self::recordKey($card->type, $card->id)] = true;
+        }
+
+        return $visible;
+    }
+
+    private static function recordKey(string $type, string $id): string
+    {
+        return "{$type}\0{$id}";
     }
 
     /**
