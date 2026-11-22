@@ -593,6 +593,7 @@ use App\Communication\Exceptions\MessageBodyTooLong;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Exceptions\MessageToSelf;
+use App\Communication\Support\ChatDepartures;
 use App\Communication\Support\ChatInboxes;
 use App\Communication\Support\ChatInterval;
 use App\Communication\Support\ChatIntervalEvidence;
@@ -2073,6 +2074,7 @@ final class CoreApi
                 ChatInboxes::class,
                 ChatInterval::class,
                 InboxIntervals::class,
+                ChatDepartures::class,
                 IntervalRole::class,
                 LeaveReason::class,
                 ActorLabelSet::class,

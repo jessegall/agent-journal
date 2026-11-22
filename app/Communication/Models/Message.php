@@ -732,4 +732,18 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
     {
         $query->where('inbox_timeline_events.sequence', '<', $sequence);
     }
+
+    /**
+     * The questions of an inbox still waiting for the named respondent.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function waitingOnRespondent(Builder $query, string $inboxId, ActorIdentity $respondent): void
+    {
+        $query->where('destination_inbox_id', $inboxId)
+            ->where('state', MessageState::WaitingForAnswer)
+            ->where('respondent_type', $respondent->type->value)
+            ->where('respondent_id', $respondent->id);
+    }
 }

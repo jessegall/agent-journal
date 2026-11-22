@@ -245,4 +245,16 @@ final class ReceiptDelivery extends Model implements EventSource, ReadableModel
                 ReceiptDeliveryState::Cancelled,
             ]);
     }
+
+    /**
+     * The pending deliveries of one interval's receipts.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function pendingForInterval(Builder $query, string $intervalId): void
+    {
+        $query->where('state', ReceiptDeliveryState::Pending)
+            ->whereIn('receipt_id', MessageReceipt::query()->ofInterval($intervalId)->select('id'));
+    }
 }

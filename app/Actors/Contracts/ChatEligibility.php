@@ -13,6 +13,12 @@ use App\Actors\Support\ActorIdentity;
  */
 interface ChatEligibility
 {
+    /**
+     * Holds the user's account and active grant under row locks to the end of the transaction, so a change to the
+     * user's membership never commits against a grant revoked meanwhile. It is the first lock a membership change takes.
+     */
+    public function lockAdmission(ActorIdentity $user, string|null $environmentId): void;
+
     public function isAdmitted(ActorIdentity $user, string|null $environmentId): bool;
 
     public function holds(ActorIdentity $user, ChatPermission $permission, string|null $environmentId): bool;

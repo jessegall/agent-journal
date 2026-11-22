@@ -244,4 +244,16 @@ final class SpeechOpportunity extends Model implements EventSource, ReadableMode
     {
         $query->where('user_root_id', $userRootId);
     }
+
+    /**
+     * The offered and claimed turns held through one interval.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function openOnInterval(Builder $query, string $intervalId): void
+    {
+        $query->where('interval_id', $intervalId)
+            ->whereIn('state', [SpeechOpportunityState::Offered, SpeechOpportunityState::Claimed]);
+    }
 }

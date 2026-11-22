@@ -19,6 +19,16 @@ final readonly class EnvironmentChatEligibility implements ChatEligibility
 {
     public function __construct(private AccessSettings $settings) {}
 
+    public function lockAdmission(ActorIdentity $user, string|null $environmentId): void
+    {
+        if ($user->type !== ActorType::User) {
+            return;
+        }
+
+        User::query()->whereKey($user->id)->lockForUpdate()->first();
+        EnvironmentUserGrant::query()->activeFor($user->id, $environmentId)->lockForUpdate()->first();
+    }
+
     public function isAdmitted(ActorIdentity $user, string|null $environmentId): bool
     {
         if (! $this->isActiveUser($user)) {

@@ -81,6 +81,17 @@ final readonly class InboxIntervals
     }
 
     /**
+     * Records that the chat closed, at the next position.
+     *
+     * @throws InboxUnavailable
+     */
+    public function recordClosed(Inbox $inbox, ActorIdentity $closedBy): void
+    {
+        $sequence = InboxRecord::lockForSequence($inbox->inboxId());
+        TimelineEvent::append($inbox->inboxId(), $sequence, TimelineEventType::Closed, $closedBy, null);
+    }
+
+    /**
      * @throws InboxUnavailable
      */
     private function lock(Inbox $inbox): void
