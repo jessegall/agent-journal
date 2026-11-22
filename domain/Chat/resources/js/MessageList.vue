@@ -12,6 +12,7 @@ import type { ConversationIntent } from './composables/useConversationIntents';
 import type { RecoveryEntry } from './composables/useMessageDrafts';
 import MessageDeliveries from './MessageDeliveries.vue';
 import MessageHead from './MessageHead.vue';
+import MessageReactions from './MessageReactions.vue';
 import NoMessages from './NoMessages.vue';
 import PendingMessage from './PendingMessage.vue';
 import RefusedSend from './RefusedSend.vue';
@@ -40,6 +41,8 @@ const props = defineProps<{
     questionUrl: (messageId: string) => string;
     // The page prop a retry reads again.
     conversationProp: string;
+    // The chat the messages are in, which a reaction names.
+    inboxId: string;
 }>();
 
 const emit = defineEmits<{
@@ -282,6 +285,7 @@ const isEmpty = computed(() => rows.value.length === 0 && props.pending.length =
                             </template>
                         </span>
                     </template>
+                    <MessageReactions :message="message" :inbox-id="inboxId" :conversation-prop="conversationProp" />
                     <template v-if="message.deliveries.some((delivery) => delivery.state !== 'accepted')">
                         <MessageDeliveries :message="message" :conversation-prop="conversationProp" />
                     </template>

@@ -378,6 +378,7 @@ function retryFocused(): void {
                     :participants="conversation.participants"
                     :question-url="questionUrl"
                     :conversation-prop="protectedProp"
+                    :inbox-id="conversation.inboxId"
                     @reply="(message) => (replyingTo = message)"
                     @older="timeline.loadOlder"
                     @decline="decline"

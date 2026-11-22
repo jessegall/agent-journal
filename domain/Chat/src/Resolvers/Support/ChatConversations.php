@@ -26,6 +26,8 @@ use App\Values\ChatLine;
 use Domain\Chat\Data\ChatCapabilitiesData;
 use Domain\Chat\Data\ChatLineData;
 use Domain\Chat\Data\ChatMessageData;
+use Domain\Chat\Data\ReactionData;
+use Domain\Chat\Models\MessageReaction;
 use Domain\Chat\Data\ChatRowsPageData;
 use Domain\Chat\Data\ChatSummaryData;
 use Domain\Chat\Data\ConversationData;
@@ -213,11 +215,16 @@ final readonly class ChatConversations
         ));
 
         $names = $this->labels->labelsFor($recipients);
+        $reactions = self::reactionsByMessage(
+            MessageReaction::toMessages(array_map(fn (MessageView $message) => $message->id, $messages)),
+            $viewer,
+        );
 
         return array_map(fn (MessageView $message) => self::rowOf(
             $message,
             $drivers,
             $viewer,
+            $reactions[$message->id] ?? [],
             array_map(fn (DeliveryView $view) => DeliveryData::from([
                 'recipient' => self::keyOf($view->recipient),
                 'label' => $names->nameOf($view->recipient) ?? self::keyOf($view->recipient),
@@ -231,12 +238,14 @@ final readonly class ChatConversations
 
     /**
      * @param  array<string, string|null>  $drivers
+     * @param  list<ReactionData>  $reactions
      * @param  list<DeliveryData>  $deliveries
      */
     private static function rowOf(
         MessageView $message,
         array $drivers,
         ActorIdentity $viewer,
+        array $reactions,
         array $deliveries,
     ): ChatMessageData {
         $speaker = "{$message->authorType}:{$message->authorId}";
@@ -273,7 +282,34 @@ final readonly class ChatConversations
             'sentAt' => $message->sentAt,
             'requestKey' => $message->requestKey,
             'deliveries' => $deliveries,
+            'reactions' => $reactions,
         ]);
+    }
+
+    /**
+     * The reactions of each message, one per emoji in the order first used, counted, with whether the viewer is among
+     * them.
+     *
+     * @param  list<MessageReaction>  $reactions
+     * @return array<string, list<ReactionData>>
+     */
+    private static function reactionsByMessage(array $reactions, ActorIdentity $viewer): array
+    {
+        $grouped = [];
+
+        foreach ($reactions as $reaction) {
+            $held = $grouped[$reaction->message_id][$reaction->emoji] ?? ['count' => 0, 'isMine' => false];
+            $grouped[$reaction->message_id][$reaction->emoji] = [
+                'count' => $held['count'] + 1,
+                'isMine' => $held['isMine'] || $reaction->isBy($viewer),
+            ];
+        }
+
+        return array_map(fn (array $emojis) => array_values(array_map(
+            fn (string $emoji, array $tally) => ReactionData::from(['emoji' => $emoji, ...$tally]),
+            array_keys($emojis),
+            $emojis,
+        )), $grouped);
     }
 
     private static function replyTargetOf(MessageView $message): ReplyTargetData|null

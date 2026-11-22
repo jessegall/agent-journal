@@ -39,6 +39,7 @@ use Domain\Chat\Http\Controllers\Membership\CreateGroupChatController;
 use Domain\Chat\Http\Controllers\Membership\LeaveChatController;
 use Domain\Chat\Http\Controllers\Membership\RemoveParticipantController;
 use Domain\Chat\Http\Controllers\Membership\TransferChatController;
+use Domain\Chat\Http\Controllers\ReactController;
 use Domain\Chat\Http\Controllers\ReadShownController;
 use Domain\Chat\Http\Controllers\ReplyController;
 use Domain\Chat\Http\Controllers\RequestOutcomeController;
@@ -49,6 +50,7 @@ use Domain\Chat\Http\Controllers\UndockController;
 use Domain\Chat\Mcp\Resources\MessageResource;
 use Domain\Chat\Policies\ConversationPolicy;
 use Domain\Chat\Policies\MessagePinPolicy;
+use Domain\Chat\Policies\MessageReactionPolicy;
 use Domain\Chat\Resolvers\ChatWindowResolver;
 use Domain\Chat\Resolvers\ChosenAgentSection;
 use Domain\Chat\Resolvers\HistoryPageResolver;
@@ -98,6 +100,10 @@ final class ChatDomain extends Domain implements
                 [AccessType::Edit],
             ),
             new PolicyDefinition(
+                MessageReactionPolicy::class,
+                [AccessType::Edit],
+            ),
+            new PolicyDefinition(
                 ConversationPolicy::class,
                 [AccessType::Edit],
             ),
@@ -116,6 +122,7 @@ final class ChatDomain extends Domain implements
                     ActionRoute::post('messages/read', ReadShownController::class, 'read'),
                     ActionRoute::post('messages/reply', ReplyController::class, 'reply'),
                     ActionRoute::post('messages/decline', DeclineQuestionController::class, 'decline'),
+                    ActionRoute::post('messages/react', ReactController::class, 'react'),
                     ActionRoute::post('messages/retry-delivery', RetryDeliveryController::class, 'retry-delivery'),
                     ActionRoute::get('messages/outcome', RequestOutcomeController::class, 'outcome'),
                     ActionRoute::get('events', ChatEventsController::class, 'events'),

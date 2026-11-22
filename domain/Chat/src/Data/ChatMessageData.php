@@ -19,6 +19,7 @@ final class ChatMessageData extends Data
 {
     /**
      * @param  list<DeliveryData>  $deliveries
+     * @param  list<ReactionData>  $reactions
      */
     public function __construct(
         public readonly string $id,
@@ -38,5 +39,7 @@ final class ChatMessageData extends Data
         public readonly string|null $requestKey,
         #[DataCollectionOf(DeliveryData::class)]
         public readonly array $deliveries = [],
+        #[DataCollectionOf(ReactionData::class)]
+        public readonly array $reactions = [],
     ) {}
 }
