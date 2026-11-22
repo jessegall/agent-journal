@@ -11,6 +11,7 @@ use App\Contracts\SlotSections;
 use App\Enums\AccessType;
 use App\Enums\ReadView;
 use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\DetailPage;
 use App\Support\NumberedPage;
 use App\Support\RecordIdentity;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
@@ -28,6 +29,7 @@ use Domain\Tasks\Data\TaskWaitChoiceData;
 use Domain\Tasks\Data\TaskWaitsData;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Exceptions\TaskPassageUnavailable;
 use Domain\Tasks\Http\Requests\TaskRequest;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
@@ -87,11 +89,25 @@ final readonly class TaskWindowResolver implements PageResolver
 
             return $this->index->of(
                 TaskFiltersData::from([...$this->request->filters()->toArray(), 'task' => $reader->number]),
-                [$this->layout->page($reader)->part($this->request->chosenTab())],
+                [$this->readerPage($reader)->part($this->request->chosenTab())],
             );
-        } catch (TaskMissing $missing) {
+        } catch (TaskMissing|TaskPassageUnavailable $missing) {
             throw new NotFoundHttpException(previous: $missing);
         }
+    }
+
+    /**
+     * The reader, opened at the brief passage a search found when the window names one.
+     *
+     * @throws TaskPassageUnavailable
+     */
+    private function readerPage(TaskReaderData $reader): DetailPage
+    {
+        if (! $this->request->asksForPassage()) {
+            return $this->layout->page($reader);
+        }
+
+        return $this->layout->pageAtPassage($reader, $this->request->passage());
     }
 
     private function logsOf(string $taskId): TaskLogsData|Optional

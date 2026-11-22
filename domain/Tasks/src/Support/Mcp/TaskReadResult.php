@@ -17,6 +17,8 @@ use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Data\TaskDetails;
 use Domain\Tasks\Data\TaskExecutionData;
 use Domain\Tasks\Data\TaskText;
+use Domain\Tasks\Exceptions\TaskPassageUnavailable;
+use Domain\Tasks\Values\TaskBriefPassage;
 
 /**
  * Presents the same task details for the tool and resource.
@@ -44,6 +46,12 @@ final readonly class TaskReadResult
 
     public function read(string $taskId, ToolArguments $arguments): ToolResult
     {
+        $passage = $arguments->optionalText('passage');
+
+        if ($passage !== null) {
+            return $this->readAt($taskId, TaskBriefPassage::fromId($passage));
+        }
+
         $cursor = $arguments->continuation();
         $view = $cursor === null ? $arguments->enumOr('view', ReadView::Summary) : ReadView::Context;
         $task = $this->tasks->details($taskId, $view);
@@ -66,6 +74,24 @@ final readonly class TaskReadResult
         $position = $this->fields->start($read, $text);
 
         return $this->fields->page($summary, $text, $position, 'task_id');
+    }
+
+    /**
+     * The task's context opened at the brief passage a search found, so the first read shows it; a brief changed
+     * since, or a passage it no longer has, is unavailable.
+     *
+     * @throws TaskPassageUnavailable
+     */
+    public function readAt(string $taskId, TaskBriefPassage $passage): ToolResult
+    {
+        $task = $this->tasks->details($taskId, ReadView::Context);
+        $text = $this->text($task);
+        [$line, $character] = $passage->startIn($text[TaskBriefPassage::FIELD] ?? '', $task->revision);
+
+        $read = new Continuation(self::TOOL, $taskId, [], 1, revision: $task->revision);
+        $position = $this->fields->startAt($read, $text, TaskBriefPassage::FIELD, $line, $character);
+
+        return $this->fields->page($this->summary($task), $text, $position, 'task_id');
     }
 
     /**

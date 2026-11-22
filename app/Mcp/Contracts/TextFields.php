@@ -15,6 +15,13 @@ interface TextFields
     public function start(Continuation $record, array $text): Continuation;
 
     /**
+     * The position inside one named field, at a line and the character inside it, such as a passage search found.
+     *
+     * @param  array<string, string>  $text
+     */
+    public function startAt(Continuation $record, array $text, string $field, int $line, int $character): Continuation;
+
+    /**
      * @param  array<string, mixed>  $summary
      * @param  array<string, string>  $text
      */

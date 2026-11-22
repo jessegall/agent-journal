@@ -28,6 +28,7 @@ final class TaskReadTool extends JournalReadTool
             'task_id' => $schema->string()->max(26)->required(),
             'view' => $schema->string()->enum(array_column(ReadView::cases(), 'value')),
             'continuation' => $schema->string(),
+            'passage' => $schema->string()->max(64),
         ];
     }
 

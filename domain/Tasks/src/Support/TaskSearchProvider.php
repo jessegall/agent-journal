@@ -9,23 +9,31 @@ use App\Contracts\ServedEnvironment;
 use App\Enums\ScoreTier;
 use App\Support\RecordIdentity;
 use App\Values\AdmittedConstraints;
+use App\Values\HitIdentity;
 use App\Values\RefreshCandidates;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;
 use App\Values\SearchResult;
-use App\Values\SearchWords;
 use App\Values\SourcePosition;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Values\TaskBriefPassage;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Searches task titles by a bounded keyset scan: a high-water id fixed on the first call, then blocks of at most 32
- * ids in binary order, tier by tier from exact title down to contains, emitting only hits whose highest tier is the
- * tier being visited. A complete task reference is answered first, at tier 500, by its indexed lookup.
+ * Searches tasks by a bounded keyset scan: a high-water id fixed on the first call, then blocks of at most 32 ids in
+ * binary order, tier by tier from exact title down to contains, emitting only hits whose highest tier is the tier
+ * being visited; then the briefs, read in fixed segments that overlap by the words' length so a phrase across a
+ * segment edge is found. A complete task reference is answered first, at tier 500, by its indexed lookup.
  */
 final readonly class TaskSearchProvider implements SearchProvider
 {
     public const int BLOCK_SIZE = 32;
+
+    public const int SEGMENT_CHARACTERS = 2048;
+
+    private const int BYTES_PER_CHARACTER = 4;
+
+    private const int SNIPPET_CONTEXT_CHARACTERS = 60;
 
     private const string TIER = 'tier';
 
@@ -34,6 +42,10 @@ final readonly class TaskSearchProvider implements SearchProvider
     private const string HIGH_WATER = 'high_water';
 
     private const string REFERENCE = 'reference';
+
+    private const string RECORD = 'record';
+
+    private const string OFFSET = 'offset';
 
     public function __construct(
         private TaskSearchAccess $access,
@@ -58,7 +70,11 @@ final readonly class TaskSearchProvider implements SearchProvider
             return $this->start($query, $constraints);
         }
 
-        return $this->scan($query, $query->position, $constraints);
+        if ($query->position->integer(self::TIER) === ScoreTier::BodyContains->value) {
+            return $this->scanBriefs($query, $query->position, $constraints);
+        }
+
+        return $this->scanTitles($query, $query->position, $constraints);
     }
 
     /**
@@ -73,21 +89,25 @@ final readonly class TaskSearchProvider implements SearchProvider
         }
 
         $reference = $this->referenceHit($query, $constraints);
+
         if ($reference !== null) {
             $first = self::position(ScoreTier::ExactTitle, '', $highWater, $reference->reference->id);
 
             return SearchBatch::more($highWater, [$reference], $first);
         }
 
-        return $this->scan($query, self::position(ScoreTier::ExactTitle, '', $highWater, ''), $constraints);
+        return $this->scanTitles($query, self::position(ScoreTier::ExactTitle, '', $highWater, ''), $constraints);
     }
 
     /**
-     * One block of the current tier: its hits are certified, since every later id of this tier sorts after them
-     * and every other unseen hit sits in a lower tier.
+     * One block of the current title tier: its hits are certified, since every later id of this tier sorts after
+     * them and every other unseen hit sits in a lower tier.
      */
-    private function scan(SearchQuery $query, SourcePosition $position, AdmittedConstraints $constraints): SearchBatch
-    {
+    private function scanTitles(
+        SearchQuery $query,
+        SourcePosition $position,
+        AdmittedConstraints $constraints,
+    ): SearchBatch {
         $tier = ScoreTier::from($position->integer(self::TIER));
         $highWater = $position->text(self::HIGH_WATER);
         $referenceId = $position->text(self::REFERENCE);
@@ -118,23 +138,105 @@ final readonly class TaskSearchProvider implements SearchProvider
         $examinedWholeBlock = $block->isEmpty() || $lastExamined === $block->last()->id;
         $tierFinished = $examinedWholeBlock && $block->count() < $blockSize;
         $nextPosition = $tierFinished
-            ? $this->nextTier($tier, $highWater, $referenceId)
+            ? self::afterTitleTier($tier, $highWater, $referenceId)
             : self::position($tier, $lastExamined, $highWater, $referenceId);
 
-        if ($nextPosition === null) {
-            return SearchBatch::exhausted($highWater, $hits);
-        }
-
-        if ($hits === []) {
-            return SearchBatch::scanning($highWater, $nextPosition);
-        }
-
-        return SearchBatch::more($highWater, $hits, $nextPosition);
+        return self::batch($highWater, $hits, $nextPosition);
     }
 
     /**
-     * Rereads the held tasks in one query, inside the reader's live grant, and answers each with its current tier
-     * and title; a task no longer admitted or no longer matching is left out, so the search drops it.
+     * One step of the brief tier: a block of whole first segments, or the next segment of the one long brief the
+     * last step stopped inside. A brief read only in part never yields a head before its match is seen, and the
+     * rows read are bounded by the byte budget.
+     */
+    private function scanBriefs(
+        SearchQuery $query,
+        SourcePosition $position,
+        AdmittedConstraints $constraints,
+    ): SearchBatch {
+        $highWater = $position->text(self::HIGH_WATER);
+        $referenceId = $position->text(self::REFERENCE);
+        $after = $position->text(self::AFTER);
+        $record = $position->text(self::RECORD);
+        $start = $record === '' ? 1 : $position->integer(self::OFFSET);
+        $rowLimit = $record === '' ? self::briefRowsFor($query) : 1;
+
+        $rows = $this->admitted($constraints)
+            ->where('id', '<=', $highWater)
+            ->when(
+                $record === '',
+                fn (Builder $rows) => $rows->where('id', '>', $after),
+                fn (Builder $rows) => $rows->whereKey($record),
+            )
+            ->orderBy('id')
+            ->limit($rowLimit)
+            ->select(['id', 'number', 'title', 'revision'])
+            ->selectRaw('substr(brief, ?, ?) as brief_segment', [$start, self::SEGMENT_CHARACTERS])
+            ->selectRaw('length(brief) as brief_length')
+            ->get();
+
+        $hits = [];
+        $overlap = max(0, mb_strlen($query->words->text) - 1);
+
+        foreach ($rows as $task) {
+            if (count($hits) === $query->pageAllowance) {
+                return self::batch($highWater, $hits, self::briefPosition($after, $highWater, $referenceId));
+            }
+
+            $hit = $this->briefHit($query, $task, $start, $referenceId);
+
+            if ($hit !== null) {
+                $hits[] = $hit;
+                $after = $task->id;
+
+                continue;
+            }
+
+            $read = $start - 1 + self::SEGMENT_CHARACTERS;
+
+            if ($read < (int) $task->getAttribute('brief_length')) {
+                $next = self::briefPosition($after, $highWater, $referenceId, $task->id, $read + 1 - $overlap);
+
+                return self::batch($highWater, $hits, $next);
+            }
+
+            $after = $task->id;
+        }
+
+        if ($record === '' && $rows->count() < $rowLimit) {
+            return SearchBatch::exhausted($highWater, $hits);
+        }
+
+        return self::batch($highWater, $hits, self::briefPosition($after, $highWater, $referenceId));
+    }
+
+    /**
+     * The brief hit of one row's segment: only for a task whose title holds no tier, so its highest tier is the
+     * brief, with the passage it starts at.
+     */
+    private function briefHit(SearchQuery $query, Task $task, int $start, string $referenceId): SearchResult|null
+    {
+        if ($task->id === $referenceId || $query->words->titleTier($task->title) !== null) {
+            return null;
+        }
+
+        $segment = (string) $task->getAttribute('brief_segment');
+
+        if (! $query->words->isFoundIn($segment)) {
+            return null;
+        }
+
+        $found = mb_stripos($segment, $query->words->text);
+        $column = $found === false ? 0 : $found;
+        $passage = new TaskBriefPassage($task->revision, $start - 1 + $column);
+
+        return self::briefResult($task, $segment, $column, $passage);
+    }
+
+    /**
+     * Rereads the held tasks in one query, inside the reader's live grant, and answers each held identity that still
+     * matches with its current tier and excerpt; a title hit is a title hit again, a passage is the same passage of
+     * an unchanged brief. Whatever no longer matches is left out, so the search drops it.
      */
     private function refresh(RefreshCandidates $query, AdmittedConstraints $constraints): SearchBatch
     {
@@ -144,25 +246,22 @@ final readonly class TaskSearchProvider implements SearchProvider
         $tasks = $this->admitted($constraints)
             ->whereKey($ids)
             ->readExactly(count($ids))
-            ->get(['id', 'number', 'title']);
+            ->get(['id', 'number', 'title', 'revision', 'brief'])
+            ->keyBy('id');
 
         $matches = [];
 
-        foreach ($tasks as $task) {
-            if (! $this->access->admitsOpen($query->reader, $task->id)) {
+        foreach ($query->candidates as $candidate) {
+            $task = $tasks->get($candidate->recordId);
+
+            if (! $task instanceof Task || ! $this->access->admitsOpen($query->reader, $task->id)) {
                 continue;
             }
 
-            if ($reference !== null && $reference->number === $task->number) {
-                $matches[] = self::referenceResult($task);
+            $match = $this->currentMatch($query, $candidate, $task, $reference?->number);
 
-                continue;
-            }
-
-            $tier = $query->words->titleTier($task->title);
-
-            if ($tier !== null) {
-                $matches[] = self::titleHit($task, $tier);
+            if ($match !== null) {
+                $matches[] = $match;
             }
         }
 
@@ -171,18 +270,41 @@ final readonly class TaskSearchProvider implements SearchProvider
         return SearchBatch::refreshed('', $query, $matches);
     }
 
-    /**
-     * The start of the next title tier, or null when the lowest tier is done and the range is proven empty.
-     */
-    private function nextTier(ScoreTier $tier, string $highWater, string $referenceId): SourcePosition|null
-    {
-        $next = $tier->nextTitleTier();
+    private function currentMatch(
+        SearchQuery $query,
+        HitIdentity $candidate,
+        Task $task,
+        int|null $referenceNumber,
+    ): SearchResult|null {
+        if ($candidate->locationId === null) {
+            if ($referenceNumber === $task->number) {
+                return self::referenceResult($task);
+            }
 
-        if ($next === null) {
+            $tier = $query->words->titleTier($task->title);
+
+            return $tier === null ? null : self::titleHit($task, $tier);
+        }
+
+        if (! TaskBriefPassage::isId($candidate->locationId)) {
             return null;
         }
 
-        return self::position($next, '', $highWater, $referenceId);
+        $passage = TaskBriefPassage::fromId($candidate->locationId);
+
+        if (! $passage->isOpenIn($task->brief, $task->revision)) {
+            return null;
+        }
+
+        $excerpt = $passage->excerptOf($task->brief, $task->revision, self::SEGMENT_CHARACTERS);
+
+        if ($query->words->titleTier($task->title) !== null || ! $query->words->isFoundIn($excerpt)) {
+            return null;
+        }
+
+        $found = mb_stripos($excerpt, $query->words->text);
+
+        return self::briefResult($task, $excerpt, $found === false ? 0 : $found, $passage);
     }
 
     private function referenceHit(SearchQuery $query, AdmittedConstraints $constraints): SearchResult|null
@@ -218,6 +340,28 @@ final readonly class TaskSearchProvider implements SearchProvider
         return $query;
     }
 
+    /**
+     * As many briefs as one step may read whole first segments of within its byte budget, at most one block.
+     */
+    private static function briefRowsFor(SearchQuery $query): int
+    {
+        $byBytes = intdiv($query->budget->bytes, self::SEGMENT_CHARACTERS * self::BYTES_PER_CHARACTER);
+
+        return max(1, min(self::BLOCK_SIZE, $query->budget->candidates, $byBytes));
+    }
+
+    /**
+     * @param  list<SearchResult>  $hits
+     */
+    private static function batch(string $highWater, array $hits, SourcePosition $next): SearchBatch
+    {
+        if ($hits === []) {
+            return SearchBatch::scanning($highWater, $next);
+        }
+
+        return SearchBatch::more($highWater, $hits, $next);
+    }
+
     private static function titleHit(Task $task, ScoreTier $tier): SearchResult
     {
         return SearchResult::shortened(
@@ -238,6 +382,36 @@ final readonly class TaskSearchProvider implements SearchProvider
         );
     }
 
+    /**
+     * A brief hit titled with the task and its passage, its excerpt the matching text with a little before it.
+     */
+    private static function briefResult(Task $task, string $text, int $column, TaskBriefPassage $passage): SearchResult
+    {
+        $from = max(0, $column - self::SNIPPET_CONTEXT_CHARACTERS);
+
+        return SearchResult::shortened(
+            "Task {$task->number} · {$task->title} · Brief",
+            mb_substr($text, $from, SearchResult::SNIPPET_CHARACTER_LIMIT),
+            new RecordIdentity(Task::LINK_TYPE, $task->id),
+            ScoreTier::BodyContains,
+            $passage->location(),
+        );
+    }
+
+    /**
+     * The start of the tier after this title tier: the next title tier, or the briefs after the last one.
+     */
+    private static function afterTitleTier(ScoreTier $tier, string $highWater, string $referenceId): SourcePosition
+    {
+        $next = $tier->nextTitleTier();
+
+        if ($next === null) {
+            return self::briefPosition('', $highWater, $referenceId);
+        }
+
+        return self::position($next, '', $highWater, $referenceId);
+    }
+
     private static function position(
         ScoreTier $tier,
         string $after,
@@ -249,6 +423,27 @@ final readonly class TaskSearchProvider implements SearchProvider
             self::AFTER => $after,
             self::HIGH_WATER => $highWater,
             self::REFERENCE => $referenceId,
+        ]);
+    }
+
+    /**
+     * A position in the brief tier: the last task read whole, and the long brief being read in segments, if any,
+     * with the character its next segment starts at.
+     */
+    private static function briefPosition(
+        string $after,
+        string $highWater,
+        string $referenceId,
+        string $record = '',
+        int $offset = 1,
+    ): SourcePosition {
+        return SourcePosition::of([
+            self::TIER => ScoreTier::BodyContains->value,
+            self::AFTER => $after,
+            self::HIGH_WATER => $highWater,
+            self::REFERENCE => $referenceId,
+            self::RECORD => $record,
+            self::OFFSET => $offset,
         ]);
     }
 }

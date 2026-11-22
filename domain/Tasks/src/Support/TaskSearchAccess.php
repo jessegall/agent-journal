@@ -61,10 +61,14 @@ final readonly class TaskSearchAccess implements SearchAccess
     }
 
     /**
-     * The task summary through tasks_read; the brief passage opener is added with the body tier.
+     * The task summary through tasks_read, or for a brief passage the same read opened at that passage.
      */
     public function openAction(string $recordId, RecordLocation|null $location): OpenAction
     {
-        return new OpenAction(TaskReadResult::TOOL, ['task_id' => $recordId]);
+        if ($location === null) {
+            return new OpenAction(TaskReadResult::TOOL, ['task_id' => $recordId]);
+        }
+
+        return new OpenAction(TaskReadResult::TOOL, ['task_id' => $recordId, 'passage' => $location->id]);
     }
 }

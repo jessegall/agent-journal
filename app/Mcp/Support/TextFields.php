@@ -33,6 +33,23 @@ final readonly class TextFields implements TextFieldsContract
     }
 
     /**
+     * @param  array<string, string>  $text
+     */
+    public function startAt(Continuation $record, array $text, string $field, int $line, int $character): Continuation
+    {
+        $index = array_search($field, array_keys($text), true);
+
+        return new Continuation(
+            $record->tool,
+            $record->selector,
+            [...$record->filters, 'field' => $index === false ? 0 : $index, 'text_digest' => $this->digest($text)],
+            $line,
+            $character,
+            revision: $record->revision,
+        );
+    }
+
+    /**
      * @param  array<string, mixed>  $summary
      * @param  array<string, string>  $text
      */

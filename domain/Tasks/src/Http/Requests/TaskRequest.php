@@ -8,7 +8,9 @@ use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use App\Support\Page;
 use App\Values\PageSize;
 use Domain\Tasks\Http\Requests\Concerns\ReadsTaskFilters;
+use Domain\Tasks\Exceptions\TaskPassageUnavailable;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Values\TaskBriefPassage;
 use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -28,7 +30,8 @@ final class TaskRequest extends FormRequest
     {
         return [
             'section' => ['nullable', 'string', 'in:logs,proofs,waits'],
-            'tab' => ['nullable', 'string', 'in:logs,proofs,waits,comments'],
+            'tab' => ['nullable', 'string', 'in:logs,proofs,waits,comments,brief'],
+            'passage' => ['nullable', 'string', 'max:64'],
             'logs_before' => ['nullable', 'string', 'regex:/^(n|[0-9]{1,10}),(n|[0-9]{1,10})$/'],
             'proofs_after' => ['nullable', 'string', 'max:26'],
             'commentsAfter' => ['nullable', 'string', 'max:26'],
@@ -104,6 +107,21 @@ final class TaskRequest extends FormRequest
         $after = $this->filled('commentsAfter') ? $this->string('commentsAfter')->toString() : null;
 
         return new Page($after, PageSize::from(null)->rows);
+    }
+
+    /**
+     * The brief passage a search opened the task at; ask asksForPassage() first.
+     *
+     * @throws TaskPassageUnavailable
+     */
+    public function passage(): TaskBriefPassage
+    {
+        return TaskBriefPassage::fromId($this->string('passage')->toString());
+    }
+
+    public function asksForPassage(): bool
+    {
+        return $this->filled('passage');
     }
 
     public function taskId(): string
