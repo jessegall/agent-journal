@@ -61,6 +61,7 @@ type LayoutFinder func(request AttachRequest) (screen.Layout, error)
 type hostTerminal struct {
 	pty      *os.File
 	reader   *screen.EmulatorReader
+	layout   screen.Layout
 	gate     *inputs.InputGate
 	mutex    sync.Mutex
 	attached io.Writer
@@ -148,7 +149,7 @@ func (socket *AttachSocket) terminalFor(request AttachRequest) (*hostTerminal, e
 		return nil, err
 	}
 	gate := inputs.NewInputGate(file, reader, layout.Composer, time.Now)
-	terminal := &hostTerminal{pty: file, reader: reader, gate: gate}
+	terminal := &hostTerminal{pty: file, reader: reader, layout: layout, gate: gate}
 	socket.terminals[request.RuntimeID] = terminal
 	go func() {
 		terminal.copyOut()
@@ -157,16 +158,16 @@ func (socket *AttachSocket) terminalFor(request AttachRequest) (*hostTerminal, e
 	return terminal, nil
 }
 
-// ReaderFor gives the screen of the runtime's program, while the host runs it; a program that ended has none, and a
-// relaunch gets a new one.
-func (socket *AttachSocket) ReaderFor(runtimeID string) (*screen.EmulatorReader, bool) {
+// ScreenFor gives the screen of the runtime's program with the layout it is classified by, while the host runs it; a
+// program that ended has none, and a relaunch gets a new one.
+func (socket *AttachSocket) ScreenFor(runtimeID string) (RuntimeScreen, bool) {
 	socket.mutex.Lock()
 	defer socket.mutex.Unlock()
 	terminal, found := socket.terminals[runtimeID]
 	if !found {
-		return nil, false
+		return RuntimeScreen{}, false
 	}
-	return terminal.reader, true
+	return RuntimeScreen{Reader: terminal.reader, Layout: terminal.layout}, true
 }
 
 // forget drops the runtime's terminal once its program ended, unless a relaunch already put a new one in its place.

@@ -12,7 +12,9 @@ import (
 	"journal-agent/screen/contracts"
 )
 
-// Frame is the screen as currently shown: every row as runs of one style, the cursor, the buffer and the size.
+// Frame is the screen as currently shown: every row as runs of one style, the cursor, the buffer and the size. A
+// shielded frame stands for a screen the host would not export, with no rows and no cursor; the privacy revision goes
+// up each time the runtime's screen turns from public to shielded, so a public frame of an earlier revision is void.
 type Frame struct {
 	Epoch      string           `json:"epoch"`
 	Sequence   uint64           `json:"sequence"`
@@ -25,6 +27,9 @@ type Frame struct {
 	TooLarge   bool             `json:"too_large"`
 	Unreadable bool             `json:"unreadable"`
 	NoTerminal bool             `json:"no_terminal"`
+	Shielded   bool             `json:"shielded"`
+	// PrivacyRevision is the runtime's privacy revision this frame was captured under.
+	PrivacyRevision uint64 `json:"privacy_revision"`
 }
 
 // FrameLimit is the most bytes of JSON one frame may take.
@@ -52,6 +57,33 @@ func (reader *EmulatorReader) Frame(epoch string, sequence uint64, now time.Time
 	reader.lock.Lock()
 	defer reader.lock.Unlock()
 
+	return reader.frame(epoch, sequence, now)
+}
+
+// ExportFrame reads the screen once, under one lock, and gives its frame only when the layout finds that very screen
+// exportable; any other screen gives a shield frame with no rows and no cursor, so the classification and the export
+// can never see two different screens.
+func (reader *EmulatorReader) ExportFrame(layout Layout, epoch string, sequence uint64, now time.Time) Frame {
+	reader.lock.Lock()
+	defer reader.lock.Unlock()
+
+	if !layout.Exportable(reader.snapshot()) {
+		return Frame{
+			Epoch:    epoch,
+			Sequence: sequence,
+			Captured: now,
+			Columns:  reader.terminal.Width(),
+			Rows:     [][]Run{},
+			Buffer:   reader.buffer(),
+			Shielded: true,
+		}
+	}
+
+	return reader.frame(epoch, sequence, now)
+}
+
+// frame reads the grid with its styles; the caller holds the lock.
+func (reader *EmulatorReader) frame(epoch string, sequence uint64, now time.Time) Frame {
 	columns, height := reader.terminal.Width(), reader.terminal.Height()
 	rows := make([][]Run, height)
 	for row := range height {

@@ -15,6 +15,8 @@ function frameOf(epoch: string, sequence: number): ScreenFrameData {
         tooLarge: false,
         unreadable: false,
         noTerminal: false,
+        shielded: false,
+        privacyRevision: 0,
     };
 }
 

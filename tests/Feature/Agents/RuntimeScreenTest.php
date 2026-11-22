@@ -33,6 +33,20 @@ final class RuntimeScreenTest extends TestCase
         $this->assertArrayHasKey('tooLarge', $frame->toArray());
     }
 
+    public function test_a_shield_frame_hydrates_its_privacy_and_an_older_host_frame_is_public(): void
+    {
+        $shield = ScreenFrameData::from([
+            ...$this->payload('epoch-1', 3),
+            'rows' => [],
+            'shielded' => true,
+            'privacy_revision' => 2,
+        ]);
+        $older = $this->frame('epoch-1', 3);
+
+        $this->assertSame([true, 2, []], [$shield->shielded, $shield->privacyRevision, $shield->rows]);
+        $this->assertSame([false, 0], [$older->shielded, $older->privacyRevision]);
+    }
+
     public function test_put_then_latest_gives_the_frame_and_a_late_frame_changes_nothing(): void
     {
         $screen = $this->app->make(RuntimeScreen::class);
@@ -76,6 +90,16 @@ final class RuntimeScreenTest extends TestCase
      */
     private function frame(string $epoch, int $sequence): ScreenFrameData
     {
+        return ScreenFrameData::from($this->payload($epoch, $sequence));
+    }
+
+    /**
+     * The JSON an older Go host sends for a frame, decoded, without the privacy fields.
+     *
+     * @return array<string, mixed>
+     */
+    private function payload(string $epoch, int $sequence): array
+    {
         $json = <<<'JSON'
         {
             "epoch": "EPOCH",
@@ -97,6 +121,6 @@ final class RuntimeScreenTest extends TestCase
         $payload = json_decode(str_replace('EPOCH', $epoch, $json), true, flags: JSON_THROW_ON_ERROR);
         $payload['sequence'] = $sequence;
 
-        return ScreenFrameData::from($payload);
+        return $payload;
     }
 }

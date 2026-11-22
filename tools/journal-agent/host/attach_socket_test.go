@@ -105,19 +105,19 @@ func TestAReattachAtAnotherSizeResizesTheScreen(t *testing.T) {
 
 func TestAnEndedProgramLeavesNoReaderAndARelaunchGetsANewOne(t *testing.T) {
 	socket, programs := listeningSocket(t)
-	if _, found := socket.ReaderFor("runtime-1"); found {
+	if _, found := socket.ScreenFor("runtime-1"); found {
 		t.Fatal("a reader before the runtime was started")
 	}
 	attached(t, socket, "runtime-1", 24, 80)
 	waitForSize(t, socket, "runtime-1", 24, 80)
-	first, _ := socket.ReaderFor("runtime-1")
+	first, _ := socket.ScreenFor("runtime-1")
 
 	(<-programs).Close()
 	waitUntilTerminalGone(t, socket, "runtime-1")
 
 	attached(t, socket, "runtime-1", 24, 80)
 	waitForSize(t, socket, "runtime-1", 24, 80)
-	if second, _ := socket.ReaderFor("runtime-1"); second == first {
+	if second, _ := socket.ScreenFor("runtime-1"); second.Reader == first.Reader {
 		t.Fatal("the relaunch reuses the ended program's reader")
 	}
 }
@@ -127,7 +127,7 @@ func waitUntilTerminalGone(t *testing.T, socket *AttachSocket, runtimeID string)
 	t.Helper()
 	deadline := time.Now().Add(time.Second)
 	for time.Now().Before(deadline) {
-		if _, found := socket.ReaderFor(runtimeID); !found {
+		if _, found := socket.ScreenFor(runtimeID); !found {
 			return
 		}
 		time.Sleep(5 * time.Millisecond)

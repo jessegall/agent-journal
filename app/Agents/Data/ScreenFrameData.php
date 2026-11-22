@@ -14,7 +14,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 /**
  * A runtime's screen as its host last captured it: every row as styled runs, the cursor, the buffer and the size,
  * numbered within the host process's epoch. A marker frame has no rows and says why: too large to send, unreadable,
- * or no terminal on the host; a plain frame dropped its styles to fit.
+ * or no terminal on the host; a plain frame dropped its styles to fit. A shielded frame stands for a screen its host
+ * would not export, and the privacy revision rises each time the runtime's screen turns from public to shielded.
  */
 #[TypeScript]
 #[MapInputName(SnakeCaseMapper::class)]
@@ -36,6 +37,8 @@ final class ScreenFrameData extends Data
         public readonly bool $tooLarge,
         public readonly bool $unreadable,
         public readonly bool $noTerminal,
+        public readonly bool $shielded = false,
+        public readonly int $privacyRevision = 0,
     ) {}
 
     /**

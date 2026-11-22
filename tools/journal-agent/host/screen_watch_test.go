@@ -3,12 +3,14 @@ package host
 import (
 	"context"
 	"errors"
+	"reflect"
 	"sync"
 	"testing"
 	"time"
 
 	"journal-agent/client"
 	"journal-agent/screen"
+	"journal-agent/screen/contracts"
 )
 
 // sentFrame is one report the fake journal took.
@@ -66,11 +68,16 @@ type fakeReaders struct {
 	readers map[string]*screen.EmulatorReader
 }
 
-func (readers *fakeReaders) ReaderFor(runtimeID string) (*screen.EmulatorReader, bool) {
+// passwordLayout is a driver's layout whose one menu family asks for a password, so no text of it leaves the host.
+var passwordLayout = screen.Layout{
+	Menus: []screen.MenuFamily{{Name: "password", Keywords: []string{"password"}, MinKeywords: 1, Secret: true}},
+}
+
+func (readers *fakeReaders) ScreenFor(runtimeID string) (RuntimeScreen, bool) {
 	readers.mutex.Lock()
 	defer readers.mutex.Unlock()
 	reader, found := readers.readers[runtimeID]
-	return reader, found
+	return RuntimeScreen{Reader: reader, Layout: passwordLayout}, found
 }
 
 func (readers *fakeReaders) run(t *testing.T, runtimeID, text string) *screen.EmulatorReader {
@@ -309,5 +316,56 @@ func TestARefusedResizeSendsTheMarkerUntilAGoodResize(t *testing.T) {
 	waitUntil(t, "a readable frame", func() bool { return len(journal.frames("runtime-1")) == 3 })
 	if frame := journal.frames("runtime-1")[2]; frame.Unreadable || frame.Columns != 30 {
 		t.Fatalf("frame after a good resize %+v", frame)
+	}
+}
+
+func TestAScreenThatAsksForAPasswordSendsAShieldWithNoText(t *testing.T) {
+	watcher, journal, readers := newWatcher(t, time.Hour)
+	readers.run(t, "runtime-1", "Password: hunter2")
+
+	watcher.Set(watch("runtime-1"))
+
+	waitUntil(t, "a shield frame", func() bool { return len(journal.frames("runtime-1")) == 1 })
+	frame := journal.frames("runtime-1")[0]
+	if !frame.Shielded || len(frame.Rows) != 0 || frame.Cursor != (contracts.Cursor{}) {
+		t.Fatalf("the password screen left the host: %+v", frame)
+	}
+	if frame.PrivacyRevision != 1 {
+		t.Fatalf("the first shield is at privacy revision %d, not 1", frame.PrivacyRevision)
+	}
+}
+
+func TestAnOrdinaryPromptStillSendsItsRows(t *testing.T) {
+	watcher, journal, readers := newWatcher(t, time.Hour)
+	readers.run(t, "runtime-1", "> ready")
+
+	watcher.Set(watch("runtime-1"))
+
+	waitUntil(t, "a frame", func() bool { return len(journal.frames("runtime-1")) == 1 })
+	frame := journal.frames("runtime-1")[0]
+	if frame.Shielded || rowText(frame) != "> ready" || frame.PrivacyRevision != 0 {
+		t.Fatalf("the ordinary prompt was not sent as it is: %+v", frame)
+	}
+}
+
+func TestTurningFromPublicToShieldedRaisesThePrivacyRevision(t *testing.T) {
+	watcher, journal, readers := newWatcher(t, time.Hour)
+	reader := readers.run(t, "runtime-1", "> ready")
+	watcher.Set(watch("runtime-1"))
+	waitUntil(t, "the public frame", func() bool { return len(journal.frames("runtime-1")) == 1 })
+
+	reader.Feed([]byte("\r\nPassword:"))
+	waitUntil(t, "the shield", func() bool { return len(journal.frames("runtime-1")) == 2 })
+	reader.Feed([]byte("\x1b[2J\x1b[H> back"))
+	waitUntil(t, "the public frame again", func() bool { return len(journal.frames("runtime-1")) == 3 })
+	reader.Feed([]byte("\r\nPassword:"))
+	waitUntil(t, "the second shield", func() bool { return len(journal.frames("runtime-1")) == 4 })
+
+	revisions := []uint64{}
+	for _, frame := range journal.frames("runtime-1") {
+		revisions = append(revisions, frame.PrivacyRevision)
+	}
+	if !reflect.DeepEqual(revisions, []uint64{0, 1, 1, 2}) {
+		t.Fatalf("the privacy revisions were %v, not 0, 1, 1, 2", revisions)
 	}
 }

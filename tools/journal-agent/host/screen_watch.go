@@ -26,9 +26,16 @@ type ScreenReporter interface {
 	ReportScreen(ctx context.Context, runtimeID string, frame screen.Frame) error
 }
 
-// ScreenReaders finds the screen of a runtime's program while the host runs it.
+// ScreenReaders finds the screen of a runtime's program, with the layout it is classified by, while the host runs it.
 type ScreenReaders interface {
-	ReaderFor(runtimeID string) (*screen.EmulatorReader, bool)
+	ScreenFor(runtimeID string) (RuntimeScreen, bool)
+}
+
+// RuntimeScreen is the screen of a program the host runs and the layout of its driver, which says whether the screen
+// may leave the host.
+type RuntimeScreen struct {
+	Reader *screen.EmulatorReader
+	Layout screen.Layout
 }
 
 // ScreenWatcher sends the screens of the runtimes the journal says are watched, each at its own interval, only when
@@ -43,6 +50,15 @@ type ScreenWatcher struct {
 	ctx        context.Context
 	mutex      sync.Mutex
 	watching   map[string]*screenWatch
+	// privacy is each runtime's privacy state, kept across its senders, so a sender started over never lowers it.
+	privacy map[string]*screenPrivacy
+}
+
+// screenPrivacy is whether a runtime's last captured screen was shielded and the revision it is at: the revision goes
+// up each time the screen turns from public to shielded.
+type screenPrivacy struct {
+	shielded bool
+	revision uint64
 }
 
 // screenWatch is one watched runtime's sender: its interval and how to stop it.
@@ -66,6 +82,7 @@ func NewScreenWatcher(ctx context.Context, reporter ScreenReporter, readers Scre
 		signOfLife: signOfLife,
 		ctx:        ctx,
 		watching:   map[string]*screenWatch{},
+		privacy:    map[string]*screenPrivacy{},
 	}, nil
 }
 
@@ -98,6 +115,25 @@ func (watcher *ScreenWatcher) Set(watched []client.Watch) {
 			watcher.stopped(runtimeID, watch)
 		}()
 	}
+}
+
+// privacyRevision records whether the runtime's screen is shielded now and gives the revision it is at, raising it
+// when the screen turned from public to shielded.
+func (watcher *ScreenWatcher) privacyRevision(runtimeID string, shielded bool) uint64 {
+	watcher.mutex.Lock()
+	defer watcher.mutex.Unlock()
+
+	privacy, known := watcher.privacy[runtimeID]
+	if !known {
+		privacy = &screenPrivacy{}
+		watcher.privacy[runtimeID] = privacy
+	}
+	if shielded && !privacy.shielded {
+		privacy.revision++
+	}
+	privacy.shielded = shielded
+
+	return privacy.revision
 }
 
 // stopped drops a sender that ended by itself, so the next list that names its runtime starts it again.
@@ -180,9 +216,21 @@ func (sender *screenSender) tick(ctx context.Context) bool {
 
 // capture reads the screen unless it is unchanged since the last capture and no sign of life is due; it says whether
 // it read anything. A runtime whose program the host does not run, or whose screen cannot be read, gives a marker
-// frame.
+// frame. A screen its layout does not find exportable gives a shield frame, read from the same snapshot it was judged
+// by, and every frame carries the runtime's privacy revision.
 func (sender *screenSender) capture(now time.Time) (screen.Frame, bool) {
-	reader, found := sender.watcher.readers.ReaderFor(sender.runtimeID)
+	frame, readable := sender.read(now)
+	if !readable {
+		return frame, false
+	}
+	frame.PrivacyRevision = sender.watcher.privacyRevision(sender.runtimeID, frame.Shielded)
+
+	return frame, true
+}
+
+// read reads the screen, or the marker that says why there is none, before its privacy revision is set.
+func (sender *screenSender) read(now time.Time) (screen.Frame, bool) {
+	runtimeScreen, found := sender.watcher.readers.ScreenFor(sender.runtimeID)
 	if !found {
 		sender.lastCapture = nil
 		marker := sender.marker(now)
@@ -190,6 +238,7 @@ func (sender *screenSender) capture(now time.Time) (screen.Frame, bool) {
 		return marker, true
 	}
 
+	reader := runtimeScreen.Reader
 	if reader.Unreadable() {
 		sender.lastCapture = nil
 		marker := sender.marker(now)
@@ -205,7 +254,9 @@ func (sender *screenSender) capture(now time.Time) (screen.Frame, bool) {
 	}
 	sender.lastCapture = &capture
 
-	return reader.Frame(sender.watcher.epoch, sender.sequence+1, now).Bounded(screen.FrameLimit), true
+	frame := reader.ExportFrame(runtimeScreen.Layout, sender.watcher.epoch, sender.sequence+1, now)
+
+	return frame.Bounded(screen.FrameLimit), true
 }
 
 // marker is a frame with no screen in it, which says why by the flag the caller sets.
