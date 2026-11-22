@@ -2,7 +2,7 @@
 import { nextTick, ref, useTemplateRef } from 'vue';
 import Button from '@kit/Button';
 import { keyedPost } from '@kit/keyedPost';
-import Modal from '@kit/Modal';
+import Dialog from '@kit/Dialog';
 import { useWindowReload } from '@kit/useWindowQuery';
 import { cancelPlan as cancelRoute, finishPlan as finishRoute } from '@generated/routes/plans';
 import type { PlanState } from '@generated/types/plans';
@@ -60,8 +60,8 @@ async function send(): Promise<void> {
 </script>
 
 <template>
-    <Modal
-        :is-open="true"
+    <Dialog
+        :open="true"
         :title="change === 'cancel' ? `Cancel plan ${number}` : `Finish plan ${number}`"
         @close="emit('close')"
     >
@@ -108,5 +108,5 @@ async function send(): Promise<void> {
                 >
             </template>
         </template>
-    </Modal>
+    </Dialog>
 </template>

@@ -10,7 +10,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * A window whose reader failed: a message that names no internal detail, and a safe reason when the reader gives
- * one; the error itself is logged with the key.
+ * one, or in the local and testing environments the error's class and message; the error itself is logged with the key.
  */
 #[TypeScript]
 final class FailedWindow extends Data

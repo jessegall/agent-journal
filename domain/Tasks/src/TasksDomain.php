@@ -14,7 +14,6 @@ use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandProvider;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasLinkRecords;
-use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\AssignableContributor;
 use App\Domains\Contracts\InternalAssignableContributor;
@@ -23,8 +22,6 @@ use App\Domains\Contracts\StateProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
-use App\Numbers\Contracts\NumberedModelProvider;
-use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
 use App\Ui\Contracts\PageProvider;
@@ -107,7 +104,6 @@ final class TasksDomain extends Domain implements
     InternalAssignableContributor,
     LinkRecordProvider,
     McpToolProvider,
-    NumberedModelProvider,
     PageProvider,
     PolicyProvider,
     SkillProvider,
@@ -115,7 +111,6 @@ final class TasksDomain extends Domain implements
 {
     use HasAssignables;
     use HasLinkRecords;
-    use HasNumberedModels;
     use HasStates;
 
     public function description(): string
@@ -259,11 +254,6 @@ final class TasksDomain extends Domain implements
     public function linkRecords(): array
     {
         return [Task::LINK_TYPE => TaskRecords::class];
-    }
-
-    public function numberedModels(): array
-    {
-        return [NumberedModel::global(Task::class)];
     }
 
     public function mcpResources(): array

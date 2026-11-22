@@ -52,6 +52,53 @@ final class WindowResultKindsTest extends TestCase
         $result = $this->resultOf(fn () => throw new RuntimeException('the table is gone'));
 
         $this->assertSame(
+            [
+                'state' => 'failed',
+                'message' => FailedWindow::MESSAGE,
+                'reason' => 'RuntimeException: the table is gone',
+            ],
+            $result->toArray(),
+        );
+    }
+
+    public function test_a_failing_window_logs_its_class_message_key_and_reader(): void
+    {
+        $log = $this->createMock(LoggerInterface::class);
+        $log->expects($this->once())->method('error')->with(
+            'The window shelf.lent failed: RuntimeException: the table is gone',
+            $this->callback(
+                fn (array $context): bool => $context['key'] === 'shelf.lent'
+                    && $context['reader'] === ShelfLayoutResolver::class
+                    && $context['exception'] instanceof RuntimeException,
+            ),
+        );
+        $this->app->instance(LoggerInterface::class, $log);
+
+        $this->resultOf(fn () => throw new RuntimeException('the table is gone'));
+    }
+
+    public function test_a_part_with_an_unknown_style_names_the_styles_allowed(): void
+    {
+        $result = $this->resultOf(
+            fn () => DeclaredLayoutData::of(LayoutPartData::text('when', 'Now', 'clock')),
+        );
+
+        $this->assertSame('failed', $result->toArray()['state']);
+        $this->assertStringContainsString('LayoutRefused', $result->toArray()['reason']);
+        $this->assertStringContainsString('the style clock', $result->toArray()['reason']);
+        $this->assertStringContainsString(
+            'Styles allowed: plain, heading, muted, badge, code, keyHint, paragraph, time.',
+            $result->toArray()['reason'],
+        );
+    }
+
+    public function test_the_failed_window_names_no_reason_outside_local_and_testing(): void
+    {
+        $this->app['env'] = 'production';
+
+        $result = $this->resultOf(fn () => throw new RuntimeException('the table is gone'));
+
+        $this->assertSame(
             ['state' => 'failed', 'message' => FailedWindow::MESSAGE, 'reason' => null],
             $result->toArray(),
         );

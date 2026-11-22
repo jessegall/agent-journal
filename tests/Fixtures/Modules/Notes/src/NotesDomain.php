@@ -14,15 +14,12 @@ use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasLinkRecords;
-use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\AssignableContributor;
 use App\Domains\Contracts\LinkRecordProvider;
 use App\Domains\Contracts\StateProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Numbers\Contracts\NumberedModelProvider;
-use App\Numbers\Support\NumberedModel;
 use App\Processes\Contracts\CommandRuleProvider;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Values\ArgumentGrammar;
@@ -93,7 +90,6 @@ final class NotesDomain extends Domain implements
     CommandProvider,
     LinkRecordProvider,
     NavigationProvider,
-    NumberedModelProvider,
     PageProvider,
     PolicyProvider,
     SectionProvider,
@@ -103,7 +99,6 @@ final class NotesDomain extends Domain implements
 {
     use HasAssignables;
     use HasLinkRecords;
-    use HasNumberedModels;
     use HasStates;
 
     public function description(): string
@@ -124,15 +119,6 @@ final class NotesDomain extends Domain implements
             ->values(NoteValue::class)
             ->commands(WriteNote::class)
             ->build();
-    }
-
-    public function numberedModels(): array
-    {
-        return [
-            NumberedModel::global(Note::class),
-            NumberedModel::global(NotePage::class),
-            NumberedModel::global(NoteSnapshot::class),
-        ];
     }
 
     public function linkRecords(): array

@@ -4,7 +4,7 @@ import { Link, router, useHttp, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue';
 import Button from '@kit/Button';
 import Field from '@kit/Field';
-import Modal from '@kit/Modal';
+import Dialog from '@kit/Dialog';
 import { followPage } from '@kit/followPage';
 import { keyedPost } from '@kit/keyedPost';
 import { newRequestId } from '@kit/requestId';
@@ -508,7 +508,7 @@ onBeforeUnmount(() => following?.stop());
 </script>
 
 <template>
-    <Modal :is-open="true" :title="titles[mode]" @close="close">
+    <Dialog :open="true" :title="titles[mode]" @close="close">
         <form class="flex flex-col gap-3" @submit.prevent="submit" @focusin="noteFocus">
             <template v-if="mode === 'switch'">
                 <p class="text-small text-text-3">
@@ -679,5 +679,5 @@ onBeforeUnmount(() => following?.stop());
                 {{ mode === 'switch' && isReviewing ? 'Confirm switch' : titles[mode] }}
             </Button>
         </template>
-    </Modal>
+    </Dialog>
 </template>

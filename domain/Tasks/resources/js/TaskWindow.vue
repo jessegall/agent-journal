@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
-import ActionsMenu from '@kit/ActionsMenu';
-import ActionsMenuItem from '@kit/ActionsMenuItem';
+import Menu from '@kit/Menu';
+import MenuItem from '@kit/MenuItem';
+import MenuItemLabel from '@kit/MenuItemLabel';
 import Button from '@kit/Button';
 import { keyedPost } from '@kit/keyedPost';
 import CommentsPanel from '@kit/CommentsPanel';
@@ -141,14 +142,14 @@ function back(): void {
                         <span class="text-small text-text-3">{{ data.actions.startReason }}</span>
                     </template>
                     <template v-if="data.actions.mayBlock || data.actions.mayCancel">
-                        <ActionsMenu :label="`Actions for task ${data.number}`">
+                        <Menu :label="`Actions for task ${data.number}`">
                             <template v-if="data.actions.mayBlock">
-                                <ActionsMenuItem @click="dialog = 'block'">Block task</ActionsMenuItem>
+                                <MenuItem @click="dialog = 'block'"><MenuItemLabel>Block task</MenuItemLabel></MenuItem>
                             </template>
                             <template v-if="data.actions.mayCancel">
-                                <ActionsMenuItem @click="dialog = 'cancel'">Cancel task</ActionsMenuItem>
+                                <MenuItem @click="dialog = 'cancel'"><MenuItemLabel>Cancel task</MenuItemLabel></MenuItem>
                             </template>
-                        </ActionsMenu>
+                        </Menu>
                     </template>
                 </div>
                 <template v-if="startStatus === 'unknown'">

@@ -100,6 +100,20 @@ final class ChildClaim extends Model implements ReadableModel
     // ----------[ Answers ]----------
 
     /**
+     * Refuses a claim whose parent's HEAD moved since the read: the old reference is never reinterpreted.
+     *
+     * @throws ChildClaimRefused
+     */
+    public function assertHeadUnmoved(CommitObservation $now): void
+    {
+        if ($now->headOid !== $this->base_oid) {
+            throw ChildClaimRefused::baseMoved($this->base_oid, $now->headOid);
+        }
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
      * The checkout the relay prepares the child's worktree for: this claim, its generation, whether the child writes
      * and the commit it starts from.
      *
@@ -113,18 +127,6 @@ final class ChildClaim extends Model implements ReadableModel
             $this->role === ChildRole::Writer,
             $this->base_oid,
         ));
-    }
-
-    /**
-     * Refuses a claim whose parent's HEAD moved since the read: the old reference is never reinterpreted.
-     *
-     * @throws ChildClaimRefused
-     */
-    public function assertHeadUnmoved(CommitObservation $now): void
-    {
-        if ($now->headOid !== $this->base_oid) {
-            throw ChildClaimRefused::baseMoved($this->base_oid, $now->headOid);
-        }
     }
 
     // ----------[ Internals ]----------

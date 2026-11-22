@@ -14,7 +14,6 @@ use App\Domains\Contracts\StateProvider;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\StateCatalog\StateTypeRegistry;
 use App\Links\Support\LinkTypeRegistry;
-use App\Numbers\Contracts\NumberedModelProvider;
 use Domain\Chat\ChatDomain;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\TestCase;
@@ -36,7 +35,6 @@ final class CoreMessagingWithoutChatTest extends TestCase
         )));
         $this->assertNotInstanceOf(StateProvider::class, $chat);
         $this->assertNotInstanceOf(LinkRecordProvider::class, $chat);
-        $this->assertNotInstanceOf(NumberedModelProvider::class, $chat);
     }
 
     public function test_core_registers_the_messaging_mechanics(): void

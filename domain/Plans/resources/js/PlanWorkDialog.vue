@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import Button from '@kit/Button';
 import { keyedPost } from '@kit/keyedPost';
-import Modal from '@kit/Modal';
+import Dialog from '@kit/Dialog';
 import { useWindowReload } from '@kit/useWindowQuery';
 import { assignWork, reassignWork } from '@generated/routes/plans';
 import type { PlanWorkPreviewData } from '@generated/types/plans';
@@ -75,8 +75,8 @@ function send(): void {
 </script>
 
 <template>
-    <Modal
-        :is-open="true"
+    <Dialog
+        :open="true"
         :title="holder === undefined ? `Assign plan ${number}` : `Reassign plan ${number}`"
         @close="emit('close')"
     >
@@ -133,5 +133,5 @@ function send(): void {
                 >
             </template>
         </template>
-    </Modal>
+    </Dialog>
 </template>

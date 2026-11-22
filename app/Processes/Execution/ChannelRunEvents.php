@@ -100,8 +100,12 @@ final class ChannelRunEvents implements RunEvents
     {
         try {
             return $this->processes->checkRunCurrency($this->runId, $this->eventKey)->staleReason;
-        } catch (CallFailed) {
-            return 'registry-unavailable: the journal could not confirm the rules this part was admitted under';
+        } catch (CallFailed $failure) {
+            return sprintf(
+                'registry-unavailable: the journal could not confirm the rules this part was admitted under (%s: %s)',
+                $failure::class,
+                $failure->getMessage(),
+            );
         }
     }
 

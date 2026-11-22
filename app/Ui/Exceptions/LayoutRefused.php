@@ -15,12 +15,28 @@ final class LayoutRefused extends RuntimeException
 {
     public static function unknownSize(string $path, LayoutTag $tag, string $size): self
     {
-        return new self("Layout part {$path} ({$tag->value}) has the size {$size}, which it does not take.");
+        $allowed = $tag->sizes() === [] ? 'none' : implode(', ', $tag->sizes());
+
+        return new self(sprintf(
+            'Layout part %s (%s) has the size %s, which it does not take. Sizes allowed: %s.',
+            $path,
+            $tag->value,
+            $size,
+            $allowed,
+        ));
     }
 
     public static function unknownStyle(string $path, LayoutTag $tag, string $style): self
     {
-        return new self("Layout part {$path} ({$tag->value}) has the style {$style}, which it does not take.");
+        $allowed = implode(', ', $tag->styles());
+
+        return new self(sprintf(
+            'Layout part %s (%s) has the style %s, which it does not take. Styles allowed: %s.',
+            $path,
+            $tag->value,
+            $style,
+            $allowed,
+        ));
     }
 
     public static function childrenNotAllowed(string $path, LayoutTag $tag): self
@@ -28,16 +44,28 @@ final class LayoutRefused extends RuntimeException
         return new self("Layout part {$path} ({$tag->value}) holds children, which it does not take.");
     }
 
-    public static function toneNotAllowed(string $path, string $tone): self
+    /**
+     * @param  list<string>  $allowed
+     */
+    public static function toneNotAllowed(string $path, string $tone, array $allowed): self
     {
-        return new self("Layout part {$path} has the tone {$tone}; only a badge takes a tone, and only a known one.");
+        $known = implode(', ', $allowed);
+
+        return new self(sprintf(
+            'Layout part %s has the tone %s; only a badge takes a tone, and only a known one. Tones allowed: %s.',
+            $path,
+            $tone,
+            $known,
+        ));
     }
 
     public static function bindingMismatch(string $path, LayoutTag $tag): self
     {
-        return new self(
-            "Layout part {$path} ({$tag->value}) takes an action binding only as an action, a field binding only as a field.",
-        );
+        return new self(sprintf(
+            'Layout part %s (%s) takes an action binding only as an action, a field binding only as a field.',
+            $path,
+            $tag->value,
+        ));
     }
 
     public static function submitOutsideForm(string $path): self

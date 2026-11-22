@@ -122,6 +122,16 @@ final class TaskHistoryEntry extends Model implements ReadableModel
     // ----------[ Answers ]----------
 
     /**
+     * The entries of one task in their order; the table has no updated_at.
+     */
+    public function defaultReadOrder(): ReadOrder
+    {
+        return ReadOrder::by(['task_history.task_id', 'task_history.sequence'], 'task_history.id');
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
      * The entry as Tasks' history read gives it, no model leaving the domain.
      *
      * @return Attribute<TaskTransition, never>
@@ -139,14 +149,6 @@ final class TaskHistoryEntry extends Model implements ReadableModel
             $this->sequence,
             CarbonImmutable::parse($this->created_at),
         ));
-    }
-
-    /**
-     * The entries of one task in their order; the table has no updated_at.
-     */
-    public function defaultReadOrder(): ReadOrder
-    {
-        return ReadOrder::by(['task_history.task_id', 'task_history.sequence'], 'task_history.id');
     }
 
     // ----------[ Internals ]----------

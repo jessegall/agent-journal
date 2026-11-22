@@ -14,6 +14,7 @@ use App\Contracts\CommandRefusal;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -21,11 +22,12 @@ use Throwable;
 
 /**
  * Turns a failure inside an MCP call into the refusal its caller is shown. A failure the journal did not name is
- * reported and shown only as a generic message with the call's correlation id.
+ * reported and shown only as a generic message with the call's correlation id; in the local and testing environments
+ * the details also name the failure's class and message.
  */
 final readonly class RefusalMapper implements RefusalMapperContract
 {
-    public function __construct(private ExceptionHandler $exceptions) {}
+    public function __construct(private ExceptionHandler $exceptions, private Application $app) {}
 
     /**
      * The failure as a caller is shown it; a failure nothing names is reported and shown only with its correlation id.
@@ -82,6 +84,9 @@ final readonly class RefusalMapper implements RefusalMapperContract
         return new MappedRefusal(
             RefusalCode::Unavailable,
             "The journal could not complete this call. Correlation id: {$correlationId}.",
+            $this->app->environment('local', 'testing')
+                ? ['exception' => $failure::class, 'cause' => $failure->getMessage()]
+                : [],
         );
     }
 }

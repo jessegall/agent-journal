@@ -11,8 +11,9 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
 /**
- * Opens an agent's main runtime as a terminal on the host the user attached from, for journal-agent attach. Run for
- * an authenticated host by the journal itself (internal, not exported).
+ * Opens an agent's main runtime as a terminal on the host the user attached from, for journal-agent attach, and seats
+ * the agent at this journal's main desk. A connected project's main agent opens through OpenBindingMainRuntime
+ * instead. Run for an authenticated host by the journal itself (internal, not exported).
  *
  * @extends Command<OpenedRuntime>
  */

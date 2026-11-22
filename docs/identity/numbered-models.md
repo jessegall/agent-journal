@@ -1,7 +1,7 @@
 # Numbered and unnumbered models
 
 Every record has a ULID key that machines use. A record that people talk about, such as plan 12 or task 47, also
-has a number. This guide says what each model needs and how a domain declares its numbered models.
+has a number. This guide says what each model needs; the model alone says it is numbered and how.
 
 ## Every model
 
@@ -50,23 +50,12 @@ final class Phase extends Model implements Assignable, Numbered
 - A number is given once, when the record is created, and never changes: changing it throws `NumberChanged`.
   Phases are ordered by their number; they have no position.
 
-## Declaring them in the domain
+## Nothing is declared in the domain
 
-The domain declares each numbered model through `NumberedModelProvider` and its trait `HasNumberedModels`:
-
-```php
-final class PlansDomain extends Domain implements AssignableContributor, CommandProvider, NavigationProvider, NumberedModelProvider, PageProvider, SectionProvider
-{
-    use HasAssignables, HasNumberedModels;
-
-    public function numberedModels(): array
-    {
-        return [NumberedModel::global(Plan::class), NumberedModel::within(Phase::class, Plan::class)];
-    }
-}
-```
-
-The journal checks the declarations when it boots, and the number allocator refuses a model nobody declared.
+A domain lists no numbered model. Once every link type is registered, the journal finds each model with a link type
+that implements `Numbered`, and checks it: a model that implements `Numbered` without `HasNumber`, or that shares a
+table with another numbered model, stops the boot. The number allocator refuses a record whose link type names no such
+model. A new numbered model needs a link type, `Numbered` and `HasNumber`, and nothing in its domain class.
 
 ## Creating numbered records
 

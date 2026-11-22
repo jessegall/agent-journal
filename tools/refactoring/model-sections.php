@@ -7,7 +7,8 @@ declare(strict_types=1);
  *
  *   php tools/refactoring/model-sections.php app domain
  *       prints "file:line<TAB>what is wrong" for a method outside a section, an unknown section name, a section out
- *       of order or a section written twice, and fails while there is one.
+ *       of order or a section written twice, an accessor (a method returning Attribute) outside Accessors or any
+ *       other method inside it, and fails while there is one.
  *   php tools/refactoring/model-sections.php --fix app domain
  *       moves each model's methods into their sections, in the rule's order, keeping each method's text whole.
  */
@@ -21,7 +22,7 @@ use PhpParser\ParserFactory;
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 require __DIR__.'/models.php';
 
-const SECTIONS = ['Constructors', 'Queries', 'Mutations', 'Answers', 'Relations', 'Internals', 'Scopes'];
+const SECTIONS = ['Constructors', 'Queries', 'Mutations', 'Answers', 'Accessors', 'Relations', 'Internals', 'Scopes'];
 
 const RELATIONS = [
     'BelongsTo', 'BelongsToMany', 'HasMany', 'HasOne', 'HasManyThrough', 'HasOneThrough', 'MorphTo', 'MorphMany',
@@ -30,7 +31,17 @@ const RELATIONS = [
 
 const MARKER = '/^\s*\/\/ -+\[ (\w+) \]-+\s*$/';
 
+const MARKER_ANYWHERE = '/^[ \t]*\/\/ -+\[ (\w+) \]-+[ \t]*$/m';
+
 const ROW_WRITES = '/->(save|update|delete|forceDelete|increment|decrement|forceFill|fill|touch|push|restore)\(/';
+
+/**
+ * Whether a method is an accessor: it returns an Attribute, whatever its visibility.
+ */
+function isAccessor(ClassMethod $method): bool
+{
+    return $method->returnType instanceof Node\Name && $method->returnType->getLast() === 'Attribute';
+}
 
 /**
  * The section a method belongs in, read from its name, visibility, return type and what its body does.
@@ -44,6 +55,7 @@ function sectionOf(ClassMethod $method, string $body): string
     return match (true) {
         in_array($name, ['casts', 'boot', 'booted'], true) => 'Constructors',
         $isScope => 'Scopes',
+        isAccessor($method) => 'Accessors',
         in_array($returns, RELATIONS, true) => 'Relations',
         ! $method->isPublic() => 'Internals',
         $method->isStatic() && preg_match(ROW_MAKES, $body) === 1 => 'Constructors',
@@ -91,7 +103,7 @@ function faultsOf(string $source, Class_ $class): array
     $methods = [];
 
     foreach ($class->getMethods() as $method) {
-        $methods[$method->getStartLine()] = $method->name->toString();
+        $methods[$method->getStartLine()] = $method;
     }
 
     for (; $line <= $class->getEndLine(); $line++) {
@@ -111,8 +123,18 @@ function faultsOf(string $source, Class_ $class): array
             $section = $name;
         }
 
-        if (isset($methods[$line]) && $section === null) {
-            $faults[] = "{$line}\tmethod {$methods[$line]} is outside a section";
+        if (! isset($methods[$line])) {
+            continue;
+        }
+
+        $name = $methods[$line]->name->toString();
+
+        if ($section === null) {
+            $faults[] = "{$line}\tmethod {$name} is outside a section";
+        } elseif (isAccessor($methods[$line]) !== ($section === 'Accessors')) {
+            $faults[] = isAccessor($methods[$line])
+                ? "{$line}\taccessor {$name} sits in {$section}, not in Accessors"
+                : "{$line}\tmethod {$name} is no accessor, so it does not belong in Accessors";
         }
     }
 
@@ -120,7 +142,47 @@ function faultsOf(string $source, Class_ $class): array
 }
 
 /**
- * The model's source with its methods sorted into sections.
+ * The sections the source's markers open, by the offset where each marker line starts.
+ *
+ * @return array<int, string>
+ */
+function markedSections(string $source): array
+{
+    $marked = [];
+
+    if (preg_match_all(MARKER_ANYWHERE, $source, $matches, PREG_OFFSET_CAPTURE) === 0) {
+        return $marked;
+    }
+
+    foreach ($matches[1] as $at => $match) {
+        $marked[$matches[0][$at][1]] = $match[0];
+    }
+
+    return $marked;
+}
+
+/**
+ * The section a method already sits in, by the last marker above it, as long as that section is a known one and the
+ * method is no accessor; none for a method with no marker above it, so it is placed by its looks.
+ *
+ * @param  array<int, string>  $marked
+ */
+function currentSectionOf(array $marked, ClassMethod $method): string|null
+{
+    $current = null;
+
+    foreach ($marked as $offset => $name) {
+        if ($offset < startOf($method) && in_array($name, SECTIONS, true) && $name !== 'Accessors') {
+            $current = $name;
+        }
+    }
+
+    return $current;
+}
+
+/**
+ * The model's source with its methods sorted into sections: a method stays in the section it already sits in, an
+ * accessor goes to Accessors, and a method with no section yet goes where its looks put it.
  */
 function sorted(string $source, Class_ $class): string
 {
@@ -139,10 +201,12 @@ function sorted(string $source, Class_ $class): string
     }
 
     $sections = array_fill_keys(SECTIONS, []);
+    $marked = markedSections($source);
 
     foreach ($methods as $method) {
         $body = substr($source, startOf($method), $method->getEndFilePos() + 1 - startOf($method));
-        $sections[sectionOf($method, $body)][] = textOf($source, $method);
+        $section = isAccessor($method) ? 'Accessors' : currentSectionOf($marked, $method) ?? sectionOf($method, $body);
+        $sections[$section][] = textOf($source, $method);
     }
 
     $parts = [];

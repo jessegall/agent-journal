@@ -22,6 +22,7 @@ use App\Web\Exceptions\PrivateRecordMissing;
 use App\Web\Exceptions\ReaderDataMismatch;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
@@ -35,7 +36,9 @@ use Throwable;
  * Turns one window, section or inspector into its result: denied without calling the reader when a check refuses or
  * the reader's record is private (missing and denied alike), ready with the reader's Data serialized inside this
  * boundary (an authorized empty read is ready, never a result of its own), or failed with a neutral message while the
- * error is logged with the key. A sign-in, CSRF, validation or redirect response still reaches the browser as it is.
+ * error is logged with the key and the reader; in the local and testing environments the failed result also names the
+ * error's class and message as its reason. A sign-in, CSRF, validation or redirect response still reaches the browser
+ * as it is.
  */
 final readonly class WindowResults implements WindowResultsContract
 {
@@ -44,6 +47,7 @@ final readonly class WindowResults implements WindowResultsContract
         private VisibilityChecks $visibility,
         private LoggerInterface $log,
         private ReflectorFactory $reflectors,
+        private Application $app,
     ) {}
 
     /**
@@ -85,25 +89,30 @@ final readonly class WindowResults implements WindowResultsContract
             return DeniedWindow::make();
         } catch (CodedRefusal $refusal) {
             if ($refusal->refusalCode() !== RefusalCode::RecordUnavailable) {
-                return $this->failed($key, $refusal);
+                return $this->failed($key, $resolver, $refusal);
             }
 
             return UnavailableWindow::make();
         } catch (Throwable $failure) {
-            return $this->failed($key, $failure);
+            return $this->failed($key, $resolver, $failure);
         }
     }
 
     /**
-     * A neutral failure for the browser, with the error logged under the window's key.
+     * A neutral failure for the browser, with the error logged under the window's key and reader; where the
+     * developer is reading (local and testing), the failure also names the error's class and message.
      */
-    private function failed(string $key, Throwable $failure): FailedWindow
+    private function failed(string $key, ResolverDefinition $resolver, Throwable $failure): FailedWindow
     {
         $this->log->error(
-            "The window {$key} failed: {$failure->getMessage()}",
-            ['key' => $key, 'exception' => $failure],
+            "The window {$key} failed: {$failure::class}: {$failure->getMessage()}",
+            ['key' => $key, 'reader' => $resolver->resolver, 'exception' => $failure],
         );
 
-        return FailedWindow::make();
+        if (! $this->app->environment('local', 'testing')) {
+            return FailedWindow::make();
+        }
+
+        return FailedWindow::because("{$failure::class}: {$failure->getMessage()}");
     }
 }

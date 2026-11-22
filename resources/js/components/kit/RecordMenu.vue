@@ -5,9 +5,11 @@ import { inertiaMethods } from '@/components/layout/layoutForm';
 import { formSendingHooks } from '@/composables/usePageChanges';
 import { useHostProp } from '@/framework/hostProp';
 import type { LayoutMenuData, LayoutMenuItemData } from '@/generated/types/core';
-import ActionsMenu from './ActionsMenu.vue';
-import ActionsMenuItem from './ActionsMenuItem.vue';
 import Icon from './Icon.vue';
+import Menu from './Menu.vue';
+import MenuItem from './MenuItem.vue';
+import MenuItemLabel from './MenuItemLabel.vue';
+import MenuSeparator from './MenuSeparator.vue';
 
 /**
  * A record's actions menu as the server built it for this actor and this record: its groups in order, set apart by
@@ -16,7 +18,7 @@ import Icon from './Icon.vue';
  * draws nothing.
  */
 const props = defineProps<{ menu: LayoutMenuData }>();
-const actions = useTemplateRef<InstanceType<typeof ActionsMenu>>('actions');
+const actions = useTemplateRef<InstanceType<typeof Menu>>('actions');
 const hostProp = useHostProp();
 
 function send(item: LayoutMenuItemData): void {
@@ -34,7 +36,7 @@ function openFromContext(): void {
         return;
     }
 
-    actions.value?.openFromContext();
+    actions.value?.open();
 }
 
 defineExpose({ openFromContext });
@@ -42,32 +44,32 @@ defineExpose({ openFromContext });
 
 <template>
     <template v-if="menu.groups.length > 0">
-        <ActionsMenu ref="actions" :label="menu.label">
+        <Menu ref="actions" :label="menu.label">
             <template v-for="(group, index) in menu.groups" :key="group.key">
                 <template v-if="index > 0">
-                    <hr role="separator" class="my-0.5 border-line" />
+                    <MenuSeparator />
                 </template>
-                <div role="group" class="flex flex-col gap-0.5">
+                <div role="group" class="flex flex-col">
                     <template v-for="item in group.items" :key="item.key">
                         <template v-if="item.method === 'GET'">
-                            <ActionsMenuItem :href="item.href">
-                                <template v-if="item.icon !== undefined">
-                                    <Icon :name="item.icon" :size="13" />
+                            <MenuItem :href="item.href">
+                                <template v-if="item.icon !== undefined" #leading>
+                                    <Icon :name="item.icon" :size="14" />
                                 </template>
-                                {{ item.label }}
-                            </ActionsMenuItem>
+                                <MenuItemLabel>{{ item.label }}</MenuItemLabel>
+                            </MenuItem>
                         </template>
                         <template v-else>
-                            <ActionsMenuItem @click="send(item)">
-                                <template v-if="item.icon !== undefined">
-                                    <Icon :name="item.icon" :size="13" />
+                            <MenuItem @click="send(item)">
+                                <template v-if="item.icon !== undefined" #leading>
+                                    <Icon :name="item.icon" :size="14" />
                                 </template>
-                                {{ item.label }}
-                            </ActionsMenuItem>
+                                <MenuItemLabel>{{ item.label }}</MenuItemLabel>
+                            </MenuItem>
                         </template>
                     </template>
                 </div>
             </template>
-        </ActionsMenu>
+        </Menu>
     </template>
 </template>

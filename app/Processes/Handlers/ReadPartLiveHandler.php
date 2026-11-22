@@ -13,6 +13,7 @@ use App\Processes\Support\PartAssessments;
 use App\Processes\Support\RunUpdates;
 use App\Processes\Support\StoredOutput;
 use App\Processes\Values\OutputProblem;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
@@ -25,6 +26,7 @@ final readonly class ReadPartLiveHandler implements CommandHandler
         private PartAssessments $assessments,
         private StoredOutput $output,
         private RunUpdates $updates,
+        private LoggerInterface $log,
     ) {}
 
     public function handle(ReadPartLive $command): string
@@ -51,7 +53,11 @@ final readonly class ReadPartLiveHandler implements CommandHandler
                 $frames = $this->output->frames($part, $stream, $checkpoint->offsetOf($stream));
                 $checkpoint = $reader->read($checkpoint, ...$frames);
             }
-        } catch (Throwable) {
+        } catch (Throwable $failure) {
+            $this->log->error(
+                "The live reader of part run {$command->partRunId} failed: {$failure::class}: {$failure->getMessage()}",
+                ['part_run' => $command->partRunId, 'exception' => $failure],
+            );
             $position->markFailed();
 
             return $position->interpretation->value;

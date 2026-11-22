@@ -135,6 +135,7 @@ use App\Agents\Commands\InterruptAgent;
 use App\Agents\Commands\InterruptNavigation;
 use App\Agents\Commands\MarkMenuEntryStale;
 use App\Agents\Commands\OpenAgentRuntime;
+use App\Agents\Commands\OpenBindingMainRuntime;
 use App\Agents\Commands\OpenHostMainRuntime;
 use App\Agents\Commands\OpenTerminalView;
 use App\Agents\Commands\ProveNavigation;
@@ -882,10 +883,8 @@ use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Numbers\Commands\InstallNumbers;
 use App\Numbers\Contracts\Numbered;
-use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Exceptions\InvalidRecordReference;
 use App\Numbers\Support\HasNumber;
-use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\RecordReference;
 use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ProfileAudience;
@@ -1604,7 +1603,6 @@ final class CoreApi
                 AssignmentResolver::class,
                 AssignmentRegistration::class,
                 Numbered::class,
-                NumberedModelProvider::class,
                 AssigneeResolver::class,
                 AssignmentWriter::class,
                 AssignmentTransaction::class,
@@ -2109,7 +2107,6 @@ final class CoreApi
                 AssignmentOutcomeType::class,
                 AssignmentData::class,
                 RecordHolderData::class,
-                NumberedModel::class,
                 RecordReference::class,
                 Exports::class,
                 ExportBuilder::class,
@@ -2432,6 +2429,7 @@ final class CoreApi
                 ReportRuntimeExit::class,
                 ReportRuntimeScreen::class,
                 OpenHostMainRuntime::class,
+                OpenBindingMainRuntime::class,
                 MarkSilentSessions::class,
                 CertifyPassedStops::class,
                 EndTerminalViews::class,
