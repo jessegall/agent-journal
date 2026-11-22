@@ -178,14 +178,29 @@ export function useTerminalController(agentId: Ref<string>, isShown: Ref<boolean
     });
     watch(isShown, followVisibility);
 
+    /**
+     * A page the browser hides, freezes or unloads stops reading at once; on return the view opens afresh in Watch,
+     * blank until a fresh frame arrives.
+     */
+    function stopForPage(): void {
+        stopTimers();
+        subscription.stop();
+    }
+
     onMounted(() => {
         document.addEventListener('visibilitychange', followVisibility);
+        document.addEventListener('freeze', stopForPage);
+        window.addEventListener('pagehide', stopForPage);
+        window.addEventListener('pageshow', followVisibility);
         if (isWatching()) {
             start();
         }
     });
     onBeforeUnmount(() => {
         document.removeEventListener('visibilitychange', followVisibility);
+        document.removeEventListener('freeze', stopForPage);
+        window.removeEventListener('pagehide', stopForPage);
+        window.removeEventListener('pageshow', followVisibility);
         stopTimers();
         subscription.stop();
     });

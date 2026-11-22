@@ -148,6 +148,18 @@ function onCompositionEnd(): void {
     isComposing.value = false;
 }
 
+// Keys typed while control was gone are dropped, never replayed.
+watch(
+    () => view.value.state,
+    (state) => {
+        if (state !== 'controlling') {
+            typed.value = '';
+            preview.value = null;
+            isComposing.value = false;
+        }
+    },
+);
+
 watch(
     () => [props.identity?.privacyRevision, props.control.promptRevision()],
     () => {
@@ -176,7 +188,13 @@ async function copy(text: string): Promise<void> {
         <div class="flex flex-wrap items-center gap-1.5">
             <span ref="controlsButton" tabindex="-1" class="text-small text-text-2">{{ ownerLabel }}</span>
             <template v-if="view.state === 'watching' && !otherViewControls && control.mayTake()">
-                <Button variant="primary" size="sm" @click="control.take()">Take control</Button>
+                <template v-if="view.unsentLine === ''">
+                    <Button variant="primary" size="sm" @click="control.take()">Take control</Button>
+                </template>
+                <template v-else>
+                    <span class="text-small text-text-2">Unfinished input</span>
+                    <Button variant="primary" size="sm" @click="control.take()">Resolve</Button>
+                </template>
             </template>
             <template v-if="view.state === 'requesting'">
                 <span class="text-small text-text-2">Requesting control…</span>

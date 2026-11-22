@@ -260,7 +260,8 @@ export class TerminalControl {
 
     /**
      * Drops control in this view at once, as on a hide, a denial or an identity or privacy change: the grant id is
-     * forgotten and the host's hold runs out by itself.
+     * forgotten and the host's hold runs out by itself. An unfinished line stays known to this writer, so on return
+     * Resolve takes control again and offers its choices.
      */
     retire(notice = ''): void {
         this.forget('watching');
@@ -300,7 +301,7 @@ export class TerminalControl {
 
         this.grantId = current.grantId;
         this.nextSequence = current.nextSequence;
-        this.publish({ state: 'controlling', notice: '' });
+        this.publish({ state: this.current.unsentLine === '' ? 'controlling' : 'choosing', notice: '' });
     }
 
     /**

@@ -120,12 +120,20 @@ export function useTerminalControl(
         }
     }
 
+    function stopForPage(): void {
+        control.retire();
+    }
+
     onMounted(() => {
         document.addEventListener('visibilitychange', stopWhenHidden);
+        document.addEventListener('freeze', stopForPage);
+        window.addEventListener('pagehide', stopForPage);
         renewal = window.setInterval(() => void control.renew(), CONTROL_RENEW_MILLISECONDS);
     });
     onBeforeUnmount(() => {
         document.removeEventListener('visibilitychange', stopWhenHidden);
+        document.removeEventListener('freeze', stopForPage);
+        window.removeEventListener('pagehide', stopForPage);
         window.clearInterval(renewal);
         control.retire();
     });
