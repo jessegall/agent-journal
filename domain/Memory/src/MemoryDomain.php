@@ -7,12 +7,9 @@ namespace Domain\Memory;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyDefinition;
 use App\Bus\Contracts\CommandProvider;
-use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
-use App\Numbers\Contracts\NumberedModelProvider;
-use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
 use Domain\Memory\Api\MemoryCard;
@@ -31,12 +28,9 @@ use Domain\Memory\Skills\MemorySkill;
 final class MemoryDomain extends Domain implements
     CommandProvider,
     McpToolProvider,
-    NumberedModelProvider,
     PolicyProvider,
     SkillProvider
 {
-    use HasNumberedModels;
-
     public function description(): string
     {
         return 'The weighted memories each agent keeps past its context window.';
@@ -57,11 +51,6 @@ final class MemoryDomain extends Domain implements
             ->values(MemoryPage::class, MemoryCard::class)
             ->exceptions(MemoryUnavailable::class, MemoryRevisionChanged::class)
             ->build();
-    }
-
-    public function numberedModels(): array
-    {
-        return [NumberedModel::global(Memory::class)];
     }
 
     public function policies(): array

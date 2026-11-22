@@ -10,15 +10,12 @@ use App\Autoload\Support\FolderClasses;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandProvider;
 use App\Domains\Concerns\HasLinkRecords;
-use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Contracts\LinkRecordProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalTool;
-use App\Numbers\Contracts\NumberedModelProvider;
-use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Support\ShareRecordDefinition;
@@ -108,7 +105,6 @@ use Domain\Documents\Mcp\DocumentSearch;
 use Domain\Documents\Mcp\OpenReportsOverview;
 use Domain\Documents\Mcp\ReportSearch;
 use Domain\Documents\Models\Document;
-use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 use Domain\Documents\Policies\DocumentPolicy;
@@ -129,14 +125,12 @@ final class DocumentsDomain extends Domain implements
     MenuProvider,
     NativePartProvider,
     NavigationProvider,
-    NumberedModelProvider,
     PageProvider,
     PolicyProvider,
     SectionProvider,
     ShareRecordContributor
 {
     use HasLinkRecords;
-    use HasNumberedModels;
 
     /**
      * The full key of a document's actions menu.
@@ -220,15 +214,6 @@ final class DocumentsDomain extends Domain implements
                 ReportMissing::class,
             )
             ->build();
-    }
-
-    public function numberedModels(): array
-    {
-        return [
-            NumberedModel::global(Document::class),
-            NumberedModel::within(DocumentRevision::class, Document::class),
-            NumberedModel::global(Report::class),
-        ];
     }
 
     public function linkRecords(): array

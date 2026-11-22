@@ -39,8 +39,6 @@ use App\Communication\Support\RegisteredInboxes;
 use App\Communication\Support\SelectedMessages;
 use App\Hooks\Contracts\IncomingWorkRegistration;
 use App\Links\Support\LinkTypeRegistry;
-use App\Numbers\Contracts\NumberedModelRegistration;
-use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Records\Contracts\RecordProviderRegistration;
 use Carbon\CarbonImmutable;
@@ -71,7 +69,6 @@ final class CommunicationServiceProvider extends ServiceProvider
     public function boot(
         LinkTypeRegistry $links,
         RecordProviderRegistration $records,
-        NumberedModelRegistration $numbers,
         PolicyCatalogue $policies,
         AssignmentRegistration $assignments,
         PendingWorkSources $pendingWork,
@@ -125,6 +122,5 @@ final class CommunicationServiceProvider extends ServiceProvider
         );
 
         $records->register(Message::LINK_TYPE, MessageLinkRecords::class);
-        $numbers->register(NumberedModel::global(Message::class));
     }
 }

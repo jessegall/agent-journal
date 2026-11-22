@@ -11,9 +11,11 @@ use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
 use App\Bus\Support\OutsideCommandAllowance;
 use App\Numbers\Exceptions\NumberChanged;
+use App\Numbers\Exceptions\NumberedModelUndeclared;
 use App\Numbers\Exceptions\NumberLimitReached;
 use App\Numbers\Models\GlobalGroup;
 use App\Numbers\Models\NumberGroup;
+use App\Numbers\Support\NumberedTypeRegistry;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -75,6 +77,18 @@ final class NumberAllocationTest extends TestCase
         $this->assertSame(1, $this->commands->run(new WriteEntry($first, 'a')));
         $this->assertSame(2, $this->commands->run(new WriteEntry($first, 'b')));
         $this->assertSame(1, $this->commands->run(new WriteEntry($second, 'c')));
+    }
+
+    public function test_a_numbered_model_is_found_without_its_domain_listing_it(): void
+    {
+        $registry = $this->app->make(NumberedTypeRegistry::class);
+
+        $this->assertFalse(method_exists(LedgerDomain::class, 'numberedModels'));
+        $registry->requireNumbered(new Ledger()->getMorphClass());
+        $registry->requireNumbered(new LedgerEntry()->getMorphClass());
+
+        $this->expectException(NumberedModelUndeclared::class);
+        $registry->requireNumbered('ledger.nobody');
     }
 
     public function test_a_refused_command_takes_its_number_back_with_it(): void

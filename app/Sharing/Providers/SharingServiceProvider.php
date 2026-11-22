@@ -7,8 +7,6 @@ namespace App\Sharing\Providers;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyDefinition;
 use App\Autoload\Support\FolderClasses;
-use App\Numbers\Contracts\NumberedModelRegistration;
-use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Sharing\Contracts\ShareGatewayProvider;
 use App\Sharing\Contracts\SharePolicy;
@@ -16,7 +14,6 @@ use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Contracts\ShareStatusResolver;
 use App\Sharing\Gateways\Ngrok\NgrokGateway;
 use App\Sharing\Gateways\Tunler\TunlerGateway;
-use App\Sharing\Models\Share;
 use App\Sharing\Policies\ShareRequestPolicy;
 use App\Sharing\Policies\SharingPolicy;
 use App\Sharing\Support\LiveShareStatus;
@@ -44,7 +41,6 @@ final class SharingServiceProvider extends ServiceProvider
 
     public function boot(
         ShareGatewayRegistry $gateways,
-        NumberedModelRegistration $numbers,
         PolicyCatalogue $policies,
     ): void {
         $policies->register('Core', new PolicyDefinition(
@@ -57,7 +53,6 @@ final class SharingServiceProvider extends ServiceProvider
             [AccessType::Create],
         ));
 
-        $numbers->register(NumberedModel::global(Share::class));
         $gateways->register(TunlerGateway::KEY, TunlerGateway::class);
         $gateways->register(NgrokGateway::KEY, NgrokGateway::class);
 

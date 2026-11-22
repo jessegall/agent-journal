@@ -33,8 +33,6 @@ use App\Exports\Support\Exports;
 use App\Hooks\Contracts\IncomingWork;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\McpToolProvider;
-use App\Numbers\Contracts\NumberedModelProvider;
-use App\Numbers\Support\NumberedModel;
 use App\Processes\Contracts\CommandRuleProvider;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\RuleScope;
@@ -574,18 +572,6 @@ final readonly class DomainEntry
     {
         return $this->provided(StateProvider::class)
             ->map(fn (StateProvider $domain) => $domain->states())
-            ->getOrElse([]);
-    }
-
-    /**
-     * The models this domain numbers; none when it declares no NumberedModelProvider.
-     *
-     * @return list<NumberedModel>
-     */
-    public function numberedModels(): array
-    {
-        return $this->provided(NumberedModelProvider::class)
-            ->map(fn (NumberedModelProvider $domain) => $domain->numberedModels())
             ->getOrElse([]);
     }
 

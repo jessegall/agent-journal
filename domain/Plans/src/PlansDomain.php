@@ -13,7 +13,6 @@ use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandProvider;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasLinkRecords;
-use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\AssignableContributor;
 use App\Domains\Contracts\LinkRecordProvider;
@@ -21,8 +20,6 @@ use App\Domains\Contracts\StateProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
-use App\Numbers\Contracts\NumberedModelProvider;
-use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Support\ShareRecordDefinition;
@@ -110,7 +107,6 @@ final class PlansDomain extends Domain implements
     McpToolProvider,
     NativePartProvider,
     NavigationProvider,
-    NumberedModelProvider,
     PageProvider,
     PolicyProvider,
     SectionProvider,
@@ -120,7 +116,6 @@ final class PlansDomain extends Domain implements
 {
     use HasAssignables;
     use HasLinkRecords;
-    use HasNumberedModels;
     use HasStates;
 
     public function description(): string
@@ -319,11 +314,6 @@ final class PlansDomain extends Domain implements
                 NavigationItem::page('closed', 'Closed', page: 'list', query: ['state' => 'closed'], position: 30),
             ]),
         ];
-    }
-
-    public function numberedModels(): array
-    {
-        return [NumberedModel::global(Plan::class), NumberedModel::within(Phase::class, Plan::class)];
     }
 
     public function states(): array
