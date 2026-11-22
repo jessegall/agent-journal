@@ -26,6 +26,7 @@ final class TaskRequest extends FormRequest
     {
         return [
             'section' => ['nullable', 'string', 'in:logs,proofs,waits'],
+            'tab' => ['nullable', 'string', 'in:logs,proofs,waits'],
             'logs_before' => ['nullable', 'string', 'regex:/^(n|[0-9]{1,10}),(n|[0-9]{1,10})$/'],
             'proofs_after' => ['nullable', 'string', 'max:26'],
             'commentsAfter' => ['nullable', 'string', 'max:26'],
@@ -34,11 +35,22 @@ final class TaskRequest extends FormRequest
     }
 
     /**
+     * The tab the reader opened, from its tab key or the section key a native reader used; Waits when it opened none.
+     */
+    public function chosenTab(): string
+    {
+        $tab = $this->string('tab')->toString();
+        $section = $this->string('section')->toString();
+
+        return $tab !== '' ? $tab : ($section !== '' ? $section : 'waits');
+    }
+
+    /**
      * Whether the reader opened its Logs tab, so their newest page is read.
      */
     public function asksForLogs(): bool
     {
-        return $this->string('section')->toString() === 'logs';
+        return $this->chosenTab() === 'logs';
     }
 
     /**
@@ -46,7 +58,7 @@ final class TaskRequest extends FormRequest
      */
     public function asksForWaits(): bool
     {
-        return $this->string('section')->toString() === 'waits';
+        return $this->chosenTab() === 'waits';
     }
 
     /**
@@ -62,7 +74,7 @@ final class TaskRequest extends FormRequest
      */
     public function asksForProofs(): bool
     {
-        return $this->string('section')->toString() === 'proofs';
+        return $this->chosenTab() === 'proofs';
     }
 
     /**

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { ConversationIntent } from './composables/useConversationIntents';
 import { UNKNOWN_OUTCOME_TEXT } from './composables/useConversationIntents';
+import Button from '@kit/Button';
+import Spinner from '@kit/Spinner';
 import { history as historyPage } from '@generated/routes/chat';
 
 /**
@@ -26,9 +28,14 @@ const statusLabels: Record<ConversationIntent['status'], string> = {
             {{ intent.text }}
         </p>
         <span class="flex gap-2 text-small text-text-3">
-            <span>{{ statusLabels[intent.status] }}</span>
+            <span class="inline-flex items-center gap-1.5">
+                <template v-if="intent.status === 'sending' || intent.status === 'uncertain'">
+                    <Spinner />
+                </template>
+                {{ statusLabels[intent.status] }}
+            </span>
             <template v-if="intent.status === 'unknown'">
-                <button type="button" class="underline" @click="emit('checkAgain', intent)">Check again</button>
+                <Button size="small" variant="ghost" @click="emit('checkAgain', intent)">Check again</Button>
                 <a class="underline" :href="historyPage().url">Open History</a>
             </template>
         </span>

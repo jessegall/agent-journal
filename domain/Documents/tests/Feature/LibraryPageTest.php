@@ -37,6 +37,10 @@ final class LibraryPageTest extends TestCase
         'number_groups',
     ];
 
+    private const string LIST = 'page.data.root.children.1.children.0.children';
+
+    private const string CONTENT = 'page.data.root.children.1.children.0.children.3.children';
+
     private User $owner;
 
     protected function setUp(): void
@@ -47,7 +51,7 @@ final class LibraryPageTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
     }
 
-    public function test_each_record_opens_its_own_page_and_each_type_keeps_its_form(): void
+    public function test_each_record_opens_its_own_page_and_each_type_keeps_its_dialog(): void
     {
         $this->file();
 
@@ -56,15 +60,14 @@ final class LibraryPageTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('layout/DeclaredLayout')
-                ->where('page.data.root.children.2.children.0.rows.1.isCurrent', false)
-                ->where('page.data.root.children.2.children.1.rows.0.isCurrent', true)
-                ->where('page.data.root.children.3.key', 'documents')
-                ->where('page.data.root.children.3.children.1.rows.0.label', 'doc 1 · Design')
-                ->where('page.data.root.children.3.children.1.rows.0.detail', 'What we build')
-                ->where('page.data.root.children.3.children.1.rows.0.href', '/documents/docs/1')
-                ->where('page.data.root.children.3.children.2.native.component', 'documents/CreateRecordForm')
-                ->where('page.data.root.children.3.children.2.native.props.action', '/documents/docs')
-                ->where('page.data.root.children.4.children.1.rows.0.href', '/documents/reports/1'));
+                ->where(self::LIST.'.1.rows.0.isCurrent', true)
+                ->where(self::CONTENT.'.0.rows.0.label', 'doc 1 · Design')
+                ->where(self::CONTENT.'.0.rows.0.detail', 'What we build')
+                ->where(self::CONTENT.'.0.rows.0.href', '/documents/docs/1')
+                ->where(self::CONTENT.'.0.rows.1.href', '/documents/reports/1')
+                ->where('page.data.root.children.0.children.1.key', 'search')
+                ->where('page.data.root.children.0.children.2.children.0.key', 'create-doc')
+                ->where('page.data.root.children.0.children.2.children.1.key', 'create-report'));
     }
 
     public function test_the_reports_choice_lists_only_reports(): void
@@ -74,9 +77,9 @@ final class LibraryPageTest extends TestCase
         $this->actingAs($this->owner)
             ->get('/documents?type=report')
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('page.data.root.children.2.children.0.rows.2.isCurrent', true)
-                ->where('page.data.root.children.3.key', 'reports')
-                ->missing('page.data.root.children.4'));
+                ->where(self::LIST.'.1.rows.2.isCurrent', true)
+                ->has(self::CONTENT.'.0.rows', 1)
+                ->where(self::CONTENT.'.0.rows.0.href', '/documents/reports/1'));
     }
 
     public function test_a_search_that_finds_nothing_names_itself_and_offers_to_clear_it(): void
@@ -86,16 +89,21 @@ final class LibraryPageTest extends TestCase
         $this->actingAs($this->owner)
             ->get('/documents?query=absent')
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('page.data.root.children.3.children.0.text', 'Nothing matches "absent".')
-                ->where('page.data.root.children.3.children.1.action.query', ['query' => '', 'after' => '']));
+                ->where(self::CONTENT.'.0.key', 'empty')
+                ->where(self::CONTENT.'.1.children.0.key', 'clear')
+                ->where(
+                    self::CONTENT.'.1.children.0.action.query',
+                    ['query' => '', 'attention' => 'active', 'after' => ''],
+                ));
     }
 
-    public function test_a_fresh_library_says_why_it_is_empty(): void
+    public function test_a_fresh_library_says_why_it_is_empty_and_offers_to_file_the_first_document(): void
     {
         $this->actingAs($this->owner)
             ->get('/documents')
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('page.data.root.children.3.text', 'No documents or reports yet.'));
+                ->where(self::CONTENT.'.0.key', 'empty')
+                ->where(self::CONTENT.'.1.children.0.dialog.title', 'Create document'));
     }
 
     private function file(): void

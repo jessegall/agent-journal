@@ -31,13 +31,16 @@ function mountResult(
 }
 
 describe('a result', () => {
-    it('labels its skeleton with its subject and pulses only where motion is welcome', () => {
+    it('draws three placeholder rows with one busy line naming its subject, pulsing only where motion is welcome', () => {
         const view = mountResult(undefined);
-        const skeleton = view.get('[role="status"]');
+        const rows = view.findAll('[aria-hidden="true"]');
 
-        expect(skeleton.attributes('aria-label')).toBe('Loading Plans');
-        expect(skeleton.find('span').classes()).toContain('motion-safe:animate-pulse');
-        expect(skeleton.find('span').classes()).not.toContain('animate-pulse');
+        expect(view.get('[aria-busy="true"]').exists()).toBe(true);
+        expect(view.findAll('[role="status"]')).toHaveLength(1);
+        expect(view.get('[role="status"]').text()).toBe('Loading Plans');
+        expect(rows).toHaveLength(3);
+        expect(rows[0].find('span').classes()).toContain('motion-safe:animate-pulse');
+        expect(rows[0].find('span').classes()).not.toContain('animate-pulse');
         view.unmount();
     });
 
@@ -46,8 +49,8 @@ describe('a result', () => {
 
         await view.get('button').trigger('click');
 
-        expect(view.get('[role="alert"]').text()).toContain("Couldn't load Plans");
-        expect(view.get('button').text()).toBe('Reload Plans');
+        expect(view.get('[role="alert"]').text()).toContain('Could not load Plans');
+        expect(view.get('button').text()).toBe('Try again');
         expect(view.emitted('retry')).toHaveLength(1);
         view.unmount();
     });
@@ -68,7 +71,7 @@ describe('a result', () => {
 
         await view.get('button').trigger('click');
 
-        expect(view.get('[role="alert"]').text()).toContain('Showing the last update.');
+        expect(view.get('[role="alert"]').text()).toContain('Showing earlier results.');
         expect(view.get('p').text()).toBe('rows, read-only');
         expect(view.emitted('retry')).toHaveLength(1);
         view.unmount();

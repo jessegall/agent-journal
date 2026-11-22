@@ -13,6 +13,7 @@ use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Models\ReaderPosition;
 use App\Processes\Support\ProjectKey;
+use Illuminate\Database\Eloquent\Builder;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -27,13 +28,17 @@ final readonly class RunSnapshotResolver
         private ResultReceipts $receipts,
     ) {}
 
+    /**
+     * Whether the run is one of the current project that the caller may see.
+     */
+    public function canSee(string $runId): bool
+    {
+        return $this->visibleRuns()->whereKey($runId)->exists();
+    }
+
     public function snapshot(string $runId): RunSnapshotData
     {
-        $run = ProcessRun::query()
-            ->forActor()
-            ->where('project_key', $this->projects->current())
-            ->whereKey($runId)
-            ->firstOr(fn () => throw new NotFoundHttpException());
+        $run = $this->visibleRuns()->whereKey($runId)->firstOr(fn () => throw new NotFoundHttpException());
 
         $parts = $run->parts()->orderBy('syntax_node')->orderBy('attempt')->readLimit(500)->get();
 
@@ -44,6 +49,14 @@ final readonly class RunSnapshotResolver
             'lifecycle' => $run->lifecycle->value,
             'parts' => array_values($parts->map(fn (PartRun $part) => $this->partOf($part))->all()),
         ]);
+    }
+
+    /**
+     * @return Builder<ProcessRun>
+     */
+    private function visibleRuns(): Builder
+    {
+        return ProcessRun::query()->forActor()->where('project_key', $this->projects->current());
     }
 
     private function partOf(PartRun $part): PartSnapshotData

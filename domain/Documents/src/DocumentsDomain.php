@@ -290,15 +290,15 @@ final class DocumentsDomain extends Domain implements
     }
 
     /**
-     * The native parts the record layouts mount: a record's comments, its links and its share control, the form
-     * that files a new one, and a document's draft editor and the form that recovers a held draft.
+     * The native parts the record layouts mount: a record's comments, a document's line comments, its links and its
+     * share control, and a document's draft editor and the form that recovers a held draft.
      *
      * @return list<string>
      */
     public function nativeParts(): array
     {
         return [
-            'CreateRecordForm.vue',
+            'DocumentComments.vue',
             'DraftEditor.vue',
             'RecordComments.vue',
             'RecordLinks.vue',

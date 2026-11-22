@@ -10,7 +10,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * Where a layout action leads: a page of the journal by its path, or a change to its own window's query, such as the
- * next page of a list; an action that cannot run says why instead and leads nowhere.
+ * next page of a list; one that appends adds the rows it reads to the rows already shown; an action that cannot run
+ * says why instead and leads nowhere.
  */
 #[TypeScript]
 final class LayoutActionData extends Data
@@ -23,6 +24,7 @@ final class LayoutActionData extends Data
         public readonly string|Optional $href = new Optional(),
         public readonly string|Optional $reason = new Optional(),
         public readonly bool $submits = false,
+        public readonly bool $appends = false,
     ) {}
 
     public static function to(string $href): self
@@ -38,6 +40,17 @@ final class LayoutActionData extends Data
     public static function changing(array $query): self
     {
         return new self($query);
+    }
+
+    /**
+     * An action that changes only these keys of its window's query and adds the rows it reads to the rows shown, such
+     * as Show more on a list read by cursor.
+     *
+     * @param  array<string, string>  $query
+     */
+    public static function appending(array $query): self
+    {
+        return new self($query, appends: true);
     }
 
     /**

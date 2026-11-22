@@ -110,7 +110,7 @@ defineExpose({ focusHeading });
                     <Button size="small" variant="bordered" @click="emit('revealNew')">New notifications</Button>
                 </template>
                 <template v-if="page === null || items.length === 0">
-                    <EmptyState icon="bell" title="No notifications yet" />
+                    <EmptyState icon="bell" title="Nothing needs you" />
                 </template>
                 <template v-else>
                     <div class="flex items-center justify-between gap-2 px-2">

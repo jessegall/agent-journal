@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, useTemplateRef, watch } from 'vue';
+import { overlayTarget } from '@/composables/overlayLayer';
 import DialogContent from './DialogContent.vue';
 import Scrim from './Scrim.vue';
 
@@ -107,7 +108,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <Teleport to="body">
+    <Teleport :to="overlayTarget()">
         <template v-if="open">
             <div
                 class="fixed inset-0 z-(--z-dialog) flex justify-center"

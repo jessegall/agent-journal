@@ -49,11 +49,37 @@ final class LayoutPartData extends Data
         public readonly LayoutBodyData|Optional $body = new Optional(),
         public readonly LayoutNativeData|Optional $native = new Optional(),
         public readonly LayoutMenuData|Optional $menu = new Optional(),
+        public readonly int|Optional $placeholders = new Optional(),
+        public readonly LayoutSplitData|Optional $split = new Optional(),
+        public readonly LayoutProgressData|Optional $progress = new Optional(),
+        public readonly LayoutDialogData|Optional $dialog = new Optional(),
     ) {}
 
     public static function box(string $key, string $style, LayoutPartData ...$children): self
     {
         return new self(LayoutTag::Box, $key, 'normal', $style, null, null, [], array_values($children));
+    }
+
+    /**
+     * A list beside its reader: the first child is the list, the rest the reader.
+     */
+    public static function split(
+        string $key,
+        LayoutSplitData $split,
+        LayoutPartData $list,
+        LayoutPartData ...$reader,
+    ): self {
+        return new self(
+            LayoutTag::Box,
+            $key,
+            'normal',
+            'split',
+            null,
+            null,
+            [],
+            [$list, ...array_values($reader)],
+            split: $split,
+        );
     }
 
     public static function text(string $key, string $value, string $style = 'plain', string $size = 'normal'): self
@@ -80,6 +106,23 @@ final class LayoutPartData extends Data
     public static function notice(string $key, string $style, string $title, string|null $detail = null): self
     {
         return new self(LayoutTag::Notice, $key, null, $style, $title, $detail, [], []);
+    }
+
+    /**
+     * The placeholder rows a list shows while its first read is pending, announced once by their label.
+     */
+    public static function skeleton(string $key, int $rows, string $label): self
+    {
+        return new self(LayoutTag::Notice, $key, null, 'skeleton', $label, null, [], [], placeholders: $rows);
+    }
+
+    /**
+     * The list's earlier rows stay under this notice when a refresh failed: the reason and its own Retry, which reads
+     * only the failed address again.
+     */
+    public static function stale(string $key, string $reason): self
+    {
+        return new self(LayoutTag::Notice, $key, null, 'stale', $reason, null, [], []);
     }
 
     /**
@@ -152,6 +195,61 @@ final class LayoutPartData extends Data
     }
 
     /**
+     * A dialog that a part of the layout opens: the opener (an action, or a menu whose item opens it), then one form
+     * with its fields and, last, the footer actions that send it. Cancel and Escape give the focus back to the opener.
+     *
+     * @param  list<LayoutPartData>  $fields
+     * @param  list<LayoutPartData>  $footer
+     */
+    public static function dialog(
+        string $key,
+        LayoutDialogData $dialog,
+        LayoutPartData $opener,
+        LayoutFormData $form,
+        array $fields,
+        array $footer,
+    ): self {
+        $sheet = self::form('form', $form, 'stack', ...[...$fields, self::box('footer', 'row', ...$footer)]);
+
+        return new self(
+            LayoutTag::Dialog,
+            $key,
+            null,
+            'dialog',
+            null,
+            null,
+            [],
+            [$opener, $sheet],
+            dialog: $dialog,
+        );
+    }
+
+    /**
+     * A measured reading of a value against its maximum: a labelled meter, or, when it counts pieces such as the
+     * finished tasks of a plan, a counted progress.
+     */
+    public static function progress(
+        string $key,
+        float $value,
+        float $max,
+        string $label,
+        string $unit,
+        bool $isCounted = false,
+    ): self {
+        return new self(
+            LayoutTag::Progress,
+            $key,
+            null,
+            $isCounted ? 'counted' : 'meter',
+            null,
+            null,
+            [],
+            [],
+            progress: new LayoutProgressData($value, $max, $label, $unit),
+        );
+    }
+
+    /**
      * A native part, mounted by its registered component name with its typed props.
      */
     public static function native(string $key, LayoutNativeData $native): self
@@ -198,6 +296,12 @@ final class LayoutPartData extends Data
             );
         }
 
+        foreach ($this->rows as $row) {
+            foreach ($row->parts() as $part) {
+                $parts += $part->assertWithinCatalogue("{$path}.{$row->key}.{$part->key}", $depth + 1, $isInForm);
+            }
+        }
+
         return $parts;
     }
 
@@ -222,6 +326,13 @@ final class LayoutPartData extends Data
         if (count($this->rows) > LayoutLimits::ROW_LIMIT) {
             throw LayoutRefused::tooManyRows($path, count($this->rows), LayoutLimits::ROW_LIMIT);
         }
+    }
+
+    private function hasOpenerAndForm(): bool
+    {
+        return count($this->children) === 2
+            && in_array($this->children[0]->tag, [LayoutTag::Action, LayoutTag::Menu], true)
+            && $this->children[1]->tag === LayoutTag::Form;
     }
 
     /**
@@ -250,7 +361,12 @@ final class LayoutPartData extends Data
             || ($this->tag === LayoutTag::Body) === $this->body instanceof Optional
             || ($this->tag === LayoutTag::Native) === $this->native instanceof Optional
             || ($this->tag === LayoutTag::Menu) === $this->menu instanceof Optional
+            || ($this->tag === LayoutTag::Progress) === $this->progress instanceof Optional
+            || ($this->tag === LayoutTag::Dialog) === $this->dialog instanceof Optional
+            || ($this->tag === LayoutTag::Dialog && ! $this->hasOpenerAndForm())
             || ($this->tag === LayoutTag::Tabs) === ($this->tabs === [])
+            || ($this->style === 'skeleton') === $this->placeholders instanceof Optional
+            || ! $this->split instanceof Optional && ! ($this->tag === LayoutTag::Box && $this->style === 'split')
         ) {
             throw LayoutRefused::bindingMismatch($path, $this->tag);
         }

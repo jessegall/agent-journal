@@ -12,8 +12,10 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 /**
  * Where a layout form sends: one registered action of the reader's own domain, by its method and the address the
  * reader resolved for its record, with the values the form sends unchanged, such as the revision it read; whether
- * each submission carries a new Idempotency-Key, and the question it asks before sending, when it asks one. The
- * owning command checks the record, the actor and its state again when it runs.
+ * each submission carries a new Idempotency-Key, and the question it asks before sending, when it asks one; once it is
+ * accepted, the sentence a toast says and, only when the domain has an authorized inverse checked against the revision
+ * after the change, the form that toast offers as Undo. The owning command checks the record, the actor and its state
+ * again when it runs.
  */
 #[TypeScript]
 final class LayoutFormData extends Data
@@ -27,5 +29,7 @@ final class LayoutFormData extends Data
         public readonly array $fixed = [],
         public readonly bool $isKeyed = false,
         public readonly string|Optional $confirmation = new Optional(),
+        public readonly string|Optional $confirmed = new Optional(),
+        public readonly self|Optional $undo = new Optional(),
     ) {}
 }

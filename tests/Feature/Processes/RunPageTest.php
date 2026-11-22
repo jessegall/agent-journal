@@ -50,7 +50,9 @@ final class RunPageTest extends TestCase
 
         $this->assertSame(LifecycleState::Stopped, $run->refresh()->lifecycle);
         config(['processes.project_key' => 'another-project']);
-        $this->actingAs($this->owner)->get("/processes/runs/{$run->id}")->assertNotFound();
+        $this->actingAs($this->owner)->get("/processes/runs/{$run->id}")->assertOk()->assertInertia(fn (
+            AssertableInertia $page,
+        ) => $page->where('page.data.root.key', 'removed')->where('page.data.root.children.1.key', 'back'));
     }
 
     private function page(string $path): TestResponse

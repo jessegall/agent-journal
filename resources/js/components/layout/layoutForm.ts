@@ -1,7 +1,7 @@
 import type { Method } from '@inertiajs/core';
 import type { InertiaForm } from '@inertiajs/vue3';
 import { inject, provide } from 'vue';
-import type { InjectionKey } from 'vue';
+import type { InjectionKey, Ref } from 'vue';
 import type { ActionMethod, LayoutPartData } from '@/generated/types/core';
 
 /**
@@ -52,4 +52,36 @@ export function startingValues(form: LayoutPartData): LayoutFormValues {
     }
 
     return values;
+}
+
+const SENT: InjectionKey<() => void> = Symbol('journal.layout-form-sent');
+
+/**
+ * Lets a form stood in by a dialog tell the dialog its submission was accepted.
+ */
+export function provideFormSent(sent: () => void): void {
+    provide(SENT, sent);
+}
+
+/**
+ * What to do once the form this part stands in was accepted; nothing outside a dialog.
+ */
+export function useFormSent(): () => void {
+    return inject(SENT, () => undefined);
+}
+
+const DRAFT: InjectionKey<Ref<Record<string, string> | null>> = Symbol('journal.layout-form-draft');
+
+/**
+ * Lets a dialog hand the fields a draft made to the form it holds, to fill it without sending it.
+ */
+export function provideFormDraft(draft: Ref<Record<string, string> | null>): void {
+    provide(DRAFT, draft);
+}
+
+/**
+ * The fields a draft made for the form this part stands in; none outside a dialog or before a draft.
+ */
+export function useFormDraft(): Ref<Record<string, string> | null> | null {
+    return inject(DRAFT, null);
 }

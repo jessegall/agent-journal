@@ -13,7 +13,6 @@ use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskWait;
-use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Reads the waits between tasks with a fixed number of queries: the waits, then the other tasks of the page in one
@@ -34,7 +33,7 @@ final readonly class TaskWaitRecords implements TaskWaitResolver
         $waits = TaskWait::waitsOf($taskId, self::MOST_WAITS_SHOWN);
         $holds = TaskWait::holdersOf($taskId, self::MOST_WAITS_SHOWN);
 
-        $others = self::tasksOf(array_values([
+        $others = Task::ofIds(array_values([
             ...array_map(strval(...), $waits->pluck('prerequisite_task_id')->all()),
             ...array_map(strval(...), $holds->pluck('dependent_task_id')->all()),
         ]));
@@ -69,7 +68,7 @@ final readonly class TaskWaitRecords implements TaskWaitResolver
         $this->actors->actor();
         $waits = TaskWait::waitsOfTasks($ids);
 
-        $prerequisites = self::tasksOf(
+        $prerequisites = Task::ofIds(
             array_values(array_map(strval(...), $waits->pluck('prerequisite_task_id')->all())),
         );
 
@@ -105,22 +104,5 @@ final readonly class TaskWaitRecords implements TaskWaitResolver
                 ? null
                 : new ActorIdentity($wait->waived_by_type, $wait->waived_by_id),
         );
-    }
-
-    /**
-     * @param  list<string>  $ids
-     * @return array<string, Task>
-     */
-    private static function tasksOf(array $ids): array
-    {
-        if ($ids === []) {
-            return [];
-        }
-
-        /** @var Collection<int, Task> $tasks */
-        $tasks = Task::query()->whereKey(array_values(array_unique($ids)))
-            ->readExactly(count(array_unique($ids)))->get(['id', 'number', 'title', 'state']);
-
-        return $tasks->keyBy('id')->all();
     }
 }

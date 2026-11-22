@@ -11,7 +11,8 @@ import type { SplitSide } from './paneLayout';
  * close cross whose slot is always kept so no tab changes width. A middle click or Delete closes a tab, a right click
  * opens its menu, and a strip too tight for every label shows only the icon of its inactive tabs. Only the chosen tab
  * is in the Tab order: Left and Right choose its neighbours and Home and End the ends. The pane's own buttons come in
- * the slot at the right.
+ * the slot at the right. The tab's menu offers Dock left, right, above and below as well as Detach and the closes, and
+ * opens by the Menu key or Shift and F10 as well as a right click.
  */
 export type PaneTab = {
     key: string;
@@ -72,22 +73,37 @@ function menuOf(tab: PaneTab): MenuEntry[] {
         },
         { label: 'Close all', run: () => closeEach(props.tabs) },
         {
-            label: 'Split right',
+            label: 'Dock left',
             disabled: isAlone,
-            run: () => emit('split', tab.key, 'right'),
+            run: () => emit('split', tab.key, 'left'),
             startsGroup: true,
         },
         {
-            label: 'Split below',
+            label: 'Dock right',
             disabled: isAlone,
-            run: () => emit('split', tab.key, 'below'),
+            run: () => emit('split', tab.key, 'right'),
         },
+        { label: 'Dock above', disabled: isAlone, run: () => emit('split', tab.key, 'above') },
+        { label: 'Dock below', disabled: isAlone, run: () => emit('split', tab.key, 'below') },
         { label: 'Detach', run: () => emit('detach', tab.key) },
     ];
 }
 
 function openMenu(event: MouseEvent, tab: PaneTab): void {
     menu.value = { tab, left: event.clientX, top: event.clientY };
+}
+
+/**
+ * The Menu key or Shift and F10 on a focused tab opens the same menu a right click does, at the tab.
+ */
+function openMenuFromKey(event: KeyboardEvent, tab: PaneTab): void {
+    if (event.key !== 'ContextMenu' && !(event.key === 'F10' && event.shiftKey)) {
+        return;
+    }
+
+    event.preventDefault();
+    const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    menu.value = { tab, left: box.left, top: box.bottom };
 }
 
 async function pickByKey(event: KeyboardEvent, tab: PaneTab): Promise<void> {
@@ -168,6 +184,7 @@ onBeforeUnmount(() => watcher?.disconnect());
                     @mousedown.middle.prevent
                     @auxclick="closeByMiddleClick($event, tab.key)"
                     @contextmenu.prevent="openMenu($event, tab)"
+                    @keydown="openMenuFromKey($event, tab)"
                     @keydown.enter.prevent="emit('pick', tab.key)"
                     @keydown.space.prevent="emit('pick', tab.key)"
                     @keydown.delete.prevent="emit('close', tab.key)"

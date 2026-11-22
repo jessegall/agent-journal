@@ -12,6 +12,7 @@ use App\Processes\Execution\ChannelRunEvents;
 use App\Processes\Execution\Supervisor;
 use App\Processes\Values\Run\FetchedAdmission;
 use App\Processes\Values\Run\SupervisedRun;
+use Psr\Log\LoggerInterface;
 
 /**
  * Runs the plan under the supervisor and reports every event over the signed channel, the root status last, spooled
@@ -29,6 +30,7 @@ final readonly class SuperviseRun implements Pipe
         private ProcessCalls $processes,
         private Supervisor $supervisor,
         private Files $files,
+        private LoggerInterface $logger,
     ) {}
 
     public function handle(FetchedAdmission $admission): SupervisedRun
@@ -39,6 +41,7 @@ final readonly class SuperviseRun implements Pipe
             $admission->eventKey,
             $admission->spoolFolder(),
             $this->files,
+            $this->logger,
         );
 
         $outcome = $this->supervisor->run($events, $admission->plan(), $admission->context());

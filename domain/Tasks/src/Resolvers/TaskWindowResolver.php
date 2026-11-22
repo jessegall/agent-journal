@@ -21,7 +21,9 @@ use Domain\Tasks\Contracts\TaskProofResolver;
 use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskMissing;
+use App\Ui\Layout\DeclaredLayoutData;
 use Domain\Tasks\Http\Data\TaskActionsData;
+use Domain\Tasks\Http\Data\TaskFiltersData;
 use Domain\Tasks\Http\Data\TaskLogsData;
 use Domain\Tasks\Http\Data\TaskProofData;
 use Domain\Tasks\Http\Data\TaskProofsData;
@@ -30,18 +32,21 @@ use Domain\Tasks\Http\Data\TaskWaitActionsData;
 use Domain\Tasks\Http\Data\TaskWaitChoiceData;
 use Domain\Tasks\Http\Data\TaskWaitsData;
 use Domain\Tasks\Http\Requests\TaskRequest;
+use Domain\Tasks\Http\Requests\TasksRequest;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
 use Domain\Tasks\Policies\TaskRunPolicy;
+use Domain\Tasks\Support\TaskIndexLayout;
+use Domain\Tasks\Support\TaskReaderLayout;
 use Domain\Tasks\Support\TaskStream;
 use Spatie\LaravelData\Optional;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * One task's record page, on its own route or open in the inspector: the task by its number with its texts, its
- * holder and its run, and the sections other domains add beside its facts, such as its plan; its Logs and Proofs only
- * when the reader opened their tab, a bounded page each. A task the caller may not read answers as not found, so no
- * earlier field stays on screen.
+ * One task's record page, on its own route or open in the inspector: the tasks list with the task by its number
+ * open in its reader, with its texts, its holder and its run; its Waits, Logs and Proofs only when the reader opened
+ * their tab, a bounded page each. A task the caller may not read answers as not found, so no earlier field stays on
+ * screen.
  */
 final readonly class TaskWindowResolver implements PageResolver
 {
@@ -59,14 +64,17 @@ final readonly class TaskWindowResolver implements PageResolver
         private TaskWaitResolver $waits,
         private CurrentAuthorizer $authorizer,
         private TaskListResolver $list,
+        private TasksRequest $listRequest,
+        private TaskIndexLayout $index,
+        private TaskReaderLayout $layout,
     ) {}
 
-    public function read(): TaskReaderData
+    public function read(): DeclaredLayoutData
     {
         try {
             $taskId = $this->request->taskId();
 
-            return TaskReaderData::fromDetails(
+            $reader = TaskReaderData::fromDetails(
                 $this->details->details($taskId, ReadView::Context),
                 $this->actionsOf($taskId),
                 $this->comments->list(new RecordIdentity(Task::LINK_TYPE, $taskId), $this->request->commentsPage()),
@@ -77,6 +85,11 @@ final readonly class TaskWindowResolver implements PageResolver
                     ? TaskWaitsData::ofWaits($this->waits->waitsOf($taskId))
                     : Optional::create(),
                 $this->request->asksForWaits() ? $this->waitActionsOf($taskId) : Optional::create(),
+            );
+
+            return $this->index->of(
+                TaskFiltersData::from([...$this->listRequest->filters()->toArray(), 'task' => $reader->number]),
+                [$this->layout->page($reader)->part($this->request->chosenTab())],
             );
         } catch (TaskMissing $missing) {
             throw new NotFoundHttpException(previous: $missing);

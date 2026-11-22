@@ -22,6 +22,10 @@ final class PlansPageTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string ROWS = 'page.data.root.children.1.children.0.children.1.children.0.rows';
+
+    private const string READER = 'page.data.root.children.1.children.1.children';
+
     private User $owner;
 
     private Plan $release;
@@ -50,47 +54,30 @@ final class PlansPageTest extends TestCase
         $this->get('/plans')->assertRedirect('/login');
     }
 
-    public function test_the_page_carries_the_cards_as_strings_and_numbers_without_its_seed_or_view(): void
+    public function test_the_page_lists_the_plans_with_their_counted_progress_and_no_selection(): void
     {
         $this->actingAs($this->owner)->get('/plans')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('plans/PlansWindow')
+            ->component('layout/DeclaredLayout')
             ->where('page.state', 'ready')
-            ->where('page.data.pagination.total', 2)
-            ->where('page.data.rows.1.id', (string) $this->release->id)
-            ->where('page.data.rows.1.totalTasks', 1)
-            ->where('page.data.rows.1.phase', '1')
-            ->missing('page.data.rows.1.holder')
-            ->where('page.data.filters.q', '')
-            ->where('page.data.selectionMissing', false)
-            ->missing('page.data.selected'));
+            ->where('page.data.root.children.0.children.1.text', '2')
+            ->where(self::ROWS.'.1.key', (string) $this->release->id)
+            ->where(self::ROWS.'.1.trailing.0.style', 'counted')
+            ->where(self::ROWS.'.1.trailing.0.progress.max', 1)
+            ->where('page.data.root.children.1.children.1.key', 'nothing-selected'));
     }
 
-    public function test_search_and_selection_survive_in_the_query_and_the_domain_rule_offers_the_start(): void
+    public function test_search_survives_in_the_query_and_a_plan_opens_beside_the_list_with_its_start(): void
     {
-        $this->actingAs($this->owner)->get(
-            "/plans?q=release&plan={$this->release->number}",
-        )->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.filters.q', 'release')
-            ->where('page.data.filters.plan', (string) $this->release->number)
-            ->count('page.data.rows', 1)
-            ->where('page.data.rows.0.start.planNumber', (string) $this->release->number)
-            ->where('page.data.selected.card.title', 'Build the release page')
-            ->where('page.data.selected.insideResults', true)
-            ->where('page.data.selected.brief', $this->release->brief)
-            ->where('page.data.selected.card.start.planId', (string) $this->release->id));
+        $this->actingAs($this->owner)->get('/plans?q=release')->assertInertia(fn (AssertableInertia $page) => $page
+            ->count(self::ROWS, 1)
+            ->where(self::ROWS.'.0.label', 'Build the release page')
+            ->where(self::ROWS.'.0.isCurrent', false));
 
-        $this->actingAs($this->owner)->get(
-            "/plans?q=release&plan={$this->paused->number}",
-        )->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.selected.insideResults', false)
-            ->missing('page.data.selected.card.start'));
-    }
-
-    public function test_a_selection_that_cannot_be_read_shows_no_title(): void
-    {
-        $this->actingAs($this->owner)->get('/plans?plan=999999')->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.selectionMissing', true)
-            ->missing('page.data.selected'));
+        $this->actingAs($this->owner)->get("/plans/{$this->release->number}")->assertInertia(
+            fn (AssertableInertia $page) => $page
+                ->where('page.data.root.children.1.children.1.key', 'detail')
+                ->where(self::ROWS.'.1.isCurrent', true),
+        );
     }
 
     public function test_invalid_filters_are_refused(): void
@@ -107,7 +94,7 @@ final class PlansPageTest extends TestCase
             'X-Inertia-Version' => (string) $this->app->make(
                 HandleInertiaRequests::class,
             )->version(Request::create('/plans')),
-            'X-Inertia-Partial-Component' => 'plans/PlansWindow',
+            'X-Inertia-Partial-Component' => 'layout/DeclaredLayout',
             'X-Inertia-Partial-Data' => 'name',
         ])->assertOk()->assertJsonMissingPath('props.page');
     }
@@ -117,9 +104,8 @@ final class PlansPageTest extends TestCase
         Plan::query()->whereKey($this->paused->id)->update(['state' => PlanState::Reviewing->value]);
 
         $this->actingAs($this->owner)->get('/plans?state=waiting')->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.filters.state', 'waiting')
-            ->where('page.data.pagination.total', 1)
-            ->where('page.data.rows.0.title', 'Compare chat layouts')
+            ->where('page.data.root.children.0.children.1.text', '1')
+            ->where(self::ROWS.'.0.label', 'Compare chat layouts')
             ->where('navigation.current', ['plans.list', 'plans.waiting'])
             ->loadDeferredProps('navigation-counts', fn (AssertableInertia $counts) => $counts
                 ->where(
@@ -134,10 +120,10 @@ final class PlansPageTest extends TestCase
             "/plans/{$this->release->number}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
             ->component('layout/DeclaredLayout')
-            ->where('page.data.root.children.2.native.component', 'plans/PlanWindow')
-            ->where('page.data.root.children.0.children.0.text', 'Build the release page')
+            ->where(self::READER.'.3.children.0.native.component', 'plans/PlanWindow')
+            ->where(self::READER.'.0.text', 'Build the release page')
             ->where('page.state', 'ready')
-            ->where('page.data.root.children.2.native.props.card.title', 'Build the release page'));
+            ->where(self::READER.'.3.children.0.native.props.card.title', 'Build the release page'));
 
         $this->actingAs($this->owner)->get(
             "/plans?inspect=plans.plan&plan={$this->release->number}",
@@ -145,7 +131,7 @@ final class PlansPageTest extends TestCase
             ->reloadOnly(
                 'inspector',
                 fn (AssertableInertia $reload) => $reload->where(
-                    'inspector.data.root.children.2.native.props.card.title',
+                    'inspector.data.root.children.1.children.1.children.3.children.0.native.props.card.title',
                     'Build the release page',
                 ),
             ));

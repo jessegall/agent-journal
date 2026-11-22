@@ -9,17 +9,20 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * A layout field's binding: the query key it writes in its own window, the value it shows now and the keys a new
- * value clears, such as the page or the chosen row, so a new filter starts at the first page.
+ * value clears, such as the page or the chosen row, so a new filter starts at the first page, and for a choice field the
+ * values it offers.
  */
 #[TypeScript]
 final class LayoutFieldData extends Data
 {
     /**
      * @param  list<string>  $clears
+     * @param  list<string>  $options
      */
     public function __construct(
         public readonly string $name,
         public readonly string $value = '',
         public readonly array $clears = [],
+        public readonly array $options = [],
     ) {}
 }

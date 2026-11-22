@@ -19,6 +19,7 @@ use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Ui\Contracts\DeclaredPages;
 use App\Ui\Contracts\RecordMenus as RecordMenusContract;
 use App\Ui\Contracts\SlotSections;
+use App\Ui\Support\DraftProducerRegistry;
 use App\Ui\Support\UiDeclarations;
 use App\Web\Console\GenerateUiManifest;
 use App\Web\Contracts\CurrentUserResolver;
@@ -70,6 +71,7 @@ final class WebServiceProvider extends ServiceProvider
     {
         $this->app->bind(NavigationRecordsContract::class, NavigationRecords::class);
         $this->app->bind(RecordMenusContract::class, RecordMenus::class);
+        $this->app->singleton(DraftProducerRegistry::class);
         $this->app->bind(InstalledVersionContract::class, InstalledVersion::class);
         $this->app->bind(ReaderRequestsContract::class, ReaderRequests::class);
         $this->app->bind(WindowResultsContract::class, WindowResults::class);

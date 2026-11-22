@@ -1,38 +1,49 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
-import LayoutPicker from '@/components/panes/LayoutPicker.vue';
-import type { LayoutData } from '@/types/generated';
+import { bringToFront, changeDetached } from '@/components/panes/arrangement';
+import { usePaneLayout } from '@/components/panes/usePaneLayout';
 
 /**
- * Version 5's information bar (shell/InformationBar.vue) under decision D3: 30 px of 12 px facts, of which version 6
- * shows none yet; the layouts button sits at the right and opens the layout picker.
+ * The information bar, drawn over the desk's top edge instead of in the flow, so the chat below it does not move down
+ * when a window floats: it lists the floating windows, each with Restore, which brings a minimised one back at its place
+ * and in front. With no floating window it is not there.
  */
-defineProps<{ layouts: LayoutData[] }>();
+const store = usePaneLayout();
+const floating = computed(() =>
+    store.detached.value.flatMap((each) => {
+        const window = store.windowOf(each.key);
 
-const isLayoutMenuOpen = ref(false);
+        return window === undefined ? [] : [{ ...each, title: window.title, icon: window.icon }];
+    }),
+);
+
+function restore(key: string): void {
+    const unfolded = changeDetached(store.arrangement.value, key, { isMinimised: false }, store.screen());
+
+    store.apply(bringToFront(unfolded, key));
+}
 </script>
 
 <template>
-    <div
-        class="relative flex min-h-[30px] flex-none items-center gap-4 border-b border-border pr-[5px] pl-4 text-small text-text-3 max-[760px]:flex-wrap"
-    >
-        <span class="flex-1"></span>
-        <Button
-            variant="icon"
-            aria-label="Layouts"
-            title="Layouts"
-            :aria-expanded="isLayoutMenuOpen"
-            @click="isLayoutMenuOpen = !isLayoutMenuOpen"
-            ><Icon name="layout" :size="13"
-        /></Button>
-        <template v-if="isLayoutMenuOpen">
-            <LayoutPicker
-                :layouts="layouts"
-                class="absolute top-[30px] right-[5px]"
-                @done="isLayoutMenuOpen = false"
-            />
-        </template>
-    </div>
+    <template v-if="floating.length > 0">
+        <div
+            role="region"
+            aria-label="Floating windows"
+            class="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-wrap items-center gap-2 px-4 py-1.5 text-small text-text-3"
+        >
+            <template v-for="window in floating" :key="window.key">
+                <span
+                    class="pointer-events-auto inline-flex items-center gap-2 rounded-field border border-border-2 bg-raised py-0.5 pr-1 pl-2 shadow-pop"
+                >
+                    <Icon :name="window.icon" :size="12" />
+                    <span class="text-text-2">{{ window.title }}</span>
+                    <Button size="small" variant="ghost" :aria-label="`Restore ${window.title}`" @click="restore(window.key)"
+                        >Restore</Button
+                    >
+                </span>
+            </template>
+        </div>
+    </template>
 </template>

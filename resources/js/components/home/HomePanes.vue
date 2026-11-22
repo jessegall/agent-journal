@@ -83,7 +83,7 @@ function componentOf(window: HomeWindowData): Component {
 
 <template>
     <div class="flex h-full min-h-0 flex-col">
-        <AgentBar>
+        <AgentBar :layouts="home.layouts">
             <template
                 v-for="section in home.barSections"
                 :key="section.propName"
@@ -94,23 +94,25 @@ function componentOf(window: HomeWindowData): Component {
                 />
             </template>
         </AgentBar>
-        <InformationBar :layouts="home.layouts" />
-        <PaneGrid>
-            <template #default="{ windowKey }">
-                <template
-                    v-for="hosted in [hostedWindow(windowKey)]"
-                    :key="windowKey"
-                >
-                    <template v-if="hosted !== undefined">
-                        <WindowHost
-                            :component="componentOf(hosted.window)"
-                            :prop-name="hosted.propName"
-                            :page-key="hosted.queryKey"
-                            :subject="hosted.window.title"
-                        />
+        <div class="relative flex min-h-0 flex-1 flex-col">
+            <InformationBar />
+            <PaneGrid>
+                <template #default="{ windowKey }">
+                    <template
+                        v-for="hosted in [hostedWindow(windowKey)]"
+                        :key="windowKey"
+                    >
+                        <template v-if="hosted !== undefined">
+                            <WindowHost
+                                :component="componentOf(hosted.window)"
+                                :prop-name="hosted.propName"
+                                :page-key="hosted.queryKey"
+                                :subject="hosted.window.title"
+                            />
+                        </template>
                     </template>
                 </template>
-            </template>
-        </PaneGrid>
+            </PaneGrid>
+        </div>
     </div>
 </template>

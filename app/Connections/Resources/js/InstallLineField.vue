@@ -5,8 +5,8 @@ import { ref, watch } from 'vue';
 
 /**
  * An issued install line in a read-only field with one Copy action, which copies exactly the bytes shown, and when
- * the line expires. Copied shows once the clipboard took this very line; a refused clipboard leaves the line selectable
- * with how to copy it by hand.
+ * the line expires. The line is masked until Show; Copied shows once the clipboard took this very line; a refused
+ * clipboard shows the line and leaves it selectable with how to copy it by hand.
  */
 const props = withDefaults(
     defineProps<{ line: string; expiresAt: string; isFresh?: boolean }>(),
@@ -16,10 +16,14 @@ const props = withDefaults(
 type CopyState = 'idle' | 'copied' | 'refused';
 
 const state = ref<CopyState>('idle');
+const isShown = ref(false);
 
 watch(
     () => props.line,
-    () => (state.value = 'idle'),
+    () => {
+        state.value = 'idle';
+        isShown.value = false;
+    },
 );
 
 async function copy(): Promise<void> {
@@ -29,6 +33,8 @@ async function copy(): Promise<void> {
         await navigator.clipboard.writeText(copying);
     } catch {
         state.value = copying === props.line ? 'refused' : state.value;
+        isShown.value = true;
+
         return;
     }
 
@@ -45,12 +51,20 @@ async function copy(): Promise<void> {
             <input
                 class="input h-7 flex-1 bg-code-bg font-mono text-small"
                 :value="line"
+                :type="isShown ? 'text' : 'password'"
                 readonly
                 spellcheck="false"
                 autocomplete="off"
                 aria-label="Install line"
                 @focus="($event.target as HTMLInputElement).select()"
             />
+            <Button
+                variant="ghost"
+                size="small"
+                :pressed="isShown"
+                @click="isShown = !isShown"
+                >{{ isShown ? 'Hide' : 'Show' }}</Button
+            >
             <Button
                 variant="primary"
                 size="small"

@@ -34,7 +34,13 @@ type KeyedOutcome = {
     onFinish?: () => void;
 };
 
-vi.mock('@inertiajs/vue3', () => ({ router: { reload, delete: destroy } }));
+const pageUrl = vi.hoisted(() => ({ value: '/connections' }));
+
+vi.mock('@inertiajs/vue3', () => ({
+    router: { reload, delete: destroy },
+    usePage: () => ({ url: pageUrl.value }),
+    Link: { props: ['href'], template: '<a :href="href"><slot /></a>' },
+}));
 vi.mock('@kit/keyedPost', () => ({ keyedPost }));
 vi.mock('@generated/routes/connections/invitations', () => ({
     issue: () => ({ url: '/settings/project-connections/invitations' }),
@@ -325,7 +331,7 @@ describe('ConnectProjectWindow', () => {
             props: { data: { ...data, bindings: { ...data.bindings, rows: [] } } },
         });
 
-        expect(wrapper.text()).toContain('No connected projects');
+        expect(wrapper.text()).toContain('No projects connected yet');
     });
 
     it('offers Start for an eligible driver with its command and names why another is unavailable', () => {
@@ -382,7 +388,7 @@ describe('ConnectProjectWindow', () => {
         window.dispatchEvent(new Event('focus'));
         await flushPromises();
 
-        expect(wrapper.text()).toContain('Journal unreachable. This is the last known list');
+        expect(wrapper.text()).toContain('Showing earlier results');
         expect(wrapper.text()).toContain('Shop / Main');
         expect(revoke.attributes('disabled')).toBeDefined();
         expect(document.activeElement?.textContent?.trim()).toBe('Retry');
@@ -395,7 +401,7 @@ describe('ConnectProjectWindow', () => {
         await button(wrapper, 'Retry').trigger('click');
         await flushPromises();
 
-        expect(wrapper.text()).not.toContain('Journal unreachable');
+        expect(wrapper.text()).not.toContain('Showing earlier results');
         expect(wrapper.text()).toContain('The journal answered again; the list is up to date.');
         expect(document.activeElement?.id).toBe('binding-binding-1');
         wrapper.unmount();
@@ -430,5 +436,20 @@ describe('ConnectProjectWindow', () => {
         expect(wrapper.text()).toContain('Revoke not confirmed: the journal did not answer.');
         expect(reload).toHaveBeenCalled();
         expect(button(wrapper, 'Retry revoke').exists()).toBe(true);
+    });
+
+    it('leads Back to the address that opened it, and only to a path on this journal', async () => {
+        pageUrl.value = '/connections?return=%2Fsettings%23connected';
+        const wrapper = mount(ConnectProjectWindow, { props: { data: windowData(true) }, attachTo: document.body });
+
+        expect(wrapper.find('a[href="/settings#connected"]').text()).toBe('Back');
+        wrapper.unmount();
+
+        pageUrl.value = '/connections?return=https%3A%2F%2Felsewhere.example';
+        const refused = mount(ConnectProjectWindow, { props: { data: windowData(true) }, attachTo: document.body });
+
+        expect(refused.findAll('a').some((link) => link.text() === 'Back')).toBe(false);
+        pageUrl.value = '/connections';
+        refused.unmount();
     });
 });

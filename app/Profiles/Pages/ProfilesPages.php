@@ -19,6 +19,8 @@ use App\Profiles\Http\Controllers\StartSignInController;
 use App\Profiles\Http\Controllers\SubmitSignInCodeController;
 use App\Profiles\Resolvers\AccountNoticesSection;
 use App\Profiles\Resolvers\AccountsWindowResolver;
+use App\Profiles\Resolvers\ProfilesWindowResolver;
+use App\Profiles\Resolvers\ProfileWindowResolver;
 use App\Profiles\Resolvers\StartAccountWindowResolver;
 use App\Profiles\Support\AccountOwnerCheck;
 use App\Ui\Contracts\NativePartProvider;
@@ -74,6 +76,12 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
                     ActionRoute::post('sign-ins/{attempt}/code', SubmitSignInCodeController::class, 'submit-code'),
                     ActionRoute::post('sign-ins/{attempt}/cancel', CancelSignInController::class, 'cancel-sign-in'),
                 ),
+            Page::layout('profiles', 'Profiles', Icon::Accounts, ProfilesWindowResolver::class)
+                ->at('profiles')
+                ->visibleWhen(AccountOwnerCheck::class),
+            Page::layout('profile', 'Profile', Icon::Accounts, ProfileWindowResolver::class)
+                ->at('profiles/{profile}')
+                ->visibleWhen(AccountOwnerCheck::class),
             Page::make(
                 'account-start',
                 'Account of a start',
@@ -102,7 +110,10 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
 
     public function navigation(): array
     {
-        return [NavigationItem::page('accounts', 'Accounts', Icon::Accounts, group: 'web.agents', position: 40)];
+        return [
+            NavigationItem::page('accounts', 'Accounts', Icon::Accounts, group: 'web.agents', position: 40),
+            NavigationItem::page('profiles', 'Profiles', Icon::Accounts, group: 'web.agents', position: 41),
+        ];
     }
 
     /**

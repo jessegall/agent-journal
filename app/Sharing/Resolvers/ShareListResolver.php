@@ -13,17 +13,21 @@ use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Layout\DeclaredLayoutData;
 use App\Ui\Layout\LayoutActionData;
+use App\Ui\Layout\LayoutBackData;
 use App\Ui\Layout\LayoutFieldData;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
+use App\Ui\Layout\ListEmpty;
+use App\Ui\Layout\ListPage;
+use App\Ui\Layout\ListPaging;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Optional;
 
 /**
- * The owner's shares and proposals, newest first, as a list layout: the state choices and the record type, gateway
- * and expiry fields, each writing the window's query and starting the list again, the rows opening their own share,
- * an empty state that says whether a filter narrowed it, and the next page while there is one. No address is ever
- * part of the list.
+ * The owner's shares and proposals, newest first, on the shared list page: the state choices and the record type,
+ * gateway and expiry fields, each writing the window's query and starting the list again, the rows opening their own
+ * share, an empty state that says whether a filter narrowed it and offers to clear it, and Show more while there are
+ * older ones. No address is ever part of the list.
  */
 final readonly class ShareListResolver implements PageResolver
 {
@@ -47,19 +51,18 @@ final readonly class ShareListResolver implements PageResolver
 
         $last = $rows === [] ? null : $rows[array_key_last($rows)];
         $shown = array_map(fn (Share $share) => ShareRowData::fromShare($share, $gatewayKeys), $rows);
+        $after = $last instanceof Share && count($found) > self::ROWS ? $last->id : null;
 
-        $parts = [
-            LayoutPartData::box('header', 'header', LayoutPartData::text('title', 'Shares', 'heading')),
-            $this->filtersOf($filters),
-            $this->rowsOf($shown, $filters),
-        ];
+        $page = ListPage::make('Shares', $this->rowsOf($shown), $this->emptyFor($filters))
+            ->filteredBy($this->filtersOf($filters))
+            ->paged(ListPaging::cursor($after))
+            ->withReader(new LayoutBackData('/sharing', 'Shares'));
 
-        if (count($found) > self::ROWS && $last !== null) {
-            $older = LayoutActionData::changing(['after' => $last->id]);
-            $parts[] = LayoutPartData::action('older', 'Older shares', $older);
+        if ($filters->after === null && $after === null) {
+            $page->counting(count($shown));
         }
 
-        return DeclaredLayoutData::of(LayoutPartData::box('shares', 'stack', ...$parts));
+        return $page->layout();
     }
 
     private function filtersOf(ShareFiltersData $filters): LayoutPartData
@@ -103,18 +106,11 @@ final readonly class ShareListResolver implements PageResolver
 
     /**
      * @param  list<ShareRowData>  $rows
+     * @return list<LayoutRowData>
      */
-    private function rowsOf(array $rows, ShareFiltersData $filters): LayoutPartData
+    private function rowsOf(array $rows): array
     {
-        if ($rows === []) {
-            return LayoutPartData::notice(
-                'empty',
-                'empty',
-                $this->isFiltered($filters) ? 'No share matches these filters.' : 'No shares yet.',
-            );
-        }
-
-        return LayoutPartData::collection('rows', 'list', array_map(fn (ShareRowData $row) => new LayoutRowData(
+        return array_map(fn (ShareRowData $row) => new LayoutRowData(
             $row->id,
             ($row->isProposal ? 'Proposal' : 'Share')." {$row->number}",
             $row->state->value,
@@ -124,7 +120,31 @@ final readonly class ShareListResolver implements PageResolver
                 'expires '.CarbonImmutable::parse($row->expiresAt)->toDateString(),
             ])),
             href: "/sharing/shares/{$row->id}",
-        ), $rows));
+        ), $rows);
+    }
+
+    /**
+     * A filter that emptied the list offers to clear every filter; shares are made from a record's own page, so an
+     * unfiltered empty list only says so.
+     */
+    private function emptyFor(ShareFiltersData $filters): ListEmpty
+    {
+        if (! $this->isFiltered($filters)) {
+            return ListEmpty::informing('No shares yet.');
+        }
+
+        $clear = LayoutActionData::changing([
+            'state' => '',
+            'rootType' => '',
+            'gateway' => '',
+            'expiresBefore' => '',
+            'after' => '',
+        ]);
+
+        return ListEmpty::offering(
+            'No share matches these filters.',
+            LayoutPartData::action('clear', 'Show all shares', $clear),
+        );
     }
 
     private function isFiltered(ShareFiltersData $filters): bool

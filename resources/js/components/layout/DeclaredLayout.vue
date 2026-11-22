@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import LayoutPart from '@/components/layout/LayoutPart.vue';
 import type { DeclaredLayoutData } from '@/generated/types/core';
+import { provideLayoutAppend } from './layoutAppend';
 
 // The one renderer of every page a domain declares as a layout: it draws the checked tree its reader built.
 defineProps<{ data: DeclaredLayoutData }>();
+provideLayoutAppend();
 </script>
 
 <template>

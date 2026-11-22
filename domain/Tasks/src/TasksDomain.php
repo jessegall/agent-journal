@@ -24,6 +24,7 @@ use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
+use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\Page;
@@ -41,6 +42,11 @@ use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskFilters;
+use Domain\Tasks\Api\TaskGraph;
+use Domain\Tasks\Api\TaskGraphDestinations;
+use Domain\Tasks\Api\TaskGraphEdge;
+use Domain\Tasks\Api\TaskGraphNode;
+use Domain\Tasks\Api\TaskGraphSuggestion;
 use Domain\Tasks\Api\TaskHistoryPage;
 use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Api\TaskLogLine;
@@ -61,6 +67,7 @@ use Domain\Tasks\Assignments\TaskAssigner;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
+use Domain\Tasks\Contracts\TaskGraphResolver;
 use Domain\Tasks\Contracts\TaskHistoryResolver;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Contracts\TaskLogResolver;
@@ -77,6 +84,7 @@ use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Http\Controllers\AddTaskWaitPageController;
 use Domain\Tasks\Http\Controllers\BlockTaskPageController;
 use Domain\Tasks\Http\Controllers\CancelTaskPageController;
+use Domain\Tasks\Http\Controllers\CreateTaskPageController;
 use Domain\Tasks\Http\Controllers\RemoveTaskWaitPageController;
 use Domain\Tasks\Http\Controllers\StartTaskPageController;
 use Domain\Tasks\Http\Controllers\WaiveTaskWaitPageController;
@@ -103,6 +111,7 @@ final class TasksDomain extends Domain implements
     InternalAssignableContributor,
     LinkRecordProvider,
     McpToolProvider,
+    NativePartProvider,
     PageProvider,
     PolicyProvider,
     SkillProvider,
@@ -133,13 +142,24 @@ final class TasksDomain extends Domain implements
         return [];
     }
 
+    /**
+     * The native parts a declared page mounts: a plan's task graph, and a task's Waits, Logs and Proofs tabs.
+     *
+     * @return list<string>
+     */
+    public function nativeParts(): array
+    {
+        return ['TaskGraph.vue', 'TaskLogsTab.vue', 'TaskProofsTab.vue', 'TaskWaitsTab.vue'];
+    }
+
     public function pages(): array
     {
         return [
-            Page::make('list', 'Tasks', Icon::Tasks, TasksWindowResolver::class, 'TasksWindow.vue')
+            Page::layout('list', 'Tasks', Icon::Tasks, TasksWindowResolver::class)
                 ->at('')
-                ->onHome(25),
-            Page::make('task', 'Task', Icon::Tasks, TaskWindowResolver::class, 'TaskWindow.vue')
+                ->onHome(25)
+                ->actions(ActionRoute::post('create', CreateTaskPageController::class, 'create-task')),
+            Page::layout('task', 'Task', Icon::Tasks, TaskWindowResolver::class)
                 ->at('{task}')
                 ->inInspector()
                 ->actions(
@@ -174,6 +194,7 @@ final class TasksDomain extends Domain implements
                 TaskLogResolver::class,
                 TaskProofResolver::class,
                 TaskWaitResolver::class,
+                TaskGraphResolver::class,
                 TaskResolver::class,
                 TaskAssignmentResolver::class,
                 AssignedTaskResolver::class,
@@ -190,6 +211,11 @@ final class TasksDomain extends Domain implements
                 TaskProof::class,
                 TaskWaits::class,
                 TaskWaitLink::class,
+                TaskGraph::class,
+                TaskGraphNode::class,
+                TaskGraphEdge::class,
+                TaskGraphSuggestion::class,
+                TaskGraphDestinations::class,
                 TaskWaitChange::class,
                 TaskSummary::class,
                 TaskAssignmentCompletion::class,

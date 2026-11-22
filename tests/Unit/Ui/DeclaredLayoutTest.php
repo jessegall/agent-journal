@@ -16,12 +16,15 @@ use App\Ui\Exceptions\InvalidSectionDeclaration;
 use App\Ui\Exceptions\LayoutRefused;
 use App\Ui\Layout\DeclaredLayoutData;
 use App\Ui\Layout\LayoutActionData;
+use App\Ui\Layout\LayoutDialogData;
+use App\Ui\Layout\LayoutFactValueData;
 use App\Ui\Layout\LayoutFieldData;
 use App\Ui\Layout\LayoutFormData;
 use App\Ui\Layout\LayoutLimits;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
 use PHPUnit\Framework\TestCase;
+use Spatie\LaravelData\Optional;
 use Tests\Fixtures\UiDeclarations\Desk\NotesResolver;
 use Tests\Fixtures\UiDeclarations\RecentNotesResolver;
 use Tests\Fixtures\UiDeclarations\ShelfLayoutResolver;
@@ -198,5 +201,85 @@ final class DeclaredLayoutTest extends TestCase
         );
 
         DeclaredLayoutData::of(LayoutPartData::collection('rows', 'list', $rows));
+    }
+
+    public function test_a_skeleton_carries_its_placeholder_rows_and_a_plain_notice_may_not_claim_that_style(): void
+    {
+        $skeleton = LayoutPartData::skeleton('loading', 3, 'Loading tasks');
+
+        $this->assertSame(1, $skeleton->assertWithinCatalogue());
+        $this->assertSame(3, $skeleton->placeholders);
+        $this->assertSame('skeleton', $skeleton->style);
+
+        $this->expectException(LayoutRefused::class);
+
+        DeclaredLayoutData::of(LayoutPartData::notice('loading', 'skeleton', 'Loading tasks'));
+    }
+
+    public function test_a_stale_notice_holds_its_reason_in_the_notice_style_of_that_name(): void
+    {
+        $stale = LayoutPartData::stale('stale', 'Offline');
+
+        $this->assertSame(1, $stale->assertWithinCatalogue());
+        $this->assertSame('stale', $stale->style);
+        $this->assertSame('Offline', $stale->text);
+    }
+
+    public function test_the_parts_that_lead_and_trail_a_row_count_and_are_checked_with_the_layout(): void
+    {
+        $row = new LayoutRowData(
+            'run-1',
+            'Run 1',
+            leading: [LayoutPartData::text('driver', 'Claude', 'badge')],
+            trailing: [LayoutPartData::badge('state', 'Running', 'busy')],
+        );
+
+        $this->assertSame(3, LayoutPartData::collection('rows', 'list', [$row])->assertWithinCatalogue());
+
+        $this->expectException(LayoutRefused::class);
+
+        $unknown = new LayoutRowData('run-2', 'Run 2', trailing: [LayoutPartData::text('state', 'Running', 'unheard')]);
+
+        LayoutPartData::collection('rows', 'list', [$unknown])->assertWithinCatalogue();
+    }
+
+    public function test_a_fact_value_holds_pieces_that_link_only_when_they_have_an_address(): void
+    {
+        $value = LayoutFactValueData::of([['Task 3', '/tasks/3'], ['Task 4', null]]);
+
+        $this->assertSame('/tasks/3', $value->pieces[0]->href);
+        $this->assertInstanceOf(Optional::class, $value->pieces[1]->href);
+    }
+
+    public function test_a_dialog_holds_its_opener_then_its_form_with_the_footer_that_sends_it(): void
+    {
+        $dialog = LayoutPartData::dialog(
+            'create',
+            new LayoutDialogData('Create task', 'Task created'),
+            LayoutPartData::action('open', 'Create task', LayoutActionData::changing([])),
+            new LayoutFormData(ActionMethod::Post, '/tasks', isKeyed: true),
+            [LayoutPartData::field('title', 'Title', new LayoutFieldData('title'), 'text')],
+            [LayoutPartData::action('send', 'Create', LayoutActionData::submitting(), 'primary')],
+        );
+
+        $this->assertSame(['open', 'form'], array_map(fn (LayoutPartData $part) => $part->key, $dialog->children));
+        $this->assertSame(['title', 'footer'], array_map(
+            fn (LayoutPartData $part) => $part->key,
+            $dialog->children[1]->children,
+        ));
+        $this->assertGreaterThan(1, $dialog->assertWithinCatalogue());
+        $this->assertInstanceOf(Optional::class, $dialog->dialog->undo);
+    }
+
+    public function test_a_progress_part_carries_its_reading_and_picks_its_style_by_whether_it_counts(): void
+    {
+        $meter = LayoutPartData::progress('week', 72, 100, 'Weekly allowance', 'percent');
+        $counted = LayoutPartData::progress('tasks', 3, 8, 'Plan 4', 'tasks', true);
+
+        $this->assertSame(1, $meter->assertWithinCatalogue());
+        $this->assertSame('meter', $meter->style);
+        $this->assertSame('counted', $counted->style);
+        $this->assertSame(72.0, $meter->progress->value);
+        $this->assertSame(8.0, $counted->progress->max);
     }
 }

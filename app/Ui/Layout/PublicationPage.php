@@ -70,24 +70,6 @@ final readonly class PublicationPage
             return LayoutPartData::body('body', ($this->body)());
         }
 
-        $shown = $this->chosenTab($chosen);
-
-        $tabs = array_map(
-            fn (PublicationTab $tab) => new LayoutTabData($tab->key, $tab->label, $tab->key === $shown->key),
-            $this->tabs,
-        );
-
-        return LayoutPartData::tabs('tabs', $tabs, ($shown->read)());
-    }
-
-    private function chosenTab(string $chosen): PublicationTab
-    {
-        foreach ($this->tabs as $tab) {
-            if ($tab->key === $chosen) {
-                return $tab;
-            }
-        }
-
-        return $this->tabs[0];
+        return PublicationTab::setOf($this->tabs, $chosen);
     }
 }

@@ -226,6 +226,24 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     }
 
     /**
+     * The tasks with these ids, each with the columns a list of waits shows, by id; an id with no task is left out.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, self>
+     */
+    public static function ofIds(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        $unique = array_values(array_unique($ids));
+
+        return self::query()->whereKey($unique)->readExactly(count($unique))
+            ->get(['id', 'number', 'title', 'state'])->keyBy('id')->all();
+    }
+
+    /**
      * The task read under its row lock, for a change that must happen once.
      */
     public static function lockedById(string $id): self

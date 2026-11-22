@@ -55,14 +55,14 @@ describe('NotificationList', () => {
             items: [],
         });
 
-        expect(list.text()).toContain('No notifications yet');
+        expect(list.text()).toContain('Nothing needs you');
     });
 
     it('shows a failed first load with Retry and never an empty list', () => {
         const list = listOf('failed', null);
 
         expect(list.text()).toContain("Couldn't load notifications");
-        expect(list.text()).not.toContain('No notifications yet');
+        expect(list.text()).not.toContain('Nothing needs you');
         expect(list.find('button').text()).toBe('Retry');
     });
 

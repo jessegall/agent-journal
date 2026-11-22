@@ -36,6 +36,20 @@ function readScreen(): void {
     snapshot.value = snapshotText();
 }
 
+/**
+ * Leave terminal, or Option with the backtick, hands the keyboard back by focusing the window switcher.
+ */
+function leave(): void {
+    document.querySelector<HTMLElement>('[data-window-switcher] [role="radio"], [data-window-switcher] button')?.focus();
+}
+
+function leaveByKey(event: KeyboardEvent): void {
+    if (event.altKey && (event.key === '`' || event.code === 'Backquote')) {
+        event.preventDefault();
+        leave();
+    }
+}
+
 function closeReader(): void {
     snapshot.value = null;
 }
@@ -80,7 +94,7 @@ const cursorStyle = computed(() => {
 </script>
 
 <template>
-    <div class="flex flex-col gap-1">
+    <div class="flex flex-col gap-1" @keydown="leaveByKey">
         <p class="text-small" :class="screen.state === 'refused' ? 'text-danger' : 'text-text-2'">
             {{ presentation.stateLine }}
         </p>
@@ -94,6 +108,7 @@ const cursorStyle = computed(() => {
             <template v-if="drawn !== null">
                 <Button variant="bordered" size="sm" :aria-controls="readerId" @click="readScreen">Read screen</Button>
             </template>
+            <Button class="min-[761px]:hidden" variant="ghost" size="sm" @click="leave">Leave terminal</Button>
         </div>
         <template v-if="snapshot !== null">
             <section :id="readerId" class="flex flex-col gap-1.5" aria-label="Terminal screen as text">

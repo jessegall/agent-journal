@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import Button from '@kit/Button';
+import RowSkeleton from '@kit/RowSkeleton';
+import StaleListNotice from '@kit/StaleListNotice';
 import { computed, nextTick, ref, watch } from 'vue';
 import type { WindowResult } from '@/generated/types/page-props';
 import { provideIsStale } from './windowFreshness';
@@ -38,6 +40,7 @@ const emit = defineEmits<{ retry: []; close: [] }>();
 defineSlots<{ content(slotProps: { data: unknown }): unknown }>();
 
 const shownPlacement = computed(() => props.placement ?? (props.isWindow ? 'pane' : 'section'));
+const hasFailed = computed(() => props.result?.state === 'failed');
 const isRefused = computed(() => props.result?.state === 'denied' || props.result?.state === 'unavailable');
 const shownData = computed(() => {
     if (props.result?.state === 'ready') {
@@ -55,6 +58,32 @@ const isFirstRead = computed(
     () => (props.result === null || props.result === undefined) && shownData.value === undefined,
 );
 const heading = ref<HTMLElement | null>(null);
+const anchor = ref<HTMLElement | null>(null);
+const isRetrying = ref(false);
+
+function retry(): void {
+    isRetrying.value = true;
+    emit('retry');
+}
+
+// A Retry keeps the focus on its own control; when that control goes with the failure, the focus moves to the heading
+// of the region that was read again.
+watch(
+    () => isEnvelopeStale.value || hasFailed.value,
+    (isFailed) => {
+        if (isFailed || !isRetrying.value) {
+            return;
+        }
+
+        isRetrying.value = false;
+        void nextTick(() => {
+            const target = anchor.value?.parentElement?.querySelector<HTMLElement>('h1, h2, h3');
+
+            target?.setAttribute('tabindex', '-1');
+            target?.focus();
+        });
+    },
+);
 
 provideIsStale(isStale);
 
@@ -71,22 +100,20 @@ watch(
 </script>
 
 <template>
+    <span ref="anchor" class="hidden"></span>
     <template v-if="isEnvelopeStale">
-        <div role="alert" class="flex items-center gap-3 border-b border-line px-4 py-2 text-small text-text-2">
-            <span class="flex-1">Showing the last update.<template v-if="reason"> {{ reason }}</template></span>
-            <Button variant="bordered" size="small" @click="emit('retry')">Reload {{ subject }}</Button>
-        </div>
+        <StaleListNotice :reason="reason ?? ''" @retry="retry" />
     </template>
     <template v-if="shownData !== undefined">
         <slot name="content" :data="shownData" />
     </template>
     <template v-else-if="result?.state === 'failed'">
         <div role="alert" class="flex flex-col items-center gap-3 px-4 py-10 text-center">
-            <p class="text-text-2">Couldn't load {{ subject }}</p>
+            <p class="text-text-2">Could not load {{ subject }}</p>
             <template v-if="reason">
                 <p class="text-small text-text-3">{{ reason }}</p>
             </template>
-            <Button variant="bordered" @click="emit('retry')">Reload {{ subject }}</Button>
+            <Button variant="bordered" @click="retry">Try again</Button>
         </div>
     </template>
     <template v-else-if="isRefused && shownPlacement === 'page'">
@@ -102,10 +129,6 @@ watch(
         </div>
     </template>
     <template v-else-if="shownPlacement !== 'section' && isFirstRead">
-        <div role="status" :aria-label="`Loading ${subject}`" class="flex flex-col gap-3 px-4 py-6">
-            <span class="h-4 w-1/3 rounded-button bg-line motion-safe:animate-pulse"></span>
-            <span class="h-4 w-2/3 rounded-button bg-line motion-safe:animate-pulse"></span>
-            <span class="h-4 w-1/2 rounded-button bg-line motion-safe:animate-pulse"></span>
-        </div>
+        <RowSkeleton :label="`Loading ${subject}`" />
     </template>
 </template>

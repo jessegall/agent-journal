@@ -24,7 +24,29 @@ final class PlanRequest extends FormRequest
      */
     public function rules(): array
     {
-        return $this->outlinePageRules();
+        return [
+            ...$this->outlinePageRules(),
+            'tab' => ['nullable', 'string', 'in:tasks,graph'],
+            'node' => ['nullable', 'string', 'max:26'],
+        ];
+    }
+
+    /**
+     * The tab the reader opened, Tasks when it opened none.
+     */
+    public function chosenTab(): string
+    {
+        $tab = $this->string('tab')->toString();
+
+        return $tab === '' ? 'tasks' : $tab;
+    }
+
+    /**
+     * The task node chosen in the graph, as the address a task leads back to carries it; '' when none is chosen.
+     */
+    public function selectedNode(): string
+    {
+        return $this->string('node')->toString();
     }
 
     public function planId(): string

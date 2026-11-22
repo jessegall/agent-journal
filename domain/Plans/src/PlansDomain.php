@@ -68,6 +68,7 @@ use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Http\Controllers\ApprovePlanReviewPageController;
 use Domain\Plans\Http\Controllers\AssignPlanWorkPageController;
 use Domain\Plans\Http\Controllers\CancelPlanPageController;
+use Domain\Plans\Http\Controllers\CreatePlanPageController;
 use Domain\Plans\Http\Controllers\FinishPlanPageController;
 use Domain\Plans\Http\Controllers\ReassignPlanWorkPageController;
 use Domain\Plans\Http\Controllers\RequestPlanChangesPageController;
@@ -83,6 +84,7 @@ use Domain\Plans\Policies\PlanPolicy;
 use Domain\Plans\Resolvers\OpenPlansCount;
 use Domain\Plans\Resolvers\PhaseWindowResolver;
 use Domain\Plans\Resolvers\PlansWindowResolver;
+use Domain\Plans\Resolvers\PlanTaskWindowResolver;
 use Domain\Plans\Resolvers\PlanWindowResolver;
 use Domain\Plans\Resolvers\TaskPlanSection;
 use Domain\Plans\Resolvers\WaitingPlansCount;
@@ -247,10 +249,15 @@ final class PlansDomain extends Domain implements
     public function pages(): array
     {
         return [
-            Page::make('list', 'Plans', Icon::Plan, PlansWindowResolver::class, 'PlansWindow.vue')
+            Page::layout('list', 'Plans', Icon::Plan, PlansWindowResolver::class)
                 ->at('')
                 ->onHome(20)
-                ->actions(ActionRoute::post('{plan}/start', StartPlanController::class, 'start')),
+                ->actions(
+                    ActionRoute::post('{plan}/start', StartPlanController::class, 'start'),
+                    ActionRoute::post('create', CreatePlanPageController::class, 'create-plan'),
+                ),
+            Page::layout('plan-task', 'Plan task', Icon::Plan, PlanTaskWindowResolver::class)
+                ->at('{plan}/tasks/{task}'),
             Page::layout('plan', 'Plan', Icon::Plan, PlanWindowResolver::class)
                 ->at('{plan}')
                 ->inInspector()
