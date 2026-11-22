@@ -168,6 +168,7 @@ describe('a declared layout', () => {
                                                 name: 'reason',
                                                 value: '',
                                                 clears: [],
+                                                options: [],
                                             },
                                         }),
                                         part({
@@ -179,6 +180,7 @@ describe('a declared layout', () => {
                                             action: {
                                                 query: {},
                                                 submits: true,
+                                                appends: false,
                                             },
                                         }),
                                     ],
@@ -526,7 +528,7 @@ describe('a declared layout', () => {
         });
 
         expect(view.get('section').attributes('aria-label')).toBe('Profile');
-        expect(view.get('[role="group"]').exists()).toBe(true);
+        expect(view.find('[role="group"]').exists()).toBe(true);
         expect(view.get('.flex-col.items-stretch').text()).toContain('Models');
         expect(view.get('.flex-col.items-stretch').text()).toContain('fast');
         expect(view.find('[role="switch"]').exists()).toBe(false);
@@ -551,7 +553,7 @@ describe('a declared layout', () => {
                                 menu: {
                                     key: 'task',
                                     label: 'Actions for task 1',
-                                    groups: [{ key: 'main', items: [{ key: 'open', label: 'Open', href: '/tasks/1' }] }],
+                                    groups: [{ key: 'main', items: [{ key: 'open', label: 'Open', href: '/tasks/1', method: 'GET' }] }],
                                 },
                             },
                             { key: 'plain', label: 'Plain', value: '', query: {}, isCurrent: false },

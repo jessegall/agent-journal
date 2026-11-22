@@ -33,7 +33,7 @@ final class StateEffectsTest extends TestCase
     {
         $this->assertSame([
             self::FIXTURES.'/RunsTheBus.php:24 RunsTheBus::onStop calls run',
-            self::FIXTURES.'/WritesARow.php:21 WritesARow::onStop calls save',
+            self::FIXTURES.'/WritesARow.php:20 WritesARow::onStop calls save',
         ], $this->effectsIn([base_path(self::FIXTURES)]));
     }
 

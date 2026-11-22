@@ -7,8 +7,8 @@ namespace Tests\Feature\Communication;
 use App\Actors\Enums\ChatPermission;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Commands\PostChatMessage;
+use App\Communication\Contracts\ChatTimeline;
 use App\Communication\Exceptions\ChatCursorRefused;
-use App\Communication\Resolvers\ChatTimeline;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
@@ -32,7 +32,7 @@ final class ChatTimelineTest extends MessagingTestCase
         parent::setUp();
 
         $this->bea = User::factory()->create(['name' => 'Bea']);
-        EnvironmentUserGrant::grant(
+        EnvironmentUserGrant::create(
             $this->bea,
             null,
             [ChatPermission::ReceiveInvitations],
@@ -77,8 +77,6 @@ final class ChatTimelineTest extends MessagingTestCase
 
     private function timeline(): ChatTimeline
     {
-        $this->app->forgetScopedInstances();
-
         return $this->app->make(ChatTimeline::class);
     }
 }

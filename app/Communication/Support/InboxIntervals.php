@@ -27,21 +27,21 @@ final readonly class InboxIntervals
      *
      * @throws InboxUnavailable
      */
-    public function join(Inbox $inbox, ActorIdentity $actor, IntervalRole $role): ChatInterval
+    public function enter(Inbox $inbox, ActorIdentity $actor, IntervalRole $role): ChatInterval
     {
         $this->lock($inbox);
 
         $active = InboxInterval::query()->activeFor($inbox->inboxId())->heldBy($actor)->first();
 
         if ($active !== null) {
-            return ChatInterval::of($active);
+            return $active->chatInterval;
         }
 
-        $sequence = InboxRecord::lockForSequence($inbox->inboxId());
-        $interval = InboxInterval::open($inbox->inboxId(), $actor, $role, $sequence);
-        TimelineEvent::append($inbox->inboxId(), $sequence, TimelineEventType::Joined, $actor, $interval->id);
+        $sequence = InboxRecord::lockedForSequence($inbox->inboxId())->takeSequence();
+        $interval = InboxInterval::create($inbox->inboxId(), $actor, $role, $sequence);
+        TimelineEvent::create($inbox->inboxId(), $sequence, TimelineEventType::Joined, $actor, $interval->id);
 
-        return ChatInterval::of($interval);
+        return $interval->chatInterval;
     }
 
     /**
@@ -52,10 +52,11 @@ final readonly class InboxIntervals
      */
     public function leave(ChatInterval $interval, LeaveReason $reason): void
     {
-        $sequence = InboxRecord::lockForSequence($interval->inboxId);
+        $sequence = InboxRecord::lockedForSequence($interval->inboxId)->takeSequence();
         $record = InboxInterval::query()->whereKey($interval->intervalId)->lockForUpdate()->firstOrFail();
         $record->end($reason, CarbonImmutable::now());
-        TimelineEvent::append(
+
+        TimelineEvent::create(
             $interval->inboxId,
             $sequence,
             TimelineEventType::Left,
@@ -72,12 +73,15 @@ final readonly class InboxIntervals
      */
     public function transfer(ChatInterval $from, ChatInterval $to): void
     {
-        $sequence = InboxRecord::lockForSequence($from->inboxId);
+        $sequence = InboxRecord::lockedForSequence($from->inboxId)->takeSequence();
+
         InboxInterval::query()->whereKey($from->intervalId)->lockForUpdate()->firstOrFail()
             ->takeRole(IntervalRole::Member);
+
         InboxInterval::query()->whereKey($to->intervalId)->lockForUpdate()->firstOrFail()
             ->takeRole(IntervalRole::Owner);
-        TimelineEvent::append($from->inboxId, $sequence, TimelineEventType::Transferred, $to->actor, $to->intervalId);
+
+        TimelineEvent::create($from->inboxId, $sequence, TimelineEventType::Transferred, $to->actor, $to->intervalId);
     }
 
     /**
@@ -87,8 +91,8 @@ final readonly class InboxIntervals
      */
     public function recordClosed(Inbox $inbox, ActorIdentity $closedBy): void
     {
-        $sequence = InboxRecord::lockForSequence($inbox->inboxId());
-        TimelineEvent::append($inbox->inboxId(), $sequence, TimelineEventType::Closed, $closedBy, null);
+        $sequence = InboxRecord::lockedForSequence($inbox->inboxId())->takeSequence();
+        TimelineEvent::create($inbox->inboxId(), $sequence, TimelineEventType::Closed, $closedBy, null);
     }
 
     /**

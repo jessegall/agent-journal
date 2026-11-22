@@ -13,6 +13,7 @@ use App\Bus\Contracts\CommandFacts;
 use App\Hooks\Contracts\StopEvidence;
 use App\Hooks\Contracts\StopPreparer;
 use App\Hooks\Decisions\Decision;
+use App\Hooks\Decisions\MessageLine;
 use App\Hooks\Enums\StopAttemptState;
 use App\Hooks\Enums\StopPreparationState;
 use App\Hooks\Events\HelperStopHeld;
@@ -62,17 +63,20 @@ final readonly class StopAttemptGate implements StopConditionGate
         private CommandFacts $facts,
     ) {}
 
-    public function answer(HookIdentity $stop): Decision
+    /**
+     * The stop's answer: nothing lets it stop, a message line lets it stop with that message, a decision refuses it.
+     */
+    public function answer(HookIdentity $stop): Decision|MessageLine|null
     {
         if (! $this->policies->isFrozenFor($stop->sessionId)) {
-            return Decision::allow();
+            return null;
         }
 
         $policy = $this->policies->policyFor($stop->sessionId);
         $preparation = $this->prepare($stop, $policy);
 
         return match ($preparation->state) {
-            StopPreparationState::Preparing => Decision::allow()->withMessage($preparation->message),
+            StopPreparationState::Preparing => new MessageLine($preparation->message),
             StopPreparationState::ReturnToActor => Decision::deny($preparation->message),
             StopPreparationState::Held => $this->holdPrepared($stop, $policy, $preparation),
             StopPreparationState::FinalChecks => $this->runFinalChecks($stop, $policy),
@@ -105,7 +109,7 @@ final readonly class StopAttemptGate implements StopConditionGate
     /**
      * Ends the turn with the work held; the first time it is held, the stop is recorded as failed and the owner told.
      */
-    private function holdPrepared(HookIdentity $stop, StartPolicy $policy, StopPreparation $preparation): Decision
+    private function holdPrepared(HookIdentity $stop, StartPolicy $policy, StopPreparation $preparation): MessageLine
     {
         if ($preparation->tellsOwner) {
             $attempt = $this->openAttempt($stop, $policy);
@@ -113,10 +117,10 @@ final readonly class StopAttemptGate implements StopConditionGate
             $this->tellOwnerHeld($attempt);
         }
 
-        return Decision::allow()->withMessage($preparation->message);
+        return new MessageLine($preparation->message);
     }
 
-    private function runFinalChecks(HookIdentity $stop, StartPolicy $policy): Decision
+    private function runFinalChecks(HookIdentity $stop, StartPolicy $policy): Decision|MessageLine|null
     {
         $attempt = $this->openAttempt($stop, $policy);
 
@@ -127,8 +131,8 @@ final readonly class StopAttemptGate implements StopConditionGate
         $stopOutcome = $this->evidence->result($attempt->reference());
 
         return match ($stopOutcome->state) {
-            StopAttemptState::Pending => Decision::allow()->withMessage(self::CHECKS_RUNNING),
-            StopAttemptState::Passed => $this->certifyCompletion($attempt, Decision::allow()),
+            StopAttemptState::Pending => new MessageLine(self::CHECKS_RUNNING),
+            StopAttemptState::Passed => $this->certifyCompletion($attempt, null),
             StopAttemptState::Failed => $this->refuseOrHold($attempt, $stop, $stopOutcome->failureSummary()),
             StopAttemptState::Unresolved => Decision::deny(self::CHECKS_UNRESOLVED),
         };
@@ -144,24 +148,27 @@ final readonly class StopAttemptGate implements StopConditionGate
         );
     }
 
-    private function passWithoutConditions(StopAttempt $attempt): Decision
+    private function passWithoutConditions(StopAttempt $attempt): MessageLine|null
     {
         if (! $attempt->isSettled()) {
             $attempt->settle(StopAttemptState::Passed, self::NO_CONDITIONS_SUBMISSION);
         }
 
-        return $this->certifyCompletion($attempt, Decision::allow()->withMessage(self::NO_CHECKS_REQUIRED));
+        return $this->certifyCompletion($attempt, new MessageLine(self::NO_CHECKS_REQUIRED));
     }
 
-    private function certifyCompletion(StopAttempt $attempt, Decision $decision): Decision
+    private function certifyCompletion(StopAttempt $attempt, MessageLine|null $message): MessageLine|null
     {
         $this->certification->certify($attempt);
 
-        return $decision;
+        return $message;
     }
 
-    private function refuseOrHold(StopAttempt $attempt, HookIdentity $stop, string $failureSummary): Decision
-    {
+    private function refuseOrHold(
+        StopAttempt $attempt,
+        HookIdentity $stop,
+        string $failureSummary,
+    ): Decision|MessageLine {
         $unchangedFailures = $this->unchangedFailureCount($stop->sessionId, $attempt, $failureSummary);
 
         if ($unchangedFailures < self::UNCHANGED_FAILURES_TO_HOLD) {
@@ -172,7 +179,7 @@ final readonly class StopAttemptGate implements StopConditionGate
             $this->tellOwnerHeld($attempt);
         }
 
-        return Decision::allow()->withMessage(self::STOP_HELD.PHP_EOL.$failureSummary);
+        return new MessageLine(self::STOP_HELD.PHP_EOL.$failureSummary);
     }
 
     private function tellOwnerHeld(StopAttempt $attempt): void

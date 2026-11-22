@@ -8,7 +8,7 @@ use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Enums\TerminalInputKind;
+use App\Agents\Enums\TerminalInputType;
 use App\Agents\Exceptions\HostArrangementRefused;
 use App\Agents\Exceptions\HostCredentialRejected;
 use App\Agents\Exceptions\HostUnavailable;
@@ -236,7 +236,7 @@ final class Host extends Model implements ReadableModel
     /**
      * Whether the host carries out this kind of browser input: text, named keys or pastes.
      */
-    public function carriesOutBrowserInputOf(TerminalInputKind $kind): bool
+    public function carriesOutBrowserInputOf(TerminalInputType $kind): bool
     {
         $capabilities = new BrowserInputCapabilities(
             $this->browser_input,

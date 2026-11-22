@@ -4,23 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\States;
 
-use App\Hooks\Attributes\StackWide;
-use App\Hooks\Commands\FocusInstruction;
-use App\Hooks\Commands\ReleaseInstruction;
-use App\Hooks\Contracts\InstructsForeground;
-use App\Hooks\Contracts\WorkRecordState;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\StopRequested;
-use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
-use App\Hooks\Values\LifecycleCommands;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskWork;
+use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * The agent is working on a task: it may not stop while the task still needs work.
  */
-final class WorkingOnTaskState extends AgentState implements InstructsForeground, WorkRecordState
+final class WorkingOnTaskState extends AgentState
 {
     public function __construct(private readonly TaskWork $task) {}
 
@@ -29,39 +24,24 @@ final class WorkingOnTaskState extends AgentState implements InstructsForeground
         return ! $this->task->needsWork();
     }
 
-    public function workRecordType(): string
+    /**
+     * @return Option<string>
+     */
+    public function workRecordType(): Option
     {
-        return Task::LINK_TYPE;
+        return new Some(Task::LINK_TYPE);
     }
 
-    public function onEnter(LifecycleContext $context): LifecycleCommands
-    {
-        return LifecycleCommands::of(new FocusInstruction());
-    }
-
-    public function onResume(LifecycleContext $context): LifecycleCommands
-    {
-        return LifecycleCommands::of(new FocusInstruction());
-    }
-
-    public function onExit(LifecycleContext $context): LifecycleCommands
-    {
-        return LifecycleCommands::of(new ReleaseInstruction());
-    }
-
-    #[StackWide]
     public function onStop(StopRequested $input): Decision
     {
         return Decision::deny($this->task->unfinishedReason());
     }
 
-    public function instructionType(): string
+    /**
+     * @return Option<string>
+     */
+    public function instruction(): Option
     {
-        return 'tasks.task';
-    }
-
-    public function instructionText(): string
-    {
-        return "Work on task {$this->task->number}, run {$this->task->runNumber}.";
+        return new Some("Work on task {$this->task->number}, run {$this->task->runNumber}.");
     }
 }

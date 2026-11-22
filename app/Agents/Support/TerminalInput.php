@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
-use App\Agents\Enums\TerminalInputKind;
+use App\Agents\Enums\TerminalInputType;
 use App\Agents\Enums\TerminalNamedKey;
 
 /**
@@ -23,7 +23,7 @@ final readonly class TerminalInput
         public bool $enter,
         public int $sequence,
         public int $screenRevision,
-        public TerminalInputKind $kind = TerminalInputKind::Text,
+        public TerminalInputType $type = TerminalInputType::Text,
         public TerminalNamedKey|null $key = null,
         public int $rows = 0,
         public int $columns = 0,
@@ -31,6 +31,6 @@ final readonly class TerminalInput
 
     public function isOverPasteBound(): bool
     {
-        return $this->kind === TerminalInputKind::Paste && strlen($this->text) > self::PASTE_BYTE_LIMIT;
+        return $this->type === TerminalInputType::Paste && strlen($this->text) > self::PASTE_BYTE_LIMIT;
     }
 }

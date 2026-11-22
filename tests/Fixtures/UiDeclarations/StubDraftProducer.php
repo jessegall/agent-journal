@@ -13,6 +13,8 @@ use App\Ui\Data\DraftQuestionData;
  */
 final class StubDraftProducer implements DraftProducer
 {
+    public const string AGENT = 'Agent 1';
+
     public function questions(): array
     {
         return array_map(
@@ -23,6 +25,6 @@ final class StubDraftProducer implements DraftProducer
 
     public function draft(array $answers): DraftedRecordData
     {
-        return new DraftedRecordData(['title' => $answers[0]], 'Agent 1');
+        return new DraftedRecordData(['title' => $answers[0]], self::AGENT);
     }
 }

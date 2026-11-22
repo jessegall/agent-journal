@@ -8,6 +8,7 @@ use App\Agents\Events\MergeOutcomeRecorded;
 use App\Agents\Events\SessionClosed;
 use App\Agents\Events\SessionOpened;
 use App\Bus\Support\RequiredListenerRegistry;
+use App\Communication\Events\ChatMessageAccepted;
 use App\Communication\Events\MessageAnswerRequired;
 use App\Communication\Events\MessageSent;
 use App\CoreApi;
@@ -30,6 +31,7 @@ use App\Web\Listeners\BroadcastPageChange;
 use Domain\Documents\Api\Events\ReportFiled;
 use Domain\Helpers\Events\ReportJobLinked;
 use Domain\Plans\Api\Events\PlanProgressChanged;
+use Domain\Plans\Api\Events\PlanReviewRequested;
 use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Listeners\CountPhaseTaskStates;
 use Domain\Plans\Listeners\SamplePlanOfStartedTask;
@@ -37,6 +39,7 @@ use Domain\Sequences\Events\SequenceStarted;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
+use Domain\Tasks\Events\TaskDescribed;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Listeners\AnnounceTaskStart;
 use Domain\Tasks\Listeners\PushTaskState;
@@ -96,6 +99,9 @@ final class RequiredListenerLaneTest extends TestCase
                 OutputChunkCommitted::class,
                 MessageAnswerRequired::class,
                 MessageSent::class,
+                ChatMessageAccepted::class,
+                PlanReviewRequested::class,
+                TaskDescribed::class,
                 RunOutcomeRecorded::class,
                 AskClosed::class,
                 AskHopAssigned::class,

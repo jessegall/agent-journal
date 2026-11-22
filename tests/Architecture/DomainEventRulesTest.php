@@ -52,7 +52,7 @@ final class DomainEventRulesTest extends TestCase
 
         yield 'an unrelated state helper has no event permission' => [
             'Plans/States/PlanStateWithForeignUse.php',
-            ['22 names '.self::TASK_CLOSED.$onlyAListener],
+            ['21 names '.self::TASK_CLOSED.$onlyAListener],
         ];
 
         yield 'a listener with a group import, naming a descriptor outside its own descriptor' => [

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Web\Listeners;
 
-use App\Actors\Enums\ActorType;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Support\ChatInboxes;
 use App\Contracts\Listener;
@@ -56,7 +55,7 @@ final readonly class BroadcastDockedSourceChange implements Listener
 
         foreach ($inboxIds as $inboxId) {
             foreach ($this->chats->activeIntervals($this->inboxes->resolve($inboxId)) as $interval) {
-                if ($interval->actor->type === ActorType::User) {
+                if ($interval->actor->type->isUser()) {
                     $userIds[$interval->actor->id] = true;
                 }
             }

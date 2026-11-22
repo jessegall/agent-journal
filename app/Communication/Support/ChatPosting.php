@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Communication\Support;
 
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\CurrentSession;
@@ -94,9 +93,11 @@ final readonly class ChatPosting
         $parent = $this->visibleParent($command->parentId, $command->inboxId);
         $author = $command->dispatchedBy();
         $identity = ActorIdentity::of($author);
+
         $answers = $parent->needsReply()
             && ! $parent->isWrittenBy($identity)
             && $parent->mayBeSettledBy($identity);
+
         $body = MessageBody::from($command->body);
         $key = $command->requestKey;
 
@@ -237,21 +238,23 @@ final readonly class ChatPosting
         $opportunity = $identity->type->isAgent()
             ? $this->speech->requireClaim($inbox, $identity, $intervalId, $claimToken, $chat)
             : null;
+
         $chat = $opportunity === null ? $chat : $chat->underRoot($opportunity->user_root_id);
         // An agent asking an agent takes the target's open turn now, or fails whole before anything is published.
         $targetTurn = $opportunity === null ? null : $this->speech->targetTurnFor($chat, $inbox);
 
-        $sequence = InboxRecord::lockForSequence($inbox->inboxId());
-        $event = TimelineEvent::append(
+        $sequence = InboxRecord::lockedForSequence($inbox->inboxId())->takeSequence();
+
+        $event = TimelineEvent::create(
             $inbox->inboxId(),
             $sequence,
             TimelineEventType::Message,
             $identity,
             $intervalId,
         );
-        $message = Message::createChat(
-            $chat,
-            $event,
+
+        $message = Message::create(
+            $chat->placedAt($event),
             new AcceptedOperation($this->accepted->requireFor(self::class)),
             $author->type->isAgent() && $this->session->hasSession() ? $this->session->sessionId() : null,
         );
@@ -260,7 +263,7 @@ final readonly class ChatPosting
         $opportunity?->spend($message);
         $targetTurn?->reserveFor($message);
 
-        if ($identity->type === ActorType::User) {
+        if ($identity->type->isUser()) {
             $this->speech->openFor($message, $intervals);
         }
 
@@ -284,6 +287,7 @@ final readonly class ChatPosting
             fn (InboxInterval $interval) => $interval->actor,
             InboxInterval::query()->activeFor($inbox->inboxId())->limit(InboxMembers::LIMIT)->get()->all(),
         ));
+
         foreach ([$chat->addressee, $chat->respondent] as $named) {
             if ($named !== null && ! array_any($members, fn (ActorIdentity $member) => $member->isSameAs($named))) {
                 throw StaleAddressee::forActor($named);

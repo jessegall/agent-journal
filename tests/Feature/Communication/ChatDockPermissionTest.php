@@ -23,10 +23,12 @@ use Tests\Support\MessagingTestCase;
  */
 final class ChatDockPermissionTest extends MessagingTestCase
 {
+    private const string TITLE = 'Ship the release';
+
     public function test_a_docked_task_shows_to_the_owner_and_not_to_a_chat_member(): void
     {
         $bea = User::factory()->create(['name' => 'Bea']);
-        EnvironmentUserGrant::grant(
+        EnvironmentUserGrant::create(
             $bea,
             null,
             [ChatPermission::ReceiveInvitations],
@@ -34,7 +36,7 @@ final class ChatDockPermissionTest extends MessagingTestCase
             CarbonImmutable::now(),
         );
         $this->inboxOf(ActorIdentity::of($bea));
-        $task = Task::factory()->create(['title' => 'Ship the release']);
+        $task = Task::factory()->create(['title' => self::TITLE]);
 
         $this->asOwner();
         $inboxId = $this->runOnBus(new CreateGroupChat('Design', [$bea->id]));
@@ -43,16 +45,14 @@ final class ChatDockPermissionTest extends MessagingTestCase
 
         $this->assertCount(1, $this->pageAs($chat)->cards);
 
-        $this->startUserRequestAs($bea->id);
+        $this->startChatMemberRequestAs($bea->id);
         $shown = (string) json_encode($this->pageAs($chat));
 
-        $this->assertStringNotContainsString('Ship the release', $shown);
+        $this->assertStringNotContainsString(self::TITLE, $shown);
     }
 
     private function pageAs(Conversation $chat): DockPageData
     {
-        $this->app->forgetScopedInstances();
-
         return $this->app->make(DockProjection::class)->page($chat, null);
     }
 }

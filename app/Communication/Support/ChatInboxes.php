@@ -59,7 +59,7 @@ final readonly class ChatInboxes
             ->heldBy($actor)
             ->firstOr(fn () => throw InboxUnavailable::forId($inbox->inboxId()));
 
-        return ChatInterval::of($interval);
+        return $interval->chatInterval;
     }
 
     public function isActiveMember(Inbox $inbox, ActorIdentity $actor): bool
@@ -80,14 +80,14 @@ final readonly class ChatInboxes
             ->orderBy('id')
             ->limit($limit)
             ->get()
-            ->map(fn (InboxInterval $interval) => ChatInterval::of($interval))
+            ->map(fn (InboxInterval $interval) => $interval->chatInterval)
             ->all());
     }
 
     /**
      * The ids of the chat inboxes the actor is an active member of, as a query to read them by.
      *
-     * @return Builder<InboxInterval>
+     * @return Builder<*>
      */
     public function memberInboxIds(ActorIdentity $actor): Builder
     {

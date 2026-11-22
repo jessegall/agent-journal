@@ -6,6 +6,7 @@ namespace App\Communication\Support;
 
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Support\AssignmentReference;
+use App\Communication\Contracts\MembershipEvidence;
 use App\Communication\Exceptions\MembershipEvidenceMismatch;
 
 /**

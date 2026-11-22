@@ -43,7 +43,7 @@ return [
     ],
     ChatMemberJoined::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'InboxInterval::open',
+        'owner' => 'InboxInterval::create',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ChatMemberJoined('interval', 'inbox', new ActorIdentity(ActorType::Agent, 'agent')),
@@ -94,6 +94,7 @@ return [
             'ReceiptDelivery::fail',
             'ReceiptDelivery::exhaust',
             'ReceiptDelivery::cancel',
+            'ReceiptDelivery::recordChange',
         ],
         'migrated' => true,
         'producers' => [],
@@ -105,6 +106,7 @@ return [
             'SpeechOpportunity::spend',
             'SpeechOpportunity::decline',
             'SpeechOpportunity::cancel',
+            'SpeechOpportunity::settle',
         ],
         'migrated' => true,
         'producers' => [],
@@ -152,7 +154,7 @@ return [
     ],
     MessageSent::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'Message::create',
+        'owner' => 'Message::createDesk',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new MessageSent('message', new ActorIdentity(ActorType::Agent, 'agent'), 'source', 'destination'),

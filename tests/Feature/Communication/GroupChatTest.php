@@ -49,15 +49,13 @@ final class GroupChatTest extends MessagingTestCase
 
     private function pageOf(string $inboxId): ConversationData
     {
-        $this->app->forgetScopedInstances();
-
         return $this->app->make(ChatConversations::class)->pageFor(null, $inboxId, null);
     }
 
     private function grantedUser(string $name): User
     {
         $user = User::factory()->create(['name' => $name]);
-        EnvironmentUserGrant::grant(
+        EnvironmentUserGrant::create(
             $user,
             null,
             [ChatPermission::ReceiveInvitations],

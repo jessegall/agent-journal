@@ -16,6 +16,6 @@ final readonly class CancelTerminalTakeController
 {
     public function __invoke(TerminalControlRequest $request, TerminalAnswers $answers): JsonResponse|Response
     {
-        return $answers->run($request->cancelCommand());
+        return $answers->control($request->cancelCommand());
     }
 }

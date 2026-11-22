@@ -48,7 +48,6 @@ final class StateEventDeliveryTest extends TestCase
         setUpCommittedHookStack as private setUpBaseStack;
         tearDownCommittedHookStack as private tearDownBaseStack;
     }
-
     use InstallsCommandModules;
     use RegistersNoteStates;
 
@@ -68,21 +67,25 @@ final class StateEventDeliveryTest extends TestCase
         $this->tearDownBaseStack();
     }
 
-    public function test_an_empty_highest_result_shadows_lower_ordinary_listeners_and_keeps_the_marked_context(): void
+    public function test_every_live_listener_answers_from_the_top_down(): void
     {
         $this->pushState(new StateReference('notes.writing', NoSubject::None));
-        $this->pushState(new StateReference('notes.watching', new SubjectReference('Hidden.', 1)));
+        $this->pushState(new StateReference('notes.watching', new SubjectReference('lower', 1)));
         $this->pushState(new StateReference('notes.watching', NoSubject::None));
 
-        $this->dispatch(new NoteWritten());
+        $this->dispatch(new NoteWritten(
+            ordinary: [new RecordNoteEffect('watching')],
+            marked: [new RecordNoteEffect('writing')],
+        ));
 
-        $this->assertSame(['A note was written.'], $this->takeContext());
+        $this->assertSame(['watching', 'watching', 'writing'], $this->app->make(NoteEffects::class)->labels);
     }
 
-    public function test_a_failed_collection_keeps_no_context_from_any_selected_listener(): void
+    public function test_a_failed_collection_runs_no_effect_of_any_selected_listener(): void
     {
         $this->pushState(new StateReference('notes.writing', NoSubject::None));
-        $this->pushState(new StateReference('notes.watching', new SubjectReference('Partial context.', 1)));
+        $this->pushState(new StateReference('notes.watching', NoSubject::None));
+        $effects = $this->app->make(NoteEffects::class);
 
         $ordinary = [];
         $this->app->make(Dispatcher::class)->listen(NoteWritten::class, function (NoteWritten $event) use (
@@ -92,15 +95,15 @@ final class StateEventDeliveryTest extends TestCase
         });
 
         try {
-            $this->dispatch(new NoteWritten(listenerFails: true));
+            $this->dispatch(new NoteWritten(listenerFails: true, ordinary: [new RecordNoteEffect('partial')]));
             $this->fail('The failing state returned successfully.');
         } catch (NoteWorkFailed) {
             $this->assertCount(1, $ordinary);
-            $this->assertSame([], $this->takeContext());
+            $this->assertSame([], $effects->labels);
         }
 
-        $this->dispatch(new NoteWritten());
-        $this->assertSame(['Partial context.', 'A note was written.'], $this->takeContext());
+        $this->dispatch(new NoteWritten(ordinary: [new RecordNoteEffect('watching')], marked: [new RecordNoteEffect('writing')]));
+        $this->assertSame(['watching', 'writing'], $effects->labels);
     }
 
     public function test_a_closed_stack_has_no_recipient(): void
@@ -110,15 +113,15 @@ final class StateEventDeliveryTest extends TestCase
             fn () => $this->app->make(StartStacks::class)->close($this->target),
         );
 
-        $this->dispatch(new NoteWritten());
+        $this->dispatch(new NoteWritten(marked: [new RecordNoteEffect('closed')]));
 
-        $this->assertSame([], $this->takeContext());
+        $this->assertSame([], $this->app->make(NoteEffects::class)->labels);
     }
 
-    public function test_covering_a_highest_ordinary_match_drops_its_effects_and_keeps_the_marked_origin(): void
+    public function test_a_listener_covered_by_a_new_frame_still_runs_its_remaining_effects(): void
     {
         $this->pushState(new StateReference('notes.writing', NoSubject::None));
-        $this->pushState(new StateReference('notes.watching', new SubjectReference('Original context.', 1)));
+        $this->pushState(new StateReference('notes.watching', new SubjectReference('original', 1)));
         $this->pushState(new StateReference('guide', NoSubject::None));
 
         $effects = $this->app->make(NoteEffects::class);
@@ -136,8 +139,7 @@ final class StateEventDeliveryTest extends TestCase
             marked: [new RecordNoteEffect('marked first'), new RecordNoteEffect('marked second')],
         ));
 
-        $this->assertSame(['cover', 'marked first', 'marked second'], $effects->labels);
-        $this->assertSame(['Original context.', 'A note was written.'], $this->takeContext());
+        $this->assertSame(['cover', 'stale', 'marked first', 'marked second'], $effects->labels);
     }
 
     public function test_a_recreated_frame_does_not_receive_the_old_occurrences_remaining_effects(): void
@@ -162,7 +164,7 @@ final class StateEventDeliveryTest extends TestCase
 
     public function test_a_live_origin_does_not_bypass_the_original_actors_command_authorization(): void
     {
-        $this->pushState(new StateReference('notes.watching', new SubjectReference('Still retained.', 1)));
+        $this->pushState(new StateReference('notes.watching', NoSubject::None));
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($this->target->agentId),
             TestStartAuthority::granting(ProfileBase::mainAgent(), []),
@@ -173,7 +175,6 @@ final class StateEventDeliveryTest extends TestCase
             $this->fail('The command ran without authority.');
         } catch (CommandAdmissionRefused) {
             $this->assertSame([], $this->app->make(NoteEffects::class)->labels);
-            $this->assertSame(['Still retained.'], $this->takeContext());
         }
     }
 
@@ -192,13 +193,11 @@ final class StateEventDeliveryTest extends TestCase
             $this->fail('The delivery reentered an active origin.');
         } catch (StateEventReentry $failure) {
             $this->assertStringContainsString('cycle', $failure->getMessage());
-            $this->assertSame(['A note was written.'], $this->takeContext());
         }
 
         $this->dispatch(new NoteWritten(marked: [new RecordNoteEffect('independent')]));
 
         $this->assertSame(['reenter', 'independent'], $effects->labels);
-        $this->assertSame(['A note was written.'], $this->takeContext());
     }
 
     public function test_synchronous_delivery_cannot_reenter_the_stack_of_an_unfinished_hook(): void

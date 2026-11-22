@@ -15,7 +15,6 @@ use App\Hooks\Models\AgentStackRow;
 use App\Hooks\References\Exceptions\ActivationDeclined;
 use App\Hooks\References\SubjectReference;
 use App\Hooks\Storage\FrameRecord;
-use App\Hooks\Support\InstructionMarkers;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Commands\CancelTask;
@@ -152,7 +151,7 @@ final class TaskStateContributionTest extends TestCase
         $this->assertSame(array_fill(0, count($pairQueries), 2), $pairQueries);
     }
 
-    public function test_each_started_task_frame_marks_its_instruction_and_a_finished_frame_keeps_its_stored_place(): void
+    public function test_a_finished_task_frame_keeps_its_stored_place(): void
     {
         $first = Task::factory()->create(['title' => 'Write the walk']);
         $second = Task::factory()->create(['title' => 'Read the walk']);
@@ -160,11 +159,8 @@ final class TaskStateContributionTest extends TestCase
 
         $commands->run(new StartTask($first->id));
         $commands->run(new StartTask($second->id));
-        $this->assertSame([$first->id, $second->id], $this->markedSubjects());
-
         $commands->run(new FinishTask($second->id, 1, 'Done.'));
 
-        $this->assertSame([$first->id, $second->id], $this->markedSubjects());
         $this->assertSame(["tasks.working {$first->id} 1", "tasks.working {$second->id} 1"], $this->taskFrames());
     }
 
@@ -223,25 +219,6 @@ final class TaskStateContributionTest extends TestCase
         );
 
         $this->assertSame(["tasks.working {$started->id} 1"], $this->taskFrames());
-    }
-
-    /**
-     * The subjects of the task frames whose instruction marker is set, bottom up.
-     *
-     * @return list<string>
-     */
-    private function markedSubjects(): array
-    {
-        $markers = $this->app->make(InstructionMarkers::class);
-        $subjects = [];
-
-        foreach (AgentStackRow::query()->forTarget($this->target)->sole()->frames->all() as $frame) {
-            foreach ($markers->lookup($this->target, $frame->id) as $marker) {
-                $subjects[] = $marker->subjectId;
-            }
-        }
-
-        return $subjects;
     }
 
     /**

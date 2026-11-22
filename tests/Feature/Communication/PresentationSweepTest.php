@@ -43,17 +43,17 @@ final class PresentationSweepTest extends TestCase
     {
         GlobalGroup::installJournal();
         $inbox = InboxRecord::create('test-chat', (string) str()->ulid());
-        $interval = InboxInterval::open($inbox->id, TestActors::agentIdentity(7), IntervalRole::Member, 1);
+        $interval = InboxInterval::create($inbox->id, TestActors::agentIdentity(7), IntervalRole::Member, 1);
         $receipt = MessageReceipt::forAudience($this->message(), [$interval], TestIds::of(9))[0];
         $start = CarbonImmutable::now();
-        $prefix = OutstandingRange::at($receipt, 0);
+        $prefix = OutstandingRange::create($receipt, 0);
         $sweep = $this->app->make(PresentationSweep::class);
 
         foreach (range(1, 5) as $attempt) {
             $at = $start->addMinutes($attempt * 10);
-            $batch = PresentationBatch::dispatch($interval->id, TestIds::of(5), 1, 'thread-1', $attempt, $at, $at);
-            $suffix = OutstandingRange::at($receipt, 100);
-            PresentationRange::inBatch($batch, $suffix, 200, hash('sha256', "suffix-{$attempt}"));
+            $batch = PresentationBatch::create($interval->id, TestIds::of(5), 1, 'thread-1', $attempt, $at, $at);
+            $suffix = OutstandingRange::create($receipt, 100);
+            PresentationRange::create($batch, $suffix, 200, hash('sha256', "suffix-{$attempt}"));
 
             $sweep->sweep($at->addMinutes(5));
 

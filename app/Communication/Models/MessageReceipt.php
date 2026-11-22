@@ -8,6 +8,7 @@ use App\Communication\Events\ChatReceiptPresented;
 use App\Contracts\EventSource;
 use App\Contracts\Support\InsertsRowSets;
 use App\Contracts\Support\RaisesEvents;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -36,8 +37,9 @@ final class MessageReceipt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use RaisesEvents;
     use InsertsRowSets;
+    use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -70,6 +72,7 @@ final class MessageReceipt extends Model implements EventSource, ReadableModel
                 'interval_id' => $interval->id,
                 'presented_at' => $interval->id === $senderIntervalId ? $now : null,
             ]);
+
             $receipt->setRelation('interval', $interval);
 
             return $receipt;
@@ -88,18 +91,17 @@ final class MessageReceipt extends Model implements EventSource, ReadableModel
      */
     public function present(CarbonImmutable $at): bool
     {
-        $changed = self::query()
-            ->whereKey($this->id)
-            ->whereNull('presented_at')
-            ->update(['presented_at' => $at, 'updated_at' => $at]) === 1;
+        $this->presented_at = self::query()->whereKey($this->id)->lockForUpdate()->sole()->presented_at;
 
-        if ($changed) {
-            $this->presented_at = $at;
-            $this->assertSaved($this->save());
-            $this->raise(new ChatReceiptPresented($this->id, $this->message_id, $this->interval_id));
+        if ($this->presented_at !== null) {
+            return false;
         }
 
-        return $changed;
+        $this->presented_at = $at;
+        $this->assertSaved($this->save());
+        $this->raise(new ChatReceiptPresented($this->id, $this->message_id, $this->interval_id));
+
+        return true;
     }
 
     // ----------[ Answers ]----------

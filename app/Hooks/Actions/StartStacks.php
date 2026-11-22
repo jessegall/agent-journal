@@ -13,8 +13,6 @@ use App\Hooks\Exceptions\StateSchemaUnknown;
 use App\Hooks\Exceptions\StateTransferUnknown;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\References\StateReference;
-use App\Hooks\Settlement\FrameLifecycle;
-use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\States\ReadyState;
 use App\Hooks\Storage\FrameRecord;
@@ -33,8 +31,6 @@ final readonly class StartStacks
         private StackTransaction $transaction,
         private ServerClock $clock,
         private StateTypes $types,
-        private StackRestorer $restorer,
-        private FrameLifecycle $lifecycle,
     ) {}
 
     /**
@@ -57,17 +53,9 @@ final readonly class StartStacks
 
         $carried = $this->carriedFrames($target);
         $frames = new FrameRecords([$bottom, ...$carried]);
-        $won = AgentStackRow::insertIfMissing($target, $frames, $this->types->ticking());
+        AgentStackRow::insertIfMissing($target, $frames, $this->types->ticking());
 
         AgentStackRow::lockAuthorizedFor($target)->frames->checkBottom();
-
-        if ($won && $carried !== []) {
-            $this->lifecycle->settle(
-                $target,
-                $this->restorer->restore(new FrameRecords([$bottom]), $target),
-                $this->restorer->restore($frames, $target),
-            );
-        }
     }
 
     /**

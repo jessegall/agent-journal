@@ -2,7 +2,7 @@
 import { usePage } from '@inertiajs/vue3';
 import type { InboxMessagesPartData } from '@generated/types/chat';
 import { questionUrl } from './agentLinks';
-import MessageList from './MessageList.vue';
+import InboxMessageList from './InboxMessageList.vue';
 
 /**
  * One inbox's newest messages as a native part of the Inbox page: the bounded slice the server read, each question
@@ -14,7 +14,7 @@ const page = usePage();
 </script>
 
 <template>
-    <MessageList
+    <InboxMessageList
         :messages="messages"
         :pending="[]"
         :refused="[]"

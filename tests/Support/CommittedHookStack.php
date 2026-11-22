@@ -81,7 +81,7 @@ trait CommittedHookStack
             $event->registry->register('test.tasks', $tasks);
             $event->registry->register(
                 'guide',
-                new ClosureStateLoader(ScriptedState::class, fn () => ScriptedState::delegating()),
+                new ClosureStateLoader(ScriptedState::class, fn () => ScriptedState::passing()),
             );
             $event->registry->register(
                 'test.messaging',

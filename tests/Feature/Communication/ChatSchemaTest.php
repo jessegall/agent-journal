@@ -46,15 +46,17 @@ final class ChatSchemaTest extends TestCase
         $second = $this->message($destination);
         $third = $this->message($destination);
 
-        DB::table('messages')->whereKey($first->id)->update(['request_key' => 'same-key']);
+        DB::table('messages')->where('id', $first->id)->update(['request_key' => 'same-key']);
 
         $this->assertThrows(
-            fn () => DB::table('messages')->whereKey($second->id)->update(['request_key' => 'same-key']),
+            fn () => DB::transaction(
+                fn () => DB::table('messages')->where('id', $second->id)->update(['request_key' => 'same-key']),
+            ),
             QueryException::class,
         );
         $this->assertSame(
             2,
-            DB::table('messages')->whereKey([$second->id, $third->id])->whereNull('request_key')->count(),
+            DB::table('messages')->whereIn('id', [$second->id, $third->id])->whereNull('request_key')->count(),
         );
     }
 

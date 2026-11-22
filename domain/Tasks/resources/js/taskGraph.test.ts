@@ -77,7 +77,7 @@ describe('the task graph', () => {
         expect(none.findAll('[data-node]')).toHaveLength(0);
         expect(none.text()).toContain('no tasks');
         expect(free.findAll('[data-node]')).toHaveLength(3);
-        expect(free.get('[role="status"]').exists()).toBe(true);
+        expect(free.find('[role="status"]').exists()).toBe(true);
     });
 
     it('shows Suggest off with its reason when no service gives an address', () => {
@@ -85,7 +85,7 @@ describe('the task graph', () => {
         const suggest = view.findAll('button').find((button) => button.text() === 'Suggest');
 
         expect(suggest?.attributes('disabled')).toBeDefined();
-        expect(view.get('#graph-suggest-reason').exists()).toBe(true);
+        expect(view.find('#graph-suggest-reason').exists()).toBe(true);
     });
 
     it('draws Now and Suggested with both figures, an action bar and Discard back to the plain graph', async () => {

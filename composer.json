@@ -121,7 +121,7 @@
         "calls:generate": "@php artisan journal:calls",
         "calls:check": "@php artisan journal:calls --check",
         "types:generate": [
-            "@php artisan typescript:transform"
+            "@php -d memory_limit=512M artisan typescript:transform"
         ],
         "types:check": [
             "phpstan analyse --memory-limit=1G"
@@ -137,12 +137,20 @@
             "@types:check",
             "@php artisan test --parallel --recreate-databases"
         ],
-        "test:run": "@php tests/bin/in-docker.php test:run-inside",
+        "test:run": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php tests/bin/in-docker.php test:run-inside"
+        ],
         "test:run-inside": [
+            "Composer\\Config::disableProcessTimeout",
             "@php tests/bin/run-tests.php"
         ],
-        "test:affected": "@php tests/bin/in-docker.php test:affected-inside",
+        "test:affected": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php tests/bin/in-docker.php test:affected-inside"
+        ],
         "test:affected-inside": [
+            "Composer\\Config::disableProcessTimeout",
             "@php tests/bin/affected-tests.php"
         ],
         "post-autoload-dump": [

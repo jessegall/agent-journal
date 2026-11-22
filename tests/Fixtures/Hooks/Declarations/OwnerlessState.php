@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Declarations;
 
-use App\Hooks\Attributes\StackWide;
 use App\Hooks\States\AgentState;
-use App\Hooks\Values\EventCommands;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 
 /**
@@ -14,9 +12,8 @@ use Domain\Plans\Api\Events\PlanProgressChanged;
  */
 final class OwnerlessState extends AgentState
 {
-    #[StackWide]
-    public function onPlanProgressChanged(PlanProgressChanged $event): EventCommands
+    public function onPlanProgressChanged(PlanProgressChanged $event): null
     {
-        return EventCommands::none();
+        return null;
     }
 }

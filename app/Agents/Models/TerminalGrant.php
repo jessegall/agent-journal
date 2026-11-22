@@ -71,7 +71,7 @@ final class TerminalGrant extends Model implements ReadableModel
     /**
      * The viewer's take of the runtime's input through their read interest, waiting for the host.
      */
-    public static function take(
+    public static function create(
         ActorIdentity $writer,
         AgentRuntime $runtime,
         TerminalView $interest,

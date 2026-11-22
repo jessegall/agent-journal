@@ -94,7 +94,6 @@ final class ChatAddressingTest extends MessagingTestCase
 
     private function rowAs(string $messageId): ChatMessageData
     {
-        $this->app->forgetScopedInstances();
         $page = $this->app->make(ChatConversations::class)->pageFor(null, $this->inboxId, null);
 
         return array_values(array_filter($page->messages, fn (ChatMessageData $row) => $row->id === $messageId))[0];
@@ -103,7 +102,7 @@ final class ChatAddressingTest extends MessagingTestCase
     private function grantedUser(string $name): User
     {
         $user = User::factory()->create(['name' => $name]);
-        EnvironmentUserGrant::grant(
+        EnvironmentUserGrant::create(
             $user,
             null,
             [ChatPermission::ReceiveInvitations],

@@ -6,6 +6,7 @@ namespace App\Communication\Models;
 
 use App\Communication\Enums\PresentationBatchState;
 use App\Communication\Exceptions\ChatStateConflict;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -49,6 +50,7 @@ final class PresentationBatch extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 
@@ -71,7 +73,7 @@ final class PresentationBatch extends Model implements ReadableModel
     /**
      * A new batch sent to the session's driver in the receiving context, leased until the given time.
      */
-    public static function dispatch(
+    public static function create(
         string $intervalId,
         string $sessionId,
         int $runtimeGeneration,
@@ -109,29 +111,20 @@ final class PresentationBatch extends Model implements ReadableModel
     }
 
     /**
-     * Confirms one of the batch's pieces by its handle digest: the piece, its outstanding range and the context's
-     * progress move together. Answers whether this confirmation changed anything.
-     *
-     * @throws ChatStateConflict
+     * Notes that one of the batch's pieces was confirmed at the time.
      */
-    public function confirmRange(string $handleDigest, CarbonImmutable $at): bool
+    public function recordProgress(CarbonImmutable $at): void
     {
-        if ($this->state->isSettled()) {
-            throw ChatStateConflict::batchSettled($this->id);
-        }
-
-        $range = $this->ranges()->where('handle_digest', $handleDigest)->first();
-
-        if ($range === null || ! $range->confirm($at)) {
-            return false;
-        }
-
-        $range->outstanding->confirm();
-        ReceiptProgress::of($range->receipt_id, $this->context_key)->advanceTo($range->end_offset);
         $this->last_progress_at = $at;
         $this->save();
+    }
 
-        return true;
+    /**
+     * The batch's piece with the handle digest, with its outstanding range, once there is one.
+     */
+    public function rangeWithDigest(string $handleDigest): PresentationRange|null
+    {
+        return $this->ranges()->where('handle_digest', $handleDigest)->with('outstanding')->first();
     }
 
     /**
@@ -163,9 +156,9 @@ final class PresentationBatch extends Model implements ReadableModel
     /**
      * Makes the batch actionable: it carries the digest of a grant only the receiving turn holds.
      */
-    public function grantClaims(string $grantDigest): void
+    public function grantClaims(string $digest): void
     {
-        $this->claim_grant_digest = $grantDigest;
+        $this->claim_grant_digest = $digest;
         $this->save();
     }
 

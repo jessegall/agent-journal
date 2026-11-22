@@ -8,6 +8,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Enums\MessageState;
 use App\Communication\Models\Message;
+use App\Communication\Models\TimelineEvent;
 
 /**
  * Everything a new chat message is made of: the one chat inbox it is posted in, the member that wrote it, its body,
@@ -174,5 +175,13 @@ final readonly class ChatEnvelope
             $this->addressee?->toArray(),
             $this->respondent?->toArray(),
         ]));
+    }
+
+    /**
+     * This envelope posted at its timeline event.
+     */
+    public function placedAt(TimelineEvent $event): PlacedChatEnvelope
+    {
+        return new PlacedChatEnvelope($this, $event);
     }
 }

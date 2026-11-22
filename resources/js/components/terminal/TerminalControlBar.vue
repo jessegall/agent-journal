@@ -322,7 +322,7 @@ async function copy(text: string): Promise<void> {
                 />
                 <Button variant="bordered" size="sm" @click="sendWithoutEnter">Type without Enter</Button>
                 <Button variant="ghost" size="sm" @click="control.sendKey('shift_tab')">
-                    Send Shift+Tab to driver
+                    Send Shift+Tab to the agent
                 </Button>
                 <span ref="privateButton" tabindex="-1">
                     <Button variant="bordered" size="sm" :disabled="!view.privateEntry" @click="control.openPrivate()">
@@ -385,7 +385,7 @@ async function copy(text: string): Promise<void> {
                     {{ highlightedLabel ? `Highlighted: ${highlightedLabel}` : '' }}
                 </p>
                 <template v-if="menu.highlighted < 0">
-                    <p class="text-small text-warn">The highlighted option cannot be told; refresh or go back.</p>
+                    <p class="text-small text-warn">The chosen option cannot be read from the screen; refresh or go back.</p>
                 </template>
                 <template v-if="view.state === 'controlling'">
                     <div class="flex flex-wrap gap-1.5">

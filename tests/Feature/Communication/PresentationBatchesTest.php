@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
+use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
+use App\Actors\Support\SystemActor;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\ReceiptCaller;
 use App\Bus\Support\ReceiptRetention;
@@ -43,6 +46,7 @@ final class PresentationBatchesTest extends TestCase
 
         GlobalGroup::installJournal();
         $this->agent = TestActors::agentIdentity(7);
+        $this->app->make(CurrentActorSetter::class)->set(new SystemActor(), new TrustedEntryAuthority('host request'));
     }
 
     public function test_batches_take_turns_between_chats_and_stay_within_twenty_posts(): void
@@ -82,8 +86,8 @@ final class PresentationBatchesTest extends TestCase
     {
         $providerId = (string) str()->ulid();
         $inboxId = $this->app->make(ChatInboxes::class)->open($providerId);
-        Conversation::openFor($inboxId, $providerId, TestActors::userIdentity(1), null, 'Chat');
-        $interval = InboxInterval::open($inboxId, $this->agent, IntervalRole::Member, 1);
+        Conversation::create($inboxId, $providerId, TestActors::userIdentity(1), null, 'Chat');
+        $interval = InboxInterval::create($inboxId, $this->agent, IntervalRole::Member, 1);
 
         foreach (range(1, $posts) as $post) {
             MessageReceipt::forAudience($this->message($body), [$interval], TestIds::of(9));

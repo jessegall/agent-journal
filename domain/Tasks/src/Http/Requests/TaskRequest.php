@@ -7,6 +7,7 @@ namespace Domain\Tasks\Http\Requests;
 use App\Assignments\Support\Page;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use App\Reads\Values\PageSize;
+use Domain\Tasks\Http\Requests\Concerns\ReadsTaskFilters;
 use Domain\Tasks\Models\Task;
 use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -18,9 +19,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 final class TaskRequest extends FormRequest
 {
     use ReadsRouteNumber;
+    use ReadsTaskFilters;
 
     /**
-     * @return array<string, list<string>>
+     * @return array<string, list<mixed>>
      */
     public function rules(): array
     {
@@ -31,6 +33,7 @@ final class TaskRequest extends FormRequest
             'proofs_after' => ['nullable', 'string', 'max:26'],
             'commentsAfter' => ['nullable', 'string', 'max:26'],
             'prerequisite_q' => ['nullable', 'string', 'max:200'],
+            ...$this->filterRules(),
         ];
     }
 

@@ -37,7 +37,7 @@ final class PairChatDemonstrationTest extends MessagingTestCase
     {
         parent::setUp();
 
-        $this->app->instance(ActorAttention::class, new class($this) implements ActorAttention
+        $attention = new class($this) implements ActorAttention
         {
             public function __construct(private PairChatDemonstrationTest $test) {}
 
@@ -47,7 +47,8 @@ final class PairChatDemonstrationTest extends MessagingTestCase
 
                 return AttentionOutcome::accepted(TestIds::of(77), 1);
             }
-        });
+        };
+        $this->app->scoped(ActorAttention::class, fn () => $attention);
     }
 
     public function countWake(): void

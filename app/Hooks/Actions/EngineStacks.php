@@ -11,7 +11,6 @@ use App\Hooks\Contracts\EngineTargetAccess;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Mutations\StatePush;
 use App\Hooks\References\StateReference;
-use App\Hooks\Settlement\FrameLifecycle;
 use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\Support\StackTransaction;
@@ -27,7 +26,6 @@ final readonly class EngineStacks
         private EngineTargetAccess $access,
         private StatePush $statePush,
         private StackRestorer $restorer,
-        private FrameLifecycle $lifecycle,
         private StateTypes $types,
     ) {}
 
@@ -51,7 +49,6 @@ final readonly class EngineStacks
     {
         $this->transaction->assertOpen($target);
         $this->access->assertTargetGranted($target);
-        $this->lifecycle->assertNotInCallbacks($target);
         $row = AgentStackRow::lockKeptFor(AgentStackRow::query()->authorizedFor($target), $target);
 
         if (! $row->isActive()) {
@@ -65,7 +62,6 @@ final readonly class EngineStacks
             return;
         }
 
-        $this->lifecycle->settle($target, $before, $after);
         $row->saveFrames($after->records(), $this->types->ticking());
     }
 }

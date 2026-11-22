@@ -18,7 +18,6 @@ import { provideDockFolds } from './dockFolds';
  */
 const props = defineProps<{
     dock: DockPageData;
-    agentId: string;
     inboxId: string;
     loadMore: (token: string) => void;
 }>();
@@ -73,7 +72,6 @@ function undock(card: DockCardEnvelope): void {
         undockRoute().url,
         {
             inboxId: props.inboxId,
-            agent: props.agentId,
             placementId: card.placementId,
             type: card.source.type,
             id: card.source.id,

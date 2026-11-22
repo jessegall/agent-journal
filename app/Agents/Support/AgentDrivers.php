@@ -15,14 +15,15 @@ final readonly class AgentDrivers
 {
     /**
      * @param  list<ActorIdentity>  $actors
-     * @return array<string, string>  the driver of each running agent, keyed by its actor key
+     * @return array<string, string> the driver of each running agent, keyed by its actor key
      */
     public function driversOf(array $actors): array
     {
         $agentIds = array_values(array_map(
             fn (ActorIdentity $actor) => $actor->id,
-            array_filter($actors, fn (ActorIdentity $actor) => $actor->type === ActorType::Agent),
+            array_filter($actors, fn (ActorIdentity $actor) => $actor->type->isAgent()),
         ));
+
         $drivers = [];
 
         foreach (AgentSession::runningDriversOf($agentIds) as $agentId => $driver) {

@@ -10,7 +10,8 @@ use App\Communication\Models\Message;
 
 /**
  * Counts the messages waiting for an actor across the inboxes it belongs to now: desk mail unread or waiting for an
- * answer, and chat rows not yet shown to it or questions kept for its turn, each counted once. A hook announces the count; it never reads, claims or installs a frame.
+ * answer, and chat rows not yet shown to it or questions kept for its turn, each counted once. A hook announces the
+ * count; it never reads, claims or installs a frame.
  */
 final readonly class PendingInboxWork implements PendingWorkSource
 {

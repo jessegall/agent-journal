@@ -12,6 +12,7 @@ use App\Reads\Enums\ReadView;
 use App\Records\Support\RecordIdentity;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\SlotSections;
+use App\Ui\Layout\DeclaredLayoutData;
 use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Api\TaskProof;
@@ -21,7 +22,6 @@ use Domain\Tasks\Contracts\TaskProofResolver;
 use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskMissing;
-use App\Ui\Layout\DeclaredLayoutData;
 use Domain\Tasks\Http\Data\TaskActionsData;
 use Domain\Tasks\Http\Data\TaskFiltersData;
 use Domain\Tasks\Http\Data\TaskLogsData;
@@ -32,7 +32,6 @@ use Domain\Tasks\Http\Data\TaskWaitActionsData;
 use Domain\Tasks\Http\Data\TaskWaitChoiceData;
 use Domain\Tasks\Http\Data\TaskWaitsData;
 use Domain\Tasks\Http\Requests\TaskRequest;
-use Domain\Tasks\Http\Requests\TasksRequest;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
 use Domain\Tasks\Policies\TaskRunPolicy;
@@ -64,7 +63,6 @@ final readonly class TaskWindowResolver implements PageResolver
         private TaskWaitResolver $waits,
         private CurrentAuthorizer $authorizer,
         private TaskListResolver $list,
-        private TasksRequest $listRequest,
         private TaskIndexLayout $index,
         private TaskReaderLayout $layout,
     ) {}
@@ -88,7 +86,7 @@ final readonly class TaskWindowResolver implements PageResolver
             );
 
             return $this->index->of(
-                TaskFiltersData::from([...$this->listRequest->filters()->toArray(), 'task' => $reader->number]),
+                TaskFiltersData::from([...$this->request->filters()->toArray(), 'task' => $reader->number]),
                 [$this->layout->page($reader)->part($this->request->chosenTab())],
             );
         } catch (TaskMissing $missing) {

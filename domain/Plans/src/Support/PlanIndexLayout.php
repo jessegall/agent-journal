@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
+use App\Ui\Contracts\DraftProducers;
 use App\Ui\Enums\ActionMethod;
 use App\Ui\Enums\ReaderWidth;
 use App\Ui\Layout\DeclaredLayoutData;
@@ -17,7 +18,6 @@ use App\Ui\Layout\LayoutRowData;
 use App\Ui\Layout\ListEmpty;
 use App\Ui\Layout\ListPage;
 use App\Ui\Layout\ListPaging;
-use App\Ui\Support\DraftProducerRegistry;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Data\PlanCardData;
 use Domain\Plans\Data\PlanFiltersData;
@@ -35,7 +35,7 @@ final readonly class PlanIndexLayout
 {
     public function __construct(
         private PlanResolver $plans,
-        private DraftProducerRegistry $producers,
+        private DraftProducers $producers,
     ) {}
 
     /**

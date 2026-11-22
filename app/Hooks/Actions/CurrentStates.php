@@ -6,7 +6,6 @@ namespace App\Hooks\Actions;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\CurrentState;
-use App\Hooks\Contracts\WorkRecordState;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\References\StateReference;
 use App\Hooks\References\SubjectReference;
@@ -62,13 +61,11 @@ final readonly class CurrentStates implements CurrentState
     {
         $subject = $frame->reference->subject;
 
-        if (! $frame->isLive()
-            || ! $subject instanceof SubjectReference
-            || ! $frame->state instanceof WorkRecordState) {
+        if (! $frame->isLive() || ! $subject instanceof SubjectReference) {
             return None::create();
         }
 
-        return Option::fromValue(new RecordIdentity($frame->state->workRecordType(), $subject->id));
+        return $frame->state->workRecordType()->map(fn (string $type) => new RecordIdentity($type, $subject->id));
     }
 
     /**

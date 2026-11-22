@@ -37,8 +37,8 @@ final class LayoutSplitData extends Data
     /**
      * The split of a record address: the reader alone in a narrow container, with Back to its list.
      */
-    public static function showingReader(LayoutBackData $back, ReaderWidth $readerWidth = ReaderWidth::Standard): self
+    public static function showingReader(LayoutBackData $back, ReaderWidth $width = ReaderWidth::Standard): self
     {
-        return new self(self::LIST_WIDTH, NarrowView::Reader, $readerWidth, $back);
+        return new self(self::LIST_WIDTH, NarrowView::Reader, $width, $back);
     }
 }

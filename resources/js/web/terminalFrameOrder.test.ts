@@ -23,6 +23,10 @@ function frameOf(epoch: string, sequence: number, stream: string | null = 's1'):
         inputOwner: null,
         takePending: false,
         promptRevision: 0,
+        attachment: null,
+        containerInstance: null,
+        connectionLost: false,
+        menu: null,
     };
 }
 

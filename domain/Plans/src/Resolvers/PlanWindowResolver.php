@@ -17,7 +17,6 @@ use Domain\Plans\Data\PlanCardData;
 use Domain\Plans\Data\PlanFiltersData;
 use Domain\Plans\Data\PlanReaderData;
 use Domain\Plans\Http\Requests\PlanRequest;
-use Domain\Plans\Http\Requests\PlansRequest;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanIndexLayout;
 use Domain\Plans\Support\PlanOutline;
@@ -36,7 +35,6 @@ final readonly class PlanWindowResolver implements PageResolver
 {
     public function __construct(
         private PlanRequest $request,
-        private PlansRequest $listRequest,
         private PlanRecords $records,
         private PlanOutline $outline,
         private PlanReviewView $review,
@@ -78,7 +76,7 @@ final readonly class PlanWindowResolver implements PageResolver
             );
 
         return $this->index->of(
-            PlanFiltersData::from([...$this->listRequest->filters()->toArray(), 'plan' => $reader->card->number]),
+            PlanFiltersData::from([...$this->request->filters()->toArray(), 'plan' => $reader->card->number]),
             [$detail->part($tab)],
         );
     }

@@ -50,9 +50,9 @@ final class ChatMembershipTest extends MessagingTestCase
 
         $providerId = strtolower((string) Str::ulid());
         $inboxId = $this->app->make(ChatInboxes::class)->open($providerId);
-        $this->chat = Conversation::openFor($inboxId, $providerId, ActorIdentity::of($this->owner), null, 'Release');
+        $this->chat = Conversation::create($inboxId, $providerId, ActorIdentity::of($this->owner), null, 'Release');
         $this->app->make(InboxIntervals::class)
-            ->join(new ChatInbox($inboxId, 'Release'), ActorIdentity::of($this->owner), IntervalRole::Owner);
+            ->enter(new ChatInbox($inboxId, 'Release'), ActorIdentity::of($this->owner), IntervalRole::Owner);
     }
 
     public function test_the_owner_adds_members_once_and_hands_the_chat_over(): void
@@ -91,9 +91,11 @@ final class ChatMembershipTest extends MessagingTestCase
     public function test_the_owner_adds_both_agents_beside_a_user_and_an_agent_keeps_its_other_chat(): void
     {
         $access = $this->app->make(AgentChatAccess::class);
+
         foreach ([$this->builder, $this->reviewer] as $agent) {
             $access->allow($agent->agent_id, null, [$this->owner->id], ActorIdentity::system(), CarbonImmutable::now());
         }
+
         $desk = $this->pairChat(ActorIdentity::of($this->owner), $this->actorOf($this->builder));
 
         $this->asOwner();
@@ -109,16 +111,18 @@ final class ChatMembershipTest extends MessagingTestCase
             $this->actorOf($this->builder),
             $this->actorOf($this->reviewer),
         ];
+
         foreach ($members as $member) {
             $this->assertTrue($chats->isActiveMember($release, $member));
         }
+
         $this->assertTrue($chats->isActiveMember(new ChatInbox($desk->inbox_id, 'Desk'), $this->actorOf($this->builder)));
     }
 
     private function grantedUser(string $name): User
     {
         $user = User::factory()->create(['name' => $name]);
-        EnvironmentUserGrant::grant(
+        EnvironmentUserGrant::create(
             $user,
             null,
             [ChatPermission::ReceiveInvitations],

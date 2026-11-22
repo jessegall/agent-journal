@@ -25,7 +25,7 @@ final class ChatMemberSignInTest extends MessagingTestCase
         parent::setUp();
 
         $this->bea = User::factory()->create(['name' => 'Bea']);
-        EnvironmentUserGrant::grant(
+        EnvironmentUserGrant::create(
             $this->bea,
             null,
             [ChatPermission::ReceiveInvitations],
@@ -38,7 +38,7 @@ final class ChatMemberSignInTest extends MessagingTestCase
     {
         $this->actingAs($this->bea)->get('/chat')->assertOk();
 
-        foreach (['/tasks', '/plans', '/settings', '/'] as $page) {
+        foreach (['/tasks', '/plans', '/'] as $page) {
             $this->actingAs($this->bea)->get($page)->assertForbidden();
         }
     }

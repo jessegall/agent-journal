@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * A line above a plain form or a sequence editor that names the agent that drafted the fields below, so the person
+ * A line above a plain form or a sequence editor that names the agent that drafted the fields below, so the user
  * knows they are a draft to read and edit, not a saved record.
  */
 defineProps<{ agent: string }>();

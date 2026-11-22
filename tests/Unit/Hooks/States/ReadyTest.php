@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
-use App\Hooks\Decisions\Decision;
-use App\Hooks\Enums\AnswerType;
+use App\Hooks\Inputs\Contracts\HookAnswerer;
 use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;
 use App\Hooks\States\ReadyState;
-use App\Reflection\Support\DeclaredType;
 use App\Reflection\Support\ReflectedMethod;
 use App\Reflection\Support\Reflector;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
@@ -30,9 +28,9 @@ final class ReadyTest extends TestCase
     {
         $partial = new class extends AgentState
         {
-            public function onStop(StopRequested $input): Decision
+            public function onStop(StopRequested $input): null
             {
-                return Decision::allow();
+                return null;
             }
         };
 
@@ -41,18 +39,15 @@ final class ReadyTest extends TestCase
     }
 
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
-    public function test_ready_allows_each_hook(HookInput $input): void
+    public function test_ready_passes_each_hook_its_policy_grants(HookInput $input): void
     {
-        $this->assertSame(
-            AnswerType::Allow,
-            $input->answerBy(new ReadyState(new FixedOperationPolicy(), new AllowedStops()))->answerType(),
-        );
+        $this->assertNull($input->answerBy(new ReadyState(new FixedOperationPolicy(), new AllowedStops())));
     }
 
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
-    public function test_the_base_state_delegates_each_hook(HookInput $input): void
+    public function test_the_base_state_passes_each_hook(HookInput $input): void
     {
-        $this->assertSame(AnswerType::Delegate, $input->answerBy(new class extends AgentState {})->answerType());
+        $this->assertNull($input->answerBy(new class extends AgentState {}));
     }
 
     public function test_a_state_is_not_finished_unless_it_says_so(): void
@@ -61,19 +56,14 @@ final class ReadyTest extends TestCase
     }
 
     /**
-     * The public hook methods of the base state, read by reflection, that the class does not declare itself.
+     * The hook methods every state answers, read by reflection, that the class does not declare itself.
      *
      * @param  class-string<AgentState>  $class
      * @return list<string>
      */
     private function hooksNotAnsweredBy(string $class): array
     {
-        $hooks = array_filter(
-            Reflector::of(AgentState::class)->methods(),
-            fn (ReflectedMethod $method) => $method->isPublic()
-                && str_starts_with($method->name(), 'on')
-                && $method->returnType()->filter(fn (DeclaredType $type) => $type->text === Decision::class)->isDefined(),
-        );
+        $hooks = Reflector::of(HookAnswerer::class)->methods();
         $state = Reflector::of($class);
 
         return array_values(array_map(

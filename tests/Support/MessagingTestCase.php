@@ -50,6 +50,10 @@ abstract class MessagingTestCase extends TestCase
         'messages',
         'message_attentions',
         'links',
+        'notification_occurrences',
+        'notification_scopes',
+        'notification_receipts',
+        'notification_changes',
     ];
 
     protected User $owner;

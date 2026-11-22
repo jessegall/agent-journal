@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Sequences\Tests\Unit\States;
 
 use App\Hooks\Decisions\Denied;
-use App\Hooks\Decisions\Enums\SimpleTransition;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\StopRequested;
@@ -45,11 +44,11 @@ final class FollowingSequenceTest extends TestCase
 
     public function test_a_running_step_prevents_the_stop_with_the_current_instruction(): void
     {
-        $decision = $this->following()->onStop($this->stop());
+        $state = $this->following();
+        $decision = $state->onStop($this->stop());
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertSame($this->running()->currentInstruction(), $decision->refusalReason());
-        $this->assertSame(SimpleTransition::Keep, $decision->transition);
+        $this->assertSame($state->instruction()->get(), $decision->refusalReason());
     }
 
     public function test_its_current_step_is_its_foreground_instruction_and_reading_it_advances_nothing(): void
@@ -57,9 +56,8 @@ final class FollowingSequenceTest extends TestCase
         $sequence = $this->running();
         $state = new FollowingSequenceState($sequence);
 
-        $this->assertSame('sequences.step', $state->instructionType());
-        $this->assertSame($sequence->currentInstruction(), $state->instructionText());
-        $this->assertSame($state->instructionText(), $state->instructionText());
+        $this->assertSame($sequence->currentInstruction(), $state->instruction()->get());
+        $this->assertSame($state->instruction()->get(), $state->instruction()->get());
         $this->assertSame(3, $sequence->stepNumber);
     }
 
@@ -77,9 +75,9 @@ final class FollowingSequenceTest extends TestCase
     }
 
     #[DataProvider('otherHooks')]
-    public function test_every_other_hook_is_delegated(HookInput $input): void
+    public function test_every_other_hook_is_passed(HookInput $input): void
     {
-        $this->assertTrue($input->answerBy($this->following())->isDelegating());
+        $this->assertNull($input->answerBy($this->following()));
     }
 
     private function running(): SequenceWork

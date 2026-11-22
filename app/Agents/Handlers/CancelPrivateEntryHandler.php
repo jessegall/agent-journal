@@ -7,7 +7,6 @@ namespace App\Agents\Handlers;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\CancelPrivateEntry;
-use App\Agents\Data\TerminalControlData;
 use App\Agents\Support\TerminalControls;
 use App\Contracts\CommandHandler;
 
@@ -18,7 +17,7 @@ final readonly class CancelPrivateEntryHandler implements CommandHandler
         private ServerClock $clock,
     ) {}
 
-    public function handle(CancelPrivateEntry $command): TerminalControlData
+    public function handle(CancelPrivateEntry $command): string
     {
         $writer = ActorIdentity::of($command->dispatchedBy());
 

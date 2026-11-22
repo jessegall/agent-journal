@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Models;
 
 use App\Communication\Enums\OutstandingRangeState;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -29,6 +30,7 @@ final class OutstandingRange extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 
@@ -45,19 +47,32 @@ final class OutstandingRange extends Model implements ReadableModel
     }
 
     /**
-     * The piece of the receipt's body starting at the offset, made the first time it is presented and found again
-     * on every retry.
+     * The piece of the receipt's body starting at the offset, still waiting for its confirmation.
      */
-    public static function at(MessageReceipt $receipt, int $startOffset): self
+    public static function create(MessageReceipt $receipt, int $startOffset): self
     {
-        return self::query()->firstOrCreate(
-            [
-                'receipt_id' => $receipt->id,
-                'start_offset' => $startOffset,
-                'state' => OutstandingRangeState::Outstanding,
-            ],
-            ['consecutive_failures' => 0],
-        );
+        $range = new self([
+            'receipt_id' => $receipt->id,
+            'start_offset' => $startOffset,
+            'state' => OutstandingRangeState::Outstanding,
+            'consecutive_failures' => 0,
+        ]);
+
+        $range->save();
+
+        return $range;
+    }
+
+    /**
+     * The piece of the receipt's body starting at the offset that still waits, once one was presented.
+     */
+    public static function waitingAt(MessageReceipt $receipt, int $startOffset): self|null
+    {
+        return self::query()
+            ->where('receipt_id', $receipt->id)
+            ->where('start_offset', $startOffset)
+            ->where('state', OutstandingRangeState::Outstanding)
+            ->first();
     }
 
     // ----------[ Mutations ]----------

@@ -6,7 +6,6 @@ namespace Domain\Chat\Support;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\ChatEligibility;
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxAccess;
@@ -49,7 +48,7 @@ final readonly class ChatInboxAccess implements InboxAccess
         // A user who lost its admission is refused at once, even while the cleanup of its chats is still to come.
         $environmentId = Conversation::forInbox($inbox->inboxId())->environment_id;
 
-        if ($identity->type === ActorType::User && ! $this->eligibility->isAdmitted($identity, $environmentId)) {
+        if ($identity->type->isUser() && ! $this->eligibility->isAdmitted($identity, $environmentId)) {
             throw InboxUnavailable::forId($inbox->inboxId());
         }
 

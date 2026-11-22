@@ -6,10 +6,11 @@ namespace App\Agents\Support;
 
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Data\PrivateInputMessageData;
 use App\Agents\Data\TerminalControlData;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\TerminalDraftChoice;
-use App\Agents\Enums\TerminalInputKind;
+use App\Agents\Enums\TerminalInputType;
 use App\Agents\Enums\TerminalReceiptOutcome;
 use App\Agents\Exceptions\TerminalControlRefused;
 use App\Agents\Exceptions\TerminalViewRefused;
@@ -53,13 +54,13 @@ final readonly class TerminalControls
         string $readInterestId,
         string $takeId,
         CarbonImmutable $now,
-    ): TerminalControlData {
+    ): string {
         $this->assertMayControl();
         $runtime = $this->lockedRuntime($agentId);
         $taken = TerminalGrant::query()->ownedBy($writer)->ofTake($takeId)->first();
 
         if ($taken !== null) {
-            return $this->answerOf($taken, $now);
+            return $taken->id;
         }
 
         $interest = TerminalView::query()->ownedBy($writer)->live()->withReadInterest($readInterestId)
@@ -77,14 +78,16 @@ final readonly class TerminalControls
             throw TerminalControlRefused::controlHeld();
         }
 
-        $grant = TerminalGrant::take($writer, $runtime->load('session'), $interest, $takeId, $now);
+        $grant = TerminalGrant::create($writer, $runtime->load('session'), $interest, $takeId, $now);
+
         $request = $this->send($runtime, DriverOperation::TakeControl, "take:{$takeId}", [
             'take_id' => $takeId,
             'generation' => $runtime->process_generation,
         ]);
+
         $grant->sendTakeWith($request);
 
-        return $this->answerOf($grant, $now);
+        return $grant->id;
     }
 
     /**
@@ -98,7 +101,7 @@ final readonly class TerminalControls
         ActorIdentity $writer,
         string $takeId,
         CarbonImmutable $now,
-    ): TerminalControlData {
+    ): string {
         $runtime = $this->lockedRuntime($agentId);
         $grant = $this->takeOf($writer, $takeId);
 
@@ -108,7 +111,7 @@ final readonly class TerminalControls
             ]));
         }
 
-        return $this->answerOf($grant, $now);
+        return $grant->id;
     }
 
     /**
@@ -120,16 +123,17 @@ final readonly class TerminalControls
         ActorIdentity $writer,
         string $grantId,
         CarbonImmutable $now,
-    ): TerminalControlData {
+    ): string {
         [$runtime, $grant] = $this->writingGrant($agentId, $writer, $grantId, $now);
         $grant->renew($now);
+
         $this->send($runtime, DriverOperation::TakeControl, 'renew:'.Str::ulid(), [
             'take_id' => $grant->take_id,
             'grant_id' => $grantId,
             'renew' => true,
         ]);
 
-        return $this->answerOf($grant, $now);
+        return $grant->id;
     }
 
     /**
@@ -143,7 +147,7 @@ final readonly class TerminalControls
         ActorIdentity $writer,
         string $grantId,
         CarbonImmutable $now,
-    ): TerminalControlData {
+    ): string {
         $runtime = $this->lockedRuntime($agentId);
         $grant = $this->grantOf($writer, $grantId);
 
@@ -154,7 +158,7 @@ final readonly class TerminalControls
             ]));
         }
 
-        return $this->answerOf($grant, $now);
+        return $grant->id;
     }
 
     /**
@@ -170,27 +174,28 @@ final readonly class TerminalControls
         string $grantId,
         TerminalInput $input,
         CarbonImmutable $now,
-    ): TerminalControlData {
+    ): string {
         if ($input->isOverPasteBound()) {
             throw TerminalControlRefused::pasteTooLarge(TerminalInput::PASTE_BYTE_LIMIT);
         }
 
         [$runtime, $grant] = $this->writingGrant($agentId, $writer, $grantId, $now);
-        $this->assertCarriesOut($runtime, $input->kind);
+        $this->assertCarriesOut($runtime, $input->type);
         $this->takeSequence($grant, $input->sequence);
+
         $this->send($runtime, DriverOperation::TerminalInput, "input:{$grant->grant_id}:{$input->sequence}", [
             'grant_id' => $grant->grant_id,
             'sequence' => $input->sequence,
             'screen_revision' => $input->screenRevision,
             'text' => $input->text,
             'enter' => $input->enter,
-            'kind' => $input->kind->value,
+            'kind' => $input->type->value,
             'key' => $input->key?->value,
             'rows' => $input->rows,
             'columns' => $input->columns,
         ]);
 
-        return $this->answerOf($grant, $now);
+        return $grant->id;
     }
 
     /**
@@ -206,16 +211,17 @@ final readonly class TerminalControls
         TerminalDraftChoice $choice,
         int $sequence,
         CarbonImmutable $now,
-    ): TerminalControlData {
+    ): string {
         [$runtime, $grant] = $this->writingGrant($agentId, $writer, $grantId, $now);
         $this->takeSequence($grant, $sequence);
+
         $this->send($runtime, DriverOperation::DraftChoice, "choose:{$grant->grant_id}:{$sequence}", [
             'grant_id' => $grant->grant_id,
             'sequence' => $sequence,
             'choice' => $choice->value,
         ]);
 
-        return $this->answerOf($grant, $now);
+        return $grant->id;
     }
 
     /**
@@ -231,16 +237,17 @@ final readonly class TerminalControls
         string $grantId,
         int $sequence,
         CarbonImmutable $now,
-    ): TerminalControlData {
+    ): string {
         [$runtime, $grant] = $this->writingGrant($agentId, $writer, $grantId, $now);
-        $this->assertCarriesOut($runtime, TerminalInputKind::Private);
+        $this->assertCarriesOut($runtime, TerminalInputType::Private);
         $this->takeSequence($grant, $sequence);
+
         $this->send($runtime, DriverOperation::OpenPrivateEntry, "input:{$grantId}:{$sequence}", [
             'grant_id' => $grantId,
             'sequence' => $sequence,
         ]);
 
-        return $this->answerOf($grant, $now);
+        return $grant->id;
     }
 
     /**
@@ -256,17 +263,14 @@ final readonly class TerminalControls
         string $grantId,
         PrivateSubmission $submission,
         CarbonImmutable $now,
-    ): TerminalControlData {
+    ): string {
         [$runtime, $grant] = $this->writingGrant($agentId, $writer, $grantId, $now);
-        $this->assertCarriesOut($runtime, TerminalInputKind::Private);
+        $this->assertCarriesOut($runtime, TerminalInputType::Private);
         $this->takeSequence($grant, $submission->sequence);
-        $this->send($runtime, DriverOperation::PrivateInput, "input:{$grantId}:{$submission->sequence}", [
-            'grant_id' => $grantId,
-            'sequence' => $submission->sequence,
-            'submission_id' => $submission->submissionId,
-        ]);
+        $message = new PrivateInputMessageData($grantId, $submission->sequence, $submission->submissionId);
+        $this->send($runtime, DriverOperation::PrivateInput, "input:{$grantId}:{$submission->sequence}", $message->toArray());
 
-        return $this->answerOf($grant, $now);
+        return $grant->id;
     }
 
     /**
@@ -280,13 +284,14 @@ final readonly class TerminalControls
         ActorIdentity $writer,
         string $grantId,
         CarbonImmutable $now,
-    ): TerminalControlData {
+    ): string {
         [$runtime, $grant] = $this->writingGrant($agentId, $writer, $grantId, $now);
+
         $this->send($runtime, DriverOperation::CancelPrivateEntry, 'private-cancel:'.Str::ulid(), [
             'grant_id' => $grantId,
         ]);
 
-        return $this->answerOf($grant, $now);
+        return $grant->id;
     }
 
     /**
@@ -300,11 +305,11 @@ final readonly class TerminalControls
         ActorIdentity $writer,
         string $grantId,
         CarbonImmutable $now,
-    ): TerminalControlData {
+    ): string {
         [$runtime, $grant] = $this->writingGrant($agentId, $writer, $grantId, $now);
         $this->send($runtime, DriverOperation::CheckScreen, 'check:'.Str::ulid(), ['grant_id' => $grant->grant_id]);
 
-        return $this->answerOf($grant, $now);
+        return $grant->id;
     }
 
     /**
@@ -328,6 +333,7 @@ final readonly class TerminalControls
 
         $sent = DriverRequest::query()->where('agent_runtime_id', $grant->agent_runtime_id)
             ->where('idempotency_key', "input:{$grant->grant_id}:{$sequence}")->first();
+
         $outcome = $sent === null
             ? TerminalReceiptOutcome::Unknown
             : TerminalReceiptOutcome::ofProgress($sent->progress);
@@ -418,7 +424,7 @@ final readonly class TerminalControls
      *
      * @throws TerminalControlRefused
      */
-    private function assertCarriesOut(AgentRuntime $runtime, TerminalInputKind $kind): void
+    private function assertCarriesOut(AgentRuntime $runtime, TerminalInputType $kind): void
     {
         if (! Host::query()->whereKey($runtime->host_id)->sole()->carriesOutBrowserInputOf($kind)) {
             throw TerminalControlRefused::watchOnly();
@@ -495,6 +501,14 @@ final readonly class TerminalControls
         );
     }
 
+    /**
+     * The writer's control of one grant row as it stands now, as a control command left it.
+     */
+    public function answerFor(ActorIdentity $writer, string $grantRowId, CarbonImmutable $now): TerminalControlData
+    {
+        return $this->answerOf(TerminalGrant::query()->ownedBy($writer)->whereKey($grantRowId)->sole(), $now);
+    }
+
     private function answerOf(TerminalGrant $grant, CarbonImmutable $now): TerminalControlData
     {
         return TerminalControlData::from($this->fieldsOf($grant, $now));
@@ -512,7 +526,7 @@ final readonly class TerminalControls
             'expiresInSeconds' => max(0, (int) $now->diffInSeconds($grant->expires_at, false)),
             'nextSequence' => $grant->next_sequence,
             'privateEntry' => Host::query()->whereKey($grant->host_id)->sole()
-                ->carriesOutBrowserInputOf(TerminalInputKind::Private),
+                ->carriesOutBrowserInputOf(TerminalInputType::Private),
         ];
     }
 }

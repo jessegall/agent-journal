@@ -22,14 +22,20 @@ final readonly class LiteralSentenceAssertionScan implements FileScan
 {
     public function key(): string
     {
-        return 'literal-sentence-assertions-3';
+        return 'literal-sentence-assertions-4';
     }
 
     public function findingsIn(ParsedFile $file): array
     {
+        $finder = new NodeFinder();
+        $calls = [
+            ...$finder->findInstanceOf($file->statements, Expr\MethodCall::class),
+            ...$finder->findInstanceOf($file->statements, Expr\StaticCall::class),
+        ];
+        usort($calls, fn (Node $first, Node $second) => $first->getStartFilePos() <=> $second->getStartFilePos());
         $findings = [];
 
-        foreach (new NodeFinder()->find($file->statements, fn (Node $node) => self::isAssertion($node)) as $call) {
+        foreach (array_filter($calls, self::isAssertion(...)) as $call) {
             foreach (self::sentencesOf($call) as $sentence) {
                 $findings[] = ['line' => $call->getStartLine(), 'sentence' => $sentence];
             }
@@ -38,12 +44,8 @@ final readonly class LiteralSentenceAssertionScan implements FileScan
         return $findings;
     }
 
-    private static function isAssertion(Node $node): bool
+    private static function isAssertion(Expr\MethodCall|Expr\StaticCall $node): bool
     {
-        if (! $node instanceof Expr\MethodCall && ! $node instanceof Expr\StaticCall) {
-            return false;
-        }
-
         return $node->name instanceof Node\Identifier
             && preg_match('/^(assert|expectExceptionMessage)/', $node->name->toString()) === 1;
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Models;
 
+use App\Communication\Support\ChatInterval;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Enums\IntervalRole;
@@ -14,6 +15,7 @@ use App\Communication\Events\ChatRoleChanged;
 use App\Communication\Exceptions\ChatStateConflict;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -41,6 +43,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read ActorIdentity $actor
+ * @property-read ChatInterval $chatInterval
  */
 #[Table('inbox_intervals')]
 #[Fillable(['inbox_id', 'actor_type', 'actor_id', 'role', 'joined_sequence', 'joined_at'])]
@@ -48,6 +51,7 @@ final class InboxInterval extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     // ----------[ Constructors ]----------
@@ -71,7 +75,7 @@ final class InboxInterval extends Model implements EventSource, ReadableModel
     /**
      * A new active interval for the actor, starting at the timeline position its joining took.
      */
-    public static function open(string $inboxId, ActorIdentity $actor, IntervalRole $role, int $joinedSequence): self
+    public static function create(string $inboxId, ActorIdentity $actor, IntervalRole $role, int $joinedSequence): self
     {
         $interval = new self([
             'inbox_id' => $inboxId,
@@ -134,12 +138,30 @@ final class InboxInterval extends Model implements EventSource, ReadableModel
         return $this->actor_type === $actor->type->value && $this->actor_id === $actor->id;
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * @return Attribute<ActorIdentity, never>
      */
     protected function actor(): Attribute
     {
         return Attribute::get(fn () => new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id));
+    }
+
+    /**
+     * The interval as the plain value chat code passes around.
+     *
+     * @return Attribute<ChatInterval, never>
+     */
+    protected function chatInterval(): Attribute
+    {
+        return Attribute::get(fn () => new ChatInterval(
+            $this->id,
+            $this->inbox_id,
+            $this->actor,
+            $this->role,
+            $this->joined_sequence,
+        ));
     }
 
     // ----------[ Scopes ]----------

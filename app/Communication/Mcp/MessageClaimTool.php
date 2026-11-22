@@ -18,7 +18,10 @@ use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 #[IsDestructive(false)]
 #[Name('messages_claim')]
 #[Dispatches(ClaimSpeech::class)]
-#[Description('Claim your turn to speak on one user message of a chat for two minutes. Give the batch_id and claim_grant from the chat messages this turn was shown: they prove the claim comes from the turn that read them, and a claim from a passive or earlier turn is refused. Give the claim token you get back to your reply, answer or post in that chat.')]
+#[Description('Claim your turn to speak on one user message of a chat for two minutes. Give the batch_id and '
+    .'claim_grant from the chat messages this turn was shown: they prove the claim comes from the turn that read '
+    .'them, and a claim from a passive or earlier turn is refused. Give the claim token you get back to your reply, '
+    .'answer or post in that chat.')]
 final class MessageClaimTool extends MessageWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array

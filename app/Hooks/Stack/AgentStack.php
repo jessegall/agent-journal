@@ -5,15 +5,22 @@ declare(strict_types=1);
 namespace App\Hooks\Stack;
 
 use App\Agents\Values\StackTarget;
+use App\Hooks\Decisions\Decision;
+use App\Hooks\Decisions\MessageLine;
 use App\Hooks\Declarations\StateMethods;
+use App\Hooks\Enums\AnswerType;
 use App\Hooks\Exceptions\BottomStateCannotFinish;
+use App\Hooks\Exceptions\InvalidHookAnswer;
 use App\Hooks\Exceptions\MissingBottomState;
+use App\Hooks\Exceptions\StackTooDeep;
 use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\References\StateReference;
 use App\Hooks\Stack\Contracts\StateFactory;
 use App\Hooks\Stack\Frames\Frame;
 use App\Hooks\Storage\FrameRecords;
 use App\Hooks\Values\StackVerdict;
+use PhpOption\None;
+use PhpOption\Option;
 
 /**
  * The immutable frame order of an agent's stack, with hook decisions collected from its live snapshot.
@@ -35,6 +42,10 @@ final readonly class AgentStack
         private StateMethodSelector $selector = new StateMethodSelector(new StateMethods()),
     ) {}
 
+    /**
+     * Asks the live states that answer the hook from the top down: the first deny answers and nothing below it is
+     * asked; otherwise the highest rewrite counts, and the hook is allowed when every state passed.
+     */
     public function answer(HookInput $input): HookAnswer
     {
         $bottom = $this->frames[0] ?? null;
@@ -49,13 +60,65 @@ final readonly class AgentStack
             throw MissingBottomState::for($input->methodName());
         }
 
-        $walk = new HookWalk($this, $this->top());
+        $steps = [];
+        $context = [];
+        $messages = [];
+        $effects = [];
+        $highest = null;
 
         foreach ($selected as $handler) {
-            $walk->collect($handler, $input);
+            $answered = StateAnswer::of(
+                $handler->frame->answer($input),
+                $handler->method->stateClass,
+                $input->methodName(),
+            );
+
+            $decision = $answered->decision;
+            $steps[] = $handler->walkStep($decision, count($answered->lines));
+            $effects = [...$effects, ...$answered->effects];
+
+            foreach ($answered->lines as $line) {
+                $context[] = $line->text;
+
+                if ($line instanceof MessageLine) {
+                    $messages[] = $line->text;
+                }
+            }
+
+            if ($decision === null) {
+                continue;
+            }
+
+            if (! $input->accepts($decision->answerType())) {
+                throw InvalidHookAnswer::for($input->methodName(), $decision->answerType()->value);
+            }
+
+            if ($decision->answerType() === AnswerType::Deny) {
+                return new HookAnswer($decision, $context, $steps, $this, $messages, $effects);
+            }
+
+            $highest ??= $decision;
         }
 
-        return $walk->finish();
+        return new HookAnswer($highest ?? Decision::allow(), $context, $steps, $this, $messages, $effects);
+    }
+
+    /**
+     * The instruction of the top live state that has one.
+     *
+     * @return Option<string>
+     */
+    public function instruction(): Option
+    {
+        foreach (array_reverse($this->frames) as $frame) {
+            $instruction = $frame->isLive() ? $frame->state->instruction() : None::create();
+
+            if ($instruction->isDefined()) {
+                return $instruction;
+            }
+        }
+
+        return None::create();
     }
 
     public function permission(): StackVerdict
@@ -110,6 +173,10 @@ final readonly class AgentStack
 
         if (! $frame->isEnabled()) {
             return $this;
+        }
+
+        if (count($this->frames) >= self::DEPTH_LIMIT) {
+            throw StackTooDeep::for($this->target->description(), self::DEPTH_LIMIT);
         }
 
         return clone ($this, ['frames' => [...$this->frames, $frame]]);

@@ -58,30 +58,30 @@ final readonly class MessageReading
      * Reads the named messages of one inbox as the reader, each locked, in the order named; a message the inbox does
      * not hold is refused as missing.
      *
-     * @param  list<string>  $messageIds
+     * @param  list<string>  $ids
      *
      * @throws InboxUnavailable
      * @throws MessageMissing
      */
-    public function readInInbox(string $inboxId, ActorContext $reader, array $messageIds): MessageReadBatch
+    public function readInInbox(string $inboxId, ActorContext $reader, array $ids): MessageReadBatch
     {
         [$inbox, $membership] = $this->admit($inboxId, $reader);
 
         $messages = Message::query()
-            ->whereKey($messageIds)
+            ->whereKey($ids)
             ->where('destination_inbox_id', $inbox->inboxId())
             ->lockForUpdate()
-            ->readExactly(count($messageIds))
+            ->readExactly(count($ids))
             ->get()
             ->keyBy('id');
 
-        $missing = array_diff($messageIds, $messages->keys()->all());
+        $missing = array_diff($ids, $messages->keys()->all());
 
         if ($missing !== []) {
             throw MessageMissing::forId((string) reset($missing));
         }
 
-        return $this->read($membership, array_map(fn (string $id) => $messages[$id], $messageIds));
+        return $this->read($membership, array_map(fn (string $id) => $messages[$id], $ids));
     }
 
     public function recipientOf(string $messageId, ActorContext $actor): InboxMembership
@@ -132,6 +132,7 @@ final readonly class MessageReading
             // An agent's chat row is read only through a confirmed presentation of its whole body, never by id.
             $shown = ! $membership->actor->type->isAgent()
                 && $this->present($message, $membership->interval(), $now);
+
             $takenUp = $message->needsReply()
                 && $this->speech->claimOnTakeUp($message, $membership->actor, $membership->interval(), $now);
 

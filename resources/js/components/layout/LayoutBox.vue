@@ -118,7 +118,7 @@ const firstTool = computed(
             </SettingsSection>
         </template>
         <template #settings-group>
-            <SettingGroup :label="readerPart('title')?.text">
+            <SettingGroup :label="readerPart('title')?.text ?? undefined">
                 <template v-for="child in part.children" :key="child.key">
                     <LayoutPart :part="child" />
                 </template>

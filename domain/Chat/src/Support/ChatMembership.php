@@ -6,16 +6,16 @@ namespace Domain\Chat\Support;
 
 use App\Actors\Contracts\ChatEligibility;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Support\AgentChatAdmission;
+use App\Communication\Contracts\ChatDepartures;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Enums\IntervalRole;
 use App\Communication\Enums\LeaveReason;
-use App\Communication\Support\ChatDepartures;
 use App\Communication\Support\ChatInboxes;
 use App\Communication\Support\ChatInterval;
 use App\Communication\Support\InboxIntervals;
 use App\Communication\Support\InboxMembers;
+use App\Profiles\Support\AgentChatAdmission;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Exceptions\ChatMembershipRefused;
 use Domain\Chat\Models\Conversation;
@@ -29,7 +29,6 @@ use Illuminate\Support\Str;
  */
 final readonly class ChatMembership
 {
-
     public function __construct(
         private ChatEligibility $eligibility,
         private AgentChatAdmission $agents,
@@ -56,8 +55,8 @@ final readonly class ChatMembership
 
         $providerId = strtolower((string) Str::ulid());
         $inboxId = $this->chats->open($providerId);
-        Conversation::openFor($inboxId, $providerId, $creator, null, $title);
-        $this->intervals->join(new ChatInbox($inboxId, $title), $creator, IntervalRole::Owner);
+        Conversation::create($inboxId, $providerId, $creator, null, $title);
+        $this->intervals->enter(new ChatInbox($inboxId, $title), $creator, IntervalRole::Owner);
 
         foreach ($members as $member) {
             $this->add($creator, $inboxId, $member);
@@ -92,8 +91,8 @@ final readonly class ChatMembership
             throw ChatMembershipRefused::notEligible($inboxId);
         }
 
-        DirectChat::removeFor($conversation);
-        $this->intervals->join($inbox, $target, IntervalRole::Member);
+        DirectChat::findFor($conversation)?->remove();
+        $this->intervals->enter($inbox, $target, IntervalRole::Member);
     }
 
     /**

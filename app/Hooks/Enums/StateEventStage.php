@@ -10,6 +10,5 @@ namespace App\Hooks\Enums;
 enum StateEventStage: string
 {
     case Collection = 'collection';
-    case Retention = 'retention';
     case Effects = 'effects';
 }

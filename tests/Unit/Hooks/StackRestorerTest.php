@@ -239,7 +239,7 @@ final class StackRestorerTest extends TestCase
         $switchedOffType = new class(function () use (&$loaded) {
             $loaded++;
 
-            return ScriptedState::delegating();
+            return ScriptedState::passing();
         }) implements ConditionalStateType, StateLoader
         {
 
@@ -307,7 +307,7 @@ final class StackRestorerTest extends TestCase
             StateTypesRequested::class,
             fn (StateTypesRequested $event) => $event->registry->register(
                 'test.wrong_class',
-                new ClosureStateLoader(SwitchableState::class, fn () => ScriptedState::delegating()),
+                new ClosureStateLoader(SwitchableState::class, fn () => ScriptedState::passing()),
             ),
         );
         $types = new StateTypes($events, FixedOperationPolicy::loader());

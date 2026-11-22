@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\States;
 
-use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\Contracts\HookAnswerer;
-use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\PromptSubmitted;
 use App\Hooks\Inputs\SessionEnded;
@@ -16,16 +14,14 @@ use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
 use App\Hooks\Inputs\ToolRequested;
-use App\Hooks\Lifecycle\LifecycleContext;
-use App\Hooks\Values\LifecycleCommands;
 use App\Hooks\Values\StackVerdict;
+use PhpOption\None;
+use PhpOption\Option;
 
 /**
- * One state on an agent's stack. Every hook method delegates to the state below until a state overrides it, and
- * before() may answer any hook first, as a Laravel policy's before does. A state only answers: its hook methods, its
- * lifecycle callbacks and its ticks never perform an external effect themselves. A tick returns commands, which the
- * engine runs with the frame's work as their origin, locked and checked to be live before each command changes
- * anything.
+ * One state on an agent's stack, asked from the top down. Every hook method delegates to the state below until a state
+ * overrides it, and the first deny answers the hook. A state only answers: its hook methods, its listeners and its
+ * ticks never perform an external effect themselves; what they return is run by their one caller.
  */
 abstract class AgentState implements HookAnswerer
 {
@@ -44,82 +40,68 @@ abstract class AgentState implements HookAnswerer
     }
 
     /**
-     * Runs when a stack change puts this frame on the stack, and returns the commands the engine runs after commit.
+     * The instruction the agent is shown while this is the top live state that has one; none by default.
+     *
+     * @return Option<string>
      */
-    public function onEnter(LifecycleContext $context): LifecycleCommands
+    public function instruction(): Option
     {
-        return LifecycleCommands::none();
+        return None::create();
     }
 
     /**
-     * Runs after a committed stack change made this frame the live top again because the live frame covering it was
-     * removed; a frame covered only by finished or switched-off frames already answered first, so it is not resumed.
+     * The link type of the record this state's subject is, read as the agent's current work while it is the top live
+     * state that names one; none by default.
+     *
+     * @return Option<string>
      */
-    public function onResume(LifecycleContext $context): LifecycleCommands
+    public function workRecordType(): Option
     {
-        return LifecycleCommands::none();
+        return None::create();
     }
 
-    /**
-     * Runs after a committed stack change removed this frame, finished or not; a frame that is only passed over by a
-     * walk has not left and is not exited.
-     */
-    public function onExit(LifecycleContext $context): LifecycleCommands
-    {
-        return LifecycleCommands::none();
-    }
-
-    /**
-     * Asked before the hook's own method: a decision answers the hook and the method is not asked; null, the default,
-     * goes on to the method.
-     */
-    public function before(HookInput $input): Decision|null
+    public function onSessionStart(SessionStarted $input): mixed
     {
         return null;
     }
 
-    public function onSessionStart(SessionStarted $input): Decision
+    public function onPrompt(PromptSubmitted $input): mixed
     {
-        return Decision::delegate();
+        return null;
     }
 
-    public function onPrompt(PromptSubmitted $input): Decision
+    public function onShellCommand(ShellCommandRequested $input): mixed
     {
-        return Decision::delegate();
+        return null;
     }
 
-    public function onShellCommand(ShellCommandRequested $input): Decision
+    public function onFileEdit(FileEditRequested $input): mixed
     {
-        return Decision::delegate();
+        return null;
     }
 
-    public function onFileEdit(FileEditRequested $input): Decision
+    public function onToolRequested(ToolRequested $input): mixed
     {
-        return Decision::delegate();
+        return null;
     }
 
-    public function onToolRequested(ToolRequested $input): Decision
+    public function onStop(StopRequested $input): mixed
     {
-        return Decision::delegate();
+        return null;
     }
 
-    public function onStop(StopRequested $input): Decision
+    public function onCompaction(ContextCompacted $input): mixed
     {
-        return Decision::delegate();
+        return null;
     }
 
-    public function onCompaction(ContextCompacted $input): Decision
+    public function onToolFinished(ToolFinished $input): mixed
     {
-        return Decision::delegate();
+        return null;
     }
 
-    public function onToolFinished(ToolFinished $input): Decision
+    public function onSessionEnd(SessionEnded $input): mixed
     {
-        return Decision::delegate();
-    }
-
-    public function onSessionEnd(SessionEnded $input): Decision
-    {
-        return Decision::delegate();
+        return null;
     }
 }

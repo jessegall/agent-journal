@@ -6,6 +6,7 @@ namespace Domain\Access\Models;
 
 use App\Actors\Enums\ChatPermission;
 use App\Actors\Support\ActorIdentity;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -44,6 +45,7 @@ final class EnvironmentUserGrant extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     public const string LOCAL_ENVIRONMENT = '';
 
@@ -64,19 +66,17 @@ final class EnvironmentUserGrant extends Model implements ReadableModel
     }
 
     /**
-     * Admits the user to the environment with the given permissions, replacing the grant it held there.
+     * Admits the user to the environment with the given permissions; the grant it replaces is revoked by the caller.
      *
      * @param  list<ChatPermission>  $permissions
      */
-    public static function grant(
+    public static function create(
         User $user,
         string|null $environmentId,
         array $permissions,
         ActorIdentity $grantedBy,
         CarbonImmutable $at,
     ): self {
-        self::query()->activeFor($user->id, $environmentId)->first()?->revoke($at);
-
         $grant = new self([
             'user_id' => $user->id,
             'environment_key' => $environmentId ?? self::LOCAL_ENVIRONMENT,

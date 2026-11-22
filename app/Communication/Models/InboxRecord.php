@@ -66,17 +66,24 @@ final class InboxRecord extends Model implements ReadableModel
     // ----------[ Mutations ]----------
 
     /**
-     * Takes the inbox's next timeline position under its row lock: the one allocator for chat messages and
-     * membership events, so two writers on one inbox never get the same number.
+     * The inbox row locked for taking its next timeline position: the one allocator for chat messages and membership
+     * events, so two writers on one inbox never get the same number.
      *
      * @throws InboxUnavailable
      */
-    public static function lockForSequence(string $id): int
+    public static function lockedForSequence(string $id): self
     {
-        $inbox = self::query()->whereKey($id)->lockForUpdate()->firstOr(fn () => throw InboxUnavailable::forId($id));
-        $inbox->next_sequence++;
-        $inbox->save();
+        return self::query()->whereKey($id)->lockForUpdate()->firstOr(fn () => throw InboxUnavailable::forId($id));
+    }
 
-        return $inbox->next_sequence;
+    /**
+     * Takes the inbox's next timeline position on this locked row.
+     */
+    public function takeSequence(): int
+    {
+        $this->next_sequence++;
+        $this->save();
+
+        return $this->next_sequence;
     }
 }

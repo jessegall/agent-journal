@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Access\Console;
 
-use Carbon\CarbonImmutable;
+use App\Bus\Contracts\OwnerCommands;
+use Domain\Access\Commands\DisableUser;
 use Domain\Access\Models\User;
-use Domain\Access\Support\EnvironmentAccess;
 use Illuminate\Console\Command;
 
 final class DisableUserCommand extends Command
@@ -17,7 +17,7 @@ final class DisableUserCommand extends Command
 
     protected $description = 'Disable a user account so it is admitted nowhere, or enable it again';
 
-    public function handle(EnvironmentAccess $access): int
+    public function handle(OwnerCommands $commands): int
     {
         $user = User::query()->where('email', (string) $this->argument('email'))->firstOrFail();
 
@@ -28,7 +28,7 @@ final class DisableUserCommand extends Command
             return self::SUCCESS;
         }
 
-        $access->disable($user, CarbonImmutable::now());
+        $commands->run(new DisableUser($user->id));
         $this->info("Disabled {$user->email}.");
 
         return self::SUCCESS;

@@ -305,7 +305,7 @@ final class EventPayloads
                 ],
             ],
             ReceiptDeliveriesScheduled::class => [
-                'afterCommit' => true,
+                'afterCommit' => false,
                 'fields' => [
                     'deliveryIds' => 'array',
                 ],

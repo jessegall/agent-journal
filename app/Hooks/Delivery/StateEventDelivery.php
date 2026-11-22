@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace App\Hooks\Delivery;
 
 use App\Agents\Values\StackTarget;
+use App\Bus\Contracts\Command;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\CommandNotRegistered;
 use App\Bus\Support\CommandRegistry;
+use App\Contracts\Event;
 use App\Contracts\ListenerFailureLog;
 use App\Hooks\Declarations\Exceptions\StateEventMethodUnregistered;
 use App\Hooks\Declarations\StateEvents;
+use App\Hooks\Declarations\StateMethod;
 use App\Hooks\Enums\StateEventStage;
+use App\Hooks\Exceptions\StateAnswerRefused;
 use App\Hooks\Exceptions\StateEventCommandRefused;
 use App\Hooks\Stack\SelectedStateMethod;
 use App\Hooks\Stack\StateMethodSelector;
@@ -22,7 +26,6 @@ use App\Hooks\StateEvents\StateEventEffects;
 use App\Hooks\StateEvents\StateEventResult;
 use App\Hooks\StateEvents\StateEventResults;
 use App\Hooks\StateEvents\StateEventStacks;
-use App\Hooks\Support\AgentMessageDelivery;
 use App\Hooks\Support\StackTransaction;
 use Closure;
 use Psr\Log\LoggerInterface;
@@ -33,13 +36,17 @@ use Throwable;
  */
 final readonly class StateEventDelivery
 {
+    /**
+     * The most commands and events one listener may return for one fact.
+     */
+    public const int EFFECT_LIMIT = 10;
+
     public function __construct(
         private StackTransaction $transaction,
         private StateEventStacks $stacks,
         private StateMethodSelector $selector,
         private StateEvents $declarations,
         private CommandRegistry $commands,
-        private AgentMessageDelivery $messages,
         private StateEventEffects $effects,
         private StateEventActivity $activity,
         private LoggerInterface $log,
@@ -71,16 +78,10 @@ final readonly class StateEventDelivery
     {
         $targets = $dispatch->audience->get()->targets;
 
-        $collect = function () use ($targets, $dispatch, $advance): array {
-            $listenerResults = array_map(fn (StackTarget $target) => $this->collect($dispatch, $target), $targets);
-            $advance(StateEventStage::Retention);
-
-            foreach ($listenerResults as $targetEffects) {
-                $this->messages->retainEvent($targetEffects->target, $dispatch, $targetEffects->context());
-            }
-
-            return $listenerResults;
-        };
+        $collect = fn (): array => array_map(
+            fn (StackTarget $target) => $this->collect($dispatch, $target),
+            $targets,
+        );
 
         $collected = $this->transaction->runForTargets($targets, $collect);
 
@@ -136,12 +137,11 @@ final readonly class StateEventDelivery
             'method' => $method->name,
             'frame' => $selection->frame->id,
             'target' => $target->description(),
-            'selection' => $selection->reason->value,
         ]);
 
-        $commands = $selection->answerEvent($event);
+        $effects = $this->effectsOf($selection->answerEvent($event), $method);
 
-        foreach ($commands->all() as $command) {
+        foreach (array_filter($effects, fn (Command|Event $effect) => $effect instanceof Command) as $command) {
             if (! $this->commands->has($command::class)) {
                 throw CommandNotRegistered::for($command::class);
             }
@@ -151,7 +151,39 @@ final readonly class StateEventDelivery
             }
         }
 
-        return StateEventResult::fromSelection($selection, $commands);
+        return StateEventResult::fromSelection($selection, $effects);
+    }
+
+    /**
+     * What a listener returned, as the commands and events it asks for: nothing, one of them, or several from a list
+     * or a generator, at most EFFECT_LIMIT; anything else is refused.
+     *
+     * @return list<Command<mixed>|Event>
+     *
+     * @throws StateAnswerRefused
+     */
+    private function effectsOf(mixed $answer, StateMethod $method): array
+    {
+        $listener = "{$method->stateClass}::{$method->name}";
+
+        $effects = match (true) {
+            $answer === null => [],
+            $answer instanceof Command, $answer instanceof Event => [$answer],
+            is_iterable($answer) => iterator_to_array($answer, false),
+            default => throw StateAnswerRefused::notAnEffect($listener, get_debug_type($answer)),
+        };
+
+        foreach ($effects as $effect) {
+            if (! $effect instanceof Command && ! $effect instanceof Event) {
+                throw StateAnswerRefused::notAnEffect($listener, get_debug_type($effect));
+            }
+        }
+
+        if (count($effects) > self::EFFECT_LIMIT) {
+            throw StateAnswerRefused::tooMany($listener, count($effects), self::EFFECT_LIMIT);
+        }
+
+        return $effects;
     }
 
     private function reportFailure(StateEventDispatch $dispatch, StateEventStage $stage, Throwable $failure): void

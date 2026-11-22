@@ -49,7 +49,16 @@ function interestOf(id: string): TerminalInterestData {
 }
 
 function identityOf(changes: Partial<TerminalScreenIdentityData> = {}): TerminalScreenIdentityData {
-    return { sessionId: 'session', processGeneration: 1, epoch: 'epoch', stream: 'stream', privacyRevision: 0, ...changes };
+    return {
+        sessionId: 'session',
+        processGeneration: 1,
+        epoch: 'epoch',
+        stream: 'stream',
+        privacyRevision: 0,
+        attachment: null,
+        containerInstance: null,
+        ...changes,
+    };
 }
 
 function frameOf(sequence: number, changes: Partial<ScreenFrameData> = {}): ScreenFrameData {

@@ -6,7 +6,6 @@ namespace App\Hooks\Inputs;
 
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\NativeTurnRecords;
-use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Inputs\Contracts\HookAnswerer;
 use App\Hooks\Inputs\Contracts\HookInput;
@@ -38,7 +37,7 @@ final readonly class PromptSubmitted implements HookInput
         return $type->fitsAnAction();
     }
 
-    public function answerBy(HookAnswerer $state): Decision
+    public function answerBy(HookAnswerer $state): mixed
     {
         return $state->onPrompt($this);
     }

@@ -22,7 +22,7 @@ final readonly class SubmitPrivateInputController
         TerminalAnswers $answers,
     ): JsonResponse|Response {
         $values->keep($request->submissionId(), $request->privateValue());
-        $answer = $answers->run($request->submitPrivateCommand());
+        $answer = $answers->control($request->submitPrivateCommand());
 
         if (! $answer->isSuccessful()) {
             $values->discard($request->submissionId());

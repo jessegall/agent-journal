@@ -163,8 +163,6 @@ final class BaselineTimelinesTest extends TestCase
             'commit',
             'TaskStarted',
             'PlanProgressChanged',
-            'commit',
-            'commit',
         ], $this->timeline);
     }
 
@@ -185,8 +183,6 @@ final class BaselineTimelinesTest extends TestCase
             'commit',
             'TaskStarted',
             'PlanProgressChanged',
-            'commit',
-            'commit',
         ], $this->timeline);
     }
 
@@ -202,7 +198,7 @@ final class BaselineTimelinesTest extends TestCase
         $this->start($task);
 
         $this->assertSame(
-            ['saved Task', 'commit', 'TaskStarted', 'PlanProgressChanged', 'commit'],
+            ['saved Task', 'commit', 'TaskStarted', 'PlanProgressChanged'],
             $this->timeline,
         );
     }
@@ -219,7 +215,7 @@ final class BaselineTimelinesTest extends TestCase
         $this->start($task);
 
         $this->assertSame(
-            ['saved Task', 'saved TaskRun', 'saved AgentStackRow', 'commit', 'TaskStarted', 'commit'],
+            ['saved Task', 'saved TaskRun', 'saved AgentStackRow', 'commit', 'TaskStarted'],
             $this->timeline,
         );
     }
@@ -323,7 +319,7 @@ final class BaselineTimelinesTest extends TestCase
         $this->timeline = [];
         $this->asAgent(new StartPlan($plan->id));
 
-        $this->assertSame(['saved Plan', 'saved AgentStackRow', 'commit', 'PlanStarted', 'commit'], $first);
+        $this->assertSame(['saved Plan', 'saved AgentStackRow', 'commit', 'PlanStarted'], $first);
         $this->assertSame(['commit'], $this->timeline);
     }
 

@@ -11,6 +11,7 @@ use App\Communication\Events\SpeechOpportunitySettled;
 use App\Communication\Exceptions\ChatStateConflict;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -48,6 +49,7 @@ final class SpeechOpportunity extends Model implements EventSource, ReadableMode
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     // ----------[ Constructors ]----------
@@ -69,7 +71,7 @@ final class SpeechOpportunity extends Model implements EventSource, ReadableMode
     /**
      * The actor's turn to speak on the user message, held through the interval it had when the message arrived.
      */
-    public static function offer(Message $root, ActorIdentity $actor, InboxInterval $interval): self
+    public static function create(Message $root, ActorIdentity $actor, InboxInterval $interval): self
     {
         $opportunity = new self([
             'inbox_id' => $interval->inbox_id,
@@ -190,6 +192,8 @@ final class SpeechOpportunity extends Model implements EventSource, ReadableMode
             && $this->lease_expires_at !== null
             && $this->lease_expires_at->greaterThan($at);
     }
+
+    // ----------[ Accessors ]----------
 
     /**
      * @return Attribute<ActorIdentity, never>

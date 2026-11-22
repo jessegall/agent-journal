@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
+use App\Bus\Contracts\Command;
+use App\Contracts\Event;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Storage\WalkStep;
+use PhpOption\Option;
 
 /**
- * What one walk ends with: the answering decision, the context every visited state added, the messages among it, and
- * the steps taken, with the stack as the walk left it.
+ * What one walk ends with: the answering decision, the context every visited state added, the messages among it, the
+ * commands and events the states answered with, in order, and the steps taken, with the stack as the walk left it.
  */
 final readonly class HookAnswer
 {
@@ -18,6 +21,7 @@ final readonly class HookAnswer
      * @param  list<string>  $context
      * @param  list<WalkStep>  $steps
      * @param  list<string>  $messages
+     * @param  list<Command<mixed>|Event>  $effects
      */
     public function __construct(
         public Decision $decision,
@@ -25,6 +29,7 @@ final readonly class HookAnswer
         public array $steps,
         public AgentStack $stack,
         public array $messages = [],
+        public array $effects = [],
     ) {}
 
     /**
@@ -52,6 +57,16 @@ final readonly class HookAnswer
     public function withContextAdded(string $line): self
     {
         return clone ($this, ['context' => [...$this->context, $line]]);
+    }
+
+    /**
+     * The instruction the stack this walk left shows.
+     *
+     * @return Option<string>
+     */
+    public function instruction(): Option
+    {
+        return $this->stack->instruction();
     }
 
     public function isRewrite(): bool
@@ -92,6 +107,7 @@ final readonly class HookAnswer
             'context' => [...$this->context, ...$following->context],
             'steps' => [...$this->steps, ...$following->steps],
             'messages' => [...$this->messages, ...$following->messages],
+            'effects' => [...$this->effects, ...$following->effects],
         ]);
     }
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
+use App\Bus\Contracts\Command;
 use App\Hooks\States\AgentState;
-use App\Hooks\Values\EventCommands;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 
 /**
@@ -14,18 +14,10 @@ use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 final class WatchingNoteState extends AgentState
 {
     /**
-     * @param list<string> $context
+     * @return list<Command<mixed>>
      */
-    public function __construct(private readonly array $context) {}
-
-    public function onNoteWritten(NoteWritten $event): EventCommands
+    public function onNoteWritten(NoteWritten $event): array
     {
-        $result = EventCommands::of(...$event->ordinary);
-
-        foreach ($this->context as $line) {
-            $result = $result->withContext($line);
-        }
-
-        return $result;
+        return $event->ordinary;
     }
 }

@@ -28,14 +28,14 @@ final readonly class AnswerMessageHandler implements CommandHandler
     {
         $dispatcher = $command->dispatchedBy();
         $question = Message::visibleById($command->messageId);
+        $reply = Message::visibleById($command->replyId);
 
         if ($question->isChat()) {
-            return $this->chats->linkAnswer($question, Message::visibleById($command->replyId), $dispatcher);
+            return $this->chats->linkAnswer($question, $reply, $dispatcher);
         }
 
         $member = $this->reading->recipientOf($command->messageId, $dispatcher);
         $message = Message::lockedById($command->messageId);
-        $reply = Message::visibleById($command->replyId);
         $actor = ActorIdentity::of($dispatcher);
         $sessionId = $this->session->hasSession() ? $this->session->sessionId() : null;
 

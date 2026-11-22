@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\States\Contracts;
 
 use App\Hooks\Decisions\Decision;
+use App\Hooks\Decisions\MessageLine;
 use App\Hooks\Inputs\Values\HookIdentity;
 
 /**
@@ -13,5 +14,5 @@ use App\Hooks\Inputs\Values\HookIdentity;
  */
 interface StopConditionGate
 {
-    public function answer(HookIdentity $stop): Decision;
+    public function answer(HookIdentity $stop): Decision|MessageLine|null;
 }

@@ -9,7 +9,7 @@ use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\States\AgentState;
 
 /**
- * A passive state that only gates file edits, which owes no instruction or lifecycle answer.
+ * A passive state that only gates file edits, which names no work record and owes no instruction.
  */
 final class GatesToolsOnly extends AgentState
 {

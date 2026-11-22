@@ -70,15 +70,13 @@ a toggle group, read through `group()`, decides participation.
 - **Switching back on.** Enabling the group again makes future pushes eligible again. It does not bring back a frame
   that an explicit transition removed while the group was off, and it does not replay a push that was declined.
 
-## Integration rule for lifecycle and ticks
+## Integration rule for hooks and ticks
 
-For the builders of doc 36 revision 3's frame lifecycle (plan 24) and doc 35 revision 3's ticker:
+For the hook walk and doc 35 revision 3's ticker:
 
-- **Lifecycle.** The hook walk and a push start from the stored stack as it is. Lifecycle callbacks come only from the
-  frames an explicit transition removed or added, and a resume only for a live top whose live cover was removed.
+- **Hooks.** The hook walk and a push start from the stored stack as it is and ask only live frames.
 - **Ticks.** The ticker skips a switched-off candidate both when it selects frames to tick and when it revalidates one,
   without pruning it from the stack (`TickCandidates::restore`). A domain wrapper around a ticking loader keeps the
   `TickableStateLoader` mark (`DomainTickableStateType`). A skipped tick advances no timing baseline.
 
-`FrameLifecycle::settle` runs for every explicit transition (`AgentStateMachine`, `StatePush` and
-`AgentStack::popExposed`). The ticker follows the tick rule above.
+The ticker follows the tick rule above.

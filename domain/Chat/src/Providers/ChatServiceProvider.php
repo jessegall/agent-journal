@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Providers;
 
+use App\Actors\Contracts\ChatMemberPolicies;
 use App\Actors\Contracts\ChatParticipationEnding;
 use App\Actors\Contracts\ReadEntitlements;
-use App\Actors\Support\ChatMemberPolicies;
 use App\Actors\Values\ReadEntitlement;
 use App\Agents\Exceptions\SessionOutdated;
 use App\Agents\Exceptions\StackTargetRefused;
@@ -49,10 +49,10 @@ final class ChatServiceProvider extends ServiceProvider
         ExceptionHandler $exceptions,
         ReadEntitlements $reads,
         InboxRegistration $inboxes,
-        ChatMemberPolicies $chatMembers,
+        ChatMemberPolicies $members,
     ): void {
-        $chatMembers->allow(ConversationPolicy::class);
-        $chatMembers->allow(MessagePinPolicy::class);
+        $members->allow(ConversationPolicy::class);
+        $members->allow(MessagePinPolicy::class);
         $inboxes->register(Conversation::CHAT_INBOX_PROVIDER, ChatInboxProvider::class, ChatInboxAccess::class);
         $reads->declare('dock_list', ReadEntitlement::resolver());
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');

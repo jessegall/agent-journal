@@ -34,14 +34,11 @@ use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EngineActor;
 use App\Hooks\Commands\CertifyPassedStops;
 use App\Hooks\Commands\RecordStopResults;
-use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\StopResultType;
 use App\Hooks\Events\HelperCompletionCertified;
 use App\Hooks\Events\HelperStopHeld;
-use App\Hooks\Inputs\Values\HookIdentity;
 use App\Hooks\Models\StopAttempt;
-use App\Hooks\States\Contracts\StopConditionGate;
 use App\Hooks\Support\StopAttemptGate;
 use App\Hooks\Values\StopResultReport;
 use App\Records\Support\RecordIdentity;
@@ -52,6 +49,7 @@ use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\OpensLedgerRuntimes;
+use Tests\Support\AsksTheStopGate;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
@@ -67,6 +65,7 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 5, reason: 'It starts test agent sessions, opens a runtime and empties the hook tables.')]
 final class HelperCompletionTest extends TestCase
 {
+    use AsksTheStopGate;
     use OpensLedgerRuntimes;
     use RefreshHookDatabase;
     use RunsTrustedCommands;
@@ -83,7 +82,7 @@ final class HelperCompletionTest extends TestCase
         $allowed = $this->stop($start, 'stop-1');
         $this->stop($start, 'stop-1');
 
-        $this->assertSame(AnswerType::Allow, $allowed->answerType());
+        $this->assertSame(AnswerType::Allow, $this->typeOf($allowed));
         $this->assertNotNull(StopAttempt::query()->withoutGlobalScopes()->sole()->certified_at);
         Event::assertDispatchedTimes(HelperCompletionCertified::class, 1);
         Event::assertDispatched(
@@ -145,8 +144,8 @@ final class HelperCompletionTest extends TestCase
         $this->settle('stop-1', StopResultType::Failed, 'NOTE is not committed');
         $refused = $this->stop($start, 'stop-1');
 
-        $this->assertSame([StopAttemptGate::CHECKS_RUNNING], $running->messages);
-        $this->assertSame(AnswerType::Deny, $refused->answerType());
+        $this->assertSame([StopAttemptGate::CHECKS_RUNNING], $this->messagesOf($running));
+        $this->assertSame(AnswerType::Deny, $this->typeOf($refused));
         Event::assertNotDispatched(HelperCompletionCertified::class);
     }
 
@@ -159,8 +158,8 @@ final class HelperCompletionTest extends TestCase
 
         $decision = $this->stop($start, 'stop-1');
 
-        $this->assertSame(AnswerType::Allow, $decision->answerType());
-        $this->assertSame([StopAttemptGate::NO_CHECKS_REQUIRED], $decision->messages);
+        $this->assertSame(AnswerType::Allow, $this->typeOf($decision));
+        $this->assertSame([StopAttemptGate::NO_CHECKS_REQUIRED], $this->messagesOf($decision));
         Event::assertDispatchedTimes(HelperCompletionCertified::class, 1);
     }
 
@@ -174,7 +173,7 @@ final class HelperCompletionTest extends TestCase
         foreach (['stop-1', 'stop-2', 'stop-3', 'stop-4'] as $stopId) {
             $this->stop($start, $stopId);
             $this->settle($stopId, StopResultType::Failed, 'NOTE is not committed');
-            $decisions[] = $this->stop($start, $stopId)->answerType();
+            $decisions[] = $this->typeOf($this->stop($start, $stopId));
         }
 
         $this->assertSame([AnswerType::Deny, AnswerType::Deny, AnswerType::Allow, AnswerType::Allow], $decisions);
@@ -193,7 +192,7 @@ final class HelperCompletionTest extends TestCase
             $last = $this->stop($start, $stopId);
         }
 
-        $this->assertSame(AnswerType::Deny, $last->answerType());
+        $this->assertSame(AnswerType::Deny, $this->typeOf($last));
         Event::assertNotDispatched(HelperStopHeld::class);
     }
 
@@ -252,14 +251,6 @@ final class HelperCompletionTest extends TestCase
         StartRecord::accept($request, ActorIdentity::system(), None::create())->startedAs($session);
 
         return $work;
-    }
-
-    private function stop(TestStart $start, string $stopId): Decision
-    {
-        $hook = new HookIdentity($start->agent->id, $start->session->id, $stopId, 'digest');
-        $start->startRequest($this->app);
-
-        return $this->app->make(StopConditionGate::class)->answer($hook);
     }
 
     private function settle(string $stopId, StopResultType $status, string $summary): void

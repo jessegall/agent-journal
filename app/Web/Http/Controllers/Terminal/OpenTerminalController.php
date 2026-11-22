@@ -17,6 +17,6 @@ final readonly class OpenTerminalController
 {
     public function __invoke(TerminalViewRequest $request, TerminalAnswers $answers): JsonResponse|Response
     {
-        return $answers->run($request->openCommand());
+        return $answers->interest($request->openCommand());
     }
 }

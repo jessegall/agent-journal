@@ -8,9 +8,9 @@ use App\Actors\Contracts\ChatEligibility;
 use App\Actors\Enums\ActorType;
 use App\Actors\Enums\ChatPermission;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Support\AgentChatAdmission;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Support\ChatInboxes;
+use App\Profiles\Support\AgentChatAdmission;
 use Domain\Chat\Models\Conversation;
 
 /**
@@ -41,7 +41,7 @@ final readonly class ChatAdmissionPolicy
             return false;
         }
 
-        return $target->type === ActorType::Agent
+        return $target->type->isAgent()
             ? $this->agents->mayJoin($target, $inviter, $chat->environment_id)
             : $this->eligibility->holds($target, ChatPermission::ReceiveInvitations, $chat->environment_id);
     }
@@ -61,6 +61,7 @@ final readonly class ChatAdmissionPolicy
             fn (string $userId) => new ActorIdentity(ActorType::User, $userId),
             $this->eligibility->invitableUserIds($chat->environment_id, self::CANDIDATE_LIMIT),
         );
+
         $agents = array_map(
             fn (string $agentId) => new ActorIdentity(ActorType::Agent, $agentId),
             $this->agents->invitableAgentIds($inviter, $chat->environment_id, self::CANDIDATE_LIMIT),

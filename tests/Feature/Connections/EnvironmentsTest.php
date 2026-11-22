@@ -78,7 +78,7 @@ final class EnvironmentsTest extends TestCase
         $this->assertStringContainsString(self::NO_ENVIRONMENT, (string) $refused->json('message'));
 
         $this->actingAs($this->owner)
-            ->putJson("/settings/project-connections/bindings/{$binding->id}/environment/{$main}")
+            ->putJson("/project-connections/bindings/{$binding->id}/environment/{$main}")
             ->assertNoContent();
         $this->assertFalse(ProjectBinding::query()->findOrFail($binding->id)->isEnvironmentUnassigned());
     }
@@ -95,7 +95,7 @@ final class EnvironmentsTest extends TestCase
 
     private function joinTicket(string $projectId, string $environmentId): string
     {
-        $issued = $this->actingAs($this->owner)->postJson('/settings/project-connections/invitations', [
+        $issued = $this->actingAs($this->owner)->postJson('/project-connections/invitations', [
             'issuanceKey' => 'join-'.Str::random(6),
             'projectId' => $projectId,
             'environmentId' => $environmentId,

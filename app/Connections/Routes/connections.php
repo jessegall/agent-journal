@@ -87,7 +87,7 @@ Route::post('/api/project-connections/recover', RecoverBindingController::class)
     ->name('connections.recover');
 
 Route::middleware(['web', 'auth', 'journal.user', 'throttle:20,1'])
-    ->prefix('/settings/project-connections')
+    ->prefix('/project-connections')
     ->name('connections.')
     ->group(function (): void {
         Route::post('/invitations', IssueProjectInvitationController::class)->name('invitations.issue');

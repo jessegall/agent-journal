@@ -7,7 +7,6 @@ namespace App\Agents\Handlers;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\SubmitPrivateInput;
-use App\Agents\Data\TerminalControlData;
 use App\Agents\Support\TerminalControls;
 use App\Contracts\CommandHandler;
 
@@ -18,7 +17,7 @@ final readonly class SubmitPrivateInputHandler implements CommandHandler
         private ServerClock $clock,
     ) {}
 
-    public function handle(SubmitPrivateInput $command): TerminalControlData
+    public function handle(SubmitPrivateInput $command): string
     {
         $writer = ActorIdentity::of($command->dispatchedBy());
 

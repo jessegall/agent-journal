@@ -35,7 +35,7 @@ describe('a result', () => {
         const view = mountResult(undefined);
         const rows = view.findAll('[aria-hidden="true"]');
 
-        expect(view.get('[aria-busy="true"]').exists()).toBe(true);
+        expect(view.find('[aria-busy="true"]').exists()).toBe(true);
         expect(view.findAll('[role="status"]')).toHaveLength(1);
         expect(view.get('[role="status"]').text()).toBe('Loading Plans');
         expect(rows).toHaveLength(3);

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Access\Support;
 
 use App\Actors\Contracts\ChatEligibility;
-use App\Actors\Enums\ActorType;
 use App\Actors\Enums\ChatPermission;
 use App\Actors\Support\ActorIdentity;
 use Domain\Access\Models\EnvironmentUserGrant;
@@ -21,7 +20,7 @@ final readonly class EnvironmentChatEligibility implements ChatEligibility
 
     public function lockAdmission(ActorIdentity $user, string|null $environmentId): void
     {
-        if ($user->type !== ActorType::User) {
+        if (! $user->type->isUser()) {
             return;
         }
 
@@ -72,7 +71,7 @@ final readonly class EnvironmentChatEligibility implements ChatEligibility
 
     private function isActiveUser(ActorIdentity $user): bool
     {
-        return $user->type === ActorType::User
+        return $user->type->isUser()
             && User::query()->whereKey($user->id)->whereNull('disabled_at')->exists();
     }
 

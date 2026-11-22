@@ -4,10 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Responses\Agents;
 
+use App\Actors\Contracts\CurrentActor;
+use App\Actors\Support\ActorIdentity;
+use App\Agents\Data\TerminalControlData;
+use App\Agents\Data\TerminalInterestData;
+use App\Agents\Support\TerminalControls;
+use App\Agents\Support\TerminalViews;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\RefusalCode;
 use App\Contracts\CommandRefusal;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
@@ -19,7 +26,12 @@ use Spatie\LaravelData\Data;
  */
 final readonly class TerminalAnswers
 {
-    public function __construct(private CommandBus $commands) {}
+    public function __construct(
+        private CommandBus $commands,
+        private CurrentActor $actors,
+        private TerminalControls $controls,
+        private TerminalViews $views,
+    ) {}
 
     /**
      * @param  Command<mixed>  $command
@@ -27,6 +39,34 @@ final readonly class TerminalAnswers
     public function run(Command $command): JsonResponse|Response
     {
         return $this->answer(fn (): mixed => $this->commands->run($command));
+    }
+
+    /**
+     * Runs a control command and answers the caller's control of the grant it left.
+     *
+     * @param  Command<string>  $command
+     */
+    public function control(Command $command): JsonResponse|Response
+    {
+        return $this->answer(fn (): TerminalControlData => $this->controls->answerFor(
+            ActorIdentity::of($this->actors->actor()),
+            $this->commands->run($command),
+            CarbonImmutable::now(),
+        ));
+    }
+
+    /**
+     * Runs an open or renewal and answers the caller's read interest as it left it.
+     *
+     * @param  Command<string>  $command
+     */
+    public function interest(Command $command): JsonResponse|Response
+    {
+        return $this->answer(fn (): TerminalInterestData => $this->views->answerFor(
+            ActorIdentity::of($this->actors->actor()),
+            $this->commands->run($command),
+            CarbonImmutable::now(),
+        ));
     }
 
     /**

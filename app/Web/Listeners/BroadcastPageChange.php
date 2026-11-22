@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Web\Listeners;
 
 use App\Actors\Contracts\AdmittedRecipients;
-use App\Actors\Enums\ActorType;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Contracts\InboxScopedFact;
 use App\Communication\Events\ChatMemberLeft;
@@ -34,13 +33,14 @@ final readonly class BroadcastPageChange implements Listener
 
     public function handle(UserInterfaceUpdater $fact): void
     {
-        if ($fact instanceof ChatMemberLeft && $fact->member->type === ActorType::User) {
+        if ($fact instanceof ChatMemberLeft && $fact->member->type->isUser()) {
             $this->events->dispatch(new ChatAccessEnded($fact->member->id, $fact->inboxId));
         }
 
         $userIds = $fact instanceof InboxScopedFact
             ? $this->membersOf($fact->scopedInboxId())
             : $this->recipients->userIds();
+
         $this->log->info('A page fact was committed.', ['fact' => $fact::class, 'users' => count($userIds)]);
 
         if ($userIds === []) {
@@ -61,7 +61,7 @@ final readonly class BroadcastPageChange implements Listener
 
         return array_values(array_map(
             fn (ChatInterval $interval) => $interval->actor->id,
-            array_filter($intervals, fn (ChatInterval $interval) => $interval->actor->type === ActorType::User),
+            array_filter($intervals, fn (ChatInterval $interval) => $interval->actor->type->isUser()),
         ));
     }
 }

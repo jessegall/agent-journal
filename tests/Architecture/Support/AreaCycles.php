@@ -9,16 +9,16 @@ use PhpOption\Option;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
- * Cycles between areas: each Core area (App\Agents, App\Hooks), each domain (Domain\Plans) and the
- * domain foundation is one unit, and no group of units may reach each other. Type folders inside one area (Contracts,
+ * Cycles between areas: Core (all of app, which follows Laravel's own layout and whose folders name each other
+ * freely, rule 64) is one unit and each domain (Domain\Plans) is one, and no group of units may reach each other. Type folders inside one area (Contracts,
  * Support, Enums) are filing, not layers, so references between them are never a cycle (question 26).
  */
 final readonly class AreaCycles
 {
     /**
-     * The folder of app that is the domain foundation, not a Core area.
+     * The one area every folder of app belongs to.
      */
-    private const string FOUNDATION_FOLDER = 'Domains';
+    private const string CORE = 'Core';
 
     /**
      * Core's root lists name every area they compose (CoreApi's exports, Core's commands); they are composition, like
@@ -196,7 +196,11 @@ final readonly class AreaCycles
 
         $parts = explode('/', substr($path, strlen($appFolder) + 1));
 
-        return self::areaOf(count($parts) > 1 ? $parts[0] : null);
+        return match (true) {
+            count($parts) === 1 => self::CORE_ROOT,
+            "App\\{$parts[0]}" === self::ENTRY_AREA => self::ENTRY_AREA,
+            default => self::CORE,
+        };
     }
 
     /**
@@ -210,21 +214,8 @@ final readonly class AreaCycles
 
         return match ($parts[0]) {
             'Domain' => count($parts) > 2 ? Option::fromValue("Domain\\{$parts[1]}") : None::create(),
-            'App' => Option::fromValue(self::areaOf(count($parts) > 2 ? $parts[1] : null)),
+            'App' => Option::fromValue(self::CORE),
             default => None::create(),
-        };
-    }
-
-    /**
-     * Core's root classes are their own area, the foundation folder is one area, and every other folder of app is a
-     * Core area.
-     */
-    private static function areaOf(string|null $folder): string
-    {
-        return match ($folder) {
-            null => self::CORE_ROOT,
-            self::FOUNDATION_FOLDER => 'Domain foundation',
-            default => "App\\{$folder}",
         };
     }
 }

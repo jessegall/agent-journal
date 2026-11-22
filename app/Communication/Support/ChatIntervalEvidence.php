@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Communication\Support;
 
+use App\Communication\Contracts\MembershipEvidence;
+
 /**
  * A chat membership, proved by the actor's active interval in the chat inbox.
  */

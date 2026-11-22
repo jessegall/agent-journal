@@ -8,11 +8,16 @@ use App\Actors\Support\ActorIdentity;
 use App\Communication\Contracts\InboxScopedFact;
 use App\Contracts\Event;
 use App\Ui\Contracts\UserInterfaceUpdater;
+use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A chat message took its place in its chat inbox's timeline; raised once its acceptance has committed.
  */
-final readonly class ChatMessageAccepted implements Event, InboxScopedFact, UserInterfaceUpdater
+final readonly class ChatMessageAccepted implements
+    Event,
+    InboxScopedFact,
+    ShouldDispatchAfterCommit,
+    UserInterfaceUpdater
 {
     public function __construct(
         public string $messageId,

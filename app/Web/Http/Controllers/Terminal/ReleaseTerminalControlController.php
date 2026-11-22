@@ -16,6 +16,6 @@ final readonly class ReleaseTerminalControlController
 {
     public function __invoke(TerminalControlRequest $request, TerminalAnswers $answers): JsonResponse|Response
     {
-        return $answers->run($request->releaseCommand());
+        return $answers->control($request->releaseCommand());
     }
 }

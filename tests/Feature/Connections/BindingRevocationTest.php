@@ -50,7 +50,7 @@ final class BindingRevocationTest extends TestCase
         $this->redeemLine('ticket-two', 'nonce-bbbbbbbbbbbbbbbb')->assertCreated();
 
         $this->actingAs($this->owner)
-            ->deleteJson("/settings/project-connections/bindings/{$first->id}")
+            ->deleteJson("/project-connections/bindings/{$first->id}")
             ->assertOk();
 
         $this->relayClaim('nonce-aaaaaaaaaaaaaaaa')->assertUnauthorized();
@@ -67,11 +67,11 @@ final class BindingRevocationTest extends TestCase
         $binding = (string) $this->redeemLine('ticket-one', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
 
         $first = $this->actingAs($this->owner)
-            ->deleteJson("/settings/project-connections/bindings/{$binding}")
+            ->deleteJson("/project-connections/bindings/{$binding}")
             ->assertOk();
         $this->travel(5)->seconds();
         $second = $this->actingAs($this->owner)
-            ->deleteJson("/settings/project-connections/bindings/{$binding}")
+            ->deleteJson("/project-connections/bindings/{$binding}")
             ->assertOk();
 
         $revoked = ProjectBinding::query()->findOrFail($binding);
@@ -98,7 +98,7 @@ final class BindingRevocationTest extends TestCase
 
         $this->actingAs($this->owner)
             ->from('/connections')
-            ->post('/settings/project-connections/bindings/revoke', ['bindings' => [$first, $second]])
+            ->post('/project-connections/bindings/revoke', ['bindings' => [$first, $second]])
             ->assertRedirect('/connections')
             ->assertSessionHas('inertia.flash_data', ['revokedBindings' => [$first => 'Revoked', $second => 'Revoked']]);
 
@@ -116,7 +116,7 @@ final class BindingRevocationTest extends TestCase
         preg_match('#/install/([A-Za-z0-9_-]+) #', (string) $line->json('installLine'), $match);
         $binding = $this->redeemLine($match[1], 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
         $this->recoverBinding('nonce-aaaaaaaaaaaaaaaa')->assertOk();
-        $this->actingAs($this->owner)->deleteJson("/settings/project-connections/bindings/{$binding}")->assertOk();
+        $this->actingAs($this->owner)->deleteJson("/project-connections/bindings/{$binding}")->assertOk();
 
         $audits = array_reverse(ConnectionAudit::newest(10));
 
@@ -139,7 +139,7 @@ final class BindingRevocationTest extends TestCase
     private function issueByOwner(string $issuanceKey): TestResponse
     {
         return $this->actingAs($this->owner)
-            ->postJson('/settings/project-connections/invitations', ['issuanceKey' => $issuanceKey])
+            ->postJson('/project-connections/invitations', ['issuanceKey' => $issuanceKey])
             ->assertCreated();
     }
 

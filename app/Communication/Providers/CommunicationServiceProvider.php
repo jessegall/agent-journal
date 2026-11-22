@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Communication\Providers;
 
+use App\Actors\Contracts\ChatMemberPolicies;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Contracts\ReadEntitlements;
-use App\Actors\Support\ChatMemberPolicies;
 use App\Actors\Support\SystemEntryPolicies;
 use App\Actors\Values\PolicyDefinition;
 use App\Actors\Values\ReadEntitlement;
@@ -16,6 +16,8 @@ use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Enums\AssignmentPurpose;
 use App\Autoload\Support\FolderClasses;
 use App\Communication\Contracts\AgentMessageReader;
+use App\Communication\Contracts\ChatDepartures;
+use App\Communication\Contracts\ChatTimeline;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\InboxNotices as InboxNoticesContract;
 use App\Communication\Contracts\InboxRegistration;
@@ -29,7 +31,9 @@ use App\Communication\Policies\MessagePolicy;
 use App\Communication\Resolvers\AgentMessages;
 use App\Communication\Resolvers\MessageRecords;
 use App\Communication\Resolvers\QuestionNotificationTarget;
+use App\Communication\Resolvers\Support\IntervalChatTimeline;
 use App\Communication\Support\InboxNotices;
+use App\Communication\Support\IntervalChatDepartures;
 use App\Communication\Support\MessageAnswerActivation;
 use App\Communication\Support\MessageClaimProvider;
 use App\Communication\Support\NotificationChangePruning;
@@ -62,6 +66,8 @@ final class CommunicationServiceProvider extends ServiceProvider
         $this->app->singleton(RegisteredInboxes::class);
         $this->app->scoped(ConversationResolver::class, MessageRecords::class);
         $this->app->bind(InboxNoticesContract::class, InboxNotices::class);
+        $this->app->bind(ChatDepartures::class, IntervalChatDepartures::class);
+        $this->app->bind(ChatTimeline::class, IntervalChatTimeline::class);
         $this->app->scoped(AgentMessageReader::class, AgentMessages::class);
         $this->app->scoped(RequestSource::class, SelectedMessages::class);
         $this->app->singleton(NotificationTargetRegistry::class);
@@ -113,12 +119,14 @@ final class CommunicationServiceProvider extends ServiceProvider
                 ->call(fn (NotificationChangePruning $pruning) => $pruning->prune(CarbonImmutable::now()))
                 ->hourly(),
         );
+
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule
                 ->call(fn (ReceiptDeliveries $deliveries) => $deliveries->deliverDue(CarbonImmutable::now()))
                 ->everyMinute(),
         );
+
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule

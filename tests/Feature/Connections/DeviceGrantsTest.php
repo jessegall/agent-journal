@@ -61,7 +61,7 @@ final class DeviceGrantsTest extends TestCase
 
         $this->travel(DeviceGrant::POLL_SECONDS_MINIMUM + 1)->seconds();
         $this->actingAs($this->owner)
-            ->post("/settings/project-connections/devices/{$start->json('userCode')}/approve")
+            ->post("/project-connections/devices/{$start->json('userCode')}/approve")
             ->assertRedirect();
         $grant = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertOk();
 
@@ -77,7 +77,7 @@ final class DeviceGrantsTest extends TestCase
         $this->travel(DeviceGrant::CODE_MINUTES + 1)->minutes();
 
         $this->actingAs($this->owner)
-            ->postJson("/settings/project-connections/devices/{$start->json('userCode')}/approve")
+            ->postJson("/project-connections/devices/{$start->json('userCode')}/approve")
             ->assertNotFound();
         $expired = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertStatus(410);
         $this->assertSame('expired_token', $expired->json('details.outcome'));
@@ -87,11 +87,11 @@ final class DeviceGrantsTest extends TestCase
     {
         $binding = $this->connected();
         $start = $this->relay('/api/device-grants', ['binding' => $binding])->assertCreated();
-        $this->actingAs($this->owner)->post("/settings/project-connections/devices/{$start->json('userCode')}/approve");
+        $this->actingAs($this->owner)->post("/project-connections/devices/{$start->json('userCode')}/approve");
         $grant = (string) $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->json('grant');
 
         $this->actingAs($this->owner)
-            ->deleteJson('/settings/project-connections/devices/'.DeviceGrant::query()->sole()->id)
+            ->deleteJson('/project-connections/devices/'.DeviceGrant::query()->sole()->id)
             ->assertNoContent();
 
         $this->postJson('https://localhost/api/project-commands/device', [
@@ -138,7 +138,7 @@ final class DeviceGrantsTest extends TestCase
         $revoked = DeviceGrant::query()->where('grant_digest', InstallTicket::digestOf($first))->sole();
 
         $this->actingAs($this->owner)
-            ->deleteJson("/settings/project-connections/devices/{$revoked->id}")
+            ->deleteJson("/project-connections/devices/{$revoked->id}")
             ->assertNoContent();
 
         $this->actingAs($this->owner)->get('/connections')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
@@ -195,10 +195,10 @@ final class DeviceGrantsTest extends TestCase
     {
         $binding = $this->connected();
         $start = $this->relay('/api/device-grants', ['binding' => $binding])->assertCreated();
-        $this->actingAs($this->owner)->post("/settings/project-connections/devices/{$start->json('userCode')}/approve");
+        $this->actingAs($this->owner)->post("/project-connections/devices/{$start->json('userCode')}/approve");
         $deviceCode = (string) $start->json('deviceCode');
         $grant = (string) $this->relay('/api/device-grants/poll', ['deviceCode' => $deviceCode])->json('grant');
-        $this->actingAs($this->owner)->deleteJson("/settings/project-connections/bindings/{$binding}")->assertOk();
+        $this->actingAs($this->owner)->deleteJson("/project-connections/bindings/{$binding}")->assertOk();
 
         $audits = array_reverse(ConnectionAudit::newestOfBindings([$binding]));
         $project = ProjectBinding::query()->findOrFail($binding)->project_id;
@@ -223,7 +223,7 @@ final class DeviceGrantsTest extends TestCase
     private function approvedGrant(string $binding): string
     {
         $start = $this->relay('/api/device-grants', ['binding' => $binding])->assertCreated();
-        $this->actingAs($this->owner)->post("/settings/project-connections/devices/{$start->json('userCode')}/approve");
+        $this->actingAs($this->owner)->post("/project-connections/devices/{$start->json('userCode')}/approve");
 
         return (string) $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->json('grant');
     }
@@ -259,7 +259,7 @@ final class DeviceGrantsTest extends TestCase
     {
         $binding = $this->connected();
         $start = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'start-1'])->assertCreated();
-        $this->actingAs($this->owner)->post("/settings/project-connections/devices/{$start->json('userCode')}/approve");
+        $this->actingAs($this->owner)->post("/project-connections/devices/{$start->json('userCode')}/approve");
         $this->app['auth']->forgetGuards();
         $issued = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertOk();
 
@@ -296,12 +296,12 @@ final class DeviceGrantsTest extends TestCase
             ->where('page.data.state', 'pending')
             ->where('page.data.journalOrigin', 'https://journal.example.com')
             ->where('page.data.isBindingRevoked', false));
-        $this->actingAs($this->owner)->post("/settings/project-connections/devices/{$start->json('userCode')}/approve");
+        $this->actingAs($this->owner)->post("/project-connections/devices/{$start->json('userCode')}/approve");
 
         $this->actingAs($this->owner)->get($window)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.state', 'approved'));
         $this->actingAs($this->owner)
-            ->postJson("/settings/project-connections/devices/{$start->json('userCode')}/approve")
+            ->postJson("/project-connections/devices/{$start->json('userCode')}/approve")
             ->assertNotFound();
     }
 

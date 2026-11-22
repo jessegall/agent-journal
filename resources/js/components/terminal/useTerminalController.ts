@@ -11,7 +11,7 @@ import {
 import type { Ref } from 'vue';
 import { computed, onBeforeUnmount, onMounted, shallowRef, watch } from 'vue';
 import type { TerminalClient, TerminalFailure, TerminalScreen } from './terminalSubscription';
-import { TerminalSubscription } from './terminalSubscription';
+import { blank, TerminalSubscription } from './terminalSubscription';
 import { useTerminalControl } from './useTerminalControl';
 
 /**
@@ -109,14 +109,7 @@ function noticesOf(screen: TerminalScreen): string[] {
  * terminal view draws.
  */
 export function useTerminalController(agentId: Ref<string>, isShown: Ref<boolean>) {
-    const screen = shallowRef<TerminalScreen>({
-        state: 'opening',
-        frame: null,
-        identity: null,
-        refusal: '',
-        receivedAt: Date.now(),
-        endedAt: '',
-    });
+    const screen = shallowRef<TerminalScreen>(blank('opening', Date.now()));
     const now = shallowRef(Date.now());
     const timers: number[] = [];
     let subscription = subscribe(agentId.value);

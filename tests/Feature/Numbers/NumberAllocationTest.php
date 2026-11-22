@@ -16,6 +16,7 @@ use App\Numbers\Exceptions\NumberLimitReached;
 use App\Numbers\Models\GlobalGroup;
 use App\Numbers\Models\NumberGroup;
 use App\Numbers\Support\NumberedTypeRegistry;
+use App\Reflection\Support\Reflector;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -83,12 +84,12 @@ final class NumberAllocationTest extends TestCase
     {
         $registry = $this->app->make(NumberedTypeRegistry::class);
 
-        $this->assertFalse(method_exists(LedgerDomain::class, 'numberedModels'));
-        $registry->requireNumbered(new Ledger()->getMorphClass());
-        $registry->requireNumbered(new LedgerEntry()->getMorphClass());
+        $this->assertFalse(Reflector::of(LedgerDomain::class)->hasMethod('numberedModels'));
+        $registry->assertNumbered(new Ledger()->getMorphClass());
+        $registry->assertNumbered(new LedgerEntry()->getMorphClass());
 
         $this->expectException(NumberedModelUndeclared::class);
-        $registry->requireNumbered('ledger.nobody');
+        $registry->assertNumbered('ledger.nobody');
     }
 
     public function test_a_refused_command_takes_its_number_back_with_it(): void

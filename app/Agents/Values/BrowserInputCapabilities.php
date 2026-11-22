@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Values;
 
-use App\Agents\Enums\TerminalInputKind;
+use App\Agents\Enums\TerminalInputType;
 
 /**
  * Which browser input a host's claim says it carries out on its terminals: text and Enter, named keys, pastes,
@@ -26,14 +26,14 @@ final readonly class BrowserInputCapabilities
         return new self(false, false, false, false, false);
     }
 
-    public function carriesOut(TerminalInputKind $kind): bool
+    public function carriesOut(TerminalInputType $kind): bool
     {
         return match ($kind) {
-            TerminalInputKind::Text => $this->text,
-            TerminalInputKind::Key => $this->text && $this->keys,
-            TerminalInputKind::Paste => $this->text && $this->paste,
-            TerminalInputKind::Resize => $this->text && $this->resize,
-            TerminalInputKind::Private => $this->text && $this->privateEntry,
+            TerminalInputType::Text => $this->text,
+            TerminalInputType::Key => $this->text && $this->keys,
+            TerminalInputType::Paste => $this->text && $this->paste,
+            TerminalInputType::Resize => $this->text && $this->resize,
+            TerminalInputType::Private => $this->text && $this->privateEntry,
         };
     }
 }

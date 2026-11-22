@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\StateEffects;
 
-use App\Hooks\Commands\FocusInstruction;
-use App\Hooks\Lifecycle\LifecycleContext;
+use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;
-use App\Hooks\Values\LifecycleCommands;
+use App\Records\Commands\UnlinkRecords;
+use App\Records\Support\RecordIdentity;
 
 /**
- * A state that only constructs and returns a command for the engine to run, which the state effects check allows.
+ * A state that only constructs and returns a command for its caller to run, which the state effects check allows.
  */
 final class ReturnsACommand extends AgentState
 {
-    public function onEnter(LifecycleContext $context): LifecycleCommands
+    public function onStop(StopRequested $input): UnlinkRecords
     {
-        return LifecycleCommands::of(new FocusInstruction());
+        return new UnlinkRecords(new RecordIdentity('tasks.task', '1'), new RecordIdentity('tasks.task', '2'));
     }
 }

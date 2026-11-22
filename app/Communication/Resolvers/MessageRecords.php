@@ -18,15 +18,14 @@ use App\Communication\Data\InboxView;
 use App\Communication\Data\MessageClaimHolder;
 use App\Communication\Data\MessagePage;
 use App\Communication\Data\MessageView;
-use App\Communication\Enums\MessageState;
 use App\Communication\Enums\MessageType;
 use App\Communication\Exceptions\ChatInboxRefused;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Models\InboxRecord;
 use App\Communication\Models\Message;
-use App\Communication\Models\TimelineEvent;
 use App\Communication\Models\MessageAttention;
 use App\Communication\Models\ReceiptDelivery;
+use App\Communication\Models\TimelineEvent;
 use App\Communication\Policies\MessageAdministrationPolicy;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\RegisteredInboxes;
@@ -66,8 +65,8 @@ final readonly class MessageRecords implements ConversationResolver
         string|null $olderCursor,
         int $limit,
     ): MessagePage {
-        $this->refuseChatInbox($firstInboxId);
-        $this->refuseChatInbox($secondInboxId);
+        $this->assertNotAChatInbox($firstInboxId);
+        $this->assertNotAChatInbox($secondInboxId);
 
         return $this->page(Message::query()->betweenInboxes($firstInboxId, $secondInboxId), $olderCursor, $limit);
     }
@@ -124,7 +123,7 @@ final readonly class MessageRecords implements ConversationResolver
     public function inspect(string $inboxId, string|null $olderCursor, int $limit): MessagePage
     {
         $this->authorizer->authorize(MessageAdministrationPolicy::class, Message::class, AccessType::Read);
-        $this->refuseChatInbox($inboxId);
+        $this->assertNotAChatInbox($inboxId);
 
         return $this->page(Message::query()->acrossInboxes()->ofInbox($inboxId), $olderCursor, $limit);
     }
@@ -173,13 +172,13 @@ final readonly class MessageRecords implements ConversationResolver
             ->get()
             ->map(fn (ReceiptDelivery $delivery) => $delivery->wakeStatus());
 
-        return array_values([...$woken->all(), ...$unsettled->all()]);
+        return [...$woken->all(), ...$unsettled->all()];
     }
 
     /**
      * @throws ChatInboxRefused
      */
-    private function refuseChatInbox(string $inboxId): void
+    private function assertNotAChatInbox(string $inboxId): void
     {
         if (InboxRecord::isChatInbox($inboxId)) {
             throw ChatInboxRefused::forInbox($inboxId);
@@ -310,7 +309,9 @@ final readonly class MessageRecords implements ConversationResolver
             ->whereKey(array_map(fn (Message $message) => $message->timeline_event_id, $chat))
             ->pluck('sequence', 'id')
             ->all();
+
         $viewer = ActorIdentity::of($this->actors->actor());
+
         $shown = Message::query()
             ->whereKey(array_map(fn (Message $message) => $message->id, $chat))
             ->receivedNowBy($viewer)

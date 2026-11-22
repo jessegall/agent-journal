@@ -157,8 +157,6 @@ final class WorkReservation extends Model implements ReadableModel
 
     // ----------[ Answers ]----------
 
-    // ----------[ Relations ]----------
-
     /**
      * @return BelongsTo<CertifiedWork, $this>
      */

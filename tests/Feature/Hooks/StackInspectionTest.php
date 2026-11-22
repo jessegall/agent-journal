@@ -56,8 +56,8 @@ final class StackInspectionTest extends TestCase
             '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10),
         )->json('lastCall.steps');
 
-        $this->assertSame([['guide', 'delegate', 'keep'], ['test.tasks', 'deny', 'keep']], array_map(
-            fn (array $step) => [$step['stateType'], $step['answer'], $step['change']],
+        $this->assertSame([['guide', 'delegate'], ['test.tasks', 'deny']], array_map(
+            fn (array $step) => [$step['stateType'], $step['answer']],
             $steps,
         ));
     }

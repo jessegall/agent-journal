@@ -5,8 +5,8 @@ description: A handler or listener that reads the agent's current work, builds a
 
 # Handlers change truth; states answer for the stack
 
-A handler or listener changes domain truth. What the agent works on next is the work state's answer: it returns the
-commands the engine runs when its frame is entered, resumed or exited, or when a fact it listens to arrives.
+A handler or listener changes domain truth. What the agent works on next is the work state's answer: its instruction,
+read from the top live state that has one, and the commands it returns when a hook or a fact it listens to reaches it.
 
 ```php
 // Before: a listener decides the stack itself
@@ -14,10 +14,10 @@ if ($this->stacks->current('tasks.working')->isEmpty()) {
     $this->stacks->push(WorkingOnTaskStateReference::forTask($task));
 }
 
-// After: the state answers on its own frame
-public function onEnter(LifecycleContext $context): LifecycleCommands
+// After: the state answers from its own frame
+public function instruction(): Option
 {
-    return LifecycleCommands::of(new FocusInstruction());
+    return new Some("Work on task {$this->task->number}.");
 }
 ```
 

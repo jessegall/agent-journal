@@ -13,8 +13,8 @@ use App\Communication\Enums\SpeechOpportunityState;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Exceptions\SpeechRefused;
 use App\Communication\Models\InboxInterval;
-use App\Communication\Models\PresentationBatch;
 use App\Communication\Models\Message;
+use App\Communication\Models\PresentationBatch;
 use App\Communication\Models\SpeechOpportunity;
 use Carbon\CarbonImmutable;
 
@@ -45,7 +45,7 @@ final readonly class SpeechAllowance
         ));
 
         foreach ($agents as $interval) {
-            $opportunity = SpeechOpportunity::offer($userMessage, $interval->actor, $interval);
+            $opportunity = SpeechOpportunity::create($userMessage, $interval->actor, $interval);
 
             if ($this->isAskedOf($userMessage, $interval->actor, count($agents))) {
                 $opportunity->reserveFor($userMessage);
@@ -69,6 +69,7 @@ final readonly class SpeechAllowance
             $isPeer = $interval->actor->type->isAgent()
                 && $interval->actor_type === $agentPost->addressee_type
                 && $interval->actor_id === $agentPost->addressee_id;
+
             $hasTurn = SpeechOpportunity::query()->onRoot($agentPost->user_root_id)
                 ->where('actor_type', $interval->actor_type)
                 ->where('actor_id', $interval->actor_id)
@@ -76,7 +77,7 @@ final readonly class SpeechAllowance
 
             if ($isPeer && ! $hasTurn) {
                 $root = Message::query()->acrossInboxes()->findOrFail($agentPost->user_root_id);
-                SpeechOpportunity::offer($root, $interval->actor, $interval);
+                SpeechOpportunity::create($root, $interval->actor, $interval);
             }
         }
     }
@@ -253,6 +254,7 @@ final readonly class SpeechAllowance
         }
 
         $digest = self::digestOf($token);
+
         $opportunity = SpeechOpportunity::query()
             ->where('inbox_id', $inbox->inboxId())
             ->openFor($actor)

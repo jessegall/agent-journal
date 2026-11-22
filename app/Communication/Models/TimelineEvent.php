@@ -7,6 +7,7 @@ namespace App\Communication\Models;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Enums\TimelineEventType;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -38,6 +39,7 @@ final class TimelineEvent extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     public const null UPDATED_AT = null;
 
@@ -58,7 +60,7 @@ final class TimelineEvent extends Model implements ReadableModel
     /**
      * Writes the event at the sequence the inbox lock handed out.
      */
-    public static function append(
+    public static function create(
         string $inboxId,
         int $sequence,
         TimelineEventType $type,
@@ -78,7 +80,7 @@ final class TimelineEvent extends Model implements ReadableModel
         return $event;
     }
 
-    // ----------[ Answers ]----------
+    // ----------[ Accessors ]----------
 
     /**
      * @return Attribute<ActorIdentity, never>

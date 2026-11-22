@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
+use App\Ui\Contracts\DraftProducers;
 use App\Ui\Enums\ActionMethod;
 use App\Ui\Layout\DeclaredLayoutData;
 use App\Ui\Layout\LayoutActionData;
@@ -16,7 +17,6 @@ use App\Ui\Layout\LayoutRowData;
 use App\Ui\Layout\ListEmpty;
 use App\Ui\Layout\ListPage;
 use App\Ui\Layout\ListPaging;
-use App\Ui\Support\DraftProducerRegistry;
 use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Enums\TaskHolderFilter;
@@ -33,7 +33,7 @@ final readonly class TaskIndexLayout
 {
     public function __construct(
         private TaskListResolver $tasks,
-        private DraftProducerRegistry $producers,
+        private DraftProducers $producers,
     ) {}
 
     /**

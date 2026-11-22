@@ -35,7 +35,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
     public function test_an_operator_retries_only_the_given_up_delivery_and_a_member_is_refused(): void
     {
         $bea = User::factory()->create(['name' => 'Bea']);
-        EnvironmentUserGrant::grant(
+        EnvironmentUserGrant::create(
             $bea,
             null,
             [ChatPermission::ReceiveInvitations],
@@ -44,6 +44,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
         );
         $this->inboxOf(ActorIdentity::of($bea));
         $access = $this->app->make(AgentChatAccess::class);
+
         foreach ([$this->builder, $this->reviewer] as $agent) {
             $access->allow($agent->agent_id, null, [$this->owner->id], ActorIdentity::system(), CarbonImmutable::now());
         }
@@ -55,7 +56,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
         $messageId = $this->runOnBus(new PostChatMessage($inboxId, 'Plan?', 'ada-plan'));
 
         $builderReceipt = $this->receiptOf($messageId, $this->builder->agent_id);
-        $range = OutstandingRange::at($builderReceipt, 8000);
+        $range = OutstandingRange::create($builderReceipt, 8000);
         $range->exhaust('The driver did not answer.');
         $delivery = ReceiptDelivery::query()->where('receipt_id', $builderReceipt->id)->sole();
         $delivery->exhaust('The driver did not answer.');
@@ -81,7 +82,7 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
             ->sole()
             ->state);
 
-        $this->startUserRequestAs($bea->id);
+        $this->startChatMemberRequestAs($bea->id);
         $this->assertFalse($this->rowOf($inboxId, $messageId)->actions->retryDelivery);
         $this->assertThrows(fn () => $this->runOnBus(new RetryDelivery($range->id)), Throwable::class);
     }
@@ -99,7 +100,6 @@ final class ChatDeliveryRetryTest extends MessagingTestCase
 
     private function rowOf(string $inboxId, string $messageId): ChatMessageData
     {
-        $this->app->forgetScopedInstances();
         $rows = $this->app->make(ChatConversations::class)->rowsPage($inboxId, null)->messages;
 
         return array_values(array_filter($rows, fn (ChatMessageData $row) => $row->id === $messageId))[0];

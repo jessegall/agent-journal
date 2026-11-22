@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Events\HelperCompletionCertified;
 use App\Hooks\Events\HelperStopHeld;
-use App\Hooks\Events\LifecycleAnswersSettled;
+use App\Hooks\Events\HookCommandAnswered;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Events\ToolCallFinished;
 use Tests\Architecture\Support\EventRole;
@@ -37,11 +37,11 @@ return [
             'app/Hooks/Support/StopAttemptGate.php',
         ],
     ],
-    LifecycleAnswersSettled::class => [
+    HookCommandAnswered::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Hooks/Settlement/FrameLifecycle.php',
+            'app/Hooks/Pipes/Answer/PublishHookEffects.php',
         ],
     ],
     StateTypesRequested::class => [

@@ -32,13 +32,13 @@ trait OpensPairChats
 
         $providerId = strtolower((string) Str::ulid());
         $inboxId = $this->app->make(ChatInboxes::class)->open($providerId);
-        $conversation = Conversation::openFor($inboxId, $providerId, $first, null, null);
+        $conversation = Conversation::create($inboxId, $providerId, $first, null, null);
         DirectChat::recordFor($conversation, null, $first, $second);
 
         $inbox = new ChatInbox($inboxId, 'Chat');
         $intervals = $this->app->make(InboxIntervals::class);
-        $intervals->join($inbox, $first, IntervalRole::Owner);
-        $intervals->join($inbox, $second, IntervalRole::Member);
+        $intervals->enter($inbox, $first, IntervalRole::Owner);
+        $intervals->enter($inbox, $second, IntervalRole::Member);
 
         return $conversation;
     }

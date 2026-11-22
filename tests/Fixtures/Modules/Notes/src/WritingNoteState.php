@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use App\Hooks\Attributes\StackWide;
+use App\Bus\Contracts\Command;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;
-use App\Hooks\Values\EventCommands;
 use Tests\Fixtures\Modules\Notes\Events\NoteAudited;
 use Tests\Fixtures\Modules\Notes\Events\NotePublished;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
@@ -24,23 +23,27 @@ final class WritingNoteState extends AgentState
         return Decision::deny('Finish the note first.');
     }
 
-    #[StackWide]
-    public function onNoteWritten(NoteWritten $event): EventCommands
+    /**
+     * @return list<Command<mixed>>
+     */
+    public function onNoteWritten(NoteWritten $event): array
     {
         if ($event->listenerFails) {
             throw NoteWorkFailed::whileListening();
         }
 
-        return EventCommands::of(...$event->marked)->withContext('A note was written.');
+        return $event->marked;
     }
 
-    #[StackWide]
-    public function onNotePublished(NotePublished $event): EventCommands
+    /**
+     * @return list<Command<mixed>>
+     */
+    public function onNotePublished(NotePublished $event): array
     {
         return $this->onNoteWritten($event->note);
     }
 
-    public function onNoteAudited(NoteAudited $event): EventCommands
+    public function onNoteAudited(NoteAudited $event): never
     {
         throw NoteWorkFailed::whileListening();
     }

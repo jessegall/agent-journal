@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Models;
 
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -26,6 +27,7 @@ final class ReceiptProgress extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 
@@ -37,12 +39,31 @@ final class ReceiptProgress extends Model implements ReadableModel
         return ['confirmed_offset' => 'integer'];
     }
 
-    public static function of(string $receiptId, string $contextKey): self
+    /**
+     * The context's progress on the receipt, starting from nothing confirmed.
+     */
+    public static function create(string $receiptId, string $contextKey): self
     {
-        return self::query()->firstOrCreate(
-            ['receipt_id' => $receiptId, 'context_key' => $contextKey],
-            ['confirmed_offset' => 0],
-        );
+        $progress = new self(['receipt_id' => $receiptId, 'context_key' => $contextKey, 'confirmed_offset' => 0]);
+        $progress->save();
+
+        return $progress;
+    }
+
+    /**
+     * The context's progress on the receipt, once it confirmed a piece of it.
+     */
+    public static function findFor(string $receiptId, string $contextKey): self|null
+    {
+        return self::query()->where('receipt_id', $receiptId)->where('context_key', $contextKey)->first();
+    }
+
+    /**
+     * How far the context confirmed the receipt's body: nothing until it confirmed a first piece.
+     */
+    public static function confirmedOffsetOf(string $receiptId, string $contextKey): int
+    {
+        return self::findFor($receiptId, $contextKey)->confirmed_offset ?? 0;
     }
 
     // ----------[ Mutations ]----------

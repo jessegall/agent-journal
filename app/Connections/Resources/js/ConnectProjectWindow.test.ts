@@ -43,17 +43,17 @@ vi.mock('@inertiajs/vue3', () => ({
 }));
 vi.mock('@kit/keyedPost', () => ({ keyedPost }));
 vi.mock('@generated/routes/connections/invitations', () => ({
-    issue: () => ({ url: '/settings/project-connections/invitations' }),
+    issue: () => ({ url: '/project-connections/invitations' }),
     revoke: ({ invitation }: { invitation: string }) => ({
-        url: `/settings/project-connections/invitations/${invitation}`,
+        url: `/project-connections/invitations/${invitation}`,
     }),
 }));
 vi.mock('@generated/routes/connections/bindings', () => ({
     revoke: ({ binding }: { binding: string }) => ({
-        url: `/settings/project-connections/bindings/${binding}`,
+        url: `/project-connections/bindings/${binding}`,
     }),
     revokeChosen: () => ({
-        url: '/settings/project-connections/bindings/revoke',
+        url: '/project-connections/bindings/revoke',
     }),
 }));
 
@@ -229,7 +229,7 @@ describe('ConnectProjectWindow', () => {
         await flushPromises();
 
         expect(destroy).toHaveBeenCalledWith(
-            '/settings/project-connections/bindings/binding-1',
+            '/project-connections/bindings/binding-1',
             expect.objectContaining({ only: ['page'], preserveState: true }),
         );
     });
@@ -244,7 +244,7 @@ describe('ConnectProjectWindow', () => {
         await flushPromises();
 
         expect(keyedPost).toHaveBeenLastCalledWith(
-            '/settings/project-connections/bindings/revoke',
+            '/project-connections/bindings/revoke',
             { bindings: ['binding-1'] },
             expect.any(String),
             expect.any(Object),
@@ -282,7 +282,7 @@ describe('ConnectProjectWindow', () => {
         await flushPromises();
 
         expect(destroy).toHaveBeenCalledWith(
-            '/settings/project-connections/invitations/one',
+            '/project-connections/invitations/one',
             expect.objectContaining({ data: { seenVersion: 1 } }),
         );
         expect(wrapper.find('input[readonly]').exists()).toBe(false);

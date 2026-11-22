@@ -6,6 +6,7 @@ namespace Tests\Support;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\ChatMemberAuthority;
 use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
@@ -52,5 +53,13 @@ trait StartsAgentRequests
         $this->app->instance(AccessSettings::class, new AccessSettings($userId));
 
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($userId), new OwnerAuthority('test'));
+    }
+
+    /**
+     * Acts as an admitted user who is not the owner, under the chat-only authority its sign-in gives it.
+     */
+    protected function startChatMemberRequestAs(string $userId): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($userId), new ChatMemberAuthority('test'));
     }
 }

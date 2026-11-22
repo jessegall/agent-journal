@@ -15,7 +15,7 @@ use App\Agents\Data\TerminalControlData;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\TerminalControlRefusal;
 use App\Agents\Enums\TerminalGrantState;
-use App\Agents\Enums\TerminalInputKind;
+use App\Agents\Enums\TerminalInputType;
 use App\Agents\Enums\TerminalNamedKey;
 use App\Agents\Exceptions\TerminalControlRefused;
 use App\Agents\Models\AgentRuntime;
@@ -141,7 +141,7 @@ final class TerminalControlTest extends TestCase
         $runtime = $this->controllableRuntime();
         $this->take($runtime, $this->openInterest($runtime));
         TerminalGrant::query()->acrossActors()->sole()->issue('grant-1');
-        $paste = new TerminalInput(str_repeat('x', 17 * 1024), false, 1, 0, TerminalInputKind::Paste);
+        $paste = new TerminalInput(str_repeat('x', 17 * 1024), false, 1, 0, TerminalInputType::Paste);
 
         try {
             $this->asOwner(new SendTerminalInput($runtime->session->agent_id, 'grant-1', $paste));
@@ -159,7 +159,7 @@ final class TerminalControlTest extends TestCase
         $runtime = $this->controllableRuntime();
         $this->take($runtime, $this->openInterest($runtime));
         TerminalGrant::query()->acrossActors()->sole()->issue('grant-1');
-        $key = new TerminalInput('', false, 1, 0, TerminalInputKind::Key, TerminalNamedKey::CtrlC);
+        $key = new TerminalInput('', false, 1, 0, TerminalInputType::Key, TerminalNamedKey::CtrlC);
 
         $this->asOwner(new SendTerminalInput($runtime->session->agent_id, 'grant-1', $key));
 

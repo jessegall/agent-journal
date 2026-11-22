@@ -16,16 +16,4 @@ final readonly class StateEventResults
      */
     public function __construct(public StackTarget $target, public array $listenerResults) {}
 
-    public function context(): StateEventContext
-    {
-        $lines = [];
-        $messages = [];
-
-        foreach ($this->listenerResults as $listenerResult) {
-            array_push($lines, ...$listenerResult->commands->context);
-            array_push($messages, ...$listenerResult->commands->messages);
-        }
-
-        return new StateEventContext($lines, $messages);
-    }
 }

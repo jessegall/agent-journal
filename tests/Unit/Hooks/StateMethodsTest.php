@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks;
 
 use App\Contracts\Event;
-use App\Hooks\Attributes\StackWide;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Exceptions\InvalidStateMethod;
-use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;
 use App\Hooks\States\Exceptions\InvalidStateClass;
-use App\Hooks\Values\EventCommands;
 use Domain\Tasks\Events\TaskStarted;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -42,46 +39,26 @@ final class StateMethodsTest extends TestCase
     {
         yield 'event name' => [new class extends AgentState
         {
-            public function onTaskStart(TaskStarted $event): EventCommands
+            public function onTaskStart(TaskStarted $event): null
             {
-                return EventCommands::none();
+                return null;
             }
         }, '::onTaskStart must be named onTaskStarted.'];
 
         yield 'non-concrete parameter' => [new class extends AgentState
         {
-            public function onTaskStarted(Event $event): EventCommands
+            public function onTaskStarted(Event $event): null
             {
-                return EventCommands::none();
+                return null;
             }
         }, '::onTaskStarted must be a public instance method with one required concrete Event.'];
 
         yield 'static method' => [new class extends AgentState
         {
-            public static function onTaskStarted(TaskStarted $event): EventCommands
+            public static function onTaskStarted(TaskStarted $event): null
             {
-                return EventCommands::none();
+                return null;
             }
         }, '::onTaskStarted must be a public instance method with one required concrete Event.'];
-
-        yield 'invalid return' => [new class extends AgentState
-        {
-            public function onTaskStarted(TaskStarted $event): void {}
-        }, '::onTaskStarted must return '.EventCommands::class.'.'];
-
-        yield 'wrong marker location' => [new class extends AgentState
-        {
-            #[StackWide]
-            public function onTick(StopRequested $input): void {}
-        }, '::onTick may use StackWide only on a hook override or state event method.'];
-
-        yield 'marker arguments' => [new class extends AgentState
-        {
-            #[StackWide(true)]
-            public function onTaskStarted(TaskStarted $event): EventCommands
-            {
-                return EventCommands::none();
-            }
-        }, '::onTaskStarted may use StackWide once and with no arguments.'];
     }
 }

@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Hooks\Declarations;
 
-use App\Hooks\Attributes\StackWide;
 use App\Hooks\States\AgentState;
 use App\Reflection\Support\ReflectedMethod;
 
 /**
- * An effective method and its selection marker on a registered state class.
+ * An effective method on a registered state class.
  */
 final readonly class StateMethod
 {
@@ -21,7 +20,6 @@ final readonly class StateMethod
         public string $stateClass,
         public string $declaringClass,
         public string $name,
-        public bool $stackWide,
     ) {}
 
     /**
@@ -33,7 +31,6 @@ final readonly class StateMethod
             $class,
             $method->declaringClass()->name(),
             $method->name(),
-            $method->hasAttribute(StackWide::class),
         );
     }
 }

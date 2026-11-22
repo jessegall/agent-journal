@@ -7,7 +7,6 @@ namespace App\Agents\Handlers;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\TakeTerminalControl;
-use App\Agents\Data\TerminalControlData;
 use App\Agents\Support\TerminalControls;
 use App\Contracts\CommandHandler;
 
@@ -18,7 +17,7 @@ final readonly class TakeTerminalControlHandler implements CommandHandler
         private ServerClock $clock,
     ) {}
 
-    public function handle(TakeTerminalControl $command): TerminalControlData
+    public function handle(TakeTerminalControl $command): string
     {
         $writer = ActorIdentity::of($command->dispatchedBy());
 

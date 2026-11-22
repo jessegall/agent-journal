@@ -75,7 +75,7 @@ final class AwaitingSkillsStateTest extends TestCase
     {
         $status = new ShellCommandRequested($this->hook(), self::command('php', CommandEffect::ReadsOnly));
 
-        $this->assertTrue(new AwaitingSkillsState(PublicationState::Pending)->onShellCommand($status)->isDelegating());
+        $this->assertNull(new AwaitingSkillsState(PublicationState::Pending)->onShellCommand($status));
     }
 
     #[DataProvider('settledStates')]

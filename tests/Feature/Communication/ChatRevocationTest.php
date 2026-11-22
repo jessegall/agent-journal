@@ -10,9 +10,10 @@ use App\Communication\Commands\PostChatMessage;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Support\ChatInboxes;
 use Carbon\CarbonImmutable;
+use Domain\Access\Commands\DisableUser;
+use Domain\Access\Commands\RevokeEnvironmentAccess;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
-use Domain\Access\Support\EnvironmentAccess;
 use Domain\Chat\Commands\CreateGroupChat;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\ChatInbox;
@@ -32,7 +33,8 @@ final class ChatRevocationTest extends MessagingTestCase
         $this->startUserRequestAs($bea->id);
         $inboxId = $this->runOnBus(new CreateGroupChat('Design', [$cy->id]));
 
-        $this->app->make(EnvironmentAccess::class)->revoke($bea, null, CarbonImmutable::now());
+        $this->startUserRequestAs($this->owner->id);
+        $this->runOnBus(new RevokeEnvironmentAccess($bea->id, null));
 
         $chat = Conversation::forInbox($inboxId);
         $members = $this->app->make(ChatInboxes::class)->activeIntervals(new ChatInbox($inboxId, 'Design'));
@@ -53,7 +55,8 @@ final class ChatRevocationTest extends MessagingTestCase
         $this->startUserRequestAs($bea->id);
         $inboxId = $this->runOnBus(new CreateGroupChat('Quiet', [$dee->id]));
 
-        $this->app->make(EnvironmentAccess::class)->disable($bea, CarbonImmutable::now());
+        $this->startUserRequestAs($this->owner->id);
+        $this->runOnBus(new DisableUser($bea->id));
 
         $this->assertFalse(Conversation::forInbox($inboxId)->isOpen());
     }
@@ -64,7 +67,7 @@ final class ChatRevocationTest extends MessagingTestCase
     private function grantedUser(string $name, array $permissions): User
     {
         $user = User::factory()->create(['name' => $name]);
-        EnvironmentUserGrant::grant($user, null, $permissions, ActorIdentity::of($this->owner), CarbonImmutable::now());
+        EnvironmentUserGrant::create($user, null, $permissions, ActorIdentity::of($this->owner), CarbonImmutable::now());
         $this->inboxOf(ActorIdentity::of($user));
 
         return $user;

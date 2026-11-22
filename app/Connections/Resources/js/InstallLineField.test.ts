@@ -29,7 +29,7 @@ describe('the install line field', () => {
         await flushPromises();
 
         expect(view.get('input').attributes('type')).toBe('text');
-        expect(view.get('p.text-danger').exists()).toBe(true);
+        expect(view.find('p.text-danger').exists()).toBe(true);
     });
 
     it('copies the line and says so, and holds the copy back while the journal cannot be reached', async () => {

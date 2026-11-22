@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Domain\Plans\Http\Requests;
 
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
+use Domain\Plans\Data\PlanFiltersData;
 use Domain\Plans\Http\Requests\Concerns\ReadsOutlinePages;
+use Domain\Plans\Http\Requests\Concerns\ReadsPlanFilters;
 use Domain\Plans\Models\Plan;
 use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -17,6 +19,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 final class PlanRequest extends FormRequest
 {
     use ReadsOutlinePages;
+    use ReadsPlanFilters;
     use ReadsRouteNumber;
 
     /**
@@ -26,9 +29,15 @@ final class PlanRequest extends FormRequest
     {
         return [
             ...$this->outlinePageRules(),
+            ...$this->planFilterRules(),
             'tab' => ['nullable', 'string', 'in:tasks,graph'],
             'node' => ['nullable', 'string', 'max:26'],
         ];
+    }
+
+    public function filters(): PlanFiltersData
+    {
+        return $this->planFilters();
     }
 
     /**

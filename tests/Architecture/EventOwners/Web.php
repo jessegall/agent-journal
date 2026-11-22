@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Web\Events\ChatAccessEnded;
 use App\Web\Events\NotificationsInvalidated;
 use App\Web\Events\PageChanged;
 use App\Web\Events\ProtectedViewInvalidated;
@@ -19,6 +20,13 @@ return [
         'producers' => [
             'app/Web/Listeners/BroadcastPageChange.php',
             'app/Web/Listeners/BroadcastDockedSourceChange.php',
+        ],
+    ],
+    ChatAccessEnded::class => [
+        'role' => EventRole::Projection,
+        'migrated' => false,
+        'producers' => [
+            'app/Web/Listeners/BroadcastPageChange.php',
         ],
     ],
     NotificationsInvalidated::class => [

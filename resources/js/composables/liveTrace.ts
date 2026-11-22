@@ -8,6 +8,7 @@ export type LiveTraceStep =
     | 'subscription authorized'
     | 'subscription refused'
     | 'signal received'
+    | 'chat access ended'
     | 'read started'
     | 'read applied'
     | 'read failed';

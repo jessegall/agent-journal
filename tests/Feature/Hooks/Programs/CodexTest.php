@@ -131,7 +131,7 @@ final class CodexTest extends TestCase
                 new Frame(
                     'guide',
                     new StateReference('guide', NoSubject::None),
-                    ScriptedState::delegating(),
+                    ScriptedState::passing(),
                     CarbonImmutable::now(),
                 ),
             ],

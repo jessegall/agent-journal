@@ -9,7 +9,10 @@ use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
+use App\Communication\Enums\LeaveReason;
+use App\Communication\Models\InboxInterval;
 use App\Communication\Models\Message;
+use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Http\Requests\ConversationRequest;
@@ -33,8 +36,8 @@ use Tests\TestCase;
  */
 final class HomePageTest extends TestCase
 {
-    use OpensPairChats;
     use CommitsHookRows;
+    use OpensPairChats;
     use WritesInboxMessages;
 
     private const string PRIVATE_BODY = 'Private words';
@@ -327,7 +330,7 @@ final class HomePageTest extends TestCase
     {
         $send = [...$this->pair(), 'body' => 'Private words', ...$this->seenSession()];
         $messageId = $this->keyedSend('key-1', $send)->assertOk()->json('messageId');
-        Message::query()->withoutGlobalScopes()->whereKey($messageId)->delete();
+        $this->leaveTheChatOf($messageId);
 
         $answer = $this->keyedSend('key-1', $send);
 
@@ -381,7 +384,7 @@ final class HomePageTest extends TestCase
     {
         $send = [...$this->pair(), 'body' => 'Hi', ...$this->seenSession()];
         $messageId = $this->keyedSend('key-1', $send)->json('messageId');
-        Message::query()->withoutGlobalScopes()->whereKey($messageId)->delete();
+        $this->leaveTheChatOf($messageId);
 
         $this->outcomeOf('key-1')->assertExactJson(['outcome' => 'no-longer-visible']);
     }
@@ -433,5 +436,19 @@ final class HomePageTest extends TestCase
             'expectedSessionId' => $this->session->id,
             'expectedGeneration' => AgentRuntime::ofSession($this->session->id)?->process_generation ?? 0,
         ];
+    }
+
+    /**
+     * The owner leaves the chat the message was posted in, so it no longer sees the message.
+     */
+    private function leaveTheChatOf(string $messageId): void
+    {
+        $message = Message::query()->acrossInboxes()->findOrFail($messageId);
+
+        InboxInterval::query()
+            ->activeFor($message->destination_inbox_id)
+            ->heldBy(ActorIdentity::of($this->owner))
+            ->sole()
+            ->end(LeaveReason::Left, CarbonImmutable::now());
     }
 }

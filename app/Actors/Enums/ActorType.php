@@ -30,4 +30,9 @@ enum ActorType: string
     {
         return $this === self::Agent;
     }
+
+    public function isUser(): bool
+    {
+        return $this === self::User;
+    }
 }

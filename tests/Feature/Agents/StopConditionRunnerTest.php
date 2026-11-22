@@ -11,18 +11,16 @@ use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
 use App\Hooks\Commands\RecordStopResults;
-use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\StopAttemptState;
 use App\Hooks\Enums\StopResultType;
-use App\Hooks\Inputs\Values\HookIdentity;
 use App\Hooks\Models\StopAttempt;
-use App\Hooks\States\Contracts\StopConditionGate;
 use App\Hooks\Support\StopAttemptGate;
 use App\Hooks\Values\StopResultReport;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\AsksTheStopGate;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
@@ -38,6 +36,7 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 3, reason: 'It starts a test agent session and empties the hook tables.')]
 final class StopConditionRunnerTest extends TestCase
 {
+    use AsksTheStopGate;
     use RefreshHookDatabase;
     use RunsTrustedCommands;
     use SendsHostCalls;
@@ -52,9 +51,9 @@ final class StopConditionRunnerTest extends TestCase
         $again = $this->stop($start, 'stop-1');
 
         $attempt = StopAttempt::query()->withoutGlobalScopes()->sole();
-        $this->assertSame(AnswerType::Allow, $decision->answerType());
-        $this->assertSame([StopAttemptGate::CHECKS_RUNNING], $decision->messages);
-        $this->assertSame(AnswerType::Allow, $again->answerType());
+        $this->assertSame(AnswerType::Allow, $this->typeOf($decision));
+        $this->assertSame([StopAttemptGate::CHECKS_RUNNING], $this->messagesOf($decision));
+        $this->assertSame(AnswerType::Allow, $this->typeOf($again));
         $this->assertSame(
             StopConditions::make([StopCondition::cleanWorktree()])->definitionHashes(),
             $attempt->condition_hashes,
@@ -92,10 +91,10 @@ final class StopConditionRunnerTest extends TestCase
         $refused = $this->stop($start, 'stop-1');
         $allowed = $this->stop($start, 'stop-2');
 
-        $this->assertSame(AnswerType::Deny, $refused->answerType());
-        $this->assertStringContainsString(self::DIRTY_WORKTREE, $refused->refusalReason());
-        $this->assertSame(AnswerType::Allow, $allowed->answerType());
-        $this->assertSame([], $allowed->messages);
+        $this->assertSame(AnswerType::Deny, $this->typeOf($refused));
+        $this->assertStringContainsString(self::DIRTY_WORKTREE, $refused->decision?->refusalReason());
+        $this->assertSame(AnswerType::Allow, $this->typeOf($allowed));
+        $this->assertSame([], $this->messagesOf($allowed));
     }
 
     public function test_a_session_without_stop_conditions_stops_at_once_on_a_passed_attempt(): void
@@ -104,8 +103,8 @@ final class StopConditionRunnerTest extends TestCase
         $empty = TestStart::start('writing-helper');
         SessionPolicy::create($empty->session, StartPolicy::mainOnHost('/workspace'));
 
-        $this->assertSame(AnswerType::Allow, $this->stop($unfrozen, 'stop-1')->answerType());
-        $this->assertSame(AnswerType::Allow, $this->stop($empty, 'stop-1')->answerType());
+        $this->assertSame(AnswerType::Allow, $this->typeOf($this->stop($unfrozen, 'stop-1')));
+        $this->assertSame(AnswerType::Allow, $this->typeOf($this->stop($empty, 'stop-1')));
         $this->assertSame(
             StopAttemptState::Passed,
             StopAttempt::query()->withoutGlobalScopes()->sole()->state,
@@ -126,14 +125,6 @@ final class StopConditionRunnerTest extends TestCase
         ));
 
         return $start;
-    }
-
-    private function stop(TestStart $start, string $stopId): Decision
-    {
-        $hook = new HookIdentity($start->agent->id, $start->session->id, $stopId, 'digest');
-        $start->startRequest($this->app);
-
-        return $this->app->make(StopConditionGate::class)->answer($hook);
     }
 
     private function settle(string $stopId, StopResultType $status, string $summary): void

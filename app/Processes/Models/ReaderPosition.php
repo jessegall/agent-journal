@@ -110,6 +110,7 @@ final class ReaderPosition extends Model implements ReadableModel
     {
         return ReaderCheckpoint::fromArray($this->checkpoint);
     }
+
     // ----------[ Internals ]----------
 
     /**

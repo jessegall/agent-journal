@@ -4,17 +4,12 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack\Frames;
 
-use App\Agents\Values\StackTarget;
 use App\Contracts\Event;
 use App\Hooks\Contracts\ConditionalState;
-use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\Contracts\HookInput;
-use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\References\StateReference;
 use App\Hooks\States\AgentState;
 use App\Hooks\Storage\FrameRecord;
-use App\Hooks\Values\EventCommands;
-use App\Hooks\Values\LifecycleCommands;
 use Carbon\CarbonImmutable;
 
 /**
@@ -91,36 +86,19 @@ final readonly class Frame
         return ! $this->isFinished() && $this->isEnabled();
     }
 
-    public function enter(StackTarget $target): LifecycleCommands
+    /**
+     * What the state's method for the hook returns, which its one caller reads.
+     */
+    public function answer(HookInput $input): mixed
     {
-        return $this->state->onEnter($this->lifecycleContext($target));
-    }
-
-    public function resume(StackTarget $target): LifecycleCommands
-    {
-        return $this->state->onResume($this->lifecycleContext($target));
-    }
-
-    public function exit(StackTarget $target): LifecycleCommands
-    {
-        return $this->state->onExit($this->lifecycleContext($target));
+        return $input->answerBy($this->state);
     }
 
     /**
-     * The state's answer to a hook: its before() when that decides, otherwise the hook's own method.
+     * What the state's listener for the fact returns: nothing, a command or several, which its one caller checks.
      */
-    public function answer(HookInput $input): Decision
-    {
-        return $this->state->before($input) ?? $input->answerBy($this->state);
-    }
-
-    public function answerEvent(Event $event, string $method): EventCommands
+    public function answerEvent(Event $event, string $method): mixed
     {
         return $this->state->{$method}($event);
-    }
-
-    private function lifecycleContext(StackTarget $target): LifecycleContext
-    {
-        return new LifecycleContext($target, $this->id, $this->reference);
     }
 }

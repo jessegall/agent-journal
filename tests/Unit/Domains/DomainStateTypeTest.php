@@ -24,7 +24,7 @@ final class DomainStateTypeTest extends TestCase
 {
     public function test_it_forwards_loading_and_asks_availability_each_time(): void
     {
-        $state = ScriptedState::delegating();
+        $state = ScriptedState::passing();
         $available = true;
         $availability = new class($available) implements DomainAvailability
         {

@@ -38,12 +38,13 @@ final readonly class DismissMessageHandler implements CommandHandler
     public function handle(DismissMessage $command): void
     {
         $actor = $command->dispatchedBy();
+        $dismissedBy = ActorIdentity::of($actor);
 
         $message = Message::query()->acrossInboxes()->whereKey($command->messageId)->lockForUpdate()->firstOr(
             fn () => throw MessageMissing::forId($command->messageId),
         );
 
-        if ($message->isChat() && ! $message->isWrittenBy(ActorIdentity::of($actor))) {
+        if ($message->isChat() && ! $message->isWrittenBy($dismissedBy)) {
             $decline = new DeclineChatQuestion($message->id, $command->reason);
             $this->chats->decline($decline->withDispatcher($actor));
 
@@ -51,7 +52,6 @@ final readonly class DismissMessageHandler implements CommandHandler
         }
 
         $type = $this->dismissalBy($message, $actor);
-        $dismissedBy = ActorIdentity::of($actor);
         $message->dismissBy($dismissedBy, $type, $command->reason, CarbonImmutable::now());
         $this->claims->releaseAny($message);
     }

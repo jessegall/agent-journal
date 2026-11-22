@@ -18,7 +18,7 @@ final readonly class AcknowledgePresentationController
     {
         $confirmed = $commands->run(new AcknowledgePresentation(
             $call->batchId,
-            array_values($call->handles),
+            $call->handles,
             $call->contextKey,
         ));
 

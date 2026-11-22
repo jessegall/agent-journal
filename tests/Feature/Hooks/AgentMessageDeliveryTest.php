@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Actors\Contracts\ActorAttention;
-use App\Actors\Support\AttentionOrigin;
 use App\Agents\Enums\DriverOperation;
-use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
@@ -28,13 +25,8 @@ use App\Hooks\Inputs\Values\PromptDetails;
 use App\Hooks\Models\PendingAgentMessage;
 use App\Hooks\References\StateReference;
 use App\Hooks\Stack\HookAnswer;
-use App\Hooks\StateEvents\StateEventContext;
 use App\Hooks\StateEvents\StateEventDispatch;
 use App\Hooks\StateEvents\StateEventScope;
-use App\Hooks\Support\AgentMessageDelivery;
-use App\Hooks\Support\PendingAgentMessages;
-use App\Hooks\Support\StackTransaction;
-use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Fixtures\Hooks\MessagingState;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 use Tests\Support\CommittedHookStack;
@@ -42,18 +34,12 @@ use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
- * Decision::message on a real hook walk: a stop that leaves the agent idle keeps the message and wakes the agent, its
+ * A state's message line on a real hook walk: a stop that leaves the agent idle keeps the message and wakes the agent, its
  * next hook hands the message over, and a busy agent gets it in the reply like any context.
  */
 final class AgentMessageDeliveryTest extends TestCase
 {
     use CommittedHookStack;
-
-    private const string PLAIN_CONTEXT = 'Plain context.';
-
-    private const string WAKE = 'Wake once.';
-
-    private const string MORE_CONTEXT = 'More context.';
 
     public function test_an_allowed_stop_keeps_the_message_and_wakes_the_idle_agent(): void
     {
@@ -106,48 +92,6 @@ final class AgentMessageDeliveryTest extends TestCase
         $this->assertSame(MessagingState::TEXT, $this->contextOf($reply));
         $this->assertSame(0, PendingAgentMessage::countFor($this->target->actorIdentity()));
         $this->assertSame(0, DriverRequest::query()->where('operation', DriverOperation::Wake)->count());
-    }
-
-    public function test_event_context_reaches_the_next_hook_with_one_wake_for_its_message_subset(): void
-    {
-        $attention = new RecordedAttention();
-        $this->app->instance(ActorAttention::class, $attention);
-        $delivery = $this->app->make(AgentMessageDelivery::class);
-        $work = $this->app->make(PendingAgentMessages::class);
-        $transaction = $this->app->make(StackTransaction::class);
-        $target = $this->target;
-        $actor = $target->actorIdentity();
-
-        $plain = $this->captureFor($target);
-        $transaction->run(
-            fn () => $delivery->retainEvent($target, $plain, new StateEventContext([self::PLAIN_CONTEXT], [])),
-        );
-
-        $this->assertSame([], $attention->wakes);
-        $this->assertSame(0, $work->pendingCount($actor));
-
-        $marked = $this->captureFor($target);
-        $context = new StateEventContext([self::WAKE, self::MORE_CONTEXT, self::WAKE], [self::WAKE, self::WAKE]);
-        $transaction->run(fn () => $delivery->retainEvent($target, $marked, $context));
-
-        $this->assertEquals([[$actor, AttentionOrigin::stateEvent($marked->id)->keyFor($actor)]], $attention->wakes);
-        $this->assertSame(1, $work->pendingCount($actor));
-        $this->assertSame(2, PendingAgentMessage::countFor($actor));
-        $this->assertSame(
-            implode("\n", [self::PLAIN_CONTEXT, self::WAKE, self::MORE_CONTEXT, self::WAKE]),
-            $this->contextOf($this->answerPrompt('call-2')),
-        );
-        $this->assertSame('{}', $this->answerPrompt('call-3'));
-    }
-
-    public function test_event_context_cannot_be_retained_for_a_target_outside_the_captured_scope(): void
-    {
-        $dispatch = $this->captureFor($this->target);
-        $other = TestActors::stack(2, 20);
-        $delivery = $this->app->make(AgentMessageDelivery::class);
-
-        $this->expectException(StackTargetRefused::class);
-        $delivery->retainEvent($other, $dispatch, new StateEventContext(['Outside this delivery.'], []));
     }
 
     private function captureFor(StackTarget $target): StateEventDispatch

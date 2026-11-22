@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Models;
 
 use App\Actors\Support\ActorIdentity;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -32,6 +33,7 @@ final class AgentChatPermission extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     public const string LOCAL_ENVIRONMENT = '';
 
@@ -46,16 +48,14 @@ final class AgentChatPermission extends Model implements ReadableModel
     }
 
     /**
-     * Allows the agent into chats of the environment, replacing what was allowed there before.
+     * Allows the agent into chats of the environment; the permission it replaces is withdrawn by the caller.
      */
-    public static function allow(
+    public static function create(
         string $agentId,
         string|null $environmentId,
         ActorIdentity $grantedBy,
         CarbonImmutable $at,
     ): self {
-        self::query()->activeFor($agentId, $environmentId)->first()?->withdraw($at);
-
         $permission = new self([
             'agent_id' => $agentId,
             'environment_key' => $environmentId ?? self::LOCAL_ENVIRONMENT,
@@ -74,14 +74,6 @@ final class AgentChatPermission extends Model implements ReadableModel
     {
         $this->revoked_at = $at;
         $this->save();
-    }
-
-    /**
-     * Lets the user invite the agent in this environment; letting it twice changes nothing.
-     */
-    public function allowInviter(string $userId): void
-    {
-        AgentChatInviter::admit($this->id, $userId);
     }
 
     // ----------[ Answers ]----------

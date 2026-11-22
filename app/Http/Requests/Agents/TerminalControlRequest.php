@@ -15,7 +15,7 @@ use App\Agents\Commands\SendTerminalInput;
 use App\Agents\Commands\SubmitPrivateInput;
 use App\Agents\Commands\TakeTerminalControl;
 use App\Agents\Enums\TerminalDraftChoice;
-use App\Agents\Enums\TerminalInputKind;
+use App\Agents\Enums\TerminalInputType;
 use App\Agents\Enums\TerminalNamedKey;
 use App\Agents\Support\TerminalInput;
 use App\Agents\Values\PrivateSubmission;
@@ -50,7 +50,7 @@ final class TerminalControlRequest extends FormRequest
             'grantId' => ['sometimes', 'string', 'max:64'],
             'text' => ['sometimes', 'string', 'max:'.self::TEXT_LIMIT],
             'enter' => ['sometimes', 'boolean'],
-            'kind' => ['sometimes', Rule::enum(TerminalInputKind::class)],
+            'kind' => ['sometimes', Rule::enum(TerminalInputType::class)],
             'key' => ['required_if:kind,key', Rule::enum(TerminalNamedKey::class)],
             'rows' => ['required_if:kind,resize', 'integer', 'min:1', 'max:1000'],
             'columns' => ['required_if:kind,resize', 'integer', 'min:1', 'max:1000'],
@@ -91,7 +91,7 @@ final class TerminalControlRequest extends FormRequest
             $this->boolean('enter'),
             $this->sequence(),
             $this->integer('screenRevision'),
-            $this->enum('kind', TerminalInputKind::class) ?? TerminalInputKind::Text,
+            $this->enum('kind', TerminalInputType::class) ?? TerminalInputType::Text,
             $this->enum('key', TerminalNamedKey::class),
             $this->integer('rows'),
             $this->integer('columns'),

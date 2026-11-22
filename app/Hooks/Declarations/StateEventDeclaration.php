@@ -28,7 +28,6 @@ final readonly class StateEventDeclaration
             $this->method->declaringClass,
             $this->method->name,
             $this->owner,
-            $this->method->stackWide ? 'wide' : 'ordinary',
         ]);
     }
 }

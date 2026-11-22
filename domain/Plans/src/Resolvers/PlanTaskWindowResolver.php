@@ -13,11 +13,10 @@ use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
 use Domain\Plans\Data\PlanFiltersData;
 use Domain\Plans\Http\Requests\PlanTaskRequest;
-use Domain\Plans\Http\Requests\PlansRequest;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanIndexLayout;
-use Domain\Tasks\Api\TaskText;
 use Domain\Tasks\Api\TaskSummary;
+use Domain\Tasks\Api\TaskText;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskResolver;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -31,7 +30,6 @@ final readonly class PlanTaskWindowResolver implements PageResolver
 {
     public function __construct(
         private PlanTaskRequest $request,
-        private PlansRequest $plansRequest,
         private TaskDetailsResolver $tasks,
         private TaskResolver $visible,
         private PlanIndexLayout $index,
@@ -41,10 +39,12 @@ final readonly class PlanTaskWindowResolver implements PageResolver
     {
         $plan = Plan::query()->findOrFail($this->request->planId());
         $ids = $plan->taskIds();
+
         $position = array_find_key(
             $this->visible->summaries($ids),
             fn (TaskSummary $summary) => $summary->number === $this->request->taskNumber(),
         ) ?? throw new NotFoundHttpException();
+
         $taskId = $ids[$position];
 
         $task = $this->tasks->details($taskId, ReadView::Context);
@@ -60,7 +60,7 @@ final readonly class PlanTaskWindowResolver implements PageResolver
             );
 
         return $this->index->of(
-            PlanFiltersData::from([...$this->plansRequest->filters()->toArray(), 'plan' => (string) $plan->number]),
+            PlanFiltersData::from([...$this->request->filters()->toArray(), 'plan' => (string) $plan->number]),
             [$reader->part()],
         );
     }

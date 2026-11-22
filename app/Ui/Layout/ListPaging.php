@@ -12,9 +12,9 @@ namespace App\Ui\Layout;
 final readonly class ListPaging
 {
     private function __construct(
-        private int $page,
-        private int $lastPage,
-        private string|null $after,
+        public int $page,
+        public int $lastPage,
+        public string|null $after,
     ) {}
 
     public static function numbered(int $page, int $lastPage): self

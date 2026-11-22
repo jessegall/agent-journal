@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Lifecycle;
 
-use App\Hooks\StateLoading\Contracts\StateLoader;
-use App\Hooks\References\StateReference;
 use App\Hooks\Decisions\StateReferences;
-use App\Hooks\StateLoading\StateSet;
 use App\Hooks\Enums\SessionTransferType;
+use App\Hooks\References\StateReference;
+use App\Hooks\StateLoading\Contracts\StateLoader;
+use App\Hooks\StateLoading\StateSet;
 use App\Hooks\States\AgentState;
 use Tests\Fixtures\Hooks\ScriptedState;
 
@@ -29,7 +29,7 @@ final class NoteStateLoader implements StateLoader
 
     private function stateFor(StateReference $reference): AgentState
     {
-        return ScriptedState::delegating();
+        return ScriptedState::passing();
     }
 
     public function schemaVersion(): int

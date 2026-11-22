@@ -16,6 +16,6 @@ final readonly class CheckTerminalScreenController
 {
     public function __invoke(TerminalControlRequest $request, TerminalAnswers $answers): JsonResponse|Response
     {
-        return $answers->run($request->checkCommand());
+        return $answers->control($request->checkCommand());
     }
 }

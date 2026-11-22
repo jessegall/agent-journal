@@ -18,6 +18,8 @@ Account
 Account of a start
 Accounts
 Activate this bundle
+Activity
+Activity levels
 Add
 Add a secret
 Add a window
@@ -30,8 +32,11 @@ Agent
 Agent journal
 Agent terminal, read only
 Alias
+All
 All caught up
 Allow one sample run of this exact line
+Answer questions instead
+Anywhere
 Approve
 Approve a terminal
 Approve merge
@@ -44,6 +49,7 @@ Attempt
 Audit
 Back
 Back to Accounts
+Back to agent chat
 Before you share
 Breadcrumb
 Build
@@ -53,9 +59,11 @@ Cancel sign-in
 Cancel start
 Cancelled
 Cancelling the sign-in…
+Change the last answer
 Check and switch
 Check capacity
 Check comment
+Check screen
 Check status
 Checked reader revision
 Checking
@@ -67,16 +75,21 @@ Choose a way to sign in to continue.
 Choose all on {{ machine }}
 Choose another way
 Choose exact text in the source
+Choose one
 Chosen: {{ describeRange(chosen) }}.
 Cleared old entries on {{ audit.lastPrunedAt }}: {{ audit.prunedAllowedReads }} allowed and {{ audit.prunedDeniedReads }} refused reads, and {{ audit.prunedLifecycleRows }} others.
 Close
 Close all
 Close others
+Close reader
 Close to the right
 Code from the sign-in page
+Code theme
 Codex cannot run in a container yet: its sandbox does not keep its tools
 Color scheme
 Command output
+Command palette
+Commands and pages
 Commands and sessions of {{ binding.projectLabel }} on {{ binding.machineLabel }} stop being accepted at once. The files on that computer stay as they are. A device that is offline now stops when its lease ends.
 Comment
 Comment on a section
@@ -89,6 +102,7 @@ Comments
 Compare code
 Configure a gateway
 Confirm
+Confirm {{ mayConfirm ? highlightedLabel : '' }}
 Connect a project
 Connected projects
 Connection recovered
@@ -96,28 +110,39 @@ Connection revoked
 Continue
 Continues on its own
 Contract
+Copy
 Copy code
 Copy failed. Select the link below and copy it yourself.
 Copy link
 Copy the code the page shows when you are done.
+Could not load {{ subject }}
 Could not reach the journal for this sign-in. It keeps waiting on the host.
 Couldn't load notifications
-Couldn't load {{ subject }}
 Couldn't refresh notifications
 Dark
 Default
 Delete
 Detach
+Detail
 Device
+Disconnected. The events below are kept.
 Dismiss
 Doc {{ number }} · {{ title }}
 Dock
+Dock above
+Dock below
 Dock it back into the layout
+Dock left
+Dock right
+Documents
 Domain off
 Done
 Download it as a file
+Drafted by {{ agent }}. Nothing is saved until you submit.
+Drafting
 Drag to resize; double-click to reset
 Driver
+Driver menu
 Dropped compared with the rule in use: {{ revision.removedClasses.join(', ') || 'none' }}
 Edit
 Email
@@ -126,21 +151,24 @@ Enter a short code on OpenAI's site. The rest happens by itself.
 Enter this code there when it asks.
 Environment
 Estimated USD value observed by the journal. It covers only the sessions the journal ran.
-Every window is open
 Examples
 Exit codes not seen in a sample yet: {{ data.unsampledStatuses.join(', ') }}
 Expires
 Expires {{ dateOnly(account.expiresAt) }}
 Failed
+Find a window
 Finish signing in
 Fixed public address
+Floating windows
 Folder connected
+Follow the system color scheme
 From line
 Full
 Full screen
 Gateway
 Gateway runtime
 Generate install line
+Give back
 Go back
 Held by
 Hide pop-ups for now
@@ -149,6 +177,8 @@ How to sign in
 Idle
 If nothing installs, check the journal's address and this install line. The folder is connected only once the installer says so.
 Import
+In the chat
+In the panel
 Install attempts
 Install line
 Install line issued
@@ -162,19 +192,23 @@ It has no email, so give it a name you'll recognise.
 It is
 It never arrived
 It waits on the host until it expires. Resume it from the Accounts header, or cancel it now.
+Join ${titleOf(other)}
 Journal
 Journal operation
-Journal unreachable. This is the last known list, read {{ dateTimeWithZone(data.bindings.serverTime) }}. Revoking and copying wait until the journal answers.
 Keep me signed in
 Keep the sign-in waiting?
+Keep typing
 Keep waiting
 Kept on the host only and never shown again.
+Keyboard help
+Keyboard shortcuts
 KiB
 Last contact
 Layout file to import
 Layout name
 Layouts
 Leave blank to keep the stored one
+Leave terminal
 Left to spend
 Light
 Link copied.
@@ -188,11 +222,12 @@ Make default
 Make it the default once it is ready
 Mark all read
 Mark read
+Menus and lists
 Merged
 Mermaid
 Module bundles waiting
+More could not be read. The rows above are kept.
 More pages
-Move to ${titleOf(other)}
 NOT
 Name
 Name of the layout
@@ -203,18 +238,20 @@ Needs sign-in
 Network
 New compared with the rule in use: {{ revision.addedClasses.join(', ') || 'none' }}
 New notifications
+Next
+Next option
 No
 No capacity
 No connected host runs agents in this place.
-No connected projects
 No endpoint is serving this share.
 No install line was issued in the last 30 days.
 No linked record can be shared with it.
+No matching commands
 No memories yet
 No module bundle is waiting.
-No notifications yet
 No output yet. Status {{ part.lifecycle }}, ended by {{ part.end }}.
 No project is connected yet, so there is nothing to join.
+No projects connected yet
 No questions waiting.
 No samples
 No saved accounts yet
@@ -223,7 +260,10 @@ Not filled in yet: {{ revision.missingFields.join(', ') }}
 Not in contact yet
 Not run yet.
 Not shared yet
+Nothing at this level
 Nothing is open in this pane.
+Nothing is open. Add a window from the bar above.
+Nothing needs you
 Notifications
 Off
 Offline
@@ -238,12 +278,16 @@ Open Claude's sign-in page and sign in.
 Open OpenAI's page and sign in with ChatGPT.
 Open a copy
 Open a window
+Open commands
 Open full run
+Open in the document reader
+Open keyboard help
 Open terminal
+Open the draft
+Open windows
 Open {{ record.target.label }}
 Open ↗
 Opening the comment's place…
-Opening the terminal…
 Ordinary
 Other ways to write it: {{ revision.spellings.join(', ') || 'none' }}
 Outcome
@@ -258,40 +302,52 @@ Password
 Paste a key from the Anthropic Console.
 Paste a key from the OpenAI platform.
 Paste a token made with claude setup-token.
+Paste it
 Paste it below and send it.
 Paste it in a terminal in the project folder. It works once, until {{ timeOfDay(expiresAt) }}.
+Paste preview
 Period
 Pool empty
 Pool too large
 Presets
 Preview saved; it can be confirmed until {{ data.savedPreview.expiresAt }}.
+Previous option
+Private input
+Private input is unavailable: this driver and host have not proved they can keep a secret off every screen and recording.
+Private input; it is sent once and kept nowhere
 Privilege change
 Problems
 Process control
 Program version
 Project
+Project files
 Proposal by {{ proposal.author }}: {{ proposal.state }}, revision {{ proposal.currentRevision }}
 Provider host
 Public address
+Question {{ step + 1 }} of {{ questions.length }}
 Read
 Read before running shell commands or reading their output.
 Read before working with agent profiles.
 Read before working with skills.
+Read screen
 Reader proof
 Reader {{ reader.readerRevisionId }} for revision {{ reader.declarationRevision }}: {{ reader.proofs.length === 0 ? 'not checked yet' : reader.proofs.join('; ') }}
 Readers
 Readers and proofs
+Reading the questions
 Ready
 Reason
 Recheck
+Reconnect
 Reconnecting to the sign-in…
 Reconnecting…
 Recorded
+Refresh
 Refresh visible windows
 Refused
 Reject
 Release hold
-Reload {{ subject }}
+Releasing control…
 Remove account
 Remove stored output ({{ storedBytes }} bytes)
 Removed
@@ -299,15 +355,20 @@ Removing
 Rename
 Replace
 Reply
+Requesting control…
 Reset
 Reset layout
 Resize
 Resize panes
+Resolve
+Restarted
+Restore
 Resume
 Retired
 Retry
 Retry cleanup
 Retry revoke
+Retry stop
 Return to Settings
 Reveal address
 Review this proposal
@@ -325,21 +386,31 @@ Run permitted commands as you in {{ data.projectLabel }} for up to 12 hours
 Run {{ sample.runId }}: {{ sample.parts.join('; ') }}
 Samples
 Save
+Save and clear
 Save gateway
 Save layout
 Save preview
 Save revision {{ revision + 1 }}
 Save the current layout to it
 Saved
+Saved draft
+Search commands
+Search windows
 Secrets
 Send
+Send Shift+Tab to the agent
 Send code
+Send it
+Send presses Enter on the line; Save and clear keeps it in this tab only and empties the prompt.
+Send privately
 Setting up
 Settled
 Setup token
 Share
 Share for
 Shell actions
+Shielding the screen before private input…
+Show all
 Show in notifications
 Show its connection
 Show more comments
@@ -363,8 +434,6 @@ Signed in as {{ accountIdentity }}.
 Sorting a command into kinds does not allow it to run, and a sample run only shows what the command does.
 Source text
 Spent
-Split below
-Split right
 Split this pane in two?
 Stacked
 Start
@@ -379,10 +448,14 @@ Status unknown
 Status: {{ part.lifecycle }}, ended by {{ part.end }}
 Still to do: {{ data.steps.join('; ') }}
 Stop
+Stop failed{{ reason ? `: ${reason}` : '' }}
 Stop session
+Stop the agent
+Stop this agent? Its unfinished line is not sent.
 Stopped
 Stopping
 Stopping the old session
+Stopping…
 Stops after {{ sample.byteCap }} bytes or {{ sample.secondsCap }} seconds
 Suits a server.
 Support record
@@ -391,46 +464,67 @@ Switch
 Switched
 Switching
 System
+Take control
 Terminal
 Terminal access
 Terminal access ({{ signIns.length }})
+Terminal controls
+Terminal placement
+Terminal screen as text
 Terminal sign-in approved
 Terminal sign-in revoked
+Terminal size: {{ view.geometry }}
 Tests and checks
 That conversation belongs to another agent.
 That conversation is not one this agent can continue.
 That conversation ran on another driver; start a new conversation instead.
 That conversation was for other work; start a new conversation instead.
 The address is not available.
+The chosen option cannot be read from the screen; refresh or go back.
+The desk
+The draft is ready. Drafted by {{ draft.agent }}.
 The gateway provider can see the public address and everything this share shows.
 The host has not said it can run this driver this way.
 The host speaks another protocol version; upgrade journal-agent.
 The journal cannot be reached to check this line is still valid, so it cannot be copied now.
 The new session failed to start
 The place this comment points at is not available: {{ unavailable.message }}
+The project's files could not be read.
 The source holds Markdown marks (such as ** or a link) that the page shows as formatting.
+The terminal still has an unfinished line: {{ view.unsentLine }}
+The unfinished line
 The version that runs here
 This account must sign in again.
 This browser did not let the journal copy the line. Select the line above and copy it with your keyboard.
 This item is unavailable
 This journal is not issuing install lines.
 This machine and the share service must keep running for the link to work.
+This paste has {{ preview.lines }} lines; each line break may run a command in the terminal.
 This profile does not allow that model.
 This profile runs only its own driver.
+This project is empty
 This release cannot do {{ release.missingCapabilities.join(', ') }} yet.
 This server can direct an agent to read and change files in your project. A line works once, for ten minutes.
 This sign-in is already running
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
 To
 To renew it, choose Sign in again on the account.
+Try again
 Turning off traffic inspection does not hide the content from the provider.
+Type a command or a page
+Type into the terminal; Enter sends the line
+Type without Enter
 Undo
 Undock
+Unfinished input
 Unfinished sign-ins
 Unknown
 Update share {{ liveShare.number }}
 Usage
+Usage unavailable
 Use
+Use the dark color scheme
+Use the light color scheme
 Use these lines
 Used for {{ revision.purpose }}; its output is {{ revision.outputRequirement }}
 Verification pending
@@ -439,6 +533,7 @@ Version control
 Version {{ location.anchor.versionLabel }}, lines {{ location.anchor.firstLine }}–{{ location.anchor.lastLine }}
 Version {{ version }}, lines {{ firstLine }}–{{ lastLine }}
 Waiting
+Waiting for activity
 Waiting for sign-in
 Waiting for the host to confirm the start
 Waiting for the host to confirm the stop
@@ -453,12 +548,14 @@ Who
 Why
 Window menu
 Window settings
+Windows to add
 Working
 Write
 Write a comment
 You can approve once the request is ready for review; a check first needs a checked reader.
 You can change it later from the list.
 You can close this window: the sign-in keeps waiting on the host. Resume it from the Accounts header.
+You can watch this terminal.
 Your comment
 Your last answer did not arrive. Paste it again.
 Your last code did not arrive. Paste it again.
@@ -504,12 +601,13 @@ to
 tools
 unresolved
 until {{ dateTime(signIn.expiresAt) }}
-updated {{ seconds(ageSeconds()) }} ago
 {{ completed }} of {{ total }}
 {{ counted(memories.length, 'memory', 'memories') }} · the number is its weight, heaviest first
 {{ data.request.state }}: waiting because {{ data.request.holdReason }}
 {{ driverName(driver) }} does not say which provider account this is, so signing in to the same account again adds another one.
 {{ failure }} Choose fewer lines, or comment on the lines instead of a quote.
+{{ name }} could not be read.
+{{ name }} is a Markdown file.
 {{ name }}'s chat
 {{ output.stream }}: bytes {{ output.startsAt }} to {{ output.size }} of {{ output.size }}
 {{ provider.label }}: start it with

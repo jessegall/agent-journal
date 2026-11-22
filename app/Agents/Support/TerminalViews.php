@@ -37,13 +37,13 @@ final readonly class TerminalViews implements TerminalViewCloser
         string $agentId,
         ActorIdentity $viewer,
         int $intervalMs,
-        string $openRequestId,
+        string $requestId,
         CarbonImmutable $now,
-    ): TerminalInterestData {
-        $opened = TerminalView::query()->ownedBy($viewer)->ofAgent($agentId)->openedBy($openRequestId)->first();
+    ): string {
+        $opened = TerminalView::query()->ownedBy($viewer)->ofAgent($agentId)->openedBy($requestId)->first();
 
         if ($opened !== null) {
-            return $this->receiptOf($opened, $now);
+            return $opened->id;
         }
 
         if (! in_array($intervalMs, TerminalView::INTERVALS_MS, true)) {
@@ -56,9 +56,9 @@ final readonly class TerminalViews implements TerminalViewCloser
             throw TerminalViewRefused::tooManyViews();
         }
 
-        $view = TerminalView::create($viewer, $runtime, $intervalMs, $now, $openRequestId);
+        $view = TerminalView::create($viewer, $runtime, $intervalMs, $now, $requestId);
 
-        return $this->receiptOf($view, $now);
+        return $view->id;
     }
 
     /**
@@ -72,7 +72,7 @@ final readonly class TerminalViews implements TerminalViewCloser
         ActorIdentity $viewer,
         string $readInterestId,
         CarbonImmutable $now,
-    ): TerminalInterestData {
+    ): string {
         $this->watchableRuntime($agentId);
         $view = $this->interestOf($agentId, $viewer, $readInterestId);
 
@@ -82,7 +82,7 @@ final readonly class TerminalViews implements TerminalViewCloser
 
         $view->renew($now);
 
-        return $this->receiptOf($view, $now);
+        return $view->id;
     }
 
     /**
@@ -182,6 +182,7 @@ final readonly class TerminalViews implements TerminalViewCloser
             'attachment' => $received->frame->attachment,
             'containerInstance' => $received->frame->containerInstance,
         ]);
+
         $liveForMs = $received->liveForMs($now);
         $proof = $liveForMs === null ? [] : ['liveForMs' => $liveForMs];
 
@@ -279,6 +280,14 @@ final readonly class TerminalViews implements TerminalViewCloser
         }
 
         return $view;
+    }
+
+    /**
+     * The viewer's read interest as it stands now, as an open or renewal left it.
+     */
+    public function answerFor(ActorIdentity $viewer, string $viewId, CarbonImmutable $now): TerminalInterestData
+    {
+        return $this->receiptOf(TerminalView::query()->ownedBy($viewer)->whereKey($viewId)->sole(), $now);
     }
 
     private function receiptOf(TerminalView $view, CarbonImmutable $now): TerminalInterestData

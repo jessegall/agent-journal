@@ -59,7 +59,7 @@ final readonly class ShareListResolver implements PageResolver
             ->withReader(new LayoutBackData('/sharing', 'Shares'));
 
         if ($filters->after === null && $after === null) {
-            $page->counting(count($shown));
+            $page = $page->counting(count($shown));
         }
 
         return $page->layout();

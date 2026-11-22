@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Http\Controllers;
 
+use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Settings\SaveSettingsRequest;
 use App\Settings\Commands\SetBooleanSetting;
@@ -17,6 +18,7 @@ use App\Settings\Data\StringChoiceValueData;
 use App\Settings\Enums\SettingType;
 use App\Settings\Support\SettingsValues;
 use App\Settings\Values\SettingReference;
+use App\Settings\Values\SettingsChange;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -62,7 +64,10 @@ final readonly class SaveSettingsPageController
         return array_values(array_filter($group->settings, SettingsValues::isEditable(...)));
     }
 
-    private function commandFor(SettingData $setting, string $text, int $revision): object|null
+    /**
+     * @return Command<SettingsChange>|null
+     */
+    private function commandFor(SettingData $setting, string $text, int $revision): Command|null
     {
         $reference = new SettingReference($setting->identity->owner, $setting->identity->key);
 

@@ -9,7 +9,6 @@ use App\Agents\Support\AgentContext;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\StackStatus;
-use App\Hooks\Enums\TransitionType;
 use App\Hooks\Exceptions\StoredValueInvalid;
 use App\Hooks\Inputs\Values\HookIdentity;
 use App\Hooks\Models\AgentStackRow;
@@ -107,7 +106,6 @@ final class HookStorageTest extends TestCase
                     'stateType' => 'tasks.working',
                     'hookMethod' => 'onStop',
                     'answer' => AnswerType::Delegate,
-                    'change' => TransitionType::Keep,
                     'contextCount' => 2,
                 ],
             ),
@@ -117,7 +115,6 @@ final class HookStorageTest extends TestCase
                     'stateType' => 'hooks.main_ready',
                     'hookMethod' => 'onStop',
                     'answer' => AnswerType::Deny,
-                    'change' => TransitionType::Push,
                     'contextCount' => 1,
                 ],
             ),
@@ -130,7 +127,6 @@ final class HookStorageTest extends TestCase
         $this->assertSame($response, $stored->answer->stdout);
         $this->assertSame(AnswerType::Deny, $stored->answer->type);
         $this->assertSame($steps->toArray(), $stored->steps->toArray());
-        $this->assertSame(TransitionType::Push, $stored->steps->steps[1]->transition);
         $this->assertSame(['hook-1', str_repeat('a', 64)], [$stored->event_id, $stored->input_digest]);
     }
 

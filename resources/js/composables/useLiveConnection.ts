@@ -73,11 +73,12 @@ export function useLiveConnection(): void {
     let connection: UserConnection | undefined;
 
     function handlersFor(isCurrent: () => boolean): LiveHandlers {
-        const whileCurrent = (run: () => void) => () => {
-            if (isCurrent()) {
-                run();
-            }
-        };
+        const whileCurrent = <Arguments extends unknown[]>(run: (...values: Arguments) => void) =>
+            (...values: Arguments) => {
+                if (isCurrent()) {
+                    run(...values);
+                }
+            };
 
         return {
             onChange: whileCurrent(pageChanged),

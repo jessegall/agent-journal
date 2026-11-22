@@ -41,7 +41,7 @@ final class BindingHostRoutesTest extends TestCase
         $this->relayClaim()->assertOk();
 
         $this->actingAs($this->owner)
-            ->deleteJson("/settings/project-connections/bindings/{$binding}")
+            ->deleteJson("/project-connections/bindings/{$binding}")
             ->assertOk();
 
         $this->relayClaim()->assertUnauthorized();

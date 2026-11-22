@@ -9,10 +9,10 @@ use App\Hooks\Pipes\Answer\DeliverMessages;
 use App\Hooks\Pipes\Answer\FindReplay;
 use App\Hooks\Pipes\Answer\LockStack;
 use App\Hooks\Pipes\Answer\PrepareCall;
+use App\Hooks\Pipes\Answer\PublishHookEffects;
 use App\Hooks\Pipes\Answer\RenderReply;
 use App\Hooks\Pipes\Answer\RestoreStack;
 use App\Hooks\Pipes\Answer\SaveCall;
-use App\Hooks\Pipes\Answer\SettleLifecycle;
 use App\Hooks\Pipes\Answer\WalkStack;
 use App\Pipelines\Contracts\PipelineDefinition;
 
@@ -32,7 +32,7 @@ final readonly class AnswerHookPipeline implements PipelineDefinition
             RestoreStack::class,
             WalkStack::class,
             DeliverMessages::class,
-            SettleLifecycle::class,
+            PublishHookEffects::class,
             ComposeForeground::class,
             RenderReply::class,
             SaveCall::class,

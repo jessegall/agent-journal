@@ -29,6 +29,7 @@ use App\Communication\Support\AcceptedOperation;
 use App\Communication\Support\ChatEnvelope;
 use App\Communication\Support\InboxMembership;
 use App\Communication\Support\MessageEnvelope;
+use App\Communication\Support\PlacedChatEnvelope;
 use App\Communication\Support\RegisteredInboxes;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
@@ -155,12 +156,23 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
     }
 
     /**
-     * A new message from its envelope, accepted under the bus receipt of the operation that sent it.
+     * A new desk message from its envelope, or a chat message at its timeline event, accepted under the bus receipt of
+     * the operation that sent it.
      */
     public static function create(
-        MessageEnvelope $envelope,
+        MessageEnvelope|PlacedChatEnvelope $envelope,
         AcceptedOperation $operation,
         string|null $senderSessionId = null,
+    ): self {
+        return $envelope instanceof PlacedChatEnvelope
+            ? self::createChat($envelope->envelope, $envelope->event, $operation, $senderSessionId)
+            : self::createDesk($envelope, $operation, $senderSessionId);
+    }
+
+    private static function createDesk(
+        MessageEnvelope $envelope,
+        AcceptedOperation $operation,
+        string|null $senderSessionId,
     ): self {
         $author = $envelope->author;
 
@@ -200,11 +212,11 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
      * A new chat message at its timeline position, posted in and to the one chat inbox, under the bus receipt of the
      * operation that posted it. A user's message starts its own user root; any other inherits the envelope's.
      */
-    public static function createChat(
+    private static function createChat(
         ChatEnvelope $envelope,
         TimelineEvent $event,
         AcceptedOperation $operation,
-        string|null $senderSessionId = null,
+        string|null $senderSessionId,
     ): self {
         $author = $envelope->author;
         $inboxId = $envelope->inbox->inboxId();
@@ -232,7 +244,7 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
 
         $message->id = $message->newUniqueId();
         $message->conversation_id = $envelope->parent === null ? $message->id : $envelope->parent->conversation_id;
-        $message->user_root_id = $author->type === ActorType::User ? $message->id : $envelope->userRootId;
+        $message->user_root_id = $author->type->isUser() ? $message->id : $envelope->userRootId;
 
         $message->assertSaved($message->save());
 
@@ -391,16 +403,6 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
     }
 
     /**
-     * The timeline position a row read with its position carries.
-     *
-     * @return Attribute<int, never>
-     */
-    protected function timelinePosition(): Attribute
-    {
-        return Attribute::get(fn () => (int) $this->getAttribute('timeline_sequence'));
-    }
-
-    /**
      * Whether the actor may settle this question: anyone may when it names no respondent, else only the one it names.
      */
     public function mayBeSettledBy(ActorIdentity $actor): bool
@@ -473,6 +475,18 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
     public function isDismissed(): bool
     {
         return $this->state === MessageState::Dismissed;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The timeline position a row read with its position carries.
+     *
+     * @return Attribute<int, never>
+     */
+    protected function timelinePosition(): Attribute
+    {
+        return Attribute::get(fn () => (int) $this->getAttribute('timeline_sequence'));
     }
 
     // ----------[ Internals ]----------

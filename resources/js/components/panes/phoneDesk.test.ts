@@ -39,7 +39,7 @@ describe('the desk on a phone', () => {
         const view = mount(Harness, { attachTo: document.body });
         await nextTick();
 
-        expect(view.get('[data-window-switcher]').exists()).toBe(true);
+        expect(view.find('[data-window-switcher]').exists()).toBe(true);
         expect(view.get('[data-phone-window="chat"]').isVisible()).toBe(true);
         expect(view.get('[data-phone-window="tasks"]').isVisible()).toBe(false);
 

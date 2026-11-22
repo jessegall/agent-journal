@@ -40,7 +40,7 @@ final class StateEventRegistrationTest extends TestCase
         $this->assertCount(2, $dispatcher->getRawListeners()[NoteWritten::class]);
     }
 
-    public function test_the_event_cache_keeps_the_owner_and_marker_and_refuses_stale_metadata(): void
+    public function test_the_event_cache_keeps_the_owner_and_refuses_stale_metadata(): void
     {
         $provider = $this->providerWithNotes();
         $events = $provider->discoverEvents();
@@ -50,11 +50,10 @@ final class StateEventRegistrationTest extends TestCase
             WritingNoteState::class,
             'onNoteWritten',
             'Notes',
-            'wide',
         ]);
 
         $this->assertContains($expected, $events['@state-events']);
-        $this->assertCount(5, $events[DomainEventServiceProvider::STATE_EVENTS]);
+        $this->assertCount(4, $events[DomainEventServiceProvider::STATE_EVENTS]);
         $path = (string) tempnam(sys_get_temp_dir(), 'state-event-cache-');
         $this->useEventCachePath($path);
         $this->app->instance('events.cached', true);
@@ -70,7 +69,7 @@ final class StateEventRegistrationTest extends TestCase
             );
 
             $events['@state-events'] = array_map(
-                fn (string $entry) => $entry === $expected ? str_replace('|wide', '|ordinary', $entry) : $entry,
+                fn (string $entry) => $entry === $expected ? str_replace('|Notes', '|Elsewhere', $entry) : $entry,
                 $events['@state-events'],
             );
             $this->writeCache($path, $events);

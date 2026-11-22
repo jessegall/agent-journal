@@ -21,6 +21,7 @@ use App\Actors\Contracts\Authorizer;
 use App\Actors\Contracts\AuthorizerProvider;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Contracts\ChatEligibility;
+use App\Actors\Contracts\ChatMemberPolicies;
 use App\Actors\Contracts\ChatParticipationEnding;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
@@ -65,7 +66,6 @@ use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\ActorLabelSet;
-use App\Actors\Support\ChatMemberPolicies;
 use App\Actors\Support\CurrentUser;
 use App\Actors\Support\UnrestrictedAuthorizer;
 use App\Actors\Values\AccessRequirement;
@@ -207,6 +207,7 @@ use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
 use App\Agents\Data\TerminalControlData;
 use App\Agents\Data\TerminalInterestData;
+use App\Agents\Data\TerminalReceiptData;
 use App\Agents\Enums\AccessRuleType;
 use App\Agents\Enums\AccountModeType;
 use App\Agents\Enums\AccountProcessRole;
@@ -251,6 +252,10 @@ use App\Agents\Enums\StartRemedyType;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Enums\StatusActionType;
 use App\Agents\Enums\TerminalDraftChoice;
+use App\Agents\Enums\TerminalGrantState;
+use App\Agents\Enums\TerminalInputType;
+use App\Agents\Enums\TerminalNamedKey;
+use App\Agents\Enums\TerminalReceiptOutcome;
 use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Events\AccountUseChanged;
 use App\Agents\Events\AgentHoldReleased;
@@ -298,7 +303,6 @@ use App\Agents\Exceptions\StartRequestConflict;
 use App\Agents\Exceptions\StopConditionsInvalid;
 use App\Agents\Exceptions\TerminalControlRefused;
 use App\Agents\Support\AccountUseCounts;
-use App\Agents\Support\AgentChatAdmission;
 use App\Agents\Support\AgentDrivers;
 use App\Agents\Support\AgentLabel;
 use App\Agents\Support\AgentOption;
@@ -338,6 +342,7 @@ use App\Agents\Support\TerminalInput;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\AccountUse;
+use App\Agents\Values\BrowserInputCapabilities;
 use App\Agents\Values\ChosenAccount;
 use App\Agents\Values\ClaimedRequest;
 use App\Agents\Values\CommitObservation;
@@ -480,6 +485,7 @@ use App\Bus\Contracts\CommandProvider;
 use App\Bus\Contracts\CommandTransaction;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Contracts\OperationResolver;
+use App\Bus\Contracts\OwnerCommands;
 use App\Bus\Contracts\RecordCommand;
 use App\Bus\Contracts\RefusalDetails;
 use App\Bus\Contracts\RequestKey;
@@ -567,6 +573,8 @@ use App\Communication\Commands\SendMessage;
 use App\Communication\Commands\TakeNextMessages;
 use App\Communication\Contracts\ActorInboxResolver;
 use App\Communication\Contracts\AgentMessageReader;
+use App\Communication\Contracts\ChatDepartures;
+use App\Communication\Contracts\ChatTimeline;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxAccess;
@@ -575,6 +583,7 @@ use App\Communication\Contracts\InboxNotices;
 use App\Communication\Contracts\InboxProvider;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
+use App\Communication\Contracts\MembershipEvidence;
 use App\Communication\Contracts\MessageCommand;
 use App\Communication\Contracts\Notifications;
 use App\Communication\Contracts\NotificationTargetResolver;
@@ -606,6 +615,7 @@ use App\Communication\Enums\IntervalRole;
 use App\Communication\Enums\LeaveReason;
 use App\Communication\Enums\MessageState;
 use App\Communication\Enums\NotificationSourceType;
+use App\Communication\Enums\TimelineEventType;
 use App\Communication\Enums\WakeState;
 use App\Communication\Events\MessageAnswered;
 use App\Communication\Events\MessageAnswerRequired;
@@ -616,15 +626,16 @@ use App\Communication\Events\MessageSent;
 use App\Communication\Events\MessageTakenUp;
 use App\Communication\Exceptions\ActorCannotSend;
 use App\Communication\Exceptions\AnswerImpossible;
+use App\Communication\Exceptions\ChatCursorRefused;
+use App\Communication\Exceptions\ChatStateConflict;
 use App\Communication\Exceptions\InboxProviderInvalid;
 use App\Communication\Exceptions\InboxUnavailable;
+use App\Communication\Exceptions\MembershipEvidenceMismatch;
 use App\Communication\Exceptions\MessageBodyTooLong;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Exceptions\MessageToSelf;
-use App\Communication\Resolvers\ChatDeliveries;
-use App\Communication\Resolvers\ChatTimeline;
-use App\Communication\Support\ChatDepartures;
+use App\Communication\Resolvers\Support\ChatDeliveries;
 use App\Communication\Support\ChatInboxes;
 use App\Communication\Support\ChatInterval;
 use App\Communication\Support\ChatIntervalEvidence;
@@ -632,8 +643,6 @@ use App\Communication\Support\DeskSeatEvidence;
 use App\Communication\Support\InboxIntervals;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
-use App\Communication\Support\MembershipEvidence;
-use App\Communication\Support\PresentationBatches;
 use App\Connections\Commands\ApproveDeviceGrant;
 use App\Connections\Commands\AssertBindingStart;
 use App\Connections\Commands\AssignBindingEnvironment;
@@ -791,11 +800,7 @@ use App\Files\Values\FilePath;
 use App\Files\Values\Fingerprint;
 use App\Files\Values\FolderEntries;
 use App\Files\Values\FolderEntry;
-use App\Hooks\Attributes\StackWide;
 use App\Hooks\Commands\CertifyPassedStops;
-use App\Hooks\Commands\FocusInstruction;
-use App\Hooks\Commands\RefreshPlanInstruction;
-use App\Hooks\Commands\ReleaseInstruction;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\Answer;
@@ -804,16 +809,15 @@ use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Contracts\IncomingWork;
 use App\Hooks\Contracts\IncomingWorkRegistration;
-use App\Hooks\Contracts\InstructsForeground;
 use App\Hooks\Contracts\OperationPolicy;
 use App\Hooks\Contracts\ReminderContribution;
 use App\Hooks\Contracts\StackEditor;
 use App\Hooks\Contracts\StackTransactionRunner;
-use App\Hooks\Contracts\StackTransition;
 use App\Hooks\Contracts\UserStack;
 use App\Hooks\Contracts\WorkProgress;
-use App\Hooks\Contracts\WorkRecordState;
+use App\Hooks\Decisions\ContextLine;
 use App\Hooks\Decisions\Decision;
+use App\Hooks\Decisions\MessageLine;
 use App\Hooks\Decisions\StateReferenceFactory;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Enums\AnswerType;
@@ -823,11 +827,11 @@ use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\SessionEndReason;
 use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\Enums\ToolOutcome;
-use App\Hooks\Enums\TransitionType;
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Events\HelperCompletionCertified;
 use App\Hooks\Events\HelperStopHeld;
 use App\Hooks\Events\StateTypesRequested;
+use App\Hooks\Exceptions\HookAnswerRefused;
 use App\Hooks\Exceptions\IncomingWorkRepeated;
 use App\Hooks\Exceptions\MonotonicClockWentBack;
 use App\Hooks\Exceptions\StackTransactionRequired;
@@ -857,18 +861,16 @@ use App\Hooks\Inputs\Values\SessionEndDetails;
 use App\Hooks\Inputs\Values\SessionStartDetails;
 use App\Hooks\Inputs\Values\StopDetails;
 use App\Hooks\Inputs\Values\ToolResult;
-use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\References\Exceptions\ActivationDeclined;
 use App\Hooks\References\StateReference;
 use App\Hooks\References\SubjectReference;
+use App\Hooks\Stack\StateAnswer;
 use App\Hooks\StateCatalog\Registration\Contracts\StateRegistration;
 use App\Hooks\StateLoading\Contracts\RecipientStateLoader;
 use App\Hooks\StateLoading\Contracts\StateLoader;
 use App\Hooks\StateLoading\StateSet;
 use App\Hooks\States\AgentState;
 use App\Hooks\Ticks\ElapsedTime;
-use App\Hooks\Values\EventCommands;
-use App\Hooks\Values\LifecycleCommands;
 use App\Hooks\Values\StackVerdict;
 use App\Hooks\Values\StopAttemptReference;
 use App\Http\Data\Assignments\RecordHolderData;
@@ -1055,6 +1057,7 @@ use App\Profiles\Exceptions\SignInAttemptMissing;
 use App\Profiles\Exceptions\SignInAttemptStale;
 use App\Profiles\Exceptions\SignInCodeInvalid;
 use App\Profiles\Exceptions\SignInMethodMissing;
+use App\Profiles\Support\AgentChatAdmission;
 use App\Profiles\Support\BaseOverride;
 use App\Profiles\Support\OperationRule;
 use App\Profiles\Support\PolicyOverride;
@@ -1352,6 +1355,7 @@ use App\Text\Values\TextRange;
 use App\Text\Values\TextVersion;
 use App\Ui\Contracts\CountResolver;
 use App\Ui\Contracts\DeclaredPages;
+use App\Ui\Contracts\DraftProducers;
 use App\Ui\Contracts\MenuProvider;
 use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\NavigationChildren;
@@ -1384,13 +1388,20 @@ use App\Ui\Declarations\ToggleOption;
 use App\Ui\Enums\ActionMethod;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\LayoutTag;
+use App\Ui\Enums\NarrowView;
 use App\Ui\Enums\PageDestination;
 use App\Ui\Enums\PageSkeleton;
+use App\Ui\Enums\ReaderWidth;
 use App\Ui\Enums\SlotContextType;
 use App\Ui\Exceptions\LayoutRefused;
 use App\Ui\Layout\DeclaredLayoutData;
+use App\Ui\Layout\DetailPage;
 use App\Ui\Layout\LayoutActionData;
+use App\Ui\Layout\LayoutBackData;
 use App\Ui\Layout\LayoutBodyData;
+use App\Ui\Layout\LayoutDialogData;
+use App\Ui\Layout\LayoutFactPieceData;
+use App\Ui\Layout\LayoutFactValueData;
 use App\Ui\Layout\LayoutFieldData;
 use App\Ui\Layout\LayoutFormData;
 use App\Ui\Layout\LayoutMenuData;
@@ -1398,8 +1409,13 @@ use App\Ui\Layout\LayoutMenuGroupData;
 use App\Ui\Layout\LayoutMenuItemData;
 use App\Ui\Layout\LayoutNativeData;
 use App\Ui\Layout\LayoutPartData;
+use App\Ui\Layout\LayoutProgressData;
 use App\Ui\Layout\LayoutRowData;
+use App\Ui\Layout\LayoutSplitData;
 use App\Ui\Layout\LayoutTabData;
+use App\Ui\Layout\ListEmpty;
+use App\Ui\Layout\ListPage;
+use App\Ui\Layout\ListPaging;
 use App\Ui\Layout\PublicationPage;
 use App\Ui\Layout\PublicationTab;
 use App\Web\Commands\RecordUserHeartbeat;
@@ -1467,6 +1483,10 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                OwnerCommands::class,
+                DraftProducers::class,
+                ChatDepartures::class,
+                ChatTimeline::class,
                 ChatParticipationEnding::class,
                 ChatEligibility::class,
                 MembershipEvidence::class,
@@ -1544,10 +1564,8 @@ final class CoreApi
                 UserStack::class,
                 StackTransactionRunner::class,
                 StateLoader::class,
-                InstructsForeground::class,
                 RecipientStateLoader::class,
                 Answer::class,
-                StackTransition::class,
                 StackEditor::class,
                 CurrentState::class,
                 TextContent::class,
@@ -1566,7 +1584,6 @@ final class CoreApi
                 WorkspacePolicy::class,
                 PolicyCatalogue::class,
                 ActorWorkStacks::class,
-                WorkRecordState::class,
                 WorkProgress::class,
                 ScriptKeywordDefinition::class,
                 Inbox::class,
@@ -1655,6 +1672,7 @@ final class CoreApi
                 CommandFacts::class,
                 JournalCommands::class,
                 SystemEntryPolicies::class,
+                ChatMemberPolicies::class,
                 Listener::class,
                 CommandHandler::class,
                 CommandProvider::class,
@@ -1717,8 +1735,26 @@ final class CoreApi
                 SkillConditionEvaluator::class,
             )
             ->values(
+                TerminalReceiptOutcome::class,
+                NarrowView::class,
+                LayoutFactPieceData::class,
+                ListPage::class,
+                DetailPage::class,
+                ListEmpty::class,
+                ListPaging::class,
+                LayoutBackData::class,
+                ReaderWidth::class,
+                TerminalGrantState::class,
+                TerminalReceiptData::class,
+                TerminalInputType::class,
+                TerminalNamedKey::class,
+                TimelineEventType::class,
+                LayoutSplitData::class,
+                LayoutProgressData::class,
+                LayoutDialogData::class,
+                LayoutFactValueData::class,
+                BrowserInputCapabilities::class,
                 ChatMemberAuthority::class,
-                ChatMemberPolicies::class,
                 ChatPermission::class,
                 SeenSession::class,
                 RefusalReason::class,
@@ -1794,9 +1830,6 @@ final class CoreApi
                 WorkRepairRequest::class,
                 PaginationData::class,
                 NavigationUncertainty::class,
-                EventCommands::class,
-                LifecycleCommands::class,
-                StackWide::class,
                 FolderClasses::class,
                 Endpoint::class,
                 CallKeyCast::class,
@@ -1941,10 +1974,11 @@ final class CoreApi
                 ResumableConversation::class,
                 StackTarget::class,
                 Decision::class,
+                ContextLine::class,
+                MessageLine::class,
+                StateAnswer::class,
                 AnswerType::class,
-                TransitionType::class,
                 StateReference::class,
-                LifecycleContext::class,
                 TextSection::class,
                 TextPart::class,
                 TextVersionSummary::class,
@@ -2093,7 +2127,6 @@ final class CoreApi
                 TerminalInput::class,
                 PrivateSubmission::class,
                 TerminalDraftChoice::class,
-                TerminalControlRefused::class,
                 ScreenReportAnswer::class,
                 ScreenReportRefusal::class,
                 ToolOutcome::class,
@@ -2111,13 +2144,10 @@ final class CoreApi
                 ChatInboxes::class,
                 ChatInterval::class,
                 InboxIntervals::class,
-                ChatDepartures::class,
-                PresentationBatches::class,
                 PresentationBatchData::class,
                 PresentationItemData::class,
                 AgentChatAdmission::class,
                 AgentDrivers::class,
-                ChatTimeline::class,
                 ChatDeliveries::class,
                 DeliveryView::class,
                 WakeState::class,
@@ -2385,9 +2415,6 @@ final class CoreApi
                 Everyone::class,
             )
             ->commands(
-                FocusInstruction::class,
-                RefreshPlanInstruction::class,
-                ReleaseInstruction::class,
                 ActivateProfiles::class,
                 RevokeProfiles::class,
                 StartProfileMain::class,
@@ -2564,6 +2591,11 @@ final class CoreApi
                 ResetSettingGroup::class,
             )
             ->exceptions(
+                ChatCursorRefused::class,
+                HookAnswerRefused::class,
+                MembershipEvidenceMismatch::class,
+                ChatStateConflict::class,
+                TerminalControlRefused::class,
                 ClassMissing::class,
                 LayoutRefused::class,
                 ActivationDeclined::class,

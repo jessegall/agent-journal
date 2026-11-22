@@ -33,7 +33,7 @@ describe('the project tree', () => {
 
         expect(empty.text()).toContain('empty');
         expect(empty.find('button').exists()).toBe(false);
-        expect(failed.get('[role="alert"]').exists()).toBe(true);
+        expect(failed.find('[role="alert"]').exists()).toBe(true);
 
         await failed.get('button').trigger('click');
         expect(failed.emitted('retry')).toHaveLength(1);

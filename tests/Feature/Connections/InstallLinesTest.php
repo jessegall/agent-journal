@@ -92,11 +92,11 @@ final class InstallLinesTest extends TestCase
         $this->switchOn();
         $viewer = User::factory()->create();
 
-        $this->assertFalse($this->actingAs($viewer)->postJson('/settings/project-connections/invitations', [
+        $this->assertFalse($this->actingAs($viewer)->postJson('/project-connections/invitations', [
             'issuanceKey' => 'action-1',
         ])->isSuccessful());
         $this->app['auth']->forgetGuards();
-        $this->assertFalse($this->postJson('/settings/project-connections/invitations', [
+        $this->assertFalse($this->postJson('/project-connections/invitations', [
             'issuanceKey' => 'action-1',
         ])->isSuccessful());
 
@@ -123,7 +123,7 @@ final class InstallLinesTest extends TestCase
         $ticket = $this->ticketOf($response);
 
         $this->actingAs($this->owner)
-            ->deleteJson('/settings/project-connections/invitations/'.$response->json('invitationId'))
+            ->deleteJson('/project-connections/invitations/'.$response->json('invitationId'))
             ->assertNoContent();
 
         $this->assertSame(
@@ -141,7 +141,7 @@ final class InstallLinesTest extends TestCase
 
     private function issue(string $issuanceKey): TestResponse
     {
-        return $this->actingAs($this->owner)->postJson('/settings/project-connections/invitations', [
+        return $this->actingAs($this->owner)->postJson('/project-connections/invitations', [
             'issuanceKey' => $issuanceKey,
         ]);
     }

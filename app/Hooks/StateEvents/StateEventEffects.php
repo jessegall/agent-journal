@@ -12,13 +12,15 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Enums\CommandOriginStatus;
 use App\Bus\Support\CommandEntrance;
 use App\Bus\Support\OperationDeadline;
+use App\Contracts\Event;
 use App\Hooks\Contracts\EngineTargetAccess;
-use App\Hooks\Lifecycle\LifecycleOrigins;
 use Closure;
+use Illuminate\Contracts\Events\Dispatcher;
 use Psr\Log\LoggerInterface;
 
 /**
- * Runs returned effects in order, using the original caller's authority and the normal command bus.
+ * Runs the commands and dispatches the events listeners answered with, in order, under the original caller's
+ * authority: commands through the normal command bus, events once their origin is still live.
  */
 final readonly class StateEventEffects
 {
@@ -32,7 +34,7 @@ final readonly class StateEventEffects
         private EngineTargetAccess $engine,
         private CommandEntrance $entrance,
         private LoggerInterface $log,
-        private LifecycleOrigins $origins,
+        private Dispatcher $events,
     ) {}
 
     public function apply(StateEventDispatch $dispatch, StateEventResults $results): void
@@ -51,11 +53,18 @@ final readonly class StateEventEffects
     {
         $audience = $origin->dispatch->audience->get();
 
-        foreach ($origin->commands() as $ordinal => $command) {
-            $effect = fn () => $this->origins->within(
-                $origin->lifecycleOrigin($ordinal + 1),
-                fn () => $this->bus->runGuarded($command, fn () => $this->guard->check($origin)),
-            );
+        foreach ($origin->effects() as $answered) {
+            $effect = $answered instanceof Event
+                ? function () use ($answered, $origin): CommandOriginStatus {
+                    $status = $this->guard->check($origin);
+
+                    if ($status === CommandOriginStatus::Eligible) {
+                        $this->events->dispatch($answered);
+                    }
+
+                    return $status;
+                }
+            : fn () => $this->bus->runGuarded($answered, fn () => $this->guard->check($origin));
 
             $status = $this->admission->admit(
                 $origin->target->sessionId,

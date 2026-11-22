@@ -40,7 +40,7 @@ final class ConnectProjectWindowTest extends TestCase
         $this->issueLine('the-ticket');
         $this->redeemLine('the-ticket', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated();
         $issued = $this->actingAs($this->owner)
-            ->postJson('/settings/project-connections/invitations', ['issuanceKey' => 'action-1'])
+            ->postJson('/project-connections/invitations', ['issuanceKey' => 'action-1'])
             ->assertCreated();
 
         $page = $this->actingAs($this->owner)->get('/connections')->assertOk()->assertInertia(fn (

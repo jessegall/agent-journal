@@ -11,6 +11,7 @@ use App\Actors\Contracts\ActorResolver;
 use App\Actors\Contracts\ActorRunner;
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
+use App\Actors\Contracts\ChatMemberPolicies;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\CurrentAuthorizer;
@@ -27,12 +28,12 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorProviderRegistry;
 use App\Actors\Support\ActorStore;
 use App\Actors\Support\AuthorizerProviderRegistry;
-use App\Actors\Support\ChatMemberPolicies;
 use App\Actors\Support\CurrentActorAuthorizer;
 use App\Actors\Support\DatabaseClock;
 use App\Actors\Support\DeclaredReads;
 use App\Actors\Support\JournalVisibility;
 use App\Actors\Support\PresenceWindow;
+use App\Actors\Support\RegisteredChatMemberPolicies;
 use App\Actors\Support\RegisteredPolicies;
 use App\Actors\Support\SystemActors;
 use App\Actors\Support\SystemAuthorizerProvider;
@@ -53,7 +54,8 @@ final class ActorsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(SystemEntryPolicies::class);
-        $this->app->singleton(ChatMemberPolicies::class);
+        $this->app->singleton(RegisteredChatMemberPolicies::class);
+        $this->app->alias(RegisteredChatMemberPolicies::class, ChatMemberPolicies::class);
         $this->app->alias(SystemEntryPolicies::class, SystemEntryPoliciesContract::class);
         $this->app->bind(CurrentActor::class, ActorStore::class);
         $this->app->bind(CurrentActorSetter::class, ActorStore::class);

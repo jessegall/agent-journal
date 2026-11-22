@@ -68,7 +68,7 @@ final class ChatInboxMembershipTest extends MessagingTestCase
         $inbox = $this->app->make(InboxResolver::class)->resolve($this->chat->inbox_id);
         $first = $this->app->make(ChatInboxes::class)->activeInterval($inbox, $builder);
 
-        $again = $this->app->make(InboxIntervals::class)->join($inbox, $builder, $first->role);
+        $again = $this->app->make(InboxIntervals::class)->enter($inbox, $builder, $first->role);
 
         $this->assertSame($first->intervalId, $again->intervalId);
         $this->assertCount(2, $this->app->make(ChatInboxes::class)->activeIntervals($inbox));

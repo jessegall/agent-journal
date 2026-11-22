@@ -16,6 +16,6 @@ final readonly class OpenPrivateEntryController
 {
     public function __invoke(TerminalControlRequest $request, TerminalAnswers $answers): JsonResponse|Response
     {
-        return $answers->run($request->openPrivateCommand());
+        return $answers->control($request->openPrivateCommand());
     }
 }

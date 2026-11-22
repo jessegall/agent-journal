@@ -30,7 +30,7 @@ final class ChatLiveDeliveryTest extends MessagingTestCase
     public function test_a_post_reaches_the_members_and_a_removed_member_hears_nothing_more(): void
     {
         $bea = User::factory()->create(['name' => 'Bea']);
-        EnvironmentUserGrant::grant(
+        EnvironmentUserGrant::create(
             $bea,
             null,
             [ChatPermission::ReceiveInvitations],
@@ -40,12 +40,12 @@ final class ChatLiveDeliveryTest extends MessagingTestCase
         $this->inboxOf(ActorIdentity::of($bea));
         $this->asOwner();
         $inboxId = $this->runOnBus(new CreateGroupChat('Design', [$bea->id]));
-        $listener = $this->app->make(BroadcastPageChange::class);
         $owner = ActorIdentity::of($this->owner);
 
         $this->assertTrue($this->app->make(UserChannel::class)->join($bea, $bea->id));
 
         Event::fake([PageChanged::class, ChatAccessEnded::class]);
+        $listener = $this->app->make(BroadcastPageChange::class);
         $listener->handle(new ChatMessageAccepted('message', $owner, $inboxId));
         Event::assertDispatched(
             PageChanged::class,
@@ -54,6 +54,7 @@ final class ChatLiveDeliveryTest extends MessagingTestCase
 
         $this->runOnBus(new RemoveChatParticipant($inboxId, "user:{$bea->id}"));
         Event::fake([PageChanged::class, ChatAccessEnded::class]);
+        $listener = $this->app->make(BroadcastPageChange::class);
         $listener->handle(new ChatMemberLeft('interval', $inboxId, ActorIdentity::of($bea), LeaveReason::Removed));
         $listener->handle(new ChatMessageAccepted('later', $owner, $inboxId));
 

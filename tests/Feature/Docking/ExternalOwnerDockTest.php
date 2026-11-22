@@ -13,12 +13,12 @@ use Domain\Chat\Models\DockPlacement;
 use Domain\Documents\Commands\CreateReport;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Support\OpensPairChats;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
 use Tests\Fixtures\Modules\Notes\Support\NotesTally;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsNotesModule;
+use Tests\Support\OpensPairChats;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -33,9 +33,9 @@ use Tests\TestCase;
 #[TimeLimit(8, 'Docks through the browser, signed calls and MCP, and reads a report page.')]
 final class ExternalOwnerDockTest extends TestCase
 {
-    use OpensPairChats;
     use CommitsHookRows;
     use InstallsNotesModule;
+    use OpensPairChats;
     use SendsMcpFrames;
     use SendsSignedCalls;
     use WritesInboxMessages;
@@ -72,6 +72,8 @@ final class ExternalOwnerDockTest extends TestCase
 
     private TestStart $agent;
 
+    private string $chatInboxId;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -81,7 +83,7 @@ final class ExternalOwnerDockTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->agent = TestStart::start();
-        $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($this->agent->agent));
+        $this->chatInboxId = $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($this->agent->agent))->inbox_id;
     }
 
     protected function tearDown(): void
@@ -100,7 +102,7 @@ final class ExternalOwnerDockTest extends TestCase
         $agentsNote->saveFor($this->agent->agent->id);
 
         $this->actingAs($this->owner)
-            ->postJson('/chat/dock', ['agent' => $this->agent->agent->id, 'type' => Note::LINK_TYPE, 'id' => $ownersNote->id])
+            ->postJson('/chat/dock', ['inboxId' => $this->chatInboxId, 'type' => Note::LINK_TYPE, 'id' => $ownersNote->id])
             ->assertJson(['outcome' => 'added']);
         $this->runCommandsAs($this->agent);
         $this->artisan('dock:add', ['type' => Note::LINK_TYPE, 'id' => $agentsNote->id, '--json' => true])
@@ -152,7 +154,7 @@ final class ExternalOwnerDockTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('page.dockOffer.label', 'Add to chat')
                 ->where('page.dockOffer.type', 'documents.report')
-                ->where('page.dockOffer.destinations.0.value', $this->agent->agent->id));
+                ->where('page.dockOffer.destinations.0.value', $this->chatInboxId));
     }
 
     public function test_a_report_page_is_a_publication_whose_details_settle_with_revision_one(): void

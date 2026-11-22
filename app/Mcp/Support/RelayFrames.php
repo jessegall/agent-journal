@@ -360,7 +360,7 @@ final class RelayFrames
             return JsonRpcReplyData::from(json_decode($body, true, 512, JSON_THROW_ON_ERROR));
         } catch (JsonException|CannotCreateData|TypeError $failure) {
             $this->diagnose(
-                "The journal's answer is not a JSON-RPC reply ({$failure::class}: {$failure->getMessage()}).",
+                'The journal\'s answer is not a JSON-RPC reply ('.$failure::class.': '.$failure->getMessage().').',
             );
 
             return null;
@@ -375,7 +375,7 @@ final class RelayFrames
         try {
             return BusyReplyData::from(json_decode($body, true, 512, JSON_THROW_ON_ERROR))->retryAfterSeconds;
         } catch (JsonException|CannotCreateData|TypeError $failure) {
-            $this->diagnose("The busy answer names no wait ({$failure::class}: {$failure->getMessage()}).");
+            $this->diagnose('The busy answer names no wait ('.$failure::class.': '.$failure->getMessage().').');
 
             return null;
         }

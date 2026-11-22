@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Tasks\States;
 
-use App\Hooks\Attributes\StackWide;
-use App\Hooks\Decisions\Decision;
-use App\Hooks\References\SubjectReference;
+use App\Hooks\Decisions\ContextLine;
 use App\Hooks\Inputs\StopRequested;
+use App\Hooks\References\SubjectReference;
 use App\Hooks\States\AgentState;
-use App\Hooks\Values\EventCommands;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Tests\Fixtures\Domains\Tasks\States\Commands\RecordCancelledTask;
@@ -22,29 +20,26 @@ class TaskWatchState extends AgentState
 {
     public function __construct(private readonly SubjectReference $watch) {}
 
-    public function onStop(StopRequested $input): Decision
+    public function onStop(StopRequested $input): ContextLine
     {
-        return Decision::allow()->withContext("Watch {$this->watch->runNumber} is active.");
+        return new ContextLine("Watch {$this->watch->runNumber} is active.");
     }
 
-    public function onTaskFinished(TaskFinished $event): EventCommands
+    public function onTaskFinished(TaskFinished $event): RecordFinishedTask|null
     {
         if ($event->taskId !== $this->watch->id) {
-            return EventCommands::none();
+            return null;
         }
 
-        return EventCommands::of(new RecordFinishedTask($event->taskId, $this->watch->runNumber))
-            ->withContext("Watch {$this->watch->runNumber} saw the task finish.");
+        return new RecordFinishedTask($event->taskId, $this->watch->runNumber);
     }
 
-    #[StackWide]
-    public function onTaskCancelled(TaskCancelled $event): EventCommands
+    public function onTaskCancelled(TaskCancelled $event): RecordCancelledTask|null
     {
         if ($event->taskId !== $this->watch->id) {
-            return EventCommands::none();
+            return null;
         }
 
-        return EventCommands::of(new RecordCancelledTask($event->taskId, $this->watch->runNumber))
-            ->withMessage("Watch {$this->watch->runNumber} saw the task cancelled.");
+        return new RecordCancelledTask($event->taskId, $this->watch->runNumber);
     }
 }

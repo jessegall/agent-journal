@@ -47,9 +47,10 @@ final readonly class MessageVisibility implements Scope
             $inboxIds = ($this->inboxes)()->inboxIdsOf($actor);
 
             $query->where(fn (Builder $visible) => $visible
-                ->where(fn (Builder $chat) => $chat
-                    ->where($model->qualifyColumn('message_type'), MessageType::Chat)
-                    ->receivedNowBy($actor))
+                ->where(function (Builder $chat) use ($model, $actor): void {
+                    /** @var Builder<Message> $chat */
+                    $chat->where($model->qualifyColumn('message_type'), MessageType::Chat)->receivedNowBy($actor);
+                })
                 ->orWhere(fn (Builder $desk) => $desk
                     ->where($model->qualifyColumn('message_type'), MessageType::Desk)
                     ->where(fn (Builder $shown) => $this->deskVisible($shown, $model, $actor, $inboxIds))));

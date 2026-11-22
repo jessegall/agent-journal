@@ -63,6 +63,9 @@ final class ExplicitTransactionTest extends TestCase
         'app/Agents/Support/DatabaseStartTransaction.php' => 'joins the open unit inside a command',
         'app/Actors/Support/ActiveActorsResolver.php' => 'no unit: a read-only snapshot',
         'app/Engine/Support/EnginePass.php' => 'no unit: rolls back what a pass left open',
+        'app/Agents/Support/AgentChatAccess.php' => 'owns a unit: the console change of an agent\'s chat access',
+        'app/Communication/Support/PresentationSweep.php' => 'owns a unit: each settled batch of the sweep',
+        'app/Communication/Support/ReceiptDeliveries.php' => 'owns a unit: each delivery the queue tries',
     ];
 
     public function test_every_transaction_opener_of_the_application_is_named(): void

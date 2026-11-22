@@ -13,47 +13,29 @@ use App\Ui\Enums\ReaderWidth;
  * narrow container by its address, and a populated index with nothing chosen shows Nothing selected there. A domain
  * hands in neutral rows and parts only.
  */
-final class ListPage
+final readonly class ListPage
 {
-    private int|null $total = null;
-
-    /**
-     * @var list<LayoutPartData>
-     */
-    private array $filters = [];
-
-    /**
-     * @var list<LayoutTabData>
-     */
-    private array $tabs = [];
-
-    /**
-     * @var list<LayoutRowData>
-     */
-    private array $views = [];
-
-    private LayoutPartData|null $search = null;
-
-    private LayoutPartData|null $creation = null;
-
-    private ListPaging|null $paging = null;
-
-    private LayoutBackData|null $back = null;
-
-    private ReaderWidth $readerWidth = ReaderWidth::Standard;
-
-    /**
-     * @var list<LayoutPartData>
-     */
-    private array $reader = [];
-
     /**
      * @param  list<LayoutRowData>  $rows
+     * @param  list<LayoutPartData>  $filters
+     * @param  list<LayoutTabData>  $tabs
+     * @param  list<LayoutRowData>  $views
+     * @param  list<LayoutPartData>  $reader
      */
     private function __construct(
-        private readonly string $title,
-        private readonly array $rows,
-        private readonly ListEmpty $empty,
+        public string $title,
+        public array $rows,
+        public ListEmpty $empty,
+        public int|null $total = null,
+        public array $filters = [],
+        public array $tabs = [],
+        public array $views = [],
+        public LayoutPartData|null $search = null,
+        public LayoutPartData|null $creation = null,
+        public ListPaging|null $paging = null,
+        public LayoutBackData|null $back = null,
+        public ReaderWidth $readerWidth = ReaderWidth::Standard,
+        public array $reader = [],
     ) {}
 
     /**
@@ -69,16 +51,12 @@ final class ListPage
      */
     public function counting(int $total): self
     {
-        $this->total = $total;
-
-        return $this;
+        return clone ($this, ['total' => $total]);
     }
 
     public function filteredBy(LayoutPartData ...$filters): self
     {
-        $this->filters = array_values($filters);
-
-        return $this;
+        return clone ($this, ['filters' => array_values($filters)]);
     }
 
     /**
@@ -86,9 +64,7 @@ final class ListPage
      */
     public function withTabs(LayoutTabData ...$tabs): self
     {
-        $this->tabs = array_values($tabs);
-
-        return $this;
+        return clone ($this, ['tabs' => array_values($tabs)]);
     }
 
     /**
@@ -96,9 +72,7 @@ final class ListPage
      */
     public function withViews(LayoutRowData ...$views): self
     {
-        $this->views = array_values($views);
-
-        return $this;
+        return clone ($this, ['views' => array_values($views)]);
     }
 
     /**
@@ -106,9 +80,7 @@ final class ListPage
      */
     public function searching(string $label, LayoutFieldData $field): self
     {
-        $this->search = LayoutPartData::field('search', $label, $field);
-
-        return $this;
+        return clone ($this, ['search' => LayoutPartData::field('search', $label, $field)]);
     }
 
     /**
@@ -116,9 +88,7 @@ final class ListPage
      */
     public function creating(string $label, LayoutActionData $action): self
     {
-        $this->creation = LayoutPartData::action('creation', $label, $action, 'primary');
-
-        return $this;
+        return clone ($this, ['creation' => LayoutPartData::action('creation', $label, $action, 'primary')]);
     }
 
     /**
@@ -127,11 +97,9 @@ final class ListPage
      */
     public function creatingWith(LayoutPartData ...$creations): self
     {
-        $this->creation = count($creations) === 1
+        return clone ($this, ['creation' => count($creations) === 1
             ? $creations[0]
-            : LayoutPartData::box('creation', 'row', ...$creations);
-
-        return $this;
+            : LayoutPartData::box('creation', 'row', ...$creations)]);
     }
 
     /**
@@ -139,16 +107,12 @@ final class ListPage
      */
     public function creatingFromMenu(LayoutMenuData $menu): self
     {
-        $this->creation = LayoutPartData::menu('creation', $menu);
-
-        return $this;
+        return clone ($this, ['creation' => LayoutPartData::menu('creation', $menu)]);
     }
 
     public function paged(ListPaging $paging): self
     {
-        $this->paging = $paging;
-
-        return $this;
+        return clone ($this, ['paging' => $paging]);
     }
 
     /**
@@ -157,17 +121,15 @@ final class ListPage
      */
     public function withReader(LayoutBackData $back, LayoutPartData ...$parts): self
     {
-        $this->back = $back;
-        $this->reader = array_values($parts);
-
-        return $this;
+        return clone ($this, [
+            'back' => $back,
+            'reader' => array_values($parts),
+        ]);
     }
 
     public function withReaderWidth(ReaderWidth $width): self
     {
-        $this->readerWidth = $width;
-
-        return $this;
+        return clone ($this, ['readerWidth' => $width]);
     }
 
     public function layout(): DeclaredLayoutData

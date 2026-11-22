@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\FileEditRequested;
@@ -18,27 +17,21 @@ use App\Hooks\Inputs\ToolRequested;
 use App\Hooks\States\AgentState;
 
 /**
- * A test state that gives the same decision to every hook and counts how often a hook method was asked; it may also
- * answer every hook from before().
+ * A test state that gives the same answer to every hook, a decision or nothing to pass, and counts how often a hook
+ * method was asked.
  */
 final class ScriptedState extends AgentState
 {
     public int $askedCount = 0;
 
     public function __construct(
-        private readonly Decision $decision,
+        private readonly Decision|null $decision,
         private readonly bool $finished = false,
-        private readonly Decision|null $beforeDecision = null,
     ) {}
 
-    public function before(HookInput $input): Decision|null
+    public static function passing(): self
     {
-        return $this->beforeDecision;
-    }
-
-    public static function delegating(): self
-    {
-        return new self(Decision::delegate());
+        return new self(null);
     }
 
     public function isFinished(): bool
@@ -46,52 +39,52 @@ final class ScriptedState extends AgentState
         return $this->finished;
     }
 
-    public function onSessionStart(SessionStarted $input): Decision
+    public function onSessionStart(SessionStarted $input): Decision|null
     {
         return $this->answer();
     }
 
-    public function onPrompt(PromptSubmitted $input): Decision
+    public function onPrompt(PromptSubmitted $input): Decision|null
     {
         return $this->answer();
     }
 
-    public function onShellCommand(ShellCommandRequested $input): Decision
+    public function onShellCommand(ShellCommandRequested $input): Decision|null
     {
         return $this->answer();
     }
 
-    public function onFileEdit(FileEditRequested $input): Decision
+    public function onFileEdit(FileEditRequested $input): Decision|null
     {
         return $this->answer();
     }
 
-    public function onToolRequested(ToolRequested $input): Decision
+    public function onToolRequested(ToolRequested $input): Decision|null
     {
         return $this->answer();
     }
 
-    public function onStop(StopRequested $input): Decision
+    public function onStop(StopRequested $input): Decision|null
     {
         return $this->answer();
     }
 
-    public function onCompaction(ContextCompacted $input): Decision
+    public function onCompaction(ContextCompacted $input): Decision|null
     {
         return $this->answer();
     }
 
-    public function onToolFinished(ToolFinished $input): Decision
+    public function onToolFinished(ToolFinished $input): Decision|null
     {
         return $this->answer();
     }
 
-    public function onSessionEnd(SessionEnded $input): Decision
+    public function onSessionEnd(SessionEnded $input): Decision|null
     {
         return $this->answer();
     }
 
-    private function answer(): Decision
+    private function answer(): Decision|null
     {
         $this->askedCount++;
 

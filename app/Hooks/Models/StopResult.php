@@ -103,8 +103,6 @@ final class StopResult extends Model implements ReadableModel
 
     // ----------[ Queries ]----------
 
-    // ----------[ Answers ]----------
-
     /**
      * This result as an inspection shows it, under its condition's label; its raw output stays out.
      */

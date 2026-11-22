@@ -13,7 +13,7 @@ use App\Ui\Layout\SettingsGroup;
 use App\Ui\Layout\SettingsRow;
 
 /**
- * One profile as a read-only reader: its label, then its supplied facts in order: Program, Model, Models it may use,
+ * One profile as a read-only reader: its label, then its supplied facts in order: Key, Model, Models it may use,
  * Driver, How many run, and Rules it works under. A fact no read supplies is left out, and the rules, which nothing
  * reads for a profile yet, say they are not available instead of looking empty.
  */
@@ -24,6 +24,7 @@ final readonly class ProfileReaderLayout
     public function part(ProfileKey $key): LayoutPartData
     {
         $profile = Profile::byKey($key);
+
         $page = DetailPage::make($profile->label)
             ->above(LayoutPartData::text('key', $profile->key, 'code'));
 
@@ -35,7 +36,7 @@ final readonly class ProfileReaderLayout
         $models = $snapshot->start->allowedModels;
 
         $rows = [
-            SettingsRow::value('program', 'Program', $snapshot->key->key),
+            SettingsRow::value('key', 'Key', $snapshot->key->key),
             SettingsRow::value('model', 'Model', $snapshot->model),
             $models === []
                 ? SettingsRow::value('models', 'Models it may use', 'Any model')->inBlock()

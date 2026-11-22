@@ -38,12 +38,12 @@ final readonly class PairChats
 
         $providerId = strtolower((string) Str::ulid());
         $inboxId = $this->chats->open($providerId);
-        $conversation = Conversation::openFor($inboxId, $providerId, $user, null, null);
+        $conversation = Conversation::create($inboxId, $providerId, $user, null, null);
         DirectChat::recordFor($conversation, null, $user, $peer);
 
         $inbox = new ChatInbox($inboxId, $agent->name);
-        $this->intervals->join($inbox, $user, IntervalRole::Owner);
-        $this->intervals->join($inbox, $peer, IntervalRole::Member);
+        $this->intervals->enter($inbox, $user, IntervalRole::Owner);
+        $this->intervals->enter($inbox, $peer, IntervalRole::Member);
 
         return $conversation;
     }

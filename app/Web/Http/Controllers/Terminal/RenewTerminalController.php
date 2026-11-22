@@ -16,6 +16,6 @@ final readonly class RenewTerminalController
 {
     public function __invoke(TerminalViewRequest $request, TerminalAnswers $answers): JsonResponse|Response
     {
-        return $answers->run($request->renewCommand());
+        return $answers->interest($request->renewCommand());
     }
 }

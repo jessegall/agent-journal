@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace App\Supervision\States;
 
-use App\Hooks\Commands\FocusInstruction;
-use App\Hooks\Commands\ReleaseInstruction;
-use App\Hooks\Contracts\InstructsForeground;
-use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\References\StateReference;
 use App\Hooks\References\SubjectReference;
 use App\Hooks\States\AgentState;
-use App\Hooks\Values\LifecycleCommands;
 use App\Supervision\Models\AskHop;
+use PhpOption\Option;
+use PhpOption\Some;
 
-final class AnsweringAskState extends AgentState implements InstructsForeground
+final class AnsweringAskState extends AgentState
 {
     public const string TYPE = 'supervision.answering';
 
@@ -30,28 +27,11 @@ final class AnsweringAskState extends AgentState implements InstructsForeground
         return ! $this->isOpen;
     }
 
-    public function onEnter(LifecycleContext $context): LifecycleCommands
+    /**
+     * @return Option<string>
+     */
+    public function instruction(): Option
     {
-        return LifecycleCommands::of(new FocusInstruction());
-    }
-
-    public function onResume(LifecycleContext $context): LifecycleCommands
-    {
-        return LifecycleCommands::of(new FocusInstruction());
-    }
-
-    public function onExit(LifecycleContext $context): LifecycleCommands
-    {
-        return LifecycleCommands::of(new ReleaseInstruction());
-    }
-
-    public function instructionType(): string
-    {
-        return 'supervision.ask';
-    }
-
-    public function instructionText(): string
-    {
-        return 'An ask waits for your answer: answer it before other work.';
+        return new Some('An ask waits for your answer: answer it before other work.');
     }
 }

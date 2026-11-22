@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
-use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\Denied;
-use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\FileOperation;
-use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\Values\FileChange;
@@ -26,7 +23,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
-use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Support\TestActors;
 
 /**
@@ -83,17 +79,14 @@ final class ReadyStateTest extends TestCase
         ReadyState $ready,
         ShellCommand $command,
     ): void {
-        $this->assertSame(AnswerType::Allow, $ready->onShellCommand($this->request($command))->answerType());
+        $this->assertNull($ready->onShellCommand($this->request($command)));
     }
 
     public function test_a_profile_that_edits_files_may_edit(): void
     {
         $edit = $this->edit(['app/Domains/Contracts/Domain.php']);
 
-        $this->assertSame(
-            AnswerType::Allow,
-            new ReadyState(new FixedOperationPolicy(true), new AllowedStops())->onFileEdit($edit)->answerType(),
-        );
+        $this->assertNull(new ReadyState(new FixedOperationPolicy(true), new AllowedStops())->onFileEdit($edit));
     }
 
     public function test_a_profile_without_file_changes_refuses_the_whole_edit_by_its_first_path(): void
@@ -104,14 +97,6 @@ final class ReadyStateTest extends TestCase
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
         $this->assertStringContainsString('app/Domains/Contracts/Domain.php', $decision->refusalReason());
-    }
-
-    #[DataProvider('roles')]
-    public function test_each_role_still_answers_every_hook_without_delegating(ReadyState $ready): void
-    {
-        foreach (HookInputs::all() as $input) {
-            $this->assertFalse($this->answerOf($input, $ready)->isDelegating());
-        }
     }
 
     /**
@@ -144,11 +129,6 @@ final class ReadyStateTest extends TestCase
             fn (string $path) => new FileChange($path, FileOperation::Edit),
             $paths,
         )));
-    }
-
-    private function answerOf(HookInput $input, ReadyState $ready): Decision
-    {
-        return $input->answerBy($ready);
     }
 
     private function hook(): HookIdentity

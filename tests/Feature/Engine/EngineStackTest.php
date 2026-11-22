@@ -19,8 +19,7 @@ use App\Hooks\Storage\FrameRecord;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Fixtures\Hooks\Lifecycle\LifecycleLog;
-use Tests\Fixtures\Hooks\Lifecycle\RecordingStateLoader;
+use Tests\Fixtures\Hooks\Stacks\FinishableStateLoader;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsAsEngine;
 use Tests\TestCase;
@@ -37,23 +36,20 @@ final class EngineStackTest extends TestCase
 
     private const array TABLES = ['agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'hook_calls'];
 
-    private LifecycleLog $log;
-
-    private RecordingStateLoader $tasks;
+    private FinishableStateLoader $tasks;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->log = new LifecycleLog();
-        $this->tasks = new RecordingStateLoader($this->log);
+        $this->tasks = new FinishableStateLoader();
         Event::listen(
             StateTypesRequested::class,
             fn (StateTypesRequested $event) => $event->registry->register('test.tasks', $this->tasks),
         );
     }
 
-    public function test_the_engine_pushes_onto_its_granted_target_and_the_frame_enters_once(): void
+    public function test_the_engine_pushes_onto_its_granted_target(): void
     {
         $started = $this->start();
 
@@ -62,7 +58,6 @@ final class EngineStackTest extends TestCase
             fn () => $this->app->make(EngineStacks::class)->push($this->targetOf($started), $this->task('A')),
         );
 
-        $this->assertSame(['enter:A'], $this->log->calls);
         $this->assertSame(['A'], $this->storedSubjects($started));
     }
 
@@ -95,7 +90,7 @@ final class EngineStackTest extends TestCase
             StackTargetRefused::class,
         );
 
-        $this->assertSame([], $this->log->calls);
+        $this->assertSame([], $this->storedSubjects($started));
     }
 
     public function test_the_engine_settles_the_finished_frames_of_its_granted_target(): void
@@ -107,7 +102,6 @@ final class EngineStackTest extends TestCase
 
         $this->asEngineFor($target, fn () => $this->app->make(EngineStacks::class)->popExposed($target));
 
-        $this->assertSame(['enter:A', 'exit:A'], $this->log->calls);
         $this->assertSame([], $this->storedSubjects($started));
     }
 

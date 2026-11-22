@@ -18,8 +18,6 @@ final readonly class AttentionOrigin
 
     public const string NAVIGATION = 'navigation';
 
-    public const string STATE_EVENT = 'state_event';
-
     public const string ASK = 'ask';
 
     public const string ASK_REPLY = 'ask_reply';
@@ -52,11 +50,6 @@ final readonly class AttentionOrigin
     public static function navigation(string $requestId, int $round, string $raiseKey): self
     {
         return new self(self::NAVIGATION, "{$requestId}:{$round}", $raiseKey);
-    }
-
-    public static function stateEvent(string $dispatchId): self
-    {
-        return new self(self::STATE_EVENT, $dispatchId, $dispatchId);
     }
 
     public static function ask(string $askId, int $version): self

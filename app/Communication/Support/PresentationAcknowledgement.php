@@ -7,10 +7,12 @@ namespace App\Communication\Support;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\CurrentSession;
 use App\Communication\Contracts\InboxResolver;
+use App\Communication\Exceptions\ChatStateConflict;
 use App\Communication\Models\InboxInterval;
 use App\Communication\Models\Message;
 use App\Communication\Models\MessageReceipt;
 use App\Communication\Models\PresentationBatch;
+use App\Communication\Models\PresentationRange;
 use App\Communication\Models\ReceiptProgress;
 use Carbon\CarbonImmutable;
 
@@ -61,14 +63,14 @@ final readonly class PresentationAcknowledgement
         $receiptIds = [];
 
         foreach ($handles as $handle) {
-            $digest = hash('sha256', $handle);
+            $range = $locked->state->isSettled() ? null : $this->confirm($locked, hash('sha256', $handle), $at);
 
-            if ($locked->state->isSettled() || ! $locked->confirmRange($digest, $at)) {
+            if ($range === null) {
                 continue;
             }
 
             $changed++;
-            $receiptIds[] = (string) $locked->ranges()->where('handle_digest', $digest)->value('receipt_id');
+            $receiptIds[] = $range->receipt_id;
         }
 
         foreach (array_unique($receiptIds) as $receiptId) {
@@ -76,6 +78,35 @@ final readonly class PresentationAcknowledgement
         }
 
         return $changed;
+    }
+
+    /**
+     * Confirms one of the batch's pieces by its handle digest: the piece, its outstanding range and the context's
+     * progress move together. Answers the piece this confirmation changed, or null when it changed nothing.
+     *
+     * @throws ChatStateConflict
+     */
+    public function confirm(PresentationBatch $batch, string $handleDigest, CarbonImmutable $at): PresentationRange|null
+    {
+        if ($batch->state->isSettled()) {
+            throw ChatStateConflict::batchSettled($batch->id);
+        }
+
+        $range = $batch->rangeWithDigest($handleDigest);
+
+        if ($range === null || ! $range->confirm($at)) {
+            return null;
+        }
+
+        $range->outstanding->confirm();
+
+        $progress = ReceiptProgress::findFor($range->receipt_id, $batch->context_key)
+            ?? ReceiptProgress::create($range->receipt_id, $batch->context_key);
+
+        $progress->advanceTo($range->end_offset);
+        $batch->recordProgress($at);
+
+        return $range;
     }
 
     private function isOwnSession(PresentationBatch $batch): bool
@@ -91,7 +122,7 @@ final readonly class PresentationAcknowledgement
         $receipt = MessageReceipt::query()->findOrFail($receiptId);
         $length = mb_strlen(Message::query()->acrossInboxes()->findOrFail($receipt->message_id)->body);
 
-        if (ReceiptProgress::of($receiptId, $contextKey)->confirmed_offset >= $length) {
+        if (ReceiptProgress::confirmedOffsetOf($receiptId, $contextKey) >= $length) {
             $receipt->present($at);
         }
     }

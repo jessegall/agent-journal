@@ -16,6 +16,6 @@ final readonly class SendTerminalInputController
 {
     public function __invoke(TerminalControlRequest $request, TerminalAnswers $answers): JsonResponse|Response
     {
-        return $answers->run($request->inputCommand());
+        return $answers->control($request->inputCommand());
     }
 }

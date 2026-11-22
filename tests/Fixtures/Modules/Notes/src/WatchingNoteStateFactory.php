@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use App\Hooks\StateLoading\Contracts\StateLoader;
-use App\Hooks\References\StateReference;
 use App\Hooks\Decisions\StateReferences;
-use App\Hooks\StateLoading\StateSet;
-use App\Hooks\References\SubjectReference;
 use App\Hooks\Enums\SessionTransferType;
+use App\Hooks\References\StateReference;
+use App\Hooks\StateLoading\Contracts\StateLoader;
+use App\Hooks\StateLoading\StateSet;
 
 /**
- * Builds ordinary note listeners whose subject, when present, supplies their context.
+ * Builds ordinary note listeners.
  */
 final readonly class WatchingNoteStateFactory implements StateLoader
 {
@@ -25,9 +24,7 @@ final readonly class WatchingNoteStateFactory implements StateLoader
     {
         return StateSet::build(
             $references,
-            fn (StateReference $reference) => new WatchingNoteState(
-                $reference->subject instanceof SubjectReference ? [$reference->subject->id] : [],
-            ),
+            fn (StateReference $reference) => new WatchingNoteState(),
         );
     }
 

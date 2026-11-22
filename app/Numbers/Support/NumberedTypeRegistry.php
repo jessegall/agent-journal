@@ -44,7 +44,7 @@ final class NumberedTypeRegistry
         }
     }
 
-    public function requireNumbered(string $linkType): void
+    public function assertNumbered(string $linkType): void
     {
         if (! isset($this->modelOfLinkType[$linkType])) {
             throw NumberedModelUndeclared::for($linkType);

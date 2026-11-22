@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Data\TerminalControlData;
 use App\Agents\Policies\AgentMaintenancePolicy;
 use App\Agents\Values\PrivateSubmission;
 use App\Bus\Attributes\Authorize;
@@ -14,7 +13,7 @@ use App\Operations\Enums\AccessType;
 /**
  * A writer sends a private value once under its single-use submission; the value is never part of the command.
  *
- * @extends Command<TerminalControlData>
+ * @extends Command<string>
  */
 #[Authorize(AgentMaintenancePolicy::class, AccessType::Read)]
 final readonly class SubmitPrivateInput extends Command

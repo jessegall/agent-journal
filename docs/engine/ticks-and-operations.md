@@ -55,7 +55,7 @@ What `onTick` may do:
 - Never write a model, sleep, call the network, start a process or dispatch a job. Expensive work belongs in a command
   or a job.
 
-A tick is not `onEnter` or `onResume`. Covered frames tick too. A finished state is skipped and stays stored; the engine
+A tick is not a hook. Covered frames tick too. A finished state is skipped and stays stored; the engine
 never prunes stacks.
 
 ## The commands a tick answers

@@ -9,7 +9,6 @@ use App\Bus\Support\OperationDeadline;
 use App\Contracts\Event;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Hooks\Enums\AnswerType;
-use App\Hooks\Enums\SelectionReason;
 use App\Hooks\Models\HookCall;
 use App\Hooks\References\StateReference;
 use App\Hooks\References\SubjectReference;
@@ -32,11 +31,7 @@ final class TaskWatchDeliveryTest extends TestCase
     use CommittedHookStack {
         setUpCommittedHookStack as private setUpBaseStack;
     }
-
     use InstallsCommandModules;
-
-    private const string WATCH_REPORT = 'Watch 3 saw the task finish.\nWatch 3 saw the task cancelled.\n'
-        .'Watch 1 saw the task cancelled.\nWatch 3 is active.';
 
     protected function setUpCommittedHookStack(): void
     {
@@ -46,7 +41,7 @@ final class TaskWatchDeliveryTest extends TestCase
         $this->setUpBaseStack();
     }
 
-    public function test_real_task_events_visit_the_live_watches_and_keep_context_for_the_stop(): void
+    public function test_real_task_events_visit_every_live_watch_from_the_top_and_each_watch_answers_the_stop(): void
     {
         $taskId = TestIds::of(42);
         $this->pushState($this->task(42));
@@ -58,10 +53,10 @@ final class TaskWatchDeliveryTest extends TestCase
         $this->app->instance(ActorAttention::class, $attention);
         $trace = [];
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects($this->exactly(4))->method('debug')->willReturnCallback(
+        $logger->method('debug')->willReturnCallback(
             static function (string $message, array $context) use (&$trace): void {
                 if ($message === 'Calling a state event method.') {
-                    $trace[] = [$context['event'], $context['selection'], $context['frame']];
+                    $trace[] = [$context['event'], $context['frame']];
                 }
             },
         );
@@ -81,26 +76,26 @@ final class TaskWatchDeliveryTest extends TestCase
         $actorId = $this->target->agentId;
         $this->assertSame([
             "finished/$taskId/3/$actorId",
+            "finished/$taskId/2/$actorId",
+            "finished/$taskId/1/$actorId",
             "cancelled/$taskId/3/$actorId",
+            "cancelled/$taskId/2/$actorId",
             "cancelled/$taskId/1/$actorId",
         ], $this->app->make(TaskWatchLog::class)->records);
-        $this->assertCount(1, $attention->wakes);
-        $this->assertEquals($this->target->actorIdentity(), $attention->wakes[0][0]);
-        $this->assertSame([
-            [TaskFinished::class, SelectionReason::FirstMatch->value],
-            [TaskCancelled::class, SelectionReason::FirstMatch->value],
-            [TaskCancelled::class, SelectionReason::StackWide->value],
-        ], array_map(fn (array $entry) => array_slice($entry, 0, 2), $trace));
-        $this->assertSame($trace[0][2], $trace[1][2]);
-        $this->assertNotSame($trace[1][2], $trace[2][2]);
-
-        $stdout = $this->answerStop('call-1');
-        $this->assertStringContainsString(
-            self::WATCH_REPORT,
-            $stdout,
+        $this->assertSame([], $attention->wakes);
+        $this->assertSame(
+            [TaskFinished::class, TaskFinished::class, TaskFinished::class, TaskCancelled::class, TaskCancelled::class, TaskCancelled::class],
+            array_column($trace, 0),
         );
+        $this->assertSame(array_slice(array_column($trace, 1), 0, 3), array_slice(array_column($trace, 1), 3));
+
+        $this->answerStop('call-1');
         $steps = HookCall::query()->forHookId('call-1')->sole()->steps->steps;
-        $this->assertSame([AnswerType::Allow, AnswerType::Deny], array_column($steps, 'answer'));
+        $this->assertSame(
+            [AnswerType::Delegate, AnswerType::Delegate, AnswerType::Delegate, AnswerType::Deny],
+            array_column($steps, 'answer'),
+        );
+        $this->assertSame([1, 1, 1, 0], array_column($steps, 'contextCount'));
     }
 
     private function dispatch(Event $event): void

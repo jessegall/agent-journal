@@ -33,7 +33,8 @@ final class FailureCausesTest extends TestCase
     public function test_an_mcp_call_that_fails_logs_the_class_and_message_of_its_cause(): void
     {
         $logger = new RecordingLogger();
-        $mapper = new class implements RefusalMapper {
+        $mapper = new class implements RefusalMapper
+        {
             public function refusal(Throwable $failure, string $subject, string $correlationId): MappedRefusal
             {
                 return new MappedRefusal(RefusalCode::InvalidInput, 'Refused.');
@@ -51,7 +52,7 @@ final class FailureCausesTest extends TestCase
 
         $context = $logger->contextOf('mcp.resource');
         $this->assertSame(RuntimeException::class, $context['failure']);
-        $this->assertSame('the reader broke', $context['message']);
+        $this->assertSame($cause->getMessage(), $context['message']);
         $this->assertSame($cause, $context['exception']);
     }
 
@@ -76,10 +77,11 @@ final class FailureCausesTest extends TestCase
         $logger = new RecordingLogger();
         $this->app->instance(LoggerInterface::class, $logger);
 
-        $this->app->make(ExceptionHandler::class)->report(new RuntimeException('something broke'));
+        $failure = new RuntimeException('something broke');
+        $this->app->make(ExceptionHandler::class)->report($failure);
 
         $context = $logger->lines[0]['context'];
         $this->assertSame(RuntimeException::class, $context['failure']);
-        $this->assertSame('something broke', $context['message']);
+        $this->assertSame($failure->getMessage(), $context['message']);
     }
 }

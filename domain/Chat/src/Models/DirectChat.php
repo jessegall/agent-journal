@@ -7,6 +7,7 @@ namespace Domain\Chat\Models;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\Support\InsertsAbsentRows;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -33,6 +34,7 @@ final class DirectChat extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids;
     use InsertsAbsentRows;
+    use Linkable;
 
     private const string LOCAL_ENVIRONMENT = '';
 
@@ -86,17 +88,25 @@ final class DirectChat extends Model implements ReadableModel
      */
     public static function findPair(string|null $environmentId, ActorIdentity $first, ActorIdentity $second): self|null
     {
-        return self::query()->forPair($environmentId, $first, $second)->first();
+        return self::query()->forPair($environmentId, $first, $second)->with('conversation')->first();
     }
 
     // ----------[ Mutations ]----------
 
     /**
-     * Removes the chat's direct lookup, as its first expansion past two members does; a chat without one is left.
+     * The chat's direct lookup, while it is still a pair.
      */
-    public static function removeFor(Conversation $conversation): void
+    public static function findFor(Conversation $conversation): self|null
     {
-        self::query()->where('conversation_id', $conversation->id)->delete();
+        return self::query()->where('conversation_id', $conversation->id)->first();
+    }
+
+    /**
+     * Removes the chat's direct lookup, as its first expansion past two members does.
+     */
+    public function remove(): void
+    {
+        $this->delete();
     }
 
     // ----------[ Answers ]----------

@@ -6,7 +6,6 @@ namespace App\Hooks\Inputs\Contracts;
 
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\NativeTurnRecords;
-use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Inputs\Values\HookIdentity;
@@ -27,7 +26,7 @@ interface HookInput
      */
     public function accepts(AnswerType $type): bool;
 
-    public function answerBy(HookAnswerer $state): Decision;
+    public function answerBy(HookAnswerer $state): mixed;
 
     /**
      * Whether an answer of that type leaves the agent idle, so the reply's context reaches nobody: only an allowed stop

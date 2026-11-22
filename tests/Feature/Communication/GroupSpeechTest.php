@@ -26,6 +26,7 @@ use Tests\Support\PresentsChatText;
 final class GroupSpeechTest extends MessagingTestCase
 {
     use PresentsChatText;
+
     private string $inboxId;
 
     protected function setUp(): void
@@ -34,12 +35,12 @@ final class GroupSpeechTest extends MessagingTestCase
 
         $providerId = strtolower((string) Str::ulid());
         $this->inboxId = $this->app->make(ChatInboxes::class)->open($providerId);
-        Conversation::openFor($this->inboxId, $providerId, ActorIdentity::of($this->owner), null, 'Design');
+        Conversation::create($this->inboxId, $providerId, ActorIdentity::of($this->owner), null, 'Design');
         $inbox = new ChatInbox($this->inboxId, 'Design');
         $intervals = $this->app->make(InboxIntervals::class);
-        $intervals->join($inbox, ActorIdentity::of($this->owner), IntervalRole::Owner);
-        $intervals->join($inbox, $this->actorOf($this->builder), IntervalRole::Member);
-        $intervals->join($inbox, $this->actorOf($this->reviewer), IntervalRole::Member);
+        $intervals->enter($inbox, ActorIdentity::of($this->owner), IntervalRole::Owner);
+        $intervals->enter($inbox, $this->actorOf($this->builder), IntervalRole::Member);
+        $intervals->enter($inbox, $this->actorOf($this->reviewer), IntervalRole::Member);
     }
 
     public function test_a_broadcast_offers_each_agent_and_a_directed_post_only_its_target(): void

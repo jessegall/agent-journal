@@ -27,21 +27,21 @@ final readonly class TaskGraphRecords implements TaskGraphResolver
         private CurrentAuthorizer $authorizer,
     ) {}
 
-    public function graphOf(string $planId, array $taskIds, string $selectedId, string $returnAddress): TaskGraph
+    public function graphOf(string $planId, array $ids, string $selectedId, string $returnAddress): TaskGraph
     {
-        $this->visibility->requireAllVisible($taskIds);
+        $this->visibility->requireAllVisible($ids);
 
-        $tasks = Task::ofIds($taskIds);
-        $inPlan = array_flip($taskIds);
+        $tasks = Task::ofIds($ids);
+        $inPlan = array_flip($ids);
 
-        $edges = $taskIds === [] ? [] : array_values(array_map(
+        $edges = $ids === [] ? [] : array_values(array_map(
             fn (TaskWait $wait) => new TaskGraphEdge(
                 $wait->prerequisite_task_id,
                 $wait->dependent_task_id,
                 $wait->isSatisfiedBy($tasks[$wait->prerequisite_task_id]->state ?? null),
             ),
             array_filter(
-                TaskWait::waitsOfTasks($taskIds)->all(),
+                TaskWait::waitsOfTasks($ids)->all(),
                 fn (TaskWait $wait) => isset($inPlan[$wait->prerequisite_task_id]),
             ),
         ));
@@ -67,6 +67,7 @@ final readonly class TaskGraphRecords implements TaskGraphResolver
     private function versionOf(array $nodes, array $edges): string
     {
         $states = array_map(fn (TaskGraphNode $node) => [$node->id, $node->state->value], $nodes);
+
         $waits = array_map(
             fn (TaskGraphEdge $edge) => [$edge->prerequisiteId, $edge->dependentId, $edge->isSatisfied],
             $edges,

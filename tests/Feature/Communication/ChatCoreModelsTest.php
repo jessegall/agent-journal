@@ -29,6 +29,7 @@ use App\Desks\Support\DeskOpening;
 use App\Numbers\Models\GlobalGroup;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use stdClass;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
@@ -58,8 +59,8 @@ final class ChatCoreModelsTest extends TestCase
 
     public function test_the_inbox_hands_out_each_sequence_once_in_order(): void
     {
-        $first = InboxRecord::lockForSequence($this->inbox->id);
-        $second = InboxRecord::lockForSequence($this->inbox->id);
+        $first = InboxRecord::lockedForSequence($this->inbox->id)->takeSequence();
+        $second = InboxRecord::lockedForSequence($this->inbox->id)->takeSequence();
 
         $this->assertSame([1, 2], [$first, $second]);
         $this->assertSame(2, $this->inbox->refresh()->next_sequence);
@@ -67,16 +68,18 @@ final class ChatCoreModelsTest extends TestCase
 
     public function test_an_actor_holds_one_active_interval_per_inbox_and_may_rejoin_after_leaving(): void
     {
-        $interval = InboxInterval::open($this->inbox->id, $this->agent, IntervalRole::Member, 1);
-        TimelineEvent::append($this->inbox->id, 1, TimelineEventType::Joined, $this->agent, $interval->id);
+        $interval = InboxInterval::create($this->inbox->id, $this->agent, IntervalRole::Member, 1);
+        TimelineEvent::create($this->inbox->id, 1, TimelineEventType::Joined, $this->agent, $interval->id);
 
         $this->assertThrows(
-            fn () => InboxInterval::open($this->inbox->id, $this->agent, IntervalRole::Member, 2),
+            fn () => DB::transaction(
+                fn () => InboxInterval::create($this->inbox->id, $this->agent, IntervalRole::Member, 2),
+            ),
             QueryException::class,
         );
 
         $interval->end(LeaveReason::Left, CarbonImmutable::now());
-        $rejoined = InboxInterval::open($this->inbox->id, $this->agent, IntervalRole::Owner, 3);
+        $rejoined = InboxInterval::create($this->inbox->id, $this->agent, IntervalRole::Owner, 3);
 
         $this->assertFalse($interval->isActive());
         $this->assertTrue($rejoined->isActive());
@@ -86,7 +89,7 @@ final class ChatCoreModelsTest extends TestCase
             ChatStateConflict::class,
         );
         $this->assertThrows(
-            fn () => TimelineEvent::append($this->inbox->id, 1, TimelineEventType::Left, $this->agent, null),
+            fn () => TimelineEvent::create($this->inbox->id, 1, TimelineEventType::Left, $this->agent, null),
             QueryException::class,
         );
     }
@@ -94,8 +97,8 @@ final class ChatCoreModelsTest extends TestCase
     public function test_a_receipt_is_presented_once_and_the_senders_receipt_starts_presented(): void
     {
         $message = $this->message();
-        $sender = InboxInterval::open($this->inbox->id, $this->agent, IntervalRole::Owner, 1);
-        $reader = InboxInterval::open($this->inbox->id, TestActors::agentIdentity(8), IntervalRole::Member, 1);
+        $sender = InboxInterval::create($this->inbox->id, $this->agent, IntervalRole::Owner, 1);
+        $reader = InboxInterval::create($this->inbox->id, TestActors::agentIdentity(8), IntervalRole::Member, 1);
 
         MessageReceipt::forAudience($message, [$sender, $reader], $sender->id);
 
@@ -109,9 +112,9 @@ final class ChatCoreModelsTest extends TestCase
 
     public function test_a_delivery_retries_then_is_exhausted_and_refuses_further_change(): void
     {
-        $interval = InboxInterval::open($this->inbox->id, $this->agent, IntervalRole::Member, 1);
+        $interval = InboxInterval::create($this->inbox->id, $this->agent, IntervalRole::Member, 1);
         MessageReceipt::forAudience($this->message(), [$interval], TestIds::of(9));
-        $delivery = ReceiptDelivery::pending(MessageReceipt::query()->ofInterval($interval->id)->firstOrFail());
+        $delivery = ReceiptDelivery::create(MessageReceipt::query()->ofInterval($interval->id)->firstOrFail());
 
         $delivery->fail('runtime away', CarbonImmutable::now()->addMinute());
         $delivery->exhaust('runtime away');
@@ -123,8 +126,8 @@ final class ChatCoreModelsTest extends TestCase
     public function test_an_opportunity_is_claimed_under_a_rising_lease_and_spent_once(): void
     {
         $root = $this->message();
-        $interval = InboxInterval::open($this->inbox->id, $this->agent, IntervalRole::Member, 1);
-        $opportunity = SpeechOpportunity::offer($root, $this->agent, $interval);
+        $interval = InboxInterval::create($this->inbox->id, $this->agent, IntervalRole::Member, 1);
+        $opportunity = SpeechOpportunity::create($root, $this->agent, $interval);
         $now = CarbonImmutable::now();
 
         $opportunity->claim(hash('sha256', 'first'), $now->addMinute());
@@ -139,7 +142,7 @@ final class ChatCoreModelsTest extends TestCase
         $this->assertSame(SpeechOpportunityState::Spent, $opportunity->refresh()->state);
         $this->assertThrows(fn () => $opportunity->decline(), ChatStateConflict::class);
         $this->assertThrows(
-            fn () => SpeechOpportunity::offer($root, $this->agent, $interval),
+            fn () => SpeechOpportunity::create($root, $this->agent, $interval),
             QueryException::class,
         );
     }

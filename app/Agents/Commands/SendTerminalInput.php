@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Data\TerminalControlData;
 use App\Agents\Policies\AgentMaintenancePolicy;
 use App\Agents\Support\TerminalInput;
 use App\Bus\Attributes\Authorize;
@@ -14,7 +13,7 @@ use App\Operations\Enums\AccessType;
 /**
  * A writer sends text or Enter through their grant, at its sequence and for the screen revision they saw.
  *
- * @extends Command<TerminalControlData>
+ * @extends Command<string>
  */
 #[Authorize(AgentMaintenancePolicy::class, AccessType::Read)]
 final readonly class SendTerminalInput extends Command

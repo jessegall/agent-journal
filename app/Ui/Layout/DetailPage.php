@@ -10,36 +10,24 @@ namespace App\Ui\Layout;
  * only the chosen one is read. A record that was removed is a notice with Back to its list. A domain hands in neutral
  * values and readers only.
  */
-final class DetailPage
+final readonly class DetailPage
 {
     /**
-     * @var list<LayoutPartData>
+     * @param  list<LayoutPartData>  $metadata
+     * @param  list<LayoutPartData>  $actions
+     * @param  list<LayoutRowData>  $facts
+     * @param  list<LayoutPartData>  $standing
+     * @param  list<PublicationTab>  $tabs
      */
-    private array $metadata = [];
-
-    private string|null $abstract = null;
-
-    /**
-     * @var list<LayoutPartData>
-     */
-    private array $actions = [];
-
-    /**
-     * @var list<LayoutRowData>
-     */
-    private array $facts = [];
-
-    /**
-     * @var list<LayoutPartData>
-     */
-    private array $standing = [];
-
-    /**
-     * @var list<PublicationTab>
-     */
-    private array $tabs = [];
-
-    private function __construct(private readonly string $title) {}
+    private function __construct(
+        public string $title,
+        public array $metadata = [],
+        public string|null $abstract = null,
+        public array $actions = [],
+        public array $facts = [],
+        public array $standing = [],
+        public array $tabs = [],
+    ) {}
 
     public static function make(string $title): self
     {
@@ -51,16 +39,12 @@ final class DetailPage
      */
     public function above(LayoutPartData ...$metadata): self
     {
-        $this->metadata = array_values($metadata);
-
-        return $this;
+        return clone ($this, ['metadata' => array_values($metadata)]);
     }
 
     public function summarising(string $abstract): self
     {
-        $this->abstract = $abstract;
-
-        return $this;
+        return clone ($this, ['abstract' => $abstract]);
     }
 
     /**
@@ -68,9 +52,7 @@ final class DetailPage
      */
     public function withActions(LayoutPartData ...$actions): self
     {
-        $this->actions = array_values($actions);
-
-        return $this;
+        return clone ($this, ['actions' => array_values($actions)]);
     }
 
     /**
@@ -78,9 +60,7 @@ final class DetailPage
      */
     public function withFacts(LayoutRowData ...$facts): self
     {
-        $this->facts = array_values($facts);
-
-        return $this;
+        return clone ($this, ['facts' => array_values($facts)]);
     }
 
     /**
@@ -88,16 +68,12 @@ final class DetailPage
      */
     public function withStanding(LayoutPartData ...$parts): self
     {
-        $this->standing = array_values($parts);
-
-        return $this;
+        return clone ($this, ['standing' => array_values($parts)]);
     }
 
     public function withTabs(PublicationTab ...$tabs): self
     {
-        $this->tabs = array_values($tabs);
-
-        return $this;
+        return clone ($this, ['tabs' => array_values($tabs)]);
     }
 
     /**

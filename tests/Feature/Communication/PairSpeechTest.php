@@ -11,14 +11,13 @@ use App\Communication\Commands\ClaimSpeech;
 use App\Communication\Commands\PostChatMessage;
 use App\Communication\Enums\MessageState;
 use App\Communication\Enums\SpeechOpportunityState;
-use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Exceptions\SpeechRefused;
 use App\Communication\Models\Message;
 use App\Communication\Models\SpeechOpportunity;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;
-use Tests\Support\PresentsChatText;
 use Tests\Support\OpensPairChats;
+use Tests\Support\PresentsChatText;
 
 /**
  * In a pair the user's question keeps the agent's one turn for it: an ordinary write under it is refused, the agent
@@ -26,8 +25,8 @@ use Tests\Support\OpensPairChats;
  */
 final class PairSpeechTest extends MessagingTestCase
 {
-    use PresentsChatText;
     use OpensPairChats;
+    use PresentsChatText;
 
     private Conversation $chat;
 
@@ -73,7 +72,7 @@ final class PairSpeechTest extends MessagingTestCase
         ]);
         $this->assertThrows(
             fn () => $this->runOnBus(new AnswerChatQuestion($this->questionId, 'Again.', 'second-key', $token)),
-            MessageStateConflict::class,
+            SpeechRefused::class,
         );
     }
 

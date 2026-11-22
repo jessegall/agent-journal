@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Models;
 
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -32,6 +33,7 @@ final class PresentationRange extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 
@@ -50,7 +52,7 @@ final class PresentationRange extends Model implements ReadableModel
     /**
      * The piece added to the batch under the digest of its handle.
      */
-    public static function inBatch(
+    public static function create(
         PresentationBatch $batch,
         OutstandingRange $outstanding,
         int $endOffset,

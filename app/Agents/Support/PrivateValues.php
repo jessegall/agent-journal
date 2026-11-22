@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Data\PrivateInputMessageData;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Values\ClaimedRequest;
@@ -38,14 +39,14 @@ final readonly class PrivateValues
             return $claimed;
         }
 
-        $fields = json_decode($claimed->message, true, flags: JSON_THROW_ON_ERROR);
-        $value = $this->cache->pull($this->key((string) $fields['submission_id']));
+        $fields = PrivateInputMessageData::from(json_decode($claimed->message, true, flags: JSON_THROW_ON_ERROR));
+        $value = $this->cache->pull($this->key($fields->submissionId));
 
         if (! is_string($value)) {
             return $claimed;
         }
 
-        return $claimed->withMessage(json_encode([...$fields, 'value' => $value], JSON_THROW_ON_ERROR));
+        return $claimed->withMessage(json_encode([...$fields->toArray(), 'value' => $value], JSON_THROW_ON_ERROR));
     }
 
     public function discard(string $submissionId): void

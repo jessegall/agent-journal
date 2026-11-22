@@ -16,6 +16,6 @@ final readonly class CancelPrivateEntryController
 {
     public function __invoke(TerminalControlRequest $request, TerminalAnswers $answers): JsonResponse|Response
     {
-        return $answers->run($request->cancelPrivateCommand());
+        return $answers->control($request->cancelPrivateCommand());
     }
 }

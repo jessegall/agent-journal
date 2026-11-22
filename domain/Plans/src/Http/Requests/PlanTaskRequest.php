@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Domain\Plans\Http\Requests;
 
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
+use Domain\Plans\Data\PlanFiltersData;
+use Domain\Plans\Http\Requests\Concerns\ReadsPlanFilters;
 use Domain\Plans\Models\Plan;
 use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -15,6 +17,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class PlanTaskRequest extends FormRequest
 {
+    use ReadsPlanFilters;
     use ReadsRouteNumber;
 
     private const array RETURN_KEYS = [
@@ -26,7 +29,12 @@ final class PlanTaskRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [];
+        return $this->planFilterRules();
+    }
+
+    public function filters(): PlanFiltersData
+    {
+        return $this->planFilters();
     }
 
     public function planNumber(): int

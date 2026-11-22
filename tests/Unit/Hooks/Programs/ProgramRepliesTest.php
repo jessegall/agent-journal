@@ -9,7 +9,6 @@ use App\Hooks\Decisions\Decision;
 use App\Hooks\Drivers\DriverReplies;
 use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Enums\RewriteSupport;
-use App\Hooks\Exceptions\InvalidShellAnswer;
 use App\Hooks\Exceptions\InvalidStopAnswer;
 use App\Hooks\Inputs\Values\DriverToolInput;
 use App\Hooks\Stack\AgentStack;
@@ -106,13 +105,6 @@ final class ProgramRepliesTest extends TestCase
         $this->expectException(InvalidStopAnswer::class);
 
         DriverReplies::stop($this->answer(Decision::rewrite('ls')));
-    }
-
-    public function test_a_delegation_has_no_shell_reply(): void
-    {
-        $this->expectException(InvalidShellAnswer::class);
-
-        $this->shell(Decision::delegate());
     }
 
     public function test_no_reply_ever_grants_a_native_approval(): void

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Unit\States;
 
 use App\Hooks\Decisions\Denied;
-use App\Hooks\Decisions\Enums\SimpleTransition;
 use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\Values\HookIdentity;
@@ -53,8 +52,7 @@ final class WorkingOnTaskTest extends TestCase
         $decision = new WorkingOnTaskState($task)->onStop($this->stop());
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertStringContainsString($task->unfinishedReason(), $decision->refusalReason());
-        $this->assertSame(SimpleTransition::Keep, $decision->transition);
+        $this->assertSame($task->unfinishedReason(), $decision->refusalReason());
         $this->assertSame(TaskState::Started, $task->state);
     }
 
@@ -70,11 +68,11 @@ final class WorkingOnTaskTest extends TestCase
     }
 
     #[DataProvider('otherHooks')]
-    public function test_every_other_hook_is_delegated(HookInput $input): void
+    public function test_every_other_hook_is_passed(HookInput $input): void
     {
         $working = new WorkingOnTaskState(new TaskWork(42, 1, TaskState::Started));
 
-        $this->assertTrue($input->answerBy($working)->isDelegating());
+        $this->assertNull($input->answerBy($working));
     }
 
     private function stop(): StopRequested

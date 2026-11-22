@@ -35,7 +35,7 @@ final class ChatAdmissionTest extends MessagingTestCase
         $this->chat = $this->pairChat(ActorIdentity::of($this->owner), $this->actorOf($this->builder));
         $this->bea = User::factory()->create(['name' => 'Bea']);
         $this->cy = User::factory()->create(['name' => 'Cy']);
-        EnvironmentUserGrant::grant(
+        EnvironmentUserGrant::create(
             $this->bea,
             null,
             [ChatPermission::ReceiveInvitations],

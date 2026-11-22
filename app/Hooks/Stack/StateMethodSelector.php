@@ -6,11 +6,10 @@ namespace App\Hooks\Stack;
 
 use App\Contracts\Event;
 use App\Hooks\Declarations\StateMethods;
-use App\Hooks\Enums\SelectionReason;
 use App\Hooks\Inputs\Contracts\HookInput;
 
 /**
- * Selects the highest match and every lower StackWide match on the starting snapshot.
+ * Selects every live frame of the starting snapshot whose state declares the method, top first.
  */
 final readonly class StateMethodSelector
 {
@@ -47,12 +46,11 @@ final readonly class StateMethodSelector
             $methods = $this->methods->forState($frame->state::class);
             $method = $methods[$input] ?? null;
 
-            if ($method === null || ($selected !== [] && ! $method->stackWide)) {
+            if ($method === null) {
                 continue;
             }
 
-            $reason = $selected === [] ? SelectionReason::FirstMatch : SelectionReason::StackWide;
-            $selected[] = new SelectedStateMethod($frame, $method, $reason);
+            $selected[] = new SelectedStateMethod($frame, $method);
         }
 
         return $selected;

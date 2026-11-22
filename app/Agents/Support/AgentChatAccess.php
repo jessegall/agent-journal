@@ -7,6 +7,7 @@ namespace App\Agents\Support;
 use App\Actors\Contracts\ChatParticipationEnding;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Models\AgentChatInviter;
 use App\Agents\Models\AgentChatPermission;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\ConnectionInterface;
@@ -34,10 +35,11 @@ final readonly class AgentChatAccess
         CarbonImmutable $at,
     ): AgentChatPermission {
         return $this->database->transaction(function () use ($agentId, $environmentId, $inviterIds, $operator, $at) {
-            $permission = AgentChatPermission::allow($agentId, $environmentId, $operator, $at);
+            AgentChatPermission::query()->activeFor($agentId, $environmentId)->first()?->withdraw($at);
+            $permission = AgentChatPermission::create($agentId, $environmentId, $operator, $at);
 
-            foreach ($inviterIds as $userId) {
-                $permission->allowInviter($userId);
+            foreach (array_unique($inviterIds) as $userId) {
+                AgentChatInviter::create($permission->id, $userId);
             }
 
             return $permission;

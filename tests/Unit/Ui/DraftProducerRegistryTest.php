@@ -33,7 +33,7 @@ final class DraftProducerRegistryTest extends TestCase
         $this->assertTrue($producers->offersGuided('task'));
         $this->assertCount(3, $producers->producerFor('task')->questions());
         $this->assertSame(['title' => 'Ship it'], $draft->fields);
-        $this->assertSame('Agent 1', $draft->agent);
+        $this->assertSame(StubDraftProducer::AGENT, $draft->agent);
         $this->assertThrows(
             fn () => $producers->register('task', StubDraftProducer::class),
             DraftProducerRepeated::class,

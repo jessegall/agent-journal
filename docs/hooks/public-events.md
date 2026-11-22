@@ -81,41 +81,29 @@ A listener whose writes the command's transaction requires carries `#[App\Contra
 ## Application events on live stack states
 
 A registered state may declare one public instance method named `on<EventClassName>` per concrete event, with one
-required argument of exactly that event type and an `App\Hooks\Values\EventCommands` return type. A loader declares
-its concrete `stateClass()` without loading subjects. The declaration is checked at boot and restoration checks that
-the loaded state matches. The normal ownership, exports and declared dependency rules apply to the exact method
-signature. The state folder grants no permission to use a foreign event elsewhere or raise it.
+required argument of exactly that event type. It returns nothing, a command, an event, or several of them, as
+`docs/hooks/state-answers.md` says. A loader declares its concrete `stateClass()` without loading subjects. The
+declaration is checked at boot and restoration checks that the loaded state matches. The normal ownership, exports and
+declared dependency rules apply to the exact method signature. The state folder grants no permission to use a foreign
+event elsewhere or raise it.
 
 The provider installs one bridge per declared event after the ordinary listeners. Cache generation and cached boot
-validate the declaration, owner and effective `#[StackWide]` marker. Cached data names methods. The current stack
-and its state subjects are loaded at delivery.
+validate the declaration and its owner. Cached data names methods. The current stack and its state subjects are loaded
+at delivery.
 
 ```php
-public function onTaskFinished(TaskFinished $event): EventCommands
+public function onTaskFinished(TaskFinished $event): RecordFinishedTask|null
 {
     if ($event->taskId !== $this->watch->id) {
-        return EventCommands::none();
+        return null;
     }
 
-    return EventCommands::of(new RecordFinishedTask($event->taskId, $this->watch->runNumber))
-        ->withContext('A watched task finished.');
-}
-
-#[StackWide]
-public function onTaskCancelled(TaskCancelled $event): EventCommands
-{
-    if ($event->taskId !== $this->watch->id) {
-        return EventCommands::none();
-    }
-
-    return EventCommands::of(new RecordCancelledTask($event->taskId, $this->watch->runNumber))
-        ->withMessage('A watched task was cancelled.');
+    return new RecordFinishedTask($event->taskId, $this->watch->runNumber);
 }
 ```
 
-In the Tasks fixture, a watch on top shadows each lower ordinary finish handler. The same watch plus any lower
-marked cancellation handlers respond to cancellation. An ordinary override of the inherited cancellation method
-stays shadowed when a higher watch handles it. Returning an empty result still claims the method's selection.
+Every live state that declares the listener is asked, from the top down, covered or not; a state filters the facts it
+cares about itself.
 
 The admission boundary captures the acting identity, authority and allowed stack targets at dispatch, including the
 original signed session or Engine frame grant where applicable. An event payload cannot grant access to a stack.

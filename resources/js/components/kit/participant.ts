@@ -1,7 +1,7 @@
-/** Who an avatar stands for: an agent of a program, a person, you, or the journal itself. */
+/** Who an avatar stands for: an agent on a driver, another user, you, or the journal itself. */
 export interface Participant {
-    kind: 'agent' | 'person' | 'you' | 'journal';
-    program?: string;
+    kind: 'agent' | 'user' | 'you' | 'journal';
+    driver?: string;
     initials?: string;
     name?: string;
     role?: string;

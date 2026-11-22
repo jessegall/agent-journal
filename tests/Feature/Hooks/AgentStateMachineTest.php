@@ -77,7 +77,7 @@ final class AgentStateMachineTest extends TestCase
         seconds: 5,
         reason: 'It runs Core\'s real admission, which classifies the line against the stored rules.',
     )]
-    public function test_a_supported_rewrite_keeps_the_child_it_pushed(): void
+    public function test_a_supported_rewrite_answers_the_admitted_command_and_leaves_the_stack(): void
     {
         $this->pushState(new StateReference('test.rewriting', NoSubject::None));
 
@@ -90,7 +90,7 @@ final class AgentStateMachineTest extends TestCase
 
         $command = json_decode($reply->stdout, true)['hookSpecificOutput']['updatedInput']['command'];
         $this->assertStringStartsWith(self::ADMISSION_PREFIX, $command);
-        $this->assertSame(['hooks.ready', 'test.rewriting', 'guide'], $this->storedTypeKeys());
+        $this->assertSame(['hooks.ready', 'test.rewriting'], $this->storedTypeKeys());
         $this->assertSame(AnswerType::Rewrite, HookCall::query()->sole()->answer->type);
     }
 

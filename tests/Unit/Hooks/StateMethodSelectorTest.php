@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks;
 
 use App\Agents\Values\StackTarget;
-use App\Hooks\Decisions\Decision;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Enums\NoSubject;
-use App\Hooks\Enums\SelectionReason;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\Values\StopDetails;
 use App\Hooks\References\StateReference;
@@ -17,35 +15,34 @@ use App\Hooks\Stack\Frames\Frame;
 use App\Hooks\Stack\SelectedStateMethod;
 use App\Hooks\Stack\StateMethodSelector;
 use App\Hooks\States\AgentState;
-use App\Hooks\Values\EventCommands;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskStarted;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
+use Tests\Fixtures\Hooks\InheritingState;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
-use Tests\Fixtures\Hooks\MarkedState;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\TestActors;
 
 final class StateMethodSelectorTest extends TestCase
 {
-    public function test_hooks_and_events_select_the_first_match_and_lower_effective_markers(): void
+    public function test_hooks_and_events_select_every_live_frame_that_declares_the_method_top_first(): void
     {
-        $ordinary = new class extends MarkedState
+        $ordinary = new class extends InheritingState
         {
-            public function onStop(StopRequested $input): Decision
+            public function onStop(StopRequested $input): null
             {
-                return Decision::delegate();
+                return null;
             }
 
-            public function onTaskStarted(TaskStarted $event): EventCommands
+            public function onTaskStarted(TaskStarted $event): null
             {
-                return EventCommands::none();
+                return null;
             }
         };
-        $inherited = new class extends MarkedState {};
-        $finished = new class extends MarkedState
+        $inherited = new class extends InheritingState {};
+        $finished = new class extends InheritingState
         {
             public function isFinished(): bool
             {
@@ -56,9 +53,9 @@ final class StateMethodSelectorTest extends TestCase
         $stack = new AgentStack([
             $this->frame('ordinary', $ordinary),
             $this->frame('inherited', $inherited),
-            $this->frame('disabled', new MarkedState(), enabled: false),
+            $this->frame('disabled', new InheritingState(), enabled: false),
             $this->frame('finished', $finished),
-            $this->frame('first', new MarkedState()),
+            $this->frame('first', new InheritingState()),
             $this->frame('default', $default),
         ], new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1'));
 
@@ -72,13 +69,12 @@ final class StateMethodSelectorTest extends TestCase
 
     public function test_metadata_is_reflected_and_reused_without_creating_a_state(): void
     {
-        $loader = new ClosureStateLoader(MarkedState::class, fn () => throw SimulatedFailure::of('Unexpected load.'));
+        $loader = new ClosureStateLoader(InheritingState::class, fn () => throw SimulatedFailure::of('Unexpected load.'));
         $methods = new StateMethods();
         $first = $methods->forLoader($loader);
 
-        $this->assertSame($first, $methods->forState(MarkedState::class));
+        $this->assertSame($first, $methods->forState(InheritingState::class));
         $this->assertEqualsCanonicalizing(['onStop', TaskStarted::class], array_keys($first));
-        $this->assertTrue($first[TaskStarted::class]->stackWide);
     }
 
     /**
@@ -86,13 +82,13 @@ final class StateMethodSelectorTest extends TestCase
      */
     private function assertSelection(array $selection, string $method): void
     {
-        $this->assertSame(['first', 'inherited'], array_map(fn ($entry) => $entry->frame->id, $selection));
         $this->assertSame(
-            [SelectionReason::FirstMatch, SelectionReason::StackWide],
-            array_map(fn ($entry) => $entry->reason, $selection),
+            ['first', 'inherited', 'ordinary'],
+            array_map(fn ($entry) => $entry->frame->id, $selection),
         );
         $this->assertSame($method, $selection[1]->method->name);
-        $this->assertSame(MarkedState::class, $selection[1]->method->declaringClass);
+        $this->assertSame(InheritingState::class, $selection[1]->method->declaringClass);
+        $this->assertNotSame(InheritingState::class, $selection[2]->method->declaringClass);
     }
 
     private function frame(string $id, AgentState $state, bool $enabled = true): Frame

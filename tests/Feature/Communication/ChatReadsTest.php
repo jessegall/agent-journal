@@ -21,8 +21,8 @@ use Tests\Support\PresentsChatText;
  */
 final class ChatReadsTest extends MessagingTestCase
 {
-    use PresentsChatText;
     use OpensPairChats;
+    use PresentsChatText;
 
     private Conversation $chat;
 
@@ -68,8 +68,6 @@ final class ChatReadsTest extends MessagingTestCase
 
     private function resolver(): ConversationResolver
     {
-        $this->app->forgetScopedInstances();
-
         return $this->app->make(ConversationResolver::class);
     }
 }

@@ -17,7 +17,6 @@ use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Middleware\ThrottleRequests;
-use Throwable;
 
 // The share-only listener runs this same entry with JOURNAL_LISTENER=sharing in its own process; no request picks it.
 if (($_SERVER['JOURNAL_LISTENER'] ?? getenv('JOURNAL_LISTENER')) === 'sharing') {

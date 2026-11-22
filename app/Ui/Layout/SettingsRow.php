@@ -20,9 +20,9 @@ final readonly class SettingsRow
     ) {}
 
     /**
-     * A row whose value is edited in a text field, a secret field or, only where declared, a switch.
+     * A row whose value is edited in a text field, a secret field, a choice or, only where declared, a switch.
      *
-     * @param  'text'|'secret'|'toggle'  $style
+     * @param  'text'|'secret'|'toggle'|'choice'  $style
      */
     public static function field(
         string $key,

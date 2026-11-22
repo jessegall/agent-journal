@@ -10,6 +10,7 @@ use App\Communication\Events\ReceiptDeliveryChanged;
 use App\Communication\Exceptions\ChatStateConflict;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -42,6 +43,7 @@ final class ReceiptDelivery extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     // ----------[ Constructors ]----------
@@ -64,7 +66,7 @@ final class ReceiptDelivery extends Model implements EventSource, ReadableModel
     /**
      * A new delivery for the receipt, due at once, keyed so the recipient's runtime takes it only once.
      */
-    public static function pending(MessageReceipt $receipt): self
+    public static function create(MessageReceipt $receipt): self
     {
         $delivery = new self([
             'receipt_id' => $receipt->id,
@@ -80,18 +82,6 @@ final class ReceiptDelivery extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Mutations ]----------
-
-    /**
-     * Holds the delivery for one attempt until the lease runs out, so no second worker tries it meanwhile.
-     *
-     * @throws ChatStateConflict
-     */
-    public function lease(CarbonImmutable $until): void
-    {
-        $this->assertPending();
-        $this->lease_expires_at = $until;
-        $this->assertSaved($this->save());
-    }
 
     /**
      * @throws ChatStateConflict

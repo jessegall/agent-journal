@@ -7,8 +7,7 @@ namespace App\Hooks\StateEvents;
 use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\Command;
 use App\Bus\Enums\CommandOriginStatus;
-use App\Hooks\Enums\LifecycleStage;
-use App\Hooks\Lifecycle\LifecycleOrigin;
+use App\Contracts\Event;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -23,28 +22,11 @@ final readonly class StateEventOrigin
     ) {}
 
     /**
-     * The origin a reserved command reads while the engine runs the command at this place of the listener's answer.
+     * @return list<Command<mixed>|Event>
      */
-    public function lifecycleOrigin(int $ordinal): LifecycleOrigin
+    public function effects(): array
     {
-        $frame = $this->listenerResult->frame;
-
-        return new LifecycleOrigin(
-            $this->target,
-            $this->dispatch->id,
-            $ordinal,
-            $frame->id,
-            $frame->reference,
-            LifecycleStage::Event,
-        );
-    }
-
-    /**
-     * @return list<Command<mixed>>
-     */
-    public function commands(): array
-    {
-        return $this->listenerResult->commandList();
+        return $this->listenerResult->effects;
     }
 
     public function logDrop(LoggerInterface $log, CommandOriginStatus $status): void

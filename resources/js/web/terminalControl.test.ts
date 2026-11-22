@@ -15,7 +15,7 @@ function controlled(client: Partial<TerminalControlClient>) {
         renew: async () => answer({ state: 'granted', grantId: 'grant' }),
         release: async () => answer({ state: 'releasing', grantId: 'grant' }),
         input: async (grantId, input, sequence, revision) => {
-            const text = 'text' in input ? input.text : input.key;
+            const text = 'text' in input ? input.text : 'key' in input ? input.key : '';
             sent.push([grantId, text, input.kind === 'text' && input.enter, sequence, revision]);
 
             return answer({ state: 'granted', grantId: 'grant', nextSequence: sequence + 1 });

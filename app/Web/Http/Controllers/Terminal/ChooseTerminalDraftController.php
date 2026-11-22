@@ -16,6 +16,6 @@ final readonly class ChooseTerminalDraftController
 {
     public function __invoke(TerminalControlRequest $request, TerminalAnswers $answers): JsonResponse|Response
     {
-        return $answers->run($request->chooseCommand());
+        return $answers->control($request->chooseCommand());
     }
 }

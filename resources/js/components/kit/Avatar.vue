@@ -13,7 +13,7 @@ const props = withDefaults(defineProps<{ participant: Participant; size?: 'sm' |
     label: undefined,
 });
 
-const round = computed(() => props.participant.kind === 'person' || props.participant.kind === 'you');
+const round = computed(() => props.participant.kind === 'user' || props.participant.kind === 'you');
 const initials = computed(() => props.participant.initials ?? (props.participant.kind === 'you' ? 'Y' : ''));
 const frame = computed(() => {
     if (round.value) {
@@ -32,7 +32,7 @@ const frame = computed(() => {
         class="inline-flex shrink-0 items-center justify-center border"
         :class="[size === 'sm' ? 'size-4' : 'size-6.5', frame]"
     >
-        <DriverMark v-if="participant.kind === 'agent'" :driver="participant.program ?? ''" :size="size === 'sm' ? 11 : 16" />
+        <DriverMark v-if="participant.kind === 'agent'" :driver="participant.driver ?? ''" :size="size === 'sm' ? 11 : 16" />
         <span v-else-if="participant.kind === 'journal'" class="text-meta font-semibold text-text">J</span>
         <span
             v-else

@@ -66,7 +66,7 @@ final class Conversation extends Model implements ReadableModel
     /**
      * The open chat over the inbox registered under the provider id, owned by the actor that opened it.
      */
-    public static function openFor(
+    public static function create(
         string $inboxId,
         string $providerId,
         ActorIdentity $owner,
@@ -164,6 +164,8 @@ final class Conversation extends Model implements ReadableModel
     {
         return $this->owner_type === $actor->type->value && $this->owner_id === $actor->id;
     }
+
+    // ----------[ Accessors ]----------
 
     /**
      * The actor that owns the open chat; a closed chat has none.

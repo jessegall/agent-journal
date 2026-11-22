@@ -66,13 +66,13 @@ final readonly class PresentationBatches
         $pending = MessageReceipt::query()
             ->ofInterval($locked->id)
             ->notPresented()
-            ->with('message')
+            ->with(['message' => fn ($messages) => $messages->acrossInboxes()])
             ->limit(self::POST_LIMIT + 1)
             ->get()
             ->sortBy(fn (MessageReceipt $receipt) => $receipt->message?->timeline_event_id)
             ->values();
 
-        $batch = PresentationBatch::dispatch(
+        $batch = PresentationBatch::create(
             $locked->id,
             $sessionId,
             $runtimeGeneration,
@@ -85,7 +85,12 @@ final readonly class PresentationBatches
         $items = [];
         $budget = self::CHARACTER_LIMIT;
         $shown = 0;
-        $reference = $this->parentReference($pending->first(), $locked, $pending->pluck('message_id')->all());
+
+        $reference = $this->parentReference(
+            $pending->first(),
+            $locked,
+            array_values($pending->map(fn (MessageReceipt $receipt) => $receipt->message_id)->all()),
+        );
 
         if ($reference !== null) {
             $item = $this->itemOf($batch, $reference[0], $reference[1], $agent, $contextKey, $budget, true);
@@ -186,7 +191,7 @@ final readonly class PresentationBatches
         int $budget,
         bool $isReference,
     ): PresentationItemData|null {
-        $start = ReceiptProgress::of($receipt->id, $contextKey)->confirmed_offset;
+        $start = ReceiptProgress::confirmedOffsetOf($receipt->id, $contextKey);
         $length = mb_strlen($message->body);
         $take = min($length - $start, $budget);
 
@@ -196,7 +201,8 @@ final readonly class PresentationBatches
 
         $handle = bin2hex(random_bytes(self::HANDLE_BYTES));
         $end = $start + max($take, 0);
-        PresentationRange::inBatch($batch, OutstandingRange::at($receipt, $start), $end, hash('sha256', $handle));
+        $outstanding = OutstandingRange::waitingAt($receipt, $start) ?? OutstandingRange::create($receipt, $start);
+        PresentationRange::create($batch, $outstanding, $end, hash('sha256', $handle));
 
         $author = $message->author();
         $root = $message->user_root_id;

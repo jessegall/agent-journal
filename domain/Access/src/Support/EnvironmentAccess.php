@@ -5,43 +5,58 @@ declare(strict_types=1);
 namespace Domain\Access\Support;
 
 use App\Actors\Contracts\ChatParticipationEnding;
+use App\Actors\Contracts\CurrentActor;
+use App\Actors\Enums\ChatPermission;
 use App\Actors\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
-use Illuminate\Database\ConnectionInterface;
 
 /**
- * Revoking a user's grant and disabling an account, each in one transaction with its consequence: the grant row and
- * the account are locked first, then every chat the user lost ends for it, so no read slips in between.
+ * Granting and revoking a user's admission to an environment and disabling an account, each with its consequence,
+ * inside the command that asked for it: the grant row and the account are locked first, then every chat the user
+ * lost ends for it, so no read slips in between.
  */
 final readonly class EnvironmentAccess
 {
     public function __construct(
-        private ConnectionInterface $database,
         private ChatParticipationEnding $chats,
+        private CurrentActor $actors,
     ) {}
 
-    public function revoke(User $user, string|null $environmentId, CarbonImmutable $at): void
+    /**
+     * @param  list<ChatPermission>  $permissions
+     */
+    public function grant(string $userId, string|null $environmentId, array $permissions): void
     {
-        $this->database->transaction(function () use ($user, $environmentId, $at): void {
-            $grant = EnvironmentUserGrant::query()->activeFor($user->id, $environmentId)->lockForUpdate()->first();
+        $now = CarbonImmutable::now();
+        EnvironmentUserGrant::query()->activeFor($userId, $environmentId)->lockForUpdate()->first()?->revoke($now);
 
-            if ($grant === null) {
-                return;
-            }
-
-            $grant->revoke($at);
-            $this->chats->endInEnvironment(ActorIdentity::of($user), $environmentId);
-        });
+        EnvironmentUserGrant::create(
+            User::query()->findOrFail($userId),
+            $environmentId,
+            $permissions,
+            ActorIdentity::of($this->actors->actor()),
+            $now,
+        );
     }
 
-    public function disable(User $user, CarbonImmutable $at): void
+    public function revoke(string $userId, string|null $environmentId): void
     {
-        $this->database->transaction(function () use ($user, $at): void {
-            User::query()->whereKey($user->id)->lockForUpdate()->first();
-            $user->disable($at);
-            $this->chats->endEverywhere(ActorIdentity::of($user));
-        });
+        $grant = EnvironmentUserGrant::query()->activeFor($userId, $environmentId)->lockForUpdate()->first();
+
+        if ($grant === null) {
+            return;
+        }
+
+        $grant->revoke(CarbonImmutable::now());
+        $this->chats->endInEnvironment(ActorIdentity::of(User::query()->findOrFail($userId)), $environmentId);
+    }
+
+    public function disable(string $userId): void
+    {
+        $user = User::query()->whereKey($userId)->lockForUpdate()->firstOrFail();
+        $user->disable(CarbonImmutable::now());
+        $this->chats->endEverywhere(ActorIdentity::of($user));
     }
 }

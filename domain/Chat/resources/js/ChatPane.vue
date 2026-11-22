@@ -299,7 +299,6 @@ function retryFocused(): void {
                 <DockStack
                     :key="conversation.inboxId"
                     :dock="conversation.dock"
-                    :agent-id="conversation.agentId"
                     :inbox-id="conversation.inboxId"
                     :load-more="loadMore"
                 />

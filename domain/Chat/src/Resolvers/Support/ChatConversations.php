@@ -18,7 +18,7 @@ use App\Communication\Data\InboxView;
 use App\Communication\Data\MessagePage;
 use App\Communication\Data\MessageView;
 use App\Communication\Enums\MessageState;
-use App\Communication\Resolvers\ChatDeliveries;
+use App\Communication\Resolvers\Support\ChatDeliveries;
 use App\Communication\Support\ChatInboxes;
 use App\Communication\Support\ChatInterval;
 use Domain\Chat\Data\ChatCapabilitiesData;
@@ -137,8 +137,10 @@ final readonly class ChatConversations
         array $intervals,
     ): ChatCapabilitiesData {
         $isOwner = $conversation->isOpen() && $conversation->isOwnedBy($viewer);
+
         $manages = $isOwner
             && $this->eligibility->holds($viewer, ChatPermission::ManageMembers, $conversation->environment_id);
+
         $hasOthers = count($intervals) > 1;
 
         return ChatCapabilitiesData::from([
@@ -161,6 +163,7 @@ final readonly class ChatConversations
     private function rowsOf(array $messages, array $drivers, ActorIdentity $viewer): array
     {
         $operates = $this->actors->authority()->mayRunApplicationCommands();
+
         $tracked = array_values(array_map(
             fn (MessageView $message) => $message->id,
             array_filter(
@@ -169,11 +172,14 @@ final readonly class ChatConversations
                     || "{$message->authorType}:{$message->authorId}" === self::keyOf($viewer),
             ),
         ));
+
         $deliveries = $this->deliveries->forMessages($tracked);
+
         $recipients = array_merge([], ...array_map(
             fn (array $views) => array_map(fn (DeliveryView $view) => $view->recipient, $views),
             array_values($deliveries),
         ));
+
         $names = $this->labels->labelsFor($recipients);
 
         return array_map(fn (MessageView $message) => self::rowOf(
@@ -202,9 +208,11 @@ final readonly class ChatConversations
         array $deliveries,
     ): ChatMessageData {
         $speaker = "{$message->authorType}:{$message->authorId}";
+
         $respondent = $message->respondentType === null
             ? null
             : "{$message->respondentType}:{$message->respondentId}";
+
         $settles = $message->state === MessageState::WaitingForAnswer && $respondent === self::keyOf($viewer);
 
         return ChatMessageData::from([

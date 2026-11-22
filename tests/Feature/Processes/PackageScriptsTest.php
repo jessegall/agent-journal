@@ -41,7 +41,7 @@ final class PackageScriptsTest extends TestCase
         $this->assertTrue($classification->isKnown());
         $this->assertTrue($classification->requiredClasses()->contains(CommandClass::Verification));
         $this->assertTrue($classification->requiredClasses()->contains(CommandClass::Delete));
-        $this->assertCount(3, $classification->parts[0]->contracts);
+        $this->assertCount(4, $classification->parts[0]->contracts);
         $this->assertStringContainsString(
             'script:composer.json#test:inside@',
             $classification->facts()[0]->origin->reference(),

@@ -53,7 +53,7 @@ final readonly class ReceiptDeliveries
                 continue;
             }
 
-            $deliveryIds[] = ReceiptDelivery::pending($receipt)->id;
+            $deliveryIds[] = ReceiptDelivery::create($receipt)->id;
         }
 
         if ($deliveryIds === []) {
@@ -97,6 +97,7 @@ final readonly class ReceiptDeliveries
             ->whereKey($deliveryId)
             ->dueAt($at)
             ->lock('for update skip locked')
+            ->with('receipt.interval')
             ->first();
 
         if ($delivery === null) {

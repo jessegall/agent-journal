@@ -14,7 +14,7 @@ import { useGuidedCreation } from './guidedCreation';
  * one at a time with their suggested answers as chips and a free text, Change the last answer, then the drafting,
  * which keeps every answer when it fails and offers Retry, and Open the draft, which hands the drafted fields to the
  * one that asked. Nothing is saved here. The focus starts on the first suggestion, stays in the text box while the
- * person types, and moves to the dialog while the draft is made.
+ * user types, and moves to the dialog while the draft is made.
  */
 const { request, end } = useGuidedCreation();
 const stage = ref<'loading' | 'asking' | 'drafting' | 'failed' | 'ready'>('loading');

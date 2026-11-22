@@ -11,8 +11,6 @@ use App\Agents\Values\StackTarget;
 use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Models\PendingAgentMessage;
 use App\Hooks\Stack\HookAnswer;
-use App\Hooks\StateEvents\StateEventContext;
-use App\Hooks\StateEvents\StateEventDispatch;
 
 /**
  * Keeps authorized event context and idle hook messages, and hands them over in the next eligible hook.
@@ -30,23 +28,6 @@ final readonly class AgentMessageDelivery
         }
 
         return $answer->withRemindersFirst($this->takeAllFor($target->actorIdentity()));
-    }
-
-    public function retainEvent(StackTarget $target, StateEventDispatch $dispatch, StateEventContext $context): void
-    {
-        $dispatch->assertTargetGranted($target);
-
-        if ($context->isEmpty()) {
-            return;
-        }
-
-        $actor = $target->actorIdentity();
-        $origin = AttentionOrigin::stateEvent($dispatch->id);
-        PendingAgentMessage::create($actor, $origin, $context->lines, $context->requestsAttention());
-
-        if ($context->requestsAttention()) {
-            $this->attention->request($actor, $origin);
-        }
     }
 
     /**

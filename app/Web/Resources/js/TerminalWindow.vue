@@ -6,7 +6,7 @@ import TerminalControlBar from '@kit/TerminalControlBar';
 import TerminalHeader from '@kit/TerminalHeader';
 import { useTerminalController } from '@kit/terminalController';
 import type { TerminalWindowData } from '@/types/generated';
-import { home } from '@/routes/web';
+import { home } from '@/routes';
 import { ref, toRef } from 'vue';
 
 /**

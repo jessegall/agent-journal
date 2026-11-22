@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Support\AssignmentHolder;
 use App\Docking\Cards\ComposedCard;
@@ -12,7 +13,9 @@ use App\Docking\Sources\Contracts\CardContext;
 use App\Docking\Sources\Contracts\Dockable;
 use App\Docking\Sources\Contracts\DockableProvider;
 use App\Docking\Sources\DockDefinition;
+use App\Operations\Enums\AccessType;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Policies\TaskPolicy;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
@@ -20,7 +23,7 @@ use Illuminate\Database\Eloquent\Collection;
  */
 final readonly class TaskDocking implements DockableProvider
 {
-    public function __construct(private AssigneeResolver $assignees) {}
+    public function __construct(private AssigneeResolver $assignees, private CurrentAuthorizer $authorizer) {}
 
     public function requireReadable(DockDefinition $definition, string $id): Dockable
     {
@@ -33,7 +36,13 @@ final readonly class TaskDocking implements DockableProvider
     {
         $cards = [];
 
-        foreach ($this->docked(Task::query()->whereKey($ids)->readExactly(count($ids))->get()) as $task) {
+        $readable = Task::query()
+            ->whereKey($ids)
+            ->readExactly(count($ids))
+            ->get()
+            ->filter(fn (Task $task) => $this->authorizer->filterActions(TaskPolicy::class, $task, [AccessType::Read]) !== []);
+
+        foreach ($this->docked($readable) as $task) {
             $cards[] = new ComposedCard($task->identifyFor($definition), $task->composeDockCard($context));
         }
 

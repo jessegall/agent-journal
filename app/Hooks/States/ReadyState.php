@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Hooks\States;
 
 use App\Agents\Values\Operation;
-use App\Hooks\Attributes\StackWide;
 use App\Hooks\Contracts\OperationPolicy;
 use App\Hooks\Decisions\Decision;
+use App\Hooks\Decisions\MessageLine;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\PromptSubmitted;
@@ -34,59 +34,57 @@ class ReadyState extends AgentState
         private readonly StopConditionGate $stops,
     ) {}
 
-    public function onSessionStart(SessionStarted $input): Decision
+    public function onSessionStart(SessionStarted $input): null
     {
-        return Decision::allow();
+        return null;
     }
 
-    public function onPrompt(PromptSubmitted $input): Decision
+    public function onPrompt(PromptSubmitted $input): null
     {
-        return Decision::allow();
+        return null;
     }
 
-    public function onShellCommand(ShellCommandRequested $input): Decision
+    public function onShellCommand(ShellCommandRequested $input): null
     {
-        return Decision::allow();
+        return null;
     }
 
-    #[StackWide]
-    public function onFileEdit(FileEditRequested $input): Decision
+    public function onFileEdit(FileEditRequested $input): Decision|null
     {
         return $this->decide($input->changes->operations());
     }
 
-    #[StackWide]
-    public function onToolRequested(ToolRequested $input): Decision
+    public function onToolRequested(ToolRequested $input): Decision|null
     {
         return $this->decide([$input->operation]);
     }
 
-    public function onStop(StopRequested $input): Decision
+    public function onStop(StopRequested $input): Decision|MessageLine|null
     {
         return $this->stops->answer($input->hook);
     }
 
-    public function onCompaction(ContextCompacted $input): Decision
+    public function onCompaction(ContextCompacted $input): null
     {
-        return Decision::allow();
+        return null;
     }
 
-    public function onToolFinished(ToolFinished $input): Decision
+    public function onToolFinished(ToolFinished $input): null
     {
-        return Decision::allow();
+        return null;
     }
 
-    public function onSessionEnd(SessionEnded $input): Decision
+    public function onSessionEnd(SessionEnded $input): null
     {
-        return Decision::allow();
+        return null;
     }
 
     /**
-     * Allows the call when the policy grants every operation of it, else refuses it with the first refusal's reason.
+     * Passes the call when the policy grants every operation of it, else refuses it with the first refusal's reason.
      *
      * @param  list<Operation>  $operations
      */
-    private function decide(array $operations): Decision
+    private function decide(array $operations): Decision|null
     {
         foreach ($operations as $operation) {
             $decision = $this->policy->assess($operation);
@@ -96,6 +94,6 @@ class ReadyState extends AgentState
             }
         }
 
-        return Decision::allow();
+        return null;
     }
 }

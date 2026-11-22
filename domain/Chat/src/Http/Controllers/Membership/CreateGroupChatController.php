@@ -23,7 +23,7 @@ final readonly class CreateGroupChatController
         CommandBus $commands,
         Redirector $redirect,
     ): JsonResponse|RedirectResponse {
-        $inboxId = $commands->run(new CreateGroupChat($input->title, array_values($input->userIds)));
+        $inboxId = $commands->run(new CreateGroupChat($input->title, $input->userIds));
 
         return $request->expectsJson()
             ? new JsonResponse(['inboxId' => $inboxId])

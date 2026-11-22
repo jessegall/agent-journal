@@ -113,6 +113,6 @@ final class InstallAttemptsTest extends TestCase
      */
     private function issue(array $body): TestResponse
     {
-        return $this->actingAs($this->owner)->postJson('/settings/project-connections/invitations', $body);
+        return $this->actingAs($this->owner)->postJson('/project-connections/invitations', $body);
     }
 }

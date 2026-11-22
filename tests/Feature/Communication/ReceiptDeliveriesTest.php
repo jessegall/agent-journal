@@ -42,6 +42,8 @@ final class ReceiptDeliveriesTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string REFUSAL = 'runtime refused';
+
     private ActorIdentity $agent;
 
     private ActorIdentity $user;
@@ -88,7 +90,7 @@ final class ReceiptDeliveriesTest extends TestCase
 
     public function test_an_agent_is_woken_once_and_a_user_gets_no_delivery(): void
     {
-        $this->post();
+        $this->postToTheChat();
 
         $this->assertSame(1, $this->requests);
         $this->assertSame(1, ReceiptDelivery::query()->count());
@@ -99,7 +101,7 @@ final class ReceiptDeliveriesTest extends TestCase
     {
         $this->outcomes = [AttentionOutcome::noRuntime()];
 
-        $this->post();
+        $this->postToTheChat();
 
         $delivery = ReceiptDelivery::query()->sole();
         $this->assertSame([ReceiptDeliveryState::Waiting, 0], [$delivery->state, $delivery->attempts]);
@@ -107,26 +109,26 @@ final class ReceiptDeliveriesTest extends TestCase
 
     public function test_a_failing_wake_retries_and_is_exhausted_after_five_tries(): void
     {
-        $this->outcomes = array_fill(0, 5, new RuntimeException('runtime refused'));
+        $this->outcomes = array_fill(0, 5, new RuntimeException(self::REFUSAL));
 
-        $this->post();
+        $this->postToTheChat();
 
         $deliveries = $this->app->make(ReceiptDeliveries::class);
 
         foreach (range(1, 4) as $pass) {
-            $deliveries->deliverDue(CarbonImmutable::now()->addDay()->addMinutes($pass));
+            $deliveries->deliverDue(CarbonImmutable::now()->addDays($pass));
         }
 
         $delivery = ReceiptDelivery::query()->sole();
         $this->assertSame([ReceiptDeliveryState::Exhausted, 5], [$delivery->state, $delivery->attempts]);
-        $this->assertSame('runtime refused', $delivery->last_failure);
+        $this->assertSame(self::REFUSAL, $delivery->last_failure);
     }
 
     public function test_a_presented_receipt_settles_its_delivery_and_is_not_woken_again(): void
     {
-        $this->outcomes = [new RuntimeException('runtime refused')];
+        $this->outcomes = [new RuntimeException(self::REFUSAL)];
 
-        $this->post();
+        $this->postToTheChat();
 
         MessageReceipt::query()->whereKey(ReceiptDelivery::query()->sole()->receipt_id)->sole()
             ->present(CarbonImmutable::now());
@@ -139,16 +141,14 @@ final class ReceiptDeliveriesTest extends TestCase
     /**
      * The user posts a message reaching itself and the agent, and its receipts are scheduled.
      */
-    private function post(): void
+    private function postToTheChat(): void
     {
-        $sender = InboxInterval::open($this->inbox->id, $this->user, IntervalRole::Owner, 1);
-        $member = InboxInterval::open($this->inbox->id, $this->agent, IntervalRole::Member, 2);
+        $sender = InboxInterval::create($this->inbox->id, $this->user, IntervalRole::Owner, 1);
+        $member = InboxInterval::create($this->inbox->id, $this->agent, IntervalRole::Member, 2);
         $message = $this->message();
 
-        MessageReceipt::forAudience($message, [$sender, $member], $sender->id);
-
-        $receipts = MessageReceipt::query()->where('message_id', $message->id)->get()->all();
-        $this->app->make(ReceiptDeliveries::class)->schedule(array_values($receipts));
+        $receipts = MessageReceipt::forAudience($message, [$sender, $member], $sender->id);
+        $this->app->make(ReceiptDeliveries::class)->schedule($receipts);
     }
 
     private function message(): Message

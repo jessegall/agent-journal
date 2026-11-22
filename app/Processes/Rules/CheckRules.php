@@ -83,6 +83,8 @@ final readonly class CheckRules
                 $read,
             ),
             $this->check('core.pint.fix', new ProgramSpellings('pint'), [], $this->pint(), $fix),
+            $this->check('core.php-cs-fixer.check', new ProgramSpellings('php-cs-fixer'), ['check'], $this->phpCsFixer(), $read),
+            $this->check('core.php-cs-fixer.fix', new ProgramSpellings('php-cs-fixer'), ['fix'], $this->phpCsFixer(), $fix),
             $this->check('core.commandments.judge', new ProgramSpellings(
                 'commandments',
                 ['commandments-release', 'commandments-go'],
@@ -235,6 +237,19 @@ final readonly class CheckRules
             OptionGrammar::flag('--no-progress'),
             OptionGrammar::flag('--ansi'),
             OptionGrammar::flag('--no-ansi'),
+        );
+    }
+
+    /**
+     * The project's own code-style fixers, run after Pint by the lint scripts.
+     */
+    private function phpCsFixer(): ArgumentGrammar
+    {
+        return ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(
+            OptionGrammar::flag('--quiet'),
+            OptionGrammar::flag('--dry-run'),
+            OptionGrammar::valued(OperandType::Path, '--config'),
+            OptionGrammar::valued(OperandType::Name, '--path-mode'),
         );
     }
 

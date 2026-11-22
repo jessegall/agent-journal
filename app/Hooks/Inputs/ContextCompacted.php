@@ -6,7 +6,6 @@ namespace App\Hooks\Inputs;
 
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\NativeTurnRecords;
-use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Inputs\Contracts\HookAnswerer;
@@ -44,7 +43,7 @@ final readonly class ContextCompacted implements HookInput
         return $type->fitsEveryHook();
     }
 
-    public function answerBy(HookAnswerer $state): Decision
+    public function answerBy(HookAnswerer $state): mixed
     {
         return $state->onCompaction($this);
     }

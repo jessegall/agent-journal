@@ -114,8 +114,6 @@ final class TerminalView extends Model implements ReadableModel
 
     // ----------[ Queries ]----------
 
-    // ----------[ Mutations ]----------
-
     /**
      * Keeps the view live for one lease from now.
      */
@@ -124,6 +122,8 @@ final class TerminalView extends Model implements ReadableModel
         $this->expires_at = $now->addSeconds(self::LEASE_SECONDS);
         $this->save();
     }
+
+    // ----------[ Mutations ]----------
 
     /**
      * Moves the view to the runtime the agent runs in now, at that runtime's generation.
@@ -233,9 +233,9 @@ final class TerminalView extends Model implements ReadableModel
      * @param  Builder<static>  $query
      */
     #[Scope]
-    protected function withReadInterest(Builder $query, string $readInterestId): void
+    protected function withReadInterest(Builder $query, string $interestId): void
     {
-        $query->where('read_interest_id', $readInterestId);
+        $query->where('read_interest_id', $interestId);
     }
 
     /**
@@ -244,9 +244,9 @@ final class TerminalView extends Model implements ReadableModel
      * @param  Builder<static>  $query
      */
     #[Scope]
-    protected function openedBy(Builder $query, string $openRequestId): void
+    protected function openedBy(Builder $query, string $requestId): void
     {
-        $query->where('open_request_id', $openRequestId);
+        $query->where('open_request_id', $requestId);
     }
 
     /**

@@ -26,6 +26,7 @@ final readonly class ChatInboxProvider implements InboxProvider
     {
         $conversation = Conversation::query()
             ->where('provider_id', $providerId)
+            ->with('directChat')
             ->firstOr(fn () => throw InboxUnavailable::forId($inboxId));
 
         return new ChatInbox($inboxId, $this->labelOf($conversation));

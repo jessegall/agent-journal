@@ -62,7 +62,7 @@ export type TerminalScreen = {
  */
 export const WAKE_GAP_MILLISECONDS = 3_000;
 
-function blank(state: TerminalScreenState, receivedAt: number): TerminalScreen {
+export function blank(state: TerminalScreenState, receivedAt: number): TerminalScreen {
     return {
         state,
         frame: null,

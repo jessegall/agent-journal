@@ -20,7 +20,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsDestructive(false)]
 #[Name('messages_acknowledge_presented')]
 #[Dispatches(AcknowledgePresentation::class)]
-#[Description('Confirm the pieces of chat text your driver showed, by batch id and the handles of its pieces; a chat message is read only once its whole body was confirmed in this driver context.')]
+#[Description('Confirm the pieces of chat text your driver showed, by batch id and the handles of its pieces; a chat '
+    .'message is read only once its whole body was confirmed in this driver context.')]
 final class MessagePresentationAcknowledgeTool extends MessageWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array
