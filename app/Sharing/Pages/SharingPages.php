@@ -19,6 +19,7 @@ use App\Sharing\Resolvers\ShareDetailResolver;
 use App\Sharing\Resolvers\ShareListResolver;
 use App\Sharing\Resolvers\SharePreviewResolver;
 use App\Sharing\Support\SharingOwnerCheck;
+use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\DomainUi;
@@ -30,15 +31,25 @@ use App\Ui\Enums\Icon;
  * with its reveal, retry and revoke, the gateway settings with configure, default and disable, and the preview of
  * sharing one record, which confirms, approves or refreshes.
  */
-final class SharingPages implements PageProvider
+final class SharingPages implements NativePartProvider, PageProvider
 {
+    /**
+     * The native parts the share layouts mount: a share's direct controls, its gateway's runtime and its audit.
+     *
+     * @return list<string>
+     */
+    public function nativeParts(): array
+    {
+        return ['AuditSection.vue', 'RuntimeSection.vue', 'ShareControls.vue'];
+    }
+
     public function pages(): array
     {
         return [
-            Page::make('shares', 'Shares', Icon::Docs, ShareListResolver::class, 'SharesWindow.vue')
+            Page::layout('shares', 'Shares', Icon::Docs, ShareListResolver::class)
                 ->at('')
                 ->visibleWhen(SharingOwnerCheck::class),
-            Page::make('share', 'Share', Icon::Docs, ShareDetailResolver::class, 'ShareWindow.vue')
+            Page::layout('share', 'Share', Icon::Docs, ShareDetailResolver::class)
                 ->at('shares/{share}')
                 ->visibleWhen(SharingOwnerCheck::class)
                 ->actions(

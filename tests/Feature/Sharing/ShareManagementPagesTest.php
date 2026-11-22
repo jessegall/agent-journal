@@ -106,19 +106,20 @@ final class ShareManagementPagesTest extends TestCase
         $list = $this->actingAs($this->owner)->get('/sharing')->assertOk()->assertInertia(fn (
             AssertableInertia $page,
         ) => $page
-            ->component('sharing/SharesWindow')
-            ->where('page.data.rows.0.id', $share->id)
-            ->where('page.data.rows.0.state', 'pending')
-            ->where('page.data.nextAfter', null));
+            ->component('layout/DeclaredLayout')
+            ->where('page.data.root.children.2.rows.0.key', $share->id)
+            ->where('page.data.root.children.2.rows.0.value', 'pending')
+            ->missing('page.data.root.children.3'));
         $this->assertStringNotContainsString(FakeShareGateway::PUBLIC_ORIGIN, (string) $list->getContent());
 
         $share->activate();
         $detail = $this->actingAs($this->owner)->get(
             "/sharing/shares/{$share->id}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('sharing/ShareWindow')
-            ->where('page.data.members.0.targetId', $this->document->id)
-            ->where('page.data.mayReveal', true));
+            ->component('layout/DeclaredLayout')
+            ->where('page.data.root.children.1.native.component', 'sharing/ShareControls')
+            ->where('page.data.root.children.1.native.props.mayReveal', true)
+            ->where('page.data.root.children.3.children.0.children.2.rows.0.key', $this->document->id));
         $this->assertStringNotContainsString(FakeShareGateway::PUBLIC_ORIGIN, (string) $detail->getContent());
 
         $this->actingAs($this->owner)->postJson("/sharing/shares/{$share->id}/link")
@@ -208,21 +209,21 @@ final class ShareManagementPagesTest extends TestCase
         $this->actingAs($this->owner)->get('/sharing?state=pending')->assertOk()->assertInertia(fn (
             AssertableInertia $page,
         ) => $page
-            ->has('page.data.rows', 1)
-            ->where('page.data.rows.0.id', $share->id));
+            ->has('page.data.root.children.2.rows', 1)
+            ->where('page.data.root.children.2.rows.0.key', $share->id));
         $first = $this->actingAs($this->owner)->get('/sharing?state=proposed')->assertOk();
         $first->assertInertia(
-            fn (AssertableInertia $page) => $page->has('page.data.rows', 25)->whereType(
-                'page.data.nextAfter',
+            fn (AssertableInertia $page) => $page->has('page.data.root.children.2.rows', 25)->whereType(
+                'page.data.root.children.3.action.query.after',
                 'string',
             ),
         );
-        $after = $first->viewData('page')['props']['page']['data']['nextAfter'];
+        $after = $first->viewData('page')['props']['page']['data']['root']['children'][3]['action']['query']['after'];
         $this->actingAs($this->owner)->get(
             "/sharing?state=proposed&after={$after}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('page.data.rows', 1)
-            ->where('page.data.nextAfter', null));
+            ->has('page.data.root.children.2.rows', 1)
+            ->missing('page.data.root.children.3'));
     }
 
     public function test_another_user_sees_no_share_and_changes_nothing(): void

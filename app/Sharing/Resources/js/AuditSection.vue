@@ -1,20 +1,22 @@
 <script setup lang="ts">
 import { dateTime } from '@kit/format';
-import type { ShareDetailData } from '@generated/types/sharing';
+import type { ShareAuditData } from '@generated/types/sharing';
+import { useWindowReload } from '@kit/useWindowQuery';
 
 /**
- * A share's audit, a page at a time: public reads set apart from the steps of its life, and what pruning removed.
+ * A share's audit as a native part of its page, a page at a time: public reads set apart from the steps of its life,
+ * each moment in the viewer's zone, and what pruning removed. Older entries are read into this window alone.
  */
-
 const actorNames = {
     owner: 'Owner',
     agent: 'Requesting agent',
     system: 'System',
     visitor: 'Unknown visitor',
 } as const;
-defineProps<{ audit: ShareDetailData['audit'] }>();
+const audit = defineProps<ShareAuditData>();
+const reload = useWindowReload();
 
-type AuditEntry = ShareDetailData['audit']['entries'][number];
+type AuditEntry = ShareAuditData['entries'][number];
 
 /** What happened: a public read says whether it was allowed, every other step is named by its type. */
 function whatHappened(entry: AuditEntry): string {
@@ -24,7 +26,17 @@ function whatHappened(entry: AuditEntry): string {
 
     return `Public read: ${entry.type === 'read_allowed' ? 'allowed' : 'denied'}`;
 }
-defineEmits<{ older: [] }>();
+
+function older(): void {
+    if (audit.nextAfter === null) {
+        return;
+    }
+
+    reload(
+        { tab: 'audit', auditAfter: audit.nextAfter },
+        { onNetworkError: () => true, onHttpException: () => true },
+    );
+}
 </script>
 
 <template>
@@ -52,7 +64,7 @@ defineEmits<{ older: [] }>();
             </tbody>
         </table>
         <template v-if="audit.nextAfter">
-            <button type="button" @click="$emit('older')">Older entries</button>
+            <button type="button" @click="older">Older entries</button>
         </template>
         <template v-if="audit.lastPrunedAt">
             <p>
