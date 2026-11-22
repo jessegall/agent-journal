@@ -14,6 +14,7 @@ use App\Ui\Layout\LayoutRowData;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\CreateRecordPartData;
+use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Data\PublicationList;
 use Domain\Documents\Enums\AttentionFilter;
@@ -62,11 +63,11 @@ final readonly class LibraryWindowResolver implements PageResolver
         }
 
         if ($documents !== null) {
-            $parts[] = $this->sectionOf('documents', 'Documents', 'doc', 'docs', $documents, $type);
+            $parts[] = $this->sectionOf('documents', 'Documents', 'doc', 'docs', $documents, $type, $filters);
         }
 
         if ($reports !== null) {
-            $parts[] = $this->sectionOf('reports', 'Reports', 'report', 'reports', $reports, $type);
+            $parts[] = $this->sectionOf('reports', 'Reports', 'report', 'reports', $reports, $type, $filters);
         }
 
         return DeclaredLayoutData::of(LayoutPartData::box('library', 'stack', ...$parts));
@@ -83,6 +84,20 @@ final readonly class LibraryWindowResolver implements PageResolver
             'query' => [$key => $case->value, 'after' => ''],
             'isCurrent' => $case === $chosen,
         ]), $cases));
+    }
+
+    /**
+     * The words of the active search and attention filter, none when the list shows every active record; the chosen
+     * type is the tab, never a filter to clear.
+     */
+    private static function filterWords(DocumentFilters $filters): string|null
+    {
+        $words = [
+            ...($filters->searches() ? ["\"{$filters->query}\""] : []),
+            ...($filters->attention !== AttentionFilter::Active ? ["the {$filters->attention->label()} filter"] : []),
+        ];
+
+        return $words === [] ? null : implode(' and ', $words);
     }
 
     private function isEmpty(PublicationList|null $list): bool
@@ -120,6 +135,7 @@ final readonly class LibraryWindowResolver implements PageResolver
         string $path,
         PublicationList $list,
         LibraryTypeFilter $type,
+        DocumentFilters $filters,
     ): LayoutPartData {
         $rows = array_map(fn (PublicationCard $card) => LayoutRowData::from([
             'key' => $card->id,
@@ -133,6 +149,22 @@ final readonly class LibraryWindowResolver implements PageResolver
 
         if ($rows !== []) {
             $parts[] = LayoutPartData::collection('rows', 'list', $rows);
+        }
+
+        $filter = self::filterWords($filters);
+
+        if ($rows === [] && $filter !== null) {
+            $lower = strtolower($heading);
+            $parts[] = LayoutPartData::notice('empty', 'empty', "No {$lower} match {$filter}.");
+            $parts[] = LayoutPartData::action(
+                'clear',
+                'Clear filter',
+                LayoutActionData::changing([
+                    'query' => '',
+                    'attention' => AttentionFilter::Active->value,
+                    'after' => '',
+                ]),
+            );
         }
 
         if ($list->hasNextPage && $type === LibraryTypeFilter::All) {

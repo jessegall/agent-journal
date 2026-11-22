@@ -43,9 +43,14 @@ defineProps<{
                     until you choose another.
                 </p>
             </template>
-            <p class="mt-4 text-small text-text-3 tabular-nums">
-                {{ progressText(reader.card) }}
-            </p>
+            <template v-if="reader.card.phase === undefined && reader.card.totalTasks === 0">
+                <p class="mt-4 text-empty text-text-3">This plan has no phases yet</p>
+            </template>
+            <template v-else>
+                <p class="mt-4 text-small text-text-3 tabular-nums">
+                    {{ progressText(reader.card) }}
+                </p>
+            </template>
         </Reader>
     </template>
     <template v-else-if="selectionMissing">

@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import Reader from '@kit/Reader';
+import { plan as planRoute } from '@generated/routes/plans';
 import type { PhaseReaderData } from '@generated/types/plans';
 
 /**
- * One phase of a plan on its own page: its tasks in their order, by number.
+ * One phase of a plan on its own page: its tasks in their order, by number; an empty phase keeps its title and leads
+ * back to its plan.
  */
 defineProps<{ data: PhaseReaderData }>();
 </script>
@@ -30,6 +33,7 @@ defineProps<{ data: PhaseReaderData }>();
         </template>
         <template v-else>
             <p class="mt-4 text-empty text-text-3">This phase has no tasks yet.</p>
+            <Link :href="planRoute.url({ plan: data.planNumber })" class="mt-2 text-small underline">Back to its plan</Link>
         </template>
     </Reader>
 </template>

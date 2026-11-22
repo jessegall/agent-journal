@@ -65,6 +65,9 @@ const exitText = computed(() => {
                 Latest: <code>{{ part.latestLine }}</code>
             </p>
         </template>
+        <template v-if="outputs.length === 0 && part.capture !== 'removed'">
+            <p class="text-text-3">No output yet. Status {{ part.lifecycle }}, ended by {{ part.end }}.</p>
+        </template>
         <template v-for="output in outputs" :key="output.stream">
             <PartOutput :output="output" />
         </template>

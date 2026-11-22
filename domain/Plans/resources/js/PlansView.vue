@@ -67,10 +67,13 @@ function submitSearch(): void {
         </template>
         <template #list>
             <div class="@container p-3">
-                <template v-if="plans.rows.length === 0">
+                <template v-if="plans.rows.length === 0 && (filters.q || filters.state)">
                     <p class="p-3 text-empty text-text-3">
                         No plans match these filters.
                     </p>
+                </template>
+                <template v-else-if="plans.rows.length === 0">
+                    <p class="p-3 text-empty text-text-3">No plans yet</p>
                 </template>
                 <div
                     class="grid grid-cols-1 gap-2.5 @[600px]:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]"
