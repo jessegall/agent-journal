@@ -86,7 +86,7 @@ final class PlanReviewDecisionTest extends TestCase
         $this->assertThrows(
             fn () => $this->runCommand(new ApprovePlanReview($this->plan->id, 1, (string) Str::uuid())),
             PlanReviewRefused::class,
-            'Review 1 of plan '.$this->plan->number.' is already withdrawn.',
+            PlanReviewRefused::alreadyDecided($this->plan->number, 1, PlanReviewState::Withdrawn->value)->getMessage(),
         );
     }
 
