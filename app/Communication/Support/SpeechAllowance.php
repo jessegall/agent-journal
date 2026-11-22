@@ -38,7 +38,8 @@ final readonly class SpeechAllowance
     {
         $agents = array_values(array_filter(
             $intervals,
-            fn (InboxInterval $interval) => $interval->actor->type->isAgent(),
+            fn (InboxInterval $interval) => $interval->actor->type->isAgent()
+                && $this->isOfferedTo($userMessage, $interval),
         ));
 
         foreach ($agents as $interval) {
@@ -48,6 +49,61 @@ final readonly class SpeechAllowance
                 $opportunity->reserveFor($userMessage);
             }
         }
+    }
+
+    /**
+     * An agent's post addressed to another agent hands the conversation over: that agent is offered a turn under the
+     * same user message once, if it has none yet; one that already spoke there waits for a new user message.
+     *
+     * @param  list<InboxInterval>  $intervals
+     */
+    public function handOff(Message $agentPost, array $intervals): void
+    {
+        if ($agentPost->addressee_type === null || $agentPost->user_root_id === null) {
+            return;
+        }
+
+        foreach ($intervals as $interval) {
+            $isPeer = $interval->actor->type->isAgent()
+                && $interval->actor_type === $agentPost->addressee_type
+                && $interval->actor_id === $agentPost->addressee_id;
+            $hasTurn = SpeechOpportunity::query()->onRoot($agentPost->user_root_id)
+                ->where('actor_type', $interval->actor_type)
+                ->where('actor_id', $interval->actor_id)
+                ->exists();
+
+            if ($isPeer && ! $hasTurn) {
+                $root = Message::query()->acrossInboxes()->findOrFail($agentPost->user_root_id);
+                SpeechOpportunity::offer($root, $interval->actor, $interval);
+            }
+        }
+    }
+
+    /**
+     * The open turn of the agent another agent's question names, taken for that question; none when the question
+     * is not one agent asking another. A turn already claimed, kept or spent makes the question fail whole.
+     *
+     * @throws SpeechRefused
+     */
+    public function targetTurnFor(ChatEnvelope $chat, Inbox $inbox): SpeechOpportunity|null
+    {
+        if (! $chat->isQuestion() || $chat->respondent === null || ! $chat->respondent->type->isAgent()) {
+            return null;
+        }
+
+        $turn = SpeechOpportunity::query()
+            ->where('inbox_id', $inbox->inboxId())
+            ->onRoot((string) $chat->userRootId)
+            ->where('actor_type', $chat->respondent->type->value)
+            ->where('actor_id', $chat->respondent->id)
+            ->lockForUpdate()
+            ->first();
+
+        if ($turn === null || $turn->state !== SpeechOpportunityState::Offered || $turn->isReserved()) {
+            throw SpeechRefused::targetBusy($chat->respondent->id);
+        }
+
+        return $turn;
     }
 
     /**
@@ -234,6 +290,20 @@ final readonly class SpeechAllowance
         }
 
         return $opportunity;
+    }
+
+    /**
+     * Whether a user's post offers this agent a turn: a broadcast offers every agent, a post addressed to an agent
+     * only that agent, and a post addressed to a user none.
+     */
+    private function isOfferedTo(Message $userMessage, InboxInterval $interval): bool
+    {
+        if ($userMessage->addressee_type === null) {
+            return true;
+        }
+
+        return $userMessage->addressee_type === $interval->actor_type
+            && $userMessage->addressee_id === $interval->actor_id;
     }
 
     private function isAskedOf(Message $userMessage, ActorIdentity $agent, int $agentCount): bool

@@ -238,6 +238,8 @@ final readonly class ChatPosting
             ? $this->speech->requireClaim($inbox, $identity, $intervalId, $claimToken, $chat)
             : null;
         $chat = $opportunity === null ? $chat : $chat->underRoot($opportunity->user_root_id);
+        // An agent asking an agent takes the target's open turn now, or fails whole before anything is published.
+        $targetTurn = $opportunity === null ? null : $this->speech->targetTurnFor($chat, $inbox);
 
         $sequence = InboxRecord::lockForSequence($inbox->inboxId());
         $event = TimelineEvent::append(
@@ -256,9 +258,14 @@ final readonly class ChatPosting
 
         $intervals = $this->writeReceipts($message, $inbox, $intervalId);
         $opportunity?->spend($message);
+        $targetTurn?->reserveFor($message);
 
         if ($identity->type === ActorType::User) {
             $this->speech->openFor($message, $intervals);
+        }
+
+        if ($opportunity !== null) {
+            $this->speech->handOff($message, $intervals);
         }
 
         return $message;
