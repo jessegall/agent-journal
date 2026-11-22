@@ -34,13 +34,14 @@ use App\Ui\Enums\Icon;
 final class SharingPages implements NativePartProvider, PageProvider
 {
     /**
-     * The native parts the share layouts mount: a share's direct controls, its gateway's runtime and its audit.
+     * The native parts the share layouts mount: a share's direct controls, its gateway's runtime and its audit, and the
+     * form that configures a gateway.
      *
      * @return list<string>
      */
     public function nativeParts(): array
     {
-        return ['AuditSection.vue', 'RuntimeSection.vue', 'ShareControls.vue'];
+        return ['AuditSection.vue', 'GatewayConfigureForm.vue', 'RuntimeSection.vue', 'ShareControls.vue'];
     }
 
     public function pages(): array
@@ -57,13 +58,7 @@ final class SharingPages implements NativePartProvider, PageProvider
                     ActionRoute::post('shares/{share}/retry', RetryShareController::class, 'retry-share'),
                     ActionRoute::delete('shares/{share}', RevokeShareController::class, 'revoke-share'),
                 ),
-            Page::make(
-                'gateways',
-                'Share gateways',
-                Icon::Docs,
-                GatewaySettingsResolver::class,
-                'GatewaySettingsWindow.vue',
-            )
+            Page::layout('gateways', 'Share gateways', Icon::Docs, GatewaySettingsResolver::class)
                 ->at('gateways')
                 ->visibleWhen(SharingOwnerCheck::class)
                 ->actions(
