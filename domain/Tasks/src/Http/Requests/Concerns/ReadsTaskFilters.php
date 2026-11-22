@@ -6,7 +6,7 @@ namespace Domain\Tasks\Http\Requests\Concerns;
 
 use Domain\Tasks\Data\TaskFiltersData;
 use Domain\Tasks\Enums\TaskHolderFilter;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStateGroup;
 use Illuminate\Validation\Rule;
 
 /**
@@ -23,7 +23,7 @@ trait ReadsTaskFilters
         return [
             'q' => ['nullable', 'string', 'max:200'],
             'page' => ['nullable', 'integer', 'min:1'],
-            'state' => ['nullable', Rule::enum(TaskState::class)],
+            'state' => ['nullable', Rule::enum(TaskStateGroup::class)],
             'holder' => ['nullable', Rule::enum(TaskHolderFilter::class)],
             'task' => ['nullable', 'string', 'regex:/^[1-9][0-9]{0,18}$/'],
         ];
@@ -37,7 +37,7 @@ trait ReadsTaskFilters
         return TaskFiltersData::from(array_filter([
             'q' => $this->string('q')->toString(),
             'page' => $this->integer('page', 1),
-            'state' => $this->enum('state', TaskState::class),
+            'state' => $this->enum('state', TaskStateGroup::class),
             'holder' => $this->enum('holder', TaskHolderFilter::class),
             'task' => $this->filled('task') ? $this->string('task')->toString() : null,
         ], fn (mixed $filterValue) => $filterValue !== null));

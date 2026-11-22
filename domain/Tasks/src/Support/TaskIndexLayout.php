@@ -20,7 +20,7 @@ use App\Support\Layout\ListPaging;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Data\TaskFiltersData;
 use Domain\Tasks\Enums\TaskHolderFilter;
-use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskStateGroup;
 use Domain\Tasks\Values\TaskCard;
 use Spatie\LaravelData\Optional;
 
@@ -78,16 +78,16 @@ final readonly class TaskIndexLayout
 
     private function choicesOf(TaskFiltersData $filters): LayoutPartData
     {
-        $chosen = $filters->state instanceof TaskState ? $filters->state->value : '';
+        $chosen = $filters->state instanceof TaskStateGroup ? $filters->state->value : '';
 
         $rows = [
+            ...array_map(fn (TaskStateGroup $group) => new LayoutRowData(
+                $group->value,
+                ucfirst($group->value),
+                query: ['state' => $group->value, 'page' => ''],
+                isCurrent: $chosen === $group->value,
+            ), TaskStateGroup::cases()),
             new LayoutRowData('all', 'All', query: ['state' => '', 'page' => ''], isCurrent: $chosen === ''),
-            ...array_map(fn (TaskState $state) => new LayoutRowData(
-                $state->value,
-                $state->badge()[0],
-                query: ['state' => $state->value, 'page' => ''],
-                isCurrent: $chosen === $state->value,
-            ), TaskState::cases()),
         ];
 
         return LayoutPartData::collection('states', 'choices', $rows);
@@ -95,7 +95,7 @@ final readonly class TaskIndexLayout
 
     private function emptyFor(TaskFiltersData $filters): ListEmpty
     {
-        if ($filters->state instanceof TaskState || $filters->search !== '') {
+        if ($filters->state instanceof TaskStateGroup || $filters->search !== '') {
             return ListEmpty::offering(
                 'No task matches these filters.',
                 LayoutPartData::action(
@@ -148,7 +148,7 @@ final readonly class TaskIndexLayout
     private function queryOf(TaskFiltersData $filters): array
     {
         return array_filter([
-            'state' => $filters->state instanceof TaskState ? $filters->state->value : null,
+            'state' => $filters->state instanceof TaskStateGroup ? $filters->state->value : null,
             'q' => $filters->search === '' ? null : $filters->search,
             'page' => $filters->page > 1 ? $filters->page : null,
             'holder' => $filters->holder === TaskHolderFilter::Any ? null : $filters->holder->value,
