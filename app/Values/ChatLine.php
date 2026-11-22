@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Support\Cards\DockIdentity;
 use Carbon\CarbonImmutable;
 
 /**
- * A plain line in a chat's timeline: its position among the messages, what it is about, its words and when it was posted.
+ * A plain line in a chat's timeline: its position among the messages, what it is about, its words, the record it
+ * shows as a card, if any, and when it was posted.
  */
 final readonly class ChatLine
 {
@@ -15,6 +17,7 @@ final readonly class ChatLine
         public int $sequence,
         public string $subject,
         public string $line,
+        public DockIdentity|null $source,
         public CarbonImmutable $postedAt,
     ) {}
 }

@@ -22,6 +22,7 @@ use App\Support\AgentOption;
 use App\Support\ChatInboxes;
 use App\Support\ChatInterval;
 use App\Support\ChatLines;
+use App\Values\ChatLine;
 use Domain\Chat\Data\ChatCapabilitiesData;
 use Domain\Chat\Data\ChatLineData;
 use Domain\Chat\Data\ChatMessageData;
@@ -121,7 +122,21 @@ final readonly class ChatConversations
     {
         $from = $reachesStart || $rows === [] ? 0 : $rows[0]->sequence;
 
-        return array_map(ChatLineData::fromChatLine(...), $this->lines->linesFrom($inboxId, $from));
+        $lines = $this->lines->linesFrom($inboxId, $from);
+        $sources = [];
+
+        foreach ($lines as $line) {
+            if ($line->source !== null) {
+                $sources["line-{$line->sequence}"] = $line->source;
+            }
+        }
+
+        $cards = $this->dock->cardsOf($sources);
+
+        return array_map(
+            fn (ChatLine $line) => ChatLineData::fromChatLine($line, $cards["line-{$line->sequence}"] ?? null),
+            $lines,
+        );
     }
 
     /**

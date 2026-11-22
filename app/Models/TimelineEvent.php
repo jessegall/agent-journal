@@ -13,6 +13,7 @@ use App\Enums\ActorType;
 use App\Enums\TimelineEventType;
 use App\Events\ChatLinePosted;
 use App\Support\ActorIdentity;
+use App\Support\Cards\DockIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -35,6 +36,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $interval_id
  * @property string|null $line_subject
  * @property string|null $line
+ * @property string|null $line_source_type
+ * @property string|null $line_source_id
  * @property CarbonImmutable $created_at
  * @property-read ActorIdentity $actor
  */
@@ -95,10 +98,16 @@ final class TimelineEvent extends Model implements EventSource, ReadableModel
 
     /**
      * Writes a plain line at the sequence the inbox lock handed out, posted for the actor it tells about, and raises it:
-     * what it is about, such as a sequence's name, and what it says of it.
+     * what it is about, such as a sequence's name, what it says of it, and the record it shows as a card, if any.
      */
-    public static function createLine(string $inboxId, int $sequence, ActorIdentity $actor, string $subject, string $line): self
-    {
+    public static function createLine(
+        string $inboxId,
+        int $sequence,
+        ActorIdentity $actor,
+        string $subject,
+        string $line,
+        DockIdentity|null $source,
+    ): self {
         $event = new self([
             'inbox_id' => $inboxId,
             'sequence' => $sequence,
@@ -108,6 +117,8 @@ final class TimelineEvent extends Model implements EventSource, ReadableModel
         ]);
         $event->line_subject = mb_substr($subject, 0, self::SUBJECT_CHARACTER_LIMIT);
         $event->line = mb_substr($line, 0, self::LINE_CHARACTER_LIMIT);
+        $event->line_source_type = $source?->type;
+        $event->line_source_id = $source?->id;
         $event->assertSaved($event->save());
         $event->raise(new ChatLinePosted($event->id, $inboxId, $sequence));
 

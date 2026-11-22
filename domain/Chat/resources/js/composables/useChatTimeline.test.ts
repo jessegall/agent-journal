@@ -84,7 +84,7 @@ describe('useChatTimeline', () => {
     });
 
     it('reads a plain line in when a line event arrives, since a line names no message', async () => {
-        const step = { sequence: 13, subject: 'Ship', line: 'Step 1 of 4', postedAt: '2026-11-22T13:43:00Z' };
+        const step = { sequence: 13, subject: 'Ship', line: 'Step 1 of 4', postedAt: '2026-11-22T13:43:00Z', card: null };
         let rowReads = 0;
         const client: ChatTimelineClient = {
             events: async () => ({

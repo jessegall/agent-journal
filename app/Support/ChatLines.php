@@ -8,6 +8,7 @@ use App\Enums\TimelineEventType;
 use App\Models\InboxInterval;
 use App\Models\InboxRecord;
 use App\Models\TimelineEvent;
+use App\Support\Cards\DockIdentity;
 use App\Values\ChatLine;
 
 /**
@@ -23,7 +24,7 @@ final readonly class ChatLines
     /** The most chats one line goes into: an agent is a member of a few chats, never of many. */
     private const int CHAT_LIMIT = 20;
 
-    public function post(ActorIdentity $agent, string $subject, string $line): void
+    public function post(ActorIdentity $agent, string $subject, string $line, DockIdentity|null $source = null): void
     {
         $inboxIds = InboxInterval::query()
             ->stillOpen()
@@ -35,7 +36,7 @@ final readonly class ChatLines
 
         foreach ($inboxIds as $inboxId) {
             $sequence = InboxRecord::lockedForSequence($inboxId)->takeSequence();
-            TimelineEvent::createLine($inboxId, $sequence, $agent, $subject, $line);
+            TimelineEvent::createLine($inboxId, $sequence, $agent, $subject, $line, $source);
         }
     }
 
@@ -58,6 +59,7 @@ final readonly class ChatLines
             $event->sequence,
             (string) $event->line_subject,
             (string) $event->line,
+            $event->line_source_type === null ? null : new DockIdentity($event->line_source_type, (string) $event->line_source_id),
             $event->created_at,
         ))->all());
     }
