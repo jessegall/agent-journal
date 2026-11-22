@@ -49,24 +49,29 @@ final readonly class ChatRevocation implements ChatParticipationEnding
         $this->endIn($user, $this->joinedBy($user));
     }
 
+    public function endForRetirement(ActorIdentity $agent): void
+    {
+        $this->endIn($agent, $this->joinedBy($agent), LeaveReason::Retired);
+    }
+
     /**
      * @param  Builder<Conversation>  $chats
      */
-    private function endIn(ActorIdentity $user, Builder $chats): void
+    private function endIn(ActorIdentity $user, Builder $chats, LeaveReason $reason = LeaveReason::Revoked): void
     {
         foreach ($chats->orderBy('inbox_id')->get() as $conversation) {
-            $this->endOne($user, $conversation);
+            $this->endOne($user, $conversation, $reason);
         }
     }
 
-    private function endOne(ActorIdentity $user, Conversation $conversation): void
+    private function endOne(ActorIdentity $user, Conversation $conversation, LeaveReason $reason): void
     {
         $inbox = $this->inboxes->resolve($conversation->inbox_id);
         $this->inboxes->accessFor($inbox)->lockExclusive($inbox);
         $interval = $this->chats->activeInterval($inbox, $user);
 
         if (! $conversation->isOwnedBy($user)) {
-            $this->departures->depart($interval, LeaveReason::Revoked);
+            $this->departures->depart($interval, $reason);
 
             return;
         }
@@ -82,7 +87,7 @@ final readonly class ChatRevocation implements ChatParticipationEnding
 
         $this->intervals->transfer($interval, $successor);
         $conversation->transferTo($successor->actor);
-        $this->departures->depart($interval, LeaveReason::Revoked);
+        $this->departures->depart($interval, $reason);
     }
 
     /**

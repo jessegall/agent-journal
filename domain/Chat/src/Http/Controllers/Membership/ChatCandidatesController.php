@@ -6,7 +6,6 @@ namespace Domain\Chat\Http\Controllers\Membership;
 
 use App\Actors\Contracts\ActorLabels;
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use Domain\Chat\Data\ChatInput;
 use Domain\Chat\Data\SpeakerData;
@@ -15,7 +14,7 @@ use Domain\Chat\Support\ChatAdmissionPolicy;
 use Illuminate\Http\JsonResponse;
 
 /**
- * The users the asker may add to a chat it is in: only eligible users of the chat's environment, through the same
+ * The users and agents the asker may add to a chat it is in: only eligible ones of the chat's environment, through the same
  * policy the add itself checks; a member who may not invite sees none.
  */
 final readonly class ChatCandidatesController
@@ -28,16 +27,13 @@ final readonly class ChatCandidatesController
         ActorLabels $labels,
     ): JsonResponse {
         $chat = $conversations->inInbox($input->inboxId);
-        $users = array_map(
-            fn (string $userId) => new ActorIdentity(ActorType::User, $userId),
-            $policy->candidates(ActorIdentity::of($actors->actor()), $chat),
-        );
-        $names = $labels->labelsFor($users);
+        $candidates = $policy->candidates(ActorIdentity::of($actors->actor()), $chat);
+        $names = $labels->labelsFor($candidates);
 
-        return new JsonResponse(['candidates' => array_map(fn (ActorIdentity $user) => SpeakerData::from([
-            'actor' => "user:{$user->id}",
-            'label' => $names->nameOf($user) ?? $user->id,
+        return new JsonResponse(['candidates' => array_map(fn (ActorIdentity $candidate) => SpeakerData::from([
+            'actor' => "{$candidate->type->value}:{$candidate->id}",
+            'label' => $names->nameOf($candidate) ?? $candidate->id,
             'driver' => null,
-        ]), $users)]);
+        ]), $candidates)]);
     }
 }

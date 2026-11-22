@@ -208,6 +208,27 @@ final readonly class ProfileBase
     }
 
     /**
+     * Whether agents of this base may be invited into chats: the main agent may, a helper or worker may not.
+     */
+    public function permitsChats(): bool
+    {
+        return $this->coordinator;
+    }
+
+    /**
+     * The profile keys whose agents may be invited into chats; a key no built-in base has is not among them.
+     *
+     * @return list<string>
+     */
+    public static function chatProfileKeys(): array
+    {
+        return array_values(array_map(
+            fn (self $base) => $base->key,
+            array_filter(self::all(), fn (self $base) => $base->permitsChats()),
+        ));
+    }
+
+    /**
      * Whether profiles from this base hold the accesses only a coordinator holds, such as dispatching work.
      */
     public function isCoordinator(): bool

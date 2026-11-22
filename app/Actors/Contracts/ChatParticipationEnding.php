@@ -21,4 +21,9 @@ interface ChatParticipationEnding
      * The user's account was disabled: every chat it is in ends for it.
      */
     public function endEverywhere(ActorIdentity $user): void;
+
+    /**
+     * The agent was retired: every chat it is in ends for it, its questions closing because their respondent left.
+     */
+    public function endForRetirement(ActorIdentity $agent): void;
 }

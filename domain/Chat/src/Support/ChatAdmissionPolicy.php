@@ -8,6 +8,7 @@ use App\Actors\Contracts\ChatEligibility;
 use App\Actors\Enums\ActorType;
 use App\Actors\Enums\ChatPermission;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Support\AgentChatAdmission;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Support\ChatInboxes;
 use Domain\Chat\Models\Conversation;
@@ -15,7 +16,8 @@ use Domain\Chat\Models\Conversation;
 /**
  * Who may bring whom into a chat: one check of the inviter and the target together, shared by candidate search and
  * by the add itself. The inviter must be a member of the chat and hold the manage permission in its environment; the
- * target must be a user admitted there who may receive invitations and is not a member yet. Agents come later.
+ * target must be a user admitted there who may receive invitations, or an agent its operator allowed this inviter to
+ * bring there, and not a member yet.
  */
 final readonly class ChatAdmissionPolicy
 {
@@ -23,6 +25,7 @@ final readonly class ChatAdmissionPolicy
 
     public function __construct(
         private ChatEligibility $eligibility,
+        private AgentChatAdmission $agents,
         private ChatInboxes $chats,
         private InboxResolver $inboxes,
     ) {}
@@ -34,16 +37,19 @@ final readonly class ChatAdmissionPolicy
 
     public function mayAdd(ActorIdentity $inviter, ActorIdentity $target, Conversation $chat): bool
     {
-        return $this->mayInvite($inviter, $chat)
-            && $target->type === ActorType::User
-            && ! $this->isMember($target, $chat)
-            && $this->eligibility->holds($target, ChatPermission::ReceiveInvitations, $chat->environment_id);
+        if (! $this->mayInvite($inviter, $chat) || $this->isMember($target, $chat)) {
+            return false;
+        }
+
+        return $target->type === ActorType::Agent
+            ? $this->agents->mayJoin($target, $inviter, $chat->environment_id)
+            : $this->eligibility->holds($target, ChatPermission::ReceiveInvitations, $chat->environment_id);
     }
 
     /**
-     * The ids of the users the inviter may add to the chat, for candidate search; none when it may invite nobody.
+     * The users and agents the inviter may add to the chat, for candidate search; none when it may invite nobody.
      *
-     * @return list<string>
+     * @return list<ActorIdentity>
      */
     public function candidates(ActorIdentity $inviter, Conversation $chat): array
     {
@@ -51,11 +57,18 @@ final readonly class ChatAdmissionPolicy
             return [];
         }
 
-        $userIds = $this->eligibility->invitableUserIds($chat->environment_id, self::CANDIDATE_LIMIT);
+        $users = array_map(
+            fn (string $userId) => new ActorIdentity(ActorType::User, $userId),
+            $this->eligibility->invitableUserIds($chat->environment_id, self::CANDIDATE_LIMIT),
+        );
+        $agents = array_map(
+            fn (string $agentId) => new ActorIdentity(ActorType::Agent, $agentId),
+            $this->agents->invitableAgentIds($inviter, $chat->environment_id, self::CANDIDATE_LIMIT),
+        );
 
         return array_values(array_filter(
-            $userIds,
-            fn (string $userId) => ! $this->isMember(new ActorIdentity(ActorType::User, $userId), $chat),
+            [...$users, ...$agents],
+            fn (ActorIdentity $candidate) => ! $this->isMember($candidate, $chat),
         ));
     }
 

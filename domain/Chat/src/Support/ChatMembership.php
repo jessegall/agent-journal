@@ -6,6 +6,7 @@ namespace Domain\Chat\Support;
 
 use App\Actors\Contracts\ChatEligibility;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Support\AgentChatAdmission;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Enums\IntervalRole;
@@ -24,12 +25,18 @@ use Illuminate\Support\Str;
 /**
  * Who is in a chat, changed under its locks: the target's admission first, then the chat inbox; every rule is checked
  * again once both are held. Only the owner adds, removes, hands over and closes; any member may leave, except the
- * owner while others remain. An agent chat stays a pair.
+ * owner while others remain. A chat with an agent stays a pair of the agent and one user.
  */
 final readonly class ChatMembership
 {
+    /**
+     * A chat with an agent holds its agent and one user, until larger agent chats are opened.
+     */
+    private const int AGENT_CHAT_SIZE = 2;
+
     public function __construct(
         private ChatEligibility $eligibility,
+        private AgentChatAdmission $agents,
         private ChatAdmissionPolicy $policy,
         private InboxResolver $inboxes,
         private ChatInboxes $chats,
@@ -71,7 +78,7 @@ final readonly class ChatMembership
     public function add(ActorIdentity $actor, string $inboxId, ActorIdentity $target): void
     {
         $conversation = Conversation::forInbox($inboxId);
-        $this->eligibility->lockAdmission($target, $conversation->environment_id);
+        $this->lockAdmissionOf($target, $conversation->environment_id);
         $inbox = $this->locked($conversation);
         $this->assertOwner($actor, $conversation);
 
@@ -80,13 +87,14 @@ final readonly class ChatMembership
         }
 
         $members = $this->chats->activeIntervals($inbox);
+        $holdsAgent = array_any($members, fn (ChatInterval $member) => $member->actor->type->isAgent());
 
-        if ($target->type->isAgent()) {
-            throw ChatMembershipRefused::agentInUserGroup($inboxId);
+        if ($holdsAgent && count($members) >= self::AGENT_CHAT_SIZE) {
+            throw ChatMembershipRefused::agentChat($inboxId);
         }
 
-        if (array_any($members, fn (ChatInterval $member) => $member->actor->type->isAgent())) {
-            throw ChatMembershipRefused::agentChat($inboxId);
+        if ($target->type->isAgent() && count($members) >= self::AGENT_CHAT_SIZE) {
+            throw ChatMembershipRefused::agentInUserGroup($inboxId);
         }
 
         if (count($members) >= InboxMembers::LIMIT) {
@@ -172,6 +180,20 @@ final readonly class ChatMembership
         $inbox = $this->locked($conversation);
         $this->assertOwner($actor, $conversation);
         $this->closeLocked($conversation, $inbox, $actor);
+    }
+
+    /**
+     * Locks what admits the target first: a user's account and grant, an agent's chat permission.
+     */
+    private function lockAdmissionOf(ActorIdentity $target, string|null $environmentId): void
+    {
+        if ($target->type->isAgent()) {
+            $this->agents->lockPermission($target, $environmentId);
+
+            return;
+        }
+
+        $this->eligibility->lockAdmission($target, $environmentId);
     }
 
     private function closeLocked(Conversation $conversation, Inbox $inbox, ActorIdentity $actor): void
