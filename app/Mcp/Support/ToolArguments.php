@@ -271,6 +271,42 @@ final readonly class ToolArguments
     }
 
     /**
+     * Whether the caller set a true/false argument; leaving it out is false.
+     *
+     * @throws ToolArgumentInvalid
+     */
+    public function flag(string $name): bool
+    {
+        if (! array_key_exists($name, $this->arguments)) {
+            return false;
+        }
+
+        if (! is_bool($this->arguments[$name])) {
+            throw ToolArgumentInvalid::for($name, 'true or false');
+        }
+
+        return $this->arguments[$name];
+    }
+
+    /**
+     * The whole number the caller sent, or null when it sent none.
+     *
+     * @throws ToolArgumentInvalid
+     */
+    public function optionalPositiveInteger(string $name): int|null
+    {
+        if (! array_key_exists($name, $this->arguments)) {
+            return null;
+        }
+
+        if (! is_int($this->arguments[$name])) {
+            throw ToolArgumentInvalid::for($name, 'a whole number');
+        }
+
+        return $this->arguments[$name];
+    }
+
+    /**
      * The text of an argument the caller may leave out, or null when it did.
      *
      * @throws ToolArgumentInvalid

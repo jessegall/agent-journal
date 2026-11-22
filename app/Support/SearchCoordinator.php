@@ -505,7 +505,12 @@ final readonly class SearchCoordinator
         ));
         $narrower = count($sources) > 1 && $progress->within === null ? $others : [];
 
-        return new SearchAnswer(SearchStatus::Incomplete, $emitted, narrowerScopes: $narrower);
+        return new SearchAnswer(
+            SearchStatus::Incomplete,
+            $emitted,
+            narrowerScopes: $narrower,
+            words: $narrower === [] ? null : $progress->words->text,
+        );
     }
 
     /**

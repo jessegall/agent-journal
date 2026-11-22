@@ -10,7 +10,8 @@ use App\Enums\SearchStatus;
 /**
  * What one search call answers: its status, the hits in the one global order, a direct open for a complete
  * reference, the sources to choose from when several recognize it, the continuation to call next, the narrower
- * scopes that avoid a stalled source, and the scope alternatives when the scope could not be used.
+ * scopes that avoid a stalled source with the words to search them for, and the scope alternatives when the scope
+ * could not be used.
  */
 final readonly class SearchAnswer
 {
@@ -27,6 +28,7 @@ final readonly class SearchAnswer
         public string|null $continuation = null,
         public array $narrowerScopes = [],
         public ScopeResolution|null $scope = null,
+        public string|null $words = null,
     ) {}
 
     public static function noSources(): self
@@ -46,6 +48,20 @@ final readonly class SearchAnswer
         return new self($status, scope: $scope);
     }
 
+    /**
+     * The fresh scoped searches an incomplete answer offers: the same words within each narrower scope.
+     *
+     * @return list<array{query: string, within: string}>
+     */
+    public function narrowerSearches(): array
+    {
+        if ($this->words === null) {
+            return [];
+        }
+
+        return array_map(fn (string $key) => ['query' => $this->words, 'within' => $key], $this->narrowerScopes);
+    }
+
     public function withContinuation(string|null $continuation): self
     {
         return new self(
@@ -56,6 +72,7 @@ final readonly class SearchAnswer
             $continuation,
             $this->narrowerScopes,
             $this->scope,
+            $this->words,
         );
     }
 }

@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
+use App\Mcp\Contracts\SearchEntry;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\SearchHit;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Support\ReadGrant;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\JsonSchema\JsonSchema;
 
-final readonly class JournalSearch
+final readonly class JournalSearch implements SearchEntry
 {
     public const string TOOL = 'search';
 
@@ -21,6 +23,21 @@ final readonly class JournalSearch
         private Continuations $continuations,
         private ReadGrant $reads,
     ) {}
+
+    public function schema(JsonSchema $schema): array
+    {
+        return [
+            'query' => $schema->string()->min(2)->max(200),
+            'types' => $schema->array()->items($schema->string()->max(64))->max(12),
+            'page' => $schema->integer()->min(1),
+            'continuation' => $schema->string(),
+        ];
+    }
+
+    public function description(): string
+    {
+        return 'Search visible journal records and page through matches by type.';
+    }
 
     public function search(ToolArguments $arguments): ToolResult
     {
