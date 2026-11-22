@@ -27,6 +27,7 @@ enum DriverCapability: string
     case ExactResume = 'exact-resume';
     case RunContained = 'run-contained';
     case NativeBinaryInput = 'native-binary-input';
+    case SharedAccount = 'shared-account';
 
     public const string NO_NATIVE_BINARY = 'An attachment reaches an agent as a journal reference it reads with the '
         .'attachment tool; no driver takes a file\'s bytes as native input yet.';

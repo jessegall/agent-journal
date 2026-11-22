@@ -17,11 +17,19 @@ final readonly class CodexTerminalCapabilities implements DriverCapabilities
 {
     public const string NOT_PROVEN = 'The Codex terminal is not proven on any host yet; use Codex headless meanwhile.';
 
+    public const string RUNS_ALONE = 'The Codex terminal refreshes its own sign-in, so it runs alone on its account.';
+
     public function capabilities(BoundTarget $target): SupportSnapshot
     {
-        return SupportSnapshot::allowingAllBut(array_map(
-            fn (DriverCapability $capability) => [$capability, OperationSupport::unavailable(self::NOT_PROVEN)],
-            DriverCapability::cases(),
-        ));
+        return SupportSnapshot::allowingAllBut([
+            ...array_map(
+                fn (DriverCapability $capability) => [$capability, OperationSupport::unavailable(self::NOT_PROVEN)],
+                array_filter(
+                    DriverCapability::cases(),
+                    fn (DriverCapability $capability) => $capability !== DriverCapability::SharedAccount,
+                ),
+            ),
+            [DriverCapability::SharedAccount, OperationSupport::unsupported(self::RUNS_ALONE)],
+        ]);
     }
 }

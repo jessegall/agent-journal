@@ -18,6 +18,7 @@ use App\Models\AgentRuntime;
 use App\Models\AgentSession;
 use App\Models\Host;
 use App\Models\SessionPolicy;
+use App\Support\AccountSharing;
 use App\Support\AgentSessions;
 use App\Support\ArrangementSetting;
 use App\Support\ContainerAdmission;
@@ -41,6 +42,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         private BuiltInStartProfiles $builtInProfiles,
         private ContainerAdmission $containers,
         private DriverCatalogue $drivers,
+        private AccountSharing $accountSharing,
     ) {}
 
     public function handle(OpenAgentRuntimeCommand $command): OpenedRuntime
@@ -80,9 +82,8 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
             $this->drivers,
         );
 
-        $this->arrangement->assertContainable(
-            $this->drivers->pinned($command->driver, $command->variant)->support->supportOf(DriverCapability::RunContained),
-        );
+        $pinned = $this->drivers->pinned($command->driver, $command->variant);
+        $this->arrangement->assertContainable($pinned->support->supportOf(DriverCapability::RunContained));
 
         $agent = Agent::query()->findOrFail($command->agentId);
         $this->sessions->lockForStart($agent);
@@ -95,6 +96,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         }
 
         $account = $this->accounts->forStart($selection->driver);
+        $this->accountSharing->assertMayStart($pinned, $account);
 
         $started = $this->starts->start(
             $agent,

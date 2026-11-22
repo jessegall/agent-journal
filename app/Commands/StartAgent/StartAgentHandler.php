@@ -26,6 +26,7 @@ use App\Models\Host;
 use App\Models\SessionPolicy;
 use App\Models\StartRecord;
 use App\Resolvers\Support\PendingStartSecrets;
+use App\Support\AccountSharing;
 use App\Support\ActorIdentity;
 use App\Support\AgentSessions;
 use App\Support\AgentWakes;
@@ -61,6 +62,7 @@ final readonly class StartAgentHandler implements CommandHandler
         private PinnedBuilds $builds,
         private DriverCatalogue $drivers,
         private DriverAdapters $adapters,
+        private AccountSharing $accountSharing,
     ) {}
 
     /**
@@ -79,9 +81,10 @@ final readonly class StartAgentHandler implements CommandHandler
             throw StartPreviewStale::since($request->previewRevision, $this->drivers->revision());
         }
 
+        $pinned = $this->drivers->pinned($request->selection->driver, $request->variant, $request->neededCapabilities());
         $record = StartRecord::accept(
             $request,
-            $this->drivers->pinned($request->selection->driver, $request->variant, $request->neededCapabilities()),
+            $pinned,
             $dispatcher,
             $this->replyInboxes->replyInboxIdFor($dispatcher),
         );
@@ -112,6 +115,7 @@ final readonly class StartAgentHandler implements CommandHandler
                 $request->chosenAccount->accountId,
                 $request->chosenAccount->reviewedSignIn,
             );
+        $this->accountSharing->assertMayStart($pinned, $account);
 
         $parent = $request->parentSessionId === null
             ? null
