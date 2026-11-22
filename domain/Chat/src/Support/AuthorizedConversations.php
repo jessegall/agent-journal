@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Domain\Chat\Support;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\AgentOption;
@@ -14,7 +16,7 @@ use App\Communication\Exceptions\InboxUnavailable;
 use Domain\Chat\Exceptions\ConversationUnavailable;
 
 /**
- * The conversation the current actor holds with one agent it may see: its own inbox and the agent's. Two inbox ids
+ * The current actor and one agent it may see, with their desk inboxes, as the key to their direct chat. Two inbox ids
  * alone never authorize, and every refusal reads the same, before any placement or source is looked up.
  */
 final readonly class AuthorizedConversations
@@ -34,10 +36,7 @@ final readonly class AuthorizedConversations
      */
     public function withVisibleAgent(AgentOption $agent): ConversationPeers
     {
-        return new ConversationPeers(
-            $this->ownInboxes->preferredFor($this->actors->actor())->inboxId(),
-            $this->destinations->resolve($agent->assignee)->inboxId(),
-        );
+        return $this->peersWith($agent);
     }
 
     /**
@@ -46,14 +45,24 @@ final readonly class AuthorizedConversations
     public function withAgent(string $agentId): ConversationPeers
     {
         try {
-            $agent = $this->agents->visibleAgent($agentId);
-
-            return new ConversationPeers(
-                $this->ownInboxes->preferredFor($this->actors->actor())->inboxId(),
-                $this->destinations->resolve($agent->assignee)->inboxId(),
-            );
+            return $this->peersWith($this->agents->visibleAgent($agentId));
         } catch (StackTargetRefused|InboxUnavailable $refused) {
             throw ConversationUnavailable::withPeer($refused);
         }
+    }
+
+    /**
+     * @throws InboxUnavailable
+     */
+    private function peersWith(AgentOption $agent): ConversationPeers
+    {
+        $actor = $this->actors->actor();
+
+        return new ConversationPeers(
+            $this->ownInboxes->preferredFor($actor)->inboxId(),
+            $this->destinations->resolve($agent->assignee)->inboxId(),
+            ActorIdentity::of($actor),
+            new ActorIdentity(ActorType::Agent, $agent->agentId),
+        );
     }
 }

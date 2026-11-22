@@ -145,7 +145,7 @@ final readonly class ChatWindowResolver implements PageResolver
     {
         $peers = $this->conversations->withVisibleAgent($agent);
         $page = $this->messages->between($peers->ownInboxId, $peers->peerInboxId, null, MessagePage::DEFAULT_LIMIT);
-        $dock = $this->dock->page($peers, $this->request->dockToken());
+        $dock = $this->dock->page($peers->existingConversation(), $this->request->dockToken());
 
         return ConversationData::fromPage(
             $peers->ownInboxId,

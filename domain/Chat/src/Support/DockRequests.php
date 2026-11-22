@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Support;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Communication\Contracts\ActorInboxResolver;
+use App\Actors\Support\ActorIdentity;
 use App\Docking\Cards\DockIdentity;
 use App\Docking\Exceptions\DockDefinitionInvalid;
 use App\Docking\Exceptions\DockSourceUnavailable;
@@ -25,13 +25,12 @@ final readonly class DockRequests
     public function __construct(
         private AuthorizedConversations $conversations,
         private CurrentActor $actors,
-        private ActorInboxResolver $inboxes,
         private DockRegistration $registry,
         private Container $container,
     ) {}
 
     /**
-     * The conversation the current actor holds with the agent, made the first time.
+     * The direct chat the current actor holds with the agent.
      *
      * @throws ConversationUnavailable
      */
@@ -58,7 +57,7 @@ final readonly class DockRequests
             return $named;
         }
 
-        $joined = Conversation::query()->joinedBy($this->ownInboxId())->limit(2)->get();
+        $joined = Conversation::query()->joinedBy($this->actor())->limit(2)->get();
 
         if ($joined->isEmpty()) {
             throw ConversationUnavailable::none();
@@ -82,23 +81,13 @@ final readonly class DockRequests
     }
 
     /**
-     * The caller's own inbox and the other side of a conversation it takes part in.
-     */
-    public function peersIn(Conversation $conversation): ConversationPeers
-    {
-        $own = $this->ownInboxId();
-
-        return new ConversationPeers($own, $conversation->peerOf($own));
-    }
-
-    /**
-     * Refuses an actor whose own inbox is not one side of the conversation, the same way as an unknown one.
+     * Refuses an actor that takes no part in the conversation, the same way as an unknown one.
      *
      * @throws ConversationUnavailable
      */
     public function assertJoined(Conversation $conversation): void
     {
-        if (! $conversation->joins($this->ownInboxId())) {
+        if (! $conversation->joins($this->actor())) {
             throw ConversationUnavailable::missing($conversation->id);
         }
     }
@@ -129,8 +118,8 @@ final readonly class DockRequests
         $definition->assertOwns($provider->requireReadable($definition, $source->id));
     }
 
-    private function ownInboxId(): string
+    private function actor(): ActorIdentity
     {
-        return $this->inboxes->preferredFor($this->actors->actor())->inboxId();
+        return ActorIdentity::of($this->actors->actor());
     }
 }

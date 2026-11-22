@@ -18,6 +18,6 @@ final readonly class DockListController
     {
         $conversation = $requests->chosenConversation($call->chat);
 
-        return $listing->of($conversation, $requests->peersIn($conversation), $call->limit);
+        return $listing->of($conversation, $call->limit);
     }
 }

@@ -40,6 +40,8 @@ final readonly class DockProjection
 
     public const int BYTE_LIMIT = 256 * 1024;
 
+    private const string UNOPENED_CHAT = 'unopened';
+
     private const int SUMMARY_CHARACTER_LIMIT = 200;
 
     public function __construct(
@@ -51,13 +53,18 @@ final readonly class DockProjection
         private Container $container,
     ) {}
 
-    public function page(ConversationPeers $peers, string|null $token, int $limit = self::CARD_LIMIT): DockPageData
-    {
+    /**
+     * One page of the chat's docked sources the actor may read; a chat not yet opened shows none.
+     */
+    public function page(
+        Conversation|null $conversation,
+        string|null $token,
+        int $limit = self::CARD_LIMIT,
+    ): DockPageData {
         $actor = $this->actors->actor();
         $identity = ActorIdentity::of($actor);
         $viewer = "{$identity->type->value}:{$identity->id}";
-        $conversation = $peers->existingConversation();
-        $conversationKey = $conversation === null ? "{$peers->ownInboxId}:{$peers->peerInboxId}" : $conversation->id;
+        $conversationKey = $conversation === null ? self::UNOPENED_CHAT : $conversation->id;
         $first = DockCursor::start($viewer, $conversationKey);
         $end = DockCursor::end($viewer, $conversationKey);
 

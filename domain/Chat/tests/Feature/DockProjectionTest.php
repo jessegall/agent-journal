@@ -19,6 +19,7 @@ use Domain\Chat\Support\ConversationPeers;
 use Domain\Chat\Support\DockProjection;
 use Domain\Chat\Tests\TestCase;
 use Tests\Fixtures\Docking\ProjectionDockable;
+use Tests\Support\OpensPairChats;
 use Tests\Fixtures\Docking\ProjectionDockableProvider;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
@@ -32,6 +33,7 @@ use Tests\Support\WritesInboxMessages;
  */
 final class DockProjectionTest extends TestCase
 {
+    use OpensPairChats;
     use CommitsHookRows;
     use StartsAgentRequests;
     use StartsMainAgents;
@@ -68,8 +70,7 @@ final class DockProjectionTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $agentId = $this->startedMainAgentSession()->agent_id;
-        $this->inboxOf(ActorIdentity::of($this->owner));
-        $this->inboxOf(new ActorIdentity(ActorType::Agent, $agentId));
+        $this->pairChat(ActorIdentity::of($this->owner), new ActorIdentity(ActorType::Agent, $agentId));
 
         $this->app->make(DockRegistration::class)->register(
             self::TYPE,
@@ -141,7 +142,7 @@ final class DockProjectionTest extends TestCase
 
     private function page(string|null $token): DockPageData
     {
-        return $this->app->make(DockProjection::class)->page($this->peers, $token);
+        return $this->app->make(DockProjection::class)->page($this->peers->existingConversation(), $token);
     }
 
     /**

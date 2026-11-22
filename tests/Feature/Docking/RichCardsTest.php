@@ -11,7 +11,6 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\DockProjection;
-use Domain\Chat\Support\DockRequests;
 use Domain\Documents\Commands\CloseReport;
 use Domain\Documents\Commands\CreateReport;
 use Domain\Plans\Models\Plan;
@@ -20,6 +19,7 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\OpensPairChats;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
 use Tests\Fixtures\Modules\Notes\Support\ReleaseReview;
@@ -38,6 +38,7 @@ use Tests\TestCase;
 #[TimeLimit(8, 'Docks four kinds of source through MCP and reads the projected cards.')]
 final class RichCardsTest extends TestCase
 {
+    use OpensPairChats;
     use CommitsHookRows;
     use InstallsNotesModule;
     use SendsMcpFrames;
@@ -84,10 +85,7 @@ final class RichCardsTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->agent = TestStart::start();
-        $this->conversation = Conversation::between(
-            $this->inboxOf(ActorIdentity::of($owner))->inboxId(),
-            $this->inboxOf(ActorIdentity::of($this->agent->agent))->inboxId(),
-        );
+        $this->conversation = $this->pairChat(ActorIdentity::of($owner), ActorIdentity::of($this->agent->agent));
     }
 
     protected function tearDown(): void
@@ -166,8 +164,7 @@ final class RichCardsTest extends TestCase
     private function cards(): string
     {
         $this->agent->startRequest($this->app);
-        $requests = $this->app->make(DockRequests::class);
-        $page = $this->app->make(DockProjection::class)->page($requests->peersIn($this->conversation), null);
+        $page = $this->app->make(DockProjection::class)->page($this->conversation, null);
 
         return (string) json_encode($page->cards, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }

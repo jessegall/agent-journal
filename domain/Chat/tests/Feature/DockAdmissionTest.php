@@ -23,6 +23,7 @@ use Domain\Chat\Values\DockResult;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\OpensPairChats;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\StartsMainAgents;
 use Tests\Support\WritesInboxMessages;
@@ -34,6 +35,7 @@ use Tests\Support\WritesInboxMessages;
  */
 final class DockAdmissionTest extends TestCase
 {
+    use OpensPairChats;
     use CommitsHookRows;
     use StartsAgentRequests;
     use StartsMainAgents;
@@ -73,8 +75,7 @@ final class DockAdmissionTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->agentId = $this->startedMainAgentSession()->agent_id;
-        $this->inboxOf(ActorIdentity::of($this->owner));
-        $this->inboxOf(new ActorIdentity(ActorType::Agent, $this->agentId));
+        $this->pairChat(ActorIdentity::of($this->owner), new ActorIdentity(ActorType::Agent, $this->agentId));
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);
         $this->startUserRequestAs($this->owner->id);
         $this->conversationId = $this->app->make(DockRequests::class)->conversationWith($this->agentId)->id;
@@ -147,9 +148,9 @@ final class DockAdmissionTest extends TestCase
 
     public function test_a_conversation_the_user_takes_no_part_in_is_refused(): void
     {
-        $strangers = Conversation::between(
-            $this->inboxOf(new ActorIdentity(ActorType::Agent, 'agent-one'))->inboxId(),
-            $this->inboxOf(new ActorIdentity(ActorType::Agent, 'agent-two'))->inboxId(),
+        $strangers = $this->pairChat(
+            new ActorIdentity(ActorType::Agent, 'agent-one'),
+            new ActorIdentity(ActorType::Agent, 'agent-two'),
         );
 
         $this->expectException(ConversationUnavailable::class);

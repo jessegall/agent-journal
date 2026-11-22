@@ -42,7 +42,7 @@ final class DockListTool extends JournalReadTool
 
         $largest = DockProjection::LARGEST_CARD_LIMIT;
         $limit = $arguments->positiveIntegerOr('limit', $largest, $largest);
-        $listed = $this->listing->of($conversation, $this->requests->peersIn($conversation), $limit);
+        $listed = $this->listing->of($conversation, $limit);
 
         return ToolResult::ok($listed->toArray());
     }
