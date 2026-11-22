@@ -51,7 +51,7 @@ code{font-family:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;font-size:.
 svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
 svg.s13{width:13px;height:13px}svg.s14{width:14px;height:14px}
 .prog-claude{color:#D97757}.prog-codex{color:var(--text)}
-.side{width:216px;flex:none;background:var(--side);border-right:1px solid var(--line);padding:12px 8px;display:flex;flex-direction:column;gap:1px;position:relative;z-index:20}
+.side{width:216px;flex:none;background:var(--side);border-right:1px solid var(--line);padding:12px 8px;display:flex;flex-direction:column;gap:1px;position:relative;z-index:100}
 .side.rail{width:56px}
 .brandrow{display:flex;align-items:center;gap:8px;padding:2px 8px 14px;font-weight:600;white-space:nowrap;overflow:hidden}
 .brandrow b{width:20px;height:20px;flex:none;border-radius:var(--radius-control);background:var(--brand);color:var(--on-brand);display:inline-flex;align-items:center;justify-content:center;font-size:var(--text-meta)}
@@ -63,7 +63,8 @@ svg.s13{width:13px;height:13px}svg.s14{width:14px;height:14px}
 .side.rail .nav{justify-content:center;padding:7px 0}
 /* The rail's labels show on hover and on keyboard focus. */
 .side.rail .nav:hover::after,.side.rail .nav:focus-visible::after{content:attr(data-tip);position:absolute;left:48px;top:50%;transform:translateY(-50%);background:var(--raised);border:1px solid var(--border-2);border-radius:var(--radius-control);padding:3px 8px;font-size:var(--text-small);color:var(--text);box-shadow:var(--shadow-pop);white-space:nowrap}
-.main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg);position:relative}
+/* .main is not positioned: menus, popovers, the palette and its scrim are measured from #app and cover the whole app. */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg)}
 .topbar{min-height:40px;flex:none;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);padding:0 10px 0 16px;color:var(--text-2)}
 .crumb{display:flex;align-items:center;gap:8px;min-width:0}
 .crumb .sq{width:8px;height:8px;border-radius:2px;background:var(--brand)}
@@ -76,7 +77,7 @@ svg.s13{width:13px;height:13px}svg.s14{width:14px;height:14px}
 .ib:focus-visible,.btn:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 .ib[aria-pressed=true]{background:var(--sel);color:var(--text)}
 .ib[disabled]{opacity:.4;pointer-events:none}
-.count{position:absolute;top:1px;right:0;min-width:14px;height:14px;border-radius:7px;background:var(--brand);color:var(--on-brand);font-size:var(--text-meta);font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 3px;line-height:1}
+.count{position:absolute;top:-2px;right:-2px;min-width:14px;height:14px;border-radius:7px;background:var(--brand);color:var(--on-brand);font-size:var(--text-meta);font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 3px;line-height:1}
 .pill{display:inline-flex;gap:7px;align-items:center;height:26px;padding:0 10px 0 8px;border-radius:999px;border:1px solid var(--border-2);background:var(--raised);font:inherit;font-size:var(--text-small);color:var(--text-2);cursor:pointer}
 .pill:hover{color:var(--text);border-color:var(--border-3)}
 .pill:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
@@ -112,18 +113,20 @@ svg.s13{width:13px;height:13px}svg.s14{width:14px;height:14px}
 .btn[disabled]{opacity:.45;pointer-events:none}
 .chip{display:inline-flex;align-items:center;gap:4px;font-size:var(--text-badge);line-height:17px;padding:0 6px;border-radius:var(--radius-badge);border:1px solid var(--border-2);color:var(--text-2);white-space:nowrap}
 .chip.faint{border-color:var(--line);color:var(--text-3)}
-a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--border-3);text-underline-offset:2px;cursor:pointer}
+button.lk{background:none;border:0;padding:0;font:inherit}
+a.lk,button.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--border-3);text-underline-offset:2px;cursor:pointer}
 .meter{height:4px;border-radius:2px;background:var(--sel);overflow:hidden;display:inline-block}
 .meter i{display:block;height:100%;background:var(--brand)}
 
 /* ---------- Home: the grid of panes, floating windows ---------- */
 .desk{position:relative;flex:1;min-height:0;overflow:hidden}
-.pane{position:absolute;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+/* Each pane is its own stacking context, so what opens inside it (a panel, a picker) stays below floating windows. */
+.pane{position:absolute;display:flex;flex-direction:column;background:var(--bg);overflow:hidden;isolation:isolate}
 .pane.droptarget{outline:2px solid var(--focus);outline-offset:-3px}
 .strip{height:34px;flex:none;display:flex;align-items:stretch;gap:8px;border-bottom:1px solid var(--border);background:var(--side);padding:0 5px 0 14px;user-select:none}
 .tabs{display:flex;gap:12px;min-width:0;flex:1;overflow:hidden}
 /* Flat tabs, as PaneTabs.vue draws them: the active tab's 1 px line flush with the strip's bottom edge. */
-.tab{position:relative;display:inline-flex;align-items:center;gap:6px;flex:none;font-size:var(--text-badge);letter-spacing:.03em;white-space:nowrap;color:var(--text-3);cursor:pointer;touch-action:none;transition:color var(--duration-hover) var(--ease-journal)}
+.tab{position:relative;display:inline-flex;align-items:center;gap:6px;flex:0 1 auto;min-width:56px;overflow:hidden;text-overflow:ellipsis;font-size:var(--text-badge);letter-spacing:.03em;white-space:nowrap;color:var(--text-3);cursor:pointer;touch-action:none;transition:color var(--duration-hover) var(--ease-journal)}
 .tab:hover{color:var(--text-2)}
 .tab[aria-selected=true]{color:var(--text);box-shadow:inset 0 -1px 0 var(--border-3)}
 .pane.active .tab[aria-selected=true]{box-shadow:inset 0 -1px 0 var(--brand)}
@@ -139,6 +142,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .split.row::after{left:3px;top:0;bottom:0;width:2px}.split.col::after{top:3px;left:0;right:0;height:2px}
 .split:hover::after,.split:focus-visible::after,.split.dragging::after{background:var(--border-3)}
 .split:focus-visible{outline:none}
+.split:focus-visible::after{background:var(--focus)}
 .win{position:absolute;display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--border-2);border-radius:var(--radius-card);box-shadow:var(--shadow-window);overflow:hidden;min-width:260px}
 .win.active{border-color:var(--border-3)}
 .win.min{height:36px!important}
@@ -155,7 +159,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .ghost,.dchip{position:absolute;pointer-events:none;z-index:190;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:var(--radius-button);border:1px solid var(--border-3);background:var(--raised);box-shadow:var(--shadow-pop);font-size:var(--text-badge);color:var(--text);white-space:nowrap}
 /* Version 5's drop compass: five 26 px cells in a cross; the aimed one fills. */
 .compass{position:absolute;z-index:82;display:grid;grid-template-columns:repeat(3,26px);grid-template-rows:repeat(3,26px);gap:3px;pointer-events:none}
-.compass i{border-radius:var(--radius-control);border:1px solid var(--border-3);background:var(--raised)}
+.compass i{border-radius:var(--radius-control);border:1px solid var(--text-4);background:var(--raised);box-shadow:var(--shadow-pop)}
 .compass i.on{background:var(--brand);border-color:var(--brand)}
 .compass i.c{grid-column:2;grid-row:2}.compass i.l{grid-column:1;grid-row:2}.compass i.r{grid-column:3;grid-row:2}.compass i.u{grid-column:2;grid-row:1}.compass i.d{grid-column:2;grid-row:3}
 .caption{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:195;background:var(--raised);border:1px solid var(--border-3);border-radius:var(--radius-menu);box-shadow:var(--shadow-pop);padding:8px 14px;font-size:var(--text-small);color:var(--text);max-width:520px;text-align:center}
@@ -187,7 +191,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .docbar small{color:var(--text-3);font-size:var(--text-badge)}
 .docbar.lifting{transform:scale(.96);opacity:.45}
 .docbar.flash{outline:2px solid var(--focus);outline-offset:2px}
-.composer{margin:0 4px 14px;border:1px solid var(--border-2);border-radius:var(--radius-composer);padding:10px 10px 8px 12px;background:var(--bg)}
+.composer{margin:0 0 14px;border:1px solid var(--border-3);border-radius:var(--radius-composer);padding:10px 10px 8px 12px;background:var(--bg)}
 .composer:focus-within{border-color:var(--border-3)}
 .composer textarea{display:block;width:100%;border:0;outline:0;resize:none;background:transparent;color:var(--text);font:inherit;height:22px}
 .composer textarea::placeholder{color:var(--text-4)}
@@ -195,7 +199,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 /* Send stays quiet until there is something to send, so the one filled button points somewhere. */
 .composer .send{border-color:var(--border-2);color:var(--text-3)}
 .composer.has .send{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
-.jchip{display:inline-flex;align-items:center;gap:6px;margin-top:8px;height:26px;padding:0 4px 0 6px;border-radius:var(--radius-button);border:1px solid var(--line);font-size:var(--text-small);color:var(--text-2)}
+.jchip{display:flex;width:fit-content;align-items:center;gap:6px;margin-top:8px;height:26px;padding:0 4px 0 6px;border-radius:var(--radius-button);border:1px solid var(--line);font-size:var(--text-small);color:var(--text-2)}
 .jchip .go{border:0;background:transparent;font:inherit;color:var(--text);cursor:pointer;padding:0 2px;text-decoration:underline;text-decoration-color:var(--border-3);text-underline-offset:2px}
 .jchip .go:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 .jm{width:16px;height:16px;flex:none;border-radius:var(--radius-badge);border:1px solid var(--border-3);font-size:var(--text-meta);font-weight:600;display:inline-flex;align-items:center;justify-content:center;color:var(--text-2)}
@@ -242,11 +246,11 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .cphead small{color:var(--text-3);font-size:var(--text-badge)}
 .cpbody{flex:1;min-height:0;overflow:auto}
 .cpbody .seqhead{padding:12px 14px 4px}.cpbody .runs{padding:6px 14px 8px}.cpbody .steps{padding:4px 14px 14px}.cpbody .seqhead h2{font-size:var(--text-card)}
-.mrow{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:transparent;font:inherit;color:var(--text);padding:9px 14px;cursor:pointer}
+.mrow{display:grid;grid-template-columns:18px 1fr;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:transparent;font:inherit;color:var(--text);padding:9px 14px;cursor:pointer}
 .mrow:hover{background:var(--hover)}
 .mrow:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
 .mrow .w{display:inline-block;width:18px;color:var(--text-3);font-variant-numeric:tabular-nums;font-size:var(--text-badge)}
-.mrow small{display:block;margin:4px 0 0 18px;color:var(--text-3);font-size:var(--text-badge)}
+.mrow small{display:block;grid-column:2;margin:4px 0 0;color:var(--text-3);font-size:var(--text-badge)}
 .seqline[aria-expanded=true] b{color:var(--text)}
 /* A document an agent names sits under its message at the full width of the chat, like a question card. */
 .docrow{margin-top:-6px}
@@ -274,7 +278,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .lrow>.meter{flex:none}
 .lrow>.chip{flex:none}
 /* Accounts: a grid of fixed columns: mark, name with its type under it, default, usage, sign-in. */
-.lrow.agrid{display:grid;grid-template-columns:16px minmax(0,1fr) 64px 84px 96px;gap:12px;align-items:center;padding:8px 12px}
+.lrow.agrid{display:grid;grid-template-columns:16px minmax(0,1fr) 84px 96px;gap:12px;align-items:center;padding:8px 12px}
 /* A list row's name with one short muted line under it: the same pattern in every list that has a second line. */
 .nm2{display:flex;flex-direction:column;min-width:0;flex:1;gap:1px}
 .nm2 .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -298,7 +302,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .docbody{font-size:var(--text-card);line-height:1.65;color:var(--text)}
 .docbody .para{margin:0 0 10px;border-radius:var(--radius-control)}
 .docbody .para.sel{background:color-mix(in srgb,var(--brand) 9%,transparent)}
-.docbody .para.has{box-shadow:inset 2px 0 0 var(--border-3);padding-left:8px}
+.docbody .para.has{border-left:2px solid var(--border-3);padding-left:8px;margin-left:-10px}
 .docbody h3{margin:18px 0 6px;font-weight:600;font-size:var(--text-title)}
 .docbody pre{font-family:var(--font-mono);font-size:var(--text-small);background:var(--code-bg);border:1px solid var(--line);border-radius:var(--radius-field);padding:10px 12px;overflow:auto;white-space:pre}
 .docbody code{font-family:var(--font-mono);font-size:var(--text-small);background:var(--code-bg);padding:0 3px;border-radius:3px}
@@ -322,6 +326,20 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .gut.draft::before{background:transparent;border:1.5px solid var(--text-3)}
 .src{white-space:pre;padding-right:80px}
 .code .k,.code .tg{color:var(--text);font-weight:600}.code .ty{color:var(--text)}.code .s,.code .nu{color:var(--text-3)}.code .cm{color:var(--text-3);font-style:italic}
+/* Code colour themes. Each sets its own surface, so its token colours read the same in the light and the dark app. */
+.code[data-ctheme]{--c-bg:var(--code-bg);--c-tx:var(--text-2);--c-gut:var(--text-4);--c-sel:color-mix(in srgb,var(--brand) 10%,transparent);--c-mark:var(--brand);background:var(--c-bg);color:var(--c-tx)}
+.code[data-ctheme] .gut{color:var(--c-gut)}.code[data-ctheme] .lnr.sel{background:var(--c-sel)}.code[data-ctheme] .lnr.sel .gut{color:var(--c-tx)}
+.code[data-ctheme] .gut.has::before{background:var(--c-mark)}.code[data-ctheme] .gut.draft::before{background:transparent;border-color:var(--c-gut)}
+.code[data-ctheme=darcula]{--c-bg:#2b2b2b;--c-tx:#a9b7c6;--c-gut:#606366;--c-sel:#32363a;--c-mark:#bbb529}
+.code[data-ctheme=darcula] .k{color:#cc7832;font-weight:600}.code[data-ctheme=darcula] .s{color:#6a8759}.code[data-ctheme=darcula] .nu{color:#6897bb}.code[data-ctheme=darcula] .cm{color:#808080}.code[data-ctheme=darcula] .ty{color:#a9b7c6}.code[data-ctheme=darcula] .tg{color:#e8bf6a;font-weight:400}.code[data-ctheme=darcula] .fn{color:#ffc66d}
+.code[data-ctheme=islands]{--c-bg:#191a1c;--c-tx:#bcbec4;--c-gut:#4b5059;--c-sel:#26282e;--c-mark:#56a8f5}
+.code[data-ctheme=islands] .k{color:#cf8e6d;font-weight:400}.code[data-ctheme=islands] .s{color:#6aab73}.code[data-ctheme=islands] .nu{color:#2aacb8}.code[data-ctheme=islands] .cm{color:#7a7e85}.code[data-ctheme=islands] .ty{color:#bcbec4}.code[data-ctheme=islands] .tg{color:#d5b778;font-weight:400}.code[data-ctheme=islands] .fn{color:#56a8f5}
+.code[data-ctheme=light]{--c-bg:#ffffff;--c-tx:#080808;--c-gut:#9aa0ae;--c-sel:#edf2fc;--c-mark:#3574f0}
+.code[data-ctheme=light] .k{color:#0033b3;font-weight:400}.code[data-ctheme=light] .s{color:#067d17}.code[data-ctheme=light] .nu{color:#1750eb}.code[data-ctheme=light] .cm{color:#8c8c8c}.code[data-ctheme=light] .ty{color:#000000}.code[data-ctheme=light] .tg{color:#0033b3;font-weight:400}.code[data-ctheme=light] .fn{color:#00627a}
+.code[data-ctheme] .cbar,.code[data-ctheme] .cthread,.code[data-ctheme] .codefoot{color:var(--text-2)}
+.code[data-ctheme]:not([data-ctheme=plain]) .codefoot{color:var(--c-gut)}
+.codehead{position:sticky;top:0;left:0;z-index:3;display:flex;width:fit-content;align-items:center;gap:6px;padding:0 0 6px 50px;font-family:var(--font-sans)}
+.codehead .btn{background:var(--raised);border-color:var(--border-2);color:var(--text-2)}
 .cfloat{position:absolute;z-index:70}
 .cbar,.cthread{font-family:var(--font-sans);font-size:var(--text-field);line-height:1.45;white-space:normal;margin:6px 16px 10px 50px;max-width:640px}
 .docbody .cbar,.docbody .cthread{margin:4px 0 14px}
@@ -426,7 +444,9 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .menu hr{border:0;border-top:1px solid var(--line);margin:4px 2px}
 .mgroup{font-size:var(--text-group);letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-3);padding:8px 8px 3px}
 .mi{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:var(--radius-control);color:var(--text-2);cursor:pointer;width:100%;border:0;background:transparent;font:inherit;font-size:var(--text-small);text-align:left;touch-action:none}
-.mi:hover,.mi:focus-visible,.mi.on{background:var(--hover);color:var(--text);outline:0}
+.mi:hover{background:var(--hover);color:var(--text);outline:0}
+/* The row Enter will run is plainly marked: a stronger fill and the focus ring. */
+.mi:focus-visible,.mi.on{background:var(--sel);color:var(--text);outline:0;box-shadow:inset 0 0 0 2px var(--focus)}
 .mi[disabled]{opacity:.45;pointer-events:none}
 .mi .k{margin-left:auto;font-size:var(--text-meta);color:var(--text-3);font-family:var(--font-mono);display:inline-flex;white-space:nowrap}
 .mi small{display:block;color:var(--text-3);font-size:var(--text-badge);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -438,6 +458,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .addpop .rows,.pal .rows{max-height:340px;overflow:auto;padding:6px}
 .qfoot{padding:7px 12px;border-top:1px solid var(--line);font-size:var(--text-meta);color:var(--text-3)}
 .scrim{position:absolute;inset:0;background:rgba(0,0,0,.18);z-index:160}
+.app.dark .scrim{background:rgba(0,0,0,.45)}
 .pal{position:absolute;left:50%;top:72px;transform:translateX(-50%);width:560px;background:var(--raised);border:1px solid var(--border-2);border-radius:var(--radius-card);box-shadow:var(--shadow-window);z-index:170;overflow:hidden}
 .pal .rows{max-height:420px}
 .keys{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:460px;background:var(--raised);border:1px solid var(--border-2);border-radius:var(--radius-card);box-shadow:var(--shadow-window);z-index:170;padding:14px 16px}
@@ -446,7 +467,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .keys dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:var(--text-field)}
 .keys dt{text-align:right}.keys dd{margin:0;color:var(--text-2)}
 /* ToastRegion: bottom right, 360 px, only to offer Undo. */
-.toast{position:absolute;right:16px;bottom:16px;width:360px;background:var(--raised);border:1px solid var(--border-2);border-radius:var(--radius-menu);padding:9px 12px;font-size:var(--text-small);color:var(--text-2);z-index:180;box-shadow:var(--shadow-pop);display:none;align-items:center;gap:10px}
+.toast{position:absolute;right:16px;bottom:104px;width:360px;background:var(--raised);border:1px solid var(--border-2);border-radius:var(--radius-menu);padding:9px 12px;font-size:var(--text-small);color:var(--text-2);z-index:180;box-shadow:var(--shadow-pop);display:none;align-items:center;gap:10px}
 .toast.on{display:flex}
 .toast span{flex:1}
 
@@ -480,7 +501,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .sedit .ops{display:flex;flex-direction:column;gap:2px}
 .sedit.lifting{background:var(--hover);box-shadow:var(--shadow-pop)}
 /* Docked cards: the parts of app/Docking (title, subtitle, state, progress, buttons), stacked under the conversation. */
-.dockarea{margin:0 4px 8px;display:flex;flex-direction:column;gap:6px}
+.dockarea{margin:0 0 8px;display:flex;flex-direction:column;gap:6px}
 .dhead{display:flex;align-items:center;gap:6px;font-size:var(--text-badge);color:var(--text-3);padding:0 2px}
 .dcard{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:var(--radius-card);background:var(--raised);padding:8px 8px 8px 12px;position:relative}
 .dcard .t{flex:1;min-width:0}
@@ -492,6 +513,14 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .dstack::before{bottom:4px;left:6px;right:6px}.dstack::after{bottom:0;left:12px;right:12px;opacity:.7}
 .gsplit{display:flex;flex:1;min-height:0}
 .gsplit .gwrap{flex:1;min-width:0}
+/* On a page with a list beside it the graph is narrow, so the task's panel goes under the graph instead. */
+.pgbody .gsplit{flex-direction:column}
+.pgbody .gcard.gside{width:auto;border-left:0;border-top:1px solid var(--line);max-height:45%}
+.lrow>.meter+.meta{width:auto}
+.lrow[aria-selected=true] .meter{background:var(--border-3)}
+.graph .edge{stroke:var(--text-4)}.graph .edge.removed{stroke:var(--text-3)}.graph .edge.hot,.graph .edge.added{stroke:var(--text)}
+.graph .node rect{stroke:var(--border-3)}.graph .node.sel rect{stroke:var(--brand)}.graph .node.neck rect,.graph .node.changed rect{stroke:var(--text)}
+.connect-cmd{white-space:normal!important;word-break:break-all;height:auto!important;min-height:30px;padding:6px 10px!important}
 .gcard.gside{position:static;width:280px;flex:none;border:0;border-left:1px solid var(--line);border-radius:0;box-shadow:none;overflow:auto;padding:14px 16px}
 /* What an agent looked at for a message: one quiet line that opens the list of its sources. */
 .srcline{display:inline-flex;align-items:center;gap:6px;margin-top:6px;border:0;background:transparent;font:inherit;font-size:var(--text-badge);color:var(--text-3);padding:0;cursor:pointer}
@@ -499,11 +528,11 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .srcline:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .srcline .cv{width:12px;height:12px;transition:transform var(--duration-hover) var(--ease-journal)}
 .srcline[aria-expanded=true] .cv{transform:rotate(90deg)}
-.srcs{margin:6px 0 0;border-left:1px solid var(--line);padding:2px 0 2px 12px;display:flex;flex-direction:column;gap:2px}
-.src{display:flex;align-items:center;gap:8px;border:0;background:transparent;font:inherit;font-size:var(--text-small);color:var(--text-2);padding:3px 4px;border-radius:var(--radius-control);cursor:pointer;text-align:left}
-.src:hover{background:var(--hover);color:var(--text)}
-.src:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
-.src small{color:var(--text-3);font-size:var(--text-badge)}
+.srclist{margin:6px 0 0;border-left:1px solid var(--line);padding:2px 0 2px 12px;display:flex;flex-direction:column;gap:2px}
+.srcitem{display:flex;align-items:center;gap:8px;border:0;background:transparent;font:inherit;font-size:var(--text-small);color:var(--text-2);padding:3px 4px;border-radius:var(--radius-control);cursor:pointer;text-align:left;white-space:normal;min-width:0}
+.srcitem:hover{background:var(--hover);color:var(--text)}
+.srcitem:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.srcitem small{color:var(--text-3);font-size:var(--text-badge)}
 .srcfound{margin:0 0 4px 26px;font-size:var(--text-small);color:var(--text-2)}
 .srcfound div{padding:1px 0}
 /* Account usage: how much is left, at a glance. */
@@ -516,7 +545,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 /* Split create button: the main part is the plain way; the chevron offers the agent way. */
 .splitb{display:inline-flex;align-items:stretch}
 .splitb .btn{border-color:var(--border-2);background:var(--bg);color:var(--text)}
-.splitb .main{border-radius:var(--radius-button) 0 0 var(--radius-button)}
+.splitb .sb-main{border-radius:var(--radius-button) 0 0 var(--radius-button)}
 .splitb .more{border-radius:0 var(--radius-button) var(--radius-button) 0;border-left:0;padding:0 6px}
 .splitb .btn:hover{background:var(--hover)}
 /* The create dialogs: a plain form, and a short guided chat that drafts the same form. */
@@ -553,7 +582,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .dlayer.l1{left:8px;right:8px;bottom:6px;z-index:2;background:var(--hover)}
 .dlayer.l2{left:16px;right:16px;bottom:0;z-index:1;background:var(--sel)}
 .dstack2:hover .dlayer.l1{transform:translateY(2px)}.dstack2:hover .dlayer.l2{transform:translateY(4px)}
-.dlist{display:flex;flex-direction:column;gap:6px}
+.dlist{display:flex;flex-direction:column;gap:6px;max-height:40vh;overflow:auto}
 .dlist .dcard{overflow:hidden}
 .bchip{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:var(--radius-seg);border:1px solid var(--line);background:transparent;font:inherit;font-size:var(--text-badge);color:var(--text-2);cursor:pointer}
 .bchip:hover{border-color:var(--border-3);color:var(--text)}
@@ -565,7 +594,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .proc .dur{font-variant-numeric:tabular-nums;color:var(--text-3);font-size:var(--text-small)}
 .out{font-family:var(--font-mono);font-size:11.5px;line-height:17px;background:var(--term);color:#d9d5d0;padding:8px 12px;white-space:pre;overflow:hidden}
 .out .e{color:#b9b3ac;font-style:italic}.out .f{color:#f0a294}.out .ok{color:#e9e6e2}
-.proc .out.peek{max-height:61px}
+.proc .out.peek{max-height:67px}.proc .out.peek.two{max-height:50px}
 .proc .out.open{max-height:240px;overflow:auto}
 /* The terminal of a terminal-driven agent: always dark, like a terminal. */
 .ttool{display:flex;align-items:center;gap:8px;height:32px;flex:none;padding:0 6px 0 12px;border-bottom:1px solid var(--line);font-size:var(--text-small);color:var(--text-3)}
@@ -797,7 +826,7 @@ The agent bar owns the agent's state; the question card's Answer says it waits o
 const ACCOUNTS=[['claude','Work (Max)','Claude Code subscription','Signed in','Expires 18 Dec 2026',true],['claude','Personal','Claude Code subscription','Needs sign-in','Expired 02 Nov 2026',false],['codex','Codex team key','Codex API key','Signed in','',false]];
 const FILES={};document.querySelectorAll('.srcfile').forEach(t=>FILES[t.dataset.path]={lang:t.dataset.lang,text:t.value.replace(/\n$/,'')});
 const MEMS={a1:[[9,'Stone mono is the house style; the accent is the strongest stone.','user 15222',['house-style']],[7,'Home starts as just the chat; windows are added by hand.','user 15222',['home']],[7,'Never ⌘B, ⌘1, ⌘⇧B or ⌃⌥ arrows for shortcuts.','report 307',['keys']],[5,'Worker 3 is on task 1702.','task 1702',['workers']]],
-  h262:[[7,'The bell counts only what waits on you.','its chat 14:05',['bell']],[5,'NotificationBell.vue lists rows from the shell.','its search 14:03',['bell','code']]]};
+  h262:[[7,'The bell counts only what waits on you.',"Designer 262's chat, 14:05",['bell']],[5,'NotificationBell.vue lists rows from the shell.',"Designer 262's search, 14:03",['bell','code']]]};
 
 /* Everyone who can be in a chat. Agents: their program's mark in a rounded square. People: initials in a circle. */
 const MEM={you:{name:'You',kind:'you'},
@@ -864,7 +893,7 @@ const H=()=>760-2-40-(infoShown()?30:0)-(ui.barHidden?0:54);
 /* =====================================================================================================================
    Windows: what each key shows
    ===================================================================================================================== */
-const CAT={chat:{t:'Chat',ic:'chat',w:480,h:520},tasks:{t:'Tasks',ic:'todos',n:TASKS.length,w:420,h:330},asks:{t:'Asks',ic:'question',n:1,w:360,h:200},plans:{t:'Plans',ic:'plan',n:2,w:360,h:300},
+const CAT={chat:{t:'Chat',ic:'chat',w:480,h:520},tasks:{t:'Tasks',ic:'todos',n:TASKS.length,w:420,h:330},asks:{t:'Questions',ic:'question',n:1,w:360,h:200},plans:{t:'Plans',ic:'plan',n:2,w:360,h:300},
   docs:{t:'Documents',ic:'docs',n:4,w:380,h:280},helpers:{t:'Helpers',ic:'users',w:340,h:220},project:{t:'Project',ic:'folder',w:280,h:460,key:'⌥1'},activity:{t:'Activity',ic:'pulse',w:520,h:300,key:'⌥2'},reminders:{t:'Reminders',ic:'bell',w:320,h:190}};
 /* A key names a window: 'tasks', 'conv:h262', 'item:task:1711', 'file:<path>' or 'mem:a1'. */
 function spec(k){for(const p of ['conv','item','file','mem'])if(k.startsWith(p+':'))return {type:p,v:k.slice(p.length+1)};return {type:k}}
@@ -902,12 +931,12 @@ function itemOf(ref){const [k,id]=ref.split(':'),n=+id;
   return {t:P[0],ic:'users',conv:P[3],body:`<div class="reader"><h2>${P[0]}</h2><div class="meta">${P[1]}</div><div style="margin-top:6px">${ST[P[2]]}</div>${P[3]?`<button class="btn sm bordered" style="margin-top:12px" data-openconv="${P[3]}">${I('chat','s14')}Open its chat</button>`:''}</div>`}}
 function waitsOf(n){const g=PLANS.map(p=>p[3]).flat().find(x=>x[0]===n);return g?(GRAPH.applied&&SUGGEST[n]?SUGGEST[n]:g[4]):[]}
 function holdsOf(n){return PLANS.map(p=>p[3]).flat().filter(x=>waitsOf(x[0]).includes(n)).map(x=>x[0])}
-function taskReader(t){const w=waitsOf(t[0]),h=holdsOf(t[0]),lk=ns=>ns.length?ns.map(x=>`<a class="lk" data-gotask="${x}">${x}</a>`).join(', '):'nothing';
-  return `<div class="reader"><div class="meta">Task ${t[0]} · plan ${t[4]}</div><h2 style="margin-top:4px">${t[1]}</h2><div>${ST[t[2]]}</div><dl class="facts"><dt>Holder</dt><dd>${t[3]}</dd><dt>Waits for</dt><dd>${lk(w)}</dd><dt>Holds up</dt><dd>${lk(h)}</dd></dl></div>`}
+function taskReader(t){const w=waitsOf(t[0]),h=holdsOf(t[0]),lk=ns=>ns.length?ns.map(x=>`<button class="lk" data-gotask="${x}" data-fk="golink:${x}">${x}</button>`).join(', '):'nothing';
+  return `<div class="reader"><div class="meta">Task ${t[0]} · plan ${t[4]}</div><h2 style="margin-top:4px">${t[1]}</h2><div>${ST[t[2]]}</div><dl class="facts"><dt>Holder</dt><dd>${t[3]==='—'?'Nobody yet':t[3]}</dd><dt>Waits for</dt><dd>${lk(w)}</dd><dt>Holds up</dt><dd>${lk(h)}</dd></dl></div>`}
 function docReader(d){return docView('doc:'+d[0],d[1],`Doc ${d[0]} · revision ${d[4]} · ${d[2]}`,mdBlocks(DOCTEXT[d[0]]||''),d[3])}
 function planReader(p,withGraph){return `<div class="reader" style="max-width:none"><div class="meta">Plan ${p[0]} · ${p[2]}%</div><h2 style="margin-top:4px">${p[1]}</h2>
   ${withGraph?`<div class="ftabs" role="tablist">${[['phases','Tasks'],['graph','Graph']].map(([k,t])=>`<button class="ftab" role="tab" data-plantab="${k}" data-fk="plantab:${k}" aria-selected="${PLANTAB===k}">${t}</button>`).join('')}</div>`:''}</div>
-  ${PLANTAB==='graph'&&withGraph?graphView(p[0]):`<div style="padding:0 22px 18px;max-width:760px">${p[3].map(([n,t,s])=>`<button class="lrow" data-gotask="${n}"><span class="num">${n}</span><span class="t">${t}</span>${ST[s]}</button>`).join('')}</div>`}`}
+  ${PLANTAB==='graph'&&withGraph?graphView(p[0]):`<div style="padding:0 22px 18px;max-width:760px">${p[3].length?p[3].map(([n,t,s])=>`<button class="lrow" data-gotask="${n}" data-fk="gotask:${n}"><span class="num">${n}</span><span class="t">${t}</span>${ST[s]}</button>`).join(''):`<div class="empty"><b>No tasks in this plan yet</b>Tasks appear here when an agent adds them to the plan.</div>`}</div>`}`}
 
 /* Markdown, as the reader shows it: headings, paragraphs, lists and code blocks. */
 function mdBlocks(text){const out=[];const L=text.split('\n');for(let i=0;i<L.length;i++){const l=L[i];if(!l.trim())continue;
@@ -995,7 +1024,7 @@ function chatHtml(c){const cv=CONV[c],grp=isGroup(c);let last=null,prevI=-1;
 const EXTRA_KIND={};
 function composer(c){const ph=`Message ${convName(c)}`;
   const rp=REPLYTO&&REPLYTO.conv===c?`<div class="replying">${I('reply','s14')}<span>Replying to <b>${MEM[speaker(c,CONV[c].msgs[REPLYTO.i])].name}</b> · “${esc(snippet(c,REPLYTO.i))}”</span><button class="ib" style="width:20px;height:20px" data-unreply aria-label="Stop replying">${I('close','s14')}</button></div>`:'';
-  return `<div class="composer">${rp}<textarea placeholder="${esc(ph)}" data-compose="${c}" data-fk="compose:${c}" aria-label="${esc(ph)}"></textarea><div class="r"><span class="ib" title="Attach">${I('clip','s14')}</span><span style="flex:1"></span><span class="chip faint">Opus</span><button class="btn sm send" data-send="${c}">${I('arrow','s14')}Send</button></div></div>`}
+  return `<div class="composer">${rp}<textarea placeholder="${esc(ph)}" data-compose="${c}" data-fk="compose:${c}" aria-label="${esc(ph)}"></textarea><div class="r"><span class="ib" title="Attach">${I('clip','s14')}</span><span style="flex:1"></span><span class="chip faint">Opus</span><button class="btn sm send" data-send="${c}" data-fk="send:${c}">${I('arrow','s14')}Send</button></div></div>`}
 /* Hooks for later sections: content above the composer (docked cards) and a terminal beside the chat. */
 const ABOVE_COMPOSER=[];
 const chatView=c=>`<div class="chatcol" style="max-width:${readW+48}px" data-chatdrop="${c}"><div class="scroll"><div class="chat" data-chat="${c}">${chatHtml(c)}</div></div>${ABOVE_COMPOSER.map(f=>f(c)).join('')}${composer(c)}</div>`;
@@ -1033,7 +1062,7 @@ function hlLine(src,st,lang){let out='',last=0;
       out+=`<span class="cm">${esc(src.slice(m.index,end+2))}</span>`;re.lastIndex=last=end+2;continue}
     else if(m[3])out+=`<span class="s">${esc(m[3])}</span>`;
     else if(m[4])out+=`<span class="tg">${esc(m[4])}</span>`;
-    else if(m[5])out+=KW.test(m[5])?`<span class="k">${m[5]}</span>`:/^[A-Z]/.test(m[5])?`<span class="ty">${m[5]}</span>`:m[5];
+    else if(m[5])out+=KW.test(m[5])?`<span class="k">${m[5]}</span>`:/^[A-Z]/.test(m[5])?`<span class="ty">${m[5]}</span>`:src[re.lastIndex]==='('?`<span class="fn">${m[5]}</span>`:m[5];
     else if(m[6])out+=`<span class="nu">${m[6]}</span>`;
     last=re.lastIndex}
   return (out+esc(src.slice(last)))||' '}
@@ -1041,8 +1070,13 @@ const isProse=p=>p.startsWith('doc:')||p.endsWith('.md');
 const span=(p,a,b)=>isProse(p)?(a===b?'paragraph '+a:'paragraphs '+a+'–'+b):(a===b?'line '+a:'lines '+a+'–'+b);
 const where=p=>p.startsWith('doc:')?'Doc '+p.slice(4):base(p.replace(/^file:/,''));
 const dkey=(p,a,b)=>p+'|'+a+'-'+b;
+/* The code's colour theme, chosen from the Theme menu at the top of any code view and remembered on this machine. */
+const CODETHEMES=[['darcula','Darcula','Dark grey, warm orange keywords'],['islands','Islands Dark','Near black, soft blue functions'],['light','Light','White, blue keywords'],['plain','Plain','The journal\'s own greys']];
+let CODETHEME=(()=>{try{return localStorage.getItem('home6.codeTheme')||'darcula'}catch(e){return 'darcula'}})();
+function setCodeTheme(id){CODETHEME=id;try{localStorage.setItem('home6.codeTheme',id)}catch(e){}}
 function codeView(path){const f=FILES[path];if(!f)return `<div class="empty"><b>Not in this design</b>${esc(path)}</div>`;
-  const st={inBlock:false},ls=f.text.split('\n'),drafts=Object.keys(DRAFTS).filter(k=>k.startsWith(path+'|'));let h=`<div class="code" data-code="${path}" role="region" aria-label="${base(path)}">`;
+  const st={inBlock:false},ls=f.text.split('\n'),drafts=Object.keys(DRAFTS).filter(k=>k.startsWith(path+'|'));const th=CODETHEMES.find(t=>t[0]===CODETHEME)||CODETHEMES[0];
+  let h=`<div class="code" data-code="${path}" data-ctheme="${th[0]}" role="region" aria-label="${base(path)}"><div class="codehead"><button class="btn sm" data-cthemes="${esc(path)}" data-fk="cthemes:${esc(path)}" aria-haspopup="menu" title="Colour theme for code">${I('caret','s14')}Theme: ${th[1]}</button></div>`;
   ls.forEach((ln,ix)=>{const n=ix+1,sel=SEL&&SEL.path===path&&n>=SEL.a&&n<=SEL.b,has=COMMENTS.some(c=>c.path===path&&n>=c.a&&n<=c.b),dr=drafts.some(k=>{const [a,b]=k.split('|')[1].split('-').map(Number);return n>=a&&n<=b});
     h+=`<div class="lnr ${sel?'sel':''}" data-ln="${n}"><span class="gut ${has?'has':dr?'draft':''}" data-gut="${n}" title="Select line ${n} · shift-click to extend">${n}</span><span class="src">${hlLine(ln,st,f.lang)}</span></div>`;
     if(COMPOSE&&COMPOSE.path===path&&n===COMPOSE.b)h+=cbarHtml();
@@ -1102,9 +1136,9 @@ function graphSvg(plan,opts={}){const D=graphData(plan,opts.suggest),sel=opts.in
       ${necks.has(n)?`<text class="badge" x="${NW-10}" y="${NH+13}" text-anchor="end">holds up ${hold}</text>`:''}</g></g>`}).join('');
   return {svg:`<svg class="graph" width="${D.W}" height="${D.H+16}" role="group" aria-label="Plan ${plan}: what waits on what">${ed}${nd}</svg>`,D}}
 function graphView(plan){const P=PLANS.find(p=>p[0]===plan);if(showEmpty)return `<div class="empty"><b>No waits yet</b>When a task waits on another, the graph shows it here.</div>`;
-  const tool=`<div class="gtool"><span class="st">${P[3].length} tasks · each arrow points from what a task waits for</span><span class="gap"></span>
+  const tool=`<div class="gtool"><span class="st">${P[3].length} task${P[3].length===1?'':'s'} · each arrow points from what a task waits for</span><span class="gap"></span>
     <button class="btn sm bordered" data-necks aria-pressed="${GRAPH.necks}" data-fk="necks">${I('neck','s14')}Show bottlenecks</button>
-    <button class="btn sm bordered" data-suggest aria-pressed="${GRAPH.suggest}" data-fk="suggest" ${plan!==56||GRAPH.applied?'disabled':''}>${I('wand','s14')}Suggest improvement</button></div>`;
+    <span title="${plan!==56?'Only plan 56 has suggestions in this design':GRAPH.applied?'The suggestion is applied':''}"><button class="btn sm bordered" data-suggest aria-pressed="${GRAPH.suggest}" data-fk="suggest" ${plan!==56||GRAPH.applied?'disabled':''}>${I('wand','s14')}Suggest improvement</button></span></div>`;
   if(GRAPH.suggest&&plan===56&&!GRAPH.applied){const now=graphSvg(plan,{showRemoved:true}),after=graphSvg(plan,{suggest:true,compare:true});
     return tool+`<div class="gsum"><span>Longest chain <b>${now.D.longest}</b> → <b>${after.D.longest}</b> tasks</span><span>At most <b>${now.D.widest}</b> → <b>${after.D.widest}</b> open tasks can run at once</span><span style="flex:1"></span><button class="btn sm" data-discard>Discard</button><button class="btn sm primary" data-apply>Apply these waits</button></div>
       <div class="gwrap"><div class="ghead">Now · the waits the suggestion drops are dotted</div>${now.svg}<div class="ghead">Suggested · new waits are heavier, changed tasks dashed</div>${after.svg}
@@ -1134,12 +1168,16 @@ function detachKey(k){const rm=n=>{if(!n)return null;if(n.t==='pane'){n.tabs=n.t
     const a=rm(n.a),b=rm(n.b);if(!a)return b;if(!b)return a;n.a=a;n.b=b;return n};
   A.grid=rm(A.grid);A.floats=A.floats.filter(f=>f.key!==k);if(A.zoom&&!paneById(A.zoom))A.zoom=null}
 /* Docks along a side of the whole grid, the way a window pushed past Home's edge lands. */
-function dockEdge(k,side){detachKey(k);const np=pane([k]);if(k==='chat')np.framed=true;
+function dockEdge(k,side){A.zoom=null;detachKey(k);const np=pane([k]);if(k==='chat')np.framed=true;
   if(!A.grid){A.grid=np;np.framed=false}
   else{const axis=side==='left'||side==='right'?'row':'col',share=axis==='row'?(k.startsWith('conv:')||k==='chat'||k.startsWith('item:doc')||k.startsWith('term:')?.38:.3):.3,first=side==='left'||side==='above';
     A.grid=split(axis,first?np:A.grid,first?A.grid:np,first?share:1-share)}
   A.active={pane:np.id}}
-function dockInPane(k,paneId,zone,index){detachKey(k);const target=paneById(paneId);if(!target){dockEdge(k,'right');return}
+function dockInPane(k,paneId,zone,index){A.zoom=null;
+  /* A tab moved within its own pane counts places after it has left; the only tab of a pane dropped on that pane stays. */
+  const own=paneById(paneId),from=own?own.tabs.indexOf(k):-1;if(from>=0&&own.tabs.length===1)return;
+  if(from>=0&&index!=null&&index>from)index--;
+  detachKey(k);const target=paneById(paneId);if(!target){dockEdge(k,'right');return}
   if(zone==='centre'||zone==='tabs'){const at=index==null?target.tabs.length:Math.min(index,target.tabs.length);target.tabs.splice(at,0,k);target.act=k;if(target.tabs.length>1)target.framed=true;A.active={pane:target.id};return}
   const np=pane([k]),axis=zone==='left'||zone==='right'?'row':'col',first=zone==='left'||zone==='above';
   A.grid=replaceNode(A.grid,paneId,p=>split(axis,first?np:p,first?p:np,.5));A.active={pane:np.id}}
@@ -1176,10 +1214,10 @@ function chatPlain(){const p=paneOf('chat');if(p&&p.tabs.length===1)p.framed=fal
    Layouts: the steps of growing are layouts the user can also save
    ===================================================================================================================== */
 const STEPS={
-  start:['1 · Day one','A new user sees only the chat, centred at the reading width, with the composer under it. Nothing else. The + in the agent bar adds a window; ⌘K does everything.'],
+  start:['1 · Day one','A new user sees only the chat in the middle, centred at the reading width, with the composer under it. The + in the agent bar adds a window; ⌘K does everything.'],
   first:['2 · A first window','Tasks floats where it opened. Push it past the right edge of Home to dock it there, or drag it onto the chat\'s compass (the cross of five squares in the middle of a pane).'],
-  docked:['3 · Docked','Asks and Tasks docked on the right; the chat keeps its reading width in the space left. Drag the shared edges, or focus one and use the arrow keys.'],
-  bare:['4 · Without the chat','Tasks, Plans and Asks fill Home in a grid. The chat comes back from the + or ⌘K.'],
+  docked:['3 · Docked','Questions and Tasks docked on the right; the chat keeps its reading width in the space left. Drag the shared edges, or focus one and use the arrow keys.'],
+  bare:['4 · Without the chat','Tasks, Plans and Questions fill Home in a grid. The chat comes back from the + or ⌘K.'],
   helper:['5 · A helper starts','The agent dispatched Designer 262. The journal\'s offer rides on the agent\'s own message as one quiet chip: open Designer 262\'s chat. It docks on the right. The dispatch is an important activity, so it is one quiet line; everything else is in Activity (⌥2).'],
   ide:['6 · Like an IDE','Built by hand from the same pieces: sidebar folded to icons, Project on the left (⌥1), a file in the editor, Activity below it (⌥2), and the chat docked on the right as a tool window. Select lines in the file, then Comment.'],
   group:['7 · A group chat','You, Agent 1 (Claude), Codex 1 (Codex) and Sam in one chat. Everyone receives every message, and agents answer and comment on each other. Hover a message to Reply. Add someone with the person-plus; see who is in it with “4 in this chat”.'],
@@ -1221,7 +1259,7 @@ function topbarHtml(){const n=unread(),c=A.mainConv;
   return `<header class="topbar"><nav class="crumb" aria-label="Breadcrumb"><span class="sq" aria-hidden="true"></span><span>Journal</span><span class="sep" aria-hidden="true">/</span><b aria-current="page">${PAGE_TITLE()}</b></nav>
     <div class="r">${page==='home'&&ui.barHidden?`<button class="pill" data-showbar data-fk="pill" title="Show the agent bar">${c==='main'?CLAUDE('s14'):I('users','s14')}${convName(c)}<span class="spin" role="img" aria-label="working"></span>${I('caret','s14')}</button>`:''}
     <button class="ib" data-bell data-fk="bell" aria-haspopup="menu" aria-label="Notifications${n?', '+n+' unread':''}" title="Notifications">${I('bell','s13')}${n?`<span class="count">${n}</span>`:''}</button>
-    <button class="ib" data-rail data-fk="railbtn" aria-label="${ui.rail?'Show the sidebar':'Fold the sidebar to icons'}" title="${ui.rail?'Show the sidebar':'Fold the sidebar to icons'}">${I('list','s13')}</button>
+    <button class="ib" data-rail data-fk="railbtn" aria-label="${ui.rail?'Show the page names':'Hide the page names'}" title="${ui.rail?'Show the page names':'Hide the page names'}">${I('list','s13')}</button>
     <button class="ib" data-scheme data-fk="scheme" aria-haspopup="menu" aria-label="Color scheme" title="Color scheme">${I('scheme','s13')}</button>
     <span class="who-me">You</span><button class="ib" aria-label="Sign out" title="Sign out">${I('power','s13')}</button></div></header>`}
 /* The agent bar names whom the main chat talks to; for a group, who is in it. Stop names what it stops. */
@@ -1232,8 +1270,8 @@ function abarHtml(){const c=A.mainConv,grp=isGroup(c),ms=members(c);
   return `<div class="abar"><button class="whoBtn" data-convmenu data-fk="convmenu" aria-haspopup="menu" title="Conversations, memories, who is in this chat">${who}${I('caret','s14')}</button>
     ${grp?`<button class="btn sm" data-members data-fk="members" aria-haspopup="menu">${I('users','s14')}${ms.length} in this chat</button>`:''}
     <button class="ib" data-addto data-fk="addto" aria-haspopup="menu" title="Add someone to this chat" aria-label="Add someone to this chat">${I('userplus','s14')}</button>
-    <span class="st" style="margin-left:4px;color:var(--text-2)"><span class="spin"></span>${STATE[c]||''}</span>
-    <div class="r">${ABAR_EXTRA.map(f=>f(c)).join('')}${grp?'':`<button class="btn sm bordered" data-stop>${I('stop','s14')}Stop ${MEM[agentOf(c)].name}</button>`}
+    <span class="st" style="margin-left:4px;color:var(--text-2)">${/waits for you|Ended|Stopped|Interrupted/.test(STATE[c]||'')?'<span class="dot hollow"></span>':'<span class="spin"></span>'}${STATE[c]||''}</span>
+    <div class="r">${ABAR_EXTRA.map(f=>f(c)).join('')}${grp?'':`<button class="btn sm bordered" data-stop data-fk="stop" ${/^Stopped/.test(STATE[c]||'')?'disabled':''}>${I('stop','s14')}Stop ${MEM[agentOf(c)].name}</button>`}
     <button class="ib" data-layouts data-fk="layouts" aria-label="Layouts" title="Layouts" aria-haspopup="menu">${I('layout','s14')}</button>
     <button class="ib" data-add data-fk="add" title="Add a window" aria-label="Add a window" aria-haspopup="dialog">${I('plus')}</button>
     <button class="ib" data-hidebar title="Hide the agent bar" aria-label="Hide the agent bar">${I('barup','s14')}</button></div></div>`}
@@ -1270,7 +1308,7 @@ function deskHtml(){let h='';const r={x:0,y:0,w:W(),h:H()};
 /* Pages from the sidebar: plain, built from the same rows, readers and flat tabs as Home. */
 function pageHtml(){const E=showEmpty,xp=PAGES_EXTRA.find(p=>p.id===page);if(xp)return xp.html();
   if(page==='tasks'){const views=`<div class="ftabs" role="tablist">${[['list','List'],['graph','Graph']].map(([k,t])=>`<button class="ftab" role="tab" data-taskview="${k}" data-fk="taskview:${k}" aria-selected="${TASKVIEW===k}">${t}</button>`).join('')}</div>`;
-    if(TASKVIEW==='graph')return `<div class="pghead"><h3>Tasks</h3>${views}<div class="r"><div class="filters" style="border:0;padding:0" role="tablist">${PLANS.map(([n])=>`<button class="ftab" role="tab" data-gplan="${n}" aria-selected="${GRAPH.plan===n}">Plan ${n}</button>`).join('')}</div></div></div><div class="pgread">${graphView(GRAPH.plan)}</div>`;
+    if(TASKVIEW==='graph')return `<div class="pghead"><h3>Tasks</h3>${views}<div class="r"><div class="filters" style="border:0;padding:0" role="tablist">${PLANS.map(([n])=>`<button class="ftab" role="tab" data-gplan="${n}" data-fk="gplan:${n}" aria-selected="${GRAPH.plan===n}">Plan ${n}</button>`).join('')}</div></div></div><div class="pgread">${graphView(GRAPH.plan)}</div>`;
     const rows=TASKS.filter(t=>TASKF==='all'||(TASKF==='open'?['work','you','open','failed'].includes(t[2]):TASKF===t[2]));
     const list=E?`<div class="empty"><b>No tasks yet</b>Tasks appear here when an agent starts work.</div>`:rows.length?rows.map(([n,t,s])=>row('ptask:'+n,`<span class="num">${n}</span><span class="t ${s==='done'?'dim':''}">${t}</span>${ST[s]}`,SELP.tasks===n)).join(''):`<div class="empty"><b>No ${TASKF} tasks</b><button class="btn sm bordered" data-taskf="all">Show all tasks</button></div>`;
     const sel=TASKS.find(t=>t[0]===SELP.tasks);
@@ -1278,20 +1316,20 @@ function pageHtml(){const E=showEmpty,xp=PAGES_EXTRA.find(p=>p.id===page);if(xp)
       `<div class="filters" role="tablist">${[['open','Open'],['testing','Testing'],['done','Done'],['all','All']].map(([k,t])=>`<button class="ftab" role="tab" data-taskf="${k}" data-fk="taskf:${k}" aria-selected="${TASKF===k}">${t}</button>`).join('')}</div>${list}`,
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose a task to read it here.</div>`:taskReader(sel))}
   if(page==='plans'){const sel=PLANS.find(p=>p[0]===SELP.plans);
-    return shell('Plans','',E?'0':'2',splitBtn('plan'),
-      E?`<div class="empty"><b>No plans yet</b>Ask the agent to plan bigger work.</div>`:PLANS.map(([n,t,p])=>row('pplan:'+n,`<span class="num">${n}</span><span class="t">${t}</span><span style="width:80px" class="meter"><i style="width:${p}%"></i></span><span class="meta">${p}%</span>`,SELP.plans===n)).join(''),
+    return shell('Plans','',E?'0':String(PLANS.length),splitBtn('plan'),
+      E?`<div class="empty"><b>No plans yet</b>Ask the agent to plan bigger work.</div>`:PLANS.map(([n,t,p])=>row('pplan:'+n,`<span class="num">${n}</span><span class="t">${t}</span><span style="width:56px;flex:none" class="meter"><i style="width:${p}%"></i></span><span class="meta">${p}%</span>`,SELP.plans===n)).join(''),
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose a plan to see its tasks.</div>`:planReader(sel,true))}
   if(page==='docs'){const sel=DOCS.find(d=>d[0]===SELP.docs);
-    return shell('Documents','',E?'0':String(DOCS.length),`<span class="field" style="width:200px;color:var(--text-4)">${I('search','s14')}&nbsp;Search documents</span>${splitBtn('document')}`,
+    return shell('Documents','',E?'0':String(DOCS.length),`<input class="field" style="width:200px" type="search" placeholder="Search documents" aria-label="Search documents" data-fk="docsearch">${splitBtn('document')}`,
       E?`<div class="empty"><b>No documents yet</b>Designs, plans and notes the agents write appear here.</div>`:DOCS.map(([n,t,m])=>row('pdoc:'+n,`<span class="num">${n}</span><span class="t">${t}</span><span class="meta">${m}</span>`,SELP.docs===n)).join(''),
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose a document to read it.</div>`:docReader(sel))}
   if(page==='accounts'){const sel=ACCOUNTS.find(a=>a[1]===SELP.accounts);
-    return shell('Accounts','',E?'0':'3',splitBtn('account'),
-      E?`<div class="empty"><b>No accounts</b>Add a Claude or Codex account so agents can run.</div>`:ACCOUNTS.map(([p,n,k,s,x,d])=>`<button class="lrow agrid" data-item="pacc:${n}" data-fk="row:pacc:${n}" ${SELP.accounts===n?'aria-selected="true"':''}>${p==='claude'?CLAUDE():CODEX()}<span class="nm2"><span class="t">${n}</span><small>${k}</small></span><span>${d?'<span class="chip faint">Default</span>':''}</span><span class="ucol">${useCell(n)}</span>${s==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':'<span class="st"><span class="dot hollow"></span>Expired</span>'}</button>`).join(''),
+    return shell('Accounts','',E?'0':String(ACCOUNTS.length),splitBtn('account'),
+      E?`<div class="empty"><b>No accounts</b>Add a Claude or Codex account so agents can run.</div>`:ACCOUNTS.map(([p,n,k,s,x,d])=>`<button class="lrow agrid" data-item="pacc:${n}" data-fk="row:pacc:${n}" ${SELP.accounts===n?'aria-selected="true"':''}>${p==='claude'?CLAUDE():CODEX()}<span class="nm2"><span class="t">${n}</span><small>${k}${d?' · default':''}</small></span><span class="ucol">${useCell(n)}</span>${s==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':`<span class="st"><span class="dot hollow"></span>${s==='Needs sign-in'?'Not signed in':'Expired'}</span>`}</button>`).join(''),
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose an account to change it.</div>`:`<div class="reader"><h2>${sel[1]}</h2><div class="meta">${sel[2]}${sel[4]?' · '+sel[4]:''}</div>
         <div class="sgroup" style="margin-top:16px"><div class="srow"><div class="t">Name<small>Shown in the account list and the agent bar.</small></div><input class="field" value="${esc(sel[1])}" aria-label="Name"></div>
         <div class="srow"><div class="t">Make default<small>Agents use this account when no other is named.</small></div><button class="toggle" role="switch" aria-checked="${sel[5]}" aria-label="Make default"></button></div>
-        <div class="srow"><div class="t">Sign-in<small>${sel[3]==='Signed in'?(sel[4]?`Signed in. It ${sel[4].toLowerCase().replace('expires','expires on')}.`:'Signed in with a key that does not expire.'):`Expired. Sign in again so agents can use it.`}</small></div>${sel[3]==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':'<button class="btn sm bordered">Sign in again</button>'}</div></div>${useGroup(sel[1])}</div>`)}
+        <div class="srow"><div class="t">Sign-in<small>${sel[3]==='Signed in'?(sel[4]?`Signed in. It ${sel[4].toLowerCase().replace('expires','expires on')}.`:'Signed in with a key that does not expire.'):sel[3]==='Needs sign-in'?'Not signed in yet. Sign in so agents can use it.':`Expired. Sign in again so agents can use it.`}</small></div>${sel[3]==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':`<button class="btn sm bordered" title="Signing in is not drawn in this design">${sel[3]==='Needs sign-in'?'Sign in':'Sign in again'}</button>`}</div></div>${useGroup(sel[1])}</div>`)}
   /* Settings: one column of setting rows; an invalid value keeps what was typed and says why. */
   return `<div class="pghead"><h3>Settings</h3></div><div style="flex:1;overflow:auto" data-keepscroll="settings"><div class="reader" style="max-width:720px">
     <div class="sec">Appearance</div><div class="sgroup"><div class="srow"><div class="t">Theme<small>Follows the system unless you choose.</small></div><div class="segc" role="group" aria-label="Theme">${['light','dark'].map(t=>`<button aria-pressed="${mode===t}" data-setmode="${t}">${t==='light'?'Light':'Dark'}</button>`).join('')}<button aria-pressed="false">System</button></div></div>
@@ -1301,7 +1339,7 @@ function pageHtml(){const E=showEmpty,xp=PAGES_EXTRA.find(p=>p.id===page);if(xp)
     <div class="sec">Agents</div><div class="sgroup"><div class="srow"><div class="t">Offer a helper's chat when it starts<small>The journal's quiet chip under the agent's message.</small></div><button class="toggle" role="switch" aria-checked="true" aria-label="Offer a helper's chat when it starts"></button></div>
       <div class="srow"><div class="t">Worker limit<small>How many workers may run at once.</small></div><div><input class="field bad" style="width:90px" value="12" aria-label="Worker limit" aria-invalid="true" aria-describedby="wlerr"><div class="errtext" id="wlerr">At most 8.</div></div></div></div>
     <div class="sec">Home</div><div class="sgroup"><div class="srow"><div class="t">Saved layouts<small>${LAYOUTS.map(l=>l.name).join(' · ')}</small></div><button class="btn sm bordered" data-gohome>Open Home</button></div></div></div></div>`}
-function shell(title,views,count,actions,list,reader){return `<div class="pghead"><h3>${title}</h3><span class="sub">${count}</span>${views}<div class="r">${actions}</div></div><div class="pgbody"><div class="pglist" role="listbox" aria-label="${title}">${list}</div><div class="pgread">${reader}</div></div>`}
+function shell(title,views,count,actions,list,reader){return `<div class="pghead"><h3>${title}</h3><span class="sub">${count}</span>${views}<div class="r">${actions}</div></div><div class="pgbody"><div class="pglist" role="region" aria-label="${title}">${list}</div><div class="pgread">${reader}</div></div>`}
 
 /* =====================================================================================================================
    Menus, the add popover, the palette
@@ -1327,14 +1365,14 @@ function addHtml(){const q=addpop.q.toLowerCase(),rows=WIN_ROWS().concat(helpers
 function openAdd(at,trigger){const app=$('#app').getBoundingClientRect();let x,y;if(at instanceof Element){const r=at.getBoundingClientRect();x=r.right-app.left-320;y=r.bottom-app.top+4}else{x=at.x;y=at.y}
   addpop={x:Math.max(6,x),y,q:'',i:0,trigger:trigger||(at instanceof Element?at.dataset.fk:null),place:at instanceof Element?null:at.place};menu=null;render()}
 /* ⌘K: every command, page, window, conversation and record in one centred list. */
-function palRows(){const q=pal.q.trim().toLowerCase(),k=page==='home'?activeKey():null,R=[];
+function palRows(){const q=pal.q.trim().toLowerCase(),ptext=pal.q.trim(),ptrig=pal.trigger,k=page==='home'?activeKey():null,R=[];
   const C=(label,ic,run,keys)=>R.push({group:'Commands',label,ic,run,keys});
   if(page==='home'){if(k){C(`Dock ${meta(k).t} on the left`,'dock',()=>dockEdge(k,'left'));C(`Dock ${meta(k).t} on the right`,'dock',()=>dockEdge(k,'right'));C(`Dock ${meta(k).t} along the bottom`,'dock',()=>dockEdge(k,'below'));C(`Float ${meta(k).t}`,'float',()=>floatKey(k));C(`Close ${meta(k).t}`,'close',()=>{closeWin(k);return false})}
     const ap=A.active&&A.active.pane;if(ap&&A.grid&&panesIn(A.grid).length>1)C(A.zoom?'Restore the layout':'Fill Home with the active pane',A.zoom?'restore':'fill',()=>{A.zoom=A.zoom?null:ap});
     const cp=paneOf('chat');if(cp&&isPlain(cp))C('Make the chat a window','window',chatToWindow);if(cp&&cp.framed&&cp.tabs.length===1)C('Make the chat plain again','chat',chatPlain);
     C('Back to just the chat','home',backToChat);LAYOUTS.forEach(l=>C(`Layout: ${l.name}`,'layout',()=>{useLayout(l);return false}));C('Save this layout','save',saveLayout);
     C(ui.barHidden?'Show the agent bar':'Hide the agent bar','barup',toggleBar);C(`${MEM[agentOf(A.mainConv)].name}'s memories`,'brain',()=>{openWin('mem:'+agentOf(A.mainConv));return false})}
-  C(ui.rail?'Show the sidebar':'Fold the sidebar to icons','list',toggleRail);C(mode==='dark'?'Light colour scheme':'Dark colour scheme','scheme',()=>setMode(mode==='dark'?'light':'dark'));C('Keyboard shortcuts','keyb',()=>{keysOpen={trigger:pal.trigger};return false},'?');
+  C(ui.rail?'Show the page names':'Hide the page names','list',toggleRail);C(mode==='dark'?'Light color scheme':'Dark color scheme','scheme',()=>setMode(mode==='dark'?'light':'dark'));C('Keyboard shortcuts','keyb',()=>{keysOpen={trigger:ptrig};return false},'?');
   C('Task graph of plan 56','graph',()=>{page='tasks';TASKVIEW='graph';GRAPH.plan=56;return false});
   PAL_EXTRA.forEach(f=>f(C));
   [['home','Home'],['tasks','Tasks'],['plans','Plans'],['docs','Documents'],...PAGES_EXTRA.map(p=>[p.id,p.t]),['accounts','Accounts'],['settings','Settings']].forEach(([p,t])=>R.push({group:'Pages',label:t,ic:'arrow',run:()=>{page=p;return false}}));
@@ -1342,7 +1380,7 @@ function palRows(){const q=pal.q.trim().toLowerCase(),k=page==='home'?activeKey(
   activeConvs().forEach(c=>R.push({group:'Conversations',label:convName(c),ic:'chat',run:()=>{openConv(c);return false}}));
   if(q){TASKS.forEach(([n,t])=>R.push({group:'Go to',label:'Task '+n,sub:t,ic:'todos',run:()=>{openItem('task:'+n);return false}}));DOCS.forEach(([n,t])=>R.push({group:'Go to',label:'Doc '+n,sub:t,ic:'docs',run:()=>{openItem('doc:'+n);return false}}));
     Object.keys(FILES).forEach(p=>R.push({group:'Go to',label:base(p),sub:p,ic:'file',run:()=>{openFile(p);return false}}))}
-  const out=R.filter(r=>!q||(r.label+' '+(r.sub||'')).toLowerCase().includes(q));if(q)out.push({group:'Ask',label:`Message ${convName(A.mainConv)}: “${esc(pal.q.trim())}”`,ic:'arrow',run:()=>{page='home';sendMessage(A.mainConv,pal.q.trim());return false}});return out}
+  const out=R.filter(r=>!q||(r.label+' '+(r.sub||'')).toLowerCase().includes(q));if(q)out.push({group:'Ask',label:`Message ${convName(A.mainConv)}: “${esc(ptext)}”`,ic:'arrow',run:()=>{page='home';sendMessage(A.mainConv,ptext);return false}});return out}
 const PAL_EXTRA=[];
 function palHtml(){const rows=palRows();pal.rows=rows;let g=null;
   return `<div class="scrim" data-scrim></div><div class="pal" id="pal" role="dialog" aria-label="Command palette"><div class="qs">${I('search','s14')}<input id="palq" value="${esc(pal.q)}" placeholder="Type a command, a page, a window, a task, a document or a file" aria-label="Command" autocomplete="off"></div>
@@ -1400,7 +1438,8 @@ function render(){
   else if(fk&&!menu){const e=document.querySelector(`[data-fk="${CSS.escape(fk)}"]`);if(e)e.focus({preventScroll:true})}
   if(SEL&&!COMPOSE)placeCommentButton();
 }
-function toast(text,undo){const t=$('#toast');$('#toastText').textContent=text;t.classList.add('on');$('#toastUndo').onclick=()=>{t.classList.remove('on');undo()};clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),6000)}
+/* A toast with nothing to undo shows no Undo. */
+function toast(text,undo){const t=$('#toast');$('#toastText').textContent=text;t.classList.add('on');$('#toastUndo').hidden=!undo;$('#toastUndo').onclick=()=>{t.classList.remove('on');if(undo)undo()};clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),6000)}
 
 /* =====================================================================================================================
    Actions
@@ -1410,7 +1449,11 @@ function toggleRail(){ui.rail=!ui.rail;A.floats.forEach(keep);changed()}
 function toggleBar(){ui.barHidden=!ui.barHidden;A.floats.forEach(keep);changed();if(ui.barHidden)focusFk('pill')}
 function backToChat(){const before=snapshot();A.grid=pane(['chat']);A.floats=[];A.zoom=null;A.active={pane:A.grid.id};changed();toast('Home is back to just the chat',()=>restore(before))}
 function saveLayout(){const n=LAYOUTS.filter(l=>l.custom).length+1,snap=clone(A);LAYOUTS.push({id:'my'+n,name:'My layout '+n,custom:true,snap});toast(`Saved as My layout ${n}`,()=>{LAYOUTS=LAYOUTS.filter(l=>l.id!=='my'+n);render()})}
-function useLayout(l){if(l.custom){A=clone(l.snap);changed()}else{step=l.id;load()}}
+/* A layout changes only the arrangement: the conversation, drafts and reactions stay. */
+function useLayout(l){if(l.custom){A=clone(l.snap)}else{const L=layoutFor(l.id),need=[...JSON.stringify(L).matchAll(/conv:(\w+)/g)].map(m=>m[1]);
+    /* A layout that needs a chat this step does not have loads its own step, as before. */
+    if(need.some(c=>!CONV[c])){step=l.id;load();focusFk('layouts');return}
+    const keep=A.mainConv;A={...A,grid:clone(L.grid),floats:clone(L.floats),mainConv:keep,zoom:null,active:null};ui.rail=l.id==='ide'}changed();focusFk('layouts')}
 function newGroup(){const id='g'+(++seq);CONV[id]={name:'New chat',members:['you','a1'],origin:'You started this chat · everyone in it receives every message',msgs:[]};EXTRA.push(id);A.mainConv=id;page='home';render();addMenu($('[data-addto]'))}
 function addMenu(anchor){const c=A.mainConv,ms=members(c),cand=['cx1',...(helpersOn?['h262','w3']:[]),'a1'].filter(x=>!ms.includes(x)),ppl=['sam','noor'].filter(x=>!ms.includes(x));
   openMenu([{head:'Agents'},...cand.map(x=>({label:MEM[x].name,sub:MEM[x].role+' · reads the chat so far',av:avatar(x),run:()=>{addMember(c,x);return false}})),{label:'Start a new Codex agent',sub:'joins as Codex 2',ic:'plus',run:()=>{MEM.cx2={name:'Codex 2',kind:'agent',prog:'codex',role:'Codex agent'};addMember(c,'cx2');return false}},
@@ -1425,7 +1468,8 @@ function askFeedback(anchor,el){const opts=['a1',...(helpersOn?['h262']:[]),...(
 /* Where a drop would land. Pushed past Home's edge: dock along that side. Over a pane: its compass cell or its tab
    strip. Anything else floats. ⌥ while dragging always floats. */
 function targetAt(ev){const d=$('#desk');if(!d)return null;const r=d.getBoundingClientRect();if(ev.altKey)return {float:true};
-  const P=8;if(ev.clientX<r.left-P)return {edge:'left'};if(ev.clientX>r.right+P)return {edge:'right'};if(ev.clientY<r.top-P&&ev.clientY>r.top-90)return {edge:'above'};if(ev.clientY>r.bottom+P)return {edge:'below'};
+  /* Home's right and bottom are the screen's edges, so the last 12 px inside the desk count as past them. */
+  const P=8,IN=12;if(ev.clientX<r.left-P)return {edge:'left'};if(ev.clientX>r.right-IN)return {edge:'right'};if(ev.clientY<r.top-P&&ev.clientY>r.top-90)return {edge:'above'};if(ev.clientY>r.bottom-IN)return {edge:'below'};
   const el=document.elementFromPoint(ev.clientX,ev.clientY),pe=el&&el.closest('[data-pane]');if(!pe||A.zoom)return {float:true};
   const strip=el.closest('[data-strip]');if(strip){const tabs=$$('.tab',strip);let idx=tabs.length;tabs.forEach((t,i)=>{const b=t.getBoundingClientRect();if(ev.clientX<b.left+b.width/2&&idx===tabs.length)idx=i});return {pane:pe.dataset.pane,zone:'tabs',index:idx}}
   const pr=pe.getBoundingClientRect(),cx=pr.left+pr.width/2,cy=pr.top+pr.height/2,dx=ev.clientX-cx,dy=ev.clientY-cy,C=29;
@@ -1463,23 +1507,28 @@ function dragNode(e,n,g){const nu=GRAPH.nudge[n]||{dx:0,dy:0},o={...nu};
     (ev,moved)=>{if(!moved){GRAPH.sel=GRAPH.sel===n?null:n;render();focusFk('gnode:'+n);return}render()})}
 /* A document dragged from the chat: a chip; over the agent's name the list opens; resting on an agent opens its
    chat; dropping hands it over. */
-function dragDoc(e,n,bar){let chip=null,hoverC=null,timer=null,target=null;const app=$('#app');
+/* The chat the bar comes from is never a target: it shows no highlight there, and a release over it hands nothing over. */
+function dragDoc(e,n,bar){let chip=null,hoverC=null,timer=null,target=null;const app=$('#app'),srcChat=bar.closest('[data-chat]'),src=srcChat&&srcChat.dataset.chat,wasMain=A.mainConv;
   pointerDrag(e,(ev)=>{const ar=app.getBoundingClientRect();if(!chip){chip=document.createElement('div');chip.className='dchip';chip.innerHTML=I('docs','s14')+'Doc '+n;app.appendChild(chip);bar.classList.add('lifting')}
       chip.style.left=(ev.clientX-ar.left+10)+'px';chip.style.top=(ev.clientY-ar.top+8)+'px';
       const el=document.elementFromPoint(ev.clientX,ev.clientY);target=null;$$('.whoBtn.drop').forEach(x=>x.classList.remove('drop'));$$('.pane.droptarget').forEach(x=>x.classList.remove('droptarget'));
       const who=el&&el.closest('[data-convmenu]'),item=el&&el.closest('[data-dropconv]'),chat=el&&el.closest('[data-chatdrop]');
       if(who){who.classList.add('drop');if(!menu||!menu.drop)openMenu(convMenuItems().filter(it=>it.dropconv||it.head==='Conversations'),who,'convmenu',{drop:true})}
-      if(item){const c=item.dataset.dropconv;target=c;$$('[data-dropconv]').forEach(x=>x.classList.toggle('on',x===item));if(hoverC!==c){hoverC=c;clearTimeout(timer);timer=setTimeout(()=>{A.mainConv=c;render();const it=$(`[data-dropconv="${c}"]`);if(it)it.classList.add('on')},450)}}
-      else if(chat){target=chat.dataset.chatdrop;const p=chat.closest('[data-pane]');if(p)p.classList.add('droptarget')}},
+      if(item&&item.dataset.dropconv!==src){const c=item.dataset.dropconv;target=c;$$('[data-dropconv]').forEach(x=>x.classList.toggle('on',x===item));if(hoverC!==c){hoverC=c;clearTimeout(timer);timer=setTimeout(()=>{A.mainConv=c;render();const it=$(`[data-dropconv="${c}"]`);if(it)it.classList.add('on')},450)}}
+      else if(chat&&chat.dataset.chatdrop!==src){target=chat.dataset.chatdrop;const p=chat.closest('[data-pane]');if(p)p.classList.add('droptarget')}},
     (ev,moved)=>{clearTimeout(timer);bar.classList.remove('lifting');if(chip)chip.remove();menu=null;
-      if(!moved){openItem('doc:'+n);return}if(target&&CONV[target]){if(target!=='main'&&!CONV[target].members&&!isOpen('conv:'+target)&&A.mainConv!==target)A.mainConv=target;handDoc(target,n)}else render()})}
+      if(!moved){openItem('doc:'+n);return}if(target&&CONV[target]){if(target!=='main'&&!CONV[target].members&&!isOpen('conv:'+target)&&A.mainConv!==target)A.mainConv=target;handDoc(target,n)}else{A.mainConv=wasMain;render()}})}
 /* Play: the same flow, step by step, with a caption for each step. */
-async function playDocFlow(){if(playing)return;playing=true;step='docs';page='home';load();await sleep(300);const app=$('#app'),ar=()=>app.getBoundingClientRect();
-  const say=async(t,ms)=>{caption=t;render();await sleep(ms)};const at=el=>{const r=el.getBoundingClientRect(),a=ar();return {x:r.left-a.left+r.width/2,y:r.top-a.top+r.height/2}};
+/* Play stops the moment another step is chosen: load() counts up RUN, and every wait checks it. */
+async function playDocFlow(){if(playing)return;playing=true;step='docs';page='home';load();const my=RUN;
   const chip=document.createElement('div');chip.className='dchip';chip.innerHTML=I('docs','s14')+'Doc 101';
-  const move=(from,to,ms)=>chip.animate([{left:from.x+'px',top:from.y+'px'},{left:to.x+'px',top:to.y+'px'}],{duration:CALM.matches?1:ms,easing:EASE,fill:'forwards'}).finished;
+  const sleep=async ms=>{await new Promise(r=>setTimeout(r,ms));if(RUN!==my){chip.remove();playing=false;throw 'stopped'}};
+  try{await playDocSteps(sleep,chip)}catch(e){if(e!=='stopped')throw e}}
+async function playDocSteps(sleep,chip){await sleep(300);const app=$('#app'),ar=()=>app.getBoundingClientRect();
+  const say=async(t,ms)=>{caption=t;render();await sleep(ms)};const at=el=>{const r=el.getBoundingClientRect(),a=ar();return {x:r.left-a.left+r.width/2,y:r.top-a.top+r.height/2}};
+  const move=async(from,to,ms)=>{await chip.animate([{left:from.x+'px',top:from.y+'px'},{left:to.x+'px',top:to.y+'px'}],{duration:CALM.matches?1:ms,easing:EASE,fill:'forwards'}).finished;await sleep(0)};
   await say('1 · A document in the chat shows as a bar.',1200);let bar=$('[data-docbar="101"]');if(bar)bar.classList.add('flash');await sleep(900);
-  await say('2 · Drag it, and it shrinks into a chip.',150);bar=$('[data-docbar="101"]');if(!bar){playing=false;return}bar.classList.add('lifting');const p0=at(bar);app.appendChild(chip);await move(p0,{x:p0.x,y:p0.y-80},700);
+  await say('2 · Drag it, and it shrinks into a chip.',150);bar=$('[data-docbar="101"]');if(!bar){chip.remove();playing=false;return}bar.classList.add('lifting');const p0=at(bar);app.appendChild(chip);await move(p0,{x:p0.x,y:p0.y-80},700);
   await say('3 · Hold it over the agent\'s name, and the list of chats opens.',100);const who=$('[data-convmenu]');await move({x:p0.x,y:p0.y-80},at(who),900);
   openMenu(convMenuItems().filter(it=>it.dropconv||it.head==='Conversations'),who,'convmenu',{drop:true});$('[data-convmenu]').classList.add('drop');await sleep(1100);
   caption='4 · Rest on Designer 262, and its chat opens behind the list.';render();let item=$('[data-dropconv="h262"]');if(item){await move(at(who),at(item),700)}
@@ -1489,7 +1538,7 @@ async function playDocFlow(){if(playing)return;playing=true;step='docs';page='ho
 /* The Comment button sits beside the selection, over the content, so nothing moves and the text stays copyable. */
 function placeCommentButton(sel){$$('.cfloat').forEach(x=>x.remove());const s=sel||SEL;if(!s)return;
   const box=$('#main').querySelector(`[data-code="${CSS.escape(s.path)}"]`);if(!box)return;const ln=box.querySelector(`[data-ln="${s.b}"]`);if(!ln)return;
-  const scroller=box.closest('.pbody,.pgread'),host=$('#main');if(!scroller)return;const br=scroller.getBoundingClientRect(),lr=ln.getBoundingClientRect(),hr=host.getBoundingClientRect();
+  const scroller=box.closest('.pbody,.pgread'),host=$('#main');if(!scroller)return;const br=scroller.getBoundingClientRect(),lr=ln.getBoundingClientRect(),hr=$('#app').getBoundingClientRect();
   const y=Math.min(br.bottom-34,Math.max(br.top+4,lr.bottom+2))-hr.top,x=br.right-hr.left-124;
   host.insertAdjacentHTML('beforeend',`<button class="btn sm primary cfloat" data-commentgo style="left:${x}px;top:${y}px">${I('comment','s14')}Comment</button>`);
   const b=$('[data-commentgo]',host);b.onclick=()=>openComment(s);b.onmousedown=ev=>ev.preventDefault()}
@@ -1502,13 +1551,14 @@ function wireGraph(){$$('[data-gwrap]').forEach(w=>w.onclick=ev=>{if(!ev.target.
   $$('[data-gnode]').forEach(g=>{g.onclick=()=>{const n=+g.dataset.gnode;GRAPH.sel=GRAPH.sel===n?null:n;render();focusFk('gnode:'+n)};g.onkeydown=ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();const n=+g.dataset.gnode;GRAPH.sel=GRAPH.sel===n?null:n;render();focusFk('gnode:'+n)}}})}
 const WIRE_EXTRA=[];
 function wire(){const on=(s,fn)=>$$(s).forEach(fn),app=$('#app');
-  on('[data-page]',b=>b.onclick=()=>{page=b.dataset.page;menu=null;render()});
+  on('[data-page]',b=>b.onclick=()=>{page=b.dataset.page;menu=null;FORM=null;GUIDE=null;CREATEFROM=null;render()});
   on('[data-bell]',b=>b.onclick=ev=>{ev.stopPropagation();openMenu(NOTES.length?[{head:'Notifications'},...NOTES.map(n=>({label:n.t,sub:n.sub,ic:n.read?'tick':'bell',run:()=>{n.read=true;n.run&&n.run();return false}})),{sep:1},{label:'Mark all as read',ic:'tick',disabled:!unread(),run:()=>NOTES.forEach(n=>n.read=true)}]:[{label:'Nothing needs you',disabled:true}],b)});
   on('[data-rail]',b=>b.onclick=toggleRail);
   on('[data-scheme]',b=>b.onclick=()=>openMenu([{head:'Color scheme'},{label:'Light',tick:mode==='light',run:()=>setMode('light')},{label:'Dark',tick:mode==='dark',run:()=>setMode('dark')}],b));
   on('[data-showbar]',b=>b.onclick=()=>{ui.barHidden=false;changed();focusFk('convmenu')});
   on('[data-hidebar]',b=>b.onclick=toggleBar);
-  on('[data-stop]',b=>b.onclick=()=>toast(`${MEM[agentOf(A.mainConv)].name} stopped`,()=>render()));
+  on('[data-stop]',b=>b.onclick=()=>{const c=A.mainConv,before=STATE[c];STATE[c]='Stopped · waits for you';render();focusFk('compose:'+c);
+    toast(`${MEM[agentOf(c)].name} stopped`,()=>{STATE[c]=before;render()})});
   on('[data-add]',b=>b.onclick=()=>openAdd(b));
   on('[data-layouts]',b=>b.onclick=()=>openMenu([{head:'Layouts'},...LAYOUTS.map(l=>({label:l.name,ic:'layout',tick:!own&&l.id===step,run:()=>{useLayout(l);return false}})),{sep:1},{label:'Save this layout',ic:'save',run:saveLayout},{label:'Back to just the chat',ic:'home',run:backToChat},{sep:1},{label:'Hide the agent bar',ic:'barup',disabled:ui.barHidden,run:toggleBar}],b));
   on('[data-fwin]',b=>b.onclick=()=>{const f=A.floats.find(x=>x.key===b.dataset.fwin);f.min=false;front(f.key);changed();focusFk('fbar:'+f.key)});
@@ -1527,7 +1577,7 @@ function wire(){const on=(s,fn)=>$$(s).forEach(fn),app=$('#app');
   on('[data-zoom]',b=>b.onclick=()=>{A.zoom=A.zoom?null:b.dataset.zoom;A.active={pane:b.dataset.zoom};changed();focusFk('zoom:'+b.dataset.zoom)});
   on('[data-floatbtn]',b=>b.onclick=()=>{const k=b.dataset.floatbtn;floatKey(k);opened.add(k);changed();focusFk('fbar:'+k)});
   on('[data-pane]',p=>p.addEventListener('pointerdown',()=>{if(!(A.active&&A.active.pane===p.dataset.pane)){A.active={pane:p.dataset.pane};$$('[data-pane]').forEach(x=>x.classList.toggle('active',x===p));$$('[data-float]').forEach(x=>x.classList.remove('active'))}},true));
-  on('[data-float]',w=>w.addEventListener('pointerdown',ev=>{const k=w.dataset.float;if(!(A.active&&A.active.float===k)&&!ev.target.closest('button')){front(k);w.parentElement.appendChild(w);$$('[data-float]').forEach((x,i)=>{x.style.zIndex=20+i;x.classList.toggle('active',x===w)})}},true));
+  on('[data-float]',w=>w.addEventListener('pointerdown',ev=>{const k=w.dataset.float;if(!(A.active&&A.active.float===k)&&!ev.target.closest('button')){front(k);$$('[data-float]').forEach(x=>{x.style.zIndex=20+A.floats.findIndex(f=>f.key===x.dataset.float);x.classList.toggle('active',x===w)})}},true));
   on('[data-fbar]',b=>{b.onpointerdown=e=>{if(e.button!==0||e.target.closest('button'))return;dragFloat(e,b.dataset.fbar,b.closest('[data-float]'))};
     b.onkeydown=ev=>{const f=A.floats.find(x=>x.key===b.dataset.fbar),st=ev.shiftKey?48:12;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(ev.key)){ev.preventDefault();f.x+=ev.key==='ArrowLeft'?-st:ev.key==='ArrowRight'?st:0;f.y+=ev.key==='ArrowUp'?-st:ev.key==='ArrowDown'?st:0;keep(f);quiet=true;render()}}});
   on('[data-minimise]',b=>b.onclick=()=>{const f=A.floats.find(x=>x.key===b.dataset.minimise);f.min=!f.min;changed();focusFk('fbar:'+f.key)});
@@ -1581,7 +1631,7 @@ function wire(){const on=(s,fn)=>$$(s).forEach(fn),app=$('#app');
   wireGraph();
   on('[data-necks]',b=>b.onclick=()=>{GRAPH.necks=!GRAPH.necks;GRAPH.suggest=false;render();focusFk('necks')});
   on('[data-suggest]',b=>b.onclick=()=>{GRAPH.suggest=!GRAPH.suggest;GRAPH.necks=false;GRAPH.sel=null;render();focusFk('suggest')});
-  on('[data-apply]',b=>b.onclick=()=>{GRAPH.applied=true;GRAPH.suggest=false;GRAPH.nudge={};render();toast('Applied 6 changed waits to plan 56',()=>{GRAPH.applied=false;render()})});
+  on('[data-apply]',b=>b.onclick=()=>{GRAPH.applied=true;GRAPH.suggest=false;GRAPH.nudge={};render();focusFk('necks');toast('Applied 6 changed waits to plan 56',()=>{GRAPH.applied=false;render()})});
   on('[data-discard]',b=>b.onclick=()=>{GRAPH.suggest=false;render();focusFk('suggest')});
   on('[data-gsel]',b=>b.onclick=()=>{GRAPH.sel=+b.dataset.gsel;render();focusFk('gnode:'+GRAPH.sel)});
   on('[data-gclear]',b=>b.onclick=()=>{const n=GRAPH.sel;GRAPH.sel=null;render();if(n)focusFk('gnode:'+n)});
@@ -1599,7 +1649,7 @@ function wire(){const on=(s,fn)=>$$(s).forEach(fn),app=$('#app');
   on('.toggle',t=>t.onclick=()=>t.setAttribute('aria-checked',t.getAttribute('aria-checked')!=='true'));
   WIRE_EXTRA.forEach(f=>f(on));
   /* Menus */
-  const m=$('#menu');if(m){$$('[data-mi]',m).forEach(b=>b.onclick=()=>{const it=menu.items[+b.dataset.mi],t=menu.trigger;menu=null;const r=it.run();if(r!==false){changed();if(t)focusFk(t)}});
+  const m=$('#menu');if(m){$$('[data-mi]',m).forEach(b=>b.onclick=()=>{const it=menu.items[+b.dataset.mi],t=menu.trigger;menu=null;const r=it.run();if(r!==false){changed();if(t)focusFk(t)}else if(!menu){render();if(t)focusFk(t)}});
     m.onkeydown=ev=>{const bs=$$('.mi:not([disabled])',m),i=bs.indexOf(document.activeElement);if(ev.key==='ArrowDown'){ev.preventDefault();bs[(i+1)%bs.length].focus()}if(ev.key==='ArrowUp'){ev.preventDefault();bs[(i-1+bs.length)%bs.length].focus()}if(ev.key==='Escape'){ev.preventDefault();closeMenus()}}}
   const ap=$('#addpop');if(ap){const q=$('#addq');q.oninput=()=>{addpop.q=q.value;addpop.i=0;render()};
     q.onkeydown=ev=>{const n=addpop.rows.length;if(ev.key==='ArrowDown'){ev.preventDefault();addpop.i=(addpop.i+1)%n;render()}if(ev.key==='ArrowUp'){ev.preventDefault();addpop.i=(addpop.i-1+n)%n;render()}
@@ -1612,9 +1662,9 @@ function wire(){const on=(s,fn)=>$$(s).forEach(fn),app=$('#app');
   on('[data-scrim]',s=>s.onclick=closeMenus);
   $('#main').oncontextmenu=onContext;
   $('#side').oncontextmenu=ev=>{const b=ev.target.closest('[data-page]');if(!b)return;ev.preventDefault();const ar=app.getBoundingClientRect(),pg=b.dataset.page;
-    openMenu([{head:b.dataset.tip},{label:'Open the page',ic:'arrow',run:()=>{page=pg}},...(['tasks','plans','docs'].includes(pg)?[{label:'Open as a window on Home',ic:'window',run:()=>{openWin(pg);return false}}]:[]),{sep:1},{label:ui.rail?'Show the sidebar':'Fold the sidebar to icons',ic:'list',run:toggleRail}],{x:ev.clientX-ar.left,y:ev.clientY-ar.top},'nav:'+pg)};
+    openMenu([{head:b.dataset.tip},{label:'Open the page',ic:'arrow',run:()=>{page=pg}},...(['tasks','plans','docs'].includes(pg)?[{label:'Open as a window on Home',ic:'window',run:()=>{openWin(pg);return false}}]:[]),{sep:1},{label:ui.rail?'Show the page names':'Hide the page names',ic:'list',run:toggleRail}],{x:ev.clientX-ar.left,y:ev.clientY-ar.top},'nav:'+pg)};
 }
-function runPal(r){if(!r)return;const t=pal.trigger;pal=null;const res=r.run();if(res!==false){changed();if(t)focusFk(t)}else render()}
+function runPal(r){if(!r)return;const t=pal.trigger;pal=null;const res=r.run();if(res!==false){changed();if(t)focusFk(t)}else if(!pal&&!menu){render();if(t)focusFk(t)}}
 function openTree(n){const o=n.dataset.topen;if(!o)return;if(o==='chat'){openConv('main');return}if(o.startsWith('conv:'))return openConv(o.slice(5));if(o.startsWith('file:'))return openFile(o.slice(5));openItem(o.slice(5))}
 
 /* Right-click: a menu for what is under the pointer. Selected text keeps the browser's own menu, so copying works. */
@@ -1636,21 +1686,22 @@ function onContext(ev){const t=ev.target,sel=getSelection();if(sel&&!sel.isColla
     items=[{head:m.t},...(p?[{label:A.zoom?'Restore the layout':'Fill Home with this pane',ic:A.zoom?'restore':'fill',run:()=>{A.zoom=A.zoom?null:p.id}},{label:'Float',ic:'float',run:()=>{floatKey(k)}}]:[{label:'Dock on the left',ic:'dock',run:()=>dockEdge(k,'left')},{label:'Dock on the right',ic:'dock',run:()=>dockEdge(k,'right')}]),
       {label:'Dock along the bottom',ic:'dock',run:()=>dockEdge(k,'below')},...(k==='chat'&&p&&p.framed&&p.tabs.length===1?[{label:'Make the chat plain again',ic:'chat',run:chatPlain}]:[]),{sep:1},{label:'Close',ic:'close',run:()=>{closeWin(k);return false}}];trig=(p?'tab:':'fbar:')+k}
   else if(page==='home'&&(pn||t.closest('.emptydesk')||t.id==='desk')){const cp=paneOf('chat');items=[{label:'Add a window here…',ic:'plus',run:()=>{openAdd({x:at.x,y:at.y,place:dp});return false}},...(cp&&isPlain(cp)?[{label:'Make the chat a window',ic:'window',run:chatToWindow}]:[]),{sep:1},{label:'Save this layout',ic:'save',run:saveLayout},{label:'Back to just the chat',ic:'home',disabled:!(A.floats.length||panesIn(A.grid).length>1),run:backToChat}]}
-  if(!items)return;ev.preventDefault();openMenu(items,at,trig)}
+  if(!items)return;ev.preventDefault();const own=t.closest('[data-fk]');openMenu(items,at,trig||(own&&own.dataset.fk))}
 
 /* =====================================================================================================================
    Keys: only keys the browser and the OS leave alone
    ===================================================================================================================== */
 addEventListener('keydown',ev=>{const t=ev.target,inField=t.closest&&t.closest('input,textarea,select,[contenteditable]');
-  if((ev.metaKey||ev.ctrlKey)&&!ev.shiftKey&&!ev.altKey&&ev.code==='KeyK'){ev.preventDefault();if(pal)closeMenus();else{const ae=document.activeElement,fk=ae&&ae.dataset&&ae.dataset.fk;menu=null;addpop=null;pal={q:'',i:0,trigger:fk};render()}return}
+  if((ev.metaKey||ev.ctrlKey)&&!ev.shiftKey&&!ev.altKey&&ev.code==='KeyK'){ev.preventDefault();if(pal)closeMenus();else{const ae=document.activeElement,fk=ae&&ae.dataset&&ae.dataset.fk;menu=null;addpop=null;keysOpen=false;pal={q:'',i:0,trigger:fk};render()}return}
   if(ev.key==='Escape'&&(menu||addpop||pal||keysOpen)){ev.preventDefault();closeMenus();return}
   if(ev.key==='Escape'&&GRAPH.sel&&!inField){const n=GRAPH.sel;GRAPH.sel=null;render();focusFk('gnode:'+n);return}
   if(ev.key==='Escape'&&SEL&&!COMPOSE&&!inField){SEL=null;$$('.cfloat').forEach(x=>x.remove());render();return}
-  if(inField||t.closest&&t.closest('.term'))return;
-  if(ev.altKey&&!ev.metaKey&&!ev.ctrlKey&&page==='home'){
+  /* ⌥1, ⌥2 and ⌥` work from the composer too: Option with a digit or the backtick types nothing a chat needs. */
+  if(ev.altKey&&!ev.metaKey&&!ev.ctrlKey&&page==='home'&&!(t.closest&&t.closest('.term'))){
     if(ev.code==='Digit1'){ev.preventDefault();isOpen('project')?closeWin('project'):openWin('project',{dock:'left'});return}
     if(ev.code==='Digit2'){ev.preventDefault();isOpen('activity')?closeWin('activity'):openWin('activity',{dock:'below'});return}
     if(ev.code==='Backquote'){ev.preventDefault();cycle();return}}
+  if(inField||t.closest&&t.closest('.term'))return;
   if(ev.key==='?'){ev.preventDefault();keysOpen={trigger:document.activeElement&&document.activeElement.dataset&&document.activeElement.dataset.fk};render();return}});
 /* ⌥` walks the windows: each pane, then each floating window; the active one is marked. */
 function cycle(){const list=[...panesIn(A.grid).map(p=>({pane:p.id})),...A.floats.map(f=>({float:f.key}))];if(!list.length)return;const i=list.findIndex(x=>A.active&&((x.pane&&x.pane===A.active.pane)||(x.float&&x.float===A.active.float)));
@@ -1724,20 +1775,20 @@ function seqView(id){const s=SEQS.find(x=>x.id===id),runs=RUNS.filter(r=>r.seq==
         <div class="rule"><b>Runs when</b> ${esc(st.when)} · <b>Done when</b> ${esc(st.done)}${st.wait?` · <b>Waits for</b> ${esc(st.wait)}`:''}</div>
         ${here.map(r=>`<span class="here">${r.state==='waits'?'<span class="dot hollow"></span>':'<span class="spin"></span>'}Run ${r.id} · ${esc(r.by)}${r.task?' · task '+r.task:''} · since ${r.since}</span>`).join(' ')}</div></li>`}).join('')}</ol>`}
 /* The editor: steps in order, each with its guard (runs when) and its check (done when). Drag or use the arrows. */
-function seqEditor(s){const E=SEQEDIT;return `<div class="seqhead"><div style="display:flex;align-items:center;gap:8px"><h2>Edit · ${esc(s.name)}</h2><span style="flex:1"></span><button class="btn sm" data-seqcancel>Cancel</button><button class="btn sm primary" data-seqsave>Save</button></div>
-  <div class="meta" style="color:var(--text-3);font-size:var(--text-small)">Each step runs when its guard holds and is done when its check passes. Drag a step by its handle to move it.</div></div>
+function seqEditor(s){const E=SEQEDIT;return `<div class="seqhead"><div style="display:flex;align-items:center;gap:8px"><h2>Edit · ${esc(s.name)}</h2><span style="flex:1"></span><button class="btn sm" data-seqcancel data-fk="seqcancel">Cancel</button><button class="btn sm primary" data-seqsave data-fk="seqsave">Save</button></div>
+  <div class="meta" style="color:var(--text-3);font-size:var(--text-small)">A step starts at its “Runs when” and ends at its “Done when”. Drag a step by its handle to move it.</div></div>
   <div style="padding:0 20px 20px" data-seqlist>${E.steps.map((st,i)=>`<div class="sedit" data-sstep="${i}"><span class="handle" data-shandle="${i}" title="Drag to move" aria-hidden="true">${I('list','s14')}</span>
-    <div><input value="${esc(st.t)}" data-sfield="${i}:t" aria-label="Step ${i+1}" placeholder="What the agent does"><div class="lab">Runs when</div><input value="${esc(st.when)}" data-sfield="${i}:when" aria-label="Step ${i+1}: runs when" placeholder="e.g. the tests pass">
-      <div class="lab">Done when</div><input value="${esc(st.done)}" data-sfield="${i}:done" aria-label="Step ${i+1}: done when" placeholder="e.g. a reviewer approves"></div>
-    <div class="ops"><button class="ib" data-smove="${i}:-1" aria-label="Move step ${i+1} up" ${i===0?'disabled':''} style="transform:rotate(180deg)">${I('caret','s14')}</button><button class="ib" data-smove="${i}:1" aria-label="Move step ${i+1} down" ${i===E.steps.length-1?'disabled':''}>${I('caret','s14')}</button><button class="ib" data-sdel="${i}" aria-label="Remove step ${i+1}">${I('close','s14')}</button></div></div>`).join('')}
+    <div><input value="${esc(st.t)}" data-sfield="${i}:t" data-fk="sfield:${i}:t" aria-label="Step ${i+1}" placeholder="What the agent does"><div class="lab">Runs when</div><input value="${esc(st.when)}" data-sfield="${i}:when" data-fk="sfield:${i}:when" aria-label="Step ${i+1}: runs when" placeholder="e.g. the tests pass">
+      <div class="lab">Done when</div><input value="${esc(st.done)}" data-sfield="${i}:done" data-fk="sfield:${i}:done" aria-label="Step ${i+1}: done when" placeholder="e.g. a reviewer approves"></div>
+    <div class="ops"><button class="ib" data-smove="${i}:-1" data-fk="smove:${i}:-1" aria-label="Move step ${i+1} up" ${i===0?'disabled':''} style="transform:rotate(180deg)">${I('caret','s14')}</button><button class="ib" data-smove="${i}:1" data-fk="smove:${i}:1" aria-label="Move step ${i+1} down" ${i===E.steps.length-1?'disabled':''}>${I('caret','s14')}</button><button class="ib" data-sdel="${i}" aria-label="Remove step ${i+1}">${I('close','s14')}</button></div></div>`).join('')}
   <button class="btn sm bordered" style="margin-top:12px" data-sadd data-fk="sadd">${I('plus','s14')}Add a step</button></div>`}
 PAGES_EXTRA.push({id:'sequences',t:'Sequences',ic:'seq',line:'its list, a sequence with its steps and where each run is, and Edit steps to add, reorder and change them.',
   html:()=>shell('Sequences','',showEmpty?'0':String(SEQS.length),splitBtn('sequence'),seqList(false),showEmpty?`<div class="empty"><b>Nothing selected</b>Choose a sequence to see its steps.</div>`:seqView(SEQSEL))});
 function seqEvent(run,text){CONV.main.msgs.push(['seq',run.id,text]);render()}
-async function runSequenceDemo(){const r=RUNS.find(x=>x.id===41),s=SEQS[0];
-  seqEvent(r,`started for task 1702 by Agent 1`);await sleep(900);r.at=0;seqEvent(r,`step 1 of 4 · ${s.steps[0].t}`);await sleep(1200);
+async function runSequenceDemo(){const r=RUNS.find(x=>x.id===41),s=SEQS[0],my=RUN;
+  seqEvent(r,`started for task 1702 by Agent 1`);await sleep(900);if(RUN!==my)return;r.at=0;seqEvent(r,`step 1 of 4 · ${s.steps[0].t}`);await sleep(1200);if(RUN!==my)return;
   seqEvent(r,`step 1 ended · ${s.steps[0].done}`);r.at=1;seqEvent(r,`step 2 of 4 · ${s.steps[1].t}`);startProc('p1');}
-function afterTests(ok){const r=RUNS.find(x=>x.id===41),s=SEQS[0];if(!ok){r.state='waits';seqEvent(r,'step 2 waits · a test failed; Agent 1 is fixing it');return}
+function afterTests(ok,stopped){const r=RUNS.find(x=>x.id===41),s=SEQS[0];if(!ok){r.state='waits';seqEvent(r,stopped?'step 2 waits · you stopped the tests':'step 2 waits · a test failed; Agent 1 is fixing it');return}
   seqEvent(r,`step 2 ended · ${s.steps[1].done}`);r.at=2;r.state='waits';seqEvent(r,`step 3 of 4 waits for ${s.steps[2].wait}`)}
 
 /* =====================================================================================================================
@@ -1751,16 +1802,16 @@ function freshProcs(){PROCS={p1:{cmd:'php artisan test --filter=Account',state:'
 const fmt=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
 const outLine=l=>l.replace(/<e>(.*?)<\/e>/,'<span class="e">$1</span>').replace(/^<f>(.*)<\/f>$/,'<span class="f">$1</span>');
 function procHtml(id){const p=PROCS[id];if(!p)return '';const st=p.state==='running'?`<span class="st" style="color:var(--text-2)"><span class="spin"></span>Running</span>`:p.state==='passed'?`<span class="st">${I('tick','s14')}Passed</span>`:p.state==='failed'?`<span class="st" style="color:var(--danger)">${I('alert','s14')}Failed</span>`:`<span class="st"><span class="dot hollow"></span>Waiting to start</span>`;
-  const shown=p.open?p.lines:p.state==='running'?p.lines.slice(-3):[];
+  const shown=p.open?p.lines:p.state==='running'?p.lines.slice(-3):p.state==='passed'?p.lines.filter(l=>l).slice(-2):[];
   return `<div class="proc" data-proc="${id}" role="group" aria-label="Command ${esc(p.cmd)}"><div class="ph">${I('term','s14')}<span class="cmd" title="${esc(p.cmd)}">${esc(p.cmd)}</span>${st}<span class="dur" data-procdur="${id}">${fmt(p.secs)}</span>
-    ${p.state==='running'?`<button class="btn sm" data-procstop="${id}">${I('stop','s14')}Stop</button>`:''}<button class="btn sm" data-proctoggle="${id}" aria-expanded="${p.open}">${p.open?'Hide output':'Show output'}</button></div>
-    ${shown.length?`<div class="out ${p.open?'open':'peek'}" data-procout="${id}" data-keepscroll="out-${id}" role="log">${shown.map(outLine).join('\n')}</div>`:''}</div>`}
+    ${p.state==='running'?`<button class="btn sm" data-procstop="${id}">${I('stop','s14')}Stop</button>`:''}<button class="btn sm" data-proctoggle="${id}" data-fk="proctoggle:${id}" aria-expanded="${p.open}">${p.open?'Hide output':'Show output'}</button></div>
+    ${shown.length?`<div class="out ${p.open?'open':'peek'}${!p.open&&p.state==='passed'?' two':''}" data-procout="${id}" data-keepscroll="out-${id}" role="log">${shown.map(outLine).join('\n')}</div>`:''}</div>`}
 EXTRA_KIND.proc=(c,m)=>procHtml(m[1]);
 function startProc(id){const p=PROCS[id];p.state='running';p.start=Date.now();p.lines=['Running tests…'];CONV.main.msgs.push(['proc',id]);render()}
 /* Live: the duration and the last lines update in place, without redrawing the chat. */
 setInterval(()=>{Object.entries(PROCS).forEach(([id,p])=>{if(p.state!=='running')return;p.secs=(Date.now()-p.start)/1000;const d=$(`[data-procdur="${id}"]`);if(d)d.textContent=fmt(p.secs);
   if(p.lines.length<=TESTLINES.length&&Math.random()<.75){p.lines.push(TESTLINES[p.lines.length-1]||'');const o=$(`[data-procout="${id}"]`);if(o){o.innerHTML=(p.open?p.lines:p.lines.slice(-3)).map(outLine).join('\n');if(p.open)o.scrollTop=o.scrollHeight}}
-  if(p.lines.length>TESTLINES.length){p.state='passed';p.open=false;render();if(p.on==='p1')afterTests(true)}})},380);
+  if(p.lines.length>TESTLINES.length){p.state='passed';render();if(p.on==='p1')afterTests(true)}})},380);
 
 /* =====================================================================================================================
    Docked cards: an item docked under the conversation, or beside the composer
@@ -1769,7 +1820,7 @@ let DOCKED={},FOLD={},JUSTDOCKED=null;
 function dockTitle(d){if(d.kind==='task'){const t=TASKS.find(x=>x[0]===d.ref)||[d.ref,'Account settings dialog: Save inside the name field','work','Worker 3'];return {ic:'todos',t:`Task ${d.ref} · ${t[1]}`,sub:`${t[3]} · step 2 of 5`,prog:40,state:ST[t[2]]||ST.work,open:()=>openItem('task:'+d.ref)}}
   if(d.kind==='plan'){const p=PLANS.find(x=>x[0]===d.ref);return {ic:'plan',t:`Plan ${p[0]} · ${p[1]}`,sub:`${p[3].filter(t=>t[2]==='done').length} of ${p[3].length} tasks done`,prog:p[2],open:()=>{page='plans';SELP.plans=p[0]}}}
   if(d.kind==='question')return {ic:'question',t:'Which save behaviour for the name?',sub:'Question · Agent 1 · 13:44',answer:true,open:()=>{}};
-  return {ic:'docs',t:'Report 307 · Critique of Home v6, round 3',sub:'Interaction review · Reviewer 313',open:()=>toast('Report 307 opens in the reader',()=>render())}}
+  return {ic:'docs',t:'Report 307 · Critique of Home v6, round 3',sub:'Interaction review · Reviewer 313',open:()=>toast('Report 307 opens in the reader')}}
 function dcardHtml(d){const x=dockTitle(d);return `<div class="dcard" data-dcard="${d.id}" data-fk="dcard:${d.id}" tabindex="0" aria-label="${esc(x.t)}, docked">${I(x.ic)}<div class="t"><b>${esc(x.t)}</b><small>${esc(x.sub)}</small>${x.prog!=null?`<span class="meter" style="width:140px;margin-top:4px"><i style="width:${x.prog}%"></i></span>`:''}</div>
   ${x.answer?'<button class="btn sm bordered">Answer</button>':x.state||''}<button class="ib" data-dopen="${d.id}" title="Open" aria-label="Open ${esc(x.t)}">${I('arrow','s14')}</button><button class="ib" data-undock="${d.id}" title="Undock" aria-label="Undock ${esc(x.t)}">${I('close','s14')}</button></div>`}
 /* Under the conversation the cards stack; with more than one they fold to the newest, with its edges showing. */
@@ -1778,7 +1829,7 @@ ABOVE_COMPOSER.push(c=>{const items=(DOCKED[c]||[]).filter(d=>d.place==='under')
     ${folded?`<div class="dstack">${dcardHtml(items[0])}</div>`:items.map(dcardHtml).join('')}</div>`});
 composer=function(c){const beside=(DOCKED[c]||[]).filter(d=>d.place==='beside');if(!beside.length)return baseComposer(c);
   return baseComposer(c).replace('<span class="chip faint">Opus</span>',beside.map(d=>{const x=dockTitle(d);return `<button class="bchip" data-dopen="${d.id}" title="${esc(x.t)} · docked beside the composer">${I(x.ic,'s13')}${esc(x.t.split(' · ')[0])}</button>`}).join('')+'<span class="chip faint">Opus</span>')};
-function dockToChat(kind,ref){const c=A.mainConv;DOCKED[c]=DOCKED[c]||[];if(DOCKED[c].some(d=>d.kind===kind&&d.ref===ref)){toast('Already docked to this chat',()=>render());return}
+function dockToChat(kind,ref){const c=A.mainConv;DOCKED[c]=DOCKED[c]||[];if(DOCKED[c].some(d=>d.kind===kind&&d.ref===ref)){toast('Already docked to this chat');return}
   const d={id:nid('d'),kind,ref,place:'under'};DOCKED[c].unshift(d);JUSTDOCKED=d.id;page='home';changed()}
 function undock(id){const c=Object.keys(DOCKED).find(k=>DOCKED[k].some(d=>d.id===id)),before=clone(DOCKED);DOCKED[c]=DOCKED[c].filter(d=>d.id!==id);changed();toast('Undocked',()=>{DOCKED=before;render()})}
 AFTER_RENDER.push(()=>{if(JUSTDOCKED&&!CALM.matches){const e=$(`[data-dcard="${JUSTDOCKED}"]`);if(e)e.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'none'}],{duration:VIEW,easing:EASE})}JUSTDOCKED=null});
@@ -1800,7 +1851,7 @@ function termView(who){const T=TERM[who];if(!T)return '';const label={connecting
   return `<div class="twrap"><div class="ttool"><span class="st">${T.state==='live'?'<span class="dot brand"></span>':T.state==='ended'?'<span class="dot hollow"></span>':'<span class="spin"></span>'}${label}</span><span class="size" data-tsize="${who}" title="Columns × rows; follows the pane's size">${T.cols}×${T.rows}</span><span class="gap"></span>
     <button class="btn sm" data-tint="${who}" ${T.state!=='live'?'disabled':''} title="Interrupt · Ctrl+C in the terminal">Interrupt</button><button class="btn sm" data-trestart="${who}" ${T.state==='connecting'||T.state==='restarting'?'disabled':''}>Restart</button><button class="btn sm" data-tend="${who}" ${T.state!=='live'?'disabled':''}>End</button></div>
     <div class="term" data-term="${who}" data-fk="term:${who}" data-keepscroll="term-${who}" tabindex="0" role="log" aria-label="${MEM[who].name}'s terminal. Type to send keys; Ctrl+C interrupts.">${T.lines.map(tline).join('\n')}${T.state==='live'?`\n<span class="pr">›</span> <span data-tinput="${who}">${esc(T.input)}</span><span class="cur"></span>`:''}</div>
-    ${T.state==='connecting'||T.state==='restarting'?`<div class="tover"><span class="spin"></span>${label}</div>`:''}${T.state==='ended'?`<div class="tover"><span>The session ended · exit ${T.exit}</span><button class="btn sm bordered" data-trestart="${who}">Restart</button></div>`:''}</div>`}
+    ${T.state==='connecting'||T.state==='restarting'?`<div class="tover"><span class="spin"></span>${label}</div>`:''}${T.state==='ended'?`<div class="tover"><span>The session ended.</span><button class="btn sm bordered" data-trestart="${who}" data-fk="trestart:${who}">Restart</button></div>`:''}</div>`}
 function termPaint(){const who='w5',el=$(`[data-term="${who}"]`);if(!el){render();return}render()}
 function termKey(who,ev){const T=TERM[who];if(T.state!=='live')return;
   if(ev.ctrlKey&&ev.key.toLowerCase()==='c'){ev.preventDefault();T.lines.push(`<p>›</p> ${esc(T.input)}^C`,'<d>Interrupted. Worker 5 stopped and waits for you.</d>');T.input='';STATE.w5='Interrupted · waits for you';render();focusFk('term:'+who);return}
@@ -1826,28 +1877,35 @@ layoutFor=function(s){if(s==='seq')return {grid:split('row',pane(['chat']),pane(
 LOADERS.push(()=>{freshRuns();freshProcs();DOCKED={};FOLD={};SEQEDIT=null;SEQRUN=null;freshTerm();
   CONV.w5={name:'Worker 5',sub:'Task 1711 · in a terminal',term:true,origin:'Started by Agent 1 for task 1711 · supervised by Agent 1 · runs in a terminal',msgs:[['ag','14:30','I\'m on the docking for task 1711. My terminal is beside this chat; type there to steer me.'],['ag','14:34','Tests for paneLayout are running now.']]};
   if(step==='seq'){CONV.main.msgs.push(['seq',40,'finished for task 1699 · 4 steps in 1 h 10 min'],['me','Ship task 1702 once Worker 3 is done.'],['ag','14:20','Starting “Ship a task” for task 1702.']);setTimeout(()=>{if(step==='seq')runSequenceDemo()},700)}
-  if(step==='dock'){DOCKED.main=[{id:'d1',kind:'task',ref:1711,place:'under'},{id:'d2',kind:'question',ref:'q1',place:'under'},{id:'d3',kind:'plan',ref:56,place:'under'},{id:'d4',kind:'report',ref:307,place:'beside'}];
+  if(step==='dock'){DOCKED.main=[{id:'d1',kind:'task',ref:1711,place:'under'},{id:'d3',kind:'plan',ref:56,place:'under'},{id:'d4',kind:'report',ref:307,place:'beside'}];
     CONV.main.msgs.push(['me','Build it and run the migration check.'],['ag','14:40','The build failed on AgentBar.vue; the migration check passed.'],['proc','p2'],['proc','p3'])}
   if(step==='term'){EXTRA.push('w5');A.mainConv='w5'}});
 WIRE_EXTRA.push(on=>{
   on('[data-seqopen]',b=>b.onclick=()=>{const [s,r]=b.dataset.seqopen.split(':').map(Number);SEQSEL=s;SEQRUN=r;openWin('seqv:'+s,{dock:'right'})});
   on('[data-seqrun]',b=>b.onclick=()=>{SEQRUN=+b.dataset.seqrun;render();focusFk('seqrun:'+SEQRUN)});
-  on('[data-seqedit]',b=>b.onclick=()=>{const s=SEQS.find(x=>x.id===+b.dataset.seqedit);SEQEDIT={id:s.id,steps:clone(s.steps)};render()});
-  on('[data-seqcancel]',b=>b.onclick=()=>{SEQEDIT=null;render()});
-  on('[data-seqsave]',b=>b.onclick=()=>{const s=SEQS.find(x=>x.id===SEQEDIT.id),before=clone(s.steps);s.steps=SEQEDIT.steps.filter(x=>x.t.trim());SEQEDIT=null;render();toast(`Saved ${s.steps.length} steps`,()=>{s.steps=before;render()})});
+  on('[data-seqedit]',b=>b.onclick=()=>{const s=SEQS.find(x=>x.id===+b.dataset.seqedit);SEQEDIT={id:s.id,steps:clone(s.steps)};render();focusFk('seqcancel');requestAnimationFrame(()=>{const f=$('[data-sfield="0:t"]');if(f)f.focus()})});
+  /* Cancel on a sequence that was never saved takes it away again, and the list's first sequence is shown. */
+  on('[data-seqcancel]',b=>b.onclick=()=>{const E=SEQEDIT;SEQEDIT=null;if(E&&E.fresh){const i=SEQS.findIndex(s=>s.id===E.id);if(i>=0)SEQS.splice(i,1);SEQSEL=SEQS[0]&&SEQS[0].id}render();focusFk(SEQSEL?'row:seq:'+SEQSEL:'create:sequence')});
+  on('[data-seqsave]',b=>b.onclick=()=>{const s=SEQS.find(x=>x.id===SEQEDIT.id),before=clone(s.steps);s.steps=SEQEDIT.steps.filter(x=>x.t.trim());SEQEDIT=null;render();focusFk('seqedit:'+s.id);toast(`Saved ${s.steps.length} steps`,()=>{s.steps=before;render()})});
   on('[data-sfield]',i=>i.oninput=()=>{const [n,f]=i.dataset.sfield.split(':');SEQEDIT.steps[+n][f]=i.value});
-  on('[data-smove]',b=>b.onclick=()=>{const [n,d]=b.dataset.smove.split(':').map(Number),st=SEQEDIT.steps,j=n+d;if(j<0||j>=st.length)return;[st[n],st[j]]=[st[j],st[n]];render();focusFk('sadd')});
+  on('[data-smove]',b=>b.onclick=()=>{const [n,d]=b.dataset.smove.split(':').map(Number),st=SEQEDIT.steps,j=n+d;if(j<0||j>=st.length)return;[st[n],st[j]]=[st[j],st[n]];render();
+    /* Focus follows the step it moved; at the top or bottom it takes the other arrow. */
+    const edge=j===0||j===st.length-1;focusFk(`smove:${j}:${edge?-d:d}`)});
   on('[data-sdel]',b=>b.onclick=()=>{SEQEDIT.steps.splice(+b.dataset.sdel,1);render();focusFk('sadd')});
   on('[data-sadd]',b=>b.onclick=()=>{SEQEDIT.steps.push({t:'',when:'',done:''});render();const ins=$$('[data-sfield$=":t"]');if(ins.length)ins[ins.length-1].focus()});
   /* Dragging a step by its handle moves it; the others make room as it passes. */
   on('[data-shandle]',h=>h.onpointerdown=e=>{const list=h.closest('[data-seqlist]'),from=+h.dataset.shandle,el=h.closest('.sedit');el.classList.add('lifting');let to=from;
     pointerDrag(e,(ev,dx,dy)=>{el.style.transform=`translateY(${dy}px)`;const rows=$$('.sedit',list);to=rows.findIndex(r=>{const b=r.getBoundingClientRect();return ev.clientY<b.top+b.height/2});if(to<0)to=rows.length-1;if(to>from)to=Math.max(from,to-1)},
       ()=>{el.classList.remove('lifting');el.style.transform='';const st=SEQEDIT.steps,[m]=st.splice(from,1);st.splice(to,0,m);render()})});
-  on('[data-newseq]',b=>b.onclick=()=>{const id=SEQS.length+10;SEQS.push({id,name:'New sequence',about:'Steps an agent follows.',steps:[{t:'',when:'',done:''}]});SEQSEL=id;SEQEDIT={id,steps:[{t:'',when:'',done:''}]};showEmpty=false;page='sequences';render()});
-  on('#main .pglist [data-item^="seq:"]',r=>r.onclick=()=>{SEQSEL=+r.dataset.item.split(':')[1];SEQEDIT=null;render();focusFk('row:'+r.dataset.item)});
+  on('[data-newseq]',b=>b.onclick=()=>{const id=SEQS.length+10;SEQS.push({id,name:'New sequence',about:'Steps an agent follows.',steps:[{t:'',when:'',done:''}]});SEQSEL=id;SEQEDIT={id,steps:[{t:'',when:'',done:''}],fresh:true};showEmpty=false;page='sequences';render()});
+  /* Choosing another sequence while editing keeps the edits a toast away: Undo returns to them. A new one never saved goes. */
+  on('#main .pglist [data-item^="seq:"]',r=>r.onclick=()=>{const to=+r.dataset.item.split(':')[1],E=SEQEDIT;if(E&&E.id===to)return;
+    let gone=null;if(E&&E.fresh){const i=SEQS.findIndex(s=>s.id===E.id);if(i>=0)gone=SEQS.splice(i,1)[0]}
+    SEQSEL=to;SEQEDIT=null;render();focusFk('row:'+r.dataset.item);
+    if(E)toast(gone?'Dropped the new sequence':'Left the edits unsaved',()=>{if(gone)SEQS.push(gone);SEQSEL=E.id;SEQEDIT=E;render()})});
   on('#desk [data-item^="seq:"]',r=>{r.ondblclick=()=>openWin('seqv:'+r.dataset.item.split(':')[1],{dock:'right'});r.onclick=r.ondblclick});
   on('[data-proctoggle]',b=>b.onclick=()=>{const p=PROCS[b.dataset.proctoggle];p.open=!p.open;render()});
-  on('[data-procstop]',b=>b.onclick=()=>{const p=PROCS[b.dataset.procstop];p.state='failed';p.lines.push('<f>Stopped by you</f>','exit 130');p.open=true;render();if(p.on==='p1')afterTests(false)});
+  on('[data-procstop]',b=>b.onclick=()=>{const p=PROCS[b.dataset.procstop];p.state='failed';p.lines.push('<f>Stopped by you</f>');render();focusFk('proctoggle:'+b.dataset.procstop);if(p.on==='p1')afterTests(false,true)});
   on('[data-fold]',b=>b.onclick=()=>{const c=b.dataset.fold;FOLD[c]=FOLD[c]===false;render();focusFk('fold:'+c)});
   on('[data-dopen]',b=>b.onclick=ev=>{ev.stopPropagation();const id=b.dataset.dopen,c=Object.keys(DOCKED).find(k=>DOCKED[k].some(d=>d.id===id)),d=DOCKED[c].find(x=>x.id===id);const r=dockTitle(d).open();render()});
   on('[data-undock]',b=>b.onclick=ev=>{ev.stopPropagation();undock(b.dataset.undock)});
@@ -1856,7 +1914,7 @@ WIRE_EXTRA.push(on=>{
   on('[data-tint]',b=>b.onclick=()=>{termKey(b.dataset.tint,{ctrlKey:true,key:'c',preventDefault(){}})});
   on('[data-trestart]',b=>b.onclick=()=>{const who=b.dataset.trestart,T=TERM[who];T.state='restarting';T.input='';render();setTimeout(()=>{T.state='connecting';render();setTimeout(()=>{T.state='live';T.lines=TBOOT.slice(0,3).concat(['<d>Restarted. Worker 5 picks up where it was.</d>']);STATE.w5='Writing the pane grid docking';render()},800)},1000)});
   on('[data-tend]',b=>b.onclick=()=>{const T=TERM[b.dataset.tend];T.state='ended';T.exit=0;STATE.w5='Ended';render()})});
-PAL_EXTRA.push(C=>{C('Sequences','seq',()=>{page='sequences';return false});if(page==='home'&&CONV[A.mainConv]&&CONV[A.mainConv].term)C('Open the terminal','term',()=>{openWin('term:'+A.mainConv,{dock:'right'});return false})});
+PAL_EXTRA.push(C=>{if(page==='home'&&CONV[A.mainConv]&&CONV[A.mainConv].term)C('Open the terminal','term',()=>{openWin('term:'+A.mainConv,{dock:'right'});return false})});
 /* =====================================================================================================================
    Panels inside the chat: an agent's memories and a sequence open over the conversation, not as windows.
    Windows are for what a user keeps on Home; these belong to the chat they were opened from.
@@ -1875,9 +1933,9 @@ openWin=function(k,o){if(k.startsWith('mem:'))return openMemories(k.slice(4));if
 delete CAT.sequences;
 ABOVE_COMPOSER.push(c=>{if(!CPANEL||CPANEL.conv!==c)return '';
   if(CPANEL.kind==='mem'){const who=CPANEL.who,ms=(MEMS[who]||[]).slice().sort((a,b)=>b[0]-a[0]);
-    return `<aside class="cpanel" role="dialog" aria-label="${MEM[who].name}'s memories" data-cpanel>${`<div class="cphead">${avatar(who)}<b>${MEM[who].name}'s memories</b><small>${ms.length} · heaviest first</small><button class="ib" data-cpclose data-fk="cpclose" aria-label="Close the memories" title="Close · Esc">${I('close','s14')}</button></div>`}
-      <div class="cpbody" data-keepscroll="cpbody">${ms.length?ms.map(([w,t,src,kw],i)=>`<button class="mrow" data-memrow="${i}" data-fk="memrow:${i}" aria-expanded="${MEMOPEN===i}"><span class="w" title="Weight">${w}</span>${esc(t)}${MEMOPEN===i?`<small>From ${esc(src)} · ${kw.map(esc).join(', ')} · fades by one at each compaction</small>`:''}</button>`).join('')
-        :`<div class="empty"><b>No memories yet</b>${MEM[who].name} keeps here what it must still know.</div>`}</div></aside>`}
+    return `<aside class="cpanel" role="dialog" aria-label="${MEM[who].name}'s memories" data-cpanel>${`<div class="cphead">${avatar(who)}<b>${MEM[who].name}'s memories</b><small>${ms.length} memor${ms.length===1?'y':'ies'} · the number is its weight, heaviest first</small><button class="ib" data-cpclose data-fk="cpclose" aria-label="Close the memories" title="Close · Esc">${I('close','s14')}</button></div>`}
+      <div class="cpbody" data-keepscroll="cpbody">${ms.length?ms.map(([w,t,src,kw],i)=>`<button class="mrow" data-memrow="${i}" data-fk="memrow:${i}" aria-expanded="${MEMOPEN===i}"><span class="w" title="Weight">${w}</span>${esc(t)}${MEMOPEN===i?`<small>From ${esc(src)} · ${kw.map(esc).join(', ')} · loses one weight each time the agent's conversation is summed up</small>`:''}</button>`).join('')
+        :`<div class="empty"><b>No memories yet</b>${MEM[who].name} has no memories yet.</div>`}</div></aside>`}
   const s=SEQS.find(x=>x.id===CPANEL.id);if(!s)return '';
   return `<aside class="cpanel" role="dialog" aria-label="Sequence ${esc(s.name)}" data-cpanel><div class="cphead">${I('seq','s14')}<b>${esc(s.name)}</b><button class="ib" data-cpclose data-fk="cpclose" aria-label="Close the sequence" title="Close · Esc">${I('close','s14')}</button></div><div class="cpbody" data-keepscroll="cpbody">${seqView(s.id)}</div></aside>`});
 /* The panel slides in from the chat's right edge. */
@@ -1933,7 +1991,7 @@ const CREATE={
   document:{noun:'document',title:'New document',plain:'Write it yourself',agent:'Write it with an agent',fields:[['title','Title','input'],['abstract','One line about it','input'],['body','Text','textarea']],
     qs:[['What is the document about?',['How docking works on Home','A review of the accounts pages','Release notes for version 6']],['Who will read it?',['The user','The workers who build it','Both']],['How long should it be?',['One screen','A full design with sections']]],
     draft:a=>({title:a[0],abstract:`${a[0]}, for ${a[1]==='Both'?'the user and the workers':a[1].toLowerCase()}.`,body:a[2]==='One screen'?`### ${a[0]}\nWhat it is in one paragraph, and what to do next.`:`### What it is\nIn short, ${a[0].toLowerCase()}.\n### How it works\nStep by step.\n### What could go wrong\nThe risks, and what to do about each.`})},
-  account:{noun:'account',title:'Add account',plain:'Add it yourself',agent:'Set it up with an agent',fields:[['program','Program (Claude Code or Codex)','input'],['name','Name','input'],['kind','Kind (subscription or API key)','input']],
+  account:{noun:'account',title:'Add account',plain:'Add it yourself',agent:'Set it up with an agent',fields:[['program','Program (Claude Code or Codex)','input'],['name','Name','input'],['kind','Type (subscription or API key)','input']],
     qs:[['Which program is the account for?',['Claude Code','Codex']],['How does it sign in?',['A subscription, in the browser','An API key']],['What should it be called?',['Work','Personal','Team key']]],
     draft:a=>({program:a[0],name:a[2],kind:a[1].startsWith('A sub')?'Subscription':'API key'})},
   sequence:{noun:'sequence',title:'New sequence',plain:'Write the steps yourself',agent:'Build it with an agent',
@@ -1941,23 +1999,31 @@ const CREATE={
     draft:a=>{const appr=!a[2].startsWith('No'),who=a[2].startsWith('I ')?'you':'a reviewer',start=a[1]==='When I start it'?'you start it':a[1].replace(/^When /,'').replace(/^a /,'a ');
       return {name:a[0],steps:[{t:'Do the work',when:start,done:'the work is committed'},{t:'Run the checks',when:'the work is committed',done:'every check passes'},...(appr?[{t:'Ask for approval',when:'the checks pass',done:`${who} approves`,wait:who}]:[]),{t:'Finish and tell the chat',when:appr?`${who} approves`:'the checks pass',done:'the result is in the chat'}]}}}};
 let FORM=null,GUIDE=null;
-function splitBtn(kind){const k=CREATE[kind];return `<span class="splitb"><button class="btn sm main" data-create="${kind}" data-fk="create:${kind}" title="${k.plain}">${I('plus','s14')}${k.title}</button><button class="btn sm more" data-createmenu="${kind}" data-fk="createmenu:${kind}" aria-haspopup="menu" aria-label="More ways to create a ${k.noun}" title="More ways">${I('caret','s14')}</button></span>`}
-function createPlain(kind,values,drafted){menu=null;if(kind==='sequence'){newSequence(values,drafted);return}FORM={kind,values:{...(values||{})},drafted:!!drafted,focus:true};GUIDE=null;render()}
+function splitBtn(kind){const k=CREATE[kind];return `<span class="splitb"><button class="btn sm sb-main" data-create="${kind}" data-fk="create:${kind}" title="${k.plain}">${I('plus','s14')}${k.title}</button><button class="btn sm more" data-createmenu="${kind}" data-fk="createmenu:${kind}" aria-haspopup="menu" aria-label="More ways to create a ${k.noun}" title="More ways">${I('caret','s14')}</button></span>`}
+function createPlain(kind,values,drafted){noteOpener();menu=null;if(kind==='sequence'){newSequence(values,drafted);return}FORM={kind,values:{...(values||{})},drafted:!!drafted,focus:true,page};GUIDE=null;render()}
 function newSequence(d,drafted){const id=Math.max(...SEQS.map(s=>s.id))+1,steps=d&&d.steps?d.steps:[{t:'',when:'',done:''}];SEQS.push({id,name:d&&d.name||'New sequence',about:'Steps an agent follows.',steps:clone(steps)});
-  SEQSEL=id;SEQEDIT={id,steps:clone(steps),drafted:!!drafted};GUIDE=null;showEmpty=false;page='sequences';render()}
-function startGuide(kind){GUIDE={kind,answers:[],text:'',drafting:false,draft:null,focus:true};FORM=null;menu=null;render()}
-function answerGuide(t){if(!t||!t.trim())return;const g=GUIDE,k=CREATE[g.kind];g.answers.push(t.trim());g.text='';g.focus=true;
+  SEQSEL=id;SEQEDIT={id,steps:clone(steps),drafted:!!drafted,fresh:true};GUIDE=null;showEmpty=false;page='sequences';render()}
+function startGuide(kind){noteOpener();GUIDE={kind,answers:[],text:'',drafting:false,draft:null,focus:true,page};FORM=null;menu=null;render()}
+function answerGuide(t,typed){if(!t||!t.trim())return;const g=GUIDE,k=CREATE[g.kind];g.answers.push(t.trim());g.text='';g.focus=typed?'text':true;
   if(g.answers.length>=k.qs.length){g.drafting=true;render();setTimeout(()=>{if(GUIDE!==g)return;g.drafting=false;g.draft=k.draft(g.answers);g.focus=true;render()},900)}else render()}
-function closeCreate(){const t=(FORM||GUIDE)&&('createmenu:'+(FORM||GUIDE).kind);FORM=null;GUIDE=null;render();if(t)focusFk(t)}
+/* The control that opened the dialog gets focus back when it closes. */
+let CREATEFROM=null;
+function noteOpener(){if(FORM||GUIDE)return;const a=document.activeElement,el=a&&a.closest&&a.closest('[data-fk]');CREATEFROM=el?el.dataset.fk:null}
+function closeCreate(){const t=(FORM||GUIDE)&&(CREATEFROM||'createmenu:'+(FORM||GUIDE).kind);FORM=null;GUIDE=null;CREATEFROM=null;render();if(t)focusFk(t)}
 function makeFromForm(){const f=FORM,v=f.values,kind=f.kind;let undo,done;
   if(kind==='task'){const n=Math.max(...TASKS.map(t=>t[0]))+1;TASKS.push([n,v.title||'Untitled task','open','—',+String(v.plan||'').replace(/\D/g,'')||56]);SELP.tasks=n;TASKF='all';TASKVIEW='list';page='tasks';done=`Created task ${n}`;undo=()=>{TASKS.splice(TASKS.findIndex(t=>t[0]===n),1);render()}}
   if(kind==='plan'){const n=Math.max(...PLANS.map(p=>p[0]))+1;PLANS.push([n,v.title||'Untitled plan',0,[]]);SELP.plans=n;PLANTAB='phases';page='plans';done=`Created plan ${n}`;undo=()=>{PLANS.splice(PLANS.findIndex(p=>p[0]===n),1);render()}}
   if(kind==='document'){const n=Math.max(...DOCS.map(d=>d[0]))+1;DOCS.unshift([n,v.title||'Untitled document','just now',v.abstract||'',1]);DOCTEXT[n]=v.body||'';SELP.docs=n;DOCTAB='text';page='docs';done=`Created doc ${n}`;undo=()=>{DOCS.splice(DOCS.findIndex(d=>d[0]===n),1);render()}}
   if(kind==='account'){const nm=v.name||'New account';ACCOUNTS.push([/codex/i.test(v.program||'')?'codex':'claude',nm,`${/codex/i.test(v.program||'')?'Codex':'Claude Code'} ${(v.kind||'subscription').toLowerCase()}`,'Needs sign-in','',false]);SELP.accounts=nm;page='accounts';done=`Added ${nm}`;undo=()=>{ACCOUNTS.splice(ACCOUNTS.findIndex(a=>a[1]===nm),1);render()}}
-  FORM=null;showEmpty=false;render();toast(done,undo)}
+  const fk={task:'row:ptask:'+SELP.tasks,plan:'row:pplan:'+SELP.plans,document:'row:pdoc:'+SELP.docs,account:'row:pacc:'+SELP.accounts}[kind];
+  if(kind==='plan'){PLANTASK=null;PLANBACK=null}
+  FORM=null;GUIDE=null;CREATEFROM=null;showEmpty=false;render();toast(done,undo);focusFk(fk)}
 function draftSummary(kind,d){if(kind==='sequence')return `<b>${esc(d.name)}</b><ol>${d.steps.map(s=>`<li>${esc(s.t)}<small>Runs when ${esc(s.when)} · done when ${esc(s.done)}</small></li>`).join('')}</ol>`;
   return CREATE[kind].fields.map(([n,l])=>d[n]?`<div><small>${l}</small>${esc(d[n]).replace(/\n/g,'<br>')}</div>`:'').join('')}
-AFTER_RENDER.push(()=>{if(!FORM&&!GUIDE)return;const host=$('#main');
+AFTER_RENDER.push(()=>{if(!FORM&&!GUIDE)return;
+  /* Going to another page, from the sidebar or the palette, leaves the dialog behind. */
+  if((FORM||GUIDE).page!==page){FORM=null;GUIDE=null;CREATEFROM=null;return}
+  const host=$('#main');
   if(FORM){const k=CREATE[FORM.kind];
     host.insertAdjacentHTML('beforeend',`<div class="scrim" data-cclose></div><div class="cdlg" id="cdlg" role="dialog" aria-label="${k.title}"><header><b>${k.title}</b><button class="ib" data-cclose aria-label="Close">${I('close','s14')}</button></header>
       <div class="cbody">${FORM.drafted?`<div class="drafted">${avatar('a1')}<span>Drafted by Agent 1 from your answers. Change anything, then ${FORM.kind==='account'?'add it':'create it'}.</span></div>`:''}
@@ -1976,15 +2042,20 @@ AFTER_RENDER.push(()=>{if(!FORM&&!GUIDE)return;const host=$('#main');
       <div class="cbody"><div class="gchat" aria-live="polite">${past}${now}</div></div>
       <footer>${n?`<button class="btn sm" data-gback>${I('reply','s14')}Change the last answer</button>`:`<button class="btn sm" data-gplain>${k.plain} instead</button>`}<span class="gap"></span><button class="btn sm" data-cclose>Cancel</button>${g.draft?`<button class="btn sm primary" data-gopen>${g.kind==='sequence'?'Open in the editor':'Open the draft'}</button>`:''}</footer></div>`);
     $$('[data-gans]',host).forEach(b=>b.onclick=()=>answerGuide(b.dataset.gans));
-    const ti=$('[data-gtext]',host);if(ti){ti.oninput=()=>{g.text=ti.value};ti.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();answerGuide(ti.value)}}}
-    const gs=$('[data-gsend]',host);if(gs)gs.onclick=()=>answerGuide(g.text);
+    const ti=$('[data-gtext]',host);if(ti){ti.oninput=()=>{g.text=ti.value};ti.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();answerGuide(ti.value,true)}}}
+    const gs=$('[data-gsend]',host);if(gs)gs.onclick=()=>answerGuide(g.text,true);
     const gb=$('[data-gback]',host);if(gb)gb.onclick=()=>{g.answers.pop();g.draft=null;g.drafting=false;g.focus=true;render()};
     const gp=$('[data-gplain]',host);if(gp)gp.onclick=()=>createPlain(g.kind);
     const go=$('[data-gopen]',host);if(go)go.onclick=()=>createPlain(g.kind,g.draft,true);
     const body=$('#cdlg .cbody');body.scrollTop=body.scrollHeight;
-    if(g.focus){g.focus=false;requestAnimationFrame(()=>{const f=$('#cdlg [data-gopen]')||$('#cdlg .gchip');if(f)f.focus()})}}
+    if(g.focus){const want=g.focus;g.focus=false;requestAnimationFrame(()=>{const f=$('#cdlg [data-gopen]')||(want==='text'&&$('#cdlg [data-gtext]'))||$('#cdlg .gchip')||$('#cdlg');if(f)f.focus()})}}
   $$('[data-cclose]',host).forEach(b=>b.onclick=closeCreate);
-  $('#cdlg').onkeydown=ev=>{if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();closeCreate()}}});
+  const dlg=$('#cdlg');dlg.setAttribute('aria-modal','true');dlg.tabIndex=-1;
+  /* Enter in a one-line field makes the item, and Command or Control with Enter does it from a text area. */
+  if(FORM)$$('[data-ff]',dlg).forEach(i=>i.addEventListener('keydown',ev=>{if(ev.key==='Enter'&&(i.tagName==='INPUT'||ev.metaKey||ev.ctrlKey)){ev.preventDefault();makeFromForm()}}));
+  dlg.onkeydown=ev=>{if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();closeCreate();return}
+    if(ev.key!=='Tab')return;const f=$$('button:not([disabled]),input,textarea',dlg);if(!f.length)return;const first=f[0],last=f[f.length-1];
+    if(ev.shiftKey&&(document.activeElement===first||document.activeElement===dlg)){ev.preventDefault();last.focus()}else if(!ev.shiftKey&&document.activeElement===last){ev.preventDefault();first.focus()}}});
 /* =====================================================================================================================
    What an agent looked at: under its message, one quiet line ("Looked at 6 sources") opens the context it gathered:
    searches with what they found, memories, documents and files read. Closed by default, one line.
@@ -1992,12 +2063,12 @@ AFTER_RENDER.push(()=>{if(!FORM&&!GUIDE)return;const host=$('#main');
 let SOURCES={},SRCOPEN=new Set(),SRCFOUND=null;
 const SRCIC={search:'search',memory:'brain',doc:'docs',file:'file'};
 function sourcesHtml(c,i){const key=c+':'+i,ss=SOURCES[key];if(!ss||!ss.length)return '';const open=SRCOPEN.has(key);
-  return `<div><button class="srcline" data-srcline="${key}" data-fk="srcline:${key}" aria-expanded="${open}">${I('chev','cv')}Looked at ${ss.length} source${ss.length>1?'s':''}</button>${open?`<div class="srcs" role="list">${ss.map((s,j)=>`<button class="src" role="listitem" data-src="${key}:${j}" data-fk="src:${key}:${j}">${I(SRCIC[s.kind],'s14')}<span>${esc(s.t)}</span>${s.sub?`<small>${esc(s.sub)}</small>`:''}</button>${SRCFOUND===key+':'+j&&s.found?`<div class="srcfound">${s.found.map(f=>`<div>${esc(f)}</div>`).join('')}</div>`:''}`).join('')}</div>`:''}</div>`}
+  return `<div><button class="srcline" data-srcline="${key}" data-fk="srcline:${key}" aria-expanded="${open}">${I('chev','cv')}Looked at ${ss.length} source${ss.length>1?'s':''}</button>${open?`<div class="srclist" role="list">${ss.map((s,j)=>`<button class="srcitem" role="listitem" data-src="${key}:${j}" data-fk="src:${key}:${j}">${I(SRCIC[s.kind],'s14')}<span>${esc(s.t)}</span>${s.sub?`<small>${esc(s.sub)}</small>`:''}</button>${SRCFOUND===key+':'+j&&s.found?`<div class="srcfound">${s.found.map(f=>`<div>${esc(f)}</div>`).join('')}</div>`:''}`).join('')}</div>`:''}</div>`}
 function openSource(key,j){const s=SOURCES[key][j];
   if(s.kind==='search'){SRCFOUND=SRCFOUND===key+':'+j?null:key+':'+j;render();focusFk('src:'+key+':'+j);return}
   if(s.kind==='memory'){openMemories(s.who,key.split(':')[0]);return}
   if(s.kind==='doc'){openItem('doc:'+s.ref);return}
-  if(FILES[s.ref])openFile(s.ref);else toast(`${base(s.ref)} is not in this design`,()=>render())}
+  if(FILES[s.ref])openFile(s.ref);else toast(`${base(s.ref)} is not on this machine`)}
 WIRE_EXTRA.push(on=>{on('[data-srcline]',b=>b.onclick=()=>{const k=b.dataset.srcline;SRCOPEN.has(k)?SRCOPEN.delete(k):SRCOPEN.add(k);render();focusFk('srcline:'+k)});
   on('[data-src]',b=>b.onclick=()=>{const p=b.dataset.src.split(':');openSource(p[0]+':'+p[1],+p[2])})});
 LOADERS.push(()=>{SRCOPEN=new Set();SRCFOUND=null;SOURCES={
@@ -2018,14 +2089,14 @@ let SPENDP='week';
 const useWord=p=>p>=90?'Almost used up':p>=60?'More than half used':'Plenty left';
 /* The row's usage column: a meter alone for a subscription (its title gives the numbers), the amount alone for a key. */
 function useCell(name){const u=USAGE[name];if(!u)return '';if(u.left)return `<span class="use amt" title="Left to spend">${u.left}</span>`;const p=Math.max(u.week,u.session);
-  return `<span class="meter um" role="img" aria-label="${p}% used" title="These 7 days ${u.week}% used · these 5 hours ${u.session}% used"><i style="width:${p}%"></i></span>`;
+  return `<span class="meter um" role="img" aria-label="${p}% used" title="This week ${u.week}% used · this session, the last 5 hours, ${u.session}% used"><i style="width:${p}%"></i></span>`;
   return `<span class="use ${p>=90?'low':''}" title="This week ${u.week}% used · this session ${u.session}% used"><span class="meter"><i style="width:${p}%"></i></span>${useWord(p)}</span>`}
 function useGroup(name){const u=USAGE[name];if(!u)return '';
   if(u.left){const s=u.spent[SPENDP];return `<div class="sec">Spending</div><div class="sgroup"><div class="srow"><div class="t">Left to spend<small>The balance Codex reports for this key.</small></div><b>${u.left}</b></div>
-    <div class="srow"><div class="t">Spent<small>${s[0]}, or ${s[1]}, ${SPENDP==='today'?'today':'this '+SPENDP}.</small></div><div class="segc" role="group" aria-label="Period">${[['today','Today'],['week','This week'],['month','This month']].map(([k,t])=>`<button aria-pressed="${SPENDP===k}" data-spendp="${k}">${t}</button>`).join('')}</div></div></div>`}
+    <div class="srow"><div class="t">Spent<small>${s[0]}, or ${s[1]}, ${SPENDP==='today'?'today':'this '+SPENDP}.</small></div><div class="segc" role="group" aria-label="Period">${[['today','Today'],['week','This week'],['month','This month']].map(([k,t])=>`<button aria-pressed="${SPENDP===k}" data-spendp="${k}" data-fk="spendp:${k}">${t}</button>`).join('')}</div></div></div>`}
   const bar=(label,p,reset)=>`<div class="srow"><div class="t">${label}<small>Resets ${reset}.</small><div class="ubar"><span class="meter"><i style="width:${p}%"></i></span><span class="use ${p>=90?'low':''}">${p}% used</span></div></div></div>`;
-  return `<div class="sec">Usage</div><div class="sgroup">${bar('These 7 days',u.week,u.weekReset)}${bar('These 5 hours',u.session,u.sessionReset)}</div>`}
-WIRE_EXTRA.push(on=>on('[data-spendp]',b=>b.onclick=()=>{SPENDP=b.dataset.spendp;render()}));
+  return `<div class="sec">Usage</div><div class="sgroup">${bar('This week',u.week,u.weekReset)}${bar('This session, the last 5 hours',u.session,u.sessionReset)}</div>`}
+WIRE_EXTRA.push(on=>on('[data-spendp]',b=>b.onclick=()=>{SPENDP=b.dataset.spendp;render();focusFk('spendp:'+SPENDP)}));
 
 /* =====================================================================================================================
    Lists inside a page open their items in place: a task clicked in a plan's list replaces that list with the task,
@@ -2037,11 +2108,13 @@ const basePlanReader=planReader;
 planReader=function(p,withGraph){if(!withGraph||!PLANTASK)return basePlanReader(p,withGraph);const t=TASKS.find(x=>x[0]===PLANTASK);if(!t)return basePlanReader(p,withGraph);
   return `<div class="backbar"><button class="btn sm" data-planback data-fk="planback">${I('reply','s14')}Back to plan ${p[0]}</button></div>`+taskReader(t).replace('</dl>',`<dt>Brief</dt><dd>${esc(BRIEF[t[0]]||'What done looks like is written in the task.')}</dd></dl>`)};
 WIRE_EXTRA.push(on=>{if(page!=='plans')return;
-  on('.pgread [data-gotask]',b=>b.onclick=ev=>{ev.preventDefault();ev.stopPropagation();const r=$('.pgread');if(!PLANTASK)PLANBACK={scroll:r?r.scrollTop:0,tab:PLANTAB};PLANTASK=+b.dataset.gotask;render();const r2=$('.pgread');if(r2)r2.scrollTop=0;focusFk('planback')});
-  on('[data-planback]',b=>b.onclick=()=>{const back=PLANBACK||{scroll:0,tab:'phases'};PLANTASK=null;PLANTAB=back.tab;PLANBACK=null;render();const r=$('.pgread');if(r)r.scrollTop=back.scroll;focusFk('plantab:'+PLANTAB)});
-  on('#main .pglist [data-item^="pplan:"]',r=>{const prev=r.onclick;r.onclick=ev=>{PLANTASK=null;PLANBACK=null;prev&&prev(ev)}})});
+  on('.pgread [data-gotask]',b=>b.onclick=ev=>{ev.preventDefault();ev.stopPropagation();const r=$('.pgread');if(!PLANTASK)PLANBACK={scroll:r?r.scrollTop:0,tab:PLANTAB,first:+b.dataset.gotask};PLANTASK=+b.dataset.gotask;render();const r2=$('.pgread');if(r2)r2.scrollTop=0;focusFk('planback')});
+  on('[data-planback]',b=>b.onclick=()=>{const back=PLANBACK||{scroll:0,tab:'phases'},was=back.first||PLANTASK;PLANTASK=null;PLANTAB=back.tab;PLANBACK=null;render();const r=$('.pgread');if(r)r.scrollTop=back.scroll;
+    focusFk($(`[data-fk="gotask:${was}"]`)?'gotask:'+was:'plantab:'+PLANTAB)});
+  on('#main .pglist [data-item^="pplan:"]',r=>{const prev=r.onclick;r.onclick=ev=>{PLANTASK=null;PLANBACK=null;GRAPH.sel=null;GRAPH.suggest=false;prev&&prev(ev)}})});
 /* When a task is chosen, the graph scrolls so its whole lit chain is in view, when it fits. */
-AFTER_RENDER.push(()=>{if(!GRAPH.sel)return;const w=$('[data-gwrap]');if(!w)return;const lit=$$('.node:not(.fade)',w);if(!lit.length)return;const wr=w.getBoundingClientRect();
+let GRAPHSCROLLED=null;
+AFTER_RENDER.push(()=>{const key=GRAPH.sel&&GRAPH.plan+':'+GRAPH.sel;if(key===GRAPHSCROLLED)return;GRAPHSCROLLED=key;if(!GRAPH.sel)return;const w=$('[data-gwrap]');if(!w)return;const lit=$$('.node:not(.fade)',w);if(!lit.length)return;const wr=w.getBoundingClientRect();
   let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;lit.forEach(n=>{const r=n.getBoundingClientRect();x0=Math.min(x0,r.left-wr.left+w.scrollLeft);x1=Math.max(x1,r.right-wr.left+w.scrollLeft);y0=Math.min(y0,r.top-wr.top+w.scrollTop);y1=Math.max(y1,r.bottom-wr.top+w.scrollTop)});
   const fitX=x1-x0<w.clientWidth,fitY=y1-y0<w.clientHeight;
   if(x0<w.scrollLeft||x1>w.scrollLeft+w.clientWidth)w.scrollTo({left:fitX?Math.max(0,x0-(w.clientWidth-(x1-x0))/2):Math.max(0,x0-16),behavior:CALM.matches?'auto':'smooth'});
@@ -2055,31 +2128,33 @@ const DOMAINS=[['tasks','Tasks','Turned off, the Tasks page and its windows are 
   ['sequences','Sequences','Turned off, no sequence starts and their lines leave the chat.'],['memory','Memory','Turned off, agents keep no memories between compactions.'],['reminders','Reminders','Turned off, no reminder fires.'],['helpers','Helpers','Turned off, the main agent starts no helpers.']];
 let SET={},CONN=null;
 const freshSet=()=>{SET={display_name:'Journal',remote_projects:true,...Object.fromEntries(DOMAINS.map(([k])=>[k,true]))};CONN={state:'idle',shown:false,token:'jrn_7Hq2-Lm9x-Kc4w',expires:30,projects:[['laptop','~/projects/shop','Connected','2 agents running'],['build box','/srv/journal-ci','Offline','Last seen yesterday at 18:40']]}};
-function settingsHtml(){const grp=(id,t,line,body,toggle,changed)=>`<div class="sec" style="display:flex;align-items:center;gap:10px"><span style="flex:1">${t}</span>${changed?`<button class="btn sm" data-setreset="${id}">Reset</button>`:''}${toggle!=null?`<button class="toggle" role="switch" aria-checked="${toggle}" data-settog="${id}" aria-label="${t}"></button>`:''}</div><p style="margin:-4px 0 8px;color:var(--text-3);font-size:var(--text-small)">${line}</p>${body?`<div class="sgroup">${body}</div>`:''}`;
+function settingsHtml(){const grp=(id,t,line,body,toggle,changed)=>`<div class="sec" style="display:flex;align-items:center;gap:10px"><span style="flex:1">${t}</span>${changed?`<button class="btn sm" data-setreset="${id}" data-fk="setreset:${id}">Reset</button>`:''}${toggle!=null?`<button class="toggle" role="switch" aria-checked="${toggle}" data-settog="${id}" data-fk="settog:${id}" aria-label="${t}"></button>`:''}</div><p style="margin:-4px 0 8px;color:var(--text-3);font-size:var(--text-small)">${line}</p>${body?`<div class="sgroup">${body}</div>`:''}`;
   const nameBad=!SET.display_name.trim();
   return `<div class="pghead"><h3>Settings</h3></div><div style="flex:1;overflow:auto" data-keepscroll="settings"><div class="reader" style="max-width:720px">
-    ${grp('general','General','How this journal names itself.',`<div class="srow"><div class="t">Journal name<small>Shown in the topbar and in the browser's tab.</small></div><div><input class="field ${nameBad?'bad':''}" data-setname value="${esc(SET.display_name)}" aria-label="Journal name" ${nameBad?'aria-invalid="true" aria-describedby="nameerr"':''}>${nameBad?'<div class="errtext" id="nameerr">A name needs at least one character.</div>':''}</div></div>`,null,SET.display_name!=='Journal')}
+    ${grp('general','General','How this journal names itself.',`<div class="srow"><div class="t">Journal name<small>Shown in the topbar and in the browser's tab.</small></div><div><input class="field ${nameBad?'bad':''}" data-setname data-fk="setname" value="${esc(SET.display_name)}" aria-label="Journal name" ${nameBad?'aria-invalid="true" aria-describedby="nameerr"':''}>${nameBad?'<div class="errtext" id="nameerr">A name needs at least one character.</div>':''}</div></div>`,null,SET.display_name!=='Journal')}
     ${grp('connected_projects','Connected projects','Projects on other machines that report to this journal.',SET.remote_projects?connectHtml():'',SET.remote_projects,false)}
     ${DOMAINS.map(([k,t,l])=>grp(k,t,l,'',SET[k],false)).join('')}</div></div>`}
 /* Connecting a project (doc 92): copy one command with its token, run it on the other machine, and it appears here. */
 function connectHtml(){const C=CONN,tok=C.shown?C.token:'jrn_••••-••••-••••',cmd=`journal connect https://journal.transport.app --token ${tok}`;
   return `<div class="srow" style="display:block"><div class="t">Connect a project<small>Run this one line on the machine with the project. It connects within a minute.</small></div>
-    <div style="display:flex;gap:6px;margin-top:8px;align-items:center"><code class="field" style="flex:1;width:auto;font-family:var(--font-mono);font-size:var(--text-small);overflow:hidden;white-space:nowrap" aria-label="Command">${esc(cmd)}</code>
-    <button class="btn sm" data-conshow aria-pressed="${C.shown}">${C.shown?'Hide':'Show'}</button><button class="btn sm bordered" data-concopy>${I('copy','s14')}Copy</button></div>
-    <div style="display:flex;gap:10px;align-items:center;margin-top:8px;font-size:var(--text-small);color:var(--text-3)">${C.state==='waiting'?'<span class="st" style="color:var(--text-2)"><span class="spin"></span>Waiting for the command to run…</span>':C.state==='connected'?`<span class="st strong">${I('tick','s14')}Connected: ${esc(C.projects[0][0])}</span>`:`<span>The token works once and expires in ${C.expires} minutes.</span>`}<span style="flex:1"></span><button class="btn sm" data-connew>Make a new one</button></div></div>
-    ${C.projects.length?C.projects.map(([m,p,s,l],i)=>`<div class="srow"><div class="t">${esc(m)} · <code>${esc(p)}</code><small>${s==='Connected'?l:`${s}. ${l}.`}</small></div><span class="st ${s==='Connected'?'':''}">${s==='Connected'?'<span class="dot solid"></span>':'<span class="dot hollow"></span>'}${s}</span><button class="btn sm" data-condrop="${i}">Disconnect</button></div>`).join('')
+    <div style="display:flex;gap:6px;margin-top:8px;align-items:center"><code class="field connect-cmd" style="flex:1;width:auto;font-family:var(--font-mono);font-size:var(--text-small)" aria-label="Command">${esc(cmd)}</code>
+    <button class="btn sm" data-conshow data-fk="conshow" aria-pressed="${C.shown}">${C.shown?'Hide':'Show'}</button><button class="btn sm bordered" data-concopy data-fk="concopy" ${C.state==='connected'?'disabled title="This token was used. Make a new one to connect another project."':''}>${I('copy','s14')}Copy</button></div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:8px;font-size:var(--text-small);color:var(--text-3)">${C.state==='waiting'?'<span class="st" style="color:var(--text-2)"><span class="spin"></span>Waiting for the command to run…</span>':C.state==='connected'?`<span class="st strong">${I('tick','s14')}Connected: ${esc(C.projects[0][0])}</span>`:`<span>The token works once and expires in ${C.expires} minutes.</span>`}<span style="flex:1"></span><button class="btn sm" data-connew data-fk="connew">Make a new one</button></div></div>
+    ${C.projects.length?C.projects.map(([m,p,s,l],i)=>`<div class="srow"><div class="t">${esc(m)} · <code>${esc(p)}</code><small>${s==='Connected'?l:`${s}. ${l}.`}</small></div><span class="st ${s==='Connected'?'':''}">${s==='Connected'?'<span class="dot solid"></span>':'<span class="dot hollow"></span>'}${s}</span><button class="btn sm" data-condrop="${i}" data-fk="condrop:${i}">Disconnect</button></div>`).join('')
       :`<div class="srow"><div class="t">No projects connected yet<small>Run the command above on the machine with the project.</small></div></div>`}`}
 const basePageHtml=pageHtml;
 pageHtml=function(){return page==='settings'?settingsHtml():basePageHtml()};
 WIRE_EXTRA.push(on=>{
-  on('[data-setname]',i=>{i.oninput=()=>{SET.display_name=i.value};i.onchange=()=>render()});
-  on('[data-settog]',b=>b.onclick=()=>{const k=b.dataset.settog;SET[k]=!SET[k];render();focusFk&&b.blur()});
-  on('[data-setreset]',b=>b.onclick=()=>{const before=SET.display_name;SET.display_name='Journal';render();toast('General is back to its defaults',()=>{SET.display_name=before;render()})});
-  on('[data-conshow]',b=>b.onclick=()=>{CONN.shown=!CONN.shown;render()});
-  on('[data-concopy]',b=>b.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(`journal connect https://journal.transport.app --token ${CONN.token}`);CONN.state='waiting';render();
+  /* The page draws again only when the name turns valid or invalid, or Reset comes or goes; the field keeps its focus. */
+  on('[data-setname]',i=>{i.oninput=()=>{const was=[!SET.display_name.trim(),SET.display_name!=='Journal'];SET.display_name=i.value;document.title=(i.value.trim()||'Journal')+' · Home';
+    const now=[!SET.display_name.trim(),SET.display_name!=='Journal'];if(was[0]!==now[0]||was[1]!==now[1]){const p=i.selectionStart;render();const f=$('[data-setname]');if(f){f.focus();f.setSelectionRange(p,p)}}}});
+  on('[data-settog]',b=>b.onclick=()=>{const k=b.dataset.settog;SET[k]=!SET[k];render();focusFk('settog:'+k)});
+  on('[data-setreset]',b=>b.onclick=()=>{const before=SET.display_name;SET.display_name='Journal';document.title='Journal · Home';render();focusFk('setname');toast('General is back to its defaults',()=>{SET.display_name=before;render()})});
+  on('[data-conshow]',b=>b.onclick=()=>{CONN.shown=!CONN.shown;render();focusFk('conshow')});
+  on('[data-concopy]',b=>b.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(`journal connect https://journal.transport.app --token ${CONN.token}`);CONN.state='waiting';render();focusFk('concopy');
     setTimeout(()=>{if(CONN.state!=='waiting')return;CONN.projects.unshift(['studio mac','~/code/journal-site','Connected','Joined just now']);CONN.state='connected';render()},3200)});
-  on('[data-connew]',b=>b.onclick=()=>{CONN.token='jrn_'+Math.random().toString(36).slice(2,6)+'-'+Math.random().toString(36).slice(2,6)+'-'+Math.random().toString(36).slice(2,6);CONN.state='idle';CONN.expires=30;render()});
-  on('[data-condrop]',b=>b.onclick=()=>{const i=+b.dataset.condrop,before=clone(CONN.projects);CONN.projects.splice(i,1);render();toast('Disconnected',()=>{CONN.projects=before;render()})})});
+  on('[data-connew]',b=>b.onclick=()=>{CONN.token='jrn_'+Math.random().toString(36).slice(2,6)+'-'+Math.random().toString(36).slice(2,6)+'-'+Math.random().toString(36).slice(2,6);CONN.state='idle';CONN.expires=30;render();focusFk('connew')});
+  on('[data-condrop]',b=>b.onclick=()=>{const i=+b.dataset.condrop,before=clone(CONN.projects);CONN.projects.splice(i,1);render();focusFk(CONN.projects.length?'condrop:'+Math.min(i,CONN.projects.length-1):'connew');toast('Disconnected',()=>{CONN.projects=before;render()})})});
 PAL_EXTRA.push(C=>{C('Connect a project','plus',()=>{page='settings';SET.remote_projects=true;return false});C('Profiles','users',()=>{page='profiles';return false})});
 
 /* =====================================================================================================================
@@ -2102,15 +2177,58 @@ function profilesHtml(){const sel=PROFILES.find(p=>p[0]===PROFSEL),row2=(t,line,
 PAGES_EXTRA.push({id:'profiles',t:'Profiles',ic:'users',line:'the kinds of helper: each with its program and models, driver, supervisor, rules and scripts.',html:profilesHtml});
 WIRE_EXTRA.push(on=>on('#main .pglist [data-item^="prof:"]',r=>r.onclick=()=>{PROFSEL=r.dataset.item.split(':')[1];render();focusFk('row:'+r.dataset.item)}));
 LOADERS.push(freshSet);
+/* =====================================================================================================================
+   Round 9 fixes (reports 321 to 324)
+   ===================================================================================================================== */
+/* The composer grows with what is typed, up to about six lines, also when a draft comes back after a redraw. */
+const growBox=t=>{t.style.height='auto';t.style.height=Math.min(Math.max(22,t.scrollHeight),140)+'px'};
+AFTER_RENDER.push(()=>$$('#main [data-compose]').forEach(t=>{if(t.value)growBox(t);t.addEventListener('input',()=>growBox(t))}));
+/* Answer on a question card puts the question above the composer; the next message is the answer. */
+let ANSWERQ=null;
+const baseComposer2=composer;
+composer=function(c){const h=composer2(c);return h};
+function composer2(c){const h=baseComposer2(c);if(!ANSWERQ||ANSWERQ.conv!==c)return h;
+  return h.replace('<div class="composer">',`<div class="composer"><div class="replying">${I('question','s14')}<span>Answering <b>${esc(ANSWERQ.q)}</b></span><button class="ib" style="width:20px;height:20px" data-unanswer aria-label="Stop answering">${I('close','s14')}</button></div>`)}
+const baseSend=sendMessage;
+sendMessage=function(c,t,extra){if(ANSWERQ&&ANSWERQ.conv===c&&t&&t.trim())ANSWERQ=null;return baseSend(c,t,extra)};
+WIRE_EXTRA.push(on=>{
+  on('.rowcard .btn, .dcard .btn',b=>{if(b.textContent.trim()!=='Answer')return;b.onclick=ev=>{ev.stopPropagation();const c=A.mainConv;ANSWERQ={conv:c,q:'Which save behaviour for the name?'};page='home';render();focusFk('compose:'+c)}});
+  on('[data-unanswer]',b=>b.onclick=()=>{const c=ANSWERQ&&ANSWERQ.conv;ANSWERQ=null;render();if(c)focusFk('compose:'+c)})});
+/* The add popover: kept inside the app, its chosen row kept in view, and rows that open from the keyboard too. */
+AFTER_RENDER.push(()=>{const p=$('#addpop');if(!p)return;const app=$('#app');
+  if(p.offsetLeft+p.offsetWidth>app.clientWidth-6)p.style.left=Math.max(6,app.clientWidth-p.offsetWidth-6)+'px';if(p.offsetTop+p.offsetHeight>app.clientHeight-6)p.style.top=Math.max(6,app.clientHeight-p.offsetHeight-6)+'px';
+  const on=$('.mi.on',p);if(on)on.scrollIntoView({block:'nearest'});
+  $$('[data-addrow]',p).forEach(b=>b.onclick=()=>{if(!addpop)return;const r=addpop.rows[+b.dataset.addrow],at=addpop.place;addpop=null;if(r)openWin(r.key,at?{at}:{})})});
+/* Focus after opening the plain chat goes to its composer; it has no tab to hold it. */
+const baseFocusKey=focusKey;
+focusKey=function(k){const p=paneOf(k);if(k==='chat'&&p&&isPlain(p)){focusFk('compose:'+A.mainConv);return}baseFocusKey(k)};
+/* A step change starts clean: no old toast whose Undo would bring back the last step, and no state left from it. */
+LOADERS.push(()=>{$('#toast').classList.remove('on');clearTimeout(toast.t);ACTFILTER=1;ACTOPEN=null;GRAPH.applied=false;GRAPH.sel=null;GRAPH.necks=false;GRAPH.suggest=false;TASKF='open';ANSWERQ=null;PLANTASK=null;PLANBACK=null});
+WIRE_EXTRA.push(on=>on('[data-cthemes]',b=>b.onclick=ev=>{ev.stopPropagation();
+  openMenu([{head:'Colour theme for code'},...CODETHEMES.map(([id,t,sub])=>({label:t,sub,tick:CODETHEME===id,run:()=>{setCodeTheme(id)}}))],b,b.dataset.fk)}));
+/* Each load() counts RUN up, so a demo still waiting from an earlier step can tell and stop. */
+var RUN;LOADERS.push(()=>{RUN=(RUN||0)+1});
+/* The sequences come back as they were whenever a step loads, so an edit saved in step 9 never breaks its demo. */
+const SEQS0=clone(SEQS);LOADERS.unshift(()=>{SEQS.splice(0,SEQS.length,...clone(SEQS0));SEQEDIT=null});
+/* The terminal stays at its newest line unless it was scrolled up to read. */
+const TERMUP={};
+AFTER_RENDER.push(()=>$$('.term[data-keepscroll]').forEach(t=>{const k=t.dataset.keepscroll;if(!TERMUP[k])t.scrollTop=t.scrollHeight;
+  t.onscroll=()=>{TERMUP[k]=t.scrollTop+t.clientHeight<t.scrollHeight-4}}));
+/* Choosing another chat closes the in-chat panel, so it never comes back unasked. */
+{const baseConvItems=convMenuItems;convMenuItems=function(...a){return baseConvItems.apply(this,a).map(it=>it.run&&it.dropconv?{...it,run:(...r)=>{CPANEL=null;MEMOPEN=null;return it.run(...r)}}:it)}}
+/* In a row of tabs the left and right arrows, Home and End move to a tab and choose it. */
+document.addEventListener('keydown',ev=>{const t=ev.target;if(!t.matches||!t.matches('[role=tab]')||t.matches('[data-tab]'))return;if(!['ArrowLeft','ArrowRight','Home','End'].includes(ev.key))return;
+  const set=$$('[role=tab]',t.closest('[role=tablist]')||t.parentElement),i=set.indexOf(t);if(i<0)return;ev.preventDefault();
+  const j=ev.key==='Home'?0:ev.key==='End'?set.length-1:(i+(ev.key==='ArrowRight'?1:-1)+set.length)%set.length,fk=set[j].dataset.fk;set[j].click();if(fk)focusFk(fk)});
 /* A plan made a moment ago has no tasks yet: its graph says so instead of drawing nothing. */
 const baseGraphView=graphView;
 graphView=function(plan){const P=PLANS.find(p=>p[0]===plan);if(!P||!P[3].length)return `<div class="empty"><b>No tasks in this plan yet</b>Its tasks, and what each waits on, show here.</div>`;return baseGraphView(plan)};
 const baseSeqEditor=seqEditor;
-seqEditor=function(s){const h=baseSeqEditor(s);if(!SEQEDIT||!SEQEDIT.drafted)return h;return h.replace('<div style="padding:0 20px 20px" data-seqlist>',`<div class="drafted inseq">${avatar('a1')}<span>Drafted by Agent 1 from your answers: each step has its guard and its check. Change anything, then Save.</span></div><div style="padding:0 20px 20px" data-seqlist>`)};
+seqEditor=function(s){const h=baseSeqEditor(s);if(!SEQEDIT||!SEQEDIT.drafted)return h;return h.replace('<div style="padding:0 20px 20px" data-seqlist>',`<div class="drafted inseq">${avatar('a1')}<span>Drafted by Agent 1 from your answers: each step has its “Runs when” and its “Done when”. Change anything, then Save.</span></div><div style="padding:0 20px 20px" data-seqlist>`)};
 WIRE_EXTRA.push(on=>{
   on('[data-create]',b=>b.onclick=()=>createPlain(b.dataset.create));
   on('[data-createmenu]',b=>b.onclick=()=>{const kind=b.dataset.createmenu,k=CREATE[kind];openMenu([{head:k.title},{label:k.plain,ic:'plus',run:()=>{createPlain(kind);return false}},{label:k.agent,sub:'Agent 1 asks three short questions and drafts it',ic:'chat',run:()=>{startGuide(kind);return false}}],b)})});
-PAL_EXTRA.push(C=>Object.entries(CREATE).forEach(([kind,k])=>{C(k.title,'plus',()=>{createPlain(kind);return false});C(`${k.agent}: ${k.noun}`,'chat',()=>{startGuide(kind);return false})}));
+PAL_EXTRA.push(C=>Object.entries(CREATE).forEach(([kind,k])=>{C(k.title,'plus',()=>{createPlain(kind);return false});C(`${k.title} with an agent`,'chat',()=>{startGuide(kind);return false})}));
 LOADERS.push(()=>{FORM=null;GUIDE=null});
 const SECTION_NOTES=[['Creating anything','Every create action is a split button. The main part is the plain way (a form, or the sequence editor); the chevron offers the agent way: a short guided chat where Agent 1 asks three questions with ready answers and drafts the same form for you to accept or change.'],['Panels inside the chat','An agent\'s memories and a sequence open in a panel that slides over the chat from its right edge: click through them, then close it. They belong to the chat; windows are for what you keep on Home.'],['Sequences','The chat says, one plain line each, when a sequence starts, which step runs, when a step waits or ends, and when it finishes. The viewer shows the steps and where each run is; the editor adds, reorders and changes steps with their guards and checks.'],
   ['Docked cards and commands','A task, plan, report or question docks under the conversation (folded into a stack) or beside the composer. A command runs as a process card: its state, its time, its last lines, and its full output when opened.'],
@@ -2132,7 +2250,7 @@ function startChrome(){
   load()}
 const NOTE_CARDS=[
   ['Docking is tiling','A window pushed past an edge of Home docks along that side. Dropped on a pane\'s compass, it splits the pane or joins its tabs. Panes share edges you drag, or move with the arrow keys. Windows taken out float; ⌥ while dragging keeps a window floating.'],
-  ['The chat, plain or a window','Alone, or beside docked panes, the chat is plain: no frame and no header, just the conversation at the reading width. Make it a window (right-click, ⌘K) and it gets a tab strip and moves like the rest.'],
+  ['The chat, plain or a window','As Home\'s only pane, the chat is plain: no frame and no header, just the conversation at the reading width. Beside other panes it has a tab strip like theirs and moves like the rest.'],
   ['A clean chat, and Activity','What agents do (tasks in hand, memories, searches, documents read, agents started) goes to Activity, each entry with an importance. Only what you choose reaches the chat, as a quiet line: from the panel\'s “In the chat” menu, or per kind in Settings.'],
   ['Documents','Documents, reports and Markdown files open in a reader. Select text to comment on it to any agent, ask an agent for feedback, or drag a document\'s bar from the chat onto an agent to hand it over.'],
   ['The task graph','Tasks and Plans show what waits on what. Click a task to light its whole chain, everything it waits on and everything waiting on it, with its holder and its waits beside it; click again, on empty space, or press Escape to clear. Show bottlenecks finds the tasks that hold up many others; Suggest improvement shows waits that can go, as a before and after.'],
