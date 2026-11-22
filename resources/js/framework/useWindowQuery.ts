@@ -46,6 +46,16 @@ export function useWindowQuery(): (
 }
 
 /**
+ * The name a key of this window's query has in the page's address: on Home window[<key>][<name>], on its own page the
+ * plain name.
+ */
+export function useWindowParam(): (name: string) => string {
+    const key = inject<string | null>(WINDOW_KEY, null);
+
+    return (name) => (key === null ? name : `window[${key}][${name}]`);
+}
+
+/**
  * Builds a link that changes only the named keys of this window's query and keeps every other key, of this window and
  * of the others; a key given undefined is removed.
  */

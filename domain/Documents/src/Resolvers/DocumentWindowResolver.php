@@ -5,19 +5,45 @@ declare(strict_types=1);
 namespace Domain\Documents\Resolvers;
 
 use App\Comments\Contracts\CommentResolver;
+use App\Docking\Cards\DockIdentity;
+use App\Docking\Data\DockablePublicationData;
 use App\Numbers\Support\RecordReference;
 use App\Records\Contracts\RecordResolver;
+use App\Records\Support\RecordIdentity;
 use App\Sharing\Contracts\ShareStatusResolver;
 use App\Ui\Contracts\PageResolver;
+use App\Ui\Enums\ActionMethod;
+use App\Ui\Layout\LayoutActionData;
+use App\Ui\Layout\LayoutBodyData;
+use App\Ui\Layout\LayoutFieldData;
+use App\Ui\Layout\LayoutFormData;
+use App\Ui\Layout\LayoutNativeData;
+use App\Ui\Layout\LayoutPartData;
+use App\Ui\Layout\LayoutRowData;
+use App\Ui\Layout\PublicationPage;
+use App\Ui\Layout\PublicationTab;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\DraftResolver;
-use Domain\Documents\Data\DocumentPageData;
-use Domain\Documents\Data\RecordPageData;
+use Domain\Documents\Data\DocumentView;
+use Domain\Documents\Data\DraftEditorPartData;
+use Domain\Documents\Data\DraftState;
+use Domain\Documents\Data\RecordCommentsPartData;
+use Domain\Documents\Data\RecordLinksPartData;
+use Domain\Documents\Data\RecordSharePartData;
+use Domain\Documents\Data\RecoverDraftPartData;
+use Domain\Documents\Data\RevisionCard;
+use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Enums\EditingState;
 use Domain\Documents\Http\Requests\RecordPageRequest;
+use Domain\Documents\Models\Document;
 use Domain\Documents\Support\RecordPageReads;
+use Spatie\LaravelData\Optional;
 
 /**
- * One document's page: its current revision rendered to safe HTML, and its draft.
+ * A document's page as a publication: its title, label, revision and abstract; under them the editing part, which
+ * stays mounted whichever tab is shown, so a held draft survives a tab change; then the tab the window chose, read
+ * alone. Text is the body, the public-comment notice and comments; Links its linked records; Details its editing and
+ * attention, settlements, Settle and Share; History its revisions, each linking to its own page.
  */
 final readonly class DocumentWindowResolver implements PageResolver
 {
@@ -31,23 +57,164 @@ final readonly class DocumentWindowResolver implements PageResolver
         private RecordPageReads $reads,
     ) {}
 
-    public function read(): DocumentPageData
+    public function read(): DockablePublicationData
     {
         $number = $this->request->documentNumber();
+        $document = $this->documents->show($number);
         $identity = $this->records->identify(RecordReference::of('doc', $number));
+        $editing = $this->drafts->stateOf($number);
+        $label = "doc {$number}";
 
-        return DocumentPageData::from([
-            'number' => (string) $number,
-            'record' => RecordPageData::fromDocumentView(
-                $this->documents->show($number),
-                $this->comments->list($identity, $this->request->commentsPage()),
-                $this->documents->inspect($number)->settlements,
-                $this->documents->links($number),
-                $this->shares->isPubliclyShared($identity),
-                $this->reads->of($identity),
-            ),
-            'editing' => $this->drafts->stateOf($number),
-            'revisions' => $this->documents->revisions($number, 1),
+        $page = PublicationPage::make(
+            $document->title,
+            [
+                LayoutPartData::text('label', $label, 'code'),
+                LayoutPartData::text('revision', "revision {$document->revision}", 'muted'),
+            ],
+            $document->abstract,
+            fn () => LayoutBodyData::fromMarkdown($document->body),
+            [
+                PublicationTab::deferred('text', 'Text', fn () => $this->textOf($document, $identity, $label)),
+                PublicationTab::deferred('links', 'Links', fn () => LayoutPartData::native(
+                    'links',
+                    LayoutNativeData::of('documents/RecordLinks', RecordLinksPartData::from([
+                        'source' => $label,
+                        'links' => $this->documents->links($number),
+                    ])),
+                )),
+                PublicationTab::deferred('details', 'Details', fn () => $this->detailsOf($document, $editing, $label)),
+                PublicationTab::deferred('history', 'History', fn () => $this->historyOf($number)),
+            ],
+        )->withStanding($this->editingOf($document, $editing));
+
+        return DockablePublicationData::of(
+            $page->layout($this->request->chosenTab()),
+            new DockIdentity(Document::LINK_TYPE, $document->id),
+        );
+    }
+
+    private function textOf(DocumentView $document, RecordIdentity $identity, string $label): LayoutPartData
+    {
+        $parts = [LayoutPartData::body('body', LayoutBodyData::fromMarkdown($document->body))];
+
+        if ($this->shares->isPubliclyShared($identity)) {
+            $parts[] = LayoutPartData::notice(
+                'public',
+                'info',
+                'This document is shared publicly: a comment you leave here will be public.',
+            );
+        }
+
+        $comments = RecordCommentsPartData::from([
+            'comments' => $this->comments->list($identity, $this->request->commentsPage()),
+            'target' => $label,
+            'reads' => $this->reads->of($identity),
+            'version' => $document->revision,
         ]);
+        $parts[] = LayoutPartData::native('comments', LayoutNativeData::of('documents/RecordComments', $comments));
+
+        return LayoutPartData::box('text', 'stack', ...$parts);
+    }
+
+    /**
+     * What the viewer may do with the draft: edit their own in the native editor, recover someone else's they may
+     * recover, see who else edits it, or open it for editing while nobody holds it.
+     */
+    private function editingOf(DocumentView $document, DraftState $editing): LayoutPartData
+    {
+        if ($editing->state === EditingState::Yours && ! $editing->draft instanceof Optional) {
+            $editor = DraftEditorPartData::from(['number' => $document->number, 'draft' => $editing->draft]);
+
+            return LayoutPartData::native('editing', LayoutNativeData::of('documents/DraftEditor', $editor));
+        }
+
+        if ($editing->state === EditingState::Held && ! $editing->held instanceof Optional) {
+            $recovery = RecoverDraftPartData::from([
+                'number' => $document->number,
+                'holder' => $this->holderOf($editing),
+                'held' => $editing->held,
+            ]);
+
+            return LayoutPartData::native('editing', LayoutNativeData::of('documents/RecoverForm', $recovery));
+        }
+
+        if ($editing->state === EditingState::Held) {
+            return LayoutPartData::notice('editing', 'info', "{$this->holderOf($editing)} is editing this document.");
+        }
+
+        return LayoutPartData::form(
+            'editing',
+            new LayoutFormData(
+                ActionMethod::Post,
+                route('documents.open-document', ['document' => $document->number], false),
+            ),
+            'inline',
+            LayoutPartData::action('send', 'Edit', LayoutActionData::submitting()),
+        );
+    }
+
+    /**
+     * The document's editing and attention, its settlements, the Settle form while it is active, sent with the
+     * revision on screen to the registered settle route, and Share.
+     */
+    private function detailsOf(DocumentView $document, DraftState $editing, string $label): LayoutPartData
+    {
+        $settlements = array_map(fn ($settlement) => new LayoutRowData(
+            $settlement->settledAt,
+            "Settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}",
+            $settlement->reason,
+        ), $this->documents->inspect((int) $document->number)->settlements);
+
+        $parts = [
+            LayoutPartData::collection('facts', 'facts', [
+                new LayoutRowData('editing', 'Editing', $editing->state->word($this->holderOf($editing))),
+                new LayoutRowData('attention', 'Attention', $document->attention->value),
+            ]),
+        ];
+
+        if ($settlements !== []) {
+            $parts[] = LayoutPartData::collection('settlements', 'list', $settlements);
+        }
+
+        if ($document->attention === AttentionState::Active) {
+            $parts[] = LayoutPartData::form(
+                'settle',
+                new LayoutFormData(
+                    ActionMethod::Post,
+                    route('documents.settle-document', ['document' => $document->number], false),
+                    ['revision' => (int) $document->revision],
+                ),
+                'inline',
+                LayoutPartData::field('reason', 'Reason', new LayoutFieldData('reason'), 'text'),
+                LayoutPartData::action('send', 'Settle', LayoutActionData::submitting()),
+            );
+        }
+
+        $share = RecordSharePartData::from(['reference' => $label]);
+        $parts[] = LayoutPartData::native('share', LayoutNativeData::of('documents/RecordShare', $share));
+
+        return LayoutPartData::box('details', 'stack', ...$parts);
+    }
+
+    /**
+     * The first page of the document's revisions, each a row linking to that revision's own page.
+     */
+    private function historyOf(int $number): LayoutPartData
+    {
+        return LayoutPartData::collection('history', 'list', array_map(
+            fn (RevisionCard $revision) => new LayoutRowData(
+                $revision->number,
+                "revision {$revision->number}",
+                $revision->title,
+                detail: $revision->closedAt,
+                href: "/documents/docs/{$number}/revisions/{$revision->number}",
+            ),
+            $this->documents->revisions($number, 1),
+        ));
+    }
+
+    private function holderOf(DraftState $editing): string
+    {
+        return $editing->holder instanceof Optional ? 'someone else' : $editing->holder;
     }
 }

@@ -68,14 +68,12 @@ use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Data\DockData;
 use Domain\Documents\Data\DockSuggestion;
 use Domain\Documents\Data\DocumentFilters;
-use Domain\Documents\Data\DocumentPageData;
 use Domain\Documents\Data\DocumentView;
 use Domain\Documents\Data\DraftState;
 use Domain\Documents\Data\DraftView;
 use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Data\PublicationList;
 use Domain\Documents\Data\RecordInspection;
-use Domain\Documents\Data\RecordPageData;
 use Domain\Documents\Data\RecordReadsData;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\ReportView;
@@ -172,8 +170,6 @@ final class DocumentsDomain extends Domain implements
                 RecordText::class,
                 EditingState::class,
                 DraftState::class,
-                DocumentPageData::class,
-                RecordPageData::class,
                 RecordReadsData::class,
                 DraftView::class,
                 RevisionCard::class,
@@ -300,14 +296,22 @@ final class DocumentsDomain extends Domain implements
     }
 
     /**
-     * The native parts the record layouts mount: a record's comments, its links and its share control, and the form
-     * that files a new one.
+     * The native parts the record layouts mount: a record's comments, its links and its share control, the form
+     * that files a new one, and a document's draft editor and the form that recovers a held draft.
      *
      * @return list<string>
      */
     public function nativeParts(): array
     {
-        return ['CreateRecordForm.vue', 'RecordComments.vue', 'RecordLinks.vue', 'RecordShare.vue', 'ReportReceipt.vue'];
+        return [
+            'CreateRecordForm.vue',
+            'DraftEditor.vue',
+            'RecordComments.vue',
+            'RecordLinks.vue',
+            'RecordShare.vue',
+            'RecoverForm.vue',
+            'ReportReceipt.vue',
+        ];
     }
 
     public function pages(): array
@@ -319,7 +323,7 @@ final class DocumentsDomain extends Domain implements
                     ActionRoute::post('docs', CreateDocumentPageController::class, 'create-document'),
                     ActionRoute::post('reports', CreateReportPageController::class, 'create-report'),
                 ),
-            Page::make('document', 'Document', Icon::Docs, DocumentWindowResolver::class, 'DocumentWindow.vue')
+            Page::layout('document', 'Document', Icon::Docs, DocumentWindowResolver::class)
                 ->at('docs/{document}')
                 ->inInspector()
                 ->actions(
