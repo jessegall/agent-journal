@@ -12,6 +12,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverSwitch;
 use App\Bus\Contracts\CommandBus;
 use App\Contracts\CommandHandler;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Exceptions\DriverSwitchStale;
 use App\Profiles\Values\DriverSwitchReceipt;
@@ -22,6 +23,7 @@ final readonly class SwitchAgentDriverHandler implements CommandHandler
         private ProfileSelections $profiles,
         private StartPreflight $preflight,
         private CommandBus $commands,
+        private DriverCatalogue $drivers,
     ) {}
 
     /**
@@ -38,12 +40,15 @@ final readonly class SwitchAgentDriverHandler implements CommandHandler
         $agent = Agent::query()->findOrFail($command->agentId);
         $this->assertCurrent($agent, $command);
         $session = AgentSession::query()->findOrFail($command->expectedSessionId);
+        // A target its driver cannot run, such as the Codex terminal, is refused with its reason before a switch exists.
+        $pin = $this->drivers->pinned($command->target->driver->value, $command->target->variant);
 
         $switch = DriverSwitch::create(
             $command->requestId,
             $session,
             $command->expectedGeneration,
             $command->target,
+            $pin,
             $command->dispatchedBy()->id,
         );
 

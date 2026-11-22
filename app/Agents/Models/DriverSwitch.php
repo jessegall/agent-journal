@@ -14,6 +14,7 @@ use App\Agents\Values\DriverSwitchTarget;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
 use App\Drivers\Enums\HookDriver;
+use App\Drivers\Values\PinnedDriver;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -32,6 +33,8 @@ use Illuminate\Support\Carbon;
  * @property string $expected_session_id
  * @property int $expected_generation
  * @property string $target_driver_key
+ * @property string $target_family
+ * @property int|null $target_protocol_version
  * @property DriverVariant $mode
  * @property string $account_id
  * @property int $account_revision
@@ -51,6 +54,8 @@ use Illuminate\Support\Carbon;
     'expected_session_id',
     'expected_generation',
     'target_driver_key',
+    'target_family',
+    'target_protocol_version',
     'mode',
     'account_id',
     'account_revision',
@@ -92,6 +97,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
         AgentSession $session,
         int $generation,
         DriverSwitchTarget $target,
+        PinnedDriver $pin,
         string $requestedBy,
     ): self {
         $switch = new self();
@@ -99,7 +105,9 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
         $switch->agent_id = $session->agent_id;
         $switch->expected_session_id = $session->id;
         $switch->expected_generation = $generation;
-        $switch->target_driver_key = $target->driver->value;
+        $switch->target_driver_key = (string) $pin->registration->key;
+        $switch->target_family = $pin->registration->family;
+        $switch->target_protocol_version = $pin->registration->protocolVersion;
         $switch->mode = $target->variant;
         $switch->account_id = $target->account->accountId;
         $switch->account_revision = $target->account->reviewedSignIn;
@@ -255,7 +263,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     public function target(): DriverSwitchTarget
     {
         return new DriverSwitchTarget(
-            HookDriver::from($this->target_driver_key),
+            HookDriver::from($this->target_family),
             $this->mode,
             new ChosenAccount($this->account_id, $this->account_revision),
             $this->conversation_id,

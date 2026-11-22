@@ -18,6 +18,7 @@ return new class extends Migration
             $table->ulid('expected_session_id');
             $table->unsignedInteger('expected_generation');
             $table->string('target_driver_key', 128);
+            $table->string('target_family', 64);
             $table->string('target_build', 64)->nullable();
             $table->unsignedInteger('target_protocol_version')->nullable();
             $table->ulid('source_binding_id')->nullable();

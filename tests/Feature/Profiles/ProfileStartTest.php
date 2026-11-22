@@ -29,6 +29,7 @@ use App\Agents\Values\DriverSwitchTarget;
 use App\Agents\Values\ModelSelection;
 use App\Bus\Contracts\CommandBus;
 use App\Drivers\Capabilities\CodexTerminalCapabilities;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Drivers\Enums\DriverCapability;
 use App\Drivers\Enums\HookDriver;
 use App\Drivers\Exceptions\DriverCapabilityUnsupported;
@@ -264,6 +265,40 @@ final class ProfileStartTest extends TestCase
         $this->switchTo(strtolower((string) Str::ulid()), strtolower((string) Str::ulid()), $this->accounts['codex']);
     }
 
+    public function test_a_switch_to_the_codex_terminal_is_refused_with_its_reason_before_any_switch_exists(): void
+    {
+        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $session = $this->start('default', null)->sessionId;
+
+        $this->assertThrows(
+            fn () => $this->switchTo(
+                strtolower((string) Str::ulid()),
+                $session,
+                $this->accounts['codex'],
+                DriverVariant::Terminal,
+            ),
+            DriverCapabilityUnsupported::class,
+            DriverCapabilityUnsupported::for(DriverCapability::Run, CodexTerminalCapabilities::NOT_PROVEN)->getMessage(),
+        );
+        $this->assertSame(0, DriverSwitch::query()->count());
+    }
+
+    public function test_a_switch_keeps_the_registration_its_target_was_pinned_to(): void
+    {
+        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $session = $this->start('default', null)->sessionId;
+        $requestId = strtolower((string) Str::ulid());
+
+        $this->switchTo($requestId, $session, $this->accounts['codex']);
+
+        $switch = DriverSwitch::query()->where('request_id', $requestId)->sole();
+        $pin = $this->app->make(DriverCatalogue::class)->pinned(HookDriver::Codex->value, DriverVariant::Headless);
+        $this->assertSame(
+            [(string) $pin->registration->key, $pin->registration->family, $pin->registration->protocolVersion],
+            [$switch->target_driver_key, $switch->target_family, $switch->target_protocol_version],
+        );
+    }
+
     public function test_after_a_proven_stop_the_replacement_starts_and_a_refused_one_fails_the_switch(): void
     {
         $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
@@ -307,8 +342,12 @@ final class ProfileStartTest extends TestCase
         return $runtime === null ? 0 : $runtime->process_generation;
     }
 
-    private function switchTo(string $requestId, string $sessionId, Account $account): DriverSwitchReceipt
-    {
+    private function switchTo(
+        string $requestId,
+        string $sessionId,
+        Account $account,
+        DriverVariant $mode = DriverVariant::Headless,
+    ): DriverSwitchReceipt {
         return $this->app->make(CommandBus::class)->run(new SwitchAgentDriverCommand(
             $requestId,
             $this->main->id,
@@ -317,7 +356,7 @@ final class ProfileStartTest extends TestCase
             self::generationOf($sessionId),
             new DriverSwitchTarget(
                 HookDriver::Codex,
-                DriverVariant::Headless,
+                $mode,
                 new ChosenAccount($account->id, $account->sign_in_generation),
                 null,
                 false,
@@ -339,6 +378,7 @@ final class ProfileStartTest extends TestCase
             $session,
             0,
             new DriverSwitchTarget(HookDriver::Codex, DriverVariant::Headless, $account, null, false),
+            $this->app->make(DriverCatalogue::class)->pinned(HookDriver::Codex->value, DriverVariant::Headless),
             'owner',
         );
         $switch->markPreflighted();

@@ -38823,6 +38823,7 @@ property	SwitchAgentDriverCommand::$requestId
 property	SwitchAgentDriverCommand::$requested
 property	SwitchAgentDriverCommand::$target
 property	SwitchAgentDriverHandler::$commands
+property	SwitchAgentDriverHandler::$drivers
 property	SwitchAgentDriverHandler::$preflight
 property	SwitchAgentDriverHandler::$profiles
 property	SwitchEvidence::$id
