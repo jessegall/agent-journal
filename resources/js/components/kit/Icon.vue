@@ -56,13 +56,34 @@ const shapes = {
         '<path d="M8 1.9l1.85 3.8 4.15.6-3 2.95.7 4.15L8 11.45 4.3 13.4l.7-4.15-3-2.95 4.15-.6Z" fill="currentColor" stroke-linejoin="round"/>',
     'dots-vertical':
         '<circle cx="8" cy="3.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="12.5" r="1.3" fill="currentColor" stroke="none"/>',
+    spark: '<path d="M8 1.8v12.4M1.8 8h12.4M3.6 3.6l8.8 8.8M12.4 3.6l-8.8 8.8"/>',
+    knot: '<path d="M8 2.2c2.6 0 4 1.6 4 3.3S10.4 8 8 8 4 9.4 4 10.8s1.4 3 4 3 4-1.4 4-3-1.4-2.8-4-2.8-4-1.3-4-2.5 1.4-3.3 4-3.3Z"/>',
+    reply: '<path d="M6.5 3.5 2.5 7.5l4 4"/><path d="M2.5 7.5h6.2a4.3 4.3 0 0 1 4.3 4.3v.7"/>',
+    smile: '<circle cx="8" cy="8" r="5.75"/><path d="M5.6 9.4a2.9 2.9 0 0 0 4.8 0"/><path d="M6 6.4v.1M10 6.4v.1"/>',
+    pin: '<path d="M6 2.5h4l-.6 3.4 2.1 2.1H4.5l2.1-2.1ZM8 8v5.5"/>',
+    term: '<rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M4.6 6.4 6.8 8.5 4.6 10.6M8.4 10.6h3"/>',
+    question: '<circle cx="8" cy="8" r="5.75"/><path d="M6.3 6.4a1.8 1.8 0 1 1 2.6 1.6c-.6.3-.9.7-.9 1.3"/><path d="M8 11.2v.1"/>',
+    alert: '<circle cx="8" cy="8" r="5.75"/><path d="M8 4.8v3.8M8 11v.1"/>',
+    file: '<path d="M4 1.8h5.5L12.5 5v9.2H4V1.8Z"/><path d="M9.5 1.8V5h3M6 8.5h4M6 11h4"/>',
+    folder: '<path d="M2 4.2h4l1.2 1.5H14v7H2z"/>',
+    memory: '<path d="M8 2.2a3.3 3.3 0 0 0-3.3 3.3c0 1.2.6 2 1.2 2.7.4.5.6 1 .6 1.6h3c0-.6.2-1.1.6-1.6.6-.7 1.2-1.5 1.2-2.7A3.3 3.3 0 0 0 8 2.2ZM6.5 12.2h3M7 14h2"/>',
+    copy: '<rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5v-2a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2"/>',
+    attach: '<path d="M12.6 7.6 8 12.2a3 3 0 0 1-4.2-4.2l4.9-4.9a2 2 0 0 1 2.8 2.8L6.6 10.8a1 1 0 0 1-1.4-1.4L9.6 5"/>',
+    send: '<path d="M8 13V3.5M4 7.2 8 3.2l4 4"/>',
 } as const;
 
 export type IconName = keyof typeof shapes;
 
+/** The three named sizes read the --icon-sm, --icon-md and --icon-lg tokens; a number is a pixel size. */
+export type IconSize = 'sm' | 'md' | 'lg' | number;
+
 const props = withDefaults(
-    defineProps<{ name: IconName; size?: number; bold?: boolean }>(),
-    { size: 16, bold: false },
+    defineProps<{ name: IconName; size?: IconSize; bold?: boolean }>(),
+    { size: 'lg', bold: false },
+);
+
+const side = computed(() =>
+    typeof props.size === 'number' ? `${props.size}px` : `var(--icon-${props.size})`,
 );
 
 const shape = computed(() => shapes[props.name]);
@@ -70,8 +91,7 @@ const shape = computed(() => shapes[props.name]);
 
 <template>
     <svg
-        :width="size"
-        :height="size"
+        :style="{ width: side, height: side }"
         viewBox="0 0 16 16"
         fill="none"
         stroke="currentColor"

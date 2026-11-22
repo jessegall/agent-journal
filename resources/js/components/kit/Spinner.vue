@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
- * A turning ring in the current text colour, for work that is under way: small beside a line of text, large alone
- * in the middle of a step.
+ * A turning ring in the current text colour, for work that is under way: 11 px beside a line of text (28 px when
+ * large, alone in the middle of a step). It turns once per 0.9 s, and per 3 s under reduced motion. It is hidden
+ * from assistive technology; the Status word carries the meaning.
  */
 withDefaults(defineProps<{ large?: boolean }>(), { large: false });
 </script>
@@ -9,7 +10,7 @@ withDefaults(defineProps<{ large?: boolean }>(), { large: false });
 <template>
     <span
         aria-hidden="true"
-        class="inline-block shrink-0 animate-spin rounded-full border-current border-r-transparent"
-        :class="large ? 'size-7 border-[2.5px]' : 'size-[9px] border'"
+        class="spinner inline-block shrink-0 rounded-full border-current/30 border-t-current"
+        :class="large ? 'size-7 border-[2.5px]' : 'size-2.75 border-[1.5px]'"
     />
 </template>

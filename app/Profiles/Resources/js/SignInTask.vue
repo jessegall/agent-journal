@@ -5,7 +5,7 @@ import type {
 } from '@generated/types/accounts';
 import Button from '@kit/Button';
 import Spinner from '@kit/Spinner';
-import TextField from '@kit/TextField';
+import Field from '@kit/Field';
 import { computed, ref, useId, watch } from 'vue';
 import ChosenSignIn from './ChosenSignIn.vue';
 import { codeDirection } from './signIn';
@@ -167,7 +167,7 @@ const openLink =
                     Your last answer did not arrive. Paste it again.
                 </p>
             </template>
-            <TextField
+            <Field
                 :id="`sign-in-secret-${fieldId}`"
                 v-model="actions.answer.code"
                 :label="method.title"
@@ -250,7 +250,7 @@ const openLink =
                 <p class="text-small text-text-2" role="alert">
                     Copy failed. Select the link below and copy it yourself.
                 </p>
-                <TextField
+                <Field
                     :id="`sign-in-link-${fieldId}`"
                     :model-value="actions.challenge.value.address ?? ''"
                     label="Link to Claude's sign-in page"
@@ -265,7 +265,7 @@ const openLink =
                     Your last code did not arrive. Paste it again.
                 </p>
             </template>
-            <TextField
+            <Field
                 :id="`sign-in-code-${fieldId}`"
                 v-model="actions.answer.code"
                 label="Code from the sign-in page"
