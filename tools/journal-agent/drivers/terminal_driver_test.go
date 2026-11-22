@@ -85,13 +85,13 @@ func request(id string) contracts.RequestIdentity {
 func TestTwoDeliveredPromptsAreTwoTurnsOfOneGeneration(t *testing.T) {
 	driver, clock, program := recordedTurn(t, 11*time.Second)
 
-	first, err := driver.Deliver(context.Background(), contracts.Delivery{Request: request("one"), Message: firstPrompt})
+	first, err := driver.Deliver(context.Background(), contracts.Delivery{Request: request("one"), Parts: contracts.TextParts(firstPrompt)})
 	if err != nil || first.Progress != contracts.ProgressApplying {
 		t.Fatalf("the first prompt ended %+v, %v", first, err)
 	}
 
 	clock.Sleep(27*time.Second + 500*time.Millisecond - clock.Now().Sub(time.Unix(0, 0)))
-	second, err := driver.Deliver(context.Background(), contracts.Delivery{Request: request("two"), Message: secondPrompt})
+	second, err := driver.Deliver(context.Background(), contracts.Delivery{Request: request("two"), Parts: contracts.TextParts(secondPrompt)})
 	if err != nil || second.Progress != contracts.ProgressApplying {
 		t.Fatalf("the second prompt ended %+v, %v", second, err)
 	}
@@ -103,7 +103,7 @@ func TestTwoDeliveredPromptsAreTwoTurnsOfOneGeneration(t *testing.T) {
 
 func TestAnInterruptHoldsTheRuntimeAndAWakeDoesNotRestartWork(t *testing.T) {
 	driver, _, program := recordedTurn(t, 11*time.Second)
-	driver.Deliver(context.Background(), contracts.Delivery{Request: request("one"), Message: firstPrompt})
+	driver.Deliver(context.Background(), contracts.Delivery{Request: request("one"), Parts: contracts.TextParts(firstPrompt)})
 
 	bound := contracts.InterruptRequest{Request: request("stop"), Turn: driver.Turns()}
 	interrupt, err := driver.Interrupt(context.Background(), bound)
@@ -121,7 +121,7 @@ func TestAnInterruptHoldsTheRuntimeAndAWakeDoesNotRestartWork(t *testing.T) {
 
 func TestAnInterruptBoundToAnEarlierTurnInterruptsNothing(t *testing.T) {
 	driver, _, program := recordedTurn(t, 11*time.Second)
-	driver.Deliver(context.Background(), contracts.Delivery{Request: request("one"), Message: firstPrompt})
+	driver.Deliver(context.Background(), contracts.Delivery{Request: request("one"), Parts: contracts.TextParts(firstPrompt)})
 	typed := program.String()
 
 	late := contracts.InterruptRequest{Request: request("late"), Turn: driver.Turns() - 1}
@@ -159,7 +159,7 @@ func TestATerminalTurnEndsWhenItsComposerIsEmptyAndStillAgain(t *testing.T) {
 		t.Fatal("a driver that submitted nothing has a turn to end")
 	}
 
-	delivery := contracts.Delivery{Request: request("one"), Message: firstPrompt}
+	delivery := contracts.Delivery{Request: request("one"), Parts: contracts.TextParts(firstPrompt)}
 	if _, err := driver.Deliver(context.Background(), delivery); err != nil {
 		t.Fatal(err)
 	}

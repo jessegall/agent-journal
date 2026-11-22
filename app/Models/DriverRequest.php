@@ -20,6 +20,7 @@ use App\Support\RuntimeStatuses;
 use App\Values\ClaimedRequest;
 use App\Values\DriverReceipt;
 use App\Values\DriverRequestPayload;
+use App\Values\MessagePart;
 use App\Values\NavigationRound;
 use App\Values\ScriptGoal;
 use App\Values\ScriptParameter;
@@ -43,6 +44,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $idempotency_key
  * @property string $payload_digest
  * @property string|null $message
+ * @property list<array{type: string, text: string, attachmentId: string, digest: string, label: string}>|null $parts
  * @property string|null $model
  * @property string|null $effort
  * @property RequestProgress $progress
@@ -104,6 +106,7 @@ final class DriverRequest extends Model implements ReadableModel
     protected function casts(): array
     {
         return [
+            'parts' => 'array',
             'script_parameters' => 'array',
             'navigation_round' => 'array',
             'operation' => DriverOperation::class,
@@ -476,6 +479,7 @@ final class DriverRequest extends Model implements ReadableModel
             $this->attempt_version,
             $this->operation->value,
             $this->message,
+            $this->partList(),
             $this->model,
             $this->effort,
             $this->script_id,
@@ -491,11 +495,22 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
+     * The delivery's parts in their order; none for any other request.
+     *
+     * @return list<MessagePart>
+     */
+    public function partList(): array
+    {
+        return MessagePart::listOf($this->parts ?? []);
+    }
+
+    /**
      * Drops the request's payload once its host reported how it ended, as a browser writer's typed text is never kept.
      */
     public function forgetPayload(): void
     {
         $this->message = null;
+        $this->parts = null;
         $this->save();
     }
 
@@ -513,6 +528,9 @@ final class DriverRequest extends Model implements ReadableModel
     public function carry(DriverRequestPayload $envelope): void
     {
         $this->message = $envelope->message;
+        $this->parts = $envelope->parts === []
+            ? null
+            : array_map(fn (MessagePart $part): array => $part->toArray(), $envelope->parts);
         $this->model = $envelope->model;
         $this->effort = $envelope->effort;
         $this->script_id = $envelope->scriptId;

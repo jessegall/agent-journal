@@ -139,7 +139,7 @@ func (driver *TerminalDriver) Deliver(
 	_ context.Context,
 	delivery contracts.Delivery,
 ) (contracts.OperationResult, error) {
-	return driver.prompt(delivery.Request, delivery.Message)
+	return driver.prompt(delivery.Request, contracts.PromptOf(delivery.Parts))
 }
 
 // Wake types the standard pending-work prompt, unless an interrupt holds the runtime: a held runtime does no work.

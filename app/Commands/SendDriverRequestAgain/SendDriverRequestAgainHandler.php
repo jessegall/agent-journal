@@ -40,7 +40,7 @@ final readonly class SendDriverRequestAgainHandler implements CommandHandler
             $runtime,
             DriverOperation::Deliver,
             $key,
-            DriverRequestPayload::message((string) $original->message),
+            DriverRequestPayload::parts($original->partList()),
         );
 
         $again->accept();

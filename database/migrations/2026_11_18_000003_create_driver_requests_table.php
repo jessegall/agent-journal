@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('idempotency_key');
             $table->char('payload_digest', 64);
             $table->text('message')->nullable();
+            $table->json('parts')->nullable();
             $table->string('model')->nullable();
             $table->string('effort', 32)->nullable();
             $table->string('progress', 32);

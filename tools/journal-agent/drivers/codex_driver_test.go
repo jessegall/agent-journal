@@ -70,10 +70,10 @@ func TestTwoRuntimesRunSeparateThreadsAndAnInterruptReachesOnlyOne(t *testing.T)
 	second := NewCodexDriver(owner, host.CodexThreadSettings{}, 1)
 	request := contracts.RequestIdentity{RuntimeID: "runtime"}
 
-	if _, err := first.Deliver(context.Background(), contracts.Delivery{Request: request, Message: "one"}); err != nil {
+	if _, err := first.Deliver(context.Background(), contracts.Delivery{Request: request, Parts: contracts.TextParts("one")}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := second.Deliver(context.Background(), contracts.Delivery{Request: request, Message: "two"}); err != nil {
+	if _, err := second.Deliver(context.Background(), contracts.Delivery{Request: request, Parts: contracts.TextParts("two")}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := first.Interrupt(context.Background(), contracts.InterruptRequest{Request: request, Turn: 1}); err != nil {
@@ -97,7 +97,7 @@ func TestAFailedTurnIsNotASuccessAndTheThreadIsKept(t *testing.T) {
 	driver := NewCodexDriver(owner, host.CodexThreadSettings{}, 1)
 	request := contracts.RequestIdentity{RuntimeID: "runtime"}
 
-	_, _ = driver.Deliver(context.Background(), contracts.Delivery{Request: request, Message: "one"})
+	_, _ = driver.Deliver(context.Background(), contracts.Delivery{Request: request, Parts: contracts.TextParts("one")})
 	owner.ends["thread-1"] <- host.CodexTurnEnd{TurnID: "thread-1-turn", Status: "failed"}
 	failed := endOf(t, driver)
 	_, _ = driver.Wake(context.Background(), contracts.WakeRequest{Request: request})
@@ -115,7 +115,7 @@ func TestAnOwnerThatExitsFailsTheRunningTurn(t *testing.T) {
 	owner := newFakeOwner()
 	driver := NewCodexDriver(owner, host.CodexThreadSettings{}, 1)
 
-	_, _ = driver.Deliver(context.Background(), contracts.Delivery{Message: "one"})
+	_, _ = driver.Deliver(context.Background(), contracts.Delivery{Parts: contracts.TextParts("one")})
 	owner.ends["thread-1"] <- host.CodexTurnEnd{Status: "ownerExited"}
 
 	if err := endOf(t, driver); !errors.Is(err, ErrProviderTurnFailed) {

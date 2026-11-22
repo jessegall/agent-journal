@@ -245,11 +245,11 @@ func (loop *Loop) startTurn(ctx context.Context, runtime *liveRuntime, admission
 	var result contracts.OperationResult
 	var err error
 	if len(admission.Deliveries) > 0 {
-		messages := make([]string, 0, len(admission.Deliveries))
+		parts := make([]contracts.MessagePart, 0, len(admission.Deliveries))
 		for _, delivery := range admission.Deliveries {
-			messages = append(messages, text(delivery.Message))
+			parts = append(parts, delivery.Parts...)
 		}
-		result, err = runtime.driver.Deliver(ctx, contracts.Delivery{Request: first, Message: strings.Join(messages, "\n\n")})
+		result, err = runtime.driver.Deliver(ctx, contracts.Delivery{Request: first, Parts: parts})
 	} else {
 		result, err = runtime.driver.Wake(ctx, contracts.WakeRequest{Request: first, Prompt: wakePrompt(admission.Wakes)})
 	}

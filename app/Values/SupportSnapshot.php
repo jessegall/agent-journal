@@ -29,7 +29,7 @@ final readonly class SupportSnapshot
         $capabilities = [];
 
         foreach (DriverCapability::cases() as $capability) {
-            $capabilities[$capability->value] = OperationSupport::allowed();
+            $capabilities[$capability->value] = $capability->defaultSupport();
         }
 
         foreach ($exceptions as [$capability, $support]) {

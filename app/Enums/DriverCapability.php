@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use App\Values\OperationSupport;
+
 /**
  * An operation a driver reports its support for, each answered on its own for the bound host (doc 103, section 4).
  */
@@ -24,4 +26,20 @@ enum DriverCapability: string
     case SignIn = 'sign-in';
     case ExactResume = 'exact-resume';
     case RunContained = 'run-contained';
+    case NativeBinaryInput = 'native-binary-input';
+
+    public const string NO_NATIVE_BINARY = 'An attachment reaches an agent as a journal reference it reads with the '
+        .'attachment tool; no driver takes a file\'s bytes as native input yet.';
+
+    /**
+     * What a driver answers for this operation unless it says otherwise: allowed, but native binary input, which no
+     * driver offers, so an attachment is always a journal reference.
+     */
+    public function defaultSupport(): OperationSupport
+    {
+        return match ($this) {
+            self::NativeBinaryInput => OperationSupport::unsupported(self::NO_NATIVE_BINARY),
+            default => OperationSupport::allowed(),
+        };
+    }
 }

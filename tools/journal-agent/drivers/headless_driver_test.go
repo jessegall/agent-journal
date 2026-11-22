@@ -53,7 +53,7 @@ func containedTurn(t *testing.T, container printingContainer) (*recordedUsage, e
 	usage := &recordedUsage{}
 	driver := NewHeadlessDriver(HeadlessRuntime{ConversationID: "conversation", Profile: profiles.ClaudeCode{},
 		Container: container, Usage: usage}, 1)
-	if _, err := driver.Deliver(context.Background(), contracts.Delivery{Request: request("one"), Message: "hi"}); err != nil {
+	if _, err := driver.Deliver(context.Background(), contracts.Delivery{Request: request("one"), Parts: contracts.TextParts("hi")}); err != nil {
 		t.Fatal(err)
 	}
 	select {

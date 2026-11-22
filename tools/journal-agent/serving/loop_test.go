@@ -137,13 +137,13 @@ type fakeRuntime struct {
 }
 
 func (runtime *fakeRuntime) Deliver(_ context.Context, delivery contracts.Delivery) (contracts.OperationResult, error) {
-	runtime.prompts = append(runtime.prompts, delivery.Message)
+	runtime.prompts = append(runtime.prompts, contracts.PromptOf(delivery.Parts))
 	runtime.finished = make(chan error, 1)
 	return contracts.OperationResult{Request: delivery.Request, Progress: contracts.ProgressApplying}, nil
 }
 
 func (runtime *fakeRuntime) Wake(_ context.Context, wake contracts.WakeRequest) (contracts.OperationResult, error) {
-	return runtime.Deliver(context.Background(), contracts.Delivery{Request: wake.Request, Message: "wake"})
+	return runtime.Deliver(context.Background(), contracts.Delivery{Request: wake.Request, Parts: contracts.TextParts("wake")})
 }
 
 func (runtime *fakeRuntime) ChangeModel(_ context.Context, change contracts.ModelChange) (contracts.OperationResult, error) {
@@ -170,7 +170,7 @@ func (runtime *fakeRuntime) Finished() <-chan error { return runtime.finished }
 func (runtime *fakeRuntime) NativeIdentity() string { return "conversation-1" }
 
 func claimed(id string, sequence int, operation string, message string) client.ClaimedRequest {
-	return client.ClaimedRequest{RuntimeID: "runtime", RequestID: id, Sequence: sequence, Operation: operation, Message: &message}
+	return client.ClaimedRequest{RuntimeID: "runtime", RequestID: id, Sequence: sequence, Operation: operation, Message: &message, Parts: contracts.TextParts(message)}
 }
 
 func waitFor(t *testing.T, condition func() bool) {

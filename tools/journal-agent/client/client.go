@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"journal-agent/drivers/contracts"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -33,8 +34,10 @@ type ClaimedRequest struct {
 	Attempt   int     `json:"attempt"`
 	Operation string  `json:"operation"`
 	Message   *string `json:"message"`
-	Model     *string `json:"model"`
-	Effort    *string `json:"effort"`
+	// Parts are a delivery's ordered text and attachment references; empty for any other request.
+	Parts  []contracts.MessagePart `json:"parts"`
+	Model  *string                 `json:"model"`
+	Effort *string                 `json:"effort"`
 	// Script is the key script a key_script request runs, with its version, its parameters and the step it stopped
 	// at, which a resumed run goes on from; all empty for any other request.
 	Script           *string           `json:"script"`

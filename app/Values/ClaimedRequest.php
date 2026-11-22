@@ -12,6 +12,7 @@ namespace App\Values;
 final readonly class ClaimedRequest
 {
     /**
+     * @param  list<MessagePart>  $parts
      * @param  list<ScriptParameter>  $scriptParameters
      */
     public function __construct(
@@ -21,6 +22,7 @@ final readonly class ClaimedRequest
         public int $attempt,
         public string $operation,
         public string|null $message,
+        public array $parts,
         public string|null $model,
         public string|null $effort,
         public string|null $script,
@@ -46,6 +48,7 @@ final readonly class ClaimedRequest
             $this->attempt,
             $this->operation,
             $message,
+            $this->parts,
             $this->model,
             $this->effort,
             $this->script,

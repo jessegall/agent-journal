@@ -121,6 +121,21 @@ final class DriverRequestRefused extends RuntimeException implements CommandRefu
         );
     }
 
+    public static function noParts(): self
+    {
+        return new self('A delivery holds at least one text or attachment.');
+    }
+
+    public static function attachmentMissing(string $attachmentId): self
+    {
+        return new self("Attachment {$attachmentId} is not there or has not finished uploading.");
+    }
+
+    public static function attachmentChanged(string $attachmentId): self
+    {
+        return new self("Attachment {$attachmentId} is not the version the message names.");
+    }
+
     public static function messageTooLarge(int $bytes, int $limit): self
     {
         return new self("The message is {$bytes} bytes; a delivery carries at most {$limit}.");

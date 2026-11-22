@@ -29,6 +29,7 @@ use App\Commands\SendDriverRequestAgain\SendDriverRequestAgainCommand;
 use App\Commands\StopAgent\StopAgentCommand;
 use App\Commands\WakeAgent\WakeAgentCommand;
 use App\Contracts\AgentDirectory;
+use App\Contracts\AttachmentReferences;
 use App\Contracts\CommandBus;
 use App\Contracts\CurrentActorSetter;
 use App\Contracts\DriverCatalogue;
@@ -77,6 +78,7 @@ use App\Values\BrowserInputCapabilities;
 use App\Values\DriverReceipt;
 use App\Values\ExecutionBudgets;
 use App\Values\ExecutionPolicy;
+use App\Values\MessagePart;
 use App\Values\OwnerAuthority;
 use App\Values\ProfileBase;
 use App\Values\ProfileStartPolicy;
@@ -173,6 +175,44 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame($first->requestId, $again->requestId);
         $this->expectException(DriverRequestRefused::class);
         $this->deliver($opened, 'key-1', 'Something else');
+    }
+
+    public function test_an_attachment_only_delivery_reaches_the_host_as_its_parts_in_order(): void
+    {
+        $this->app->scoped(AttachmentReferences::class, fn (): AttachmentReferences => $this->attachmentsExcept('gone'));
+        [$host, $opened] = $this->openRuntime();
+        $parts = [MessagePart::attachment('01JNOTES', 'digest-1', 'notes.md'), MessagePart::text('Read it first.')];
+
+        $receipt = $this->asOwner(new DeliverAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'parts', $parts));
+
+        $claimed = $this->claimedScript($host, $receipt->requestId);
+        $this->assertSame(array_map(fn (MessagePart $part): array => $part->toArray(), $parts), $claimed['parts']);
+    }
+
+    public function test_a_delivery_naming_an_attachment_that_cannot_be_read_is_refused_whole(): void
+    {
+        $this->app->scoped(AttachmentReferences::class, fn (): AttachmentReferences => $this->attachmentsExcept('gone'));
+        [, $opened] = $this->openRuntime();
+        $parts = [MessagePart::text('Here it is.'), MessagePart::attachment('gone', 'digest-1', 'old.md')];
+
+        $this->assertThrows(
+            fn () => $this->asOwner(new DeliverAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'mixed', $parts)),
+            DriverRequestRefused::class,
+            DriverRequestRefused::attachmentMissing('gone')->getMessage(),
+        );
+        $this->assertSame(0, DriverRequest::query()->where('idempotency_key', 'mixed')->count());
+    }
+
+    public function test_a_repeated_delivery_of_the_same_parts_returns_the_same_request(): void
+    {
+        $this->app->scoped(AttachmentReferences::class, fn (): AttachmentReferences => $this->attachmentsExcept('gone'));
+        [, $opened] = $this->openRuntime();
+        $parts = [MessagePart::attachment('01JNOTES', 'digest-1', 'notes.md')];
+        $send = fn (): DriverReceipt => $this->asOwner(
+            new DeliverAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'same', $parts),
+        );
+
+        $this->assertSame($send()->requestId, $send()->requestId);
     }
 
     public function test_requests_are_numbered_in_the_order_they_were_accepted(): void
@@ -1349,7 +1389,8 @@ final class AgentDriverLedgerTest extends TestCase
         $repeated = $this->asOwner(new SendDriverRequestAgainCommand($original->id, true, 'again'));
 
         $again = DriverRequest::query()->findOrFail($againId);
-        $this->assertSame([$againId, $original->id, 'Hello'], [$repeated, $again->possible_duplicate_of_id, $again->message]);
+        $this->assertSame([$againId, $original->id], [$repeated, $again->possible_duplicate_of_id]);
+        $this->assertEquals($original->partList(), $again->partList());
         $this->assertSame(RequestProgress::DeliveryUncertain, $original->fresh()?->progress);
     }
 
@@ -1381,9 +1422,27 @@ final class AgentDriverLedgerTest extends TestCase
         ));
     }
 
+    /**
+     * Attachments that can all be read but the one named.
+     */
+    private function attachmentsExcept(string $missing): AttachmentReferences
+    {
+        return new readonly class($missing) implements AttachmentReferences
+        {
+            public function __construct(private string $missing) {}
+
+            public function assertReadable(MessagePart $part, string $recipientSessionId): void
+            {
+                if ($part->attachmentId === $this->missing) {
+                    throw DriverRequestRefused::attachmentMissing($part->attachmentId);
+                }
+            }
+        };
+    }
+
     private function deliver(OpenedRuntime $opened, string $key, string $message): DriverReceipt
     {
-        return $this->asOwner(new DeliverAgentCommand($this->agentIdOf($opened), $opened->sessionId, $key, $message));
+        return $this->asOwner(DeliverAgentCommand::text($this->agentIdOf($opened), $opened->sessionId, $key, $message));
     }
 
     private function reportProgress(string $hostId, string $requestId, RequestProgress $progress): void

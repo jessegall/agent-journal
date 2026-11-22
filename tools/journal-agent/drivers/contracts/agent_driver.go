@@ -18,10 +18,10 @@ type RequestIdentity struct {
 	Attempt   int
 }
 
-// Delivery is content to hand the agent as a new prompt.
+// Delivery is content to hand the agent as a new prompt: its parts in the order they were sent.
 type Delivery struct {
 	Request RequestIdentity
-	Message string
+	Parts   []MessagePart
 }
 
 // WakeRequest asks an idle agent to look for waiting work.

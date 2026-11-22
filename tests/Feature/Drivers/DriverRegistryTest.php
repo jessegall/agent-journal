@@ -138,6 +138,31 @@ final class DriverRegistryTest extends TestCase
         $this->assertSame(HeadlessCapabilities::NO_TERMINAL, $support->supportOf(DriverCapability::Watch)->reason);
     }
 
+    public function test_every_driver_takes_attachments_as_references_and_none_takes_native_binary_input(): void
+    {
+        $answers = array_map(
+            function (string $key): array {
+                $support = $this->registry()->forKey(DriverKey::from($key))->capabilities(BoundTarget::onHost('host-1'));
+
+                return [
+                    $key,
+                    $support->supportOf(DriverCapability::Attachments)->isAllowed(),
+                    $support->supportOf(DriverCapability::NativeBinaryInput)->reason,
+                ];
+            },
+            ['claude-code-headless', 'claude-code', 'codex-headless'],
+        );
+
+        $this->assertSame(
+            [
+                ['claude-code-headless', true, DriverCapability::NO_NATIVE_BINARY],
+                ['claude-code', true, DriverCapability::NO_NATIVE_BINARY],
+                ['codex-headless', true, DriverCapability::NO_NATIVE_BINARY],
+            ],
+            $answers,
+        );
+    }
+
     private function registry(): DriverRegistry
     {
         $drivers = $this->app->make(DriverCatalogue::class);

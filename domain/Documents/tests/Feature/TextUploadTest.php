@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
+use App\Contracts\AttachmentReferences;
 use App\Contracts\CommandBus;
 use App\Contracts\CommandTransaction;
+use App\Exceptions\DriverRequestRefused;
+use App\Values\MessagePart;
 use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
@@ -81,6 +84,34 @@ final class TextUploadTest extends TestCase
         $author->startRequest($this->app);
         $bus->run(new DiscardUploadCommand($ids[0]));
         $this->begin('f');
+    }
+
+    public function test_a_delivery_names_only_an_attachment_its_recipient_can_read_at_that_version(): void
+    {
+        $recipient = TestStart::start();
+        $other = TestStart::start();
+        $recipient->startRequest($this->app);
+        $id = $this->begin('notes');
+        $bus = $this->app->make(CommandBus::class);
+        $bus->run(new AppendUploadCommand($id, 0, 'notes', hash('sha256', 'notes')));
+        $bus->run(new CommitUploadCommand($id));
+        $attachments = $this->app->make(AttachmentReferences::class);
+
+        $attachments->assertReadable(MessagePart::attachment($id, hash('sha256', 'notes'), 'notes.md'), $recipient->session->id);
+
+        $this->assertThrows(
+            fn () => $attachments->assertReadable(
+                MessagePart::attachment($id, hash('sha256', 'notes'), 'notes.md'),
+                $other->session->id,
+            ),
+            DriverRequestRefused::class,
+            DriverRequestRefused::attachmentMissing($id)->getMessage(),
+        );
+        $this->assertThrows(
+            fn () => $attachments->assertReadable(MessagePart::attachment($id, 'older', 'notes.md'), $recipient->session->id),
+            DriverRequestRefused::class,
+            DriverRequestRefused::attachmentChanged($id)->getMessage(),
+        );
     }
 
     private function begin(string $text): string

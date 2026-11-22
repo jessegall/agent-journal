@@ -16,8 +16,8 @@ final readonly class DriverBudgets
         public int $deliverMaxBytes,
     ) {}
 
-    public function fitsDelivery(string $message): bool
+    public function fitsDelivery(int $textBytes): bool
     {
-        return strlen($message) <= $this->deliverMaxBytes;
+        return $textBytes <= $this->deliverMaxBytes;
     }
 }

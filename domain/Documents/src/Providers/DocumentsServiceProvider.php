@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Providers;
 
+use App\Contracts\AttachmentReferences;
 use App\Contracts\CurrentSession;
 use App\Contracts\NotificationTargets;
 use App\Contracts\ReadEntitlements;
@@ -41,6 +42,7 @@ use Domain\Documents\Resolvers\ReportRecords;
 use Domain\Documents\Resolvers\RetainedDrafts;
 use Domain\Documents\Support\DocumentDocking;
 use Domain\Documents\Support\ReportDocking;
+use Domain\Documents\Support\SealedAttachments;
 use Domain\Documents\Support\UploadStore;
 use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
@@ -60,6 +62,7 @@ final class DocumentsServiceProvider extends ServiceProvider
         $this->app->bind(ReportResolver::class, ReportRecords::class);
         $this->app->bind(SealedUploads::class, UploadStore::class);
         $this->app->scoped(AttachmentReader::class, AttachmentPages::class);
+        $this->app->scoped(AttachmentReferences::class, SealedAttachments::class);
         $this->app->scoped(DocumentReader::class, DocumentPages::class);
         $this->app->scoped(ReportReader::class, ReportPages::class);
     }

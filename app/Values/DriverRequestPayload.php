@@ -12,9 +12,11 @@ final readonly class DriverRequestPayload
 {
     /**
      * @param  array<string, string>  $scriptParameters
+     * @param  list<MessagePart>  $parts
      */
     private function __construct(
         public string|null $message = null,
+        public array $parts = [],
         public string|null $model = null,
         public string|null $effort = null,
         public string|null $scriptId = null,
@@ -28,9 +30,19 @@ final readonly class DriverRequestPayload
         return new self();
     }
 
-    public static function message(string $message): self
+    /**
+     * A delivery of these parts, in their order.
+     *
+     * @param  list<MessagePart>  $parts
+     */
+    public static function parts(array $parts): self
     {
-        return new self(message: $message);
+        return new self(parts: $parts);
+    }
+
+    public static function text(string $text): self
+    {
+        return self::parts([MessagePart::text($text)]);
     }
 
     /**
@@ -76,6 +88,7 @@ final readonly class DriverRequestPayload
     {
         $content = [
             $this->message,
+            array_map(fn (MessagePart $part): array => $part->toArray(), $this->parts),
             $this->model,
             $this->effort,
             $this->scriptId,

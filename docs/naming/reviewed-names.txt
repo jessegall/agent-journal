@@ -340,6 +340,7 @@ case	DriverCapability::ExactResume
 case	DriverCapability::HookMethods
 case	DriverCapability::Interrupt
 case	DriverCapability::KeyScripts
+case	DriverCapability::NativeBinaryInput
 case	DriverCapability::Paste
 case	DriverCapability::PrivateEntry
 case	DriverCapability::Resize
@@ -621,6 +622,8 @@ case	MergeRefusalReason::ChangedReviewedHead
 case	MergeRefusalReason::ChangedTarget
 case	MergeRefusalReason::Conflict
 case	MergeRefusalReason::OverlappingLocalChanges
+case	MessagePartType::Attachment
+case	MessagePartType::Text
 case	MessageState::Answered
 case	MessageState::Dismissed
 case	MessageState::Sent
@@ -3977,6 +3980,7 @@ class	MessageLinkRecords
 class	MessageMissing
 class	MessageNamed
 class	MessagePage
+class	MessagePart
 class	MessagePin
 class	MessagePinPolicy
 class	MessagePinRecords
@@ -5730,6 +5734,7 @@ class	ScriptStopPreparation
 class	ScriptSyntaxError
 class	ScriptsPages
 class	ScriptsServiceProvider
+class	SealedAttachments
 class	SearchAnswer
 class	SearchBatch
 class	SearchBatchInvalid
@@ -6929,6 +6934,7 @@ class	UnassignRecordController
 class	UnassignRecordHandler
 class	UnassignRecordRequest
 class	UnassignRecordTool
+class	UnavailableAttachments
 class	UnavailableMergeAdmission
 class	UnavailableSupervisorDispatch
 class	UnavailableWindow
@@ -7365,6 +7371,7 @@ constant	DomainTypeWriter::TYPE_OWNERS_FILE
 constant	DomainUi::DECLARED_LAYOUT
 constant	DraftAnswersRequest::ANSWER_LIMIT
 constant	DraftTokens::FILE
+constant	DriverCapability::NO_NATIVE_BINARY
 constant	DriverConversationResolver::MOST_CONVERSATIONS
 constant	DriverKey::CHARACTER_LIMIT
 constant	DriverKey::PATTERN
@@ -8354,6 +8361,7 @@ enum	LineCardPlacement
 enum	MenuEntryState
 enum	MergeAttemptState
 enum	MergeRefusalReason
+enum	MessagePartType
 enum	MessageState
 enum	MessageType
 enum	MiddlewareStage
@@ -8605,6 +8613,7 @@ interface	AssignmentStorage
 interface	AssignmentTransaction
 interface	AssignmentWriter
 interface	AttachmentReader
+interface	AttachmentReferences
 interface	AuthoritySource
 interface	Authorizer
 interface	AuthorizerProvider
@@ -10611,6 +10620,7 @@ method	AttachWordToSimpleCommand::produces()
 method	AttachmentPages::__construct()
 method	AttachmentPages::attachment()
 method	AttachmentReader::attachment()
+method	AttachmentReferences::assertReadable()
 method	AttentionFilter::label()
 method	AttentionFilter::state()
 method	AttentionOrigin::__construct()
@@ -13065,6 +13075,8 @@ method	DefineSequenceController::__invoke()
 method	DefineSequenceHandler::handle()
 method	DeliverAgentCommand::__construct()
 method	DeliverAgentCommand::target()
+method	DeliverAgentCommand::text()
+method	DeliverAgentCommand::textBytes()
 method	DeliverAgentHandler::__construct()
 method	DeliverAgentHandler::handle()
 method	DeliverMessages::__construct()
@@ -13963,6 +13975,7 @@ method	DriverCapabilities::assertSupports()
 method	DriverCapabilities::capabilities()
 method	DriverCapabilities::finalAnswer()
 method	DriverCapabilities::supports()
+method	DriverCapability::defaultSupport()
 method	DriverCapabilityUnsupported::__construct()
 method	DriverCapabilityUnsupported::for()
 method	DriverCapabilityUnsupported::refusalCode()
@@ -14091,6 +14104,7 @@ method	DriverRequest::markUnavailable()
 method	DriverRequest::markUncertain()
 method	DriverRequest::moveTo()
 method	DriverRequest::navigationRound()
+method	DriverRequest::partList()
 method	DriverRequest::receipt()
 method	DriverRequest::recordRefusal()
 method	DriverRequest::recordScriptProgress()
@@ -14122,15 +14136,18 @@ method	DriverRequestPayload::__construct()
 method	DriverRequestPayload::digestFor()
 method	DriverRequestPayload::effort()
 method	DriverRequestPayload::keyScript()
-method	DriverRequestPayload::message()
 method	DriverRequestPayload::model()
 method	DriverRequestPayload::navigate()
 method	DriverRequestPayload::nothing()
+method	DriverRequestPayload::parts()
 method	DriverRequestPayload::terminalControl()
+method	DriverRequestPayload::text()
 method	DriverRequestRecovered::__construct()
 method	DriverRequestRecovery::__construct()
 method	DriverRequestRecovery::lockedAt()
 method	DriverRequestRecovery::record()
+method	DriverRequestRefused::attachmentChanged()
+method	DriverRequestRefused::attachmentMissing()
 method	DriverRequestRefused::changedSinceRead()
 method	DriverRequestRefused::duplicateNotConfirmed()
 method	DriverRequestRefused::emptyModel()
@@ -14140,6 +14157,7 @@ method	DriverRequestRefused::holdNotReleasable()
 method	DriverRequestRefused::keyConflict()
 method	DriverRequestRefused::messageTooLarge()
 method	DriverRequestRefused::noEffectUnproven()
+method	DriverRequestRefused::noParts()
 method	DriverRequestRefused::noRuntime()
 method	DriverRequestRefused::noStoppedScript()
 method	DriverRequestRefused::notCancellable()
@@ -16986,6 +17004,13 @@ method	MessageMissing::forId()
 method	MessageMissing::refusalCode()
 method	MessageNamed::__construct()
 method	MessagePage::__construct()
+method	MessagePart::__construct()
+method	MessagePart::attachment()
+method	MessagePart::isAttachment()
+method	MessagePart::jsonSerialize()
+method	MessagePart::listOf()
+method	MessagePart::text()
+method	MessagePart::toArray()
 method	MessagePin::casts()
 method	MessagePin::pinFor()
 method	MessagePinPolicy::model()
@@ -22328,6 +22353,8 @@ method	ScriptsPages::pages()
 method	ScriptsPages::types()
 method	ScriptsServiceProvider::boot()
 method	ScriptsServiceProvider::register()
+method	SealedAttachments::__construct()
+method	SealedAttachments::assertReadable()
 method	SealedUploads::consume()
 method	SearchAccess::admitsOpen()
 method	SearchAccess::agentRead()
@@ -26196,6 +26223,7 @@ method	TextUpload::isDigest()
 method	TextUpload::locked()
 method	TextUpload::seal()
 method	TextUpload::sealed()
+method	TextUpload::sealedFor()
 method	TextUpload::unexpired()
 method	TextUploadChunk::create()
 method	TextUploadChunk::text()
@@ -26591,6 +26619,7 @@ method	UnassignRecordHandler::handle()
 method	UnassignRecordRequest::rules()
 method	UnassignRecordTool::command()
 method	UnassignRecordTool::writeSchema()
+method	UnavailableAttachments::assertReadable()
 method	UnavailableMergeAdmission::requireApproval()
 method	UnavailableSupervisorDispatch::startFor()
 method	UnavailableWindow::__construct()
@@ -29279,6 +29308,7 @@ parameter	$recipe
 parameter	$recipient
 parameter	$recipientId
 parameter	$recipientInboxId
+parameter	$recipientSessionId
 parameter	$recipientType
 parameter	$recipients
 parameter	$recognizer
@@ -29969,6 +29999,7 @@ parameter	$terminal
 parameter	$terminalGrants
 parameter	$terminator
 parameter	$text
+parameter	$textBytes
 parameter	$textPart
 parameter	$textSections
 parameter	$texts
@@ -31871,6 +31902,7 @@ property	ClaimedRequest::$model
 property	ClaimedRequest::$navigationRequestId
 property	ClaimedRequest::$navigationRound
 property	ClaimedRequest::$operation
+property	ClaimedRequest::$parts
 property	ClaimedRequest::$processGeneration
 property	ClaimedRequest::$processStartId
 property	ClaimedRequest::$requestId
@@ -32608,8 +32640,9 @@ property	DefineSequenceCommand::$name
 property	DefineSequenceCommand::$steps
 property	DeliverAgentCommand::$agentId
 property	DeliverAgentCommand::$idempotencyKey
-property	DeliverAgentCommand::$message
+property	DeliverAgentCommand::$parts
 property	DeliverAgentCommand::$sessionId
+property	DeliverAgentHandler::$attachments
 property	DeliverAgentHandler::$budgets
 property	DeliverAgentHandler::$requests
 property	DeliverMessages::$delivery
@@ -33185,6 +33218,7 @@ property	DriverRequestPayload::$effort
 property	DriverRequestPayload::$message
 property	DriverRequestPayload::$model
 property	DriverRequestPayload::$navigationRound
+property	DriverRequestPayload::$parts
 property	DriverRequestPayload::$scriptId
 property	DriverRequestPayload::$scriptParameters
 property	DriverRequestPayload::$scriptVersion
@@ -34865,6 +34899,11 @@ property	MessageLine::$text
 property	MessageNamed::$messageId
 property	MessagePage::$messages
 property	MessagePage::$olderCursor
+property	MessagePart::$attachmentId
+property	MessagePart::$digest
+property	MessagePart::$label
+property	MessagePart::$text
+property	MessagePart::$type
 property	MessagePinRecords::$actors
 property	MessagePinRecords::$pinnable
 property	MessageRead::$firstRead
@@ -38523,6 +38562,7 @@ property	ScriptStopPreparation::$keywords
 property	ScriptStopPreparation::$profiles
 property	ScriptStopPreparation::$reader
 property	ScriptSyntaxError::$diagnostic
+property	SealedAttachments::$sessions
 property	SearchAnswer::$continuation
 property	SearchAnswer::$directOpen
 property	SearchAnswer::$failedSources

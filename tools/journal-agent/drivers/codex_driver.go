@@ -49,7 +49,7 @@ func (driver *CodexDriver) NativeIdentity() string {
 }
 
 func (driver *CodexDriver) Deliver(ctx context.Context, delivery contracts.Delivery) (contracts.OperationResult, error) {
-	return driver.startTurn(ctx, delivery.Request, delivery.Message)
+	return driver.startTurn(ctx, delivery.Request, contracts.PromptOf(delivery.Parts))
 }
 
 func (driver *CodexDriver) Wake(ctx context.Context, wake contracts.WakeRequest) (contracts.OperationResult, error) {

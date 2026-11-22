@@ -7,6 +7,7 @@ namespace Domain\Documents\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\ReadableModel;
+use App\Support\SessionProvenance;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Exceptions\UploadChunkConflict;
@@ -86,6 +87,19 @@ final class TextUpload extends Model implements ReadableModel
             $id,
             fn () => throw UploadExpired::forUpload(),
         );
+    }
+
+    /**
+     * The sealed upload as the given session reads it: its own uploads only.
+     *
+     * @throws UploadExpired
+     */
+    public static function sealedFor(SessionProvenance $sessions, string $sessionId, string $id): self
+    {
+        return $sessions->fromSession(self::query()->withoutGlobalScope(self::SESSION_SCOPE), $sessionId)
+            ->unexpired()
+            ->whereNotNull('sealed_at')
+            ->findOr($id, fn () => throw UploadExpired::forUpload());
     }
 
     // ----------[ Mutations ]----------
