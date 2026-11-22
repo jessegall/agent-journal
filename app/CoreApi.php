@@ -1157,6 +1157,38 @@ use App\Scripts\Attributes\ScriptMember;
 use App\Scripts\Attributes\ScriptObject;
 use App\Scripts\Contracts\ScriptKeywordDefinition;
 use App\Scripts\Values\ScriptContext;
+use App\Search\Contracts\BatchOutcome;
+use App\Search\Contracts\ReferenceRecognizer;
+use App\Search\Contracts\SearchAccess;
+use App\Search\Contracts\SearchProvider;
+use App\Search\Enums\FailureReason;
+use App\Search\Enums\ScoreTier;
+use App\Search\Enums\SearchSurface;
+use App\Search\Exceptions\SearchableInvalid;
+use App\Search\Exceptions\SearchBatchInvalid;
+use App\Search\Exceptions\SearchValueInvalid;
+use App\Search\Exceptions\SearchWordsInvalid;
+use App\Search\Support\Searchable;
+use App\Search\Values\AdmittedConstraints;
+use App\Search\Values\AllowedNames;
+use App\Search\Values\ExhaustedOutcome;
+use App\Search\Values\FailedOutcome;
+use App\Search\Values\HitIdentity;
+use App\Search\Values\MoreOutcome;
+use App\Search\Values\RecognizedReference;
+use App\Search\Values\RecordLocation;
+use App\Search\Values\RefreshCandidates;
+use App\Search\Values\RefreshedOutcome;
+use App\Search\Values\ScanningOutcome;
+use App\Search\Values\SearchBatch;
+use App\Search\Values\SearchQuery;
+use App\Search\Values\SearchReader;
+use App\Search\Values\SearchResult;
+use App\Search\Values\SearchScope;
+use App\Search\Values\SearchWords;
+use App\Search\Values\SourceHit;
+use App\Search\Values\SourcePosition;
+use App\Search\Values\WorkBudget;
 use App\Settings\Commands\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Settings\Commands\EnableSettingGroup\EnableSettingGroupCommand;
 use App\Settings\Commands\ResetSetting\ResetSettingCommand;
@@ -1565,6 +1597,10 @@ final class CoreApi
                 InboxNotices::class,
                 CurrentSession::class,
                 SearchContribution::class,
+                SearchProvider::class,
+                SearchAccess::class,
+                ReferenceRecognizer::class,
+                BatchOutcome::class,
                 ConversationVisits::class,
                 AutoAssignmentActivity::class,
                 NativeTurnRecords::class,
@@ -1967,6 +2003,29 @@ final class CoreApi
                 TextChunk::class,
                 SearchHit::class,
                 SearchPage::class,
+                ScoreTier::class,
+                SearchSurface::class,
+                FailureReason::class,
+                SearchWords::class,
+                SearchScope::class,
+                SearchReader::class,
+                WorkBudget::class,
+                SourcePosition::class,
+                SearchQuery::class,
+                RefreshCandidates::class,
+                RecordLocation::class,
+                SearchResult::class,
+                HitIdentity::class,
+                SourceHit::class,
+                SearchBatch::class,
+                ExhaustedOutcome::class,
+                MoreOutcome::class,
+                ScanningOutcome::class,
+                FailedOutcome::class,
+                RefreshedOutcome::class,
+                AllowedNames::class,
+                AdmittedConstraints::class,
+                RecognizedReference::class,
                 Dispatches::class,
                 VisibleToProfiles::class,
                 DiscoveryProfile::class,
@@ -2773,6 +2832,10 @@ final class CoreApi
                 StackTransactionRequired::class,
                 InvalidAssignmentIdentity::class,
                 InvalidRecordIdentity::class,
+                SearchableInvalid::class,
+                SearchBatchInvalid::class,
+                SearchValueInvalid::class,
+                SearchWordsInvalid::class,
                 AccountUnavailable::class,
                 AccountUseMissing::class,
                 AccountInUse::class,
@@ -2901,6 +2964,7 @@ final class CoreApi
                 LinkTypeRegistry::class,
                 StateReferenceFactory::class,
                 ProvidesModelRecords::class,
+                Searchable::class,
                 HasNumber::class,
                 AssignableListing::class,
                 TextSearch::class,
