@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import AgentTerminal from '@kit/AgentTerminal';
+import Button from '@kit/Button';
+import TerminalHeader from '@kit/TerminalHeader';
 import { useTerminalController } from '@kit/terminalController';
 import type { TerminalWindowData } from '@/types/generated';
 import { home } from '@/routes/web';
@@ -13,20 +15,32 @@ import { ref, toRef } from 'vue';
  */
 const props = defineProps<{ data: TerminalWindowData }>();
 
-const { presentation } = useTerminalController(toRef(() => props.data.agentId), ref(true));
+const { presentation, retry } = useTerminalController(toRef(() => props.data.agentId), ref(true));
+
+const backToChat = {
+    key: 'back',
+    label: 'Back to agent chat',
+    run: () => router.visit(home.url({ query: { agent: props.data.agentId } })),
+};
 </script>
 
 <template>
     <Head title="Terminal" />
-    <div class="flex flex-col gap-4 p-6">
-        <div class="flex items-center gap-3">
-            <h1 class="text-lg font-semibold">Terminal</h1>
-            <Link
-                :href="home.url({ query: { agent: data.agentId } })"
-                class="text-small text-text-2 underline hover:text-text"
-                >Back to agent chat</Link
-            >
-        </div>
-        <AgentTerminal :presentation="presentation" />
+    <div class="flex flex-col gap-3 p-6">
+        <TerminalHeader
+            agent-name="Terminal"
+            :driver="null"
+            owner="Watching"
+            placement="Own page"
+            :main="backToChat"
+            :secondary="[]"
+        />
+        <AgentTerminal :presentation="presentation">
+            <template #actions="{ state }">
+                <template v-if="state === 'not_reporting'">
+                    <Button variant="bordered" size="sm" @click="retry">Retry</Button>
+                </template>
+            </template>
+        </AgentTerminal>
     </div>
 </template>

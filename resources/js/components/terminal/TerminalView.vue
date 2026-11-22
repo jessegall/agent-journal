@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { seconds } from '@kit/format';
-import SwitchCase from '@kit/SwitchCase';
 import { computed } from 'vue';
 import TerminalRow from './TerminalRow.vue';
 import type { TerminalPresentation } from './useTerminalController';
 
 /**
- * An agent's terminal, drawn only: the screen as the driver draws it, with its colours and cursor, at the driver's own
- * size, and the notices its controller gives. It reads nothing itself.
+ * An agent's terminal, drawn only: the line saying what the screen is, the notices about it, the actions its window
+ * offers for that state, and the screen as the driver draws it, with its colours and cursor, at the driver's own size.
+ * Only the screen is monospaced. It reads nothing itself.
  */
 const props = defineProps<{ presentation: TerminalPresentation }>();
 
@@ -24,43 +23,32 @@ const cursorStyle = computed(() => {
 </script>
 
 <template>
-    <SwitchCase :value="screen.state">
-        <template #opening>
-            <p class="text-text-3">Opening the terminal…</p>
+    <div class="flex flex-col gap-1">
+        <p class="text-small" :class="screen.state === 'refused' ? 'text-danger' : 'text-text-2'">
+            {{ presentation.stateLine }}
+        </p>
+        <template v-for="notice in presentation.notices" :key="notice">
+            <p class="text-small text-warn">{{ notice }}</p>
         </template>
-        <template #refused>
-            <p class="text-warn">{{ screen.refusal }}</p>
-        </template>
-        <template #default>
-            <div class="flex flex-col gap-1">
-                <p class="text-sm text-text-3">
-                    updated {{ seconds(presentation.ageSeconds) }} ago
-                </p>
-                <template v-for="notice in presentation.notices" :key="notice">
-                    <p class="text-warn text-sm">{{ notice }}</p>
-                </template>
-                <div
-                    class="terminal max-h-[70vh] max-w-full overflow-auto rounded"
-                >
-                    <template v-if="drawn !== null">
-                        <pre
-                            class="relative m-0 font-mono leading-tight"
-                            :class="{
-                                'opacity-50': screen.state === 'ended',
-                            }"
-                            :style="{ width: `${drawn.columns}ch` }"
-                            aria-label="Agent terminal, read only"
-                        ><template v-for="(row, index) in drawn.rows" :key="index">
+        <div class="flex flex-wrap gap-1.5">
+            <slot name="actions" :state="screen.state" />
+        </div>
+        <template v-if="drawn !== null">
+            <div class="terminal max-h-[70vh] max-w-full overflow-auto rounded">
+                <pre
+                    class="relative m-0 font-mono leading-tight"
+                    :class="{ 'opacity-60': screen.state === 'ended' }"
+                    :style="{ width: `${drawn.columns}ch` }"
+                    aria-label="Agent terminal, read only"
+                ><template v-for="(row, index) in drawn.rows" :key="index">
     <TerminalRow
-                            :runs="row.runs"
-                            :plain="drawn.plain"
-                        />
+                    :runs="row.runs"
+                    :plain="drawn.plain"
+                />
   </template><span class="cursor absolute h-[1lh] w-[1ch]" :style="cursorStyle" /></pre>
-                    </template>
-                </div>
             </div>
         </template>
-    </SwitchCase>
+    </div>
 </template>
 
 <style scoped>

@@ -20,10 +20,12 @@ const POLL_MILLISECONDS = 500;
 const RENEW_MILLISECONDS = 10_000;
 
 /**
- * What the terminal's presentation draws: the screen, the notices about it and its age in whole seconds.
+ * What the terminal's presentation draws: the screen, the one line saying what it is, the notices about it and its
+ * age in whole seconds.
  */
 export type TerminalPresentation = {
     screen: TerminalScreen;
+    stateLine: string;
     notices: string[];
     ageSeconds: number;
 };
@@ -56,25 +58,38 @@ function failureOf(failure: unknown): TerminalFailure {
     return { kind: 'lost', message: '' };
 }
 
-function noticesOf(screen: TerminalScreen, ageSeconds: number): string[] {
+function clockTime(milliseconds: number): string {
+    return new Date(milliseconds).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+/**
+ * The one line that says what the screen is now: watching live, last reported, no preview, a silent host, an end or a
+ * refusal, each with the time it is about.
+ */
+function stateLineOf(screen: TerminalScreen, ageSeconds: number): string {
+    const lastUpdate = clockTime(screen.receivedAt);
+
+    return {
+        opening: 'Opening the terminal…',
+        refused: screen.refusal,
+        live: `Watching · updated ${seconds(ageSeconds)} ago`,
+        last_reported: `Last reported at ${lastUpdate}; this host does not show a live screen`,
+        preview_unavailable: 'Terminal preview unavailable',
+        not_reporting: `The agent's host stopped reporting; the screen was last updated at ${lastUpdate}`,
+        ended: `Session ended at ${timeOfDay(screen.endedAt)}`,
+    }[screen.state];
+}
+
+/**
+ * What a shown frame cannot show as it is, each dated by the last frame that could.
+ */
+function noticesOf(screen: TerminalScreen): string[] {
     const frame = screen.frame;
+    const lastUpdate = clockTime(screen.receivedAt);
     const markers: [boolean, string][] = [
-        [screen.state === 'preview_unavailable', 'Terminal preview unavailable'],
-        [
-            screen.state === 'last_reported',
-            `Last reported ${seconds(ageSeconds)} ago; this host does not show a live screen`,
-        ],
-        [
-            screen.state === 'not_reporting',
-            `The agent's host is not reporting; no update for ${ageSeconds} s`,
-        ],
-        [
-            screen.state === 'ended',
-            `This session ended at ${timeOfDay(screen.endedAt)}; open the current one from Home`,
-        ],
         [frame !== null && frame.noTerminal, "The agent's terminal is not running on its host"],
-        [frame !== null && frame.tooLarge, 'Screen too large to show'],
-        [frame !== null && frame.unreadable, 'The screen cannot be read'],
+        [frame !== null && frame.tooLarge, `Screen too large to show; last screen from ${lastUpdate}`],
+        [frame !== null && frame.unreadable, `The screen cannot be read; last screen from ${lastUpdate}`],
         [frame !== null && frame.plain, 'Shown without colours'],
     ];
 
@@ -172,8 +187,22 @@ export function useTerminalController(agentId: Ref<string>, isShown: Ref<boolean
     const presentation = computed<TerminalPresentation>(() => {
         const ageSeconds = Math.max(0, Math.round((now.value - screen.value.receivedAt) / 1000));
 
-        return { screen: screen.value, notices: noticesOf(screen.value, ageSeconds), ageSeconds };
+        return {
+            screen: screen.value,
+            stateLine: stateLineOf(screen.value, ageSeconds),
+            notices: noticesOf(screen.value),
+            ageSeconds,
+        };
     });
 
-    return { presentation };
+    /**
+     * Opens a fresh read, as Retry does for a host that stopped reporting.
+     */
+    function retry(): void {
+        if (isWatching()) {
+            start();
+        }
+    }
+
+    return { presentation, retry };
 }

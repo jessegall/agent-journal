@@ -3,6 +3,8 @@ import { readStoredJson, keepStoredJson } from '@kit/browserStorage';
 import PaneSplitter from '@kit/PaneSplitter';
 import PaneTabs from '@kit/PaneTabs';
 import type { PaneTab } from '@kit/PaneTabs';
+import TerminalHeader from '@kit/TerminalHeader';
+import type { TerminalHeaderAction } from '@kit/TerminalHeader';
 import type { AgentOptionData } from '@generated/types/chat';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { closeTerminalBesideChat, terminalDock } from './composables/useTerminalDock';
@@ -31,6 +33,8 @@ const chatShare = ref(readStoredJson('local', SPLIT_STORAGE_KEY, storedShare) ??
 const isFullScreen = ref(false);
 const chosenTab = ref<'chat' | 'terminal'>('terminal');
 let watcher: ResizeObserver | null = null;
+// The control that opened full screen, which gets the focus back when it ends.
+let fullScreenOpener: HTMLElement | null = null;
 
 const agent = computed(() => props.agents.find((option) => option.id === terminalDock.agentId));
 const isOpen = computed(() => agent.value !== undefined);
@@ -69,6 +73,33 @@ const tabs = computed<PaneTab[]>(() => [
         isActive: chosenTab.value === 'terminal',
     },
 ]);
+
+const placementLabel = computed(
+    () => ({ dock: 'Beside chat', tabs: 'In a tab', 'full-screen': 'Full screen' })[placement.value],
+);
+const closeAction: TerminalHeaderAction = { key: 'close', label: 'Close terminal', run: () => void close() };
+const exitFullScreen: TerminalHeaderAction = {
+    key: 'exit-full-screen',
+    label: 'Exit full screen',
+    run: () => void leaveFullScreen(),
+};
+const enterFullScreen: TerminalHeaderAction = {
+    key: 'full-screen',
+    label: 'Full screen',
+    run: () => {
+        fullScreenOpener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        isFullScreen.value = true;
+    },
+};
+const mainAction = computed(() => (isFullScreen.value ? exitFullScreen : closeAction));
+const secondaryActions = computed(() => (isFullScreen.value ? [closeAction] : [enterFullScreen]));
+
+async function leaveFullScreen(): Promise<void> {
+    isFullScreen.value = false;
+    await nextTick();
+    fullScreenOpener?.focus();
+    fullScreenOpener = null;
+}
 
 function moveSplit(share: number, spaceSize: number): void {
     chatShare.value = boundedChatShare(share, spaceSize, remPixels());
@@ -149,24 +180,14 @@ onBeforeUnmount(() => {
             <PaneTabs :tabs="tabs" @pick="pickTab" @close="closeTab" />
         </template>
         <template v-if="isOpen && agent">
-            <div class="flex flex-none items-center gap-2 px-3 py-1 text-small text-text-2">
-                <span class="font-semibold text-text">{{ agent.name }}</span>
-                <span class="flex-1"></span>
-                <button
-                    type="button"
-                    class="rounded-control border border-border-2 px-2 py-0.5 hover:bg-hover hover:text-text"
-                    @click="isFullScreen = !isFullScreen"
-                >
-                    {{ isFullScreen ? 'Exit full screen' : 'Full screen' }}
-                </button>
-                <button
-                    type="button"
-                    class="rounded-control border border-border-2 px-2 py-0.5 hover:bg-hover hover:text-text"
-                    @click="close"
-                >
-                    Close terminal
-                </button>
-            </div>
+            <TerminalHeader
+                :agent-name="agent.name"
+                :driver="agent.sessionDriver"
+                owner="Watching"
+                :placement="placementLabel"
+                :main="mainAction"
+                :secondary="secondaryActions"
+            />
         </template>
         <div ref="space" class="flex min-h-0 flex-1 flex-row">
             <div v-show="showsChat" class="min-w-0" :style="chatStyle">
@@ -182,7 +203,7 @@ onBeforeUnmount(() => {
                     :aria-label="`Terminal for ${agent.name}`"
                     role="region"
                 >
-                    <DockedTerminal :agent-id="agent.id" :is-shown="showsTerminal" />
+                    <DockedTerminal :agent-id="agent.id" :is-shown="showsTerminal" @back-to-chat="close" />
                 </div>
             </template>
         </div>
