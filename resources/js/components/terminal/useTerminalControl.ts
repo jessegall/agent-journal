@@ -56,7 +56,13 @@ export function useTerminalControl(
     screen: Ref<TerminalScreen>,
     isShown: Ref<boolean>,
 ) {
-    const view = shallowRef<ControlView>({ state: 'watching', notice: '', unsentLine: '', savedDrafts: [] });
+    const view = shallowRef<ControlView>({
+        state: 'watching',
+        notice: '',
+        unsentLine: '',
+        savedDrafts: [],
+        geometry: '',
+    });
     let control = controlFor(agentId.value);
 
     function promptRevision(): number {
@@ -127,6 +133,8 @@ export function useTerminalControl(
         send: (text: string, enter: boolean) => control.send(text, enter, promptRevision()),
         sendKey: (key: string) => control.sendInput({ kind: 'key', key }, promptRevision()),
         paste: (text: string) => control.sendInput({ kind: 'paste', text }, promptRevision()),
+        resize: (rows: number, columns: number) =>
+            control.sendInput({ kind: 'resize', rows, columns }, promptRevision()),
         promptRevision,
         deleteSavedDraft: (index: number) => control.deleteSavedDraft(index),
         holdsGrant: () => control.holdsGrant(),

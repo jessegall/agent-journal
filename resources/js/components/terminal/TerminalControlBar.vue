@@ -198,6 +198,9 @@ async function copy(text: string): Promise<void> {
                 <TerminalStopAction :agent-id="agentId" :identity="identity" />
             </template>
         </div>
+        <template v-if="view.geometry && view.state === 'controlling'">
+            <p class="text-small text-text-3">Terminal size: {{ view.geometry }}</p>
+        </template>
         <template v-if="view.notice">
             <p class="text-small text-warn" role="status">{{ view.notice }}</p>
         </template>

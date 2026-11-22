@@ -3,7 +3,8 @@ import AgentTerminal from '@kit/AgentTerminal';
 import Button from '@kit/Button';
 import TerminalControlBar from '@kit/TerminalControlBar';
 import { useTerminalController } from '@kit/terminalController';
-import { toRef } from 'vue';
+import { useTerminalResize } from '@kit/terminalResize';
+import { ref, toRef } from 'vue';
 
 /**
  * The terminal the chat shows beside it: one controller for the agent, which reads only while the terminal is shown,
@@ -33,24 +34,29 @@ function holdsCloseForDraft(): boolean {
 }
 
 defineExpose({ holdsCloseForDraft });
+
+const area = ref<HTMLElement | null>(null);
+useTerminalResize(area, control);
 </script>
 
 <template>
-    <AgentTerminal :presentation="presentation">
-        <template #actions="{ state }">
-            <TerminalControlBar
-                :control="control"
-                :other-view-controls="presentation.screen.frame?.inputOwner === 'browser' && !control.holdsGrant()"
-                :agent-id="agentId"
-                :identity="presentation.screen.identity"
-                @owner="(label: string) => emit('owner', label)"
-            />
-            <template v-if="state === 'not_reporting'">
-                <Button variant="bordered" size="sm" @click="retry">Retry</Button>
+    <div ref="area" class="h-full min-h-0 overflow-auto">
+        <AgentTerminal :presentation="presentation">
+            <template #actions="{ state }">
+                <TerminalControlBar
+                    :control="control"
+                    :other-view-controls="presentation.screen.frame?.inputOwner === 'browser' && !control.holdsGrant()"
+                    :agent-id="agentId"
+                    :identity="presentation.screen.identity"
+                    @owner="(label: string) => emit('owner', label)"
+                />
+                <template v-if="state === 'not_reporting'">
+                    <Button variant="bordered" size="sm" @click="retry">Retry</Button>
+                </template>
+                <template v-if="presentation.screen.frame?.noTerminal">
+                    <Button variant="bordered" size="sm" @click="emit('backToChat')">Back to chat</Button>
+                </template>
             </template>
-            <template v-if="presentation.screen.frame?.noTerminal">
-                <Button variant="bordered" size="sm" @click="emit('backToChat')">Back to chat</Button>
-            </template>
-        </template>
-    </AgentTerminal>
+        </AgentTerminal>
+    </div>
 </template>

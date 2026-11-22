@@ -26,7 +26,8 @@ export type TerminalControlClient = {
 export type TerminalInputPayload =
     | { kind: 'text'; text: string; enter: boolean }
     | { kind: 'key'; key: string }
-    | { kind: 'paste'; text: string };
+    | { kind: 'paste'; text: string }
+    | { kind: 'resize'; rows: number; columns: number };
 
 /**
  * The most bytes one paste may carry, as the journal bounds it.
@@ -60,6 +61,8 @@ export type ControlView = {
     notice: string;
     unsentLine: string;
     savedDrafts: string[];
+    // The size the last resize achieved, as rowsxcolumns, or that it was unavailable.
+    geometry: string;
 };
 
 /**
@@ -83,7 +86,8 @@ export class TerminalControl {
     private grantId = '';
     private nextSequence = 1;
     private cancelled = false;
-    private current: ControlView = { state: 'watching', notice: '', unsentLine: '', savedDrafts: [] };
+    private lastAchievedSize = '';
+    private current: ControlView = { state: 'watching', notice: '', unsentLine: '', savedDrafts: [], geometry: '' };
 
     constructor(
         private readonly client: TerminalControlClient,
@@ -165,7 +169,11 @@ export class TerminalControl {
             const answer = await this.client.input(this.grantId, input, sequence, screenRevision);
             this.nextSequence = answer.nextSequence;
             this.publish({ unsentLine: this.unsentAfter(input) });
-            await this.followReceipt(sequence);
+            const outcome = await this.followReceipt(sequence);
+
+            if (input.kind === 'resize') {
+                this.publish({ geometry: outcome === 'applied' ? this.lastAchievedSize : 'resize unavailable' });
+            }
         } catch (failure) {
             this.inputRefused(failure);
         }
@@ -176,8 +184,11 @@ export class TerminalControl {
      * the screen.
      */
     private unsentAfter(input: TerminalInputPayload): string {
-        if (input.kind === 'key') {
+        if (input.kind === 'key' || input.kind === 'resize') {
             return this.current.unsentLine;
+        }
+        if (input.kind === 'paste') {
+            return this.current.unsentLine + input.text;
         }
         if (input.kind === 'text' && input.enter) {
             return '';
@@ -299,6 +310,7 @@ export class TerminalControl {
         for (;;) {
             const answer = await this.client.receipt(this.takeId, sequence);
             const outcome = answer.receipt?.outcome ?? 'pending';
+            this.lastAchievedSize = answer.receipt?.achievedSize ?? '';
 
             if (outcome === 'uncertain') {
                 this.publish({ state: 'uncertain', notice: 'Input may have reached the terminal.' });
