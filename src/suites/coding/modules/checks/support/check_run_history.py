@@ -1,7 +1,8 @@
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from engine.event.logged_event import LoggedEvent
+from suites.coding.modules.checks.models.check import Check
 from suites.coding.modules.checks.support.check_run_record import CheckRunRecord
 
 CHECK_RUN_FIELD = "last_run_at"
@@ -17,16 +18,20 @@ class CheckRunHistory:
 
     records: Sequence[CheckRunRecord]
 
+    # walked from the newest event, starting at the check's current values, since an event names a value only
+    # when it changed and the oldest events read may come after the last change
     @classmethod
-    def built(cls, events: Iterable[LoggedEvent]) -> "CheckRunHistory":
+    def built(cls, events: Sequence[LoggedEvent], check: Check) -> "CheckRunHistory":
         records: list[CheckRunRecord] = []
-        passed, output = False, ""
-        for event in events:
+        passed, output = bool(check.last_passed), check.last_output
+        for event in reversed(events):
             passed = bool(event.data[PASSED_FIELD][1]) if PASSED_FIELD in event.data else passed
             output = str(event.data[OUTPUT_FIELD][1]) if OUTPUT_FIELD in event.data else output
             if CHECK_RUN_FIELD in event.data and event.data[CHECK_RUN_FIELD][1] is not None:
                 records.append(CheckRunRecord(str(event.data[CHECK_RUN_FIELD][1]), passed, output))
-        return cls(tuple(reversed(records[-RUNS_SHOWN:])))
+            passed = bool(event.data[PASSED_FIELD][0]) if PASSED_FIELD in event.data else passed
+            output = str(event.data[OUTPUT_FIELD][0] or "") if OUTPUT_FIELD in event.data else output
+        return cls(tuple(records[:RUNS_SHOWN]))
 
     def lines(self) -> Sequence[str]:
         return [f"{record.run_at}  {'passed' if record.passed else 'failed'}" for record in self.records] or ["no runs yet"]
