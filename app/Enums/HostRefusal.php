@@ -14,6 +14,7 @@ enum HostRefusal: string
 {
     case AccountFolderRejected = 'protected-account-folder-rejected';
     case IdentityMismatch = 'identity-mismatch';
+    case PinnedBuildMissing = 'pinned-build-missing';
     case Unknown = 'unknown';
 
     public function explanation(): string
@@ -21,6 +22,8 @@ enum HostRefusal: string
         return match ($this) {
             self::AccountFolderRejected => 'The host could not verify the protection required for this account.',
             self::IdentityMismatch => 'The driver started a different conversation than this session is bound to, so nothing was sent to it.',
+            self::PinnedBuildMissing => 'The host no longer has the build of the driver this session was started on, '
+                .'so it started nothing rather than run the session on another build.',
             self::Unknown => 'The host declined this request.',
         };
     }
@@ -35,6 +38,10 @@ enum HostRefusal: string
             self::IdentityMismatch => StartRemedy::forEveryone(
                 StartRemedyType::RetryStart,
                 'Start the agent again',
+            ),
+            self::PinnedBuildMissing => StartRemedy::forOperators(
+                StartRemedyType::OperatorInstruction,
+                'Restore the pinned build on the host, or end the session and start a new one',
             ),
             self::Unknown => StartRemedy::forEveryone(
                 StartRemedyType::OperatorInstruction,

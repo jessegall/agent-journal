@@ -526,10 +526,12 @@ case	HostProtocolVersion::First
 case	HostProtocolVersion::RemoteProject
 case	HostRefusal::AccountFolderRejected
 case	HostRefusal::IdentityMismatch
+case	HostRefusal::PinnedBuildMissing
 case	HostRefusal::Unknown
 case	HostWakeRefusal::CapacityUnavailable
 case	HostWakeRefusal::ContainerUnavailable
 case	HostWakeRefusal::ImageUnverified
+case	HostWakeRefusal::PinnedBuildMissing
 case	HostWakeRefusal::ProtectedAccountFolderRejected
 case	HostWakeRefusal::Unknown
 case	Icon::Accounts

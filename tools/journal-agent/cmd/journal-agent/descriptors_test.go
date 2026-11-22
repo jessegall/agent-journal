@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	drivercontracts "journal-agent/drivers/contracts"
 	"strings"
 	"testing"
 
@@ -43,6 +44,10 @@ func TestAGrantForADriverTheHostDidNotAdvertiseStartsNothing(t *testing.T) {
 
 	if !errors.Is(err, ErrDriverNotAdvertised) {
 		t.Fatalf("a grant the host did not advertise gave %v, want ErrDriverNotAdvertised", err)
+	}
+	refused, found := drivercontracts.StartRefusalOf(err)
+	if !found || refused.Reason != drivercontracts.RefusalPinnedBuildMissing {
+		t.Fatalf("a grant for a build the host does not run refused %+v, want the missing pinned build named", refused)
 	}
 }
 

@@ -164,6 +164,9 @@ const (
 	RefusalImageUnverified                RefusalReason = "image-unverified"
 	RefusalCapacityUnavailable            RefusalReason = "capacity-unavailable"
 	RefusalProtectedAccountFolderRejected RefusalReason = "protected-account-folder-rejected"
+	// RefusalPinnedBuildMissing: the host does not run the build the runtime was pinned to, so it never starts the
+	// runtime on another build.
+	RefusalPinnedBuildMissing RefusalReason = "pinned-build-missing"
 )
 
 // StartRefused is the failure of an operation the host refused for an allowlisted reason before it created any process

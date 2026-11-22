@@ -257,11 +257,12 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 		return nil, fmt.Errorf("runtime %s runs %q, which has no pinned profile", runtimeID, grant.Runtime.Driver)
 	}
 	if !advertises(opener.declared, grant.Runtime.DriverKey, grant.Runtime.DriverBuild) {
-		return nil, fmt.Errorf("runtime %s runs %s at %s: %w", runtimeID, grant.Runtime.DriverKey,
-			grant.Runtime.DriverBuild, ErrDriverNotAdvertised)
+		return nil, drivercontracts.RefuseStart(drivercontracts.RefusalPinnedBuildMissing, fmt.Errorf(
+			"runtime %s runs %s at %s: %w", runtimeID, grant.Runtime.DriverKey, grant.Runtime.DriverBuild,
+			ErrDriverNotAdvertised))
 	}
 	if err := pinnedBuild(profile, grant.Runtime.DriverBuild); err != nil {
-		return nil, fmt.Errorf("runtime %s: %w", runtimeID, err)
+		return nil, drivercontracts.RefuseStart(drivercontracts.RefusalPinnedBuildMissing, fmt.Errorf("runtime %s: %w", runtimeID, err))
 	}
 	var confined *host.ChildConfinement
 	if prepared.Claim.ChildCheckout != nil && opener.worktrees != nil {
@@ -882,9 +883,9 @@ func startOf(
 		RuntimeID:      runtimeID,
 		ConversationID: conversationID,
 		Driver:         profile.Driver(),
-		Command:   append([]string{executable}, startArguments...),
-		Folder:    grant.Runtime.Folder,
-		Env:       startEnvironment,
+		Command:        append([]string{executable}, startArguments...),
+		Folder:         grant.Runtime.Folder,
+		Env:            startEnvironment,
 	}, nil
 }
 

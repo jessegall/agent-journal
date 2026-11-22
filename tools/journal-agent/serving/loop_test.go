@@ -20,8 +20,8 @@ type fakeJournal struct {
 	holds    []string
 	// sequences are the numbers of every request and activity report, in the order they were sent.
 	sequences []uint64
-	exits    int
-	raises   []client.NavigationRaise
+	exits     int
+	raises    []client.NavigationRaise
 	// interrupts are the navigation requests the host reported the user took over.
 	interrupts []string
 	// replayed are the library entries the host reported it replayed.

@@ -38,6 +38,7 @@ use App\Enums\DriverOperation;
 use App\Enums\DriverVariant;
 use App\Enums\ExecutionModeType;
 use App\Enums\HoldReason;
+use App\Enums\HostRefusal;
 use App\Enums\HostWakeRefusal;
 use App\Enums\RecoveryAction;
 use App\Enums\RequestOutcome;
@@ -808,6 +809,7 @@ final class AgentDriverLedgerTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $refused = $this->deliver($opened, 'no-container', 'Hello');
         $unnamed = $this->deliver($opened, 'odd-reason', 'Hello again');
+        $missing = $this->deliver($opened, 'old-build', 'Hello once more');
         $claimed = $this->claimedScript($host, $refused->requestId);
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
         $this->assertSame(
@@ -815,10 +817,10 @@ final class AgentDriverLedgerTest extends TestCase
             [$claimed['sessionId'], $claimed['processGeneration']],
         );
         $attempts = DriverRequest::query()
-            ->whereKey([$refused->requestId, $unnamed->requestId])
-            ->limit(2)
+            ->whereKey([$refused->requestId, $unnamed->requestId, $missing->requestId])
+            ->limit(3)
             ->pluck('attempt_version', 'id');
-        $reports = [[$refused, 'container-unavailable'], [$unnamed, 'disk-on-fire']];
+        $reports = [[$refused, 'container-unavailable'], [$unnamed, 'disk-on-fire'], [$missing, 'pinned-build-missing']];
 
         foreach ($reports as [$receipt, $reason]) {
             $this->hostCall($host, '/host/reports/request', [
@@ -840,6 +842,10 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame(
             [HostWakeRefusal::ContainerUnavailable, true, HostWakeRefusal::Unknown, true],
             [$kept->refusal_reason, $kept->no_process_created, $unknown->refusal_reason, $unknown->no_process_created],
+        );
+        $this->assertSame(
+            HostRefusal::PinnedBuildMissing,
+            DriverRequest::query()->findOrFail($missing->requestId)->refusal_reason?->startReason(),
         );
     }
 

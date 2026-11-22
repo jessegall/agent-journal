@@ -14,6 +14,7 @@ enum HostWakeRefusal: string
     case ImageUnverified = 'image-unverified';
     case CapacityUnavailable = 'capacity-unavailable';
     case ProtectedAccountFolderRejected = 'protected-account-folder-rejected';
+    case PinnedBuildMissing = 'pinned-build-missing';
     case Unknown = 'unknown';
 
     /**
@@ -34,6 +35,7 @@ enum HostWakeRefusal: string
             self::ImageUnverified => StartRefusalType::ImageUnverified,
             self::CapacityUnavailable => StartRefusalType::CapacityUnavailable,
             self::ProtectedAccountFolderRejected => HostRefusal::AccountFolderRejected,
+            self::PinnedBuildMissing => HostRefusal::PinnedBuildMissing,
             self::Unknown => HostRefusal::Unknown,
         };
     }
