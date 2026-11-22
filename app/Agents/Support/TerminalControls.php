@@ -257,6 +257,19 @@ final readonly class TerminalControls
     }
 
     /**
+     * Retires every grant and pending take of the runtime, whoever holds it, before the runtime is stopped; each is
+     * fenced at the host ahead of the stop.
+     */
+    public function revokeRuntime(AgentRuntime $runtime, CarbonImmutable $now): void
+    {
+        $grants = TerminalGrant::query()->acrossActors()->holdingRuntime($runtime->id, $now)->get();
+
+        foreach ($grants as $grant) {
+            $this->revoke($runtime, $grant);
+        }
+    }
+
+    /**
      * Retires every grant the viewer holds on the agent, as when they may no longer inspect it, and fences each at
      * its host.
      */

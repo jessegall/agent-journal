@@ -45,6 +45,8 @@ export type TerminalScreenState =
 export type TerminalScreen = {
     state: TerminalScreenState;
     frame: ScreenFrameData | null;
+    // The session and generation the shown screen belongs to, for actions that must name them, such as Stop.
+    identity: TerminalScreenIdentityData | null;
     refusal: string;
     receivedAt: number;
     endedAt: string;
@@ -56,7 +58,7 @@ export type TerminalScreen = {
 export const WAKE_GAP_MILLISECONDS = 3_000;
 
 function blank(state: TerminalScreenState, receivedAt: number): TerminalScreen {
-    return { state, frame: null, refusal: '', receivedAt, endedAt: '' };
+    return { state, frame: null, identity: null, refusal: '', receivedAt, endedAt: '' };
 }
 
 function isSameStream(first: TerminalScreenIdentityData, second: TerminalScreenIdentityData): boolean {
@@ -264,6 +266,7 @@ export class TerminalSubscription {
         this.publish({
             ...blank(answer.state, Date.parse(answer.receivedAt ?? '') || this.now()),
             frame,
+            identity,
         });
     }
 

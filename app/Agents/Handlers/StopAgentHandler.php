@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
+use App\Actors\Contracts\ServerClock;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Exceptions\StopOutdated;
 use App\Agents\Support\DriverRequests;
+use App\Agents\Support\TerminalControls;
 use App\Agents\Values\DriverReceipt;
 use App\Contracts\CommandHandler;
 
 final readonly class StopAgentHandler implements CommandHandler
 {
-    public function __construct(private DriverRequests $requests) {}
+    public function __construct(
+        private DriverRequests $requests,
+        private TerminalControls $controls,
+        private ServerClock $clock,
+    ) {}
 
     /**
      * @throws StopOutdated
@@ -38,6 +44,8 @@ final readonly class StopAgentHandler implements CommandHandler
         if ($open !== null) {
             return $open->receipt();
         }
+
+        $this->controls->revokeRuntime($this->requests->runtimeOf($target)->load('session'), $this->clock->now());
 
         return $this->requests->stop($target, $command->idempotencyKey)->receipt();
     }

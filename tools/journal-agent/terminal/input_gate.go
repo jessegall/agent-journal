@@ -27,6 +27,8 @@ type InputGate struct {
 	// since it last looked, even when their Enter already gave the composer back.
 	userInputs uint64
 	browser    browserGrants
+	// stopping is a gate a stop fenced: no take is granted and no driver line or key is written any more.
+	stopping bool
 }
 
 // NewInputGate guards writes to the program, reading its composer from the reader; now is the clock of draft ages.
@@ -76,7 +78,7 @@ func (gate *InputGate) Type(requestID string, attempt int, text string, readGene
 	defer gate.mutex.Unlock()
 
 	gate.expireGrant()
-	if gate.owner != NobodyOwns || gate.reader.Generation(gate.composer.Name()) != readGeneration {
+	if gate.stopping || gate.owner != NobodyOwns || gate.reader.Generation(gate.composer.Name()) != readGeneration {
 		return nil, ErrComposerHeld
 	}
 	if _, err := io.WriteString(gate.program, text); err != nil {
@@ -132,7 +134,7 @@ func (gate *InputGate) Keys(keys string) error {
 	defer gate.mutex.Unlock()
 
 	gate.expireGrant()
-	if gate.owner == BrowserInput {
+	if gate.stopping || gate.owner == BrowserInput {
 		return ErrComposerHeld
 	}
 	if gate.owner == UserInput {

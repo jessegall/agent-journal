@@ -193,6 +193,9 @@ func (terminal *hostTerminal) resize(rows, columns uint16) {
 type Terminal struct {
 	Reader *screen.EmulatorReader
 	Gate   *inputs.InputGate
+	// Hangup ends the program from outside its input: it closes the PTY the host owns, so no key, draft or Enter is
+	// ever sent to stop it.
+	Hangup func() error
 }
 
 // Open starts the runtime's program on a PTY the host owns, or finds the one it already runs under the runtime's id,
@@ -203,7 +206,7 @@ func (socket *AttachSocket) Open(request AttachRequest) (Terminal, error) {
 		return Terminal{}, err
 	}
 
-	return Terminal{Reader: terminal.reader, Gate: terminal.gate}, nil
+	return Terminal{Reader: terminal.reader, Gate: terminal.gate, Hangup: terminal.pty.Close}, nil
 }
 
 func (terminal *hostTerminal) attach(client io.Writer) {

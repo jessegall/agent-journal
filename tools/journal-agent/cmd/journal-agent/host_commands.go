@@ -523,6 +523,7 @@ func terminalDriverOf(profile contracts.DriverProfile, opened host.Terminal, gen
 		Gate:              opened.Gate,
 		Composer:          layout.Composer.Name(),
 		Layout:            layout,
+		Hangup:            opened.Hangup,
 		Generation:        opened.Reader.Generation,
 		Scripts:           scripts.Registered(),
 		Runner:            keyscripts.NewRunner(opened.Gate, classifier, clock, view, driver, relay.Report),

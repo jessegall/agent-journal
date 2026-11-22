@@ -42,6 +42,8 @@ const backToChat = {
                 <TerminalControlBar
                     :control="control"
                     :other-view-controls="presentation.screen.frame?.inputOwner === 'browser' && !control.holdsGrant()"
+                    :agent-id="data.agentId"
+                    :identity="presentation.screen.identity"
                     @owner="(label: string) => (ownerLabel = label)"
                 />
                 <template v-if="state === 'not_reporting'">

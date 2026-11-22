@@ -1,14 +1,21 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
 import Button from '@/components/kit/Button.vue';
+import type { TerminalScreenIdentityData } from '@generated/types/core';
+import TerminalStopAction from './TerminalStopAction.vue';
 import type { TerminalControlHandle } from './useTerminalControl';
 
 /**
  * The terminal's control: one primary action for where control stands, the line the writer types into while they
- * hold it, the choices for an unfinished line when they give it back, and this tab's saved drafts. F6 or Shift+Tab
- * leaves the line for the Terminal controls button.
+ * hold it, the choices for an unfinished line when they give it back, this tab's saved drafts, and Stop beside them.
+ * F6 or Shift+Tab leaves the line for the Terminal controls button.
  */
-const props = defineProps<{ control: TerminalControlHandle; otherViewControls: boolean }>();
+const props = defineProps<{
+    control: TerminalControlHandle;
+    otherViewControls: boolean;
+    agentId: string;
+    identity: TerminalScreenIdentityData | null;
+}>();
 
 const emit = defineEmits<{ owner: [label: string] }>();
 
@@ -88,6 +95,9 @@ async function copy(text: string): Promise<void> {
             </template>
             <template v-if="view.state === 'watch_only'">
                 <span class="text-small text-text-2">You can watch this terminal.</span>
+            </template>
+            <template v-if="identity !== null && view.state !== 'watch_only'">
+                <TerminalStopAction :agent-id="agentId" :identity="identity" />
             </template>
         </div>
         <template v-if="view.notice">

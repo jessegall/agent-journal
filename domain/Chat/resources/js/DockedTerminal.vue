@@ -41,6 +41,8 @@ defineExpose({ holdsCloseForDraft });
             <TerminalControlBar
                 :control="control"
                 :other-view-controls="presentation.screen.frame?.inputOwner === 'browser' && !control.holdsGrant()"
+                :agent-id="agentId"
+                :identity="presentation.screen.identity"
                 @owner="(label: string) => emit('owner', label)"
             />
             <template v-if="state === 'not_reporting'">

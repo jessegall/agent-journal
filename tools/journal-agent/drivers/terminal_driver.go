@@ -38,13 +38,15 @@ const turnStartDeadline = 10 * time.Second
 
 // TerminalRuntime is what the terminal driver drives: the screen read from the program, the gate every key passes,
 // the program build's registered key scripts, the clock its waits run on, the process generation its reports carry,
-// the relay its key scripts report their steps through, and the layout a browser writer's prompt is classified by.
+// the relay its key scripts report their steps through, the layout a browser writer's prompt is classified by, and
+// the runtime-owned hangup that stops the program without a key.
 type TerminalRuntime struct {
 	Profile           string
 	Classifier        *screen.Classifier
 	Gate              *terminal.InputGate
 	Composer          string
 	Layout            screen.Layout
+	Hangup            func() error
 	Generation        func(region string) uint64
 	Scripts           *keyscripts.Registry
 	Runner            *keyscripts.Runner
@@ -175,8 +177,25 @@ func (driver *TerminalDriver) Interrupt(
 	}, nil
 }
 
+// Stop fences the input first, retiring a browser writer, any pending take and every queued input in one step, then
+// ends the program through the runtime-owned hangup, which never types the draft, a stop key or Enter; a program
+// with no hangup is stopped from its composer as before. The serving loop confirms the exit. A failed hangup keeps
+// the input fenced so Retry stop finds nothing written meanwhile.
 func (driver *TerminalDriver) Stop(_ context.Context, stop contracts.StopRequest) (contracts.OperationResult, error) {
-	if err := driver.runtime.Gate.Keys(stopKeys); err != nil {
+	driver.runtime.Gate.FenceForStop()
+	if driver.runtime.Hangup == nil {
+		return driver.stopFromComposer(stop)
+	}
+	if err := driver.runtime.Hangup(); err != nil {
+		return failed(stop.Request), err
+	}
+
+	return contracts.OperationResult{Request: stop.Request, Progress: contracts.ProgressApplying}, nil
+}
+
+// stopFromComposer types the stop keys through the fenced gate, for a program the host holds no PTY of.
+func (driver *TerminalDriver) stopFromComposer(stop contracts.StopRequest) (contracts.OperationResult, error) {
+	if err := driver.runtime.Gate.StopKeys(stopKeys); err != nil {
 		return failed(stop.Request), err
 	}
 

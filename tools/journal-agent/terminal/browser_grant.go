@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"io"
 	"time"
 )
 
@@ -89,7 +90,7 @@ func (gate *InputGate) Take(takeID string, scope GrantScope) (BrowserGrant, erro
 	defer gate.mutex.Unlock()
 
 	gate.expireGrant()
-	if gate.browser.isCancelled(takeID) {
+	if gate.stopping || gate.browser.isCancelled(takeID) {
 		return BrowserGrant{}, ErrTakeCancelled
 	}
 	if held := gate.browser.grant; held != nil {
@@ -186,6 +187,31 @@ func (gate *InputGate) LocalResized() {
 	defer gate.mutex.Unlock()
 
 	gate.preemptForLocal()
+}
+
+// FenceForStop retires a browser writer and every pending take and drops a pending driver line, in one step under
+// the gate lock, so nothing more is written once a stop begins; the composer stays as it is and nothing is sent.
+func (gate *InputGate) FenceForStop() {
+	gate.mutex.Lock()
+	defer gate.mutex.Unlock()
+
+	if gate.browser.pendingTake != "" {
+		gate.browser.rememberCancelled(gate.browser.pendingTake)
+		gate.browser.pendingTake = ""
+	}
+	gate.browser.grant, gate.browser.receipts = nil, nil
+	gate.invalidatePending()
+	gate.stopping = true
+}
+
+// StopKeys writes the keys that stop a program from its composer, past any hold, for a stop that has no hangup.
+func (gate *InputGate) StopKeys(keys string) error {
+	gate.mutex.Lock()
+	defer gate.mutex.Unlock()
+
+	_, err := io.WriteString(gate.program, keys)
+
+	return err
 }
 
 // preemptForLocal retires a browser grant because the local user acted; the caller holds the mutex.

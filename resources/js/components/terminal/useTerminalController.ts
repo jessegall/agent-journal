@@ -107,6 +107,7 @@ export function useTerminalController(agentId: Ref<string>, isShown: Ref<boolean
     const screen = shallowRef<TerminalScreen>({
         state: 'opening',
         frame: null,
+        identity: null,
         refusal: '',
         receivedAt: Date.now(),
         endedAt: '',
