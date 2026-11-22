@@ -1046,15 +1046,17 @@ function graphData(plan,useSuggest){const g=PLANS.find(p=>p[0]===plan)[3],waits=
   const maxd=Math.max(...Object.values(depth)),longest=1+maxd,widest=Math.max(...Object.values(layers).map(l=>l.filter(n=>g.find(t=>t[0]===n)[2]!=='done').length));
   return {g,pos,edges,depth,holds,longest,widest,W:20+(maxd+1)*(NW+GX),H:20+Math.max(...Object.values(layers).map(l=>l.length))*(NH+GY)+10}}
 function graphSvg(plan,opts={}){const D=graphData(plan,opts.suggest),sel=opts.interactive?GRAPH.sel:null,nb=new Set();
-  if(sel)D.edges.forEach(([a,b])=>{if(a===sel)nb.add(b);if(b===sel)nb.add(a)});
+  /* A chosen task lights its whole chain: everything it waits on back to the start, everything waiting on it to the end. */
+  const up=new Set(),down=new Set();if(sel){const walk=(n,set,dir)=>D.edges.forEach(([a,b])=>{const nx=dir?(a===n?b:null):(b===n?a:null);if(nx!=null&&!set.has(nx)){set.add(nx);walk(nx,set,dir)}});walk(sel,up,false);walk(sel,down,true)}
+  const inChain=n=>n===sel||up.has(n)||down.has(n),onPath=(a,b)=>((a===sel||up.has(a))&&(b===sel||up.has(b)))||((a===sel||down.has(a))&&(b===sel||down.has(b)));
   const necks=opts.necks?new Set(D.g.filter(t=>D.holds(t[0])>=5).map(t=>t[0])):new Set();
   const added=new Set(),removed=new Set();
   if(opts.compare){const bk=new Set(graphData(plan,false).edges.map(e=>e.join('>')));D.edges.forEach(e=>{if(!bk.has(e.join('>')))added.add(e.join('>'))})}
   if(opts.showRemoved){const after=new Set(graphData(plan,true).edges.map(e=>e.join('>')));D.edges.forEach(e=>{if(!after.has(e.join('>')))removed.add(e.join('>'))})}
   const ed=D.edges.map(([a,b])=>{const p=D.pos[a],q=D.pos[b],x1=p.x+NW,y1=p.y+NH/2,x2=q.x-2,y2=q.y+NH/2,done=D.g.find(t=>t[0]===a)[2]==='done',k=a+'>'+b;
-    const cls=['edge',done?'met':'',sel&&(a===sel||b===sel)?'hot':'',sel&&a!==sel&&b!==sel?'fade':'',added.has(k)?'added':'',removed.has(k)?'removed':''].join(' ');
+    const cls=['edge',done?'met':'',sel&&onPath(a,b)?'hot':'',sel&&!onPath(a,b)?'fade':'',added.has(k)?'added':'',removed.has(k)?'removed':''].join(' ');
     return `<path class="${cls}" d="M${x1} ${y1} C${x1+GX/2} ${y1},${x2-GX/2} ${y2},${x2} ${y2}" marker-end="url(#arr)"/>`}).join('');
-  const nd=D.g.map(([n,t,s,h])=>{const p=D.pos[n],cls=['node',s,sel===n?'sel':'',sel&&sel!==n?(nb.has(n)?'half':'fade'):'',necks.has(n)?'neck':'',opts.necks&&!necks.has(n)?'half':'',opts.compare&&SUGGEST[n]?'changed':''].join(' '),hold=D.holds(n);
+  const nd=D.g.map(([n,t,s,h])=>{const p=D.pos[n],cls=['node',s,sel===n?'sel':'',sel&&!inChain(n)?'fade':'',necks.has(n)?'neck':'',opts.necks&&!necks.has(n)?'half':'',opts.compare&&SUGGEST[n]?'changed':''].join(' '),hold=D.holds(n);
     return `<g class="${cls}" data-gnode="${n}" data-fk="gnode:${n}" ${opts.interactive?`tabindex="0" role="button" aria-label="Task ${n}: ${esc(t)}, ${STW[s]}, holds up ${hold}" aria-pressed="${sel===n}"`:''} transform="translate(${p.x},${p.y})"><g class="box"><rect width="${NW}" height="${NH}" rx="8"/>
       <text class="n" x="10" y="17">${n} · ${esc(h)}</text><text class="tt" x="10" y="34">${esc(t.length>25?t.slice(0,24)+'…':t)}</text>
       <circle cx="${NW-12}" cy="13" r="3.5" fill="${s==='done'?'var(--text-3)':s==='work'||s==='you'?'var(--brand)':'none'}" stroke="var(--text-3)" stroke-width="1.2"/>
@@ -1251,7 +1253,7 @@ function pageHtml(){const E=showEmpty,xp=PAGES_EXTRA.find(p=>p.id===page);if(xp)
         <div class="srow"><div class="t">Default account<small>Used when a start names none.</small></div><button class="toggle" role="switch" aria-checked="${sel[5]}" aria-label="Default account"></button></div>
         <div class="srow"><div class="t">Sign-in<small>${sel[3]}</small></div>${sel[3]==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':'<button class="btn sm bordered">Sign in again</button>'}</div></div></div>`)}
   /* Settings: one column of setting rows; an invalid value keeps what was typed and says why. */
-  return `<div class="pghead"><h3>Settings</h3></div><div style="flex:1;overflow:auto"><div class="reader" style="max-width:720px">
+  return `<div class="pghead"><h3>Settings</h3></div><div style="flex:1;overflow:auto" data-keepscroll="settings"><div class="reader" style="max-width:720px">
     <div class="sec">Appearance</div><div class="sgroup"><div class="srow"><div class="t">Theme<small>Follows the system unless you choose.</small></div><div class="segc" role="group" aria-label="Theme">${['light','dark'].map(t=>`<button aria-pressed="${mode===t}" data-setmode="${t}">${t==='light'?'Light':'Dark'}</button>`).join('')}<button aria-pressed="false">System</button></div></div>
       <div class="srow"><div class="t">Reading width<small>How wide the chat and readers get.</small></div><input class="field" style="width:90px" value="${readW} px" aria-label="Reading width"></div></div>
     <div class="sec">What reaches the chat</div><div class="sgroup"><div class="srow"><div class="t">Activities in the chat<small>The rest stays in the Activity panel.</small></div><div class="segc" role="group" aria-label="Activities in the chat">${[[4,'Nothing'],[3,'Important'],[2,'Important and normal']].map(([l,t])=>`<button aria-pressed="${CHATLEVEL===l}" data-setlevel="${l}">${t}</button>`).join('')}</div></div>
@@ -1320,6 +1322,8 @@ function render(){
   const prev={};if(!quiet&&!CALM.matches)$$('#main [data-flip]').forEach(e=>prev[e.dataset.flip]={x:e.offsetLeft,y:e.offsetTop,w:e.offsetWidth,h:e.offsetHeight});
   const scrolls={};$$('#main [data-body],#main .pgread,#main .pglist,#main .gwrap,#main [data-keepscroll]').forEach((b,i)=>scrolls[(b.dataset.body||b.dataset.keepscroll||b.className)+i]=[b.scrollTop,b.scrollLeft]);
   const draft={};$$('#main [data-compose]').forEach(t=>{if(t.value)draft[t.dataset.compose]=t.value});
+  /* No interaction jumps the page: a chat keeps where you were reading, and follows new messages only when you were at the end. */
+  const chatPos={};$$('#main .chatcol .scroll').forEach(s=>{const c=s.querySelector('[data-chat]');if(c)chatPos[c.dataset.chat]=[s.scrollTop,s.scrollHeight-s.scrollTop-s.clientHeight<40]});
   const sideEl=$('#side'),oldSide=sideEl.offsetWidth;
   app.style.width=frameW+'px';app.classList.toggle('dark',mode==='dark');document.body.classList.toggle('dk',mode==='dark');
   sideEl.className='side'+(ui.rail?' rail':'');sideEl.innerHTML=sideHtml();
@@ -1333,7 +1337,7 @@ function render(){
   mainEl.innerHTML=h;
   $$('#main [data-body],#main .pgread,#main .pglist,#main .gwrap,#main [data-keepscroll]').forEach((b,i)=>{const s=scrolls[(b.dataset.body||b.dataset.keepscroll||b.className)+i];if(s){b.scrollTop=s[0];b.scrollLeft=s[1]}});
   $$('#main [data-compose]').forEach(t=>{if(draft[t.dataset.compose]){t.value=draft[t.dataset.compose];t.closest('.composer').classList.add('has')}});
-  $$('#main .chat').forEach(c=>{const sc=c.parentElement;if(sc&&sc.classList.contains('scroll'))sc.scrollTop=sc.scrollHeight});
+  $$('#main .chatcol .scroll').forEach(s=>{const c=s.querySelector('[data-chat]'),p=c&&chatPos[c.dataset.chat];s.scrollTop=!p||p[1]?s.scrollHeight:p[0]});
   /* Motion: panes and windows glide from where they were; new ones grow in; the sidebar eases to its width. */
   if(!quiet&&!CALM.matches){$$('#main [data-flip]').forEach(e=>{const p=prev[e.dataset.flip],r={x:e.offsetLeft,y:e.offsetTop,w:e.offsetWidth,h:e.offsetHeight};
       if(p){const dx=p.x-r.x,dy=p.y-r.y,sx=p.w/r.w,sy=p.h/r.h;if(Math.abs(dx)>1||Math.abs(dy)>1||Math.abs(sx-1)>.01||Math.abs(sy-1)>.01)e.animate([{transformOrigin:'0 0',transform:`translate(${dx}px,${dy}px) scale(${sx},${sy})`},{transformOrigin:'0 0',transform:'none'}],{duration:VIEW,easing:EASE})}
@@ -1453,7 +1457,9 @@ function placeCommentButton(sel){$$('.cfloat').forEach(x=>x.remove());const s=se
 /* =====================================================================================================================
    Wiring
    ===================================================================================================================== */
-function wireGraph(){$$('[data-gnode]').forEach(g=>{g.onpointerdown=e=>{if(e.button!==0)return;dragNode(e,+g.dataset.gnode,g)};g.onkeydown=ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();const n=+g.dataset.gnode;GRAPH.sel=GRAPH.sel===n?null:n;render();focusFk('gnode:'+n)}}})}
+/* Nodes are not dragged: a click chooses a task (again, it clears); a click on empty space clears too. */
+function wireGraph(){$$('[data-gwrap]').forEach(w=>w.onclick=ev=>{if(!ev.target.closest('[data-gnode],.gcard')&&GRAPH.sel){GRAPH.sel=null;render()}});
+  $$('[data-gnode]').forEach(g=>{g.onclick=()=>{const n=+g.dataset.gnode;GRAPH.sel=GRAPH.sel===n?null:n;render();focusFk('gnode:'+n)};g.onkeydown=ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();const n=+g.dataset.gnode;GRAPH.sel=GRAPH.sel===n?null:n;render();focusFk('gnode:'+n)}}})}
 const WIRE_EXTRA=[];
 function wire(){const on=(s,fn)=>$$(s).forEach(fn),app=$('#app');
   on('[data-page]',b=>b.onclick=()=>{page=b.dataset.page;menu=null;render()});
@@ -1579,7 +1585,7 @@ function onContext(ev){const t=ev.target,sel=getSelection();if(sel&&!sel.isColla
   const msg=t.closest('.msg'),item=t.closest('[data-item]'),tab=t.closest('[data-tab]'),fl=t.closest('[data-float]'),pn=t.closest('[data-pane]'),gn=t.closest('[data-gnode]'),db=t.closest('[data-docbar]');
   if(items){}
   else if(db){const n=+db.dataset.docbar;items=[{head:'Doc '+n},{label:'Open',ic:'arrow',run:()=>{openItem('doc:'+n);return false}},{head:'Hand it to'},...activeConvs().map(c=>({label:convName(c),av:isGroup(c)?I('users','s14'):avatar(agentOf(c)),run:()=>{handDoc(c,n);return false}}))]}
-  else if(gn){const n=+gn.dataset.gnode;items=[{head:'Task '+n},{label:'Show its waits',ic:'graph',run:()=>{GRAPH.sel=n}},{label:'Open task',ic:'arrow',run:()=>{SELP.tasks=n;page='tasks';TASKVIEW='list';TASKF='all';return false}},{label:'Put it back in place',ic:'restore',disabled:!GRAPH.nudge[n],run:()=>{delete GRAPH.nudge[n]}}]}
+  else if(gn){const n=+gn.dataset.gnode;items=[{head:'Task '+n},{label:'Show its waits',ic:'graph',run:()=>{GRAPH.sel=n}},{label:'Open task',ic:'arrow',run:()=>{SELP.tasks=n;page='tasks';TASKVIEW='list';TASKF='all';return false}}]}
   else if(msg&&!msg.closest('.code')){const chat=msg.closest('[data-chat]');if(!chat)return;const c=chat.dataset.chat,i=+msg.dataset.mi,mm=CONV[c].msgs[i],who=mm?speaker(c,mm):'you';
     items=[{label:'Reply',ic:'reply',run:()=>{REPLYTO={conv:c,i};render();focusFk('compose:'+c);return false}},{label:'Copy text',ic:'copy',run:()=>{navigator.clipboard&&navigator.clipboard.writeText(plain(msg.innerHTML).trim());return false}},
       ...(MEM[who]&&MEM[who].kind==='agent'?[{label:`${MEM[who].name}'s memories`,ic:'brain',run:()=>{openWin('mem:'+who);return false}}]:[]),
@@ -1830,10 +1836,10 @@ delete CAT.sequences;
 ABOVE_COMPOSER.push(c=>{if(!CPANEL||CPANEL.conv!==c)return '';
   if(CPANEL.kind==='mem'){const who=CPANEL.who,ms=(MEMS[who]||[]).slice().sort((a,b)=>b[0]-a[0]);
     return `<aside class="cpanel" role="dialog" aria-label="${MEM[who].name}'s memories" data-cpanel>${`<div class="cphead">${avatar(who)}<b>${MEM[who].name}'s memories</b><small>${ms.length} · heaviest first</small><button class="ib" data-cpclose data-fk="cpclose" aria-label="Close the memories" title="Close · Esc">${I('close','s14')}</button></div>`}
-      <div class="cpbody">${ms.length?ms.map(([w,t,src,kw],i)=>`<button class="mrow" data-memrow="${i}" data-fk="memrow:${i}" aria-expanded="${MEMOPEN===i}"><span class="w" title="Weight">${w}</span>${esc(t)}${MEMOPEN===i?`<small>From ${esc(src)} · ${kw.map(esc).join(', ')} · fades by one at each compaction</small>`:''}</button>`).join('')
+      <div class="cpbody" data-keepscroll="cpbody">${ms.length?ms.map(([w,t,src,kw],i)=>`<button class="mrow" data-memrow="${i}" data-fk="memrow:${i}" aria-expanded="${MEMOPEN===i}"><span class="w" title="Weight">${w}</span>${esc(t)}${MEMOPEN===i?`<small>From ${esc(src)} · ${kw.map(esc).join(', ')} · fades by one at each compaction</small>`:''}</button>`).join('')
         :`<div class="empty"><b>No memories yet</b>${MEM[who].name} keeps here what it must still know.</div>`}</div></aside>`}
   const s=SEQS.find(x=>x.id===CPANEL.id);if(!s)return '';
-  return `<aside class="cpanel" role="dialog" aria-label="Sequence ${esc(s.name)}" data-cpanel><div class="cphead">${I('seq','s14')}<b>${esc(s.name)}</b><button class="ib" data-cpclose data-fk="cpclose" aria-label="Close the sequence" title="Close · Esc">${I('close','s14')}</button></div><div class="cpbody">${seqView(s.id)}</div></aside>`});
+  return `<aside class="cpanel" role="dialog" aria-label="Sequence ${esc(s.name)}" data-cpanel><div class="cphead">${I('seq','s14')}<b>${esc(s.name)}</b><button class="ib" data-cpclose data-fk="cpclose" aria-label="Close the sequence" title="Close · Esc">${I('close','s14')}</button></div><div class="cpbody" data-keepscroll="cpbody">${seqView(s.id)}</div></aside>`});
 /* The panel slides in from the chat's right edge. */
 AFTER_RENDER.push(()=>{if(CPOPEN&&!CALM.matches){const p=$('[data-cpanel]');if(p)p.animate([{opacity:0,transform:'translateX(24px)'},{opacity:1,transform:'none'}],{duration:VIEW,easing:EASE})}CPOPEN=null});
 WIRE_EXTRA.push(on=>{
@@ -1972,7 +1978,7 @@ const NOTE_CARDS=[
   ['The chat, plain or a window','Alone, or beside docked panes, the chat is plain: no frame and no header, just the conversation at the reading width. Make it a window (right-click, ⌘K) and it gets a tab strip and moves like the rest.'],
   ['A clean chat, and Activity','What agents do (tasks in hand, memories, searches, documents read, agents started) goes to Activity, each entry with an importance. Only what you choose reaches the chat, as a quiet line: from the panel\'s “In the chat” menu, or per kind in Settings.'],
   ['Documents','Documents, reports and Markdown files open in a reader. Select text to comment on it to any agent, ask an agent for feedback, or drag a document\'s bar from the chat onto an agent to hand it over.'],
-  ['The task graph','Tasks and Plans show what waits on what. Click a task to see it alone, with its holder, what it waits for and what it holds up. Nudge tasks out of the way. Show bottlenecks finds the tasks that hold up many others; Suggest improvement shows waits that can go, as a before and after.'],
+  ['The task graph','Tasks and Plans show what waits on what. Click a task to light its whole chain, everything it waits on and everything waiting on it, with its holder and its waits beside it; click again, on empty space, or press Escape to clear. Show bottlenecks finds the tasks that hold up many others; Suggest improvement shows waits that can go, as a before and after.'],
   ['One signal per fact; safe keys','The agent bar owns the agent\'s state, and the topbar\'s bell is the only bell. Toasts only offer Undo. ⌘K opens everything; ⌥1, ⌥2 and ⌥` are read by key position. There is no ⌘B, ⌘1, ⌘⇧B, ⌃⌥ arrow or Space shortcut.']].concat(SECTION_NOTES);
 STEPS.docs[2]='<button class="tbtn" id="playBtn" style="margin-left:6px">▶ Play</button>';
 startChrome();
