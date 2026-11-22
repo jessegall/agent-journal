@@ -210,9 +210,45 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .msg:hover .mact,.mact:focus-visible{opacity:1}
 .mact:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 .me .mact{right:auto;left:-72px;top:4px}
-.rq{display:flex;gap:6px;align-items:center;border:0;background:transparent;font:inherit;font-size:var(--text-badge);color:var(--text-3);padding:0 0 0 8px;margin:2px 0 5px;border-left:2px solid var(--border-3);cursor:pointer;text-align:left;max-width:100%;min-width:0}
-.rq b{color:var(--text-2);font-weight:500;flex:none}
-.rq span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* An agent message's hover actions sit together at its top right. */
+.macts{position:absolute;top:-12px;right:-4px;display:inline-flex;gap:4px}
+.macts .mact{position:static}
+.macts .tm{align-self:center;font-size:var(--text-badge);color:var(--text-3);font-variant-numeric:tabular-nums;opacity:0;padding:0 4px;background:var(--bg);border-radius:var(--radius-badge)}
+.msg:hover .macts .tm{opacity:1}
+/* A reply to something further up: only a small "↩ name" link. */
+.rq{display:inline-flex;border:0;background:transparent;font:inherit;font-size:var(--text-badge);color:var(--text-3);padding:0;margin:0 0 3px;cursor:pointer;text-decoration:underline;text-decoration-color:var(--border-3);text-underline-offset:2px}
+.rq:hover{color:var(--text-2)}
+.msg:hover .macts .mact,.macts:focus-within .mact{opacity:1}
+/* Reactions: one chip per emoji with its count; yours are marked; the + adds one. */
+.reacts{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.rx{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 8px;border-radius:999px;border:1px solid var(--line);background:var(--bg);font:inherit;font-size:var(--text-small);color:var(--text-2);cursor:pointer;font-variant-numeric:tabular-nums}
+.rx:hover{border-color:var(--border-3)}
+.rx[aria-pressed=true]{border-color:var(--brand);background:var(--sel);color:var(--text)}
+.rx:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.rx.add{color:var(--text-3);padding:0 7px}
+.rxpop{position:absolute;z-index:155;background:var(--raised);border:1px solid var(--border-2);border-radius:var(--radius-menu);box-shadow:var(--shadow-pop);padding:6px}
+.rxpop .row{display:flex;gap:2px;align-items:center}
+.rxpop .grid{display:grid;grid-template-columns:repeat(8,32px);gap:2px;margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
+.emo{width:32px;height:32px;border:0;border-radius:var(--radius-control);background:transparent;font-size:18px;cursor:pointer;line-height:1}
+.emo:hover,.emo:focus-visible,.emo[aria-pressed=true]{background:var(--sel);outline:0}
+/* A panel inside the chat (an agent's memories, a sequence): it slides over the conversation from the right edge
+   of the chat column and closes again; it is part of the chat, not a window. */
+.chatcol{position:relative}
+.cpanel{position:absolute;top:8px;right:4px;bottom:8px;width:min(380px,calc(100% - 8px));z-index:30;display:flex;flex-direction:column;background:var(--raised);border:1px solid var(--border-2);border-radius:var(--radius-card);box-shadow:var(--shadow-pop);overflow:hidden}
+.cphead{display:flex;align-items:center;gap:8px;height:44px;flex:none;padding:0 6px 0 12px;border-bottom:1px solid var(--line)}
+.cphead b{font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cphead small{color:var(--text-3);font-size:var(--text-badge)}
+.cpbody{flex:1;min-height:0;overflow:auto}
+.cpbody .seqhead{padding:12px 14px 4px}.cpbody .runs{padding:6px 14px 8px}.cpbody .steps{padding:4px 14px 14px}.cpbody .seqhead h2{font-size:var(--text-card)}
+.mrow{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:transparent;font:inherit;color:var(--text);padding:9px 14px;cursor:pointer}
+.mrow:hover{background:var(--hover)}
+.mrow:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.mrow .w{display:inline-block;width:18px;color:var(--text-3);font-variant-numeric:tabular-nums;font-size:var(--text-badge)}
+.mrow small{display:block;margin:4px 0 0 18px;color:var(--text-3);font-size:var(--text-badge)}
+.seqline[aria-expanded=true] b{color:var(--text)}
+/* A document an agent names sits under its message at the full width of the chat, like a question card. */
+.docrow{margin-top:-6px}
+.docrow .docbar{margin-top:0}
 .rq:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 .typing{display:flex;gap:6px;align-items:center;font-size:var(--text-badge);color:var(--text-3)}
 .replying{display:flex;align-items:center;gap:6px;font-size:var(--text-badge);color:var(--text-3);padding:0 0 7px;margin-bottom:6px;border-bottom:1px solid var(--line)}
@@ -514,6 +550,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
   <symbol id="neck" viewBox="0 0 16 16"><path d="M2 3h12l-4.5 5v5l-3-1.5V8z"/></symbol>
   <symbol id="term" viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M4.5 6.5 6.5 8l-2 1.5M8 10h3.5"/></symbol>
   <symbol id="seq" viewBox="0 0 16 16"><circle cx="3.5" cy="4" r="1.5"/><circle cx="3.5" cy="12" r="1.5"/><path d="M3.5 5.5v5M6.5 4h7M6.5 12h7M6.5 8h5"/></symbol>
+  <symbol id="smile" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 9.4a3 3 0 0 0 4.8 0M6 6.6h.1M10 6.6h.1"/></symbol>
   <symbol id="pin" viewBox="0 0 16 16"><path d="M6 2.5h4l-.5 4 2 2v1h-7v-1l2-2z"/><path d="M8 9.5V14"/></symbol>
 </defs></svg>
 
@@ -701,7 +738,7 @@ function freshConvs(){CONV={main:{name:'Agent 1',msgs:BASE()},
     ['say','a1','14:10','I\'d put the bell in the topbar, next to the sidebar button, where the shell already has it.'],
     ['say','cx1','14:11','Agreed. One catch: <code>NotificationBell.vue</code> only counts unread rows, so "waits on you" needs its own filter.',2],
     ['say','a1','14:11','Good catch. I\'ll add the filter to the task.',3],
-    ['sys','You added Sam · Sam can read the chat so far and receives every new message'],
+    ['sys','Sam joined'],
     ['say','sam','14:14','From the support side: the count should only include what waits on you, not every unread line.'],
     ['say','cx1','14:15','That matches Helper 262\'s question. I\'ll make the count filter on waits-on-you.',6]]}}}
 const STATE={main:'Working on task 1702',h262:'Designing the notifications bell',w3:'Writing the test for Enter',g1:'Agent 1 working · Codex 1 reading'};
@@ -844,13 +881,13 @@ function avatar(id,big){const p=MEM[id];if(p.kind!=='agent')return `<span class=
   return big?`<span class="av" title="${p.name} · ${p.role}">${mark}</span>`:`<span class="avs" title="${p.name} · ${p.role}">${mark}</span>`}
 const stack=c=>`<span class="stack">${members(c).slice(0,4).map(m=>avatar(m,true)).join('')}</span>`;
 function snippet(c,j){const m=CONV[c].msgs[j];if(!m)return '';const t=plain(m[0]==='me'?m[1]:m[0]==='ag'?m[2]:m[3]);return t.length>64?t.slice(0,64)+'…':t}
-const quote=(c,j)=>`<button class="rq" data-jump="${j}" title="Show the message this answers">${I('reply','s14')}<b>${MEM[speaker(c,CONV[c].msgs[j])].name}</b><span>${esc(snippet(c,j))}</span></button>`;
+const quote=(c,j)=>`<button class="rq" data-jump="${j}" title="Answers: ${esc(snippet(c,j))}" aria-label="Answers ${MEM[speaker(c,CONV[c].msgs[j])].name}: ${esc(snippet(c,j))}. Show it">↩ ${MEM[speaker(c,CONV[c].msgs[j])].name}</button>`;
 const docbar=n=>{const d=DOCS.find(x=>x[0]===n);return d?`<div class="docbar" data-docbar="${n}" data-fk="docbar:${n}" tabindex="0" role="button" aria-label="Doc ${n}: ${esc(d[1])}. Enter opens it; drag it onto an agent to hand it over.">${I('docs','s14')}<span class="t">Doc ${n} · ${esc(d[1])}<br><small>Revision ${d[4]} · ${d[2]} · drag onto an agent to hand it over</small></span><button class="btn sm" data-opendoc="${n}" tabindex="-1">Open</button></div>`:''};
 /* The journal's offer to open a helper's chat rides on the agent's own message: one quiet chip for every start. */
 function chipHtml(convs){const open=convs.filter(c=>CHIP[c]==='opened'),offer=convs.filter(c=>!CHIP[c]);if(!offer.length&&!open.length)return '';
   return `<div class="jchip"><span class="jm" title="From the journal">J</span>${offer.length?`<span>Open</span>${offer.map(c=>`<button class="go" data-chipopen="${c}">${convName(c)}'s chat</button>`).join(' · ')}<button class="ib" style="width:20px;height:20px" data-chipno="${offer.join(',')}" title="Not now" aria-label="Not now">${I('close','s14')}</button>`
     :`<span>${open.map(convName).join(' and ')}'s chat is open</span>`}</div>`}
-function chatHtml(c){const cv=CONV[c],grp=isGroup(c);let last=null;
+function chatHtml(c){const cv=CONV[c],grp=isGroup(c);let last=null,prevI=-1;
   return (cv.origin?`<div class="origin">${I('users','s14')}<span>${cv.origin}</span></div>`:'')+cv.msgs.map((m,i)=>{const k=m[0];
     if(k==='day'){last=null;return `<div class="day">${m[1]}</div>`}
     if(k==='sys'){last=null;return `<div class="sys">${m[1]}</div>`}
@@ -861,12 +898,17 @@ function chatHtml(c){const cv=CONV[c],grp=isGroup(c);let last=null;
     if(EXTRA_KIND[k])return EXTRA_KIND[k](c,m,i);
     const who=speaker(c,m),rt=k==='me'?m[2]:k==='say'?m[4]:null,ex=k==='me'||k==='ag'?m[3]:null,act=`<button class="mact" data-reply="${c}:${i}" data-fk="reply:${c}:${i}" aria-label="Reply to ${MEM[who].name}">${I('reply','s14')}Reply</button>`;
     const extra=(ex&&ex.doc?docbar(ex.doc):'')+(ex&&ex.chip?chipHtml(ex.chip):'');
-    if(who==='you'){last='you';return `<div class="me msg" data-mi="${i}">${rt!=null?quote(c,rt):''}${m[1]}${extra}${act}</div>`}
-    const time=k==='ag'?m[1]:m[2],text=k==='ag'?m[2]:m[3],head=!grp||last!==who||rt!=null;last=who;
-    return `<div class="ag msg" data-mi="${i}">${head?`<div class="m">${avatar(who)}<span class="nm">${MEM[who].name}</span>${grp?`<span>· ${MEM[who].kind==='person'?'person':MEM[who].prog==='codex'?'Codex':'Claude Code'}</span>`:''}<span>· ${time}</span></div>`:''}${rt!=null?quote(c,rt):''}${text}${extra}${act}</div>`}).join('')}
+    /* A reply names what it answers only when that is not the message right above it, and then as a small link. */
+    const q=rt!=null&&rt!==prevI?quote(c,rt):'';prevI=i;
+    if(who==='you'){last='you';return `<div class="me msg" data-mi="${i}">${q}${m[1]}${extra}${act}</div>`}
+    /* In a group the name heads a run of messages once; the time shows on hover, beside React and Reply. */
+    const time=k==='ag'?m[1]:m[2],text=k==='ag'?m[2]:m[3],head=!grp||last!==who;last=who;
+    /* An agent's message: React and Reply on hover; its reactions under it; a document it names below, full width. */
+    const acts=`<span class="macts">${grp?`<span class="tm">${time}</span>`:''}<button class="mact" data-react="${c}:${i}" data-fk="react:${c}:${i}" aria-haspopup="dialog" aria-label="React to ${MEM[who].name}'s message">${I('smile','s14')}React</button>${act}</span>`;
+    return `<div class="ag msg" data-mi="${i}" title="${grp?esc(MEM[who].name+' · '+time):''}">${head?`<div class="m">${avatar(who)}<span class="nm">${MEM[who].name}</span>${grp?'':`<span>· ${time}</span>`}</div>`:''}${q}${text}${ex&&ex.chip?chipHtml(ex.chip):''}${reactsHtml(c,i)}${acts}</div>${ex&&ex.doc?`<div class="docrow">${docbar(ex.doc)}</div>`:''}`}).join('')}
 /* Kinds of chat line added by later sections (sequences, docked cards, processes); each draws itself. */
 const EXTRA_KIND={};
-function composer(c){const grp=isGroup(c),ph=grp?`Message everyone in ${convName(c)} · @name asks one of them`:`Message ${convName(c)}…`;
+function composer(c){const ph=`Message ${convName(c)}`;
   const rp=REPLYTO&&REPLYTO.conv===c?`<div class="replying">${I('reply','s14')}<span>Replying to <b>${MEM[speaker(c,CONV[c].msgs[REPLYTO.i])].name}</b> · “${esc(snippet(c,REPLYTO.i))}”</span><button class="ib" style="width:20px;height:20px" data-unreply aria-label="Stop replying">${I('close','s14')}</button></div>`:'';
   return `<div class="composer">${rp}<textarea placeholder="${esc(ph)}" data-compose="${c}" data-fk="compose:${c}" aria-label="${esc(ph)}"></textarea><div class="r"><span class="ib" title="Attach">${I('clip','s14')}</span><span style="flex:1"></span><span class="chip faint">Opus</span><button class="btn sm send" data-send="${c}">${I('arrow','s14')}Send</button></div></div>`}
 /* Hooks for later sections: content above the composer (docked cards) and a terminal beside the chat. */
@@ -881,7 +923,7 @@ function sendMessage(c,t,extra){if(!t.trim())return;const cv=CONV[c],rt=REPLYTO&
     const other=agents.find(a=>a!==target);if(other&&!named&&COMMENT_ON[other])setTimeout(()=>{cv.msgs.push(['say',other,'now',COMMENT_ON[other],ti]);render()},1300)},1000)}
 /* Adding someone: every member receives every message, and a new member reads the chat so far. */
 function addMember(c,id){const cv=CONV[c];if(!cv.members)cv.members=['you',OWN[c]];if(cv.members.includes(id))return;cv.members.push(id);
-  const p=MEM[id];cv.msgs.push(['sys',`You added ${p.name} · ${p.kind==='person'?p.name+' can':'it can'} read the chat so far and receives every new message`]);
+  const p=MEM[id];cv.msgs.push(['sys',`${p.name} joined`]);
   if(p.kind==='agent'){cv.msgs.push(['typing',id]);setTimeout(()=>{const ti=cv.msgs.findIndex(m=>m[0]==='typing'&&m[1]===id);if(ti>=0)cv.msgs.splice(ti,1,['say',id,'now','Joined. I\'ve read the chat so far.']);render()},1100)}
   render()}
 function removeMember(c,id){const cv=CONV[c];cv.members=members(c).filter(m=>m!==id);cv.msgs.push(['sys',`You removed ${MEM[id].name} · they no longer receive messages`]);render()}
@@ -991,7 +1033,8 @@ function graphView(plan){const P=PLANS.find(p=>p[0]===plan);if(showEmpty)return 
    ===================================================================================================================== */
 const pane=(tabs,extra={})=>({t:'pane',id:nid('p'),tabs,act:tabs[0],...extra});
 const split=(axis,a,b,ratio=.5)=>({t:'split',id:nid('s'),axis,a,b,ratio});
-const isPlain=p=>p.tabs.length===1&&p.tabs[0]==='chat'&&!p.framed;
+/* The chat is plain only when it is Home's one pane; beside other panes it has a tab strip like theirs. */
+const isPlain=p=>p.tabs.length===1&&p.tabs[0]==='chat'&&!p.framed&&panesIn(A.grid).length===1;
 function panesIn(n,out=[]){if(!n)return out;if(n.t==='pane')out.push(n);else{panesIn(n.a,out);panesIn(n.b,out)}return out}
 const paneOf=k=>panesIn(A.grid).find(p=>p.tabs.includes(k));
 const paneById=id=>panesIn(A.grid).find(p=>p.id===id);
@@ -1524,6 +1567,36 @@ document.addEventListener('selectionchange',()=>{const s=getSelection();if(s&&s.
 
 /* SECTIONS: later parts (sequences, docked cards, processes, terminals) register themselves below this line. */
 
+/* =====================================================================================================================
+   Reactions on agent messages: one chip per emoji with its count, yours marked; add from hover or right-click
+   ===================================================================================================================== */
+let REACT={},RXPOP=null;
+const QUICK=['👍','❤️','🎉','😄','👀','✅'];
+const ALLEMO=['👍','👎','❤️','🎉','😄','😂','😮','😢','👀','✅','❌','🙏','🔥','💡','🚀','⭐','🤔','👏','💯','🛠️','📌','⏳','🧪','🐛'];
+const EMONAME={'👍':'Thumbs up','❤️':'Heart','🎉':'Celebrate','😄':'Smile'};
+function reactsHtml(c,i){const r=REACT[c+':'+i];if(!r)return '';const es=Object.entries(r).filter(([,w])=>w.length);if(!es.length)return '';
+  return `<div class="reacts" role="group" aria-label="Reactions">${es.map(([e,w])=>{const mine=w.includes('you');return `<button class="rx" data-rx="${c}:${i}:${e}" data-fk="rx:${c}:${i}:${e}" aria-pressed="${mine}" title="${w.map(x=>MEM[x].name).join(', ')}" aria-label="${e} ${w.length}${mine?', including yours':''}">${e}<span>${w.length}</span></button>`}).join('')}<button class="rx add" data-react="${c}:${i}" data-fk="rxadd:${c}:${i}" aria-haspopup="dialog" aria-label="Add a reaction" title="Add a reaction">${I('smile','s14')}+</button></div>`}
+function toggleReact(key,e){const r=REACT[key]=REACT[key]||{},w=r[e]=r[e]||[],at=w.indexOf('you');if(at>=0)w.splice(at,1);else w.push('you');render()}
+function openReact(key,anchor,full){const app=$('#app').getBoundingClientRect(),b=anchor.getBoundingClientRect();RXPOP={key,x:b.left-app.left,y:b.bottom-app.top+4,full:!!full,trigger:anchor.dataset.fk};menu=null;render()}
+function closeReact(){const t=RXPOP&&RXPOP.trigger;RXPOP=null;render();if(t)focusFk(t)}
+/* The picker: six quick ones in a row, the + opens the rest; arrows move, Enter picks, Escape closes. */
+AFTER_RENDER.push(()=>{if(!RXPOP)return;const mine=e=>((REACT[RXPOP.key]||{})[e]||[]).includes('you'),btn=e=>`<button class="emo" data-emo="${e}" aria-pressed="${mine(e)}" aria-label="${EMONAME[e]||e}">${e}</button>`;
+  $('#main').insertAdjacentHTML('beforeend',`<div class="rxpop" id="rxpop" role="dialog" aria-label="Add a reaction" style="left:${RXPOP.x}px;top:${RXPOP.y}px"><div class="row">${QUICK.map(btn).join('')}<button class="ib" data-emomore aria-expanded="${RXPOP.full}" aria-label="More emoji" title="More emoji">${I('plus','s14')}</button></div>${RXPOP.full?`<div class="grid">${ALLEMO.map(btn).join('')}</div>`:''}</div>`);
+  const p=$('#rxpop'),app=$('#app');if(RXPOP.x+p.offsetWidth>app.clientWidth-6)p.style.left=Math.max(6,app.clientWidth-p.offsetWidth-6)+'px';if(RXPOP.y+p.offsetHeight>app.clientHeight-6)p.style.top=Math.max(6,RXPOP.y-p.offsetHeight-40)+'px';
+  $$('[data-emo]',p).forEach(b=>b.onclick=()=>{const k=RXPOP.key,t=RXPOP.trigger;RXPOP=null;toggleReact(k,b.dataset.emo);if(t)focusFk(t)});
+  $('[data-emomore]',p).onclick=()=>{RXPOP.full=!RXPOP.full;render()};
+  p.onkeydown=ev=>{const bs=$$('.emo',p),i=bs.indexOf(document.activeElement);if(ev.key==='ArrowRight'){ev.preventDefault();bs[(i+1)%bs.length].focus()}if(ev.key==='ArrowLeft'){ev.preventDefault();bs[(i-1+bs.length)%bs.length].focus()}if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();closeReact()}};
+  requestAnimationFrame(()=>{const f=$('#rxpop .emo');if(f)f.focus({preventScroll:true})})});
+document.addEventListener('pointerdown',ev=>{if(RXPOP&&!ev.target.closest('#rxpop,[data-react]')){RXPOP=null;render()}},true);
+WIRE_EXTRA.push(on=>{on('[data-react]',b=>b.onclick=ev=>{ev.stopPropagation();if(RXPOP&&RXPOP.key===b.dataset.react){closeReact();return}openReact(b.dataset.react,b)});
+  on('[data-rx]',b=>b.onclick=()=>{const p=b.dataset.rx.split(':');toggleReact(p[0]+':'+p[1],p.slice(2).join(':'));focusFk(b.dataset.fk)})});
+/* Right-click an agent's message: the quick reactions first, then the rest of its menu. */
+CONTEXT_EXTRA.push(t=>{const msg=t.closest('.ag.msg'),chat=msg&&msg.closest('[data-chat]');if(!chat)return null;const c=chat.dataset.chat,i=+msg.dataset.mi,key=c+':'+i,mm=CONV[c].msgs[i],who=mm?speaker(c,mm):null;
+  return [{head:'React'},...QUICK.slice(0,4).map(e=>({label:`${e}  ${EMONAME[e]}`,tick:((REACT[key]||{})[e]||[]).includes('you'),run:()=>{toggleReact(key,e);return false}})),{label:'More reactions…',ic:'smile',run:()=>{const b=msg.querySelector('[data-react]');if(b)openReact(key,b,true);return false}},{sep:1},
+    {label:'Reply',ic:'reply',run:()=>{REPLYTO={conv:c,i};render();focusFk('compose:'+c);return false}},{label:'Copy text',ic:'copy',run:()=>{navigator.clipboard&&navigator.clipboard.writeText(plain(msg.innerHTML).trim());return false}},
+    ...(who&&MEM[who]&&MEM[who].kind==='agent'?[{label:`${MEM[who].name}'s memories`,ic:'brain',run:()=>{openWin('mem:'+who);return false}}]:[])]});
+LOADERS.push(()=>{RXPOP=null;REACT={'main:3':{'👍':['you']},'g1:3':{'👍':['a1','you'],'👀':['sam']},'g1:7':{'✅':['a1']}}});
+
 /* Window keys added by the sections: 'seqv:<id>' a sequence's viewer, 'term:<agent>' a terminal. */
 const baseMeta=meta,baseBody=body,baseComposer=composer,baseLayout=layoutFor;
 meta=function(k){if(k.startsWith('seqv:')){const s=SEQS.find(x=>x.id===+k.slice(5));return {t:'Sequence · '+s.name,ic:'seq',w:460,h:520}}
@@ -1691,7 +1764,43 @@ WIRE_EXTRA.push(on=>{
   on('[data-trestart]',b=>b.onclick=()=>{const who=b.dataset.trestart,T=TERM[who];T.state='restarting';T.input='';render();setTimeout(()=>{T.state='connecting';render();setTimeout(()=>{T.state='live';T.lines=TBOOT.slice(0,3).concat(['<d>Restarted. Worker 5 picks up where it was.</d>']);STATE.w5='Writing the pane grid docking';render()},800)},1000)});
   on('[data-tend]',b=>b.onclick=()=>{const T=TERM[b.dataset.tend];T.state='ended';T.exit=0;STATE.w5='Ended';render()})});
 PAL_EXTRA.push(C=>{C('Sequences','seq',()=>{page='sequences';return false});if(page==='home'&&CONV[A.mainConv]&&CONV[A.mainConv].term)C('Open the terminal','term',()=>{openWin('term:'+A.mainConv,{dock:'right'});return false})});
-const SECTION_NOTES=[['Sequences','The chat says, one plain line each, when a sequence starts, which step runs, when a step waits or ends, and when it finishes. The viewer shows the steps and where each run is; the editor adds, reorders and changes steps with their guards and checks.'],
+/* =====================================================================================================================
+   Panels inside the chat: an agent's memories and a sequence open over the conversation, not as windows.
+   Windows are for what a user keeps on Home; these belong to the chat they were opened from.
+   ===================================================================================================================== */
+let CPANEL=null,CPOPEN=null,MEMOPEN=null;
+/* The chat a panel opens in: the one it was asked from, else the main chat, else any open chat with that agent. */
+function panelConv(who,from){if(from)return from;if(agentOf(A.mainConv)===who||members(A.mainConv).includes(who))return A.mainConv;const c=Object.keys(OWN).find(k=>OWN[k]===who);return c&&isOpen('conv:'+c)?c:A.mainConv}
+function openPanel(p){const ae=document.activeElement;CPANEL={...p,trigger:p.trigger||(ae&&ae.dataset&&ae.dataset.fk)};CPOPEN=CPANEL;MEMOPEN=null;menu=null;page='home';
+  if(!isOpen(CPANEL.conv==='main'?'chat':'conv:'+CPANEL.conv)&&CPANEL.conv!==A.mainConv){A.mainConv=CPANEL.conv}render();focusFk('cpclose')}
+function closePanel(){const t=CPANEL&&CPANEL.trigger;CPANEL=null;render();if(t)focusFk(t)}
+const openMemories=(who,from)=>openPanel({kind:'mem',who,conv:panelConv(who,from)});
+const openSeqPanel=(id,run,from)=>{SEQSEL=id;if(run)SEQRUN=run;openPanel({kind:'seq',id,conv:from||A.mainConv})};
+/* Every old way in (the agent bar, a message's menu, a memory line, a sequence line) now opens the panel. */
+const baseOpenWin=openWin;
+openWin=function(k,o){if(k.startsWith('mem:'))return openMemories(k.slice(4));if(k.startsWith('seqv:'))return openSeqPanel(+k.slice(5));return baseOpenWin(k,o)};
+delete CAT.sequences;
+ABOVE_COMPOSER.push(c=>{if(!CPANEL||CPANEL.conv!==c)return '';
+  if(CPANEL.kind==='mem'){const who=CPANEL.who,ms=(MEMS[who]||[]).slice().sort((a,b)=>b[0]-a[0]);
+    return `<aside class="cpanel" role="dialog" aria-label="${MEM[who].name}'s memories" data-cpanel>${`<div class="cphead">${avatar(who)}<b>${MEM[who].name}'s memories</b><small>${ms.length} · heaviest first</small><button class="ib" data-cpclose data-fk="cpclose" aria-label="Close the memories" title="Close · Esc">${I('close','s14')}</button></div>`}
+      <div class="cpbody">${ms.length?ms.map(([w,t,src,kw],i)=>`<button class="mrow" data-memrow="${i}" data-fk="memrow:${i}" aria-expanded="${MEMOPEN===i}"><span class="w" title="Weight">${w}</span>${esc(t)}${MEMOPEN===i?`<small>From ${esc(src)} · ${kw.map(esc).join(', ')} · fades by one at each compaction</small>`:''}</button>`).join('')
+        :`<div class="empty"><b>No memories yet</b>${MEM[who].name} keeps here what it must still know.</div>`}</div></aside>`}
+  const s=SEQS.find(x=>x.id===CPANEL.id);if(!s)return '';
+  return `<aside class="cpanel" role="dialog" aria-label="Sequence ${esc(s.name)}" data-cpanel><div class="cphead">${I('seq','s14')}<b>${esc(s.name)}</b><button class="ib" data-cpclose data-fk="cpclose" aria-label="Close the sequence" title="Close · Esc">${I('close','s14')}</button></div><div class="cpbody">${seqView(s.id)}</div></aside>`});
+/* The panel slides in from the chat's right edge. */
+AFTER_RENDER.push(()=>{if(CPOPEN&&!CALM.matches){const p=$('[data-cpanel]');if(p)p.animate([{opacity:0,transform:'translateX(24px)'},{opacity:1,transform:'none'}],{duration:VIEW,easing:EASE})}CPOPEN=null});
+WIRE_EXTRA.push(on=>{
+  on('[data-cpclose]',b=>b.onclick=closePanel);
+  on('[data-cpanel]',p=>p.onkeydown=ev=>{if(ev.key==='Escape'&&!ev.target.closest('input')){ev.preventDefault();ev.stopPropagation();closePanel()}
+    if(ev.key==='ArrowDown'||ev.key==='ArrowUp'){const rows=$$('.mrow',p),i=rows.indexOf(document.activeElement);if(i>=0){ev.preventDefault();rows[(i+(ev.key==='ArrowDown'?1:-1)+rows.length)%rows.length].focus()}}});
+  on('[data-memrow]',b=>b.onclick=()=>{const i=+b.dataset.memrow;MEMOPEN=MEMOPEN===i?null:i;render();focusFk('memrow:'+i)});
+  /* A sequence line opens its steps and runs in the panel of the chat it is in; again, it closes. */
+  on('[data-seqopen]',b=>{const [s,r]=b.dataset.seqopen.split(':').map(Number),c=b.closest('[data-chat]').dataset.chat,on2=CPANEL&&CPANEL.kind==='seq'&&CPANEL.id===s&&CPANEL.conv===c;b.setAttribute('aria-expanded',!!on2);
+    b.onclick=()=>{if(on2){closePanel();return}openSeqPanel(s,r,c)}})});
+layoutFor=(prev=>function(s){if(s==='seq')return {grid:pane(['chat']),floats:[]};return prev(s)})(layoutFor);
+LOADERS.push(()=>{CPANEL=null;MEMOPEN=null;if(step==='seq')setTimeout(()=>{if(step==='seq'&&!CPANEL){SEQRUN=41;CPANEL={kind:'seq',id:9,conv:'main'};CPOPEN=CPANEL;render()}},400)});
+STEPS.seq[1]='“Ship a task” runs for task 1702. The chat says plainly when it starts, which step runs, when a step ends or waits; the tests run as a process card with live output. The sequence\'s steps and runs open in a panel inside the chat (click a sequence line, or close it with ×); Edit steps opens the editor there.';
+const SECTION_NOTES=[['Panels inside the chat','An agent\'s memories and a sequence open in a panel that slides over the chat from its right edge: click through them, then close it. They belong to the chat; windows are for what you keep on Home.'],['Sequences','The chat says, one plain line each, when a sequence starts, which step runs, when a step waits or ends, and when it finishes. The viewer shows the steps and where each run is; the editor adds, reorders and changes steps with their guards and checks.'],
   ['Docked cards and commands','A task, plan, report or question docks under the conversation (folded into a stack) or beside the composer. A command runs as a process card: its state, its time, its last lines, and its full output when opened.'],
   ['The terminal','A terminal-driven agent\'s chat opens its live terminal beside it. Type to send keys, Ctrl+C to interrupt; its size follows the pane; connecting, restarting and ended each say so plainly.']];
 
