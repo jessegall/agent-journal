@@ -1,42 +1,48 @@
 <script setup lang="ts">
+import Icon from './Icon.vue';
 import type { IconName } from './Icon.vue';
 import IconButton from './IconButton.vue';
-import ItemCard from './ItemCard.vue';
 
 /**
- * An ItemCard pinned to a chat: padding 8 8 8 12, focusable and labelled "<title>, docked"; Enter on the card opens
- * the item. The trail slot holds what the kind shows (a Status for a task or plan, Answer for a question) and Open and
- * Undock sit at the end. It enters from 8px below over 240 ms, and without motion under reduced motion.
+ * A card pinned to a chat: a --border-3 border, radius --radius-card on --raised, padding 8 8 8 12, focusable and
+ * labelled "<title>, docked"; Enter on the card opens the item. It shows its icon, title and subline, or what the
+ * default slot draws in their place; the trail slot holds what the kind shows (a state, or Answer), and Open, when the
+ * item opens, and Undock sit at the end. It enters from 8px below over 240 ms, and without motion under reduced motion.
  */
-defineProps<{
-    icon: IconName;
-    title: string;
-    subline?: string;
-    meter?: { value: number; label: string };
-}>();
+withDefaults(defineProps<{ title: string; icon?: IconName; subline?: string; canOpen?: boolean }>(), {
+    icon: undefined,
+    subline: undefined,
+    canOpen: true,
+});
 
 defineEmits<{ open: []; undock: [] }>();
 </script>
 
 <template>
-    <ItemCard
+    <div
         role="group"
+        tabindex="0"
         :aria-label="`${title}, docked`"
-        :icon="icon"
-        :title="title"
-        :subline="subline"
-        :meter="meter"
-        padding="sm"
-        interactive
-        class="docked-card-enter"
-        @keydown.enter.self="$emit('open')"
+        class="docked-card-enter relative flex items-center gap-2.5 overflow-hidden rounded-card border border-border-3 bg-raised py-2 pr-2 pl-3 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
+        @keydown.enter.self="canOpen && $emit('open')"
     >
-        <template #trail><slot name="trail" /></template>
-        <template #actions>
-            <IconButton icon="arrow" label="Open" size="sm" @click="$emit('open')" />
-            <IconButton icon="dock" label="Undock" size="sm" @click="$emit('undock')" />
+        <template v-if="icon">
+            <Icon :name="icon" :size="16" class="flex-none text-text-3" />
         </template>
-    </ItemCard>
+        <div class="min-w-0 flex-1">
+            <slot>
+                <b class="block truncate font-medium text-text">{{ title }}</b>
+                <template v-if="subline">
+                    <small class="block text-badge text-text-3">{{ subline }}</small>
+                </template>
+            </slot>
+        </div>
+        <slot name="trail" />
+        <template v-if="canOpen">
+            <IconButton icon="arrow" :label="`Open ${title}`" size="sm" @click="$emit('open')" />
+        </template>
+        <IconButton icon="close" :label="`Undock ${title}`" size="sm" @click="$emit('undock')" />
+    </div>
 </template>
 
 <style scoped>

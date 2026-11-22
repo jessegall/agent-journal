@@ -7,13 +7,16 @@ import { keepStoredJson, readStoredJson } from '@kit/browserStorage';
 import type { DockCardEnvelope } from '@kit/dockCards';
 import { isAnswerCurrent, protectedViewGeneration } from '@kit/protectedView';
 import { newRequestId } from '@kit/requestId';
+import Button from '@kit/Button';
+import Icon from '@kit/Icon';
 import DockCard from './DockCard.vue';
 import { provideDockFolds } from './dockFolds';
 
 /**
- * The sources docked in this conversation, one bordered stack of full-width cards above the composer, newest first.
- * The user folds the whole stack or a part of a card, and the fold is kept by the card's placement and the part's
- * path, so a refresh keeps it. An empty dock takes no space. When a grant may have been taken away it empties at once,
+ * The sources docked in this conversation, a stack of cards above the composer, newest first, under a header that
+ * counts them. With more than one the stack folds to the newest with its edges showing; Show all fans it out and Fold
+ * settles it back. The user folds the whole stack or a part of a card, and the fold is kept by the card's placement
+ * and the part's path, so a refresh keeps it. An empty dock takes no space. When a grant may have been taken away it empties at once,
  * and only an answer asked for after that fills it again.
  */
 const props = defineProps<{
@@ -28,7 +31,9 @@ const STACK = '__stack';
 const folds = ref<Record<string, boolean>>({});
 const asked = ref(false);
 const loaded = ref<DockCardEnvelope[]>([...props.dock.cards]);
-const isOpen = computed(() => folds.value[STACK] ?? true);
+// With more than one card the stack folds to the newest, its edges showing, until Show all fans it out.
+const isOpen = computed(() => folds.value[STACK] ?? false);
+const shown = computed(() => (isOpen.value ? loaded.value : loaded.value.slice(0, 1)));
 
 onMounted(() => {
     folds.value = readStoredJson('local', FOLDS, (decoded) =>
@@ -83,21 +88,25 @@ function undock(card: DockCardEnvelope): void {
 
 <template>
     <template v-if="loaded.length > 0">
-        <section class="flex max-h-[40%] min-h-0 flex-none flex-col rounded-control border border-border-2" aria-label="Docked in this chat">
-            <header class="flex items-center gap-2 border-b border-border px-3 py-1 text-small text-text-3">
-                <button type="button" :aria-expanded="isOpen" class="hover:text-text" @click="fold(STACK, !isOpen)">
-                    {{ loaded.length }} loaded
-                </button>
+        <section class="mb-2 flex max-h-[40%] min-h-0 flex-none flex-col gap-1.5" aria-label="Docked to this chat">
+            <header class="flex items-center gap-2 text-small text-text-3">
+                <Icon name="pin" :size="14" />
+                <span>{{ loaded.length }} docked</span>
                 <span class="flex-1"></span>
                 <button type="button" class="hover:text-text" @click="more">Check for more</button>
+                <template v-if="loaded.length > 1">
+                    <Button size="small" variant="ghost" :aria-expanded="isOpen" @click="fold(STACK, !isOpen)">
+                        {{ isOpen ? 'Fold' : `Show all ${loaded.length}` }}
+                    </Button>
+                </template>
             </header>
-            <template v-if="isOpen">
-                <ul class="min-h-0 overflow-y-auto">
-                    <template v-for="card in loaded" :key="card.placementId">
+            <ul class="flex min-h-0 flex-col gap-1.5 overflow-y-auto">
+                <template v-for="(card, index) in shown" :key="card.placementId">
+                    <li :class="{ 'shadow-[0_4px_0_-1px_var(--raised),0_4px_0_0_var(--border-3),0_8px_0_-2px_var(--raised),0_8px_0_-1px_var(--border-3)] rounded-card': !isOpen && index === 0 && loaded.length > 1 }">
                         <DockCard :card="card" @undock="undock(card)" />
-                    </template>
-                </ul>
-            </template>
+                    </li>
+                </template>
+            </ul>
         </section>
     </template>
 </template>
