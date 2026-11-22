@@ -1284,7 +1284,7 @@ function deskHtml(){let h='';const r={x:0,y:0,w:W(),h:H()};
 /* Pages from the sidebar: plain, built from the same rows, readers and flat tabs as Home. */
 function pageHtml(){const E=showEmpty,xp=PAGES_EXTRA.find(p=>p.id===page);if(xp)return xp.html();
   if(page==='tasks'){const views=`<div class="ftabs" role="tablist">${[['list','List'],['graph','Graph']].map(([k,t])=>`<button class="ftab" role="tab" data-taskview="${k}" data-fk="taskview:${k}" aria-selected="${TASKVIEW===k}">${t}</button>`).join('')}</div>`;
-    if(TASKVIEW==='graph')return `<div class="pghead"><h3>Tasks</h3>${views}<div class="r"><div class="filters" style="border:0;padding:0" role="tablist">${PLANS.map(([n])=>`<button class="ftab" role="tab" data-gplan="${n}" aria-selected="${GRAPH.plan===n}">Plan ${n}</button>`).join('')}</div></div></div><div class="pgread">${graphView(GRAPH.plan)}</div>`;
+    if(TASKVIEW==='graph')return `<div class="pghead"><h3>Tasks</h3>${views}<div class="r"><div class="filters" style="border:0;padding:0" role="tablist">${PLANS.map(([n])=>`<button class="ftab" role="tab" data-gplan="${n}" data-fk="gplan:${n}" aria-selected="${GRAPH.plan===n}">Plan ${n}</button>`).join('')}</div></div></div><div class="pgread">${graphView(GRAPH.plan)}</div>`;
     const rows=TASKS.filter(t=>TASKF==='all'||(TASKF==='open'?['work','you','open','failed'].includes(t[2]):TASKF===t[2]));
     const list=E?`<div class="empty"><b>No tasks yet</b>Tasks appear here when an agent starts work.</div>`:rows.length?rows.map(([n,t,s])=>row('ptask:'+n,`<span class="num">${n}</span><span class="t ${s==='done'?'dim':''}">${t}</span>${ST[s]}`,SELP.tasks===n)).join(''):`<div class="empty"><b>No ${TASKF} tasks</b><button class="btn sm bordered" data-taskf="all">Show all tasks</button></div>`;
     const sel=TASKS.find(t=>t[0]===SELP.tasks);
@@ -1292,20 +1292,20 @@ function pageHtml(){const E=showEmpty,xp=PAGES_EXTRA.find(p=>p.id===page);if(xp)
       `<div class="filters" role="tablist">${[['open','Open'],['testing','Testing'],['done','Done'],['all','All']].map(([k,t])=>`<button class="ftab" role="tab" data-taskf="${k}" data-fk="taskf:${k}" aria-selected="${TASKF===k}">${t}</button>`).join('')}</div>${list}`,
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose a task to read it here.</div>`:taskReader(sel))}
   if(page==='plans'){const sel=PLANS.find(p=>p[0]===SELP.plans);
-    return shell('Plans','',E?'0':'2',splitBtn('plan'),
-      E?`<div class="empty"><b>No plans yet</b>Ask the agent to plan bigger work.</div>`:PLANS.map(([n,t,p])=>row('pplan:'+n,`<span class="num">${n}</span><span class="t">${t}</span><span style="width:80px" class="meter"><i style="width:${p}%"></i></span><span class="meta">${p}%</span>`,SELP.plans===n)).join(''),
+    return shell('Plans','',E?'0':String(PLANS.length),splitBtn('plan'),
+      E?`<div class="empty"><b>No plans yet</b>Ask the agent to plan bigger work.</div>`:PLANS.map(([n,t,p])=>row('pplan:'+n,`<span class="num">${n}</span><span class="t">${t}</span><span style="width:56px;flex:none" class="meter"><i style="width:${p}%"></i></span><span class="meta">${p}%</span>`,SELP.plans===n)).join(''),
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose a plan to see its tasks.</div>`:planReader(sel,true))}
   if(page==='docs'){const sel=DOCS.find(d=>d[0]===SELP.docs);
-    return shell('Documents','',E?'0':String(DOCS.length),`<span class="field" style="width:200px;color:var(--text-4)">${I('search','s14')}&nbsp;Search documents</span>${splitBtn('document')}`,
+    return shell('Documents','',E?'0':String(DOCS.length),`<input class="field" style="width:200px" type="search" placeholder="Search documents" aria-label="Search documents" data-fk="docsearch">${splitBtn('document')}`,
       E?`<div class="empty"><b>No documents yet</b>Designs, plans and notes the agents write appear here.</div>`:DOCS.map(([n,t,m])=>row('pdoc:'+n,`<span class="num">${n}</span><span class="t">${t}</span><span class="meta">${m}</span>`,SELP.docs===n)).join(''),
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose a document to read it.</div>`:docReader(sel))}
   if(page==='accounts'){const sel=ACCOUNTS.find(a=>a[1]===SELP.accounts);
-    return shell('Accounts','',E?'0':'3',splitBtn('account'),
-      E?`<div class="empty"><b>No accounts</b>Add a Claude or Codex account so agents can run.</div>`:ACCOUNTS.map(([p,n,k,s,x,d])=>`<button class="lrow agrid" data-item="pacc:${n}" data-fk="row:pacc:${n}" ${SELP.accounts===n?'aria-selected="true"':''}>${p==='claude'?CLAUDE():CODEX()}<span class="nm2"><span class="t">${n}</span><small>${k}</small></span><span>${d?'<span class="chip faint">Default</span>':''}</span><span class="ucol">${useCell(n)}</span>${s==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':'<span class="st"><span class="dot hollow"></span>Expired</span>'}</button>`).join(''),
+    return shell('Accounts','',E?'0':String(ACCOUNTS.length),splitBtn('account'),
+      E?`<div class="empty"><b>No accounts</b>Add a Claude or Codex account so agents can run.</div>`:ACCOUNTS.map(([p,n,k,s,x,d])=>`<button class="lrow agrid" data-item="pacc:${n}" data-fk="row:pacc:${n}" ${SELP.accounts===n?'aria-selected="true"':''}>${p==='claude'?CLAUDE():CODEX()}<span class="nm2"><span class="t">${n}</span><small>${k}${d?' · default':''}</small></span><span class="ucol">${useCell(n)}</span>${s==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':`<span class="st"><span class="dot hollow"></span>${s==='Needs sign-in'?'Not signed in':'Expired'}</span>`}</button>`).join(''),
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose an account to change it.</div>`:`<div class="reader"><h2>${sel[1]}</h2><div class="meta">${sel[2]}${sel[4]?' · '+sel[4]:''}</div>
         <div class="sgroup" style="margin-top:16px"><div class="srow"><div class="t">Name<small>Shown in the account list and the agent bar.</small></div><input class="field" value="${esc(sel[1])}" aria-label="Name"></div>
         <div class="srow"><div class="t">Make default<small>Agents use this account when no other is named.</small></div><button class="toggle" role="switch" aria-checked="${sel[5]}" aria-label="Make default"></button></div>
-        <div class="srow"><div class="t">Sign-in<small>${sel[3]==='Signed in'?(sel[4]?`Signed in. It ${sel[4].toLowerCase().replace('expires','expires on')}.`:'Signed in with a key that does not expire.'):`Expired. Sign in again so agents can use it.`}</small></div>${sel[3]==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':'<button class="btn sm bordered">Sign in again</button>'}</div></div>${useGroup(sel[1])}</div>`)}
+        <div class="srow"><div class="t">Sign-in<small>${sel[3]==='Signed in'?(sel[4]?`Signed in. It ${sel[4].toLowerCase().replace('expires','expires on')}.`:'Signed in with a key that does not expire.'):sel[3]==='Needs sign-in'?'Not signed in yet. Sign in so agents can use it.':`Expired. Sign in again so agents can use it.`}</small></div>${sel[3]==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':`<button class="btn sm bordered" title="Signing in is not drawn in this design">${sel[3]==='Needs sign-in'?'Sign in':'Sign in again'}</button>`}</div></div>${useGroup(sel[1])}</div>`)}
   /* Settings: one column of setting rows; an invalid value keeps what was typed and says why. */
   return `<div class="pghead"><h3>Settings</h3></div><div style="flex:1;overflow:auto" data-keepscroll="settings"><div class="reader" style="max-width:720px">
     <div class="sec">Appearance</div><div class="sgroup"><div class="srow"><div class="t">Theme<small>Follows the system unless you choose.</small></div><div class="segc" role="group" aria-label="Theme">${['light','dark'].map(t=>`<button aria-pressed="${mode===t}" data-setmode="${t}">${t==='light'?'Light':'Dark'}</button>`).join('')}<button aria-pressed="false">System</button></div></div>
@@ -1315,7 +1315,7 @@ function pageHtml(){const E=showEmpty,xp=PAGES_EXTRA.find(p=>p.id===page);if(xp)
     <div class="sec">Agents</div><div class="sgroup"><div class="srow"><div class="t">Offer a helper's chat when it starts<small>The journal's quiet chip under the agent's message.</small></div><button class="toggle" role="switch" aria-checked="true" aria-label="Offer a helper's chat when it starts"></button></div>
       <div class="srow"><div class="t">Worker limit<small>How many workers may run at once.</small></div><div><input class="field bad" style="width:90px" value="12" aria-label="Worker limit" aria-invalid="true" aria-describedby="wlerr"><div class="errtext" id="wlerr">At most 8.</div></div></div></div>
     <div class="sec">Home</div><div class="sgroup"><div class="srow"><div class="t">Saved layouts<small>${LAYOUTS.map(l=>l.name).join(' · ')}</small></div><button class="btn sm bordered" data-gohome>Open Home</button></div></div></div></div>`}
-function shell(title,views,count,actions,list,reader){return `<div class="pghead"><h3>${title}</h3><span class="sub">${count}</span>${views}<div class="r">${actions}</div></div><div class="pgbody"><div class="pglist" role="listbox" aria-label="${title}">${list}</div><div class="pgread">${reader}</div></div>`}
+function shell(title,views,count,actions,list,reader){return `<div class="pghead"><h3>${title}</h3><span class="sub">${count}</span>${views}<div class="r">${actions}</div></div><div class="pgbody"><div class="pglist" role="region" aria-label="${title}">${list}</div><div class="pgread">${reader}</div></div>`}
 
 /* =====================================================================================================================
    Menus, the add popover, the palette
@@ -1517,7 +1517,7 @@ function wireGraph(){$$('[data-gwrap]').forEach(w=>w.onclick=ev=>{if(!ev.target.
   $$('[data-gnode]').forEach(g=>{g.onclick=()=>{const n=+g.dataset.gnode;GRAPH.sel=GRAPH.sel===n?null:n;render();focusFk('gnode:'+n)};g.onkeydown=ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();const n=+g.dataset.gnode;GRAPH.sel=GRAPH.sel===n?null:n;render();focusFk('gnode:'+n)}}})}
 const WIRE_EXTRA=[];
 function wire(){const on=(s,fn)=>$$(s).forEach(fn),app=$('#app');
-  on('[data-page]',b=>b.onclick=()=>{page=b.dataset.page;menu=null;render()});
+  on('[data-page]',b=>b.onclick=()=>{page=b.dataset.page;menu=null;FORM=null;GUIDE=null;CREATEFROM=null;render()});
   on('[data-bell]',b=>b.onclick=ev=>{ev.stopPropagation();openMenu(NOTES.length?[{head:'Notifications'},...NOTES.map(n=>({label:n.t,sub:n.sub,ic:n.read?'tick':'bell',run:()=>{n.read=true;n.run&&n.run();return false}})),{sep:1},{label:'Mark all as read',ic:'tick',disabled:!unread(),run:()=>NOTES.forEach(n=>n.read=true)}]:[{label:'Nothing needs you',disabled:true}],b)});
   on('[data-rail]',b=>b.onclick=toggleRail);
   on('[data-scheme]',b=>b.onclick=()=>openMenu([{head:'Color scheme'},{label:'Light',tick:mode==='light',run:()=>setMode('light')},{label:'Dark',tick:mode==='dark',run:()=>setMode('dark')}],b));
@@ -1740,12 +1740,12 @@ function seqView(id){const s=SEQS.find(x=>x.id===id),runs=RUNS.filter(r=>r.seq==
         <div class="rule"><b>Runs when</b> ${esc(st.when)} · <b>Done when</b> ${esc(st.done)}${st.wait?` · <b>Waits for</b> ${esc(st.wait)}`:''}</div>
         ${here.map(r=>`<span class="here">${r.state==='waits'?'<span class="dot hollow"></span>':'<span class="spin"></span>'}Run ${r.id} · ${esc(r.by)}${r.task?' · task '+r.task:''} · since ${r.since}</span>`).join(' ')}</div></li>`}).join('')}</ol>`}
 /* The editor: steps in order, each with its guard (runs when) and its check (done when). Drag or use the arrows. */
-function seqEditor(s){const E=SEQEDIT;return `<div class="seqhead"><div style="display:flex;align-items:center;gap:8px"><h2>Edit · ${esc(s.name)}</h2><span style="flex:1"></span><button class="btn sm" data-seqcancel>Cancel</button><button class="btn sm primary" data-seqsave>Save</button></div>
+function seqEditor(s){const E=SEQEDIT;return `<div class="seqhead"><div style="display:flex;align-items:center;gap:8px"><h2>Edit · ${esc(s.name)}</h2><span style="flex:1"></span><button class="btn sm" data-seqcancel data-fk="seqcancel">Cancel</button><button class="btn sm primary" data-seqsave data-fk="seqsave">Save</button></div>
   <div class="meta" style="color:var(--text-3);font-size:var(--text-small)">Each step runs when its guard holds and is done when its check passes. Drag a step by its handle to move it.</div></div>
   <div style="padding:0 20px 20px" data-seqlist>${E.steps.map((st,i)=>`<div class="sedit" data-sstep="${i}"><span class="handle" data-shandle="${i}" title="Drag to move" aria-hidden="true">${I('list','s14')}</span>
     <div><input value="${esc(st.t)}" data-sfield="${i}:t" aria-label="Step ${i+1}" placeholder="What the agent does"><div class="lab">Runs when</div><input value="${esc(st.when)}" data-sfield="${i}:when" aria-label="Step ${i+1}: runs when" placeholder="e.g. the tests pass">
       <div class="lab">Done when</div><input value="${esc(st.done)}" data-sfield="${i}:done" aria-label="Step ${i+1}: done when" placeholder="e.g. a reviewer approves"></div>
-    <div class="ops"><button class="ib" data-smove="${i}:-1" aria-label="Move step ${i+1} up" ${i===0?'disabled':''} style="transform:rotate(180deg)">${I('caret','s14')}</button><button class="ib" data-smove="${i}:1" aria-label="Move step ${i+1} down" ${i===E.steps.length-1?'disabled':''}>${I('caret','s14')}</button><button class="ib" data-sdel="${i}" aria-label="Remove step ${i+1}">${I('close','s14')}</button></div></div>`).join('')}
+    <div class="ops"><button class="ib" data-smove="${i}:-1" data-fk="smove:${i}:-1" aria-label="Move step ${i+1} up" ${i===0?'disabled':''} style="transform:rotate(180deg)">${I('caret','s14')}</button><button class="ib" data-smove="${i}:1" data-fk="smove:${i}:1" aria-label="Move step ${i+1} down" ${i===E.steps.length-1?'disabled':''}>${I('caret','s14')}</button><button class="ib" data-sdel="${i}" aria-label="Remove step ${i+1}">${I('close','s14')}</button></div></div>`).join('')}
   <button class="btn sm bordered" style="margin-top:12px" data-sadd data-fk="sadd">${I('plus','s14')}Add a step</button></div>`}
 PAGES_EXTRA.push({id:'sequences',t:'Sequences',ic:'seq',line:'its list, a sequence with its steps and where each run is, and Edit steps to add, reorder and change them.',
   html:()=>shell('Sequences','',showEmpty?'0':String(SEQS.length),splitBtn('sequence'),seqList(false),showEmpty?`<div class="empty"><b>Nothing selected</b>Choose a sequence to see its steps.</div>`:seqView(SEQSEL))});
@@ -1848,19 +1848,26 @@ LOADERS.push(()=>{freshRuns();freshProcs();DOCKED={};FOLD={};SEQEDIT=null;SEQRUN
 WIRE_EXTRA.push(on=>{
   on('[data-seqopen]',b=>b.onclick=()=>{const [s,r]=b.dataset.seqopen.split(':').map(Number);SEQSEL=s;SEQRUN=r;openWin('seqv:'+s,{dock:'right'})});
   on('[data-seqrun]',b=>b.onclick=()=>{SEQRUN=+b.dataset.seqrun;render();focusFk('seqrun:'+SEQRUN)});
-  on('[data-seqedit]',b=>b.onclick=()=>{const s=SEQS.find(x=>x.id===+b.dataset.seqedit);SEQEDIT={id:s.id,steps:clone(s.steps)};render()});
-  on('[data-seqcancel]',b=>b.onclick=()=>{SEQEDIT=null;render()});
-  on('[data-seqsave]',b=>b.onclick=()=>{const s=SEQS.find(x=>x.id===SEQEDIT.id),before=clone(s.steps);s.steps=SEQEDIT.steps.filter(x=>x.t.trim());SEQEDIT=null;render();toast(`Saved ${s.steps.length} steps`,()=>{s.steps=before;render()})});
+  on('[data-seqedit]',b=>b.onclick=()=>{const s=SEQS.find(x=>x.id===+b.dataset.seqedit);SEQEDIT={id:s.id,steps:clone(s.steps)};render();focusFk('seqcancel');requestAnimationFrame(()=>{const f=$('[data-sfield="0:t"]');if(f)f.focus()})});
+  /* Cancel on a sequence that was never saved takes it away again, and the list's first sequence is shown. */
+  on('[data-seqcancel]',b=>b.onclick=()=>{const E=SEQEDIT;SEQEDIT=null;if(E&&E.fresh){const i=SEQS.findIndex(s=>s.id===E.id);if(i>=0)SEQS.splice(i,1);SEQSEL=SEQS[0]&&SEQS[0].id}render();focusFk(SEQSEL?'row:seq:'+SEQSEL:'create:sequence')});
+  on('[data-seqsave]',b=>b.onclick=()=>{const s=SEQS.find(x=>x.id===SEQEDIT.id),before=clone(s.steps);s.steps=SEQEDIT.steps.filter(x=>x.t.trim());SEQEDIT=null;render();focusFk('seqedit:'+s.id);toast(`Saved ${s.steps.length} steps`,()=>{s.steps=before;render()})});
   on('[data-sfield]',i=>i.oninput=()=>{const [n,f]=i.dataset.sfield.split(':');SEQEDIT.steps[+n][f]=i.value});
-  on('[data-smove]',b=>b.onclick=()=>{const [n,d]=b.dataset.smove.split(':').map(Number),st=SEQEDIT.steps,j=n+d;if(j<0||j>=st.length)return;[st[n],st[j]]=[st[j],st[n]];render();focusFk('sadd')});
+  on('[data-smove]',b=>b.onclick=()=>{const [n,d]=b.dataset.smove.split(':').map(Number),st=SEQEDIT.steps,j=n+d;if(j<0||j>=st.length)return;[st[n],st[j]]=[st[j],st[n]];render();
+    /* Focus follows the step it moved; at the top or bottom it takes the other arrow. */
+    const edge=j===0||j===st.length-1;focusFk(`smove:${j}:${edge?-d:d}`)});
   on('[data-sdel]',b=>b.onclick=()=>{SEQEDIT.steps.splice(+b.dataset.sdel,1);render();focusFk('sadd')});
   on('[data-sadd]',b=>b.onclick=()=>{SEQEDIT.steps.push({t:'',when:'',done:''});render();const ins=$$('[data-sfield$=":t"]');if(ins.length)ins[ins.length-1].focus()});
   /* Dragging a step by its handle moves it; the others make room as it passes. */
   on('[data-shandle]',h=>h.onpointerdown=e=>{const list=h.closest('[data-seqlist]'),from=+h.dataset.shandle,el=h.closest('.sedit');el.classList.add('lifting');let to=from;
     pointerDrag(e,(ev,dx,dy)=>{el.style.transform=`translateY(${dy}px)`;const rows=$$('.sedit',list);to=rows.findIndex(r=>{const b=r.getBoundingClientRect();return ev.clientY<b.top+b.height/2});if(to<0)to=rows.length-1;if(to>from)to=Math.max(from,to-1)},
       ()=>{el.classList.remove('lifting');el.style.transform='';const st=SEQEDIT.steps,[m]=st.splice(from,1);st.splice(to,0,m);render()})});
-  on('[data-newseq]',b=>b.onclick=()=>{const id=SEQS.length+10;SEQS.push({id,name:'New sequence',about:'Steps an agent follows.',steps:[{t:'',when:'',done:''}]});SEQSEL=id;SEQEDIT={id,steps:[{t:'',when:'',done:''}]};showEmpty=false;page='sequences';render()});
-  on('#main .pglist [data-item^="seq:"]',r=>r.onclick=()=>{SEQSEL=+r.dataset.item.split(':')[1];SEQEDIT=null;render();focusFk('row:'+r.dataset.item)});
+  on('[data-newseq]',b=>b.onclick=()=>{const id=SEQS.length+10;SEQS.push({id,name:'New sequence',about:'Steps an agent follows.',steps:[{t:'',when:'',done:''}]});SEQSEL=id;SEQEDIT={id,steps:[{t:'',when:'',done:''}],fresh:true};showEmpty=false;page='sequences';render()});
+  /* Choosing another sequence while editing keeps the edits a toast away: Undo returns to them. A new one never saved goes. */
+  on('#main .pglist [data-item^="seq:"]',r=>r.onclick=()=>{const to=+r.dataset.item.split(':')[1],E=SEQEDIT;if(E&&E.id===to)return;
+    let gone=null;if(E&&E.fresh){const i=SEQS.findIndex(s=>s.id===E.id);if(i>=0)gone=SEQS.splice(i,1)[0]}
+    SEQSEL=to;SEQEDIT=null;render();focusFk('row:'+r.dataset.item);
+    if(E)toast(gone?'Dropped the new sequence':'Left the edits unsaved',()=>{if(gone)SEQS.push(gone);SEQSEL=E.id;SEQEDIT=E;render()})});
   on('#desk [data-item^="seq:"]',r=>{r.ondblclick=()=>openWin('seqv:'+r.dataset.item.split(':')[1],{dock:'right'});r.onclick=r.ondblclick});
   on('[data-proctoggle]',b=>b.onclick=()=>{const p=PROCS[b.dataset.proctoggle];p.open=!p.open;render()});
   on('[data-procstop]',b=>b.onclick=()=>{const p=PROCS[b.dataset.procstop];p.state='failed';p.lines.push('<f>Stopped by you</f>','exit 130');p.open=true;render();if(p.on==='p1')afterTests(false)});
@@ -1958,19 +1965,24 @@ const CREATE={
       return {name:a[0],steps:[{t:'Do the work',when:start,done:'the work is committed'},{t:'Run the checks',when:'the work is committed',done:'every check passes'},...(appr?[{t:'Ask for approval',when:'the checks pass',done:`${who} approves`,wait:who}]:[]),{t:'Finish and tell the chat',when:appr?`${who} approves`:'the checks pass',done:'the result is in the chat'}]}}}};
 let FORM=null,GUIDE=null;
 function splitBtn(kind){const k=CREATE[kind];return `<span class="splitb"><button class="btn sm sb-main" data-create="${kind}" data-fk="create:${kind}" title="${k.plain}">${I('plus','s14')}${k.title}</button><button class="btn sm more" data-createmenu="${kind}" data-fk="createmenu:${kind}" aria-haspopup="menu" aria-label="More ways to create a ${k.noun}" title="More ways">${I('caret','s14')}</button></span>`}
-function createPlain(kind,values,drafted){menu=null;if(kind==='sequence'){newSequence(values,drafted);return}FORM={kind,values:{...(values||{})},drafted:!!drafted,focus:true};GUIDE=null;render()}
+function createPlain(kind,values,drafted){noteOpener();menu=null;if(kind==='sequence'){newSequence(values,drafted);return}FORM={kind,values:{...(values||{})},drafted:!!drafted,focus:true};GUIDE=null;render()}
 function newSequence(d,drafted){const id=Math.max(...SEQS.map(s=>s.id))+1,steps=d&&d.steps?d.steps:[{t:'',when:'',done:''}];SEQS.push({id,name:d&&d.name||'New sequence',about:'Steps an agent follows.',steps:clone(steps)});
-  SEQSEL=id;SEQEDIT={id,steps:clone(steps),drafted:!!drafted};GUIDE=null;showEmpty=false;page='sequences';render()}
-function startGuide(kind){GUIDE={kind,answers:[],text:'',drafting:false,draft:null,focus:true};FORM=null;menu=null;render()}
-function answerGuide(t){if(!t||!t.trim())return;const g=GUIDE,k=CREATE[g.kind];g.answers.push(t.trim());g.text='';g.focus=true;
+  SEQSEL=id;SEQEDIT={id,steps:clone(steps),drafted:!!drafted,fresh:true};GUIDE=null;showEmpty=false;page='sequences';render()}
+function startGuide(kind){noteOpener();GUIDE={kind,answers:[],text:'',drafting:false,draft:null,focus:true};FORM=null;menu=null;render()}
+function answerGuide(t,typed){if(!t||!t.trim())return;const g=GUIDE,k=CREATE[g.kind];g.answers.push(t.trim());g.text='';g.focus=typed?'text':true;
   if(g.answers.length>=k.qs.length){g.drafting=true;render();setTimeout(()=>{if(GUIDE!==g)return;g.drafting=false;g.draft=k.draft(g.answers);g.focus=true;render()},900)}else render()}
-function closeCreate(){const t=(FORM||GUIDE)&&('createmenu:'+(FORM||GUIDE).kind);FORM=null;GUIDE=null;render();if(t)focusFk(t)}
+/* The control that opened the dialog gets focus back when it closes. */
+let CREATEFROM=null;
+function noteOpener(){if(FORM||GUIDE)return;const a=document.activeElement,el=a&&a.closest&&a.closest('[data-fk]');CREATEFROM=el?el.dataset.fk:null}
+function closeCreate(){const t=(FORM||GUIDE)&&(CREATEFROM||'createmenu:'+(FORM||GUIDE).kind);FORM=null;GUIDE=null;CREATEFROM=null;render();if(t)focusFk(t)}
 function makeFromForm(){const f=FORM,v=f.values,kind=f.kind;let undo,done;
   if(kind==='task'){const n=Math.max(...TASKS.map(t=>t[0]))+1;TASKS.push([n,v.title||'Untitled task','open','—',+String(v.plan||'').replace(/\D/g,'')||56]);SELP.tasks=n;TASKF='all';TASKVIEW='list';page='tasks';done=`Created task ${n}`;undo=()=>{TASKS.splice(TASKS.findIndex(t=>t[0]===n),1);render()}}
   if(kind==='plan'){const n=Math.max(...PLANS.map(p=>p[0]))+1;PLANS.push([n,v.title||'Untitled plan',0,[]]);SELP.plans=n;PLANTAB='phases';page='plans';done=`Created plan ${n}`;undo=()=>{PLANS.splice(PLANS.findIndex(p=>p[0]===n),1);render()}}
   if(kind==='document'){const n=Math.max(...DOCS.map(d=>d[0]))+1;DOCS.unshift([n,v.title||'Untitled document','just now',v.abstract||'',1]);DOCTEXT[n]=v.body||'';SELP.docs=n;DOCTAB='text';page='docs';done=`Created doc ${n}`;undo=()=>{DOCS.splice(DOCS.findIndex(d=>d[0]===n),1);render()}}
   if(kind==='account'){const nm=v.name||'New account';ACCOUNTS.push([/codex/i.test(v.program||'')?'codex':'claude',nm,`${/codex/i.test(v.program||'')?'Codex':'Claude Code'} ${(v.kind||'subscription').toLowerCase()}`,'Needs sign-in','',false]);SELP.accounts=nm;page='accounts';done=`Added ${nm}`;undo=()=>{ACCOUNTS.splice(ACCOUNTS.findIndex(a=>a[1]===nm),1);render()}}
-  FORM=null;showEmpty=false;render();toast(done,undo)}
+  const fk={task:'row:ptask:'+SELP.tasks,plan:'row:pplan:'+SELP.plans,document:'row:pdoc:'+SELP.docs,account:'row:pacc:'+SELP.accounts}[kind];
+  if(kind==='plan'){PLANTASK=null;PLANBACK=null}
+  FORM=null;GUIDE=null;CREATEFROM=null;showEmpty=false;render();toast(done,undo);focusFk(fk)}
 function draftSummary(kind,d){if(kind==='sequence')return `<b>${esc(d.name)}</b><ol>${d.steps.map(s=>`<li>${esc(s.t)}<small>Runs when ${esc(s.when)} · done when ${esc(s.done)}</small></li>`).join('')}</ol>`;
   return CREATE[kind].fields.map(([n,l])=>d[n]?`<div><small>${l}</small>${esc(d[n]).replace(/\n/g,'<br>')}</div>`:'').join('')}
 AFTER_RENDER.push(()=>{if(!FORM&&!GUIDE)return;const host=$('#main');
@@ -1992,15 +2004,20 @@ AFTER_RENDER.push(()=>{if(!FORM&&!GUIDE)return;const host=$('#main');
       <div class="cbody"><div class="gchat" aria-live="polite">${past}${now}</div></div>
       <footer>${n?`<button class="btn sm" data-gback>${I('reply','s14')}Change the last answer</button>`:`<button class="btn sm" data-gplain>${k.plain} instead</button>`}<span class="gap"></span><button class="btn sm" data-cclose>Cancel</button>${g.draft?`<button class="btn sm primary" data-gopen>${g.kind==='sequence'?'Open in the editor':'Open the draft'}</button>`:''}</footer></div>`);
     $$('[data-gans]',host).forEach(b=>b.onclick=()=>answerGuide(b.dataset.gans));
-    const ti=$('[data-gtext]',host);if(ti){ti.oninput=()=>{g.text=ti.value};ti.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();answerGuide(ti.value)}}}
-    const gs=$('[data-gsend]',host);if(gs)gs.onclick=()=>answerGuide(g.text);
+    const ti=$('[data-gtext]',host);if(ti){ti.oninput=()=>{g.text=ti.value};ti.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();answerGuide(ti.value,true)}}}
+    const gs=$('[data-gsend]',host);if(gs)gs.onclick=()=>answerGuide(g.text,true);
     const gb=$('[data-gback]',host);if(gb)gb.onclick=()=>{g.answers.pop();g.draft=null;g.drafting=false;g.focus=true;render()};
     const gp=$('[data-gplain]',host);if(gp)gp.onclick=()=>createPlain(g.kind);
     const go=$('[data-gopen]',host);if(go)go.onclick=()=>createPlain(g.kind,g.draft,true);
     const body=$('#cdlg .cbody');body.scrollTop=body.scrollHeight;
-    if(g.focus){g.focus=false;requestAnimationFrame(()=>{const f=$('#cdlg [data-gopen]')||$('#cdlg .gchip');if(f)f.focus()})}}
+    if(g.focus){const want=g.focus;g.focus=false;requestAnimationFrame(()=>{const f=$('#cdlg [data-gopen]')||(want==='text'&&$('#cdlg [data-gtext]'))||$('#cdlg .gchip')||$('#cdlg');if(f)f.focus()})}}
   $$('[data-cclose]',host).forEach(b=>b.onclick=closeCreate);
-  $('#cdlg').onkeydown=ev=>{if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();closeCreate()}}});
+  const dlg=$('#cdlg');dlg.setAttribute('aria-modal','true');dlg.tabIndex=-1;
+  /* Enter in a one-line field makes the item, and Command or Control with Enter does it from a text area. */
+  if(FORM)$$('[data-ff]',dlg).forEach(i=>i.addEventListener('keydown',ev=>{if(ev.key==='Enter'&&(i.tagName==='INPUT'||ev.metaKey||ev.ctrlKey)){ev.preventDefault();makeFromForm()}}));
+  dlg.onkeydown=ev=>{if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();closeCreate();return}
+    if(ev.key!=='Tab')return;const f=$$('button:not([disabled]),input,textarea',dlg);if(!f.length)return;const first=f[0],last=f[f.length-1];
+    if(ev.shiftKey&&(document.activeElement===first||document.activeElement===dlg)){ev.preventDefault();last.focus()}else if(!ev.shiftKey&&document.activeElement===last){ev.preventDefault();first.focus()}}});
 /* =====================================================================================================================
    What an agent looked at: under its message, one quiet line ("Looked at 6 sources") opens the context it gathered:
    searches with what they found, memories, documents and files read. Closed by default, one line.
@@ -2055,7 +2072,7 @@ planReader=function(p,withGraph){if(!withGraph||!PLANTASK)return basePlanReader(
 WIRE_EXTRA.push(on=>{if(page!=='plans')return;
   on('.pgread [data-gotask]',b=>b.onclick=ev=>{ev.preventDefault();ev.stopPropagation();const r=$('.pgread');if(!PLANTASK)PLANBACK={scroll:r?r.scrollTop:0,tab:PLANTAB};PLANTASK=+b.dataset.gotask;render();const r2=$('.pgread');if(r2)r2.scrollTop=0;focusFk('planback')});
   on('[data-planback]',b=>b.onclick=()=>{const back=PLANBACK||{scroll:0,tab:'phases'};PLANTASK=null;PLANTAB=back.tab;PLANBACK=null;render();const r=$('.pgread');if(r)r.scrollTop=back.scroll;focusFk('plantab:'+PLANTAB)});
-  on('#main .pglist [data-item^="pplan:"]',r=>{const prev=r.onclick;r.onclick=ev=>{PLANTASK=null;PLANBACK=null;prev&&prev(ev)}})});
+  on('#main .pglist [data-item^="pplan:"]',r=>{const prev=r.onclick;r.onclick=ev=>{PLANTASK=null;PLANBACK=null;GRAPH.sel=null;GRAPH.suggest=false;prev&&prev(ev)}})});
 /* When a task is chosen, the graph scrolls so its whole lit chain is in view, when it fits. */
 AFTER_RENDER.push(()=>{if(!GRAPH.sel)return;const w=$('[data-gwrap]');if(!w)return;const lit=$$('.node:not(.fade)',w);if(!lit.length)return;const wr=w.getBoundingClientRect();
   let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;lit.forEach(n=>{const r=n.getBoundingClientRect();x0=Math.min(x0,r.left-wr.left+w.scrollLeft);x1=Math.max(x1,r.right-wr.left+w.scrollLeft);y0=Math.min(y0,r.top-wr.top+w.scrollTop);y1=Math.max(y1,r.bottom-wr.top+w.scrollTop)});
