@@ -81,7 +81,11 @@ const paragraphs = computed(() =>
                 </template>
             </section>
             <template v-if="reader.review">
-                <PlanReviewPanel :review="reader.review" :number="reader.card.number" />
+                <PlanReviewPanel
+                    :review="reader.review"
+                    :number="reader.card.number"
+                    :state="reader.card.state"
+                />
             </template>
             <template v-if="reader.card.phase === undefined">
                 <p class="mt-4 text-small text-text-3">No phases yet</p>

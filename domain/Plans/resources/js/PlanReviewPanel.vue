@@ -3,7 +3,8 @@ import { nextTick, ref, useTemplateRef } from 'vue';
 import Button from '@kit/Button';
 import { keyedPost } from '@kit/keyedPost';
 import { approveReview, requestChanges, requestReview, withdrawReview } from '@generated/routes/plans';
-import type { PlanReviewData } from '@generated/types/plans';
+import type { PlanReviewData, PlanState } from '@generated/types/plans';
+import PlanEndDialog from './PlanEndDialog.vue';
 import { useHostProp } from '@/framework/hostProp';
 
 /**
@@ -13,7 +14,10 @@ import { useHostProp } from '@/framework/hostProp';
  * the edition before. One post at a time under its request key, reloading only the window's prop; a lost answer shows
  * Outcome unknown and Check plan, which sends the same request under the same key again only when chosen.
  */
-const props = defineProps<{ review: PlanReviewData; number: string }>();
+const props = defineProps<{ review: PlanReviewData; number: string; state: PlanState }>();
+
+const ending = ref<'cancel' | 'finish' | null>(null);
+const notice = ref('');
 
 const pane = useHostProp();
 const reasonField = useTemplateRef<HTMLTextAreaElement>('reasonField');
@@ -136,7 +140,16 @@ function decidedText(decidedById: string, decidedByType: string, decidedAt: stri
                 <Button size="small" variant="bordered" @click="post(lost.url, lost.data, lost.key)">Check plan</Button>
             </p>
         </template>
+        <template v-if="notice !== ''">
+            <p role="alert" class="text-small text-text-2">{{ notice }}</p>
+        </template>
         <div class="flex flex-wrap gap-2">
+            <template v-if="review.mayFinish">
+                <Button size="small" variant="primary" @click="ending = 'finish'">Finish plan</Button>
+            </template>
+            <template v-if="review.mayCancel">
+                <Button size="small" variant="danger" @click="ending = 'cancel'">Cancel plan</Button>
+            </template>
             <template v-if="review.mayRequest">
                 <Button size="small" variant="bordered" :pending="pending" @click="post(requestReview.url({ plan: number }), {})"
                     >Request review</Button
@@ -170,6 +183,16 @@ function decidedText(decidedById: string, decidedByType: string, decidedAt: stri
             <div>
                 <Button size="small" :pending="pending" @click="askForChanges">Request changes</Button>
             </div>
+        </template>
+        <template v-if="ending !== null">
+            <PlanEndDialog
+                :change="ending"
+                :number="number"
+                :revision="review.revision"
+                :state="state"
+                @close="ending = null"
+                @refused="(message) => { notice = message; ending = null; }"
+            />
         </template>
     </section>
 </template>
