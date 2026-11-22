@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import ActionsMenu from '@kit/ActionsMenu';
-import ActionsMenuItem from '@kit/ActionsMenuItem';
+import Menu from '@kit/Menu';
+import MenuItem from '@kit/MenuItem';
+import MenuItemLabel from '@kit/MenuItemLabel';
 import Icon from '@kit/Icon';
 import StateBadge from '@kit/StateBadge';
 import type { TaskRowData } from '@generated/types/tasks';
@@ -61,11 +62,13 @@ const linkName = computed(
                 </span>
             </span>
         </Link>
-        <ActionsMenu :label="`Actions for task ${task.number}`" class="shrink-0">
-            <ActionsMenuItem :href="href" preserve-scroll>
-                <Icon name="arrow" :size="12" />
-                <span>Open task</span>
-            </ActionsMenuItem>
-        </ActionsMenu>
+        <Menu :label="`Actions for task ${task.number}`" class="shrink-0">
+            <MenuItem :href="href" preserve-scroll>
+                <template #leading>
+                    <Icon name="arrow" :size="14" />
+                </template>
+                <MenuItemLabel>Open task</MenuItemLabel>
+            </MenuItem>
+        </Menu>
     </div>
 </template>

@@ -2,7 +2,7 @@
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 import Button from '@kit/Button';
 import { keyedPost } from '@kit/keyedPost';
-import Modal from '@kit/Modal';
+import Dialog from '@kit/Dialog';
 import { useWindowReload } from '@kit/useWindowQuery';
 import { addWait, removeWait, waiveWait } from '@generated/routes/tasks';
 import type { TaskWaitChoiceData } from '@generated/types/tasks';
@@ -97,7 +97,7 @@ function checkTask(): void {
 </script>
 
 <template>
-    <Modal :is-open="true" :title="title" @close="emit('close')">
+    <Dialog :open="true" :title="title" @close="emit('close')">
         <div class="flex flex-col gap-3">
             <p class="text-body text-text-2">{{ effect }}</p>
             <template v-if="change === 'add'">
@@ -160,5 +160,5 @@ function checkTask(): void {
                 >
             </template>
         </template>
-    </Modal>
+    </Dialog>
 </template>
