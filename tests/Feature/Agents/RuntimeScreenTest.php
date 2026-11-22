@@ -7,12 +7,14 @@ namespace Tests\Feature\Agents;
 use App\Agents\Data\ScreenFrameData;
 use App\Agents\Enums\ScreenBuffer;
 use App\Agents\Support\RuntimeScreen;
+use App\Agents\Support\ScreenRegistration;
 use Carbon\CarbonImmutable;
 use Tests\TestCase;
 
 /**
- * A host's frame hydrates from the JSON the Go host sends, and the cache keeps only each runtime's latest frame: a
- * late frame is ignored, a restarted host starts afresh, and a minute without frames leaves nothing.
+ * A host's frame hydrates from the JSON the Go host sends, and the cache keeps only each runtime's latest frame under
+ * its identity: a late frame is ignored, a restarted host starts afresh and its old epoch is retired, a reader of
+ * another registration sees nothing, and a minute without frames leaves nothing.
  */
 final class RuntimeScreenTest extends TestCase
 {
@@ -33,48 +35,103 @@ final class RuntimeScreenTest extends TestCase
         $this->assertArrayHasKey('tooLarge', $frame->toArray());
     }
 
-    public function test_put_then_latest_gives_the_frame_and_a_late_frame_changes_nothing(): void
+    public function test_a_shield_frame_hydrates_its_privacy_and_an_older_host_frame_is_public(): void
     {
-        $screen = $this->app->make(RuntimeScreen::class);
-        $now = CarbonImmutable::parse('2026-11-19 12:00:00');
+        $shield = ScreenFrameData::from([
+            ...$this->payload('epoch-1', 3),
+            'rows' => [],
+            'shielded' => true,
+            'privacy_revision' => 2,
+        ]);
+        $older = $this->frame('epoch-1', 3);
 
-        $screen->put('runtime-1', $this->frame('epoch-1', 5), $now);
-        $screen->put('runtime-1', $this->frame('epoch-1', 4), $now->addSecond());
-
-        $latest = $screen->latest('runtime-1');
-        $this->assertSame(5, $latest?->frame->sequence);
-        $this->assertTrue($latest->receivedAt->equalTo($now));
-        $this->assertNull($screen->latest('runtime-2'));
+        $this->assertSame([true, 2, []], [$shield->shielded, $shield->privacyRevision, $shield->rows]);
+        $this->assertSame([false, 0], [$older->shielded, $older->privacyRevision]);
     }
 
-    public function test_a_frame_of_a_new_epoch_replaces_the_stored_one(): void
+    public function test_a_frame_hydrates_its_stream_and_liveness_proof(): void
+    {
+        $frame = ScreenFrameData::from([
+            ...$this->payload('epoch-1', 1),
+            'stream' => 'stream-1',
+            'proof' => 4,
+            'expires_at' => '2026-11-19T12:00:15.123456789Z',
+        ]);
+        $older = $this->frame('epoch-1', 1);
+
+        $this->assertSame(
+            ['stream-1', 4, '2026-11-19T12:00:15.123456789Z'],
+            [$frame->stream, $frame->proof, $frame->expiresAt],
+        );
+        $this->assertSame([null, 0, null], [$older->stream, $older->proof, $older->expiresAt]);
+    }
+
+    public function test_admit_then_latest_gives_the_frame_and_a_late_frame_changes_nothing(): void
     {
         $screen = $this->app->make(RuntimeScreen::class);
         $now = CarbonImmutable::parse('2026-11-19 12:00:00');
+        $registration = new ScreenRegistration('runtime-1', 'host-1', 1);
 
-        $screen->put('runtime-1', $this->frame('epoch-1', 50), $now);
-        $screen->put('runtime-1', $this->frame('epoch-2', 1), $now);
+        $this->assertTrue($screen->admit($registration, $this->frame('epoch-1', 5), $now));
+        $this->assertFalse($screen->admit($registration, $this->frame('epoch-1', 4), $now->addSecond()));
 
+        $latest = $screen->latest($registration);
+        $this->assertSame(5, $latest?->frame->sequence);
+        $this->assertTrue($latest->receivedAt->equalTo($now));
+        $this->assertNull($screen->latest(new ScreenRegistration('runtime-2', 'host-1', 1)));
+    }
+
+    public function test_a_frame_of_a_new_epoch_replaces_the_stored_one_and_the_old_epoch_is_retired(): void
+    {
+        $screen = $this->app->make(RuntimeScreen::class);
+        $now = CarbonImmutable::parse('2026-11-19 12:00:00');
+        $registration = new ScreenRegistration('runtime-1', 'host-1', 1);
+
+        $screen->admit($registration, $this->frame('epoch-1', 50), $now);
+        $screen->admit($registration, $this->frame('epoch-2', 1), $now);
+
+        $this->assertFalse($screen->admit($registration, $this->frame('epoch-1', 51), $now));
         $this->assertSame(['epoch-2', 1], [
-            $screen->latest('runtime-1')?->frame->epoch,
-            $screen->latest('runtime-1')?->frame->sequence,
+            $screen->latest($registration)?->frame->epoch,
+            $screen->latest($registration)?->frame->sequence,
         ]);
+    }
+
+    public function test_a_reader_expecting_another_generation_or_host_sees_nothing(): void
+    {
+        $screen = $this->app->make(RuntimeScreen::class);
+        $registration = new ScreenRegistration('runtime-1', 'host-1', 1);
+        $screen->admit($registration, $this->frame('epoch-1', 1), CarbonImmutable::now());
+
+        $this->assertNull($screen->latest(new ScreenRegistration('runtime-1', 'host-1', 2)));
+        $this->assertNull($screen->latest(new ScreenRegistration('runtime-1', 'host-2', 1)));
     }
 
     public function test_a_minute_without_frames_leaves_nothing(): void
     {
         $screen = $this->app->make(RuntimeScreen::class);
-        $screen->put('runtime-1', $this->frame('epoch-1', 1), CarbonImmutable::now());
+        $registration = new ScreenRegistration('runtime-1', 'host-1', 1);
+        $screen->admit($registration, $this->frame('epoch-1', 1), CarbonImmutable::now());
 
         $this->travel(RuntimeScreen::KEEP_SECONDS + 1)->seconds();
 
-        $this->assertNull($screen->latest('runtime-1'));
+        $this->assertNull($screen->latest($registration));
     }
 
     /**
      * A frame as the Go host encodes it: snake case keys, and default style keys left out.
      */
     private function frame(string $epoch, int $sequence): ScreenFrameData
+    {
+        return ScreenFrameData::from($this->payload($epoch, $sequence));
+    }
+
+    /**
+     * The JSON an older Go host sends for a frame, decoded, without the privacy fields.
+     *
+     * @return array<string, mixed>
+     */
+    private function payload(string $epoch, int $sequence): array
     {
         $json = <<<'JSON'
         {
@@ -97,6 +154,6 @@ final class RuntimeScreenTest extends TestCase
         $payload = json_decode(str_replace('EPOCH', $epoch, $json), true, flags: JSON_THROW_ON_ERROR);
         $payload['sequence'] = $sequence;
 
-        return ScreenFrameData::from($payload);
+        return $payload;
     }
 }

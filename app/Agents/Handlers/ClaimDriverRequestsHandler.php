@@ -11,10 +11,12 @@ use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
+use App\Agents\Models\Host;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\PendingWorkSources;
 use App\Agents\Support\PresentationPrompts;
+use App\Agents\Support\PrivateValues;
 use App\Agents\Values\ClaimedRequest;
 use App\Contracts\CommandHandler;
 use Carbon\CarbonImmutable;
@@ -30,10 +32,13 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
     public function __construct(
         private PendingWorkSources $pendingWork,
         private PresentationPrompts $presentation,
+        private PrivateValues $privateValues,
     ) {}
 
     public function handle(ClaimDriverRequests $command): ClaimedRequests
     {
+        Host::query()->whereKey($command->hostId)->sole()->advertiseBrowserInput($command->browserInput);
+
         /**
          * @var Collection<string, AgentRuntime> $runtimes
          */
@@ -85,7 +90,10 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
             }
 
             $request->stage($now);
-            $claimed[] = $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null);
+            $claimed[] = $this->privateValues->carriedBy(
+                $request,
+                $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null),
+            );
         }
 
         for ($round = 0; count($claimed) < $command->limit && $pending->isNotEmpty(); $round++) {

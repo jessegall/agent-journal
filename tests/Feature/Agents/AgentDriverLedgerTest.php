@@ -66,6 +66,7 @@ use App\Agents\Support\NativeTurns;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\PendingWorkSources;
 use App\Agents\Support\StartGrant;
+use App\Agents\Values\BrowserInputCapabilities;
 use App\Agents\Values\DriverReceipt;
 use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\ExecutionPolicy;
@@ -223,7 +224,7 @@ final class AgentDriverLedgerTest extends TestCase
             new ReportRuntimeActivity($host->hostId, $opened->runtimeId, RuntimeActivity::Running, HoldReason::None, 1),
         );
         $this->asOwner(new WakeAgent($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
-        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10, BrowserInputCapabilities::none()));
         $this->asOwner(new WakeAgent($this->agentIdOf($opened), $opened->sessionId, 'wake-2'));
         $turns = $this->app->make(NativeTurns::class);
 
@@ -235,7 +236,7 @@ final class AgentDriverLedgerTest extends TestCase
             [$wake->wake_acknowledged, $wake->wake_requested, $wake->progress],
         );
 
-        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10, BrowserInputCapabilities::none()));
         $turns->acknowledgeWake($opened->sessionId, CarbonImmutable::now()->addSecond());
 
         $wake->refresh();
@@ -250,7 +251,7 @@ final class AgentDriverLedgerTest extends TestCase
             new ReportRuntimeActivity($host->hostId, $opened->runtimeId, RuntimeActivity::Running, HoldReason::None, 1),
         );
         $this->asOwner(new WakeAgent($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
-        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10, BrowserInputCapabilities::none()));
 
         $this->app->make(NativeTurns::class)->acknowledgeWake($opened->sessionId, CarbonImmutable::now()->subMinute());
 
@@ -268,7 +269,7 @@ final class AgentDriverLedgerTest extends TestCase
         );
         $this->asOwner(new WakeAgent($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
 
-        $claimed = $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $claimed = $this->asSystem(new ClaimDriverRequests($host->hostId, 10, BrowserInputCapabilities::none()));
 
         $wake = DriverRequest::query()->where('operation', DriverOperation::Wake)->sole();
         $this->assertSame([], $claimed->requests);
@@ -285,7 +286,7 @@ final class AgentDriverLedgerTest extends TestCase
         );
         $this->asOwner(new WakeAgent($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
 
-        $claimed = $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $claimed = $this->asSystem(new ClaimDriverRequests($host->hostId, 10, BrowserInputCapabilities::none()));
 
         $this->assertCount(1, $claimed->requests);
         $this->assertSame(
@@ -318,7 +319,7 @@ final class AgentDriverLedgerTest extends TestCase
         [$host, $opened] = $this->openRuntime(firstMessage: 'Mine');
         [, $foreign] = $this->openRuntime(firstMessage: 'Not mine');
 
-        $claimed = $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $claimed = $this->asSystem(new ClaimDriverRequests($host->hostId, 10, BrowserInputCapabilities::none()));
 
         $this->assertInstanceOf(ClaimedRequests::class, $claimed);
         $this->assertSame(
@@ -634,7 +635,7 @@ final class AgentDriverLedgerTest extends TestCase
         $agentId = $this->agentIdOf($opened);
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
         $stop = $this->asOwner(new StopAgent($agentId, $opened->sessionId, 'stop-1', $runtime->process_generation));
-        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10, BrowserInputCapabilities::none()));
         $this->reportProgress($host->hostId, $stop->requestId, RequestProgress::Applied);
 
         $this->assertSame('Stopping', $this->statusOf($agentId)->label);
@@ -687,7 +688,7 @@ final class AgentDriverLedgerTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $unavailable = $this->deliver($opened, 'host-restarted', 'Hello');
         $failed = $this->deliver($opened, 'host-refused', 'Hello again');
-        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10, BrowserInputCapabilities::none()));
         $this->reportProgress($host->hostId, $unavailable->requestId, RequestProgress::Unavailable);
         $this->reportProgress($host->hostId, $failed->requestId, RequestProgress::Failed);
 
@@ -708,7 +709,7 @@ final class AgentDriverLedgerTest extends TestCase
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
         $unavailable = $this->deliver($opened, 'entry-gone', 'Pick GPT-6');
         $unconfirmed = $this->deliver($opened, 'only-highlighted', 'Pick GPT-6 again');
-        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10, BrowserInputCapabilities::none()));
 
         $this->hostCall($host, '/host/reports/activity', [
             'runtime_id' => $runtime->id,
@@ -789,7 +790,7 @@ final class AgentDriverLedgerTest extends TestCase
     {
         [$host, $opened] = $this->openRuntime();
         $receipt = $this->deliver($opened, 'fails-once', 'Hello');
-        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10, BrowserInputCapabilities::none()));
         $request = DriverRequest::query()->findOrFail($receipt->requestId);
         $oldAttempt = $request->attempt_version;
         $this->asSystem(new ReportRequestProgress(
@@ -824,7 +825,7 @@ final class AgentDriverLedgerTest extends TestCase
     {
         [$host, $opened] = $this->openRuntime();
         $receipt = $this->deliver($opened, 'uncertain', 'Hello');
-        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10, BrowserInputCapabilities::none()));
         $request = DriverRequest::query()->findOrFail($receipt->requestId);
         $this->asSystem(new ReportRequestProgress(
             $host->hostId,
@@ -894,7 +895,7 @@ final class AgentDriverLedgerTest extends TestCase
         [$host, $opened] = $this->openRuntime();
         $agentId = $this->agentIdOf($opened);
         $effort = $this->asOwner(new ChangeAgentEffort($agentId, $opened->sessionId, 'effort-1', 'high'));
-        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10, BrowserInputCapabilities::none()));
         $request = DriverRequest::query()->findOrFail($effort->requestId);
         $attempt = $request->attempt_version;
         $this->asSystem(new ReportRequestProgress(

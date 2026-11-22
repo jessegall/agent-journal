@@ -101,6 +101,38 @@ func (layout Layout) MenuEntries(snapshot contracts.Snapshot) (MenuEntries, bool
 	return MenuEntries{}, false
 }
 
+// FrameMenu is a recognized menu as a public frame shows it: its family, its option labels, the highlighted one
+// (-1 when the highlight cannot be told), and the screen generation it was read at, which a choice must name.
+type FrameMenu struct {
+	Family      string   `json:"family"`
+	Labels      []string `json:"labels"`
+	Highlighted int      `json:"highlighted"`
+	Revision    uint64   `json:"revision"`
+}
+
+// frameMenu is the recognized menu of the snapshot for a public frame; found is false on a screen without one.
+func (layout Layout) frameMenu(snapshot contracts.Snapshot, revision uint64) (FrameMenu, bool) {
+	for _, family := range layout.Menus {
+		reader, readable := family.Options.(EntryReader)
+		if !readable || !family.matches(snapshot) {
+			continue
+		}
+		entries, found := reader.Entries(snapshot)
+		if !found {
+			return FrameMenu{}, false
+		}
+
+		return FrameMenu{
+			Family:      family.Name,
+			Labels:      entries.Labels,
+			Highlighted: entries.Highlighted,
+			Revision:    revision,
+		}, true
+	}
+
+	return FrameMenu{}, false
+}
+
 // View is what a key script reads besides the screen's kind: its rows, and the entries of the menu on it.
 type View struct {
 	layout Layout

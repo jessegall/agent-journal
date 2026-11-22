@@ -59,4 +59,30 @@ final readonly class ClaimedRequest
             $this->processGeneration,
         );
     }
+
+    /**
+     * The same request carrying another message, as a private input carries its value to the host only.
+     */
+    public function withMessage(string $message): self
+    {
+        return new self(
+            $this->runtimeId,
+            $this->requestId,
+            $this->sequence,
+            $this->attempt,
+            $this->operation,
+            $message,
+            $this->model,
+            $this->effort,
+            $this->script,
+            $this->scriptVersion,
+            $this->scriptParameters,
+            $this->scriptStep,
+            $this->navigationRequestId,
+            $this->navigationRound,
+            $this->sessionId,
+            $this->processStartId,
+            $this->processGeneration,
+        );
+    }
 }

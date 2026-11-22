@@ -16,6 +16,18 @@ type Recorder struct {
 	started time.Time
 	now     func() time.Time
 	fixture Fixture
+	// suppressed is a recorder a capture barrier stopped: it keeps no bytes, lengths or times.
+	suppressed bool
+}
+
+// Suppress stops the recorder for private entry: nothing of what follows is kept, not even its length or time.
+func (recorder *Recorder) Suppress() bool {
+	recorder.mutex.Lock()
+	defer recorder.mutex.Unlock()
+
+	recorder.suppressed = true
+
+	return true
 }
 
 // NewRecorder starts a recording at the clock's current time.
@@ -31,6 +43,10 @@ func (recorder *Recorder) Output(stream string, bytes []byte) {
 	recorder.mutex.Lock()
 	defer recorder.mutex.Unlock()
 
+	if recorder.suppressed {
+		return
+	}
+
 	redacted := emailAddress.ReplaceAllFunc(append([]byte(nil), bytes...), func(address []byte) []byte {
 		return []byte("<redacted>")
 	})
@@ -41,6 +57,10 @@ func (recorder *Recorder) Output(stream string, bytes []byte) {
 func (recorder *Recorder) Input(bytes []byte, secret bool) {
 	recorder.mutex.Lock()
 	defer recorder.mutex.Unlock()
+
+	if recorder.suppressed {
+		return
+	}
 
 	event := InputEvent{Offset: recorder.offset(), Secret: secret, Length: len(bytes)}
 	if !secret {
@@ -54,6 +74,10 @@ func (recorder *Recorder) Input(bytes []byte, secret bool) {
 func (recorder *Recorder) Resize(geometry Geometry) {
 	recorder.mutex.Lock()
 	defer recorder.mutex.Unlock()
+
+	if recorder.suppressed {
+		return
+	}
 
 	recorder.fixture.Resizes = append(recorder.fixture.Resizes, ResizeEvent{Offset: recorder.offset(), Geometry: geometry})
 }

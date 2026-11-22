@@ -16,6 +16,8 @@ enum TerminalViewRefusal: string
     case NotRunning = 'not_running';
     case TooManyViews = 'too_many_views';
     case UnsupportedInterval = 'interval';
+    case UnknownInterest = 'unknown_interest';
+    case InterestEnded = 'interest_ended';
 
     /**
      * The code a caller reads from the refusal, which also gives its HTTP status.
@@ -27,6 +29,8 @@ enum TerminalViewRefusal: string
             self::NotRunning => RefusalCode::StateBlocked,
             self::ProcessDriver, self::UnsupportedInterval => RefusalCode::InvalidInput,
             self::TooManyViews => RefusalCode::Busy,
+            self::UnknownInterest => RefusalCode::RecordUnavailable,
+            self::InterestEnded => RefusalCode::StateBlocked,
         };
     }
 }

@@ -79,10 +79,15 @@ func (opener runtimeOpener) containedTerminalRuntime(
 	if err != nil {
 		return nil, err
 	}
+	instance, err := opener.containers.InstanceID(ctx, container.Name)
+	if err != nil {
+		return nil, errors.Join(err, container.Stop(ctx, manifest.Network))
+	}
 
 	opened, err := opener.socket.Open(host.AttachRequest{
 		RuntimeID: runtimeID, Driver: profile.Driver(), Command: attach, Folder: opener.stateFolder,
 		Env: []string{"PATH=" + os.Getenv("PATH")}, Rows: defaultRows, Columns: defaultColumns,
+		ContainerInstance: instance,
 	})
 	if err != nil {
 		return nil, errors.Join(err, container.Stop(ctx, manifest.Network))

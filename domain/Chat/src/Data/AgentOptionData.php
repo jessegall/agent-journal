@@ -48,6 +48,9 @@ final class AgentOptionData extends Data
         public readonly AgentStatusData $status,
         // The driver the live session runs, which a switch names as its source; none without a session.
         public readonly string|null $sessionDriver,
+        // Whether the current runtime waits at a driver menu only its user can answer, such as folder trust or
+        // first-run setup; the notice it raises names this session and generation.
+        public readonly bool $needsAttention,
     ) {}
 
     public static function fromAgentOption(AgentOption $agent): self
@@ -71,6 +74,7 @@ final class AgentOptionData extends Data
             'startRefusal' => $agent->startRefusal,
             'status' => $agent->status,
             'sessionDriver' => $agent->sessionDriver,
+            'needsAttention' => $agent->hold->needsAttentionInDriver(),
         ]);
     }
 }

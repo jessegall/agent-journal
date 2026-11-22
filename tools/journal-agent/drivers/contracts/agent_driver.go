@@ -74,6 +74,36 @@ type KeyScriptRequest struct {
 	ResumeStep *int
 }
 
+// BrowserControl is one browser writer's operation the journal relays to the program's input gate: the operation,
+// the take and grant it names, whether a take renews its grant, the process generation it was meant for, and for an
+// input its sequence, the prompt revision the writer saw, its kind (text, key or paste), the text, Enter, the named
+// key and a draft choice.
+type BrowserControl struct {
+	Request        RequestIdentity
+	Operation      string
+	TakeID         string
+	GrantID        string
+	Renew          bool
+	Generation     uint64
+	Sequence       uint64
+	PromptRevision uint64
+	Text           string
+	Enter          bool
+	Choice         string
+	InputKind      string
+	Key            string
+	Rows           int
+	Columns        int
+	SubmissionID   string
+	// Value is a private submission's value: written once, never logged or kept.
+	Value string
+}
+
+// BrowserControlled carries out browser writers' operations; a driver without a terminal does not.
+type BrowserControlled interface {
+	ControlFromBrowser(ctx context.Context, control BrowserControl) (OperationResult, error)
+}
+
 // KeyScriptRunner runs registered key scripts; a driver with no terminal answers with OutcomeTerminalRequired.
 type KeyScriptRunner interface {
 	RunKeyScript(ctx context.Context, request KeyScriptRequest) (OperationResult, error)
@@ -89,6 +119,8 @@ const (
 	ProgressDeliveryUncertain Progress = "delivery_uncertain"
 	ProgressFailed            Progress = "failed"
 	ProgressUnavailable       Progress = "unavailable"
+	// ProgressCancelled is a request a browser take settled before it was submitted: nothing of it reached the program.
+	ProgressCancelled Progress = "cancelled"
 )
 
 // Outcome is how an applied or failed request ended.

@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
+use App\Agents\Support\HeldFrame;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * A viewer asks for the frame of the agent's terminal after the one they hold, named by its epoch and sequence;
- * the first ask holds none.
+ * A viewer asks for the frame of the agent's terminal after the one they hold, named by its epoch, stream and
+ * sequence, through one read interest; the first ask holds none.
  */
 final class TerminalFrameRequest extends FormRequest
 {
@@ -20,17 +21,27 @@ final class TerminalFrameRequest extends FormRequest
         return [
             'epoch' => ['sometimes', 'string', 'max:64'],
             'after' => ['sometimes', 'integer', 'min:0'],
+            'stream' => ['sometimes', 'string', 'max:64'],
+            'interest' => ['sometimes', 'string', 'max:64'],
         ];
     }
 
-    public function heldEpoch(): string
+    /**
+     * The frame the view holds, read through the interest the request names.
+     */
+    public function heldFrame(): HeldFrame
     {
-        return $this->string('epoch')->toString();
+        return new HeldFrame(
+            $this->readInterestId(),
+            $this->string('epoch')->toString(),
+            $this->string('stream')->toString(),
+            $this->integer('after'),
+        );
     }
 
-    public function heldSequence(): int
+    private function readInterestId(): string
     {
-        return $this->integer('after');
+        return $this->string('interest')->toString();
     }
 
     public function agentId(): string

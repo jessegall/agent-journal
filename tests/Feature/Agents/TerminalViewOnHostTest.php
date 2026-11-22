@@ -13,6 +13,7 @@ use App\Engine\Support\EngineListenerSet;
 use App\Engine\Support\EngineTickedDelivery;
 use App\Hooks\Ticks\ElapsedTime;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Engine\RunsEnginePasses;
 use Tests\Support\OpensTerminalRuntimes;
@@ -54,7 +55,7 @@ final class TerminalViewOnHostTest extends TestCase
     {
         $host = $this->enrolledHost();
         $runtime = $this->runtimeOn($host->hostId);
-        TerminalView::create(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now());
+        TerminalView::create(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now(), (string) Str::ulid());
         $watched = $this->app->make(WatchedRuntimes::class);
 
         $response = $this->hostCall($host, '/host/claim?limit=5&wait=10&watched_version=0');
@@ -95,9 +96,31 @@ final class TerminalViewOnHostTest extends TestCase
         $lapsing = $this->runtimeOn('host-1');
         $stopping = $this->runtimeOn('host-2');
         $kept = $this->runtimeOn('host-3');
-        $lapsed = TerminalView::create(TestActors::userIdentity(1), $lapsing, 500, CarbonImmutable::now()->subMinute());
-        $ofStopped = TerminalView::create(TestActors::userIdentity(1), $stopping, 500, CarbonImmutable::now());
-        $live = TerminalView::create(TestActors::userIdentity(1), $kept, 500, CarbonImmutable::now());
+
+        $lapsed = TerminalView::create(
+            TestActors::userIdentity(1),
+            $lapsing,
+            500,
+            CarbonImmutable::now()->subMinute(),
+            (string) Str::ulid(),
+        );
+
+        $ofStopped = TerminalView::create(
+            TestActors::userIdentity(1),
+            $stopping,
+            500,
+            CarbonImmutable::now(),
+            (string) Str::ulid(),
+        );
+
+        $live = TerminalView::create(
+            TestActors::userIdentity(1),
+            $kept,
+            500,
+            CarbonImmutable::now(),
+            (string) Str::ulid(),
+        );
+
         $this->app->make(DriverRequestEndings::class)->closeAfterExit($stopping);
         $versions = [$watched->version('host-1'), $watched->version('host-2'), $watched->version('host-3')];
 
@@ -120,9 +143,25 @@ final class TerminalViewOnHostTest extends TestCase
     public function test_an_engine_pass_deletes_views_ended_more_than_a_day_ago_and_keeps_fresh_ones(): void
     {
         $runtime = $this->runtimeOn('host-1');
-        $old = TerminalView::create(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now()->subDays(2));
+
+        $old = TerminalView::create(
+            TestActors::userIdentity(1),
+            $runtime,
+            500,
+            CarbonImmutable::now()->subDays(2),
+            (string) Str::ulid(),
+        );
+
         $old->close(CarbonImmutable::now()->subDays(2));
-        $fresh = TerminalView::create(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now()->subHour());
+
+        $fresh = TerminalView::create(
+            TestActors::userIdentity(1),
+            $runtime,
+            500,
+            CarbonImmutable::now()->subHour(),
+            (string) Str::ulid(),
+        );
+
         $fresh->close(CarbonImmutable::now()->subHour());
 
         $this->pass(fn () => $this->app->make(EngineTickedDelivery::class)->deliver(

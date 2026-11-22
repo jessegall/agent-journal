@@ -13,10 +13,15 @@ import (
 	"journal-agent/client"
 	"journal-agent/screen"
 	"journal-agent/screen/contracts"
+	inputs "journal-agent/terminal"
 )
 
 // signOfLife is how long an unchanged screen goes without a frame before one is sent anyway.
 const signOfLife = 10 * time.Second
+
+// proofLifetime is how long a frame proves the host alive after its capture: the sign of life's ten seconds, one
+// second for the browser's poll and four for transit and clock uncertainty.
+const proofLifetime = signOfLife + time.Second + 4*time.Second
 
 // failureLogInterval is how often a runtime's failed reports are logged at most.
 const failureLogInterval = time.Minute
@@ -26,9 +31,27 @@ type ScreenReporter interface {
 	ReportScreen(ctx context.Context, runtimeID string, frame screen.Frame) error
 }
 
-// ScreenReaders finds the screen of a runtime's program while the host runs it.
+// ScreenReaders finds the screen of a runtime's program, with the layout it is classified by, while the host runs it.
 type ScreenReaders interface {
-	ReaderFor(runtimeID string) (*screen.EmulatorReader, bool)
+	ScreenFor(runtimeID string) (RuntimeScreen, bool)
+	// LostConnection is whether a runtime with no screen lost its contained attachment while its container runs.
+	LostConnection(runtimeID string) bool
+}
+
+// RuntimeScreen is the screen of a program the host runs, the layout of its driver, which says whether the screen
+// may leave the host, the input gate, which says who holds the input, and the capture barrier, which shields the
+// screen while it is closed.
+type RuntimeScreen struct {
+	Reader  *screen.EmulatorReader
+	Layout  screen.Layout
+	Gate    *inputs.InputGate
+	Barrier *inputs.CaptureBarrier
+	// Incarnation rises each time a verified public redraw replaced the screen after private entry; a sender that
+	// sees it change starts a new stream.
+	Incarnation uint64
+	// Attachment and ContainerInstance name this attachment and the verified container it attaches to, if any.
+	Attachment        string
+	ContainerInstance string
 }
 
 // ScreenWatcher sends the screens of the runtimes the journal says are watched, each at its own interval, only when
@@ -43,6 +66,15 @@ type ScreenWatcher struct {
 	ctx        context.Context
 	mutex      sync.Mutex
 	watching   map[string]*screenWatch
+	// privacy is each runtime's privacy state, kept across its senders, so a sender started over never lowers it.
+	privacy map[string]*screenPrivacy
+}
+
+// screenPrivacy is whether a runtime's last captured screen was shielded and the revision it is at: the revision goes
+// up each time the screen turns from public to shielded.
+type screenPrivacy struct {
+	shielded bool
+	revision uint64
 }
 
 // screenWatch is one watched runtime's sender: its interval and how to stop it.
@@ -54,19 +86,30 @@ type screenWatch struct {
 // NewScreenWatcher makes a watcher whose senders end with ctx; its epoch is new for every host process, so frames of
 // a restarted host are never taken for old ones.
 func NewScreenWatcher(ctx context.Context, reporter ScreenReporter, readers ScreenReaders) (*ScreenWatcher, error) {
-	random := make([]byte, 8)
-	if _, err := rand.Read(random); err != nil {
+	epoch, err := randomName()
+	if err != nil {
 		return nil, err
 	}
 	return &ScreenWatcher{
 		reporter:   reporter,
 		readers:    readers,
 		now:        time.Now,
-		epoch:      hex.EncodeToString(random),
+		epoch:      epoch,
 		signOfLife: signOfLife,
 		ctx:        ctx,
 		watching:   map[string]*screenWatch{},
+		privacy:    map[string]*screenPrivacy{},
 	}, nil
+}
+
+// randomName is a new random name of sixteen hex digits, for an epoch or a stream.
+func randomName() (string, error) {
+	random := make([]byte, 8)
+	if _, err := rand.Read(random); err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(random), nil
 }
 
 // Set makes the watched list the one the journal sent: a runtime that left it stops, a new one starts, and one whose
@@ -89,15 +132,39 @@ func (watcher *ScreenWatcher) Set(watched []client.Watch) {
 		if _, running := watcher.watching[runtimeID]; running || interval <= 0 {
 			continue
 		}
+		stream, err := randomName()
+		if err != nil {
+			log.Printf("the screen of runtime %s has no stream: %v", runtimeID, err)
+			continue
+		}
 		ctx, cancel := context.WithCancel(watcher.ctx)
 		watch := &screenWatch{interval: interval, cancel: cancel}
 		watcher.watching[runtimeID] = watch
-		sender := &screenSender{watcher: watcher, runtimeID: runtimeID}
+		sender := &screenSender{watcher: watcher, runtimeID: runtimeID, stream: stream}
 		go func() {
 			sender.run(ctx, interval)
 			watcher.stopped(runtimeID, watch)
 		}()
 	}
+}
+
+// privacyRevision records whether the runtime's screen is shielded now and gives the revision it is at, raising it
+// when the screen turned from public to shielded.
+func (watcher *ScreenWatcher) privacyRevision(runtimeID string, shielded bool) uint64 {
+	watcher.mutex.Lock()
+	defer watcher.mutex.Unlock()
+
+	privacy, known := watcher.privacy[runtimeID]
+	if !known {
+		privacy = &screenPrivacy{}
+		watcher.privacy[runtimeID] = privacy
+	}
+	if shielded && !privacy.shielded {
+		privacy.revision++
+	}
+	privacy.shielded = shielded
+
+	return privacy.revision
 }
 
 // stopped drops a sender that ended by itself, so the next list that names its runtime starts it again.
@@ -120,11 +187,16 @@ func (capture screenCapture) isSameAs(other screenCapture) bool {
 	return capture.reader == other.reader && capture.version == other.version
 }
 
-// screenSender is one runtime's capture loop and what it last sent.
+// screenSender is one runtime's capture loop and what it last sent. Each start of a sender is a new stream, whose
+// sequence starts over at one, and every report it tries carries a newer proof.
 type screenSender struct {
 	watcher   *ScreenWatcher
 	runtimeID string
+	stream    string
 	sequence  uint64
+	proof     uint64
+	// incarnation is the screen incarnation the stream reads; a new one starts a new stream.
+	incarnation uint64
 	// lastCapture is the screen version last read and from which reader; nil until a capture reads, and after a
 	// failed send, so the next round reads again.
 	lastCapture  *screenCapture
@@ -162,6 +234,8 @@ func (sender *screenSender) tick(ctx context.Context) bool {
 	}
 
 	frame.Sequence = sender.sequence + 1
+	sender.proof++
+	frame.Stream, frame.Proof, frame.ExpiresAt = sender.stream, sender.proof, frame.Captured.Add(proofLifetime)
 	err := sender.watcher.reporter.ReportScreen(ctx, sender.runtimeID, frame)
 	var refused client.ScreenRefused
 	if errors.As(err, &refused) {
@@ -180,16 +254,31 @@ func (sender *screenSender) tick(ctx context.Context) bool {
 
 // capture reads the screen unless it is unchanged since the last capture and no sign of life is due; it says whether
 // it read anything. A runtime whose program the host does not run, or whose screen cannot be read, gives a marker
-// frame.
+// frame. A screen its layout does not find exportable gives a shield frame, read from the same snapshot it was judged
+// by, and every frame carries the runtime's privacy revision.
 func (sender *screenSender) capture(now time.Time) (screen.Frame, bool) {
-	reader, found := sender.watcher.readers.ReaderFor(sender.runtimeID)
+	frame, readable := sender.read(now)
+	if !readable {
+		return frame, false
+	}
+	frame.PrivacyRevision = sender.watcher.privacyRevision(sender.runtimeID, frame.Shielded)
+
+	return frame, true
+}
+
+// read reads the screen, or the marker that says why there is none, before its privacy revision is set.
+func (sender *screenSender) read(now time.Time) (screen.Frame, bool) {
+	runtimeScreen, found := sender.watcher.readers.ScreenFor(sender.runtimeID)
 	if !found {
 		sender.lastCapture = nil
 		marker := sender.marker(now)
-		marker.NoTerminal = true
+		marker.ConnectionLost = sender.watcher.readers.LostConnection(sender.runtimeID)
+		marker.NoTerminal = !marker.ConnectionLost
 		return marker, true
 	}
 
+	sender.followIncarnation(runtimeScreen.Incarnation)
+	reader := runtimeScreen.Reader
 	if reader.Unreadable() {
 		sender.lastCapture = nil
 		marker := sender.marker(now)
@@ -205,7 +294,37 @@ func (sender *screenSender) capture(now time.Time) (screen.Frame, bool) {
 	}
 	sender.lastCapture = &capture
 
-	return reader.Frame(sender.watcher.epoch, sender.sequence+1, now).Bounded(screen.FrameLimit), true
+	frame := sender.export(runtimeScreen, now)
+	frame.Attachment, frame.ContainerInstance = runtimeScreen.Attachment, runtimeScreen.ContainerInstance
+	grant := runtimeScreen.Gate.GrantState()
+	frame.InputOwner, frame.TakePending = string(grant.Owner), grant.PendingTake != ""
+	frame.PromptRevision = grant.PromptRevision
+
+	return frame.Bounded(screen.FrameLimit), true
+}
+
+// followIncarnation starts a new stream, its sequence from one, when the screen was replaced after private entry, so
+// no frame of the old screen is taken for the new one.
+func (sender *screenSender) followIncarnation(incarnation uint64) {
+	if incarnation == sender.incarnation {
+		return
+	}
+	stream, err := randomName()
+	if err != nil {
+		return
+	}
+	sender.stream, sender.sequence, sender.proof, sender.incarnation = stream, 0, 0, incarnation
+	sender.lastCapture, sender.sentAny = nil, false
+}
+
+// export reads the frame to send: the shield while the capture barrier is closed, otherwise the screen as its layout
+// lets it leave.
+func (sender *screenSender) export(runtimeScreen RuntimeScreen, now time.Time) screen.Frame {
+	if runtimeScreen.Barrier.IsClosed() {
+		return runtimeScreen.Reader.ShieldFrame(sender.watcher.epoch, sender.sequence+1, now)
+	}
+
+	return runtimeScreen.Reader.ExportFrame(runtimeScreen.Layout, sender.watcher.epoch, sender.sequence+1, now)
 }
 
 // marker is a frame with no screen in it, which says why by the flag the caller sets.
@@ -229,5 +348,7 @@ func (sender *screenSender) logFailure(now time.Time, err error) {
 func sameScreen(first, second screen.Frame) bool {
 	first.Epoch, first.Sequence, first.Captured = "", 0, time.Time{}
 	second.Epoch, second.Sequence, second.Captured = "", 0, time.Time{}
+	first.Stream, first.Proof, first.ExpiresAt = "", 0, time.Time{}
+	second.Stream, second.Proof, second.ExpiresAt = "", 0, time.Time{}
 	return reflect.DeepEqual(first, second)
 }

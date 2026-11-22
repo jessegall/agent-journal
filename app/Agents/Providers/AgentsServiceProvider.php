@@ -65,6 +65,7 @@ use App\Agents\Models\NavigationRequest;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Models\Support\ProcessStartScope;
 use App\Agents\Policies\AgentMaintenancePolicy;
+use App\Agents\Policies\AgentTerminalControlPolicy;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Resolvers\AgentAuthorityRecords;
 use App\Agents\Resolvers\AgentLabels;
@@ -320,6 +321,8 @@ final class AgentsServiceProvider extends ServiceProvider
             AgentMaintenancePolicy::class,
             [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Execute],
         ));
+
+        $policies->register('Core', new PolicyDefinition(AgentTerminalControlPolicy::class, [AccessType::Edit]));
 
         $systemEntries->allow('account reconciliation', AgentMaintenancePolicy::class);
         $systemEntries->allow('main agent install', AgentPolicy::class);

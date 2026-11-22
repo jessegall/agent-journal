@@ -8,9 +8,11 @@ use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\HostProtocolVersion;
+use App\Agents\Enums\TerminalInputKind;
 use App\Agents\Exceptions\HostArrangementRefused;
 use App\Agents\Exceptions\HostCredentialRejected;
 use App\Agents\Exceptions\HostUnavailable;
+use App\Agents\Values\BrowserInputCapabilities;
 use App\Agents\Values\HostCombination;
 use App\Agents\Values\ProtectionReport;
 use App\Agents\Values\StartProposal;
@@ -37,6 +39,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $protocol_version
  * @property list<array{driver: string, build: string, arrangement: string, placement: string, variant: string}> $combinations
  * @property CarbonImmutable|null $revoked_at
+ * @property bool $browser_input
+ * @property bool $browser_keys
+ * @property bool $browser_paste
+ * @property bool $browser_resize
+ * @property bool $browser_private
  */
 #[Fillable(['installation_name', 'credential_hash', 'start_roots', 'arrangement'])]
 final class Host extends Model implements ReadableModel
@@ -57,6 +64,11 @@ final class Host extends Model implements ReadableModel
             'start_roots' => 'array',
             'protection' => 'array',
             'combinations' => 'array',
+            'browser_input' => 'boolean',
+            'browser_keys' => 'boolean',
+            'browser_paste' => 'boolean',
+            'browser_resize' => 'boolean',
+            'browser_private' => 'boolean',
             'revoked_at' => 'immutable_datetime',
         ];
     }
@@ -179,6 +191,24 @@ final class Host extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * Keeps which browser input the host's latest claim says it carries out on its terminals.
+     */
+    public function advertiseBrowserInput(BrowserInputCapabilities $capabilities): void
+    {
+        $this->browser_input = $capabilities->text;
+        $this->browser_keys = $capabilities->keys;
+        $this->browser_paste = $capabilities->paste;
+        $this->browser_resize = $capabilities->resize;
+        $this->browser_private = $capabilities->privateEntry;
+
+        if (! $this->isDirty(['browser_input', 'browser_keys', 'browser_paste', 'browser_resize', 'browser_private'])) {
+            return;
+        }
+
+        $this->save();
+    }
+
     public function revokeAt(CarbonImmutable $time): void
     {
         $this->revoked_at = $time;
@@ -193,6 +223,30 @@ final class Host extends Model implements ReadableModel
     public function runsPlacement(ExecutionModeType $placement): bool
     {
         return $this->arrangement->isContained() === ($placement === ExecutionModeType::RequiredContainer);
+    }
+
+    /**
+     * Whether a browser may take control of this host's terminals; a host that never said so is watch-only.
+     */
+    public function carriesOutBrowserInput(): bool
+    {
+        return $this->browser_input;
+    }
+
+    /**
+     * Whether the host carries out this kind of browser input: text, named keys or pastes.
+     */
+    public function carriesOutBrowserInputOf(TerminalInputKind $kind): bool
+    {
+        $capabilities = new BrowserInputCapabilities(
+            $this->browser_input,
+            $this->browser_keys,
+            $this->browser_paste,
+            $this->browser_resize,
+            $this->browser_private,
+        );
+
+        return $capabilities->carriesOut($kind);
     }
 
     public function speaksCurrentProtocol(): bool

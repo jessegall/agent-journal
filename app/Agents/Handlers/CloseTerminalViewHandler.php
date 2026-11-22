@@ -21,6 +21,6 @@ final readonly class CloseTerminalViewHandler implements CommandHandler
     {
         $viewer = ActorIdentity::of($command->dispatchedBy());
 
-        $this->views->close($command->agentId, $viewer, $this->clock->now());
+        $this->views->close($command->agentId, $viewer, $command->readInterestId, $this->clock->now());
     }
 }

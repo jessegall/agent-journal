@@ -7,6 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
@@ -25,7 +26,7 @@ final class TerminalViewTest extends TestCase
         $now = CarbonImmutable::parse('2026-11-19 12:00:00');
         $runtime = $this->runtime();
 
-        $view = TerminalView::create(TestActors::userIdentity(1), $runtime, 500, $now);
+        $view = TerminalView::create(TestActors::userIdentity(1), $runtime, 500, $now, (string) Str::ulid());
 
         $stored = TerminalView::query()->ownedBy(TestActors::userIdentity(1))->findOrFail($view->id);
         $this->assertSame($runtime->id, $stored->agent_runtime_id);
@@ -40,7 +41,7 @@ final class TerminalViewTest extends TestCase
     public function test_renewing_moves_the_expiry_and_closing_ends_the_view(): void
     {
         $now = CarbonImmutable::parse('2026-11-19 12:00:00');
-        $view = TerminalView::create(TestActors::userIdentity(1), $this->runtime(), 1000, $now);
+        $view = TerminalView::create(TestActors::userIdentity(1), $this->runtime(), 1000, $now, (string) Str::ulid());
 
         $view->renew($now->addSeconds(10));
         $this->assertTrue($view->refresh()->expires_at->equalTo($now->addSeconds(40)));
@@ -54,9 +55,9 @@ final class TerminalViewTest extends TestCase
     {
         $now = CarbonImmutable::parse('2026-11-19 12:00:00');
         $runtime = $this->runtime();
-        $lapsed = TerminalView::create(TestActors::userIdentity(1), $runtime, 500, $now);
-        $renewed = TerminalView::create(TestActors::userIdentity(1), $runtime, 500, $now);
-        $closed = TerminalView::create(TestActors::userIdentity(2), $runtime, 500, $now);
+        $lapsed = TerminalView::create(TestActors::userIdentity(1), $runtime, 500, $now, (string) Str::ulid());
+        $renewed = TerminalView::create(TestActors::userIdentity(1), $runtime, 500, $now, (string) Str::ulid());
+        $closed = TerminalView::create(TestActors::userIdentity(2), $runtime, 500, $now, (string) Str::ulid());
         $later = $now->addSeconds(TerminalView::LEASE_SECONDS + 1);
         $renewed->renew($now->addSeconds(20));
         $closed->close($now->addSeconds(5));
