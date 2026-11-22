@@ -88,4 +88,30 @@ describe('the sidebar', () => {
         expect(view.findAll('h2')).toHaveLength(0);
         expect(view.find('nav[aria-label="More pages"]').exists()).toBe(false);
     });
+
+    it('is 216 px wide, marks the current page with a bar as well as its colour, and folds to a 56 px rail', async () => {
+        page.props.navigation = {
+            items: [
+                item({ key: 'plans.list', label: 'Plans', url: '/plans' }),
+                item({ key: 'rules.list', label: 'Rules', url: '/rules' }),
+            ],
+            groups: [],
+            current: ['plans.list'],
+        };
+
+        const view = mount(AppSidebar);
+
+        expect(view.get('aside').classes()).toContain('w-54');
+        expect(view.get('a[aria-current="page"]').classes()).toContain('bg-sel');
+        expect(view.findAll('[data-current-marker]')).toHaveLength(1);
+        expect(view.get('a[href="/rules"]').find('[data-current-marker]').exists()).toBe(false);
+
+        const { useSidebar } = await import('@/composables/useSidebar');
+        const { isMini } = useSidebar();
+        isMini.value = true;
+        await view.vm.$nextTick();
+
+        expect(view.get('aside').classes()).toContain('w-14');
+        isMini.value = false;
+    });
 });

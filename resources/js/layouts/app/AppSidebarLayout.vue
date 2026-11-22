@@ -9,7 +9,7 @@ import { usePresenceHeartbeat } from '@/composables/usePresenceHeartbeat';
 
 /**
  * The persistent shell every signed-in page sits in: it stays mounted across visits, only the page inside changes, and
- * it holds the tab's one live connection, its one presence heartbeat and its one toast region, apart from the
+ * it holds the tab's one live connection, its one presence heartbeat, its one toast region and the overlay layer every dialog mounts into, apart from the
  * reconnect status.
  */
 const page = usePage();
@@ -34,5 +34,6 @@ const title = computed(() => (typeof page.props.title === 'string' ? page.props.
             <main class="min-h-0 flex-1 overflow-hidden"><slot /></main>
         </div>
         <ToastRegion />
+        <div id="overlay-layer" class="contents"></div>
     </div>
 </template>

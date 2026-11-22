@@ -7,7 +7,7 @@ import type { NavigationItemData } from '@/types/generated';
 /**
  * One navigation item of the sidebar: its icon and label, its count once the counts arrive (0 is shown, an unavailable
  * count shows nothing), marked as the current page when it is, and its visible children indented below it in the full
- * form. An item without a link of its own is shown but cannot be followed.
+ * form. The current page has the selection colour and a marker bar. An item without a link of its own is shown but cannot be followed.
  */
 const props = defineProps<{
     item: NavigationItemData;
@@ -23,7 +23,7 @@ const hasCount = computed(() => props.item.counted && count.value !== undefined)
 const rowClass = computed(() => [
     props.isMini ? 'justify-center' : 'px-2',
     props.depth > 0 && !props.isMini ? 'pl-7' : '',
-    { 'bg-raised': isCurrent.value },
+    { 'bg-sel': isCurrent.value },
 ]);
 </script>
 
@@ -32,10 +32,17 @@ const rowClass = computed(() => [
         <Link
             :href="item.url"
             :title="isMini ? item.label : undefined"
-            class="flex shrink-0 items-center gap-2.5 rounded-button py-1.5 text-body text-text hover:bg-raised focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
+            class="relative flex shrink-0 items-center gap-2.5 rounded-button py-1.5 text-body text-text hover:bg-hover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
             :class="rowClass"
             :aria-current="isCurrent ? 'page' : undefined"
         >
+            <template v-if="isCurrent">
+                <span
+                    aria-hidden="true"
+                    data-current-marker
+                    class="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-text"
+                ></span>
+            </template>
             <template v-if="item.icon !== undefined">
                 <Icon :name="item.icon" :size="13" class="text-text-3" />
             </template>
