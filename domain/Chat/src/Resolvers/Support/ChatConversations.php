@@ -15,12 +15,14 @@ use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Data\MessagePage;
 use App\Communication\Data\MessageView;
+use App\Communication\Enums\MessageState;
 use App\Communication\Support\ChatInboxes;
 use App\Communication\Support\ChatInterval;
 use Domain\Chat\Data\ChatCapabilitiesData;
 use Domain\Chat\Data\ChatMessageData;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Data\ParticipantData;
+use Domain\Chat\Data\QuestionActionsData;
 use Domain\Chat\Data\ReplyTargetData;
 use Domain\Chat\Data\SpeakerData;
 use Domain\Chat\Models\Conversation;
@@ -53,7 +55,7 @@ final readonly class ChatConversations
         $conversation = Conversation::forInbox($inboxId);
         $capabilities = $this->capabilitiesOf($viewer, $conversation, $intervals);
         $page = $this->messages->timeline($inboxId, null, MessagePage::DEFAULT_LIMIT);
-        $rows = array_map(fn (MessageView $message) => self::rowOf($message, $drivers), $page->messages);
+        $rows = array_map(fn (MessageView $message) => self::rowOf($message, $drivers, $viewer), $page->messages);
 
         return ConversationData::from([
             'inboxId' => $inboxId,
@@ -106,9 +108,13 @@ final readonly class ChatConversations
     /**
      * @param  array<string, string|null>  $drivers
      */
-    private static function rowOf(MessageView $message, array $drivers): ChatMessageData
+    private static function rowOf(MessageView $message, array $drivers, ActorIdentity $viewer): ChatMessageData
     {
         $speaker = "{$message->authorType}:{$message->authorId}";
+        $respondent = $message->respondentType === null
+            ? null
+            : "{$message->respondentType}:{$message->respondentId}";
+        $settles = $message->state === MessageState::WaitingForAnswer && $respondent === self::keyOf($viewer);
 
         return ChatMessageData::from([
             'id' => $message->id,
@@ -126,6 +132,8 @@ final readonly class ChatConversations
             'body' => $message->body,
             'state' => $message->state,
             'stateVersion' => $message->stateVersion,
+            'respondent' => $respondent,
+            'actions' => QuestionActionsData::from(['answer' => $settles, 'decline' => $settles]),
             'readByMe' => $message->shownToViewer,
             'sentAt' => $message->sentAt,
             'requestKey' => $message->requestKey,

@@ -26,6 +26,8 @@ final class ChatMessageData extends Data
         public readonly string $body,
         public readonly MessageState $state,
         public readonly int $stateVersion,
+        public readonly string|null $respondent,
+        public readonly QuestionActionsData $actions,
         public readonly bool $readByMe,
         public readonly string $sentAt,
         // The key the viewer posted this row under; only its own author sees it, so a send settles on it.

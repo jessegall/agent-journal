@@ -23,7 +23,9 @@ use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageRequestConflict;
 use App\Communication\Exceptions\MessageStateConflict;
+use App\Communication\Exceptions\RespondentRequired;
 use App\Communication\Exceptions\SpeechRefused;
+use App\Communication\Exceptions\StaleAddressee;
 use App\Communication\Models\InboxInterval;
 use App\Communication\Models\InboxRecord;
 use App\Communication\Models\Message;
@@ -59,6 +61,7 @@ final readonly class ChatPosting
                 $author,
                 MessageBody::from($command->body),
                 $command->requestKey,
+                $command->addressee(),
             ),
         )->id;
     }
@@ -219,7 +222,7 @@ final readonly class ChatPosting
         $access->lockExclusive($inbox);
         $intervalId = $access->membership($inbox, $author)->interval();
         $identity = ActorIdentity::of($author);
-        $chat = $envelope($inbox, $identity);
+        $chat = $this->addressed($envelope($inbox, $identity), $inbox);
 
         $earlier = Message::postedUnderKey($inbox->inboxId(), $identity, $chat->requestKey);
 
@@ -255,6 +258,41 @@ final readonly class ChatPosting
         }
 
         return $message;
+    }
+
+    /**
+     * The envelope with its addressee and respondent checked against the members now: both must be active members,
+     * and a question names who settles it, implicitly the only other member of a pair.
+     *
+     * @throws StaleAddressee
+     * @throws RespondentRequired
+     */
+    private function addressed(ChatEnvelope $chat, Inbox $inbox): ChatEnvelope
+    {
+        $members = array_values(array_map(
+            fn (InboxInterval $interval) => $interval->actor,
+            InboxInterval::query()->activeFor($inbox->inboxId())->limit(InboxMembers::LIMIT)->get()->all(),
+        ));
+        foreach ([$chat->addressee, $chat->respondent] as $named) {
+            if ($named !== null && ! array_any($members, fn (ActorIdentity $member) => $member->isSameAs($named))) {
+                throw StaleAddressee::forActor($named);
+            }
+        }
+
+        if (! $chat->isQuestion() || $chat->respondent !== null) {
+            return $chat;
+        }
+
+        $others = array_values(array_filter(
+            $members,
+            fn (ActorIdentity $member) => ! $member->isSameAs($chat->author),
+        ));
+
+        if (count($others) !== 1) {
+            throw RespondentRequired::forInbox($inbox->inboxId());
+        }
+
+        return $chat->askedOf($others[0]);
     }
 
     /**

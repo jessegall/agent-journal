@@ -328,6 +328,8 @@ final readonly class MessageRecords implements ConversationResolver
                 'userRootId' => in_array($message->user_root_id, $hiddenParents, true) ? null : $message->user_root_id,
                 'addresseeType' => $message->addressee_type,
                 'addresseeId' => $message->addressee_id,
+                'respondentType' => $message->respondent_type,
+                'respondentId' => $message->respondent_id,
                 'shownToViewer' => in_array($message->id, $shown, true),
             ];
         }

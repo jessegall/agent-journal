@@ -73,6 +73,30 @@ final readonly class ChatEnvelope
     }
 
     /**
+     * The same question, put to the one member that must settle it.
+     */
+    public function askedOf(ActorIdentity $respondent): self
+    {
+        return new self(
+            $this->inbox,
+            $this->author,
+            $this->body,
+            $this->state,
+            $this->parent,
+            $this->addressee ?? $respondent,
+            $respondent,
+            $this->userRootId,
+            $this->requestKey,
+            $this->answersParent,
+        );
+    }
+
+    public function isQuestion(): bool
+    {
+        return $this->state === MessageState::WaitingForAnswer;
+    }
+
+    /**
      * Whether this is the answer to the given question.
      */
     public function isAnswerTo(string $questionId): bool
@@ -80,9 +104,17 @@ final readonly class ChatEnvelope
         return $this->answersParent && $this->parent?->id === $questionId;
     }
 
-    public static function post(Inbox $inbox, ActorIdentity $author, MessageBody $body, string $requestKey): self
-    {
-        return new self($inbox, $author, $body, MessageState::Sent, null, null, null, null, $requestKey);
+    /**
+     * A post, addressed to one member when it names one; every member still receives it.
+     */
+    public static function post(
+        Inbox $inbox,
+        ActorIdentity $author,
+        MessageBody $body,
+        string $requestKey,
+        ActorIdentity|null $addressee = null,
+    ): self {
+        return new self($inbox, $author, $body, MessageState::Sent, null, $addressee, null, null, $requestKey);
     }
 
     public static function ask(

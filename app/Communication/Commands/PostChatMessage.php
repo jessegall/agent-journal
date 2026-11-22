@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Commands;
 
+use App\Actors\Support\ActorIdentity;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
@@ -31,7 +32,16 @@ final readonly class PostChatMessage extends Command implements TargetedCommand
         #[Required]
         public string $requestKey,
         public string|null $claimToken = null,
+        public string|null $addresseeText = null,
     ) {}
+
+    /**
+     * The member the post is addressed to, written as type:id, when one is named.
+     */
+    public function addressee(): ActorIdentity|null
+    {
+        return $this->addresseeText === null ? null : ActorIdentity::fromText($this->addresseeText);
+    }
 
     public static function targetOf(string $inboxId): string
     {

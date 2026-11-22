@@ -50,5 +50,7 @@ final class MessageView extends Data
         public readonly string|null $addresseeType = null,
         public readonly string|null $addresseeId = null,
         public readonly bool $shownToViewer = false,
+        public readonly string|null $respondentType = null,
+        public readonly string|null $respondentId = null,
     ) {}
 }
