@@ -86,7 +86,7 @@ install() {
         docker compose $profiles up -d --wait --wait-timeout 240 &&
         restart_changed_mounts &&
         docker compose exec -T app php artisan agents:install &&
-        docker compose exec -T app php artisan profile:activate >/dev/null &&
+        activate_profiles &&
         docker compose exec -T app php artisan cache:forget installed-version &&
         check_front_door &&
         sh .docker/helper/prune.sh >/dev/null
@@ -140,6 +140,11 @@ check_front_door() {
         echo "a page asked for over HTTPS links its assets over http"
         return 1
     fi
+}
+
+# Activates the shipped profiles; its output is shown only when it fails, so a failed install says why.
+activate_profiles() {
+    activated=$(docker compose exec -T app php artisan profile:activate 2>&1) || { printf '%s\n' "$activated"; return 1; }
 }
 
 # A rolling update of the app: the new container starts beside the old one, and the old one stops only once the new
