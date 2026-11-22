@@ -47,14 +47,17 @@ function isActive(href: string): boolean {
 <template>
     <aside
         class="flex shrink-0 flex-col border-r border-border bg-side max-[760px]:fixed max-[760px]:inset-y-0 max-[760px]:left-0 max-[760px]:z-90 max-[760px]:w-[220px]"
-        :class="[isMini ? 'w-[52px]' : 'w-[220px]', isOpenOnPhone ? '' : 'max-[760px]:hidden']"
+        :class="[
+            isMini ? 'w-[52px]' : 'w-[220px]',
+            isOpenOnPhone ? '' : 'max-[760px]:hidden',
+        ]"
     >
         <div
             class="flex items-center gap-2.5 py-3.5"
             :class="isMini ? 'justify-center' : 'px-[18px]'"
         >
             <span
-                class="grid size-5 shrink-0 place-items-center rounded-[6px] bg-brand text-meta font-semibold text-white"
+                class="grid size-5 shrink-0 place-items-center rounded-[6px] bg-brand text-meta font-semibold text-on-brand"
                 >A</span
             >
             <template v-if="!isMini">

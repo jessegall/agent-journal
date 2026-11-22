@@ -94,10 +94,8 @@ final class CapacityReservation extends Model implements ReadableModel
 
         return match (true) {
             (int) $held->clone()->sum('cpu_cores') + $budgets->cpuCores > $capacity->cpuCores => CapacityResource::Cpu,
-            (int) $held->clone()->sum('memory_bytes') + $budgets->memoryBytes > $capacity->memoryBytes
-                => CapacityResource::Memory,
-            (int) $held->clone()->sum('disk_bytes') + $budgets->workspaceBytes > $capacity->diskBytes
-                => CapacityResource::Disk,
+            (int) $held->clone()->sum('memory_bytes') + $budgets->memoryBytes > $capacity->memoryBytes => CapacityResource::Memory,
+            (int) $held->clone()->sum('disk_bytes') + $budgets->workspaceBytes > $capacity->diskBytes => CapacityResource::Disk,
             default => null,
         };
     }

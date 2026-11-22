@@ -56,6 +56,16 @@ if [ -n "$installed" ] && git -C "$mirror" cat-file -e "$installed^{commit}" 2>/
     migrations_changed=no
 fi
 
+# Nothing is released, so a schema change edits its table's create migration in place instead of adding one. A
+# migration the installed commit already had that changed or went away is rerun by no plain migrate, so the database
+# is rebuilt from the migrations instead: the test server's data is wiped by design (question 36).
+schema_rebuilt=no
+if [ -n "$installed" ] && git -C "$mirror" cat-file -e "$installed^{commit}" 2>/dev/null &&
+    git -C "$mirror" diff --name-only --diff-filter=MDR "$installed" "$newest" |
+    grep -qE '(^|/)(Database/Migrations|database/migrations)/'; then
+    schema_rebuilt=yes
+fi
+
 # A contained installation, as its .env says, also runs the contained profile and its pinned runner image.
 arrangement=$(sed -n 's/^AGENTS_ARRANGEMENT=//p' .env | tail -n 1)
 profiles=""
@@ -66,7 +76,9 @@ profiles=""
 install() {
     docker compose --progress=quiet build app share web &&
         { [ "$arrangement" != contained ] || pin_runner; } &&
-        { [ "$migrations_changed" = no ] || docker compose run --rm -T app php artisan migrate --force; } &&
+        { [ "$migrations_changed" = no ] || [ "$schema_rebuilt" = yes ] ||
+            docker compose run --rm -T app php artisan migrate --force; } &&
+        { [ "$schema_rebuilt" = no ] || docker compose run --rm -T app php artisan migrate:fresh --force; } &&
         roll_app &&
         docker compose $profiles up -d --wait --wait-timeout 240 &&
         restart_changed_mounts &&
