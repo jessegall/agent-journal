@@ -267,7 +267,23 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .lrow .num{font-size:var(--text-badge);color:var(--text-3);width:40px;flex:none;font-variant-numeric:tabular-nums}
 .lrow .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lrow .t.dim{color:var(--text-3)}
-.lrow .meta{color:var(--text-3);font-size:var(--text-badge);flex:none}
+.lrow .meta{color:var(--text-3);font-size:var(--text-badge);flex:none;width:92px;text-align:right}
+/* Every list keeps columns: the title takes the free width and each trailing cell has a fixed width, so states,
+   meters and dates line up from row to row. */
+.lrow>.st{width:112px;flex:none}
+.lrow>.meter{flex:none}
+.lrow>.chip{flex:none}
+/* Accounts: a grid of fixed columns: mark, name with its type under it, default, usage, sign-in. */
+.lrow.agrid{display:grid;grid-template-columns:16px minmax(0,1fr) 64px 84px 96px;gap:12px;align-items:center;padding:8px 12px}
+/* A list row's name with one short muted line under it: the same pattern in every list that has a second line. */
+.nm2{display:flex;flex-direction:column;min-width:0;flex:1;gap:1px}
+.nm2 .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nm2 small{font-size:var(--text-small);color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrow.two{padding:8px 12px}
+.agrid .ucol{display:flex;align-items:center}
+.agrid .meter.um{width:84px;height:5px;border-radius:3px}
+.agrid .use.amt{font-variant-numeric:tabular-nums;color:var(--text-2);font-size:var(--text-small)}
+.agrid>.st{width:auto}
 .facts{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;margin:10px 0 0;font-size:var(--text-field)}
 .facts dt{color:var(--text-3)}.facts dd{margin:0}
 .reader{padding:18px 22px;max-width:760px}
@@ -874,7 +890,7 @@ const BODY={
   plans:()=>PLANS.map(([n,t,p])=>row('plan:'+n,`<span class="num">${n}</span><span class="t">${t}</span><span style="width:80px" class="meter"><i style="width:${p}%"></i></span><span class="meta">${p}%</span>`)).join(''),
   docs:()=>DOCS.map(([n,t,m])=>row('doc:'+n,`<span class="num">${n}</span><span class="t">${t}</span><span class="meta">${m}</span>`)).join(''),
   helpers:()=>[...(helpersOn?[['helper:262','Designer 262','Designing the notifications bell','work']]:[]),['worker:3','Worker 3','Task 1702 · 2 of 5 steps','work'],['helper:258','Reviewer 258','Reviewed plan 54','done']]
-    .map(([ref,n,t,s])=>row(ref,`<span class="t">${n}<span style="color:var(--text-3)"> · ${t}</span></span>${ST[s]}`)).join(''),
+    .map(([ref,n,t,s])=>row(ref,`<span class="nm2"><span class="t">${n}</span><small>${t}</small></span>${ST[s]}`).replace('class="lrow"','class="lrow two"')).join(''),
   reminders:()=>`<div class="empty"><b>No reminders</b>Ask the agent to remind you of something.</div>`,
   activity:()=>activityView(),
   project:()=>`<div class="seg3" role="tablist" aria-label="Project view">${['files','journal'].map(v=>`<button class="ftab" role="tab" data-pview="${v}" data-fk="pview:${v}" aria-selected="${PVIEW===v}">${v==='files'?'Files':'Journal'}</button>`).join('')}</div>`+treeHtml()};
@@ -1271,7 +1287,7 @@ function pageHtml(){const E=showEmpty,xp=PAGES_EXTRA.find(p=>p.id===page);if(xp)
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose a document to read it.</div>`:docReader(sel))}
   if(page==='accounts'){const sel=ACCOUNTS.find(a=>a[1]===SELP.accounts);
     return shell('Accounts','',E?'0':'3',splitBtn('account'),
-      E?`<div class="empty"><b>No accounts</b>Add a Claude or Codex account so agents can run.</div>`:ACCOUNTS.map(([p,n,k,s,x,d])=>row('pacc:'+n,`${p==='claude'?CLAUDE():CODEX()}<span class="t">${n}<span style="color:var(--text-3)"> · ${k}</span></span>${d?'<span class="chip faint">Default</span>':''}${useCell(n)}${s==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':'<span class="st">Expired</span>'}`,SELP.accounts===n)).join(''),
+      E?`<div class="empty"><b>No accounts</b>Add a Claude or Codex account so agents can run.</div>`:ACCOUNTS.map(([p,n,k,s,x,d])=>`<button class="lrow agrid" data-item="pacc:${n}" data-fk="row:pacc:${n}" ${SELP.accounts===n?'aria-selected="true"':''}>${p==='claude'?CLAUDE():CODEX()}<span class="nm2"><span class="t">${n}</span><small>${k}</small></span><span>${d?'<span class="chip faint">Default</span>':''}</span><span class="ucol">${useCell(n)}</span>${s==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':'<span class="st"><span class="dot hollow"></span>Expired</span>'}</button>`).join(''),
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose an account to change it.</div>`:`<div class="reader"><h2>${sel[1]}</h2><div class="meta">${sel[2]}${sel[4]?' · '+sel[4]:''}</div>
         <div class="sgroup" style="margin-top:16px"><div class="srow"><div class="t">Name<small>Shown in the account list and the agent bar.</small></div><input class="field" value="${esc(sel[1])}" aria-label="Name"></div>
         <div class="srow"><div class="t">Make default<small>Agents use this account when no other is named.</small></div><button class="toggle" role="switch" aria-checked="${sel[5]}" aria-label="Make default"></button></div>
@@ -1697,7 +1713,7 @@ const freshRuns=()=>RUNS=[{id:41,seq:9,task:1702,by:'Agent 1',at:0,state:'runnin
 const runWord=r=>{const s=SEQS.find(x=>x.id===r.seq);return r.state==='done'?'finished':r.state==='waits'?`waits at step ${r.at+1} for ${s.steps[r.at].wait||'a check'}`:`at step ${r.at+1} of ${s.steps.length}`};
 /* A sequence's line in the chat: plain, one line, opening the viewer at that run. */
 EXTRA_KIND.seq=(c,m)=>{const r=RUNS.find(x=>x.id===m[1]),s=SEQS.find(x=>x.id===r.seq);return `<button class="actline seqline" data-seqopen="${s.id}:${r.id}" title="Open the sequence">${I('seq','s14')}<span><b>${esc(s.name)}</b> · ${m[2]}</span></button>`};
-function seqList(inWindow){const rows=SEQS.map(s=>row('seq:'+s.id,`${I('seq','s14')}<span class="t">${esc(s.name)}<span style="color:var(--text-3)"> · ${s.steps.length} steps</span></span><span class="meta">${RUNS.filter(r=>r.seq===s.id&&r.state!=='done').length} running</span>`,!inWindow&&SEQSEL===s.id)).join('');
+function seqList(inWindow){const rows=SEQS.map(s=>row('seq:'+s.id,`<span class="nm2"><span class="t">${esc(s.name)}</span><small>${s.steps.length} steps · ${esc(s.about)}</small></span><span class="meta">${RUNS.filter(r=>r.seq===s.id&&r.state!=='done').length} running</span>`,!inWindow&&SEQSEL===s.id).replace('class="lrow"','class="lrow two"')).join('');
   return showEmpty?`<div class="empty"><b>No sequences yet</b>A sequence is a list of steps an agent follows, each with when it runs and when it is done.<br><span style="display:inline-flex;margin-top:12px">${splitBtn('sequence')}</span></div>`:rows}
 function seqView(id){const s=SEQS.find(x=>x.id===id),runs=RUNS.filter(r=>r.seq===id),cur=runs.find(r=>r.id===SEQRUN)||runs.find(r=>r.state!=='done')||runs[0];
   if(SEQEDIT&&SEQEDIT.id===id)return seqEditor(s);
@@ -2000,12 +2016,14 @@ const USAGE={'Work (Max)':{week:72,weekReset:'on Monday at 09:00',session:30,ses
   'Codex team key':{left:'$41.20',spent:{today:['$1.90','410,000 tokens'],week:['$8.80','1.9 million tokens'],month:['$31.40','6.8 million tokens']}}};
 let SPENDP='week';
 const useWord=p=>p>=90?'Almost used up':p>=60?'More than half used':'Plenty left';
-function useCell(name){const u=USAGE[name];if(!u)return '';if(u.left)return `<span class="use" title="Left to spend">${u.left} left</span>`;const p=Math.max(u.week,u.session);
+/* The row's usage column: a meter alone for a subscription (its title gives the numbers), the amount alone for a key. */
+function useCell(name){const u=USAGE[name];if(!u)return '';if(u.left)return `<span class="use amt" title="Left to spend">${u.left}</span>`;const p=Math.max(u.week,u.session);
+  return `<span class="meter um" role="img" aria-label="${p}% used" title="These 7 days ${u.week}% used · these 5 hours ${u.session}% used"><i style="width:${p}%"></i></span>`;
   return `<span class="use ${p>=90?'low':''}" title="This week ${u.week}% used · this session ${u.session}% used"><span class="meter"><i style="width:${p}%"></i></span>${useWord(p)}</span>`}
 function useGroup(name){const u=USAGE[name];if(!u)return '';
   if(u.left){const s=u.spent[SPENDP];return `<div class="sec">Spending</div><div class="sgroup"><div class="srow"><div class="t">Left to spend<small>The balance Codex reports for this key.</small></div><b>${u.left}</b></div>
     <div class="srow"><div class="t">Spent<small>${s[0]}, or ${s[1]}, ${SPENDP==='today'?'today':'this '+SPENDP}.</small></div><div class="segc" role="group" aria-label="Period">${[['today','Today'],['week','This week'],['month','This month']].map(([k,t])=>`<button aria-pressed="${SPENDP===k}" data-spendp="${k}">${t}</button>`).join('')}</div></div></div>`}
-  const bar=(label,p,reset)=>`<div class="srow"><div class="t">${label}<small>${useWord(p)}. Resets ${reset}.</small><div class="ubar"><span class="meter"><i style="width:${p}%"></i></span><span class="use ${p>=90?'low':''}">${p}% used</span></div></div></div>`;
+  const bar=(label,p,reset)=>`<div class="srow"><div class="t">${label}<small>Resets ${reset}.</small><div class="ubar"><span class="meter"><i style="width:${p}%"></i></span><span class="use ${p>=90?'low':''}">${p}% used</span></div></div></div>`;
   return `<div class="sec">Usage</div><div class="sgroup">${bar('These 7 days',u.week,u.weekReset)}${bar('These 5 hours',u.session,u.sessionReset)}</div>`}
 WIRE_EXTRA.push(on=>on('[data-spendp]',b=>b.onclick=()=>{SPENDP=b.dataset.spendp;render()}));
 
@@ -2075,7 +2093,7 @@ const PROFILES=[['designer','Designer','Claude Code','Opus',['Opus','Sonnet'],'T
   ['worker','Worker','Claude Code or Codex','Sonnet',['Sonnet','Opus','Codex'],'Terminal driver','Agent 1','One per job',['commandments'],['git push to main'],['Stops when its task is ready to test'],'after-edit: run the commandments judge','Writes the code for one task and tests it.']];
 let PROFSEL='designer';
 function profilesHtml(){const sel=PROFILES.find(p=>p[0]===PROFSEL),row2=(t,line,v)=>`<div class="srow"><div class="t">${t}<small>${line}</small></div><div style="text-align:right;max-width:280px">${v}</div></div>`,chips=a=>a.map(x=>`<span class="chip faint">${esc(x)}</span>`).join(' ');
-  return shell('Profiles','',String(PROFILES.length),'',PROFILES.map(([id,t,prog,model])=>row('prof:'+id,`${I('users','s14')}<span class="t">${t}<span style="color:var(--text-3)"> · ${prog} · ${model}</span></span>`,PROFSEL===id)).join(''),
+  return shell('Profiles','',String(PROFILES.length),'',PROFILES.map(p=>row('prof:'+p[0],`<span class="nm2"><span class="t">${p[1]}</span><small>${esc(p[12])}</small></span>`,PROFSEL===p[0]).replace('class="lrow"','class="lrow two"')).join(''),
     `<div class="reader"><h2>${sel[1]}</h2><p class="ab">${esc(sel[12])}</p><div class="sgroup">
       ${row2('Program','What it runs on.',esc(sel[2]))}${row2('Model','The model it starts with.',esc(sel[3]))}${row2('Models it may use','Others can be chosen when it starts.',chips(sel[4]))}
       ${row2('Driver','How the journal runs it.',esc(sel[5]))}${row2('Answers to','Its supervisor, who gets its reports and questions.',esc(sel[6]))}${row2('How many run','Whether one is reused or a new one starts for each job.',esc(sel[7]))}</div>
