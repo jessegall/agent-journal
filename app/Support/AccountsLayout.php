@@ -66,8 +66,32 @@ final readonly class AccountsLayout
             query: ['account' => $row->id, 'add' => ''],
             isCurrent: $row->id === $chosen,
             leading: [LayoutPartData::text('driver', $row->driver, 'driver')],
-            trailing: [LayoutPartData::badge('state', $this->stateWord($row->state), $this->stateTone($row->state))],
+            trailing: [
+                LayoutPartData::badge('state', $this->stateWord($row->state), $this->stateTone($row->state)),
+                ...$this->usageMeterOf($row),
+            ],
         );
+    }
+
+    /**
+     * The row's usage as the design draws it beside the state: the first window a driver measured, as a meter; none
+     * when nothing was measured.
+     *
+     * @return list<LayoutPartData>
+     */
+    private function usageMeterOf(AccountRowData $row): array
+    {
+        if (! $row->usage instanceof AccountUsageData) {
+            return [];
+        }
+
+        foreach ($row->usage->windows as $window) {
+            if ($window->usedPercent !== null) {
+                return [LayoutPartData::progress('usage', $window->usedPercent, 100, 'Usage', 'percent')];
+            }
+        }
+
+        return [];
     }
 
     /**
