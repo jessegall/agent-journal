@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use App\Assignments\Exceptions\AssignmentGroupTooLarge;
-use App\Assignments\Support\AssignmentGroup;
-use App\Bus\Values\RecoveryCall;
-use App\Records\Exceptions\RecordUnavailable;
-use App\Records\Support\RecordIdentity;
+use App\Exceptions\AssignmentGroupTooLarge;
+use App\Exceptions\RecordUnavailable;
+use App\Support\AssignmentGroup;
+use App\Support\RecordIdentity;
+use App\Values\RecoveryCall;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;

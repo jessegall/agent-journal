@@ -4,24 +4,26 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentRuntime;
-use App\Agents\Models\AgentSession;
-use App\Communication\Enums\LeaveReason;
-use App\Communication\Models\InboxInterval;
-use App\Communication\Models\Message;
+use App\Enums\LeaveReason;
+use App\Models\Agent;
+use App\Models\AgentRuntime;
+use App\Models\AgentSession;
+use App\Models\InboxInterval;
+use App\Models\Message;
+use App\Support\ActorIdentity;
+use App\Support\StartSessions;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Http\Requests\ConversationRequest;
+use Domain\Chat\Support\SentMessageAnswer;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
+use Inertia\Support\SessionKey;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
@@ -288,9 +290,8 @@ final class HomePageTest extends TestCase
     {
         $send = [...$this->pair(), 'body' => 'Hello once', ...$this->seenSession()];
 
-        $first = $this->keyedSend('key-1', $send)->assertOk()->assertJson(['requestKey' => 'key-1']);
-        $first = $first->json('messageId');
-        $again = $this->keyedSend('key-1', $send)->assertOk()->json('messageId');
+        $first = $this->sentMessageOf($this->keyedSend('key-1', $send), 'key-1');
+        $again = $this->sentMessageOf($this->keyedSend('key-1', $send), 'key-1');
 
         $this->assertSame($first, $again);
         $this->assertSame(1, Message::query()->withoutGlobalScopes()->count());
@@ -300,19 +301,19 @@ final class HomePageTest extends TestCase
     {
         $send = [...$this->pair(), 'body' => 'Hello twice', ...$this->seenSession()];
 
-        $this->keyedSend('key-1', $send)->assertOk();
-        $this->keyedSend('key-2', $send)->assertOk();
+        $this->sentMessageOf($this->keyedSend('key-1', $send), 'key-1');
+        $this->sentMessageOf($this->keyedSend('key-2', $send), 'key-2');
 
         $this->assertSame(2, Message::query()->withoutGlobalScopes()->count());
     }
 
     public function test_a_used_key_with_other_text_is_refused_as_a_key_conflict(): void
     {
-        $this->keyedSend('key-1', [...$this->pair(), 'body' => 'First text', ...$this->seenSession()])->assertOk();
+        $this->sentMessageOf($this->keyedSend('key-1', [...$this->pair(), 'body' => 'First text', ...$this->seenSession()]), 'key-1');
 
         $this->keyedSend('key-1', [...$this->pair(), 'body' => 'Other text', ...$this->seenSession()])
-            ->assertStatus(409)
-            ->assertJson(['code' => 'request-key-conflict']);
+            ->assertRedirect('/')
+            ->assertSessionHas('refusal_code', 'request-key-conflict');
         $this->assertSame(1, Message::query()->withoutGlobalScopes()->count());
     }
 
@@ -320,22 +321,22 @@ final class HomePageTest extends TestCase
     {
         $stale = [...$this->pair(), 'body' => 'Still there?', ...$this->seenSession(), 'expectedGeneration' => 99];
 
-        $this->keyedSend('key-1', $stale)->assertStatus(409)->assertJson(['code' => 'stale-generation']);
+        $this->keyedSend('key-1', $stale)->assertRedirect('/')->assertSessionHas('refusal_code', 'stale-generation');
         $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
 
-        $this->keyedSend('key-2', [...$stale, ...$this->seenSession()])->assertOk();
+        $this->sentMessageOf($this->keyedSend('key-2', [...$stale, ...$this->seenSession()]), 'key-2');
         $this->assertSame(1, Message::query()->withoutGlobalScopes()->count());
     }
 
     public function test_a_caller_who_no_longer_sees_the_message_gets_neither_text_nor_id_on_a_repeat(): void
     {
         $send = [...$this->pair(), 'body' => 'Private words', ...$this->seenSession()];
-        $messageId = $this->keyedSend('key-1', $send)->assertOk()->json('messageId');
+        $messageId = $this->sentMessageOf($this->keyedSend('key-1', $send), 'key-1');
         $this->leaveTheChatOf($messageId);
 
         $answer = $this->keyedSend('key-1', $send);
 
-        $answer->assertStatus(403);
+        $answer->assertRedirect('/')->assertSessionHasErrors();
         $this->assertStringNotContainsString($messageId, (string) $answer->getContent());
         $this->assertStringNotContainsString(self::PRIVATE_BODY, (string) $answer->getContent());
     }
@@ -343,7 +344,7 @@ final class HomePageTest extends TestCase
     public function test_a_confirmed_send_is_looked_up_by_its_key_with_its_id_and_never_cached(): void
     {
         $send = [...$this->pair(), 'body' => 'Hi', ...$this->seenSession()];
-        $messageId = $this->keyedSend('key-1', $send)->json('messageId');
+        $messageId = $this->sentMessageOf($this->keyedSend('key-1', $send), 'key-1');
 
         $this->outcomeOf('key-1')
             ->assertOk()
@@ -353,7 +354,7 @@ final class HomePageTest extends TestCase
 
     public function test_an_unknown_key_or_another_target_is_not_yet_observable_and_reveals_nothing(): void
     {
-        $this->keyedSend('key-1', [...$this->pair(), 'body' => 'Hi', ...$this->seenSession()])->assertOk();
+        $this->sentMessageOf($this->keyedSend('key-1', [...$this->pair(), 'body' => 'Hi', ...$this->seenSession()]), 'key-1');
 
         $this->outcomeOf('key-2')->assertExactJson(['outcome' => 'not-yet-observable']);
         $this->outcomeOf('key-1', ['inboxId' => TestIds::of(99999)])
@@ -364,8 +365,8 @@ final class HomePageTest extends TestCase
 
     public function test_an_expired_receipt_is_expired_and_a_recorded_refusal_is_refused_with_its_code(): void
     {
-        $this->keyedSend('key-1', [...$this->pair(), 'body' => 'Hi', ...$this->seenSession()])->assertOk();
-        $this->keyedSend('key-2', [...$this->pair(), 'body' => 'Hello', ...$this->seenSession()])->assertOk();
+        $this->sentMessageOf($this->keyedSend('key-1', [...$this->pair(), 'body' => 'Hi', ...$this->seenSession()]), 'key-1');
+        $this->sentMessageOf($this->keyedSend('key-2', [...$this->pair(), 'body' => 'Hello', ...$this->seenSession()]), 'key-2');
         DB::table('command_receipts')->where('request_key', 'key-1')->update(['answers_until' => now()->subMinute()]);
         DB::table('command_receipts')->where('request_key', 'key-2')->update([
             'state' => 'refused',
@@ -384,7 +385,7 @@ final class HomePageTest extends TestCase
     public function test_a_caller_who_lost_sight_of_the_message_is_told_it_is_no_longer_visible_without_its_id(): void
     {
         $send = [...$this->pair(), 'body' => 'Hi', ...$this->seenSession()];
-        $messageId = $this->keyedSend('key-1', $send)->json('messageId');
+        $messageId = $this->sentMessageOf($this->keyedSend('key-1', $send), 'key-1');
         $this->leaveTheChatOf($messageId);
 
         $this->outcomeOf('key-1')->assertExactJson(['outcome' => 'no-longer-visible']);
@@ -411,8 +412,19 @@ final class HomePageTest extends TestCase
     private function keyedSend(string $key, array $send): TestResponse
     {
         return $this->actingAs($this->owner)
+            ->from('/')
             ->withHeader('Idempotency-Key', $key)
-            ->postJson('/chat/messages', [...$send, 'requestKey' => $key]);
+            ->post('/chat/messages', [...$send, 'requestKey' => $key]);
+    }
+
+    /**
+     * The id of the message a send went back to the page with, after checking it went under its own request key.
+     */
+    private function sentMessageOf(TestResponse $send, string $key): string
+    {
+        $send->assertRedirect('/')->assertSessionHas(SessionKey::FLASH_DATA.'.'.SentMessageAnswer::REQUEST_KEY, $key);
+
+        return $send->getSession()->get(SessionKey::FLASH_DATA)[SentMessageAnswer::SENT_MESSAGE];
     }
 
     /**

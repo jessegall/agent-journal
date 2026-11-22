@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Pipelines\Contracts\Pipe;
-use App\Pipelines\Contracts\PipelineDefinition;
-use App\Pipelines\Support\PipelineAdapter;
-use App\Pipelines\Support\PipelineRunner;
-use App\Reflection\Support\DeclaredType;
-use App\Reflection\Support\ReflectedMethod;
-use App\Reflection\Support\Reflector;
+use App\Contracts\Pipe;
+use App\Contracts\PipelineDefinition;
+use App\Support\DeclaredType;
+use App\Support\PipelineAdapter;
+use App\Support\PipelineRunner;
+use App\Support\ReflectedMethod;
+use App\Support\Reflector;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;

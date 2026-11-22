@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks\Drivers;
 
-use App\Drivers\Support\DefaultDrivers;
-use App\Hooks\Compatibility\DriverCompatibility;
-use App\Hooks\Compatibility\Exceptions\DriverArrangementUnproven;
-use App\Hooks\Enums\AuthenticationArrangement;
-use App\Hooks\Enums\DriverEvidence;
+use App\Enums\AuthenticationArrangement;
+use App\Enums\DriverEvidence;
+use App\Support\Compatibility\DriverCompatibility;
+use App\Support\Compatibility\Exceptions\DriverArrangementUnproven;
+use App\Support\DefaultDrivers;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 

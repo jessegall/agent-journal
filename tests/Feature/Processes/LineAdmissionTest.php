@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Contracts\ShellAdmission;
-use App\Processes\Contracts\VerificationTiming;
-use App\Processes\Enums\AdmissionRefusalCode;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Models\CommandRequest;
-use App\Processes\Models\ProcessRun;
-use App\Processes\Values\Admission;
-use App\Processes\Values\AdmissionRefusal;
-use App\Processes\Values\ExecutionContext;
-use App\Processes\Values\TimingVerdict;
+use App\Contracts\ShellAdmission;
+use App\Contracts\VerificationTiming;
+use App\Enums\AdmissionRefusalCode;
+use App\Enums\ShellDialect;
+use App\Models\CommandRequest;
+use App\Models\ProcessRun;
+use App\Values\Admission;
+use App\Values\AdmissionRefusal;
+use App\Values\ExecutionContext;
+use App\Values\TimingVerdict;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;

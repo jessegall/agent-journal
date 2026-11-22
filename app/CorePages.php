@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Connections\Pages\ConnectionsPages;
-use App\Processes\Pages\ProcessPages;
-use App\Profiles\Pages\ProfilesPages;
-use App\Scripts\Pages\ScriptsPages;
-use App\Settings\Pages\SettingsPages;
-use App\Sharing\Pages\SharingPages;
-use App\Ui\Declarations\DomainUi;
-use App\Web\Pages\WebPages;
+use App\Declarations\DomainUi;
+use App\Pages\ConnectionsPages;
+use App\Pages\ProcessPages;
+use App\Pages\ProfilesPages;
+use App\Pages\ScriptsPages;
+use App\Pages\SettingsPages;
+use App\Pages\SharingPages;
+use App\Pages\WebPages;
 
 /**
  * Core's own page declarations, served beside the domains': Web's, Sharing's, Connections', Processes', Profiles', Scripts' and Settings'.

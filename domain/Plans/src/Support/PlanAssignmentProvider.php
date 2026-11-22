@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Assignments\Contracts\Assignable;
-use App\Assignments\Contracts\AssignableProvider;
-use App\Records\Exceptions\RecordUnavailable;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\Assignable;
+use App\Contracts\AssignableProvider;
+use App\Contracts\CurrentActor;
+use App\Exceptions\RecordUnavailable;
+use App\Support\RecordIdentity;
 use Domain\Plans\Models\Plan;
 use Illuminate\Container\Attributes\Scoped;
 

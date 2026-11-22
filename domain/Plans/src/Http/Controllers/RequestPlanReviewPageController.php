@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorIdentity;
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActor;
+use App\Support\ActorIdentity;
 use Domain\Plans\Commands\RequestPlanReview\RequestPlanReviewCommand;
 use Domain\Plans\Http\Requests\PlanReviewRequest;
 use Illuminate\Http\RedirectResponse;

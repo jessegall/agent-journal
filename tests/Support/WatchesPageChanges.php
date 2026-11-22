@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Support\ActorContext;
-use App\Web\Events\PageChanged;
+use App\Events\PageChanged;
+use App\Support\ActorContext;
 use Illuminate\Support\Facades\Event;
 
 /**

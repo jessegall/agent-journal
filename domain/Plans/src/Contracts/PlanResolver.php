@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Contracts;
 
-use App\Actors\Exceptions\AgentActorRequired;
-use Domain\Plans\Api\AssignedPlanFilters;
-use Domain\Plans\Api\AssignedPlanList;
-use Domain\Plans\Api\PlanFilters;
-use Domain\Plans\Api\PlanList;
+use App\Exceptions\AgentActorRequired;
+use Domain\Plans\Values\AssignedPlanFilters;
+use Domain\Plans\Values\AssignedPlanList;
+use Domain\Plans\Values\PlanFilters;
+use Domain\Plans\Values\PlanList;
 
 /**
  * One page of plan cards for whoever acts in this request, with the selected plan; every agent and the user read every

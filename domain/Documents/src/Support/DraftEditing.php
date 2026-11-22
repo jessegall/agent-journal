@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Numbers\Support\RecordReference;
-use Domain\Documents\Api\DraftReference;
-use Domain\Documents\Api\DraftTarget;
+use App\Support\RecordReference;
+use Domain\Documents\Concerns\RefusesOtherDrafts;
 use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
-use Domain\Documents\Support\Concerns\RefusesOtherDrafts;
+use Domain\Documents\Values\DraftReference;
+use Domain\Documents\Values\DraftTarget;
 
 /**
  * The one flow every draft edit follows: lock the document, find this editor's draft by its token, check the

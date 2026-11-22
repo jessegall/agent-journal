@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Events;
 
 use App\Contracts\Event;
-use App\Ui\Contracts\UserInterfaceUpdater;
+use App\Contracts\UserInterfaceUpdater;
 
 /**
  * A source was docked in a conversation or undocked from it. Raised after the commit; both sides' pages read their

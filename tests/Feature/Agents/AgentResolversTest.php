@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\ActorContextMissing;
-use App\Actors\Support\ActorContext;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Contracts\AgentResolver;
-use App\Agents\Contracts\SessionResolver;
-use App\Agents\Exceptions\StackTargetRefused;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Agents\Support\SessionOption;
+use App\Contracts\AgentResolver;
+use App\Contracts\CurrentActorSetter;
+use App\Contracts\SessionResolver;
+use App\Exceptions\ActorContextMissing;
+use App\Exceptions\StackTargetRefused;
+use App\Models\Agent;
+use App\Models\AgentSession;
+use App\Support\ActorContext;
+use App\Support\SessionOption;
+use App\Support\StartSessions;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\ActsAsActors;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Agents\Values\StackTarget;
+use App\Values\StackTarget;
 use Domain\Sequences\Events\SequenceStarted;
 use Tests\Architecture\Support\EventRole;
 

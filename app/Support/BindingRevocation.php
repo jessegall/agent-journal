@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support;
+
+use App\Enums\ConnectionAuditActor;
+use App\Enums\ConnectionAuditType;
+use App\Models\ConnectionAudit;
+use App\Models\DeviceGrant;
+use App\Models\ProjectBinding;
+use App\Models\ProjectCommandRun;
+use App\Values\BindingOutcome;
+use Carbon\CarbonImmutable;
+
+/**
+ * Revokes one locked binding inside the command that holds it, once: the binding, its host and its device grants, its
+ * running command streams ended, and the user who did it audited. A binding revoked already answers the time it was
+ * revoked and changes nothing more. Each row changes through its own method.
+ */
+final readonly class BindingRevocation
+{
+    public function revoke(ProjectBinding $binding, string $userId): BindingOutcome
+    {
+        if ($binding->isRevoked()) {
+            return new BindingOutcome($binding->id, BindingOutcome::ALREADY_REVOKED, $binding->revokedAtText());
+        }
+
+        $binding->revoke();
+        $binding->host->revokeAt(CarbonImmutable::now());
+
+        foreach (DeviceGrant::lockLiveOf($binding) as $grant) {
+            $grant->revoke();
+        }
+
+        foreach (ProjectCommandRun::lockRunningOf($binding) as $run) {
+            $run->cancel();
+        }
+
+        ConnectionAudit::ofBinding(ConnectionAuditType::BindingRevoked, ConnectionAuditActor::User, $userId, $binding);
+
+        return new BindingOutcome($binding->id, BindingOutcome::REVOKED, $binding->revokedAtText());
+    }
+}

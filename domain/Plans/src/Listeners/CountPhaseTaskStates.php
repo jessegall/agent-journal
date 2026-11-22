@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Listeners;
 
-use App\Contracts\Attributes\InCommandTransaction;
+use App\Attributes\InCommandTransaction;
 use App\Contracts\Listener;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanProgressCount;
-use Domain\Tasks\Api\Events\TaskBlocked;
-use Domain\Tasks\Api\Events\TaskCancelled;
-use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Events\TaskBlocked;
+use Domain\Tasks\Events\TaskCancelled;
+use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Events\TaskStarted;
 
 /**

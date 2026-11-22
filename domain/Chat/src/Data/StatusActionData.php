@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use App\Agents\Enums\StatusActionType;
-use App\Agents\Support\StatusAction;
+use App\Enums\StatusActionType;
+use App\Support\StatusAction;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

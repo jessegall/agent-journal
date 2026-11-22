@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Access\Models;
 
-use App\Actors\Contracts\MessageRecipient;
-use App\Actors\Contracts\MessageSender;
-use App\Actors\Contracts\SeatedActor;
-use App\Actors\Enums\ActorType;
-use App\Assignments\Contracts\Assignee;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Contracts\Support\InsertsAbsentRows;
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
+use App\Concerns\BoundedReads;
+use App\Concerns\InsertsAbsentRows;
+use App\Concerns\Linkable;
+use App\Contracts\Assignee;
+use App\Contracts\MessageRecipient;
+use App\Contracts\MessageSender;
+use App\Contracts\ReadableModel;
+use App\Contracts\SeatedActor;
+use App\Enums\ActorType;
+use App\Support\AssigneeIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -105,7 +105,11 @@ class User extends Authenticatable implements
     {
         $owner = new self(['name' => $name, 'email' => $email, 'password' => $password]);
         $owner->setAttribute($owner->getKeyName(), $owner->newUniqueId());
-        $owner->insertIfAbsent();
+
+        // The inserted row is returned as it is, so its caller sees wasRecentlyCreated; an owner already there is read.
+        if ($owner->insertIfAbsent()) {
+            return $owner;
+        }
 
         return self::query()->where('email', $email)->sole();
     }

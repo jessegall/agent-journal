@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Contracts;
 
-use App\Bus\Contracts\CommandFacts;
+use App\Contracts\CommandFacts;
 
 /**
  * A required listener that stages a public occurrence it has no row to raise on.

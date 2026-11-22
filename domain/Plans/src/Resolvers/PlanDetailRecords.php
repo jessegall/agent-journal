@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Resolvers;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Reads\Enums\ReadView;
-use Domain\Plans\Api\PhaseDetails;
-use Domain\Plans\Api\PlanDetails;
-use Domain\Plans\Api\PlanPhaseTasks;
+use App\Contracts\CurrentActor;
+use App\Enums\ReadView;
 use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Values\PhaseDetails;
+use Domain\Plans\Values\PlanDetails;
+use Domain\Plans\Values\PlanPhaseTasks;
 
 /**
  * Reads one plan with the progress PlanRecords computes for every plan list, and one phase with its task references;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Enums\ReceiptState;
-use App\Bus\Exceptions\RequestKeyConflict;
-use App\Bus\Exceptions\RequestKeyExpired;
-use App\Bus\Exceptions\RequestKeyMissing;
-use App\Bus\Models\CommandReceipt;
-use App\Bus\Support\RequestKey;
+use App\Contracts\CommandBus;
+use App\Enums\ReceiptState;
+use App\Exceptions\RequestKeyConflict;
+use App\Exceptions\RequestKeyExpired;
+use App\Exceptions\RequestKeyMissing;
 use App\Http\Middleware\Web\ReadIdempotencyKey;
+use App\Models\CommandReceipt;
+use App\Support\RequestKey;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;

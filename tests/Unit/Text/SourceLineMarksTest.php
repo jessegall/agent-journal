@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Text;
 
-use App\Text\Support\MarkdownText;
-use App\Text\Support\TextPart;
+use App\Support\MarkdownText;
+use App\Support\TextPart;
 use PHPUnit\Framework\TestCase;
 
 /**

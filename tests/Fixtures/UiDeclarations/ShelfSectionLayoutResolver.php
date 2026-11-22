@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations;
 
-use App\Ui\Contracts\SectionResolver;
-use App\Ui\Declarations\SlotContext;
-use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\LayoutPartData;
+use App\Contracts\SectionResolver;
+use App\Declarations\SlotContext;
+use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\LayoutPartData;
 
 /**
  * A declared section's reader: one line of text.

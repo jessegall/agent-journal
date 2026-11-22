@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Ui;
 
-use App\Ui\Exceptions\DraftProducerMissing;
-use App\Ui\Exceptions\DraftProducerRepeated;
-use App\Ui\Support\DraftProducerRegistry;
+use App\Exceptions\DraftProducerMissing;
+use App\Exceptions\DraftProducerRepeated;
+use App\Support\DraftProducerRegistry;
 use Tests\Fixtures\UiDeclarations\StubDraftProducer;
 use Tests\TestCase;
 

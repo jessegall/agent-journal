@@ -1,0 +1,117 @@
+{
+    "about": "Doc 107 revision 3, section Destination key, as data: how an old folder of an area maps to its Laravel place. generate-manifest.php reads it.",
+    "kind_roots": [
+        "Attributes",
+        "Casts",
+        "CommandMiddleware",
+        "Concerns",
+        "Contracts",
+        "Data",
+        "Declarations",
+        "Enums",
+        "Events",
+        "Exceptions",
+        "Jobs",
+        "Listeners",
+        "Models",
+        "Observers",
+        "Pages",
+        "Pipelines",
+        "Pipes",
+        "Policies",
+        "Providers",
+        "Resolvers",
+        "Values"
+    ],
+    "renamed_roots": {
+        "Console/Concerns": "Console/Concerns",
+        "Actions": "Support",
+        "Support": "Support",
+        "Handlers/Support": "Support",
+        "Http/Data": "Data",
+        "Http/Enums": "Enums",
+        "Http/Support": "Support",
+        "Http/Controllers": "Http/Controllers",
+        "Http/Middleware": "Http/Middleware",
+        "Http/Requests": "Http/Requests",
+        "Http/Responses": "Http/Responses",
+        "Console": "Console/Commands",
+        "Mcp/Tools": "Mcp/Tools",
+        "Mcp/Methods": "Mcp/Methods",
+        "Mcp/Servers": "Mcp/Servers",
+        "Mcp/Resources": "Mcp/Resources"
+    },
+    "area_roots": {
+        "Skills/Mcp": "Mcp/Tools",
+        "Communication/Mcp": "Mcp/Tools",
+        "Web/Routes/DeclaredRoutes.php": "Support/DeclaredRoutes.php"
+    },
+    "grouped_roots": [
+        "Calls"
+    ],
+    "paired_roots": [
+        "Commands"
+    ],
+    "repository_roots": {
+        "Database/Migrations": "database/migrations",
+        "Database/Seeders": "database/seeders",
+        "Database/Factories": "database/factories"
+    },
+    "assets": {
+        "Resources/js": "resources/js/{area}",
+        "Connections/Resources/install.sh": "resources/connections/install.sh",
+        "Web/Templates": "resources/views/generators"
+    },
+    "routes_root": "Routes",
+    "routes_destination": "routes/{area}",
+    "package_routes_destination": "routes",
+    "specialist_fallback": "Support/{kind}",
+    "core_root_files": [
+        "CoreApi.php",
+        "CoreCommands.php",
+        "CorePages.php",
+        "CoreMcpTools.php"
+    ],
+    "core_flat_roots": [
+        "Providers",
+        "Contracts",
+        "Http",
+        "Mcp"
+    ],
+    "composition_trait_roots": [
+        "Support",
+        "Support/Concerns",
+        "Commands/Concerns"
+    ],
+    "composition_trait_destination": "Concerns",
+    "phase_four_roots": [
+        "Http",
+        "Console",
+        "Commands",
+        "Calls",
+        "Providers",
+        "Listeners",
+        "Mcp",
+        "Pages",
+        "CommandMiddleware"
+    ],
+    "outside_consumer_roots": [
+        "config",
+        "docs",
+        "tools",
+        "resources/js",
+        "domain",
+        "routes",
+        "bootstrap",
+        ".ai"
+    ],
+    "package_kept_roots": {
+        "Access": [
+            "Actions"
+        ]
+    },
+    "package_role_folders": {
+        "Api": "by-declaration",
+        "Mcp": "by-protocol"
+    }
+}

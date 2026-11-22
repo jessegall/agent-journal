@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Methods;
 
-use App\Agents\Contracts\ToolDiscovery;
-use App\Agents\Support\AgentContext;
+use App\Contracts\ToolDiscovery;
+use App\Support\AgentContext;
 use Laravel\Mcp\Server\Methods\ListTools;
 use Laravel\Mcp\Server\ServerContext;
 use Laravel\Mcp\Transport\JsonRpcRequest;

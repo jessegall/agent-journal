@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\ChangeDocumentDetails;
 
-use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Commands\Support\DocumentCommandHandler;
 use Domain\Documents\Support\DraftEditing;
 use Domain\Documents\Support\DraftText;
+use Domain\Documents\Values\DraftReference;
 
 final readonly class ChangeDocumentDetailsHandler extends DocumentCommandHandler
 {

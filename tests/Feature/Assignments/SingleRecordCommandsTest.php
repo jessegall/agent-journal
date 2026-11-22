@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Assignments\Models\AssignmentRecord;
+use App\Models\Agent;
+use App\Models\AgentSession;
+use App\Models\AssignmentRecord;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;

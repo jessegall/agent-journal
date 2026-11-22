@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Actors\Contracts\AdmittedRecipients;
+use App\Contracts\AdmittedRecipients;
 
 /**
  * The admitted audience: the configured owner, or nobody when none is configured.

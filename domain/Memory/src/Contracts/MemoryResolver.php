@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Contracts;
 
-use Domain\Memory\Api\MemoryCard;
-use Domain\Memory\Api\MemoryPage;
 use Domain\Memory\Exceptions\MemoryUnavailable;
+use Domain\Memory\Values\MemoryCard;
+use Domain\Memory\Values\MemoryPage;
 
 /**
  * Reads the calling actor's own memories, 50 to a page; nobody reads another actor's.

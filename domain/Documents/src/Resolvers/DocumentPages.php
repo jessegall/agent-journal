@@ -9,15 +9,15 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Support\Continuation;
 use App\Mcp\Support\ToolArguments;
-use App\Records\Support\RecordIdentity;
-use App\Text\Support\MarkdownText;
-use App\Text\Support\TextPreview;
+use App\Support\MarkdownText;
+use App\Support\RecordIdentity;
+use App\Support\TextPreview;
 use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Enums\PublicationView;
-use Domain\Documents\Mcp\PublicationChunks;
-use Domain\Documents\Mcp\PublicationPages;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
+use Domain\Documents\Support\Mcp\PublicationChunks;
+use Domain\Documents\Support\Mcp\PublicationPages;
 use Domain\Documents\Values\DocumentReadCard;
 
 final readonly class DocumentPages implements DocumentReader

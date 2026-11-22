@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Hooks\Drivers\AccountConfigurationWrite;
-use App\Hooks\Drivers\CodexFolderTrust;
-use App\Hooks\Exceptions\FolderTrustRefused;
+use App\Exceptions\FolderTrustRefused;
+use App\Support\Drivers\AccountConfigurationWrite;
+use App\Support\Drivers\CodexFolderTrust;
 use Illuminate\Filesystem\Filesystem;
 use PHPUnit\Framework\TestCase;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\PhpStan;
 
-use App\Reflection\Support\Reflector;
+use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use ReflectionException;
 use Tests\Fixtures\Reflection\Attributes\Marker;

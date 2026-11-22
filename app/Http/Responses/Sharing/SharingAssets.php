@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Responses\Sharing;
 
-use App\Files\Contracts\Files;
-use App\Files\Enums\Place;
-use App\Files\Exceptions\FileJsonInvalid;
-use App\Files\Values\FilePath;
+use App\Contracts\Files;
+use App\Enums\Place;
+use App\Exceptions\FileJsonInvalid;
+use App\Values\FilePath;
 
 /**
  * The files of the public reader's own build, as its manifest lists them: the only files the share listener serves.

@@ -1,5 +1,5 @@
 import type { TerminalControlData } from '@generated/types/core';
-import { getJson, JsonRequestFailed, postJson } from '@kit/jsonRequests';
+import { getJson, JsonRequestFailed, postJson } from '@/framework/jsonRequests';
 import { newRequestId } from '@/kit/requestId';
 import {
     cancelPrivateEntry,

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Http\Controllers\Calls;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use Domain\Helpers\Calls\StartHelperCall;
 use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
-use Domain\Helpers\Http\Data\HelperReceiptData;
+use Domain\Helpers\Data\HelperReceiptData;
 use Domain\Helpers\Values\HelperWork;
 
 /**

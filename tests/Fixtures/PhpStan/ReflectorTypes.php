@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\PhpStan;
 
-use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Reflection\Concerns\Reflects;
-use App\Reflection\Support\Reflector;
+use App\Attributes\RetainedActorRequestKey;
+use App\Concerns\Reflects;
+use App\Support\Reflector;
 use Tests\Fixtures\Reflection\Attributes\Marker;
 use Tests\Fixtures\Reflection\Parcel;
 
@@ -21,21 +21,21 @@ class ReflectorTypes
 
     public function reflectorTypes(Parcel $parcel): void
     {
-        assertType('App\Reflection\Support\Reflector<static(Tests\Fixtures\PhpStan\ReflectorTypes)>', $this->reflect());
-        assertType('App\Reflection\Support\Reflector<Tests\Fixtures\Reflection\Parcel>', static::reflect(Parcel::class));
-        assertType('App\Reflection\Support\Reflector<Tests\Fixtures\Reflection\Parcel>', static::reflect($parcel));
-        assertType('App\Reflection\Support\Reflector<Tests\Fixtures\Reflection\Parcel>', Reflector::of(Parcel::class));
-        assertType('App\Reflection\Support\Reflector<Tests\Fixtures\Reflection\Parcel>', Reflector::of($parcel));
+        assertType('App\Support\Reflector<static(Tests\Fixtures\PhpStan\ReflectorTypes)>', $this->reflect());
+        assertType('App\Support\Reflector<Tests\Fixtures\Reflection\Parcel>', static::reflect(Parcel::class));
+        assertType('App\Support\Reflector<Tests\Fixtures\Reflection\Parcel>', static::reflect($parcel));
+        assertType('App\Support\Reflector<Tests\Fixtures\Reflection\Parcel>', Reflector::of(Parcel::class));
+        assertType('App\Support\Reflector<Tests\Fixtures\Reflection\Parcel>', Reflector::of($parcel));
     }
 
     public function attributeTypes(): void
     {
-        assertType('App\Bus\Attributes\RetainedActorRequestKey', $this->reflect()->attribute(RetainedActorRequestKey::class));
+        assertType('App\Attributes\RetainedActorRequestKey', $this->reflect()->attribute(RetainedActorRequestKey::class));
         assertType(
-            'PhpOption\Option<App\Bus\Attributes\RetainedActorRequestKey>',
+            'PhpOption\Option<App\Attributes\RetainedActorRequestKey>',
             $this->reflect()->attributes(RetainedActorRequestKey::class)->first(),
         );
-        assertType('App\Bus\Attributes\RetainedActorRequestKey', $this->reflect()->attributes(RetainedActorRequestKey::class)->first()->get());
+        assertType('App\Attributes\RetainedActorRequestKey', $this->reflect()->attributes(RetainedActorRequestKey::class)->first()->get());
 
         foreach (static::reflect(Parcel::class)->attributes(Marker::class) as $marker) {
             assertType('Tests\Fixtures\Reflection\Attributes\Marker', $marker);

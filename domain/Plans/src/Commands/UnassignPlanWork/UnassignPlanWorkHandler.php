@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\UnassignPlanWork;
 
-use App\Assignments\Contracts\AssignmentWriter;
-use App\Assignments\Support\AssignmentResult;
+use App\Contracts\AssignmentWriter;
+use App\Support\AssignmentResult;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Support\PlanAssignmentGroup;
 

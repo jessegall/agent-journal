@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Bus\Enums\RefusalCode;
+use App\Enums\RefusalCode;
 use App\Mcp\Data\ContractSnapshotData;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Servers\JournalServer;

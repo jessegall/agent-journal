@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Sharing;
 
 use App\Http\Responses\Sharing\SharedPageResponses;
-use App\Sharing\Support\ProbeChallenges;
+use App\Support\ProbeChallenges;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\Response as BaseResponse;
 

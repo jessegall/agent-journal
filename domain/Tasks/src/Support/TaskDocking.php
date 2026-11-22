@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
-use App\Actors\Contracts\CurrentAuthorizer;
-use App\Assignments\Contracts\AssigneeResolver;
-use App\Assignments\Support\AssignmentHolder;
-use App\Docking\Cards\ComposedCard;
-use App\Docking\Exceptions\DockSourceUnavailable;
-use App\Docking\Sources\Contracts\CardContext;
-use App\Docking\Sources\Contracts\Dockable;
-use App\Docking\Sources\Contracts\DockableProvider;
-use App\Docking\Sources\DockDefinition;
-use App\Operations\Enums\AccessType;
+use App\Contracts\AssigneeResolver;
+use App\Contracts\CurrentAuthorizer;
+use App\Enums\AccessType;
+use App\Exceptions\DockSourceUnavailable;
+use App\Support\AssignmentHolder;
+use App\Support\Cards\ComposedCard;
+use App\Support\Sources\Contracts\CardContext;
+use App\Support\Sources\Contracts\Dockable;
+use App\Support\Sources\Contracts\DockableProvider;
+use App\Support\Sources\DockDefinition;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
 use Illuminate\Database\Eloquent\Collection;

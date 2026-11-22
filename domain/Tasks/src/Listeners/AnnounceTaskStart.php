@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Listeners;
 
-use App\Bus\Contracts\CommandFacts;
-use App\Contracts\Attributes\InCommandTransaction;
+use App\Attributes\InCommandTransaction;
+use App\Contracts\CommandFacts;
 use App\Contracts\Listener;
-use Domain\Tasks\Api\Events\TaskStartCommitted;
+use Domain\Tasks\Events\TaskStartCommitted;
 use Domain\Tasks\Events\TaskStarted;
 
 /**

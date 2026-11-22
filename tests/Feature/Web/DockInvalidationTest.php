@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Domains\Providers\DomainEventServiceProvider;
-use App\Sharing\Events\ShareRevoked;
-use App\Web\Events\ProtectedViewInvalidated;
-use App\Web\Listeners\BroadcastPageChange;
-use App\Web\Listeners\BroadcastProtectedViewInvalidation;
+use App\Events\ProtectedViewInvalidated;
+use App\Events\ShareRevoked;
+use App\Listeners\BroadcastPageChange;
+use App\Listeners\BroadcastProtectedViewInvalidation;
+use App\Providers\DomainEventServiceProvider;
 use Domain\Chat\Events\DockChanged;
 use Tests\TestCase;
 

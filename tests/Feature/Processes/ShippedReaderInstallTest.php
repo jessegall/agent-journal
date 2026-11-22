@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Values\OwnerAuthority;
-use App\Processes\Contracts\ShellAdmission;
-use App\Processes\Enums\AdmissionRefusalCode;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Rules\ShippedReaders;
-use App\Processes\Support\ShippedReaderInstaller;
-use App\Processes\Values\Admission;
-use App\Processes\Values\AdmissionRefusal;
-use App\Processes\Values\ExecutionContext;
-use App\Processes\Values\ToolVersions;
+use App\Contracts\CurrentActorSetter;
+use App\Contracts\ShellAdmission;
+use App\Enums\AdmissionRefusalCode;
+use App\Enums\ShellDialect;
+use App\Support\Rules\ShippedReaders;
+use App\Support\ShippedReaderInstaller;
+use App\Values\Admission;
+use App\Values\AdmissionRefusal;
+use App\Values\ExecutionContext;
+use App\Values\OwnerAuthority;
+use App\Values\ToolVersions;
 use Tests\Support\Processes\RunsDirectLines;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;

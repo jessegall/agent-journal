@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
-use App\Profiles\Values\ProfileKey;
+use App\Values\ProfileKey;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

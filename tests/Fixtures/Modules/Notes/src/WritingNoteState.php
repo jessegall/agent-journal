@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use App\Bus\Contracts\Command;
-use App\Hooks\Decisions\Decision;
-use App\Hooks\Inputs\StopRequested;
-use App\Hooks\States\AgentState;
+use App\Contracts\Command;
+use App\Support\Decisions\Decision;
+use App\Support\Inputs\StopRequested;
+use App\Support\States\AgentState;
 use Tests\Fixtures\Modules\Notes\Events\NoteAudited;
 use Tests\Fixtures\Modules\Notes\Events\NotePublished;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;

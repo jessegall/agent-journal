@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Comments;
 
-use App\Comments\Commands\PostComment\PostCommentCommand;
-use App\Comments\Commands\PostTextComment\PostTextCommentCommand;
+use App\Commands\PostComment\PostCommentCommand;
+use App\Commands\PostTextComment\PostTextCommentCommand;
+use App\Contracts\RecordResolver;
+use App\Enums\TextAnchorType;
 use App\Http\Requests\RecordTargetRequest;
-use App\Records\Contracts\RecordResolver;
-use App\Text\Enums\TextAnchorType;
-use App\Text\Values\TextRange;
+use App\Values\TextRange;
 use Illuminate\Validation\Validator;
 
 /**

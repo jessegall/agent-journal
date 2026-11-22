@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Assignments\Contracts\AssigneeResolver;
-use App\Assignments\Contracts\AssignmentQuery;
-use App\Assignments\Support\AssigneeIdentity;
-use Domain\Tasks\Api\TaskFilters;
-use Domain\Tasks\Api\TaskList;
-use Domain\Tasks\Api\TaskType;
+use App\Contracts\AssigneeResolver;
+use App\Contracts\AssignmentQuery;
+use App\Contracts\CurrentActor;
+use App\Support\AssigneeIdentity;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Enums\TaskHolderFilter;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Resolvers\Support\TaskExecutions;
+use Domain\Tasks\Support\TaskType;
+use Domain\Tasks\Values\TaskFilters;
+use Domain\Tasks\Values\TaskList;
 use Illuminate\Database\Eloquent\Builder;
 
 /**

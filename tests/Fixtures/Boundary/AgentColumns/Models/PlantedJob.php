@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\AgentColumns\Models;
 
-use App\Agents\Support\AgentContext;
-use App\Agents\Values\StackTarget;
+use App\Support\AgentContext;
+use App\Values\StackTarget;
 use Illuminate\Database\Eloquent\Model;
 
 /**

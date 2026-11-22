@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\TwoCycle\Orders;
 
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
+use App\Support\Domain;
+use App\Support\Exports;
 use Tests\Fixtures\Domains\TwoCycle\Payments\PaymentsDomain;
 
 final class OrdersDomain extends Domain

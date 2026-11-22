@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Communication\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
-use App\Communication\Commands\SendMessage\SendMessageCommand;
-use App\Communication\Commands\TakeNextMessages\TakeNextMessagesCommand;
-use App\Communication\Enums\MessageState;
-use App\Communication\Exceptions\ChatInboxRefused;
-use App\Communication\Exceptions\ChatMessageRefused;
-use App\Communication\Models\Message;
+use App\Commands\AskChatQuestion\AskChatQuestionCommand;
+use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
+use App\Commands\SendMessage\SendMessageCommand;
+use App\Commands\TakeNextMessages\TakeNextMessagesCommand;
+use App\Enums\MessageState;
+use App\Exceptions\ChatInboxRefused;
+use App\Exceptions\ChatMessageRefused;
+use App\Models\Message;
+use App\Support\ActorIdentity;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\OpensPairChats;

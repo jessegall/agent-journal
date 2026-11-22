@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\AgentRequests\Support\SignedCall;
-use App\Agents\Enums\ArrangementType;
-use App\Agents\Enums\HostProtocolVersion;
-use App\Profiles\Support\SignedSignInHost;
+use App\Enums\ArrangementType;
+use App\Enums\HostProtocolVersion;
+use App\Support\SignedCall;
+use App\Support\SignedSignInHost;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;

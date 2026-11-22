@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews\Enums;
 
-use App\Settings\Contracts\ChoiceLabel;
+use App\Contracts\ChoiceLabel;
 
 enum ReviewMode: string implements ChoiceLabel
 {

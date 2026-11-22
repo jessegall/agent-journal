@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Resolvers;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Assignments\Support\NumberedPage;
-use Domain\Rules\Api\RuleFilters;
-use Domain\Rules\Api\RuleList;
-use Domain\Rules\Api\RuleView;
+use App\Contracts\CurrentActor;
+use App\Support\NumberedPage;
 use Domain\Rules\Contracts\RuleResolver;
 use Domain\Rules\Models\Rule;
+use Domain\Rules\Values\RuleFilters;
+use Domain\Rules\Values\RuleList;
+use Domain\Rules\Values\RuleView;
 use Illuminate\Container\Attributes\Scoped;
 
 /**

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews;
 
-use App\Domains\Concerns\HasIncomingWork;
-use App\Domains\Concerns\HasStates;
-use App\Domains\Contracts\IncomingWorkProvider;
-use App\Domains\Contracts\StateProvider;
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
-use App\Settings\Contracts\SettingsProvider;
+use App\Concerns\HasIncomingWork;
+use App\Concerns\HasStates;
+use App\Contracts\IncomingWorkProvider;
+use App\Contracts\StateProvider;
+use App\Support\Domain;
+use App\Support\Exports;
+use App\Contracts\SettingsProvider;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Fixtures\Domains\Reviews\States\ReviewStateType;
 use Tests\Fixtures\Domains\Reviews\Work\ReviewInbox;

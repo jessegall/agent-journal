@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Concerns;
 
-use App\AgentRequests\Values\CommandReport;
-use App\Text\Support\TextSelection;
+use App\Support\TextSelection;
+use App\Values\CommandReport;
 use Domain\Documents\Data\RecordText;
 
 /**

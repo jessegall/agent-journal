@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\FinishTask;
 
-use App\Bus\Contracts\CommandFacts;
-use App\Desks\Contracts\RunClaims;
+use App\Contracts\CommandFacts;
+use App\Contracts\RunClaims;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Exceptions\TaskRunFinished;
 use Domain\Tasks\Exceptions\TaskRunNotYours;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Skills\Commands\PrepareSkillPublication\PrepareSkillPublicationCommand;
-use App\Skills\Commands\PublishSkills\PublishSkillsCommand;
-use App\Skills\Contracts\SkillPublisher;
-use App\Skills\Enums\PublicationState;
-use App\Skills\Exceptions\SkillPublicationStale;
-use App\Skills\Models\SkillPublication;
-use App\Skills\Support\HostSkillPublisher;
-use App\Skills\Support\SkillPublishing;
+use App\Commands\PrepareSkillPublication\PrepareSkillPublicationCommand;
+use App\Commands\PublishSkills\PublishSkillsCommand;
+use App\Contracts\SkillPublisher;
+use App\Enums\PublicationState;
+use App\Exceptions\SkillPublicationStale;
+use App\Models\SkillPublication;
+use App\Support\HostSkillPublisher;
+use App\Support\SkillPublishing;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Skills\FullDiskPublisher;

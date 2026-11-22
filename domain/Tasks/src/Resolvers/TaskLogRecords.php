@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use Domain\Tasks\Api\TaskLogPage;
 use Domain\Tasks\Contracts\TaskLogResolver;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Models\TaskLogEntry;
+use Domain\Tasks\Values\TaskLogPage;
 use Illuminate\Database\Eloquent\Collection;
 
 /**

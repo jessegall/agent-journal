@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Policies;
 
-use App\Actors\Contracts\Actor;
-use App\Actors\Contracts\RecordPolicy;
-use App\Actors\Support\ActorIdentity;
-use App\Desks\Contracts\RunClaims;
-use App\Operations\Enums\AccessType;
+use App\Contracts\Actor;
+use App\Contracts\RecordPolicy;
+use App\Contracts\RunClaims;
+use App\Enums\AccessType;
+use App\Support\ActorIdentity;
 use Domain\Tasks\Models\Task;
 use Illuminate\Auth\Access\Response;
 

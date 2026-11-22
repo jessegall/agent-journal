@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Actors;
 
-use App\Actors\Contracts\ActiveActorCounter;
-use App\Actors\Enums\ActorType;
+use App\Contracts\ActiveActorCounter;
+use App\Enums\ActorType;
 use Carbon\CarbonImmutable;
 use Tests\Support\Exceptions\SimulatedFailure;
 

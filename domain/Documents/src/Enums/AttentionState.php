@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Enums;
 
-use App\Docking\Cards\StateLabel;
-use App\Docking\Enums\Tone;
+use App\Enums\Tone;
+use App\Support\Cards\StateLabel;
 
 /**
  * Whether a record still asks for attention, or was settled as needing none.

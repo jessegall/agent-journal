@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Domains\Support\Domain;
-use App\Domains\Support\DomainEntry;
-use App\Reflection\Support\Reflector;
+use App\Support\Domain;
+use App\Support\DomainEntry;
+use App\Support\Reflector;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
@@ -141,36 +141,6 @@ final readonly class DeclarationRules
                         );
                     }
                 }
-            }
-        }
-
-        return $violations;
-    }
-
-    /**
-     * The domain foundation holds exactly its fixed files beside the domain folders, given relative to its folder.
-     *
-     * @param  list<string>  $fixedFiles
-     * @return list<Violation>
-     */
-    public function extraSharedFiles(string $sharedFolder, array $fixedFiles): array
-    {
-        $violations = [];
-
-        foreach (DomainFiles::allIn($sharedFolder) as $path) {
-            if ($this->isInADomain($path)) {
-                continue;
-            }
-
-            if (! in_array(substr($path, strlen($sharedFolder) + 1), $fixedFiles, true)) {
-                $violations[] = new Violation(
-                    $path,
-                    1,
-                    $path,
-                    'App\Domain',
-                    'App\Domain',
-                    ViolationType::SharedPlaceFile,
-                );
             }
         }
 

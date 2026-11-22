@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Actors\Contracts\CurrentAuthorizer;
-use App\Agents\Enums\TerminalControlRefusal;
-use App\Agents\Enums\TerminalGrantState;
-use App\Agents\Enums\TerminalReceiptOutcome;
-use App\Agents\Models\AgentRuntime;
-use App\Agents\Models\Host;
-use App\Agents\Models\TerminalGrant;
-use App\Agents\Values\BrowserInputCapabilities;
-use App\Bus\Enums\RefusalCode;
+use App\Contracts\CurrentAuthorizer;
+use App\Enums\RefusalCode;
+use App\Enums\TerminalControlRefusal;
+use App\Enums\TerminalGrantState;
+use App\Enums\TerminalReceiptOutcome;
+use App\Models\AgentRuntime;
+use App\Models\Host;
+use App\Models\TerminalGrant;
+use App\Values\BrowserInputCapabilities;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Str;

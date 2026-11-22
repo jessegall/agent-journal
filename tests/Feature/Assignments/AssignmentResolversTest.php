@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\ActorContextMissing;
-use App\Agents\Models\Agent;
-use App\Assignments\Contracts\AssigneeResolver;
-use App\Assignments\Contracts\AssignmentResolver;
-use App\Assignments\Exceptions\AssignmentTypeUnavailable;
-use App\Assignments\Exceptions\InvalidAssignmentPage;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\Page;
+use App\Contracts\AssigneeResolver;
+use App\Contracts\AssignmentResolver;
+use App\Enums\ActorType;
+use App\Exceptions\ActorContextMissing;
+use App\Exceptions\AssignmentTypeUnavailable;
+use App\Exceptions\InvalidAssignmentPage;
+use App\Models\Agent;
+use App\Support\AssigneeIdentity;
+use App\Support\Page;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;

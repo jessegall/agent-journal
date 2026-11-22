@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\Bus\Contracts\CommandBus;
-use App\Processes\Support\ConnectedProject;
-use App\Processes\Support\ProjectKey;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Support\ActorContext;
+use App\Support\ConnectedProject;
+use App\Support\ProjectKey;
+use App\Values\OwnerAuthority;
 use Domain\Tasks\Commands\CreateTask\CreateTaskCommand;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;

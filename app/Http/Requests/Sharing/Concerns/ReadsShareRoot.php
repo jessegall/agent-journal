@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Sharing\Concerns;
 
-use App\Numbers\Support\RecordReference;
-use App\Records\Contracts\RecordResolver;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\RecordResolver;
+use App\Support\RecordIdentity;
+use App\Support\RecordReference;
 
 /**
  * For a sharing request whose route names the root record as people name it, such as doc 12.

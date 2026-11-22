@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Commands\ProveReader\ProveReaderCommand;
-use App\Processes\Enums\RequestState;
-use App\Processes\Exceptions\ReaderProofFailed;
-use App\Processes\Exceptions\RevisionImmutable;
-use App\Processes\Models\ReaderProof;
-use App\Processes\Models\ReaderRevision;
+use App\Commands\ProveReader\ProveReaderCommand;
+use App\Enums\RequestState;
+use App\Exceptions\ReaderProofFailed;
+use App\Exceptions\RevisionImmutable;
+use App\Models\ReaderProof;
+use App\Models\ReaderRevision;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;

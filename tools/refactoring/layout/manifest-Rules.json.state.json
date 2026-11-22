@@ -1,0 +1,86 @@
+{
+    "moved": {
+        "domain/Rules/src/Api/Events/RuleApproved.php": "be8e4a66bbe6502aefec190344159f4de9180ec6",
+        "domain/Rules/src/Api/Events/RuleDenied.php": "0e76f662e8c10fb33bf380252d3ec514073f53cc",
+        "domain/Rules/src/Api/Events/RuleRemoved.php": "95baacc4cf6d0fd894d3c85b1ec5431a566569fb",
+        "domain/Rules/src/Api/RuleDetails.php": "0b697d78902406704f1080a9c7365838fe37b43b",
+        "domain/Rules/src/Api/RuleFilters.php": "4f65f3d3029c4be51d342230e71f1012ecaeba98",
+        "domain/Rules/src/Api/RuleList.php": "8b1a7893d7098682d873b01d2cedd4a324777a7d",
+        "domain/Rules/src/Api/RuleView.php": "8e1fb8e92fd91f4d5dd2774d5a37bf0711607827",
+        "domain/Rules/src/Mcp/ActiveRulesOverview.php": "70f14f038f29a64a6380bf9ff6d7d0ffb08d47c9",
+        "domain/Rules/src/Mcp/ProposeRuleTool.php": "18d640f1fe2ab58ff9697dfa1a1973b27db0f2ef",
+        "domain/Rules/src/Mcp/RuleReadTool.php": "0be24b1abb287354174abe930f65e8284b533376",
+        "domain/Rules/src/Mcp/RuleSearch.php": "a60dea53d9342585e676ef35a81e2b4ae5ae6860",
+        "domain/Rules/src/Mcp/RulesListResult.php": "55589115dba3f0a7d3bdead850e7e4bd717eb4a6",
+        "domain/Rules/src/Mcp/RulesListTool.php": "40dbaa65c42aa92d1cc0fac7328c0dd9381d9410",
+        "domain/Rules/src/Mcp/RulesResource.php": "62c816369a96082970029c11ea77c1f71b25c256",
+        "domain/Rules/src/Skills/RulesSkill.php": "db3d3922c309dd115e5bc462ac59a327b68a54a3"
+    },
+    "edits": {
+        "domain/Rules/src/Contracts/RuleDetailsResolver.php": {
+            "prior": "bb5c1adfa7ff977ce05f4739699ca43bc4db8f9e",
+            "result": "e1475f30bbc4f7a52fccd84e4f2a4d4b96de85c6",
+            "move": "batch"
+        },
+        "domain/Rules/src/Contracts/RuleResolver.php": {
+            "prior": "5f08d4dcfb8b35a5338aa2d9e5dbb4b506812d83",
+            "result": "43cb5a7d42ce793e25c93eeb8a500d7dcdb1b79b",
+            "move": "batch"
+        },
+        "domain/Rules/src/Data/RuleFiltersData.php": {
+            "prior": "4b5056a894e530e884237ed73377fc8e513072ec",
+            "result": "ed60e020b73577eae8a2c92eb4f3f267ef78c69b",
+            "move": "batch"
+        },
+        "domain/Rules/src/Models/Rule.php": {
+            "prior": "be2a20f9efb9be66ab931ee0cd5d515d4522baca",
+            "result": "e1ba2a0b5f1e2c12fe786a8f1a21062aad8c6b35",
+            "move": "batch"
+        },
+        "domain/Rules/src/Resolvers/RuleDetailRecords.php": {
+            "prior": "774c438eef667da965166fe7d7bd86d1e634daab",
+            "result": "8ce13d73034ec3b2aa0dbe3852f474a6aba43398",
+            "move": "batch"
+        },
+        "domain/Rules/src/Resolvers/RuleRecords.php": {
+            "prior": "a06e8e5b98cd77650ecb4e4fbdf60921aa3ed315",
+            "result": "9552b1e559e9fb764ded22ef0e611a4a495e21c5",
+            "move": "batch"
+        },
+        "domain/Rules/src/Resolvers/RulesWindowResolver.php": {
+            "prior": "75475a9670a9cdc46b563e47e4b414e6d2491bc6",
+            "result": "1110973f3503977977a60bdb67735be49ded0333",
+            "move": "batch"
+        },
+        "domain/Rules/src/RulesDomain.php": {
+            "prior": "d84658ba9ba41f0cfab003c68ad169eee96571c4",
+            "result": "5670ba29eaf159229b95b23332f01a8cf95d872d",
+            "move": "batch"
+        },
+        "domain/Rules/tests/Feature/ReviewRuleTest.php": {
+            "prior": "a8fd2283a2e32ae1e0baafd46e3b8f0d4bdd83c9",
+            "result": "eb4e32cfe812961ab27b5ee9677cdca9482b1413",
+            "move": "batch"
+        },
+        "domain/Rules/tests/Feature/RuleCommandsTest.php": {
+            "prior": "81417850d2a8cc56aaa0012cb1b31910c56812ea",
+            "result": "a7a0abadd2419c7b5667eb266e8ce87016b66c7d",
+            "move": "batch"
+        },
+        "tests/Architecture/EventOwners/Rules.php": {
+            "prior": "f7a07d9abff13e087ebca31d2a91952c1eeb0efa",
+            "result": "bd4a1b2a1064aebc2ee2c1cf237450b2046fb4f4",
+            "move": "batch"
+        },
+        "tests/Feature/Events/EventPayloads.php": {
+            "prior": "73415a2d3b7d6a759ad1695f4f358f2431114867",
+            "result": "dd75f083cc533dcdb0fa5b9cee84710fb4efd0ef",
+            "move": "batch"
+        },
+        "tests/Unit/Skills/ShippedSkillFilesTest.php": {
+            "prior": "418337b8233577168b51cadc78c313e0f91b31cf",
+            "result": "b81798bb6550903a63d2f7c260189e854d179307",
+            "move": "batch"
+        }
+    }
+}

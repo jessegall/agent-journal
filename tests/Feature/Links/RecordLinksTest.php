@@ -4,24 +4,26 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Links;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\AgentRequests\Support\SignedCall;
-use App\Agents\Support\AgentContext;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\CommandInputInvalid;
-use App\Communication\Models\Message;
-use App\Links\Exceptions\UnknownLinkType;
-use App\Links\Models\Link;
-use App\Numbers\Support\RecordReference;
-use App\Records\Commands\LinkRecords\LinkRecordsCommand;
-use App\Records\Commands\UnlinkRecords\UnlinkRecordsCommand;
-use App\Records\Contracts\RecordResolver;
-use App\Records\Exceptions\InvalidRecordIdentity;
-use App\Records\Exceptions\RecordUnavailable;
-use App\Records\Support\RecordIdentity;
+use App\Commands\LinkRecords\LinkRecordsCommand;
+use App\Commands\UnlinkRecords\UnlinkRecordsCommand;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Contracts\RecordResolver;
+use App\Exceptions\CommandInputInvalid;
+use App\Exceptions\InvalidRecordIdentity;
+use App\Exceptions\RecordUnavailable;
+use App\Exceptions\UnknownLinkType;
+use App\Models\Link;
+use App\Models\Message;
+use App\Support\ActorContext;
+use App\Support\AgentContext;
+use App\Support\RecordIdentity;
+use App\Support\RecordReference;
+use App\Support\SignedCall;
+use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Models\Document;
@@ -65,6 +67,7 @@ final class RecordLinksTest extends TestCase
         'desk_preferences',
         'assignments',
         'command_receipts',
+        'users',
     ];
 
     protected function setUp(): void
@@ -191,6 +194,21 @@ final class RecordLinksTest extends TestCase
         }
 
         $this->fail('The read was not refused.');
+    }
+
+    public function test_the_page_adds_and_removes_a_link_and_goes_back_to_the_record(): void
+    {
+        $owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
+        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n"));
+        $link = ['source' => 'report 1', 'target' => 'plan 1'];
+
+        $this->actingAs($owner)->from('/reports/1')->post('/links/add', $link)->assertRedirect('/reports/1');
+        $this->assertSame(1, Link::query()->count());
+
+        $this->actingAs($owner)->from('/reports/1')->post('/links/remove', $link)->assertRedirect('/reports/1');
+        $this->assertSame(0, Link::query()->count());
     }
 
     private function actAsUser(): void

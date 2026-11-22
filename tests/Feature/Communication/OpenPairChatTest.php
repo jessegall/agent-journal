@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Support\ActorContext;
-use App\Communication\Contracts\InboxResolver;
-use App\Communication\Exceptions\InboxUnavailable;
-use App\Communication\Support\RegisteredInboxes;
+use App\Contracts\InboxResolver;
+use App\Exceptions\InboxUnavailable;
+use App\Support\ActorContext;
+use App\Support\RegisteredInboxes;
 use Domain\Chat\Commands\OpenPairChat\OpenPairChatCommand;
 use Tests\Support\MessagingTestCase;
 

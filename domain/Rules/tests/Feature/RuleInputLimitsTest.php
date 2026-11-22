@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\CommandInputInvalid;
+use App\Contracts\CommandBus;
+use App\Exceptions\CommandInputInvalid;
 use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Tests\TestCase;

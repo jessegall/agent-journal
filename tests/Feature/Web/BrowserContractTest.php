@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Web\Types\HiddenAwareDataTransformer;
+use App\Support\Types\HiddenAwareDataTransformer;
 use Illuminate\Filesystem\Filesystem;
 use Spatie\TypeScriptTransformer\Transformers\EnumTransformer;
 use Spatie\TypeScriptTransformer\TypeScriptTransformer;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Models;
 
-use App\Links\Support\Linkable;
-use App\Numbers\Contracts\Numbered;
-use App\Numbers\Support\HasNumber;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
-use App\Text\Contracts\TextContent;
-use App\Text\Values\TextVersion;
+use App\Concerns\Linkable;
+use App\Contracts\Numbered;
+use App\Concerns\HasNumber;
+use App\Contracts\ReadableModel;
+use App\Concerns\BoundedReads;
+use App\Contracts\TextContent;
+use App\Values\TextVersion;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;

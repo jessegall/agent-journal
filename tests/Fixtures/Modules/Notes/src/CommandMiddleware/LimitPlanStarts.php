@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\CommandMiddleware;
 
-use App\Bus\Contracts\CommandMiddleware;
-use App\Bus\Exceptions\CommandRefused;
-use App\Bus\Support\CommandCall;
+use App\Contracts\CommandMiddleware;
+use App\Exceptions\CommandRefused;
+use App\Support\CommandCall;
 use Closure;
 use Tests\Fixtures\Modules\Notes\Support\CommandTrail;
 

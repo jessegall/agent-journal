@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\OwnerAuthority;
-use App\Agents\Enums\ConversationModeType;
+use App\Contracts\CurrentActorSetter;
+use App\Enums\ConversationModeType;
+use App\Support\ActorContext;
+use App\Support\ActorIdentity;
+use App\Values\OwnerAuthority;
 use Domain\Helpers\Values\JobLaunch;
 use Tests\TestCase as BaseTestCase;
 

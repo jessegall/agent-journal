@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Calls;
 
-use App\AgentRequests\Attributes\Endpoint;
-use App\AgentRequests\Attributes\PresentList;
-use App\AgentRequests\Contracts\JournalCall;
-use App\AgentRequests\Enums\CallEffect;
-use App\Assignments\Support\NumberedPage;
-use Domain\Tasks\Http\Data\AssignedTaskListData;
+use App\Attributes\Endpoint;
+use App\Attributes\PresentList;
+use App\Contracts\JournalCall;
+use App\Enums\CallEffect;
+use App\Support\NumberedPage;
+use Domain\Tasks\Data\AssignedTaskListData;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;

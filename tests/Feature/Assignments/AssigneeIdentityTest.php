@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Contracts\Actor;
-use App\Agents\Models\Agent;
-use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
-use App\Assignments\Commands\ReassignRecord\ReassignRecordCommand;
-use App\Assignments\Contracts\Assignee;
-use App\Assignments\Models\AssignmentRecord;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\RequestKey;
-use App\Reflection\Support\Reflector;
+use App\Commands\AssignRecord\AssignRecordCommand;
+use App\Commands\ReassignRecord\ReassignRecordCommand;
+use App\Contracts\Actor;
+use App\Contracts\Assignee;
+use App\Contracts\CommandBus;
+use App\Models\Agent;
+use App\Models\AssignmentRecord;
+use App\Support\AssigneeIdentity;
+use App\Support\Reflector;
+use App\Support\RequestKey;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Reads\Enums\ReadView;
-use Domain\Plans\Api\PlanFilters;
-use Domain\Plans\Api\PlanPhaseTasks;
+use App\Enums\ReadView;
 use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
+use Domain\Plans\Values\PlanFilters;
+use Domain\Plans\Values\PlanPhaseTasks;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Models\Task;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Profiles\Values\SignInVerification;
+use App\Values\SignInVerification;
 use PHPUnit\Framework\TestCase;
 
 final class SignInVerificationTest extends TestCase

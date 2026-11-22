@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support\Processes;
 
-use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Syntax\TreeParser;
-use App\Processes\Values\Classification;
-use App\Processes\Values\ExecutionContext;
+use App\Contracts\CommandClassifier;
+use App\Enums\ShellDialect;
+use App\Support\Syntax\TreeParser;
+use App\Values\Classification;
+use App\Values\ExecutionContext;
 
 /**
  * Classifies a bash line as the runner would in the project folder.

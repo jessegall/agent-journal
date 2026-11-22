@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Skills\Contracts\Skill;
-use App\Skills\Shipped\JournalSkill;
-use App\Skills\Shipped\ProfilesSkill;
-use App\Skills\Shipped\ShellSkill;
-use App\Skills\Shipped\SkillsSkill;
-use App\Skills\Support\CanonicalRenderer;
-use App\Skills\Support\MarkdownParts;
-use App\Skills\Values\SkillOwner;
-use Domain\Access\Skills\AccessSkill;
-use Domain\Chat\Skills\ChatSkill;
-use Domain\Memory\Skills\MemorySkill;
-use Domain\Plans\Skills\PlanSkill;
-use Domain\Reminders\Skills\RemindersSkill;
-use Domain\Rules\Skills\RulesSkill;
-use Domain\Sequences\Skills\SequencesSkill;
-use Domain\Tasks\Skills\TasksSkill;
+use App\Contracts\Skill;
+use App\Support\CanonicalRenderer;
+use App\Support\MarkdownParts;
+use App\Support\Shipped\JournalSkill;
+use App\Support\Shipped\ProfilesSkill;
+use App\Support\Shipped\ShellSkill;
+use App\Support\Shipped\SkillsSkill;
+use App\Values\SkillOwner;
+use Domain\Access\Support\Skills\AccessSkill;
+use Domain\Chat\Support\Skills\ChatSkill;
+use Domain\Memory\Support\Skills\MemorySkill;
+use Domain\Plans\Support\Skills\PlanSkill;
+use Domain\Reminders\Support\Skills\RemindersSkill;
+use Domain\Rules\Support\Skills\RulesSkill;
+use Domain\Sequences\Support\Skills\SequencesSkill;
+use Domain\Tasks\Support\Skills\TasksSkill;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 

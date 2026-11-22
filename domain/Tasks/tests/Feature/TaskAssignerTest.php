@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Assignments\Contracts\AssignmentPool;
-use App\Assignments\Models\AssignmentRecord;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\PoolMembers;
-use Domain\Tasks\Api\TaskType;
-use Domain\Tasks\Assignments\ActiveTaskAssignments;
-use Domain\Tasks\Assignments\TaskAssigner;
+use App\Contracts\AssignmentPool;
+use App\Enums\ActorType;
+use App\Models\AssignmentRecord;
+use App\Support\ActorIdentity;
+use App\Support\AssigneeIdentity;
+use App\Support\PoolMembers;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\CandidateLimitInvalid;
 use Domain\Tasks\Exceptions\TaskNotOpenForAssignment;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Support\Assignments\ActiveTaskAssignments;
+use Domain\Tasks\Support\Assignments\TaskAssigner;
+use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature\Domains;
 
 use App\CoreApi;
-use App\Domains\Exceptions\InvalidListener;
-use App\Domains\Support\DomainRegistry;
-use App\Domains\Support\ListenerOwnership;
-use App\Domains\Support\StateListenerDeclarations;
-use App\Hooks\Declarations\StateMethods;
-use App\Hooks\StateCatalog\StateTypeRegistry;
-use App\Reflection\Support\CatalogueReflectorFactory;
+use App\Declarations\StateMethods;
+use App\Exceptions\InvalidListener;
+use App\Support\CatalogueReflectorFactory;
+use App\Support\DomainRegistry;
+use App\Support\ListenerOwnership;
+use App\Support\StateCatalog\StateTypeRegistry;
+use App\Support\StateListenerDeclarations;
 use Tests\Fixtures\Hooks\Declarations\OwnerlessLoader;
 use Tests\Fixtures\Hooks\Declarations\OwnerlessState;
 use Tests\TestCase;
@@ -26,7 +26,7 @@ final class StateListenerOwnerTest extends TestCase
     {
         $types = new StateTypeRegistry();
         $types->register('fixture.ownerless', new OwnerlessLoader());
-        $ownership = new ListenerOwnership($this->app->make(DomainRegistry::class), CoreApi::exports(), [], new CatalogueReflectorFactory());
+        $ownership = new ListenerOwnership($this->app->make(DomainRegistry::class), CoreApi::exports(), [], new CatalogueReflectorFactory(), app_path());
 
         $this->expectException(InvalidListener::class);
         $this->expectExceptionMessage(OwnerlessState::class.'@onPlanProgressChanged');

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Enums\ChatPermission;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Support\AgentChatAccess;
-use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Communication\Enums\IntervalRole;
-use App\Communication\Enums\TimelineEventType;
-use App\Communication\Exceptions\InboxUnavailable;
-use App\Communication\Models\TimelineEvent;
-use App\Communication\Support\ChatInboxes;
-use App\Communication\Support\InboxIntervals;
+use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Enums\ChatPermission;
+use App\Enums\IntervalRole;
+use App\Enums\TimelineEventType;
+use App\Exceptions\InboxUnavailable;
+use App\Models\TimelineEvent;
+use App\Support\ActorIdentity;
+use App\Support\AgentChatAccess;
+use App\Support\ChatInboxes;
+use App\Support\InboxIntervals;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;

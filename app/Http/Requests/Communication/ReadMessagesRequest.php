@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
+use App\Commands\ReadMessages\ReadMessagesCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class ReadMessagesRequest extends FormRequest

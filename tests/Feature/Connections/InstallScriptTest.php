@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Values\ReleaseManifest;
-use App\Agents\Values\ReleaseTarget;
-use App\Connections\Exceptions\TicketMalformed;
-use App\Connections\Support\InstallScript;
+use App\Enums\HostProtocolVersion;
+use App\Exceptions\TicketMalformed;
+use App\Support\InstallScript;
+use App\Values\ReleaseManifest;
+use App\Values\ReleaseTarget;
 use Symfony\Component\Process\Process;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TimeLimits\TimeLimit;

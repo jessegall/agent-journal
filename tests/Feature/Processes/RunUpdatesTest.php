@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Events\RunChanged;
-use App\Processes\Resolvers\Support\RunSnapshotResolver;
-use App\Processes\Support\RunUpdates;
+use App\Events\RunChanged;
+use App\Resolvers\Support\RunSnapshotResolver;
+use App\Support\RunUpdates;
 use Illuminate\Support\Facades\Event;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tests\Support\Processes\RunsAcmeRequests;

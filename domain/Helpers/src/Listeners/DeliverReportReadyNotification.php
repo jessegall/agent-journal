@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Listeners;
 
-use App\Communication\Contracts\Notifications;
-use App\Communication\Data\NotificationTarget;
-use App\Communication\Enums\NotificationSourceType;
-use App\Contracts\Attributes\InCommandTransaction;
+use App\Attributes\InCommandTransaction;
 use App\Contracts\Listener;
+use App\Contracts\Notifications;
+use App\Data\NotificationTarget;
+use App\Enums\NotificationSourceType;
 use Domain\Helpers\Events\ReportJobLinked;
 use Domain\Helpers\Models\HelperJob;
 

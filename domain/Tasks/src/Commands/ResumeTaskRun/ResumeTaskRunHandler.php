@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\ResumeTaskRun;
 
-use App\Actors\Support\ActorIdentity;
-use App\Desks\Contracts\RunClaims;
-use App\Desks\Exceptions\RunClaimRefused;
-use App\Hooks\Contracts\ActorWorkStacks;
-use App\Hooks\References\SubjectReference;
+use App\Contracts\ActorWorkStacks;
+use App\Contracts\RunClaims;
+use App\Exceptions\RunClaimRefused;
+use App\Support\ActorIdentity;
+use App\Support\References\SubjectReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskResumeCovered;
@@ -16,7 +16,7 @@ use Domain\Tasks\Exceptions\TaskRunFinished;
 use Domain\Tasks\Exceptions\TaskRunStale;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
-use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
+use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
 
 final readonly class ResumeTaskRunHandler extends TaskCommandHandler
 {

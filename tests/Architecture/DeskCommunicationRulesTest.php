@@ -6,7 +6,7 @@ namespace Tests\Architecture;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Finder\Finder;
+use Tests\Architecture\Support\FormerPaths;
 
 /**
  * The rules desks and Core communication keep: a desk is never an actor, no code there chooses behaviour by actor
@@ -15,7 +15,7 @@ use Symfony\Component\Finder\Finder;
  */
 final class DeskCommunicationRulesTest extends TestCase
 {
-    private const array FOLDERS = ['app/Desks', 'app/Communication'];
+    private const array FOLDERS = ['app/Desks/', 'app/Communication/'];
 
     private const array RULES = [
         'a desk implements Actor (a desk is not an actor)' => 'implementsActor',
@@ -161,12 +161,11 @@ final class DeskCommunicationRulesTest extends TestCase
     private function files(): array
     {
         $root = dirname(__DIR__, 2);
-        $folders = array_map(fn (string $folder) => "{$root}/{$folder}", self::FOLDERS);
-        $finder = Finder::create()->files()->name('*.php')->in($folders);
         $files = [];
 
-        foreach ($finder as $file) {
-            $files[substr($file->getPathname(), strlen($root) + 1)] = $file->getContents();
+        // The desk and communication files by the folders they had before plan 62 moved them to their roles.
+        foreach (FormerPaths::filesFrom(self::FOLDERS) as $path) {
+            $files[$path] = (string) file_get_contents("{$root}/{$path}");
         }
 
         return $files;

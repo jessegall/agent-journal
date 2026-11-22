@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\AgentRequests;
 
-use App\AgentRequests\Exceptions\StateBlocked;
-use App\AgentRequests\Pipelines\RunSignedCallPipeline;
-use App\AgentRequests\Values\CallToSend;
-use App\AgentRequests\Values\CommandReport;
-use App\Pipelines\Support\PipelineRunner;
+use App\Exceptions\StateBlocked;
+use App\Pipelines\RunSignedCallPipeline;
+use App\Support\PipelineRunner;
+use App\Values\CallToSend;
+use App\Values\CommandReport;
 use Tests\Fixtures\AgentRequests\NoteAnswer;
 use Tests\Fixtures\AgentRequests\WriteNoteCall;
 use Tests\Support\RecordedCalls;

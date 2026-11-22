@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Support;
 
-use App\Assignments\Contracts\Assignable;
-use App\Assignments\Contracts\AssignableProvider;
-use App\Records\Exceptions\RecordUnavailable;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\Assignable;
+use App\Contracts\AssignableProvider;
+use App\Exceptions\RecordUnavailable;
+use App\Support\RecordIdentity;
 use Illuminate\Container\Attributes\Scoped;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 

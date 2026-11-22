@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Agents\Enums\StartRefusalType;
-use App\Agents\Models\Agent;
-use App\Agents\Support\CapacityCheck;
-use App\Agents\Support\StartRemedyWords;
+use App\Enums\StartRefusalType;
 use App\Http\Requests\Agents\CheckCapacityRequest;
-use Illuminate\Http\JsonResponse;
+use App\Models\Agent;
+use App\Support\CapacityCheck;
+use App\Support\StartRemedyWords;
 
 /**
  * Check capacity: whether a start of the agent with these choices would fit the host now, or which resource it lacks,
@@ -17,23 +16,26 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class CheckCapacityController
 {
+    /**
+     * @return array{fits: bool, resource?: string, explanation?: string, remedy?: string}
+     */
     public function __invoke(
         CheckCapacityRequest $request,
         string $agent,
         CapacityCheck $check,
         StartRemedyWords $words,
-    ): JsonResponse {
+    ): array {
         $shortage = $check->shortageFor(Agent::query()->findOrFail($agent), $request->mode(), $request->budgets());
 
         if ($shortage === null) {
-            return new JsonResponse(['fits' => true]);
+            return ['fits' => true];
         }
 
-        return new JsonResponse([
+        return [
             'fits' => false,
             'resource' => $shortage->value,
             'explanation' => $shortage->explanation(),
             'remedy' => $words->textOf(StartRefusalType::CapacityUnavailable->remedy()),
-        ]);
+        ];
     }
 }

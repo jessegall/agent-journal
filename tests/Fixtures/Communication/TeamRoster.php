@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Communication;
 
-use App\Actors\Support\ActorIdentity;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\AssignmentReference;
-use App\Communication\Support\InboxMembership;
+use App\Support\ActorIdentity;
+use App\Support\AssigneeIdentity;
+use App\Support\AssignmentReference;
+use App\Support\InboxMembership;
 use Illuminate\Support\Str;
 
 /**

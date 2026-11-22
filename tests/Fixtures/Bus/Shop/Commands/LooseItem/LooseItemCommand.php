@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Bus\Shop\Commands\LooseItem;
 
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
-use App\Operations\Enums\AccessType;
-use App\Bus\Attributes\Authorize;
-use App\Actors\Support\ActorContext;
-use App\Bus\Contracts\Command;
-use App\Bus\Exceptions\CommandDispatcherMissing;
+use App\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Support\ActorContext;
+use App\Contracts\Command;
+use App\Exceptions\CommandDispatcherMissing;
 
 /**
  * A command that is neither readonly nor built on the base: it loads, and the registry refuses it as not readonly.

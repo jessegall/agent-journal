@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\QuestionReminders\States;
 
-use App\Hooks\Contracts\WorkOccurrenceGuard;
-use App\Hooks\References\Exceptions\WorkOccurrenceStale;
-use App\Hooks\References\WorkOccurrence;
+use App\Contracts\WorkOccurrenceGuard;
+use App\Support\References\Exceptions\WorkOccurrenceStale;
+use App\Support\References\WorkOccurrence;
 use Tests\Fixtures\Domains\QuestionReminders\Models\Question;
 
 /**

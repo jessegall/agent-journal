@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\OperationDeadline;
-use App\Hooks\Drivers\DriverCapabilities;
-use App\Hooks\Drivers\DriverReply;
-use App\Hooks\Enums\RewriteSupport;
-use App\Hooks\Events\ContextStarted;
-use App\Hooks\Inputs\ContextCompacted;
-use App\Hooks\Inputs\Values\CompactionDetails;
-use App\Hooks\Models\HookCall;
-use App\Hooks\Stack\HookAnswer;
+use App\Contracts\CommandBus;
+use App\Enums\RewriteSupport;
+use App\Events\ContextStarted;
+use App\Models\HookCall;
+use App\Support\Drivers\DriverCapabilities;
+use App\Support\Drivers\DriverReply;
+use App\Support\Inputs\ContextCompacted;
+use App\Support\Inputs\Values\CompactionDetails;
+use App\Support\OperationDeadline;
+use App\Support\Stack\HookAnswer;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;

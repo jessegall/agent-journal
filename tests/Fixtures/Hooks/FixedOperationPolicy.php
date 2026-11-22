@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Agents\Enums\AccessRuleType;
-use App\Agents\Values\AccessDecision;
-use App\Agents\Values\Operation;
-use App\Hooks\Contracts\OperationPolicy;
-use App\Hooks\States\Contracts\StopConditionGate;
-use App\Hooks\StateLoading\Loaders\ReadyStateLoader;
-use App\Operations\Enums\AccessType;
+use App\Enums\AccessRuleType;
+use App\Values\AccessDecision;
+use App\Values\Operation;
+use App\Contracts\OperationPolicy;
+use App\Support\States\Contracts\StopConditionGate;
+use App\Support\StateLoading\Loaders\ReadyStateLoader;
+use App\Enums\AccessType;
 use Illuminate\Container\Container;
 
 /**

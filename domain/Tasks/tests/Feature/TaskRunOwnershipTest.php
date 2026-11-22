@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\ActorNotAllowed;
-use App\Actors\Support\ActorContext;
-use App\AgentRequests\Support\SignedCall;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Agents\Support\AgentContext;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\RequestKey;
-use App\Desks\Contracts\RunClaims;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Contracts\RunClaims;
+use App\Exceptions\ActorNotAllowed;
+use App\Models\Agent;
+use App\Models\AgentSession;
+use App\Support\ActorContext;
+use App\Support\AgentContext;
+use App\Support\RequestKey;
+use App\Support\SignedCall;
+use App\Support\StartSessions;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;

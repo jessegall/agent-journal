@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Files\Contracts\Files;
-use App\Files\Enums\Place;
-use App\Files\Exceptions\FolderClosed;
+use App\Contracts\Files;
+use App\Enums\Place;
+use App\Exceptions\FolderClosed;
 use Tests\Support\Files\UsesTemporaryPlaces;
 use Tests\TestCase;
 

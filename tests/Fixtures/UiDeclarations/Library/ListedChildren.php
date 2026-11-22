@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Library;
 
-use App\Ui\Contracts\NavigationChildren;
+use App\Contracts\NavigationChildren;
 
 /**
  * Lists the items a test put in ListedNavigation.

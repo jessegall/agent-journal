@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Reads\Support\ReadBuilder;
-use App\Records\Contracts\RecordProvider;
-use App\Records\Data\RecordCard;
-use App\Records\Support\ProvidesModelRecords;
+use App\Concerns\ProvidesModelRecords;
+use App\Contracts\CurrentActor;
+use App\Contracts\RecordProvider;
+use App\Data\RecordCard;
+use App\Support\ReadBuilder;
 use Domain\Tasks\Models\Task;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;

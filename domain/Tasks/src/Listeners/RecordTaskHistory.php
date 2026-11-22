@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Listeners;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorIdentity;
-use App\Contracts\Attributes\InCommandTransaction;
+use App\Attributes\InCommandTransaction;
+use App\Contracts\CurrentActor;
 use App\Contracts\Listener;
-use Domain\Tasks\Api\Events\TaskBlocked;
-use Domain\Tasks\Api\Events\TaskCancelled;
-use Domain\Tasks\Api\Events\TaskFinished;
+use App\Support\ActorIdentity;
+use Domain\Tasks\Events\TaskBlocked;
+use Domain\Tasks\Events\TaskCancelled;
+use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskHistoryEntry;

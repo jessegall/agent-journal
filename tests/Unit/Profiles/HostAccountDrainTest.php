@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Agents\Enums\ArrangementType;
-use App\Profiles\Support\HostAccountDrain;
+use App\Enums\ArrangementType;
+use App\Support\HostAccountDrain;
 use PHPUnit\Framework\TestCase;
 
 final class HostAccountDrainTest extends TestCase

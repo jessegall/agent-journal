@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Agents;
 
-use App\Actors\Support\ActorStore;
-use App\Agents\Contracts\HostCalls;
-use App\Agents\Contracts\LocalProjectHosts;
-use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Exceptions\CallSignatureInvalid;
-use App\Agents\Exceptions\HostCredentialRejected;
-use App\Agents\Exceptions\HostProtocolMismatch;
-use App\Agents\Values\HostContext;
-use App\Bus\Enums\CommandEntry;
-use App\Bus\Support\CommandEntrance;
+use App\Contracts\HostCalls;
+use App\Contracts\LocalProjectHosts;
+use App\Enums\CommandEntry;
+use App\Enums\HostProtocolVersion;
+use App\Exceptions\CallSignatureInvalid;
+use App\Exceptions\HostCredentialRejected;
+use App\Exceptions\HostProtocolMismatch;
+use App\Support\ActorStore;
+use App\Support\CommandEntrance;
+use App\Values\HostContext;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\JsonResponse;

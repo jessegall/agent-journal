@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Communication;
 
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\AssignmentReference;
-use App\Communication\Exceptions\MembershipEvidenceMismatch;
-use App\Communication\Support\InboxMembership;
+use App\Exceptions\MembershipEvidenceMismatch;
+use App\Support\AssigneeIdentity;
+use App\Support\AssignmentReference;
+use App\Support\InboxMembership;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;

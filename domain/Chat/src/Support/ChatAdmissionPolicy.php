@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Actors\Contracts\ChatEligibility;
-use App\Actors\Enums\ActorType;
-use App\Actors\Enums\ChatPermission;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Contracts\InboxResolver;
-use App\Communication\Support\ChatInboxes;
-use App\Profiles\Support\AgentChatAdmission;
+use App\Contracts\ChatEligibility;
+use App\Contracts\InboxResolver;
+use App\Enums\ActorType;
+use App\Enums\ChatPermission;
+use App\Support\ActorIdentity;
+use App\Support\AgentChatAdmission;
+use App\Support\ChatInboxes;
 use Domain\Chat\Models\Conversation;
 
 /**

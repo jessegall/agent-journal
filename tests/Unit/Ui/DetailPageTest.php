@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Ui;
 
-use App\Ui\Layout\DetailPage;
-use App\Ui\Layout\LayoutActionData;
-use App\Ui\Layout\LayoutBackData;
-use App\Ui\Layout\LayoutFactValueData;
-use App\Ui\Layout\LayoutPartData;
-use App\Ui\Layout\LayoutRowData;
-use App\Ui\Layout\PublicationTab;
+use App\Support\Layout\DetailPage;
+use App\Support\Layout\LayoutActionData;
+use App\Support\Layout\LayoutBackData;
+use App\Support\Layout\LayoutFactValueData;
+use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\LayoutRowData;
+use App\Support\Layout\PublicationTab;
 use Tests\TestCase;
 
 /**

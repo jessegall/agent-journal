@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Commands\StartSequence;
 
-use App\Agents\Contracts\SessionResolver;
+use App\Contracts\SessionResolver;
 use Domain\Sequences\Commands\Support\SequenceCommandHandler;
 use Domain\Sequences\Models\SequenceRun;
 

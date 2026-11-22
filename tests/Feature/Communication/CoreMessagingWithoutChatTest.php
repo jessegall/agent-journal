@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Bus\Support\CommandRegistry;
-use App\Communication\Commands\SendMessage\SendMessageCommand;
-use App\Communication\Models\Message;
-use App\Communication\States\Support\AnsweringMessageStateReference;
+use App\Commands\SendMessage\SendMessageCommand;
+use App\Contracts\LinkRecordProvider;
+use App\Contracts\StateProvider;
 use App\CoreCommands;
-use App\Domains\Contracts\LinkRecordProvider;
-use App\Domains\Contracts\StateProvider;
-use App\Hooks\Events\StateTypesRequested;
-use App\Hooks\StateCatalog\StateTypeRegistry;
-use App\Links\Support\LinkTypeRegistry;
+use App\Events\StateTypesRequested;
+use App\Models\Message;
+use App\Support\CommandRegistry;
+use App\Support\LinkTypeRegistry;
+use App\Support\StateCatalog\StateTypeRegistry;
+use App\Support\States\Support\AnsweringMessageStateReference;
 use Domain\Chat\ChatDomain;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\TestCase;

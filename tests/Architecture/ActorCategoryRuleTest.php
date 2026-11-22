@@ -26,7 +26,7 @@ final class ActorCategoryRuleTest extends TestCase
      * Where an ActorType case stays allowed, each with why it chooses no behaviour; the list only shrinks.
      */
     private const array ALLOWED = [
-        'app/Sharing/Models/ShareAudit.php' => 'maps the kind of actor to the label an audit line shows',
+        'app/Models/ShareAudit.php' => 'maps the kind of actor to the label an audit line shows',
     ];
 
     public function test_no_code_chooses_behaviour_by_the_type_of_actor(): void

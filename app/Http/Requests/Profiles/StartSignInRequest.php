@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
-use App\Drivers\Contracts\DriverCatalogue;
-use App\Profiles\Enums\SignInMethod;
-use App\Profiles\Support\SignInProtocols;
+use App\Contracts\DriverCatalogue;
+use App\Enums\SignInMethod;
+use App\Support\SignInProtocols;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

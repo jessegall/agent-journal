@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Data;
 
-use App\Assignments\Support\AssignmentData;
-use Domain\Plans\Api\PlanCard;
+use App\Support\AssignmentData;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Values\PlanCard;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

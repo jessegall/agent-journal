@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\CloseReport;
 
-use App\Numbers\Support\RecordReference;
+use App\Support\RecordReference;
 use Domain\Documents\Commands\Support\DocumentCommandHandler;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Support\RecordChanges;

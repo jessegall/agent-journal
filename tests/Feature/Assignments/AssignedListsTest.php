@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Agents\Models\Agent;
-use App\Assignments\Contracts\AssignmentTransaction;
-use App\Assignments\Exceptions\InvalidAssignmentPage;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\NumberedPage;
-use Domain\Plans\Api\AssignedPlanFilters;
+use App\Contracts\AssignmentTransaction;
+use App\Exceptions\InvalidAssignmentPage;
+use App\Models\Agent;
+use App\Support\AssigneeIdentity;
+use App\Support\NumberedPage;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
-use Domain\Tasks\Api\TaskFilters;
+use Domain\Plans\Values\AssignedPlanFilters;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Values\TaskFilters;
 use Illuminate\Support\Str;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Data;
 
-use App\Http\Data\PaginationData;
+use App\Data\PaginationData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;

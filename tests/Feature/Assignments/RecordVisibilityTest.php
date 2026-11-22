@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Agents\Models\Agent;
-use App\Assignments\Contracts\RecordVisibility;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\RecordVisibility;
+use App\Models\Agent;
+use App\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;

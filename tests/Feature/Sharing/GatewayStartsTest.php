@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Sharing\Enums\GatewayAddressCheck;
-use App\Sharing\Exceptions\GatewayOpenFailed;
-use App\Sharing\Gateways\Support\GatewayChildren;
-use App\Sharing\Gateways\Support\GatewayStarts;
-use App\Sharing\Support\GatewayConfiguration;
-use App\Sharing\Support\GatewayOperation;
+use App\Enums\GatewayAddressCheck;
+use App\Exceptions\GatewayOpenFailed;
+use App\Support\GatewayConfiguration;
+use App\Support\GatewayOperation;
+use App\Support\Gateways\Support\GatewayChildren;
+use App\Support\Gateways\Support\GatewayStarts;
 use Illuminate\Process\Factory as Processes;
 use Illuminate\Process\FakeInvokedProcess;
 use Tests\Support\Sharing\FakeShareGateway;

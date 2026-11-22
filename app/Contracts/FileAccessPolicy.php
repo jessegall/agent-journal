@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Contracts;
+
+use App\Enums\FileAccess;
+use PhpOption\Option;
+
+/**
+ * Judges one file an agent's tool reads or writes, before any state is asked; the area that binds it knows why.
+ */
+interface FileAccessPolicy
+{
+    /**
+     * The refusal the agent reads when this session may not touch the file; it names no other session or path.
+     *
+     * @return Option<string>
+     */
+    public function refusalFor(string $sessionId, FileAccess $access, string $path): Option;
+}

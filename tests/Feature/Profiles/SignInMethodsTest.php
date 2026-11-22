@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Drivers\Support\DefaultDrivers;
-use App\Http\Data\Profiles\SignInMethodData;
-use App\Profiles\Enums\SignInMethod;
-use App\Profiles\Exceptions\SignInMethodMissing;
-use App\Profiles\Support\ClaudeSignIn;
-use App\Profiles\Support\CodexSignIn;
-use App\Profiles\Support\SignInProtocols;
+use App\Data\Profiles\SignInMethodData;
+use App\Enums\SignInMethod;
+use App\Exceptions\SignInMethodMissing;
+use App\Support\ClaudeSignIn;
+use App\Support\CodexSignIn;
+use App\Support\DefaultDrivers;
+use App\Support\SignInProtocols;
 use Tests\TestCase;
 
 /**

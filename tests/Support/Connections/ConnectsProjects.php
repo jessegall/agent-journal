@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Support\Connections;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\AgentRequests\Support\SignedCall;
-use App\Agents\Enums\HostProtocolVersion;
-use App\Bus\Contracts\CommandBus;
-use App\Connections\Models\InstallAttempt;
-use App\Connections\Models\ProjectInvitation;
-use App\Connections\Values\InstallTicket;
-use App\Drivers\Support\DefaultDrivers;
-use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
-use App\Settings\Values\SettingReference;
+use App\Commands\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Enums\HostProtocolVersion;
+use App\Models\InstallAttempt;
+use App\Models\ProjectInvitation;
+use App\Support\ActorContext;
+use App\Support\DefaultDrivers;
+use App\Support\SignedCall;
+use App\Values\InstallTicket;
+use App\Values\OwnerAuthority;
+use App\Values\SettingReference;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -28,6 +28,8 @@ use Illuminate\Testing\TestResponse;
  */
 trait ConnectsProjects
 {
+    use IssuesInstallLines;
+
     private User $owner;
 
     protected function setUpConnectsProjects(): void

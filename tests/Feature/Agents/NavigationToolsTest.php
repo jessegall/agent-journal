@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\Agents\Contracts\MainSeatTakeover;
-use App\Agents\Enums\NavigationState;
-use App\Agents\Models\NavigationRequest;
-use App\Assignments\Contracts\AssignmentTransaction;
+use App\Contracts\AssignmentTransaction;
+use App\Contracts\CurrentActorSetter;
+use App\Contracts\MainSeatTakeover;
+use App\Enums\NavigationState;
+use App\Models\NavigationRequest;
+use App\Support\ActorContext;
+use App\Values\OwnerAuthority;
 use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\RaisesNavigationRequests;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Assignments;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Assignments\Contracts\AutoAssignmentAccess;
-use App\Assignments\Contracts\AutoAssignmentResolver;
-use App\Http\Data\Assignments\AutoAssignmentPageData;
+use App\Contracts\AutoAssignmentAccess;
+use App\Contracts\AutoAssignmentResolver;
+use App\Contracts\CurrentActor;
+use App\Data\Assignments\AutoAssignmentPageData;
 use App\Http\Requests\Assignments\ListAutoAssignmentsRequest;
 use Illuminate\Http\JsonResponse;
 

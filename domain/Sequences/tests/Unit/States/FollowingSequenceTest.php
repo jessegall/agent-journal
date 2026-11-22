@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Tests\Unit\States;
 
-use App\Hooks\Decisions\Denied;
-use App\Hooks\Inputs\ContextCompacted;
-use App\Hooks\Inputs\Contracts\HookInput;
-use App\Hooks\Inputs\StopRequested;
-use App\Hooks\Inputs\Values\HookIdentity;
-use App\Hooks\Inputs\Values\StopDetails;
+use App\Support\Decisions\Denied;
+use App\Support\Inputs\ContextCompacted;
+use App\Support\Inputs\Contracts\HookInput;
+use App\Support\Inputs\StopRequested;
+use App\Support\Inputs\Values\HookIdentity;
+use App\Support\Inputs\Values\StopDetails;
 use Domain\Sequences\Enums\SequenceRunState;
-use Domain\Sequences\States\FollowingSequenceState;
 use Domain\Sequences\Support\SequenceWork;
+use Domain\Sequences\Support\States\FollowingSequenceState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;

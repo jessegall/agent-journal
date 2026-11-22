@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Values;
 
-use App\Agents\Enums\ConversationModeType;
+use App\Enums\ConversationModeType;
 
 /**
  * How a dispatch launched one job, kept with the job so its receipt reads the same after a parent restart: the

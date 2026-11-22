@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Values\HostContext;
-use App\Bus\Contracts\CommandBus;
-use App\Http\Data\Agents\UsageReportData;
+use App\Contracts\CommandBus;
+use App\Data\Agents\UsageReportData;
+use App\Values\HostContext;
 use Illuminate\Http\Response;
 
 /**

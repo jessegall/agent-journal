@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
-use App\Communication\Contracts\ConversationResolver;
-use App\Communication\Data\MessageClaimHolder;
-use App\Communication\Data\MessageReader;
+use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Contracts\ConversationResolver;
+use App\Data\MessageClaimHolder;
+use App\Data\MessageReader;
 use Spatie\LaravelData\Optional;
 use Tests\Support\MessagingTestCase;
 

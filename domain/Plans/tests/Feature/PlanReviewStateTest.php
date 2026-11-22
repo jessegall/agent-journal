@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\OwnerAuthority;
-use App\Bus\Contracts\CommandBus;
-use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Storage\FrameRecord;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Enums\ActorType;
+use App\Models\AgentStackRow;
+use App\Support\ActorContext;
+use App\Support\ActorIdentity;
+use App\Support\Storage\FrameRecord;
+use App\Values\OwnerAuthority;
 use Domain\Plans\Commands\RequestPlanReview\RequestPlanReviewCommand;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\States\Support\ReviewingPlanStateReference;
+use Domain\Plans\Support\States\Support\ReviewingPlanStateReference;
 use Domain\Plans\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;

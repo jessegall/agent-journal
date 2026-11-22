@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Enums\ChatPermission;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Support\AgentChatAccess;
-use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Communication\Commands\RetryDelivery\RetryDeliveryCommand;
-use App\Communication\Enums\OutstandingRangeState;
-use App\Communication\Enums\ReceiptDeliveryState;
-use App\Communication\Enums\WakeState;
-use App\Communication\Models\MessageReceipt;
-use App\Communication\Models\OutstandingRange;
-use App\Communication\Models\ReceiptDelivery;
+use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\RetryDelivery\RetryDeliveryCommand;
+use App\Enums\ChatPermission;
+use App\Enums\OutstandingRangeState;
+use App\Enums\ReceiptDeliveryState;
+use App\Enums\WakeState;
+use App\Models\MessageReceipt;
+use App\Models\OutstandingRange;
+use App\Models\ReceiptDelivery;
+use App\Support\ActorIdentity;
+use App\Support\AgentChatAccess;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;

@@ -1,0 +1,542 @@
+{
+    "moved": {
+        "domain/Tasks/src/Api/Events/TaskBlocked.php": "811a7f66b23605828db2e20c105d33996dc5f71d",
+        "domain/Tasks/src/Api/Events/TaskCancelled.php": "c6b3110af79aee5f280421633c23064a2d64134b",
+        "domain/Tasks/src/Api/Events/TaskCheckRecorded.php": "4556cf3a972a4be7f9b0fee6918fa8c2f1421eb3",
+        "domain/Tasks/src/Api/Events/TaskFinished.php": "46bb2c1520c1f020035df2f33c8a5ba3fa6b3912",
+        "domain/Tasks/src/Api/Events/TaskLogged.php": "04ff1de9019b9469c20baf65a4ceea52dd4e1136",
+        "domain/Tasks/src/Api/Events/TaskStartCommitted.php": "36b171e3d0110eb483a1de0df8ee1430de230d67",
+        "domain/Tasks/src/Api/Events/TaskWaitChanged.php": "b4b9b46a866005ca1857981b51b67f1564092752",
+        "domain/Tasks/src/Api/TaskAssignmentCompletion.php": "5fca3e91c4b5830652613b266cc0744dd9dea96c",
+        "domain/Tasks/src/Api/TaskCard.php": "1c0ac7f027fb470efa63b51ac22cd706489662b2",
+        "domain/Tasks/src/Api/TaskDetails.php": "9c530a53be5bdb2f042f37e5a3b9480ef7ed84d3",
+        "domain/Tasks/src/Api/TaskExecution.php": "e71c984c251ee11e4a20a9fc10d2c31e3b040266",
+        "domain/Tasks/src/Api/TaskFilters.php": "a14278a1a1876d3fe7609526b62dc4d21a63d695",
+        "domain/Tasks/src/Api/TaskGraph.php": "80a87212f7039af135b46b8290289e46158a07b6",
+        "domain/Tasks/src/Api/TaskGraphDestinations.php": "3c77f6999548df12cd598f2151e4a2b38b3f8b25",
+        "domain/Tasks/src/Api/TaskGraphEdge.php": "efd6dffd85e68367ccb575360d535a2134e0ba1d",
+        "domain/Tasks/src/Api/TaskGraphNode.php": "858bb3e15fa9e62263950a903746295bdbcad944",
+        "domain/Tasks/src/Api/TaskGraphSuggestion.php": "1197d2fa50231f0c25a3fe328f8f66b016ae6c29",
+        "domain/Tasks/src/Api/TaskHistoryPage.php": "370c08f185ad51a1279fcbef0bfdfcb79c370d41",
+        "domain/Tasks/src/Api/TaskList.php": "babc95959a11e39e7072a13a9478e28cf00595a7",
+        "domain/Tasks/src/Api/TaskLogLine.php": "59e8369f60e8223a7fccb2151a5f27d4c9a25c5a",
+        "domain/Tasks/src/Api/TaskLogPage.php": "2d8dec4ef792e3e3be7003589dfdaccaa862e00c",
+        "domain/Tasks/src/Api/TaskProgress.php": "60e1aa3e6bfbad938f543808071b64d6eb44dde2",
+        "domain/Tasks/src/Api/TaskProof.php": "3c2afd239b1dcd1d62d30e0fdf4797e22260d9d6",
+        "domain/Tasks/src/Api/TaskProofPage.php": "dcaeb51d6e09443b6dddab5049cf75241a51543d",
+        "domain/Tasks/src/Api/TaskSummary.php": "7682cd33dc693f31e1c582409f3eed31935312f3",
+        "domain/Tasks/src/Api/TaskText.php": "bc0e14ac34d72195c5228533154023969fbc77c1",
+        "domain/Tasks/src/Api/TaskTransition.php": "cd5cf09b22a91ae77b004cd48fac8b098ca5f1b5",
+        "domain/Tasks/src/Api/TaskType.php": "71231bbd3c9507081f8a2937428e3601f7221169",
+        "domain/Tasks/src/Api/TaskWaitLink.php": "c034d0b7672ad72cccc65ff833c7c404c3a6a73b",
+        "domain/Tasks/src/Api/TaskWaits.php": "860d66aeab068277a6777069c782564efb8c5192",
+        "domain/Tasks/src/Assignments/ActiveTaskAssignments.php": "7085b1258429981447ff487cf39cdd896e546850",
+        "domain/Tasks/src/Assignments/NamedTaskPool.php": "e3db5dd74f82f5f472a48be7a2ff1f0b9fbbce8b",
+        "domain/Tasks/src/Assignments/NamedTaskPoolFactory.php": "651a7dac897e9021327c37ffa28d9fc62f8ef63a",
+        "domain/Tasks/src/Assignments/OpenTaskPool.php": "63c6f0e2b21c43e7e09415f569c016edfcc785b2",
+        "domain/Tasks/src/Assignments/OpenTaskPoolFactory.php": "c7239277cfbbaa3165677d8b16b047400adb2b4d",
+        "domain/Tasks/src/Assignments/TaskAssigner.php": "c87cd81af3be6abc4d09e6c182883b090f7c200b",
+        "domain/Tasks/src/Console/AssignedTasksCommand.php": "d36c377a5bcaea2a3b5eeadd6cb76a71f8bd691b",
+        "domain/Tasks/src/Http/Data/AssignedTaskCardData.php": "0c7318280e67b917b6b4deeb54aadd3943590ea7",
+        "domain/Tasks/src/Http/Data/AssignedTaskListData.php": "b4316f2e7e6ee450ffdab002bde4981b910ab9ac",
+        "domain/Tasks/src/Http/Data/TaskActionsData.php": "e5d659ff159a08f6e7dda666375cb5c193bf5203",
+        "domain/Tasks/src/Http/Data/TaskCommentsData.php": "0de273b1a1d1119b33d39bc98c41f4e8be68dc2f",
+        "domain/Tasks/src/Http/Data/TaskExecutionData.php": "58c52d6a8889f8e98053cd7d309ef1fa0670c42d",
+        "domain/Tasks/src/Http/Data/TaskFiltersData.php": "e1ed0bef6f35e01aea7262b5a79fc99018dbd6d4",
+        "domain/Tasks/src/Http/Data/TaskListData.php": "3878884a3539974ee9cc01ec8c7ccea5b1493cb5",
+        "domain/Tasks/src/Http/Data/TaskLogsData.php": "098c175777dd60c9ab8e50db8e215c288b2e7c80",
+        "domain/Tasks/src/Http/Data/TaskLogsPartData.php": "e1507a23d158f8a0f45bb042a25a1431f4c167f0",
+        "domain/Tasks/src/Http/Data/TaskProofData.php": "4cae963e40da7826ce3cd2f74951ca948c9010a6",
+        "domain/Tasks/src/Http/Data/TaskProofsData.php": "ed647794e5c5e9efb955a4176352bc0103b8ae75",
+        "domain/Tasks/src/Http/Data/TaskProofsPartData.php": "3bfc6f1fd5bf06138f864b03aa66687b627e68a2",
+        "domain/Tasks/src/Http/Data/TaskReaderData.php": "aaa91c520ac2f9ca9a7129cabc6d567bc03c661f",
+        "domain/Tasks/src/Http/Data/TaskRowData.php": "899a3c520821687409b4b6dd119bd2abdfd68a39",
+        "domain/Tasks/src/Http/Data/TaskRunnerData.php": "452e7acabe0543d144b9478d58dc640fb0a5f7cf",
+        "domain/Tasks/src/Http/Data/TaskStreamEntryData.php": "ec456029cd1063fcf4f68ee14299bee396275866",
+        "domain/Tasks/src/Http/Data/TaskStreamPageData.php": "100bdfe0f8de2ffb4daaf33cc56cf1b3f4e08d16",
+        "domain/Tasks/src/Http/Data/TaskWaitActionsData.php": "a504f8a607d0e099821e593aac7f8a645b4f384a",
+        "domain/Tasks/src/Http/Data/TaskWaitChoiceData.php": "8afefb1571c7cee0da038210f4426760cb4b854e",
+        "domain/Tasks/src/Http/Data/TaskWaitItemData.php": "76327036270d2c11cf9dc9feb342be1c5fca6278",
+        "domain/Tasks/src/Http/Data/TaskWaitsData.php": "62fb4b1d8190a5598463b2f3fa787c417bfc3a7c",
+        "domain/Tasks/src/Http/Data/TaskWaitsPartData.php": "e3401f56094c61fb30f7a6fc06a0fb0b0caa900e",
+        "domain/Tasks/src/Mcp/AssignedTasksTool.php": "108cbd019fa4a90d3c545a6467eda411aa929aa2",
+        "domain/Tasks/src/Mcp/BlockTaskTool.php": "c78a0d50828ab7aff53c30e341cd3f60196a6cbb",
+        "domain/Tasks/src/Mcp/CancelTaskTool.php": "c3df21fa0cf29b85a020e697d1ff1b36bc3f7e82",
+        "domain/Tasks/src/Mcp/CreateTaskTool.php": "dbecbe5d9b594578eeaf857be0a507cd93cd46cc",
+        "domain/Tasks/src/Mcp/EditTaskTool.php": "9e4f19871eae956014dfe7833091e09d0b9b9088",
+        "domain/Tasks/src/Mcp/FinishTaskTool.php": "05a38c4efe8b49c56594027f722b1500ec075417",
+        "domain/Tasks/src/Mcp/HeldTasksOverview.php": "d8fa16a4beca93eebd31c99e82b46baa0204fe60",
+        "domain/Tasks/src/Mcp/LogTaskTool.php": "82958c1f8bb794377032486f46c94eb4910c38ba",
+        "domain/Tasks/src/Mcp/RunTaskCheckTool.php": "91e49af05b1ad055cfac6171c11950215f78f1f4",
+        "domain/Tasks/src/Mcp/StartTaskTool.php": "93fd70eb2b5a479a85ee5fc89d0c6884522f200d",
+        "domain/Tasks/src/Mcp/TaskListTool.php": "4985fa449314ca63e8a7ed849240d346ff34051f",
+        "domain/Tasks/src/Mcp/TaskReadResult.php": "d6fd3de2810e75cb873f62725d59479f70a42cd3",
+        "domain/Tasks/src/Mcp/TaskReadTool.php": "a24859f286fd2d43c8287d69ac45079c09dcf48f",
+        "domain/Tasks/src/Mcp/TaskResource.php": "79dc5c4a3e2e4ab45d16e8bf6e990a2b10cec8f4",
+        "domain/Tasks/src/Mcp/TaskSearch.php": "c4529723bb21ef12ca2a327b1925e6e4393f0184",
+        "domain/Tasks/src/Mcp/TaskWriteTool.php": "599b0e31c63d90116b92fc9c459b3003c126de97",
+        "domain/Tasks/src/Mcp/TasksListTool.php": "81461b717ce4e48b76c2bc4618eee9c17d56354d",
+        "domain/Tasks/src/Skills/TasksSkill.php": "d45be0b0e5f12c49ea7192f44b713621e94f64a0",
+        "domain/Tasks/src/States/Support/WorkingOnTaskStateFactory.php": "a107839c55069c67d7e373dbf18bf7cf8e3e50f1",
+        "domain/Tasks/src/States/Support/WorkingOnTaskStateReference.php": "4cbbc38592a3f5ee90f211e3c45ecc362b97541c",
+        "domain/Tasks/src/States/WorkingOnTaskState.php": "852ecc6e11c89e9fbc11bb329be091a49cb0f590",
+        "domain/Tasks/src/Routes/agent.php": "401c6f0e3d845c2973929f6076747cd80f9268d9"
+    },
+    "edits": {
+        ".commandments/custom/samples/WorkStackDecision.php": {
+            "prior": "1e44ea237d630e0a447d97f6a4004c2b1c82d663",
+            "result": "45ddd21ebb2b5186b1002a6ae0c0bb05733d4ebb",
+            "move": "batch"
+        },
+        "domain/Plans/src/Commands/RecordPhaseCheck/RecordPhaseCheckHandler.php": {
+            "prior": "0dd37940aa694527ad9614cf78a75d8f4bdd708d",
+            "result": "9013778289e5ec0bae1c2f4c34168fc16b4e5b49",
+            "move": "batch"
+        },
+        "domain/Plans/src/Data/PhaseTaskData.php": {
+            "prior": "513e6fc46e8ac5c72716246aa1cf1ab378736c79",
+            "result": "b56121239abe14f4bf5a6809cf7e2fa836fd737e",
+            "move": "batch"
+        },
+        "domain/Plans/src/Listeners/CountPhaseTaskStates.php": {
+            "prior": "a68b377cb85d6ee3da21dba5029a0843ad256770",
+            "result": "e1b753d90dedfc9817ca2002b268236ac6ded9cd",
+            "move": "batch"
+        },
+        "domain/Plans/src/Listeners/RaisePlanProgressChanged.php": {
+            "prior": "d6b0d8e871fe067af02bf789db156dde70057225",
+            "result": "88f68b58918daff747f104965a4922cb8d8dbeab",
+            "move": "batch"
+        },
+        "domain/Plans/src/PlansDomain.php": {
+            "prior": "76dc1e93fa0b9b098920207a6c8e63fa4bb64307",
+            "result": "455fea641c2b4b26a827c65b5922685a96961efc",
+            "move": "batch"
+        },
+        "domain/Plans/src/Resolvers/PlanTaskWindowResolver.php": {
+            "prior": "30e8afdbb8668351692efc0e793d38c223491eb2",
+            "result": "8df29a1760529ca7662b50447f8c264b98cc598e",
+            "move": "batch"
+        },
+        "domain/Plans/src/Support/PhaseTiming.php": {
+            "prior": "8167d261ab1dcab47535be255947efa81ca56ff8",
+            "result": "7a8266fc7783b88fe9475d35ef21db3edfd63ece",
+            "move": "batch"
+        },
+        "domain/Plans/src/Support/PlanOutline.php": {
+            "prior": "6deaf062e265a0772ebcd9a4cadad83e3280eefe",
+            "result": "90230e18a55eed29d6d73382f23878aa9e56e773",
+            "move": "batch"
+        },
+        "domain/Plans/src/Support/PlanProgressCount.php": {
+            "prior": "f7460712b1134da6b47b03557e0dca7d2bf5745a",
+            "result": "1264079106270c254a9d4c252b260d60cff7d2bd",
+            "move": "batch"
+        },
+        "domain/Plans/tests/Feature/PlanTaskPoolTest.php": {
+            "prior": "01b3113a4853695ee2b5a078c991247418c16742",
+            "result": "975cb93a2e28b98f6742d89839f7b90bd76934e3",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Calls/ListAssignedTasksCall.php": {
+            "prior": "52860b91ff7d172a68ebaf122cedcfb0f4b270ab",
+            "result": "a53a53ad4f5693fabd0f194d329ef804c3a46e3e",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Calls/TaskCalls.php": {
+            "prior": "c214c4e8e469227eec2333c185729f40fda099b0",
+            "result": "424be0e279970de6dfb82a5d13a6d6f822f93f6a",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunHandler.php": {
+            "prior": "a8ae3c9f7a4a95ad0ebcaf896f59e80111285e79",
+            "result": "a2cdb18b93495df5e5588b28eaa6c508fbd4aab0",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Commands/StartTask/StartTaskHandler.php": {
+            "prior": "a264383ea1751dcb4a9547483301b285d196ee7b",
+            "result": "fa444779d0c5e6d3df05e0e3f36d73cb020d4f2a",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Contracts/AssignedTaskResolver.php": {
+            "prior": "ee9fe357ad1141c6c252e54e796226d30eca0409",
+            "result": "51f4f312c2952e90dd387977225c0f76ac2e01cd",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Contracts/TaskAssignmentResolver.php": {
+            "prior": "9b8bf46afc51b24ecd9361335a7e52a3a5b145ce",
+            "result": "695c70d4786edd175931c940fcbf5ad3e26eaf01",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Contracts/TaskDetailsResolver.php": {
+            "prior": "7d8dfeec72cd5ea1d080c669fb4b26d2df76c487",
+            "result": "321468cda2cf6c3a3b5796386edf3b85661d0b60",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Contracts/TaskGraphResolver.php": {
+            "prior": "de782d79c3ce98b0604fff05080a1fc6a700e773",
+            "result": "5e9eb0eb787aa6f2cb8c80778397a1f3c650304c",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Contracts/TaskHistoryResolver.php": {
+            "prior": "e1cc42460fccc868f8da80c8f43ab7434a7d91d6",
+            "result": "8fa40f30d55dc63652936506d1db67c357767204",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Contracts/TaskListResolver.php": {
+            "prior": "b820cde081072b3568ac19401e200b58718655b6",
+            "result": "5daa1098a175a8b826569d781af02ee5a886667c",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Contracts/TaskLogResolver.php": {
+            "prior": "b2e27f0e22ea42fe0ecef63b8de6fa59a6f71472",
+            "result": "5d467f2846fc9d9da137f98b1fc489407e6b0a22",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Contracts/TaskProgressCounter.php": {
+            "prior": "2eeaaaa4ae1abe2ab0ed989e995e02fe013c387a",
+            "result": "d754598d1701002d28c7714adff66e54ae7614c4",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Contracts/TaskProofResolver.php": {
+            "prior": "222cd83b30f2117e51cd7bef773d130247949699",
+            "result": "e8bf1d9ea43e7f365c10602d2d61a53ecbd71a2e",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Contracts/TaskResolver.php": {
+            "prior": "ee5abd7a13464fdbf4bda443a5673fbf07a8a005",
+            "result": "35bb4613d07e2e03c624c34db9bd8d5aaa36b35e",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Contracts/TaskWaitResolver.php": {
+            "prior": "e5c667fe5e42694ae4cb4371d5ba19c1c29020e9",
+            "result": "7257711fb61cdccb86d518c4187d99475f1c0078",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Http/Controllers/Calls/ListAssignedTasksController.php": {
+            "prior": "699d81efe1176d39e99815babc907ae3df1a51c0",
+            "result": "e834794381edfb38042d53e80904b512d87ad6bd",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Http/Requests/Concerns/ReadsTaskFilters.php": {
+            "prior": "e74a99b6055a558024e0f39b7ae683cd1a872d67",
+            "result": "2633fb1a1e49e2304d35b107d9388e5b8d445fd4",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Listeners/AnnounceTaskStart.php": {
+            "prior": "a5de0c02697c9198ae9d834668ad648de577c8fc",
+            "result": "4fd965a2db5999816235a5be61d80e3ce9f84ed9",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Listeners/PushTaskState.php": {
+            "prior": "4a7137e3a5dd0cd35dd692e271475751262ad3fc",
+            "result": "c6e4f621c9bb9920802d4346d718535e76dc5fb3",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Listeners/RecordTaskHistory.php": {
+            "prior": "f6ca62fc98c9f71c907557adc68850db23d789d1",
+            "result": "22b2e90c9df8ce9a3ccbd4244acbb822f1811691",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Models/Task.php": {
+            "prior": "8c0608f2c6ee618e697795857fb0f5bcb64dc1db",
+            "result": "67ed15e74b622e135afff56e6dae058db069bc4c",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Models/TaskCheck.php": {
+            "prior": "282bbef71509fccb617a4614dd9a803a62d13bc6",
+            "result": "94316905487e83f4ba108454c37fbb340f3c491e",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Models/TaskHistoryEntry.php": {
+            "prior": "7ee008399236df22b2cb0372386855aa841b71f4",
+            "result": "fc621b8f734188742a096e40fd1badf804c32b80",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Models/TaskLogEntry.php": {
+            "prior": "95c34f00e63dabe747338878003b99d21eebdb15",
+            "result": "0b64d81ab5612f8625b040a19150b7df90e388ad",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Models/TaskWait.php": {
+            "prior": "4d1243f110a660eef1dfc3861618c675b4116e5c",
+            "result": "d8098d7a6387e577147988726303232d6ad39d78",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Providers/TasksServiceProvider.php": {
+            "prior": "766d615260954215b4a498889ed05ca35e01895f",
+            "result": "c68d6c27370e16e8c2ab7289b64c4663b4fe0c95",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Resolvers/AssignedTasks.php": {
+            "prior": "33cdb9c603be9f3ce6d76d56b6c5aed0ec241b0b",
+            "result": "bc0883a7ec448753209a4a8e096b835ee079f1e4",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Resolvers/ListedTasks.php": {
+            "prior": "44461cbf00cfe83aa4a4de0f4d85b273b82442d4",
+            "result": "152bcbac37c0323394b3bdceed4952580598a2a4",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Resolvers/Support/TaskExecutions.php": {
+            "prior": "52d54fdc315cb0c0a881736b7dec12fa424a5931",
+            "result": "6316f8fb5d6ff4e4ff7eab3c9973c300393e3494",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Resolvers/TaskAssignmentRecords.php": {
+            "prior": "4840a6eef0ee5a7af64932e8328c897d5fbeebd0",
+            "result": "5a4bee34551f4994d4298b2da9492dcf0fe27a2d",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Resolvers/TaskCounts.php": {
+            "prior": "bcc18464ea551ce36283ac482135dfb0261955f3",
+            "result": "a6ec5d90d602fd58f072a28a65a56745fc186aa6",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Resolvers/TaskDetailRecords.php": {
+            "prior": "d4a47c3027fc6175390e88a5bbe32f0837a73c67",
+            "result": "b9b4f424fa284e8fd39d21c8b071b1c2708733ec",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Resolvers/TaskGraphRecords.php": {
+            "prior": "47307af662a9ad14273d9906021f12e648adce67",
+            "result": "739e30ec7fcc5ed6812e74d86d1fdac3143857a2",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Resolvers/TaskHistoryRecords.php": {
+            "prior": "cbf609aaf2f69dd8cbc6cbdf70270b945fcb7607",
+            "result": "61a6af035355699d49ae0c59eb2d75726b529613",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Resolvers/TaskLogRecords.php": {
+            "prior": "d1e9a9cacd425217ea5d5aad1884c0039891a59d",
+            "result": "ba6ef4e13a96a7ed503b71f5ca52efd27cee6734",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Resolvers/TaskProofRecords.php": {
+            "prior": "26b2701bcceca53f42fb50bf0b2341044eef0053",
+            "result": "b4aa7058599cab047f4aee5eb1b7caf4f89a58ff",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Resolvers/TaskWaitRecords.php": {
+            "prior": "c99c44efdeac2219371e8935d8c723af732ab2b8",
+            "result": "86bbce57ccc01ce73e539bc45c861463fe044e82",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Resolvers/TaskWindowResolver.php": {
+            "prior": "7351f36777e635a14231b774c6d32442b34316c4",
+            "result": "2a4564eb92d76921da30da1f81f37c88d8f750c7",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Resolvers/VisibleTasks.php": {
+            "prior": "2cf87fdb05cd956fd2dc1755e8499a63c71e4697",
+            "result": "513831513811349a0a99e1689a527cf40f7bfb79",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Support/TaskDetailsFactory.php": {
+            "prior": "f9222f1e432aeb7000e5eeb804abf40d5458a99f",
+            "result": "e120a65bd1488852e67a08fcf0935db7eaf40841",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Support/TaskIndexLayout.php": {
+            "prior": "da7d6cb744eee9e12632cf1350a92674a9b9d63c",
+            "result": "df957fc9ba735b091d106b2fe6c95fd499b6722a",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Support/TaskReaderLayout.php": {
+            "prior": "50ebf67c727d3e093f6b99015305978f2352f950",
+            "result": "640e07251c9055ce2b4e5c2e8b889ee69b2241d1",
+            "move": "batch"
+        },
+        "domain/Tasks/src/Support/TaskStream.php": {
+            "prior": "690d38e61a82afab6469b6e6e173e5887433bb65",
+            "result": "f9a7d90eff28408fef34e8f1c641ad4a305952ef",
+            "move": "batch"
+        },
+        "domain/Tasks/src/TasksDomain.php": {
+            "prior": "0ccf4644b4b2f8d80805e634ddfb3370a48d8a55",
+            "result": "99b395d517928ee526e470beb639c57c337d6213",
+            "move": "batch"
+        },
+        "domain/Tasks/tests/Feature/TaskAssignerTest.php": {
+            "prior": "2fb865d80692bdfec657c970b5518a3612823052",
+            "result": "8f885e7763603f91c373631c1bb8f2d6f2942ed7",
+            "move": "batch"
+        },
+        "domain/Tasks/tests/Feature/TaskCheckTest.php": {
+            "prior": "b364438f19848cb182dfa4924257fc0109604d99",
+            "result": "3dade9f4c55df7deb5c31b9ef9f54b333428c29c",
+            "move": "batch"
+        },
+        "domain/Tasks/tests/Feature/TaskCommandsTest.php": {
+            "prior": "22a51899705bc16476c5f38ad58c8b238462e3f4",
+            "result": "a59acc1cbb8679ac6ae0ee74b38054e580baeb74",
+            "move": "batch"
+        },
+        "domain/Tasks/tests/Feature/TaskDetailsResolverTest.php": {
+            "prior": "d133c1a4eeb2a7dd6d18eff63644509824722029",
+            "result": "10e36c3501add5ff3f0307d471e9120052c2cb88",
+            "move": "batch"
+        },
+        "domain/Tasks/tests/Feature/TaskHistoryTest.php": {
+            "prior": "926be19df4e1086dd5a4fb1c860044ca3a6177f5",
+            "result": "0457a0638c33eb855bba706217b1883843df42c7",
+            "move": "batch"
+        },
+        "domain/Tasks/tests/Feature/TaskLogTest.php": {
+            "prior": "27c6f57785a63569155bcc8be933be45bb723a81",
+            "result": "8a4792bd9db741788cf7c7983f53306958ff4e8e",
+            "move": "batch"
+        },
+        "domain/Tasks/tests/Feature/TaskPageSignalsTest.php": {
+            "prior": "3c9eb9f4afb7b1ac695a2214b925938133c41a17",
+            "result": "364f890781ab8d22e38a4a3472cdaa14fc03cfa6",
+            "move": "batch"
+        },
+        "domain/Tasks/tests/Feature/TaskPoolsTest.php": {
+            "prior": "1042500aeb607aadd5c57f9e8745dfd65905f922",
+            "result": "131f9fb888548c56b78db12e4fc63b2ae88835f6",
+            "move": "batch"
+        },
+        "domain/Tasks/tests/Feature/TaskStartWaitsTest.php": {
+            "prior": "15786af381b410258b55202129f9b54d289e9807",
+            "result": "0dc3c9a6ebbdeea5b4fe6e6c7523dd99568a7a8d",
+            "move": "batch"
+        },
+        "domain/Tasks/tests/Feature/TaskStateContributionTest.php": {
+            "prior": "311c666b13f0242c11f64a3e25db7dcd8cc378c7",
+            "result": "9a5207245e8730cb068bff2f490c1ce14bce9a32",
+            "move": "batch"
+        },
+        "domain/Tasks/tests/Feature/TaskStreamTest.php": {
+            "prior": "86f2963c5466eee7f612d71798b1105af1e0e2fb",
+            "result": "b1715982cd91b35fa41066f24a7b49af58bc42b3",
+            "move": "batch"
+        },
+        "domain/Tasks/tests/Feature/WorkerLifecycleFactsTest.php": {
+            "prior": "bfe5d57de522ce68be7a96b26c532189bf19185a",
+            "result": "eb0997a6fc372a54a1a049215e7c5ac67a80c40e",
+            "move": "batch"
+        },
+        "domain/Tasks/tests/Unit/States/WorkingOnTaskTest.php": {
+            "prior": "d7126eaebab47dba0c1115f9f71922d0ec064778",
+            "result": "654528f92f79db842c763ebd411b0dc4f5a93077",
+            "move": "batch"
+        },
+        "tests/Architecture/EventOwners/Tasks.php": {
+            "prior": "329d1ad4ab698b0f39123f2c19813307a3713647",
+            "result": "593e335e0439b7ee91a517518061cd77165444cd",
+            "move": "batch"
+        },
+        "tests/Feature/Assignments/AssignedListsTest.php": {
+            "prior": "356781ee2e39bbbe64ccc378e543ae7155decf39",
+            "result": "d277a5e61165f53d004899467bba20f67d5a6d89",
+            "move": "batch"
+        },
+        "tests/Feature/Assignments/AutoAssignmentCommandsTest.php": {
+            "prior": "7ffd6411cfeafb507bff70a14508f4c60f547414",
+            "result": "758c6973cb6e05da16eb13af8a6ef9d1f62a762a",
+            "move": "batch"
+        },
+        "tests/Feature/Assignments/AutoAssignmentStatusTest.php": {
+            "prior": "e5a2563079dfd51488633d8eb1899ca4fb6ff46a",
+            "result": "e7607d92eceb85d777db992dbda5ffaba9f6715e",
+            "move": "batch"
+        },
+        "tests/Feature/Assignments/AutoAssignmentTriggerTest.php": {
+            "prior": "f45a4e888bad3de502aa7a79cc632d338f18ecd1",
+            "result": "666c284f34468e54b78276ed33d159640bb7fb48",
+            "move": "batch"
+        },
+        "tests/Feature/Docking/RichCardsTest.php": {
+            "prior": "a84756ef41fd3ce51cf2add96de9f89baefce0db",
+            "result": "aa5df466c92e2089992d3a8e4099d458b799ecf5",
+            "move": "batch"
+        },
+        "tests/Feature/Domains/RequiredListenerLaneTest.php": {
+            "prior": "e78f87a4ca568ee2f529a5d338d6d919305a1fad",
+            "result": "cd6373766303c8fcd33856c104004cd1049e7c4d",
+            "move": "batch"
+        },
+        "tests/Feature/Events/BaselineTimelinesTest.php": {
+            "prior": "e9eb004d6158bcaf829c0bdae64e20c1101c1f00",
+            "result": "b21c3c4f5d8db335e86292f011e6c3af68bd2611",
+            "move": "batch"
+        },
+        "tests/Feature/Events/EventPayloadTest.php": {
+            "prior": "8770150f11a45e8bc4bec2960211627fd44ed73f",
+            "result": "88c5d6de28a18a33985771a5b0fe0b68b5937f57",
+            "move": "batch"
+        },
+        "tests/Feature/Events/EventPayloads.php": {
+            "prior": "2cc81b1d77fea7ce91ac72bb0c96a9e8768d5ef8",
+            "result": "d8de7ceb71c62eff9cc3be849331431a36adce45",
+            "move": "batch"
+        },
+        "tests/Feature/Hooks/TaskWatchDeliveryTest.php": {
+            "prior": "5c42c9436c73bc1f915e2ff62445d26d5e5838de",
+            "result": "75a14bb90592ea3a6d10e03f13d3d94165371ccb",
+            "move": "batch"
+        },
+        "tests/Feature/Settings/DomainStateTypesTest.php": {
+            "prior": "addd0b92ea7adf7086b9050746d0b17064e10a04",
+            "result": "86a2c23823ecf41464b1ed346df4c07ec521570f",
+            "move": "batch"
+        },
+        "tests/Feature/Web/PageChangeTest.php": {
+            "prior": "2c19cbcc732665517badd766c29d7eb74675b29e",
+            "result": "ceacb9f616bda3c403e84bef20e2fbca4e04dcdc",
+            "move": "batch"
+        },
+        "tests/Fixtures/Domains/Tasks/States/OrdinaryTaskWatchState.php": {
+            "prior": "7d6bc9c1924b374a8ace779aad9d8ce84b45c158",
+            "result": "a6f00765374ff0befe8b3acf125bcd9274e70a88",
+            "move": "batch"
+        },
+        "tests/Fixtures/Domains/Tasks/States/TaskWatchState.php": {
+            "prior": "a322de759e189fbc439bbd75c85e92c1446d556a",
+            "result": "7d32cfb7b01e3130941dcbd4daf1f7d427f1b944",
+            "move": "batch"
+        },
+        "tests/Fixtures/Hooks/InMemoryTaskLoader.php": {
+            "prior": "d6979525e27212c681d3a239ce54e303258b5fdc",
+            "result": "dd51359b1d5889914509ffddd4bb631dcf6fe20c",
+            "move": "batch"
+        },
+        "tests/Support/HasAutoAssignmentWorker.php": {
+            "prior": "a9eb7ff94e45c6e684d88be93320593b07a369c1",
+            "result": "b39b739fc9376e332c66fe875f317a73533e2632",
+            "move": "batch"
+        },
+        "tests/Unit/Domains/ExportsTest.php": {
+            "prior": "7fc4f030a4ed5670c4fa3f36882fb94c5a057762",
+            "result": "20bd5696f11e1d0f008c88facdc4fe73813530d3",
+            "move": "batch"
+        },
+        "tests/Unit/Hooks/AgentStackTest.php": {
+            "prior": "c4dbdea299a3b7dcb10988832042b355287c7002",
+            "result": "676b69999ad75e520d6bf53c57b150d7e049b61e",
+            "move": "batch"
+        },
+        "tests/Unit/Hooks/ForegroundInstructionsTest.php": {
+            "prior": "e76ef7d6b66ea68e59e2b8b65a9cd2416f7c14be",
+            "result": "3c8f6974993c9738ff3d5e6922828dc7891d5d4e",
+            "move": "batch"
+        },
+        "tests/Unit/Hooks/StateLoaderTest.php": {
+            "prior": "7ef3878b118f262e8cfef4d1608741d900ea2479",
+            "result": "9c38e1f146ec3e2bce138c2b26d5a203efa82d84",
+            "move": "batch"
+        },
+        "tests/Unit/Hooks/TransparentFramesTest.php": {
+            "prior": "7cbf959836d05ecf57ea6f9fa42e0baf00a188a0",
+            "result": "203458fa97ad75c2ff2be146f760ec24fd22d693",
+            "move": "batch"
+        },
+        "tests/Unit/Skills/ShippedSkillFilesTest.php": {
+            "prior": "d2e518ad6f7948868c0139c442ad28b0a77f667a",
+            "result": "73688a4992677d89fb4e6235835ea52b4db75dea",
+            "move": "batch"
+        }
+    }
+}

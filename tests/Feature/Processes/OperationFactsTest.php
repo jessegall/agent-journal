@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Agents\Values\Operation;
-use App\Agents\Values\ResourceRequest;
-use App\Hooks\Support\ShellOperations;
-use App\Operations\Enums\AccessType;
-use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Syntax\TreeParser;
-use App\Processes\Values\ExecutionContext;
+use App\Contracts\CommandClassifier;
+use App\Enums\AccessType;
+use App\Enums\ShellDialect;
+use App\Support\ShellOperations;
+use App\Support\Syntax\TreeParser;
+use App\Values\ExecutionContext;
+use App\Values\Operation;
+use App\Values\ResourceRequest;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 

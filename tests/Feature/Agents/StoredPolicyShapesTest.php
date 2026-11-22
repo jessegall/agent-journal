@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Stored\StoredAccessPolicy;
-use App\Agents\Stored\StoredExecutionPolicy;
-use App\Agents\Stored\StoredStopConditions;
-use App\Agents\Values\AccessPolicy;
-use App\Agents\Values\ExecutionBudgets;
-use App\Agents\Values\ExecutionPolicy;
-use App\Agents\Values\HostAccess;
-use App\Agents\Values\OperationGrant;
-use App\Agents\Values\ResourceRequest;
-use App\Agents\Values\StopCondition;
-use App\Agents\Values\StopConditions;
-use App\Operations\Enums\AccessType;
-use App\Processes\Values\ProcessGrants;
+use App\Enums\AccessType;
+use App\Enums\ExecutionModeType;
+use App\Support\Stored\StoredAccessPolicy;
+use App\Support\Stored\StoredExecutionPolicy;
+use App\Support\Stored\StoredStopConditions;
+use App\Values\AccessPolicy;
+use App\Values\ExecutionBudgets;
+use App\Values\ExecutionPolicy;
+use App\Values\HostAccess;
+use App\Values\OperationGrant;
+use App\Values\ProcessGrants;
+use App\Values\ResourceRequest;
+use App\Values\StopCondition;
+use App\Values\StopConditions;
 use Tests\TestCase;
 
 /**

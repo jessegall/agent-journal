@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\RepeatableRead;
-use App\Bus\Attributes\RequiresRequestKey;
-use App\Bus\Enums\CommandEntry;
-use App\Bus\Support\CommandRegistry;
-use App\Bus\Support\RegisteredMiddleware;
-use App\Reflection\Support\Reflector;
+use App\Attributes\Authorize;
+use App\Attributes\Entry;
+use App\Attributes\RepeatableRead;
+use App\Attributes\RequiresRequestKey;
+use App\Commands\ProvisionActorDesk\ProvisionActorDeskCommand;
+use App\Enums\CommandEntry;
+use App\Support\CommandRegistry;
+use App\Support\Reflector;
+use App\Support\RegisteredMiddleware;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\TypesDeclared;
 use Tests\Support\InstallsCommandModules;
@@ -55,6 +56,8 @@ final class CommandFolderTest extends TestCase
             $this->classesIn('Commands'),
             fn (string $class) => str_ends_with($class, 'Command') && ! $registry->has($class),
         );
+
+        $this->assertContains(ProvisionActorDeskCommand::class, $this->classesIn('Commands'));
 
         $this->assertSame(
             [],
@@ -156,7 +159,11 @@ final class CommandFolderTest extends TestCase
     private function classesIn(string $folder): array
     {
         return array_values(
-            array_filter($this->allClasses(), fn (string $class) => str_contains($class, "\\{$folder}\\")),
+            // A Console\\Commands folder holds Artisan adapters, never bus pairs.
+            array_filter(
+                $this->allClasses(),
+                fn (string $class) => str_contains($class, "\\{$folder}\\") && ! str_contains($class, '\\Console\\Commands\\'),
+            ),
         );
     }
 

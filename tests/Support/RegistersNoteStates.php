@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Domains\Bootstrappers\RegisterStates;
-use App\Domains\Providers\DomainEventServiceProvider;
-use App\Domains\Support\DomainRegistry;
+use App\Providers\DomainEventServiceProvider;
+use App\Support\Bootstrappers\RegisterStates;
+use App\Support\DomainRegistry;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 

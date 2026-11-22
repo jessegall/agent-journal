@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Web\Support\UserChannel;
+use App\Support\UserChannel;
 use Domain\Access\Models\User;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;

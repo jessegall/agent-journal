@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
-use Domain\Tasks\Api\TaskTransition;
+use App\Contracts\CommandBus;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Contracts\TaskHistoryResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
+use Domain\Tasks\Values\TaskTransition;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;

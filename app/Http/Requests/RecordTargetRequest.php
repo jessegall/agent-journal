@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Numbers\Support\RecordReference;
-use App\Records\Contracts\RecordResolver;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\RecordResolver;
+use App\Support\RecordIdentity;
+use App\Support\RecordReference;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

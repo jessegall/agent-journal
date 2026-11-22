@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Comments;
 
-use App\Comments\Contracts\CommentResolver;
+use App\Contracts\CommentResolver;
+use App\Contracts\RecordResolver;
 use App\Http\Requests\Comments\ListCommentsRequest;
-use App\Records\Contracts\RecordResolver;
 use Illuminate\Http\JsonResponse;
 
 final readonly class ListCommentsController

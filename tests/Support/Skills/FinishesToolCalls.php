@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Support\Skills;
 
-use App\Agents\Models\AgentSession;
-use App\Agents\Values\StackTarget;
-use App\Hooks\Enums\ToolOutcome;
-use App\Hooks\Events\ToolCallFinished;
-use App\Hooks\Inputs\Values\DriverToolInput;
-use App\Hooks\Inputs\Values\ToolResult;
-use App\Skills\Listeners\RecordProvenSkillReads;
+use App\Enums\ToolOutcome;
+use App\Events\ToolCallFinished;
+use App\Listeners\RecordProvenSkillReads;
+use App\Models\AgentSession;
+use App\Support\Inputs\Values\DriverToolInput;
+use App\Support\Inputs\Values\ToolResult;
+use App\Values\StackTarget;
 
 /**
  * A tool call of the session that finished well, handed to the listener that records proven skill reads.

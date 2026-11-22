@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Enums\ActorType;
-use App\Agents\Exceptions\AgentNotAvailable;
-use App\Agents\Lifecycle\AgentLifecycle;
-use App\Agents\Models\Agent;
-use App\Assignments\Exceptions\AssigneeUnavailable;
-use App\Assignments\Registry\AssignmentRegistry;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\Page;
+use App\Enums\ActorType;
+use App\Exceptions\AgentNotAvailable;
+use App\Exceptions\AssigneeUnavailable;
+use App\Models\Agent;
+use App\Support\AssigneeIdentity;
+use App\Support\Lifecycle\AgentLifecycle;
+use App\Support\Page;
+use App\Support\Registry\AssignmentRegistry;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;

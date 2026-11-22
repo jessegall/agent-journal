@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Desks;
 
-use App\Agents\Models\Agent;
-use App\Assignments\Models\AssignmentRecord;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Communication\Contracts\InboxResolver;
-use App\Communication\Exceptions\InboxUnavailable;
-use App\Communication\Models\InboxRecord;
-use App\Desks\Exceptions\DeskSeatCountInvalid;
-use App\Desks\Models\DeskRecord;
-use App\Desks\Models\DeskSeat;
-use App\Desks\Support\DeskInboxAccess;
-use App\Desks\Support\DeskOpening;
+use App\Contracts\InboxResolver;
+use App\Exceptions\DeskSeatCountInvalid;
+use App\Exceptions\InboxUnavailable;
+use App\Models\Agent;
+use App\Models\AssignmentRecord;
+use App\Models\DeskRecord;
+use App\Models\DeskSeat;
+use App\Models\InboxRecord;
+use App\Support\AssigneeIdentity;
+use App\Support\DeskInboxAccess;
+use App\Support\DeskOpening;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 

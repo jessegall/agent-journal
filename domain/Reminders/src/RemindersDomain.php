@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Reminders;
 
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
-use App\Skills\Contracts\SkillProvider;
-use App\Ui\Contracts\PageProvider;
-use App\Ui\Declarations\Page;
-use App\Ui\Enums\Icon;
+use App\Contracts\PageProvider;
+use App\Contracts\SkillProvider;
+use App\Declarations\Page;
+use App\Enums\Icon;
+use App\Support\Domain;
+use App\Support\Exports;
 use Domain\Reminders\Resolvers\RemindersWindowResolver;
-use Domain\Reminders\Skills\RemindersSkill;
+use Domain\Reminders\Support\Skills\RemindersSkill;
 
 final class RemindersDomain extends Domain implements PageProvider, SkillProvider
 {

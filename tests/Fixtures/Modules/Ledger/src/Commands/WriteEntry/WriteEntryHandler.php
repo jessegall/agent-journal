@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger\Commands\WriteEntry;
 
-use App\Bus\Exceptions\CommandRefused;
+use App\Exceptions\CommandRefused;
 use App\Contracts\CommandHandler;
 use Tests\Fixtures\Modules\Ledger\Commands\WriteEntry\WriteEntryCommand;
 use Tests\Fixtures\Modules\Ledger\Models\LedgerEntry;

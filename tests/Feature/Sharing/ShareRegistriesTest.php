@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Records\Exceptions\InvalidRecordIdentity;
-use App\Sharing\Enums\ShareRelationType;
-use App\Sharing\Exceptions\ShareGatewayInvalid;
-use App\Sharing\Exceptions\ShareRecordInvalid;
-use App\Sharing\Exceptions\ShareRelationInvalid;
-use App\Sharing\Exceptions\UnknownShareGateway;
-use App\Sharing\Exceptions\UnknownShareRecordType;
-use App\Sharing\Exceptions\UnknownShareRelation;
-use App\Sharing\Support\ShareGatewayRegistry;
-use App\Sharing\Support\ShareRecordDefinition;
-use App\Sharing\Support\ShareRecordRegistry;
+use App\Enums\ShareRelationType;
+use App\Exceptions\InvalidRecordIdentity;
+use App\Exceptions\ShareGatewayInvalid;
+use App\Exceptions\ShareRecordInvalid;
+use App\Exceptions\ShareRelationInvalid;
+use App\Exceptions\UnknownShareGateway;
+use App\Exceptions\UnknownShareRecordType;
+use App\Exceptions\UnknownShareRelation;
+use App\Support\ShareGatewayRegistry;
+use App\Support\ShareRecordDefinition;
+use App\Support\ShareRecordRegistry;
 use Tests\Fixtures\Domains\Flyers\FlyersDomain;
 use Tests\Fixtures\Domains\Leaflets\LeafletsDomain;
 use Tests\Fixtures\Domains\Pamphlets\Pamphlet;

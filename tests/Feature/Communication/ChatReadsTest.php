@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\AcknowledgeChatMessages\AcknowledgeChatMessagesCommand;
-use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Communication\Contracts\ConversationResolver;
-use App\Communication\Exceptions\ChatInboxRefused;
-use App\Communication\Support\PendingInboxWork;
+use App\Commands\AcknowledgeChatMessages\AcknowledgeChatMessagesCommand;
+use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Contracts\ConversationResolver;
+use App\Exceptions\ChatInboxRefused;
+use App\Support\ActorIdentity;
+use App\Support\PendingInboxWork;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\OpensPairChats;

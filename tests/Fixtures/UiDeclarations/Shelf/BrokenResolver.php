@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Shelf;
 
-use App\Ui\Contracts\SectionResolver;
-use App\Ui\Declarations\SlotContext;
+use App\Contracts\SectionResolver;
+use App\Declarations\SlotContext;
 use Tests\Fixtures\UiDeclarations\RecentNotesData;
 use Tests\Support\Exceptions\SimulatedFailure;
 

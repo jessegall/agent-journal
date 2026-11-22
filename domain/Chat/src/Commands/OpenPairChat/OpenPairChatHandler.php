@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands\OpenPairChat;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\AgentDirectory;
+use App\Contracts\AgentDirectory;
+use App\Support\ActorIdentity;
 use Domain\Chat\Commands\Support\ChatCommandHandler;
 use Domain\Chat\Support\PairChats;
 

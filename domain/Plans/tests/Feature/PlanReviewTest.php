@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Enums\ActorType;
+use App\Support\ActorIdentity;
 use Closure;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
 use Domain\Plans\Commands\EditPlan\EditPlanCommand;

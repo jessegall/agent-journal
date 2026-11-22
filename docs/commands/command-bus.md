@@ -6,15 +6,15 @@ everything a module developer needs for that.
 
 ## A command and its handler
 
-A command is a final readonly value in the owner's `Commands` folder that extends `App\Bus\Support\Command` and
+A command is a final readonly value in the owner's `Commands` folder that extends `App\Support\Command` and
 declares only its business fields in its constructor, and its docblock says what it answers. Its handler is found by
 its name: `Domain\Rules\Commands\ProposeRule\ProposeRuleCommand` is handled by `Domain\Rules\Commands\ProposeRule\ProposeRuleHandler`, so the command
 names no handler and the two folders import one way. A handler has one public `handle` method that takes the command,
 and holds no transaction code: the bus opens the transaction.
 
-The handler reads who dispatched the command with `$command->dispatchedBy()`: an `App\Actors\Support\ActorContext`,
+The handler reads who dispatched the command with `$command->dispatchedBy()`: an `App\Support\ActorContext`,
 the actor's type and id and nothing more, no authority. The bus binds it on every call. A command the caller has just
-built is unbound, and reading `dispatchedBy()` on it raises `App\Bus\Exceptions\CommandDispatcherMissing`.
+built is unbound, and reading `dispatchedBy()` on it raises `App\Exceptions\CommandDispatcherMissing`.
 
 A command and its one handler share a folder of their own under the owner's `Commands` folder:
 `domain/Rules/src/Commands/ProposeRule/ProposeRuleCommand.php` beside `ProposeRuleHandler.php`, with an optional
@@ -24,9 +24,9 @@ replaced by `Handler`, in the same folder.
 ```php
 namespace Domain\Rules\Commands\ProposeRule;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Support\Command;
-use App\Operations\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Support\Command;
+use App\Enums\AccessType;
 use Domain\Rules\Policies\RulePolicy;
 
 /**
@@ -71,36 +71,36 @@ final readonly class ProposeRuleHandler implements CommandHandler
 ```
 
 A handler that runs another handler directly, without the bus, binds that command to its own dispatcher with
-`withDispatcher($command->dispatchedBy())`, as `App\Agents\Commands\OpenHostMainRuntime\OpenHostMainRuntimeHandler`,
-`App\Agents\Support\DriverHeartbeatSource` and `App\Profiles\Commands\InstallBuiltInProfiles\InstallBuiltInProfilesHandler` do. Every other
+`withDispatcher($command->dispatchedBy())`, as `App\Commands\OpenHostMainRuntime\OpenHostMainRuntimeHandler`,
+`App\Support\DriverHeartbeatSource` and `App\Commands\InstallBuiltInProfiles\InstallBuiltInProfilesHandler` do. Every other
 command goes through the bus.
 
 A command carries whole numbers, text, yes or no, decimals, backed enums, their nullable forms, final readonly values the
 owner may name, and lists of those, never a model, a service or a stack target (a session is an int id the handler
-resolves). A handler returns nothing, one of those, or a final readonly value such as `App\Assignments\Support\AssignmentResult`.
+resolves). A handler returns nothing, one of those, or a final readonly value such as `App\Support\AssignmentResult`.
 
 Every command a person or an agent sends declares who may run it with one `#[Authorize(Policy::class,
 AccessType::Case)]`: the policy names the model it guards, so the declaration needs no subject. A command whose policy
-decides on one record implements `App\Bus\Contracts\RecordCommand` and returns that locked record from `subject()`,
+decides on one record implements `App\Contracts\RecordCommand` and returns that locked record from `subject()`,
 as `Domain\Tasks\Commands\BlockTask\BlockTaskCommand` does for `Domain\Tasks\Policies\TaskRunPolicy`; its handler takes the record as
 its second argument, as `Domain\Tasks\Commands\BlockTask\BlockTaskHandler::handle(BlockTask $command, Task $task)` does, so it
 loads it once. The bus checks the caller's profile grants before the subject is loaded and refuses with
-`App\Bus\Exceptions\CommandAdmissionRefused`, then authorizes the subject and refuses with
-`App\Actors\Exceptions\ActorNotAllowed`. A command with neither `Authorize` nor a trusted entry fails the boot with
-`App\Bus\Exceptions\CommandDeclarationInvalid`; a trusted entry is `#[Entry(CommandEntry::HostControl)]`,
+`App\Exceptions\CommandAdmissionRefused`, then authorizes the subject and refuses with
+`App\Exceptions\ActorNotAllowed`. A command with neither `Authorize` nor a trusted entry fails the boot with
+`App\Exceptions\CommandDeclarationInvalid`; a trusted entry is `#[Entry(CommandEntry::HostControl)]`,
 `ShareGateway`, `SkillPublisher` or `EngineMaintenance`. Such a command runs only through that entry's dispatcher, as
 the journal itself, and never from a request. No command asks what kind of actor calls (rule 39); the guide in
 docs/domains/authorization.md shows how a module declares its policies.
 
 One attribute changes how a command runs:
 
-- `#[RepeatableRead]` runs it in a repeatable-read transaction, as `App\Assignments\Commands\AssignRecord\AssignRecordCommand` does.
+- `#[RepeatableRead]` runs it in a repeatable-read transaction, as `App\Commands\AssignRecord\AssignRecordCommand` does.
 
-The owner lists its commands on its Domain class through `App\Bus\Contracts\CommandProvider`, and exports the ones other
-owners may run. Callers take `App\Bus\Contracts\CommandBus` as a method parameter and call `run`:
+The owner lists its commands on its Domain class through `App\Contracts\CommandProvider`, and exports the ones other
+owners may run. Callers take `App\Contracts\CommandBus` as a method parameter and call `run`:
 
 ```php
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 
 $commands->run(new FinishTask($taskId));
@@ -110,12 +110,12 @@ $commands->run(new FinishTask($taskId));
 
 A command declares what input it takes on its constructor properties, with Spatie's validation attributes
 (`Spatie\LaravelData\Attributes\Validation\Max`, `Min`, `Between`, `Required`, `Filled`, `Regex`, `In`,
-`RequiredWithout` and the rest) and Core's `App\Bus\Attributes\OneLine`, which refuses a line break between two words
+`RequiredWithout` and the rest) and Core's `App\Attributes\OneLine`, which refuses a line break between two words
 of a title or an abstract. A limit several commands share is a constant on the model it describes, and the attribute
 names it:
 
 ```php
-use App\Bus\Attributes\OneLine;
+use App\Attributes\OneLine;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
@@ -125,10 +125,10 @@ public function __construct(
 ) {}
 ```
 
-- The registry reads the attributes once at start-up (`App\Bus\Support\PropertyRules`) and puts the rule for the
+- The registry reads the attributes once at start-up (`App\Support\PropertyRules`) and puts the rule for the
   property's type first: `string`, `integer`, `numeric`, `boolean` or `array`, so `Max` counts characters, the number
   or the items as the type says.
-- `App\Bus\CommandMiddleware\ValidateCommand` checks each call: it gives the validator only the ruled properties and
+- `App\CommandMiddleware\ValidateCommand` checks each call: it gives the validator only the ruled properties and
   leaves out a property whose value is null, as a field that was not sent; `RequiredWithout` sees it as missing. A
   command that declares no limit passes without a validator.
 - It runs after the actor check and the binding of the dispatcher, and before stack admission: a caller of the
@@ -154,7 +154,7 @@ The limits in use today:
 | `RequiredWithout('weight')`, `Filled` | `EditMemory` text | none |
 | `Between` | `SaveMemory`, `EditMemory` weight | `Memory::LIGHTEST`, `Memory::HEAVIEST` |
 
-Bad input is refused with `App\Bus\Exceptions\CommandInputInvalid`, code `invalid_input`, not retryable. Its message
+Bad input is refused with `App\Exceptions\CommandInputInvalid`, code `invalid_input`, not retryable. Its message
 reads `The input was refused.` and then one line per wrong field with its first problem, never the value sent. The
 CLI prints it after `The journal refused the call (invalid_input):`, MCP and agent routes answer it with its code and
 a 422, a JSON route answers 422 with Laravel's `errors` per field, and a web page goes back with each field's error and
@@ -163,11 +163,11 @@ the old input.
 ## Middleware: scopes, stages and order
 
 A module watches or changes commands with middleware in its `CommandMiddleware` folder, declared on its Domain class
-through `App\Bus\Contracts\CommandMiddlewareProvider`:
+through `App\Contracts\CommandMiddlewareProvider`:
 
 ```php
-use App\Bus\Support\CommandScope;
-use App\Bus\Support\MiddlewareDeclaration;
+use App\Support\CommandScope;
+use App\Support\MiddlewareDeclaration;
 
 public function commandMiddleware(): array
 {
@@ -188,35 +188,35 @@ public function commandMiddleware(): array
   the before-transaction stage, the transaction, the inside stage and the handler. Within a stage, owners run in the
   order of `bootstrap/domains.php`, and each owner's middleware in its declaration order.
 
-`App\Bus\CommandMiddleware\BindDispatcher` runs right after `App\Bus\CommandMiddleware\CheckEntry`, before
-`App\Bus\CommandMiddleware\ValidateCommand`. It reads the request's actor from `App\Actors\Contracts\CurrentActor`
+`App\CommandMiddleware\BindDispatcher` runs right after `App\CommandMiddleware\CheckEntry`, before
+`App\CommandMiddleware\ValidateCommand`. It reads the request's actor from `App\Contracts\CurrentActor`
 and passes on `$call->withDispatcher($actor)`, a call whose command is a copy bound to that actor; the caller's own
-object stays unbound. A call without an actor is refused there with `App\Actors\Exceptions\ActorContextMissing`, before
+object stays unbound. A call without an actor is refused there with `App\Exceptions\ActorContextMissing`, before
 the input check and stack admission. `replacedBy($command)` keeps its one argument and binds the replacement to the
 call's actor, so module middleware never binds a command itself.
 
-A middleware implements `App\Bus\Contracts\CommandMiddleware` and gets an `App\Bus\Support\CommandCall`. The contract,
+A middleware implements `App\Contracts\CommandMiddleware` and gets an `App\Support\CommandCall`. The contract,
 each break of it refused by name:
 
 | Rule | Refused with |
 |---|---|
-| Call next exactly once. | `App\Bus\Exceptions\MiddlewareSkippedCommand`, `App\Bus\Exceptions\ContinuationCalledTwice` |
-| Return what next returned. | `App\Bus\Exceptions\CommandResultChanged` |
-| Do not catch and hide a failure. | `App\Bus\Exceptions\MiddlewareSwallowedFailure` |
-| Replace the command only with the same class, through `replacedBy`. | `App\Bus\Exceptions\CommandReplacedWithOtherClass` |
-| Replace another owner's command only when it is exported. | `App\Bus\Exceptions\CommandReplacementRefused` |
-| Refuse by throwing `App\Bus\Exceptions\CommandRefused::because(...)`. | shown as a form error on the web, a 403 on agent routes |
+| Call next exactly once. | `App\Exceptions\MiddlewareSkippedCommand`, `App\Exceptions\ContinuationCalledTwice` |
+| Return what next returned. | `App\Exceptions\CommandResultChanged` |
+| Do not catch and hide a failure. | `App\Exceptions\MiddlewareSwallowedFailure` |
+| Replace the command only with the same class, through `replacedBy`. | `App\Exceptions\CommandReplacedWithOtherClass` |
+| Replace another owner's command only when it is exported. | `App\Exceptions\CommandReplacementRefused` |
+| Refuse by throwing `App\Exceptions\CommandRefused::because(...)`. | shown as a form error on the web, a 403 on agent routes |
 
 ## The transaction
 
 The bus opens one transaction per command: read committed unless the command is `#[RepeatableRead]`, with lock and
-statement limits always set (`App\Bus\Support\OperationDeadline`). A serialization failure or a deadlock reruns the
-whole command, three attempts at most, then `App\Bus\Exceptions\CommandRetryExhausted`; a lock or statement timeout is
-`App\Bus\Exceptions\StackLockTimedOut`. A command run by a handler joins the open transaction when its isolation matches,
-and is refused with `App\Bus\Exceptions\CommandTransactionMismatch` otherwise, as it is for a transaction the bus did not
-open. A handler that opens a transaction itself is refused with `App\Bus\Exceptions\ExplicitTransactionInCommand`, and a
+statement limits always set (`App\Support\OperationDeadline`). A serialization failure or a deadlock reruns the
+whole command, three attempts at most, then `App\Exceptions\CommandRetryExhausted`; a lock or statement timeout is
+`App\Exceptions\StackLockTimedOut`. A command run by a handler joins the open transaction when its isolation matches,
+and is refused with `App\Exceptions\CommandTransactionMismatch` otherwise, as it is for a transaction the bus did not
+open. A handler that opens a transaction itself is refused with `App\Exceptions\ExplicitTransactionInCommand`, and a
 handler that catches a failed inner command and goes on fails the whole command with
-`App\Bus\Exceptions\NestedCommandFailureIgnored`. An exception a caller may be shown implements
+`App\Exceptions\NestedCommandFailureIgnored`. An exception a caller may be shown implements
 `App\Contracts\CommandRefusal`.
 
 ## Facts: raised, required, held and released
@@ -236,13 +236,13 @@ The registry checks every declaration when the application starts:
 
 | Error | Fix |
 |---|---|
-| `App\Bus\Exceptions\CommandDeclarationInvalid` | Make the command final readonly in `Commands`, extending `App\Bus\Support\Command`, with fields and a result the grammar above allows. |
-| `App\Bus\Exceptions\CommandHandlerMissing` | Write the handler the message names: the command's name with `Command` replaced by `Handler`, beside the command in its folder. |
-| `App\Bus\Exceptions\CommandListedTwice` | List each command once. |
-| `App\Bus\Exceptions\MiddlewareDeclarationInvalid` | Name only commands the module may see, in a `CommandMiddleware` folder. |
-| `App\Bus\Exceptions\MiddlewareListedTwice` | Declare each middleware once per scope and stage. |
+| `App\Exceptions\CommandDeclarationInvalid` | Make the command final readonly in `Commands`, extending `App\Support\Command`, with fields and a result the grammar above allows. |
+| `App\Exceptions\CommandHandlerMissing` | Write the handler the message names: the command's name with `Command` replaced by `Handler`, beside the command in its folder. |
+| `App\Exceptions\CommandListedTwice` | List each command once. |
+| `App\Exceptions\MiddlewareDeclarationInvalid` | Name only commands the module may see, in a `CommandMiddleware` folder. |
+| `App\Exceptions\MiddlewareListedTwice` | Declare each middleware once per scope and stage. |
 
-`App\Bus\Exceptions\CommandDeclarationInvalid` also refuses an input limit that could never work:
+`App\Exceptions\CommandDeclarationInvalid` also refuses an input limit that could never work:
 
 | The limit | Fix |
 |---|---|
@@ -253,8 +253,8 @@ The registry checks every declaration when the application starts:
 | An attribute on a property of a value class the command carries | Check it in that value's factory: the attribute is never read. |
 | An attribute Spatie cannot turn into a rule | Give it arguments of the types the attribute takes. |
 
-A command nobody registered is refused at dispatch with `App\Bus\Exceptions\CommandNotRegistered`, and a ninth nested
-command with `App\Bus\Exceptions\CommandNestingTooDeep`.
+A command nobody registered is refused at dispatch with `App\Exceptions\CommandNotRegistered`, and a ninth nested
+command with `App\Exceptions\CommandNestingTooDeep`.
 
 ## What comes later, and the limits
 

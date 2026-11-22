@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Desks;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Models\Agent;
-use App\Assignments\Contracts\AssignmentDestinationResolver;
-use App\Assignments\Contracts\AssignmentTransaction;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Communication\Contracts\InboxDestinationResolver;
-use App\Communication\Contracts\InboxResolver;
-use App\Desks\Contracts\ActorDesks;
-use App\Desks\Models\DeskRecord;
-use App\Desks\Support\DeskSeating;
+use App\Contracts\ActorDesks;
+use App\Contracts\AssignmentDestinationResolver;
+use App\Contracts\AssignmentTransaction;
+use App\Contracts\InboxDestinationResolver;
+use App\Contracts\InboxResolver;
+use App\Models\Agent;
+use App\Models\DeskRecord;
+use App\Support\ActorIdentity;
+use App\Support\AssigneeIdentity;
+use App\Support\DeskSeating;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsDesks;
 use Tests\Support\StartsOwnerRequest;

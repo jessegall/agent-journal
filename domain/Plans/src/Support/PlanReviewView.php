@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use App\Actors\Contracts\CurrentAuthorizer;
-use App\Assignments\Contracts\AssigneeResolver;
-use App\Assignments\Support\AssigneeName;
-use App\Assignments\Support\AssignmentGroup;
-use App\Assignments\Support\Page;
-use App\Operations\Enums\AccessType;
+use App\Contracts\AssigneeResolver;
+use App\Contracts\CurrentAuthorizer;
+use App\Enums\AccessType;
+use App\Support\AssigneeName;
+use App\Support\AssignmentGroup;
+use App\Support\Page;
 use Domain\Plans\Data\PlanReviewData;
 use Domain\Plans\Data\PlanReviewReceiptData;
 use Domain\Plans\Data\PlanWorkPreviewData;

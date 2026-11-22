@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Enums\MountType;
-use App\Agents\Enums\WorkspaceUse;
-use App\Agents\Exceptions\WorkspaceSourceMissing;
-use App\Agents\Exceptions\WorkspaceSourcesInvalid;
-use App\Agents\Support\ArrangementSetting;
-use App\Agents\Support\ManifestMount;
-use App\Agents\Support\MountRules;
+use App\Enums\MountType;
+use App\Enums\WorkspaceUse;
+use App\Exceptions\WorkspaceSourceMissing;
+use App\Exceptions\WorkspaceSourcesInvalid;
+use App\Support\ArrangementSetting;
+use App\Support\ManifestMount;
+use App\Support\MountRules;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Shop\Commands\LimitedItem;
 
-use App\Operations\Enums\AccessType;
-use App\Bus\Attributes\Authorize;
-use App\Bus\Support\Command;
+use App\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\Between;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Tests\Fixtures\Bus\Models\FixtureWork;

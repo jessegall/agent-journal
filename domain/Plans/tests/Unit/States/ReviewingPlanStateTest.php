@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Unit\States;
 
-use App\Hooks\Decisions\Denied;
-use App\Hooks\Events\HelperReportedOnRecord;
-use App\Hooks\Events\HelperSentOnRecord;
-use App\Hooks\Inputs\StopRequested;
-use App\Hooks\Inputs\Values\HookIdentity;
-use App\Hooks\Inputs\Values\StopDetails;
-use App\Records\Support\RecordIdentity;
+use App\Events\HelperReportedOnRecord;
+use App\Events\HelperSentOnRecord;
+use App\Support\Decisions\Denied;
+use App\Support\Inputs\StopRequested;
+use App\Support\Inputs\Values\HookIdentity;
+use App\Support\Inputs\Values\StopDetails;
+use App\Support\RecordIdentity;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\States\ReviewingPlanState;
 use Domain\Plans\Support\PlanWork;
+use Domain\Plans\Support\States\ReviewingPlanState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\TestIds;

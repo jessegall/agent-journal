@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Contracts;
 
-use App\Agents\Values\ReadRequest;
 use App\Mcp\Data\SearchPage;
+use App\Values\ReadRequest;
 
 interface SearchContribution
 {

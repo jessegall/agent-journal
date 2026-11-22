@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Communication\Commands\ReplyInChat\ReplyInChatCommand;
-use App\Communication\Enums\MessageType;
-use App\Communication\Exceptions\MessageRequestConflict;
-use App\Communication\Models\Message;
-use App\Communication\Models\MessageReceipt;
-use App\Communication\Models\TimelineEvent;
+use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\ReplyInChat\ReplyInChatCommand;
+use App\Enums\MessageType;
+use App\Exceptions\MessageRequestConflict;
+use App\Models\Message;
+use App\Models\MessageReceipt;
+use App\Models\TimelineEvent;
+use App\Support\ActorIdentity;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\OpensPairChats;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Models\TerminalView;
-use App\Agents\Support\DriverRequestEndings;
-use App\Agents\Support\WatchedRuntimes;
-use App\Engine\Events\EngineTicked;
-use App\Engine\Support\EndTerminalViewsOnTick;
-use App\Engine\Support\EngineListenerSet;
-use App\Engine\Support\EngineTickedDelivery;
-use App\Hooks\Ticks\ElapsedTime;
+use App\Events\EngineTicked;
+use App\Models\TerminalView;
+use App\Support\DriverRequestEndings;
+use App\Support\EndTerminalViewsOnTick;
+use App\Support\EngineListenerSet;
+use App\Support\EngineTickedDelivery;
+use App\Support\Ticks\ElapsedTime;
+use App\Support\WatchedRuntimes;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;

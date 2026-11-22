@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Providers;
 
-use App\Docking\Sources\Contracts\DockRegistration;
-use App\Links\Support\LinkTypeRegistry;
+use App\Support\Sources\Contracts\DockRegistration;
+use App\Support\LinkTypeRegistry;
 use Tests\Fixtures\Modules\Notes\Support\NoteDocking;
 use Tests\Fixtures\Modules\Notes\Support\NotesTally;
 use Tests\Fixtures\Modules\Notes\Support\NotesTallyDocking;

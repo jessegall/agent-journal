@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Providers;
 
-use App\Actors\Contracts\ReadEntitlements;
-use App\Actors\Values\ReadEntitlement;
-use App\Agents\Contracts\CurrentSession;
-use App\Agents\Contracts\SessionProvenance;
-use App\Autoload\Support\FolderClasses;
-use App\Communication\Contracts\NotificationTargets;
-use App\Docking\Sources\Contracts\DockRegistration;
-use App\Links\Support\LinkTypeRegistry;
-use App\Operations\Enums\AccessType;
+use App\Contracts\CurrentSession;
+use App\Contracts\NotificationTargets;
+use App\Contracts\ReadEntitlements;
+use App\Contracts\SessionProvenance;
+use App\Enums\AccessType;
+use App\Support\FolderClasses;
+use App\Support\LinkTypeRegistry;
+use App\Support\Sources\Contracts\DockRegistration;
+use App\Values\ReadEntitlement;
 use Domain\Documents\Contracts\AttachmentReader;
 use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Contracts\DocumentResolver;
@@ -100,8 +100,8 @@ final class DocumentsServiceProvider extends ServiceProvider
             fn (Schedule $schedule) => $schedule->call(fn (UploadStore $uploads) => $uploads->pruneExpired())->daily(),
         );
 
-        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
-        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
+        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
+        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console/Commands', Command::class));
     }
 
     /**

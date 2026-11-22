@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\RequestPlanChanges;
 
-use App\Actors\Support\ActorIdentity;
+use App\Support\ActorIdentity;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Exceptions\PlanReviewRefused;

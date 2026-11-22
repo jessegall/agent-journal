@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use App\Agents\Enums\DriverVariant;
-use App\Drivers\Contracts\DriverCatalogue;
-use App\Drivers\Enums\DriverCapability;
-use App\Drivers\Values\BoundTarget;
-use App\Drivers\Values\DriverRegistration;
+use App\Contracts\DriverCatalogue;
+use App\Enums\DriverCapability;
+use App\Enums\DriverVariant;
+use App\Values\BoundTarget;
+use App\Values\DriverRegistration;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

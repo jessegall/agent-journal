@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Calls;
 
-use App\AgentRequests\Attributes\Endpoint;
-use App\AgentRequests\Casts\CallKeyCast;
-use App\AgentRequests\Contracts\JournalCall;
-use App\AgentRequests\Enums\CallEffect;
-use App\AgentRequests\Enums\ReceiptOwner;
-use App\AgentRequests\Support\CallKey;
-use App\AgentRequests\Transformers\CallKeyTransformer;
-use App\AgentRequests\Values\CallAccepted;
+use App\Attributes\Endpoint;
+use App\Casts\CallKeyCast;
+use App\Contracts\JournalCall;
+use App\Enums\CallEffect;
+use App\Enums\ReceiptOwner;
+use App\Support\CallKey;
+use App\Support\Transformers\CallKeyTransformer;
+use App\Values\CallAccepted;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;

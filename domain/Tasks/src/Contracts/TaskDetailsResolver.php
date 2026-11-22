@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
-use App\Reads\Enums\ReadView;
-use Domain\Tasks\Api\TaskDetails;
+use App\Enums\ReadView;
+use Domain\Tasks\Data\TaskDetails;
 use Domain\Tasks\Exceptions\TaskMissing;
 
 /**

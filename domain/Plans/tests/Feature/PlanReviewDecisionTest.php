@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
+use App\Enums\ActorType;
+use App\Support\ActorIdentity;
 use Domain\Plans\Commands\ApprovePlanReview\ApprovePlanReviewCommand;
 use Domain\Plans\Commands\RequestPlanReview\RequestPlanReviewCommand;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;

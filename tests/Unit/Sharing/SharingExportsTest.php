@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Unit\Sharing;
 
 use App\CoreApi;
-use App\Sharing\Models\Share;
-use App\Sharing\Support\OwnerSharePolicy;
-use App\Sharing\Support\ShareGatewayRegistry;
-use App\Sharing\Support\ShareRecordRegistry;
-use App\Sharing\Support\ShareToken;
+use App\Models\Share;
+use App\Support\OwnerSharePolicy;
+use App\Support\ShareGatewayRegistry;
+use App\Support\ShareRecordRegistry;
+use App\Support\ShareToken;
 use Tests\TestCase;
 
 /**
@@ -25,7 +25,7 @@ final class SharingExportsTest extends TestCase
 
         foreach (glob(dirname(__DIR__, 2).'/Fixtures/Domains/Pamphlets/*.php') ?: [] as $file) {
             preg_match_all(
-                '/^use (App\\\\(?:Sharing|Records)\\\\[A-Za-z\\\\]+);/m',
+                '/^use (App\\\\[A-Za-z\\\\]+);/m',
                 (string) file_get_contents($file),
                 $imports,
             );
@@ -34,8 +34,8 @@ final class SharingExportsTest extends TestCase
 
         $named = array_values(array_unique($named));
 
-        $this->assertContains('App\\Sharing\\Contracts\\Shareable', $named);
-        $this->assertContains('App\\Sharing\\Contracts\\ShareRecordContributor', $named);
+        $this->assertContains('App\\Contracts\\Shareable', $named);
+        $this->assertContains('App\\Contracts\\ShareRecordContributor', $named);
         $this->assertSame([], array_values(array_filter($named, fn (string $name) => ! $exports->has($name))));
     }
 

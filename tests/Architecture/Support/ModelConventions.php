@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
-use App\Reflection\Support\Reflector;
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Contracts\ReadableModel;
+use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;

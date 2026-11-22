@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Contracts\WorkStacks;
-use App\Assignments\Contracts\AssignmentResolver;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\Page;
-use App\Processes\Contracts\VerificationTiming;
-use App\Processes\Values\TimingVerdict;
+use App\Contracts\AssignmentResolver;
+use App\Contracts\CurrentActor;
+use App\Contracts\VerificationTiming;
+use App\Contracts\WorkStacks;
+use App\Support\AssigneeIdentity;
+use App\Support\Page;
+use App\Values\TimingVerdict;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
-use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Values\TaskSummary;
 
 /**
  * Holds an agent's tests and checks while the current phase of a started plan it holds still has open or started

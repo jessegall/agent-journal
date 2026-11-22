@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Agents\Commands\RetireMenuEntry\RetireMenuEntryCommand;
-use App\Agents\Enums\MenuEntryState;
+use App\Commands\RetireMenuEntry\RetireMenuEntryCommand;
+use App\Enums\MenuEntryState;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;

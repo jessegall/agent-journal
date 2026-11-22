@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Contracts\ServerClock;
+use App\Contracts\ServerClock;
 use Carbon\CarbonImmutable;
 
 /**

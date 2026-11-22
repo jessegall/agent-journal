@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Agents\Support\AgentContext;
-use App\Bus\Contracts\RefusalMapper;
+use App\Contracts\RefusalMapper;
 use App\Mcp\Contracts\McpCall;
 use App\Mcp\Data\ToolResult;
+use App\Support\AgentContext;
 use Closure;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;

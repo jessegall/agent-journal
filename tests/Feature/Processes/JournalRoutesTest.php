@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Enums\CommandClass;
-use App\Processes\Enums\UnresolvedType;
+use App\Enums\CommandClass;
+use App\Enums\UnresolvedType;
 use Tests\Support\Processes\ClassifiesLines;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

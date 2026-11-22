@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Bus\Support\ActiveEventUnits;
-use App\Bus\Support\EventUnit;
-use App\Bus\Support\RequiredDrain;
-use App\Bus\Support\RequiredListenerRegistry;
+use App\Support\ActiveEventUnits;
+use App\Support\EventUnit;
+use App\Support\RequiredDrain;
+use App\Support\RequiredListenerRegistry;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Contracts\RaisingRow;

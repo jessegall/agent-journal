@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Enums\AccountProcessRole;
-use App\Agents\Enums\ProcessStartState;
-use App\Agents\Support\EnrolledHost;
-use App\Drivers\Support\DefaultDrivers;
-use App\Profiles\Events\AccountsChanged;
-use App\Profiles\Events\AccountUsageChanged;
-use App\Profiles\Models\Account;
-use App\Profiles\Models\AccountUsageCost;
-use App\Profiles\Models\AccountUsageWindow;
-use App\Profiles\Values\AccountLabel;
+use App\Enums\AccountProcessRole;
+use App\Enums\ProcessStartState;
+use App\Events\AccountsChanged;
+use App\Events\AccountUsageChanged;
+use App\Models\Account;
+use App\Models\AccountUsageCost;
+use App\Models\AccountUsageWindow;
+use App\Support\DefaultDrivers;
+use App\Support\EnrolledHost;
+use App\Values\AccountLabel;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;

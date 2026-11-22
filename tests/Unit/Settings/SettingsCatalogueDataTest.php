@@ -4,26 +4,27 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
-use App\Reflection\Enums\TypeShape;
-use App\Reflection\Support\DeclaredType;
-use App\Reflection\Support\ReflectedProperty;
-use App\Reflection\Support\Reflector;
-use App\Settings\Data\BooleanValueData;
-use App\Settings\Data\DecimalConstraintsData;
-use App\Settings\Data\DecimalValueData;
-use App\Settings\Data\IntegerChoiceConstraintsData;
-use App\Settings\Data\IntegerChoiceValueData;
-use App\Settings\Data\InvalidValueData;
-use App\Settings\Data\PlainGroupAvailabilityData;
-use App\Settings\Data\SettingIdentityData;
-use App\Settings\Data\SettingsCatalogueData;
-use App\Settings\Data\ToggleGroupAvailabilityData;
-use App\Settings\Enums\GroupAvailability;
-use App\Settings\Enums\SettingAvailability;
-use App\Settings\Enums\SettingSource;
-use App\Settings\Enums\SettingType;
+use App\Data\BooleanValueData;
+use App\Data\DecimalConstraintsData;
+use App\Data\DecimalValueData;
+use App\Data\IntegerChoiceConstraintsData;
+use App\Data\IntegerChoiceValueData;
+use App\Data\InvalidValueData;
+use App\Data\PlainGroupAvailabilityData;
+use App\Data\SettingIdentityData;
+use App\Data\SettingsCatalogueData;
+use App\Data\ToggleGroupAvailabilityData;
+use App\Enums\GroupAvailability;
+use App\Enums\SettingAvailability;
+use App\Enums\SettingSource;
+use App\Enums\SettingType;
+use App\Enums\TypeShape;
+use App\Support\DeclaredType;
+use App\Support\ReflectedProperty;
+use App\Support\Reflector;
 use PhpOption\Option;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Tests\Architecture\Support\FormerPaths;
 use Tests\TestCase;
 
 /**
@@ -114,8 +115,9 @@ final class SettingsCatalogueDataTest extends TestCase
 
     public function test_no_catalogue_property_is_mixed_or_an_untyped_array(): void
     {
-        foreach (glob(app_path('Settings/Data/*.php')) ?: [] as $file) {
-            $class = Reflector::of('App\\Settings\\Data\\'.basename($file, '.php'));
+        // The catalogue's data classes by the folder they had before plan 62 moved them to app/Data.
+        foreach (FormerPaths::filesFrom(['app/Settings/Data/']) as $file) {
+            $class = Reflector::of('App\\'.str_replace('/', '\\', substr($file, 4, -4)));
             $this->assertTrue($class->isFinal(), $class->name());
 
             $ownProperties = array_filter(

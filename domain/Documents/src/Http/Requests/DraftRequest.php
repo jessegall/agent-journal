@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Requests;
 
-use App\Numbers\Support\RecordReference;
-use Domain\Documents\Api\DraftTarget;
+use App\Support\RecordReference;
+use Domain\Documents\Values\DraftTarget;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
-use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Communication\Models\Message;
-use App\Communication\States\Support\AnsweringMessageStateFactory;
-use App\Communication\States\Support\AnsweringMessageStateReference;
-use App\Communication\Support\MessageAnswerActivation;
-use App\Hooks\Contracts\ActorWorkStacks;
-use App\Hooks\Decisions\StateReferences;
-use App\Hooks\References\StateReference;
-use App\Hooks\States\AgentState;
+use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Contracts\ActorWorkStacks;
+use App\Models\Message;
+use App\Support\Decisions\StateReferences;
+use App\Support\MessageAnswerActivation;
+use App\Support\References\StateReference;
+use App\Support\States\AgentState;
+use App\Support\States\Support\AnsweringMessageStateFactory;
+use App\Support\States\Support\AnsweringMessageStateReference;
 use PhpOption\Option;
 use Tests\Support\MessagingTestCase;
 

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Enums\ChatPermission;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Communication\Commands\ReplyInChat\ReplyInChatCommand;
-use App\Communication\Exceptions\RespondentRequired;
-use App\Communication\Exceptions\StaleAddressee;
-use App\Communication\Models\Message;
+use App\Commands\AskChatQuestion\AskChatQuestionCommand;
+use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\ReplyInChat\ReplyInChatCommand;
+use App\Enums\ChatPermission;
+use App\Exceptions\RespondentRequired;
+use App\Exceptions\StaleAddressee;
+use App\Models\Message;
+use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;

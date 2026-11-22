@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Agents\CommandMiddleware\AnnounceUnavailableStart;
-use App\Agents\CommandMiddleware\CommitHeldStartRefusals;
-use App\Agents\CommandMiddleware\KeepStartReceipt;
-use App\Agents\Commands\ContinueStart\ContinueStartCommand;
-use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Agents\Commands\StartAgent\StartAgentCommand;
-use App\Autoload\Support\FolderClasses;
-use App\Bus\Contracts\Command;
-use App\Bus\Support\CommandOwner;
-use App\Bus\Support\CommandScope;
-use App\Bus\Support\MiddlewareDeclaration;
-use App\Engine\CommandMiddleware\GuardTickOrigin;
-use App\Skills\CommandMiddleware\RefuseWritesDuringEvaluation;
+use App\CommandMiddleware\AnnounceUnavailableStart;
+use App\CommandMiddleware\CommitHeldStartRefusals;
+use App\CommandMiddleware\GuardTickOrigin;
+use App\CommandMiddleware\KeepStartReceipt;
+use App\CommandMiddleware\RefuseWritesDuringEvaluation;
+use App\Commands\ContinueStart\ContinueStartCommand;
+use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\StartAgent\StartAgentCommand;
+use App\Contracts\Command;
+use App\Support\CommandOwner;
+use App\Support\CommandScope;
+use App\Support\FolderClasses;
+use App\Support\MiddlewareDeclaration;
 
 /**
  * Core's own commands and middleware, read at start-up beside the domains' (doc 19, section 6.1).
@@ -28,7 +28,7 @@ final class CoreCommands
      */
     public static function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/*/Commands/*', Command::class);
+        return FolderClasses::in(__DIR__.'/Commands/*', Command::class);
     }
 
     /**

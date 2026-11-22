@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Access\Http\Middleware;
 
-use App\Actors\Contracts\Actor;
-use App\Actors\Contracts\AuthoritySource;
-use App\Actors\Contracts\ChatEligibility;
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Contracts\JournalAdmission;
-use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\ChatMemberAuthority;
-use App\Actors\Values\OwnerAuthority;
+use App\Contracts\Actor;
+use App\Contracts\AuthoritySource;
+use App\Contracts\ChatEligibility;
+use App\Contracts\CurrentActorSetter;
+use App\Contracts\JournalAdmission;
+use App\Support\ActorIdentity;
+use App\Values\ChatMemberAuthority;
+use App\Values\OwnerAuthority;
 use Closure;
 use Domain\Access\Exceptions\JournalAccessDenied;
 use Illuminate\Http\Request;

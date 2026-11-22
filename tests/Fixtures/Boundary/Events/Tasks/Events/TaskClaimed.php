@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Events\Tasks\Events;
 
-use App\Contracts\Attributes\RequiresListener;
+use App\Attributes\RequiresListener;
 use App\Contracts\Event;
 use Tests\Fixtures\Boundary\Events\Plans\Listeners\RequiredClaimListener;
 

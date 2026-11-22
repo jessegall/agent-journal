@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Settings;
 
-use App\Settings\Contracts\SettingsDefinition;
-use App\Settings\Declarations\SettingGroup;
+use App\Contracts\SettingsDefinition;
+use App\Declarations\SettingGroup;
 
 /**
  * A fixture settings definition built from the groups given to it.

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Enums\ActorType;
-use App\Assignments\Contracts\AssignmentTransaction;
-use App\Assignments\Exceptions\AssignmentRetryExhausted;
-use App\Assignments\Exceptions\AssignmentTransactionRequired;
-use App\Assignments\Models\AssignmentRecord;
-use App\Assignments\Storage\AssignmentStore;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Records\Support\RecordIdentity;
-use App\Reflection\Support\Reflector;
+use App\Contracts\AssignmentTransaction;
+use App\Enums\ActorType;
+use App\Exceptions\AssignmentRetryExhausted;
+use App\Exceptions\AssignmentTransactionRequired;
+use App\Models\AssignmentRecord;
+use App\Support\AssigneeIdentity;
+use App\Support\RecordIdentity;
+use App\Support\Reflector;
+use App\Support\Storage\AssignmentStore;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;

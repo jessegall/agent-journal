@@ -14,8 +14,8 @@ declare(strict_types=1);
  * --allow-requests lets the hostile work settings item send one small request on account A.
  */
 
-use App\Drivers\Support\DefaultDrivers;
-use App\Hooks\Compatibility\DriverCompatibility;
+use App\Support\Compatibility\DriverCompatibility;
+use App\Support\DefaultDrivers;
 use Tools\Accounts\AccountStatus;
 
 use function Tools\Accounts\empty_folder;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Http\Controllers;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use Domain\Tasks\Commands\WaiveTaskWait\WaiveTaskWaitCommand;
 use Domain\Tasks\Http\Requests\TaskWaitRequest;
 use Illuminate\Http\RedirectResponse;

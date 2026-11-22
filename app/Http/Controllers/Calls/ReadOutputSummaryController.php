@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Calls;
+
+use App\Calls\Processes\OutputSummary;
+use App\Calls\Processes\ReadOutputSummaryCall;
+use App\Models\ProcessRun;
+use App\Support\OutputSummaries;
+
+/**
+ * Answers a run's output summary and records the read.
+ */
+final readonly class ReadOutputSummaryController
+{
+    public function __invoke(
+        ReadOutputSummaryCall $call,
+        ProcessRun $processRun,
+        OutputSummaries $summaries,
+    ): OutputSummary {
+        return $summaries->of($processRun);
+    }
+}

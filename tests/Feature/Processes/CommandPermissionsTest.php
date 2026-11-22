@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Processes\Enums\CommandClass;
-use App\Processes\Models\PermissionRevocation;
-use App\Processes\Values\CommandClassSet;
-use App\Processes\Values\CommandPattern;
-use App\Processes\Values\CommandPatternSet;
-use App\Processes\Values\CommandPermissions;
-use App\Processes\Values\ProcessGrants;
+use App\Enums\ActorType;
+use App\Enums\CommandClass;
+use App\Models\PermissionRevocation;
+use App\Support\ActorIdentity;
+use App\Values\CommandClassSet;
+use App\Values\CommandPattern;
+use App\Values\CommandPatternSet;
+use App\Values\CommandPermissions;
+use App\Values\ProcessGrants;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 

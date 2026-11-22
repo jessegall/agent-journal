@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks;
 
 use App\Contracts\Event;
-use App\Hooks\Declarations\StateMethods;
-use App\Hooks\Exceptions\InvalidStateMethod;
-use App\Hooks\States\AgentState;
-use App\Hooks\States\Exceptions\InvalidStateClass;
+use App\Declarations\StateMethods;
+use App\Exceptions\InvalidStateMethod;
+use App\Support\States\AgentState;
+use App\Support\States\Exceptions\InvalidStateClass;
 use Domain\Tasks\Events\TaskStarted;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;

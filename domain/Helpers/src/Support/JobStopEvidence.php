@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Hooks\Values\StopAttemptReference;
+use App\Values\StopAttemptReference;
 use Domain\Helpers\Models\HelperJob;
 use PhpOption\Option;
 

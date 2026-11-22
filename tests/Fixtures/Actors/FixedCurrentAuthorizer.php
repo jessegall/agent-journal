@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Actors;
 
-use App\Actors\Contracts\CurrentAuthorizer;
-use App\Actors\Exceptions\ActorNotAllowed;
-use App\Operations\Enums\AccessType;
+use App\Contracts\CurrentAuthorizer;
+use App\Exceptions\ActorNotAllowed;
+use App\Enums\AccessType;
 
 /**
  * The caller's authorizer fixed for a test: the caller is granted the listed accesses and nothing else.

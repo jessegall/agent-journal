@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
-use App\Profiles\Contracts\SignInHost;
-use App\Profiles\Enums\AccountCheckResult;
-use App\Profiles\Enums\SignInOutcome;
-use App\Profiles\Values\ClaimedAccountCheck;
-use App\Profiles\Values\ClaimedCleanup;
-use App\Profiles\Values\ClaimedSignIn;
-use App\Profiles\Values\CleanupProgress;
-use App\Profiles\Values\SignInChallenge;
-use App\Profiles\Values\SignInIdentity;
-use App\Profiles\Values\SignInPoll;
+use App\Contracts\SignInHost;
+use App\Enums\AccountCheckResult;
+use App\Enums\SignInOutcome;
+use App\Values\ClaimedAccountCheck;
+use App\Values\ClaimedCleanup;
+use App\Values\ClaimedSignIn;
+use App\Values\CleanupProgress;
+use App\Values\SignInChallenge;
+use App\Values\SignInIdentity;
+use App\Values\SignInPoll;
 
 /**
  * A host that hands out one sign-in and remembers each report.

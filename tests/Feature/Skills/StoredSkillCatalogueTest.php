@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Skills\Conditions\Conditions;
-use App\Skills\Models\Skill;
-use App\Skills\Support\StoredSkillWrites;
-use App\Skills\Values\SectionDraft;
-use App\Skills\Values\SkillDraft;
-use App\Skills\Values\SkillKey;
+use App\Models\Skill;
+use App\Support\Conditions\Conditions;
+use App\Support\StoredSkillWrites;
+use App\Values\SectionDraft;
+use App\Values\SkillDraft;
+use App\Values\SkillKey;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Support\CommitsHookRows;

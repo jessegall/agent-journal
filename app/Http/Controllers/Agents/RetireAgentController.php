@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Agents\Commands\RetireAgent\RetireAgentCommand;
-use App\Assignments\Support\AssignmentHolders;
-use App\Bus\Contracts\CommandBus;
-use App\Http\Data\Assignments\AssignmentResultData;
+use App\Commands\RetireAgent\RetireAgentCommand;
+use App\Contracts\CommandBus;
+use App\Data\Assignments\AssignmentResultData;
 use App\Http\Requests\Agents\RetireAgentRequest;
+use App\Support\AssignmentHolders;
 use Illuminate\Http\JsonResponse;
 
 /**

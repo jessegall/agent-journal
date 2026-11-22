@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
-use Domain\Tasks\Api\TaskGraph;
+use Domain\Tasks\Data\TaskGraph;
 use Domain\Tasks\Exceptions\TaskMissing;
 
 /**

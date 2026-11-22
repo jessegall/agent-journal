@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Text;
 
-use App\Text\Support\TextPreview;
+use App\Support\TextPreview;
 use PHPUnit\Framework\TestCase;
 
 /**

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\CommentOnReport;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Support\Command;
-use App\Comments\Policies\CommentPolicy;
-use App\Operations\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Enums\AccessType;
+use App\Policies\CommentPolicy;
+use App\Support\Command;
 
 /**
  * @extends Command<string>

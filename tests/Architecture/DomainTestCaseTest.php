@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Reflection\Support\Reflector;
+use App\Support\Reflector;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 

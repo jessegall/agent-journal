@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Data;
 
-use App\Records\Data\RecordCard;
+use App\Data\RecordCard;
 use Domain\Documents\Enums\AttentionState;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;

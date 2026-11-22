@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assignments\Concerns;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Assignments\Support\AutoAssignmentInput;
-use App\Assignments\Support\AutoAssignmentKey;
-use App\Assignments\Support\PoolReference;
-use App\Numbers\Support\RecordReference;
-use App\Records\Contracts\RecordResolver;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\RecordResolver;
+use App\Enums\ActorType;
+use App\Support\ActorIdentity;
+use App\Support\AutoAssignmentInput;
+use App\Support\AutoAssignmentKey;
+use App\Support\PoolReference;
+use App\Support\RecordIdentity;
+use App\Support\RecordReference;
 use Illuminate\Validation\Rule;
 
 /**

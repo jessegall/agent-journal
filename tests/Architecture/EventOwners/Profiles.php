@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-use App\Profiles\Events\AccountCleaned;
-use App\Profiles\Events\AccountCleanupRetried;
-use App\Profiles\Events\AccountHeldForMaintenance;
-use App\Profiles\Events\AccountNoticeRecorded;
-use App\Profiles\Events\AccountNoticeResolved;
-use App\Profiles\Events\AccountRemovalBegun;
-use App\Profiles\Events\AccountRenamed;
-use App\Profiles\Events\AccountsChanged;
-use App\Profiles\Events\AccountSignedIn;
-use App\Profiles\Events\AccountSignedOut;
-use App\Profiles\Events\AccountSwitched;
-use App\Profiles\Events\AccountUsageChanged;
-use App\Profiles\Events\ProfileRevisionRevoked;
-use App\Profiles\Events\SignInAttemptCleanupRetried;
-use App\Profiles\Events\SignInAttemptFinished;
-use App\Profiles\Events\SignInAttemptReleased;
-use App\Profiles\Events\SignInAttemptStarted;
+use App\Events\AccountCleaned;
+use App\Events\AccountCleanupRetried;
+use App\Events\AccountHeldForMaintenance;
+use App\Events\AccountNoticeRecorded;
+use App\Events\AccountNoticeResolved;
+use App\Events\AccountRemovalBegun;
+use App\Events\AccountRenamed;
+use App\Events\AccountsChanged;
+use App\Events\AccountSignedIn;
+use App\Events\AccountSignedOut;
+use App\Events\AccountSwitched;
+use App\Events\AccountUsageChanged;
+use App\Events\ProfileRevisionRevoked;
+use App\Events\SignInAttemptCleanupRetried;
+use App\Events\SignInAttemptFinished;
+use App\Events\SignInAttemptReleased;
+use App\Events\SignInAttemptStarted;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -32,8 +32,8 @@ return [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Profiles/Commands/PublishSignInChallenge/PublishSignInChallengeHandler.php',
-            'app/Profiles/Listeners/ProjectAccountsChanged.php',
+            'app/Commands/PublishSignInChallenge/PublishSignInChallengeHandler.php',
+            'app/Listeners/ProjectAccountsChanged.php',
         ],
     ],
     AccountCleaned::class => [
@@ -122,7 +122,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Profiles/Commands/RevokeProfiles/RevokeProfilesHandler.php',
+            'app/Commands/RevokeProfiles/RevokeProfilesHandler.php',
         ],
     ],
     SignInAttemptCleanupRetried::class => [

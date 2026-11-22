@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Agents\Values\StackTarget;
-use App\Hooks\Exceptions\TooManyTickCommands;
-use App\Hooks\StateCatalog\StateTypeRegistry;
-use App\Hooks\States\AgentState;
-use App\Hooks\Ticks\ElapsedTime;
-use App\Hooks\Ticks\TickCommands;
-use App\Hooks\Ticks\TickContext;
-use App\Records\Commands\UnlinkRecords\UnlinkRecordsCommand;
-use App\Reflection\Support\ReflectedProperty;
-use App\Reflection\Support\Reflector;
+use App\Commands\UnlinkRecords\UnlinkRecordsCommand;
+use App\Exceptions\TooManyTickCommands;
+use App\Support\ReflectedProperty;
+use App\Support\Reflector;
+use App\Support\StateCatalog\StateTypeRegistry;
+use App\Support\States\AgentState;
+use App\Support\Ticks\ElapsedTime;
+use App\Support\Ticks\TickCommands;
+use App\Support\Ticks\TickContext;
+use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\ClosureStateLoader;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Engine;
 
-use App\Actors\Support\ActorContext;
-use App\Agents\Values\StackTarget;
-use App\Engine\Exceptions\EngineAccessRefused;
-use App\Engine\Support\EngineAccess;
-use App\Engine\Support\EngineActor;
+use App\Exceptions\EngineAccessRefused;
+use App\Support\ActorContext;
+use App\Support\EngineAccess;
+use App\Support\EngineActor;
+use App\Values\StackTarget;
 use PHPUnit\Framework\TestCase;
 
 /**

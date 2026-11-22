@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Data\NotificationTarget;
-use App\Communication\Enums\NotificationSourceType;
-use App\Communication\Events\NotificationsChanged;
-use App\Communication\Models\NotificationScope;
-use App\Communication\Support\NotificationDelivery;
-use App\Web\Events\NotificationsInvalidated;
-use App\Web\Listeners\BroadcastNotificationChanges;
-use App\Web\Support\UserChannel;
+use App\Data\NotificationTarget;
+use App\Enums\NotificationSourceType;
+use App\Events\NotificationsChanged;
+use App\Events\NotificationsInvalidated;
+use App\Listeners\BroadcastNotificationChanges;
+use App\Models\NotificationScope;
+use App\Support\NotificationDelivery;
+use App\Support\UserChannel;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;

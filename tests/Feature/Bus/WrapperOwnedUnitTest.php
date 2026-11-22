@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Bus\CommandMiddleware\RunInTransaction;
-use App\Bus\Support\CommandCall;
-use App\Bus\Support\CommandNesting;
-use App\Bus\Support\Publication;
-use App\Bus\Support\RequiredListenerRegistry;
+use App\CommandMiddleware\RunInTransaction;
+use App\Support\CommandCall;
+use App\Support\CommandNesting;
+use App\Support\Publication;
+use App\Support\RequiredListenerRegistry;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Events\Dispatcher;

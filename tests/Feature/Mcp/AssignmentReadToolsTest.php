@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Actors\Enums\ActorType;
-use App\Assignments\Contracts\AssigneeResolver;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\AssigneeList;
-use App\Assignments\Support\AssigneeName;
-use App\Assignments\Support\Page;
+use App\Contracts\AssigneeResolver;
+use App\Enums\ActorType;
+use App\Support\AssigneeIdentity;
+use App\Support\AssigneeList;
+use App\Support\AssigneeName;
+use App\Support\Page;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;

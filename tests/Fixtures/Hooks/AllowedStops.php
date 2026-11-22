@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Hooks\Inputs\Values\HookIdentity;
-use App\Hooks\States\Contracts\StopConditionGate;
+use App\Support\Inputs\Values\HookIdentity;
+use App\Support\States\Contracts\StopConditionGate;
 
 /**
  * A stop gate for a session with no stop conditions: every stop is allowed.

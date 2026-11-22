@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
+use App\Contracts\InstalledVersion;
 use App\Http\Middleware\Web\HandleInertiaRequests;
-use App\Web\Contracts\InstalledVersion;
-use App\Web\Support\InstalledVersion as CachedVersion;
+use App\Support\InstalledVersion as CachedVersion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Process;

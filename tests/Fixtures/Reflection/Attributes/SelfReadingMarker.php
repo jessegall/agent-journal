@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Reflection\Attributes;
 
-use App\Reflection\Support\Reflector;
+use App\Support\Reflector;
 use Attribute;
 use Tests\Fixtures\Reflection\SelfReadingParcel;
 

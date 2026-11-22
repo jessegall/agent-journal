@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Domains\Support\DomainEntry;
-use App\Processes\Enums\ScopeType;
-use App\Processes\Support\CommandRuleRegistry;
-use App\Processes\Values\CommandRule;
+use App\Enums\ScopeType;
+use App\Support\CommandRuleRegistry;
+use App\Support\DomainEntry;
+use App\Values\CommandRule;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\TestCase;
 

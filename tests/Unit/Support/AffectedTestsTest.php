@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Support;
 
-use App\Domains\Support\DomainRegistry;
+use App\Support\DomainRegistry;
 use Tests\Support\AffectedTests;
 use Tests\TestCase;
 
@@ -43,7 +43,7 @@ final class AffectedTestsTest extends TestCase
             AffectedTests::EVERYTHING,
             $this->affectedBy(
                 'domain/Rules/src/Commands/ApproveRule/ApproveRuleHandler.php',
-                'app/Bus/Support/CommandRegistry.php',
+                'app/Support/CommandRegistry.php',
             ),
         );
         $this->assertSame(AffectedTests::EVERYTHING, $this->affectedBy('tests/Support/CommitsHookRows.php'));
@@ -52,7 +52,7 @@ final class AffectedTestsTest extends TestCase
 
     public function test_a_change_to_a_core_area_runs_its_tests_and_the_tests_that_name_the_class(): void
     {
-        $affected = $this->affectedBy('app/Profiles/Support/ClaudeKeySignIn.php');
+        $affected = $this->affectedBy('app/Support/ClaudeKeySignIn.php');
 
         $this->assertNotSame(AffectedTests::EVERYTHING, $affected);
         $this->assertContains('tests/Feature/Profiles', $affected);

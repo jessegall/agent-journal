@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Listeners;
 
-use App\Contracts\Attributes\InCommandTransaction;
+use App\Attributes\InCommandTransaction;
+use App\Contracts\ActorWorkStacks;
 use App\Contracts\Listener;
-use App\Hooks\Contracts\ActorWorkStacks;
-use Domain\Plans\Api\Events\PlanStarted;
-use Domain\Plans\States\Support\WorkingOnPlanStateReference;
+use Domain\Plans\Events\PlanStarted;
+use Domain\Plans\Support\States\Support\WorkingOnPlanStateReference;
 
 /**
  * Puts the started plan on the starting agent's stack in the same transaction as the start, so both commit or neither

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Hooks\Decisions\Decision;
-use App\Hooks\Inputs\ContextCompacted;
-use App\Hooks\Inputs\FileEditRequested;
-use App\Hooks\Inputs\PromptSubmitted;
-use App\Hooks\Inputs\SessionEnded;
-use App\Hooks\Inputs\SessionStarted;
-use App\Hooks\Inputs\ShellCommandRequested;
-use App\Hooks\Inputs\StopRequested;
-use App\Hooks\Inputs\ToolFinished;
-use App\Hooks\Inputs\ToolRequested;
-use App\Hooks\States\AgentState;
+use App\Support\Decisions\Decision;
+use App\Support\Inputs\ContextCompacted;
+use App\Support\Inputs\FileEditRequested;
+use App\Support\Inputs\PromptSubmitted;
+use App\Support\Inputs\SessionEnded;
+use App\Support\Inputs\SessionStarted;
+use App\Support\Inputs\ShellCommandRequested;
+use App\Support\Inputs\StopRequested;
+use App\Support\Inputs\ToolFinished;
+use App\Support\Inputs\ToolRequested;
+use App\Support\States\AgentState;
 
 /**
  * A test state that gives the same answer to every hook, a decision or nothing to pass, and counts how often a hook

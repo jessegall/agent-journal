@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\QuestionReminders;
 
-use App\Bus\Contracts\CommandProvider;
-use App\Domains\Concerns\HasStates;
-use App\Domains\Contracts\StateProvider;
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
+use App\Contracts\CommandProvider;
+use App\Concerns\HasStates;
+use App\Contracts\StateProvider;
+use App\Support\Domain;
+use App\Support\Exports;
 use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder\SendQuestionReminderCommand;
 use Tests\Fixtures\Domains\QuestionReminders\States\AwaitingAnswerLoader;
 

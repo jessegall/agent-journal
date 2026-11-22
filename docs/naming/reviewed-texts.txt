@@ -399,6 +399,7 @@ Search windows
 Secrets
 Send
 Send Shift+Tab to the agent
+Send again
 Send code
 Send it
 Send presses Enter on the line; Save and clear keeps it in this tab only and empties the prompt.

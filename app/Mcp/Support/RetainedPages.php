@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Agents\Support\AgentContext;
 use App\Mcp\Exceptions\ContinuationStale;
 use App\Mcp\Models\RetainedPage;
+use App\Support\AgentContext;
 use Carbon\CarbonImmutable;
 use Closure;
 

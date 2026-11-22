@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Actions\RegisterPendingStart;
-use App\Agents\Enums\TransportProfileType;
-use App\Agents\Values\SelectedAccount;
-use App\Records\Contracts\IdentityLinks;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\IdentityLinks;
+use App\Enums\TransportProfileType;
+use App\Support\RecordIdentity;
+use App\Support\RegisterPendingStart;
+use App\Values\SelectedAccount;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;

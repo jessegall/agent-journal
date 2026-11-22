@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Listeners;
 
-use App\Contracts\Attributes\InCommandTransaction;
-use Domain\Plans\Api\Events\PlanProgressChanged;
+use App\Attributes\InCommandTransaction;
+use Domain\Plans\Events\PlanProgressChanged;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**

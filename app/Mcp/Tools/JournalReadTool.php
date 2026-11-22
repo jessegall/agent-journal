@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Agents\Contracts\ReadGrant;
-use App\Agents\Values\ReadRequest;
+use App\Contracts\ReadGrant;
 use App\Mcp\Contracts\McpCall;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
+use App\Values\ReadRequest;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\ResponseFactory;
 

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers;
 
-use App\Communication\Contracts\ConversationResolver;
-use App\Communication\Data\InboxView;
-use App\Communication\Data\MessagePage;
-use App\Ui\Contracts\PageResolver;
-use App\Ui\Enums\ActionMethod;
-use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\LayoutActionData;
-use App\Ui\Layout\LayoutFormData;
-use App\Ui\Layout\LayoutNativeData;
-use App\Ui\Layout\LayoutPartData;
+use App\Contracts\ConversationResolver;
+use App\Contracts\PageResolver;
+use App\Data\InboxView;
+use App\Data\MessagePage;
+use App\Enums\ActionMethod;
+use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\LayoutActionData;
+use App\Support\Layout\LayoutFormData;
+use App\Support\Layout\LayoutNativeData;
+use App\Support\Layout\LayoutPartData;
 use Domain\Chat\Data\InboxMessagesPartData;
 
 /**

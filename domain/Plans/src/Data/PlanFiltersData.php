@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Data;
 
-use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Enums\PlanStateGroup;
+use Domain\Plans\Values\PlanFilters;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Regex;
 use Spatie\LaravelData\Data;

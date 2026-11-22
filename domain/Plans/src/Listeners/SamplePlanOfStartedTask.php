@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Listeners;
 
-use App\Bus\Contracts\CommandFacts;
-use App\Contracts\Attributes\InCommandTransaction;
+use App\Attributes\InCommandTransaction;
+use App\Contracts\CommandFacts;
 use App\Contracts\Listener;
-use Domain\Plans\Api\Events\PlanProgressChanged;
+use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Models\Phase;
 use Domain\Tasks\Events\TaskStarted;
 

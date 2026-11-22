@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
-use App\Communication\Enums\MessageState;
-use App\Communication\Exceptions\AnswerImpossible;
-use App\Communication\Exceptions\MessageMissing;
-use App\Communication\Models\Message;
-use App\Desks\Support\DeskOpening;
+use App\Commands\RequireMessageAnswer\RequireMessageAnswerCommand;
+use App\Enums\MessageState;
+use App\Exceptions\AnswerImpossible;
+use App\Exceptions\MessageMissing;
+use App\Models\Message;
+use App\Support\DeskOpening;
 use Tests\Support\MessagingTestCase;
 
 /**

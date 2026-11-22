@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Docking;
 
-use App\Actors\Support\ActorIdentity;
-use App\Bus\Contracts\CommandBus;
-use App\Docking\Support\DockDefinitions;
+use App\Contracts\CommandBus;
+use App\Support\ActorIdentity;
+use App\Support\DockDefinitions;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Models\DockPlacement;

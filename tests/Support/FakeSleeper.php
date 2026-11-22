@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Engine\Contracts\Sleeper;
+use App\Contracts\Sleeper;
 
 /**
  * Sleeps by moving the fake monotonic clock, with an optional stall added to the first sleep.

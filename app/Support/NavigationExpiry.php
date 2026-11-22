@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support;
+
+use App\Contracts\NavigationExpiry as NavigationExpiryContract;
+use App\Enums\HoldReason;
+use App\Enums\NavigationState;
+use App\Enums\RequestOutcome;
+use App\Models\NavigationRequest;
+use Carbon\CarbonImmutable;
+
+/**
+ * Expires the navigation requests nobody answered in time, at most a bounded batch per sweep: each ends its key
+ * script request entry_unavailable and releases its runtime.
+ */
+final readonly class NavigationExpiry implements NavigationExpiryContract
+{
+    public function __construct(private DriverRequestEndings $endings) {}
+
+    /**
+     * The most requests one sweep expires; the rest wait for the next pass.
+     */
+    private const int SWEEP_LIMIT = 100;
+
+    public function expireDue(): void
+    {
+        $due = NavigationRequest::query()
+            ->acrossActors()
+            ->whereIn('state', [NavigationState::Open, NavigationState::Answering])
+            ->expiredBefore(CarbonImmutable::now())
+            ->with(['driverRequest', 'runtime'])
+            ->lockForUpdate()
+            ->limit(self::SWEEP_LIMIT)
+            ->get();
+
+        foreach ($due as $navigation) {
+            $this->endings->expire($navigation);
+            $navigation->driverRequest->fail(RequestOutcome::EntryUnavailable);
+            $navigation->runtime->holdFor(HoldReason::None);
+        }
+    }
+}

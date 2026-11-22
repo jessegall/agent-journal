@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands\UndockSource;
 
-use App\Docking\Cards\DockIdentity;
+use App\Support\Cards\DockIdentity;
 use Domain\Chat\Commands\Support\ChatCommandHandler;
 use Domain\Chat\Enums\DockOutcome;
 use Domain\Chat\Models\Conversation;

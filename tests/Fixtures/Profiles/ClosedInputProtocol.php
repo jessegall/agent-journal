@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
-use App\Profiles\Values\SignInHosts;
-use App\Profiles\Contracts\SignInProtocol;
-use App\Profiles\Support\PrivateAccountProcess;
-use App\Profiles\Values\SignInChallenge;
-use App\Profiles\Values\SignInIdentity;
-use App\Profiles\Values\SignInVerification;
+use App\Values\SignInHosts;
+use App\Contracts\SignInProtocol;
+use App\Support\PrivateAccountProcess;
+use App\Values\SignInChallenge;
+use App\Values\SignInIdentity;
+use App\Values\SignInVerification;
 
 /**
  * A sign-in whose program closed its input before the user's answer came, so handing the answer to it breaks; any

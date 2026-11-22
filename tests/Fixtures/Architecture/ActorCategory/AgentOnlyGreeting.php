@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Architecture\ActorCategory;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
+use App\Enums\ActorType;
+use App\Support\ActorIdentity;
 
 /**
  * Chooses behaviour by the kind of actor, which rule 39 forbids; the rule 39 test must find it.

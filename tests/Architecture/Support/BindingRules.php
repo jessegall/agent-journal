@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorContext;
-use App\Reflection\Support\DeclaredType;
-use App\Reflection\Support\ReflectedMethod;
-use App\Reflection\Support\Reflector;
+use App\Contracts\CurrentActor;
+use App\Support\ActorContext;
+use App\Support\DeclaredType;
+use App\Support\ReflectedMethod;
+use App\Support\Reflector;
 use Illuminate\Container\Attributes\Bind;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Container\Attributes\Singleton;

@@ -4,45 +4,43 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Bus\Support\CommandRegistry;
+use App\Commands\ApproveShareRequest\ApproveShareRequestCommand;
+use App\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
+use App\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
+use App\Commands\CreateShare\CreateShareCommand;
+use App\Commands\DisableShareGateway\DisableShareGatewayCommand;
+use App\Commands\ExpireShares\ExpireSharesCommand;
+use App\Commands\PruneShareAudit\PruneShareAuditCommand;
+use App\Commands\ReadShare\ReadShareCommand;
+use App\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
+use App\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
+use App\Commands\RefreshShareScope\RefreshShareScopeCommand;
+use App\Commands\ReopenSharedGateways\ReopenSharedGatewaysCommand;
+use App\Commands\RequestShare\RequestShareCommand;
+use App\Commands\RetryShare\RetryShareCommand;
+use App\Commands\RevokeShare\RevokeShareCommand;
+use App\Commands\SaveSharePreview\SaveSharePreviewCommand;
+use App\Contracts\Shareable;
+use App\Contracts\ShareGateway;
+use App\Contracts\ShareGatewayProvider;
+use App\Contracts\SharePolicy;
+use App\Contracts\ShareRecordContributor;
+use App\Contracts\ShareRecordProvider;
 use App\CoreApi;
 use App\CoreCommands;
-use App\Reflection\Support\Reflector;
-use App\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
-use App\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
-use App\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
-use App\Sharing\Commands\CreateShare\CreateShareCommand;
-use App\Sharing\Commands\DisableShareGateway\DisableShareGatewayCommand;
-use App\Sharing\Commands\ExpireShares\ExpireSharesCommand;
-use App\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;
-use App\Sharing\Commands\ReadShare\ReadShareCommand;
-use App\Sharing\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
-use App\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
-use App\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;
-use App\Sharing\Commands\ReopenSharedGateways\ReopenSharedGatewaysCommand;
-use App\Sharing\Commands\RequestShare\RequestShareCommand;
-use App\Sharing\Commands\RetryShare\RetryShareCommand;
-use App\Sharing\Commands\RevokeShare\RevokeShareCommand;
-use App\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
-use App\Sharing\Contracts\Shareable;
-use App\Sharing\Contracts\ShareGateway;
-use App\Sharing\Contracts\ShareGatewayProvider;
-use App\Sharing\Contracts\SharePolicy;
-use App\Sharing\Contracts\ShareRecordContributor;
-use App\Sharing\Contracts\ShareRecordProvider;
-use App\Sharing\Events\ShareActivated;
-use App\Sharing\Events\ShareCreated;
-use App\Sharing\Events\ShareExpired;
-use App\Sharing\Events\ShareFailed;
-use App\Sharing\Events\ShareGatewayChanged;
-use App\Sharing\Events\ShareRequested;
-use App\Sharing\Events\ShareRevoked;
-use App\Sharing\Events\ShareScopeChanged;
-use App\Sharing\Support\ReadPermit;
+use App\Events\ShareActivated;
+use App\Events\ShareCreated;
+use App\Events\ShareExpired;
+use App\Events\ShareFailed;
+use App\Events\ShareGatewayChanged;
+use App\Events\ShareRequested;
+use App\Events\ShareRevoked;
+use App\Events\ShareScopeChanged;
+use App\Support\CommandRegistry;
+use App\Support\ReadPermit;
+use App\Support\Reflector;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use SplFileInfo;
+use Tests\Architecture\Support\FormerPaths;
 use Tests\TestCase;
 
 /**
@@ -119,7 +117,7 @@ final class SharingBoundaryTest extends TestCase
         $sharing = array_values(
             array_filter(
                 CoreCommands::commands(),
-                fn (string $command) => str_starts_with($command, 'App\\Sharing\\Commands\\'),
+                fn (string $command) => FormerPaths::classWasIn($command, ['app/Sharing/Commands/']),
             ),
         );
 
@@ -161,28 +159,22 @@ final class SharingBoundaryTest extends TestCase
     }
 
     /**
+     * The sharing files by the folders they had before plan 62 moved them to their roles.
+     *
      * @return list<string>
      */
     private function sharingFiles(): array
     {
-        $files = [];
-        $roots = [
-            app_path('Sharing'),
-            app_path('Http/Controllers/Sharing'),
-            app_path('Http/Requests/Sharing'),
-            app_path('Http/Data/Sharing'),
-            app_path('Http/Middleware/Sharing'),
-        ];
-
-        foreach (array_filter($roots, is_dir(...)) as $root) {
-            foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root)) as $file) {
-                if ($file instanceof SplFileInfo && $file->getExtension() === 'php') {
-                    $files[] = $file->getPathname();
-                }
-            }
-        }
-
-        return $files;
+        return array_map(
+            base_path(...),
+            FormerPaths::filesFrom([
+                'app/Sharing/',
+                'app/Http/Controllers/Sharing/',
+                'app/Http/Requests/Sharing/',
+                'app/Http/Data/Sharing/',
+                'app/Http/Middleware/Sharing/',
+            ]),
+        );
     }
 
     /**
@@ -190,10 +182,10 @@ final class SharingBoundaryTest extends TestCase
      */
     private function handlers(): array
     {
-        return array_map(
-            fn (string $file) => 'App\\Sharing\\Commands\\'.basename(dirname($file)).'\\'.basename($file, '.php'),
-            glob(app_path('Sharing/Commands/*/*Handler.php')) ?: [],
-        );
+        return array_values(array_filter(
+            $this->classesFrom('app/Sharing/Commands/'),
+            fn (string $class) => str_ends_with($class, 'Handler'),
+        ));
     }
 
     /**
@@ -201,9 +193,27 @@ final class SharingBoundaryTest extends TestCase
      */
     private function classesIn(string $folder): array
     {
+        return array_values(array_filter(
+            $this->classesFrom("app/Sharing/{$folder}/"),
+            fn (string $class) => ! str_contains(substr(FormerPaths::of(self::pathOf($class)), strlen("app/Sharing/{$folder}/")), '/'),
+        ));
+    }
+
+    /**
+     * The classes whose files were under the old folder.
+     *
+     * @return list<string>
+     */
+    private function classesFrom(string $prefix): array
+    {
         return array_map(
-            fn (string $file) => 'App\\Sharing\\'.$folder.'\\'.basename($file, '.php'),
-            glob(app_path("Sharing/{$folder}/*.php")) ?: [],
+            fn (string $path) => 'App\\'.str_replace('/', '\\', substr($path, 4, -4)),
+            FormerPaths::filesFrom([$prefix]),
         );
+    }
+
+    private static function pathOf(string $className): string
+    {
+        return 'app/'.str_replace('\\', '/', substr($className, 4)).'.php';
     }
 }

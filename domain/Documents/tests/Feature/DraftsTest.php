@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\CommandInputInvalid;
-use App\Text\Exceptions\SectionMissing;
-use App\Text\Exceptions\TextMatchInvalid;
-use Domain\Documents\Api\DraftTarget;
+use App\Contracts\CommandBus;
+use App\Exceptions\CommandInputInvalid;
+use App\Exceptions\SectionMissing;
+use App\Exceptions\TextMatchInvalid;
 use Domain\Documents\Commands\ChangeDocumentDetails\ChangeDocumentDetailsCommand;
 use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
@@ -23,6 +22,7 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentClose;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
+use Domain\Documents\Values\DraftTarget;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;

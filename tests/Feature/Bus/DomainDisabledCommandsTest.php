@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\CommandRefused;
-use App\Bus\Exceptions\DomainDisabled;
-use App\Bus\Support\CommandScope;
-use App\Bus\Support\MiddlewareDeclaration;
+use App\Contracts\CommandBus;
 use App\Contracts\DomainAvailability;
+use App\Exceptions\CommandRefused;
+use App\Exceptions\DomainDisabled;
+use App\Support\CommandScope;
+use App\Support\MiddlewareDeclaration;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Commands\StartPlan\StartPlanHandler;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck\ShuffleDeckCommand;

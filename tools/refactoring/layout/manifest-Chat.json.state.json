@@ -1,0 +1,37 @@
+{
+    "moved": {
+        "domain/Chat/src/Console/DockAddCommand.php": "00b35f6bb227dbb65a2935142a62dd2a80dfdad3",
+        "domain/Chat/src/Console/DockListCommand.php": "6daaabc30482815eebb2ade5ecd26912d44bcb8b",
+        "domain/Chat/src/Console/DockRemoveCommand.php": "daa3d60efeca03d8d810e59aead0a2de31fce4bc",
+        "domain/Chat/src/Mcp/AnswerMessageTool.php": "68a3ba19466e066af45f14672062329cf92d26e9",
+        "domain/Chat/src/Mcp/AskQuestionTool.php": "d7f6066c45f31e1218128c649fb430fe81556fce",
+        "domain/Chat/src/Mcp/DismissMessageTool.php": "b24cc53aed458db42432e1e34d388ae19645270b",
+        "domain/Chat/src/Mcp/DockAddTool.php": "8e228e5c5f78a77424b5447b5ac7f004d4bf185c",
+        "domain/Chat/src/Mcp/DockListTool.php": "1c4b436a6fac3e002c9af2f691aa8de6aa00d453",
+        "domain/Chat/src/Mcp/DockRemoveTool.php": "92e7cdb72fe1ceb45f9fb4aa2be7738c010df92d",
+        "domain/Chat/src/Mcp/MessageContextTool.php": "31f9356df2d40383cf7f3216b15620d12688f037",
+        "domain/Chat/src/Mcp/MessageDetailsTool.php": "3a1af6b43117f0360cc42efc28e045e3b7eb3ede",
+        "domain/Chat/src/Mcp/MessageReadResult.php": "cb0a7804be218257a78877197c41adf997f56170",
+        "domain/Chat/src/Mcp/MessageReadTool.php": "667c986080b3123311aa8fd694886172cb8c8e5f",
+        "domain/Chat/src/Mcp/MessageResource.php": "c7253180975b7f95eef2ce47002cb2f192647c3a",
+        "domain/Chat/src/Mcp/MessageSearch.php": "6fe827dbcd8db4b0ebbea35b01bae881cd5f9c2c",
+        "domain/Chat/src/Mcp/MessagesListTool.php": "35bb53a802c05e6c2e7b829570b7b866fc245792",
+        "domain/Chat/src/Mcp/PendingMessagesOverview.php": "a2fe921940e6afbf13da7ca40cc58438cc3d0be3",
+        "domain/Chat/src/Mcp/ReplyToMessageTool.php": "279f0275b33d7ba63d8cbf5464d24002d5f66e2a",
+        "domain/Chat/src/Mcp/SelectMessageTool.php": "e888dbe47ffaaac6a53cc5b163f13611c30c065f",
+        "domain/Chat/src/Skills/ChatSkill.php": "24d0d562078e2911eb86e0d6fc9a808b242206f5",
+        "domain/Chat/src/Routes/agent.php": "29135a5c264e1ab44ba46dedd82d3cb046a284a0"
+    },
+    "edits": {
+        "domain/Chat/src/ChatDomain.php": {
+            "prior": "f01c392db3de2be49a4dee1fe5bb917d7c23a0ea",
+            "result": "fd1c0d606bfc23b8067e67e911d099ee2675a0e7",
+            "move": "batch"
+        },
+        "tests/Unit/Skills/ShippedSkillFilesTest.php": {
+            "prior": "e74fa09865c9d573ff368082cce9f45212694616",
+            "result": "2db9cddd814f23bd705a95ffb6aa389b716db647",
+            "move": "batch"
+        }
+    }
+}

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Docking;
 
-use App\Docking\Cards\ConsoleOutput;
-use App\Docking\Cards\Contracts\DockPart;
-use App\Docking\Cards\CountedProgress;
-use App\Docking\Cards\Disclosure;
-use App\Docking\Cards\DockCard;
-use App\Docking\Cards\Stack;
-use App\Docking\Cards\Subtitle;
-use App\Docking\Cards\Title;
-use App\Docking\Enums\ConsoleStream;
-use App\Docking\Enums\DisclosureState;
-use App\Docking\Exceptions\DockCardInvalid;
+use App\Enums\ConsoleStream;
+use App\Enums\DisclosureState;
+use App\Exceptions\DockCardInvalid;
+use App\Support\Cards\ConsoleOutput;
+use App\Support\Cards\Contracts\DockPart;
+use App\Support\Cards\CountedProgress;
+use App\Support\Cards\Disclosure;
+use App\Support\Cards\DockCard;
+use App\Support\Cards\Stack;
+use App\Support\Cards\Subtitle;
+use App\Support\Cards\Title;
 use PHPUnit\Framework\TestCase;
 
 /**

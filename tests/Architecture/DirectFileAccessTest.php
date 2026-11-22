@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\DirectFileAccess;
+use Tests\Architecture\Support\FormerPaths;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -16,11 +17,26 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of app/ and the domains.')]
 final class DirectFileAccessTest extends TestCase
 {
-    private const string HOW_TO_FIX = "Read, list, stat and write files through App\\Files\\Contracts\\Files:\n";
+    private const string HOW_TO_FIX = "Read, list, stat and write files through App\\Contracts\\Files:\n";
+
+    private const array FILES_PRIMITIVES = [
+        'app/Support/CodeFiles.php',
+        'app/Support/FileWriter.php',
+        'app/Support/FolderWalker.php',
+        'app/Support/LocalFiles.php',
+        'app/Support/PathConfinement.php',
+        'app/Support/PlaceRoots.php',
+    ];
 
     public function test_only_the_files_area_touches_the_disk(): void
     {
-        $found = DirectFileAccess::across(base_path())->outside('app/Files');
+        $found = DirectFileAccess::across(base_path());
+
+        // The Files area's own files touch the disk: those plan 62 moved out of app/Files, and the primitives that
+        // already sat in app/Support by role.
+        foreach ([...FormerPaths::filesFrom(['app/Files/']), ...self::FILES_PRIMITIVES] as $primitive) {
+            $found = $found->outside($primitive);
+        }
 
         $this->assertSame(
             $found->listedSites(),

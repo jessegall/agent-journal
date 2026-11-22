@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Commands\SendHelper;
 
-use App\Actors\Support\ActorIdentity;
+use App\Support\ActorIdentity;
 use Domain\Helpers\Commands\Support\HelperCommandHandler;
 use Domain\Helpers\Support\DispatchRequest;
 use Domain\Helpers\Support\HelperDispatch;

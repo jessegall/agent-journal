@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Domains\Support\Domain;
-use App\Reflection\Support\ReflectedMethod;
-use App\Reflection\Support\Reflector;
+use App\Support\Domain;
+use App\Support\ReflectedMethod;
+use App\Support\Reflector;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 

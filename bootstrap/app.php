@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Connections\Http\Middleware\ResolveConnectedProject;
 use App\Http\Middleware\Agents\AuthenticateAgent;
 use App\Http\Middleware\Agents\AuthenticateHost;
 use App\Http\Middleware\Agents\ReadRequestKey;
 use App\Http\Middleware\MeasureReads;
+use App\Http\Middleware\ResolveConnectedProject;
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Http\Middleware\Web\ReadIdempotencyKey;
 use Domain\Access\Http\Middleware\AuthenticateUser;
@@ -29,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    // Listeners are registered once, by App\Domains\Providers\DomainEventServiceProvider, through its checks.
+    // Listeners are registered once, by App\Providers\DomainEventServiceProvider, through its checks.
     ->withEvents(discover: false)
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(MeasureReads::class);

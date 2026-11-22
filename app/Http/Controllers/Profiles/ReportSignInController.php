@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Agents\Values\HostContext;
-use App\Bus\Contracts\CommandBus;
+use App\Commands\ReportSignIn\ReportSignInCommand;
+use App\Contracts\CommandBus;
 use App\Http\Requests\Profiles\SignInReportRequest;
-use App\Profiles\Commands\ReportSignIn\ReportSignInCommand;
+use App\Values\HostContext;
 use Illuminate\Http\Response;
 
 /**

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\ActorGuidance;
-use App\Agents\Models\WorkspaceRead;
-use App\Agents\Support\EnrolledHost;
-use App\Agents\Values\CommitObservation;
-use App\Agents\Values\WorkReference;
-use App\Agents\Values\WorkspaceReadReference;
+use App\Contracts\ActorGuidance;
+use App\Models\WorkspaceRead;
+use App\Support\ActorIdentity;
+use App\Support\EnrolledHost;
+use App\Values\CommitObservation;
+use App\Values\WorkReference;
+use App\Values\WorkspaceReadReference;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;

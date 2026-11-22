@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Profiles\Console\ProfileActivateCommand;
-use App\Profiles\Models\Profile;
+use App\Console\Commands\ProfileActivateCommand;
+use App\Models\Profile;
 use Domain\Access\Support\AccessSettings;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

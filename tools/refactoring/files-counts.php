@@ -13,18 +13,18 @@ declare(strict_types=1);
  * count is the number of fingerprints taken; PHP has no counter of its own for the stat calls realpath makes.
  */
 
-use App\Files\Enums\Place;
-use App\Files\Exceptions\DepthTooDeep;
-use App\Files\Support\ClosedFolders;
-use App\Files\Support\CodeFiles;
-use App\Files\Support\FileContents;
-use App\Files\Support\FileWriter;
-use App\Files\Support\FolderWalker;
-use App\Files\Support\LocalFiles;
-use App\Files\Support\PathConfinement;
-use App\Files\Support\PlaceRoots;
-use App\Files\Values\Depth;
-use App\Files\Values\FilePath;
+use App\Enums\Place;
+use App\Exceptions\DepthTooDeep;
+use App\Support\ClosedFolders;
+use App\Support\CodeFiles;
+use App\Support\FileContents;
+use App\Support\FileWriter;
+use App\Support\FolderWalker;
+use App\Support\LocalFiles;
+use App\Support\PathConfinement;
+use App\Support\PlaceRoots;
+use App\Values\Depth;
+use App\Values\FilePath;
 use Illuminate\Config\Repository;
 use Illuminate\Filesystem\Filesystem;
 

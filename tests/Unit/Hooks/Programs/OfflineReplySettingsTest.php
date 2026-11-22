@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Drivers;
 
-use App\AgentRequests\Support\AgentClientSettings;
-use App\AgentRequests\Support\StartEnvironment;
-use App\AgentRequests\Support\StartProfilePin;
-use App\Agents\Enums\OfflineReplyMode;
-use App\Agents\Exceptions\OfflineReplyModeInvalid;
-use App\Agents\Exceptions\OfflineReplySealInvalid;
-use App\Agents\Support\OfflineReplySeal;
-use App\Hooks\Relay\RelaySettings;
+use App\Enums\OfflineReplyMode;
+use App\Exceptions\OfflineReplyModeInvalid;
+use App\Exceptions\OfflineReplySealInvalid;
+use App\Support\AgentClientSettings;
+use App\Support\OfflineReplySeal;
+use App\Support\Relay\RelaySettings;
+use App\Support\StartEnvironment;
+use App\Support\StartProfilePin;
 use PHPUnit\Framework\TestCase;
 
 /**

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\StartTask;
 
-use App\Actors\Contracts\ReplyInboxes;
-use App\Actors\Support\ActorIdentity;
-use App\Bus\Contracts\CommandFacts;
-use App\Desks\Contracts\RunClaims;
-use Domain\Tasks\Api\TaskWaitLink;
+use App\Contracts\CommandFacts;
+use App\Contracts\ReplyInboxes;
+use App\Contracts\RunClaims;
+use App\Support\ActorIdentity;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Enums\TaskState;
@@ -17,6 +16,7 @@ use Domain\Tasks\Exceptions\TaskRunTaken;
 use Domain\Tasks\Exceptions\TaskWaitsUnmet;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
+use Domain\Tasks\Values\TaskWaitLink;
 
 /**
  * Resolves the session after every middleware, then starts the task for it under the task's row lock and answers the

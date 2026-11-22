@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Commands\ApproveRule;
 
-use App\Actors\Support\ActorIdentity;
+use App\Support\ActorIdentity;
 use Domain\Rules\Commands\Support\RuleCommandHandler;
 use Domain\Rules\Models\Rule;
 

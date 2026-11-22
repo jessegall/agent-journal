@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Agents\Support\StartReceipt;
+use App\Support\StartReceipt;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Tests\Support\DispatchesHelpers;

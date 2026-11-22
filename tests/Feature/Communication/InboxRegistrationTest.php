@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Contracts\InboxRegistration;
-use App\Communication\Contracts\InboxResolver;
-use App\Communication\Exceptions\InboxProviderInvalid;
-use App\Communication\Exceptions\InboxUnavailable;
-use App\Communication\Models\InboxRecord;
+use App\Contracts\InboxRegistration;
+use App\Contracts\InboxResolver;
+use App\Exceptions\InboxProviderInvalid;
+use App\Exceptions\InboxUnavailable;
+use App\Models\InboxRecord;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Tests\Fixtures\Communication\TeamInboxAccess;
 use Tests\Fixtures\Communication\TeamInboxProvider;

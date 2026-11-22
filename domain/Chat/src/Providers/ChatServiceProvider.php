@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Providers;
 
-use App\Actors\Contracts\ChatMemberPolicies;
-use App\Actors\Contracts\ChatParticipationEnding;
-use App\Actors\Contracts\ReadEntitlements;
-use App\Actors\Values\ReadEntitlement;
-use App\Agents\Exceptions\SessionOutdated;
-use App\Agents\Exceptions\StackTargetRefused;
-use App\Autoload\Support\FolderClasses;
-use App\Bus\Support\RefusalReason;
-use App\Communication\Contracts\InboxRegistration;
+use App\Contracts\ChatMemberPolicies;
+use App\Contracts\ChatParticipationEnding;
 use App\Contracts\CommandRefusal;
-use App\Docking\Sources\Contracts\DockedSources;
-use App\Docking\Sources\Contracts\DockOffers;
+use App\Contracts\InboxRegistration;
+use App\Contracts\ReadEntitlements;
+use App\Exceptions\SessionOutdated;
+use App\Exceptions\StackTargetRefused;
+use App\Support\FolderClasses;
+use App\Support\RefusalReason;
+use App\Support\Sources\Contracts\DockedSources;
+use App\Support\Sources\Contracts\DockOffers;
+use App\Values\ReadEntitlement;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Policies\ConversationPolicy;
 use Domain\Chat\Policies\MessagePinPolicy;
@@ -55,8 +55,8 @@ final class ChatServiceProvider extends ServiceProvider
         $members->allow(MessagePinPolicy::class);
         $inboxes->register(Conversation::CHAT_INBOX_PROVIDER, ChatInboxProvider::class, ChatInboxAccess::class);
         $reads->declare('dock_list', ReadEntitlement::resolver());
-        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
-        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
+        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
+        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console/Commands', Command::class));
 
         // A session that can no longer take a message is a form error on the composer, not a failure, with the
         // refusal's stable code flashed beside it; a JSON caller is answered by the shared refusal rendering.

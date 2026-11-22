@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Agents\Enums\SessionStatus;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Profiles\Models\Profile;
-use App\Profiles\Models\ProfileRevision;
-use App\Profiles\Values\ProfileBase;
+use App\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Contracts\CommandBus;
+use App\Enums\SessionStatus;
+use App\Models\Agent;
+use App\Models\AgentSession;
+use App\Models\Profile;
+use App\Models\ProfileRevision;
+use App\Values\ProfileBase;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Agents\TestSelections;

@@ -21,6 +21,9 @@ import type { SharedData } from './generated';
 declare module '@inertiajs/core' {
     export interface InertiaConfig {
         sharedPageProps: SharedData;
+        // What a page action flashes with its redirect back: a notice the toast region shows, and any value a form
+        // reads from its own answer, such as the id of what it made.
+        flashDataType: { notice?: string; [key: string]: unknown };
     }
 }
 

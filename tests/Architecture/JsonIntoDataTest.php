@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Reflection\Support\Reflector;
+use App\Support\Reflector;
 use Spatie\LaravelData\Data;
 use Tests\Architecture\Support\DomainFiles;
+use Tests\Architecture\Support\FormerPaths;
 use Tests\Architecture\Support\JsonDecodeScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -33,14 +34,14 @@ final class JsonIntoDataTest extends TestCase
      * names whose entries each go into their own Data class.
      */
     private const array ANY_JSON_METHODS = [
-        'App\\Settings\\Storage\\EncodedValue::jsonSerialize',
-        'App\\Settings\\Casts\\SettingsDocumentCast::get',
-        'App\\Processes\\Support\\DeclarativeReader::lineOf',
-        'App\\AgentRequests\\Console\\Concerns\\RunsCallPipelines::jsonOption',
-        'App\\Profiles\\Console\\ImportProfileDraftCommand::readCommands',
-        'App\\Skills\\Support\\ConditionTree::fromJson',
-        'App\\Profiles\\Casts\\ProfileAuthorizationCast::deniedCommandsOf',
-        'App\\Agents\\Support\\WorkspaceSources::fromJson',
+        'App\\Support\\Storage\\EncodedValue::jsonSerialize',
+        'App\\Casts\\SettingsDocumentCast::get',
+        'App\\Support\\DeclarativeReader::lineOf',
+        'App\\Console\\Concerns\\RunsCallPipelines::jsonOption',
+        'App\\Console\\Commands\\ImportProfileDraftCommand::readCommands',
+        'App\\Support\\ConditionTree::fromJson',
+        'App\\Casts\\ProfileAuthorizationCast::deniedCommandsOf',
+        'App\\Support\\WorkspaceSources::fromJson',
     ];
 
     public function test_every_decoded_json_goes_straight_into_a_data_class(): void
@@ -51,7 +52,8 @@ final class JsonIntoDataTest extends TestCase
         foreach (ScanCache::findingsInFolders(new JsonDecodeScan(), $folders) as $path => $decodes) {
             $relative = substr($path, strlen(base_path()) + 1);
 
-            if (str_starts_with($relative, 'app/Files/')) {
+            // The Files area decodes files as it reads them: its files plan 62 moved, and LocalFiles, moved before.
+            if (FormerPaths::wasIn($relative, ['app/Files/']) || $relative === 'app/Support/LocalFiles.php') {
                 continue;
             }
 

@@ -6,9 +6,9 @@ namespace Domain\Plans\Tests\Feature\Http;
 
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
 use Illuminate\Support\Facades\Event;

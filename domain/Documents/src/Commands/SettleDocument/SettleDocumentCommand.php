@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\SettleDocument;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Support\Command;
-use App\Operations\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Enums\AccessType;
+use App\Support\Command;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;

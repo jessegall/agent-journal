@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\RecoverDocument;
 
-use Domain\Documents\Api\CloseResult;
 use Domain\Documents\Commands\Support\DocumentCommandHandler;
 use Domain\Documents\Support\DraftClosing;
+use Domain\Documents\Values\CloseResult;
 
 final readonly class RecoverDocumentHandler extends DocumentCommandHandler
 {

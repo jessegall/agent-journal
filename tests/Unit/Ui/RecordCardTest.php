@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Ui;
 
-use App\Ui\Enums\Icon;
-use App\Ui\Layout\LayoutActionData;
-use App\Ui\Layout\LayoutPartData;
-use App\Ui\Layout\RecordCard;
+use App\Enums\Icon;
+use App\Support\Layout\LayoutActionData;
+use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\RecordCard;
 use Tests\TestCase;
 
 /**

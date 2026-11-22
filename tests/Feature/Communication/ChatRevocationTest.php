@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Enums\ChatPermission;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Communication\Exceptions\InboxUnavailable;
-use App\Communication\Support\ChatInboxes;
+use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Enums\ChatPermission;
+use App\Exceptions\InboxUnavailable;
+use App\Support\ActorIdentity;
+use App\Support\ChatInboxes;
 use Carbon\CarbonImmutable;
 use Domain\Access\Commands\DisableUser\DisableUserCommand;
 use Domain\Access\Commands\RevokeEnvironmentAccess\RevokeEnvironmentAccessCommand;

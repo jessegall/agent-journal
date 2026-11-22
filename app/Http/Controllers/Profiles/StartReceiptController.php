@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Agents\Contracts\StartRecordResolver;
-use App\Agents\Enums\StartDisposition;
-use App\Agents\Exceptions\StartRecordMissing;
-use App\Agents\Models\AgentRuntime;
-use App\Agents\Support\StartRecordDetails;
-use App\Agents\Support\StartRefusalCodes;
-use App\Agents\Support\StartRemedyWords;
-use Illuminate\Http\JsonResponse;
+use App\Contracts\StartRecordResolver;
+use App\Enums\StartDisposition;
+use App\Exceptions\StartRecordMissing;
+use App\Models\AgentRuntime;
+use App\Support\StartRecordDetails;
+use App\Support\StartRefusalCodes;
+use App\Support\StartRemedyWords;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Where a submitted start stands, read by the request id the browser kept when its reply was lost: pending, accepted
@@ -22,19 +22,22 @@ final readonly class StartReceiptController
 {
     private const string UNAVAILABLE = 'This item is unavailable.';
 
-    public function __invoke(string $requestId, StartRecordResolver $records, StartRemedyWords $words): JsonResponse
+    /**
+     * @return array<string, string|int|null>
+     */
+    public function __invoke(string $request, StartRecordResolver $records, StartRemedyWords $words): array
     {
         try {
-            $receipt = $records->receipt(strtolower($requestId));
+            $receipt = $records->receipt(strtolower($request));
         } catch (StartRecordMissing) {
-            return new JsonResponse(['message' => self::UNAVAILABLE], 404);
+            throw new NotFoundHttpException(self::UNAVAILABLE);
         }
 
-        return new JsonResponse(match ($receipt->disposition) {
+        return match ($receipt->disposition) {
             StartDisposition::Accepted => ['requestId' => $receipt->requestId, 'state' => 'pending'],
             StartDisposition::Started => self::accepted($receipt),
             StartDisposition::Refused, StartDisposition::Failed => self::refused($receipt, $words),
-        });
+        };
     }
 
     /**

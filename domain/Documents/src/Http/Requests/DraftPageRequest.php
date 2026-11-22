@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Http\Requests;
 
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
-use Domain\Documents\Api\DraftTarget;
+use Domain\Documents\Values\DraftTarget;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

@@ -1,0 +1,316 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support;
+
+use App\Contracts\AssignmentProviders;
+use App\Contracts\AssignmentTransaction;
+use App\Contracts\AssignmentWriter;
+use App\Contracts\CurrentActor;
+use App\Contracts\CurrentAuthorizer;
+use App\Contracts\JournalAssignmentWriter;
+use App\Contracts\MaintenanceAssignmentWriter;
+use App\Enums\AccessType;
+use App\Enums\ActorType;
+use App\Enums\AssignmentOutcomeType;
+use App\Enums\AssignmentReason;
+use App\Exceptions\AssignmentConflict;
+use App\Exceptions\AssignmentRootFinished;
+use App\Models\WorkerReservation;
+use App\Policies\AssignmentRecipientPolicy;
+use App\Support\Storage\AssignmentStore;
+use App\Support\Support\AssignmentBatch;
+use Closure;
+
+/**
+ * The assignment writer: in one repeatable-read transaction it checks the caller may give out work and the
+ * recipient may receive it, taking their shared lifecycle locks in type and id order, takes the record from its
+ * owner under a key-share lock, then changes the one holding and raises the one committed fact. The caller is always
+ * the actor of this request.
+ */
+final readonly class WriteAssignments implements
+    AssignmentWriter,
+    JournalAssignmentWriter,
+    MaintenanceAssignmentWriter
+{
+    public function __construct(
+        private CurrentActor $actors,
+        private CurrentAuthorizer $authorizer,
+        private AssignmentProviders $providers,
+        private AssignmentTransaction $transaction,
+        private AssignmentStore $store,
+        private AssignmentFacts $facts,
+        private AssignmentBatch $batch,
+        private AdmitPublicAssignments $admission,
+        private AdmitJournalAssignment $journalAdmission,
+    ) {}
+
+    public function assign(RecordIdentity $record, AssigneeIdentity $recipient): AssignmentResult
+    {
+        $this->transaction->assertOpen();
+
+        return $this->assignAdmitted($this->admission->admitPublic($record, $recipient));
+    }
+
+    public function assignForMaintenance(RecordIdentity $record, AssigneeIdentity $recipient): AssignmentResult
+    {
+        $this->transaction->assertOpen();
+
+        return $this->assignAdmitted($this->admission->admitMaintenance($record, $recipient));
+    }
+
+    public function assignForJournal(JournalAssignment $assignment): AssignmentResult
+    {
+        $this->transaction->assertOpen();
+
+        return $this->assignAdmitted($this->journalAdmission->admit($assignment));
+    }
+
+    private function assignAdmitted(AdmittedAssignment $admitted): AssignmentResult
+    {
+        $record = $admitted->record;
+        $current = $this->store->lockCurrent($record);
+
+        if ($current->isDefined()) {
+            return $this->unchangedIfHeldBy($current->get(), $admitted->resolved)->forRequest($admitted->request());
+        }
+
+        $after = $this->store->assignIfUnheld($record, $admitted->resolved);
+
+        return $this->changed(AssignmentReason::Assigned, $record, null, $after)->forRequest($admitted->request());
+    }
+
+    public function reassign(
+        RecordIdentity $record,
+        AssignmentReference $expected,
+        AssigneeIdentity $recipient,
+    ): AssignmentResult {
+        $this->transaction->assertOpen();
+        $admitted = $this->admission->admitPublic($record, $recipient);
+
+        return $this->replaceAdmitted($admitted, $expected);
+    }
+
+    public function reassignForJournal(JournalAssignment $assignment, AssignmentReference $expected): AssignmentResult
+    {
+        $this->transaction->assertOpen();
+
+        return $this->replaceAdmitted($this->journalAdmission->admit($assignment, $expected), $expected);
+    }
+
+    public function releaseForJournal(RecordIdentity $record): void
+    {
+        $this->transaction->assertOpen();
+        $this->providers->journalProvider($record->type)->assertJournalRelease($record);
+        $current = $this->store->lockCurrent($record);
+
+        if ($current->isEmpty()) {
+            return;
+        }
+
+        $this->store->remove($current->get());
+        $this->changed(AssignmentReason::Unassigned, $record, $current->get(), null);
+    }
+
+    private function replaceAdmitted(AdmittedAssignment $admitted, AssignmentReference $expected): AssignmentResult
+    {
+        $current = $this->store->lockExpected($admitted->record, $expected);
+
+        if ($current->holder()->isSameAs($admitted->resolved)) {
+            return $this->unchanged($current)->forRequest($admitted->request());
+        }
+
+        $after = $this->store->replace($current, $admitted->resolved);
+
+        return $this->changed(
+            AssignmentReason::Reassigned,
+            $admitted->record,
+            $current,
+            $after,
+        )->forRequest($admitted->request());
+    }
+
+    public function unassign(RecordIdentity $record, AssignmentReference $expected): AssignmentResult
+    {
+        $this->providers->assertPublic($record->type);
+        $this->transaction->assertOpen();
+        $this->assertMayUnassign();
+        $this->providers->recordProvider($record->type)->requireAssignable($record);
+
+        if ($this->store->lockCurrent($record)->isEmpty()) {
+            return new AssignmentResult([new AssignmentOutcome($record, null, AssignmentOutcomeType::Unchanged)], []);
+        }
+
+        $current = $this->store->lockExpected($record, $expected);
+        $this->store->remove($current);
+
+        return $this->changed(AssignmentReason::Unassigned, $record, $current, null);
+    }
+
+    public function assignUnfinished(AssigneeIdentity $recipient, Closure $records): AssignmentResult
+    {
+        $this->transaction->assertOpen();
+        $reservations = WorkerReservation::lockedFor(self::workersAmong([$recipient]));
+        [$group, $finished] = $this->checkedGroup($records);
+        $admitted = $this->admission->admitPublic($group->root, $recipient);
+        $root = $this->store->lockCurrent($group->root);
+
+        if ($root->isDefined() && ! $root->get()->holder()->isSameAs($admitted->resolved)) {
+            throw AssignmentConflict::heldByAnother($group->root);
+        }
+
+        if ($root->isEmpty()) {
+            foreach ($reservations as $reservation) {
+                $reservation->occupy($group->root);
+            }
+        }
+
+        return $this->published(AssignmentReason::Assigned, $this->each(
+            $group,
+            $finished,
+            fn (RecordIdentity $record) => $this->batch->giveTo($record, $admitted->resolved),
+        ))->forRequest($admitted->request());
+    }
+
+    public function reassignUnfinished(
+        AssignmentReference $expectedRoot,
+        AssigneeIdentity $recipient,
+        Closure $records,
+    ): AssignmentResult {
+        $this->transaction->assertOpen();
+        $reservations = WorkerReservation::lockedFor(self::workersAmong([$recipient, $expectedRoot->holder]));
+        [$group, $finished] = $this->checkedGroup($records);
+        $admitted = $this->admission->admitPublic($group->root, $recipient);
+        $this->store->lockExpected($group->root, $expectedRoot);
+
+        foreach ($reservations as $reservation) {
+            $reservation->release($group->root);
+        }
+
+        ($reservations["{$recipient->type}:{$recipient->id}"] ?? null)?->occupy($group->root);
+
+        return $this->published(AssignmentReason::Reassigned, $this->each(
+            $group,
+            $finished,
+            fn (RecordIdentity $record) => $this->batch->giveTo($record, $admitted->resolved),
+        ))->forRequest($admitted->request());
+    }
+
+    public function unassignUnfinished(AssignmentReference $expectedRoot, Closure $records): AssignmentResult
+    {
+        $this->transaction->assertOpen();
+        $this->assertMayUnassign();
+        $reservations = WorkerReservation::lockedFor(self::workersAmong([$expectedRoot->holder]));
+        [$group, $finished] = $this->checkedGroup($records);
+        $this->store->lockExpected($group->root, $expectedRoot);
+
+        foreach ($reservations as $reservation) {
+            $reservation->release($group->root);
+        }
+
+        return $this->published(
+            AssignmentReason::Unassigned,
+            $this->each($group, $finished, fn (RecordIdentity $record) => $this->batch->clear($record)),
+        );
+    }
+
+    /**
+     * The owner's group, every record checked, refused when its root is finished.
+     *
+     * @param  Closure(): AssignmentGroup  $records
+     * @return array{AssignmentGroup, list<RecordIdentity>}
+     */
+    private function checkedGroup(Closure $records): array
+    {
+        [$group, $finished] = $this->batch->checkedGroup($records);
+
+        if ($this->batch->isFinished($group->root, $finished)) {
+            throw AssignmentRootFinished::for($group->root, $group->finishedRootRecovery);
+        }
+
+        return [$group, $finished];
+    }
+
+    /**
+     * Applies the change to the root and every unfinished record, and skips the finished ones.
+     *
+     * @param  list<RecordIdentity>  $finished
+     * @param  Closure(RecordIdentity): AssignmentResult  $change
+     */
+    private function each(AssignmentGroup $group, array $finished, Closure $change): AssignmentResult
+    {
+        return AssignmentResult::combined(array_map(
+            fn (
+                RecordIdentity $record,
+            ) => $this->batch->isFinished($record, $finished) ? $this->batch->skip($record) : $change($record),
+            $group->records,
+        ));
+    }
+
+    private function published(AssignmentReason $reason, AssignmentResult $change): AssignmentResult
+    {
+        $this->facts->publish(ActorIdentity::of($this->actors->actor()), $reason, $change);
+
+        return $change;
+    }
+
+    /**
+     * Authorizes the caller for the write, then checks the recipient may hold work, before anything changes.
+     */
+    private function assertMayUnassign(): void
+    {
+        $this->authorizer->authorize(
+            AssignmentRecipientPolicy::class,
+            AssignmentRecipientPolicy::model(),
+            AccessType::Delete,
+        );
+    }
+
+    private function unchangedIfHeldBy(Assignment $current, AssigneeIdentity $recipient): AssignmentResult
+    {
+        if (! $current->holder()->isSameAs($recipient)) {
+            throw AssignmentConflict::heldByAnother($current->record);
+        }
+
+        return $this->unchanged($current);
+    }
+
+    private function unchanged(Assignment $current): AssignmentResult
+    {
+        return new AssignmentResult(
+            [new AssignmentOutcome($current->record, $current, AssignmentOutcomeType::Unchanged)],
+            [],
+        );
+    }
+
+    private function changed(
+        AssignmentReason $reason,
+        RecordIdentity $record,
+        Assignment|null $before,
+        Assignment|null $after,
+    ): AssignmentResult {
+        $assignmentChange = new AssignmentResult(
+            [new AssignmentOutcome($record, $after, AssignmentOutcomeType::Changed)],
+            [new AssignmentChange($record, $before, $after)],
+        );
+
+        $this->facts->publish(ActorIdentity::of($this->actors->actor()), $reason, $assignmentChange);
+
+        return $assignmentChange;
+    }
+
+    /**
+     * The agents among the holders, whose units are reserved; a user holds work without a reservation.
+     *
+     * @param  list<AssigneeIdentity>  $holders
+     * @return list<AssigneeIdentity>
+     */
+    private static function workersAmong(array $holders): array
+    {
+        return array_values(array_filter(
+            $holders,
+            fn (AssigneeIdentity $holder) => $holder->type === ActorType::Agent->value,
+        ));
+    }
+}

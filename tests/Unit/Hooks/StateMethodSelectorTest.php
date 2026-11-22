@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Agents\Values\StackTarget;
-use App\Hooks\Declarations\StateMethods;
-use App\Hooks\Enums\NoSubject;
-use App\Hooks\Inputs\StopRequested;
-use App\Hooks\Inputs\Values\StopDetails;
-use App\Hooks\References\StateReference;
-use App\Hooks\Stack\AgentStack;
-use App\Hooks\Stack\Frames\Frame;
-use App\Hooks\Stack\SelectedStateMethod;
-use App\Hooks\Stack\StateMethodSelector;
-use App\Hooks\States\AgentState;
+use App\Declarations\StateMethods;
+use App\Enums\NoSubject;
+use App\Support\Inputs\StopRequested;
+use App\Support\Inputs\Values\StopDetails;
+use App\Support\References\StateReference;
+use App\Support\Stack\AgentStack;
+use App\Support\Stack\Frames\Frame;
+use App\Support\Stack\SelectedStateMethod;
+use App\Support\Stack\StateMethodSelector;
+use App\Support\States\AgentState;
+use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskStarted;

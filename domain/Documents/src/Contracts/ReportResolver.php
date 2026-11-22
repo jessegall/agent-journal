@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Contracts;
 
-use App\Records\Data\RecordCard;
-use App\Text\Exceptions\SectionMissing;
-use App\Text\Support\TextSelection;
+use App\Data\RecordCard;
+use App\Exceptions\SectionMissing;
+use App\Support\TextSelection;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\PublicationList;
 use Domain\Documents\Data\RecordInspection;

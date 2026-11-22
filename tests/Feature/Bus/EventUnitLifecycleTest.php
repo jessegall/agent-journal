@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Bus\Exceptions\EventUnitRefused;
-use App\Bus\Support\ActiveEventUnits;
-use App\Bus\Support\EventUnit;
-use App\Bus\Support\EventUnitLifecycle;
-use App\Bus\Support\RequiredListenerRegistry;
-use App\Hooks\Support\StackTransaction;
+use App\Exceptions\EventUnitRefused;
+use App\Support\ActiveEventUnits;
+use App\Support\EventUnit;
+use App\Support\EventUnitLifecycle;
+use App\Support\RequiredListenerRegistry;
+use App\Support\StackTransaction;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

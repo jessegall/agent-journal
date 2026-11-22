@@ -1,0 +1,352 @@
+{
+    "moved": {
+        "domain/Plans/src/Api/AssignedPlanFilters.php": "d4c9dd5cc2e7daa205d3fa121e45b0649ded1b00",
+        "domain/Plans/src/Api/AssignedPlanList.php": "fcd2df95eb0afeae28e72a37488e0d8e75d20275",
+        "domain/Plans/src/Api/Events/PlanCancelled.php": "85932d103e355ec925652615a60ef1a0808c6110",
+        "domain/Plans/src/Api/Events/PlanFinished.php": "584b18b089434972c071438ff1f5def275926ce4",
+        "domain/Plans/src/Api/Events/PlanProgressChanged.php": "ddb49eb08a3a5caf072c597c54406c499cb21b7d",
+        "domain/Plans/src/Api/Events/PlanReviewDecided.php": "7d54741634aee07c5082e459a1b027728e2d4df7",
+        "domain/Plans/src/Api/Events/PlanReviewRequested.php": "09094baee1f53b0f34e03dd20c35068e1442b1c1",
+        "domain/Plans/src/Api/Events/PlanReviewWithdrawn.php": "bfd676dd2a44aac5e89f0bbdaec0db7874bc307b",
+        "domain/Plans/src/Api/Events/PlanStarted.php": "882f7a8f1cb56b2e1c9adf14167c89425c7c35a9",
+        "domain/Plans/src/Api/PhaseDetails.php": "d35e7872c6577622fb8dca79061cd0eb5055781e",
+        "domain/Plans/src/Api/PlanCard.php": "a7c5bd70c69404b12d6695dd17d4975094530302",
+        "domain/Plans/src/Api/PlanDetails.php": "be2f3017e36e19d2a362b2a69037050a4da81466",
+        "domain/Plans/src/Api/PlanFilters.php": "12289bfe788c30ea5c3f524aee1a45728f724060",
+        "domain/Plans/src/Api/PlanList.php": "df6cabf81a1d1aba9a7b28547b67ee0609e434d8",
+        "domain/Plans/src/Api/PlanPhaseTasks.php": "89f7361be37d3828dbedd5534a903bf8310ddf61",
+        "domain/Plans/src/Api/PlanProgress.php": "1777290c29d216266bace43b9cd4a4915274b73e",
+        "domain/Plans/src/Api/PlanSelection.php": "915633047d8f04eb95e69804557dfd7d8899d9a7",
+        "domain/Plans/src/Assignments/PlanTaskPool.php": "7374e1e245cc95b5390cf4fa981269fda38685e6",
+        "domain/Plans/src/Assignments/PlanTaskPoolFactory.php": "66b156b545c024b1fb7f00cddc648b2c38f574f4",
+        "domain/Plans/src/Console/AssignPlanWorkCommand.php": "e96ce3d792fed814cd46203c8092da220fb0ccf4",
+        "domain/Plans/src/Console/AssignedPlansCommand.php": "b75fb068344dc8c5a6cdc9da681de23e68085316",
+        "domain/Plans/src/Console/PhaseCheckCommand.php": "03f962b5c83dcd6151abe27ba1dfe3c1a91f426d",
+        "domain/Plans/src/Console/PhaseShowCommand.php": "cd831a82784870677c3c65d0c470c308381acdc3",
+        "domain/Plans/src/Console/ReassignPlanWorkCommand.php": "81626317d3114edd1d1c65ee5256db79394fdec4",
+        "domain/Plans/src/Console/UnassignPlanWorkCommand.php": "582da7ebd5ddb2abde4795dec54e4e10f6c24d9f",
+        "domain/Plans/src/Http/Data/AssignedPlanCardData.php": "fb00e585d774ad8fdf7b248579f1db4676fb06f0",
+        "domain/Plans/src/Http/Data/AssignedPlanListData.php": "84c338e5728cb1f1861ab658d6c4ad27e4f242ab",
+        "domain/Plans/src/Http/Data/PlanWorkResultData.php": "44473cfc54d8ac62b5b3c19fa92da4a5797f3439",
+        "domain/Plans/src/Mcp/AddPhaseTasksTool.php": "29770e581fae090ef4fa7d34f4fb1586f40f0a43",
+        "domain/Plans/src/Mcp/AssignPlanWorkTool.php": "e6a53eafae8aacfcb0734e6e287b074a7d107183",
+        "domain/Plans/src/Mcp/AssignedPlansTool.php": "3dbd0751a45b0edb60fc137d7ab7cbbfa1551d55",
+        "domain/Plans/src/Mcp/CancelPlanTool.php": "9f70f1f3ed52dc4b9d9199a6b1251bce332d9656",
+        "domain/Plans/src/Mcp/CreatePhaseTool.php": "f787e4e2627042682d53b3aa119060b8afb57786",
+        "domain/Plans/src/Mcp/CreatePlanTool.php": "92b028fc3939757ecabcfc112c3f1c211d96fcb9",
+        "domain/Plans/src/Mcp/EditPlanTool.php": "0bd6ba02582cf29fade01bea42946380924824f0",
+        "domain/Plans/src/Mcp/FinishPlanTool.php": "763c872cb4ec3cbfaf6f63d03766737c7762c170",
+        "domain/Plans/src/Mcp/HeldPlansOverview.php": "cdcf5e30e981302de012147bba4f2dbef1bd4638",
+        "domain/Plans/src/Mcp/PhaseReadTool.php": "d3f485536bfc3fc18555abc80e04b29263fa964a",
+        "domain/Plans/src/Mcp/PlanCascadeTool.php": "55bb2a6004b131a0c4bf215d89950de6c4caf2a0",
+        "domain/Plans/src/Mcp/PlanReadResult.php": "ce101b80a6f682ed9519d818858a07cb08c9a069",
+        "domain/Plans/src/Mcp/PlanReadTool.php": "850ba074b02132c1c085d60f2646a0983d2e2873",
+        "domain/Plans/src/Mcp/PlanResource.php": "046315154f48d24685f190ec62b181926adfa451",
+        "domain/Plans/src/Mcp/PlanSearch.php": "9b22240eaee80e3aa62e3c4a9f31e12ea9ebf14a",
+        "domain/Plans/src/Mcp/PlanWriteTool.php": "d4785363771818cca3b3fc690886d35493d2b0a0",
+        "domain/Plans/src/Mcp/PlansListTool.php": "2dc8ea56508365ec477af6aa05c6ccce9eaa7db9",
+        "domain/Plans/src/Mcp/ReassignPlanWorkTool.php": "4800cdc3614692e23e8dc3a2621aa5ca2f20a166",
+        "domain/Plans/src/Mcp/StartPlanTool.php": "0adf06a8c0c8a26f1d5678675444a89d25befb98",
+        "domain/Plans/src/Mcp/UnassignPlanWorkTool.php": "6d4e6155d06c18935b8ecb45145c716c975fb5e7",
+        "domain/Plans/src/Skills/PlanSkill.php": "a134f826447dff92b58ffab56a514a0a1eaf28a5",
+        "domain/Plans/src/States/ReviewingPlanState.php": "85fc51348fa5c2ad0bbf1059f8d2fd3123937688",
+        "domain/Plans/src/States/Support/ReviewingPlanStateFactory.php": "ca4cb9e4cfe11a54a540ebefe31392544f780aa6",
+        "domain/Plans/src/States/Support/ReviewingPlanStateReference.php": "a84790b2780139ba4fa73a0d5d318214822d7dab",
+        "domain/Plans/src/States/Support/WorkingOnPlanStateFactory.php": "af89fdc71af4be7e6496468e298b2afeb8a1a08c",
+        "domain/Plans/src/States/Support/WorkingOnPlanStateReference.php": "e633aed0f9b75dc999b24e1b503b0ce0a979aedc",
+        "domain/Plans/src/States/WorkingOnPlanState.php": "b3eabaaa04a3d48909bf59af846e23d42e9e340f",
+        "domain/Plans/src/Routes/agent.php": "df8fd466063b9576afa910dab2ef29653751b120"
+    },
+    "edits": {
+        "domain/Plans/src/Calls/AssignPlanWorkCall.php": {
+            "prior": "16658a343487fd329067684a867484be682ae3d5",
+            "result": "df1434008ff9511675c968cedf2e165268919300",
+            "move": "batch"
+        },
+        "domain/Plans/src/Calls/ListAssignedPlansCall.php": {
+            "prior": "ffacd64d3fc4fe6ec737eccd6b889b3440717e27",
+            "result": "4b2e6550a93d5e08c6e268d65b4f0ec336dcf041",
+            "move": "batch"
+        },
+        "domain/Plans/src/Calls/PlanCalls.php": {
+            "prior": "611f8ff2ff487f29401be94991d5d76dcf68f133",
+            "result": "d8b1b47881eca7e9677e339164d4fd46d5d065c2",
+            "move": "batch"
+        },
+        "domain/Plans/src/Calls/ReassignPlanWorkCall.php": {
+            "prior": "bfe1415a80eaf9c7a0a16d0c89fa8eac9c015b8a",
+            "result": "ef6d8ac722be547ff31f26a0ff7544a68fc0f086",
+            "move": "batch"
+        },
+        "domain/Plans/src/Calls/UnassignPlanWorkCall.php": {
+            "prior": "71b3fc50491d51883273708d0e5492966dc4f723",
+            "result": "26359b31b7eca9e53a174999939e39e1dfc65d23",
+            "move": "batch"
+        },
+        "domain/Plans/src/Console/Concerns/ReportsPlanWork.php": {
+            "prior": "8efcc0cca3d901dd88ff4d154b7b0ebcbb2994de",
+            "result": "3284933480afcd409d93162f15ba9e5b855c5eab",
+            "move": "batch"
+        },
+        "domain/Plans/src/Contracts/PlanDetailsResolver.php": {
+            "prior": "74546bb64a4ee724d055b594433de6f9f16533eb",
+            "result": "5160484cfdc9b066dcd85135e7fdccf919b3d4e4",
+            "move": "batch"
+        },
+        "domain/Plans/src/Contracts/PlanResolver.php": {
+            "prior": "d3c372f0fe1c653b9bb3f6180b42264218cfba05",
+            "result": "16c7a12b562bd45bdf0b33e079c4e63e0f5d153e",
+            "move": "batch"
+        },
+        "domain/Plans/src/Data/PlanCardData.php": {
+            "prior": "59419f343c9d64853ca96443c1bb518f2d13c3ab",
+            "result": "75e57c845f39fc5abf161cc5f2b65db457d9f318",
+            "move": "batch"
+        },
+        "domain/Plans/src/Data/PlanFiltersData.php": {
+            "prior": "12ccea973fa1d047e0ca4061d52b5de946ebd0fb",
+            "result": "1916ec3134c0b657d5a5d5edcde22585e5fbe034",
+            "move": "batch"
+        },
+        "domain/Plans/src/Data/PlanReaderData.php": {
+            "prior": "461a2852de9e8ad7bbeae83fbdc583f2432b7867",
+            "result": "dea57cfadf70975b904d4bb1ca6d16b1964a7099",
+            "move": "batch"
+        },
+        "domain/Plans/src/Http/Controllers/Calls/AssignPlanWorkController.php": {
+            "prior": "1ce60e94c1437f1632b02310c196ab99a6c449c5",
+            "result": "611f2a2d364dd5919230ef73a5b9a55410ce4356",
+            "move": "batch"
+        },
+        "domain/Plans/src/Http/Controllers/Calls/ListAssignedPlansController.php": {
+            "prior": "d27b05ae41dc8f021ff05b5a8e63730b08c90662",
+            "result": "a1741134e3fb184468b64908fca9d976b50c4824",
+            "move": "batch"
+        },
+        "domain/Plans/src/Http/Controllers/Calls/ReassignPlanWorkController.php": {
+            "prior": "dfb77ca8c489d560d9a635143c2db5efee648a95",
+            "result": "97f22cd825c65841d1e77f81a98fbd4733d2cdf0",
+            "move": "batch"
+        },
+        "domain/Plans/src/Http/Controllers/Calls/UnassignPlanWorkController.php": {
+            "prior": "bc7df36ff6da850610a7834924b18ca875841627",
+            "result": "f25364049f27438c8f044d650f51893592f1cf5a",
+            "move": "batch"
+        },
+        "domain/Plans/src/Listeners/PushPlanReviewState.php": {
+            "prior": "eaea06080261ea4a58cbdac3d615c058aea751fc",
+            "result": "5e52ec6aec968405bdfdb9a30a6b50e8e8a8b6e6",
+            "move": "batch"
+        },
+        "domain/Plans/src/Listeners/PushPlanState.php": {
+            "prior": "4a4bcb9168b6dfb31b2dd090194ce70ab49d933b",
+            "result": "5f11c9b7ab1c120a41de22db56c5c0a0c6a87886",
+            "move": "batch"
+        },
+        "domain/Plans/src/Listeners/RaisePlanProgressChanged.php": {
+            "prior": "88f68b58918daff747f104965a4922cb8d8dbeab",
+            "result": "e95c0a178694a4e52187b7bcfebbc5dececec5b4",
+            "move": "batch"
+        },
+        "domain/Plans/src/Listeners/SamplePlanOfStartedTask.php": {
+            "prior": "65caa5e5d5ee56451bde60badf9d5649221d1cd4",
+            "result": "ce4f2a3301318b77bb9b2307e3a43ac4ca167a4b",
+            "move": "batch"
+        },
+        "domain/Plans/src/Models/Phase.php": {
+            "prior": "87ab67e3834e2647a80b7088309ee56ddb2a5d55",
+            "result": "18f2968b02842636992c7e6463ad85670f08fce6",
+            "move": "batch"
+        },
+        "domain/Plans/src/Models/Plan.php": {
+            "prior": "b9e928f8d316bd67b223df4921509cf3dd3b1f3b",
+            "result": "bc2d88c78eef9301502ba05f564fa9827c8e376e",
+            "move": "batch"
+        },
+        "domain/Plans/src/PlansDomain.php": {
+            "prior": "455fea641c2b4b26a827c65b5922685a96961efc",
+            "result": "a03ae6157d854dcf9e8b2ee791d80bd8e7eac489",
+            "move": "batch"
+        },
+        "domain/Plans/src/Resolvers/OpenPlansCount.php": {
+            "prior": "1a578eb57c8950d2a590b72daa94428c7755e9e5",
+            "result": "08a72047c3efb28af931c041001a472647da0770",
+            "move": "batch"
+        },
+        "domain/Plans/src/Resolvers/PlanDetailRecords.php": {
+            "prior": "c83ad74fe6d620018e7f7ee7302eaa83e3c96e38",
+            "result": "31387236b3181109a01f2372c9352978a7d3fa24",
+            "move": "batch"
+        },
+        "domain/Plans/src/Resolvers/PlanRecords.php": {
+            "prior": "3d765900a7ad322002a4fada8370d8ad155d80e5",
+            "result": "fa72974d103714cff980ba33a3632be01f81e08f",
+            "move": "batch"
+        },
+        "domain/Plans/src/Resolvers/PlanWindowResolver.php": {
+            "prior": "a7f9d184362161e807b9c2ea11218cf35a29a5ab",
+            "result": "29e027592e90e3525ffdad38d15b079c1e310b93",
+            "move": "batch"
+        },
+        "domain/Plans/src/Resolvers/WaitingPlansCount.php": {
+            "prior": "389fa4911f84b11e87e6c3d4118bde7d15bea15f",
+            "result": "526651d783e7b5e46b2806385273e8abb2b2a690",
+            "move": "batch"
+        },
+        "domain/Plans/src/Resolvers/WaitingPlansSection.php": {
+            "prior": "ee13a04feb24f6b13cbfb4c78c6bec477a8bdd27",
+            "result": "2c6f743a8ebeca05ae07bb05790604f8dd4ca173",
+            "move": "batch"
+        },
+        "domain/Plans/src/Support/DockedPlan.php": {
+            "prior": "ea9f4c0f4d201b788bcd73070955b13e6425bc9e",
+            "result": "c51bd9f6528e7d99a6553a473ad59d55c55085e1",
+            "move": "batch"
+        },
+        "domain/Plans/src/Support/PlanDocking.php": {
+            "prior": "7de04db5919b5d455fab84e8400868acc87ed6d3",
+            "result": "c0d67e7ea20e5a5b2c9f5c445ce1d611a359432e",
+            "move": "batch"
+        },
+        "domain/Plans/src/Support/PlanProgressCount.php": {
+            "prior": "1264079106270c254a9d4c252b260d60cff7d2bd",
+            "result": "4274cb91e3a6ac8bb24a9a935e81e0a867d5d9a7",
+            "move": "batch"
+        },
+        "domain/Plans/tests/Feature/Http/StartPlanTest.php": {
+            "prior": "ced06aa61d3426c1d0a83e9b0fa98ad0b92b776e",
+            "result": "f7c5757a70aafc933118d83022c9b05d7a75f92a",
+            "move": "batch"
+        },
+        "domain/Plans/tests/Feature/PlanDetailsResolverTest.php": {
+            "prior": "3cf93be580c890c7829b93cfb6f7543b8f2d7ca7",
+            "result": "76e5f1df512bb09ca2e23ae98f4d9112310d2746",
+            "move": "batch"
+        },
+        "domain/Plans/tests/Feature/PlanFinishCancelTest.php": {
+            "prior": "26d7aaa8729391d9afb29d190a04c4eaca232522",
+            "result": "7621d41222c29a655ad0ea7e2aa2ec8461810ca4",
+            "move": "batch"
+        },
+        "domain/Plans/tests/Feature/PlanRecordsTest.php": {
+            "prior": "63a4c4c1f6d610ca44dde2864ea3b5d0c930fd49",
+            "result": "a99207300ba7e70e2e180322c9413125a849f9a2",
+            "move": "batch"
+        },
+        "domain/Plans/tests/Feature/PlanReviewStateTest.php": {
+            "prior": "29afd45d034aa21b218f2b7850f22e80d1512ad7",
+            "result": "1d4e325a14784c2c1913f234a9ee3c76f8177365",
+            "move": "batch"
+        },
+        "domain/Plans/tests/Feature/PlanTalliesTest.php": {
+            "prior": "73570d1778af670f9c237eb783fa189da1c28188",
+            "result": "2df527635a0c59b238ad599551fe2e04203a7496",
+            "move": "batch"
+        },
+        "domain/Plans/tests/Feature/PlanTaskPoolTest.php": {
+            "prior": "975cb93a2e28b98f6742d89839f7b90bd76934e3",
+            "result": "87bc147d5eb9f0f162a60ebc96ac347649eaaca2",
+            "move": "batch"
+        },
+        "domain/Plans/tests/Feature/PlanWorkingStateTest.php": {
+            "prior": "9c4e337bc6aa2db37c13dc7725217a752002f227",
+            "result": "241baf97fc6c340738ea9a2358295d9e1dc290e4",
+            "move": "batch"
+        },
+        "domain/Plans/tests/Feature/StartPlanTest.php": {
+            "prior": "0ef950e7ac40f05af25b633688c38a5c69bcb72a",
+            "result": "c95fd15aceaa5f1d0edbf4bae16cc94086dc34a1",
+            "move": "batch"
+        },
+        "domain/Plans/tests/Unit/States/ReviewingPlanStateTest.php": {
+            "prior": "87853b7a06a62f9fdb02672a841ca45450434292",
+            "result": "90efe69f9492012c08533381c4d8a01496459745",
+            "move": "batch"
+        },
+        "tests/Architecture/EventOwners/Plans.php": {
+            "prior": "2dec79a963f0c4a69a63c47d5d66b90dce20c0db",
+            "result": "218b4a1e3ddc97741bc8a4c553b4d2c05f7bf159",
+            "move": "batch"
+        },
+        "tests/Feature/Assignments/AssignedListsTest.php": {
+            "prior": "d277a5e61165f53d004899467bba20f67d5a6d89",
+            "result": "426790fa78de6599b353b8b568cb3c3e478fcf90",
+            "move": "batch"
+        },
+        "tests/Feature/Domains/ListenerPolicyTest.php": {
+            "prior": "e2dfe4cc2fd0dbb1a2afd06b46d3b9882640a824",
+            "result": "a4a5f6f2dd6c16cfbaeb81f744e6ba81d9a21fe7",
+            "move": "batch"
+        },
+        "tests/Feature/Domains/RequiredListenerLaneTest.php": {
+            "prior": "cd6373766303c8fcd33856c104004cd1049e7c4d",
+            "result": "64db55475d2e55b73ee1dc6188c6c5702ae723e8",
+            "move": "batch"
+        },
+        "tests/Feature/Events/BaselineTimelinesTest.php": {
+            "prior": "b21c3c4f5d8db335e86292f011e6c3af68bd2611",
+            "result": "7194b462142916ec6c360574a16a87e53b9dbdba",
+            "move": "batch"
+        },
+        "tests/Feature/Events/EventPayloadTest.php": {
+            "prior": "88c5d6de28a18a33985771a5b0fe0b68b5937f57",
+            "result": "a91638b1a078cc343720b29ab65ac91ac3bdde0d",
+            "move": "batch"
+        },
+        "tests/Feature/Events/EventPayloads.php": {
+            "prior": "d8de7ceb71c62eff9cc3be849331431a36adce45",
+            "result": "e716aa761f862b6a1de8fd6fa89c3996e978f027",
+            "move": "batch"
+        },
+        "tests/Feature/Tasks/TaskStartFactsTest.php": {
+            "prior": "1fb8030b9d14ff20b04388955285a0a53cda954d",
+            "result": "2373b7da02e16612a43509b948f13492c44241fe",
+            "move": "batch"
+        },
+        "tests/Feature/Web/PageChangeTest.php": {
+            "prior": "ceacb9f616bda3c403e84bef20e2fbca4e04dcdc",
+            "result": "137187c16b69aa3c75651d4da4647452814129d6",
+            "move": "batch"
+        },
+        "tests/Feature/Web/UiManifestTest.php": {
+            "prior": "3349e24fb7951f59f8883cacc59e14ab6d01345a",
+            "result": "e387b7d741435a6d3b50603671259b2dbb295a9a",
+            "move": "batch"
+        },
+        "tests/Fixtures/Hooks/Declarations/OwnerlessState.php": {
+            "prior": "2c31e27f4f5b6d0e73bf7b4da4ac0cf9b7077206",
+            "result": "62f819d167ba53dd1f7cc52b31ce1c88ec2177b9",
+            "move": "batch"
+        },
+        "tests/Fixtures/Listeners/QueuedRequiredListener.php": {
+            "prior": "f7a33e84cf6891565936ed0ab2eccc1af97713a4",
+            "result": "022914a12a5fd0bab7add79b5baab986e3b18b51",
+            "move": "batch"
+        },
+        "tests/Fixtures/Listeners/RequiredProgressListener.php": {
+            "prior": "8fd77983f334b1c436c47b426dfcbad9a6ec0524",
+            "result": "c938f4082c7bfe4239d5ba25a4510bb46bd4ec5c",
+            "move": "batch"
+        },
+        "tests/Unit/Exports/ExportsTest.php": {
+            "prior": "56a4dc4fe86d0d2adb17d0d665e1800f48d1c2da",
+            "result": "89b3a493552621644886a1295e2d4f8791def48e",
+            "move": "batch"
+        },
+        "tests/Unit/Hooks/ForegroundInstructionsTest.php": {
+            "prior": "3c8f6974993c9738ff3d5e6922828dc7891d5d4e",
+            "result": "b503816b6c2457b407b65967242324ea19930789",
+            "move": "batch"
+        },
+        "tests/Unit/Hooks/TransparentFramesTest.php": {
+            "prior": "203458fa97ad75c2ff2be146f760ec24fd22d693",
+            "result": "288f9b172840be375524ad5faac8b481e7a7dddc",
+            "move": "batch"
+        },
+        "tests/Unit/Skills/ShippedSkillFilesTest.php": {
+            "prior": "73688a4992677d89fb4e6235835ea52b4db75dea",
+            "result": "e74fa09865c9d573ff368082cce9f45212694616",
+            "move": "batch"
+        }
+    }
+}

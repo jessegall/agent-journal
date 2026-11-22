@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Contracts\Event;
-use App\Domains\Support\DomainEntry;
-use App\Exports\Support\Exports;
-use App\Reflection\Support\Reflector;
+use App\Support\DomainEntry;
+use App\Support\Exports;
+use App\Support\Reflector;
 
 /**
  * Judges name uses against the domain each file belongs to, the domains it declares it requires and what each owner
@@ -31,6 +31,7 @@ final readonly class BoundaryChecker
         private array $entries,
         private ProjectRoots $roots,
         private Exports $coreExports,
+        private BoundaryRoots|null $extraRoots = null,
     ) {}
 
     /**
@@ -148,7 +149,9 @@ final readonly class BoundaryChecker
         foreach ($uses as $use) {
             $name = ltrim($use->name, '\\');
 
-            if (! $this->isShared($name) && ! $this->isDomainName($name)) {
+            // Every project class a composition file names is judged, Database\\Seeders as much as App and the
+            // packages, as Composer's project roots give them; framework and library names keep their treatment.
+            if (! $this->roots->startsWithProjectNamespace($name)) {
                 continue;
             }
 
@@ -282,7 +285,8 @@ final readonly class BoundaryChecker
      */
     private function domainHolding(string $path): DomainEntry|null
     {
-        return array_find($this->entries, fn (DomainEntry $entry) => $entry->holdsFile($path));
+        return array_find($this->entries, fn (DomainEntry $entry) => $entry->holdsFile($path))
+            ?? $this->extraRoots?->packageHolding($path);
     }
 
     private function isDomainName(string $name): bool
@@ -342,10 +346,17 @@ final readonly class BoundaryChecker
     {
         $name = ltrim($name, '\\');
 
-        return stripos($name, 'App\\') === 0 && stripos(
-            $name,
-            'App\\Domains\\',
-        ) !== 0 && self::isDeclared($name) && ! $this->coreExports->has($name);
+        return stripos($name, 'App\\') === 0 && ! self::isDomainFoundation($name) && self::isDeclared($name)
+            && ! $this->coreExports->has($name);
+    }
+
+    /**
+     * The domain foundation every package builds on, the classes plan 62 moved out of app/Domains: the Domain base,
+     * its registry and entries, bootstrappers and their contracts. A package may name them as it did before.
+     */
+    private static function isDomainFoundation(string $name): bool
+    {
+        return FormerPaths::classWasIn($name, ['app/Domains/']);
     }
 
     /**
@@ -353,8 +364,8 @@ final readonly class BoundaryChecker
      */
     private static function isCheckedRegistrationSite(string $file): bool
     {
-        return str_ends_with($file, 'app/Domains/Bootstrappers/RegisterStates.php')
-            || str_ends_with($file, 'app/Domains/Providers/DomainEventServiceProvider.php');
+        return str_ends_with($file, 'app/Support/Bootstrappers/RegisterStates.php')
+            || str_ends_with($file, 'app/Providers/DomainEventServiceProvider.php');
     }
 
     /**
@@ -364,10 +375,7 @@ final readonly class BoundaryChecker
     {
         $name = ltrim($name, '\\');
 
-        return stripos($name, 'App\\') === 0 && stripos(
-            $name,
-            'App\\Domains\\',
-        ) !== 0 && Reflector::find($name)
+        return stripos($name, 'App\\') === 0 && ! self::isDomainFoundation($name) && Reflector::find($name)
             ->filter(fn (Reflector $type) => $type->isSubclassOf(Event::class))
             ->isDefined();
     }

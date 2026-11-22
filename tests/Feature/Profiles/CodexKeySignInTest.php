@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Profiles\Support\CodexKeySignIn;
-use App\Profiles\Values\SignInVerification;
+use App\Support\CodexKeySignIn;
+use App\Values\SignInVerification;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Resolvers;
 
-use App\Ui\Contracts\PageResolver;
+use App\Contracts\PageResolver;
 use Tests\Fixtures\Modules\Notes\Data\NotesPageData;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 

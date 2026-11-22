@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Library;
 
-use App\Settings\Contracts\SettingsDefinition;
-use App\Settings\Declarations\SettingGroup;
-use App\Settings\Declarations\StringSetting;
+use App\Contracts\SettingsDefinition;
+use App\Declarations\SettingGroup;
+use App\Declarations\StringSetting;
 
 /**
  * A fixture definition that counts how often it is built.

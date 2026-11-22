@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use Domain\Plans\Api\PlanProgress;
-use Domain\Tasks\Api\TaskProgress;
+use Domain\Plans\Values\PlanProgress;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Values\TaskProgress;
 
 /**
  * Turns what Tasks counts and how its tasks move into Plans' own progress, inside Plans, so the progress Plans

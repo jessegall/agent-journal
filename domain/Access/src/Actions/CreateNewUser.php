@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Access\Actions;
 
-use App\Actors\Contracts\ActorProvisioning;
-use App\Actors\Support\ActorIdentity;
-use App\Assignments\Contracts\AssignmentTransaction;
+use App\Contracts\ActorProvisioning;
+use App\Contracts\AssignmentTransaction;
+use App\Support\ActorIdentity;
 use Domain\Access\Concerns\PasswordValidationRules;
 use Domain\Access\Models\User;
 use Illuminate\Contracts\Validation\Factory as ValidationFactory;

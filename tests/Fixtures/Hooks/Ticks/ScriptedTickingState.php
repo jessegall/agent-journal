@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Ticks;
 
-use App\Hooks\Contracts\TickableState;
-use App\Hooks\States\AgentState;
-use App\Hooks\Ticks\TickCommands;
-use App\Hooks\Ticks\TickContext;
+use App\Contracts\TickableState;
+use App\Support\States\AgentState;
+use App\Support\Ticks\TickCommands;
+use App\Support\Ticks\TickContext;
 
 /**
  * A ticking state that hands its tick to its loader's script.

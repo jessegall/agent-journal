@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Sharing;
 
-use App\Bus\Enums\CommandEntry;
-use App\Bus\Support\EntryDispatchers;
+use App\Commands\ReadShare\ReadShareCommand;
+use App\Enums\CommandEntry;
+use App\Exceptions\ShareLinkRefused;
+use App\Exceptions\ShareReadLimited;
 use App\Http\Requests\Sharing\ReadShareRequest;
 use App\Http\Responses\Sharing\SharedPageResponses;
-use App\Sharing\Commands\ReadShare\ReadShareCommand;
-use App\Sharing\Exceptions\ShareLinkRefused;
-use App\Sharing\Exceptions\ShareReadLimited;
-use App\Sharing\Support\ReadPermit;
-use App\Sharing\Support\ReadPermits;
-use App\Sharing\Support\ShareReadLimits;
-use App\Sharing\Support\SourceAddressRule;
+use App\Support\EntryDispatchers;
+use App\Support\ReadPermit;
+use App\Support\ReadPermits;
+use App\Support\ShareReadLimits;
+use App\Support\SourceAddressRule;
 use Illuminate\Http\Response;
 
 /**

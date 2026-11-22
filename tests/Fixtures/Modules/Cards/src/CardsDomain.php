@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards;
 
-use App\Operations\Enums\AccessType;
-use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Values\PolicyDefinition;
-use App\Bus\Contracts\CommandMiddlewareProvider;
-use App\Bus\Contracts\CommandProvider;
-use App\Bus\Support\CommandScope;
-use App\Bus\Support\MiddlewareDeclaration;
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
+use App\Enums\AccessType;
+use App\Contracts\PolicyProvider;
+use App\Values\PolicyDefinition;
+use App\Contracts\CommandMiddlewareProvider;
+use App\Contracts\CommandProvider;
+use App\Support\CommandScope;
+use App\Support\MiddlewareDeclaration;
+use App\Support\Domain;
+use App\Support\Exports;
 use Tests\Fixtures\Modules\Cards\CommandMiddleware\RecordCards;
 use Tests\Fixtures\Modules\Cards\Commands\DrawCard\DrawCardCommand;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck\ShuffleDeckCommand;

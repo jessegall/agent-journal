@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Contracts\HostCapabilities;
-use App\Agents\Enums\AccountModeType;
-use App\Agents\Enums\CapabilityStatusType;
-use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Enums\HostCapabilityType;
-use App\Agents\Enums\StartRefusalType;
-use App\Agents\Exceptions\AccountContainerUnsupported;
-use App\Agents\Exceptions\CapabilityMatrixInvalid;
-use App\Agents\Exceptions\HostCapabilityUnsupported;
-use App\Agents\Resolvers\RecordedHostCapabilities;
-use App\Agents\Support\HostCapabilityQuery;
-use App\Drivers\Support\DefaultDrivers;
-use App\Files\Contracts\Files;
+use App\Contracts\Files;
+use App\Contracts\HostCapabilities;
+use App\Enums\AccountModeType;
+use App\Enums\CapabilityStatusType;
+use App\Enums\ExecutionModeType;
+use App\Enums\HostCapabilityType;
+use App\Enums\StartRefusalType;
+use App\Exceptions\AccountContainerUnsupported;
+use App\Exceptions\CapabilityMatrixInvalid;
+use App\Exceptions\HostCapabilityUnsupported;
+use App\Resolvers\RecordedHostCapabilities;
+use App\Support\DefaultDrivers;
+use App\Support\HostCapabilityQuery;
 use Tests\TestCase;
 
 /**

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Domains\Support\DomainEntry;
-use App\Ui\Declarations\ActionRoute;
-use App\Ui\Declarations\Page;
-use App\Ui\Declarations\Section;
-use App\Ui\Declarations\Slot;
-use App\Ui\Enums\Icon;
-use App\Ui\Enums\SlotContextType;
-use App\Ui\Support\UiDeclarations;
-use App\Web\Exceptions\UiPrefixUnavailable;
-use App\Web\Routes\DeclaredRoutes;
+use App\Declarations\ActionRoute;
+use App\Declarations\Page;
+use App\Declarations\Section;
+use App\Declarations\Slot;
+use App\Enums\Icon;
+use App\Enums\SlotContextType;
+use App\Exceptions\UiPrefixUnavailable;
+use App\Support\DeclaredRoutes;
+use App\Support\DomainEntry;
+use App\Support\UiDeclarations;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Routing\Route;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use App\Http\Requests\Agents\InterruptAgentRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

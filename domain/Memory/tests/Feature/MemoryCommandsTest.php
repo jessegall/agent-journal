@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Tests\Feature;
 
-use App\Actors\Support\ActorIdentity;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\CommandInputInvalid;
+use App\Contracts\CommandBus;
+use App\Exceptions\CommandInputInvalid;
+use App\Support\ActorIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Memory\Commands\EditMemory\EditMemoryCommand;

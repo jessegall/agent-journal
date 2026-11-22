@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Hooks\Decisions\Decision;
-use App\Hooks\Decisions\Denied;
-use App\Hooks\Enums\AnswerType;
-use App\Hooks\Exceptions\EmptyReason;
-use App\Hooks\Exceptions\NoRefusalReason;
-use App\Hooks\Exceptions\NoReplacementLine;
+use App\Enums\AnswerType;
+use App\Exceptions\EmptyReason;
+use App\Exceptions\NoRefusalReason;
+use App\Exceptions\NoReplacementLine;
+use App\Support\Decisions\Decision;
+use App\Support\Decisions\Denied;
 use PHPUnit\Framework\TestCase;
 
 final class DecisionTest extends TestCase

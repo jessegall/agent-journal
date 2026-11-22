@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Contracts;
+
+use App\Values\StartPolicy;
+
+/**
+ * The policy a session was started under, as it was frozen then.
+ */
+interface SessionPolicyReader
+{
+    public function policyFor(string $sessionId): StartPolicy;
+
+    /**
+     * Whether the session was started under a frozen policy; a session the journal did not start has none.
+     */
+    public function isFrozenFor(string $sessionId): bool;
+}

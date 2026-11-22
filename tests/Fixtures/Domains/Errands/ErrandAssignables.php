@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Errands;
 
-use App\Assignments\Contracts\Assignable;
-use App\Assignments\Contracts\AssignableProvider;
-use App\Assignments\Exceptions\AssignmentTypeUnavailable;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\Assignable;
+use App\Contracts\AssignableProvider;
+use App\Exceptions\AssignmentTypeUnavailable;
+use App\Support\RecordIdentity;
 
 /**
  * Answers for errands with none to give: every errand is missing.

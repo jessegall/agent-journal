@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Exceptions\ActorNotAllowed;
-use App\Agents\Models\Agent;
-use App\Assignments\Contracts\AssignmentTransaction;
-use App\Assignments\Contracts\AssignmentWriter;
-use App\Assignments\Enums\AssignmentOutcomeType;
-use App\Assignments\Exceptions\AssigneeUnavailable;
-use App\Assignments\Exceptions\AssignmentConflict;
-use App\Assignments\Models\AssignmentRecord;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Records\Exceptions\RecordUnavailable;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\AssignmentTransaction;
+use App\Contracts\AssignmentWriter;
+use App\Enums\AssignmentOutcomeType;
+use App\Exceptions\ActorNotAllowed;
+use App\Exceptions\AssigneeUnavailable;
+use App\Exceptions\AssignmentConflict;
+use App\Exceptions\RecordUnavailable;
+use App\Models\Agent;
+use App\Models\AssignmentRecord;
+use App\Support\AssigneeIdentity;
+use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\ActorNotAllowed;
-use App\Actors\Support\ActorContext;
-use App\Bus\Contracts\CommandBus;
-use App\Skills\Commands\CreateSkill\CreateSkillCommand;
-use App\Skills\Commands\ReviseSkill\ReviseSkillCommand;
-use App\Skills\Contracts\SkillResolver;
-use App\Skills\Models\SkillRevision;
-use App\Skills\Values\SectionDraft;
-use App\Skills\Values\SkillDraft;
-use App\Skills\Values\SkillKey;
+use App\Commands\CreateSkill\CreateSkillCommand;
+use App\Commands\ReviseSkill\ReviseSkillCommand;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Contracts\SkillResolver;
+use App\Exceptions\ActorNotAllowed;
+use App\Models\SkillRevision;
+use App\Support\ActorContext;
+use App\Values\SectionDraft;
+use App\Values\SkillDraft;
+use App\Values\SkillKey;
 use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\ActsAsActors;

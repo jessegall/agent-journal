@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Agents\Commands\RetireAgent\RetireAgentCommand;
-use App\Bus\Contracts\CommandBus;
-use App\Profiles\Exceptions\ProfileProposalRefused;
-use App\Profiles\Support\ProfileProposal;
+use App\Commands\RetireAgent\RetireAgentCommand;
+use App\Contracts\CommandBus;
+use App\Exceptions\ProfileProposalRefused;
+use App\Support\ProfileProposal;
 use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
 use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
 use Domain\Helpers\Exceptions\HelperBusy;

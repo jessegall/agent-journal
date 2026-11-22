@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Agents\Models\Agent;
-use App\Domains\Support\DomainRegistry;
-use App\Ui\Support\UiDeclarations;
-use App\Web\Pages\WebPages;
-use App\Web\Routes\DeclaredRoutes;
+use App\Models\Agent;
+use App\Pages\WebPages;
+use App\Support\DeclaredRoutes;
+use App\Support\DomainRegistry;
+use App\Support\UiDeclarations;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Routing\Router;

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Scripts;
 
-use App\Scripts\Contracts\ScriptStatement;
-use App\Scripts\Enums\ScriptEffect;
-use App\Scripts\Enums\SyntaxForm;
-use App\Scripts\Support\CompileContext;
-use App\Scripts\Values\FlowShape;
-use App\Scripts\Values\Instruction;
-use App\Scripts\Values\KeywordDefinition;
-use App\Scripts\Values\ParsedStatement;
-use App\Scripts\Values\RunContext;
-use App\Scripts\Values\StepOutcome;
+use App\Contracts\ScriptStatement;
+use App\Enums\ScriptEffect;
+use App\Enums\SyntaxForm;
+use App\Support\CompileContext;
+use App\Values\FlowShape;
+use App\Values\Instruction;
+use App\Values\KeywordDefinition;
+use App\Values\ParsedStatement;
+use App\Values\RunContext;
+use App\Values\StepOutcome;
 
 final readonly class ExampleScriptKeyword implements ScriptStatement
 {

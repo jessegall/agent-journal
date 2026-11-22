@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Models\Host;
+use App\Enums\HostProtocolVersion;
+use App\Models\Host;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

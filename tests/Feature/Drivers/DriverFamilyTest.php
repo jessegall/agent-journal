@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Drivers;
 
-use App\Drivers\Contracts\DriverCatalogue;
-use App\Drivers\Exceptions\DriverFamilyUnknown;
-use App\Drivers\Support\DriverRegistry;
-use App\Drivers\Values\DriverFamily;
-use App\Drivers\Values\DriverKey;
-use App\Drivers\Values\DriverRegistration;
+use App\Contracts\DriverCatalogue;
+use App\Exceptions\DriverFamilyUnknown;
+use App\Support\DriverRegistry;
+use App\Values\DriverFamily;
+use App\Values\DriverKey;
+use App\Values\DriverRegistration;
 use Tests\TestCase;
 
 /**

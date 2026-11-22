@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\AgentRequests\Support\SignedCall;
-use App\Agents\Support\AgentContext;
-use App\Bus\Exceptions\CallFailedUnexpectedly;
+use App\Exceptions\CallFailedUnexpectedly;
 use App\Mcp\Exceptions\ResultTooLarge;
+use App\Support\AgentContext;
+use App\Support\SignedCall;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Exceptions;
 use Tests\Fixtures\Mcp\FixtureReadTool;

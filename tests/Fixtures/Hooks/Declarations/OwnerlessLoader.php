@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Declarations;
 
-use App\Hooks\StateLoading\Contracts\StateLoader;
-use App\Hooks\Decisions\StateReferences;
-use App\Hooks\StateLoading\StateSet;
-use App\Hooks\Enums\SessionTransferType;
+use App\Support\StateLoading\Contracts\StateLoader;
+use App\Support\Decisions\StateReferences;
+use App\Support\StateLoading\StateSet;
+use App\Enums\SessionTransferType;
 
 /**
  * Loads the ownerless fixture state.

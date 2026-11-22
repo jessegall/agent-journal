@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Exceptions;
+
+use App\Concerns\RendersRefusal;
+use App\Contracts\CodedRefusal;
+use App\Contracts\CommandRefusal;
+use App\Enums\RefusalCode;
+use RuntimeException;
+
+/**
+ * An outcome or a health report that does not match what the run holds: another endpoint version, another or an
+ * expired lease, or an operation it never claimed.
+ */
+final class GatewayLeaseRefused extends RuntimeException implements CodedRefusal, CommandRefusal
+{
+    use RendersRefusal;
+
+    public static function forOperation(string $operationId): self
+    {
+        return new self(
+            sprintf(
+                'Gateway operation %s is not held under this run, endpoint version and lease; its outcome is ignored.',
+                $operationId,
+            ),
+        );
+    }
+
+    public static function forEndpoint(string $configurationId, int $version): self
+    {
+        return new self(
+            "Endpoint version {$version} of configuration {$configurationId} is not held by this run.",
+        );
+    }
+
+    protected function status(): int
+    {
+        return 409;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::StateBlocked;
+    }
+}

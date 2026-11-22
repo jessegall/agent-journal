@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Bus\Contracts\CommandBus;
-use App\Drivers\Support\DefaultDrivers;
-use App\Profiles\Commands\SwitchAccount\SwitchAccountCommand;
-use App\Profiles\Models\Account;
-use App\Profiles\Values\AccountLabel;
-use App\Web\Events\PageChanged;
-use Domain\Plans\Api\Events\PlanProgressChanged;
+use App\Commands\SwitchAccount\SwitchAccountCommand;
+use App\Contracts\CommandBus;
+use App\Events\PageChanged;
+use App\Models\Account;
+use App\Support\DefaultDrivers;
+use App\Values\AccountLabel;
 use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
-use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Event;

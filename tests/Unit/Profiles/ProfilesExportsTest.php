@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
+use App\Contracts\ProfileResolver;
 use App\CoreApi;
-use App\Domains\Support\DomainRegistry;
-use App\Profiles\Contracts\ProfileResolver;
-use App\Profiles\Exceptions\ProfileKeyInvalid;
-use App\Profiles\Exceptions\ProfileMissing;
-use App\Profiles\Support\BuiltInAuthorizations;
-use App\Profiles\Values\ProfileBase;
-use App\Profiles\Values\ProfileKey;
-use App\Profiles\Values\ProfileSnapshot;
+use App\Exceptions\ProfileKeyInvalid;
+use App\Exceptions\ProfileMissing;
+use App\Support\BuiltInAuthorizations;
+use App\Support\DomainRegistry;
+use App\Values\ProfileBase;
+use App\Values\ProfileKey;
+use App\Values\ProfileSnapshot;
 use Tests\Fixtures\Profiles\TestStartPolicies;
 use Tests\TestCase;
 

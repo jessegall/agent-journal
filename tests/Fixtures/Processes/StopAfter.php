@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Processes;
 
-use App\Processes\Contracts\StopSignal;
+use App\Contracts\StopSignal;
 
 /**
  * A stop signal for tests that is requested once a number of seconds has passed since it was made.

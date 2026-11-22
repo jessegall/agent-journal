@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Files\Enums\Place;
-use App\Files\Exceptions\FileJsonInvalid;
-use App\Files\Exceptions\FileMissing;
-use App\Files\Exceptions\FileReadReentered;
-use App\Files\Exceptions\FileUnreadable;
-use App\Files\Exceptions\LinkLeavesPlace;
-use App\Files\Support\LocalFiles;
-use App\Files\Values\FilePath;
-use App\Reflection\Support\Reflector;
+use App\Enums\Place;
+use App\Exceptions\FileJsonInvalid;
+use App\Exceptions\FileMissing;
+use App\Exceptions\FileReadReentered;
+use App\Exceptions\FileUnreadable;
+use App\Exceptions\LinkLeavesPlace;
+use App\Support\LocalFiles;
+use App\Support\Reflector;
+use App\Values\FilePath;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Filesystem\Filesystem;

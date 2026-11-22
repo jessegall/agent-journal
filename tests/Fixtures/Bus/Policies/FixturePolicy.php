@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Policies;
 
-use App\Actors\Contracts\Policy;
+use App\Contracts\Policy;
 use Tests\Fixtures\Bus\Models\FixtureWork;
 
 /**

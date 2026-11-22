@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
-use Domain\Tasks\Api\TaskWaits;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Values\TaskWaits;
 
 /**
  * Reads the waits between tasks for whoever may read them: a task's direct waits both ways, and which of some tasks

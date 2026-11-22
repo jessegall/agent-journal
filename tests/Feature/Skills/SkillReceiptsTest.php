@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Agents\Models\AgentSession;
-use App\Agents\Values\StackTarget;
-use App\Hooks\Enums\ContextStartType;
-use App\Hooks\Events\ContextStarted;
-use App\Hooks\Support\ContextReminders;
-use App\Skills\Enums\ReadEvidence;
-use App\Skills\Listeners\AdvanceSkillContext;
-use App\Skills\Models\SkillPublication;
-use App\Skills\Models\SkillReceipt;
+use App\Enums\ContextStartType;
+use App\Enums\ReadEvidence;
+use App\Events\ContextStarted;
+use App\Listeners\AdvanceSkillContext;
+use App\Models\AgentSession;
+use App\Models\SkillPublication;
+use App\Models\SkillReceipt;
+use App\Support\ContextReminders;
+use App\Values\StackTarget;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\Skills\AdmitsMainAgentSkills;

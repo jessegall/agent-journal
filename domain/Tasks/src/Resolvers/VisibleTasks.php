@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Actors\Contracts\CurrentActor;
-use Domain\Tasks\Api\TaskSummary;
+use App\Contracts\CurrentActor;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Values\TaskSummary;
 use Illuminate\Container\Attributes\Scoped;
 
 /**

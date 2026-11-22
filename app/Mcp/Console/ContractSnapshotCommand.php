@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mcp\Console;
 
-use App\Files\Contracts\Files;
-use App\Files\Enums\Place;
-use App\Files\Exceptions\FileUnwritable;
-use App\Files\Values\FilePath;
+use App\Contracts\Files;
+use App\Enums\Place;
+use App\Exceptions\FileUnwritable;
 use App\Mcp\Support\ContractSnapshot;
+use App\Values\FilePath;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Engine\Contracts\Watchdog;
+use App\Contracts\Watchdog;
 
 /**
  * Keeps whether it is armed and how often it was armed, and never ends the process.

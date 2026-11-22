@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorStore;
-use App\Assignments\Models\AssignmentRecord;
-use App\Assignments\Support\AssigneeIdentity;
+use App\Enums\ActorType;
+use App\Models\AssignmentRecord;
+use App\Support\ActorStore;
+use App\Support\AssigneeIdentity;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;

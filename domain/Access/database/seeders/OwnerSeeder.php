@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Access\Database\Seeders;
 
-use App\Actors\Support\ActorIdentity;
-use App\Bus\Enums\CommandEntry;
-use App\Bus\Support\EntryDispatchers;
-use App\Desks\Commands\ProvisionActorDesk\ProvisionActorDeskCommand;
+use App\Commands\ProvisionActorDesk\ProvisionActorDeskCommand;
+use App\Contracts\JournalCommands;
+use App\Enums\CommandEntry;
+use App\Support\ActorIdentity;
 use Domain\Access\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -17,12 +17,12 @@ use Illuminate\Database\Seeder;
  */
 final class OwnerSeeder extends Seeder
 {
-    public function run(EntryDispatchers $dispatchers): void
+    public function run(JournalCommands $commands): void
     {
         $owner = User::installOwner('Owner', 'owner@journal.local', 'password');
 
         if ($owner->wasRecentlyCreated) {
-            $dispatchers->runAsJournal(
+            $commands->runAsJournal(
                 CommandEntry::HostControl,
                 'desk install',
                 new ProvisionActorDeskCommand(ActorIdentity::of($owner), $owner->name),

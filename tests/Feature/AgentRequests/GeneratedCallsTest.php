@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\AgentRequests;
 
-use App\AgentRequests\Support\CallGroups;
+use App\Support\CallGroups;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -19,7 +19,7 @@ final class GeneratedCallsTest extends TestCase
 
     private const string CLASS_DECLARATION = 'final readonly class NoteCalls';
 
-    private const string KEY_PARAMETER = '\\App\\AgentRequests\\Support\\CallKey $requestKey = new CallKey()';
+    private const string KEY_PARAMETER = '\\App\\Support\\CallKey $requestKey = new CallKey()';
 
     public function test_the_generated_files_are_current(): void
     {
@@ -45,7 +45,7 @@ final class GeneratedCallsTest extends TestCase
 
     public function test_a_check_fails_on_a_changed_file(): void
     {
-        $path = app_path('Client/Support/JournalClient.php');
+        $path = app_path('Support/JournalClient.php');
         $original = (string) file_get_contents($path);
         file_put_contents($path, $original.<<<'TEXT'
 
@@ -55,7 +55,7 @@ final class GeneratedCallsTest extends TestCase
 
         try {
             $this->artisan('journal:calls', ['--check' => true])
-                ->expectsOutputToContain('app/Client/Support/JournalClient.php differs')
+                ->expectsOutputToContain('app/Support/JournalClient.php differs')
                 ->assertFailed();
         } finally {
             file_put_contents($path, $original);

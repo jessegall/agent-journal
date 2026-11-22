@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\SessionProvenance;
+use App\Contracts\CurrentActor;
+use App\Contracts\SessionProvenance;
+use App\Support\ActorIdentity;
 use Domain\Documents\Models\DocumentDraft;
 use Illuminate\Container\Attributes\Scoped;
 

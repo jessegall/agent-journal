@@ -1,0 +1,25 @@
+{
+    "about": "Doc 107 revision 3: the Chat package's reviewed placements. The key in layout-rules.json covers every row; rows already final stay (verification only).",
+    "package_order": [
+        "Tasks",
+        "Plans",
+        "Documents",
+        "Chat",
+        "Memory",
+        "Rules",
+        "Sequences",
+        "Reminders",
+        "Access",
+        "Helpers"
+    ],
+    "position": 4,
+    "requires": [],
+    "counts": {
+        "rows": 235,
+        "moves": 21,
+        "stays": 174,
+        "generated": 40,
+        "rows_with_outside_consumers": 0
+    },
+    "paths": {}
+}

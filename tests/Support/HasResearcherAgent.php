@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Agents\Models\Agent;
+use App\Models\Agent;
 
 /**
  * A read-only helper agent named Researcher, made before each test.

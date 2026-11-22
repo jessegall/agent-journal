@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Enums\CapacityResource;
-use App\Agents\Enums\ConversationModeType;
-use App\Agents\Enums\StartOriginType;
-use App\Agents\Exceptions\CapacityUnavailable;
-use App\Agents\Models\Agent;
-use App\Agents\Models\StartRecord;
-use App\Agents\Values\StartPolicy;
-use App\Agents\Values\StartRequest;
+use App\Enums\CapacityResource;
+use App\Enums\ConversationModeType;
+use App\Enums\StartOriginType;
+use App\Exceptions\CapacityUnavailable;
+use App\Models\Agent;
+use App\Models\StartRecord;
+use App\Support\ActorContext;
+use App\Support\ActorIdentity;
+use App\Support\StartSessions;
+use App\Values\StartPolicy;
+use App\Values\StartRequest;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use PhpOption\None;
@@ -54,7 +54,7 @@ final class StartReceiptReadTest extends TestCase
             CapacityUnavailable::because(CapacityResource::Memory, 'its memory does not fit.'),
         );
 
-        $this->actingAs($this->owner)->getJson(route('profiles.start-receipt', $request->requestId))
+        $this->actingAs($this->owner)->getJson(route('web.start-receipt', $request->requestId))
             ->assertOk()
             ->assertExactJson([
                 'requestId' => $request->requestId,
@@ -74,7 +74,7 @@ final class StartReceiptReadTest extends TestCase
             ->session;
         $record->startedAs($session);
 
-        $this->actingAs($this->owner)->getJson(route('profiles.start-receipt', $request->requestId))
+        $this->actingAs($this->owner)->getJson(route('web.start-receipt', $request->requestId))
             ->assertOk()
             ->assertJsonPath('state', 'accepted')
             ->assertJsonPath('sessionId', $session->id);
@@ -86,7 +86,7 @@ final class StartReceiptReadTest extends TestCase
         StartRecord::accept($request, TestSelections::pinOf($request), $this->ownerIdentity(), None::create());
         $member = User::factory()->create();
 
-        $this->actingAs($member)->getJson(route('profiles.start-receipt', $request->requestId))
+        $this->actingAs($member)->getJson(route('web.start-receipt', $request->requestId))
             ->assertForbidden()
             ->assertDontSee($request->requestId);
     }

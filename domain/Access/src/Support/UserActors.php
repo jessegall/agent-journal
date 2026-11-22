@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Actors\Contracts\Actor;
-use App\Actors\Contracts\ActorProvider;
-use App\Actors\Contracts\JournalAdmission;
-use App\Actors\Exceptions\ActorUnavailable;
-use App\Actors\Support\ActorIdentity;
+use App\Contracts\Actor;
+use App\Contracts\ActorProvider;
+use App\Contracts\JournalAdmission;
+use App\Exceptions\ActorUnavailable;
+use App\Support\ActorIdentity;
 use Domain\Access\Models\User;
 
 /**

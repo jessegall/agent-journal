@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Contracts\AliasResolver;
-use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Enums\ParseOutcome;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Syntax\TreeParser;
-use App\Processes\Values\ExecutionContext;
-use App\Processes\Values\ShellNode;
+use App\Contracts\AliasResolver;
+use App\Contracts\CommandClassifier;
+use App\Enums\ParseOutcome;
+use App\Enums\ShellDialect;
+use App\Support\Syntax\TreeParser;
+use App\Values\ExecutionContext;
+use App\Values\ShellNode;
 use Tests\Fixtures\Processes\NoAliases;
 use Tests\Support\Processes\ShellCorpusCase;
 use Tests\Support\Processes\ShellCorpusManifest;

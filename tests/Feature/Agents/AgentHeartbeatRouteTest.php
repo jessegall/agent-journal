@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Actors\Contracts\ServerClock;
-use App\Agents\Actions\StartTokens;
-use App\Agents\Models\AgentSession;
+use App\Contracts\ServerClock;
+use App\Models\AgentSession;
+use App\Support\StartTokens;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Response;

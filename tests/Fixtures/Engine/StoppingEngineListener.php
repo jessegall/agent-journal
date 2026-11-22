@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Engine;
 
-use App\Engine\Contracts\EngineListener;
-use App\Engine\Events\EngineTicked;
-use App\Engine\Support\EngineLoop;
+use App\Contracts\EngineListener;
+use App\Events\EngineTicked;
+use App\Support\EngineLoop;
 
 /**
  * Keeps every EngineTicked it receives and stops the engine loop once it received the given number.

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Bus;
 
-use App\Actors\Support\ActorContext;
-use App\Bus\Exceptions\CommandDispatcherMissing;
-use App\Bus\Support\Command;
-use App\Bus\Support\CommandGrammar;
-use App\Bus\Support\PlainValue;
-use App\Reflection\Support\ReflectedProperty;
-use App\Reflection\Support\Reflector;
+use App\Exceptions\CommandDispatcherMissing;
+use App\Support\ActorContext;
+use App\Support\Command;
+use App\Support\CommandGrammar;
+use App\Support\PlainValue;
+use App\Support\ReflectedProperty;
+use App\Support\Reflector;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Bus\Proof\BoundItem;
 

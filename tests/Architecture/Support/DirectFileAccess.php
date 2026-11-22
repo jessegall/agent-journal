@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Files\Enums\PlaceExemption;
+use App\Enums\PlaceExemption;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
@@ -45,7 +45,7 @@ final readonly class DirectFileAccess
     {
         return new self($this->projectRoot, array_filter(
             $this->findings,
-            fn (string $path) => ! str_starts_with($path, rtrim($folder, '/').'/'),
+            fn (string $path) => $path !== $folder && ! str_starts_with($path, rtrim($folder, '/').'/'),
             ARRAY_FILTER_USE_KEY,
         ));
     }
@@ -118,7 +118,7 @@ final readonly class DirectFileAccess
         $waiting = count($sites) - $exempt;
 
         return <<<TEXT
-        # The direct file access sites outside app/Files (plan 39): {$waiting} still waiting to move to App\\Files\\Contracts\\Files,
+        # The direct file access sites outside app/Files (plan 39): {$waiting} still waiting to move to App\\Contracts\\Files,
         # and {$exempt} exempt. One line per file and form, without line numbers. A task that moves a site removes its own
         # lines here, in the same task; the waiting part only shrinks. An 'exempt' line names a method marked
         # #[OutsideThePlaces(PlaceExemption::...)], for a reason the user settled (doc 69).

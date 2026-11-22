@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Support\ActorStore;
-use App\Bus\Contracts\Command;
-use App\Bus\Support\CommandRegistry;
-use App\Bus\Support\EntryDispatchers;
+use App\Contracts\Command;
+use App\Support\ActorStore;
+use App\Support\CommandRegistry;
+use App\Support\EntryDispatchers;
 
 /**
  * Runs a trusted entry's command as the journal does: as the system, through the command's own entry.

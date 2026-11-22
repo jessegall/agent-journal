@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers\Calls;
 
-use App\Numbers\Support\RecordReference;
+use App\Support\RecordReference;
 use Domain\Documents\Calls\ShowDocumentCall;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Data\RecordText;

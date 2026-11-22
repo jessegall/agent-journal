@@ -1,0 +1,48 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Pipes\Grammar;
+
+use App\Enums\NodeType;
+use App\Pipelines\ReadCompoundPipeline;
+use App\Support\Grammar\CompoundToParse;
+use App\Support\Grammar\FunctionToParse;
+use App\Support\Grammar\NodeRead;
+use App\Support\PipelineAdapter;
+use App\Values\SourceRange;
+
+/**
+ * A function definition is not supported, but its body must still be a complete group or subshell: the body is read
+ * through the compound pipeline to check it, and the definition becomes one Unsupported node over it.
+ *
+ * @extends PipelineAdapter<FunctionToParse, NodeRead>
+ */
+final readonly class ParseFunctionBody extends PipelineAdapter
+{
+    protected function definition(): string
+    {
+        return ReadCompoundPipeline::class;
+    }
+
+    protected function produces(): string
+    {
+        return NodeRead::class;
+    }
+
+    protected function into(object $input): CompoundToParse
+    {
+        return $input->toParse->compound();
+    }
+
+    protected function back(object $parsedBody, object $input): NodeRead
+    {
+        $draft = $input->toParse->draft();
+        $range = new SourceRange($input->start, $draft->range($parsedBody->node)->end);
+        $definition = $draft->add(NodeType::Unsupported, $range, null);
+        $draft->adopt($definition, $parsedBody->node);
+        $draft->markUnsupported('A function definition is not supported.', $input->start);
+
+        return new NodeRead($definition);
+    }
+}

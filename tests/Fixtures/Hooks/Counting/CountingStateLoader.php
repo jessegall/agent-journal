@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Counting;
 
-use App\Hooks\Decisions\StateReferences;
-use App\Hooks\Enums\SessionTransferType;
-use App\Hooks\StateLoading\Contracts\StateLoader;
-use App\Hooks\StateLoading\StateSet;
+use App\Support\Decisions\StateReferences;
+use App\Enums\SessionTransferType;
+use App\Support\StateLoading\Contracts\StateLoader;
+use App\Support\StateLoading\StateSet;
 
 /**
  * Loads a fresh counting state for each frame, so only the values its frame saved can bring a count back.

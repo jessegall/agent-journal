@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Models\Agent;
-use App\Agents\Models\CapacityReservation;
-use App\Agents\Values\ExecutionBudgets;
-use App\Agents\Values\HostCapacity;
+use App\Enums\ExecutionModeType;
+use App\Models\Agent;
+use App\Models\CapacityReservation;
+use App\Values\ExecutionBudgets;
+use App\Values\HostCapacity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Tests\Support\RefreshHookDatabase;
@@ -45,7 +45,7 @@ final class CheckCapacityTest extends TestCase
     public function test_a_container_start_that_does_not_fit_names_the_resource_and_reserves_nothing(): void
     {
         $this->actingAs($this->owner)
-            ->getJson(route('agents.capacity', [
+            ->getJson(route('web.capacity', [
                 'agent' => $this->agent->id,
                 'mode' => ExecutionModeType::RequiredContainer->value,
             ]))
@@ -63,7 +63,7 @@ final class CheckCapacityTest extends TestCase
     public function test_a_start_on_the_host_is_not_held_to_container_capacity(): void
     {
         $this->actingAs($this->owner)
-            ->getJson(route('agents.capacity', [
+            ->getJson(route('web.capacity', [
                 'agent' => $this->agent->id,
                 'mode' => ExecutionModeType::ProtectedHost->value,
             ]))

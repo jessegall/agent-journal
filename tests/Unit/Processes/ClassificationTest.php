@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Processes\Enums\CommandClass;
-use App\Processes\Enums\CommandType;
-use App\Processes\Enums\OutputRequirement;
-use App\Processes\Enums\UnresolvedType;
-use App\Processes\Values\ClassFact;
-use App\Processes\Values\Classification;
-use App\Processes\Values\CommandClassSet;
-use App\Processes\Values\PartClassification;
-use App\Processes\Values\RuleOrigin;
-use App\Processes\Values\SyntaxOrigin;
-use App\Processes\Values\UnresolvedFact;
+use App\Enums\CommandClass;
+use App\Enums\CommandType;
+use App\Enums\OutputRequirement;
+use App\Enums\UnresolvedType;
+use App\Values\ClassFact;
+use App\Values\Classification;
+use App\Values\CommandClassSet;
+use App\Values\PartClassification;
+use App\Values\RuleOrigin;
+use App\Values\SyntaxOrigin;
+use App\Values\UnresolvedFact;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\Processes\ParsesBashLines;
 

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Agents;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\PresenceWindow;
-use App\Agents\Commands\RecordHeartbeat\RecordHeartbeatCommand;
-use App\Agents\Exceptions\CallProtocolUnsupported;
-use App\Agents\Exceptions\CallSignatureInvalid;
-use App\Agents\Exceptions\CredentialRejected;
-use App\Agents\Support\AgentContext;
-use App\Agents\Support\AgentContextFactory;
-use App\Bus\Contracts\CommandBus;
+use App\Commands\RecordHeartbeat\RecordHeartbeatCommand;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Exceptions\CallProtocolUnsupported;
+use App\Exceptions\CallSignatureInvalid;
+use App\Exceptions\CredentialRejected;
+use App\Support\AgentContext;
+use App\Support\AgentContextFactory;
+use App\Support\PresenceWindow;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Container\Container;

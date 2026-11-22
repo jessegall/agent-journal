@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers\Support;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Data\MessageView;
-use App\Communication\Exceptions\MessageMissing;
+use App\Contracts\CurrentActor;
+use App\Data\MessageView;
+use App\Exceptions\MessageMissing;
+use App\Support\ActorIdentity;
 use Domain\Chat\Models\MessagePin;
 use Domain\Chat\Support\PinnableMessages;
 

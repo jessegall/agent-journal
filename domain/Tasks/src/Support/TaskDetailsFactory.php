@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
-use App\Assignments\Support\AssignmentHolder;
-use Domain\Tasks\Api\TaskDetails;
-use Domain\Tasks\Api\TaskExecution;
-use Domain\Tasks\Api\TaskText;
+use App\Support\AssignmentHolder;
+use Domain\Tasks\Data\TaskDetails;
+use Domain\Tasks\Data\TaskText;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Values\TaskExecution;
 use PhpOption\Option;
 
 /**

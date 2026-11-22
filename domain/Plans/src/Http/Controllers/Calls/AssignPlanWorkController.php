@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers\Calls;
 
-use App\Assignments\Contracts\AssigneeResolver;
-use App\Bus\Contracts\CommandBus;
-use App\Records\Contracts\RecordResolver;
+use App\Contracts\AssigneeResolver;
+use App\Contracts\CommandBus;
+use App\Contracts\RecordResolver;
 use Domain\Plans\Calls\AssignPlanWorkCall;
 use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;
-use Domain\Plans\Http\Data\PlanWorkResultData;
+use Domain\Plans\Data\PlanWorkResultData;
 
 /**
  * Assigns the work under a plan or phase and answers what changed.

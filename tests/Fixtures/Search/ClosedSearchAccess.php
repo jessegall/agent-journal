@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Fixtures\Search;
+
+use App\Contracts\SearchAccess;
+use App\Support\ActorContext;
+use App\Values\AdmittedConstraints;
+use App\Values\ReadRequest;
+use App\Values\SearchReader;
+
+/**
+ * A search policy that asks agents for logs_read and lets no signed-in user search.
+ */
+final class ClosedSearchAccess implements SearchAccess
+{
+    public function agentRead(): ReadRequest
+    {
+        return ReadRequest::forDiscovery('logs_read');
+    }
+
+    public function canUserSearch(ActorContext $user): bool
+    {
+        return false;
+    }
+
+    public function constraints(SearchReader $reader): AdmittedConstraints
+    {
+        return AdmittedConstraints::unrestricted();
+    }
+}

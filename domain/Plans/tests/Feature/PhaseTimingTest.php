@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Agents\Models\Agent;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Processes\Contracts\VerificationTiming;
-use App\Processes\Support\OpenTiming;
-use App\Processes\Values\TimingVerdict;
+use App\Contracts\VerificationTiming;
+use App\Models\Agent;
+use App\Support\AssigneeIdentity;
+use App\Support\OpenTiming;
+use App\Values\TimingVerdict;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PhaseTiming;

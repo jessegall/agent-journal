@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\CreateDocument;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\OneLine;
-use App\Bus\Support\Command;
-use App\Operations\Enums\AccessType;
-use App\Records\Support\RecordIdentity;
-use Domain\Documents\Api\CreatedRecord;
+use App\Attributes\Authorize;
+use App\Attributes\OneLine;
+use App\Enums\AccessType;
+use App\Support\Command;
+use App\Support\RecordIdentity;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentPolicy;
+use Domain\Documents\Values\CreatedRecord;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Required;
 

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Resolvers;
 
-use App\Actors\Contracts\CurrentActor;
-use Domain\Rules\Api\RuleDetails;
+use App\Contracts\CurrentActor;
 use Domain\Rules\Contracts\RuleDetailsResolver;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Models\Rule;
+use Domain\Rules\Values\RuleDetails;
 use Illuminate\Container\Attributes\Scoped;
 
 /**

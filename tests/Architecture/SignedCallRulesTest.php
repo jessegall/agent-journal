@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\AgentRequests\Contracts\JournalCall;
-use App\AgentRequests\Support\CallRoutes;
+use App\Attributes\JournalRoute;
+use App\Calls\Agents\RecordHeartbeatCall;
+use App\Contracts\JournalCall;
+use App\Enums\JournalRouteType;
 use App\Mcp\Servers\JournalServer;
-use App\Processes\Attributes\JournalRoute;
-use App\Processes\Enums\JournalRouteType;
-use App\Reflection\Support\Reflector;
+use App\Support\CallRoutes;
+use App\Support\Reflector;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Route as Routes;
 use Spatie\LaravelData\Data;
@@ -31,7 +32,7 @@ final class SignedCallRulesTest extends TestCase
     /**
      * The folders that may name an agent or a session in their own calls, where the agent itself is the subject.
      */
-    private const array AGENT_FOLDERS = ['App\\Agents\\', 'App\\Hooks\\'];
+    private const array AGENT_FOLDERS = ['App\\Calls\\Agents\\', 'App\\Calls\\Hooks\\'];
 
     public function test_every_agent_route_is_a_declared_call(): void
     {
@@ -53,6 +54,7 @@ final class SignedCallRulesTest extends TestCase
 
     public function test_every_call_implements_the_answer_its_endpoint_declares(): void
     {
+        $this->assertContains(RecordHeartbeatCall::class, self::calls());
         $this->assertSame([], SignedCallRules::callsAnsweringOtherThanTheyImplement(self::calls()));
         $this->assertSame(
             [PlantedRetireCall::class],
@@ -76,6 +78,7 @@ final class SignedCallRulesTest extends TestCase
 
     public function test_a_command_that_only_reads_makes_no_write(): void
     {
+        $this->assertNotSame([], self::readCommands());
         $this->assertSame([], SignedCallRules::writesOfReadCommands(self::readCommands(), self::calls()));
         $this->assertNotSame([], SignedCallRules::writesOfReadCommands(
             ['PlantedCommand' => '$processes->admitLine($line);'],
@@ -85,7 +88,7 @@ final class SignedCallRulesTest extends TestCase
 
     public function test_no_code_writes_an_agent_path_outside_the_routes_and_the_sender(): void
     {
-        $allowed = ['/Routes/', 'AgentRequests/Support/SignedCallSender.php', 'Mcp/Servers/JournalServer.php'];
+        $allowed = ['/routes/', 'app/Support/SignedCallSender.php', 'Mcp/Servers/JournalServer.php'];
         $found = [];
 
         foreach (DomainFiles::in([app_path(), ...DomainFiles::domainCode()]) as $file) {
@@ -148,7 +151,7 @@ final class SignedCallRulesTest extends TestCase
         $calls = [];
 
         $files = [
-            ...glob(app_path('*/Calls/*Call.php')) ?: [],
+            ...glob(app_path('Calls/*/*Call.php')) ?: [],
             ...glob(base_path('domain/*/src/Calls/*Call.php')) ?: [],
         ];
 
@@ -173,8 +176,8 @@ final class SignedCallRulesTest extends TestCase
         $commands = [];
 
         $files = [
-            ...glob(app_path('*/Console/*Command.php')) ?: [],
-            ...glob(base_path('domain/*/src/Console/*Command.php')) ?: [],
+            ...glob(app_path('Console/Commands/*Command.php')) ?: [],
+            ...glob(base_path('domain/*/src/Console/Commands/*Command.php')) ?: [],
         ];
 
         foreach ($files as $file) {

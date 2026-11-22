@@ -1,0 +1,25 @@
+{
+    "about": "Doc 107 revision 3: the Rules package's reviewed placements. The key in layout-rules.json covers every row; rows already final stay (verification only).",
+    "package_order": [
+        "Tasks",
+        "Plans",
+        "Documents",
+        "Chat",
+        "Memory",
+        "Rules",
+        "Sequences",
+        "Reminders",
+        "Access",
+        "Helpers"
+    ],
+    "position": 6,
+    "requires": [],
+    "counts": {
+        "rows": 47,
+        "moves": 15,
+        "stays": 32,
+        "generated": 0,
+        "rows_with_outside_consumers": 3
+    },
+    "paths": {}
+}

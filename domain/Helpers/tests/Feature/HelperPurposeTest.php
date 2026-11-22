@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\OwnerAuthority;
-use App\Assignments\Contracts\RecordVisibility;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\CurrentActorSetter;
+use App\Contracts\RecordVisibility;
+use App\Support\ActorContext;
+use App\Support\ActorIdentity;
+use App\Support\RecordIdentity;
+use App\Values\OwnerAuthority;
 use Domain\Helpers\Exceptions\PurposeConflict;
 use Domain\Helpers\Exceptions\PurposeRequired;
 use Domain\Helpers\Exceptions\SubjectUnavailable;

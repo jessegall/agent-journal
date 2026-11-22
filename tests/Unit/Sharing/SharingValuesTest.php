@@ -4,32 +4,33 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Sharing;
 
-use App\Bus\Support\CommandGrammar;
-use App\Records\Support\RecordIdentity;
-use App\Sharing\Enums\ShareAuditType;
-use App\Sharing\Enums\ShareRelationType;
-use App\Sharing\Enums\ShareState;
-use App\Sharing\Support\GatewayConfiguration;
-use App\Sharing\Support\GatewayEndpoint;
-use App\Sharing\Support\GatewayHealth;
-use App\Sharing\Support\GatewayOperation;
-use App\Sharing\Support\GatewaySettings;
-use App\Sharing\Support\GatewaySetupCheck;
-use App\Sharing\Support\ShareCandidates;
-use App\Sharing\Support\ShareContentRead;
-use App\Sharing\Support\SharedContent;
-use App\Sharing\Support\ShareLinkedCandidate;
-use App\Sharing\Support\ShareRecordCard;
-use App\Sharing\Support\ShareRecordDefinition;
-use App\Sharing\Support\ShareRecords;
-use App\Sharing\Support\ShareRelation;
-use App\Sharing\Support\ShareRelationRead;
-use App\Sharing\Support\ShareRelationSet;
-use App\Sharing\Support\ShareSelectedTarget;
-use App\Sharing\Support\ShareSelection;
-use App\Sharing\Support\ShareTargetRead;
+use App\Enums\ShareAuditType;
+use App\Enums\ShareRelationType;
+use App\Enums\ShareState;
+use App\Support\CommandGrammar;
+use App\Support\GatewayConfiguration;
+use App\Support\GatewayEndpoint;
+use App\Support\GatewayHealth;
+use App\Support\GatewayOperation;
+use App\Support\GatewaySettings;
+use App\Support\GatewaySetupCheck;
+use App\Support\RecordIdentity;
+use App\Support\ShareCandidates;
+use App\Support\ShareContentRead;
+use App\Support\SharedContent;
+use App\Support\ShareLinkedCandidate;
+use App\Support\ShareRecordCard;
+use App\Support\ShareRecordDefinition;
+use App\Support\ShareRecords;
+use App\Support\ShareRelation;
+use App\Support\ShareRelationRead;
+use App\Support\ShareRelationSet;
+use App\Support\ShareSelectedTarget;
+use App\Support\ShareSelection;
+use App\Support\ShareTargetRead;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Tests\Architecture\Support\FormerPaths;
 
 /**
  * The sharing values and enums: states answer which are live, terminal or retryable, relation sets are built from
@@ -113,10 +114,8 @@ final class SharingValuesTest extends TestCase
     public function test_every_sharing_value_fits_the_bus_grammar(string $class): void
     {
         $grammar = new CommandGrammar(
-            static fn (string $name): bool => str_starts_with(
-                $name,
-                'App\\Sharing\\',
-            ) || $name === RecordIdentity::class,
+            static fn (string $name): bool => FormerPaths::classWasIn($name, ['app/Sharing/'])
+                || $name === RecordIdentity::class,
         );
 
         $this->assertNull($grammar->problemWithProperties($class));

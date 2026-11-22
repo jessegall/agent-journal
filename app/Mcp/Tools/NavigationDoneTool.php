@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Agents\Commands\ProveNavigation\ProveNavigationCommand;
-use App\Agents\Enums\NavigationCompletion;
+use App\Commands\ProveNavigation\ProveNavigationCommand;
+use App\Enums\NavigationCompletion;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;

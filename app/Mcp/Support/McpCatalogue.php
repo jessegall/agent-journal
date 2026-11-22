@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Bus\Support\CommandRegistry;
-use App\Hooks\Contracts\JournalToolNames;
+use App\Contracts\JournalToolNames;
+use App\Contracts\ReflectorFactory;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Contracts\SearchContribution;
@@ -19,8 +19,8 @@ use App\Mcp\Exceptions\McpToolNameTaken;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
-use App\Records\Support\RecordIdentity;
-use App\Reflection\Contracts\ReflectorFactory;
+use App\Support\CommandRegistry;
+use App\Support\RecordIdentity;
 use Laravel\Mcp\Server\Attributes\Name;
 
 /**

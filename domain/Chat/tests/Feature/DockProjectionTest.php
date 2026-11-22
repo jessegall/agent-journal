@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Docking\Cards\DockIdentity;
-use App\Docking\Sources\Contracts\DockRegistration;
-use App\Docking\Wire\EncodedCard;
+use App\Enums\ActorType;
+use App\Support\ActorIdentity;
+use App\Support\Cards\DockIdentity;
+use App\Support\Sources\Contracts\DockRegistration;
+use App\Support\Wire\EncodedCard;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;

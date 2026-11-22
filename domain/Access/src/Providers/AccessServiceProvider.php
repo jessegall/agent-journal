@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Access\Providers;
 
-use App\Actors\Contracts\ActiveActorRegistration;
-use App\Actors\Contracts\ActorProviderRegistration;
-use App\Actors\Contracts\AdmittedRecipients;
-use App\Actors\Contracts\AuthorizerProviderRegistration;
-use App\Actors\Contracts\ChatEligibility;
-use App\Actors\Contracts\JournalAdmission;
-use App\Actors\Enums\ActorType;
-use App\Autoload\Support\FolderClasses;
-use App\Reflection\Contracts\TypeReflections;
-use App\Web\Contracts\CurrentUserResolver;
+use App\Contracts\ActiveActorRegistration;
+use App\Contracts\ActorProviderRegistration;
+use App\Contracts\AdmittedRecipients;
+use App\Contracts\AuthorizerProviderRegistration;
+use App\Contracts\ChatEligibility;
+use App\Contracts\CurrentUserResolver;
+use App\Contracts\JournalAdmission;
+use App\Contracts\TypeReflections;
+use App\Enums\ActorType;
+use App\Support\FolderClasses;
 use Domain\Access\Actions\CreateNewUser;
 use Domain\Access\Actions\ResetUserPassword;
 use Domain\Access\Models\Passkey;
@@ -76,7 +76,7 @@ class AccessServiceProvider extends ServiceProvider
         $actors->registerLabels(ActorType::User, UserLabels::class);
         $actors->registerVisibility(ActorType::User, UserVisibility::class);
         $presentActors->register(PresentUserCounter::class);
-        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
+        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console/Commands', Command::class));
         $this->configureActions();
         $this->configureRateLimiting();
     }

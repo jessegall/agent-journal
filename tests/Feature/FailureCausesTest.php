@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\AgentRequests\Support\AgentCallReply;
-use App\AgentRequests\Support\SignedCall;
-use App\Agents\Support\AgentContext;
-use App\Bus\Contracts\RefusalMapper;
-use App\Bus\Enums\RefusalCode;
-use App\Bus\Values\MappedRefusal;
+use App\Contracts\RefusalMapper;
+use App\Enums\RefusalCode;
 use App\Mcp\Data\JsonRpcMessageData;
 use App\Mcp\Support\Frame;
 use App\Mcp\Support\LoggedMcpCall;
 use App\Mcp\Support\RelayFrames;
 use App\Mcp\Support\ResultBudget;
+use App\Support\AgentCallReply;
+use App\Support\AgentContext;
+use App\Support\SignedCall;
+use App\Values\MappedRefusal;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Laravel\Mcp\Response;

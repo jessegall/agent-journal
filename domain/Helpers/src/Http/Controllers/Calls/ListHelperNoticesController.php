@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Helpers\Http\Controllers\Calls;
 
 use Domain\Helpers\Calls\ListHelperNoticesCall;
-use Domain\Helpers\Http\Data\HelperNoticeListData;
-use Domain\Helpers\Readers\HelperNotices;
+use Domain\Helpers\Data\HelperNoticeListData;
+use Domain\Helpers\Support\Readers\HelperNotices;
 
 /**
  * Answers the newest notices the caller was left about its helpers' jobs.

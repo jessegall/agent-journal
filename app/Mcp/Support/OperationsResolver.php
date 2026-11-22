@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Bus\Contracts\OperationResolver;
-use App\Bus\Exceptions\OperationUnavailable;
-use App\Bus\Support\Operation;
+use App\Contracts\OperationResolver;
+use App\Exceptions\OperationUnavailable;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
+use App\Support\Operation;
 
 /**
  * The caller's write under a request key as operations_read and its resource give it: where it stands, its refusal or

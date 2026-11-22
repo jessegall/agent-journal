@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Shelf;
 
-use App\Ui\Contracts\UserInterfaceUpdater;
+use App\Contracts\UserInterfaceUpdater;
 
 /**
  * A fact of a module Web knows nothing about, which changes what users see.

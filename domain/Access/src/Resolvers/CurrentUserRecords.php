@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Access\Resolvers;
 
-use App\Actors\Support\CurrentUser;
-use App\Web\Contracts\CurrentUserResolver;
+use App\Contracts\CurrentUserResolver;
+use App\Support\CurrentUser;
 use Domain\Access\Models\User;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Auth\Guard;

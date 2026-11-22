@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
+use App\Enums\ActorType;
+use App\Support\ActorIdentity;
 
 /**
  * Agent 7, the builder the tests assign work to, under a request of user 1.

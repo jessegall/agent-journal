@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Responses\Sharing;
 
 use App\Contracts\CommandRefusal;
-use App\Sharing\Exceptions\ShareReadLimited;
-use App\Sharing\Support\SharedPage;
-use App\Text\Support\MarkdownText;
+use App\Exceptions\ShareReadLimited;
+use App\Support\MarkdownText;
+use App\Support\SharedPage;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;

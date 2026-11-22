@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers;
 
-use App\Agents\Contracts\AgentDirectory;
-use App\Agents\Support\AgentOption;
-use App\Ui\Contracts\SectionResolver;
-use App\Ui\Declarations\SlotContext;
+use App\Contracts\AgentDirectory;
+use App\Contracts\SectionResolver;
+use App\Declarations\SlotContext;
+use App\Support\AgentOption;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Spatie\LaravelData\Optional;

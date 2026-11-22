@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use App\Bus\Support\OuterTransactionOwner;
-use App\Bus\Support\OutsideCommandAllowance;
+use App\Support\OuterTransactionOwner;
+use App\Support\OutsideCommandAllowance;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Relations\Relation;

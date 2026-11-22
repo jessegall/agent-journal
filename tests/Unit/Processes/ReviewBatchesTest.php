@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Processes\Enums\ReviewLimit;
-use App\Processes\Values\CommandShape;
-use App\Processes\Values\ReviewBatches;
+use App\Enums\ReviewLimit;
+use App\Values\CommandShape;
+use App\Values\ReviewBatches;
 use PHPUnit\Framework\TestCase;
 
 /**

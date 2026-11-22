@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Models\Agent;
-use App\Bus\Exceptions\CommandInputInvalid;
-use App\Communication\Commands\SendMessage\SendMessageCommand;
-use App\Communication\Enums\MessageState;
-use App\Communication\Events\MessageSent;
-use App\Communication\Exceptions\InboxUnavailable;
-use App\Communication\Models\Message;
+use App\Commands\SendMessage\SendMessageCommand;
+use App\Enums\MessageState;
+use App\Events\MessageSent;
+use App\Exceptions\CommandInputInvalid;
+use App\Exceptions\InboxUnavailable;
+use App\Models\Agent;
+use App\Models\Message;
+use App\Support\ActorIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Event;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
+use App\Contracts\Files;
 use App\CoreApi;
-use App\Files\Contracts\Files;
-use App\Files\Enums\Place;
-use App\Files\Exceptions\PlaceUnavailable;
-use App\Files\Support\CodeFiles;
-use App\Files\Support\LocalFiles;
-use App\Files\Values\Depth;
-use App\Files\Values\FilePath;
+use App\Enums\Place;
+use App\Exceptions\PlaceUnavailable;
+use App\Support\CodeFiles;
+use App\Support\LocalFiles;
+use App\Values\Depth;
+use App\Values\FilePath;
 use Tests\Support\Files\UsesTemporaryPlaces;
 use Tests\TestCase;
 
@@ -33,7 +33,7 @@ final class FilesServiceTest extends TestCase
 
     public function test_code_reads_through_files_are_the_process_code_reads(): void
     {
-        $pattern = FilePath::in(Place::Project, 'app/Files/Contracts/*.php');
+        $pattern = FilePath::in(Place::Project, 'app/Contracts/*.php');
 
         $this->assertSame(CodeFiles::ofProcess()->folder($pattern), $this->app->make(Files::class)->codeFolder($pattern));
     }

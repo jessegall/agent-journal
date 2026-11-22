@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Files\Enums\Place;
-use App\Files\Exceptions\FilePathInvalid;
-use App\Files\Values\FilePath;
+use App\Enums\Place;
+use App\Exceptions\FilePathInvalid;
+use App\Values\FilePath;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

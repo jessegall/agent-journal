@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Calls;
 
-use App\AgentRequests\Attributes\Endpoint;
-use App\AgentRequests\Contracts\JournalCall;
-use App\AgentRequests\Enums\CallEffect;
+use App\Attributes\Endpoint;
+use App\Contracts\JournalCall;
+use App\Enums\CallEffect;
 use Domain\Plans\Calls\Concerns\NamesPlanPhase;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Min;

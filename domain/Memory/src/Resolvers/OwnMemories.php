@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Resolvers;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorIdentity;
-use Domain\Memory\Api\MemoryCard;
-use Domain\Memory\Api\MemoryPage;
+use App\Contracts\CurrentActor;
+use App\Support\ActorIdentity;
 use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
+use Domain\Memory\Values\MemoryCard;
+use Domain\Memory\Values\MemoryPage;
 
 /**
  * Reads one page of the memories of this request's actor, heaviest first.

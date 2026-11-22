@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Calls\AdmitLineCall;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Models\CommandRequest;
-use App\Processes\Models\ProcessRun;
-use App\Processes\Values\AdmissionRefusal;
+use App\Calls\Processes\AdmitLineCall;
+use App\Enums\ShellDialect;
+use App\Models\CommandRequest;
+use App\Models\ProcessRun;
+use App\Values\AdmissionRefusal;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\Processes\RunsDirectLines;
 use Tests\Support\RefreshHookDatabase;

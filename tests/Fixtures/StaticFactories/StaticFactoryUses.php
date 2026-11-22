@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\StaticFactories;
 
-use App\Reflection\Exceptions\ClassMissing;
-use App\Reflection\Support\Reflector;
+use App\Exceptions\ClassMissing;
+use App\Support\Reflector;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Container\Container;
 

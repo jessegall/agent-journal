@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Domains\Support\DomainRegistry;
+use App\Support\DomainRegistry;
 use Tests\Architecture\Support\ModelTables;
 use Tests\Architecture\Support\ParsedFile;
 use Tests\Architecture\Support\TableChecker;

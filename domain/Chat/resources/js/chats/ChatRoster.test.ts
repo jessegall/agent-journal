@@ -5,11 +5,9 @@ import type { ConversationData } from '@generated/types/chat';
 
 vi.mock('@inertiajs/vue3', () => ({
     router: { post: vi.fn() },
-    useHttp: () => ({ get: vi.fn() }),
 }));
 vi.mock('@generated/routes/chat', () => ({
     addMember: () => ({ url: '/chat/chats/members' }),
-    candidates: () => ({ url: '/chat/chats/candidates' }),
     close: () => ({ url: '/chat/chats/close' }),
     leave: () => ({ url: '/chat/chats/leave' }),
     removeMember: () => ({ url: '/chat/chats/members/remove' }),

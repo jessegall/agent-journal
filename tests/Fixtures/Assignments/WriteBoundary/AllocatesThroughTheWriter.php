@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Assignments\WriteBoundary;
 
-use App\Assignments\Models\AssignmentRecord;
+use App\Models\AssignmentRecord;
 
 /**
  * A read of an assignment's holder outside the writers, which the check allows.

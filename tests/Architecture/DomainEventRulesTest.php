@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Contracts\PipelineRunner;
 use App\CoreApi;
-use App\Domains\Exceptions\InvalidListener;
-use App\Domains\Registration\ListenerPolicy;
-use App\Domains\Support\DomainRegistry;
-use App\Domains\Support\ListenerOwnership;
-use App\Domains\Support\StateListenerDeclarations;
-use App\Hooks\Declarations\StateMethods;
-use App\Hooks\Stack\StateTypes;
-use App\Pipelines\Contracts\PipelineRunner;
-use App\Reflection\Support\CatalogueReflectorFactory;
+use App\Declarations\StateMethods;
+use App\Exceptions\InvalidListener;
+use App\Support\CatalogueReflectorFactory;
+use App\Support\DomainRegistry;
+use App\Support\ListenerOwnership;
+use App\Support\Registration\ListenerPolicy;
+use App\Support\Stack\StateTypes;
+use App\Support\StateListenerDeclarations;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\EventCallScan;
@@ -83,7 +83,7 @@ final class DomainEventRulesTest extends TestCase
     public function test_state_event_permissions_and_manual_registration_use_the_listener_policy(): void
     {
         $registry = DomainRegistry::from([TasksDomain::class, PlansDomain::class]);
-        $ownership = new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders(), new CatalogueReflectorFactory());
+        $ownership = new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders(), new CatalogueReflectorFactory(), app_path());
         $states = new StateListenerDeclarations($ownership, new CatalogueReflectorFactory());
         $policy = new ListenerPolicy($this->app->make(PipelineRunner::class), $ownership);
         $declaration = new StateMethods()->forState(PlanState::class)[self::TASK_CLOSED];
@@ -108,7 +108,7 @@ final class DomainEventRulesTest extends TestCase
     {
         $registry = $this->app->make(DomainRegistry::class);
         $states = new StateListenerDeclarations(
-            new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders(), new CatalogueReflectorFactory()),
+            new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders(), new CatalogueReflectorFactory(), app_path()),
             new CatalogueReflectorFactory(),
         );
         $methods = new StateMethods();

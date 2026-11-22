@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\EventCalls\Plans;
 
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
+use App\Support\Domain;
+use App\Support\Exports;
 use Tests\Fixtures\Boundary\EventCalls\Tasks\TasksDomain;
 
 final class PlansDomain extends Domain

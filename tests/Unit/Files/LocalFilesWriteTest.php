@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Files\Contracts\Files;
-use App\Files\Enums\Permissions;
-use App\Files\Enums\Place;
-use App\Files\Exceptions\FileExists;
-use App\Files\Exceptions\FileUnwritable;
-use App\Files\Exceptions\FolderClosed;
-use App\Files\Exceptions\LinkLeavesPlace;
-use App\Files\Values\FilePath;
+use App\Contracts\Files;
+use App\Enums\Permissions;
+use App\Enums\Place;
+use App\Exceptions\FileExists;
+use App\Exceptions\FileUnwritable;
+use App\Exceptions\FolderClosed;
+use App\Exceptions\LinkLeavesPlace;
+use App\Values\FilePath;
 use Carbon\CarbonImmutable;
 use Tests\Support\Files\UsesTemporaryPlaces;
 use Tests\TestCase;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Comments\Models\Comment;
-use App\Comments\Support\HasComments;
-use App\Exports\Support\Exports;
-use App\Links\Support\LinkAccess;
-use App\Reads\Support\ReadBuilder;
-use App\Reflection\Support\ReflectedProperty;
-use App\Reflection\Support\Reflector;
+use App\Concerns\HasComments;
+use App\Models\Comment;
+use App\Support\Exports;
+use App\Support\LinkAccess;
+use App\Support\ReadBuilder;
+use App\Support\ReflectedProperty;
+use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use PhpParser\Node;
 use PhpParser\Node\Name;
@@ -397,7 +397,8 @@ final readonly class PublicContracts
             fn (PublicOwner $candidate) => $candidate->isCore() && $candidate->exportsName($name),
         );
 
-        if ($owner->exportsName($name) || $coreExports) {
+        // The domain foundation, the classes plan 62 moved out of app/Domains, is public to every package as before.
+        if ($owner->exportsName($name) || $coreExports || FormerPaths::classWasIn($name, ['app/Domains/'])) {
             return null;
         }
 

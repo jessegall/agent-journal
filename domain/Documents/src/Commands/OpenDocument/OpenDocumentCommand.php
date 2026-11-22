@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\OpenDocument;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Support\Command;
-use App\Operations\Enums\AccessType;
-use Domain\Documents\Api\DraftReference;
+use App\Attributes\Authorize;
+use App\Enums\AccessType;
+use App\Support\Command;
 use Domain\Documents\Policies\DocumentPolicy;
+use Domain\Documents\Values\DraftReference;
 
 /**
  * Opens a draft of a document for whoever runs the command; opening it again in the same session returns the

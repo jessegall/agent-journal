@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Http\Controllers\Calls;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use Domain\Memory\Calls\MemoryNamed;
 use Domain\Memory\Calls\SaveMemoryCall;
 use Domain\Memory\Commands\SaveMemory\SaveMemoryCommand;

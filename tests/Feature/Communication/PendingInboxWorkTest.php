@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
-use App\Communication\Support\PendingInboxWork;
+use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Support\PendingInboxWork;
 use Tests\Support\MessagingTestCase;
 
 /**

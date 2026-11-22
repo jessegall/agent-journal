@@ -1,0 +1,2497 @@
+{
+  "baseline_sha": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+  "pairs": [
+    {
+      "owner": "Access",
+      "stem": "DisableUser",
+      "command": "Domain\\Access\\Commands\\DisableUser\\DisableUserCommand",
+      "handler": "Domain\\Access\\Commands\\DisableUser\\DisableUserHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Access",
+      "stem": "GrantEnvironmentAccess",
+      "command": "Domain\\Access\\Commands\\GrantEnvironmentAccess\\GrantEnvironmentAccessCommand",
+      "handler": "Domain\\Access\\Commands\\GrantEnvironmentAccess\\GrantEnvironmentAccessHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Access",
+      "stem": "RevokeEnvironmentAccess",
+      "command": "Domain\\Access\\Commands\\RevokeEnvironmentAccess\\RevokeEnvironmentAccessCommand",
+      "handler": "Domain\\Access\\Commands\\RevokeEnvironmentAccess\\RevokeEnvironmentAccessHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Agents",
+      "stem": "AbandonNavigation",
+      "command": "App\\Agents\\Commands\\AbandonNavigation\\AbandonNavigationCommand",
+      "handler": "App\\Agents\\Commands\\AbandonNavigation\\AbandonNavigationHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "AnswerNavigation",
+      "command": "App\\Agents\\Commands\\AnswerNavigation\\AnswerNavigationCommand",
+      "handler": "App\\Agents\\Commands\\AnswerNavigation\\AnswerNavigationHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "CancelAccountUses",
+      "command": "App\\Agents\\Commands\\CancelAccountUses\\CancelAccountUsesCommand",
+      "handler": "App\\Agents\\Commands\\CancelAccountUses\\CancelAccountUsesHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "CancelDriverRequest",
+      "command": "App\\Agents\\Commands\\CancelDriverRequest\\CancelDriverRequestCommand",
+      "handler": "App\\Agents\\Commands\\CancelDriverRequest\\CancelDriverRequestHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "CancelKeyScript",
+      "command": "App\\Agents\\Commands\\CancelKeyScript\\CancelKeyScriptCommand",
+      "handler": "App\\Agents\\Commands\\CancelKeyScript\\CancelKeyScriptHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "CancelLaunch",
+      "command": "App\\Agents\\Commands\\CancelLaunch\\CancelLaunchCommand",
+      "handler": "App\\Agents\\Commands\\CancelLaunch\\CancelLaunchHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "CancelPrivateEntry",
+      "command": "App\\Agents\\Commands\\CancelPrivateEntry\\CancelPrivateEntryCommand",
+      "handler": "App\\Agents\\Commands\\CancelPrivateEntry\\CancelPrivateEntryHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "CancelTerminalTake",
+      "command": "App\\Agents\\Commands\\CancelTerminalTake\\CancelTerminalTakeCommand",
+      "handler": "App\\Agents\\Commands\\CancelTerminalTake\\CancelTerminalTakeHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ChangeAgentEffort",
+      "command": "App\\Agents\\Commands\\ChangeAgentEffort\\ChangeAgentEffortCommand",
+      "handler": "App\\Agents\\Commands\\ChangeAgentEffort\\ChangeAgentEffortHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ChangeAgentModel",
+      "command": "App\\Agents\\Commands\\ChangeAgentModel\\ChangeAgentModelCommand",
+      "handler": "App\\Agents\\Commands\\ChangeAgentModel\\ChangeAgentModelHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "CheckTerminalScreen",
+      "command": "App\\Agents\\Commands\\CheckTerminalScreen\\CheckTerminalScreenCommand",
+      "handler": "App\\Agents\\Commands\\CheckTerminalScreen\\CheckTerminalScreenHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ChooseTerminalDraft",
+      "command": "App\\Agents\\Commands\\ChooseTerminalDraft\\ChooseTerminalDraftCommand",
+      "handler": "App\\Agents\\Commands\\ChooseTerminalDraft\\ChooseTerminalDraftHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ClaimDriverRequests",
+      "command": "App\\Agents\\Commands\\ClaimDriverRequests\\ClaimDriverRequestsCommand",
+      "handler": "App\\Agents\\Commands\\ClaimDriverRequests\\ClaimDriverRequestsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ClaimStart",
+      "command": "App\\Agents\\Commands\\ClaimStart\\ClaimStartCommand",
+      "handler": "App\\Agents\\Commands\\ClaimStart\\ClaimStartHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ClaimStartGrant",
+      "command": "App\\Agents\\Commands\\ClaimStartGrant\\ClaimStartGrantCommand",
+      "handler": "App\\Agents\\Commands\\ClaimStartGrant\\ClaimStartGrantHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "CloseTerminalView",
+      "command": "App\\Agents\\Commands\\CloseTerminalView\\CloseTerminalViewCommand",
+      "handler": "App\\Agents\\Commands\\CloseTerminalView\\CloseTerminalViewHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ContinueStart",
+      "command": "App\\Agents\\Commands\\ContinueStart\\ContinueStartCommand",
+      "handler": "App\\Agents\\Commands\\ContinueStart\\ContinueStartHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "CreateAgent",
+      "command": "App\\Agents\\Commands\\CreateAgent\\CreateAgentCommand",
+      "handler": "App\\Agents\\Commands\\CreateAgent\\CreateAgentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "DeliverAgent",
+      "command": "App\\Agents\\Commands\\DeliverAgent\\DeliverAgentCommand",
+      "handler": "App\\Agents\\Commands\\DeliverAgent\\DeliverAgentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "DismissLaunchOutcome",
+      "command": "App\\Agents\\Commands\\DismissLaunchOutcome\\DismissLaunchOutcomeCommand",
+      "handler": "App\\Agents\\Commands\\DismissLaunchOutcome\\DismissLaunchOutcomeHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "EnrollHost",
+      "command": "App\\Agents\\Commands\\EnrollHost\\EnrollHostCommand",
+      "handler": "App\\Agents\\Commands\\EnrollHost\\EnrollHostHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "FailDriverSwitchLaunch",
+      "command": "App\\Agents\\Commands\\FailDriverSwitchLaunch\\FailDriverSwitchLaunchCommand",
+      "handler": "App\\Agents\\Commands\\FailDriverSwitchLaunch\\FailDriverSwitchLaunchHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "FenceProfileRevision",
+      "command": "App\\Agents\\Commands\\FenceProfileRevision\\FenceProfileRevisionCommand",
+      "handler": "App\\Agents\\Commands\\FenceProfileRevision\\FenceProfileRevisionHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "HoldAccountUses",
+      "command": "App\\Agents\\Commands\\HoldAccountUses\\HoldAccountUsesCommand",
+      "handler": "App\\Agents\\Commands\\HoldAccountUses\\HoldAccountUsesHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ImportHelperCommits",
+      "command": "App\\Agents\\Commands\\ImportHelperCommits\\ImportHelperCommitsCommand",
+      "handler": "App\\Agents\\Commands\\ImportHelperCommits\\ImportHelperCommitsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "InspectMergeAttempts",
+      "command": "App\\Agents\\Commands\\InspectMergeAttempts\\InspectMergeAttemptsCommand",
+      "handler": "App\\Agents\\Commands\\InspectMergeAttempts\\InspectMergeAttemptsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "InterruptAgent",
+      "command": "App\\Agents\\Commands\\InterruptAgent\\InterruptAgentCommand",
+      "handler": "App\\Agents\\Commands\\InterruptAgent\\InterruptAgentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "InterruptNavigation",
+      "command": "App\\Agents\\Commands\\InterruptNavigation\\InterruptNavigationCommand",
+      "handler": "App\\Agents\\Commands\\InterruptNavigation\\InterruptNavigationHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "MarkMenuEntryStale",
+      "command": "App\\Agents\\Commands\\MarkMenuEntryStale\\MarkMenuEntryStaleCommand",
+      "handler": "App\\Agents\\Commands\\MarkMenuEntryStale\\MarkMenuEntryStaleHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "MergeReviewedWork",
+      "command": "App\\Agents\\Commands\\MergeReviewedWork\\MergeReviewedWorkCommand",
+      "handler": "App\\Agents\\Commands\\MergeReviewedWork\\MergeReviewedWorkHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "OpenAgentRuntime",
+      "command": "App\\Agents\\Commands\\OpenAgentRuntime\\OpenAgentRuntimeCommand",
+      "handler": "App\\Agents\\Commands\\OpenAgentRuntime\\OpenAgentRuntimeHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "OpenBindingMainRuntime",
+      "command": "App\\Agents\\Commands\\OpenBindingMainRuntime\\OpenBindingMainRuntimeCommand",
+      "handler": "App\\Agents\\Commands\\OpenBindingMainRuntime\\OpenBindingMainRuntimeHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "OpenHostMainRuntime",
+      "command": "App\\Agents\\Commands\\OpenHostMainRuntime\\OpenHostMainRuntimeCommand",
+      "handler": "App\\Agents\\Commands\\OpenHostMainRuntime\\OpenHostMainRuntimeHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "OpenPrivateEntry",
+      "command": "App\\Agents\\Commands\\OpenPrivateEntry\\OpenPrivateEntryCommand",
+      "handler": "App\\Agents\\Commands\\OpenPrivateEntry\\OpenPrivateEntryHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "OpenTerminalView",
+      "command": "App\\Agents\\Commands\\OpenTerminalView\\OpenTerminalViewCommand",
+      "handler": "App\\Agents\\Commands\\OpenTerminalView\\OpenTerminalViewHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ProveNavigation",
+      "command": "App\\Agents\\Commands\\ProveNavigation\\ProveNavigationCommand",
+      "handler": "App\\Agents\\Commands\\ProveNavigation\\ProveNavigationHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "RaiseNavigation",
+      "command": "App\\Agents\\Commands\\RaiseNavigation\\RaiseNavigationCommand",
+      "handler": "App\\Agents\\Commands\\RaiseNavigation\\RaiseNavigationHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReassignAgentRuntime",
+      "command": "App\\Agents\\Commands\\ReassignAgentRuntime\\ReassignAgentRuntimeCommand",
+      "handler": "App\\Agents\\Commands\\ReassignAgentRuntime\\ReassignAgentRuntimeHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "RecheckDriverSwitch",
+      "command": "App\\Agents\\Commands\\RecheckDriverSwitch\\RecheckDriverSwitchCommand",
+      "handler": "App\\Agents\\Commands\\RecheckDriverSwitch\\RecheckDriverSwitchHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReconcileStarts",
+      "command": "App\\Agents\\Commands\\ReconcileStarts\\ReconcileStartsCommand",
+      "handler": "App\\Agents\\Commands\\ReconcileStarts\\ReconcileStartsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "RecordHeartbeat",
+      "command": "App\\Agents\\Commands\\RecordHeartbeat\\RecordHeartbeatCommand",
+      "handler": "App\\Agents\\Commands\\RecordHeartbeat\\RecordHeartbeatHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "RecordHostDescriptors",
+      "command": "App\\Agents\\Commands\\RecordHostDescriptors\\RecordHostDescriptorsCommand",
+      "handler": "App\\Agents\\Commands\\RecordHostDescriptors\\RecordHostDescriptorsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "RecordHostProtection",
+      "command": "App\\Agents\\Commands\\RecordHostProtection\\RecordHostProtectionCommand",
+      "handler": "App\\Agents\\Commands\\RecordHostProtection\\RecordHostProtectionHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "RecordRuntime",
+      "command": "App\\Agents\\Commands\\RecordRuntime\\RecordRuntimeCommand",
+      "handler": "App\\Agents\\Commands\\RecordRuntime\\RecordRuntimeHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReleaseAgentHold",
+      "command": "App\\Agents\\Commands\\ReleaseAgentHold\\ReleaseAgentHoldCommand",
+      "handler": "App\\Agents\\Commands\\ReleaseAgentHold\\ReleaseAgentHoldHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReleaseTerminalControl",
+      "command": "App\\Agents\\Commands\\ReleaseTerminalControl\\ReleaseTerminalControlCommand",
+      "handler": "App\\Agents\\Commands\\ReleaseTerminalControl\\ReleaseTerminalControlHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "RenewTerminalControl",
+      "command": "App\\Agents\\Commands\\RenewTerminalControl\\RenewTerminalControlCommand",
+      "handler": "App\\Agents\\Commands\\RenewTerminalControl\\RenewTerminalControlHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "RenewTerminalView",
+      "command": "App\\Agents\\Commands\\RenewTerminalView\\RenewTerminalViewCommand",
+      "handler": "App\\Agents\\Commands\\RenewTerminalView\\RenewTerminalViewHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "RepairDriverSettings",
+      "command": "App\\Agents\\Commands\\RepairDriverSettings\\RepairDriverSettingsCommand",
+      "handler": "App\\Agents\\Commands\\RepairDriverSettings\\RepairDriverSettingsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReportCleanup",
+      "command": "App\\Agents\\Commands\\ReportCleanup\\ReportCleanupCommand",
+      "handler": "App\\Agents\\Commands\\ReportCleanup\\ReportCleanupHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReportDriverTurn",
+      "command": "App\\Agents\\Commands\\ReportDriverTurn\\ReportDriverTurnCommand",
+      "handler": "App\\Agents\\Commands\\ReportDriverTurn\\ReportDriverTurnHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReportEntryReplayed",
+      "command": "App\\Agents\\Commands\\ReportEntryReplayed\\ReportEntryReplayedCommand",
+      "handler": "App\\Agents\\Commands\\ReportEntryReplayed\\ReportEntryReplayedHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReportFailure",
+      "command": "App\\Agents\\Commands\\ReportFailure\\ReportFailureCommand",
+      "handler": "App\\Agents\\Commands\\ReportFailure\\ReportFailureHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReportRequestProgress",
+      "command": "App\\Agents\\Commands\\ReportRequestProgress\\ReportRequestProgressCommand",
+      "handler": "App\\Agents\\Commands\\ReportRequestProgress\\ReportRequestProgressHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReportRunning",
+      "command": "App\\Agents\\Commands\\ReportRunning\\ReportRunningCommand",
+      "handler": "App\\Agents\\Commands\\ReportRunning\\ReportRunningHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReportRuntimeActivity",
+      "command": "App\\Agents\\Commands\\ReportRuntimeActivity\\ReportRuntimeActivityCommand",
+      "handler": "App\\Agents\\Commands\\ReportRuntimeActivity\\ReportRuntimeActivityHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReportRuntimeExit",
+      "command": "App\\Agents\\Commands\\ReportRuntimeExit\\ReportRuntimeExitCommand",
+      "handler": "App\\Agents\\Commands\\ReportRuntimeExit\\ReportRuntimeExitHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReportRuntimeHeartbeat",
+      "command": "App\\Agents\\Commands\\ReportRuntimeHeartbeat\\ReportRuntimeHeartbeatCommand",
+      "handler": "App\\Agents\\Commands\\ReportRuntimeHeartbeat\\ReportRuntimeHeartbeatHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReportRuntimeScreen",
+      "command": "App\\Agents\\Commands\\ReportRuntimeScreen\\ReportRuntimeScreenCommand",
+      "handler": "App\\Agents\\Commands\\ReportRuntimeScreen\\ReportRuntimeScreenHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReportStopped",
+      "command": "App\\Agents\\Commands\\ReportStopped\\ReportStoppedCommand",
+      "handler": "App\\Agents\\Commands\\ReportStopped\\ReportStoppedHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ReportWorkspaceRead",
+      "command": "App\\Agents\\Commands\\ReportWorkspaceRead\\ReportWorkspaceReadCommand",
+      "handler": "App\\Agents\\Commands\\ReportWorkspaceRead\\ReportWorkspaceReadHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ResolveDriverDelivery",
+      "command": "App\\Agents\\Commands\\ResolveDriverDelivery\\ResolveDriverDeliveryCommand",
+      "handler": "App\\Agents\\Commands\\ResolveDriverDelivery\\ResolveDriverDeliveryHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "ResumeKeyScript",
+      "command": "App\\Agents\\Commands\\ResumeKeyScript\\ResumeKeyScriptCommand",
+      "handler": "App\\Agents\\Commands\\ResumeKeyScript\\ResumeKeyScriptHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "RetireAgent",
+      "command": "App\\Agents\\Commands\\RetireAgent\\RetireAgentCommand",
+      "handler": "App\\Agents\\Commands\\RetireAgent\\RetireAgentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "RetireMenuEntry",
+      "command": "App\\Agents\\Commands\\RetireMenuEntry\\RetireMenuEntryCommand",
+      "handler": "App\\Agents\\Commands\\RetireMenuEntry\\RetireMenuEntryHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "RetryDriverRequest",
+      "command": "App\\Agents\\Commands\\RetryDriverRequest\\RetryDriverRequestCommand",
+      "handler": "App\\Agents\\Commands\\RetryDriverRequest\\RetryDriverRequestHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "RetryDriverSwitch",
+      "command": "App\\Agents\\Commands\\RetryDriverSwitch\\RetryDriverSwitchCommand",
+      "handler": "App\\Agents\\Commands\\RetryDriverSwitch\\RetryDriverSwitchHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "RunKeyScript",
+      "command": "App\\Agents\\Commands\\RunKeyScript\\RunKeyScriptCommand",
+      "handler": "App\\Agents\\Commands\\RunKeyScript\\RunKeyScriptHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "SendDriverRequestAgain",
+      "command": "App\\Agents\\Commands\\SendDriverRequestAgain\\SendDriverRequestAgainCommand",
+      "handler": "App\\Agents\\Commands\\SendDriverRequestAgain\\SendDriverRequestAgainHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "SendTerminalInput",
+      "command": "App\\Agents\\Commands\\SendTerminalInput\\SendTerminalInputCommand",
+      "handler": "App\\Agents\\Commands\\SendTerminalInput\\SendTerminalInputHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "SettleAccountUses",
+      "command": "App\\Agents\\Commands\\SettleAccountUses\\SettleAccountUsesCommand",
+      "handler": "App\\Agents\\Commands\\SettleAccountUses\\SettleAccountUsesHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "StartAgent",
+      "command": "App\\Agents\\Commands\\StartAgent\\StartAgentCommand",
+      "handler": "App\\Agents\\Commands\\StartAgent\\StartAgentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "StartOwnedAgent",
+      "command": "App\\Agents\\Commands\\StartOwnedAgent\\StartOwnedAgentCommand",
+      "handler": "App\\Agents\\Commands\\StartOwnedAgent\\StartOwnedAgentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "StopAgent",
+      "command": "App\\Agents\\Commands\\StopAgent\\StopAgentCommand",
+      "handler": "App\\Agents\\Commands\\StopAgent\\StopAgentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "SubmitPrivateInput",
+      "command": "App\\Agents\\Commands\\SubmitPrivateInput\\SubmitPrivateInputCommand",
+      "handler": "App\\Agents\\Commands\\SubmitPrivateInput\\SubmitPrivateInputHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "TakeTerminalControl",
+      "command": "App\\Agents\\Commands\\TakeTerminalControl\\TakeTerminalControlCommand",
+      "handler": "App\\Agents\\Commands\\TakeTerminalControl\\TakeTerminalControlHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Agents",
+      "stem": "WakeAgent",
+      "command": "App\\Agents\\Commands\\WakeAgent\\WakeAgentCommand",
+      "handler": "App\\Agents\\Commands\\WakeAgent\\WakeAgentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Assignments",
+      "stem": "AssignRecord",
+      "command": "App\\Assignments\\Commands\\AssignRecord\\AssignRecordCommand",
+      "handler": "App\\Assignments\\Commands\\AssignRecord\\AssignRecordHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Assignments",
+      "stem": "AssignRecordForMaintenance",
+      "command": "App\\Assignments\\Commands\\AssignRecordForMaintenance\\AssignRecordForMaintenanceCommand",
+      "handler": "App\\Assignments\\Commands\\AssignRecordForMaintenance\\AssignRecordForMaintenanceHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Assignments",
+      "stem": "ClaimAutoAssignment",
+      "command": "App\\Assignments\\Commands\\ClaimAutoAssignment\\ClaimAutoAssignmentCommand",
+      "handler": "App\\Assignments\\Commands\\ClaimAutoAssignment\\ClaimAutoAssignmentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Assignments",
+      "stem": "ConfigureAutoAssignment",
+      "command": "App\\Assignments\\Commands\\ConfigureAutoAssignment\\ConfigureAutoAssignmentCommand",
+      "handler": "App\\Assignments\\Commands\\ConfigureAutoAssignment\\ConfigureAutoAssignmentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Assignments",
+      "stem": "DisableAutoAssignment",
+      "command": "App\\Assignments\\Commands\\DisableAutoAssignment\\DisableAutoAssignmentCommand",
+      "handler": "App\\Assignments\\Commands\\DisableAutoAssignment\\DisableAutoAssignmentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Assignments",
+      "stem": "EnableAutoAssignment",
+      "command": "App\\Assignments\\Commands\\EnableAutoAssignment\\EnableAutoAssignmentCommand",
+      "handler": "App\\Assignments\\Commands\\EnableAutoAssignment\\EnableAutoAssignmentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Assignments",
+      "stem": "ReassignRecord",
+      "command": "App\\Assignments\\Commands\\ReassignRecord\\ReassignRecordCommand",
+      "handler": "App\\Assignments\\Commands\\ReassignRecord\\ReassignRecordHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Assignments",
+      "stem": "UnassignRecord",
+      "command": "App\\Assignments\\Commands\\UnassignRecord\\UnassignRecordCommand",
+      "handler": "App\\Assignments\\Commands\\UnassignRecord\\UnassignRecordHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Chat",
+      "stem": "AddChatParticipant",
+      "command": "Domain\\Chat\\Commands\\AddChatParticipant\\AddChatParticipantCommand",
+      "handler": "Domain\\Chat\\Commands\\AddChatParticipant\\AddChatParticipantHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Chat",
+      "stem": "ClearDeletedSource",
+      "command": "Domain\\Chat\\Commands\\ClearDeletedSource\\ClearDeletedSourceCommand",
+      "handler": "Domain\\Chat\\Commands\\ClearDeletedSource\\ClearDeletedSourceHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Chat",
+      "stem": "CloseChat",
+      "command": "Domain\\Chat\\Commands\\CloseChat\\CloseChatCommand",
+      "handler": "Domain\\Chat\\Commands\\CloseChat\\CloseChatHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Chat",
+      "stem": "CreateGroupChat",
+      "command": "Domain\\Chat\\Commands\\CreateGroupChat\\CreateGroupChatCommand",
+      "handler": "Domain\\Chat\\Commands\\CreateGroupChat\\CreateGroupChatHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Chat",
+      "stem": "DockSource",
+      "command": "Domain\\Chat\\Commands\\DockSource\\DockSourceCommand",
+      "handler": "Domain\\Chat\\Commands\\DockSource\\DockSourceHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Chat",
+      "stem": "LeaveChat",
+      "command": "Domain\\Chat\\Commands\\LeaveChat\\LeaveChatCommand",
+      "handler": "Domain\\Chat\\Commands\\LeaveChat\\LeaveChatHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Chat",
+      "stem": "OpenPairChat",
+      "command": "Domain\\Chat\\Commands\\OpenPairChat\\OpenPairChatCommand",
+      "handler": "Domain\\Chat\\Commands\\OpenPairChat\\OpenPairChatHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Chat",
+      "stem": "PinMessage",
+      "command": "Domain\\Chat\\Commands\\PinMessage\\PinMessageCommand",
+      "handler": "Domain\\Chat\\Commands\\PinMessage\\PinMessageHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Chat",
+      "stem": "RemoveChatParticipant",
+      "command": "Domain\\Chat\\Commands\\RemoveChatParticipant\\RemoveChatParticipantCommand",
+      "handler": "Domain\\Chat\\Commands\\RemoveChatParticipant\\RemoveChatParticipantHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Chat",
+      "stem": "TransferChatOwnership",
+      "command": "Domain\\Chat\\Commands\\TransferChatOwnership\\TransferChatOwnershipCommand",
+      "handler": "Domain\\Chat\\Commands\\TransferChatOwnership\\TransferChatOwnershipHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Chat",
+      "stem": "UndockSource",
+      "command": "Domain\\Chat\\Commands\\UndockSource\\UndockSourceCommand",
+      "handler": "Domain\\Chat\\Commands\\UndockSource\\UndockSourceHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Chat",
+      "stem": "UnpinMessage",
+      "command": "Domain\\Chat\\Commands\\UnpinMessage\\UnpinMessageCommand",
+      "handler": "Domain\\Chat\\Commands\\UnpinMessage\\UnpinMessageHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Comments",
+      "stem": "PostComment",
+      "command": "App\\Comments\\Commands\\PostComment\\PostCommentCommand",
+      "handler": "App\\Comments\\Commands\\PostComment\\PostCommentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Comments",
+      "stem": "PostTextComment",
+      "command": "App\\Comments\\Commands\\PostTextComment\\PostTextCommentCommand",
+      "handler": "App\\Comments\\Commands\\PostTextComment\\PostTextCommentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "AcknowledgeChatMessages",
+      "command": "App\\Communication\\Commands\\AcknowledgeChatMessages\\AcknowledgeChatMessagesCommand",
+      "handler": "App\\Communication\\Commands\\AcknowledgeChatMessages\\AcknowledgeChatMessagesHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "AcknowledgePresentation",
+      "command": "App\\Communication\\Commands\\AcknowledgePresentation\\AcknowledgePresentationCommand",
+      "handler": "App\\Communication\\Commands\\AcknowledgePresentation\\AcknowledgePresentationHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "AnswerChatQuestion",
+      "command": "App\\Communication\\Commands\\AnswerChatQuestion\\AnswerChatQuestionCommand",
+      "handler": "App\\Communication\\Commands\\AnswerChatQuestion\\AnswerChatQuestionHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "AnswerMessage",
+      "command": "App\\Communication\\Commands\\AnswerMessage\\AnswerMessageCommand",
+      "handler": "App\\Communication\\Commands\\AnswerMessage\\AnswerMessageHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "AskChatQuestion",
+      "command": "App\\Communication\\Commands\\AskChatQuestion\\AskChatQuestionCommand",
+      "handler": "App\\Communication\\Commands\\AskChatQuestion\\AskChatQuestionHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "AskMessage",
+      "command": "App\\Communication\\Commands\\AskMessage\\AskMessageCommand",
+      "handler": "App\\Communication\\Commands\\AskMessage\\AskMessageHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "AskQuestion",
+      "command": "App\\Communication\\Commands\\AskQuestion\\AskQuestionCommand",
+      "handler": "App\\Communication\\Commands\\AskQuestion\\AskQuestionHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "ClaimSpeech",
+      "command": "App\\Communication\\Commands\\ClaimSpeech\\ClaimSpeechCommand",
+      "handler": "App\\Communication\\Commands\\ClaimSpeech\\ClaimSpeechHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "DeclineChatQuestion",
+      "command": "App\\Communication\\Commands\\DeclineChatQuestion\\DeclineChatQuestionCommand",
+      "handler": "App\\Communication\\Commands\\DeclineChatQuestion\\DeclineChatQuestionHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "DismissMessage",
+      "command": "App\\Communication\\Commands\\DismissMessage\\DismissMessageCommand",
+      "handler": "App\\Communication\\Commands\\DismissMessage\\DismissMessageHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "HideUnseatedNotifications",
+      "command": "App\\Communication\\Commands\\HideUnseatedNotifications\\HideUnseatedNotificationsCommand",
+      "handler": "App\\Communication\\Commands\\HideUnseatedNotifications\\HideUnseatedNotificationsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "MarkAllNotificationsRead",
+      "command": "App\\Communication\\Commands\\MarkAllNotificationsRead\\MarkAllNotificationsReadCommand",
+      "handler": "App\\Communication\\Commands\\MarkAllNotificationsRead\\MarkAllNotificationsReadHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "MarkNotificationRead",
+      "command": "App\\Communication\\Commands\\MarkNotificationRead\\MarkNotificationReadCommand",
+      "handler": "App\\Communication\\Commands\\MarkNotificationRead\\MarkNotificationReadHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "MarkQuestionNotificationRead",
+      "command": "App\\Communication\\Commands\\MarkQuestionNotificationRead\\MarkQuestionNotificationReadCommand",
+      "handler": "App\\Communication\\Commands\\MarkQuestionNotificationRead\\MarkQuestionNotificationReadHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "MarkTargetNotificationRead",
+      "command": "App\\Communication\\Commands\\MarkTargetNotificationRead\\MarkTargetNotificationReadCommand",
+      "handler": "App\\Communication\\Commands\\MarkTargetNotificationRead\\MarkTargetNotificationReadHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "PostChatMessage",
+      "command": "App\\Communication\\Commands\\PostChatMessage\\PostChatMessageCommand",
+      "handler": "App\\Communication\\Commands\\PostChatMessage\\PostChatMessageHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "ReadMessages",
+      "command": "App\\Communication\\Commands\\ReadMessages\\ReadMessagesCommand",
+      "handler": "App\\Communication\\Commands\\ReadMessages\\ReadMessagesHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "ReleaseMessageClaim",
+      "command": "App\\Communication\\Commands\\ReleaseMessageClaim\\ReleaseMessageClaimCommand",
+      "handler": "App\\Communication\\Commands\\ReleaseMessageClaim\\ReleaseMessageClaimHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "ReleaseSpeech",
+      "command": "App\\Communication\\Commands\\ReleaseSpeech\\ReleaseSpeechCommand",
+      "handler": "App\\Communication\\Commands\\ReleaseSpeech\\ReleaseSpeechHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "ReplyInChat",
+      "command": "App\\Communication\\Commands\\ReplyInChat\\ReplyInChatCommand",
+      "handler": "App\\Communication\\Commands\\ReplyInChat\\ReplyInChatHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "ReplyToMessage",
+      "command": "App\\Communication\\Commands\\ReplyToMessage\\ReplyToMessageCommand",
+      "handler": "App\\Communication\\Commands\\ReplyToMessage\\ReplyToMessageHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "RequireMessageAnswer",
+      "command": "App\\Communication\\Commands\\RequireMessageAnswer\\RequireMessageAnswerCommand",
+      "handler": "App\\Communication\\Commands\\RequireMessageAnswer\\RequireMessageAnswerHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "RetryDelivery",
+      "command": "App\\Communication\\Commands\\RetryDelivery\\RetryDeliveryCommand",
+      "handler": "App\\Communication\\Commands\\RetryDelivery\\RetryDeliveryHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "SelectMessage",
+      "command": "App\\Communication\\Commands\\SelectMessage\\SelectMessageCommand",
+      "handler": "App\\Communication\\Commands\\SelectMessage\\SelectMessageHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "SendMessage",
+      "command": "App\\Communication\\Commands\\SendMessage\\SendMessageCommand",
+      "handler": "App\\Communication\\Commands\\SendMessage\\SendMessageHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Communication",
+      "stem": "TakeNextMessages",
+      "command": "App\\Communication\\Commands\\TakeNextMessages\\TakeNextMessagesCommand",
+      "handler": "App\\Communication\\Commands\\TakeNextMessages\\TakeNextMessagesHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "ApproveDeviceGrant",
+      "command": "App\\Connections\\Commands\\ApproveDeviceGrant\\ApproveDeviceGrantCommand",
+      "handler": "App\\Connections\\Commands\\ApproveDeviceGrant\\ApproveDeviceGrantHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "AssertBindingStart",
+      "command": "App\\Connections\\Commands\\AssertBindingStart\\AssertBindingStartCommand",
+      "handler": "App\\Connections\\Commands\\AssertBindingStart\\AssertBindingStartHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "AssignBindingEnvironment",
+      "command": "App\\Connections\\Commands\\AssignBindingEnvironment\\AssignBindingEnvironmentCommand",
+      "handler": "App\\Connections\\Commands\\AssignBindingEnvironment\\AssignBindingEnvironmentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "CancelProjectCommandRun",
+      "command": "App\\Connections\\Commands\\CancelProjectCommandRun\\CancelProjectCommandRunCommand",
+      "handler": "App\\Connections\\Commands\\CancelProjectCommandRun\\CancelProjectCommandRunHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "FinishProjectCommandRun",
+      "command": "App\\Connections\\Commands\\FinishProjectCommandRun\\FinishProjectCommandRunCommand",
+      "handler": "App\\Connections\\Commands\\FinishProjectCommandRun\\FinishProjectCommandRunHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "IssueProjectInvitation",
+      "command": "App\\Connections\\Commands\\IssueProjectInvitation\\IssueProjectInvitationCommand",
+      "handler": "App\\Connections\\Commands\\IssueProjectInvitation\\IssueProjectInvitationHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "PollDeviceGrant",
+      "command": "App\\Connections\\Commands\\PollDeviceGrant\\PollDeviceGrantCommand",
+      "handler": "App\\Connections\\Commands\\PollDeviceGrant\\PollDeviceGrantHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "RecordBindingPresence",
+      "command": "App\\Connections\\Commands\\RecordBindingPresence\\RecordBindingPresenceCommand",
+      "handler": "App\\Connections\\Commands\\RecordBindingPresence\\RecordBindingPresenceHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "RecordBindingRuntimeStop",
+      "command": "App\\Connections\\Commands\\RecordBindingRuntimeStop\\RecordBindingRuntimeStopCommand",
+      "handler": "App\\Connections\\Commands\\RecordBindingRuntimeStop\\RecordBindingRuntimeStopHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "RecordBindingStart",
+      "command": "App\\Connections\\Commands\\RecordBindingStart\\RecordBindingStartCommand",
+      "handler": "App\\Connections\\Commands\\RecordBindingStart\\RecordBindingStartHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "RecordProjectCommandProcess",
+      "command": "App\\Connections\\Commands\\RecordProjectCommandProcess\\RecordProjectCommandProcessCommand",
+      "handler": "App\\Connections\\Commands\\RecordProjectCommandProcess\\RecordProjectCommandProcessHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "RecoverProjectBinding",
+      "command": "App\\Connections\\Commands\\RecoverProjectBinding\\RecoverProjectBindingCommand",
+      "handler": "App\\Connections\\Commands\\RecoverProjectBinding\\RecoverProjectBindingHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "RedeemProjectInvitation",
+      "command": "App\\Connections\\Commands\\RedeemProjectInvitation\\RedeemProjectInvitationCommand",
+      "handler": "App\\Connections\\Commands\\RedeemProjectInvitation\\RedeemProjectInvitationHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "RenewRuntimeLease",
+      "command": "App\\Connections\\Commands\\RenewRuntimeLease\\RenewRuntimeLeaseCommand",
+      "handler": "App\\Connections\\Commands\\RenewRuntimeLease\\RenewRuntimeLeaseHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "RevokeDeviceGrant",
+      "command": "App\\Connections\\Commands\\RevokeDeviceGrant\\RevokeDeviceGrantCommand",
+      "handler": "App\\Connections\\Commands\\RevokeDeviceGrant\\RevokeDeviceGrantHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "RevokeProjectBinding",
+      "command": "App\\Connections\\Commands\\RevokeProjectBinding\\RevokeProjectBindingCommand",
+      "handler": "App\\Connections\\Commands\\RevokeProjectBinding\\RevokeProjectBindingHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "RevokeProjectBindings",
+      "command": "App\\Connections\\Commands\\RevokeProjectBindings\\RevokeProjectBindingsCommand",
+      "handler": "App\\Connections\\Commands\\RevokeProjectBindings\\RevokeProjectBindingsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "RevokeProjectInvitation",
+      "command": "App\\Connections\\Commands\\RevokeProjectInvitation\\RevokeProjectInvitationCommand",
+      "handler": "App\\Connections\\Commands\\RevokeProjectInvitation\\RevokeProjectInvitationHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "StartDeviceGrant",
+      "command": "App\\Connections\\Commands\\StartDeviceGrant\\StartDeviceGrantCommand",
+      "handler": "App\\Connections\\Commands\\StartDeviceGrant\\StartDeviceGrantHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "StartProjectCommandRun",
+      "command": "App\\Connections\\Commands\\StartProjectCommandRun\\StartProjectCommandRunCommand",
+      "handler": "App\\Connections\\Commands\\StartProjectCommandRun\\StartProjectCommandRunHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Connections",
+      "stem": "SubmitWorktreeDelivery",
+      "command": "App\\Connections\\Commands\\SubmitWorktreeDelivery\\SubmitWorktreeDeliveryCommand",
+      "handler": "App\\Connections\\Commands\\SubmitWorktreeDelivery\\SubmitWorktreeDeliveryHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Desks",
+      "stem": "CreateDesk",
+      "command": "App\\Desks\\Commands\\CreateDesk\\CreateDeskCommand",
+      "handler": "App\\Desks\\Commands\\CreateDesk\\CreateDeskHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Desks",
+      "stem": "InstallDesks",
+      "command": "App\\Desks\\Commands\\InstallDesks\\InstallDesksCommand",
+      "handler": "App\\Desks\\Commands\\InstallDesks\\InstallDesksHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Desks",
+      "stem": "ProvisionActorDesk",
+      "command": "App\\Desks\\Commands\\ProvisionActorDesk\\ProvisionActorDeskCommand",
+      "handler": "App\\Desks\\Commands\\ProvisionActorDesk\\ProvisionActorDeskHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Desks",
+      "stem": "ReleaseSeat",
+      "command": "App\\Desks\\Commands\\ReleaseSeat\\ReleaseSeatCommand",
+      "handler": "App\\Desks\\Commands\\ReleaseSeat\\ReleaseSeatHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Desks",
+      "stem": "ReplaceSeatOccupant",
+      "command": "App\\Desks\\Commands\\ReplaceSeatOccupant\\ReplaceSeatOccupantCommand",
+      "handler": "App\\Desks\\Commands\\ReplaceSeatOccupant\\ReplaceSeatOccupantHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Desks",
+      "stem": "RestoreActorDesk",
+      "command": "App\\Desks\\Commands\\RestoreActorDesk\\RestoreActorDeskCommand",
+      "handler": "App\\Desks\\Commands\\RestoreActorDesk\\RestoreActorDeskHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Desks",
+      "stem": "SeatActor",
+      "command": "App\\Desks\\Commands\\SeatActor\\SeatActorCommand",
+      "handler": "App\\Desks\\Commands\\SeatActor\\SeatActorHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Documents",
+      "stem": "AppendUpload",
+      "command": "Domain\\Documents\\Commands\\AppendUpload\\AppendUploadCommand",
+      "handler": "Domain\\Documents\\Commands\\AppendUpload\\AppendUploadHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "BeginUpload",
+      "command": "Domain\\Documents\\Commands\\BeginUpload\\BeginUploadCommand",
+      "handler": "Domain\\Documents\\Commands\\BeginUpload\\BeginUploadHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "ChangeDocumentDetails",
+      "command": "Domain\\Documents\\Commands\\ChangeDocumentDetails\\ChangeDocumentDetailsCommand",
+      "handler": "Domain\\Documents\\Commands\\ChangeDocumentDetails\\ChangeDocumentDetailsHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "CloseDocument",
+      "command": "Domain\\Documents\\Commands\\CloseDocument\\CloseDocumentCommand",
+      "handler": "Domain\\Documents\\Commands\\CloseDocument\\CloseDocumentHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "CloseReport",
+      "command": "Domain\\Documents\\Commands\\CloseReport\\CloseReportCommand",
+      "handler": "Domain\\Documents\\Commands\\CloseReport\\CloseReportHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "CommentOnDocument",
+      "command": "Domain\\Documents\\Commands\\CommentOnDocument\\CommentOnDocumentCommand",
+      "handler": "Domain\\Documents\\Commands\\CommentOnDocument\\CommentOnDocumentHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "CommentOnReport",
+      "command": "Domain\\Documents\\Commands\\CommentOnReport\\CommentOnReportCommand",
+      "handler": "Domain\\Documents\\Commands\\CommentOnReport\\CommentOnReportHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "CommitUpload",
+      "command": "Domain\\Documents\\Commands\\CommitUpload\\CommitUploadCommand",
+      "handler": "Domain\\Documents\\Commands\\CommitUpload\\CommitUploadHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "CreateDocument",
+      "command": "Domain\\Documents\\Commands\\CreateDocument\\CreateDocumentCommand",
+      "handler": "Domain\\Documents\\Commands\\CreateDocument\\CreateDocumentHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "CreateReport",
+      "command": "Domain\\Documents\\Commands\\CreateReport\\CreateReportCommand",
+      "handler": "Domain\\Documents\\Commands\\CreateReport\\CreateReportHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "DiscardUpload",
+      "command": "Domain\\Documents\\Commands\\DiscardUpload\\DiscardUploadCommand",
+      "handler": "Domain\\Documents\\Commands\\DiscardUpload\\DiscardUploadHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "EditDocument",
+      "command": "Domain\\Documents\\Commands\\EditDocument\\EditDocumentCommand",
+      "handler": "Domain\\Documents\\Commands\\EditDocument\\EditDocumentHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "OpenDocument",
+      "command": "Domain\\Documents\\Commands\\OpenDocument\\OpenDocumentCommand",
+      "handler": "Domain\\Documents\\Commands\\OpenDocument\\OpenDocumentHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "RecoverDocument",
+      "command": "Domain\\Documents\\Commands\\RecoverDocument\\RecoverDocumentCommand",
+      "handler": "Domain\\Documents\\Commands\\RecoverDocument\\RecoverDocumentHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "RecoverDraft",
+      "command": "Domain\\Documents\\Commands\\RecoverDraft\\RecoverDraftCommand",
+      "handler": "Domain\\Documents\\Commands\\RecoverDraft\\RecoverDraftHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "ReplaceDocumentBody",
+      "command": "Domain\\Documents\\Commands\\ReplaceDocumentBody\\ReplaceDocumentBodyCommand",
+      "handler": "Domain\\Documents\\Commands\\ReplaceDocumentBody\\ReplaceDocumentBodyHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "ReplaceDocumentText",
+      "command": "Domain\\Documents\\Commands\\ReplaceDocumentText\\ReplaceDocumentTextCommand",
+      "handler": "Domain\\Documents\\Commands\\ReplaceDocumentText\\ReplaceDocumentTextHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Documents",
+      "stem": "SettleDocument",
+      "command": "Domain\\Documents\\Commands\\SettleDocument\\SettleDocumentCommand",
+      "handler": "Domain\\Documents\\Commands\\SettleDocument\\SettleDocumentHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Engine",
+      "stem": "EndTerminalViews",
+      "command": "App\\Engine\\Commands\\EndTerminalViews\\EndTerminalViewsCommand",
+      "handler": "App\\Engine\\Commands\\EndTerminalViews\\EndTerminalViewsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Engine",
+      "stem": "EnforceLaunchLimits",
+      "command": "App\\Engine\\Commands\\EnforceLaunchLimits\\EnforceLaunchLimitsCommand",
+      "handler": "App\\Engine\\Commands\\EnforceLaunchLimits\\EnforceLaunchLimitsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Engine",
+      "stem": "ExpireNavigationRequests",
+      "command": "App\\Engine\\Commands\\ExpireNavigationRequests\\ExpireNavigationRequestsCommand",
+      "handler": "App\\Engine\\Commands\\ExpireNavigationRequests\\ExpireNavigationRequestsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Engine",
+      "stem": "MarkSilentSessions",
+      "command": "App\\Engine\\Commands\\MarkSilentSessions\\MarkSilentSessionsCommand",
+      "handler": "App\\Engine\\Commands\\MarkSilentSessions\\MarkSilentSessionsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Engine",
+      "stem": "SettleFrameTimes",
+      "command": "App\\Engine\\Commands\\SettleFrameTimes\\SettleFrameTimesCommand",
+      "handler": "App\\Engine\\Commands\\SettleFrameTimes\\SettleFrameTimesHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Helpers",
+      "stem": "CancelHelperJob",
+      "command": "Domain\\Helpers\\Commands\\CancelHelperJob\\CancelHelperJobCommand",
+      "handler": "Domain\\Helpers\\Commands\\CancelHelperJob\\CancelHelperJobHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Helpers",
+      "stem": "CancelLaunchedHelperJob",
+      "command": "Domain\\Helpers\\Commands\\CancelLaunchedHelperJob\\CancelLaunchedHelperJobCommand",
+      "handler": "Domain\\Helpers\\Commands\\CancelLaunchedHelperJob\\CancelLaunchedHelperJobHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Helpers",
+      "stem": "ContinueHelper",
+      "command": "Domain\\Helpers\\Commands\\ContinueHelper\\ContinueHelperCommand",
+      "handler": "Domain\\Helpers\\Commands\\ContinueHelper\\ContinueHelperHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Helpers",
+      "stem": "FinishHelperJob",
+      "command": "Domain\\Helpers\\Commands\\FinishHelperJob\\FinishHelperJobCommand",
+      "handler": "Domain\\Helpers\\Commands\\FinishHelperJob\\FinishHelperJobHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Helpers",
+      "stem": "HoldHelperJob",
+      "command": "Domain\\Helpers\\Commands\\HoldHelperJob\\HoldHelperJobCommand",
+      "handler": "Domain\\Helpers\\Commands\\HoldHelperJob\\HoldHelperJobHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Helpers",
+      "stem": "MarkHelperJobUnfinished",
+      "command": "Domain\\Helpers\\Commands\\MarkHelperJobUnfinished\\MarkHelperJobUnfinishedCommand",
+      "handler": "Domain\\Helpers\\Commands\\MarkHelperJobUnfinished\\MarkHelperJobUnfinishedHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Helpers",
+      "stem": "SendHelper",
+      "command": "Domain\\Helpers\\Commands\\SendHelper\\SendHelperCommand",
+      "handler": "Domain\\Helpers\\Commands\\SendHelper\\SendHelperHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Helpers",
+      "stem": "StartHelper",
+      "command": "Domain\\Helpers\\Commands\\StartHelper\\StartHelperCommand",
+      "handler": "Domain\\Helpers\\Commands\\StartHelper\\StartHelperHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Helpers",
+      "stem": "SteerHelper",
+      "command": "Domain\\Helpers\\Commands\\SteerHelper\\SteerHelperCommand",
+      "handler": "Domain\\Helpers\\Commands\\SteerHelper\\SteerHelperHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Hooks",
+      "stem": "CertifyPassedStops",
+      "command": "App\\Hooks\\Commands\\CertifyPassedStops\\CertifyPassedStopsCommand",
+      "handler": "App\\Hooks\\Commands\\CertifyPassedStops\\CertifyPassedStopsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Hooks",
+      "stem": "RecordStopResults",
+      "command": "App\\Hooks\\Commands\\RecordStopResults\\RecordStopResultsCommand",
+      "handler": "App\\Hooks\\Commands\\RecordStopResults\\RecordStopResultsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Memory",
+      "stem": "EditMemory",
+      "command": "Domain\\Memory\\Commands\\EditMemory\\EditMemoryCommand",
+      "handler": "Domain\\Memory\\Commands\\EditMemory\\EditMemoryHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Memory",
+      "stem": "RemoveMemory",
+      "command": "Domain\\Memory\\Commands\\RemoveMemory\\RemoveMemoryCommand",
+      "handler": "Domain\\Memory\\Commands\\RemoveMemory\\RemoveMemoryHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Memory",
+      "stem": "SaveMemory",
+      "command": "Domain\\Memory\\Commands\\SaveMemory\\SaveMemoryCommand",
+      "handler": "Domain\\Memory\\Commands\\SaveMemory\\SaveMemoryHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Numbers",
+      "stem": "InstallNumbers",
+      "command": "App\\Numbers\\Commands\\InstallNumbers\\InstallNumbersCommand",
+      "handler": "App\\Numbers\\Commands\\InstallNumbers\\InstallNumbersHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Plans",
+      "stem": "AddPhase",
+      "command": "Domain\\Plans\\Commands\\AddPhase\\AddPhaseCommand",
+      "handler": "Domain\\Plans\\Commands\\AddPhase\\AddPhaseHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Plans",
+      "stem": "AddPhaseTasks",
+      "command": "Domain\\Plans\\Commands\\AddPhaseTasks\\AddPhaseTasksCommand",
+      "handler": "Domain\\Plans\\Commands\\AddPhaseTasks\\AddPhaseTasksHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Plans",
+      "stem": "ApprovePlanReview",
+      "command": "Domain\\Plans\\Commands\\ApprovePlanReview\\ApprovePlanReviewCommand",
+      "handler": "Domain\\Plans\\Commands\\ApprovePlanReview\\ApprovePlanReviewHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Plans",
+      "stem": "AssignPlanWork",
+      "command": "Domain\\Plans\\Commands\\AssignPlanWork\\AssignPlanWorkCommand",
+      "handler": "Domain\\Plans\\Commands\\AssignPlanWork\\AssignPlanWorkHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Plans",
+      "stem": "CancelPlan",
+      "command": "Domain\\Plans\\Commands\\CancelPlan\\CancelPlanCommand",
+      "handler": "Domain\\Plans\\Commands\\CancelPlan\\CancelPlanHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Plans",
+      "stem": "CreatePlan",
+      "command": "Domain\\Plans\\Commands\\CreatePlan\\CreatePlanCommand",
+      "handler": "Domain\\Plans\\Commands\\CreatePlan\\CreatePlanHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Plans",
+      "stem": "EditPlan",
+      "command": "Domain\\Plans\\Commands\\EditPlan\\EditPlanCommand",
+      "handler": "Domain\\Plans\\Commands\\EditPlan\\EditPlanHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Plans",
+      "stem": "FinishPlan",
+      "command": "Domain\\Plans\\Commands\\FinishPlan\\FinishPlanCommand",
+      "handler": "Domain\\Plans\\Commands\\FinishPlan\\FinishPlanHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Plans",
+      "stem": "ReassignPlanWork",
+      "command": "Domain\\Plans\\Commands\\ReassignPlanWork\\ReassignPlanWorkCommand",
+      "handler": "Domain\\Plans\\Commands\\ReassignPlanWork\\ReassignPlanWorkHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Plans",
+      "stem": "RecordPhaseCheck",
+      "command": "Domain\\Plans\\Commands\\RecordPhaseCheck\\RecordPhaseCheckCommand",
+      "handler": "Domain\\Plans\\Commands\\RecordPhaseCheck\\RecordPhaseCheckHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Plans",
+      "stem": "RequestPlanChanges",
+      "command": "Domain\\Plans\\Commands\\RequestPlanChanges\\RequestPlanChangesCommand",
+      "handler": "Domain\\Plans\\Commands\\RequestPlanChanges\\RequestPlanChangesHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Plans",
+      "stem": "RequestPlanReview",
+      "command": "Domain\\Plans\\Commands\\RequestPlanReview\\RequestPlanReviewCommand",
+      "handler": "Domain\\Plans\\Commands\\RequestPlanReview\\RequestPlanReviewHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Plans",
+      "stem": "StartPlan",
+      "command": "Domain\\Plans\\Commands\\StartPlan\\StartPlanCommand",
+      "handler": "Domain\\Plans\\Commands\\StartPlan\\StartPlanHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Plans",
+      "stem": "UnassignPlanWork",
+      "command": "Domain\\Plans\\Commands\\UnassignPlanWork\\UnassignPlanWorkCommand",
+      "handler": "Domain\\Plans\\Commands\\UnassignPlanWork\\UnassignPlanWorkHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Plans",
+      "stem": "WithdrawPlanReview",
+      "command": "Domain\\Plans\\Commands\\WithdrawPlanReview\\WithdrawPlanReviewCommand",
+      "handler": "Domain\\Plans\\Commands\\WithdrawPlanReview\\WithdrawPlanReviewHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Processes",
+      "stem": "ApproveRuleBundle",
+      "command": "App\\Processes\\Commands\\ApproveRuleBundle\\ApproveRuleBundleCommand",
+      "handler": "App\\Processes\\Commands\\ApproveRuleBundle\\ApproveRuleBundleHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "ApproveRuleProposal",
+      "command": "App\\Processes\\Commands\\ApproveRuleProposal\\ApproveRuleProposalCommand",
+      "handler": "App\\Processes\\Commands\\ApproveRuleProposal\\ApproveRuleProposalHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "ApproveSample",
+      "command": "App\\Processes\\Commands\\ApproveSample\\ApproveSampleCommand",
+      "handler": "App\\Processes\\Commands\\ApproveSample\\ApproveSampleHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "AssessPartOutput",
+      "command": "App\\Processes\\Commands\\AssessPartOutput\\AssessPartOutputCommand",
+      "handler": "App\\Processes\\Commands\\AssessPartOutput\\AssessPartOutputHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "CleanProcessOutput",
+      "command": "App\\Processes\\Commands\\CleanProcessOutput\\CleanProcessOutputCommand",
+      "handler": "App\\Processes\\Commands\\CleanProcessOutput\\CleanProcessOutputHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "ImportRuleProposals",
+      "command": "App\\Processes\\Commands\\ImportRuleProposals\\ImportRuleProposalsCommand",
+      "handler": "App\\Processes\\Commands\\ImportRuleProposals\\ImportRuleProposalsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "IssueEvidencePermit",
+      "command": "App\\Processes\\Commands\\IssueEvidencePermit\\IssueEvidencePermitCommand",
+      "handler": "App\\Processes\\Commands\\IssueEvidencePermit\\IssueEvidencePermitHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "MarkRunsStale",
+      "command": "App\\Processes\\Commands\\MarkRunsStale\\MarkRunsStaleCommand",
+      "handler": "App\\Processes\\Commands\\MarkRunsStale\\MarkRunsStaleHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "OpenCommandRequest",
+      "command": "App\\Processes\\Commands\\OpenCommandRequest\\OpenCommandRequestCommand",
+      "handler": "App\\Processes\\Commands\\OpenCommandRequest\\OpenCommandRequestHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "ProposeCommandRule",
+      "command": "App\\Processes\\Commands\\ProposeCommandRule\\ProposeCommandRuleCommand",
+      "handler": "App\\Processes\\Commands\\ProposeCommandRule\\ProposeCommandRuleHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "ProposeReader",
+      "command": "App\\Processes\\Commands\\ProposeReader\\ProposeReaderCommand",
+      "handler": "App\\Processes\\Commands\\ProposeReader\\ProposeReaderHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "ProveReader",
+      "command": "App\\Processes\\Commands\\ProveReader\\ProveReaderCommand",
+      "handler": "App\\Processes\\Commands\\ProveReader\\ProveReaderHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "ReadPartLive",
+      "command": "App\\Processes\\Commands\\ReadPartLive\\ReadPartLiveCommand",
+      "handler": "App\\Processes\\Commands\\ReadPartLive\\ReadPartLiveHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "ReconcileLostRuns",
+      "command": "App\\Processes\\Commands\\ReconcileLostRuns\\ReconcileLostRunsCommand",
+      "handler": "App\\Processes\\Commands\\ReconcileLostRuns\\ReconcileLostRunsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "RecordEvidenceReads",
+      "command": "App\\Processes\\Commands\\RecordEvidenceReads\\RecordEvidenceReadsCommand",
+      "handler": "App\\Processes\\Commands\\RecordEvidenceReads\\RecordEvidenceReadsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "RecordRunChunk",
+      "command": "App\\Processes\\Commands\\RecordRunChunk\\RecordRunChunkCommand",
+      "handler": "App\\Processes\\Commands\\RecordRunChunk\\RecordRunChunkHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "RecordRunEvents",
+      "command": "App\\Processes\\Commands\\RecordRunEvents\\RecordRunEventsCommand",
+      "handler": "App\\Processes\\Commands\\RecordRunEvents\\RecordRunEventsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "RejectRuleProposal",
+      "command": "App\\Processes\\Commands\\RejectRuleProposal\\RejectRuleProposalCommand",
+      "handler": "App\\Processes\\Commands\\RejectRuleProposal\\RejectRuleProposalHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "ReplayAssessment",
+      "command": "App\\Processes\\Commands\\ReplayAssessment\\ReplayAssessmentCommand",
+      "handler": "App\\Processes\\Commands\\ReplayAssessment\\ReplayAssessmentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "RestoreCommandRule",
+      "command": "App\\Processes\\Commands\\RestoreCommandRule\\RestoreCommandRuleCommand",
+      "handler": "App\\Processes\\Commands\\RestoreCommandRule\\RestoreCommandRuleHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "RetireCommandRule",
+      "command": "App\\Processes\\Commands\\RetireCommandRule\\RetireCommandRuleCommand",
+      "handler": "App\\Processes\\Commands\\RetireCommandRule\\RetireCommandRuleHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "RetryProcessRun",
+      "command": "App\\Processes\\Commands\\RetryProcessRun\\RetryProcessRunCommand",
+      "handler": "App\\Processes\\Commands\\RetryProcessRun\\RetryProcessRunHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "ReviseRuleProposal",
+      "command": "App\\Processes\\Commands\\ReviseRuleProposal\\ReviseRuleProposalCommand",
+      "handler": "App\\Processes\\Commands\\ReviseRuleProposal\\ReviseRuleProposalHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "RevokeCommandPermissions",
+      "command": "App\\Processes\\Commands\\RevokeCommandPermissions\\RevokeCommandPermissionsCommand",
+      "handler": "App\\Processes\\Commands\\RevokeCommandPermissions\\RevokeCommandPermissionsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "RevokeRunOutcomeAccess",
+      "command": "App\\Processes\\Commands\\RevokeRunOutcomeAccess\\RevokeRunOutcomeAccessCommand",
+      "handler": "App\\Processes\\Commands\\RevokeRunOutcomeAccess\\RevokeRunOutcomeAccessHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "SaveCommandRule",
+      "command": "App\\Processes\\Commands\\SaveCommandRule\\SaveCommandRuleCommand",
+      "handler": "App\\Processes\\Commands\\SaveCommandRule\\SaveCommandRuleHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "SettleSample",
+      "command": "App\\Processes\\Commands\\SettleSample\\SettleSampleCommand",
+      "handler": "App\\Processes\\Commands\\SettleSample\\SettleSampleHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "StartSample",
+      "command": "App\\Processes\\Commands\\StartSample\\StartSampleCommand",
+      "handler": "App\\Processes\\Commands\\StartSample\\StartSampleHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "StopProcessRun",
+      "command": "App\\Processes\\Commands\\StopProcessRun\\StopProcessRunCommand",
+      "handler": "App\\Processes\\Commands\\StopProcessRun\\StopProcessRunHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "StopSurvivors",
+      "command": "App\\Processes\\Commands\\StopSurvivors\\StopSurvivorsCommand",
+      "handler": "App\\Processes\\Commands\\StopSurvivors\\StopSurvivorsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "VerifyRestoredOutput",
+      "command": "App\\Processes\\Commands\\VerifyRestoredOutput\\VerifyRestoredOutputCommand",
+      "handler": "App\\Processes\\Commands\\VerifyRestoredOutput\\VerifyRestoredOutputHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "WithdrawCommandRequest",
+      "command": "App\\Processes\\Commands\\WithdrawCommandRequest\\WithdrawCommandRequestCommand",
+      "handler": "App\\Processes\\Commands\\WithdrawCommandRequest\\WithdrawCommandRequestHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Processes",
+      "stem": "WithdrawRuleProposal",
+      "command": "App\\Processes\\Commands\\WithdrawRuleProposal\\WithdrawRuleProposalCommand",
+      "handler": "App\\Processes\\Commands\\WithdrawRuleProposal\\WithdrawRuleProposalHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "ActivateProfiles",
+      "command": "App\\Profiles\\Commands\\ActivateProfiles\\ActivateProfilesCommand",
+      "handler": "App\\Profiles\\Commands\\ActivateProfiles\\ActivateProfilesHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "AddUsageCost",
+      "command": "App\\Profiles\\Commands\\AddUsageCost\\AddUsageCostCommand",
+      "handler": "App\\Profiles\\Commands\\AddUsageCost\\AddUsageCostHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "BeginSignIn",
+      "command": "App\\Profiles\\Commands\\BeginSignIn\\BeginSignInCommand",
+      "handler": "App\\Profiles\\Commands\\BeginSignIn\\BeginSignInHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "BeginSignInAgain",
+      "command": "App\\Profiles\\Commands\\BeginSignInAgain\\BeginSignInAgainCommand",
+      "handler": "App\\Profiles\\Commands\\BeginSignInAgain\\BeginSignInAgainHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "CancelSignIn",
+      "command": "App\\Profiles\\Commands\\CancelSignIn\\CancelSignInCommand",
+      "handler": "App\\Profiles\\Commands\\CancelSignIn\\CancelSignInHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "CheckAccount",
+      "command": "App\\Profiles\\Commands\\CheckAccount\\CheckAccountCommand",
+      "handler": "App\\Profiles\\Commands\\CheckAccount\\CheckAccountHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "ClaimAccountCheck",
+      "command": "App\\Profiles\\Commands\\ClaimAccountCheck\\ClaimAccountCheckCommand",
+      "handler": "App\\Profiles\\Commands\\ClaimAccountCheck\\ClaimAccountCheckHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "ClaimCleanup",
+      "command": "App\\Profiles\\Commands\\ClaimCleanup\\ClaimCleanupCommand",
+      "handler": "App\\Profiles\\Commands\\ClaimCleanup\\ClaimCleanupHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "ClaimSignIn",
+      "command": "App\\Profiles\\Commands\\ClaimSignIn\\ClaimSignInCommand",
+      "handler": "App\\Profiles\\Commands\\ClaimSignIn\\ClaimSignInHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "CleanAccount",
+      "command": "App\\Profiles\\Commands\\CleanAccount\\CleanAccountCommand",
+      "handler": "App\\Profiles\\Commands\\CleanAccount\\CleanAccountHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "CleanSignInAttempt",
+      "command": "App\\Profiles\\Commands\\CleanSignInAttempt\\CleanSignInAttemptCommand",
+      "handler": "App\\Profiles\\Commands\\CleanSignInAttempt\\CleanSignInAttemptHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "CompleteSignIn",
+      "command": "App\\Profiles\\Commands\\CompleteSignIn\\CompleteSignInCommand",
+      "handler": "App\\Profiles\\Commands\\CompleteSignIn\\CompleteSignInHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "DismissAccountNotice",
+      "command": "App\\Profiles\\Commands\\DismissAccountNotice\\DismissAccountNoticeCommand",
+      "handler": "App\\Profiles\\Commands\\DismissAccountNotice\\DismissAccountNoticeHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "ExpireSignInAttempt",
+      "command": "App\\Profiles\\Commands\\ExpireSignInAttempt\\ExpireSignInAttemptCommand",
+      "handler": "App\\Profiles\\Commands\\ExpireSignInAttempt\\ExpireSignInAttemptHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "InstallBuiltInProfiles",
+      "command": "App\\Profiles\\Commands\\InstallBuiltInProfiles\\InstallBuiltInProfilesCommand",
+      "handler": "App\\Profiles\\Commands\\InstallBuiltInProfiles\\InstallBuiltInProfilesHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "InstallMainAgent",
+      "command": "App\\Profiles\\Commands\\InstallMainAgent\\InstallMainAgentCommand",
+      "handler": "App\\Profiles\\Commands\\InstallMainAgent\\InstallMainAgentHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "MaintainAccount",
+      "command": "App\\Profiles\\Commands\\MaintainAccount\\MaintainAccountCommand",
+      "handler": "App\\Profiles\\Commands\\MaintainAccount\\MaintainAccountHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "PublishSignInChallenge",
+      "command": "App\\Profiles\\Commands\\PublishSignInChallenge\\PublishSignInChallengeCommand",
+      "handler": "App\\Profiles\\Commands\\PublishSignInChallenge\\PublishSignInChallengeHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "RecheckAccount",
+      "command": "App\\Profiles\\Commands\\RecheckAccount\\RecheckAccountCommand",
+      "handler": "App\\Profiles\\Commands\\RecheckAccount\\RecheckAccountHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "ReconcileAccounts",
+      "command": "App\\Profiles\\Commands\\ReconcileAccounts\\ReconcileAccountsCommand",
+      "handler": "App\\Profiles\\Commands\\ReconcileAccounts\\ReconcileAccountsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "ReconcileSignIns",
+      "command": "App\\Profiles\\Commands\\ReconcileSignIns\\ReconcileSignInsCommand",
+      "handler": "App\\Profiles\\Commands\\ReconcileSignIns\\ReconcileSignInsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "RecordAccountFailure",
+      "command": "App\\Profiles\\Commands\\RecordAccountFailure\\RecordAccountFailureCommand",
+      "handler": "App\\Profiles\\Commands\\RecordAccountFailure\\RecordAccountFailureHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "RecordAccountNotice",
+      "command": "App\\Profiles\\Commands\\RecordAccountNotice\\RecordAccountNoticeCommand",
+      "handler": "App\\Profiles\\Commands\\RecordAccountNotice\\RecordAccountNoticeHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "RecordThreadTokens",
+      "command": "App\\Profiles\\Commands\\RecordThreadTokens\\RecordThreadTokensCommand",
+      "handler": "App\\Profiles\\Commands\\RecordThreadTokens\\RecordThreadTokensHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "RecordUsageWindow",
+      "command": "App\\Profiles\\Commands\\RecordUsageWindow\\RecordUsageWindowCommand",
+      "handler": "App\\Profiles\\Commands\\RecordUsageWindow\\RecordUsageWindowHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "ReleaseAccountRemoval",
+      "command": "App\\Profiles\\Commands\\ReleaseAccountRemoval\\ReleaseAccountRemovalCommand",
+      "handler": "App\\Profiles\\Commands\\ReleaseAccountRemoval\\ReleaseAccountRemovalHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "ReleaseSignInAgain",
+      "command": "App\\Profiles\\Commands\\ReleaseSignInAgain\\ReleaseSignInAgainCommand",
+      "handler": "App\\Profiles\\Commands\\ReleaseSignInAgain\\ReleaseSignInAgainHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "RemoveAccount",
+      "command": "App\\Profiles\\Commands\\RemoveAccount\\RemoveAccountCommand",
+      "handler": "App\\Profiles\\Commands\\RemoveAccount\\RemoveAccountHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "RenameAccount",
+      "command": "App\\Profiles\\Commands\\RenameAccount\\RenameAccountCommand",
+      "handler": "App\\Profiles\\Commands\\RenameAccount\\RenameAccountHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "ReportSignIn",
+      "command": "App\\Profiles\\Commands\\ReportSignIn\\ReportSignInCommand",
+      "handler": "App\\Profiles\\Commands\\ReportSignIn\\ReportSignInHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "RetryAccountCleanup",
+      "command": "App\\Profiles\\Commands\\RetryAccountCleanup\\RetryAccountCleanupCommand",
+      "handler": "App\\Profiles\\Commands\\RetryAccountCleanup\\RetryAccountCleanupHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "RetryAttemptCleanup",
+      "command": "App\\Profiles\\Commands\\RetryAttemptCleanup\\RetryAttemptCleanupCommand",
+      "handler": "App\\Profiles\\Commands\\RetryAttemptCleanup\\RetryAttemptCleanupHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "RevokeProfiles",
+      "command": "App\\Profiles\\Commands\\RevokeProfiles\\RevokeProfilesCommand",
+      "handler": "App\\Profiles\\Commands\\RevokeProfiles\\RevokeProfilesHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "SaveProfileDraft",
+      "command": "App\\Profiles\\Commands\\SaveProfileDraft\\SaveProfileDraftCommand",
+      "handler": "App\\Profiles\\Commands\\SaveProfileDraft\\SaveProfileDraftHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "StartProfileMain",
+      "command": "App\\Profiles\\Commands\\StartProfileMain\\StartProfileMainCommand",
+      "handler": "App\\Profiles\\Commands\\StartProfileMain\\StartProfileMainHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "StartSwitchReplacement",
+      "command": "App\\Profiles\\Commands\\StartSwitchReplacement\\StartSwitchReplacementCommand",
+      "handler": "App\\Profiles\\Commands\\StartSwitchReplacement\\StartSwitchReplacementHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "SubmitSignInCode",
+      "command": "App\\Profiles\\Commands\\SubmitSignInCode\\SubmitSignInCodeCommand",
+      "handler": "App\\Profiles\\Commands\\SubmitSignInCode\\SubmitSignInCodeHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "SwitchAccount",
+      "command": "App\\Profiles\\Commands\\SwitchAccount\\SwitchAccountCommand",
+      "handler": "App\\Profiles\\Commands\\SwitchAccount\\SwitchAccountHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "SwitchAgentDriver",
+      "command": "App\\Profiles\\Commands\\SwitchAgentDriver\\SwitchAgentDriverCommand",
+      "handler": "App\\Profiles\\Commands\\SwitchAgentDriver\\SwitchAgentDriverHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Profiles",
+      "stem": "TakeSignInCode",
+      "command": "App\\Profiles\\Commands\\TakeSignInCode\\TakeSignInCodeCommand",
+      "handler": "App\\Profiles\\Commands\\TakeSignInCode\\TakeSignInCodeHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Records",
+      "stem": "LinkRecords",
+      "command": "App\\Records\\Commands\\LinkRecords\\LinkRecordsCommand",
+      "handler": "App\\Records\\Commands\\LinkRecords\\LinkRecordsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Records",
+      "stem": "UnlinkRecords",
+      "command": "App\\Records\\Commands\\UnlinkRecords\\UnlinkRecordsCommand",
+      "handler": "App\\Records\\Commands\\UnlinkRecords\\UnlinkRecordsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Rules",
+      "stem": "ApproveRule",
+      "command": "Domain\\Rules\\Commands\\ApproveRule\\ApproveRuleCommand",
+      "handler": "Domain\\Rules\\Commands\\ApproveRule\\ApproveRuleHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Rules",
+      "stem": "DenyRule",
+      "command": "Domain\\Rules\\Commands\\DenyRule\\DenyRuleCommand",
+      "handler": "Domain\\Rules\\Commands\\DenyRule\\DenyRuleHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Rules",
+      "stem": "ProposeRule",
+      "command": "Domain\\Rules\\Commands\\ProposeRule\\ProposeRuleCommand",
+      "handler": "Domain\\Rules\\Commands\\ProposeRule\\ProposeRuleHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Rules",
+      "stem": "RemoveRule",
+      "command": "Domain\\Rules\\Commands\\RemoveRule\\RemoveRuleCommand",
+      "handler": "Domain\\Rules\\Commands\\RemoveRule\\RemoveRuleHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Scripts",
+      "stem": "RecordScriptStepResult",
+      "command": "App\\Scripts\\Commands\\RecordScriptStepResult\\RecordScriptStepResultCommand",
+      "handler": "App\\Scripts\\Commands\\RecordScriptStepResult\\RecordScriptStepResultHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sequences",
+      "stem": "StartSequence",
+      "command": "Domain\\Sequences\\Commands\\StartSequence\\StartSequenceCommand",
+      "handler": "Domain\\Sequences\\Commands\\StartSequence\\StartSequenceHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Settings",
+      "stem": "DisableSettingGroup",
+      "command": "App\\Settings\\Commands\\DisableSettingGroup\\DisableSettingGroupCommand",
+      "handler": "App\\Settings\\Commands\\DisableSettingGroup\\DisableSettingGroupHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Settings",
+      "stem": "EnableSettingGroup",
+      "command": "App\\Settings\\Commands\\EnableSettingGroup\\EnableSettingGroupCommand",
+      "handler": "App\\Settings\\Commands\\EnableSettingGroup\\EnableSettingGroupHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Settings",
+      "stem": "ResetSetting",
+      "command": "App\\Settings\\Commands\\ResetSetting\\ResetSettingCommand",
+      "handler": "App\\Settings\\Commands\\ResetSetting\\ResetSettingHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Settings",
+      "stem": "ResetSettingGroup",
+      "command": "App\\Settings\\Commands\\ResetSettingGroup\\ResetSettingGroupCommand",
+      "handler": "App\\Settings\\Commands\\ResetSettingGroup\\ResetSettingGroupHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Settings",
+      "stem": "SetBooleanSetting",
+      "command": "App\\Settings\\Commands\\SetBooleanSetting\\SetBooleanSettingCommand",
+      "handler": "App\\Settings\\Commands\\SetBooleanSetting\\SetBooleanSettingHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Settings",
+      "stem": "SetDecimalSetting",
+      "command": "App\\Settings\\Commands\\SetDecimalSetting\\SetDecimalSettingCommand",
+      "handler": "App\\Settings\\Commands\\SetDecimalSetting\\SetDecimalSettingHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Settings",
+      "stem": "SetIntegerChoice",
+      "command": "App\\Settings\\Commands\\SetIntegerChoice\\SetIntegerChoiceCommand",
+      "handler": "App\\Settings\\Commands\\SetIntegerChoice\\SetIntegerChoiceHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Settings",
+      "stem": "SetIntegerSetting",
+      "command": "App\\Settings\\Commands\\SetIntegerSetting\\SetIntegerSettingCommand",
+      "handler": "App\\Settings\\Commands\\SetIntegerSetting\\SetIntegerSettingHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Settings",
+      "stem": "SetStringChoice",
+      "command": "App\\Settings\\Commands\\SetStringChoice\\SetStringChoiceCommand",
+      "handler": "App\\Settings\\Commands\\SetStringChoice\\SetStringChoiceHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Settings",
+      "stem": "SetStringSetting",
+      "command": "App\\Settings\\Commands\\SetStringSetting\\SetStringSettingCommand",
+      "handler": "App\\Settings\\Commands\\SetStringSetting\\SetStringSettingHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "ApproveShareRequest",
+      "command": "App\\Sharing\\Commands\\ApproveShareRequest\\ApproveShareRequestCommand",
+      "handler": "App\\Sharing\\Commands\\ApproveShareRequest\\ApproveShareRequestHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "ClaimGatewayOperation",
+      "command": "App\\Sharing\\Commands\\ClaimGatewayOperation\\ClaimGatewayOperationCommand",
+      "handler": "App\\Sharing\\Commands\\ClaimGatewayOperation\\ClaimGatewayOperationHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "ConfigureShareGateway",
+      "command": "App\\Sharing\\Commands\\ConfigureShareGateway\\ConfigureShareGatewayCommand",
+      "handler": "App\\Sharing\\Commands\\ConfigureShareGateway\\ConfigureShareGatewayHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "CreateShare",
+      "command": "App\\Sharing\\Commands\\CreateShare\\CreateShareCommand",
+      "handler": "App\\Sharing\\Commands\\CreateShare\\CreateShareHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "DisableShareGateway",
+      "command": "App\\Sharing\\Commands\\DisableShareGateway\\DisableShareGatewayCommand",
+      "handler": "App\\Sharing\\Commands\\DisableShareGateway\\DisableShareGatewayHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "ExpireShares",
+      "command": "App\\Sharing\\Commands\\ExpireShares\\ExpireSharesCommand",
+      "handler": "App\\Sharing\\Commands\\ExpireShares\\ExpireSharesHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "PruneShareAudit",
+      "command": "App\\Sharing\\Commands\\PruneShareAudit\\PruneShareAuditCommand",
+      "handler": "App\\Sharing\\Commands\\PruneShareAudit\\PruneShareAuditHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "ReadShare",
+      "command": "App\\Sharing\\Commands\\ReadShare\\ReadShareCommand",
+      "handler": "App\\Sharing\\Commands\\ReadShare\\ReadShareHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "RecordGatewayHealth",
+      "command": "App\\Sharing\\Commands\\RecordGatewayHealth\\RecordGatewayHealthCommand",
+      "handler": "App\\Sharing\\Commands\\RecordGatewayHealth\\RecordGatewayHealthHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "RecordGatewayOutcome",
+      "command": "App\\Sharing\\Commands\\RecordGatewayOutcome\\RecordGatewayOutcomeCommand",
+      "handler": "App\\Sharing\\Commands\\RecordGatewayOutcome\\RecordGatewayOutcomeHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "RefreshShareScope",
+      "command": "App\\Sharing\\Commands\\RefreshShareScope\\RefreshShareScopeCommand",
+      "handler": "App\\Sharing\\Commands\\RefreshShareScope\\RefreshShareScopeHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "ReopenSharedGateways",
+      "command": "App\\Sharing\\Commands\\ReopenSharedGateways\\ReopenSharedGatewaysCommand",
+      "handler": "App\\Sharing\\Commands\\ReopenSharedGateways\\ReopenSharedGatewaysHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "RequestShare",
+      "command": "App\\Sharing\\Commands\\RequestShare\\RequestShareCommand",
+      "handler": "App\\Sharing\\Commands\\RequestShare\\RequestShareHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "RetryShare",
+      "command": "App\\Sharing\\Commands\\RetryShare\\RetryShareCommand",
+      "handler": "App\\Sharing\\Commands\\RetryShare\\RetryShareHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "RevokeShare",
+      "command": "App\\Sharing\\Commands\\RevokeShare\\RevokeShareCommand",
+      "handler": "App\\Sharing\\Commands\\RevokeShare\\RevokeShareHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Sharing",
+      "stem": "SaveSharePreview",
+      "command": "App\\Sharing\\Commands\\SaveSharePreview\\SaveSharePreviewCommand",
+      "handler": "App\\Sharing\\Commands\\SaveSharePreview\\SaveSharePreviewHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Skills",
+      "stem": "ActivateSkillPublication",
+      "command": "App\\Skills\\Commands\\ActivateSkillPublication\\ActivateSkillPublicationCommand",
+      "handler": "App\\Skills\\Commands\\ActivateSkillPublication\\ActivateSkillPublicationHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Skills",
+      "stem": "CopySkill",
+      "command": "App\\Skills\\Commands\\CopySkill\\CopySkillCommand",
+      "handler": "App\\Skills\\Commands\\CopySkill\\CopySkillHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Skills",
+      "stem": "CreateSkill",
+      "command": "App\\Skills\\Commands\\CreateSkill\\CreateSkillCommand",
+      "handler": "App\\Skills\\Commands\\CreateSkill\\CreateSkillHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Skills",
+      "stem": "FailSkillPublication",
+      "command": "App\\Skills\\Commands\\FailSkillPublication\\FailSkillPublicationCommand",
+      "handler": "App\\Skills\\Commands\\FailSkillPublication\\FailSkillPublicationHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Skills",
+      "stem": "PrepareSkillPublication",
+      "command": "App\\Skills\\Commands\\PrepareSkillPublication\\PrepareSkillPublicationCommand",
+      "handler": "App\\Skills\\Commands\\PrepareSkillPublication\\PrepareSkillPublicationHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Skills",
+      "stem": "PruneSkillPublications",
+      "command": "App\\Skills\\Commands\\PruneSkillPublications\\PruneSkillPublicationsCommand",
+      "handler": "App\\Skills\\Commands\\PruneSkillPublications\\PruneSkillPublicationsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Skills",
+      "stem": "PublishSkills",
+      "command": "App\\Skills\\Commands\\PublishSkills\\PublishSkillsCommand",
+      "handler": "App\\Skills\\Commands\\PublishSkills\\PublishSkillsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Skills",
+      "stem": "RecordSkillRead",
+      "command": "App\\Skills\\Commands\\RecordSkillRead\\RecordSkillReadCommand",
+      "handler": "App\\Skills\\Commands\\RecordSkillRead\\RecordSkillReadHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Skills",
+      "stem": "RefreshSkills",
+      "command": "App\\Skills\\Commands\\RefreshSkills\\RefreshSkillsCommand",
+      "handler": "App\\Skills\\Commands\\RefreshSkills\\RefreshSkillsHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Skills",
+      "stem": "RestoreSkill",
+      "command": "App\\Skills\\Commands\\RestoreSkill\\RestoreSkillCommand",
+      "handler": "App\\Skills\\Commands\\RestoreSkill\\RestoreSkillHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Skills",
+      "stem": "RetireSkill",
+      "command": "App\\Skills\\Commands\\RetireSkill\\RetireSkillCommand",
+      "handler": "App\\Skills\\Commands\\RetireSkill\\RetireSkillHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Skills",
+      "stem": "RetrySkillPublication",
+      "command": "App\\Skills\\Commands\\RetrySkillPublication\\RetrySkillPublicationCommand",
+      "handler": "App\\Skills\\Commands\\RetrySkillPublication\\RetrySkillPublicationHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Skills",
+      "stem": "ReviseSkill",
+      "command": "App\\Skills\\Commands\\ReviseSkill\\ReviseSkillCommand",
+      "handler": "App\\Skills\\Commands\\ReviseSkill\\ReviseSkillHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Supervision",
+      "stem": "AdvanceAsk",
+      "command": "App\\Supervision\\Commands\\AdvanceAsk\\AdvanceAskCommand",
+      "handler": "App\\Supervision\\Commands\\AdvanceAsk\\AdvanceAskHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Supervision",
+      "stem": "ApproveCodeReview",
+      "command": "App\\Supervision\\Commands\\ApproveCodeReview\\ApproveCodeReviewCommand",
+      "handler": "App\\Supervision\\Commands\\ApproveCodeReview\\ApproveCodeReviewHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Supervision",
+      "stem": "AskSupervisor",
+      "command": "App\\Supervision\\Commands\\AskSupervisor\\AskSupervisorCommand",
+      "handler": "App\\Supervision\\Commands\\AskSupervisor\\AskSupervisorHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Supervision",
+      "stem": "ChangeSupervisor",
+      "command": "App\\Supervision\\Commands\\ChangeSupervisor\\ChangeSupervisorCommand",
+      "handler": "App\\Supervision\\Commands\\ChangeSupervisor\\ChangeSupervisorHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Supervision",
+      "stem": "CloseWorkChain",
+      "command": "App\\Supervision\\Commands\\CloseWorkChain\\CloseWorkChainCommand",
+      "handler": "App\\Supervision\\Commands\\CloseWorkChain\\CloseWorkChainHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Supervision",
+      "stem": "HandOffCodeReview",
+      "command": "App\\Supervision\\Commands\\HandOffCodeReview\\HandOffCodeReviewCommand",
+      "handler": "App\\Supervision\\Commands\\HandOffCodeReview\\HandOffCodeReviewHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Supervision",
+      "stem": "ReplyToAsk",
+      "command": "App\\Supervision\\Commands\\ReplyToAsk\\ReplyToAskCommand",
+      "handler": "App\\Supervision\\Commands\\ReplyToAsk\\ReplyToAskHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Supervision",
+      "stem": "ResolveMergeAttempt",
+      "command": "App\\Supervision\\Commands\\ResolveMergeAttempt\\ResolveMergeAttemptCommand",
+      "handler": "App\\Supervision\\Commands\\ResolveMergeAttempt\\ResolveMergeAttemptHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Supervision",
+      "stem": "ReturnCodeReview",
+      "command": "App\\Supervision\\Commands\\ReturnCodeReview\\ReturnCodeReviewCommand",
+      "handler": "App\\Supervision\\Commands\\ReturnCodeReview\\ReturnCodeReviewHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Supervision",
+      "stem": "RouteAsk",
+      "command": "App\\Supervision\\Commands\\RouteAsk\\RouteAskCommand",
+      "handler": "App\\Supervision\\Commands\\RouteAsk\\RouteAskHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Supervision",
+      "stem": "SettleMergeOutcomes",
+      "command": "App\\Supervision\\Commands\\SettleMergeOutcomes\\SettleMergeOutcomesCommand",
+      "handler": "App\\Supervision\\Commands\\SettleMergeOutcomes\\SettleMergeOutcomesHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Supervision",
+      "stem": "WithdrawAsk",
+      "command": "App\\Supervision\\Commands\\WithdrawAsk\\WithdrawAskCommand",
+      "handler": "App\\Supervision\\Commands\\WithdrawAsk\\WithdrawAskHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Supervision",
+      "stem": "WithdrawWorkChain",
+      "command": "App\\Supervision\\Commands\\WithdrawWorkChain\\WithdrawWorkChainCommand",
+      "handler": "App\\Supervision\\Commands\\WithdrawWorkChain\\WithdrawWorkChainHandler",
+      "class": "paired Core area"
+    },
+    {
+      "owner": "Tasks",
+      "stem": "AddTaskWait",
+      "command": "Domain\\Tasks\\Commands\\AddTaskWait\\AddTaskWaitCommand",
+      "handler": "Domain\\Tasks\\Commands\\AddTaskWait\\AddTaskWaitHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Tasks",
+      "stem": "BindTaskCheck",
+      "command": "Domain\\Tasks\\Commands\\BindTaskCheck\\BindTaskCheckCommand",
+      "handler": "Domain\\Tasks\\Commands\\BindTaskCheck\\BindTaskCheckHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Tasks",
+      "stem": "BlockTask",
+      "command": "Domain\\Tasks\\Commands\\BlockTask\\BlockTaskCommand",
+      "handler": "Domain\\Tasks\\Commands\\BlockTask\\BlockTaskHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Tasks",
+      "stem": "CancelTask",
+      "command": "Domain\\Tasks\\Commands\\CancelTask\\CancelTaskCommand",
+      "handler": "Domain\\Tasks\\Commands\\CancelTask\\CancelTaskHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Tasks",
+      "stem": "CreateTask",
+      "command": "Domain\\Tasks\\Commands\\CreateTask\\CreateTaskCommand",
+      "handler": "Domain\\Tasks\\Commands\\CreateTask\\CreateTaskHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Tasks",
+      "stem": "EditTask",
+      "command": "Domain\\Tasks\\Commands\\EditTask\\EditTaskCommand",
+      "handler": "Domain\\Tasks\\Commands\\EditTask\\EditTaskHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Tasks",
+      "stem": "FinishTask",
+      "command": "Domain\\Tasks\\Commands\\FinishTask\\FinishTaskCommand",
+      "handler": "Domain\\Tasks\\Commands\\FinishTask\\FinishTaskHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Tasks",
+      "stem": "LogTaskRun",
+      "command": "Domain\\Tasks\\Commands\\LogTaskRun\\LogTaskRunCommand",
+      "handler": "Domain\\Tasks\\Commands\\LogTaskRun\\LogTaskRunHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Tasks",
+      "stem": "RemoveTaskWait",
+      "command": "Domain\\Tasks\\Commands\\RemoveTaskWait\\RemoveTaskWaitCommand",
+      "handler": "Domain\\Tasks\\Commands\\RemoveTaskWait\\RemoveTaskWaitHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Tasks",
+      "stem": "ResumeTaskRun",
+      "command": "Domain\\Tasks\\Commands\\ResumeTaskRun\\ResumeTaskRunCommand",
+      "handler": "Domain\\Tasks\\Commands\\ResumeTaskRun\\ResumeTaskRunHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Tasks",
+      "stem": "RunTaskCheck",
+      "command": "Domain\\Tasks\\Commands\\RunTaskCheck\\RunTaskCheckCommand",
+      "handler": "Domain\\Tasks\\Commands\\RunTaskCheck\\RunTaskCheckHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Tasks",
+      "stem": "StartTask",
+      "command": "Domain\\Tasks\\Commands\\StartTask\\StartTaskCommand",
+      "handler": "Domain\\Tasks\\Commands\\StartTask\\StartTaskHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Tasks",
+      "stem": "WaiveTaskWait",
+      "command": "Domain\\Tasks\\Commands\\WaiveTaskWait\\WaiveTaskWaitCommand",
+      "handler": "Domain\\Tasks\\Commands\\WaiveTaskWait\\WaiveTaskWaitHandler",
+      "class": "final package pair"
+    },
+    {
+      "owner": "Web",
+      "stem": "RecordUserHeartbeat",
+      "command": "App\\Web\\Commands\\RecordUserHeartbeat\\RecordUserHeartbeatCommand",
+      "handler": "App\\Web\\Commands\\RecordUserHeartbeat\\RecordUserHeartbeatHandler",
+      "class": "paired Core area"
+    }
+  ]
+}

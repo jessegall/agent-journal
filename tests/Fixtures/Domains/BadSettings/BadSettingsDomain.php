@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\BadSettings;
 
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
-use App\Settings\Contracts\SettingsProvider;
-use App\Settings\Contracts\SettingsDefinition;
-use App\Settings\Declarations\SettingGroup;
-use App\Settings\Declarations\StringSetting;
+use App\Support\Domain;
+use App\Support\Exports;
+use App\Contracts\SettingsProvider;
+use App\Contracts\SettingsDefinition;
+use App\Declarations\SettingGroup;
+use App\Declarations\StringSetting;
 use Tests\Fixtures\Settings\SettingsList;
 
 final class BadSettingsDomain extends Domain implements SettingsProvider

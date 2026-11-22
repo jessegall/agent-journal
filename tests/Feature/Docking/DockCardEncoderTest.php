@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Docking;
 
-use App\Docking\Cards\DockCard;
-use App\Docking\Cards\DockIdentity;
-use App\Docking\Cards\Stack;
-use App\Docking\Cards\Subtitle;
-use App\Docking\Cards\Title;
-use App\Docking\Enums\PartType;
-use App\Docking\Exceptions\PartMapInvalid;
-use App\Docking\Wire\DockCardEncoder;
-use App\Docking\Wire\DockNodeTypes;
-use App\Docking\Wire\PartMap;
+use App\Enums\PartType;
+use App\Exceptions\PartMapInvalid;
+use App\Support\Cards\DockCard;
+use App\Support\Cards\DockIdentity;
+use App\Support\Cards\Stack;
+use App\Support\Cards\Subtitle;
+use App\Support\Cards\Title;
+use App\Support\Wire\DockCardEncoder;
+use App\Support\Wire\DockNodeTypes;
+use App\Support\Wire\PartMap;
 use Tests\TestCase;
 
 /**

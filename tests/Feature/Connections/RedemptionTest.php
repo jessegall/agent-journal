@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Models\Agent;
-use App\Agents\Models\Host;
-use App\Connections\Models\Project;
-use App\Connections\Models\ProjectBinding;
-use App\Connections\Models\ProjectInvitation;
+use App\Enums\HostProtocolVersion;
+use App\Models\Agent;
+use App\Models\Host;
+use App\Models\Project;
+use App\Models\ProjectBinding;
+use App\Models\ProjectInvitation;
 use Illuminate\Testing\TestResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\CommitsHookRows;

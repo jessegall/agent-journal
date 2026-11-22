@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Autoload;
 
-use App\Autoload\Support\FolderClasses;
-use App\Bus\Contracts\Command;
+use App\Contracts\Command;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\OverviewReadTool;
+use App\Support\FolderClasses;
 use Domain\Chat\Commands\PinMessage\PinMessageCommand;
 use Illuminate\Console\Command as ConsoleCommand;
 use Tests\TestCase;

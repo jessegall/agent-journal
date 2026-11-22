@@ -10,9 +10,9 @@ use Domain\Plans\Data\PhaseTaskPageData;
 use Domain\Plans\Data\PlanOutlineData;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
-use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Contracts\TaskWaitResolver;
+use Domain\Tasks\Values\TaskSummary;
 use Spatie\LaravelData\Optional;
 
 /**

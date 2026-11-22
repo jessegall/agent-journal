@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Actors\Contracts\ActorAttention;
-use App\Bus\Support\OperationDeadline;
+use App\Contracts\ActorAttention;
 use App\Contracts\Event;
-use App\Domains\Providers\DomainEventServiceProvider;
-use App\Hooks\Enums\AnswerType;
-use App\Hooks\Models\HookCall;
-use App\Hooks\References\StateReference;
-use App\Hooks\References\SubjectReference;
-use App\Hooks\Support\StackTransaction;
-use Domain\Tasks\Api\Events\TaskCancelled;
-use Domain\Tasks\Api\Events\TaskFinished;
+use App\Enums\AnswerType;
+use App\Models\HookCall;
+use App\Providers\DomainEventServiceProvider;
+use App\Support\OperationDeadline;
+use App\Support\References\StateReference;
+use App\Support\References\SubjectReference;
+use App\Support\StackTransaction;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Events\TaskCancelled;
+use Domain\Tasks\Events\TaskFinished;
 use Illuminate\Contracts\Events\Dispatcher;
 use Psr\Log\LoggerInterface;
 use Tests\Fixtures\Agents\RecordedAttention;

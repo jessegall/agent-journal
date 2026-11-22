@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Data;
 
-use App\Text\Support\TextPreview;
+use App\Support\TextPreview;
 
 final readonly class SearchHit
 {

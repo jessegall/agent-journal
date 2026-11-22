@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Contracts\Attributes\RequiresListener;
+use App\Attributes\RequiresListener;
 use PhpParser\Node\Attribute;
 use PhpParser\Node\InterpolatedStringPart;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\NodeFinder;
 
 /**
- * Every string, string part or heredoc of a file that names project code, such as 'App\Communication\Models\Message'.
+ * Every string, string part or heredoc of a file that names project code, such as 'App\Models\Message'.
  * The listener a write owner's RequiresListener names is a declaration that admits it, never a use of it.
  */
 final class StringScan

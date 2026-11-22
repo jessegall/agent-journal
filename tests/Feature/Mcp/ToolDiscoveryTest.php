@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Agents\Contracts\ToolDiscovery;
+use App\Contracts\ToolDiscovery;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;

@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Library;
 
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
-use App\Ui\Contracts\NavigationProvider;
-use App\Ui\Contracts\PageProvider;
-use App\Ui\Contracts\SidebarGroupProvider;
-use App\Ui\Declarations\ActionRoute;
-use App\Ui\Declarations\NavigationItem;
-use App\Ui\Declarations\Page;
-use App\Ui\Declarations\SidebarGroup;
-use App\Ui\Declarations\Slot;
-use App\Ui\Enums\Icon;
-use App\Ui\Enums\SlotContextType;
+use App\Support\Domain;
+use App\Support\Exports;
+use App\Contracts\NavigationProvider;
+use App\Contracts\PageProvider;
+use App\Contracts\SidebarGroupProvider;
+use App\Declarations\ActionRoute;
+use App\Declarations\NavigationItem;
+use App\Declarations\Page;
+use App\Declarations\SidebarGroup;
+use App\Declarations\Slot;
+use App\Enums\Icon;
+use App\Enums\SlotContextType;
 
 /**
  * A fixture domain with a list page, a record page offering a slot, an action, nested navigation and its own sidebar

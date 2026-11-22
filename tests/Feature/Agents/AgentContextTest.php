@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Actions\AgentSessions;
-use App\Agents\Actions\StartTokens;
-use App\Agents\Exceptions\AgentContextMissing;
-use App\Agents\Models\StartToken;
-use App\Agents\Support\AgentContext;
-use App\Hooks\Stack\StateTypes;
+use App\Exceptions\AgentContextMissing;
 use App\Http\Middleware\Agents\AuthenticateAgent;
+use App\Models\StartToken;
+use App\Support\AgentContext;
+use App\Support\AgentSessions;
+use App\Support\Stack\StateTypes;
+use App\Support\StartTokens;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Domains\Support\DomainEntry;
-use App\Exports\Support\Exports;
+use App\Support\DomainEntry;
+use App\Support\Exports;
 
 /**
  * A domain or Core, with the namespace it owns and the types it exports.

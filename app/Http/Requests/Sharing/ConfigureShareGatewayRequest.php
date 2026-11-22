@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Sharing;
 
+use App\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use App\Http\Requests\Concerns\ReadsIdempotencyKey;
-use App\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
-use App\Sharing\Gateways\Support\GatewaySecrets;
-use App\Sharing\Gateways\Support\TypedSecret;
+use App\Support\Gateways\Support\GatewaySecrets;
+use App\Support\Gateways\Support\TypedSecret;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

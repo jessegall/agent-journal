@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Hooks\Inputs\StopRequested;
+use App\Support\Inputs\StopRequested;
 use Domain\Tasks\Events\TaskStarted as Started;
 
 /**

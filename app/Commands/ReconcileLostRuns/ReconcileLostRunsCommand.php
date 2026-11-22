@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Commands\ReconcileLostRuns;
+
+use App\Attributes\Entry;
+use App\Enums\CommandEntry;
+use App\Support\Command;
+
+/**
+ * The journal marks the runs whose supervisor fell silent as lost.
+ *
+ * @extends Command<int>
+ */
+#[Entry(CommandEntry::HostControl)]
+final readonly class ReconcileLostRunsCommand extends Command {}

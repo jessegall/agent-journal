@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Contracts\CurrentAuthorizer;
-use App\Actors\Exceptions\ActorNotAllowed;
-use App\Operations\Enums\AccessType;
-use App\Reflection\Contracts\TypeReflections;
+use App\Contracts\CurrentActor;
+use App\Contracts\CurrentAuthorizer;
+use App\Contracts\TypeReflections;
+use App\Enums\AccessType;
+use App\Exceptions\ActorNotAllowed;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 use Illuminate\Database\Eloquent\Model;

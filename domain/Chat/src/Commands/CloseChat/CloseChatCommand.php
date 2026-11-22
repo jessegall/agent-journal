@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands\CloseChat;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Support\Command;
-use App\Operations\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Attributes\RetainedActorRequestKey;
+use App\Enums\AccessType;
+use App\Support\Command;
 use Domain\Chat\Policies\ConversationPolicy;
 
 /**

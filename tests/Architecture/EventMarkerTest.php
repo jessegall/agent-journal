@@ -7,7 +7,7 @@ namespace Tests\Architecture;
 use App\Contracts\CommandHandler;
 use App\Contracts\Event;
 use App\Contracts\Listener;
-use App\Reflection\Support\Reflector;
+use App\Support\Reflector;
 use PhpOption\None;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Architecture\Support\DomainFiles;

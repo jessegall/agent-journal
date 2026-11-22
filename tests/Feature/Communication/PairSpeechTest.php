@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\AnswerChatQuestion\AnswerChatQuestionCommand;
-use App\Communication\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Communication\Commands\ClaimSpeech\ClaimSpeechCommand;
-use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Communication\Enums\MessageState;
-use App\Communication\Enums\SpeechOpportunityState;
-use App\Communication\Exceptions\SpeechRefused;
-use App\Communication\Models\Message;
-use App\Communication\Models\SpeechOpportunity;
+use App\Commands\AnswerChatQuestion\AnswerChatQuestionCommand;
+use App\Commands\AskChatQuestion\AskChatQuestionCommand;
+use App\Commands\ClaimSpeech\ClaimSpeechCommand;
+use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Enums\MessageState;
+use App\Enums\SpeechOpportunityState;
+use App\Exceptions\SpeechRefused;
+use App\Models\Message;
+use App\Models\SpeechOpportunity;
+use App\Support\ActorIdentity;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\OpensPairChats;

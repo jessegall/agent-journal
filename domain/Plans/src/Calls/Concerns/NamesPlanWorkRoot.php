@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Calls\Concerns;
 
-use App\Numbers\Exceptions\InvalidRecordReference;
-use App\Numbers\Support\RecordReference;
-use App\Records\Contracts\RecordResolver;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\RecordResolver;
+use App\Exceptions\InvalidRecordReference;
+use App\Support\RecordIdentity;
+use App\Support\RecordReference;
 use Domain\Plans\Models\Phase;
 use Illuminate\Support\Str;
 

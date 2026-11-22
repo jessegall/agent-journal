@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Models\ProcessStart;
-use App\Agents\Models\SessionOutputGrant;
-use App\Agents\Values\HostContext;
-use App\Agents\Values\SessionOutputPaths;
-use App\Hooks\Relay\OutputGrantSeal;
 use App\Http\Requests\Agents\StartReportRequest;
+use App\Models\ProcessStart;
+use App\Models\SessionOutputGrant;
+use App\Support\Relay\OutputGrantSeal;
+use App\Values\HostContext;
+use App\Values\SessionOutputPaths;
 use Illuminate\Http\JsonResponse;
 
 /**

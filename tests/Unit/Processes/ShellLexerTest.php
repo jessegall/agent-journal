@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Pipelines\Support\PipelineRunner;
-use App\Processes\Enums\AnalysisLimit;
-use App\Processes\Enums\ParseOutcome;
-use App\Processes\Enums\RedirectType;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Enums\TokenType;
-use App\Processes\Enums\WordSegmentType;
-use App\Processes\Syntax\LexedLine;
-use App\Processes\Syntax\LexerScan;
-use App\Processes\Syntax\ShellLexer;
-use App\Processes\Syntax\Token;
-use App\Reflection\Support\CatalogueReflectorFactory;
+use App\Enums\AnalysisLimit;
+use App\Enums\ParseOutcome;
+use App\Enums\RedirectType;
+use App\Enums\ShellDialect;
+use App\Enums\TokenType;
+use App\Enums\WordSegmentType;
+use App\Support\CatalogueReflectorFactory;
+use App\Support\PipelineRunner;
+use App\Support\Syntax\LexedLine;
+use App\Support\Syntax\LexerScan;
+use App\Support\Syntax\ShellLexer;
+use App\Support\Syntax\Token;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
 

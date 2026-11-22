@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Requests;
 
-use App\Assignments\Support\Page;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
-use App\Reads\Values\PageSize;
+use App\Support\Page;
+use App\Values\PageSize;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

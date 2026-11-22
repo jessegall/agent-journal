@@ -76,7 +76,8 @@ final class ScanCache
         }
 
         if ($changed) {
-            self::write($cacheFile, $stored);
+            // A file that is gone, such as one a move renamed, keeps no entry, so the cache holds only what exists.
+            self::write($cacheFile, array_filter($stored, is_file(...), ARRAY_FILTER_USE_KEY));
         }
 
         return $byFile;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Commands\ProposeRule;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Support\Command;
-use App\Operations\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Enums\AccessType;
+use App\Support\Command;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Policies\RulePolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;

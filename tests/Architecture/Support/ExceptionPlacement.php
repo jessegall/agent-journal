@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Reflection\Support\Reflector;
+use App\Support\Reflector;
 use Tests\Support\ScanCache\ScanCache;
 use Throwable;
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Exceptions;
 
-use App\Bus\Contracts\CodedRefusal;
-use App\Bus\Enums\RefusalCode;
+use App\Contracts\CodedRefusal;
 use App\Contracts\CommandRefusal;
+use App\Enums\RefusalCode;
 use RuntimeException;
 
 final class TaskMissing extends RuntimeException implements CodedRefusal, CommandRefusal

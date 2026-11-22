@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers\Calls;
 
-use App\AgentRequests\Values\CallAccepted;
+use App\Values\CallAccepted;
 use Domain\Documents\Calls\EditReportCall;
 use Domain\Documents\Exceptions\ReportUnchangeable;
 

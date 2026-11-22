@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-use App\Sharing\Enums\ShareState;
-use App\Sharing\Events\ShareActivated;
-use App\Sharing\Events\ShareCreated;
-use App\Sharing\Events\ShareExpired;
-use App\Sharing\Events\ShareFailed;
-use App\Sharing\Events\ShareGatewayChanged;
-use App\Sharing\Events\ShareRequested;
-use App\Sharing\Events\ShareRevoked;
-use App\Sharing\Events\ShareScopeChanged;
-use App\Sharing\Support\ShareFact;
+use App\Enums\ShareState;
+use App\Events\ShareActivated;
+use App\Events\ShareCreated;
+use App\Events\ShareExpired;
+use App\Events\ShareFailed;
+use App\Events\ShareGatewayChanged;
+use App\Events\ShareRequested;
+use App\Events\ShareRevoked;
+use App\Events\ShareScopeChanged;
+use App\Support\ShareFact;
 use Tests\Architecture\Support\EventRole;
 
 /**

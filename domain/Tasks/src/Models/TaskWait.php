@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
 use App\Contracts\EventSource;
-use App\Contracts\Support\RaisesEvents;
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
-use Domain\Tasks\Api\Events\TaskWaitChanged;
+use App\Contracts\ReadableModel;
+use App\Enums\ActorType;
+use App\Support\ActorIdentity;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWaitChange;
+use Domain\Tasks\Events\TaskWaitChanged;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;

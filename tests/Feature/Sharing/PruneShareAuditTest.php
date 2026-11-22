@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Actors\Support\ActorIdentity;
-use App\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;
-use App\Sharing\Enums\ShareAuditType;
-use App\Sharing\Enums\ShareState;
-use App\Sharing\Models\Share;
-use App\Sharing\Models\ShareAudit;
-use App\Sharing\Models\ShareGatewayConfiguration;
-use App\Sharing\Support\AuditPruning;
+use App\Commands\PruneShareAudit\PruneShareAuditCommand;
+use App\Enums\ShareAuditType;
+use App\Enums\ShareState;
+use App\Models\Share;
+use App\Models\ShareAudit;
+use App\Models\ShareGatewayConfiguration;
+use App\Support\ActorIdentity;
+use App\Support\AuditPruning;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;

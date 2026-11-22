@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support\Sharing;
 
-use App\Records\Support\RecordIdentity;
-use App\Sharing\Models\Share;
-use App\Sharing\Models\ShareGatewayConfiguration;
-use App\Sharing\Support\ShareGrant;
-use App\Sharing\Support\ShareToken;
+use App\Models\Share;
+use App\Models\ShareGatewayConfiguration;
+use App\Support\RecordIdentity;
+use App\Support\ShareGrant;
+use App\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Tests\Support\TestIds;
 

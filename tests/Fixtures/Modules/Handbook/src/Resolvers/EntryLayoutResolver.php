@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Handbook\Resolvers;
 
-use App\Ui\Contracts\PageResolver;
-use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\LayoutActionData;
-use App\Ui\Layout\LayoutBodyData;
-use App\Ui\Layout\LayoutPartData;
-use App\Ui\Layout\LayoutRowData;
-use App\Ui\Layout\PublicationPage;
-use App\Ui\Layout\PublicationTab;
+use App\Contracts\PageResolver;
+use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\LayoutActionData;
+use App\Support\Layout\LayoutBodyData;
+use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\LayoutRowData;
+use App\Support\Layout\PublicationPage;
+use App\Support\Layout\PublicationTab;
 use Closure;
 use Illuminate\Contracts\Auth\Guard;
 use Tests\Fixtures\Modules\Handbook\Http\Requests\EntryRequest;

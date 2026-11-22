@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\QuestionReminders\States;
 
-use App\Hooks\Contracts\TickableState;
-use App\Hooks\States\AgentState;
-use App\Hooks\Ticks\TickCommands;
-use App\Hooks\Ticks\TickContext;
+use App\Contracts\TickableState;
+use App\Support\States\AgentState;
+use App\Support\Ticks\TickCommands;
+use App\Support\Ticks\TickContext;
 use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder\SendQuestionReminderCommand;
 
 /**

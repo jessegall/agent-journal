@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Text;
 
 use App\Http\Requests\RecordTargetRequest;
-use App\Text\Support\TextSelection;
+use App\Support\TextSelection;
 
 /**
  * A bounded read of one version of a record's text: a span of lines, or one section by its number or heading.

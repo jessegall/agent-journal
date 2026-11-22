@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Contracts;
+
+use App\Exceptions\CommandTransactionMissing;
+use App\Exceptions\RecordUnavailable;
+use App\Exceptions\UnknownLinkType;
+use App\Support\RecordIdentity;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * Links and unlinks records inside the running bus command: the source must be the actor's to change and each target
+ * readable to them. It joins the command's transaction and never opens one.
+ */
+interface RecordLinker
+{
+    /**
+     * Links a record the caller already holds to each target; a link that exists is left as it is.
+     *
+     * @param  list<RecordIdentity>  $targets
+     *
+     * @throws CommandTransactionMissing|UnknownLinkType|RecordUnavailable
+     */
+    public function linkFrom(Model $source, array $targets): void;
+
+    /**
+     * @throws CommandTransactionMissing|UnknownLinkType|RecordUnavailable
+     */
+    public function link(RecordIdentity $source, RecordIdentity $target): void;
+
+    /**
+     * @throws CommandTransactionMissing|UnknownLinkType|RecordUnavailable
+     */
+    public function unlink(RecordIdentity $source, RecordIdentity $target): void;
+}

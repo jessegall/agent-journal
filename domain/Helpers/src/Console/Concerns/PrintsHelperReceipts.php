@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Console\Concerns;
 
-use App\AgentRequests\Values\CommandReport;
-use Domain\Helpers\Http\Data\HelperReceiptData;
+use App\Values\CommandReport;
+use Domain\Helpers\Data\HelperReceiptData;
 
 /**
  * How the helper commands read their options and print a dispatch receipt, and the refusal of a start that names no

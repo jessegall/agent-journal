@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Actors\Enums\ActorType;
-use App\Assignments\Contracts\AssigneeResolver;
-use App\Assignments\Support\AssigneeName;
-use App\Assignments\Support\Page;
+use App\Contracts\AssigneeResolver;
+use App\Enums\ActorType;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
@@ -15,6 +13,8 @@ use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\Continuation;
 use App\Mcp\Support\Continuations;
 use App\Mcp\Support\ToolArguments;
+use App\Support\AssigneeName;
+use App\Support\Page;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;

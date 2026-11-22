@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Actors\Exceptions\ActiveActorCounterRepeated;
-use App\Actors\Exceptions\ActiveActorsUnavailable;
-use App\Actors\Support\ActiveActorCounterRegistry;
-use App\Actors\Support\ActiveActorsResolver;
+use App\Exceptions\ActiveActorCounterRepeated;
+use App\Exceptions\ActiveActorsUnavailable;
+use App\Support\ActiveActorCounterRegistry;
+use App\Support\ActiveActorsResolver;
 use Tests\Fixtures\Actors\FailingAgentCounter;
 use Tests\Fixtures\Actors\FakeAgentCounter;
 use Tests\Fixtures\Actors\FakeUserCounter;

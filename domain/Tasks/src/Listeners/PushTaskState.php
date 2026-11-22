@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Listeners;
 
-use App\Contracts\Attributes\InCommandTransaction;
+use App\Attributes\InCommandTransaction;
+use App\Contracts\ActorWorkStacks;
 use App\Contracts\Listener;
-use App\Hooks\Contracts\ActorWorkStacks;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Resolvers\Support\TaskRecords;
-use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
+use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
 
 /**
  * Puts the started run on the agent's stack in the same transaction as the start, so both commit or neither does.

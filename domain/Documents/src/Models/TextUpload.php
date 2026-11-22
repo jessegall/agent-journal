@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Exceptions\UploadChunkConflict;

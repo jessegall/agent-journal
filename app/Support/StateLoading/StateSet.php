@@ -1,0 +1,92 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support\StateLoading;
+
+use App\Exceptions\StateClassMismatch;
+use App\Exceptions\StateSubjectMissing;
+use App\Support\Decisions\StateReferences;
+use App\Support\References\StateReference;
+use App\Support\References\SubjectReference;
+use App\Support\States\AgentState;
+use Closure;
+
+/**
+ * The state of each reference of one batch, by its place in the batch; a reference whose subject is gone has none,
+ * and asking for it is refused.
+ */
+final readonly class StateSet
+{
+    /**
+     * @param  array<int, AgentState>  $states
+     */
+    private function __construct(public array $states, public string $typeKey) {}
+
+    /**
+     * Builds each reference's state with the subjects already read for the whole batch.
+     *
+     * @param  Closure(StateReference): AgentState  $of  throws StateSubjectMissing for a subject that is gone
+     */
+    public static function build(StateReferences $references, Closure $of): self
+    {
+        $states = [];
+        $typeKey = '';
+
+        foreach ($references->references as $position => $reference) {
+            $typeKey = $reference->typeKey;
+
+            try {
+                $states[$position] = $of($reference);
+            } catch (StateSubjectMissing) {
+                continue;
+            }
+        }
+
+        return new self($states, $typeKey);
+    }
+
+    /**
+     * Builds each reference's state from its subject among those read for the whole batch, keyed by id; a reference
+     * whose subject is not among them has no state.
+     *
+     * @template TSubject
+     *
+     * @param  array<string, TSubject>  $subjects
+     * @param  Closure(TSubject, SubjectReference): AgentState  $of
+     */
+    public static function forSubjects(StateReferences $references, array $subjects, Closure $of): self
+    {
+        return self::build($references, function (StateReference $reference) use ($subjects, $of): AgentState {
+            $subject = $reference->subject;
+
+            if (! $subject instanceof SubjectReference || ! isset($subjects[$subject->id])) {
+                throw StateSubjectMissing::for($reference->typeKey);
+            }
+
+            return $of($subjects[$subject->id], $subject);
+        });
+    }
+
+    /**
+     * @param  class-string<AgentState>  $class
+     */
+    public function stateOfClassAt(int $position, string $class): AgentState
+    {
+        $state = $this->stateAt($position);
+
+        if ($state::class !== $class) {
+            throw StateClassMismatch::for($this->typeKey, $class, $state::class);
+        }
+
+        return $state;
+    }
+
+    /**
+     * @throws StateSubjectMissing
+     */
+    public function stateAt(int $position): AgentState
+    {
+        return $this->states[$position] ?? throw StateSubjectMissing::for($this->typeKey);
+    }
+}

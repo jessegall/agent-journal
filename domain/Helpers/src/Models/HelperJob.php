@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Models\Support\BelongsToOneActor;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Enums\ConversationModeType;
-use App\Agents\Support\OwnerStartReceipt;
-use App\Assignments\Contracts\Assignable;
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
-use App\Records\Support\RecordIdentity;
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Contracts\Assignable;
+use App\Contracts\ReadableModel;
+use App\Enums\ActorType;
+use App\Enums\ConversationModeType;
+use App\Models\Support\BelongsToOneActor;
+use App\Support\ActorIdentity;
+use App\Support\OwnerStartReceipt;
+use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperJobFinished;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\Agents\Enums\NavigationCompletion;
-use App\Agents\Enums\NavigationState;
-use App\Agents\Exceptions\NavigationTransitionRefused;
-use App\Agents\Models\NavigationRequest;
+use App\Contracts\CurrentActorSetter;
+use App\Enums\NavigationCompletion;
+use App\Enums\NavigationState;
+use App\Exceptions\NavigationTransitionRefused;
+use App\Models\NavigationRequest;
+use App\Support\ActorContext;
+use App\Values\OwnerAuthority;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;

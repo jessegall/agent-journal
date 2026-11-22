@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Contracts\ShellAdmission;
-use App\Processes\Enums\AdmissionRefusalCode;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Models\PartRun;
-use App\Processes\Models\ProcessRun;
-use App\Processes\Values\Admission;
-use App\Processes\Values\AdmissionRefusal;
-use App\Processes\Values\ExecutionContext;
+use App\Contracts\ShellAdmission;
+use App\Enums\AdmissionRefusalCode;
+use App\Enums\ShellDialect;
+use App\Models\PartRun;
+use App\Models\ProcessRun;
+use App\Values\Admission;
+use App\Values\AdmissionRefusal;
+use App\Values\ExecutionContext;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Processes\ProcessOutputDisk;

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Support\InstallLineAvailability;
-use App\Agents\Support\PublishedReleases;
-use App\Bus\Contracts\CommandBus;
-use App\Http\Data\Connections\ReleaseOfferData;
-use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
-use App\Settings\Contracts\SettingsResolver;
-use App\Settings\Support\CoreSettings;
-use App\Settings\Values\SettingReference;
+use App\Commands\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Contracts\CommandBus;
+use App\Contracts\SettingsResolver;
+use App\Data\Connections\ReleaseOfferData;
+use App\Enums\HostProtocolVersion;
+use App\Support\CoreSettings;
+use App\Support\InstallLineAvailability;
+use App\Support\PublishedReleases;
+use App\Values\SettingReference;
 use Tests\Support\ActsAsTestOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\PublicRelease;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\CreateTask;
 
-use App\Processes\Contracts\ServedEnvironment;
+use App\Contracts\ServedEnvironment;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Models\Task;
 

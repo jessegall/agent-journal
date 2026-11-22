@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Data;
 
-use Domain\Rules\Api\RuleFilters;
+use Domain\Rules\Values\RuleFilters;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Ulid;
 use Spatie\LaravelData\Data;

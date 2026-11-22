@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\CoreApi;
-use App\Exports\Support\Exports;
+use App\Support\Exports;
 use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\PublicContracts;

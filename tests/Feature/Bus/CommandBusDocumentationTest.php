@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Reflection\Support\Reflector;
+use App\Support\Reflector;
 use Tests\Architecture\Support\FolderType;
 use Tests\TestCase;
 

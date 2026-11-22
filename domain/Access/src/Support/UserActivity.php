@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Actors\Contracts\JournalAdmission;
-use App\Actors\Support\ActorIdentity;
-use App\Assignments\Contracts\AutoAssignmentActivity;
+use App\Contracts\AutoAssignmentActivity;
+use App\Contracts\JournalAdmission;
+use App\Support\ActorIdentity;
 use Domain\Access\Models\User;
 
 /**

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\HelperCommitImport;
-use App\Agents\Enums\MergeAttemptState;
-use App\Agents\Enums\MergeRefusalReason;
-use App\Agents\Models\MergeAttempt;
-use App\Agents\Support\ProtectedMerge;
-use App\Agents\Values\ApprovedHead;
-use App\Agents\Values\ReviewDecisionReference;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\HelperCommitImport;
+use App\Enums\MergeAttemptState;
+use App\Enums\MergeRefusalReason;
+use App\Models\MergeAttempt;
+use App\Support\ActorIdentity;
+use App\Support\ProtectedMerge;
+use App\Support\RecordIdentity;
+use App\Values\ApprovedHead;
+use App\Values\ReviewDecisionReference;
 use Illuminate\Process\Factory;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;

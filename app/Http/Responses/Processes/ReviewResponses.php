@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Responses\Processes;
 
-use App\Bus\Contracts\Command;
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\Command;
+use App\Contracts\CommandBus;
 use App\Contracts\CommandRefusal;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

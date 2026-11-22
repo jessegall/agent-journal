@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Agents\Values\StackTarget;
-use App\Hooks\Enums\NoSubject;
-use App\Hooks\References\StateReference;
-use App\Hooks\Stack\Contracts\StateFactory;
-use App\Hooks\Stack\StackRestorer;
-use App\Hooks\Stack\StateTypes;
-use App\Hooks\Storage\FrameRecord;
-use App\Hooks\Storage\FrameRecords;
-use App\Reflection\Support\ReflectedProperty;
-use App\Reflection\Support\Reflector;
+use App\Enums\NoSubject;
+use App\Support\References\StateReference;
+use App\Support\ReflectedProperty;
+use App\Support\Reflector;
+use App\Support\Stack\Contracts\StateFactory;
+use App\Support\Stack\StackRestorer;
+use App\Support\Stack\StateTypes;
+use App\Support\Storage\FrameRecord;
+use App\Support\Storage\FrameRecords;
+use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use Tests\Fixtures\Hooks\Lifecycle\Listeners\RegisterNoteState;

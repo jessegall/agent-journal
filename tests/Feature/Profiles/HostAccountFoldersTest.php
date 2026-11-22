@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Profiles\Exceptions\AccountFolderRefused;
-use App\Profiles\Support\HostAccountFolders;
-use App\Profiles\Support\HostStartSocket;
+use App\Exceptions\AccountFolderRefused;
+use App\Support\HostAccountFolders;
+use App\Support\HostStartSocket;
 use Tests\TestCase;
 
 /**

@@ -1,0 +1,39 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Commands\RevokeRunOutcomeAccess;
+
+use App\Contracts\CommandHandler;
+use App\Contracts\Notifications;
+use App\Data\NotificationTarget;
+use App\Enums\ActorType;
+use App\Exceptions\RunOutcomeAccessRefused;
+use App\Models\ProcessRun;
+use App\Resolvers\RunNotificationTarget;
+use App\Support\ActorIdentity;
+
+final readonly class RevokeRunOutcomeAccessHandler implements CommandHandler
+{
+    public function __construct(private Notifications $notifications) {}
+
+    /**
+     * @throws RunOutcomeAccessRefused
+     */
+    public function handle(RevokeRunOutcomeAccessCommand $command): void
+    {
+        $run = ProcessRun::lockedForOutcome($command->runId);
+
+        if (! $run->isByActor(ActorIdentity::of($command->dispatchedBy()))) {
+            throw RunOutcomeAccessRefused::notYours($run->id);
+        }
+
+        if ($run->outcome_user_id === null) {
+            return;
+        }
+
+        $user = new ActorIdentity(ActorType::User, $run->outcome_user_id);
+        $run->revokeOutcomeUser();
+        $this->notifications->withdraw(new NotificationTarget(RunNotificationTarget::KEY, $run->id), $user);
+    }
+}

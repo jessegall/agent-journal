@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Processes\Enums\AnalysisLimit;
-use App\Processes\Syntax\TimeBudget;
+use App\Enums\AnalysisLimit;
+use App\Support\Syntax\TimeBudget;
 use PHPUnit\Framework\TestCase;
 
 /**

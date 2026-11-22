@@ -27,11 +27,13 @@ final readonly class ModelWrite
     }
 
     /**
-     * The area of the code it is in: the folder under app or domain.
+     * The owner of the code it is in: Core for app, or the package's folder under domain.
      */
     public function area(): string
     {
-        return explode('/', $this->path)[1] ?? $this->path;
+        $parts = explode('/', $this->path);
+
+        return $parts[0] === 'app' ? 'Core' : ($parts[1] ?? $this->path);
     }
 
     /**

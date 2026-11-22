@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Ui;
 
-use App\Ui\Enums\ActionMethod;
-use App\Ui\Layout\LayoutFieldData;
-use App\Ui\Layout\LayoutFormData;
-use App\Ui\Layout\LayoutPartData;
-use App\Ui\Layout\SettingsGroup;
-use App\Ui\Layout\SettingsPage;
-use App\Ui\Layout\SettingsRow;
+use App\Enums\ActionMethod;
+use App\Support\Layout\LayoutFieldData;
+use App\Support\Layout\LayoutFormData;
+use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\SettingsGroup;
+use App\Support\Layout\SettingsPage;
+use App\Support\Layout\SettingsRow;
 use Spatie\LaravelData\Optional;
 use Tests\TestCase;
 

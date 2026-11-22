@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Domains\Exceptions\InvalidListener;
-use App\Domains\Providers\DomainEventServiceProvider;
+use App\Exceptions\InvalidListener;
+use App\Providers\DomainEventServiceProvider;
 use Tests\Support\SetsEventCachePath;
 use Tests\TestCase;
 

@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorStore;
-use App\Assignments\Contracts\AssignmentRegistration;
-use App\Assignments\Registry\AssignmentRegistry;
+use App\Contracts\AssignmentRegistration;
+use App\Contracts\CurrentActorSetter;
+use App\Contracts\ShellCommandParser;
 use App\CoreApi;
-use App\Domains\Support\DomainRegistry;
-use App\Exports\Support\Exports;
-use App\Processes\Contracts\ShellCommandParser;
+use App\Support\ActorStore;
+use App\Support\DomainRegistry;
+use App\Support\Exports;
+use App\Support\Registry\AssignmentRegistry;
+use App\Support\ShellParser;
 use Tests\Architecture\Support\BindingRules;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
@@ -40,20 +41,20 @@ final class BindingRulesTest extends TestCase
      * or the system the same way the sharing console owner and supervisor do.
      */
     private const array ACTOR_SITES = [
-        'app/Actors/Support/ActorStore.php',
-        'app/Actors/Providers/ActorsServiceProvider.php',
-        'app/Actors/Contracts/CurrentActor.php',
-        'app/Actors/Contracts/CurrentActorSetter.php',
+        'app/Support/ActorStore.php',
+        'app/Providers/ActorsServiceProvider.php',
+        'app/Contracts/CurrentActor.php',
+        'app/Contracts/CurrentActorSetter.php',
         'app/CoreApi.php',
         'app/Http/Middleware/Agents/AuthenticateAgent.php',
         'app/Http/Middleware/Agents/AuthenticateHost.php',
-        'app/Connections/Http/Middleware/AuthenticateDeviceGrant.php',
-        'app/Bus/Support/ConsoleOwner.php',
-        'app/Bus/Support/EntryDispatchers.php',
+        'app/Http/Middleware/AuthenticateDeviceGrant.php',
+        'app/Support/ConsoleOwner.php',
+        'app/Support/EntryDispatchers.php',
         'domain/Access/Http/Middleware/AuthenticateUser.php',
-        'app/Engine/Support/EnginePass.php',
-        'app/Skills/Listeners/RefreshOnSkillsChanged.php',
-        'app/Profiles/Support/BuiltInProfilePins.php',
+        'app/Support/EnginePass.php',
+        'app/Listeners/RefreshOnSkillsChanged.php',
+        'app/Support/BuiltInProfilePins.php',
     ];
 
     /**
@@ -61,15 +62,15 @@ final class BindingRulesTest extends TestCase
      * the registry, Core's composition root and export list, its area providers, and the domain foundation.
      */
     private const array ASSIGNMENT_REGISTRATION_SITES = [
-        'app/Assignments/Contracts/AssignmentRegistration.php',
-        'app/Assignments/Registry/AssignmentRegistry.php',
-        'app/Assignments/Providers/AssignmentsServiceProvider.php',
-        'app/Agents/Providers/AgentsServiceProvider.php',
-        'app/Desks/Providers/DesksServiceProvider.php',
-        'app/Communication/Providers/CommunicationServiceProvider.php',
+        'app/Contracts/AssignmentRegistration.php',
+        'app/Support/Registry/AssignmentRegistry.php',
+        'app/Providers/AssignmentsServiceProvider.php',
+        'app/Providers/AgentsServiceProvider.php',
+        'app/Providers/DesksServiceProvider.php',
+        'app/Providers/CommunicationServiceProvider.php',
         'app/Providers/CoreServiceProvider.php',
         'app/CoreApi.php',
-        'app/Domains/Bootstrappers/RegisterAssignables.php',
+        'app/Support/Bootstrappers/RegisterAssignables.php',
     ];
 
     public function test_every_stated_binding_of_the_app_is_sound(): void
@@ -103,16 +104,16 @@ final class BindingRulesTest extends TestCase
             'PlansServiceProvider.php:18 binds Tests\\Fixtures\\Bindings\\Plans\\Contracts\\PlanResolver, but Tests\\Fixtures\\Bindings\\Plans\\PlanNotes does not implement it',
             "PlansServiceProvider.php:19 binds Tests\\Fixtures\\Bindings\\Tasks\\Contracts\\TaskResolver, but Tasks owns it; only Core's public contracts are filled by another owner",
             'PlansServiceProvider.php:20 binds Tests\\Fixtures\\Bindings\\Plans\\Contracts\\PlanCounter, but the target Tests\\Fixtures\\Bindings\\Tasks\\TaskList belongs to Tasks',
-            'PlanCounts.php:11 binds Tests\\Fixtures\\Bindings\\Plans\\PlanCounts, but the singleton Tests\\Fixtures\\Bindings\\Plans\\PlanCounts keeps the per-request App\\Actors\\Contracts\\CurrentActor beyond its request',
+            'PlanCounts.php:11 binds Tests\\Fixtures\\Bindings\\Plans\\PlanCounts, but the singleton Tests\\Fixtures\\Bindings\\Plans\\PlanCounts keeps the per-request App\\Contracts\\CurrentActor beyond its request',
         ], array_map(
             fn (Violation $violation) => basename($violation->file).":{$violation->line} {$violation->reason()}",
             $violations,
         ));
     }
 
-    public function test_cores_parser_comes_from_processes(): void
+    public function test_cores_parser_is_the_shell_parser(): void
     {
-        $this->assertStringStartsWith('App\Processes\\', $this->app->make(ShellCommandParser::class)::class);
+        $this->assertInstanceOf(ShellParser::class, $this->app->make(ShellCommandParser::class));
     }
 
     public function test_only_the_authentication_sites_name_the_actor_store_or_set_the_actor(): void

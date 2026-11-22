@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Tasks\States;
 
-use App\Hooks\StateLoading\Contracts\StateLoader;
-use App\Hooks\References\StateReference;
-use App\Hooks\Decisions\StateReferences;
-use App\Hooks\StateLoading\StateSet;
-use App\Hooks\References\SubjectReference;
-use App\Hooks\Enums\SessionTransferType;
-use App\Hooks\Exceptions\StateSubjectMissing;
+use App\Support\StateLoading\Contracts\StateLoader;
+use App\Support\References\StateReference;
+use App\Support\Decisions\StateReferences;
+use App\Support\StateLoading\StateSet;
+use App\Support\References\SubjectReference;
+use App\Enums\SessionTransferType;
+use App\Exceptions\StateSubjectMissing;
 
 /**
  * Restores a watch from the task id and watch number stored in its frame.

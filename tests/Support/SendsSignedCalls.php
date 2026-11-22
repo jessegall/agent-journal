@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\AgentRequests\Support\AgentClientSettings;
+use App\Contracts\CurrentActorSetter;
+use App\Support\AgentClientSettings;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Support\ActorIdentity;
-use App\Assignments\Support\AutoAssignmentKey;
-use Domain\Tasks\Api\TaskType;
+use App\Support\ActorIdentity;
+use App\Support\AutoAssignmentKey;
+use Domain\Tasks\Support\TaskType;
 use Tests\Fixtures\Agents\TestStart;
 
 /**

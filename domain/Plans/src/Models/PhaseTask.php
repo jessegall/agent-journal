@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Models;
 
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
-use App\Reads\Support\CountsPivotLoads;
-use App\Reads\Values\ReadOrder;
+use App\Concerns\BoundedReads;
+use App\Concerns\CountsPivotLoads;
+use App\Concerns\Linkable;
+use App\Contracts\ReadableModel;
+use App\Values\ReadOrder;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;

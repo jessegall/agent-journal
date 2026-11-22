@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Agents\Enums\TransportProfileType;
-use App\Agents\Events\AccountSettingsRequested;
-use App\Agents\Support\AccountStartRecipe;
-use App\Agents\Support\AccountStartSettings;
-use App\Drivers\Support\DefaultDrivers;
-use App\Hooks\Compatibility\DriverCompatibility;
-use App\Hooks\Contracts\DriverCompatibilities;
-use App\Hooks\Enums\DriverEvidence;
-use App\Profiles\Enums\SignInMethod;
-use App\Profiles\Models\Account;
-use App\Profiles\Values\AccountLabel;
+use App\Contracts\DriverCompatibilities;
+use App\Enums\DriverEvidence;
+use App\Enums\SignInMethod;
+use App\Enums\TransportProfileType;
+use App\Events\AccountSettingsRequested;
+use App\Models\Account;
+use App\Support\AccountStartRecipe;
+use App\Support\AccountStartSettings;
+use App\Support\Compatibility\DriverCompatibility;
+use App\Support\DefaultDrivers;
+use App\Values\AccountLabel;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

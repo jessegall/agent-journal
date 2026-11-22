@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\ActorNotAllowed;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\Bus\Contracts\CommandBus;
-use Domain\Rules\Api\Events\RuleRemoved;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Exceptions\ActorNotAllowed;
+use App\Support\ActorContext;
+use App\Values\OwnerAuthority;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
 use Domain\Rules\Commands\RemoveRule\RemoveRuleCommand;
 use Domain\Rules\Enums\RuleState;
+use Domain\Rules\Events\RuleRemoved;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Tests\TestCase;

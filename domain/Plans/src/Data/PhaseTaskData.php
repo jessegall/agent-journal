@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Data;
 
-use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Values\TaskSummary;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

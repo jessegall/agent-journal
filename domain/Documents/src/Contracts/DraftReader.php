@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Contracts;
 
-use Domain\Documents\Api\RetainedDraftView;
+use Domain\Documents\Values\RetainedDraftView;
 
 interface DraftReader
 {

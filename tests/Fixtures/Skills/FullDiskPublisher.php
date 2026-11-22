@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Skills;
 
-use App\Skills\Contracts\SkillPublisher;
-use App\Skills\Exceptions\SkillPublicationFailed;
+use App\Contracts\SkillPublisher;
+use App\Exceptions\SkillPublicationFailed;
 
 /**
  * A publisher whose disk is full: staging fails, activation and reads pass through.

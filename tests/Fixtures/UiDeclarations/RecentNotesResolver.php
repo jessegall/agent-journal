@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations;
 
-use App\Ui\Contracts\PageResolver;
-use App\Ui\Contracts\SectionResolver;
-use App\Ui\Declarations\SlotContext;
+use App\Contracts\PageResolver;
+use App\Contracts\SectionResolver;
+use App\Declarations\SlotContext;
 
 /**
  * A reader that narrows its return type to a concrete Data class, as both a page and a section reader.

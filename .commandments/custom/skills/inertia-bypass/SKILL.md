@@ -19,7 +19,7 @@ follow it; and its errors never reach the page's props, so a refusal has nowhere
   `router.post(action.url(...), body, { only: ['page'], preserveState: true })` (rule 56). The controller answers
   through `ReviewResponses`, and a refusal arrives as the page's `errors`.
 - **Polling is a reload on a timer**, never a JSON poll: `router.reload({ only: ['page'], async: true })`.
-- The terminal page (`app/Web/Pages/WebPages.php`, `useTerminalFrames.ts`) is the worked example of all three.
+- The terminal page (`app/Pages/WebPages.php`, `useTerminalFrames.ts`) is the worked example of all three.
 
 ```ts
 // Before: around Inertia

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Hooks\Actions\AgentStacks;
-use App\Hooks\Actions\UserStacks;
-use App\Hooks\Contracts\AgentStack;
-use App\Hooks\Contracts\StackTransactionRunner;
-use App\Hooks\Contracts\UserStack;
-use App\Hooks\Support\StackTransaction;
+use App\Contracts\AgentStack;
+use App\Contracts\StackTransactionRunner;
+use App\Contracts\UserStack;
+use App\Support\AgentStacks;
+use App\Support\StackTransaction;
+use App\Support\UserStacks;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;

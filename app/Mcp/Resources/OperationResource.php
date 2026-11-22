@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Mcp\Resources;
 
-use App\Agents\Contracts\ReadGrant;
-use App\Agents\Values\ReadRequest;
+use App\Contracts\ReadGrant;
 use App\Mcp\Support\OperationsResolver;
+use App\Values\ReadRequest;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;

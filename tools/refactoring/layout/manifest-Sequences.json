@@ -1,0 +1,543 @@
+[
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "262e08ad82fe4a22038302c37116fd738eadb2af",
+        "old_path": "domain/Sequences/database/migrations/2026_11_17_000008_create_sequence_runs_table.php",
+        "old_class": null,
+        "final_path": "domain/Sequences/database/migrations/2026_11_17_000008_create_sequence_runs_table.php",
+        "final_class": null,
+        "status": "stay",
+        "kind": "anonymous migration",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c1dadb52363dab17ffc6ddd2e94d34902e46d661",
+        "old_path": "domain/Sequences/resources/js/SequenceEditor.test.ts",
+        "old_class": null,
+        "final_path": "domain/Sequences/resources/js/SequenceEditor.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "83b0aab93dcd667f5649629bc1e48d80b970c3f7",
+        "old_path": "domain/Sequences/resources/js/SequenceEditor.vue",
+        "old_class": null,
+        "final_path": "domain/Sequences/resources/js/SequenceEditor.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5434e5e1e1a3857a3e005c00dbd4313245703633",
+        "old_path": "domain/Sequences/resources/js/sequenceDraft.test.ts",
+        "old_class": null,
+        "final_path": "domain/Sequences/resources/js/sequenceDraft.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b18a498c95ab8d7c4d01d4c407b378d55cd27d10",
+        "old_path": "domain/Sequences/resources/js/sequenceDraft.ts",
+        "old_class": null,
+        "final_path": "domain/Sequences/resources/js/sequenceDraft.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "48f20e207be210c11cb182b75933b26d13016688",
+        "old_path": "domain/Sequences/resources/skills/sequences.md",
+        "old_class": null,
+        "final_path": "domain/Sequences/resources/skills/sequences.md",
+        "final_class": null,
+        "status": "stay",
+        "kind": "blade or static asset",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "04ff8d6f0c38e908c37efac977d6235a3ae7dbff",
+        "old_path": "domain/Sequences/src/Commands/StartSequence/StartSequenceCommand.php",
+        "old_class": "Domain\\Sequences\\Commands\\StartSequence\\StartSequenceCommand",
+        "final_path": "domain/Sequences/src/Commands/StartSequence/StartSequenceCommand.php",
+        "final_class": "Domain\\Sequences\\Commands\\StartSequence\\StartSequenceCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "abfab673593d2c7c86f6de12ebbd45d20e0b6c15",
+        "old_path": "domain/Sequences/src/Commands/StartSequence/StartSequenceHandler.php",
+        "old_class": "Domain\\Sequences\\Commands\\StartSequence\\StartSequenceHandler",
+        "final_path": "domain/Sequences/src/Commands/StartSequence/StartSequenceHandler.php",
+        "final_class": "Domain\\Sequences\\Commands\\StartSequence\\StartSequenceHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "08c58b92f7553db8eabf4a9a1e0a59610a02ed9d",
+        "old_path": "domain/Sequences/src/Commands/Support/SequenceCommandHandler.php",
+        "old_class": "Domain\\Sequences\\Commands\\Support\\SequenceCommandHandler",
+        "final_path": "domain/Sequences/src/Commands/Support/SequenceCommandHandler.php",
+        "final_class": "Domain\\Sequences\\Commands\\Support\\SequenceCommandHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6c24dddf177d14fa32f5ac26570e195f4f83fe1c",
+        "old_path": "domain/Sequences/src/Data/SequenceEditorPartData.php",
+        "old_class": "Domain\\Sequences\\Data\\SequenceEditorPartData",
+        "final_path": "domain/Sequences/src/Data/SequenceEditorPartData.php",
+        "final_class": "Domain\\Sequences\\Data\\SequenceEditorPartData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "81b5edb63fd28ddbb9f0d9977ed2aaf4fecfcf97",
+        "old_path": "domain/Sequences/src/Data/SequenceStepData.php",
+        "old_class": "Domain\\Sequences\\Data\\SequenceStepData",
+        "final_path": "domain/Sequences/src/Data/SequenceStepData.php",
+        "final_class": "Domain\\Sequences\\Data\\SequenceStepData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6c03088af62dd63d162130c9a0271a80cd7f47c9",
+        "old_path": "domain/Sequences/src/Enums/SequenceRunState.php",
+        "old_class": "Domain\\Sequences\\Enums\\SequenceRunState",
+        "final_path": "domain/Sequences/src/Enums/SequenceRunState.php",
+        "final_class": "Domain\\Sequences\\Enums\\SequenceRunState",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d2ad584e6926dc67e266542517cb372dd925b8ff",
+        "old_path": "domain/Sequences/src/Events/SequenceStarted.php",
+        "old_class": "Domain\\Sequences\\Events\\SequenceStarted",
+        "final_path": "domain/Sequences/src/Events/SequenceStarted.php",
+        "final_class": "Domain\\Sequences\\Events\\SequenceStarted",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a6bdbff654e0c0c6321a3c8478391f0e789aaeaa",
+        "old_path": "domain/Sequences/src/Exceptions/SequenceRunMissing.php",
+        "old_class": "Domain\\Sequences\\Exceptions\\SequenceRunMissing",
+        "final_path": "domain/Sequences/src/Exceptions/SequenceRunMissing.php",
+        "final_class": "Domain\\Sequences\\Exceptions\\SequenceRunMissing",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "24033a498c2a6d5ae71fa63af7c58231c8124a88",
+        "old_path": "domain/Sequences/src/Http/Requests/SequenceRunRequest.php",
+        "old_class": "Domain\\Sequences\\Http\\Requests\\SequenceRunRequest",
+        "final_path": "domain/Sequences/src/Http/Requests/SequenceRunRequest.php",
+        "final_class": "Domain\\Sequences\\Http\\Requests\\SequenceRunRequest",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e11204e2f340c82d73f6a8f53478a4a432694eea",
+        "old_path": "domain/Sequences/src/Listeners/PushSequenceState.php",
+        "old_class": "Domain\\Sequences\\Listeners\\PushSequenceState",
+        "final_path": "domain/Sequences/src/Listeners/PushSequenceState.php",
+        "final_class": "Domain\\Sequences\\Listeners\\PushSequenceState",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f1b376e9a54b99e819bc670e2348b4cd71ce8bd5",
+        "old_path": "domain/Sequences/src/Models/SequenceRun.php",
+        "old_class": "Domain\\Sequences\\Models\\SequenceRun",
+        "final_path": "domain/Sequences/src/Models/SequenceRun.php",
+        "final_class": "Domain\\Sequences\\Models\\SequenceRun",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4ab7d5ade5b202c5f14e3785a552d5154fd158b1",
+        "old_path": "domain/Sequences/src/Policies/SequencePolicy.php",
+        "old_class": "Domain\\Sequences\\Policies\\SequencePolicy",
+        "final_path": "domain/Sequences/src/Policies/SequencePolicy.php",
+        "final_class": "Domain\\Sequences\\Policies\\SequencePolicy",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1397a4c08a09c27fda6a5d21a08944a8fbbd31f8",
+        "old_path": "domain/Sequences/src/Providers/SequencesServiceProvider.php",
+        "old_class": "Domain\\Sequences\\Providers\\SequencesServiceProvider",
+        "final_path": "domain/Sequences/src/Providers/SequencesServiceProvider.php",
+        "final_class": "Domain\\Sequences\\Providers\\SequencesServiceProvider",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bbb7487b2b2d7123c074e44cfd93c231d35260f8",
+        "old_path": "domain/Sequences/src/Resolvers/SequenceIndexResolver.php",
+        "old_class": "Domain\\Sequences\\Resolvers\\SequenceIndexResolver",
+        "final_path": "domain/Sequences/src/Resolvers/SequenceIndexResolver.php",
+        "final_class": "Domain\\Sequences\\Resolvers\\SequenceIndexResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c5ea025f7fdbc5bc693a166f24846bfbf5adbf96",
+        "old_path": "domain/Sequences/src/Resolvers/SequenceRunWindowResolver.php",
+        "old_class": "Domain\\Sequences\\Resolvers\\SequenceRunWindowResolver",
+        "final_path": "domain/Sequences/src/Resolvers/SequenceRunWindowResolver.php",
+        "final_class": "Domain\\Sequences\\Resolvers\\SequenceRunWindowResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9864a73fa22ff8e179fef5ea8419cb0b4bbdf10d",
+        "old_path": "domain/Sequences/src/Resolvers/Support/SequenceRecords.php",
+        "old_class": "Domain\\Sequences\\Resolvers\\Support\\SequenceRecords",
+        "final_path": "domain/Sequences/src/Resolvers/Support/SequenceRecords.php",
+        "final_class": "Domain\\Sequences\\Resolvers\\Support\\SequenceRecords",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "62b3bb73f5d257d875ce20334ea0ecc07c332e86",
+        "old_path": "domain/Sequences/src/SequencesDomain.php",
+        "old_class": "Domain\\Sequences\\SequencesDomain",
+        "final_path": "domain/Sequences/src/SequencesDomain.php",
+        "final_class": "Domain\\Sequences\\SequencesDomain",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "77d8878468459b23b74ac2b92a2b4e9aac666aa7",
+        "old_path": "domain/Sequences/src/Skills/SequencesSkill.php",
+        "old_class": "Domain\\Sequences\\Skills\\SequencesSkill",
+        "final_path": "domain/Sequences/src/Support/Skills/SequencesSkill.php",
+        "final_class": "Domain\\Sequences\\Support\\Skills\\SequencesSkill",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Sequences",
+        "consumers": [
+            "tools/refactoring/layout/manifest-Sequences.json"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "17c03398835df8ffb982fd9c97a1015a49bda9b4",
+        "old_path": "domain/Sequences/src/States/FollowingSequenceState.php",
+        "old_class": "Domain\\Sequences\\States\\FollowingSequenceState",
+        "final_path": "domain/Sequences/src/Support/States/FollowingSequenceState.php",
+        "final_class": "Domain\\Sequences\\Support\\States\\FollowingSequenceState",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Sequences",
+        "consumers": [
+            "domain/Sequences/tests/Unit/States/FollowingSequenceTest.php",
+            "tools/refactoring/layout/manifest-Sequences.json"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "58a659b51119fff4d547464e7d5ef0351f5773f2",
+        "old_path": "domain/Sequences/src/States/Support/FollowingSequenceStateFactory.php",
+        "old_class": "Domain\\Sequences\\States\\Support\\FollowingSequenceStateFactory",
+        "final_path": "domain/Sequences/src/Support/States/Support/FollowingSequenceStateFactory.php",
+        "final_class": "Domain\\Sequences\\Support\\States\\Support\\FollowingSequenceStateFactory",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Sequences",
+        "consumers": [
+            "tools/refactoring/layout/manifest-Sequences.json"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "86289f121656e3e4f864adc4960bf345b596f39b",
+        "old_path": "domain/Sequences/src/States/Support/FollowingSequenceStateReference.php",
+        "old_class": "Domain\\Sequences\\States\\Support\\FollowingSequenceStateReference",
+        "final_path": "domain/Sequences/src/Support/States/Support/FollowingSequenceStateReference.php",
+        "final_class": "Domain\\Sequences\\Support\\States\\Support\\FollowingSequenceStateReference",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Sequences",
+        "consumers": [
+            "tools/refactoring/layout/manifest-Sequences.json"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c5da689ab3faf48455038abbf93d67f351b56d41",
+        "old_path": "domain/Sequences/src/Support/SequenceWork.php",
+        "old_class": "Domain\\Sequences\\Support\\SequenceWork",
+        "final_path": "domain/Sequences/src/Support/SequenceWork.php",
+        "final_class": "Domain\\Sequences\\Support\\SequenceWork",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Sequences",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    }
+]

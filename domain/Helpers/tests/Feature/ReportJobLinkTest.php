@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Enums\ConversationModeType;
-use App\Agents\Enums\DriverSourceType;
-use App\Agents\Enums\ModelSelectionType;
-use App\Agents\Enums\StartDisposition;
-use App\Agents\Enums\StartOriginType;
-use App\Agents\Models\Agent;
-use App\Agents\Support\StartRecordDetails;
+use App\Enums\ActorType;
+use App\Enums\ConversationModeType;
+use App\Enums\DriverSourceType;
+use App\Enums\ModelSelectionType;
+use App\Enums\StartDisposition;
+use App\Enums\StartOriginType;
+use App\Models\Agent;
+use App\Support\ActorIdentity;
+use App\Support\StartRecordDetails;
 use Domain\Helpers\Enums\ReportJobDiscrepancyReason;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;

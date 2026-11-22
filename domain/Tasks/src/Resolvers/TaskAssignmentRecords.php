@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Records\Support\RecordIdentity;
-use Domain\Tasks\Api\TaskAssignmentCompletion;
+use App\Contracts\CurrentActor;
+use App\Support\RecordIdentity;
 use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Values\TaskAssignmentCompletion;
 use Illuminate\Container\Attributes\Scoped;
 
 /**

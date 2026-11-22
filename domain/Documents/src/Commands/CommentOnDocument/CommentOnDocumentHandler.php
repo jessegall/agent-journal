@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\CommentOnDocument;
 
-use App\Numbers\Support\RecordReference;
-use App\Records\Support\RecordIdentity;
+use App\Support\RecordIdentity;
+use App\Support\RecordReference;
 use Domain\Documents\Commands\Support\DocumentCommandHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Resolvers\DocumentRecords;

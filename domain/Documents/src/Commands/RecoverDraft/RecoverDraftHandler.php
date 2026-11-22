@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\RecoverDraft;
 
-use App\Bus\Contracts\CommandBus;
-use Domain\Documents\Api\DraftReference;
-use Domain\Documents\Api\DraftTarget;
+use App\Contracts\CommandBus;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Commands\Support\DocumentCommandHandler;
 use Domain\Documents\Exceptions\DraftHeld;
@@ -14,6 +12,8 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Resolvers\RetainedDrafts;
 use Domain\Documents\Support\DraftEditing;
+use Domain\Documents\Values\DraftReference;
+use Domain\Documents\Values\DraftTarget;
 
 final readonly class RecoverDraftHandler extends DocumentCommandHandler
 {

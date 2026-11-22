@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Providers;
 
-use App\Links\Support\LinkTypeRegistry;
+use App\Support\LinkTypeRegistry;
 use Domain\Sequences\Models\SequenceRun;
 use Illuminate\Support\ServiceProvider;
 

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Processes\Enums\AnalysisLimit;
-use App\Processes\Enums\NodeType;
-use App\Processes\Enums\ParseOutcome;
-use App\Processes\Values\ShellNode;
-use App\Processes\Values\ShellTree;
+use App\Enums\AnalysisLimit;
+use App\Enums\NodeType;
+use App\Enums\ParseOutcome;
+use App\Values\ShellNode;
+use App\Values\ShellTree;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\Processes\ParsesBashLines;
 

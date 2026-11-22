@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Actors\Contracts\JournalAdmission;
-use App\Actors\Exceptions\ConsoleOwnerMissing;
-use App\Bus\Contracts\CommandBus;
-use App\Supervision\Contracts\SupervisorDispatch;
-use App\Supervision\Enums\SupervisorDispatchOutcome;
-use App\Supervision\Values\SupervisorRequest;
+use App\Contracts\CommandBus;
+use App\Contracts\JournalAdmission;
+use App\Contracts\SupervisorDispatch;
+use App\Enums\SupervisorDispatchOutcome;
+use App\Exceptions\ConsoleOwnerMissing;
+use App\Values\SupervisorRequest;
 use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
 use Domain\Helpers\Exceptions\HelperBusy;
 use Domain\Helpers\Values\HelperWork;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
-use App\Actors\Contracts\ActorLabels;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Contracts\NotificationTargetResolver;
-use App\Communication\Data\NotificationLink;
-use App\Ui\Contracts\DeclaredPages;
+use App\Contracts\ActorLabels;
+use App\Contracts\DeclaredPages;
+use App\Contracts\NotificationTargetResolver;
+use App\Data\NotificationLink;
+use App\Support\ActorIdentity;
 use Domain\Documents\Models\Report;
 
 /**

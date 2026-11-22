@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\ReplaceDocumentText;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Support\Command;
-use App\Operations\Enums\AccessType;
-use Domain\Documents\Api\DraftReference;
-use Domain\Documents\Api\DraftTarget;
+use App\Attributes\Authorize;
+use App\Enums\AccessType;
+use App\Support\Command;
 use Domain\Documents\Policies\DocumentPolicy;
+use Domain\Documents\Values\DraftReference;
+use Domain\Documents\Values\DraftTarget;
 
 /**
  * Replaces one exact piece of a draft, which must appear exactly once.

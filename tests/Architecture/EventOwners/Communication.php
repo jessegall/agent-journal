@@ -2,30 +2,30 @@
 
 declare(strict_types=1);
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Enums\DismissalType;
-use App\Communication\Enums\IntervalRole;
-use App\Communication\Enums\LeaveReason;
-use App\Communication\Enums\ReceiptDeliveryState;
-use App\Communication\Enums\SpeechOpportunityState;
-use App\Communication\Events\ChatMemberJoined;
-use App\Communication\Events\ChatMemberLeft;
-use App\Communication\Events\ChatMessageAccepted;
-use App\Communication\Events\ChatReceiptPresented;
-use App\Communication\Events\ChatRoleChanged;
-use App\Communication\Events\MessageAnswered;
-use App\Communication\Events\MessageAnswerRequired;
-use App\Communication\Events\MessageClaimReleased;
-use App\Communication\Events\MessageDismissed;
-use App\Communication\Events\MessageRead;
-use App\Communication\Events\MessageSent;
-use App\Communication\Events\MessageTakenUp;
-use App\Communication\Events\NotificationsChanged;
-use App\Communication\Events\NotificationsWithdrawn;
-use App\Communication\Events\ReceiptDeliveriesScheduled;
-use App\Communication\Events\ReceiptDeliveryChanged;
-use App\Communication\Events\SpeechOpportunitySettled;
+use App\Enums\ActorType;
+use App\Enums\DismissalType;
+use App\Enums\IntervalRole;
+use App\Enums\LeaveReason;
+use App\Enums\ReceiptDeliveryState;
+use App\Enums\SpeechOpportunityState;
+use App\Events\ChatMemberJoined;
+use App\Events\ChatMemberLeft;
+use App\Events\ChatMessageAccepted;
+use App\Events\ChatReceiptPresented;
+use App\Events\ChatRoleChanged;
+use App\Events\MessageAnswered;
+use App\Events\MessageAnswerRequired;
+use App\Events\MessageClaimReleased;
+use App\Events\MessageDismissed;
+use App\Events\MessageRead;
+use App\Events\MessageSent;
+use App\Events\MessageTakenUp;
+use App\Events\NotificationsChanged;
+use App\Events\NotificationsWithdrawn;
+use App\Events\ReceiptDeliveriesScheduled;
+use App\Events\ReceiptDeliveryChanged;
+use App\Events\SpeechOpportunitySettled;
+use App\Support\ActorIdentity;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -83,7 +83,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Communication/Support/ReceiptDeliveries.php',
+            'app/Support/ReceiptDeliveries.php',
         ],
     ],
     ReceiptDeliveryChanged::class => [
@@ -135,7 +135,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Communication/Commands/ReleaseMessageClaim/ReleaseMessageClaimHandler.php',
+            'app/Commands/ReleaseMessageClaim/ReleaseMessageClaimHandler.php',
         ],
     ],
     MessageDismissed::class => [
@@ -163,7 +163,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Communication/Support/MessageReading.php',
+            'app/Support/MessageReading.php',
         ],
     ],
     NotificationsChanged::class => [
@@ -182,8 +182,8 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Communication/Commands/HideUnseatedNotifications/HideUnseatedNotificationsHandler.php',
-            'app/Communication/Support/RecipientNotifications.php',
+            'app/Commands/HideUnseatedNotifications/HideUnseatedNotificationsHandler.php',
+            'app/Support/RecipientNotifications.php',
         ],
     ],
 ];

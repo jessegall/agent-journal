@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Models\Support\BelongsToOneActor;
-use App\Actors\Support\ActorIdentity;
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Contracts\ReadableModel;
+use App\Enums\ActorType;
+use App\Models\Support\BelongsToOneActor;
+use App\Support\ActorIdentity;
 use Domain\Helpers\Exceptions\HelperIdentityFixed;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;

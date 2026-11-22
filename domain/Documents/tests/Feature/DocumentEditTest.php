@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
-use App\Comments\Models\Comment;
-use App\Text\Exceptions\SectionMissing;
-use Domain\Documents\Api\DraftTarget;
+use App\Contracts\CommandBus;
+use App\Exceptions\SectionMissing;
+use App\Models\Comment;
 use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
@@ -22,6 +21,7 @@ use Domain\Documents\Exceptions\DraftHeld;
 use Domain\Documents\Exceptions\DraftMarkdownInvalid;
 use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Tests\TestCase;
+use Domain\Documents\Values\DraftTarget;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;

@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Enums\ChatPermission;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Communication\Contracts\ChatTimeline;
-use App\Communication\Exceptions\ChatCursorRefused;
+use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Contracts\ChatTimeline;
+use App\Enums\ChatPermission;
+use App\Exceptions\ChatCursorRefused;
+use App\Support\ActorIdentity;
+use App\Support\Web\PageReadProps;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
 use Domain\Chat\Commands\AddChatParticipant\AddChatParticipantCommand;
 use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
 use Domain\Chat\Commands\RemoveChatParticipant\RemoveChatParticipantCommand;
+use Illuminate\Testing\TestResponse;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -73,6 +75,46 @@ final class ChatTimelineTest extends MessagingTestCase
         $this->startUserRequestAs($this->bea->id);
         $this->expectException(ChatCursorRefused::class);
         $this->timeline()->after($this->inboxId, $old);
+    }
+
+    public function test_the_page_reads_its_events_and_rows_by_a_partial_reload_and_a_refused_cursor_answers_409(): void
+    {
+        $this->runOnBus(new PostChatMessageCommand($this->inboxId, 'One.', 'one'));
+
+        $events = $this->actingAs($this->owner)->pageRead('chat.events', ['inboxId' => $this->inboxId])->assertOk();
+        $rows = $this->actingAs($this->owner)->pageRead('chat.rows', ['inboxId' => $this->inboxId])->assertOk();
+
+        $this->assertIsString($events->json('props.read_chat_events.cursor'));
+        $this->assertSame(['One.'], array_column($rows->json('props.read_chat_rows.messages'), 'body'));
+        $this->assertNull($events->json('props.read_chat_rows'));
+
+        $this->startUserRequestAs($this->bea->id);
+        $old = (string) $this->timeline()->snapshot($this->inboxId)->cursor;
+        $this->asOwner();
+        $this->runOnBus(new RemoveChatParticipantCommand($this->inboxId, "user:{$this->bea->id}"));
+        $this->runOnBus(new AddChatParticipantCommand($this->inboxId, "user:{$this->bea->id}"));
+
+        $this->actingAs($this->bea)->pageRead('chat.events', ['inboxId' => $this->inboxId, 'cursor' => $old])
+            ->assertStatus(409);
+    }
+
+    /**
+     * A page read as the chat asks for it: a partial reload of the chat page that names only that read's prop, with
+     * its query under read[<prop>].
+     *
+     * @param  array<string, string>  $query
+     */
+    private function pageRead(string $routeName, array $query): TestResponse
+    {
+        $prop = PageReadProps::propName($routeName);
+        $page = $this->get('/chat')->viewData('page');
+
+        return $this->get('/chat?'.http_build_query([PageReadProps::QUERY => [$prop => $query]]), [
+            'X-Inertia' => 'true',
+            'X-Inertia-Version' => $page['version'],
+            'X-Inertia-Partial-Component' => $page['component'],
+            'X-Inertia-Partial-Data' => $prop,
+        ]);
     }
 
     private function timeline(): ChatTimeline

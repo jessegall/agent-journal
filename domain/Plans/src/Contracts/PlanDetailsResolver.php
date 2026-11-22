@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Contracts;
 
-use App\Reads\Enums\ReadView;
-use Domain\Plans\Api\PhaseDetails;
-use Domain\Plans\Api\PlanDetails;
+use App\Enums\ReadView;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanMissing;
+use Domain\Plans\Values\PhaseDetails;
+use Domain\Plans\Values\PlanDetails;
 
 /**
  * One plan or one phase for whoever acts in this request, with Plans' own progress; every actor reads every plan.

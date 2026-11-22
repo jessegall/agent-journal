@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reflection;
 
-use App\Reflection\Contracts\ReflectorFactory;
-use App\Reflection\Exceptions\QuestionNotNegatable;
-use App\Reflection\Support\CatalogueReflectorFactory;
-use App\Reflection\Support\Reflector;
+use App\Contracts\ReflectorFactory;
+use App\Exceptions\QuestionNotNegatable;
+use App\Support\CatalogueReflectorFactory;
+use App\Support\Reflector;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Reflection\Labelled;
 use Tests\Fixtures\Reflection\MarkedParcel;

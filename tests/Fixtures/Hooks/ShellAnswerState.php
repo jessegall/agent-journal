@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Hooks\Inputs\ShellCommandRequested;
-use App\Hooks\States\AgentState;
+use App\Support\Inputs\ShellCommandRequested;
+use App\Support\States\AgentState;
 use Closure;
 
 /**

@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Agents\Enums\AccessRuleType;
-use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Exceptions\ExecutionBudgetInvalid;
-use App\Agents\Exceptions\ExecutionPolicyInvalid;
-use App\Agents\Exceptions\StopConditionsInvalid;
-use App\Agents\Values\AccessPolicy;
-use App\Agents\Values\ExecutionBudgets;
-use App\Agents\Values\ExecutionPolicy;
-use App\Agents\Values\Operation;
-use App\Agents\Values\OperationGrant;
-use App\Agents\Values\ResourceRequest;
-use App\Agents\Values\StopCondition;
-use App\Agents\Values\StopConditions;
-use App\Operations\Enums\AccessType;
-use App\Operations\Exceptions\UnknownAccessType;
-use App\Processes\Values\ProcessGrants;
-use App\Profiles\Values\ProfileBase;
+use App\Enums\AccessRuleType;
+use App\Enums\AccessType;
+use App\Enums\ExecutionModeType;
+use App\Exceptions\ExecutionBudgetInvalid;
+use App\Exceptions\ExecutionPolicyInvalid;
+use App\Exceptions\StopConditionsInvalid;
+use App\Exceptions\UnknownAccessType;
+use App\Values\AccessPolicy;
+use App\Values\ExecutionBudgets;
+use App\Values\ExecutionPolicy;
+use App\Values\Operation;
+use App\Values\OperationGrant;
+use App\Values\ProcessGrants;
+use App\Values\ProfileBase;
+use App\Values\ResourceRequest;
+use App\Values\StopCondition;
+use App\Values\StopConditions;
 use Tests\TestCase;
 
 /**

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Providers;
 
-use App\Actors\Contracts\ReadEntitlements;
-use App\Actors\Values\ReadEntitlement;
-use App\Autoload\Support\FolderClasses;
-use App\Docking\Sources\Contracts\DockRegistration;
-use App\Links\Support\LinkTypeRegistry;
-use App\Processes\Contracts\VerificationTiming;
+use App\Contracts\ReadEntitlements;
+use App\Contracts\VerificationTiming;
+use App\Support\FolderClasses;
+use App\Support\LinkTypeRegistry;
+use App\Support\Sources\Contracts\DockRegistration;
+use App\Values\ReadEntitlement;
 use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Exceptions\PlanMissing;
@@ -67,8 +67,8 @@ final class PlansServiceProvider extends ServiceProvider
                 ->withErrors(['start' => $denied->getMessage()]));
         }
 
-        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
-        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
+        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
+        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console/Commands', Command::class));
 
         $links->register([
             Plan::LINK_TYPE => Plan::class,

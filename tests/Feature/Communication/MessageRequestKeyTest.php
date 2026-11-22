@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\AskMessage\AskMessageCommand;
-use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
-use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Communication\Contracts\ConversationResolver;
-use App\Communication\Data\MessageView;
+use App\Commands\AskMessage\AskMessageCommand;
+use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Contracts\ConversationResolver;
+use App\Data\MessageView;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\MessagingTestCase;
 

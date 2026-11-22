@@ -4,27 +4,29 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Comments;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
+use App\Contracts\RecordResolver;
 use App\Http\Requests\Comments\PostCommentRequest;
-use App\Records\Contracts\RecordResolver;
-use Illuminate\Http\JsonResponse;
+use App\Http\Responses\PageActionAnswers;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Routing\Redirector;
 
+/**
+ * Posts a comment through the bus and goes back to the page with the comment's id flashed; a refusal comes back as the
+ * page's errors.
+ */
 final readonly class PostCommentController
 {
+    /**
+     * The flash key of the posted comment's id.
+     */
+    public const string POSTED_COMMENT = 'postedCommentId';
+
     public function __invoke(
         PostCommentRequest $request,
         CommandBus $commands,
         RecordResolver $records,
-        Redirector $redirect,
-    ): JsonResponse|RedirectResponse {
-        $commentId = $commands->run($request->command($records));
-
-        if (! $request->expectsJson()) {
-            return $redirect->back(303);
-        }
-
-        return new JsonResponse(['comment' => $commentId]);
+        PageActionAnswers $answers,
+    ): RedirectResponse {
+        return $answers->backWith(self::POSTED_COMMENT, $commands->run($request->command($records)));
     }
 }

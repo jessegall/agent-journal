@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\AgentRequests;
 
-use App\AgentRequests\Exceptions\KeyedWriteWithoutReceipt;
-use App\AgentRequests\Support\CallRoutes;
+use App\Exceptions\KeyedWriteWithoutReceipt;
+use App\Support\CallRoutes;
 use Illuminate\Support\Facades\Route;
 use Tests\Fixtures\AgentRequests\WriteNoteController;
 use Tests\Fixtures\Agents\TestStart;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Listeners;
 
-use App\Bus\Contracts\JournalCommands;
-use App\Bus\Enums\CommandEntry;
+use App\Contracts\JournalCommands;
 use App\Contracts\Listener;
-use App\Processes\Contracts\ResultReceipts;
-use App\Processes\Events\RunChanged;
-use App\Processes\Values\PartProjection;
+use App\Contracts\ResultReceipts;
+use App\Enums\CommandEntry;
+use App\Events\RunChanged;
+use App\Values\PartProjection;
 use Domain\Tasks\Commands\BindTaskCheck\BindTaskCheckCommand;
 use Domain\Tasks\Models\TaskCheck;
 

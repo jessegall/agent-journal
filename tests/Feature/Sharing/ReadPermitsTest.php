@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Reads\Contracts\ReadMeter;
-use App\Sharing\Exceptions\ReadPermitMissing;
-use App\Sharing\Exceptions\ShareLinkRefused;
-use App\Sharing\Models\Share;
-use App\Sharing\Models\ShareAudit;
-use App\Sharing\Models\ShareGatewayConfiguration;
-use App\Sharing\Support\GatewaySettings;
-use App\Sharing\Support\ReadPermits;
-use App\Sharing\Support\ShareGrant;
-use App\Sharing\Support\ShareToken;
+use App\Contracts\ReadMeter;
+use App\Exceptions\ReadPermitMissing;
+use App\Exceptions\ShareLinkRefused;
+use App\Models\Share;
+use App\Models\ShareAudit;
+use App\Models\ShareGatewayConfiguration;
+use App\Support\GatewaySettings;
+use App\Support\ReadPermits;
+use App\Support\ShareGrant;
+use App\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;

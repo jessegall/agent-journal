@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
-use App\Actors\Exceptions\AgentActorRequired;
-use Domain\Tasks\Api\TaskFilters;
-use Domain\Tasks\Api\TaskList;
-use Domain\Tasks\Api\TaskSummary;
+use App\Exceptions\AgentActorRequired;
+use Domain\Tasks\Values\TaskFilters;
+use Domain\Tasks\Values\TaskList;
+use Domain\Tasks\Values\TaskSummary;
 use PhpOption\Option;
 
 /**

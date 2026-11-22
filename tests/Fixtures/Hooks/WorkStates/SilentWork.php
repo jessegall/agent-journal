@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\WorkStates;
 
-use App\Hooks\States\AgentState;
+use App\Support\States\AgentState;
 use PhpOption\Option;
 use PhpOption\Some;
 

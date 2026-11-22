@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Values\OwnerAuthority;
-use App\AgentRequests\Support\SignedCall;
-use App\Agents\Support\AgentContext;
+use App\Contracts\CurrentActorSetter;
 use App\Mcp\Exceptions\ContinuationInvalid;
 use App\Mcp\Exceptions\ContinuationStale;
 use App\Mcp\Support\Continuation;
@@ -15,6 +12,9 @@ use App\Mcp\Support\Continuations;
 use App\Mcp\Support\RetainedPages;
 use App\Mcp\Support\TextChunk;
 use App\Mcp\Support\ToolArguments;
+use App\Support\AgentContext;
+use App\Support\SignedCall;
+use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Laravel\Mcp\Request;
 use Tests\Support\CommitsHookRows;

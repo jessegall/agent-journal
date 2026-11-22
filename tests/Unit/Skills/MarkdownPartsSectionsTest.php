@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Skills\Exceptions\SkillSourceInvalid;
-use App\Skills\Support\MarkdownParts;
-use App\Skills\Values\SkillOwner;
-use App\Skills\Values\SkillSection;
+use App\Exceptions\SkillSourceInvalid;
+use App\Support\MarkdownParts;
+use App\Values\SkillOwner;
+use App\Values\SkillSection;
 use Illuminate\Support\Facades\File;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\UsesTemporaryFolder;

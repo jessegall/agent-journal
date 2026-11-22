@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use App\Hooks\Decisions\StateReferences;
-use App\Hooks\Enums\SessionTransferType;
-use App\Hooks\References\StateReference;
-use App\Hooks\StateLoading\Contracts\StateLoader;
-use App\Hooks\StateLoading\StateSet;
+use App\Support\Decisions\StateReferences;
+use App\Enums\SessionTransferType;
+use App\Support\References\StateReference;
+use App\Support\StateLoading\Contracts\StateLoader;
+use App\Support\StateLoading\StateSet;
 
 /**
  * Builds ordinary note listeners.

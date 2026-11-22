@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Access\Commands\GrantEnvironmentAccess;
 
-use App\Actors\Enums\ChatPermission;
-use App\Bus\Attributes\Authorize;
-use App\Bus\Support\Command;
-use App\Operations\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Enums\AccessType;
+use App\Enums\ChatPermission;
+use App\Support\Command;
 use Domain\Access\Policies\EnvironmentAccessPolicy;
 
 /**

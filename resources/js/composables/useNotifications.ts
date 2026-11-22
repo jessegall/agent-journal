@@ -1,14 +1,8 @@
-import type { NotificationChangePage, NotificationItem, NotificationPage } from '@/generated/types/core';
-import { xsrfToken } from '@/echo';
-import { notifications } from '@/routes/communication';
-import { changes, read, readAll, readQuestion, readTarget } from '@/routes/communication/notifications';
+import type { NotificationItem } from '@/generated/types/core';
 import { onBeforeUnmount, onMounted } from 'vue';
-import {
-    LEASE_MILLISECONDS,
-    NotificationRequestFailed,
-    notificationStore,
-} from './notificationStore';
-import type { NotificationClient, NotificationStore } from './notificationStore';
+import { LEASE_MILLISECONDS, notificationStore } from './notificationStore';
+import type { NotificationStore } from './notificationStore';
+import { notificationVisits } from './notificationVisits';
 import { onPurge } from './protectedView';
 
 /**
@@ -21,58 +15,10 @@ const REFRESH_MILLISECONDS = LEASE_MILLISECONDS;
  */
 const LEASE_CHECK_MILLISECONDS = 1_000;
 
-async function requestPage(url: string, init: RequestInit): Promise<NotificationPage> {
-    return (await requestJson(url, init)) as NotificationPage;
-}
-
-async function requestJson(url: string, init: RequestInit): Promise<unknown> {
-    let response: Response;
-
-    try {
-        response = await fetch(url, {
-            credentials: 'same-origin',
-            ...init,
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-XSRF-TOKEN': xsrfToken(),
-            },
-        });
-    } catch {
-        throw new NotificationRequestFailed('lost');
-    }
-
-    if (response.status >= 500) {
-        throw new NotificationRequestFailed('lost');
-    }
-
-    if (!response.ok) {
-        throw new NotificationRequestFailed('refused');
-    }
-
-    return await response.json();
-}
-
-const client: NotificationClient = {
-    page: (cursor) =>
-        requestPage(notifications.url(cursor === null ? undefined : { query: { cursor } }), { method: 'GET' }),
-    markRead: (receiptId) =>
-        requestPage(read.url(), { method: 'POST', body: JSON.stringify({ receiptId }) }),
-    markQuestionRead: (messageId) =>
-        requestPage(readQuestion.url(), { method: 'POST', body: JSON.stringify({ messageId }) }),
-    markTargetRead: (targetKey, targetId) =>
-        requestPage(readTarget.url(), { method: 'POST', body: JSON.stringify({ targetKey, targetId }) }),
-    markAll: (through) =>
-        requestPage(readAll.url(), { method: 'POST', body: JSON.stringify({ through: Number(through) }) }),
-    changes: async (cursor) =>
-        (await requestJson(changes.url({ query: { since: cursor } }), { method: 'GET' })) as NotificationChangePage,
-};
-
 /**
  * The tab's one notification snapshot, cleared by every protected purge, including sign-out and a change of user.
  */
-const store = notificationStore(client);
+const store = notificationStore(notificationVisits);
 onPurge(store.purge);
 
 /**

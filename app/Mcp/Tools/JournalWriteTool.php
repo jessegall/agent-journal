@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Bus\Contracts\Command;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Contracts\RequestKey;
+use App\Contracts\Command;
+use App\Contracts\CommandBus;
+use App\Contracts\RequestKey;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Contracts\McpCall;
 use App\Mcp\Data\ToolResult;

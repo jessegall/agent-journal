@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\AssignmentReference;
-use App\Communication\Commands\ReleaseMessageClaim\ReleaseMessageClaimCommand;
+use App\Commands\ReleaseMessageClaim\ReleaseMessageClaimCommand;
+use App\Support\AssigneeIdentity;
+use App\Support\AssignmentReference;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class ReleaseMessageClaimRequest extends FormRequest

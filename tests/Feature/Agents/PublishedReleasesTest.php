@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Enums\HostProtocolVersion;
+use App\Enums\HostProtocolVersion;
 use Tests\TestCase;
 
 final class PublishedReleasesTest extends TestCase

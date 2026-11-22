@@ -1,0 +1,72 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support\Classification;
+
+use App\Enums\CommandType;
+use App\Values\ClassFact;
+use App\Values\PartClassification;
+use App\Values\ProgramIdentity;
+use App\Values\UnresolvedFact;
+
+/**
+ * Joins what a wrapper does by itself with what its child command does, on the wrapper's node: the facts and
+ * unresolved facts of both, and the child's purpose unless something is unresolved.
+ */
+final readonly class ChildCommand
+{
+    /**
+     * @param  list<ClassFact>  $ownFacts
+     * @param  list<UnresolvedFact>  $ownUnresolved
+     * @param  list<PartClassification>  $children
+     */
+    public static function join(
+        int $node,
+        ProgramIdentity $wrapper,
+        array $ownFacts,
+        array $ownUnresolved,
+        array $children,
+    ): PartClassification {
+        $facts = $ownFacts;
+        $unresolved = $ownUnresolved;
+        $purpose = CommandType::Ordinary;
+        $contracts = [];
+
+        foreach ($children as $child) {
+            $contracts = [...$contracts, ...$child->contracts];
+
+            $facts = [
+                ...$facts,
+                ...array_map(
+                    fn (ClassFact $fact) => new ClassFact(
+                        $fact->class,
+                        $node,
+                        $fact->origin,
+                        "Its child {$child->program?->family}: {$fact->reason}",
+                    ),
+                    $child->facts,
+                ),
+            ];
+
+            $unresolved = [
+                ...$unresolved,
+                ...array_map(
+                    fn (UnresolvedFact $fact) => new UnresolvedFact($fact->type, $node, $fact->reason),
+                    $child->unresolved,
+                ),
+            ];
+
+            $purpose = $purpose === CommandType::Ordinary ? $child->purpose : $purpose;
+        }
+
+        return new PartClassification(
+            $node,
+            $facts,
+            $unresolved,
+            $unresolved === [] ? $purpose : CommandType::Unknown,
+            $wrapper,
+            $contracts,
+        );
+    }
+}

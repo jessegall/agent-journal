@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
-use App\Settings\Declarations\BooleanSetting;
-use App\Settings\Declarations\ChoiceSetting;
-use App\Settings\Declarations\DecimalSetting;
-use App\Settings\Declarations\EnumSetting;
-use App\Settings\Declarations\IntegerSetting;
-use App\Settings\Enums\SettingType;
-use App\Settings\Exceptions\SettingDeclarationInvalid;
-use App\Settings\Support\ChoiceOptions;
-use App\Settings\Values\Choice;
-use App\Settings\Values\Decimal;
+use App\Declarations\BooleanSetting;
+use App\Declarations\ChoiceSetting;
+use App\Declarations\DecimalSetting;
+use App\Declarations\EnumSetting;
+use App\Declarations\IntegerSetting;
+use App\Enums\SettingType;
+use App\Exceptions\SettingDeclarationInvalid;
+use App\Support\ChoiceOptions;
+use App\Values\Choice;
+use App\Values\Decimal;
 use Closure;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Domains\Reviews\Enums\ReviewLevel;

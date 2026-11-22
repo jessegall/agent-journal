@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Web\Events\ChatAccessEnded;
-use App\Web\Events\NotificationsInvalidated;
-use App\Web\Events\PageChanged;
-use App\Web\Events\ProtectedViewInvalidated;
+use App\Events\ChatAccessEnded;
+use App\Events\NotificationsInvalidated;
+use App\Events\PageChanged;
+use App\Events\ProtectedViewInvalidated;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -18,30 +18,30 @@ return [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Web/Listeners/BroadcastPageChange.php',
-            'app/Web/Listeners/BroadcastDockedSourceChange.php',
+            'app/Listeners/BroadcastPageChange.php',
+            'app/Listeners/BroadcastDockedSourceChange.php',
         ],
     ],
     ChatAccessEnded::class => [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Web/Listeners/BroadcastPageChange.php',
+            'app/Listeners/BroadcastPageChange.php',
         ],
     ],
     NotificationsInvalidated::class => [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Web/Listeners/BroadcastNotificationChanges.php',
+            'app/Listeners/BroadcastNotificationChanges.php',
         ],
     ],
     ProtectedViewInvalidated::class => [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Web/Listeners/BroadcastProtectedViewInvalidation.php',
-            'app/Web/Listeners/PurgeWithdrawnNotifications.php',
+            'app/Listeners/BroadcastProtectedViewInvalidation.php',
+            'app/Listeners/PurgeWithdrawnNotifications.php',
         ],
     ],
 ];

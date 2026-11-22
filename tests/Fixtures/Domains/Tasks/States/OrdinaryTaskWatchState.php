@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Tasks\States;
 
-use Domain\Tasks\Api\Events\TaskCancelled;
+use Domain\Tasks\Events\TaskCancelled;
 use Tests\Fixtures\Domains\Tasks\States\Commands\RecordCancelledTask\RecordCancelledTaskCommand;
 
 /**

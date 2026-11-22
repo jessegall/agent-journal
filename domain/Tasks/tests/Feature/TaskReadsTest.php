@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\ActorContextMissing;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
+use App\Contracts\CurrentActorSetter;
+use App\Exceptions\ActorContextMissing;
+use App\Support\ActorContext;
+use App\Values\OwnerAuthority;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Exceptions\TaskMissing;

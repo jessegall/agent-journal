@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Http\Controllers\Calls;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use Domain\Helpers\Calls\ContinueHelperCall;
 use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
-use Domain\Helpers\Http\Data\HelperReceiptData;
+use Domain\Helpers\Data\HelperReceiptData;
 
 /**
  * Continues the helper's unfinished job and answers the receipt.

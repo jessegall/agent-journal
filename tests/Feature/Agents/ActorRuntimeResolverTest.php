@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Exceptions\CredentialRejected;
-use App\Agents\Models\Agent;
-use App\Agents\Resolvers\Support\CurrentAgentRuntimes;
-use App\Agents\Support\CredentialLookup;
+use App\Exceptions\CredentialRejected;
+use App\Models\Agent;
+use App\Resolvers\Support\CurrentAgentRuntimes;
+use App\Support\ActorIdentity;
+use App\Support\CredentialLookup;
+use App\Support\StartSessions;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\OpensDriverRuntimes;
 use Tests\Support\RefreshHookDatabase;

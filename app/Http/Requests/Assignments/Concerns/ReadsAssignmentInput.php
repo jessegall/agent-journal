@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assignments\Concerns;
 
-use App\Actors\Enums\ActorType;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\AssignmentReference;
-use App\Records\Support\RecordIdentity;
+use App\Enums\ActorType;
+use App\Support\AssigneeIdentity;
+use App\Support\AssignmentReference;
+use App\Support\RecordIdentity;
 use Illuminate\Validation\Rule;
 
 /**

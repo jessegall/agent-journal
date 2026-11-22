@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Assignments\Enums\ClaimBasis;
-use App\Assignments\Models\AssignmentRecord;
-use App\Assignments\Models\ClaimAuthorization;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\AssignmentReference;
-use App\Records\Support\RecordIdentity;
+use App\Enums\ClaimBasis;
+use App\Models\AssignmentRecord;
+use App\Models\ClaimAuthorization;
+use App\Support\AssigneeIdentity;
+use App\Support\AssignmentReference;
+use App\Support\RecordIdentity;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;

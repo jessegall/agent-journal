@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
-use Domain\Tasks\Api\TaskLogLine;
-use Domain\Tasks\Api\TaskTransition;
 use Domain\Tasks\Contracts\TaskHistoryResolver;
 use Domain\Tasks\Contracts\TaskLogResolver;
-use Domain\Tasks\Http\Data\TaskStreamEntryData;
-use Domain\Tasks\Http\Data\TaskStreamPageData;
+use Domain\Tasks\Data\TaskStreamEntryData;
+use Domain\Tasks\Data\TaskStreamPageData;
+use Domain\Tasks\Values\TaskLogLine;
+use Domain\Tasks\Values\TaskTransition;
 use Spatie\LaravelData\Optional;
 
 /**

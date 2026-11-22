@@ -1,0 +1,32 @@
+[
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "s/{token}/{path?}",
+        "name": null,
+        "action": "App\\Http\\Controllers\\Sharing\\ReadShareController",
+        "middleware": []
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "build-sharing/{file}",
+        "name": null,
+        "action": "App\\Http\\Controllers\\Sharing\\SharingAssetController",
+        "middleware": []
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "_probe/{challenge}",
+        "name": null,
+        "action": "App\\Http\\Controllers\\Sharing\\ProbeChallengeController",
+        "middleware": []
+    }
+]

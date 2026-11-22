@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Agents\Commands\RetryDriverSwitch\RetryDriverSwitchCommand;
-use App\Bus\Contracts\CommandBus;
+use App\Commands\RetryDriverSwitch\RetryDriverSwitchCommand;
+use App\Contracts\CommandBus;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Routing\Redirector;
 
 /**
@@ -21,12 +19,11 @@ final readonly class RetryDriverSwitchController
      */
     public function __invoke(
         string $switch,
-        Request $request,
         CommandBus $commands,
         Redirector $redirect,
-    ): Response|RedirectResponse {
+    ): RedirectResponse {
         $commands->run(new RetryDriverSwitchCommand(strtolower($switch)));
 
-        return $request->expectsJson() ? new Response(status: Response::HTTP_NO_CONTENT) : $redirect->back(303);
+        return $redirect->back(303);
     }
 }

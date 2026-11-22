@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Exceptions\ActorNotAllowed;
-use App\Actors\Exceptions\GrantNotRegistered;
-use App\Actors\Exceptions\PolicyDefinitionConflict;
-use App\Actors\Values\PolicyDefinition;
 use App\Contracts\DomainAvailability;
-use App\Domains\Support\DomainEntry;
-use App\Operations\Enums\AccessType;
+use App\Contracts\PolicyCatalogue;
+use App\Enums\AccessType;
+use App\Exceptions\ActorNotAllowed;
+use App\Exceptions\GrantNotRegistered;
+use App\Exceptions\PolicyDefinitionConflict;
+use App\Support\DomainEntry;
+use App\Values\PolicyDefinition;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\Policies\NotePolicy;

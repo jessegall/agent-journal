@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Domains\Support\DomainEntry;
-use App\Domains\Support\DomainRegistry;
+use App\Support\DomainEntry;
+use App\Support\DomainRegistry;
+use Tests\Architecture\Support\FormerPaths;
 
 /**
  * The tests a set of changed files can break, read from the domain boundaries and Core's areas: a change inside one
@@ -103,7 +104,8 @@ final readonly class AffectedTests
             return ['paths' => [$file], 'domains' => []];
         }
 
-        if (preg_match('#^app/([A-Z][A-Za-z]+)/.+$#', $file, $area) !== 1
+        // A Core file's area is the folder it had before plan 62 moved it to its role, which the test folders mirror.
+        if (preg_match('#^app/([A-Z][A-Za-z]+)/.+$#', FormerPaths::of($file), $area) !== 1
             || in_array($area[1], self::GLOBAL_AREAS, true)) {
             return null;
         }

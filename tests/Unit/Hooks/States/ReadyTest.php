@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
-use App\Hooks\Inputs\Contracts\HookAnswerer;
-use App\Hooks\Inputs\Contracts\HookInput;
-use App\Hooks\Inputs\StopRequested;
-use App\Hooks\States\AgentState;
-use App\Hooks\States\ReadyState;
-use App\Reflection\Support\ReflectedMethod;
-use App\Reflection\Support\Reflector;
+use App\Support\Inputs\Contracts\HookAnswerer;
+use App\Support\Inputs\Contracts\HookInput;
+use App\Support\Inputs\StopRequested;
+use App\Support\ReflectedMethod;
+use App\Support\Reflector;
+use App\Support\States\AgentState;
+use App\Support\States\ReadyState;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\AllowedStops;

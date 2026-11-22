@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Data\NotificationTarget;
-use App\Communication\Enums\NotificationSourceType;
-use App\Communication\Models\NotificationReceipt;
-use App\Communication\Models\NotificationScope;
-use App\Communication\Support\NotificationDelivery;
-use App\Communication\Support\NotificationReceipts;
+use App\Data\NotificationTarget;
+use App\Enums\NotificationSourceType;
+use App\Models\NotificationReceipt;
+use App\Models\NotificationScope;
+use App\Support\ActorIdentity;
+use App\Support\NotificationDelivery;
+use App\Support\NotificationReceipts;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;

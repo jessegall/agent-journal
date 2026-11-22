@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Resolvers;
 
-use App\Ui\Contracts\PageResolver;
-use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\LayoutPartData;
+use App\Contracts\PageResolver;
+use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\LayoutPartData;
 
 /**
  * The sequences address with no run: no list of runs a reader may see exists yet, so it says that a run opens from an

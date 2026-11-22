@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\ReportCleanup\ReportCleanupCommand;
-use App\Agents\Enums\CleanupStep;
-use App\Agents\Models\CleanupOperation;
-use App\Agents\Values\HostContext;
-use App\Bus\Contracts\CommandBus;
+use App\Commands\ReportCleanup\ReportCleanupCommand;
+use App\Contracts\CommandBus;
+use App\Enums\CleanupStep;
 use App\Http\Requests\Agents\CleanupReportRequest;
+use App\Models\CleanupOperation;
+use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 
 /**

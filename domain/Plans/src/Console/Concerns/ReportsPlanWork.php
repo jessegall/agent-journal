@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Console\Concerns;
 
-use App\AgentRequests\Values\CommandReport;
-use Domain\Plans\Http\Data\PlanWorkResultData;
+use App\Values\CommandReport;
+use Domain\Plans\Data\PlanWorkResultData;
 
 /**
  * Reports what a cascade over a plan or phase changed: one line, or the whole answer as JSON with --json.

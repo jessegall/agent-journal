@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Support;
 
-use App\Docking\Cards\DockCard;
-use App\Docking\Cards\DockIdentity;
-use App\Docking\Cards\Stack;
-use App\Docking\Cards\Title;
-use App\Docking\Sources\Contracts\CardContext;
-use App\Docking\Sources\Contracts\Dockable;
-use App\Docking\Sources\DockDefinition;
+use App\Support\Cards\DockCard;
+use App\Support\Cards\DockIdentity;
+use App\Support\Cards\Stack;
+use App\Support\Cards\Title;
+use App\Support\Sources\Contracts\CardContext;
+use App\Support\Sources\Contracts\Dockable;
+use App\Support\Sources\DockDefinition;
 
 /**
  * How many notes there are: a durable value with no row of its own, named by a stable key and made again from the

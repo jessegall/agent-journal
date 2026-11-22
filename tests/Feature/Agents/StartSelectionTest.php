@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Enums\DriverSourceType;
-use App\Agents\Enums\DriverVariant;
-use App\Agents\Enums\ModelSelectionType;
-use App\Agents\Enums\StartRefusalType;
-use App\Agents\Exceptions\DefaultUnavailable;
-use App\Agents\Exceptions\DriverConflict;
-use App\Agents\Exceptions\DriverRequired;
-use App\Agents\Exceptions\DriverUnsupported;
-use App\Agents\Exceptions\ModelRequired;
-use App\Agents\Exceptions\ModelUnavailable;
-use App\Agents\Values\ModelSelection;
-use App\Agents\Values\ProfileDefaults;
-use App\Agents\Values\SelectedDriver;
-use App\Drivers\Contracts\DriverCatalogue;
-use App\Drivers\Support\DefaultDrivers;
+use App\Contracts\DriverCatalogue;
+use App\Enums\DriverSourceType;
+use App\Enums\DriverVariant;
+use App\Enums\ModelSelectionType;
+use App\Enums\StartRefusalType;
+use App\Exceptions\DefaultUnavailable;
+use App\Exceptions\DriverConflict;
+use App\Exceptions\DriverRequired;
+use App\Exceptions\DriverUnsupported;
+use App\Exceptions\ModelRequired;
+use App\Exceptions\ModelUnavailable;
+use App\Support\DefaultDrivers;
+use App\Values\ModelSelection;
+use App\Values\ProfileDefaults;
+use App\Values\SelectedDriver;
 use Tests\TestCase;
 
 /**

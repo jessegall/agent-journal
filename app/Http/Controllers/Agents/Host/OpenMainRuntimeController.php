@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\OpenHostMainRuntime\OpenHostMainRuntimeCommand;
-use App\Agents\Values\HostContext;
-use App\Bus\Contracts\CommandBus;
-use App\Http\Data\Agents\MainRuntimeRequestData;
+use App\Commands\OpenHostMainRuntime\OpenHostMainRuntimeCommand;
+use App\Contracts\CommandBus;
+use App\Data\Agents\MainRuntimeRequestData;
+use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 
 /**

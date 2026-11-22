@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\OpenDocument;
 
-use App\Agents\Contracts\SessionProvenance;
-use App\Numbers\Support\RecordReference;
-use Domain\Documents\Api\DraftReference;
+use App\Contracts\SessionProvenance;
+use App\Support\RecordReference;
 use Domain\Documents\Commands\Support\DocumentCommandHandler;
 use Domain\Documents\Exceptions\DraftHeld;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Support\RequestEditor;
+use Domain\Documents\Values\DraftReference;
 
 final readonly class OpenDocumentHandler extends DocumentCommandHandler
 {

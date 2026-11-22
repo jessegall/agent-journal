@@ -1,0 +1,45 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Documents\Support\Cards;
+
+use App\Enums\Emphasis;
+use App\Support\Cards\Button;
+use App\Support\Cards\DestinationArgument;
+use App\Support\Cards\DockCard;
+use App\Support\Cards\DockDestination;
+use App\Support\Cards\Stack;
+use App\Support\Cards\Subtitle;
+use App\Support\Cards\Title;
+use App\Support\Sources\Contracts\CardContext;
+use Domain\Documents\Models\Document;
+
+/**
+ * A document's card in a dock: its current title, its revision and where it stands, with Open when the viewer may
+ * open it.
+ */
+final readonly class DocumentDockCard
+{
+    public DockCard $card;
+
+    public function __construct(Document $document, CardContext $context)
+    {
+        $revision = $document->currentRevisionOrFail();
+
+        $parts = [
+            new Title('title', $revision->title),
+            new Subtitle('revision', "revision {$revision->number}"),
+            $document->attention->stateLabel(),
+        ];
+
+        $argument = new DestinationArgument('document', (string) $document->number);
+        $open = new DockDestination('documents.document', $argument);
+
+        foreach ($context->permittedDestination($open) as $permitted) {
+            $parts[] = new Button('open', 'Open', Emphasis::Primary, $permitted);
+        }
+
+        $this->card = DockCard::named($revision->title, Stack::of('root', ...$parts));
+    }
+}

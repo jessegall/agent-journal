@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Web\Data\LoginInput;
-use App\Web\Pages\LoginPage;
+use App\Data\LoginInput;
+use App\Pages\LoginPage;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Inertia\Response;

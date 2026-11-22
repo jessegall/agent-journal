@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Skills\Exceptions\SkillDeclarationInvalid;
-use App\Skills\Exceptions\SkillSourceInvalid;
-use App\Skills\Support\CanonicalRenderer;
-use App\Skills\Support\MarkdownParts;
-use App\Skills\Values\MarkdownPart;
-use App\Skills\Values\SkillOwner;
+use App\Exceptions\SkillDeclarationInvalid;
+use App\Exceptions\SkillSourceInvalid;
+use App\Support\CanonicalRenderer;
+use App\Support\MarkdownParts;
+use App\Values\MarkdownPart;
+use App\Values\SkillOwner;
 use Illuminate\Support\Facades\File;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Skills\Guide\GuideSkill;

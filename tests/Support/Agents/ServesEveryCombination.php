@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
-use App\Agents\Enums\ArrangementType;
-use App\Agents\Enums\DriverVariant;
-use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Models\Host;
-use App\Agents\Support\HostDescriptorEnrollment;
-use App\Agents\Values\EnrolledDescriptor;
-use App\Agents\Values\HostDescriptor;
-use App\Drivers\Contracts\DriverCatalogue;
-use App\Drivers\Support\DefaultDrivers;
-use App\Hooks\Compatibility\DriverCompatibility;
+use App\Contracts\DriverCatalogue;
+use App\Enums\ArrangementType;
+use App\Enums\DriverVariant;
+use App\Enums\ExecutionModeType;
+use App\Enums\HostProtocolVersion;
+use App\Models\Host;
+use App\Support\Compatibility\DriverCompatibility;
+use App\Support\DefaultDrivers;
+use App\Support\HostDescriptorEnrollment;
+use App\Values\EnrolledDescriptor;
+use App\Values\HostDescriptor;
 
 /**
  * Enrols a local host of this protocol that declared every driver and variant on the protected host, so a main start

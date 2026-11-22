@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Agents\Enums\HostProtocolVersion;
-use App\Connections\Models\Environment;
-use App\Connections\Models\Project;
-use App\Connections\Models\ProjectBinding;
-use App\Connections\Models\ProjectInvitation;
+use App\Enums\HostProtocolVersion;
+use App\Models\Environment;
+use App\Models\Project;
+use App\Models\ProjectBinding;
+use App\Models\ProjectInvitation;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
@@ -95,12 +95,12 @@ final class EnvironmentsTest extends TestCase
 
     private function joinTicket(string $projectId, string $environmentId): string
     {
-        $issued = $this->actingAs($this->owner)->postJson('/project-connections/invitations', [
+        $issued = $this->issuedLine([
             'issuanceKey' => 'join-'.Str::random(6),
             'projectId' => $projectId,
             'environmentId' => $environmentId,
-        ])->assertCreated();
-        preg_match('#/install/([A-Za-z0-9_-]+)#', (string) $issued->json('installLine'), $ticket);
+        ]);
+        preg_match('#/install/([A-Za-z0-9_-]+)#', (string) $issued['installLine'], $ticket);
 
         return $ticket[1];
     }

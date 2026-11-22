@@ -449,6 +449,7 @@ case	FlowNodeType::Policy
 case	FlowNodeType::Terminal
 case	FlowNodeType::Trigger
 case	FolderType::Actions
+case	FolderType::ArtisanCommands
 case	FolderType::CommandMiddleware
 case	FolderType::CommandPair
 case	FolderType::Commands
@@ -1736,6 +1737,7 @@ class	AgentMessageCard
 class	AgentMessageDelivery
 class	AgentMessageDetails
 class	AgentMessages
+class	AgentNavigationRecords
 class	AgentNotAvailable
 class	AgentOption
 class	AgentOptionData
@@ -1840,7 +1842,6 @@ class	ApproveShareRequestController
 class	ApproveShareRequestHandler
 class	ApprovedHead
 class	ApprovedPair
-class	AreaCycles
 class	ArgumentGrammar
 class	ArithmeticCommandReader
 class	ArrangementSetting
@@ -2068,6 +2069,7 @@ class	BottomStateCannotFinish
 class	BoundTarget
 class	BoundaryChecker
 class	BoundaryReport
+class	BoundaryRoots
 class	BroadcastDockedSourceChange
 class	BroadcastNotificationChanges
 class	BroadcastPageChange
@@ -2446,6 +2448,7 @@ class	CommandNestingTooDeep
 class	CommandNotRegistered
 class	CommandOperand
 class	CommandOperation
+class	CommandOperationListedTwice
 class	CommandOriginCheck
 class	CommandOriginChecks
 class	CommandOwner
@@ -2762,7 +2765,6 @@ class	DeskSeatEvidence
 class	DeskSeatProvider
 class	DeskSeating
 class	DeskUnavailable
-class	DesksSeeder
 class	DesksServiceProvider
 class	DestinationArgument
 class	DestinationEncoder
@@ -3180,6 +3182,7 @@ class	ExplanationData
 class	Explanations
 class	ExplicitTransactionInCommand
 class	ExportBuilder
+class	ExportValidator
 class	Exports
 class	FailDriverSwitchLaunchCommand
 class	FailDriverSwitchLaunchHandler
@@ -3259,6 +3262,7 @@ class	FolderWorkspace
 class	FollowingSequenceState
 class	FollowingSequenceStateFactory
 class	FollowingSequenceStateReference
+class	FormerPaths
 class	Frame
 class	FrameBaselineMissing
 class	FrameBaselines
@@ -3663,6 +3667,7 @@ class	LayoutPartData
 class	LayoutProgressData
 class	LayoutRefused
 class	LayoutRequest
+class	LayoutRoots
 class	LayoutRowData
 class	LayoutSplitData
 class	LayoutTabData
@@ -4001,7 +4006,6 @@ class	NavigationProofRefused
 class	NavigationRaiseAnswer
 class	NavigationRaiseData
 class	NavigationRaiseRefused
-class	NavigationRecords
 class	NavigationRequest
 class	NavigationRequestProvider
 class	NavigationRound
@@ -4046,8 +4050,6 @@ class	NotificationChangeItem
 class	NotificationChangePage
 class	NotificationChangePruning
 class	NotificationChanges
-class	NotificationChangesController
-class	NotificationChangesRequest
 class	NotificationCursor
 class	NotificationCursorInvalid
 class	NotificationDelivery
@@ -4057,8 +4059,7 @@ class	NotificationItem
 class	NotificationLink
 class	NotificationOccurrence
 class	NotificationPage
-class	NotificationPageController
-class	NotificationPageRequest
+class	NotificationProps
 class	NotificationReceipt
 class	NotificationReceipts
 class	NotificationScope
@@ -4083,7 +4084,6 @@ class	NumberedModelUndeclared
 class	NumberedPage
 class	NumberedPageContent
 class	NumberedTypeRegistry
-class	NumbersSeeder
 class	NumbersServiceProvider
 class	ObjectDefinition
 class	ObjectMember
@@ -4203,12 +4203,15 @@ class	PackageFileData
 class	PackageRules
 class	PackageScripts
 class	Page
+class	PageActionAnswers
 class	PageChangeBroadcastLog
 class	PageChanged
 class	PageController
 class	PagePropTypes
 class	PageProps
+class	PageReadProps
 class	PageSize
+class	PageVisibility
 class	PaginationData
 class	PairChats
 class	PaneChoice
@@ -6716,6 +6719,7 @@ class	TunlerStatusData
 class	TunlerStatusUnreadable
 class	TurnReportController
 class	TypeNotNamed
+class	TypeOwnerRepeated
 class	TypeOwners
 class	TypeScriptServiceProvider
 class	TypedSecret
@@ -6842,6 +6846,7 @@ class	WalkStep
 class	WalkedCall
 class	WatchedRuntime
 class	WatchedRuntimes
+class	WebNavigationRecords
 class	WebPages
 class	WebServiceProvider
 class	WindowResults
@@ -6938,9 +6943,6 @@ constant	AnsweringMessageStateReference::TYPE_KEY
 constant	AnyOf::TYPE
 constant	AnyOf::VERSION
 constant	AppendUploadCommand::MAX_BYTES
-constant	AreaCycles::CORE
-constant	AreaCycles::CORE_ROOT
-constant	AreaCycles::ENTRY_AREA
 constant	ArrangementSetting::ENVIRONMENT
 constant	Ask::LIFETIME_HOURS
 constant	Ask::LINK_TYPE
@@ -6989,6 +6991,8 @@ constant	BindingRules::SINGLETON_METHODS
 constant	BindingStart::UPDATED_AT
 constant	BoundaryChecker::SHARED_NAMESPACES
 constant	BoundaryChecker::SHARED_PLACE
+constant	BoundaryRoots::CORE_FOLDERS
+constant	BoundaryRoots::PACKAGE_FOLDERS
 constant	BuiltInAuthorizations::ORIENTATION_READS
 constant	BuiltInDesks::MAIN
 constant	BuiltInDesks::SOURCES
@@ -7003,6 +7007,7 @@ constant	CallRetries::WAITS_MILLISECONDS
 constant	CallRoutes::CALL_DEFAULT
 constant	CallTooLarge::CODE
 constant	CallbackEnvelope::DEADLINE_SECONDS
+constant	CancelLaunchController::STOPPED
 constant	CanonicalRenderer::MOST_BYTES
 constant	CanonicalRenderer::MOST_DESCRIPTION_BYTES
 constant	CanonicalRenderer::MOST_SECTIONS
@@ -7099,9 +7104,9 @@ constant	ContractSnapshot::PATH
 constant	Conversation::CHAT_INBOX_PROVIDER
 constant	CoreMcpTools::ORIENTATION_RESOURCES
 constant	CoreMcpTools::ORIENTATION_TOOLS
-constant	CoreServiceProvider::AREAS
 constant	CoreSkills::OWNER
 constant	CreateDocumentCommand::MOST_LINKS
+constant	CreateGroupChatController::CREATED_CHAT
 constant	CreateReportCommand::MOST_LINKS
 constant	DatabaseAssignmentTransaction::ATTEMPTS
 constant	DatabaseAssignmentTransaction::RETRYABLE_STATES
@@ -7170,6 +7175,7 @@ constant	DomainEventServiceProvider::LANES
 constant	DomainEventServiceProvider::LANES_VERSION
 constant	DomainEventServiceProvider::STATE_EVENTS
 constant	DomainTypeWriter::COMPATIBILITY_FILE
+constant	DomainTypeWriter::TYPE_OWNERS_FILE
 constant	DomainUi::DECLARED_LAYOUT
 constant	DraftAnswersRequest::ANSWER_LIMIT
 constant	DraftTokens::FILE
@@ -7224,7 +7230,7 @@ constant	ExpireNavigationRequestsCommand::MAINTENANCE_SCOPE
 constant	ExpireSharesHandler::MOST_PER_RUN
 constant	ExplainCommandController::NOTICE
 constant	Explanations::SNIPPET_BYTES
-constant	Exports::CORE_SUPPORT
+constant	ExportValidator::CORE_SUPPORT
 constant	FailedWindow::MESSAGE
 constant	FileChange::DECLARATION_REVISION
 constant	FileChange::SURFACE
@@ -7235,6 +7241,7 @@ constant	FileFunctionScan::ITERATORS
 constant	FlowGraphData::MERMAID_ESCAPES
 constant	FolderWorkspace::ROOT
 constant	FollowingSequenceStateReference::TYPE_KEY
+constant	FormerPaths::MAP
 constant	Frame::BUDGET_SECONDS
 constant	Frame::CANCELLED
 constant	Frame::INITIALIZE
@@ -7320,6 +7327,8 @@ constant	LayoutLimits::DEPTH_LIMIT
 constant	LayoutLimits::PART_LIMIT
 constant	LayoutLimits::ROW_LIMIT
 constant	LayoutPartData::TONES
+constant	LayoutRoots::CORE_ROOT_FILES
+constant	LayoutRoots::ROLE_FOLDERS
 constant	LayoutSplitData::LIST_WIDTH
 constant	LibraryWindowResolver::SHARING_NOTICE
 constant	LimitMcpMessage::BYTE_LIMIT
@@ -7419,6 +7428,8 @@ constant	NotificationChangePruning::BATCH
 constant	NotificationItem::UNAVAILABLE_TITLE
 constant	NotificationOccurrence::UPDATED_AT
 constant	NotificationPage::SIZE
+constant	NotificationProps::CURSOR
+constant	NotificationProps::SINCE
 constant	NotificationReceipt::UPDATED_AT
 constant	NotificationReceipts::MARK_ALL_BATCH
 constant	NotificationScopes::JOURNAL
@@ -7444,7 +7455,9 @@ constant	OutputVerdict::CODE
 constant	PackageScripts::HARMLESS_CALLBACKS
 constant	PackageScripts::PACKAGE_FILES
 constant	Page::LARGEST_LIMIT
+constant	PageActionAnswers::NOTICE
 constant	PageChanged::NAME
+constant	PageReadProps::QUERY
 constant	PathConfinement::LINK_LIMIT
 constant	PendingAgentMessage::DELIVERY_LIMIT
 constant	Phase::LINK_TYPE
@@ -7473,6 +7486,7 @@ constant	PlanReviewView::RECIPIENTS_SHOWN
 constant	PlanShareProvider::SUMMARY_COLUMNS
 constant	PlanTaskPoolFactory::KEY
 constant	PlanTaskRequest::RETURN_KEYS
+constant	PostCommentController::POSTED_COMMENT
 constant	PostCommentRequest::ANCHOR_FIELDS
 constant	PostCommentRequest::FIELDS_OF_TYPE
 constant	PrepareSkillPublicationHandler::MOST_FILES
@@ -7666,6 +7680,8 @@ constant	SearchContribution::PAGE_SIZE
 constant	SeatLossRepair::PERSONAL_LABEL
 constant	SecureShareResponse::HEADERS
 constant	SendDriverRequestAgainHandler::KEY_PREFIX
+constant	SentMessageAnswer::REQUEST_KEY
+constant	SentMessageAnswer::SENT_MESSAGE
 constant	SeparateRequiredListeners::DEFERRING_INTERFACES
 constant	SessionOutputGrant::MOST_GRANTS
 constant	SessionOutputPaths::DOT_SEGMENT
@@ -8642,6 +8658,7 @@ interface	TickSubjectLocks
 interface	TickableState
 interface	TickableStateLoader
 interface	ToolDiscovery
+interface	TypeProvider
 interface	TypeReflections
 interface	UiOwnerAvailability
 interface	UnitOwner
@@ -9364,6 +9381,13 @@ method	AgentMessages::reader()
 method	AgentMessages::search()
 method	AgentMessages::selected()
 method	AgentMessages::source()
+method	AgentNavigationRecords::__construct()
+method	AgentNavigationRecords::menuEntries()
+method	AgentNavigationRecords::menuEntry()
+method	AgentNavigationRecords::menuEntryCount()
+method	AgentNavigationRecords::menuQuery()
+method	AgentNavigationRecords::navigationRequest()
+method	AgentNavigationRecords::staleHint()
 method	AgentNotAvailable::forAgent()
 method	AgentNotAvailable::refusalCode()
 method	AgentNotAvailable::status()
@@ -9745,14 +9769,6 @@ method	ApproveShareRequestHandler::__construct()
 method	ApproveShareRequestHandler::handle()
 method	ApprovedHead::__construct()
 method	ApprovedPair::__construct()
-method	AreaCycles::__construct()
-method	AreaCycles::areaOfFile()
-method	AreaCycles::areaOfName()
-method	AreaCycles::cycles()
-method	AreaCycles::forbiddenUses()
-method	AreaCycles::ofEdges()
-method	AreaCycles::ofProject()
-method	AreaCycles::stronglyConnectedGroups()
 method	ArgumentGrammar::__construct()
 method	ArgumentGrammar::acceptingNumericOptions()
 method	ArgumentGrammar::check()
@@ -10578,6 +10594,7 @@ method	BoundaryChecker::eventViolations()
 method	BoundaryChecker::isCheckedRegistrationSite()
 method	BoundaryChecker::isCoreEvent()
 method	BoundaryChecker::isDeclared()
+method	BoundaryChecker::isDomainFoundation()
 method	BoundaryChecker::isDomainName()
 method	BoundaryChecker::isFreeToUse()
 method	BoundaryChecker::isPrivateCoreName()
@@ -10589,6 +10606,9 @@ method	BoundaryChecker::violations()
 method	BoundaryChecker::violationsOf()
 method	BoundaryReport::of()
 method	BoundaryReport::relative()
+method	BoundaryRoots::__construct()
+method	BoundaryRoots::folders()
+method	BoundaryRoots::packageHolding()
 method	BoundedReads::all()
 method	BoundedReads::defaultReadLimit()
 method	BoundedReads::defaultReadOrder()
@@ -11500,7 +11520,9 @@ method	ClosedFolders::assertNotClosed()
 method	ClosedFolders::closedIn()
 method	ClosedSettingsAccess::allows()
 method	CodeFiles::__construct()
+method	CodeFiles::applicationRoot()
 method	CodeFiles::assertProject()
+method	CodeFiles::composerRoot()
 method	CodeFiles::counted()
 method	CodeFiles::file()
 method	CodeFiles::folder()
@@ -11726,6 +11748,7 @@ method	CommandOperand::__construct()
 method	CommandOperation::__construct()
 method	CommandOperation::isSameOperation()
 method	CommandOperation::name()
+method	CommandOperationListedTwice::for()
 method	CommandOriginCheck::__construct()
 method	CommandOriginCheck::permits()
 method	CommandOriginCheck::status()
@@ -12200,6 +12223,7 @@ method	ConnectionsOwnerCheck::allows()
 method	ConnectionsPages::declarations()
 method	ConnectionsPages::navigation()
 method	ConnectionsPages::pages()
+method	ConnectionsPages::types()
 method	ConnectionsPolicy::model()
 method	ConnectionsServiceProvider::boot()
 method	ConnectionsServiceProvider::register()
@@ -12604,7 +12628,6 @@ method	DeclarationInvalid::notJson()
 method	DeclarationInvalid::refusalCode()
 method	DeclarationInvalid::status()
 method	DeclarationRules::__construct()
-method	DeclarationRules::extraSharedFiles()
 method	DeclarationRules::filesOutsideDomains()
 method	DeclarationRules::isInADomain()
 method	DeclarationRules::liesIn()
@@ -12654,7 +12677,6 @@ method	DeclaredReads::declare()
 method	DeclaredReads::of()
 method	DeclaredRouteKey::of()
 method	DeclaredRoutes::__construct()
-method	DeclaredRoutes::ownedBy()
 method	DeclaredRoutes::prefixes()
 method	DeclaredRoutes::refuseTakenPrefixes()
 method	DeclaredRoutes::register()
@@ -12797,7 +12819,6 @@ method	DeskUnavailable::forId()
 method	DeskUnavailable::forSeat()
 method	DeskUnavailable::refusalCode()
 method	DeskUnavailable::status()
-method	DesksSeeder::run()
 method	DesksServiceProvider::boot()
 method	DesksServiceProvider::register()
 method	DestinationArgument::__construct()
@@ -13315,6 +13336,7 @@ method	Domain::bootstrappers()
 method	Domain::canDisable()
 method	Domain::description()
 method	Domain::exports()
+method	Domain::mcpRoot()
 method	Domain::mcpTools()
 method	Domain::requires()
 method	DomainAvailability::isEnabled()
@@ -13431,6 +13453,7 @@ method	DomainTypeWriter::output()
 method	DomainTypeWriter::ownerExportLines()
 method	DomainTypeWriter::pathOf()
 method	DomainTypeWriter::resolveReference()
+method	DomainTypeWriter::typeOwners()
 method	DomainUi::__construct()
 method	DomainUi::assertImplements()
 method	DomainUi::assertInvokableController()
@@ -13438,6 +13461,7 @@ method	DomainUi::componentFile()
 method	DomainUi::declaring()
 method	DomainUi::fullKey()
 method	DomainUi::of()
+method	DomainUi::owns()
 method	DomainUi::presentationFile()
 method	DomainUi::presentationName()
 method	DomainUi::uri()
@@ -14282,13 +14306,18 @@ method	ExportBuilder::make()
 method	ExportBuilder::plainList()
 method	ExportBuilder::support()
 method	ExportBuilder::values()
+method	ExportValidator::__construct()
+method	ExportValidator::check()
+method	ExportValidator::command()
+method	ExportValidator::contract()
+method	ExportValidator::event()
+method	ExportValidator::exception()
+method	ExportValidator::ownType()
+method	ExportValidator::reasonNotAValue()
+method	ExportValidator::support()
+method	ExportValidator::value()
 method	Exports::__construct()
 method	Exports::all()
-method	Exports::check()
-method	Exports::command()
-method	Exports::contract()
-method	Exports::event()
-method	Exports::exception()
 method	Exports::has()
 method	Exports::hasCommand()
 method	Exports::hasEvent()
@@ -14296,10 +14325,6 @@ method	Exports::listHolds()
 method	Exports::make()
 method	Exports::normalized()
 method	Exports::of()
-method	Exports::ownType()
-method	Exports::reasonNotAValue()
-method	Exports::support()
-method	Exports::value()
 method	FactOrigin::reference()
 method	FactStaging::deliver()
 method	FactStaging::stage()
@@ -14547,6 +14572,14 @@ method	FollowingSequenceStateFactory::sessionTransfer()
 method	FollowingSequenceStateFactory::stateClass()
 method	FollowingSequenceStateFactory::statesFor()
 method	FollowingSequenceStateReference::forRun()
+method	FormerPaths::classWasIn()
+method	FormerPaths::filesFrom()
+method	FormerPaths::foldersToScan()
+method	FormerPaths::liesOutside()
+method	FormerPaths::of()
+method	FormerPaths::paths()
+method	FormerPaths::read()
+method	FormerPaths::wasIn()
 method	Frame::__construct()
 method	Frame::answer()
 method	Frame::answerEvent()
@@ -15791,6 +15824,10 @@ method	LayoutRefused::unknownStyle()
 method	LayoutRequest::layoutName()
 method	LayoutRequest::rules()
 method	LayoutRequest::shape()
+method	LayoutRoots::core()
+method	LayoutRoots::coreRootFiles()
+method	LayoutRoots::misplaced()
+method	LayoutRoots::package()
 method	LayoutRowData::__construct()
 method	LayoutRowData::parts()
 method	LayoutSplitData::__construct()
@@ -16284,6 +16321,7 @@ method	McpSearchTypeTaken::between()
 method	McpServiceProvider::boot()
 method	McpServiceProvider::register()
 method	McpToolDirectory::classesIn()
+method	McpToolDirectory::rootOf()
 method	McpToolNameInvalid::missing()
 method	McpToolNameInvalid::notSnakeCase()
 method	McpToolNameTaken::for()
@@ -16962,20 +17000,8 @@ method	NavigationReader::menuEntries()
 method	NavigationReader::menuEntry()
 method	NavigationReader::menuEntryCount()
 method	NavigationReader::navigationRequest()
-method	NavigationRecords::__construct()
 method	NavigationRecords::counts()
-method	NavigationRecords::current()
-method	NavigationRecords::itemData()
-method	NavigationRecords::matchScore()
-method	NavigationRecords::menuEntries()
-method	NavigationRecords::menuEntry()
-method	NavigationRecords::menuEntryCount()
-method	NavigationRecords::menuQuery()
-method	NavigationRecords::navigationRequest()
-method	NavigationRecords::outranks()
-method	NavigationRecords::staleHint()
 method	NavigationRecords::tree()
-method	NavigationRecords::urlOf()
 method	NavigationRequest::abandon()
 method	NavigationRequest::answer()
 method	NavigationRequest::assignmentIdentity()
@@ -17101,9 +17127,6 @@ method	NotificationChanges::isOlderThanKept()
 method	NotificationChanges::itemsOf()
 method	NotificationChanges::reset()
 method	NotificationChanges::since()
-method	NotificationChangesController::__invoke()
-method	NotificationChangesRequest::rules()
-method	NotificationChangesRequest::since()
 method	NotificationCursor::__construct()
 method	NotificationCursor::at()
 method	NotificationCursor::read()
@@ -17128,9 +17151,11 @@ method	NotificationOccurrence::isNew()
 method	NotificationOccurrence::keyed()
 method	NotificationOccurrence::targeting()
 method	NotificationPage::__construct()
-method	NotificationPageController::__invoke()
-method	NotificationPageRequest::cursor()
-method	NotificationPageRequest::rules()
+method	NotificationProps::__construct()
+method	NotificationProps::actor()
+method	NotificationProps::cursorIn()
+method	NotificationProps::of()
+method	NotificationProps::sinceIn()
 method	NotificationReceipt::allForTarget()
 method	NotificationReceipt::casts()
 method	NotificationReceipt::create()
@@ -17221,7 +17246,6 @@ method	NumberedPageContent::__construct()
 method	NumberedPages::answer()
 method	NumberedTypeRegistry::assertNumbered()
 method	NumberedTypeRegistry::checkDeclarations()
-method	NumbersSeeder::run()
 method	NumbersServiceProvider::boot()
 method	NumbersServiceProvider::register()
 method	ObjectDefinition::__construct()
@@ -17538,6 +17562,10 @@ method	Page::onHome()
 method	Page::options()
 method	Page::slots()
 method	Page::visibleWhen()
+method	PageActionAnswers::__construct()
+method	PageActionAnswers::back()
+method	PageActionAnswers::backWith()
+method	PageActionAnswers::backWithNotice()
 method	PageChangeBroadcastLog::__construct()
 method	PageChangeBroadcastLog::record()
 method	PageChanged::__construct()
@@ -17567,9 +17595,20 @@ method	PageProps::pageResult()
 method	PageProps::sectionResult()
 method	PageProps::sectionsOf()
 method	PageProvider::pages()
+method	PageReadProps::__construct()
+method	PageReadProps::answer()
+method	PageReadProps::argumentFor()
+method	PageReadProps::formRequestOf()
+method	PageReadProps::of()
+method	PageReadProps::propName()
+method	PageReadProps::queryOf()
+method	PageReadProps::routeOf()
+method	PageReadProps::routeParameterOf()
 method	PageResolver::read()
 method	PageSize::__construct()
 method	PageSize::from()
+method	PageVisibility::__construct()
+method	PageVisibility::assertVisible()
 method	PaginationData::__construct()
 method	PairChats::__construct()
 method	PairChats::open()
@@ -18475,6 +18514,7 @@ method	ProcessPages::requestPage()
 method	ProcessPages::runOutcomePage()
 method	ProcessPages::runPage()
 method	ProcessPages::runsPage()
+method	ProcessPages::types()
 method	ProcessPolicy::model()
 method	ProcessReconcileCommand::handle()
 method	ProcessRestoreCheckCommand::handle()
@@ -18798,6 +18838,7 @@ method	ProfilesPages::nativeParts()
 method	ProfilesPages::navigation()
 method	ProfilesPages::pages()
 method	ProfilesPages::sections()
+method	ProfilesPages::types()
 method	ProfilesServiceProvider::boot()
 method	ProfilesServiceProvider::register()
 method	ProfilesServiceProvider::scopeAccountsToOwner()
@@ -21770,6 +21811,7 @@ method	ScriptSyntaxError::at()
 method	ScriptTrigger::policy()
 method	ScriptsPages::declarations()
 method	ScriptsPages::pages()
+method	ScriptsPages::types()
 method	ScriptsServiceProvider::boot()
 method	ScriptsServiceProvider::register()
 method	SealedUploads::consume()
@@ -22200,6 +22242,7 @@ method	SettingsPage::make()
 method	SettingsPages::declarations()
 method	SettingsPages::navigation()
 method	SettingsPages::pages()
+method	SettingsPages::types()
 method	SettingsProvider::settings()
 method	SettingsRecord::casts()
 method	SettingsRecord::lockedForOwner()
@@ -22749,6 +22792,7 @@ method	SharingOwnerCheck::allows()
 method	SharingPages::declarations()
 method	SharingPages::nativeParts()
 method	SharingPages::pages()
+method	SharingPages::types()
 method	SharingPolicy::model()
 method	SharingServiceProvider::boot()
 method	SharingServiceProvider::register()
@@ -25539,10 +25583,14 @@ method	TunlerStatusData::__construct()
 method	TunlerStatusUnreadable::because()
 method	TurnReportController::__invoke()
 method	TypeNotNamed::for()
+method	TypeOwnerRepeated::forClass()
+method	TypeOwnerRepeated::forSymbol()
 method	TypeOwners::__construct()
+method	TypeOwners::claims()
 method	TypeOwners::keys()
 method	TypeOwners::of()
 method	TypeOwners::ownerOf()
+method	TypeProvider::types()
 method	TypeReflections::of()
 method	TypeScriptServiceProvider::configure()
 method	TypeScriptServiceProvider::register()
@@ -25869,11 +25917,20 @@ method	WatchedRuntimes::forHost()
 method	WatchedRuntimes::isWatched()
 method	WatchedRuntimes::version()
 method	WatchedRuntimes::versionOf()
+method	WebNavigationRecords::__construct()
+method	WebNavigationRecords::counts()
+method	WebNavigationRecords::current()
+method	WebNavigationRecords::itemData()
+method	WebNavigationRecords::matchScore()
+method	WebNavigationRecords::outranks()
+method	WebNavigationRecords::tree()
+method	WebNavigationRecords::urlOf()
 method	WebPages::declarations()
 method	WebPages::nativeParts()
 method	WebPages::navigation()
 method	WebPages::pages()
 method	WebPages::sidebarGroups()
+method	WebPages::types()
 method	WebServiceProvider::boot()
 method	WebServiceProvider::fieldOf()
 method	WebServiceProvider::refusalAnswer()
@@ -26204,7 +26261,6 @@ parameter	$answers
 parameter	$answersParent
 parameter	$any
 parameter	$app
-parameter	$appFolder
 parameter	$appKey
 parameter	$appName
 parameter	$apparmor
@@ -26659,6 +26715,7 @@ parameter	$coreDeclarations
 parameter	$coreExports
 parameter	$coreFolder
 parameter	$coreListenerFolders
+parameter	$corePath
 parameter	$coreRules
 parameter	$correction
 parameter	$correlationId
@@ -26819,7 +26876,6 @@ parameter	$documentation
 parameter	$documents
 parameter	$domain
 parameter	$domainClass
-parameter	$domainFolder
 parameter	$domainName
 parameter	$domainSwitches
 parameter	$domains
@@ -26907,11 +26963,11 @@ parameter	$enteredAt
 parameter	$entitlement
 parameter	$entrance
 parameter	$entries
-parameter	$entries	app/Files/Values/FolderEntries.php
-parameter	$entries	app/Reflection/Support/Attributes.php
-parameter	$entries	app/Sharing/Support/ShareAuditPage.php
-parameter	$entries	app/Skills/Commands/RefreshSkills/RefreshSkillsHandler.php
-parameter	$entries	app/Skills/Resolvers/Support/SkillStatusResolver.php
+parameter	$entries	app/Commands/RefreshSkills/RefreshSkillsHandler.php
+parameter	$entries	app/Resolvers/Support/SkillStatusResolver.php
+parameter	$entries	app/Support/Attributes.php
+parameter	$entries	app/Support/ShareAuditPage.php
+parameter	$entries	app/Values/FolderEntries.php
 parameter	$entry
 parameter	$entryDispatchers
 parameter	$entryGroup
@@ -27013,6 +27069,7 @@ parameter	$expression
 parameter	$extended
 parameter	$extension
 parameter	$extensions
+parameter	$extraRoots
 parameter	$fact
 parameter	$factLimit
 parameter	$factory
@@ -27076,7 +27133,6 @@ parameter	$firstRequest
 parameter	$firstRequestId
 parameter	$firstRound
 parameter	$fixed
-parameter	$fixedFiles
 parameter	$flag
 parameter	$flags
 parameter	$floatSize
@@ -27092,7 +27148,6 @@ parameter	$follower
 parameter	$following
 parameter	$followsGap
 parameter	$footer
-parameter	$forbidden
 parameter	$form
 parameter	$format
 parameter	$forward
@@ -27402,25 +27457,25 @@ parameter	$issue
 parameter	$issued
 parameter	$issuedAt
 parameter	$italic
-parameter	$item	app/Agents/Data/ProtectedItemData.php
-parameter	$item	app/Agents/Data/ProtectionReportData.php
-parameter	$item	app/Agents/Support/PresentationPrompts.php
-parameter	$item	app/Agents/Values/ProtectedItem.php
-parameter	$item	app/Agents/Values/ProtectionReport.php
-parameter	$item	app/Communication/Data/NotificationChangeItem.php
-parameter	$item	app/Communication/Resolvers/Support/NotificationFeed.php
-parameter	$item	app/Communication/Support/PresentationBatches.php
-parameter	$item	app/Ui/Declarations/RegisteredMenuItem.php
-parameter	$item	app/Ui/Declarations/RegisteredNavigation.php
-parameter	$item	app/Ui/Exceptions/InvalidMenuDeclaration.php
-parameter	$item	app/Ui/Support/UiDeclarations.php
-parameter	$item	app/Web/Support/RecordMenus.php
+parameter	$item	app/Data/NotificationChangeItem.php
+parameter	$item	app/Data/ProtectedItemData.php
+parameter	$item	app/Data/ProtectionReportData.php
+parameter	$item	app/Declarations/RegisteredMenuItem.php
+parameter	$item	app/Declarations/RegisteredNavigation.php
+parameter	$item	app/Exceptions/InvalidMenuDeclaration.php
+parameter	$item	app/Resolvers/Support/NotificationFeed.php
+parameter	$item	app/Support/PresentationBatches.php
+parameter	$item	app/Support/PresentationPrompts.php
+parameter	$item	app/Support/RecordMenus.php
+parameter	$item	app/Support/UiDeclarations.php
+parameter	$item	app/Values/ProtectedItem.php
+parameter	$item	app/Values/ProtectionReport.php
 parameter	$itemValue
-parameter	$items	app/Agents/Data/ProtectionReportData.php
-parameter	$items	app/Agents/Values/ProtectionReport.php
-parameter	$items	app/Communication/Data/NotificationPage.php
-parameter	$items	app/Communication/Data/PresentationBatchData.php
-parameter	$items	app/Ui/Layout/LayoutMenuGroupData.php
+parameter	$items	app/Data/NotificationPage.php
+parameter	$items	app/Data/PresentationBatchData.php
+parameter	$items	app/Data/ProtectionReportData.php
+parameter	$items	app/Support/Layout/LayoutMenuGroupData.php
+parameter	$items	app/Values/ProtectionReport.php
 parameter	$job
 parameter	$jobId
 parameter	$jobState
@@ -27523,7 +27578,7 @@ parameter	$linked
 parameter	$linking
 parameter	$links
 parameter	$list
-parameter	$list	app/Ui/Layout/LayoutPartData.php
+parameter	$list	app/Support/Layout/LayoutPartData.php
 parameter	$listCursor
 parameter	$listName
 parameter	$listRead
@@ -27843,6 +27898,7 @@ parameter	$originals
 parameter	$origins
 parameter	$other
 parameter	$otherId
+parameter	$otherOwner
 parameter	$others
 parameter	$outcome
 parameter	$outcomeUserId
@@ -27887,6 +27943,7 @@ parameter	$page
 parameter	$pageId
 parameter	$pageMax
 parameter	$pageName
+parameter	$pageReads
 parameter	$pages
 parameter	$pagination
 parameter	$paging
@@ -27941,7 +27998,7 @@ parameter	$pathsByConversation
 parameter	$pattern
 parameter	$patterns
 parameter	$pause
-parameter	$payload	app/Hooks/Delivery/StateEventDispatcher.php
+parameter	$payload	app/Support/Delivery/StateEventDispatcher.php
 parameter	$payloadDigest
 parameter	$pending
 parameter	$pendingCleanups
@@ -28015,6 +28072,7 @@ parameter	$precision
 parameter	$predecessor
 parameter	$preferences
 parameter	$prefix
+parameter	$prefixes
 parameter	$preflight
 parameter	$preparation
 parameter	$prepared
@@ -28089,6 +28147,7 @@ parameter	$proof
 parameter	$proofId
 parameter	$proofValue
 parameter	$proofs
+parameter	$prop
 parameter	$propName
 parameter	$propTypes
 parameter	$properties
@@ -28369,30 +28428,30 @@ parameter	$responsibilities
 parameter	$restored
 parameter	$restorer
 parameter	$result
-parameter	$result	app/Agents/Models/MergeAttempt.php
-parameter	$result	app/Agents/Support/ProtectedMerge.php
-parameter	$result	app/Agents/Values/MergeOutcome.php
-parameter	$result	app/Bus/Values/ReceiptAnswer.php
-parameter	$result	app/Connections/Values/BindingOutcome.php
-parameter	$result	app/Hooks/Readers/SessionInspections.php
+parameter	$result	app/Commands/ResolveMergeAttempt/ResolveMergeAttemptCommand.php
+parameter	$result	app/Data/AskDetail.php
+parameter	$result	app/Data/ClaudeAnswerData.php
+parameter	$result	app/Data/CodexMessageData.php
+parameter	$result	app/Data/ProfileStepData.php
+parameter	$result	app/Data/RunOutcomeSummaryData.php
+parameter	$result	app/Events/RunOutcomeRecorded.php
 parameter	$result	app/Mcp/Data/JsonRpcReplyData.php
-parameter	$result	app/Processes/Data/RunOutcomeSummaryData.php
-parameter	$result	app/Processes/Events/RunOutcomeRecorded.php
-parameter	$result	app/Processes/Models/ProcessRun.php
-parameter	$result	app/Processes/Models/RunOutcome.php
-parameter	$result	app/Processes/Support/RunOutcomes.php
-parameter	$result	app/Profiles/Data/ClaudeAnswerData.php
-parameter	$result	app/Profiles/Data/CodexMessageData.php
-parameter	$result	app/Scripts/Data/ProfileStepData.php
-parameter	$result	app/Supervision/Commands/ResolveMergeAttempt/ResolveMergeAttemptCommand.php
-parameter	$result	app/Supervision/Data/AskDetail.php
+parameter	$result	app/Models/MergeAttempt.php
+parameter	$result	app/Models/ProcessRun.php
+parameter	$result	app/Models/RunOutcome.php
+parameter	$result	app/Support/ProtectedMerge.php
+parameter	$result	app/Support/Readers/SessionInspections.php
+parameter	$result	app/Support/RunOutcomes.php
+parameter	$result	app/Values/BindingOutcome.php
+parameter	$result	app/Values/MergeOutcome.php
+parameter	$result	app/Values/ReceiptAnswer.php
 parameter	$resultAccountId
 parameter	$resultLabel
 parameter	$resultNote
 parameter	$resultNumber
 parameter	$resultRevision
 parameter	$resultingTargetOid
-parameter	$results	app/Hooks/StateEvents/StateEventEffects.php
+parameter	$results	app/Support/StateEvents/StateEventEffects.php
 parameter	$resumable
 parameter	$resumedNumber
 parameter	$resumedSessionId
@@ -28437,6 +28496,7 @@ parameter	$role
 parameter	$rollBack
 parameter	$room
 parameter	$root
+parameter	$rootFiles
 parameter	$rootId
 parameter	$rootMigrationFolder
 parameter	$rootPlan
@@ -28631,7 +28691,6 @@ parameter	$shareId
 parameter	$shareRecords
 parameter	$shareable
 parameter	$shared
-parameter	$sharedFolder
 parameter	$sharedFolders
 parameter	$shares
 parameter	$sharing
@@ -28679,6 +28738,7 @@ parameter	$snippet
 parameter	$socket
 parameter	$source
 parameter	$sourceDigest
+parameter	$sourceFolder
 parameter	$sourceHash
 parameter	$sourceId
 parameter	$sourceInboxId
@@ -28834,6 +28894,7 @@ parameter	$switchStageLabel
 parameter	$switchable
 parameter	$switchedOn
 parameter	$switches
+parameter	$symbol
 parameter	$syntax
 parameter	$syntaxFacts
 parameter	$system
@@ -29013,48 +29074,49 @@ parameter	$validation
 parameter	$validator
 parameter	$validators
 parameter	$value
-parameter	$value	app/Actors/Models/Support/ReadsForActor.php
-parameter	$value	app/AgentRequests/Casts/CallKeyCast.php
-parameter	$value	app/AgentRequests/Transformers/CallKeyTransformer.php
-parameter	$value	app/Agents/Casts/NavigationScreenCast.php
-parameter	$value	app/Agents/Exceptions/ArrangementUnknown.php
-parameter	$value	app/Agents/Support/ArrangementSetting.php
-parameter	$value	app/Agents/Support/PrivateValues.php
-parameter	$value	app/Assignments/Casts/PoolReferenceCast.php
-parameter	$value	app/Bus/Support/OneLineRule.php
-parameter	$value	app/Comments/Casts/CommentViewsCast.php
-parameter	$value	app/Docking/Cards/DestinationArgument.php
-parameter	$value	app/Docking/Data/DockDestinationOptionData.php
-parameter	$value	app/Hooks/Storage/FrameRecordsCast.php
-parameter	$value	app/Hooks/Storage/RecordedAnswerCast.php
-parameter	$value	app/Hooks/Storage/RecordedStepsCast.php
-parameter	$value	app/Processes/Casts/RuleScopeCast.php
-parameter	$value	app/Processes/Casts/StoredValueCast.php
-parameter	$value	app/Processes/Casts/StoredValuesCast.php
-parameter	$value	app/Profiles/Casts/ProfileAuthorizationCast.php
-parameter	$value	app/Profiles/Casts/ProfileBaseCast.php
-parameter	$value	app/Profiles/Casts/ProfileStartPolicyCast.php
-parameter	$value	app/Profiles/Casts/SupervisorRoutesCast.php
-parameter	$value	app/Profiles/Exceptions/ProfileProposalRefused.php
-parameter	$value	app/Reads/Support/BoundedReads.php
-parameter	$value	app/Reflection/Support/CatalogueReflectorFactory.php
-parameter	$value	app/Reflection/Support/ReflectedProperty.php
-parameter	$value	app/Reflection/Support/Reflector.php
-parameter	$value	app/Scripts/Values/ObjectRead.php
-parameter	$value	app/Settings/Casts/SettingsDocumentCast.php
-parameter	$value	app/Sharing/Casts/GatewaySettingsCast.php
-parameter	$value	app/Sharing/Casts/SelectedTargetsCast.php
-parameter	$value	app/Skills/Casts/SkillSectionsCast.php
-parameter	$value	app/Ui/Layout/LayoutFieldData.php
-parameter	$value	app/Ui/Layout/LayoutPartData.php
-parameter	$value	app/Ui/Layout/LayoutProgressData.php
-parameter	$value	app/Ui/Layout/LayoutRowData.php
-parameter	$value	app/Ui/Layout/SettingsRow.php
+parameter	$value	app/Casts/CallKeyCast.php
+parameter	$value	app/Casts/CommentViewsCast.php
+parameter	$value	app/Casts/GatewaySettingsCast.php
+parameter	$value	app/Casts/NavigationScreenCast.php
+parameter	$value	app/Casts/PoolReferenceCast.php
+parameter	$value	app/Casts/ProfileAuthorizationCast.php
+parameter	$value	app/Casts/ProfileBaseCast.php
+parameter	$value	app/Casts/ProfileStartPolicyCast.php
+parameter	$value	app/Casts/RuleScopeCast.php
+parameter	$value	app/Casts/SelectedTargetsCast.php
+parameter	$value	app/Casts/SettingsDocumentCast.php
+parameter	$value	app/Casts/SkillSectionsCast.php
+parameter	$value	app/Casts/StoredValueCast.php
+parameter	$value	app/Casts/StoredValuesCast.php
+parameter	$value	app/Casts/SupervisorRoutesCast.php
+parameter	$value	app/Concerns/BoundedReads.php
+parameter	$value	app/Data/DockDestinationOptionData.php
+parameter	$value	app/Exceptions/ArrangementUnknown.php
+parameter	$value	app/Exceptions/ProfileProposalRefused.php
+parameter	$value	app/Http/Responses/PageActionAnswers.php
+parameter	$value	app/Models/Support/ReadsForActor.php
+parameter	$value	app/Support/ArrangementSetting.php
+parameter	$value	app/Support/Cards/DestinationArgument.php
+parameter	$value	app/Support/CatalogueReflectorFactory.php
+parameter	$value	app/Support/Layout/LayoutFieldData.php
+parameter	$value	app/Support/Layout/LayoutPartData.php
+parameter	$value	app/Support/Layout/LayoutProgressData.php
+parameter	$value	app/Support/Layout/LayoutRowData.php
+parameter	$value	app/Support/Layout/SettingsRow.php
+parameter	$value	app/Support/OneLineRule.php
+parameter	$value	app/Support/PrivateValues.php
+parameter	$value	app/Support/ReflectedProperty.php
+parameter	$value	app/Support/Reflector.php
+parameter	$value	app/Support/Storage/FrameRecordsCast.php
+parameter	$value	app/Support/Storage/RecordedAnswerCast.php
+parameter	$value	app/Support/Storage/RecordedStepsCast.php
+parameter	$value	app/Support/Transformers/CallKeyTransformer.php
+parameter	$value	app/Values/ObjectRead.php
 parameter	$valueClass
 parameter	$valueClasses
-parameter	$values	app/Hooks/Storage/FrameRecord.php
-parameter	$values	app/Hooks/Storage/StoredFrame.php
-parameter	$values	app/Web/Http/Controllers/Terminal/SubmitPrivateInputController.php
+parameter	$values	app/Http/Controllers/Terminal/SubmitPrivateInputController.php
+parameter	$values	app/Support/Storage/FrameRecord.php
+parameter	$values	app/Support/Storage/StoredFrame.php
 parameter	$variable
 parameter	$variableText
 parameter	$variables
@@ -29601,6 +29663,8 @@ property	AgentMessages::$actors
 property	AgentMessages::$continuations
 property	AgentMessages::$inboxes
 property	AgentMessages::$session
+property	AgentNavigationRecords::$answering
+property	AgentNavigationRecords::$transaction
 property	AgentOption::$actions
 property	AgentOption::$agentId
 property	AgentOption::$assignee
@@ -29804,7 +29868,6 @@ property	ApprovedHead::$work
 property	ApprovedPair::$contract
 property	ApprovedPair::$declaration
 property	ApprovedPair::$reader
-property	AreaCycles::$edges
 property	ArgumentGrammar::$acceptsNumericOptions
 property	ArgumentGrammar::$endsOptionsAtDoubleDash
 property	ArgumentGrammar::$minimumOperands
@@ -30255,7 +30318,10 @@ property	BooleanValueData::$type
 property	BoundTarget::$hostId
 property	BoundaryChecker::$coreExports
 property	BoundaryChecker::$entries
+property	BoundaryChecker::$extraRoots
 property	BoundaryChecker::$roots
+property	BoundaryRoots::$basePath
+property	BoundaryRoots::$entries
 property	BroadcastDockedSourceChange::$chats
 property	BroadcastDockedSourceChange::$docked
 property	BroadcastDockedSourceChange::$events
@@ -30613,10 +30679,7 @@ property	CheckFailedAccount::$journal
 property	CheckJobGrant::$admission
 property	CheckJobGrant::$nesting
 property	CheckJobGrant::$registry
-property	CheckPageVisibility::$actors
-property	CheckPageVisibility::$container
-property	CheckPageVisibility::$declarations
-property	CheckPageVisibility::$owners
+property	CheckPageVisibility::$visibility
 property	CheckProfileScriptCall::$commands
 property	CheckProfileScriptCall::$profile
 property	CheckProfileScriptCall::$source
@@ -31894,6 +31957,7 @@ property	DomainUi::$pages
 property	DomainUi::$scriptFolder
 property	DomainUi::$sections
 property	DomainUi::$sidebarGroups
+property	DomainUi::$types
 property	DraftClosed::$published
 property	DraftClosed::$revisionNumber
 property	DraftClosing::$editors
@@ -32439,12 +32503,12 @@ property	ExportBuilder::$events
 property	ExportBuilder::$exceptions
 property	ExportBuilder::$support
 property	ExportBuilder::$valueClasses
+property	ExportValidator::$namespace
+property	ExportValidator::$owner
 property	Exports::$commands
 property	Exports::$contracts
 property	Exports::$events
 property	Exports::$exceptions
-property	Exports::$namespace
-property	Exports::$owner
 property	Exports::$support
 property	Exports::$valueClasses
 property	FailDriverSwitchLaunchCommand::$reason
@@ -32547,6 +32611,7 @@ property	FolderWalker::$roots
 property	FolderWorkspace::$folder
 property	FollowingSequenceState::$sequence
 property	FollowingSequenceStateFactory::$runs
+property	FormerPaths::$paths
 property	Frame::$admittedAt
 property	Frame::$bottom
 property	Frame::$bytes
@@ -32661,6 +32726,8 @@ property	HandleInertiaRequests::$actors
 property	HandleInertiaRequests::$appName
 property	HandleInertiaRequests::$inertia
 property	HandleInertiaRequests::$navigation
+property	HandleInertiaRequests::$notifications
+property	HandleInertiaRequests::$pageReads
 property	HandleInertiaRequests::$rootView
 property	HandleInertiaRequests::$sharing
 property	HandleInertiaRequests::$users
@@ -33440,6 +33507,7 @@ property	ListenerDeclarations::$ownership
 property	ListenerDeclarations::$required
 property	ListenerOwnership::$coreExports
 property	ListenerOwnership::$coreListenerFolders
+property	ListenerOwnership::$corePath
 property	ListenerOwnership::$reflectors
 property	ListenerOwnership::$registry
 property	ListenerPolicy::$ownership
@@ -33917,13 +33985,6 @@ property	NavigationRaiseData::$rows
 property	NavigationRaiseData::$sentSteps
 property	NavigationRaiseData::$staleEntry
 property	NavigationRaiseData::$step
-property	NavigationRecords::$answering
-property	NavigationRecords::$container
-property	NavigationRecords::$declarations
-property	NavigationRecords::$log
-property	NavigationRecords::$merge
-property	NavigationRecords::$transaction
-property	NavigationRecords::$urls
 property	NavigationRequest::$attributes
 property	NavigationRound::$choose
 property	NavigationRound::$completes
@@ -34023,6 +34084,10 @@ property	NotificationPage::$nextCursor
 property	NotificationPage::$through
 property	NotificationPage::$unread
 property	NotificationPage::$version
+property	NotificationProps::$actors
+property	NotificationProps::$changes
+property	NotificationProps::$feed
+property	NotificationProps::$inertia
 property	NotificationReceipts::$scopes
 property	NotificationTarget::$id
 property	NotificationTarget::$key
@@ -34313,6 +34378,7 @@ property	Page::$skeleton
 property	Page::$slots
 property	Page::$title
 property	Page::$visibility
+property	PageActionAnswers::$inertia
 property	PageChangeBroadcastLog::$log
 property	PageChanged::$userIds
 property	PageController::$declarations
@@ -34326,7 +34392,16 @@ property	PageProps::$inertia
 property	PageProps::$owners
 property	PageProps::$readers
 property	PageProps::$windowResults
+property	PageReadProps::$container
+property	PageReadProps::$declarations
+property	PageReadProps::$inertia
+property	PageReadProps::$owners
+property	PageReadProps::$visibility
 property	PageSize::$rows
+property	PageVisibility::$actors
+property	PageVisibility::$container
+property	PageVisibility::$declarations
+property	PageVisibility::$owners
 property	PaginationData::$lastPage
 property	PaginationData::$page
 property	PaginationData::$total
@@ -37397,6 +37472,7 @@ property	SendTerminalInputCommand::$input
 property	SendTerminalInputHandler::$clock
 property	SendTerminalInputHandler::$controls
 property	SentMessageAnswer::$conversations
+property	SentMessageAnswer::$inertia
 property	SentMessageAnswer::$key
 property	SentMessageAnswer::$redirect
 property	SequenceEditorPartData::$cancelAddress
@@ -39463,6 +39539,7 @@ property	TunlerStatus::$isLoggedIn
 property	TunlerStatusData::$host
 property	TunlerStatusData::$isAuthenticated
 property	TunlerStatusData::$loggedIn
+property	TypeOwners::$claims
 property	TypeOwners::$owners
 property	TypedSecret::$name
 property	TypedSecret::$secretText
@@ -39641,6 +39718,11 @@ property	WalkedCall::$row
 property	WalkedCall::$stackBefore
 property	WatchedRuntime::$intervalMs
 property	WatchedRuntime::$runtimeId
+property	WebNavigationRecords::$container
+property	WebNavigationRecords::$declarations
+property	WebNavigationRecords::$log
+property	WebNavigationRecords::$merge
+property	WebNavigationRecords::$urls
 property	WindowResults::$app
 property	WindowResults::$log
 property	WindowResults::$offers
@@ -39889,8 +39971,6 @@ variable	$approved
 variable	$approver
 variable	$approvers
 variable	$area
-variable	$areas
-variable	$areasOnStack
 variable	$argument
 variable	$arguments
 variable	$arms
@@ -40163,6 +40243,7 @@ variable	$cookie
 variable	$copies
 variable	$copy
 variable	$copyId
+variable	$coreAreas
 variable	$coreExports
 variable	$coreGroups
 variable	$coreRoot
@@ -40183,7 +40264,6 @@ variable	$currentDigest
 variable	$currentId
 variable	$currentPhaseOf
 variable	$cursor
-variable	$cycles
 variable	$data	app/Http/Responses/Agents/TerminalAnswers.php
 variable	$database
 variable	$deadline
@@ -40222,7 +40302,6 @@ variable	$denials
 variable	$denied
 variable	$deny
 variable	$dependency
-variable	$dependencyArea
 variable	$dependent
 variable	$depth
 variable	$descriptor
@@ -40314,10 +40393,10 @@ variable	$entered
 variable	$enteredState
 variable	$entitlement
 variable	$entries
-variable	$entries	app/Agents/Support/WorkspaceSources.php
-variable	$entries	app/Bus/Support/DeclaredCommand.php
-variable	$entries	app/Files/Support/FileWriter.php
-variable	$entries	app/Files/Support/FolderWalker.php
+variable	$entries	app/Support/DeclaredCommand.php
+variable	$entries	app/Support/FileWriter.php
+variable	$entries	app/Support/FolderWalker.php
+variable	$entries	app/Support/WorkspaceSources.php
 variable	$entry
 variable	$enum
 variable	$envelopes
@@ -40351,7 +40430,6 @@ variable	$evidence
 variable	$exactAgents
 variable	$examined
 variable	$examinedUpTo
-variable	$exampleUse
 variable	$exceeded
 variable	$except
 variable	$excerpt
@@ -40698,14 +40776,14 @@ variable	$issuedAt
 variable	$issuedHere
 variable	$issuerIsOwner
 variable	$item
-variable	$item	app/Bus/Support/CommandGrammar.php
-variable	$item	app/Communication/Resolvers/Support/NotificationChanges.php
-variable	$items	app/Agents/Support/PresentationPrompts.php
-variable	$items	app/Communication/Resolvers/Support/NotificationChanges.php
-variable	$items	app/Communication/Resolvers/Support/NotificationFeed.php
-variable	$items	app/Communication/Support/PresentationBatches.php
-variable	$items	app/Ui/Support/UiDeclarations.php
-variable	$items	app/Web/Support/RecordMenus.php
+variable	$item	app/Resolvers/Support/NotificationChanges.php
+variable	$item	app/Support/CommandGrammar.php
+variable	$items	app/Resolvers/Support/NotificationChanges.php
+variable	$items	app/Resolvers/Support/NotificationFeed.php
+variable	$items	app/Support/PresentationBatches.php
+variable	$items	app/Support/PresentationPrompts.php
+variable	$items	app/Support/RecordMenus.php
+variable	$items	app/Support/UiDeclarations.php
 variable	$job
 variable	$jobId
 variable	$jobs
@@ -40766,7 +40844,7 @@ variable	$linkType
 variable	$linked
 variable	$links
 variable	$list
-variable	$list	app/Processes/Resolvers/RunListResolver.php
+variable	$list	app/Resolvers/RunListResolver.php
 variable	$listed
 variable	$listedClasses
 variable	$listener
@@ -40799,7 +40877,6 @@ variable	$looksSecret
 variable	$loop
 variable	$lost
 variable	$low
-variable	$lowLinks
 variable	$made
 variable	$main
 variable	$mainAgent
@@ -40888,7 +40965,6 @@ variable	$name
 variable	$nameLength
 variable	$nameOperands
 variable	$nameStart
-variable	$nameUsesByFile
 variable	$named
 variable	$namedClasses
 variable	$names
@@ -40967,6 +41043,7 @@ variable	$operands
 variable	$operates
 variable	$operation
 variable	$operationId
+variable	$operationName
 variable	$operations
 variable	$operator
 variable	$operatorRange
@@ -41315,14 +41392,14 @@ variable	$response
 variable	$rest
 variable	$restored
 variable	$result
-variable	$result	app/Bus/Support/EventUnit.php
-variable	$result	app/Bus/Support/EventUnitLifecycle.php
-variable	$result	app/Http/Support/Web/PageProps.php
-variable	$result	app/Scripts/Models/ProfileRun.php
-variable	$result	app/Scripts/Models/ProfileStepResult.php
-variable	$result	app/Supervision/Readers/AskRecords.php
-variable	$result	app/Supervision/Resolvers/MergeAskNotificationTarget.php
-variable	$result	app/Ui/Declarations/Page.php
+variable	$result	app/Declarations/Page.php
+variable	$result	app/Models/ProfileRun.php
+variable	$result	app/Models/ProfileStepResult.php
+variable	$result	app/Resolvers/MergeAskNotificationTarget.php
+variable	$result	app/Support/EventUnit.php
+variable	$result	app/Support/EventUnitLifecycle.php
+variable	$result	app/Support/Readers/AskRecords.php
+variable	$result	app/Support/Web/PageProps.php
 variable	$resultBytes
 variable	$resumable
 variable	$resumedConversation
@@ -41488,7 +41565,6 @@ variable	$sortedNames
 variable	$sortedParameters
 variable	$source
 variable	$sourceAdmitted
-variable	$sourceArea
 variable	$sourceClass
 variable	$sourceRoot
 variable	$sources
@@ -41579,6 +41655,7 @@ variable	$switch
 variable	$switchable
 variable	$switchedOn
 variable	$switches
+variable	$symbols
 variable	$syntaxFacts
 variable	$tab
 variable	$table
@@ -41715,16 +41792,17 @@ variable	$valid
 variable	$validation
 variable	$validator
 variable	$value
-variable	$value	app/Connections/Logging/InstallSecretRedaction.php
-variable	$value	app/Docking/Wire/Fields/DestinationField.php
-variable	$value	app/Docking/Wire/Fields/EnumField.php
-variable	$value	app/Docking/Wire/Fields/FlagField.php
-variable	$value	app/Docking/Wire/Fields/InstantField.php
-variable	$value	app/Docking/Wire/Fields/LinesField.php
-variable	$value	app/Docking/Wire/Fields/NumberField.php
-variable	$value	app/Docking/Wire/Fields/TextField.php
-variable	$value	app/Scripts/Support/ObjectReader.php
-variable	$value	app/Settings/Support/SettingsValues.php
+variable	$value	app/Support/Logging/InstallSecretRedaction.php
+variable	$value	app/Support/ObjectReader.php
+variable	$value	app/Support/SettingsValues.php
+variable	$value	app/Support/Web/PageReadProps.php
+variable	$value	app/Support/Wire/Fields/DestinationField.php
+variable	$value	app/Support/Wire/Fields/EnumField.php
+variable	$value	app/Support/Wire/Fields/FlagField.php
+variable	$value	app/Support/Wire/Fields/InstantField.php
+variable	$value	app/Support/Wire/Fields/LinesField.php
+variable	$value	app/Support/Wire/Fields/NumberField.php
+variable	$value	app/Support/Wire/Fields/TextField.php
 variable	$values
 variable	$variable
 variable	$variables
@@ -41750,7 +41828,6 @@ variable	$visibleRecords
 variable	$visibleRunIds
 variable	$visibleTargets
 variable	$visibleTaskIds
-variable	$visitArea
 variable	$visited
 variable	$vitest
 variable	$wait

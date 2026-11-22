@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\CallScan;
+use Tests\Architecture\Support\FormerPaths;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -48,7 +49,7 @@ final class CommandBypassTest extends TestCase
     /**
      * The one place that may call Laravel's dispatcher directly.
      */
-    private const string BUS = 'app/Bus/Support/LaravelCommandBus.php';
+    private const string BUS = 'app/Support/LaravelCommandBus.php';
 
     public function test_nothing_reaches_laravels_dispatcher_around_the_command_bus(): void
     {
@@ -71,8 +72,13 @@ final class CommandBypassTest extends TestCase
     {
         $found = [];
 
-        foreach (ScanCache::findingsInFolders(new CallScan(), array_map(base_path(...), $folders)) as $path => $calls) {
+        // Core's checked areas are judged by the folders their files had before plan 62 moved them to their roles.
+        foreach (ScanCache::findingsInFolders(new CallScan(), array_map(base_path(...), FormerPaths::foldersToScan($folders))) as $path => $calls) {
             $file = substr($path, strlen(base_path()) + 1);
+
+            if (FormerPaths::liesOutside($file, $folders)) {
+                continue;
+            }
 
             if ($file === self::BUS) {
                 continue;

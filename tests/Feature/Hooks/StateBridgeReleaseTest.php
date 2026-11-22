@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Agents\Values\StackTarget;
-use App\Bus\Support\EventUnitLifecycle;
-use App\Bus\Support\RequiredListenerRegistry;
-use App\Hooks\Delivery\StateEventBridge;
-use App\Hooks\StateEvents\StateEventScope;
-use App\Hooks\Support\StackTransaction;
+use App\Support\Delivery\StateEventBridge;
+use App\Support\EventUnitLifecycle;
+use App\Support\RequiredListenerRegistry;
+use App\Support\StackTransaction;
+use App\Support\StateEvents\StateEventScope;
+use App\Values\StackTarget;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Events\Dispatcher;

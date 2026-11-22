@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Data;
 
-use App\Reads\Values\PageSize;
+use App\Values\PageSize;
 use Domain\Documents\Enums\AttentionFilter;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;

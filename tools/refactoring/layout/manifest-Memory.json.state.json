@@ -1,0 +1,47 @@
+{
+    "moved": {
+        "domain/Memory/src/Api/MemoryCard.php": "b86add41d57b3dad1a5d10de9e0e508dd316d464",
+        "domain/Memory/src/Api/MemoryPage.php": "0eeeae2eb6a58416101bd36e7a9aa41b4ba664fd",
+        "domain/Memory/src/Console/MemoryEditCommand.php": "dc4e48ce77053b3b9e4872eb5da7ac5b77ccbe97",
+        "domain/Memory/src/Console/MemoryListCommand.php": "b1d2e62ee15f8fbafa3ef4a07aa068a648dcdffd",
+        "domain/Memory/src/Console/MemoryRemoveCommand.php": "c1293ddc2dda267b620df66b188a4aec32636bab",
+        "domain/Memory/src/Console/MemorySaveCommand.php": "74301c6ec0ea0220e4d92438f25026aa0ab0cb90",
+        "domain/Memory/src/Mcp/EditMemoryTool.php": "41b99f2345e4bce2477987f9f7d95bd8efeb20fd",
+        "domain/Memory/src/Mcp/MemoriesListTool.php": "92f15aa0b36f4f57dbea889816dc0a95be15f8ac",
+        "domain/Memory/src/Mcp/MemoryReadResult.php": "3c9c3fcfa8c7ed731a1a0dddf3a371c367291119",
+        "domain/Memory/src/Mcp/MemoryReadTool.php": "a6d75cc9ae7416e89a4d6b0cb61c872005424567",
+        "domain/Memory/src/Mcp/MemoryResource.php": "87198afbba5e34d27fbeb3c2fdb6a13548f4c0dd",
+        "domain/Memory/src/Mcp/MemoryWriteTool.php": "2785a283a37dedd1c5f46fa00e89d87ad7d48f48",
+        "domain/Memory/src/Mcp/RemoveMemoryTool.php": "f2f383b2f2792d337a9b44c7598b55cc4a903c08",
+        "domain/Memory/src/Mcp/SaveMemoryTool.php": "c8fc90b515d0760d4033261802ad33e754bfd269",
+        "domain/Memory/src/Skills/MemorySkill.php": "b1e45ab8d34c04a9ab14e6ee7aa20eee5538781a",
+        "domain/Memory/src/Routes/agent.php": "4161c699dc65503e7ce64f15f00e901727e938c3"
+    },
+    "edits": {
+        "domain/Memory/src/Contracts/MemoryResolver.php": {
+            "prior": "f1bf91c0275ce1e865d9eaa29a57b3751f2f0c0f",
+            "result": "94a18f6697151ef07f9a0c7f0480e10e4e04b49d",
+            "move": "batch"
+        },
+        "domain/Memory/src/MemoryDomain.php": {
+            "prior": "f2d136d81d60ba0df030f860051d80eb0825b0bd",
+            "result": "5b437895be9ceac906b205f8c8bfd23dedb828c4",
+            "move": "batch"
+        },
+        "domain/Memory/src/Providers/MemoryServiceProvider.php": {
+            "prior": "c65df15a9c7b79731a1c79ae70184507e173dc14",
+            "result": "83e6c2b8feb9768e4be5dfc8cd7125fb22fb740b",
+            "move": "batch"
+        },
+        "domain/Memory/src/Resolvers/OwnMemories.php": {
+            "prior": "757f975feff52738323bf1ea92d1e71ef758e619",
+            "result": "1a925217628a224831ec4acd9044cb29b69ba8a0",
+            "move": "batch"
+        },
+        "tests/Unit/Skills/ShippedSkillFilesTest.php": {
+            "prior": "2db9cddd814f23bd705a95ffb6aa389b716db647",
+            "result": "418337b8233577168b51cadc78c313e0f91b31cf",
+            "move": "batch"
+        }
+    }
+}

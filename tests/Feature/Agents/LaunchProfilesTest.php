@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Contracts\HostCapabilities;
-use App\Agents\Enums\CapabilityStatusType;
-use App\Agents\Enums\LaunchProfileType;
-use App\Agents\Support\ArrangementSetting;
-use App\Agents\Support\HostCapability;
-use App\Agents\Support\HostCapabilityQuery;
-use App\Agents\Support\LaunchProfiles;
-use App\Agents\Values\SelectedAccount;
-use App\Drivers\Support\DefaultDrivers;
-use App\Profiles\Models\Account;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\HostCapabilities;
+use App\Enums\CapabilityStatusType;
+use App\Enums\LaunchProfileType;
+use App\Models\Account;
+use App\Support\ArrangementSetting;
+use App\Support\DefaultDrivers;
+use App\Support\HostCapability;
+use App\Support\HostCapabilityQuery;
+use App\Support\LaunchProfiles;
+use App\Support\RecordIdentity;
+use App\Values\SelectedAccount;
 use Tests\TestCase;
 
 /**

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Text\Support\MarkdownText;
-use App\Text\Support\TextReading;
-use App\Text\Support\TextSelection;
+use App\Support\MarkdownText;
+use App\Support\TextReading;
+use App\Support\TextSelection;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;

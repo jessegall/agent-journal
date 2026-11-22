@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Hooks\Exceptions\IncomingWorkFailed;
-use App\Hooks\Exceptions\IncomingWorkRepeated;
-use App\Hooks\Support\IncomingWorkList;
+use App\Exceptions\IncomingWorkFailed;
+use App\Exceptions\IncomingWorkRepeated;
+use App\Support\IncomingWorkList;
 use Illuminate\Container\Container;
 use Tests\Fixtures\Domains\Reviews\Work\ReviewInbox;
 use Tests\Fixtures\Hooks\FailingIncomingWork;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Agents\Support\AgentContext;
-use App\Agents\Values\StackTarget;
-use App\Hooks\Contracts\CurrentState;
-use App\Hooks\References\StateReference;
+use App\Contracts\CurrentState;
 use App\Mcp\Data\ToolResult;
+use App\Support\AgentContext;
+use App\Support\References\StateReference;
+use App\Values\StackTarget;
 use Illuminate\Contracts\Container\Container;
 
 /**

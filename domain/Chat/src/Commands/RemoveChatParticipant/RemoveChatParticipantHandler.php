@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands\RemoveChatParticipant;
 
-use App\Actors\Support\ActorIdentity;
+use App\Support\ActorIdentity;
 use Domain\Chat\Commands\Support\ChatCommandHandler;
 use Domain\Chat\Exceptions\ChatMembershipRefused;
 use Domain\Chat\Support\ChatMembership;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
-use App\Drivers\Support\DefaultDrivers;
-use App\Profiles\Values\ProfileBase;
-use App\Profiles\Values\ProfileStartPolicy;
+use App\Support\DefaultDrivers;
+use App\Values\ProfileBase;
+use App\Values\ProfileStartPolicy;
 
 /**
  * The global default start policy of a profile type, pinned to Claude Code, as tests that only need a valid policy

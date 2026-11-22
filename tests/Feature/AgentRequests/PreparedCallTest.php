@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\AgentRequests;
 
-use App\AgentRequests\Exceptions\CallDeadlinePassed;
-use App\AgentRequests\Exceptions\JournalUnreachable;
-use App\AgentRequests\Exceptions\StartSettingMissing;
-use App\AgentRequests\Exceptions\StartTokenRefused;
-use App\AgentRequests\Support\AgentClientSettings;
-use App\AgentRequests\Support\AgentRequestClient;
-use App\AgentRequests\Support\EnvironmentCredentialSource;
-use App\AgentRequests\Support\SignedCall;
-use App\AgentRequests\Support\StartEnvironment;
-use App\AgentRequests\Support\StartProfilePin;
+use App\Exceptions\CallDeadlinePassed;
+use App\Exceptions\JournalUnreachable;
+use App\Exceptions\StartSettingMissing;
+use App\Exceptions\StartTokenRefused;
+use App\Support\AgentClientSettings;
+use App\Support\AgentRequestClient;
+use App\Support\EnvironmentCredentialSource;
+use App\Support\SignedCall;
+use App\Support\StartEnvironment;
+use App\Support\StartProfilePin;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;

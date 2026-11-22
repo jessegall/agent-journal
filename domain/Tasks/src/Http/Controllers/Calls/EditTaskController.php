@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Http\Controllers\Calls;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use Domain\Tasks\Calls\EditTaskCall;
 use Domain\Tasks\Calls\TaskEdited;
 use Domain\Tasks\Commands\EditTask\EditTaskCommand;

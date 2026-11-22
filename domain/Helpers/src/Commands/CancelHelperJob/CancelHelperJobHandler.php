@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Commands\CancelHelperJob;
 
-use App\Agents\Commands\CancelLaunch\CancelLaunchCommand;
-use App\Bus\Contracts\CommandBus;
+use App\Commands\CancelLaunch\CancelLaunchCommand;
+use App\Contracts\CommandBus;
 use Domain\Helpers\Commands\Support\HelperCommandHandler;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Models\HelperJob;

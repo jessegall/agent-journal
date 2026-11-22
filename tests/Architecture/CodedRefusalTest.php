@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Bus\Contracts\CodedRefusal;
-use App\Bus\Exceptions\Concerns\RendersRefusal;
-use App\Reflection\Support\Reflector;
+use App\Concerns\RendersRefusal;
+use App\Contracts\CodedRefusal;
+use App\Support\Reflector;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Fixtures\Architecture\Refusals\UncodedRefusal;
 use Tests\TestCase;

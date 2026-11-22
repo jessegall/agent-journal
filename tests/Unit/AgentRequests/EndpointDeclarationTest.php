@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\AgentRequests;
 
-use App\AgentRequests\Enums\CallEffect;
-use App\AgentRequests\Enums\ReceiptOwner;
-use App\AgentRequests\Exceptions\CallKeyInvalid;
-use App\AgentRequests\Exceptions\EndpointDeclarationInvalid;
-use App\AgentRequests\Support\CallKey;
-use App\AgentRequests\Support\EndpointDeclarations;
+use App\Enums\CallEffect;
+use App\Enums\ReceiptOwner;
+use App\Exceptions\CallKeyInvalid;
+use App\Exceptions\EndpointDeclarationInvalid;
+use App\Support\CallKey;
+use App\Support\EndpointDeclarations;
 use Tests\Fixtures\AgentRequests\Invalid\ReadWithReceiptCall;
 use Tests\Fixtures\AgentRequests\Invalid\WriteWithoutReceiptCall;
 use Tests\Fixtures\AgentRequests\NoteAnswer;

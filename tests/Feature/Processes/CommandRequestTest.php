@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Commands\OpenCommandRequest\OpenCommandRequestCommand;
-use App\Processes\Commands\WithdrawCommandRequest\WithdrawCommandRequestCommand;
-use App\Processes\Enums\RequestHoldReason;
-use App\Processes\Enums\RequestState;
-use App\Processes\Exceptions\RequestTransitionRefused;
-use App\Processes\Models\CommandRequest;
+use App\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\Commands\WithdrawCommandRequest\WithdrawCommandRequestCommand;
+use App\Enums\RequestHoldReason;
+use App\Enums\RequestState;
+use App\Exceptions\RequestTransitionRefused;
+use App\Models\CommandRequest;
 use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

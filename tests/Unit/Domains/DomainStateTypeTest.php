@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Unit\Domains;
 
 use App\Contracts\DomainAvailability;
-use App\Domains\Support\DomainStateType;
-use App\Domains\Support\DomainTickableStateType;
-use App\Hooks\Decisions\StateReferences;
-use App\Hooks\Enums\NoSubject;
-use App\Hooks\References\StateReference;
+use App\Enums\NoSubject;
+use App\Support\Decisions\StateReferences;
+use App\Support\DomainStateType;
+use App\Support\DomainTickableStateType;
+use App\Support\References\StateReference;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\ScriptedState;

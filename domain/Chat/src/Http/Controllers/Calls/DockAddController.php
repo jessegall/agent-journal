@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Calls;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use Domain\Chat\Calls\DockAddCall;
 use Domain\Chat\Commands\DockSource\DockSourceCommand;
 use Domain\Chat\Data\DockAnswerData;

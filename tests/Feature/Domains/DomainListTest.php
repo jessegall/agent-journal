@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Domains\Providers\DomainEventServiceProvider;
-use App\Domains\Support\DomainEntry;
-use App\Domains\Support\DomainRegistry;
+use App\Providers\DomainEventServiceProvider;
+use App\Support\DomainEntry;
+use App\Support\DomainRegistry;
 use Domain\Documents\DocumentsDomain;
 use Domain\Tasks\TasksDomain;
 use Tests\TestCase;
@@ -37,9 +37,8 @@ final class DomainListTest extends TestCase
             $this->assertContains($folder, $paths);
         }
 
-        $this->assertContains(app_path('Hooks/Listeners'), $paths);
-
-        $this->assertNotContains(app_path('Listeners'), $paths);
+        $this->assertContains(app_path('Listeners'), $paths);
+        $this->assertContains(app_path('Mcp/Listeners'), $paths);
         $this->assertNotContains(app_path('Http/Listeners'), $paths);
     }
 

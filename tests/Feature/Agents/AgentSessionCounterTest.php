@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Actors\Support\ActiveActorCounterRegistry;
-use App\Actors\Support\ActiveActorsResolver;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Actions\StartTokens;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Agents\Support\AgentSessionCounter;
+use App\Models\Agent;
+use App\Models\AgentSession;
+use App\Support\ActiveActorCounterRegistry;
+use App\Support\ActiveActorsResolver;
+use App\Support\AgentSessionCounter;
+use App\Support\StartSessions;
+use App\Support\StartTokens;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;

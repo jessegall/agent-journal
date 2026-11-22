@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Sharing\Enums\ShareState;
-use App\Sharing\Events\ShareExpired;
-use App\Sharing\Events\ShareRevoked;
-use App\Sharing\Exceptions\ShareEndInvalid;
-use App\Sharing\Models\Share;
-use App\Sharing\Models\ShareGatewayConfiguration;
+use App\Enums\ShareState;
+use App\Events\ShareExpired;
+use App\Events\ShareRevoked;
+use App\Exceptions\ShareEndInvalid;
+use App\Models\Share;
+use App\Models\ShareGatewayConfiguration;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;

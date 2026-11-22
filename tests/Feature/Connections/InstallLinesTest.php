@@ -4,24 +4,23 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Values\ReleaseManifest;
-use App\Agents\Values\ReleaseTarget;
-use App\Bus\Contracts\CommandBus;
-use App\Connections\Models\ProjectInvitation;
-use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
-use App\Settings\Values\SettingReference;
+use App\Commands\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Enums\HostProtocolVersion;
+use App\Models\ProjectInvitation;
+use App\Support\ActorContext;
+use App\Values\OwnerAuthority;
+use App\Values\ReleaseManifest;
+use App\Values\ReleaseTarget;
+use App\Values\SettingReference;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Testing\TestResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Connections\IssuesInstallLines;
 use Tests\TestCase;
 
 /**
@@ -31,6 +30,7 @@ use Tests\TestCase;
 final class InstallLinesTest extends TestCase
 {
     use CommitsHookRows;
+    use IssuesInstallLines;
 
     private const string UNUSABLE_LINE = 'journal: this install line cannot be used. '
         ."Copy a new one from the journal.\n";
@@ -68,10 +68,7 @@ final class InstallLinesTest extends TestCase
     {
         $this->switchOn();
 
-        $response = $this->issue('action-1')->assertCreated();
-
-        $this->assertStringContainsString('no-store', (string) $response->headers->get('Cache-Control'));
-        $ticket = $this->ticketOf($response);
+        $ticket = $this->ticketOf($this->issue('action-1'));
         $this->assertSame(1, ProjectInvitation::query()->count());
         $script = $this->get("/install/{$ticket}")->assertOk();
         $this->assertStringContainsString($ticket, (string) $script->getContent());
@@ -107,8 +104,8 @@ final class InstallLinesTest extends TestCase
     {
         $this->switchOn();
 
-        $first = $this->ticketOf($this->issue('action-1')->assertCreated());
-        $second = $this->ticketOf($this->issue('action-1')->assertCreated());
+        $first = $this->ticketOf($this->issue('action-1'));
+        $second = $this->ticketOf($this->issue('action-1'));
 
         $this->assertNotSame($first, $second);
         $this->assertSame(1, ProjectInvitation::query()->pending()->count());
@@ -123,7 +120,7 @@ final class InstallLinesTest extends TestCase
         $ticket = $this->ticketOf($response);
 
         $this->actingAs($this->owner)
-            ->deleteJson('/project-connections/invitations/'.$response->json('invitationId'))
+            ->deleteJson('/project-connections/invitations/'.$response['invitationId'])
             ->assertNoContent();
 
         $this->assertSame(
@@ -134,25 +131,26 @@ final class InstallLinesTest extends TestCase
 
     public function test_no_line_is_issued_while_connecting_projects_is_switched_off(): void
     {
-        $this->issue('action-1')->assertConflict();
+        $this->assertIsString($this->refusedLine(['issuanceKey' => 'action-1']));
 
         $this->assertSame(0, ProjectInvitation::query()->count());
     }
 
-    private function issue(string $issuanceKey): TestResponse
+    /**
+     * @return array<string, mixed>
+     */
+    private function issue(string $issuanceKey): array
     {
-        return $this->actingAs($this->owner)->postJson('/project-connections/invitations', [
-            'issuanceKey' => $issuanceKey,
-        ]);
+        return $this->issuedLine(['issuanceKey' => $issuanceKey]);
     }
 
     /**
-     * @param  TestResponse<Response>  $response
+     * @param  array<string, mixed>  $issued
      */
-    private function ticketOf(TestResponse $response): string
+    private function ticketOf(array $issued): string
     {
-        $this->assertMatchesRegularExpression(self::LINE, (string) $response->json('installLine'));
-        preg_match(self::LINE, (string) $response->json('installLine'), $match);
+        $this->assertMatchesRegularExpression(self::LINE, (string) $issued['installLine']);
+        preg_match(self::LINE, (string) $issued['installLine'], $match);
 
         return $match[1];
     }

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\InvalidActorText;
-use App\Actors\Support\ActorIdentity;
-use App\Actors\Support\ActorStore;
-use App\Actors\Support\SystemActor;
-use App\Actors\Values\OwnerAuthority;
+use App\Enums\ActorType;
+use App\Exceptions\InvalidActorText;
+use App\Support\ActorIdentity;
+use App\Support\ActorStore;
+use App\Support\SystemActor;
+use App\Values\OwnerAuthority;
 use Domain\Access\Models\User;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\TestCase;

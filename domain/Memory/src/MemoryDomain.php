@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace Domain\Memory;
 
-use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Values\PolicyDefinition;
-use App\Bus\Contracts\CommandProvider;
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
+use App\Contracts\CommandProvider;
+use App\Contracts\PolicyProvider;
+use App\Contracts\SkillProvider;
+use App\Enums\AccessType;
 use App\Mcp\Contracts\McpToolProvider;
-use App\Operations\Enums\AccessType;
-use App\Skills\Contracts\SkillProvider;
-use Domain\Memory\Api\MemoryCard;
-use Domain\Memory\Api\MemoryPage;
+use App\Support\Domain;
+use App\Support\Exports;
+use App\Values\PolicyDefinition;
 use Domain\Memory\Commands\EditMemory\EditMemoryCommand;
 use Domain\Memory\Commands\RemoveMemory\RemoveMemoryCommand;
 use Domain\Memory\Commands\SaveMemory\SaveMemoryCommand;
 use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
-use Domain\Memory\Mcp\MemoryResource;
+use Domain\Memory\Mcp\Resources\MemoryResource;
 use Domain\Memory\Policies\MemoryPolicy;
-use Domain\Memory\Skills\MemorySkill;
+use Domain\Memory\Support\Skills\MemorySkill;
+use Domain\Memory\Values\MemoryCard;
+use Domain\Memory\Values\MemoryPage;
 
 final class MemoryDomain extends Domain implements
     CommandProvider,

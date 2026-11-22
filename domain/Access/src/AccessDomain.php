@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Domain\Access;
 
-use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Enums\ActorType;
-use App\Actors\Values\PolicyDefinition;
-use App\Assignments\Support\ActivityDefinition;
-use App\Assignments\Support\AssigneeDefinition;
-use App\Autoload\Support\FolderClasses;
-use App\Bus\Contracts\CommandProvider;
-use App\Bus\Support\Command;
-use App\Domains\Concerns\HasAssignables;
-use App\Domains\Contracts\AssigneeContributor;
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
-use App\Operations\Enums\AccessType;
-use App\Skills\Contracts\SkillProvider;
+use App\Concerns\HasAssignables;
+use App\Contracts\AssigneeContributor;
+use App\Contracts\CommandProvider;
+use App\Contracts\PolicyProvider;
+use App\Contracts\SkillProvider;
+use App\Enums\AccessType;
+use App\Enums\ActorType;
+use App\Support\ActivityDefinition;
+use App\Support\AssigneeDefinition;
+use App\Support\Command;
+use App\Support\Domain;
+use App\Support\Exports;
+use App\Support\FolderClasses;
+use App\Values\PolicyDefinition;
 use Domain\Access\Policies\EnvironmentAccessPolicy;
-use Domain\Access\Skills\AccessSkill;
+use Domain\Access\Support\Skills\AccessSkill;
 use Domain\Access\Support\UserActivity;
 use Domain\Access\Support\UserAssignees;
 

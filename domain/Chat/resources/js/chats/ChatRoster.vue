@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { router, useHttp } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
+import { readPage } from '@kit/pageReads';
 import { computed, ref } from 'vue';
 import Button from '@kit/Button';
 import type { ConversationData, SpeakerData } from '@generated/types/chat';
-import { addMember, candidates, close, leave, removeMember, transfer } from '@generated/routes/chat';
+import { addMember, close, leave, removeMember, transfer } from '@generated/routes/chat';
 import ParticipantRow from './ParticipantRow.vue';
 
 /**
@@ -20,7 +21,6 @@ const others = computed(() => props.conversation.participants.filter((member) =>
 const isOwner = computed(() => props.conversation.participants.some(
     (member) => member.actor === props.conversation.viewer && member.role === 'owner',
 ));
-const search = useHttp<{ inboxId: string }, { candidates: SpeakerData[] }>({ inboxId: props.conversation.inboxId });
 const found = ref<SpeakerData[]>([]);
 
 const membersList = ref<HTMLElement | null>(null);
@@ -46,9 +46,9 @@ function remove(participant: string): void {
 }
 
 function findCandidates(): void {
-    search.get(candidates({ query: { inboxId: props.conversation.inboxId } }).url, {
-        onSuccess: (answer) => (found.value = answer.candidates),
-    });
+    void readPage<{ candidates: SpeakerData[] }>('chat.candidates', { inboxId: props.conversation.inboxId }).then(
+        (answer) => (found.value = answer.candidates),
+    );
 }
 </script>
 

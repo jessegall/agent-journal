@@ -1,0 +1,49 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support;
+
+use App\Contracts\ShareBudget;
+use App\Contracts\ShareRecordProvider;
+use App\Exceptions\RecordUnavailable;
+
+/**
+ * Comments as share records: they advertise only the parent-bound capability, so a share reaches a comment through
+ * its parent's provider alone. On their own they are never a root, never a linked target and never read.
+ */
+final readonly class CommentShareProvider implements ShareRecordProvider
+{
+    public const string CAPABILITY = 'share-comment';
+
+    public function mayDisclose(RecordIdentity $record): bool
+    {
+        return false;
+    }
+
+    /**
+     * @throws RecordUnavailable
+     */
+    public function preview(ShareSelection $selection, ShareBudget $budget): ShareRecordCard
+    {
+        throw RecordUnavailable::forActor($selection->root);
+    }
+
+    public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords
+    {
+        return new ShareRecords([], $read->targets, null);
+    }
+
+    public function readRelated(ShareRelationRead $read, ShareBudget $budget): ShareRecords
+    {
+        return new ShareRecords([], [], null);
+    }
+
+    /**
+     * @throws RecordUnavailable
+     */
+    public function content(ShareContentRead $read, ShareBudget $budget): SharedContent
+    {
+        throw RecordUnavailable::forActor($read->record);
+    }
+}

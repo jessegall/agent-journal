@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Resolvers;
 
-use App\Ui\Contracts\CountResolver;
-use Domain\Plans\Api\PlanFilters;
+use App\Contracts\CountResolver;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Enums\PlanStateGroup;
+use Domain\Plans\Values\PlanFilters;
 
 /**
  * How many plans are open: planned, started or paused, beside that navigation item; counted the way the list counts.

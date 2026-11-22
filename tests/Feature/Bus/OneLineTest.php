@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Bus\Attributes\OneLine;
+use App\Attributes\OneLine;
 use App\CoreApi;
 use Illuminate\Validation\ValidationException;
 use Tests\Fixtures\Bus\OneLineTitle;

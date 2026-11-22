@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Reflection;
 
-use App\Reflection\Concerns\Reflects;
-use App\Reflection\Support\Reflector;
+use App\Concerns\Reflects;
+use App\Support\Reflector;
 
 /**
  * A class that reflects itself, or a target it is given, through the Reflects trait.

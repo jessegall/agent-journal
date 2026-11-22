@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Files\Enums\Place;
-use App\Files\Exceptions\CodeReadOutsideProject;
-use App\Files\Support\CodeFiles;
-use App\Files\Values\FilePath;
+use App\Enums\Place;
+use App\Exceptions\CodeReadOutsideProject;
+use App\Support\CodeFiles;
+use App\Values\FilePath;
 use Illuminate\Filesystem\Filesystem;
 use PHPUnit\Framework\TestCase;
 

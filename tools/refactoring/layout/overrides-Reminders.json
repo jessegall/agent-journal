@@ -1,0 +1,25 @@
+{
+    "about": "Doc 107 revision 3: the Reminders package's reviewed placements. The key in layout-rules.json covers every row; rows already final stay (verification only).",
+    "package_order": [
+        "Tasks",
+        "Plans",
+        "Documents",
+        "Chat",
+        "Memory",
+        "Rules",
+        "Sequences",
+        "Reminders",
+        "Access",
+        "Helpers"
+    ],
+    "position": 8,
+    "requires": [],
+    "counts": {
+        "rows": 5,
+        "moves": 1,
+        "stays": 4,
+        "generated": 0,
+        "rows_with_outside_consumers": 0
+    },
+    "paths": {}
+}

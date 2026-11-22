@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Contracts\MainSeatTakeover;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Assignments\Contracts\AssignmentTransaction;
-use App\Bus\Enums\CommandEntry;
-use App\Bus\Support\EntryDispatchers;
-use App\Communication\Support\RegisteredInboxes;
-use App\Desks\Commands\InstallDesks\InstallDesksCommand;
-use App\Desks\Models\DeskRecord;
-use App\Desks\Support\BuiltInDesks;
+use App\Commands\InstallDesks\InstallDesksCommand;
+use App\Contracts\AssignmentTransaction;
+use App\Contracts\MainSeatTakeover;
+use App\Enums\CommandEntry;
+use App\Models\Agent;
+use App\Models\AgentSession;
+use App\Models\DeskRecord;
+use App\Support\BuiltInDesks;
+use App\Support\EntryDispatchers;
+use App\Support\RegisteredInboxes;
 use Tests\Support\MessagingTestCase;
 
 /**
