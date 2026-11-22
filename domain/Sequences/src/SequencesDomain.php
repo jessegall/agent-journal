@@ -23,8 +23,10 @@ use Domain\Sequences\Commands\AdvanceSequence\AdvanceSequenceCommand;
 use Domain\Sequences\Commands\CancelSequence\CancelSequenceCommand;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Policies\SequencePolicy;
+use Domain\Sequences\Policies\StoredSequencePolicy;
 use Domain\Sequences\Resolvers\SequenceIndexResolver;
 use Domain\Sequences\Resolvers\SequenceRunWindowResolver;
+use Domain\Sequences\Resolvers\SequenceWindowResolver;
 use Domain\Sequences\Support\Skills\SequencesSkill;
 use Domain\Sequences\Support\States\Support\FollowingSequenceStateFactory;
 use Domain\Sequences\Support\States\Support\FollowingSequenceStateReference;
@@ -51,6 +53,10 @@ final class SequencesDomain extends Domain implements
             new PolicyDefinition(
                 SequencePolicy::class,
                 [AccessType::Create, AccessType::Edit],
+            ),
+            new PolicyDefinition(
+                StoredSequencePolicy::class,
+                [AccessType::Read, AccessType::Create, AccessType::Edit],
             ),
         ];
     }
@@ -93,6 +99,7 @@ final class SequencesDomain extends Domain implements
     {
         return [
             Page::layout('index', 'Sequences', Icon::Sequence, SequenceIndexResolver::class)->at(''),
+            Page::layout('sequence', 'Sequence', Icon::Sequence, SequenceWindowResolver::class)->at('{sequence}'),
             Page::layout('run', 'Sequence run', Icon::Activity, SequenceRunWindowResolver::class)->at('runs/{run}'),
         ];
     }

@@ -38,6 +38,7 @@ use Domain\Sequences\Support\SequenceWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
@@ -47,6 +48,7 @@ use Illuminate\Support\Carbon;
  *
  * @property string $id
  * @property string $number_group_id
+ * @property string|null $sequence_id
  * @property int $number
  * @property string $name
  * @property list<string> $steps
@@ -107,6 +109,14 @@ final class SequenceRun extends Model implements Dockable, EventSource, Numbered
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * @return BelongsTo<Sequence, $this>
+     */
+    public function sequence(): BelongsTo
+    {
+        return $this->belongsTo(Sequence::class);
+    }
 
     /**
      * The run read under its row lock, among those the actor may see, for a change that must happen once.

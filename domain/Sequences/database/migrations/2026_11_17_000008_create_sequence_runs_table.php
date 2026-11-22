@@ -15,6 +15,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
             $table->unsignedBigInteger('number');
+            $table->foreignUlid('sequence_id')->nullable()->constrained('sequences')->nullOnDelete();
             $table->string('name');
             $table->jsonb('steps');
             $table->unsignedInteger('current_step')->default(1);

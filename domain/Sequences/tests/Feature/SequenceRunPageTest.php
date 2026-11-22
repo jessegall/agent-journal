@@ -6,14 +6,15 @@ namespace Domain\Sequences\Tests\Feature;
 
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Domain\Sequences\Data\SequenceStepData;
+use Domain\Sequences\Models\Sequence;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Tests\TestCase;
-use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
 
 /**
- * The run page opens only for a run the reader may read, and the sequences address explains that runs open from their
- * own link, since no list of them exists.
+ * The Sequences page lists the stored sequences and a chosen one shows its steps and its runs; a run page opens only
+ * for a run the reader may read.
  */
 final class SequenceRunPageTest extends TestCase
 {
@@ -29,12 +30,25 @@ final class SequenceRunPageTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
     }
 
-    public function test_the_index_address_explains_how_a_run_is_reached(): void
+    public function test_the_index_lists_the_stored_sequences_and_a_chosen_one_shows_its_steps_and_runs(): void
     {
-        $this->actingAs($this->owner)->get('/sequences')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('layout/DeclaredLayout')
-            ->where('page.data.root.children.1.key', 'entry')
-            ->where('page.data.root.children.1.style', 'empty'));
+        $sequence = Sequence::define('Release', 'Ship a version', [
+            SequenceStepData::from(['id' => 'tests', 'title' => 'Tests', 'runsWhen' => 'held', 'doneWhen' => 'green']),
+        ]);
+        $run = SequenceRun::create('Release', ['Run the tests']);
+        $run->sequence()->associate($sequence)->save();
+
+        $this->actingAs($this->owner)->get('/sequences')->assertOk()->assertSee($sequence->id);
+        $this->actingAs($this->owner)
+            ->get("/sequences/{$sequence->id}")
+            ->assertOk()
+            ->assertSee('tests')
+            ->assertSee("/sequences/runs/{$run->number}");
+    }
+
+    public function test_an_unknown_sequence_is_not_found(): void
+    {
+        $this->actingAs($this->owner)->get('/sequences/01ARZ3NDEKTSV4RRFFQ69G5FAV')->assertNotFound();
     }
 
     public function test_a_run_the_reader_may_not_read_is_not_found(): void

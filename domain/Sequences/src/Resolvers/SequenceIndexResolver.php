@@ -6,26 +6,17 @@ namespace Domain\Sequences\Resolvers;
 
 use App\Contracts\PageResolver;
 use App\Support\Layout\DeclaredLayoutData;
-use App\Support\Layout\LayoutPartData;
+use Domain\Sequences\Resolvers\Support\SequenceIndexLayout;
 
 /**
- * The sequences address with no run: no list of runs a reader may see exists yet, so it says that a run opens from an
- * authorized run link.
+ * The Sequences page with nothing chosen: the stored sequences and Nothing selected.
  */
 final readonly class SequenceIndexResolver implements PageResolver
 {
+    public function __construct(private SequenceIndexLayout $index) {}
+
     public function read(): DeclaredLayoutData
     {
-        return DeclaredLayoutData::of(LayoutPartData::box(
-            'sequences',
-            'stack',
-            LayoutPartData::text('title', 'Sequences', 'heading'),
-            LayoutPartData::notice(
-                'entry',
-                'empty',
-                'A sequence run opens from its own link.',
-                'Follow the link a run gives you; only runs you may read open.',
-            ),
-        ));
+        return $this->index->of('', []);
     }
 }
