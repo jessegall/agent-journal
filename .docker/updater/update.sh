@@ -79,6 +79,7 @@ install() {
         { [ "$migrations_changed" = no ] || [ "$schema_rebuilt" = yes ] ||
             docker compose run --rm -T app php artisan migrate --force; } &&
         { [ "$schema_rebuilt" = no ] || docker compose run --rm -T app php artisan migrate:fresh --force; } &&
+        enroll_rebuilt_host &&
         roll_app &&
         docker compose $profiles up -d --wait --wait-timeout 240 &&
         restart_changed_mounts &&
@@ -87,6 +88,19 @@ install() {
         docker compose exec -T app php artisan cache:forget installed-version &&
         check_front_door &&
         sh .docker/helper/prune.sh >/dev/null
+}
+
+# A rebuilt database has forgotten the contained host, whose saved id and secret the journal then refuses, so the
+# host is enrolled again and its new id and secret replace the old ones where compose and agent-host-enroll read them.
+enroll_rebuilt_host() {
+    [ "$arrangement" = contained ] && [ "$schema_rebuilt" = yes ] || return 0
+    name=$(sed -n 's/^AGENTS_INSTALLATION_NAME=//p' .env | tail -n 1)
+    enrolled=$(docker compose run --rm -T app php artisan agents:host-enroll "${name:-journal}" --contained) || return 1
+    host_id=$(printf '%s\n' "$enrolled" | sed -n 's/^Host \([0-9a-z]*\) is enrolled.*/\1/p')
+    secret=$(printf '%s\n' "$enrolled" | tail -n 1 | tr -d '\r')
+    [ -n "$host_id" ] && [ -n "$secret" ] || { echo "the rebuilt host's enrolment printed no id or secret"; return 1; }
+    sed -i "s/^AGENTS_HOST_ID=.*/AGENTS_HOST_ID=$host_id/" .env
+    (umask 077 && printf '%s\n' "$secret" > secrets/journal_host_secret) && chown 10001:10001 secrets/journal_host_secret
 }
 
 # A service reads a file mounted from the installation folder only when it starts, and compose sees no change in it,
