@@ -5661,6 +5661,8 @@ class	SelectedTargetsCast
 class	SelectionSource
 class	SelfMeasuredCommands
 class	SendCall
+class	SendDriverRequestAgainCommand
+class	SendDriverRequestAgainHandler
 class	SendHelperCall
 class	SendHelperCommand
 class	SendHelperController
@@ -7657,6 +7659,7 @@ constant	ScriptStopPreparation::UNCHANGED_RETURNS_TO_HOLD
 constant	SearchContribution::PAGE_SIZE
 constant	SeatLossRepair::PERSONAL_LABEL
 constant	SecureShareResponse::HEADERS
+constant	SendDriverRequestAgainHandler::KEY_PREFIX
 constant	SeparateRequiredListeners::DEFERRING_INTERFACES
 constant	SessionOutputGrant::MOST_GRANTS
 constant	SessionOutputPaths::DOT_SEGMENT
@@ -13625,6 +13628,8 @@ method	DriverRequest::canRepair()
 method	DriverRequest::canResolve()
 method	DriverRequest::canResumeScript()
 method	DriverRequest::canRetry()
+method	DriverRequest::canRetrySafely()
+method	DriverRequest::canSendAgain()
 method	DriverRequest::cancel()
 method	DriverRequest::carry()
 method	DriverRequest::casts()
@@ -13641,6 +13646,7 @@ method	DriverRequest::isInitialWakeOf()
 method	DriverRequest::isKeyScript()
 method	DriverRequest::isStoppedKeyScript()
 method	DriverRequest::markApplied()
+method	DriverRequest::markPossibleDuplicateOf()
 method	DriverRequest::markUnavailable()
 method	DriverRequest::markUncertain()
 method	DriverRequest::moveTo()
@@ -13652,6 +13658,7 @@ method	DriverRequest::repairWith()
 method	DriverRequest::resolveAsApplied()
 method	DriverRequest::resolveAsNotApplied()
 method	DriverRequest::retry()
+method	DriverRequest::retrySafely()
 method	DriverRequest::runtime()
 method	DriverRequest::scriptGoal()
 method	DriverRequest::settleAfterExit()
@@ -13659,6 +13666,7 @@ method	DriverRequest::settleWithoutWork()
 method	DriverRequest::stage()
 method	DriverRequest::status()
 method	DriverRequest::supersede()
+method	DriverRequest::wasRetriedFrom()
 method	DriverRequestEndings::abandon()
 method	DriverRequestEndings::cancel()
 method	DriverRequestEndings::cancelNavigation()
@@ -13684,12 +13692,14 @@ method	DriverRequestRecovery::__construct()
 method	DriverRequestRecovery::lockedAt()
 method	DriverRequestRecovery::record()
 method	DriverRequestRefused::changedSinceRead()
+method	DriverRequestRefused::duplicateNotConfirmed()
 method	DriverRequestRefused::emptyModel()
 method	DriverRequestRefused::generationChanged()
 method	DriverRequestRefused::holdChanged()
 method	DriverRequestRefused::holdNotReleasable()
 method	DriverRequestRefused::keyConflict()
 method	DriverRequestRefused::messageTooLarge()
+method	DriverRequestRefused::noEffectUnproven()
 method	DriverRequestRefused::noRuntime()
 method	DriverRequestRefused::noStoppedScript()
 method	DriverRequestRefused::notCancellable()
@@ -13697,6 +13707,7 @@ method	DriverRequestRefused::notReassignable()
 method	DriverRequestRefused::notRepairable()
 method	DriverRequestRefused::notResolvable()
 method	DriverRequestRefused::notRetriable()
+method	DriverRequestRefused::notUncertain()
 method	DriverRequestRefused::sessionEnded()
 method	DriverRequestRefused::stopping()
 method	DriverRequestRefused::unsupportedEffort()
@@ -21819,6 +21830,9 @@ method	SelfMeasuredCommands::all()
 method	SelfMeasuredCommands::has()
 method	SendCall::__construct()
 method	SendCall::handle()
+method	SendDriverRequestAgainCommand::__construct()
+method	SendDriverRequestAgainCommand::handle()
+method	SendDriverRequestAgainHandler::handle()
 method	SendHelperCall::__construct()
 method	SendHelperCommand::__construct()
 method	SendHelperController::__invoke()
@@ -26544,6 +26558,7 @@ parameter	$confinement
 parameter	$confirm
 parameter	$confirmation
 parameter	$confirmed
+parameter	$confirmsPossibleDuplicate
 parameter	$conflict
 parameter	$conflicts
 parameter	$connection
@@ -37278,6 +37293,11 @@ property	SelectionSource::$profileKey
 property	SelectionSource::$profileRevision
 property	SelfMeasuredCommands::$commands
 property	SendCall::$sender
+property	SendDriverRequestAgainCommand::$confirmsPossibleDuplicate
+property	SendDriverRequestAgainCommand::$description
+property	SendDriverRequestAgainCommand::$reason
+property	SendDriverRequestAgainCommand::$requestId
+property	SendDriverRequestAgainCommand::$signature
 property	SendHelperCall::$brief
 property	SendHelperCall::$driverKey
 property	SendHelperCall::$identityId

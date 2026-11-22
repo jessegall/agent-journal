@@ -29,6 +29,7 @@ use App\Agents\Commands\ResolveDriverDelivery\ResolveDriverDeliveryCommand;
 use App\Agents\Commands\ResumeKeyScript\ResumeKeyScriptCommand;
 use App\Agents\Commands\RetireAgent\RetireAgentCommand;
 use App\Agents\Commands\RetryDriverRequest\RetryDriverRequestCommand;
+use App\Agents\Commands\SendDriverRequestAgain\SendDriverRequestAgainCommand;
 use App\Agents\Commands\StopAgent\StopAgentCommand;
 use App\Agents\Commands\WakeAgent\WakeAgentCommand;
 use App\Agents\Contracts\AgentDirectory;
@@ -816,6 +817,8 @@ final class AgentDriverLedgerTest extends TestCase
             RequestProgress::Failed,
             null,
             RequestOutcome::EntryUnavailable,
+            refusal: HostWakeRefusal::ContainerUnavailable,
+            noProcessCreated: true,
         ));
         $request->refresh();
 
@@ -1286,6 +1289,70 @@ final class AgentDriverLedgerTest extends TestCase
         );
     }
 
+    public function test_a_proven_no_effect_failure_is_retried_once_from_two_tabs(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $receipt = $this->deliver($opened, 'two-tabs', 'Hello');
+        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->reportProgress($host->hostId, $receipt->requestId, RequestProgress::Failed);
+        $read = DriverRequest::query()->findOrFail($receipt->requestId);
+
+        $first = $this->asOwner(new RetryDriverRequestCommand($read->id, $read->row_version, 'first tab'));
+        $second = $this->asOwner(new RetryDriverRequestCommand($read->id, $read->row_version, 'second tab'));
+
+        $this->assertSame($first, $second);
+        $this->assertSame($read->attempt_version + 1, $read->fresh()?->attempt_version);
+    }
+
+    public function test_a_failure_without_proof_that_nothing_ran_is_not_retried(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $receipt = $this->deliver($opened, 'unproven', 'Hello');
+        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $request = DriverRequest::query()->findOrFail($receipt->requestId);
+        $this->asSystem(new ReportRequestProgressCommand(
+            $host->hostId,
+            $request->id,
+            $request->attempt_version,
+            RequestProgress::Failed,
+            null,
+            RequestOutcome::Refused,
+        ));
+        $request->refresh();
+
+        $this->assertThrows(
+            fn () => $this->asOwner(new RetryDriverRequestCommand($request->id, $request->row_version, 'again')),
+            DriverRequestRefused::class,
+            DriverRequestRefused::noEffectUnproven($request->id)->getMessage(),
+        );
+    }
+
+    public function test_an_uncertain_delivery_is_sent_again_only_as_a_confirmed_possible_duplicate(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $receipt = $this->deliver($opened, 'uncertain', 'Hello');
+        $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->reportProgress($host->hostId, $receipt->requestId, RequestProgress::DeliveryUncertain);
+        $original = DriverRequest::query()->findOrFail($receipt->requestId);
+
+        $this->assertThrows(
+            fn () => $this->asOwner(new RetryDriverRequestCommand($original->id, $original->row_version, 'retry')),
+            DriverRequestRefused::class,
+        );
+        $this->assertThrows(
+            fn () => $this->asOwner(new SendDriverRequestAgainCommand($original->id, false, 'again')),
+            DriverRequestRefused::class,
+            DriverRequestRefused::duplicateNotConfirmed($original->id)->getMessage(),
+        );
+
+        $againId = $this->asOwner(new SendDriverRequestAgainCommand($original->id, true, 'again'));
+        $repeated = $this->asOwner(new SendDriverRequestAgainCommand($original->id, true, 'again'));
+
+        $again = DriverRequest::query()->findOrFail($againId);
+        $this->assertSame([$againId, $original->id, 'Hello'], [$repeated, $again->possible_duplicate_of_id, $again->message]);
+        $this->assertSame(RequestProgress::DeliveryUncertain, $original->fresh()?->progress);
+    }
+
     private function numberedReport(string $hostId, string $requestId, RequestProgress $progress, int $sequence): void
     {
         $request = DriverRequest::query()->findOrFail($requestId);
@@ -1319,6 +1386,8 @@ final class AgentDriverLedgerTest extends TestCase
             $progress,
             null,
             RequestOutcome::EntryUnavailable,
+            refusal: HostWakeRefusal::ContainerUnavailable,
+            noProcessCreated: true,
         ));
     }
 }

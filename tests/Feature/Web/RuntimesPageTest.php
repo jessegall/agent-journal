@@ -11,6 +11,7 @@ use App\Agents\Commands\EnrollHost\EnrollHostCommand;
 use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\HoldReason;
+use App\Agents\Enums\HostWakeRefusal;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Models\Agent;
@@ -77,6 +78,7 @@ final class RuntimesPageTest extends TestCase
         $this->openRuntime();
         $request = DriverRequest::query()->orderBy('sequence')->firstOrFail();
         $request->fail(RequestOutcome::EntryUnavailable);
+        $request->recordRefusal(HostWakeRefusal::ContainerUnavailable, true);
         $request->refresh();
 
         $this->actingAs($this->owner)->get('/web/runtimes')->assertInertia(fn (AssertableInertia $page) => $page

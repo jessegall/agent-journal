@@ -69,7 +69,7 @@ final readonly class RuntimeStatuses
             'scriptStep' => $request->script_step,
             'scriptEvidence' => $request->script_evidence,
             'rowVersion' => $request->row_version,
-            'canRetry' => $request->canRetry(),
+            'canRetry' => $request->canRetrySafely(),
             'canCancel' => $request->canCancel(),
             'canResolve' => $request->canResolve(),
             'canResumeScript' => $request->canResumeScript(),

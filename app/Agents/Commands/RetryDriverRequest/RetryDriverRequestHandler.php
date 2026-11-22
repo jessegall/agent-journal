@@ -6,6 +6,7 @@ namespace App\Agents\Commands\RetryDriverRequest;
 
 use App\Agents\Enums\RecoveryAction;
 use App\Agents\Exceptions\DriverRequestRefused;
+use App\Agents\Models\DriverRequest;
 use App\Agents\Support\DriverRequestRecovery;
 use App\Contracts\CommandHandler;
 
@@ -15,13 +16,24 @@ final readonly class RetryDriverRequestHandler implements CommandHandler
 
     public function handle(RetryDriverRequestCommand $command): int
     {
+        $request = DriverRequest::query()->whereKey($command->requestId)->lockForUpdate()->firstOrFail();
+
+        // A second tab retrying the same failure gets the attempt the first one made.
+        if ($request->wasRetriedFrom($command->expectedRowVersion)) {
+            return $request->row_version;
+        }
+
         $request = $this->recovery->lockedAt($command->requestId, $command->expectedRowVersion);
 
         if (! $request->canRetry()) {
             throw DriverRequestRefused::notRetriable($request->id, $request->progress->value);
         }
 
-        $request->retry();
+        if (! $request->canRetrySafely()) {
+            throw DriverRequestRefused::noEffectUnproven($request->id);
+        }
+
+        $request->retrySafely();
 
         return $this->recovery->record($request, RecoveryAction::Retried, $command->reason);
     }

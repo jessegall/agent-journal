@@ -34,6 +34,23 @@ final class DriverRequestRefused extends RuntimeException implements CommandRefu
         );
     }
 
+    public static function noEffectUnproven(string $requestId): self
+    {
+        return new self(
+            "Request {$requestId} failed without proof that nothing ran; check its status, or send it again as a possible duplicate.",
+        );
+    }
+
+    public static function notUncertain(string $requestId, string $progress): self
+    {
+        return new self("Request {$requestId} is {$progress}; only an uncertain delivery is sent again.");
+    }
+
+    public static function duplicateNotConfirmed(string $requestId): self
+    {
+        return new self("Sending request {$requestId} again may deliver it twice; confirm the possible duplicate first.");
+    }
+
     public static function notCancellable(string $requestId, string $progress): self
     {
         return new self("Request {$requestId} is {$progress}; only a request that has not started is cancelled.");

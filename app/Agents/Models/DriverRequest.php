@@ -49,6 +49,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property RequestOutcome|null $outcome
  * @property HostWakeRefusal|null $refusal_reason
  * @property bool $no_process_created
+ * @property int|null $retried_from_version
+ * @property string|null $possible_duplicate_of_id
  * @property ExpectedTiming $expected_timing
  * @property CarbonImmutable|null $expected_observed_at
  * @property CarbonImmutable|null $updated_at
@@ -192,11 +194,30 @@ final class DriverRequest extends Model implements ReadableModel
     /**
      * Sends the request again under its own key, as a new attempt: a report of an older attempt is refused after it.
      */
+    /**
+     * A new attempt after proof that nothing ran, remembered by the row version it was made from.
+     */
+    public function retrySafely(): void
+    {
+        $this->retried_from_version = $this->row_version;
+        $this->no_process_created = false;
+        $this->retry();
+    }
+
     public function retry(): void
     {
         $this->attempt_version++;
         $this->outcome = null;
         $this->moveTo(RequestProgress::Accepted);
+        $this->save();
+    }
+
+    /**
+     * Marks this new request as a possible duplicate of an uncertain one the user chose to send again.
+     */
+    public function markPossibleDuplicateOf(self $original): void
+    {
+        $this->possible_duplicate_of_id = $original->id;
         $this->save();
     }
 
@@ -254,6 +275,31 @@ final class DriverRequest extends Model implements ReadableModel
     public function canRetry(): bool
     {
         return in_array($this->progress, [RequestProgress::Failed, RequestProgress::Unavailable], true);
+    }
+
+    /**
+     * Whether a new attempt is safe: the request failed and the host proved no process of it ran. Failed or
+     * unavailable alone is no proof.
+     */
+    public function canRetrySafely(): bool
+    {
+        return $this->canRetry() && $this->no_process_created;
+    }
+
+    /**
+     * Whether a retry from this row version already made the current attempt, so a second tab gets that attempt.
+     */
+    public function wasRetriedFrom(int $rowVersion): bool
+    {
+        return $this->retried_from_version === $rowVersion;
+    }
+
+    /**
+     * Whether the request may be sent again as a new request: only a delivery whose outcome is unknown.
+     */
+    public function canSendAgain(): bool
+    {
+        return $this->operation === DriverOperation::Deliver && $this->progress === RequestProgress::DeliveryUncertain;
     }
 
     /**
