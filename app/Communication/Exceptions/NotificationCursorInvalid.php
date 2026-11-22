@@ -6,6 +6,7 @@ namespace App\Communication\Exceptions;
 
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
+use Illuminate\Http\JsonResponse;
 use RuntimeException;
 
 /**
@@ -21,5 +22,16 @@ final class NotificationCursorInvalid extends RuntimeException implements CodedR
     public function refusalCode(): RefusalCode
     {
         return RefusalCode::InvalidInput;
+    }
+
+    /**
+     * The cursor is the request's own input, so it is answered as that field's validation error, browser or not.
+     */
+    public function render(): JsonResponse
+    {
+        return new JsonResponse(
+            ['message' => $this->getMessage(), 'errors' => ['cursor' => [$this->getMessage()]]],
+            $this->refusalCode()->status(),
+        );
     }
 }

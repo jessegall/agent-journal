@@ -10,7 +10,6 @@ use App\Communication\Contracts\NotificationTargetResolver;
 use App\Communication\Data\NotificationLink;
 use App\Ui\Contracts\DeclaredPages;
 use Domain\Documents\Models\Report;
-use PhpOption\Option;
 
 /**
  * A report-ready notification leads to the report's own page while the reader may read the report: its title as
@@ -27,32 +26,28 @@ final readonly class ReportNotificationTarget implements NotificationTargetResol
         private ActorLabels $labels,
     ) {}
 
-    /**
-     * @return Option<NotificationLink>
-     */
-    public function linkFor(string $targetId): Option
+    public function linksFor(array $targetIds): array
     {
-        if (! ctype_digit($targetId)) {
-            return Option::fromValue(null);
+        $numbers = array_map(intval(...), array_values(array_filter($targetIds, ctype_digit(...))));
+        $reports = Report::query()->sharedPublished()->whereIn('number', $numbers)->readExactly(count($numbers))->get();
+        $filers = $this->labels->labelsFor(
+            array_values($reports->map(fn (Report $report) => new ActorIdentity($report->creator_type, $report->creator_id))->all()),
+        );
+        $links = [];
+
+        foreach ($reports as $report) {
+            $name = $filers->nameOf(new ActorIdentity($report->creator_type, $report->creator_id));
+            $links[(string) $report->number] = new NotificationLink(
+                $name === null ? $report->title : "{$report->title}, from {$name}",
+                $this->pages->addressOf(self::REPORT_PAGE, ['report' => (string) $report->number]),
+            );
         }
 
-        return Report::query()->sharedPublished()->where('number', (int) $targetId)->firstOption()
-            ->map(fn (Report $report) => new NotificationLink(
-                $this->titleOf($report),
-                $this->pages->addressOf(self::REPORT_PAGE, ['report' => (string) $report->number]),
-            ));
+        return $links;
     }
 
     public function disclosesMissing(): bool
     {
         return false;
-    }
-
-    private function titleOf(Report $report): string
-    {
-        $filer = new ActorIdentity($report->creator_type, $report->creator_id);
-        $name = $this->labels->labelsFor([$filer])->nameOf($filer);
-
-        return $name === null ? $report->title : "{$report->title}, from {$name}";
     }
 }

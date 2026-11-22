@@ -16,7 +16,8 @@ const page = usePage();
 
 useLiveConnection();
 usePresenceHeartbeat();
-const title = computed(() => page.component);
+// The declared page's own title, such as Documents; a page from outside the declarations shows its component.
+const title = computed(() => (typeof page.props.title === 'string' ? page.props.title : page.component));
 </script>
 
 <template>

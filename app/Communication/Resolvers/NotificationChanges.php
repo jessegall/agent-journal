@@ -14,7 +14,7 @@ use App\Communication\Models\NotificationReceipt;
 use App\Communication\Models\NotificationScope;
 use App\Communication\Support\NotificationChangeCursor;
 use App\Communication\Support\NotificationScopes;
-use PhpOption\None;
+use PhpOption\Option;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -99,10 +99,10 @@ final readonly class NotificationChanges
             array_values(array_unique(array_map(fn (NotificationChange $change) => $change->receipt_id, $changes))),
         );
 
-        return array_map(function (NotificationChange $change) use ($receipts): NotificationChangeItem {
-            $item = isset($receipts[$change->receipt_id])
-                ? $this->feed->itemOf($receipts[$change->receipt_id])
-                : None::create();
+        $items = $this->feed->itemsOf(array_values($receipts));
+
+        return array_map(function (NotificationChange $change) use ($items): NotificationChangeItem {
+            $item = Option::fromArraysValue($items, $change->receipt_id);
 
             return new NotificationChangeItem(
                 (string) $change->version,

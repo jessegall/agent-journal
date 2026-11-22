@@ -18,7 +18,7 @@ use App\Desks\Models\DeskRecord;
 use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChangeResult;
 use Illuminate\Database\ConnectionInterface;
-use Tests\Support\Exceptions\SimulatedFailure;
+use Illuminate\Database\QueryException;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -27,6 +27,18 @@ use Tests\Support\MessagingTestCase;
  */
 final class QuestionNotificationsTest extends MessagingTestCase
 {
+    /**
+     * Refuses every receipt, so an ask fails after its message and occurrence are written.
+     */
+    private const string REFUSE_RECEIPT = <<<'SQL'
+        CREATE FUNCTION refuse_receipt() RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN
+            RAISE EXCEPTION 'refused for the test';
+        END $$;
+        CREATE TRIGGER refuse_receipt BEFORE INSERT ON notification_receipts
+            FOR EACH ROW EXECUTE FUNCTION refuse_receipt();
+        SQL;
+
     protected const array TABLES = [
         ...parent::TABLES,
         'notification_changes',
@@ -86,14 +98,18 @@ final class QuestionNotificationsTest extends MessagingTestCase
 
     public function test_an_ask_that_rolls_back_leaves_no_receipt(): void
     {
-        $this->assertThrows(
-            fn () => $this->app->make(ConnectionInterface::class)->transaction(function (): void {
-                $this->runOnBus(new AskMessage($this->ownerInboxId(), $this->team->inboxId(), 'Who takes this?'));
+        $database = $this->app->make(ConnectionInterface::class);
+        $database->unprepared(self::REFUSE_RECEIPT);
 
-                throw SimulatedFailure::of('The command fails after asking.');
-            }),
-            SimulatedFailure::class,
-        );
+        try {
+            $this->assertThrows(
+                fn () => $this->runOnBus(new AskMessage($this->ownerInboxId(), $this->team->inboxId(), 'Who takes this?')),
+                QueryException::class,
+                'refused for the test',
+            );
+        } finally {
+            $database->unprepared('DROP TRIGGER refuse_receipt ON notification_receipts; DROP FUNCTION refuse_receipt();');
+        }
 
         $this->assertSame(0, NotificationOccurrence::query()->count());
         $this->assertSame(0, NotificationReceipt::query()->count());

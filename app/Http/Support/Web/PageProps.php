@@ -44,7 +44,7 @@ final readonly class PageProps
      */
     public function forPage(RegisteredPage $page, DeclaredPageRequest $request): array
     {
-        $props = ['page' => fn () => $this->ownPageResult($page, $request)];
+        $props = ['title' => $page->page->title, 'page' => fn () => $this->ownPageResult($page, $request)];
 
         $route = $request->route() instanceof Route ? $request->route() : null;
 

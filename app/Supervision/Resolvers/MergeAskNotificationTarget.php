@@ -31,9 +31,25 @@ final readonly class MergeAskNotificationTarget implements NotificationTargetRes
     ) {}
 
     /**
+     * A page holds few of these, so each is read on its own.
+     */
+    public function linksFor(array $targetIds): array
+    {
+        $links = [];
+
+        foreach ($targetIds as $targetId) {
+            $this->linkFor($targetId)->forAll(function (NotificationLink $link) use (&$links, $targetId): void {
+                $links[$targetId] = $link;
+            });
+        }
+
+        return $links;
+    }
+
+    /**
      * @return Option<NotificationLink>
      */
-    public function linkFor(string $targetId): Option
+    private function linkFor(string $targetId): Option
     {
         $reader = ActorIdentity::of($this->actors->actor());
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Communication\Contracts;
 
 use App\Communication\Data\NotificationLink;
-use PhpOption\Option;
 
 /**
  * Answers, for the signed-in actor, what one type of notification target shows: its title and address while the
@@ -14,9 +13,13 @@ use PhpOption\Option;
 interface NotificationTargetResolver
 {
     /**
-     * @return Option<NotificationLink>
+     * The links of the targets the reader may still see, by target id, read together; a target left out has none.
+     * A numeric target id keys the array as PHP keys it, an integer.
+     *
+     * @param  list<string>  $targetIds
+     * @return array<int|string, NotificationLink>
      */
-    public function linkFor(string $targetId): Option;
+    public function linksFor(array $targetIds): array;
 
     /**
      * Whether a target this resolver finds no link for may show as a generic unavailable entry; when not, the
