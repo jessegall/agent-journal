@@ -474,6 +474,26 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .dstack{position:relative;padding-bottom:8px}
 .dstack::before,.dstack::after{content:"";position:absolute;left:10px;right:10px;height:8px;border:1px solid var(--line);border-top:0;border-radius:0 0 var(--radius-card) var(--radius-card);background:var(--raised)}
 .dstack::before{bottom:4px;left:6px;right:6px}.dstack::after{bottom:0;left:12px;right:12px;opacity:.7}
+/* What an agent looked at for a message: one quiet line that opens the list of its sources. */
+.srcline{display:inline-flex;align-items:center;gap:6px;margin-top:6px;border:0;background:transparent;font:inherit;font-size:var(--text-badge);color:var(--text-3);padding:0;cursor:pointer}
+.srcline:hover{color:var(--text-2)}
+.srcline:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.srcline .cv{width:12px;height:12px;transition:transform var(--duration-hover) var(--ease-journal)}
+.srcline[aria-expanded=true] .cv{transform:rotate(90deg)}
+.srcs{margin:6px 0 0;border-left:1px solid var(--line);padding:2px 0 2px 12px;display:flex;flex-direction:column;gap:2px}
+.src{display:flex;align-items:center;gap:8px;border:0;background:transparent;font:inherit;font-size:var(--text-small);color:var(--text-2);padding:3px 4px;border-radius:var(--radius-control);cursor:pointer;text-align:left}
+.src:hover{background:var(--hover);color:var(--text)}
+.src:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.src small{color:var(--text-3);font-size:var(--text-badge)}
+.srcfound{margin:0 0 4px 26px;font-size:var(--text-small);color:var(--text-2)}
+.srcfound div{padding:1px 0}
+/* Account usage: how much is left, at a glance. */
+.use{display:inline-flex;align-items:center;gap:6px;font-size:var(--text-badge);color:var(--text-3);white-space:nowrap}
+.use .meter{width:54px}
+.use.low{color:var(--text);font-weight:500}
+.ubar{display:flex;align-items:center;gap:10px;margin-top:6px}
+.ubar .meter{width:220px;height:6px;border-radius:3px}
+.backbar{display:flex;align-items:center;gap:8px;padding:10px 22px 0}
 /* Split create button: the main part is the plain way; the chevron offers the agent way. */
 .splitb{display:inline-flex;align-items:stretch}
 .splitb .btn{border-color:var(--border-2);background:var(--bg);color:var(--text)}
@@ -951,7 +971,7 @@ function chatHtml(c){const cv=CONV[c],grp=isGroup(c);let last=null,prevI=-1;
     const time=k==='ag'?m[1]:m[2],text=k==='ag'?m[2]:m[3],head=!grp||last!==who;last=who;
     /* An agent's message: React and Reply on hover; its reactions under it; a document it names below, full width. */
     const acts=`<span class="macts">${grp?`<span class="tm">${time}</span>`:''}<button class="mact" data-react="${c}:${i}" data-fk="react:${c}:${i}" aria-haspopup="dialog" aria-label="React to ${MEM[who].name}'s message">${I('smile','s14')}React</button>${act}</span>`;
-    return `<div class="ag msg" data-mi="${i}" title="${grp?esc(MEM[who].name+' · '+time):''}">${head?`<div class="m">${avatar(who)}<span class="nm">${MEM[who].name}</span>${grp?'':`<span>· ${time}</span>`}</div>`:''}${q}${text}${ex&&ex.chip?chipHtml(ex.chip):''}${reactsHtml(c,i)}${acts}</div>${ex&&ex.doc?`<div class="docrow">${docbar(ex.doc)}</div>`:''}`}).join('')}
+    return `<div class="ag msg" data-mi="${i}" title="${grp?esc(MEM[who].name+' · '+time):''}">${head?`<div class="m">${avatar(who)}<span class="nm">${MEM[who].name}</span>${grp?'':`<span>· ${time}</span>`}</div>`:''}${q}${text}${ex&&ex.chip?chipHtml(ex.chip):''}${sourcesHtml(c,i)}${reactsHtml(c,i)}${acts}</div>${ex&&ex.doc?`<div class="docrow">${docbar(ex.doc)}</div>`:''}`}).join('')}
 /* Kinds of chat line added by later sections (sequences, docked cards, processes); each draws itself. */
 const EXTRA_KIND={};
 function composer(c){const ph=`Message ${convName(c)}`;
@@ -1247,11 +1267,11 @@ function pageHtml(){const E=showEmpty,xp=PAGES_EXTRA.find(p=>p.id===page);if(xp)
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose a document to read it.</div>`:docReader(sel))}
   if(page==='accounts'){const sel=ACCOUNTS.find(a=>a[1]===SELP.accounts);
     return shell('Accounts','',E?'0':'3',splitBtn('account'),
-      E?`<div class="empty"><b>No accounts</b>Add a Claude or Codex account so agents can run.</div>`:ACCOUNTS.map(([p,n,k,s,x,d])=>row('pacc:'+n,`${p==='claude'?CLAUDE():CODEX()}<span class="t">${n}<span style="color:var(--text-3)"> · ${k}</span></span>${d?'<span class="chip faint">Default</span>':''}${s==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':'<span class="st">Needs sign-in</span>'}`,SELP.accounts===n)).join(''),
+      E?`<div class="empty"><b>No accounts</b>Add a Claude or Codex account so agents can run.</div>`:ACCOUNTS.map(([p,n,k,s,x,d])=>row('pacc:'+n,`${p==='claude'?CLAUDE():CODEX()}<span class="t">${n}<span style="color:var(--text-3)"> · ${k}</span></span>${d?'<span class="chip faint">Default</span>':''}${useCell(n)}${s==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':'<span class="st">Expired</span>'}`,SELP.accounts===n)).join(''),
       E||!sel?`<div class="empty"><b>Nothing selected</b>Choose an account to change it.</div>`:`<div class="reader"><h2>${sel[1]}</h2><div class="meta">${sel[2]}${sel[4]?' · '+sel[4]:''}</div>
         <div class="sgroup" style="margin-top:16px"><div class="srow"><div class="t">Name<small>Shown in the account list and the agent bar.</small></div><input class="field" value="${esc(sel[1])}" aria-label="Name"></div>
-        <div class="srow"><div class="t">Default account<small>Used when a start names none.</small></div><button class="toggle" role="switch" aria-checked="${sel[5]}" aria-label="Default account"></button></div>
-        <div class="srow"><div class="t">Sign-in<small>${sel[3]}</small></div>${sel[3]==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':'<button class="btn sm bordered">Sign in again</button>'}</div></div></div>`)}
+        <div class="srow"><div class="t">Make default<small>Agents use this account when no other is named.</small></div><button class="toggle" role="switch" aria-checked="${sel[5]}" aria-label="Make default"></button></div>
+        <div class="srow"><div class="t">Sign-in<small>${sel[3]==='Signed in'?(sel[4]?`Signed in. It ${sel[4].toLowerCase().replace('expires','expires on')}.`:'Signed in with a key that does not expire.'):`Expired. Sign in again so agents can use it.`}</small></div>${sel[3]==='Signed in'?'<span class="st"><span class="dot solid"></span>Signed in</span>':'<button class="btn sm bordered">Sign in again</button>'}</div></div>${useGroup(sel[1])}</div>`)}
   /* Settings: one column of setting rows; an invalid value keeps what was typed and says why. */
   return `<div class="pghead"><h3>Settings</h3></div><div style="flex:1;overflow:auto" data-keepscroll="settings"><div class="reader" style="max-width:720px">
     <div class="sec">Appearance</div><div class="sgroup"><div class="srow"><div class="t">Theme<small>Follows the system unless you choose.</small></div><div class="segc" role="group" aria-label="Theme">${['light','dark'].map(t=>`<button aria-pressed="${mode===t}" data-setmode="${t}">${t==='light'?'Light':'Dark'}</button>`).join('')}<button aria-pressed="false">System</button></div></div>
@@ -1945,6 +1965,58 @@ AFTER_RENDER.push(()=>{if(!FORM&&!GUIDE)return;const host=$('#main');
     if(g.focus){g.focus=false;requestAnimationFrame(()=>{const f=$('#cdlg [data-gopen]')||$('#cdlg .gchip');if(f)f.focus()})}}
   $$('[data-cclose]',host).forEach(b=>b.onclick=closeCreate);
   $('#cdlg').onkeydown=ev=>{if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();closeCreate()}}});
+/* =====================================================================================================================
+   What an agent looked at: under its message, one quiet line ("Looked at 6 sources") opens the context it gathered:
+   searches with what they found, memories, documents and files read. Closed by default, one line.
+   ===================================================================================================================== */
+let SOURCES={},SRCOPEN=new Set(),SRCFOUND=null;
+const SRCIC={search:'search',memory:'brain',doc:'docs',file:'file'};
+function sourcesHtml(c,i){const key=c+':'+i,ss=SOURCES[key];if(!ss||!ss.length)return '';const open=SRCOPEN.has(key);
+  return `<div><button class="srcline" data-srcline="${key}" data-fk="srcline:${key}" aria-expanded="${open}">${I('chev','cv')}Looked at ${ss.length} source${ss.length>1?'s':''}</button>${open?`<div class="srcs" role="list">${ss.map((s,j)=>`<button class="src" role="listitem" data-src="${key}:${j}" data-fk="src:${key}:${j}">${I(SRCIC[s.kind],'s14')}<span>${esc(s.t)}</span>${s.sub?`<small>${esc(s.sub)}</small>`:''}</button>${SRCFOUND===key+':'+j&&s.found?`<div class="srcfound">${s.found.map(f=>`<div>${esc(f)}</div>`).join('')}</div>`:''}`).join('')}</div>`:''}</div>`}
+function openSource(key,j){const s=SOURCES[key][j];
+  if(s.kind==='search'){SRCFOUND=SRCFOUND===key+':'+j?null:key+':'+j;render();focusFk('src:'+key+':'+j);return}
+  if(s.kind==='memory'){openMemories(s.who,key.split(':')[0]);return}
+  if(s.kind==='doc'){openItem('doc:'+s.ref);return}
+  if(FILES[s.ref])openFile(s.ref);else toast(`${base(s.ref)} is not in this design`,()=>render())}
+WIRE_EXTRA.push(on=>{on('[data-srcline]',b=>b.onclick=()=>{const k=b.dataset.srcline;SRCOPEN.has(k)?SRCOPEN.delete(k):SRCOPEN.add(k);render();focusFk('srcline:'+k)});
+  on('[data-src]',b=>b.onclick=()=>{const p=b.dataset.src.split(':');openSource(p[0]+':'+p[1],+p[2])})});
+LOADERS.push(()=>{SRCOPEN=new Set();SRCFOUND=null;SOURCES={
+  'main:3':[{kind:'search',t:'Searched for “account settings dialog”',sub:'6 found',found:['Task 1702 · Account settings dialog','Doc 85 · Design: account settings dialog','Doc 82 · Accounts page touch-up','Message 13507','Task 1688 · Remove the info icons','Doc 96 · Accounts review']},
+    {kind:'memory',t:'4 memories',sub:'Agent 1',who:'a1'},{kind:'doc',t:'Doc 101 · Design: Home, version 6',sub:'revision 4',ref:101},{kind:'doc',t:'Doc 96 · Accounts review',sub:'revision 2',ref:96},
+    {kind:'file',t:'AccountSettingsDialog.vue',sub:'accounts',ref:'resources/js/components/accounts/AccountSettingsDialog.vue'},{kind:'file',t:'arrangement.ts',sub:'panes',ref:'resources/js/components/panes/arrangement.ts'}],
+  'g1:3':[{kind:'search',t:'Searched for “NotificationBell”',sub:'3 found',found:['NotificationBell.vue','NotificationList.vue','Doc 95 · Notifications plan']},{kind:'file',t:'NotificationBell.vue',sub:'shell',ref:'resources/js/components/shell/NotificationBell.vue'}],
+  'h262:1':[{kind:'search',t:'Searched for “bell count”',sub:'2 found',found:['Doc 95 · Notifications plan','Task 1695 · Sign-in check on a slow host']},{kind:'memory',t:'2 memories',sub:'Helper 262',who:'h262'}]}});
+
+/* =====================================================================================================================
+   Accounts: usage at a glance. A subscription shows this week's and this session's use, each with when it resets; an
+   API account shows what is left to spend, when the provider tells, and what was spent over a period.
+   ===================================================================================================================== */
+const USAGE={'Work (Max)':{week:72,weekReset:'on Monday at 09:00',session:30,sessionReset:'in 3 hours'},'Personal':{week:96,weekReset:'on Monday at 09:00',session:91,sessionReset:'in 40 minutes'},
+  'Codex team key':{left:'$41.20',spent:{today:['$1.90','410,000 tokens'],week:['$8.80','1.9 million tokens'],month:['$31.40','6.8 million tokens']}}};
+let SPENDP='week';
+const useWord=p=>p>=90?'Almost used up':p>=60?'More than half used':'Plenty left';
+function useCell(name){const u=USAGE[name];if(!u)return '';if(u.left)return `<span class="use" title="Left to spend">${u.left} left</span>`;const p=Math.max(u.week,u.session);
+  return `<span class="use ${p>=90?'low':''}" title="This week ${u.week}% used · this session ${u.session}% used"><span class="meter"><i style="width:${p}%"></i></span>${useWord(p)}</span>`}
+function useGroup(name){const u=USAGE[name];if(!u)return '';
+  if(u.left){const s=u.spent[SPENDP];return `<div class="sec">Spending</div><div class="sgroup"><div class="srow"><div class="t">Left to spend<small>The balance Codex reports for this key.</small></div><b>${u.left}</b></div>
+    <div class="srow"><div class="t">Spent<small>${s[0]}, or ${s[1]}, ${SPENDP==='today'?'today':'this '+SPENDP}.</small></div><div class="segc" role="group" aria-label="Period">${[['today','Today'],['week','This week'],['month','This month']].map(([k,t])=>`<button aria-pressed="${SPENDP===k}" data-spendp="${k}">${t}</button>`).join('')}</div></div></div>`}
+  const bar=(label,p,reset)=>`<div class="srow"><div class="t">${label}<small>${useWord(p)}. Resets ${reset}.</small><div class="ubar"><span class="meter"><i style="width:${p}%"></i></span><span class="use ${p>=90?'low':''}">${p}% used</span></div></div></div>`;
+  return `<div class="sec">Usage</div><div class="sgroup">${bar('This week',u.week,u.weekReset)}${bar('This session',u.session,u.sessionReset)}</div>`}
+WIRE_EXTRA.push(on=>on('[data-spendp]',b=>b.onclick=()=>{SPENDP=b.dataset.spendp;render()}));
+
+/* =====================================================================================================================
+   Lists inside a page open their items in place: a task clicked in a plan's list replaces that list with the task,
+   and Back returns to the list where it was scrolled.
+   ===================================================================================================================== */
+let PLANTASK=null,PLANBACK=null;
+const BRIEF={1711:'A window pushed past an edge of Home docks along that side; a drop on a compass cell splits that pane.',1725:'The Tasks and Plans pages show what waits on what, and a click lights a task\'s chain.'};
+const basePlanReader=planReader;
+planReader=function(p,withGraph){if(!withGraph||!PLANTASK)return basePlanReader(p,withGraph);const t=TASKS.find(x=>x[0]===PLANTASK);if(!t)return basePlanReader(p,withGraph);
+  return `<div class="backbar"><button class="btn sm" data-planback data-fk="planback">${I('reply','s14')}Back to plan ${p[0]}</button></div>`+taskReader(t).replace('</dl>',`<dt>Brief</dt><dd>${esc(BRIEF[t[0]]||'What done looks like is written in the task.')}</dd></dl>`)};
+WIRE_EXTRA.push(on=>{if(page!=='plans')return;
+  on('.pgread [data-gotask]',b=>b.onclick=ev=>{ev.preventDefault();ev.stopPropagation();const r=$('.pgread');if(!PLANTASK)PLANBACK={scroll:r?r.scrollTop:0,tab:PLANTAB};PLANTASK=+b.dataset.gotask;render();const r2=$('.pgread');if(r2)r2.scrollTop=0;focusFk('planback')});
+  on('[data-planback]',b=>b.onclick=()=>{const back=PLANBACK||{scroll:0,tab:'phases'};PLANTASK=null;PLANTAB=back.tab;PLANBACK=null;render();const r=$('.pgread');if(r)r.scrollTop=back.scroll;focusFk('plantab:'+PLANTAB)});
+  on('#main .pglist [data-item^="pplan:"]',r=>{const prev=r.onclick;r.onclick=ev=>{PLANTASK=null;PLANBACK=null;prev&&prev(ev)}})});
 /* A plan made a moment ago has no tasks yet: its graph says so instead of drawing nothing. */
 const baseGraphView=graphView;
 graphView=function(plan){const P=PLANS.find(p=>p[0]===plan);if(!P||!P[3].length)return `<div class="empty"><b>No tasks in this plan yet</b>Its tasks, and what each waits on, show here.</div>`;return baseGraphView(plan)};
