@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('line', 240)->nullable();
             $table->string('line_source_type', 64)->nullable();
             $table->string('line_source_id', 64)->nullable();
+            $table->string('line_card_placement', 16)->nullable();
             $table->timestampTz('created_at');
 
             $table->unique(['inbox_id', 'sequence']);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
+use App\Enums\LineCardPlacement;
 use App\Support\Wire\EncodedCard;
 use App\Values\ChatLine;
 use Spatie\LaravelData\Data;
@@ -28,10 +29,11 @@ final class ChatLineData extends Data
             references: ['DockCardEnvelope' => new CustomReference('docking', 'DockCardEnvelope')],
         )]
         public readonly EncodedCard|null $card,
+        public readonly LineCardPlacement $cardPlacement,
     ) {}
 
     public static function fromChatLine(ChatLine $line, EncodedCard|null $card): self
     {
-        return new self($line->sequence, $line->subject, $line->line, $line->postedAt->toIso8601String(), $card);
+        return new self($line->sequence, $line->subject, $line->line, $line->postedAt->toIso8601String(), $card, $line->cardPlacement);
     }
 }

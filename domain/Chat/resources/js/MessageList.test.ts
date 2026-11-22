@@ -156,7 +156,7 @@ describe('MessageList', () => {
             requestKey: null,
             deliveries: [],
         });
-        const step = { sequence: 2, subject: 'Ship', line: 'Step 1 of 4', postedAt: '2026-11-22T13:43:00Z', card: null };
+        const step = { sequence: 2, subject: 'Ship', line: 'Step 1 of 4', postedAt: '2026-11-22T13:43:00Z', card: null, cardPlacement: 'inline' as const };
         const list = mount(MessageList, {
             props: {
                 lines: [step],
