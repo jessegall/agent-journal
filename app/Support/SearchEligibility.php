@@ -13,6 +13,7 @@ use App\Values\DeclaredSearchable;
 use App\Values\DiscoveryPage;
 use App\Values\ScopeResolution;
 use App\Values\SearchReader;
+use App\Values\SearchRequest;
 use Illuminate\Contracts\Container\Container;
 
 /**
@@ -86,6 +87,19 @@ final readonly class SearchEligibility
     }
 
     /**
+     * The scope a request names: every source when it names none, else what its within resolves to; resolving reads
+     * declarations only, so an unknown or ambiguous scope runs no provider.
+     */
+    public function scopeOf(SearchReader $reader, SearchRequest $request): ScopeResolution
+    {
+        if ($request->within === null) {
+            return ScopeResolution::everywhere();
+        }
+
+        return $this->resolve($reader, $request->within);
+    }
+
+    /**
      * Resolves what the caller typed as a scope: an exact key first, else the whole trimmed label in folded form.
      */
     public function resolve(SearchReader $reader, string $chosen): ScopeResolution
@@ -98,7 +112,10 @@ final readonly class SearchEligibility
             }
         }
 
-        $labelled = array_values(array_filter($eligible, fn (DeclaredSearchable $source) => $source->hasLabel($chosen)));
+        $labelled = array_values(array_filter(
+            $eligible,
+            fn (DeclaredSearchable $source): bool => $source->hasLabel($chosen),
+        ));
 
         if (count($labelled) === 1) {
             return ScopeResolution::resolved($labelled[0]);

@@ -29,6 +29,7 @@ use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\FolderClasses;
 use App\Support\PoolDefinition;
+use App\Support\Searchable;
 use App\Values\PolicyDefinition;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Contracts\TaskAssignmentResolver;
@@ -87,6 +88,9 @@ use Domain\Tasks\Support\Mcp\TaskSearch;
 use Domain\Tasks\Support\Skills\TasksSkill;
 use Domain\Tasks\Support\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
+use Domain\Tasks\Support\TaskReferenceRecognizer;
+use Domain\Tasks\Support\TaskSearchAccess;
+use Domain\Tasks\Support\TaskSearchProvider;
 use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\Values\TaskAssignmentCompletion;
 use Domain\Tasks\Values\TaskCard;
@@ -293,6 +297,19 @@ final class TasksDomain extends Domain implements
     public function searchContributions(): array
     {
         return [TaskSearch::class];
+    }
+
+    public function searchables(): array
+    {
+        return [
+            Searchable::make(
+                'task',
+                'Tasks',
+                TaskSearchAccess::class,
+                TaskSearchProvider::class,
+                TaskReferenceRecognizer::class,
+            ),
+        ];
     }
 
     public function skills(): array

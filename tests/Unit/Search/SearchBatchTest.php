@@ -54,7 +54,8 @@ final class SearchBatchTest extends TestCase
         $outcome = SearchBatch::scanning('v1', $position)->outcome;
 
         $this->assertInstanceOf(ScanningOutcome::class, $outcome);
-        $this->assertTrue($outcome->nextWork->equals(SourcePosition::of(['tier' => 400, 'last_id' => self::SECOND_ID])));
+        $expected = SourcePosition::of(['tier' => 400, 'last_id' => self::SECOND_ID]);
+        $this->assertTrue($outcome->nextWork->equals($expected));
     }
 
     public function test_more_needs_a_certified_hit(): void
@@ -125,7 +126,8 @@ final class SearchBatchTest extends TestCase
 
     public function test_a_refresh_asks_about_at_most_a_batch_of_candidates(): void
     {
-        $candidates = array_fill(0, SearchQuery::HIT_LIMIT + 1, new HitIdentity('tasks.task', 'tasks.task', self::FIRST_ID));
+        $identity = new HitIdentity('tasks.task', 'tasks.task', self::FIRST_ID);
+        $candidates = array_fill(0, SearchQuery::HIT_LIMIT + 1, $identity);
 
         $this->expectException(SearchBatchInvalid::class);
 

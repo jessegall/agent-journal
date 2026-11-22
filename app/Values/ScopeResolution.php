@@ -28,6 +28,11 @@ final readonly class ScopeResolution
         public array $sources,
     ) {}
 
+    public static function everywhere(): self
+    {
+        return new self(ScopeAnswer::Everywhere, []);
+    }
+
     public static function resolved(DeclaredSearchable $source): self
     {
         return new self(ScopeAnswer::Resolved, [$source]);
@@ -59,7 +64,21 @@ final readonly class ScopeResolution
      */
     public function offersDiscovery(): bool
     {
-        return ! $this->isResolved();
+        return ! $this->answer->admitsSearch();
+    }
+
+    /**
+     * The scope a search runs over on this answer.
+     *
+     * @throws SearchableMissing
+     */
+    public function searchScope(): SearchScope
+    {
+        if ($this->answer === ScopeAnswer::Everywhere) {
+            return SearchScope::everywhere();
+        }
+
+        return SearchScope::within($this->source()->qualifiedKey);
     }
 
     /**

@@ -26,6 +26,21 @@ enum ScoreTier: int
         return [self::ExactTitle, self::TitlePrefix, self::TitleContains];
     }
 
+    /**
+     * The title tier a provider visits after this one, or null when this is the last tier it visits.
+     */
+    public function nextTitleTier(): self|null
+    {
+        $tiers = self::titleTiers();
+        $index = array_search($this, $tiers, true);
+
+        if ($index === false) {
+            return null;
+        }
+
+        return $tiers[$index + 1] ?? null;
+    }
+
     public function isAbove(self $other): bool
     {
         return $this->value > $other->value;
