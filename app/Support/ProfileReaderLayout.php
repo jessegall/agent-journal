@@ -19,6 +19,8 @@ use App\Values\ProfileKey;
  */
 final readonly class ProfileReaderLayout
 {
+    private const string MODELS_HELP = 'Others can be chosen when it starts.';
+
     public function __construct(private ProfileResolver $profiles) {}
 
     public function part(ProfileKey $key): LayoutPartData
@@ -37,14 +39,19 @@ final readonly class ProfileReaderLayout
 
         $rows = [
             SettingsRow::value('key', 'Key', $snapshot->key->key),
-            SettingsRow::value('model', 'Model', $snapshot->model),
+            SettingsRow::value('model', 'Model', $snapshot->model, 'The model it starts with.'),
             $models === []
-                ? SettingsRow::value('models', 'Models it may use', 'Any model')->inBlock()
-                : SettingsRow::chips('models', 'Models it may use', $models),
+                ? SettingsRow::value('models', 'Models it may use', 'Any model', self::MODELS_HELP)->inBlock()
+                : SettingsRow::chips('models', 'Models it may use', $models, self::MODELS_HELP),
             ...($snapshot->start->driver === null
                 ? []
-                : [SettingsRow::value('driver', 'Driver', $snapshot->start->driver)]),
-            SettingsRow::value('instances', 'How many run', str_replace('_', ' ', $snapshot->instances->value)),
+                : [SettingsRow::value('driver', 'Driver', $snapshot->start->driver, 'How the journal runs it.')]),
+            SettingsRow::value(
+                'instances',
+                'How many run',
+                str_replace('_', ' ', $snapshot->instances->value),
+                'Whether one is reused or a new one starts for each job.',
+            ),
             SettingsRow::value('rules', 'Rules it works under', 'Not available')->inBlock(),
         ];
 
