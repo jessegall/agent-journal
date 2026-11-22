@@ -8,6 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\ReadableModel;
 use App\Contracts\StartRefusal;
+use App\Enums\ActorType;
 use App\Enums\ConversationModeType;
 use App\Enums\DriverSourceType;
 use App\Enums\DriverVariant;
@@ -246,7 +247,7 @@ final class StartRecord extends Model implements ReadableModel
             ->readAll('the start records of the sessions one host claims for')
             ->get()
             ->keyBy('session_id')
-            ->filter(fn (self $record) => $record->readiness->holdsDeliveries())
+            ->filter(fn (self $record) => $record->readiness->shouldHoldDeliveries())
             ->map(fn (self $record) => (string) $record->session_id)
             ->all());
     }
@@ -443,7 +444,7 @@ final class StartRecord extends Model implements ReadableModel
 
     public function wasRequestedBy(ActorIdentity $actor): bool
     {
-        return $this->actor_type === $actor->type->value && $this->actor_id === $actor->id;
+        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id)->isSameAs($actor);
     }
 
     // ----------[ Internals ]----------

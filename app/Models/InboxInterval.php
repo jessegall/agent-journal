@@ -135,7 +135,7 @@ final class InboxInterval extends Model implements EventSource, ReadableModel
 
     public function isHeldBy(ActorIdentity $actor): bool
     {
-        return $this->actor_type === $actor->type->value && $this->actor_id === $actor->id;
+        return $this->actor->isSameAs($actor);
     }
 
     // ----------[ Accessors ]----------

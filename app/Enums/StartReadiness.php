@@ -19,7 +19,7 @@ enum StartReadiness: string
     /**
      * Whether messages sent to the start wait until its conversation is verified.
      */
-    public function holdsDeliveries(): bool
+    public function shouldHoldDeliveries(): bool
     {
         return $this !== self::Ready;
     }
