@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import SegmentedControl from '@/components/kit/SegmentedControl.vue';
 import { usePaneLayout } from '@/components/panes/usePaneLayout';
 import DetachedWindowFrame from './DetachedWindowFrame.vue';
-import DragGhost from './DragGhost.vue';
+import DragGhost from '@/components/kit/DragGhost.vue';
 import PaneNode from './PaneNode.vue';
 import { windowsIn } from './paneLayout';
 
@@ -18,6 +18,14 @@ const NARROW_WIDTH = 700;
 defineSlots<{ default(props: { windowKey: string }): unknown }>();
 
 const store = usePaneLayout();
+
+/** The window being dragged with where the pointer is, which the ghost beside the pointer shows. */
+const dragged = computed(() => {
+    const drag = store.drag.value;
+    const window = drag === null ? undefined : store.windowOf(drag.windowKey);
+
+    return drag === null || window === undefined ? null : { window, x: drag.x, y: drag.y };
+});
 const grid = ref<HTMLElement | null>(null);
 const isNarrow = ref(false);
 let watcher: ResizeObserver | null = null;
@@ -82,8 +90,13 @@ onBeforeUnmount(() => watcher?.disconnect());
                 <slot :window-key="detached.key" />
             </DetachedWindowFrame>
         </template>
-        <template v-if="store.drag.value">
-            <DragGhost :drag="store.drag.value" />
+        <template v-if="dragged">
+            <DragGhost
+                :icon="dragged.window.icon"
+                :title="dragged.window.title"
+                :x="dragged.x"
+                :y="dragged.y"
+            />
         </template>
     </div>
 </template>

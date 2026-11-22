@@ -30,6 +30,8 @@ function press(event: PointerEvent): void {
     (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
     origin = { point: pointOf(event), ratio: ratio.value, moved: false };
     dragging.value = true;
+    // The panes stop easing their size while the splitter is dragged, so they follow the pointer.
+    document.body.classList.add(props.axis === 'x' ? 'resizing' : 'resizing-y');
 }
 
 function drag(event: PointerEvent): void {
@@ -47,6 +49,7 @@ function drag(event: PointerEvent): void {
 
 function release(): void {
     dragging.value = false;
+    document.body.classList.remove('resizing', 'resizing-y');
 }
 
 function step(event: KeyboardEvent): void {

@@ -5,7 +5,9 @@ import Icon from '@/components/kit/Icon.vue';
 import { usePaneLayout } from '@/components/panes/usePaneLayout';
 import { useWindowDrag } from '@/components/panes/useWindowDrag';
 import { detachWindow, dropWindow } from './arrangement';
-import DropCompass from './DropCompass.vue';
+import DropCompass from '@/components/kit/DropCompass.vue';
+import DropPreview from '@/components/kit/DropPreview.vue';
+import type { CompassTarget } from '@/components/kit/compassTargets';
 import MenuList from './MenuList.vue';
 import type { MenuEntry } from './MenuList.vue';
 import AddWindowPopover from './AddWindowPopover.vue';
@@ -131,6 +133,23 @@ const compassZone = computed<DropZone | null>(() =>
         ? aimedHere.value.zone
         : null,
 );
+
+/** A drop zone as the kit's compass and preview name it. */
+const compassTargets: Record<DropZone, CompassTarget> = {
+    centre: 'center',
+    left: 'left',
+    right: 'right',
+    above: 'up',
+    below: 'down',
+};
+
+/** The pane's own box, which the preview shades and whose middle holds the compass, while a drag aims here. */
+const paneArea = computed(() => ({
+    x: 0,
+    y: 0,
+    width: compassZone.value === null ? 0 : (frame.value?.clientWidth ?? 0),
+    height: compassZone.value === null ? 0 : (frame.value?.clientHeight ?? 0),
+}));
 
 const insertAt = computed(() =>
     aimedHere.value?.zone === 'tabs' ? aimedHere.value.place : -1,
@@ -308,7 +327,11 @@ const menuEntries = computed<MenuEntry[]>(() => {
             </p>
         </template>
         <template v-if="compassZone">
-            <DropCompass :zone="compassZone" />
+            <DropPreview :area="paneArea" :target="compassTargets[compassZone]" />
+            <DropCompass
+                :center="{ x: paneArea.width / 2, y: paneArea.height / 2 }"
+                :aimed="compassTargets[compassZone]"
+            />
         </template>
         <template v-if="offeredTitle !== null">
             <SplitOffer :title="offeredTitle" @pick="answerOffer" />
