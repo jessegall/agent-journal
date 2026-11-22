@@ -71,6 +71,7 @@ final readonly class LibraryWindowResolver implements PageResolver
             $menuOf = fn (PublicationCard $card) => [
                 'menu' => $this->menus->onRecord(DocumentsDomain::DOCUMENT_ACTIONS, $card->number),
             ];
+
             $parts[] = $this->sectionOf(
                 'documents',
                 'Documents',
@@ -85,6 +86,7 @@ final readonly class LibraryWindowResolver implements PageResolver
 
         if ($reports !== null) {
             $noMenu = fn (PublicationCard $card) => [];
+
             $parts[] = $this->sectionOf(
                 'reports',
                 'Reports',

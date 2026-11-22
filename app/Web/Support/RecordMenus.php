@@ -61,6 +61,7 @@ final readonly class RecordMenus implements RecordMenusContract
                 $one->menuItem->position,
                 $one->key,
             ] <=> [$other->menuItem->position, $other->key]);
+
             $groups[] = ['key' => (string) $group, 'position' => $items[0]->menuItem->position, 'items' => $items];
         }
 

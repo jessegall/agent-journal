@@ -30,7 +30,7 @@ final class HandbookPageTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    private const int OTHER_OWNER = 999_999;
+    private const string OTHER_OWNER = 'another-owner';
 
     private User $owner;
 

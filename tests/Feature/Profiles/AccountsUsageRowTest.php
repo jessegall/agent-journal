@@ -58,7 +58,7 @@ final class AccountsUsageRowTest extends TestCase
 
     public function test_an_account_without_a_reading_has_no_usage(): void
     {
-        $rows = $this->app->make(AccountsWindowResolver::class)->read()->rows;
+        $rows = $this->app->make(AccountsWindowResolver::class)->list()->rows;
 
         $this->assertCount(2, $rows);
 
@@ -108,7 +108,7 @@ final class AccountsUsageRowTest extends TestCase
 
     private function rowOf(string $accountId): AccountRowData
     {
-        $rows = $this->app->make(AccountsWindowResolver::class)->read()->rows;
+        $rows = $this->app->make(AccountsWindowResolver::class)->list()->rows;
 
         return array_values(array_filter($rows, fn (AccountRowData $row) => $row->id === $accountId))[0];
     }

@@ -47,6 +47,7 @@ final readonly class InboxPageResolver implements PageResolver
     private function cardOf(InboxView $inbox): LayoutPartData
     {
         $counts = $inbox->counts;
+
         $header = [
             LayoutPartData::text('label', $inbox->label, 'heading'),
             LayoutPartData::text(
@@ -62,6 +63,7 @@ final readonly class InboxPageResolver implements PageResolver
                 route('chat.take-next', [], false),
                 ['inboxId' => $inbox->inboxId],
             );
+
             $header[] = LayoutPartData::form(
                 'take-next',
                 $takeNext,

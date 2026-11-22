@@ -6,7 +6,6 @@ namespace App\Web\Resolvers;
 
 use App\Agents\Contracts\RuntimeResolver;
 use App\Agents\Data\RuntimeStatus;
-use App\Agents\Enums\DriverVariant;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Layout\DeclaredLayoutData;
 use App\Ui\Layout\LayoutActionData;
@@ -58,9 +57,11 @@ final readonly class RuntimeStatusResolver implements PageResolver
     private function cardOf(RuntimeEntryData $entry): LayoutPartData
     {
         $status = $entry->status;
+
         $age = $status->observationAgeSeconds === null
             ? 'never observed'
             : "observed {$status->observationAgeSeconds}s ago";
+
         $summary = [
             LayoutPartData::text('driver', $status->driver, 'code'),
             LayoutPartData::text('activity', $status->activity->value),
@@ -72,7 +73,7 @@ final readonly class RuntimeStatusResolver implements PageResolver
             ),
         ];
 
-        if ($status->variant === DriverVariant::Terminal) {
+        if ($status->hasTerminal()) {
             $terminal = LayoutActionData::to(route('web.terminal', ['agent' => $status->agentId], false));
             $summary[] = LayoutPartData::action('terminal', 'Watch terminal', $terminal, 'ghost');
         }

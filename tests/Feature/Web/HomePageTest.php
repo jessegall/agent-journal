@@ -187,7 +187,7 @@ final class HomePageTest extends TestCase
         )->assertInertia(fn (AssertableInertia $page) => $page
             ->loadDeferredProps('section_chat_dock_plans_waiting', fn (AssertableInertia $section) => $section
                 ->where('section_chat_dock_plans_waiting.state', 'ready')
-                ->where('section_chat_dock_plans_waiting.data.rows.0.title', 'Review the dock')));
+                ->where('section_chat_dock_plans_waiting.data.root.children.0.rows.0.label', "plan {$waiting->number} · Review the dock")));
         $this->actingAs($this->owner)->get('/chat')->assertInertia(fn (AssertableInertia $page) => $page
             ->loadDeferredProps('section_chat_dock_plans_waiting', fn (AssertableInertia $section) => $section
                 ->where('section_chat_dock_plans_waiting', null)));

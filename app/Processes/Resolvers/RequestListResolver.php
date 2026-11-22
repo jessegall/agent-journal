@@ -51,6 +51,7 @@ final readonly class RequestListResolver implements PageResolver
 
         $requestRows = array_values($requests->map(RequestRowData::fromRequest(...))->all());
         $ruleRows = array_values($rules->map(ClassificationRuleRowData::fromRule(...))->all());
+
         $bundles = BundleListPartData::from([
             'bundles' => array_values(array_map(BundleRowData::fromBundle(...), $waiting)),
         ]);

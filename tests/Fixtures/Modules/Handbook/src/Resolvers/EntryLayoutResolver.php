@@ -37,7 +37,7 @@ final readonly class EntryLayoutResolver implements PageResolver
 
     public function read(): DeclaredLayoutData
     {
-        $ownerId = (int) $this->auth->id();
+        $ownerId = (string) $this->auth->id();
         $entry = $this->entries->visibleTo($ownerId, $this->request->entryNumber());
         $text = fn () => LayoutBodyData::fromMarkdown($this->entries->textSlice($entry, self::TEXT_BYTE_LIMIT));
 

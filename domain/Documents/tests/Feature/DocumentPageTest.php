@@ -44,10 +44,12 @@ final class DocumentPageTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
+
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
         $this->app->make(CurrentActorSetter::class)->clear();
     }

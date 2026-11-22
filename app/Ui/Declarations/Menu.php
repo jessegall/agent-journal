@@ -18,9 +18,9 @@ final readonly class Menu
     /**
      * A menu opened on one record, such as a document's actions, whose items take its number as the parameter named.
      */
-    public static function record(string $key, string $label, string $recordParameter): self
+    public static function record(string $key, string $label, string $parameter): self
     {
-        return new self($key, $label, $recordParameter);
+        return new self($key, $label, $parameter);
     }
 
     /**
