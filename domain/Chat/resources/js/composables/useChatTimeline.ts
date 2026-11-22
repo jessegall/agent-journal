@@ -1,7 +1,8 @@
 import { xsrfToken } from '@/echo';
 import { events as eventsRoute, rows as rowsRoute } from '@generated/routes/chat';
 import type { ChatEventsPageData, ChatMessageData, ChatRowsPageData, ConversationData } from '@generated/types/chat';
-import { computed, ref, shallowRef, watch } from 'vue';
+import { onChatAccessEnded } from '@kit/chatAccess';
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import type { ComputedRef, Ref } from 'vue';
 import { chatTimeline } from './chatTimeline';
 import type { ChatTimeline } from './chatTimeline';
@@ -70,6 +71,8 @@ export type ChatTimelineView = {
     unreadShown: ComputedRef<string[]>;
     hasOlder: Ref<boolean>;
     loadOlder(): Promise<void>;
+    /** Whether this view lost the chat: it was removed, left or the chat closed. */
+    accessEnded: Ref<boolean>;
     /** Reads what happened after this view's cursor and merges it in. */
     catchUp(): Promise<void>;
 };
@@ -89,6 +92,7 @@ export function useChatTimeline(
     let reading: Promise<void> | null = null;
     const messages = shallowRef<ChatMessageData[]>([]);
     const hasOlder = ref(false);
+    const accessEnded = ref(false);
 
     function changed(): void {
         messages.value = timeline?.shown() ?? [];
@@ -96,22 +100,47 @@ export function useChatTimeline(
     }
 
     /**
+     * The view lost the chat: its rows, buffer and cursor go, and every read still under way for it is ignored.
+     */
+    function end(): void {
+        timeline = null;
+        cursor = null;
+        reading = null;
+        accessEnded.value = true;
+        changed();
+    }
+
+    /**
+     * Whether a read that started for this timeline may still change the view; a read for a lost or left chat may not.
+     */
+    function isCurrent(shown: ChatTimeline): boolean {
+        return timeline === shown;
+    }
+
+    /**
      * Starts the view from a snapshot at the watermark: the newest page of rows, and the cursor after it.
      */
-    async function restart(inboxId: string): Promise<void> {
+    async function restart(inboxId: string, shown: ChatTimeline): Promise<void> {
         const snapshot = await client.events(inboxId, null);
 
+        if (!isCurrent(shown)) {
+            return;
+        }
+
         if (snapshot.accessEnded) {
-            timeline?.restart([], 0, null);
-            cursor = null;
-            changed();
+            end();
 
             return;
         }
 
         const newest = await client.rows(inboxId, null);
+
+        if (!isCurrent(shown)) {
+            return;
+        }
+
         cursor = snapshot.cursor;
-        timeline?.restart(newest.messages, snapshot.watermark, newest.olderCursor);
+        shown.restart(newest.messages, snapshot.watermark, newest.olderCursor);
         changed();
     }
 
@@ -124,6 +153,11 @@ export function useChatTimeline(
 
         for (let page = 0; page < GAP_PAGE_LIMIT && wanted.size > 0; page++) {
             const rows = await client.rows(inboxId, older);
+
+            if (!isCurrent(shown)) {
+                return;
+            }
+
             shown.offerRows(rows.messages);
             wanted = new Set([...wanted].filter((id) => !rows.messages.some((row) => row.id === id)));
             older = rows.olderCursor;
@@ -136,7 +170,7 @@ export function useChatTimeline(
 
     async function readAfterCursor(inboxId: string, shown: ChatTimeline): Promise<void> {
         if (cursor === null) {
-            await restart(inboxId);
+            await restart(inboxId, shown);
 
             return;
         }
@@ -144,15 +178,22 @@ export function useChatTimeline(
         for (;;) {
             const page = await client.events(inboxId, cursor);
 
+            if (!isCurrent(shown)) {
+                return;
+            }
+
             if (page.accessEnded) {
-                shown.restart([], 0, null);
-                cursor = null;
-                changed();
+                end();
 
                 return;
             }
 
             await fill(inboxId, shown, shown.missingOf(page.events));
+
+            if (!isCurrent(shown)) {
+                return;
+            }
+
             const last = page.events.length === 0 ? page.watermark : page.events[page.events.length - 1].sequence;
             const full = page.events.length >= EVENT_PAGE_LIMIT;
             shown.advance(full ? last : page.watermark);
@@ -177,15 +218,20 @@ export function useChatTimeline(
             return reading;
         }
 
-        reading = readAfterCursor(inboxId, shown)
+        const read = readAfterCursor(inboxId, shown)
             .catch(async (failure: unknown) => {
-                if (failure instanceof ChatTimelineReadFailed && failure.refused) {
-                    await restart(inboxId);
+                if (failure instanceof ChatTimelineReadFailed && failure.refused && isCurrent(shown)) {
+                    await restart(inboxId, shown);
                 }
             })
-            .finally(() => (reading = null));
+            .finally(() => {
+                if (reading === read) {
+                    reading = null;
+                }
+            });
+        reading = read;
 
-        return reading;
+        return read;
     }
 
     watch(
@@ -193,6 +239,8 @@ export function useChatTimeline(
         (inboxId) => {
             const opened = conversation.value;
             cursor = null;
+            reading = null;
+            accessEnded.value = false;
             timeline = opened === undefined || inboxId === undefined
                 ? null
                 : chatTimeline(opened.messages, opened.latestSequence, opened.olderCursor);
@@ -207,6 +255,16 @@ export function useChatTimeline(
         () => conversation.value?.messages,
         (page) => {
             const opened = conversation.value;
+            if (opened !== undefined && timeline === null && accessEnded.value) {
+                // A rejoin shows the chat again: it starts from a fresh snapshot, never from the lost cursor.
+                accessEnded.value = false;
+                timeline = chatTimeline(opened.messages, opened.latestSequence, opened.olderCursor);
+                changed();
+                void catchUp();
+
+                return;
+            }
+
             const shown = timeline;
 
             if (opened === undefined || shown === null || page === undefined) {
@@ -232,6 +290,11 @@ export function useChatTimeline(
         }
 
         const page = await client.rows(inboxId, older);
+
+        if (!isCurrent(shown)) {
+            return;
+        }
+
         shown.offerOlder(page.messages, page.olderCursor);
         changed();
     }
@@ -242,5 +305,13 @@ export function useChatTimeline(
             .map((row) => row.id),
     );
 
-    return { messages, unreadShown, hasOlder, loadOlder, catchUp };
+    // The live notice that this tab lost a chat ends the view of it at once, before the page is read again.
+    const stopListening = onChatAccessEnded((inboxId) => {
+        if (conversation.value?.inboxId === inboxId) {
+            end();
+        }
+    });
+    onBeforeUnmount(stopListening);
+
+    return { messages, unreadShown, hasOlder, loadOlder, catchUp, accessEnded };
 }

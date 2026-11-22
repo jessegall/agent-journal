@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { arrivalAnnouncement } from './composables/arrivalAnnouncement';
 import { useChatTimeline } from './composables/useChatTimeline';
 import { useChosenAgent } from './composables/useChosenAgent';
@@ -92,6 +92,13 @@ const replyingTo = ref<ReplyTarget | null>(null);
  * This view's own rows of the chat, merged in timeline order without gaps or duplicates, and paged back on request.
  */
 const timeline = useChatTimeline(conversation);
+
+// A room the viewer lost takes the focus with it: the keyboard continues from the chat selector.
+watch(timeline.accessEnded, (ended) => {
+    if (ended) {
+        void nextTick(() => document.getElementById('chat-selector')?.focus());
+    }
+});
 
 /**
  * The owner of the user's sends in this conversation, the same one Home and Chat's page share.
