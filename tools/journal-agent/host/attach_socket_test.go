@@ -274,8 +274,9 @@ func TestAClosedCaptureBarrierStopsTheLocalMirrorAndTheWatcherShieldsTheScreen(t
 	}
 }
 
-// publicRedraw is a full redraw of a ready composer, as the program draws it after a private operation.
-const publicRedraw = "\x1b[2J\x1b[H────────\r\n> \r\n────────\x1b[2;3H"
+// publicRedraw is a full redraw of a ready composer between rules across the 80-column screen, as the program draws
+// it after a private operation.
+var publicRedraw = "\x1b[2J\x1b[H" + strings.Repeat("─", 80) + "\r\n> \r\n" + strings.Repeat("─", 80) + "\x1b[2;3H"
 
 // waitForBarrier waits until the barrier's state is the one wanted, failing after a second.
 func waitForBarrier(t *testing.T, terminal *hostTerminal, closed bool) {

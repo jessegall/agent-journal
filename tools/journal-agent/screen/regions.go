@@ -102,6 +102,39 @@ func (region MarkedSpan) Rows(snapshot contracts.Snapshot) (contracts.RowRange, 
 	return contracts.RowRange{}, false
 }
 
+// Text is the composer's typed text, without its marker.
+func (region FencedRow) Text(snapshot contracts.Snapshot) string {
+	rows, found := region.Rows(snapshot)
+	if !found {
+		return ""
+	}
+
+	return unmarked(snapshot.Rows[rows.First], []string{region.Marker})
+}
+
+// Text is the composer's typed text, without the prefix it starts with.
+func (region MarkedRow) Text(snapshot contracts.Snapshot) string {
+	rows, found := region.Rows(snapshot)
+	if !found {
+		return ""
+	}
+
+	return unmarked(snapshot.Rows[rows.First], region.Prefixes)
+}
+
+// unmarked is a row without the first marker it starts with, its no-break spaces plain and its spaces trimmed.
+func unmarked(text string, markers []string) string {
+	row := strings.TrimSpace(plainSpaces(text))
+	for _, marker := range markers {
+		bare := strings.TrimSpace(marker)
+		if strings.HasPrefix(row, bare) {
+			return strings.TrimSpace(strings.TrimPrefix(row, bare))
+		}
+	}
+
+	return row
+}
+
 // startsWith is whether a row starts with the marker; a row is read without its trailing spaces, so a bare marker
 // such as an empty prompt's "❯ " is drawn as "❯".
 func startsWith(text, marker string) bool {

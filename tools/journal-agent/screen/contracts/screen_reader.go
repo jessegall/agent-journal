@@ -69,3 +69,11 @@ type Region interface {
 	// Rows finds the region's rows in the snapshot, or found is false while it is not drawn.
 	Rows(snapshot Snapshot) (rows RowRange, found bool)
 }
+
+// ComposerRegion is the region a program's user types into; it knows the prompt marker drawn before the text.
+type ComposerRegion interface {
+	Region
+
+	// Text is what is typed in the composer, without its prompt marker, spaces trimmed; empty while it is not drawn.
+	Text(snapshot Snapshot) string
+}

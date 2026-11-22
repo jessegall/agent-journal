@@ -149,3 +149,18 @@ func TestEveryInputOfTheUserIsCountedAlsoTheEnterThatGivesTheComposerBack(t *tes
 		t.Fatalf("%d inputs counted, the composer is %v's", gate.UserInputs(), gate.Owner())
 	}
 }
+
+func TestAPastedLineIsWrittenBetweenPasteMarkersAndEchoedAsItsText(t *testing.T) {
+	reader, layout := readyClaudeCode(t)
+	program := &bytes.Buffer{}
+	gate := NewInputGate(program, reader, layout.Composer, time.Now)
+
+	line, err := gate.Paste("request-1", 1, "two\nlines", reader.Generation(layout.Composer.Name()))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if program.String() != pasteStart+"two\nlines"+pasteEnd || line.Text != "two\nlines" {
+		t.Fatalf("the program got %q and the line expects %q", program.String(), line.Text)
+	}
+}

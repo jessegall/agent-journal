@@ -18,7 +18,7 @@ type InputGate struct {
 	mutex      sync.Mutex
 	program    io.Writer
 	reader     contracts.ScreenReader
-	composer   contracts.Region
+	composer   contracts.ComposerRegion
 	now        func() time.Time
 	owner      Owner
 	draftSince time.Time
@@ -39,7 +39,7 @@ type InputGate struct {
 func NewInputGate(
 	program io.Writer,
 	reader contracts.ScreenReader,
-	composer contracts.Region,
+	composer contracts.ComposerRegion,
 	now func() time.Time,
 ) *InputGate {
 	return &InputGate{
@@ -85,6 +85,18 @@ func (gate *InputGate) UserInputs() uint64 {
 // a browser writer's grant included, refuses it with ErrComposerHeld. It never presses Enter: Submit does, once the
 // echo is seen.
 func (gate *InputGate) Type(requestID string, attempt int, text string, readGeneration uint64) (*TypedLine, error) {
+	return gate.typeLine(requestID, attempt, text, text, readGeneration)
+}
+
+// Paste types the text as one bracketed paste, so a newline in it never submits early; the line's echo is the text
+// itself, never the paste markers around it.
+func (gate *InputGate) Paste(requestID string, attempt int, text string, readGeneration uint64) (*TypedLine, error) {
+	return gate.typeLine(requestID, attempt, pasteStart+text+pasteEnd, text, readGeneration)
+}
+
+// typeLine writes the bytes into an empty composer the driver may use and keeps the text they draw as the pending
+// line.
+func (gate *InputGate) typeLine(requestID string, attempt int, written, text string, readGeneration uint64) (*TypedLine, error) {
 	gate.mutex.Lock()
 	defer gate.mutex.Unlock()
 
@@ -92,7 +104,7 @@ func (gate *InputGate) Type(requestID string, attempt int, text string, readGene
 	if gate.stopping || gate.owner != NobodyOwns || gate.reader.Generation(gate.composer.Name()) != readGeneration {
 		return nil, ErrComposerHeld
 	}
-	if _, err := io.WriteString(gate.program, text); err != nil {
+	if _, err := io.WriteString(gate.program, written); err != nil {
 		return nil, err
 	}
 
@@ -245,16 +257,5 @@ func matchesIgnoringSpaces(drawn, typed []rune) bool {
 
 // composerText is the text in the composer after its marker, or nothing while the composer is not drawn.
 func (gate *InputGate) composerText() string {
-	snapshot := gate.reader.Snapshot()
-	rows, found := gate.composer.Rows(snapshot)
-	if !found {
-		return ""
-	}
-
-	lines := make([]string, 0, rows.Last-rows.First)
-	for row := rows.First; row < rows.Last; row++ {
-		lines = append(lines, strings.ReplaceAll(snapshot.Rows[row], " ", " "))
-	}
-
-	return strings.TrimSpace(strings.Join(lines, " "))
+	return gate.composer.Text(gate.reader.Snapshot())
 }

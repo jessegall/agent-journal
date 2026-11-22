@@ -322,7 +322,7 @@ func (driver *TerminalDriver) prompt(
 	generation := driver.runtime.Generation(driver.runtime.Composer)
 	// The text goes in as one bracketed paste of its sanitized form, so a newline in a participant's body never
 	// submits early and no control character reaches the program; only the gate's own Enter submits.
-	line, err := driver.runtime.Gate.Type(request.RequestID, request.Attempt, pastedText(text), generation)
+	line, err := driver.runtime.Gate.Paste(request.RequestID, request.Attempt, sanitizedText(text), generation)
 	if errors.Is(err, terminal.ErrComposerHeld) {
 		return staged(request), nil
 	}

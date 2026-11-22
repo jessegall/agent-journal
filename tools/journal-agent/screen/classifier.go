@@ -81,7 +81,7 @@ func (family MenuFamily) matchesWords(snapshot contracts.Snapshot) bool {
 // and the other regions worth counting, such as its spinner and status line.
 type Layout struct {
 	Buffer            contracts.Buffer
-	Composer          contracts.Region
+	Composer          contracts.ComposerRegion
 	EmptyCursorColumn int
 	ComposerStableFor time.Duration
 	Menus             []MenuFamily

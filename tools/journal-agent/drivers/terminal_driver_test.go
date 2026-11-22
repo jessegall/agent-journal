@@ -78,6 +78,11 @@ func recordedTurn(t *testing.T, until time.Duration) (*TerminalDriver, *replayCl
 	}), clock, program
 }
 
+// pasted is a prompt as the input gate types it: one bracketed paste.
+func pasted(prompt string) string {
+	return "\x1b[200~" + prompt + "\x1b[201~"
+}
+
 func request(id string) contracts.RequestIdentity {
 	return contracts.RequestIdentity{RuntimeID: "runtime-1", RequestID: id, Attempt: 1}
 }
@@ -96,7 +101,7 @@ func TestTwoDeliveredPromptsAreTwoTurnsOfOneGeneration(t *testing.T) {
 		t.Fatalf("the second prompt ended %+v, %v", second, err)
 	}
 
-	if driver.Turns() != 2 || program.String() != firstPrompt+"\r"+secondPrompt+"\r" {
+	if driver.Turns() != 2 || program.String() != pasted(firstPrompt)+"\r"+pasted(secondPrompt)+"\r" {
 		t.Fatalf("%d turns, and the program got %q", driver.Turns(), program.String())
 	}
 }

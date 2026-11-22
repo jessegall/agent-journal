@@ -224,6 +224,10 @@ func (gate *InputGate) applyLocked(
 	if receipts.uncertain {
 		return BrowserReceipt{Sequence: operation.Sequence, Outcome: Uncertain}, nil
 	}
+	// A resize types nothing into the composer, so it needs no prompt that admits input.
+	if operation.Kind == ResizeOperation {
+		return gate.resizeLocked(operation, receipts), nil
+	}
 	if !gate.admitsPrompt(layout) || operation.PromptRevision != gate.browser.promptRevision ||
 		len(operation.Text) > OperationByteLimit {
 		return BrowserReceipt{Sequence: operation.Sequence, Outcome: Paused}, nil
@@ -248,8 +252,6 @@ func (gate *InputGate) writeLocked(
 		return gate.keyLocked(operation, receipts), nil
 	case PasteOperation:
 		return gate.pasteLocked(operation, receipts, bracketedPaste), nil
-	case ResizeOperation:
-		return gate.resizeLocked(operation, receipts), nil
 	}
 
 	return gate.chooseLocked(operation, receipts, clearKeys)

@@ -281,7 +281,6 @@ func (socket *AttachSocket) LostConnection(runtimeID string) bool {
 	return lost && runs != nil && runs(instance)
 }
 
-
 // resize gives the program's terminal and the screen read from it the size of the attached window, so the screen
 // keeps the grid the program draws on; a size the reader refuses leaves the reader as it was.
 func (terminal *hostTerminal) resize(rows, columns uint16) {
