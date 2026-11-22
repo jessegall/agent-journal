@@ -43,4 +43,8 @@ class ExitReasons:
 
     def terminal_tail(self, agent: Agent) -> str:
         path = self.home.terminal_file(agent.id)
-        return "" if not FileAccess.is_file(path) else FileAccess.read(path)[-TAIL_BYTES:]
+        if not FileAccess.is_file(path):
+            return ""
+        # a terminal capture holds raw bytes, and its tail can start inside a character
+        start = max(FileAccess.stat(path).st_size - TAIL_BYTES, 0)
+        return FileAccess.bytes_range(path, start, TAIL_BYTES).decode(errors="replace")
