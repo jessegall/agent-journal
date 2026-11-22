@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 import Button from '@kit/Button';
 import EmptyState from '@kit/EmptyState';
 import ListReaderLayout from '@kit/ListReaderLayout';
 import PageHeader from '@kit/PageHeader';
 import StaleListNotice from '@kit/StaleListNotice';
 import { useFilteredReads } from '@kit/useFilteredReads';
+import { useFocusRecovery } from '@kit/useFocusRecovery';
 import { useWindowQuery } from '@kit/useWindowQuery';
 import type {
     TaskFiltersData,
@@ -26,7 +27,7 @@ const props = defineProps<{ data: TaskListData }>();
 
 const windowUrl = useWindowQuery();
 const list = useTemplateRef<HTMLElement>('list');
-const announcement = ref('');
+const { announcement, afterRemoval } = useFocusRecovery(list, 'a[aria-label^="Task "]');
 const { read, retry, isStale } = useFilteredReads();
 
 const filters = computed(() => props.data.filters);
@@ -75,17 +76,7 @@ watch(
             return;
         }
 
-        announcement.value = `Task ${chosen} no longer matches this filter`;
-        await nextTick();
-        const next = rows[Math.min(oldIndex, rows.length - 1)];
-        const nextLink =
-            next === undefined
-                ? null
-                : list.value?.querySelector<HTMLElement>(
-                      `a[aria-label^="Task ${next.number}:"]`,
-                  );
-
-        (nextLink ?? list.value)?.focus();
+        await afterRemoval(oldIndex, `Task ${chosen} no longer matches this filter`);
     },
 );
 
