@@ -22,8 +22,17 @@ const props = withDefaults(
         placement?: 'page' | 'pane' | 'section';
         // Where a refused page leads back to; Home when it has no parent the user may see.
         returnUrl?: string;
+        // Whether the page read that included this result failed; the page then shows the one notice.
+        isBatchStale?: boolean;
     }>(),
-    { keptData: undefined, isWindow: false, subject: 'item', placement: undefined, returnUrl: '/' },
+    {
+        keptData: undefined,
+        isWindow: false,
+        subject: 'item',
+        placement: undefined,
+        returnUrl: '/',
+        isBatchStale: false,
+    },
 );
 const emit = defineEmits<{ retry: []; close: [] }>();
 defineSlots<{ content(slotProps: { data: unknown }): unknown }>();
@@ -39,7 +48,9 @@ const shownData = computed(() => {
     return isRefused.value ? undefined : (props.keptData ?? undefined);
 });
 const reason = computed(() => (props.result?.state === 'failed' ? (props.result.reason ?? null) : null));
-const isStale = computed(() => props.result?.state === 'failed' && shownData.value !== undefined);
+const isEnvelopeStale = computed(() => props.result?.state === 'failed' && shownData.value !== undefined);
+// Retained content stays readable with its commands disabled while either its own read or the page's batch failed.
+const isStale = computed(() => isEnvelopeStale.value || (props.isBatchStale && shownData.value !== undefined));
 const isFirstRead = computed(
     () => (props.result === null || props.result === undefined) && shownData.value === undefined,
 );
@@ -60,7 +71,7 @@ watch(
 </script>
 
 <template>
-    <template v-if="isStale">
+    <template v-if="isEnvelopeStale">
         <div role="alert" class="flex items-center gap-3 border-b border-line px-4 py-2 text-small text-text-2">
             <span class="flex-1">Showing the last update.<template v-if="reason"> {{ reason }}</template></span>
             <Button variant="bordered" size="small" @click="emit('retry')">Reload {{ subject }}</Button>

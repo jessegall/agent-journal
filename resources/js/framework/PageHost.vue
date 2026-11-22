@@ -3,6 +3,8 @@ import { router } from '@inertiajs/vue3';
 import type { Component } from 'vue';
 import type { WindowResult } from '@/generated/types/page-props';
 import {
+    hasStaleProps,
+    isPropStale,
     pageReadStatus,
     retryPageRead,
     useLiveReload,
@@ -22,11 +24,11 @@ useLiveReload();
 </script>
 
 <template>
-    <template v-if="pageReadStatus === 'failed'">
-        <p role="status" class="text-small text-text-3">
-            This page could not be refreshed.
+    <template v-if="pageReadStatus === 'failed' && hasStaleProps()">
+        <p role="alert" class="text-small text-text-3">
+            Showing the last update.
             <button type="button" class="underline" @click="retryPageRead()">
-                Retry
+                Refresh visible windows
             </button>
         </p>
     </template>
@@ -38,6 +40,7 @@ useLiveReload();
         is-window
         :subject="subject"
         placement="page"
+        :is-batch-stale="isPropStale('page')"
         @retry="router.reload({ only: ['page'] })"
     >
         <template #content="{ data }">

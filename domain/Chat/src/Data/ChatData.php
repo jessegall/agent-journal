@@ -33,5 +33,7 @@ final class ChatData extends Data
         public readonly ConversationData|Optional $conversation = new Optional(),
         // The accounts a start or switch form asked for, read only when it asked.
         public readonly EligibleAccountsData|Optional $eligibleAccounts = new Optional(),
+        // A setup problem the reader cannot fix here, such as a missing own inbox; it replaces the conversation.
+        public readonly string|Optional $setupNotice = new Optional(),
     ) {}
 }

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue';
+import { computed } from 'vue';
+import { isPropStale } from '@/composables/usePageChanges';
 import { useWindowProps } from '@/composables/useWindowProps';
 import { provideHostProp } from './hostProp';
 import { provideWindowKey } from './useWindowQuery';
@@ -22,6 +24,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{ close: [] }>();
+const isBatchStale = computed(() => isPropStale(props.propName));
 const { result, keptData, retry } = useWindowProps(
     props.propName,
     props.askOnStart,
@@ -40,6 +43,7 @@ if (props.pageKey !== undefined) {
         :is-window="pageKey !== undefined"
         :subject="subject ?? (pageKey !== undefined ? 'this window' : 'this section')"
         :placement="pageKey !== undefined ? 'pane' : 'section'"
+        :is-batch-stale="isBatchStale"
         @retry="retry"
         @close="emit('close')"
     >

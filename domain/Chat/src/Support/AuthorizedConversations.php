@@ -7,6 +7,7 @@ namespace Domain\Chat\Support;
 use App\Actors\Contracts\CurrentActor;
 use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Exceptions\StackTargetRefused;
+use App\Agents\Support\AgentOption;
 use App\Communication\Contracts\ActorInboxResolver;
 use App\Communication\Contracts\InboxDestinationResolver;
 use App\Communication\Exceptions\InboxUnavailable;
@@ -24,6 +25,20 @@ final readonly class AuthorizedConversations
         private ActorInboxResolver $ownInboxes,
         private InboxDestinationResolver $destinations,
     ) {}
+
+    /**
+     * The conversation with an agent the reader already sees: a missing own inbox is a setup problem, told apart from a
+     * peer the actor may not see, and answered as it is.
+     *
+     * @throws InboxUnavailable
+     */
+    public function withVisibleAgent(AgentOption $agent): ConversationPeers
+    {
+        return new ConversationPeers(
+            $this->ownInboxes->preferredFor($this->actors->actor())->inboxId(),
+            $this->destinations->resolve($agent->assignee)->inboxId(),
+        );
+    }
 
     /**
      * @throws ConversationUnavailable

@@ -74,6 +74,17 @@ describe('a result', () => {
         view.unmount();
     });
 
+    it('keeps a result of a failed page batch readable and read-only without a notice of its own', () => {
+        const view = mount(ResultView, {
+            props: { result: { state: 'ready', data: { rows: [] } }, isWindow: true, subject: 'Plans', isBatchStale: true },
+            slots: { content: () => h(content) },
+        });
+
+        expect(view.get('p').text()).toBe('rows, read-only');
+        expect(view.find('[role="alert"]').exists()).toBe(false);
+        view.unmount();
+    });
+
     it('shows fresh content once a read succeeds', () => {
         const view = mountResult({ state: 'ready', data: { rows: [] } }, { rows: [] });
 
