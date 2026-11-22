@@ -19,10 +19,11 @@ const props = withDefaults(
         size?: 'sm' | 'md' | 'lg';
         placement?: 'center' | 'top-64' | 'top-72';
         header?: boolean;
+        flush?: boolean;
         initialFocus?: string;
         returnFocus?: HTMLElement;
     }>(),
-    { size: 'md', placement: 'center', header: true, initialFocus: undefined, returnFocus: undefined },
+    { size: 'md', placement: 'center', header: true, flush: false, initialFocus: undefined, returnFocus: undefined },
 );
 
 const emit = defineEmits<{ close: [] }>();
@@ -124,7 +125,8 @@ onBeforeUnmount(() => {
                     :title="title"
                     :size="size"
                     :header="header"
-                    class="relative mx-4 transition duration-(--duration-pop) ease-journal starting:translate-y-1 starting:opacity-0 motion-reduce:transition-none"
+                    :flush="flush"
+                    class="relative z-(--z-dialog) mx-4 transition duration-(--duration-pop) ease-journal starting:translate-y-1 starting:opacity-0 motion-reduce:transition-none"
                     @close="emit('close')"
                 >
                     <template v-if="$slots.header" #header>

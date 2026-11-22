@@ -20,8 +20,6 @@ export function useShellOverlays() {
  */
 export function useShellShortcuts(): void {
     function press(event: KeyboardEvent): void {
-        const target = event.target as Element | null;
-
         if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
             event.preventDefault();
 
@@ -33,7 +31,7 @@ export function useShellShortcuts(): void {
         }
 
         const asksForHelp = event.key === '?' && !event.ctrlKey && !event.metaKey;
-        const isTypingInField = target?.closest(FIELD) !== null;
+        const isTypingInField = event.target instanceof Element && event.target.closest(FIELD) !== null;
 
         if (asksForHelp && !isTypingInField) {
             event.preventDefault();

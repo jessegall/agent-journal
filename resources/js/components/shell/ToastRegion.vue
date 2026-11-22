@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { nextTick, onBeforeUnmount, ref } from 'vue';
+import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
 import { flashedNoticeToast } from '@/composables/flashedNotice';
 import { notificationToasts } from '@/composables/notificationToasts';
@@ -98,11 +99,11 @@ function quiet(event: Event): void {
             <section
                 ref="region"
                 aria-label="Outcomes"
-                class="fixed right-4 bottom-4 z-90 flex w-[min(360px,calc(100vw-32px))] flex-col gap-2"
+                class="fixed right-4 bottom-26 z-(--z-toast) flex w-[min(360px,calc(100vw-32px))] flex-col gap-2"
             >
                 <template v-for="toast in shown" :key="toast.key">
                     <div
-                        class="flex items-start gap-2 rounded-card border bg-raised p-3 text-small shadow-pop"
+                        class="flex animate-[toast-in_var(--duration-pop)_var(--ease-journal)] items-center gap-2.5 rounded-menu border bg-raised px-3 py-[9px] text-small text-text-2 shadow-pop"
                         :class="toast.type === 'failure' ? 'border-danger' : 'border-border-2'"
                         @mouseenter="toasts.hold(toast.key, 'hover')"
                         @mouseleave="toasts.release(toast.key, 'hover')"
@@ -110,28 +111,22 @@ function quiet(event: Event): void {
                         @focusout="toasts.release(toast.key, 'focus')"
                     >
                         <template v-if="toast.type === 'failure'">
-                            <Icon name="warn" :size="14" class="mt-0.5 shrink-0 text-danger" />
+                            <Icon name="warn" :size="14" class="shrink-0 text-danger" />
                         </template>
-                        <div class="flex min-w-0 flex-1 flex-col gap-1">
-                            <p class="line-clamp-3 [overflow-wrap:anywhere] text-text" :title="toast.title">
-                                {{ toast.title }}
-                            </p>
-                            <span class="flex flex-wrap gap-x-3 gap-y-1 text-text-3">
-                                <Link :href="toast.href" class="underline">Open</Link>
-                                <button type="button" class="underline" @click="dismiss(toast.key, $event)">
-                                    Dismiss
-                                </button>
-                            </span>
-                        </div>
+                        <p class="m-0 line-clamp-3 min-w-0 flex-1 [overflow-wrap:anywhere]" :title="toast.title">
+                            {{ toast.title }}
+                        </p>
+                        <Button variant="bordered" size="sm" :href="toast.href">Open</Button>
+                        <Button variant="bordered" size="sm" @click="dismiss(toast.key, $event)">Dismiss</Button>
                     </div>
                 </template>
                 <template v-if="summary.length > 0">
-                    <div class="flex flex-col gap-1 rounded-card border border-border-2 bg-raised p-3 text-small">
-                        <p class="text-text">{{ summary.length }} more outcomes</p>
-                        <span class="flex gap-3 text-text-3">
-                            <button type="button" class="underline" @click="openBell">Show in notifications</button>
-                            <button type="button" class="underline" @click="dismissSummary">Dismiss</button>
-                        </span>
+                    <div
+                        class="flex items-center gap-2.5 rounded-menu border border-border-2 bg-raised px-3 py-[9px] text-small text-text-2 shadow-pop"
+                    >
+                        <p class="m-0 min-w-0 flex-1">{{ summary.length }} more outcomes</p>
+                        <Button variant="bordered" size="sm" @click="openBell">Show in notifications</Button>
+                        <Button variant="bordered" size="sm" @click="dismissSummary">Dismiss</Button>
                     </div>
                 </template>
                 <button type="button" class="self-end text-small text-text-3 underline" @click="quiet">

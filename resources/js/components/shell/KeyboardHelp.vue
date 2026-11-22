@@ -5,33 +5,28 @@ import { useShellOverlays } from '@/composables/useShellOverlays';
 import { shortcutGroups } from './shortcuts';
 
 /**
- * The keyboard help, a modal dialog over the page: every shortcut the app has, in groups, each with its keys in Kbd.
- * It scrolls inside the dialog so a phone keeps its footer reachable, traps the focus, and Escape closes it and gives
- * the focus back to what opened it.
+ * The keyboard help, a modal dialog over the page as the design draws it: a plain title over one list of every
+ * shortcut the app has, its keys in Kbd right-aligned on the left and what they do on the right. It scrolls inside the
+ * dialog, traps the focus, and Escape closes it and gives the focus back to what opened it.
  */
 const { isHelpOpen } = useShellOverlays();
+const shortcuts = shortcutGroups.flatMap((group) => group.shortcuts);
 </script>
 
 <template>
-    <Dialog :open="isHelpOpen" title="Keyboard shortcuts" size="md" @close="isHelpOpen = false">
-        <div class="flex max-h-[60dvh] flex-col gap-4 overflow-y-auto">
-            <template v-for="group in shortcutGroups" :key="group.title">
-                <section :aria-label="group.title" class="flex flex-col gap-1.5">
-                    <h3 class="text-group font-semibold tracking-[.06em] text-text-3 uppercase">{{ group.title }}</h3>
-                    <ul class="m-0 flex list-none flex-col gap-1 p-0">
-                        <template v-for="shortcut in group.shortcuts" :key="shortcut.does">
-                            <li class="flex items-center justify-between gap-3 text-small text-text-2">
-                                <span class="min-w-0">{{ shortcut.does }}</span>
-                                <span class="flex shrink-0 items-center gap-1">
-                                    <template v-for="key in shortcut.keys" :key="key">
-                                        <Kbd>{{ key }}</Kbd>
-                                    </template>
-                                </span>
-                            </li>
+    <Dialog :open="isHelpOpen" title="Keyboard shortcuts" size="md" :header="false" @close="isHelpOpen = false">
+        <div class="flex max-h-[70dvh] flex-col gap-3 overflow-y-auto">
+            <h2 class="m-0 text-body font-semibold text-text">Keyboard shortcuts</h2>
+            <dl class="m-0 grid grid-cols-[minmax(0,auto)_1fr] items-baseline gap-x-4 gap-y-2 text-small">
+                <template v-for="(shortcut, place) in shortcuts" :key="place">
+                    <dt class="flex flex-wrap justify-end gap-1">
+                        <template v-for="key in shortcut.keys" :key="key">
+                            <Kbd>{{ key }}</Kbd>
                         </template>
-                    </ul>
-                </section>
-            </template>
+                    </dt>
+                    <dd class="m-0 text-text-2">{{ shortcut.does }}</dd>
+                </template>
+            </dl>
         </div>
     </Dialog>
 </template>

@@ -13,8 +13,8 @@ import { dialogTitleIdKey } from './dialogTitleId';
  * secondary actions in the secondary slot. Without a header the dialog is named by aria-label.
  */
 const props = withDefaults(
-    defineProps<{ title: string; size?: 'sm' | 'md' | 'lg'; header?: boolean; closeLabel?: string }>(),
-    { size: 'md', header: true, closeLabel: 'Close' },
+    defineProps<{ title: string; size?: 'sm' | 'md' | 'lg'; header?: boolean; flush?: boolean; closeLabel?: string }>(),
+    { size: 'md', header: true, flush: false, closeLabel: 'Close' },
 );
 
 const emit = defineEmits<{ close: [] }>();
@@ -45,7 +45,7 @@ provide(dialogTitleIdKey, titleId);
         <slot name="header">
             <DialogHeader v-if="hasHeader" :title="title" :close-label="closeLabel" @close="emit('close')" />
         </slot>
-        <DialogBody>
+        <DialogBody :flush="flush">
             <slot />
         </DialogBody>
         <DialogFooter v-if="$slots.footer">

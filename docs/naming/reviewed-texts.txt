@@ -24,6 +24,7 @@ Activity levels
 Add
 Add a secret
 Add a window
+Add a window…
 Add account
 Add an account
 Add another
@@ -157,7 +158,6 @@ Exit codes not seen in a sample yet: {{ data.unsampledStatuses.join(', ') }}
 Expires
 Expires {{ dateOnly(account.expiresAt) }}
 Failed
-Find a window
 Finish signing in
 Fixed public address
 Floating
@@ -640,5 +640,7 @@ until {{ dateTime(signIn.expiresAt) }}
 · sign-in page
 ← Back
 ← Stay
+↑ ↓ choose · Enter adds it · Esc closes
+↑ ↓ choose · Enter runs it · Esc closes
 ✓ Saved
 ✓ {{ method.title }} works.

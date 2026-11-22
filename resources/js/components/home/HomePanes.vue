@@ -83,7 +83,7 @@ function componentOf(window: HomeWindowData): Component {
 </script>
 
 <template>
-    <div class="flex h-full min-h-0 flex-col">
+    <div class="relative flex h-full min-h-0 flex-col">
         <AgentBar :layouts="home.layouts">
             <template
                 v-for="section in home.barSections"

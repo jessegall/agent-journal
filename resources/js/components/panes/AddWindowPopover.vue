@@ -62,12 +62,12 @@ watch(open, async (isOpen) => {
 </script>
 
 <template>
-    <Popover v-model:open="open" label="Add a window" :anchor="anchor" :width="320">
+    <Popover v-model:open="open" label="Add a window" :anchor="anchor" align="right" :width="320">
         <div ref="root" class="flex max-h-[min(80vh,420px)] w-full flex-col max-[760px]:max-w-[calc(100vw-12px)]">
             <SearchField
                 v-model="query"
                 label="Search windows"
-                placeholder="Find a window"
+                placeholder="Add a window…"
                 :controls="listId"
                 :active-descendant="activeId ?? undefined"
                 @move="press($event === 1 ? 'ArrowDown' : 'ArrowUp')"
@@ -83,7 +83,7 @@ watch(open, async (isOpen) => {
                             @pointerdown="emit('grab', $event, window.key)"
                             @click="chooseFromKeyboard($event, window.key)"
                         >
-                            <template #leading><Icon :name="window.icon" :size="12" /></template>
+                            <template #leading><Icon :name="window.icon" :size="14" /></template>
                             {{ window.title }}
                         </MenuItem>
                     </template>
@@ -94,6 +94,9 @@ watch(open, async (isOpen) => {
                     </p>
                 </template>
             </div>
+            <p class="border-t border-line px-3 py-2 text-badge text-text-3">
+                ↑ ↓ choose · Enter adds it · Esc closes
+            </p>
         </div>
     </Popover>
 </template>

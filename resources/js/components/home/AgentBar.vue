@@ -59,7 +59,7 @@ function deskEdges(): DeskEdges {
 <template>
     <div
         ref="agentBar"
-        class="relative flex min-h-[54px] flex-none items-center gap-2.5 border-b border-border px-4 text-body max-[760px]:flex-wrap max-[760px]:py-2"
+        class="flex min-h-[54px] flex-none items-center gap-2.5 border-b border-border px-4 text-body max-[760px]:flex-wrap max-[760px]:py-2"
         role="region"
         aria-label="Agent"
     >

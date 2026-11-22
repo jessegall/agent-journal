@@ -60,17 +60,26 @@ function menu() {
 
 describe('AgentMenu', () => {
     it('groups the agents as main, helpers and retired', () => {
-        const groups = menu().findAll('[role="presentation"]').map((group) => group.text());
+        const groups = menu()
+            .findAll('[role="group"]')
+            .map((group) => group.find(`[id="${group.attributes('aria-labelledby')}"]`).text());
 
         expect(groups).toEqual(['Main', 'Helpers', 'Retired']);
     });
 
+    it('gives the search the focus when it opens', () => {
+        const opened = mount(AgentMenu, { props: menu().props(), attachTo: document.body });
+
+        expect(document.activeElement).toBe(opened.find('input').element);
+        opened.unmount();
+    });
+
     it('narrows the agents by the search and chooses the first with Enter', async () => {
         const found = menu();
-        const search = found.find('input[type="search"]');
+        const search = found.find('input');
 
         await search.setValue('rev');
-        expect(found.findAll('[role="option"]').map((option) => option.find('span').text())).toEqual(['Reviewer']);
+        expect(found.findAll('[role="option"]').map((option) => option.find('.truncate').text())).toEqual(['Reviewer']);
         await search.trigger('keydown', { key: 'Enter' });
 
         expect(visited).toEqual(['/?agent=reviewer']);
