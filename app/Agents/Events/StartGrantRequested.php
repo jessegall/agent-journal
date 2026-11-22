@@ -8,7 +8,7 @@ use App\Agents\Support\StartAdditions;
 use App\Contracts\Event;
 
 /**
- * A host takes a session's start grant and is about to spawn its program: listeners add the folders the start needs,
+ * A host takes a session's start grant and is about to spawn its driver: listeners add the folders the start needs,
  * or refuse it when what it needs is not ready.
  */
 final readonly class StartGrantRequested implements Event

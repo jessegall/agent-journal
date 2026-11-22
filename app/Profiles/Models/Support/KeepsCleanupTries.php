@@ -8,7 +8,7 @@ use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Values\CleanupProgress;
 
 /**
- * A row whose folder a host cleans in tries: it keeps the proof that the program's store is gone, counts the tries
+ * A row whose folder a host cleans in tries: it keeps the proof that the driver's store is gone, counts the tries
  * that left something behind with what was left, and waits for the owner's Retry once the tries run out. A folder a
  * running session still uses is no try: it is cleaned once the session is gone.
  */

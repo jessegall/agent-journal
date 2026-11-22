@@ -21,7 +21,7 @@ use App\Skills\Support\SkillTargets;
 use App\Skills\Support\StartDriver;
 
 /**
- * Admits a start's skills inside its transaction: a program the journal cannot hand skills to is refused, a required
+ * Admits a start's skills inside its transaction: a driver the journal cannot hand skills to is refused, a required
  * skill outside the selection refuses the start with its key, and the selected set is saved as a pending publication
  * that is written once the start committed. Before the first skill:refresh there is no generation to publish.
  */

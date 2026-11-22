@@ -15,7 +15,7 @@ use App\Files\Values\FilePath;
 use App\Hooks\Support\ProtectedAccounts;
 
 /**
- * What the relay of one start needs, given to the program's environment by the start: where the journal
+ * What the relay of one start needs, given to the driver's environment by the start: where the journal
  * answers, the start token, the sealed offline reply, the host's bypass file and the account folders it refuses on
  * its own while the journal is away.
  */
@@ -62,7 +62,7 @@ final readonly class RelaySettings
     }
 
     /**
-     * The value the host gave the program under the name; empty when it gave none, as for a start with no account.
+     * The value the host gave the driver under the name; empty when it gave none, as for a start with no account.
      */
     private static function valueOrEmpty(StartEnvironment $start, string $name): string
     {
@@ -70,7 +70,7 @@ final readonly class RelaySettings
     }
 
     /**
-     * The process generation the host gave this program, or 0 when the host gave none.
+     * The process generation the host gave this driver, or 0 when the host gave none.
      */
     private static function processGenerationOf(StartEnvironment $start): int
     {
@@ -82,7 +82,7 @@ final readonly class RelaySettings
     }
 
     /**
-     * The account folders the host gave this program, which the relay refuses on its own while the journal is away.
+     * The account folders the host gave this driver, which the relay refuses on its own while the journal is away.
      */
     private static function protectedAccountsOf(StartEnvironment $start): ProtectedAccounts
     {
@@ -120,7 +120,7 @@ final readonly class RelaySettings
     }
 
     /**
-     * The host file that says whether the program's current context generation is prepared, beside the bypass log.
+     * The host file that says whether the driver's current context generation is prepared, beside the bypass log.
      */
     public function preparationFile(): FilePath
     {
@@ -136,7 +136,7 @@ final readonly class RelaySettings
     }
 
     /**
-     * The hook path, with the process generation the host gave this program when it has one, so the server can refuse
+     * The hook path, with the process generation the host gave this driver when it has one, so the server can refuse
      * a call from an older process (doc 40, section 12).
      */
     public function hookPath(string $driver): string

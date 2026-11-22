@@ -14,7 +14,7 @@ use App\Hooks\Contracts\DriverCompatibilities;
 use App\Hooks\Enums\DriverEvidence;
 
 /**
- * The compatibility of each program's pinned build, as its account-free capture and native procedure recorded it.
+ * The compatibility of each driver's pinned build, as its account-free capture and native procedure recorded it.
  * Contained, its arrangement is shown only by a contained host's report that every item is enforced in the agent
  * image (doc 61, decision 7), for the launch profile a signed-in start of the driver uses (doc 78 revision 2).
  */

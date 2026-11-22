@@ -415,7 +415,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Whether the binding may start the program: one whose hooks run isolated per session, that its relay reported it
+     * Whether the binding may start the driver: one whose hooks run isolated per session, that its relay reported it
      * can run with isolated hooks, start grants and a lease.
      */
     public function eligibilityOf(HookDriver $driver): ProviderEligibility

@@ -6,7 +6,7 @@ namespace App\Text\Support;
 
 /**
  * The grammar of a stable key such as journal-reviewer: lowercase ASCII letters and digits in words joined by single
- * hyphens, 1 to 64 characters. Profile, skill, program and provider keys share it.
+ * hyphens, 1 to 64 characters. Profile, skill, driver and provider keys share it.
  */
 final class StableKey
 {

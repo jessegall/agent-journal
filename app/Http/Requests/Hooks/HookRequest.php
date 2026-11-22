@@ -9,7 +9,7 @@ use App\Hooks\Drivers\HookPayload;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * One hook call from an authenticated agent: the program in the address and the native payload in the body.
+ * One hook call from an authenticated agent: the driver in the address and the native payload in the body.
  */
 final class HookRequest extends FormRequest
 {
@@ -43,7 +43,7 @@ final class HookRequest extends FormRequest
     }
 
     /**
-     * The process generation the relay sent, or null for a program the host did not start.
+     * The process generation the relay sent, or null for a driver the host did not start.
      */
     public function processGeneration(): int|null
     {

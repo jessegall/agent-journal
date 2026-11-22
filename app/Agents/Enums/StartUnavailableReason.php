@@ -7,7 +7,7 @@ namespace App\Agents\Enums;
 use App\Agents\Support\StartRemedy;
 
 /**
- * Why no account could start a start of a program, safe to tell the agent that asked.
+ * Why no account could start a start of a driver, safe to tell the agent that asked.
  * It stays apart from AccountNoticeReason on purpose: an agent may learn only these, never a rejected sign-in
  * or a provider limit, which only the owner's account notices carry.
  */
@@ -36,7 +36,7 @@ enum StartUnavailableReason: string
     public function explanation(): string
     {
         return match ($this) {
-            self::NoAccount => 'No account is chosen for this program.',
+            self::NoAccount => 'No account is chosen for this driver.',
             self::NeedsSignIn => 'This account needs to sign in again.',
             self::Maintenance => 'This account is being signed in again or removed.',
             self::ChosenAccountMissing => 'The chosen account is unavailable.',

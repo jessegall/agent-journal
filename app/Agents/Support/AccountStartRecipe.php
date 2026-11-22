@@ -7,7 +7,7 @@ namespace App\Agents\Support;
 use App\Agents\Enums\TransportProfileType;
 
 /**
- * What the host does to run a claimed start on its account, as the program's adapter checked it for the pinned build:
+ * What the host does to run a claimed start on its account, as the driver's adapter checked it for the pinned build:
  * the environment it sets, the variables it points at a new empty folder, the variables it removes so no other
  * credential is used, the flags it passes, the entries it keeps in the account's own configuration, the build and
  * arrangement the recipe holds for, and the private protection settings the host writes for the start alone.
@@ -20,7 +20,7 @@ final readonly class AccountStartRecipe
      * @param  list<string>  $removedVariables
      * @param  list<string>  $startFlags
      * @param  list<StartSetting>  $accountSettings
-     * @param  list<string>  $readFiles  the files the host opens for the program, the first on descriptor 3
+     * @param  list<string>  $readFiles  the files the host opens for the driver, the first on descriptor 3
      */
     public function __construct(
         public array $environment,

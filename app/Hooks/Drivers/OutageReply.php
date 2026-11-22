@@ -9,7 +9,7 @@ use App\Hooks\Enums\DriverStopDecision;
 use App\Hooks\Enums\HookEvent;
 
 /**
- * The reply the host gives a program when a hook call to the journal fails. During an outage a start granted the
+ * The reply the host gives a driver when a hook call to the journal fails. During an outage a start granted the
  * neutral
  * reply goes on and the host logs the bypass; any other start is refused. Any other failure is refused for every
  * start.
@@ -22,7 +22,7 @@ final class OutageReply
     public const string PREPARATION_PENDING_REASON = 'preparation-pending: the journal has not prepared this '
         .'context yet, so tools wait until its context and state reach the driver.';
 
-    public const string PROTECTED_REASON = 'The journal is unreachable, so saved program accounts and saved outputs '
+    public const string PROTECTED_REASON = 'The journal is unreachable, so saved driver accounts and saved outputs '
         .'stay closed until it is back.';
 
     public static function for(CallFailure $failure, bool $passesOutages, string $nativeEvent): DriverReply
@@ -38,8 +38,8 @@ final class OutageReply
     }
 
     /**
-     * The refusal of a tool call while the program's current context generation is not prepared yet: for every
-     * start, also while the journal is away, so no tool runs before its context and state reached the program.
+     * The refusal of a tool call while the driver's current context generation is not prepared yet: for every
+     * start, also while the journal is away, so no tool runs before its context and state reached the driver.
      */
     public static function preparationPending(string $nativeEvent): DriverReply
     {

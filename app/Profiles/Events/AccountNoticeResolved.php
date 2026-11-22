@@ -7,7 +7,7 @@ namespace App\Profiles\Events;
 use App\Profiles\Contracts\ShownOnAccounts;
 
 /**
- * A notice on the program's accounts was resolved.
+ * A notice on the driver's accounts was resolved.
  */
 final readonly class AccountNoticeResolved implements ShownOnAccounts
 {

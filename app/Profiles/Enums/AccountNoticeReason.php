@@ -9,7 +9,7 @@ use App\Agents\Enums\StartUnavailableReason;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * Why the owner is told to look at a program's accounts: no account is chosen, the chosen one must sign in again, it
+ * Why the owner is told to look at a driver's accounts: no account is chosen, the chosen one must sign in again, it
  * is held while it changes, a request was rejected as signed out, or the provider limits the account.
  */
 #[TypeScript]
@@ -35,7 +35,7 @@ enum AccountNoticeReason: string
     }
 
     /**
-     * The notice a program failure leaves, or none for a failure the owner need not act on.
+     * The notice a driver failure leaves, or none for a failure the owner need not act on.
      */
     public static function forFailure(DriverFailure $failure): self|null
     {

@@ -10,7 +10,7 @@ use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 
 /**
- * Sets the hold under the program's selection lock and then the account's, the order every start takes.
+ * Sets the hold under the driver's selection lock and then the account's, the order every start takes.
  */
 final readonly class MaintainAccountHandler implements CommandHandler
 {

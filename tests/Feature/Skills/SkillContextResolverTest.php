@@ -27,7 +27,7 @@ use Tests\TestCase;
 
 /**
  * Skill conditions read one context per request: the agent's trusted role, the profile revision its session was
- * started with, and its program and provider; each request in a worker builds its own.
+ * started with, and its driver and provider; each request in a worker builds its own.
  */
 final class SkillContextResolverTest extends TestCase
 {

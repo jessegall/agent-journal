@@ -10,7 +10,7 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
 /**
- * The host reports that a claimed start's program failed, in the checked vocabulary, after it proved the process
+ * The host reports that a claimed start's driver failed, in the checked vocabulary, after it proved the process
  * gone: the start ends, and the safe failure is published once for recovery.
  * Run for an authenticated host by the journal itself (internal, not exported).
  *

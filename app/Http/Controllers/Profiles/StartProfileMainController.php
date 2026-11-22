@@ -13,7 +13,7 @@ use Inertia\ResponseFactory;
 
 /**
  * Starts a main agent from a profile that coordinates the journal's work. A page's form returns to that page with the
- * started session's id flashed, so the form waits for that session; a JSON caller reads the session, program and
+ * started session's id flashed, so the form waits for that session; a JSON caller reads the session, driver and
  * model.
  */
 final readonly class StartProfileMainController
@@ -40,7 +40,7 @@ final readonly class StartProfileMainController
         return new JsonResponse([
             'sessionId' => $receipt->sessionId,
             'newSession' => $receipt->newSession,
-            'programArguments' => $receipt->programArguments,
+            'driverArguments' => $receipt->driverArguments,
         ]);
     }
 }

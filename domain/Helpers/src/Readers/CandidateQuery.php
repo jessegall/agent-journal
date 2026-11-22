@@ -10,7 +10,7 @@ use Domain\Helpers\Models\HelperPurpose;
 
 /**
  * Which of the acting parent's helpers may take new work: the profile key and base the work needs, its purpose, the
- * chosen program and exact model, and whether the work must be independent of everything the helper saw before.
+ * chosen driver and exact model, and whether the work must be independent of everything the helper saw before.
  */
 final readonly class CandidateQuery
 {

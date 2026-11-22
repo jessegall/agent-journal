@@ -10,18 +10,18 @@ use App\Skills\Values\SkillDelivery;
 use App\Skills\Values\SkillKey;
 
 /**
- * How one program finds its skills: the layout of a published set, the folder the host writes it to and what the
+ * How one driver finds its skills: the layout of a published set, the folder the host writes it to and what the
  * start adds, how an agent is told to read a skill, and whether a running session sees a changed set.
  */
 interface DriverSkills
 {
     /**
-     * The path of a skill's SKILL.md inside the program's target folder.
+     * The path of a skill's SKILL.md inside the driver's target folder.
      */
     public function skillFile(SkillKey $key): string;
 
     /**
-     * Files the program needs beside the skills to discover them, bytes by path inside the target folder.
+     * Files the driver needs beside the skills to discover them, bytes by path inside the target folder.
      *
      * @return array<string, string>
      */

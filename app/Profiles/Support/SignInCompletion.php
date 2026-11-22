@@ -19,8 +19,8 @@ use App\Profiles\Values\SignInIdentity;
 use Carbon\CarbonImmutable;
 
 /**
- * Saves a verified sign-in once: under the program's selection lock, then the attempt's, it rechecks the attempt is
- * live, within its deadline and in the generation the host ran in, then makes or signs in the account. The program's
+ * Saves a verified sign-in once: under the driver's selection lock, then the attempt's, it rechecks the attempt is
+ * live, within its deadline and in the generation the host ran in, then makes or signs in the account. The driver's
  * first account becomes the one its starts use.
  */
 final readonly class SignInCompletion

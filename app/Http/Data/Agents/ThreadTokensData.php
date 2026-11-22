@@ -16,7 +16,7 @@ use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
- * A thread's token count a host observed: the thread's total so far, the parts of it the program named and the last
+ * A thread's token count a host observed: the thread's total so far, the parts of it the driver named and the last
  * turn's total, each part only when it was reported.
  */
 #[MapInputName(SnakeCaseMapper::class)]

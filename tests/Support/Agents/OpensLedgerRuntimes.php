@@ -33,7 +33,7 @@ trait OpensLedgerRuntimes
     private const string FOLDER = '/work/project';
 
     /**
-     * Every runtime starts through the real start path, which runs with the account chosen for its program.
+     * Every runtime starts through the real start path, which runs with the account chosen for its driver.
      */
     protected function setUpOpensLedgerRuntimes(): void
     {

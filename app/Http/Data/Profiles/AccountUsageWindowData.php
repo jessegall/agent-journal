@@ -10,7 +10,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One limit window of an account as its program last reported it: the limit, the window, its used percent, its length
+ * One limit window of an account as its driver last reported it: the limit, the window, its used percent, its length
  * in minutes and when it resets, each only when reported, and when it was observed.
  */
 #[TypeScript]

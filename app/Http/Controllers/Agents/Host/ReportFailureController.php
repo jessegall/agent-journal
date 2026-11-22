@@ -11,7 +11,7 @@ use App\Http\Requests\Agents\StartReportRequest;
 use Illuminate\Http\Response;
 
 /**
- * Takes the host's report that a claimed start's program failed, after it proved the process gone.
+ * Takes the host's report that a claimed start's driver failed, after it proved the process gone.
  * The host's calls run as the journal itself: a host is infrastructure, never an actor.
  */
 final readonly class ReportFailureController

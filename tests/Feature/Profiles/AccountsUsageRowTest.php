@@ -28,7 +28,7 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * Each row of the Accounts page carries the usage its account's programs reported, read for all rows in three
+ * Each row of the Accounts page carries the usage its account's drivers reported, read for all rows in three
  * grouped queries, and no usage at all for an account without a reading.
  */
 final class AccountsUsageRowTest extends TestCase

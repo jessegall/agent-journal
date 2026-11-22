@@ -12,7 +12,7 @@ use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 
 /**
- * A viewer opens a read-only view of an agent's live terminal: a lease, never a request to the program.
+ * A viewer opens a read-only view of an agent's live terminal: a lease, never a request to the driver.
  *
  * @extends Command<TerminalViewReceipt>
  */

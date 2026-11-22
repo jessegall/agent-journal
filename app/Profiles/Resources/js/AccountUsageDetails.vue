@@ -10,8 +10,8 @@ import {
 } from './accountUsage';
 
 /**
- * The usage an account's programs reported, in its settings: each window with its value, reset and observation, the
- * month's estimated dollars with what they cover, and the latest thread with the parts the program reported.
+ * The usage an account's drivers reported, in its settings: each window with its value, reset and observation, the
+ * month's estimated dollars with what they cover, and the latest thread with the parts the driver reported.
  */
 const props = defineProps<{
     usage: AccountUsageData;

@@ -24,7 +24,7 @@ use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
- * An agent's own session list says which program and model each session runs, how they were chosen, that the actual
+ * An agent's own session list says which driver and model each session runs, how they were chosen, that the actual
  * model is not reported, and which native conversation it is in with how many visits.
  */
 final class SessionSelectionReadTest extends TestCase

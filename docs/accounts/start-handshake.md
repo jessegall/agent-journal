@@ -16,7 +16,7 @@ Running the program on the host and only its tools in a container does not answe
 
 ## What was checked
 
-On 2026-11-18, on the development machine, with the pinned builds of `docs/hooks/program-capabilities.md`. Only the programs' own help was read: nothing signed in, nothing was started and no account folder was touched.
+On 2026-11-18, on the development machine, with the pinned builds of `docs/hooks/driver-capabilities.md`. Only the programs' own help was read: nothing signed in, nothing was started and no account folder was touched.
 
 ```text
 $ claude --version

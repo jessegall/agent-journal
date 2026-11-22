@@ -24,7 +24,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * Which saved account new starts of one program use: one row per program, made the first time it is needed, with a
+ * Which saved account new starts of one driver use: one row per driver, made the first time it is needed, with a
  * change number that only grows so a page can tell a newer choice from an older one.
  *
  * @property string $id
@@ -61,7 +61,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * The program's selection row, made when it is first needed and locked for the rest of the transaction; two
+     * The driver's selection row, made when it is first needed and locked for the rest of the transaction; two
      * requests that make it at once end with the same one row.
      */
     public static function lockedFor(HookDriver $driver): self
@@ -72,7 +72,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The account the program's starts use, with the selection and then the account locked for the start's
+     * The account the driver's starts use, with the selection and then the account locked for the start's
      * transaction; the start path's own read, which no request's actor limits.
      *
      * @throws AccountUnavailable
@@ -93,7 +93,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The program's selection row for the journal's own maintenance or the host, made when first needed and locked;
+     * The driver's selection row for the journal's own maintenance or the host, made when first needed and locked;
      * whoever acts.
      */
     public static function lockedForJournal(HookDriver $driver): self
@@ -116,13 +116,13 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Each program's current choice, one row per program made so far.
+     * Each driver's current choice, one row per driver made so far.
      *
      * @return list<self>
      */
     public static function listed(): array
     {
-        return array_values(self::query()->orderBy('driver')->readAll('one row per program')->get()->all());
+        return array_values(self::query()->orderBy('driver')->readAll('one row per driver')->get()->all());
     }
 
     // ----------[ Mutations ]----------
@@ -166,7 +166,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Leaves the program with no chosen account, as when the chosen one must sign in again or is removed.
+     * Leaves the driver with no chosen account, as when the chosen one must sign in again or is removed.
      */
     public function clear(): void
     {
@@ -192,7 +192,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Chooses the account when the program never had one chosen, as for its first signed-in account.
+     * Chooses the account when the driver never had one chosen, as for its first signed-in account.
      */
     public function chooseFirst(Account $account): void
     {
@@ -204,7 +204,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Leaves the program with no chosen account when the given one was chosen, as when it must sign in again.
+     * Leaves the driver with no chosen account when the given one was chosen, as when it must sign in again.
      */
     public function clearIfChosen(Account $account): void
     {
@@ -225,7 +225,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Makes the program's selection row when none exists yet; two requests that make it at once leave one row.
+     * Makes the driver's selection row when none exists yet; two requests that make it at once leave one row.
      */
     private static function makeIfAbsent(HookDriver $driver): void
     {

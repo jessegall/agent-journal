@@ -53,7 +53,7 @@ final readonly class ContainerManifest
 
     /**
      * The manifest of one session's start: its workspace mounted at /workspace as its arrangement places it and as the
-     * session uses it, read-only, shared or its own clone; its program its own terminal process when the execution
+     * session uses it, read-only, shared or its own clone; its driver its own terminal process when the execution
      * policy makes it attachable.
      *
      * @throws ManifestRefused

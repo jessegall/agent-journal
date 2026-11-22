@@ -137,7 +137,7 @@ final class HookTransactionTest extends TestCase
     public function test_a_replayed_session_start_with_a_changed_program_session_id_keeps_the_first_mapping(): void
     {
         $capabilities = new DriverCapabilities(
-            'Test program',
+            'Test driver',
             'session starts',
             ['onSessionStart'],
             RewriteSupport::WithoutApproval,

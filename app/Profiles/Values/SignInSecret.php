@@ -26,7 +26,7 @@ final readonly class SignInSecret
     }
 
     /**
-     * A keyed fingerprint of the secret for its program and method, so the same key is known again without keeping it.
+     * A keyed fingerprint of the secret for its driver and method, so the same key is known again without keeping it.
      */
     public function fingerprintFor(string $driver, SignInMethod $method, string $key): string
     {

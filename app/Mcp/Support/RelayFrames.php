@@ -21,7 +21,7 @@ use Throwable;
 use TypeError;
 
 /**
- * The relay's side of a started program's stdio: newline-delimited UTF-8 frames read without buffering past what
+ * The relay's side of a started driver's stdio: newline-delimited UTF-8 frames read without buffering past what
  * arrived, admitted with their arrival time into a queue of at most eight, and the journal's answers written back
  * one line each. A frame refused here never reaches the journal; diagnostics go to stderr, never stdout.
  */
@@ -363,7 +363,7 @@ final class RelayFrames
     }
 
     /**
-     * The seconds a busy refusal asks the program to wait, when its body says.
+     * The seconds a busy refusal asks the driver to wait, when its body says.
      */
     private static function retryAfterIn(string $body): int|null
     {

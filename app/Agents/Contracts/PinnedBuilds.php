@@ -7,7 +7,7 @@ namespace App\Agents\Contracts;
 use App\Drivers\Enums\HookDriver;
 
 /**
- * Names the build of each program the journal is pinned to, which a host must run for a start to go there.
+ * Names the build of each driver the journal is pinned to, which a host must run for a start to go there.
  */
 interface PinnedBuilds
 {

@@ -26,7 +26,7 @@ use Carbon\CarbonImmutable;
 
 /**
  * The Accounts page: every saved account that is not removed, with whether new starts use it, how many starts run on
- * it as Core counts them and the usage its programs reported, read for all rows at once, and each program's choice.
+ * it as Core counts them and the usage its drivers reported, read for all rows at once, and each driver's choice.
  */
 final readonly class AccountsWindowResolver implements PageResolver
 {

@@ -9,7 +9,7 @@ use App\Profiles\Exceptions\SignInProtocolMissing;
 use Closure;
 
 /**
- * A program's sign-in process on the host: started with exactly the arguments and environment given, its standard
+ * A driver's sign-in process on the host: started with exactly the arguments and environment given, its standard
  * input kept for the user's code, its output read into a small private buffer that is never logged or recorded,
  * and stopped when its attempt ends.
  */
@@ -35,8 +35,8 @@ final class PrivateAccountProcess
     private function __construct(private $process, private array $pipes, private string $workingDirectory) {}
 
     /**
-     * Starts the program; each read file is opened for it on its own descriptor, so a secret in a file reaches the
-     * program without its arguments or environment.
+     * Starts the driver; each read file is opened for it on its own descriptor, so a secret in a file reaches the
+     * driver without its arguments or environment.
      *
      * @param  list<string>  $arguments
      * @param  array<string, string>  $environment
@@ -63,7 +63,7 @@ final class PrivateAccountProcess
     }
 
     /**
-     * A process that runs no program of its own and only holds a sign-in open until the owner's key or token
+     * A process that runs no driver of its own and only holds a sign-in open until the owner's key or token
      * arrives; released, it ends with exit code 0.
      */
     public static function holding(string $workingDirectory): self
@@ -72,7 +72,7 @@ final class PrivateAccountProcess
     }
 
     /**
-     * Closes the program's standard input, for a program that reads it to its end.
+     * Closes the driver's standard input, for a driver that reads it to its end.
      */
     public function closeInput(): void
     {
@@ -97,7 +97,7 @@ final class PrivateAccountProcess
     }
 
     /**
-     * Gives the program a line on its standard input, such as the code the user typed, whole.
+     * Gives the driver a line on its standard input, such as the code the user typed, whole.
      *
      * @throws SignInAnswerUndelivered
      */
@@ -107,12 +107,12 @@ final class PrivateAccountProcess
         $written = @fwrite($this->pipes[0], $text);
 
         if ($written !== strlen($text) || ! fflush($this->pipes[0])) {
-            throw SignInAnswerUndelivered::toProgram();
+            throw SignInAnswerUndelivered::toDriver();
         }
     }
 
     /**
-     * What the program printed so far, at most the buffer's size; its adapter reads challenges from it.
+     * What the driver printed so far, at most the buffer's size; its adapter reads challenges from it.
      */
     public function output(): string
     {
@@ -139,7 +139,7 @@ final class PrivateAccountProcess
     }
 
     /**
-     * Waits, draining the output, until what the program printed satisfies the test, the program ends or the time
+     * Waits, draining the output, until what the driver printed satisfies the test, the driver ends or the time
      * limit passes, and answers whether the output satisfied it.
      *
      * @param  Closure(string): bool  $isSatisfied

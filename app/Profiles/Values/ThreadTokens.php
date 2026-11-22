@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Values;
 
 /**
- * The latest token count a program reported for one of its threads: the thread's total so far, the parts of it the
- * program named, and the last turn's total, each part only when it was reported.
+ * The latest token count a driver reported for one of its threads: the thread's total so far, the parts of it the
+ * driver named, and the last turn's total, each part only when it was reported.
  */
 final readonly class ThreadTokens
 {

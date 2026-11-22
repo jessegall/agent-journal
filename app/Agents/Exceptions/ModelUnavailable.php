@@ -9,7 +9,7 @@ use App\Agents\Enums\StartRefusalType;
 use InvalidArgumentException;
 
 /**
- * A named model the profile does not allow for the program.
+ * A named model the profile does not allow for the driver.
  */
 final class ModelUnavailable extends InvalidArgumentException implements StartRefusal
 {

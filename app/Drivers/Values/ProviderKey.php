@@ -8,7 +8,7 @@ use App\Drivers\Exceptions\ProviderKeyInvalid;
 use App\Text\Support\StableKey;
 
 /**
- * The stable name of the provider family a program runs on, such as anthropic or openai; never an account.
+ * The stable name of the provider family a driver runs on, such as anthropic or openai; never an account.
  */
 final readonly class ProviderKey
 {

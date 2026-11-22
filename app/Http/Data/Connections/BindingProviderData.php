@@ -8,7 +8,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One program a connected folder could start, as the owner sees it: its name, whether Start is offered for it, the
+ * One driver a connected folder could start, as the owner sees it: its name, whether Start is offered for it, the
  * command that starts it in the folder, and the reason it is not offered.
  */
 #[TypeScript]

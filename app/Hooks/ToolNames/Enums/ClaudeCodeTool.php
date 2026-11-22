@@ -54,7 +54,7 @@ enum ClaudeCodeTool: string
     }
 
     /**
-     * Whether the tool only keeps the program's own task list, which reaches no file, network or journal resource.
+     * Whether the tool only keeps the driver's own task list, which reaches no file, network or journal resource.
      */
     public function keepsOwnTaskList(): bool
     {
@@ -109,7 +109,7 @@ enum ClaudeCodeTool: string
 
     /**
      * The operation a read, search or web call declares: what it needs where. A shell command and a file edit are
-     * judged by their own inputs; the journal's discovery tools and the program's own task list reach no resource.
+     * judged by their own inputs; the journal's discovery tools and the driver's own task list reach no resource.
      */
     public function operation(DriverToolInput $input): Operation
     {

@@ -12,7 +12,7 @@ use App\Profiles\Support\AccountNotices;
 use Carbon\CarbonImmutable;
 
 /**
- * Chooses the account under the program's selection lock and then the account's, the order every start takes, and
+ * Chooses the account under the driver's selection lock and then the account's, the order every start takes, and
  * tells the owner's pages once that has committed. Choosing the chosen account again changes nothing.
  */
 final readonly class SwitchAccountHandler implements CommandHandler

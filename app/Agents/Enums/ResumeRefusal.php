@@ -33,7 +33,7 @@ enum ResumeRefusal: string
     {
         return match ($this) {
             self::ConversationMissing, self::OtherAgent => 'This conversation is unavailable to resume.',
-            self::OtherDriver => 'This conversation uses a different program.',
+            self::OtherDriver => 'This conversation uses a different driver.',
             self::OtherContext => 'This conversation cannot continue in this work.',
         };
     }

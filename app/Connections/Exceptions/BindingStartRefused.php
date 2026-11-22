@@ -11,7 +11,7 @@ use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
- * A binding's start refused before any grant: another host, another root or folder, another agent, or a program
+ * A binding's start refused before any grant: another host, another root or folder, another agent, or a driver
  * the binding may not start.
  */
 final class BindingStartRefused extends RuntimeException implements CodedRefusal, CommandRefusal
@@ -57,7 +57,7 @@ final class BindingStartRefused extends RuntimeException implements CodedRefusal
 
     public static function providerUnavailable(string $bindingId, string $reason): self
     {
-        return new self("Binding {$bindingId} cannot start this program: {$reason}");
+        return new self("Binding {$bindingId} cannot start this driver: {$reason}");
     }
 
     public static function otherProjectsEnvironment(string $bindingId): self

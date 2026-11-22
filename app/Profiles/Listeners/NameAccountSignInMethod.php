@@ -10,7 +10,7 @@ use App\Profiles\Models\Account;
 
 /**
  * A start on a saved account names the method that account signed in by, as it is saved, so the host knows which
- * usage its program reports. An account that is gone names none, and its start is not claimed.
+ * usage its driver reports. An account that is gone names none, and its start is not claimed.
  */
 final readonly class NameAccountSignInMethod implements Listener
 {

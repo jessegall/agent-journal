@@ -11,7 +11,7 @@ use Illuminate\Routing\Redirector;
 
 /**
  * Interrupts the agent's current turn from Home: the session stays, and the bar shows Interrupting and then what the
- * program does.
+ * driver does.
  */
 final readonly class InterruptAgentController
 {

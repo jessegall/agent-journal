@@ -133,7 +133,7 @@ final readonly class HelperCandidates
     }
 
     /**
-     * Only ordinary work on the same purpose with a conversation on the chosen program and model resumes it.
+     * Only ordinary work on the same purpose with a conversation on the chosen driver and model resumes it.
      */
     private function resumes(CandidateQuery $query, RankedLaunchCandidate $candidate): bool
     {

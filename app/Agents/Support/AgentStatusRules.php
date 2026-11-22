@@ -157,7 +157,7 @@ final class AgentStatusRules
     }
 
     // A fresh hold of the current process that waits for someone takes over the display, with its own words and the
-    // place it is answered; a login or a secret is answered in the program or on the host, never in chat.
+    // place it is answered; a login or a secret is answered in the driver or on the host, never in chat.
     private static function held(AgentEvidence $evidence): AgentStatus|null
     {
         $runtime = $evidence->runtime;

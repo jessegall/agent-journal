@@ -18,7 +18,7 @@ use App\Contracts\CommandHandler;
 use Symfony\Component\Uid\Ulid;
 
 /**
- * Builds the successor's start from the session it continues: the same agent, program, model and parent, the policy
+ * Builds the successor's start from the session it continues: the same agent, driver, model and parent, the policy
  * frozen with the old session, and a request id made from the old session's id, so a repeated or concurrent Continue
  * finds the start already made. The start itself picks the account chosen now.
  */

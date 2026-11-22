@@ -21,7 +21,7 @@ const selected = computed(() => props.data.agents.find((agent) => agent.id === p
 const status = computed(() => selected.value?.status);
 const announcement = useStatusAnnouncement(() => status.value, () => isDialogOpen.value);
 
-// Each state's mark: a filled dot for a running program, a ring while it moves, a danger dot for a refusal.
+// Each state's mark: a filled dot for a running driver, a ring while it moves, a danger dot for a refusal.
 const marks: Record<string, string> = {
     working: 'bg-brand',
     idle: 'bg-text-3',

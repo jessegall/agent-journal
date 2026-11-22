@@ -7,14 +7,14 @@ namespace Tests\Support;
 use App\Hooks\Drivers\Contracts\DriverAdapter;
 
 /**
- * What the test of one program's adapter checks beside its fixtures: the model arguments the host starts it with.
+ * What the test of one driver's adapter checks beside its fixtures: the model arguments the host starts it with.
  */
 trait ChecksProgramAdapter
 {
     use ChecksProgramFixtures;
 
     /**
-     * A model the program is started on.
+     * A model the driver is started on.
      */
     abstract protected static function selectedModel(): string;
 

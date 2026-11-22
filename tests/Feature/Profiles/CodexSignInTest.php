@@ -12,8 +12,8 @@ use Tests\TestCase;
 
 /**
  * Codex's own device-code sign-in run against a stand-in app-server: the account folder keeps its sign-in in its own
- * file before the sign-in starts, the address and code come from the program's answer, the sign-in is over when the
- * program announces it, and its own status check signs the folder in.
+ * file before the sign-in starts, the address and code come from the driver's answer, the sign-in is over when the
+ * driver announces it, and its own status check signs the folder in.
  */
 #[TimeLimit(seconds: 8, reason: 'It runs a stand-in program as a host process several times.')]
 final class CodexSignInTest extends TestCase

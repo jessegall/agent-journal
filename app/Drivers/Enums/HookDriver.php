@@ -8,7 +8,7 @@ use App\Drivers\Values\DriverKey;
 use App\Drivers\Values\ProviderKey;
 
 /**
- * The agent programs whose hooks the journal answers, as they appear in the hook endpoint's address.
+ * The agent drivers whose hooks the journal answers, as they appear in the hook endpoint's address.
  */
 enum HookDriver: string
 {
@@ -16,7 +16,7 @@ enum HookDriver: string
     case Codex = 'codex';
 
     /**
-     * The native hook events this program's adapter maps, which its isolated settings register.
+     * The native hook events this driver's adapter maps, which its isolated settings register.
      *
      * @return list<string>
      */
@@ -37,7 +37,7 @@ enum HookDriver: string
     }
 
     /**
-     * The program's own tools that start or reach another agent; they are always denied, since only the journal's
+     * The driver's own tools that start or reach another agent; they are always denied, since only the journal's
      * helpers and workers are ever started (rule 36). The names are those plan 26's start evidence found per build.
      *
      * @return list<string>
@@ -58,7 +58,7 @@ enum HookDriver: string
     }
 
     /**
-     * The allow rules that let the program call the journal's own MCP tools without a native prompt: the literal
+     * The allow rules that let the driver call the journal's own MCP tools without a native prompt: the literal
      * journal server prefix and never a wildcard for another server. Codex approves its journal entry in its account
      * configuration instead.
      *
@@ -78,7 +78,7 @@ enum HookDriver: string
     }
 
     /**
-     * The provider family the program runs on, as its registration gives it; never read from a model name.
+     * The provider family the driver runs on, as its registration gives it; never read from a model name.
      */
     public function provider(): ProviderKey
     {
@@ -89,10 +89,10 @@ enum HookDriver: string
     }
 
     /**
-     * The program's name as people read it, such as on an account named after it.
+     * The driver's name as people read it, such as on an account named after it.
      */
     /**
-     * Whether an address is one of the program's own sign-in pages: HTTPS, on the provider's sign-in hosts or below
+     * Whether an address is one of the driver's own sign-in pages: HTTPS, on the provider's sign-in hosts or below
      * them. A sign-in shows the user no other link.
      */
     public function isSignInAddress(string $address): bool
@@ -127,7 +127,7 @@ enum HookDriver: string
     }
 
     /**
-     * The name the protected host knows the program by, as its profiles and its start protocol write it.
+     * The name the protected host knows the driver by, as its profiles and its start protocol write it.
      */
     public function hostName(): string
     {
@@ -138,7 +138,7 @@ enum HookDriver: string
     }
 
     /**
-     * Whether the program scopes its hooks to one session, as a connected project folder needs to run it isolated;
+     * Whether the driver scopes its hooks to one session, as a connected project folder needs to run it isolated;
      * Codex scopes them per installation, not per thread, so it does not yet.
      */
     public function isolatesHooksPerSession(): bool
@@ -152,8 +152,8 @@ enum HookDriver: string
     }
 
     /**
-     * The arguments that start this program on the selected model: Claude Code 2.1.323 and codex-cli 0.165.0 both take
-     * --model (docs/hooks/program-capabilities.md).
+     * The arguments that start this driver on the selected model: Claude Code 2.1.323 and codex-cli 0.165.0 both take
+     * --model (docs/hooks/driver-capabilities.md).
      *
      * @return list<string>
      */
@@ -175,7 +175,7 @@ enum HookDriver: string
     }
 
     /**
-     * Whether the program saves a conversation's large tool outputs in a folder named for it beside its transcript;
+     * Whether the driver saves a conversation's large tool outputs in a folder named for it beside its transcript;
      * Claude Code does, Codex keeps them in the transcript.
      */
     public function keepsOutputsBesideTranscript(): bool

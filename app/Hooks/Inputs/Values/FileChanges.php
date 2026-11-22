@@ -7,7 +7,7 @@ namespace App\Hooks\Inputs\Values;
 use App\Agents\Values\Operation;
 
 /**
- * The files one edit changes, in the order the program changes them.
+ * The files one edit changes, in the order the driver changes them.
  */
 final readonly class FileChanges
 {

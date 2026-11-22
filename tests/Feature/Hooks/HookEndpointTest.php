@@ -193,20 +193,20 @@ final class HookEndpointTest extends TestCase
 
     public function test_a_clear_keeps_the_journal_session_and_records_the_new_program_session(): void
     {
-        $startup = '{"session_id":"program-session-1","hook_event_name":"SessionStart","source":"startup"}';
-        $clear = '{"session_id":"program-session-2","hook_event_name":"SessionStart","source":"clear"}';
+        $startup = '{"session_id":"driver-session-1","hook_event_name":"SessionStart","source":"startup"}';
+        $clear = '{"session_id":"driver-session-2","hook_event_name":"SessionStart","source":"clear"}';
         $this->hook('claude-code', $startup, 'call-1')->assertOk();
         $this->hook('claude-code', $clear, 'call-2')->assertOk();
 
         $this->assertSame(1, AgentSession::query()->count());
         $conversation = $this->start->session->fresh(['currentConversation'])?->currentConversation;
-        $this->assertSame('program-session-2', $conversation?->native_id);
+        $this->assertSame('driver-session-2', $conversation?->native_id);
         $this->assertSame(2, HookCall::query()->authorizedFor($this->target())->count());
     }
 
     public function test_an_unknown_program_has_no_endpoint(): void
     {
-        $this->hook('another-program', $this->stopBody())->assertNotFound();
+        $this->hook('another-driver', $this->stopBody())->assertNotFound();
     }
 
     /**
@@ -222,7 +222,7 @@ final class HookEndpointTest extends TestCase
     }
 
     /**
-     * The hook's answer to the program, decoded from the stdout it returned.
+     * The hook's answer to the driver, decoded from the stdout it returned.
      *
      * @return array<string, mixed>
      */

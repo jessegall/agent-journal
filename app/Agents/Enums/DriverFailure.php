@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Enums;
 
 /**
- * Why a program said a start's request failed, in the checked vocabulary of its failure signal; anything unchecked
+ * Why a driver said a start's request failed, in the checked vocabulary of its failure signal; anything unchecked
  * is Unknown, never proof that the account signed out.
  */
 enum DriverFailure: string
@@ -19,7 +19,7 @@ enum DriverFailure: string
     case Unknown = 'unknown';
 
     /**
-     * The failure a program's checked error code names; a code outside the checked vocabulary is Unknown.
+     * The failure a driver's checked error code names; a code outside the checked vocabulary is Unknown.
      */
     public static function fromCheckedCode(string $code): self
     {

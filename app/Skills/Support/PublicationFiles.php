@@ -11,8 +11,8 @@ use App\Skills\Values\PublicationManifest;
 use App\Skills\Values\SkillKey;
 
 /**
- * The files one publication delivers, in its program's layout and a fixed order: a SKILL.md per selected skill from
- * its immutable generation, the files the program needs to discover them, then manifest.json with only safe identities
+ * The files one publication delivers, in its driver's layout and a fixed order: a SKILL.md per selected skill from
+ * its immutable generation, the files the driver needs to discover them, then manifest.json with only safe identities
  * and hashes. Each publication stages in a folder of its own under its
  * generation, so two selections for one target never mix.
  */

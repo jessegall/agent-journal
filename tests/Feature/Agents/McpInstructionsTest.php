@@ -89,7 +89,7 @@ final class McpInstructionsTest extends TestCase
             new SessionStartDetails('native-1', ContextStartType::Start, null),
         );
         $capabilities = new DriverCapabilities(
-            'Test program',
+            'Test driver',
             'session starts',
             ['onSessionStart'],
             RewriteSupport::WithoutApproval,

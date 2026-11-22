@@ -26,8 +26,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 #[Name('menu_list')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description(
-    'The menu library: each entry\'s program, goal, builds proven on with a stale mark each, uses, last use and '
-    .'state, newest first. Filter by program and state.',
+    'The menu library: each entry\'s driver, goal, builds proven on with a stale mark each, uses, last use and '
+    .'state, newest first. Filter by driver and state.',
 )]
 final class MenuListTool extends JournalReadTool
 {

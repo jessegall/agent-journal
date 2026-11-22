@@ -9,7 +9,7 @@ use App\Hooks\Exceptions\StoredValueInvalid;
 use Spatie\LaravelData\Data;
 
 /**
- * The final answer of one hook call as it is kept for a retry: its type and the exact reply the program received.
+ * The final answer of one hook call as it is kept for a retry: its type and the exact reply the driver received.
  */
 final class RecordedAnswer extends Data
 {

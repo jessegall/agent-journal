@@ -117,7 +117,7 @@ final class HookStartTest extends TestCase
     {
         $this->expectException(DriverUnsupported::class);
 
-        $this->start('main-agent', 'some-other-program');
+        $this->start('main-agent', 'some-other-driver');
     }
 
     public function test_a_clear_or_resume_keeps_the_journal_session_and_its_stack(): void
@@ -125,13 +125,13 @@ final class HookStartTest extends TestCase
         $started = $this->start('main-agent');
         $visits = $this->app->make(RecordConversationVisit::class);
 
-        $visits->entered($started->session->id, 'program-session-1', null, 'call-1', CarbonImmutable::now());
+        $visits->entered($started->session->id, 'driver-session-1', null, 'call-1', CarbonImmutable::now());
         $framesBefore = $this->bottomOf($started);
-        $visits->entered($started->session->id, 'program-session-2', null, 'call-2', CarbonImmutable::now());
+        $visits->entered($started->session->id, 'driver-session-2', null, 'call-2', CarbonImmutable::now());
 
         $this->assertSame(1, AgentSession::query()->count());
         $this->assertSame(
-            'program-session-2',
+            'driver-session-2',
             $started->session->fresh(['currentConversation'])?->currentConversation?->native_id,
         );
         $this->assertSame($framesBefore, $this->bottomOf($started));
@@ -209,7 +209,7 @@ final class HookStartTest extends TestCase
                 new StopDetails('turn-1', false),
             );
             $capabilities = new DriverCapabilities(
-                'Test program',
+                'Test driver',
                 'stop replies',
                 ['onStop'],
                 RewriteSupport::WithoutApproval,

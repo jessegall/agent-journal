@@ -10,13 +10,13 @@ use App\Drivers\Values\DriverKey;
 use RuntimeException;
 
 /**
- * A program the journal has no proven way to hand skills to.
+ * A driver the journal has no proven way to hand skills to.
  */
 final class DriverSkillsUnsupported extends RuntimeException implements CodedRefusal
 {
     public static function for(DriverKey $driver): self
     {
-        return new self("The journal cannot deliver skills to the program {$driver->key}.");
+        return new self("The journal cannot deliver skills to the driver {$driver->key}.");
     }
 
     public function refusalCode(): RefusalCode

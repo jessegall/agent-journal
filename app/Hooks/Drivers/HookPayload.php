@@ -49,8 +49,8 @@ final class HookPayload extends Data
     ) {}
 
     /**
-     * The program's own id of the prompt this call belongs to: Claude Code's prompt_id, Codex's turn_id (plan 26
-     * task 883). Null when the program sent none; the journal never invents one.
+     * The driver's own id of the prompt this call belongs to: Claude Code's prompt_id, Codex's turn_id (plan 26
+     * task 883). Null when the driver sent none; the journal never invents one.
      */
     public function nativePromptId(): string|null
     {
@@ -62,7 +62,7 @@ final class HookPayload extends Data
     }
 
     /**
-     * Whether the call comes from inside a program's own native child, which carries the child's agent id.
+     * Whether the call comes from inside a driver's own native child, which carries the child's agent id.
      */
     public function isFromNativeChild(): bool
     {
@@ -82,7 +82,7 @@ final class HookPayload extends Data
     }
 
     /**
-     * The conversation a session start entered: its id, why it started and the transcript file the program named for
+     * The conversation a session start entered: its id, why it started and the transcript file the driver named for
      * it, when it named one.
      */
     public function startDetails(): SessionStartDetails
@@ -93,8 +93,8 @@ final class HookPayload extends Data
     }
 
     /**
-     * The folder the program works in, against which a tool's relative paths are read; the file system root when the
-     * program named none, so nothing relative is read as safe.
+     * The folder the driver works in, against which a tool's relative paths are read; the file system root when the
+     * driver named none, so nothing relative is read as safe.
      */
     public function workFolder(): string
     {
@@ -126,7 +126,7 @@ final class HookPayload extends Data
     }
 
     /**
-     * The native event the call was sent for; none for an event the journal maps for no program.
+     * The native event the call was sent for; none for an event the journal maps for no driver.
      *
      * @return Option<HookEvent>
      */
@@ -159,7 +159,7 @@ final class HookPayload extends Data
     }
 
     /**
-     * Why the session ended, read from the reason both programs send on SessionEnd.
+     * Why the session ended, read from the reason both drivers send on SessionEnd.
      */
     public function endReason(): SessionEndReason
     {
@@ -173,7 +173,7 @@ final class HookPayload extends Data
     }
 
     /**
-     * Why the context starts, read from the source both programs send on SessionStart; they call a start startup.
+     * Why the context starts, read from the source both drivers send on SessionStart; they call a start startup.
      */
     public function startSource(): ContextStartType
     {

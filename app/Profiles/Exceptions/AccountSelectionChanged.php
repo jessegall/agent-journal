@@ -8,7 +8,7 @@ use App\Contracts\StaleRefusal;
 use RuntimeException;
 
 /**
- * The program's default account changed since the page showed it, so a choice made against the older one is refused;
+ * The driver's default account changed since the page showed it, so a choice made against the older one is refused;
  * the page reads the current default again.
  */
 final class AccountSelectionChanged extends RuntimeException implements StaleRefusal

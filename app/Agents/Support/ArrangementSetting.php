@@ -96,7 +96,7 @@ final readonly class ArrangementSetting
     }
 
     /**
-     * Refuses, contained, a program whose sandbox does not keep its tools from its sign-in, whatever the account's
+     * Refuses, contained, a driver whose sandbox does not keep its tools from its sign-in, whatever the account's
      * sign-in method: Codex limits writes only (doc 61, decision 8).
      *
      * @throws DriverNotContainable

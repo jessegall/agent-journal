@@ -7,7 +7,7 @@ namespace App\Profiles\Events;
 use App\Profiles\Contracts\ShownOnAccounts;
 
 /**
- * The owner chose another saved account as the program's active one.
+ * The owner chose another saved account as the driver's active one.
  */
 final readonly class AccountSwitched implements ShownOnAccounts
 {

@@ -8,7 +8,7 @@ use App\Drivers\Exceptions\DriverKeyInvalid;
 use App\Text\Support\StableKey;
 
 /**
- * The stable name of an agent program, such as claude-code or codex, as its registration gives it.
+ * The stable name of an agent driver, such as claude-code or codex, as its registration gives it.
  */
 final readonly class DriverKey
 {

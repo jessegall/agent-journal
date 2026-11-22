@@ -9,7 +9,7 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
 /**
- * Ends a runtime's session on the host's verified report that its program exited. Run for an authenticated host by the
+ * Ends a runtime's session on the host's verified report that its driver exited. Run for an authenticated host by the
  * journal itself (internal, not exported).
  *
  * @extends Command<void>

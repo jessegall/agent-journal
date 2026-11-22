@@ -93,7 +93,7 @@ final class SessionContextTest extends TestCase
             new SessionStartDetails("native-{$callId}", $source, null),
         );
         $capabilities = new DriverCapabilities(
-            'Test program',
+            'Test driver',
             'session starts',
             ['onSessionStart'],
             RewriteSupport::WithoutApproval,

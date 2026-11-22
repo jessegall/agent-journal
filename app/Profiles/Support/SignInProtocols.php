@@ -11,7 +11,7 @@ use App\Registries\Support\Registry;
 use Illuminate\Contracts\Container\Container;
 
 /**
- * The sign-in protocol of each method each program declares, registered by its adapter.
+ * The sign-in protocol of each method each driver declares, registered by its adapter.
  */
 final class SignInProtocols
 {
@@ -34,7 +34,7 @@ final class SignInProtocols
     }
 
     /**
-     * The methods the program declares, in the order the sign-in form lists them, OAuth first.
+     * The methods the driver declares, in the order the sign-in form lists them, OAuth first.
      *
      * @return list<SignInMethod>
      */
@@ -47,7 +47,7 @@ final class SignInProtocols
     }
 
     /**
-     * Whether the host has a protocol for the program's method, OAuth when no method is named.
+     * Whether the host has a protocol for the driver's method, OAuth when no method is named.
      */
     public function supports(string $driver, SignInMethod $method = SignInMethod::OAuth): bool
     {
@@ -55,7 +55,7 @@ final class SignInProtocols
     }
 
     /**
-     * The protocol of the program's method, OAuth when no method is named.
+     * The protocol of the driver's method, OAuth when no method is named.
      *
      * @throws SignInMethodMissing
      */

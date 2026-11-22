@@ -13,7 +13,7 @@ use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;
 
 /**
- * What the journal hands back to a program's hook: its standard output, standard error and exit code.
+ * What the journal hands back to a driver's hook: its standard output, standard error and exit code.
  */
 final readonly class DriverReply
 {

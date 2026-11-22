@@ -12,7 +12,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One sign-in as its owner sees it: its program, the name a new account gets or the account it signs in again, its
+ * One sign-in as its owner sees it: its driver, the name a new account gets or the account it signs in again, its
  * state and deadline, the account it made, renewed or matched when the reader may read it, whether that account
  * lacks the provider's own identity so a later sign-in to it cannot be recognised, whether a renewal still waits for
  * the agents running on the account to finish, and the provider's reason

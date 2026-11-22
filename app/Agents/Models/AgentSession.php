@@ -34,7 +34,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
- * One start of an agent: one journal session, its parent session for a child, and the program's own session once
+ * One start of an agent: one journal session, its parent session for a child, and the driver's own session once
  * verified.
  *
  * @property string $id
@@ -245,7 +245,7 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
-     * Whether the session's program discovered its tools after the moment given.
+     * Whether the session's driver discovered its tools after the moment given.
      */
     public static function discoveredAfter(string $sessionId, CarbonImmutable $moment): bool
     {
@@ -270,7 +270,7 @@ final class AgentSession extends Model implements ReadableModel
     // ----------[ Mutations ]----------
 
     /**
-     * Records the selection and the start request once; a session never changes the program or model it ran.
+     * Records the selection and the start request once; a session never changes the driver or model it ran.
      *
      * @throws SessionSelectionFixed
      */
@@ -292,7 +292,7 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
-     * Records the skill generation the session's program was spawned with.
+     * Records the skill generation the session's driver was spawned with.
      */
     public function recordSkillGeneration(string $generationId): void
     {
@@ -327,7 +327,7 @@ final class AgentSession extends Model implements ReadableModel
     // ----------[ Answers ]----------
 
     /**
-     * Starts the session of one start with the program and model it runs and the request that started it.
+     * Starts the session of one start with the driver and model it runs and the request that started it.
      *
      * @throws SessionSelectionFixed
      */
@@ -378,7 +378,7 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
-     * The program ended without an end hook, and the evidence says how the journal knows.
+     * The driver ended without an end hook, and the evidence says how the journal knows.
      */
     public function endWithEvidenceAt(CarbonImmutable $time, string $evidence): void
     {

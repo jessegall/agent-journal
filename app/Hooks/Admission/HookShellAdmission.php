@@ -20,7 +20,7 @@ use App\Processes\Values\ExecutionContext;
 /**
  * Core's mandatory admission of a shell line the frames let through (doc 21 revision 6, section 10): whatever a frame
  * answered, a line that would run is admitted first, the replacement when a state rewrote it. A refused line is denied
- * on the stack from before the walk; an admitted one reaches the agent as the supervised runner's line. A program
+ * on the stack from before the walk; an admitted one reaches the agent as the supervised runner's line. A driver
  * that cannot take a rewrite, or a session with no runtime to run in, is refused, since the runner cannot reach it.
  * The hook id is the admission's request key, so a repeated delivery is answered by the replay and admits nothing new.
  */
@@ -45,7 +45,7 @@ final readonly class HookShellAdmission
         }
 
         if (! $capabilities->rewrites->canRewrite()) {
-            $limit = 'This program cannot take a rewritten command line without asking first.';
+            $limit = 'This driver cannot take a rewritten command line without asking first.';
 
             return $answer->replacedBy($this->runnerUnavailable($limit), $stackBefore);
         }

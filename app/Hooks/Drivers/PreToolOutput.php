@@ -16,7 +16,7 @@ use Spatie\LaravelData\Optional;
 final class PreToolOutput extends Data
 {
     /**
-     * @param  array<string, mixed>|Optional  $updatedInput  the program's own tool arguments, kept whole
+     * @param  array<string, mixed>|Optional  $updatedInput  the driver's own tool arguments, kept whole
      */
     public function __construct(
         public readonly string $hookEventName = HookEvent::PreToolUse->value,

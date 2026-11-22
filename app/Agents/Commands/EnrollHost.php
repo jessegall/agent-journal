@@ -11,7 +11,7 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
 /**
- * Enrolls a machine that may run agent programs, with the folders it may start in and the arrangement it runs them in,
+ * Enrolls a machine that may run agent drivers, with the folders it may start in and the arrangement it runs them in,
  * local unless it is the contained agent-host service; its secret is given once.
  *
  * @extends Command<EnrolledHost>

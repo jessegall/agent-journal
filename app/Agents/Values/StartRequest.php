@@ -11,7 +11,7 @@ use App\Records\Support\RecordIdentity;
 
 /**
  * One request to start an agent: its id, which makes a repeat find the same start, the agent, the selected
- * program and model, who asked and for what, how the conversation starts and where it runs. It holds no credential.
+ * driver and model, who asked and for what, how the conversation starts and where it runs. It holds no credential.
  */
 final readonly class StartRequest
 {

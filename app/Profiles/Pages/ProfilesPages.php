@@ -35,7 +35,7 @@ use App\Ui\Enums\SlotContextType;
 
 /**
  * The pages Core's Profiles declares, for the owner alone, under /accounts: the saved Claude Code and Codex accounts,
- * with choosing the one each program starts with and renaming one.
+ * with choosing the one each driver starts with and renaming one.
  */
 final class ProfilesPages implements NativePartProvider, NavigationProvider, PageProvider, SectionProvider
 {

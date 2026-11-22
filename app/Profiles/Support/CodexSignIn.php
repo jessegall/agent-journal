@@ -20,7 +20,7 @@ use TypeError;
  * Codex's own sign-in on the host, into one private account folder: the folder as CODEX_HOME with its sign-in kept
  * in its own auth.json, then `codex app-server` asked for a device-code sign-in (`account/login/start`, type
  * `chatgptDeviceCode`) until it announces `account/login/completed` for that login, proved by `account/read` on the
- * same app-server. The address and code go only to the user; the program exchanges every token itself. `codex login
+ * same app-server. The address and code go only to the user; the driver exchanges every token itself. `codex login
  * status` is the plain check.
  */
 final readonly class CodexSignIn implements SignInProtocol
@@ -65,12 +65,12 @@ final readonly class CodexSignIn implements SignInProtocol
     }
 
     /**
-     * A device sign-in's code goes out to the user only; nothing typed is ever given to the program.
+     * A device sign-in's code goes out to the user only; nothing typed is ever given to the driver.
      */
     public function acceptCode(PrivateAccountProcess $process, string $code): void {}
 
     /**
-     * Over once the program exits or announces the completion of its own login; another login's completion and other
+     * Over once the driver exits or announces the completion of its own login; another login's completion and other
      * notifications are ignored.
      */
     public function hasFinished(PrivateAccountProcess $process): bool
@@ -79,7 +79,7 @@ final readonly class CodexSignIn implements SignInProtocol
     }
 
     /**
-     * Signed in only when the program's own login completed with success, account/read on the same app-server then
+     * Signed in only when the driver's own login completed with success, account/read on the same app-server then
      * answers a ChatGPT account, and the folder's status check agrees; the email is shown to the user only.
      */
     public function prove(PrivateAccountProcess $process, string $directory): SignInVerification
@@ -111,7 +111,7 @@ final readonly class CodexSignIn implements SignInProtocol
     }
 
     /**
-     * The address and code the user enters to approve the sign-in, from the program's answer to the start; none
+     * The address and code the user enters to approve the sign-in, from the driver's answer to the start; none
      * until it answered.
      *
      * @return array{address: string, code: string}|null
@@ -124,7 +124,7 @@ final readonly class CodexSignIn implements SignInProtocol
     }
 
     /**
-     * The completion the program announced for the login it started, read from every line it printed.
+     * The completion the driver announced for the login it started, read from every line it printed.
      */
     private static function completionIn(string $output): CodexLoginCompletedData|null
     {
@@ -150,7 +150,7 @@ final readonly class CodexSignIn implements SignInProtocol
     }
 
     /**
-     * The program's answer to the login start, none until it answered with a device code.
+     * The driver's answer to the login start, none until it answered with a device code.
      */
     private static function loginStartIn(string $output): CodexLoginStartData|null
     {
@@ -164,7 +164,7 @@ final readonly class CodexSignIn implements SignInProtocol
     }
 
     /**
-     * The account the program's account/read answered with; signed out when it answered none it could name.
+     * The account the driver's account/read answered with; signed out when it answered none it could name.
      */
     private static function accountIn(string $output): CodexAccountReadData
     {
@@ -178,7 +178,7 @@ final readonly class CodexSignIn implements SignInProtocol
     }
 
     /**
-     * The program's answer to one of the journal's requests, by its id.
+     * The driver's answer to one of the journal's requests, by its id.
      */
     private static function answerIn(string $output, int $requestId): CodexMessageData|null
     {
@@ -192,7 +192,7 @@ final readonly class CodexSignIn implements SignInProtocol
     }
 
     /**
-     * Each line the program printed that reads as one of its messages; any other line is left out.
+     * Each line the driver printed that reads as one of its messages; any other line is left out.
      *
      * @return list<CodexMessageData>
      */

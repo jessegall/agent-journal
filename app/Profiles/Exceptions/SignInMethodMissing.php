@@ -9,7 +9,7 @@ use App\Hooks\Compatibility\DriverCompatibility;
 use RuntimeException;
 
 /**
- * The program declares no such sign-in method on this host, as the build it is pinned to offers none, so the sign-in
+ * The driver declares no such sign-in method on this host, as the build it is pinned to offers none, so the sign-in
  * is refused before any attempt starts.
  */
 final class SignInMethodMissing extends RuntimeException
@@ -23,7 +23,7 @@ final class SignInMethodMissing extends RuntimeException
     }
 
     /**
-     * The refusal for a registry key written as program:method.
+     * The refusal for a registry key written as driver:method.
      */
     public static function forKey(string $key): self
     {

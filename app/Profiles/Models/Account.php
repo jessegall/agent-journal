@@ -44,8 +44,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * One saved Claude Code or Codex account: its program, the name its owner gave it, its state and the private folder
- * its program keeps the sign-in in. Exactly one sign-in process may write that folder at a time; each new writer,
+ * One saved Claude Code or Codex account: its driver, the name its owner gave it, its state and the private folder
+ * its driver keeps the sign-in in. Exactly one sign-in process may write that folder at a time; each new writer,
  * replacement and removal starts a new sign-in generation, and anything that reports on the account carries the
  * generation it saw. A removed account keeps its row and label for the starts that used it.
  *
@@ -144,7 +144,7 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The first free label of the program for a new account: the proposed one, else its numbered variants from 2.
+     * The first free label of the driver for a new account: the proposed one, else its numbered variants from 2.
      */
     public static function freeLabel(HookDriver $driver, AccountLabel $proposed): AccountLabel
     {
@@ -158,7 +158,7 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The program's account, not removed, that holds the principal a verified sign-in proved; none for a sign-in that
+     * The driver's account, not removed, that holds the principal a verified sign-in proved; none for a sign-in that
      * proved no subject.
      */
     public static function holdingPrincipal(HookDriver $driver, SignInIdentity $identity): self|null
@@ -178,7 +178,7 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Whether another account of the attempt's program, not removed, already signs in by the key or token the attempt
+     * Whether another account of the attempt's driver, not removed, already signs in by the key or token the attempt
      * was given; an attempt without a key holds none.
      */
     public static function holdingKeyOf(SignInAttempt $attempt): self|null
@@ -214,7 +214,7 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The owner's accounts that are not removed, by program and name.
+     * The owner's accounts that are not removed, by driver and name.
      *
      * @return list<self>
      */
@@ -300,7 +300,7 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The program of an account, for the journal's own maintenance or the host, read before its locks are taken.
+     * The driver of an account, for the journal's own maintenance or the host, read before its locks are taken.
      */
     public static function driverForJournal(string $accountId): HookDriver
     {
@@ -310,7 +310,7 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The program of the account the owner may change, read before its locks are taken in their order.
+     * The driver of the account the owner may change, read before its locks are taken in their order.
      *
      * @throws AccountMissing
      */
@@ -486,7 +486,7 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Gives the account a new name, which no other account of its program in use may share, ignoring case, and advances
+     * Gives the account a new name, which no other account of its driver in use may share, ignoring case, and advances
      * its name revision; a name saved against an older revision is refused, so a rename made meanwhile is never
      * overwritten unseen. The same name again changes nothing.
      *
@@ -630,7 +630,7 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Ends the removal once the processes are gone and the program's store and folder are deleted; the row, its link
+     * Ends the removal once the processes are gone and the driver's store and folder are deleted; the row, its link
      * and its label stay for history.
      */
     public function finishRemoval(): void
@@ -730,7 +730,7 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The folder a start runs the program's sign-in from; a removed account has none.
+     * The folder a start runs the driver's sign-in from; a removed account has none.
      *
      * @throws AccountUnavailable
      */

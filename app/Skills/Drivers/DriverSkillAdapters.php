@@ -10,7 +10,7 @@ use App\Skills\Contracts\DriverSkills;
 use App\Skills\Exceptions\DriverSkillsUnsupported;
 
 /**
- * The skill adapter of each program the journal can hand skills to.
+ * The skill adapter of each driver the journal can hand skills to.
  */
 final readonly class DriverSkillAdapters
 {
@@ -20,7 +20,7 @@ final readonly class DriverSkillAdapters
     ) {}
 
     /**
-     * @throws DriverSkillsUnsupported for a program with no adapter
+     * @throws DriverSkillsUnsupported for a driver with no adapter
      */
     public function for(DriverKey $driver): DriverSkills
     {

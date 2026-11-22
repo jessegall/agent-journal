@@ -8,7 +8,7 @@ use App\Agents\Enums\OfflineReplyMode;
 
 /**
  * What other areas add to one start as the host takes its grant: folders to write in its settings folder, with the
- * arguments that point the program at them.
+ * arguments that point the driver at them.
  */
 final class StartAdditions
 {

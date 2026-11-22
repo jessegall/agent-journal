@@ -13,7 +13,7 @@ use App\Hooks\Relay\RelaySettings;
 use Illuminate\Console\Command;
 
 /**
- * The command a started program's isolated settings run for every hook: it reads the payload on standard input.
+ * The command a started driver's isolated settings run for every hook: it reads the payload on standard input.
  */
 final class RelayHookCommand extends Command
 {

@@ -20,7 +20,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * One viewer's lease on watching a runtime's terminal: live until it is closed or lapses unrenewed, and never a
- * request to the program.
+ * request to the driver.
  *
  * @property string $id
  * @property string $actor_type

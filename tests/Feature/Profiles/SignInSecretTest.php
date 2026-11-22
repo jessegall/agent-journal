@@ -33,7 +33,7 @@ use Tests\TestCase;
 
 /**
  * A key or token for a secret method travels to the host like a typed code, up to its own longer limit, and leaves
- * only a keyed fingerprint on the attempt; the same key for the same program is known again by it.
+ * only a keyed fingerprint on the attempt; the same key for the same driver is known again by it.
  */
 #[TimeLimit(seconds: 3, reason: 'It commits attempts through the bus and empties three tables per test.')]
 final class SignInSecretTest extends TestCase

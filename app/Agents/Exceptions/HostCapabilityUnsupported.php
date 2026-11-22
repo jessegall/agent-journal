@@ -10,7 +10,7 @@ use App\Agents\Support\HostCapability;
 use RuntimeException;
 
 /**
- * A start whose configured guarantee needs a host or program capability the recorded evidence does not prove;
+ * A start whose configured guarantee needs a host or driver capability the recorded evidence does not prove;
  * it is refused before any work starts.
  */
 final class HostCapabilityUnsupported extends RuntimeException implements StartRefusal

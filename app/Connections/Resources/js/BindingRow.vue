@@ -11,7 +11,7 @@ import TerminalAccess from './TerminalAccess.vue';
 /**
  * One connected folder, in reading order: its project and environment, the device and reference that tell two
  * folders of one name apart, its outlined state with the words for it, and when its relay was last in contact, as a
- * relative time with the absolute date and zone for a reader, then each program with the command that starts it in the
+ * relative time with the absolute date and zone for a reader, then each driver with the command that starts it in the
  * folder, or the reason Start is not offered for it. Unless it is revoked already it has a box to choose it
  * for revoking with others and its own Revoke, named for its device, both held back while the list is only last
  * known. Revoke asks first in a dialog named for the device, with Cancel focused, and Cancel gives focus back to

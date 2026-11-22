@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The latest token count a program reported for one thread on a saved account in one sign-in generation: the
+ * The latest token count a driver reported for one thread on a saved account in one sign-in generation: the
  * thread's total so far, the reported parts of it and the last turn's total. A newer count replaces it, never adds.
  *
  * @property string $id
@@ -137,7 +137,7 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
     // ----------[ Mutations ]----------
 
     /**
-     * Replaces the thread's count with a newer one; totals are the program's own, so they are never added up.
+     * Replaces the thread's count with a newer one; totals are the driver's own, so they are never added up.
      */
     public function replaceWith(string $driver, ThreadTokens $tokens): void
     {

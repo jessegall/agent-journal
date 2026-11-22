@@ -7,7 +7,7 @@ namespace App\Agents\Values;
 use App\Drivers\Enums\HookDriver;
 
 /**
- * The exact files one native conversation of a session may read back: its transcript and, for a program that saves
+ * The exact files one native conversation of a session may read back: its transcript and, for a driver that saves
  * large tool outputs beside it, that conversation's own output folder. Never a parent folder of other sessions.
  */
 final readonly class SessionOutputPaths

@@ -14,7 +14,7 @@ use App\Operations\Enums\AccessType;
 
 /**
  * Starts an agent for one request: its session, selection and credential in the command's transaction; a repeat of
- * the same request finds the same start, and nothing starts a program before the commit.
+ * the same request finds the same start, and nothing starts a driver before the commit.
  *
  * @extends Command<StartReceipt>
  */

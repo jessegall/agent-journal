@@ -9,8 +9,8 @@ use App\Profiles\Exceptions\SignInMethodMissing;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * How an account signs in to its program: the program's own OAuth sign-in, or a long-lived provider token or an API
- * key the owner gives, which the journal passes on to the program.
+ * How an account signs in to its driver: the driver's own OAuth sign-in, or a long-lived provider token or an API
+ * key the owner gives, which the journal passes on to the driver.
  */
 #[TypeScript]
 enum SignInMethod: string
@@ -20,7 +20,7 @@ enum SignInMethod: string
     case ApiKey = 'api_key';
 
     /**
-     * Whether the owner gives a value, a token or a key, that the journal passes on to the program.
+     * Whether the owner gives a value, a token or a key, that the journal passes on to the driver.
      */
     public function isSecret(): bool
     {
@@ -41,10 +41,10 @@ enum SignInMethod: string
     }
 
     /**
-     * The sentences the sign-in form shows about how the program's method is paid for, and, for a key or token, that
+     * The sentences the sign-in form shows about how the driver's method is paid for, and, for a key or token, that
      * checking it may send one small request with it.
      *
-     * @throws SignInMethodMissing when the program has no such sign-in
+     * @throws SignInMethodMissing when the driver has no such sign-in
      */
     public function billingNote(HookDriver $driver): string
     {
@@ -69,9 +69,9 @@ enum SignInMethod: string
     }
 
     /**
-     * The title of the method's card for a program, such as 'Sign in with Claude'.
+     * The title of the method's card for a driver, such as 'Sign in with Claude'.
      *
-     * @throws SignInMethodMissing when the program has no such sign-in
+     * @throws SignInMethodMissing when the driver has no such sign-in
      */
     public function title(HookDriver $driver): string
     {
@@ -87,7 +87,7 @@ enum SignInMethod: string
     /**
      * The one sentence the method's card shows on how it works for the user.
      *
-     * @throws SignInMethodMissing when the program has no such sign-in
+     * @throws SignInMethodMissing when the driver has no such sign-in
      */
     public function description(HookDriver $driver): string
     {
@@ -105,7 +105,7 @@ enum SignInMethod: string
     /**
      * Where the user gets the token or key a secret method asks for; a sign-in that is not secret asks for none.
      *
-     * @throws SignInMethodMissing when the program has no such sign-in
+     * @throws SignInMethodMissing when the driver has no such sign-in
      */
     public function secretSource(HookDriver $driver): string|null
     {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\DomainFiles;
-use Tests\Architecture\Support\UserWords;
+use Tests\Architecture\Support\WordLines;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -22,7 +22,7 @@ final class UserWordTest extends TestCase
                 base_path('tests/Fixtures/UserWords/SaysPerson.php').':10',
                 base_path('tests/Fixtures/UserWords/SaysPerson.php').':8',
             ],
-            UserWords::in([base_path('tests/Fixtures/UserWords')]),
+            WordLines::in(WordLines::USER_WORDS, [base_path('tests/Fixtures/UserWords')]),
         );
     }
 
@@ -36,6 +36,6 @@ final class UserWordTest extends TestCase
             ...(glob(base_path('domain/*/resources/js'), GLOB_ONLYDIR) ?: []),
         ];
 
-        $this->assertSame([], UserWords::in($folders));
+        $this->assertSame([], WordLines::in(WordLines::USER_WORDS, $folders));
     }
 }

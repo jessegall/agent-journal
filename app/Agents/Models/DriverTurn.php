@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * One native turn of a runtime's program: keyed by its process generation and the program's own prompt id
+ * One native turn of a runtime's driver: keyed by its process generation and the driver's own prompt id
  * (Claude Code prompt_id, Codex turn_id), with the settings it ran with and how it ended.
  *
  * @property string $id

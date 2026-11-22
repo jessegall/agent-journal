@@ -37,9 +37,9 @@ enum StartPreflightRefusal: string
     public function explanation(): string
     {
         return match ($this) {
-            self::DriverPinned => 'This profile requires its assigned program.',
+            self::DriverPinned => 'This profile requires its assigned driver.',
             self::ModelNotAllowed => 'This profile does not allow that model.',
-            self::DriverNotContainable => 'This program cannot run with the required protection here.',
+            self::DriverNotContainable => 'This driver cannot run with the required protection here.',
             self::NoHost => 'No connected host serves this environment.',
             self::HostProtocolOutdated => 'The host needs an update before it can start agents.',
             self::CombinationNotDeclared => 'The host does not support these settings together.',
@@ -49,11 +49,11 @@ enum StartPreflightRefusal: string
     public function remedy(): StartRemedy
     {
         return match ($this) {
-            self::DriverPinned => StartRemedy::forEveryone(StartRemedyType::ChooseProgram, 'Use the assigned program'),
+            self::DriverPinned => StartRemedy::forEveryone(StartRemedyType::ChooseDriver, 'Use the assigned driver'),
             self::ModelNotAllowed => StartRemedy::forEveryone(StartRemedyType::ChooseModel, 'Choose an allowed model'),
             self::DriverNotContainable => StartRemedy::forEveryone(
-                StartRemedyType::ChooseProgram,
-                'Choose a supported program',
+                StartRemedyType::ChooseDriver,
+                'Choose a supported driver',
             ),
             self::NoHost => StartRemedy::forOperators(StartRemedyType::ConnectHost, 'Connect a host'),
             self::HostProtocolOutdated => StartRemedy::forOperators(StartRemedyType::UpdateHost, 'Update the host'),

@@ -19,7 +19,7 @@ use Illuminate\Contracts\Bus\Dispatcher as JobDispatcher;
 use Illuminate\Contracts\Config\Repository;
 
 /**
- * Starts or rejoins a new account's sign-in under the program's selection lock: one attempt at a time writes a new
+ * Starts or rejoins a new account's sign-in under the driver's selection lock: one attempt at a time writes a new
  * folder. The attempt and its deadline are saved before its deadline job is queued, after commit, with ids only.
  */
 final readonly class BeginSignInHandler implements CommandHandler

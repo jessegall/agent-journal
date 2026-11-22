@@ -15,7 +15,7 @@ import {
 
 /**
  * What an account's usage shows: the one line of its row and the details of its settings, chosen from the readings
- * its programs reported. Every choice takes the current time, so the page can choose again when a window resets.
+ * its drivers reported. Every choice takes the current time, so the page can choose again when a window resets.
  */
 
 const minutesOfWeek = 10080;
@@ -82,7 +82,7 @@ function isWeek(window: AccountUsageWindowData): boolean {
 }
 
 /**
- * A window whose program reported how much of it is used.
+ * A window whose driver reported how much of it is used.
  */
 type MeasuredWindow = AccountUsageWindowData & { usedPercent: number };
 
@@ -203,7 +203,7 @@ export interface UsageFact {
 
 /**
  * Each window with its name and value together, its reset or the reset it passed, and when it was observed; a window
- * the program named only by its reset shows that date and when it was seen, with no share used.
+ * the driver named only by its reset shows that date and when it was seen, with no share used.
  */
 export function windowFacts(usage: AccountUsageData, now: Date): UsageFact[] {
     return usage.windows
@@ -246,7 +246,7 @@ export function costFacts(cost: AccountMonthCostData): UsageFact[] {
 }
 
 /**
- * The latest thread's total and only the parts of it the program reported.
+ * The latest thread's total and only the parts of it the driver reported.
  */
 export function threadFacts(thread: AccountThreadTokensData): UsageFact[] {
     const parts: [string, number | null][] = [

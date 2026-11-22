@@ -10,7 +10,7 @@ use App\Bus\Support\Command;
 use App\Profiles\Values\ClaimedAccountCheck;
 
 /**
- * A host's runner takes the next account to check with the program's own status check; nothing when none waits.
+ * A host's runner takes the next account to check with the driver's own status check; nothing when none waits.
  * Run for an authenticated host by the journal itself (internal, not exported).
  *
  * @extends Command<ClaimedAccountCheck|null>

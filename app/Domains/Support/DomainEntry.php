@@ -614,7 +614,7 @@ final readonly class DomainEntry
     }
 
     /**
-     * The command rules this domain declares for its own programs, owned by it as a module so they wait for review;
+     * The command rules this domain declares for its own drivers, owned by it as a module so they wait for review;
      * none without CommandRuleProvider.
      *
      * @return list<CommandRule>

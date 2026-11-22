@@ -11,7 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
 /**
- * Chooses the account for new starts of its program through the bus and returns to the Accounts page.
+ * Chooses the account for new starts of its driver through the bus and returns to the Accounts page.
  */
 final readonly class ActivateAccountController
 {

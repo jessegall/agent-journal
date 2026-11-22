@@ -6,7 +6,7 @@ an empty `CLAUDE_CONFIG_DIR` and an empty `ANTHROPIC_CONFIG_DIR`, and an environ
 Nothing here was signed in, and no run reached the API (`duration_api_ms` 0, `total_cost_usd` 0). This is evidence
 about the program, not about protection: a capture installs no protected binary and proves no sandbox. The fixtures
 are in `tests/Fixtures/Accounts/Claude`; doc 15 (sections 7, 12 and 20) holds the decisions they serve, and doc 17 the
-final ones. The hook callbacks themselves are in [program-capabilities.md](../hooks/program-capabilities.md).
+final ones. The hook callbacks themselves are in [driver-capabilities.md](../hooks/driver-capabilities.md).
 
 ## The start invocation
 

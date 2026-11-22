@@ -9,8 +9,8 @@ use App\Ui\Contracts\UserInterfaceUpdater;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
- * A saved account of a program changed what its owner sees: chosen, renamed, signed in or removed. It names the
- * program and the account by id alone, once the change has committed.
+ * A saved account of a driver changed what its owner sees: chosen, renamed, signed in or removed. It names the
+ * driver and the account by id alone, once the change has committed.
  */
 final readonly class AccountsChanged implements Event, ShouldDispatchAfterCommit, UserInterfaceUpdater
 {

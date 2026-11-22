@@ -19,7 +19,7 @@ final readonly class SettledCall
     ) {}
 
     /**
-     * The call with the reply the program adapter renders from its answer.
+     * The call with the reply the driver adapter renders from its answer.
      */
     public function withAnswer(HookAnswer $answer): self
     {

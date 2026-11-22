@@ -13,7 +13,7 @@ use Illuminate\Contracts\Encryption\Encrypter;
 
 /**
  * The short-lived, encrypted exchange between the host running a sign-in and the user approving it: the challenge
- * the program printed, and the code the user typed back. Each lives only until the attempt's deadline, and a typed
+ * the driver printed, and the code the user typed back. Each lives only until the attempt's deadline, and a typed
  * code is handed to the host once.
  */
 final readonly class SignInChallenges

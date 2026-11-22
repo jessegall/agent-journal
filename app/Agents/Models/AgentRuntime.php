@@ -28,7 +28,7 @@ use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * The running program behind one agent session on one host: its driver, activity and hold, the requested, staged
+ * The running driver behind one agent session on one host: its driver, activity and hold, the requested, staged
  * and observed model and effort, and its process generation. AgentSession stays the only presence timestamp.
  *
  * @property string $id
@@ -271,7 +271,7 @@ final class AgentRuntime extends Model implements ReadableModel
     }
 
     /**
-     * Records the model and effort the program reports it runs with now.
+     * Records the model and effort the driver reports it runs with now.
      */
     public function observeSettings(string|null $model, string|null $effort, CarbonImmutable $at): void
     {
@@ -361,7 +361,7 @@ final class AgentRuntime extends Model implements ReadableModel
     }
 
     /**
-     * Whether the runtime's program draws a screen a viewer can watch: only a terminal runtime does.
+     * Whether the runtime's driver draws a screen a viewer can watch: only a terminal runtime does.
      */
     public function hasScreen(): bool
     {
@@ -411,8 +411,8 @@ final class AgentRuntime extends Model implements ReadableModel
     }
 
     /**
-     * Whether a user may release the runtime's hold: an interrupt or a call for attention. A hold the program
-     * itself shows, such as compacting or a login, ends only on the program's own evidence.
+     * Whether a user may release the runtime's hold: an interrupt or a call for attention. A hold the driver
+     * itself shows, such as compacting or a login, ends only on the driver's own evidence.
      */
     public function canReleaseHold(): bool
     {

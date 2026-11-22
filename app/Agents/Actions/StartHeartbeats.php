@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Follows a start by its heartbeats. A session whose beats stop for a presence window is marked silent, which only
- * means absent: silence never times a session out. The host's verified report that the program exited ends it, and
+ * means absent: silence never times a session out. The host's verified report that the driver exited ends it, and
  * a session no host took up, that never beat and whose start nobody claimed within a presence window, ends too.
  */
 final readonly class StartHeartbeats implements StartHeartbeatsContract
@@ -71,7 +71,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     }
 
     /**
-     * The host saw the program exit, so the session ends at once with that evidence.
+     * The host saw the driver exit, so the session ends at once with that evidence.
      */
     public function markExited(AgentSession $session, string $evidence): void
     {

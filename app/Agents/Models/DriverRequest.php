@@ -303,7 +303,7 @@ final class DriverRequest extends Model implements ReadableModel
 
     /**
      * Gives the failed setting change a new value in its own place in the queue, as a new attempt; the host then
-     * waits for the program's evidence of it before any content behind it runs.
+     * waits for the driver's evidence of it before any content behind it runs.
      */
     public function repairWith(DriverRequestPayload $envelope): void
     {
@@ -366,7 +366,7 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
-     * Keeps why the host refused the request and whether it proved no process of the program was made; settling a
+     * Keeps why the host refused the request and whether it proved no process of the driver was made; settling a
      * launch on it is the start's own decision.
      */
     public function recordRefusal(HostWakeRefusal $reason, bool $noProcessCreated): void

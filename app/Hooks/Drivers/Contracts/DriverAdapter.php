@@ -13,7 +13,7 @@ use App\Hooks\Inputs\Values\HookIdentity;
 use App\Hooks\Stack\HookAnswer;
 
 /**
- * Turns the journal's final answer into one program's native reply. An adapter maps only the hooks its capabilities
+ * Turns the journal's final answer into one driver's native reply. An adapter maps only the hooks its capabilities
  * list.
  */
 interface DriverAdapter
@@ -21,12 +21,12 @@ interface DriverAdapter
     public function capabilities(): DriverCapabilities;
 
     /**
-     * What an account start of the pinned program may rely on, and how far the real program showed it.
+     * What an account start of the pinned driver may rely on, and how far the real driver showed it.
      */
     public function compatibility(): DriverCompatibility;
 
     /**
-     * The arguments that start this program on the selected model.
+     * The arguments that start this driver on the selected model.
      *
      * @return list<string>
      */

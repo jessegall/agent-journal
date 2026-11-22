@@ -29,7 +29,7 @@ use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
- * The owner switches the account a program starts with and renames accounts through the bus: each change commits
+ * The owner switches the account a driver starts with and renames accounts through the bus: each change commits
  * in order and tells the pages once, a repeated click changes nothing, and an agent can do neither.
  */
 final class AccountSwitchingTest extends TestCase

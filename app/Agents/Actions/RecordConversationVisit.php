@@ -30,7 +30,7 @@ final readonly class RecordConversationVisit implements ConversationVisits
     public function __construct(private MapSessionOutputs $outputs) {}
 
     /**
-     * A program start, resume or clear entered a native conversation.
+     * A driver start, resume or clear entered a native conversation.
      *
      * @throws ConversationIncompatible
      */

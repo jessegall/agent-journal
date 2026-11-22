@@ -4,7 +4,7 @@ Captured 2026-11-18 on codex-cli 0.165.0 (binary sha256
 `a45099154d7fb4a5ed8a56f40966a95deb938e508bab23e6985035c709e9a85a`), with no account: every run used an empty `HOME`
 and an empty `CODEX_HOME`, and an environment of only those two and `PATH`. Nothing here was signed in. The fixtures
 are in `tests/Fixtures/Accounts/Codex`; doc 15 (sections 8, 12 and 13) holds the decisions they serve, doc 17 the final
-ones, and [program-capabilities.md](../hooks/program-capabilities.md) the hook callbacks. Task 251 owns the procedure
+ones, and [driver-capabilities.md](../hooks/driver-capabilities.md) the hook callbacks. Task 251 owns the procedure
 with a real account; every claim below that needs one is marked missing, not assumed.
 
 ## Signed out

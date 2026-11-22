@@ -21,7 +21,7 @@ use App\Drivers\Enums\HookDriver;
 use Tests\TestCase;
 
 /**
- * A start always names a model, and its program comes from the caller, the profile or the parent session, in that
+ * A start always names a model, and its driver comes from the caller, the profile or the parent session, in that
  * order; every refusal has its stable reason and the design's wording.
  */
 final class StartSelectionTest extends TestCase

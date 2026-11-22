@@ -7,7 +7,7 @@ namespace App\Agents\Values;
 use App\Agents\Enums\DriverVariant;
 
 /**
- * What a new runtime is opened with: the host and folder it runs in, the program build and profile, the driver,
+ * What a new runtime is opened with: the host and folder it runs in, the driver build and profile, the driver,
  * the first model and effort, and the content of its first delivery, if any.
  */
 final readonly class RuntimeIntent

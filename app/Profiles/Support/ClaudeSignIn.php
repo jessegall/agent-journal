@@ -16,7 +16,7 @@ use App\Profiles\Values\SignInVerification;
 /**
  * Claude Code's own sign-in on the host, into one private account folder: `claude auth login --claudeai` with the
  * folder as CLAUDE_CONFIG_DIR and nothing else of the host's configuration, the sign-in address read from its private
- * output, the user's code typed on its standard input, and `claude auth status --json` as the check. The program
+ * output, the user's code typed on its standard input, and `claude auth status --json` as the check. The driver
  * exchanges every token itself; nothing here sees one.
  */
 final readonly class ClaudeSignIn implements SignInProtocol
@@ -84,7 +84,7 @@ final readonly class ClaudeSignIn implements SignInProtocol
     }
 
     /**
-     * The address the user opens to approve the sign-in, as the program printed it; none until it did.
+     * The address the user opens to approve the sign-in, as the driver printed it; none until it did.
      */
     public function addressFrom(PrivateAccountProcess $process): string|null
     {
@@ -92,7 +92,7 @@ final readonly class ClaudeSignIn implements SignInProtocol
     }
 
     /**
-     * Types the user's code into the program; a code that is empty, too long or holds a control character never
+     * Types the user's code into the driver; a code that is empty, too long or holds a control character never
      * reaches it.
      *
      * @throws SignInCodeInvalid
