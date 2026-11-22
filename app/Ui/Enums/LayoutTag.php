@@ -52,7 +52,7 @@ enum LayoutTag: string
                 'stack', 'row', 'section', 'card', 'panel', 'header', 'group', 'divider', 'split', 'bar', 'reader',
                 'settings-page', 'settings', 'settings-group', 'setting', 'setting-block',
             ],
-            self::Text => ['plain', 'heading', 'muted', 'badge', 'code', 'keyHint', 'paragraph', 'time', 'chip'],
+            self::Text => ['plain', 'heading', 'muted', 'badge', 'code', 'keyHint', 'paragraph', 'time', 'chip', 'icon'],
             self::Collection => ['list', 'facts', 'choices'],
             self::Notice => ['info', 'success', 'warning', 'error', 'empty', 'refusal', 'skeleton', 'stale'],
             self::Action => ['bordered', 'ghost', 'primary', 'danger'],

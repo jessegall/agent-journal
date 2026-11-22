@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import Chip from '@/components/kit/Chip.vue';
+import Icon from '@/components/kit/Icon.vue';
+import type { IconName } from '@/components/kit/Icon.vue';
 import StateBadge from '@/components/kit/StateBadge.vue';
 import SwitchCase from '@/components/kit/SwitchCase.vue';
 import type { LayoutPartData } from '@/generated/types/core';
@@ -24,6 +26,9 @@ const badgeTone = computed(() => (props.part.tone ?? 'quiet') as BadgeTone);
         </template>
         <template #badge>
             <StateBadge :label="part.text ?? ''" :tone="badgeTone" />
+        </template>
+        <template #icon>
+            <Icon :name="(part.text ?? 'info') as IconName" :size="14" class="text-text-3" />
         </template>
         <template #chip>
             <Chip>{{ part.text }}</Chip>

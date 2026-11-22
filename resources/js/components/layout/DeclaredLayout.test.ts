@@ -570,4 +570,51 @@ describe('a declared layout', () => {
         expect(view.find('[role="menu"]').exists()).toBe(true);
         view.unmount();
     });
+
+    it('draws a card box as a labelled group with its icon, title, badge and permitted action', () => {
+        const view = mount(DeclaredLayout, {
+            props: {
+                data: {
+                    root: part({
+                        tag: 'box',
+                        key: 'question-4',
+                        style: 'card',
+                        children: [
+                            part({
+                                tag: 'box',
+                                key: 'head',
+                                style: 'row',
+                                children: [
+                                    part({ tag: 'text', key: 'icon', style: 'icon', text: 'chat' }),
+                                    part({ tag: 'text', key: 'title', style: 'plain', text: 'Which branch?' }),
+                                    part({ tag: 'text', key: 'badge', style: 'badge', text: 'Waiting', tone: 'warn' }),
+                                ],
+                            }),
+                            part({
+                                tag: 'box',
+                                key: 'actions',
+                                style: 'row',
+                                children: [
+                                    part({
+                                        tag: 'action',
+                                        key: 'answer',
+                                        style: 'bordered',
+                                        size: 'normal',
+                                        text: 'Answer',
+                                        action: { query: {}, href: '/chat/4', submits: false, appends: false },
+                                    }),
+                                ],
+                            }),
+                        ],
+                    }),
+                },
+            },
+            global: { stubs: { Link: { props: ['href'], template: '<a :href="href"><slot /></a>' } } },
+        });
+        const card = view.get('[role="group"]');
+
+        expect(card.attributes('aria-label')).toBe('Which branch?');
+        expect(card.text()).toContain('Waiting');
+        expect(card.get('a').attributes('href')).toBe('/chat/4');
+    });
 });
