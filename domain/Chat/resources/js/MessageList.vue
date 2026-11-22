@@ -2,6 +2,8 @@
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import Avatar from '@kit/Avatar';
+import Button from '@kit/Button';
+import Card from '@kit/Card';
 import Icon from '@kit/Icon';
 import type { ChatMessageData, ParticipantData } from '@generated/types/chat';
 import type { ConversationIntent } from './composables/useConversationIntents';
@@ -71,6 +73,11 @@ const rows = computed((): MessageRow[] =>
         return { message, time: timeFormat.format(sentAt), day: startsDay ? dayLabel(sentAt) : null };
     }),
 );
+
+/** A question someone asked you that waits for your answer: drawn as a card with its Answer button. */
+function isQuestionToMe(message: ChatMessageData): boolean {
+    return !isOwn(message) && message.state === 'waiting_for_answer' && message.actions.answer;
+}
 
 function isOwn(message: ChatMessageData): boolean {
     return message.speaker.actor === props.viewer;
@@ -187,7 +194,22 @@ function stateOf(message: ChatMessageData): string | null {
                 <template v-if="message.replyTo !== null && !message.replyTo.visible">
                     <span class="text-small text-text-3">The original was removed or is hidden from you</span>
                 </template>
-                <p class="text-body whitespace-pre-wrap text-text">{{ message.body }}</p>
+                <template v-if="isQuestionToMe(message)">
+                    <Card padding="sm" class="flex items-center gap-2.5">
+                        <Icon name="question" :size="16" class="flex-none text-text-3" />
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-body whitespace-pre-wrap text-text">{{ message.body }}</span>
+                            <small class="block text-badge text-text-3">Question · asked {{ time }}</small>
+                        </span>
+                        <Button size="small" variant="bordered" @click="emit('reply', message)">Answer</Button>
+                        <template v-if="message.actions.decline">
+                            <Button size="small" variant="ghost" @click="emit('decline', message)">Decline</Button>
+                        </template>
+                    </Card>
+                </template>
+                <template v-else>
+                    <p class="text-body whitespace-pre-wrap text-text">{{ message.body }}</p>
+                </template>
                 <template v-if="stateOf(message) !== null || message.state === 'waiting_for_answer'">
                     <span class="flex gap-2 text-small text-text-3">
                         <template v-if="stateOf(message) !== null">
@@ -200,7 +222,7 @@ function stateOf(message: ChatMessageData): string | null {
                         </template>
                     </span>
                 </template>
-                <template v-if="!isOwn(message)">
+                <template v-if="!isOwn(message) && !isQuestionToMe(message)">
                     <span
                         class="absolute -top-3 -right-1 inline-flex gap-1 opacity-0 transition-opacity duration-(--duration-hover) group-focus-within/message:opacity-100 group-hover/message:opacity-100"
                     >

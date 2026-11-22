@@ -8,7 +8,10 @@ import { useConversationIntents } from './composables/useConversationIntents';
 import { draftKey } from './composables/useMessageDrafts';
 import type { AgentOptionData, ChatData } from '@generated/types/chat';
 import type { ReplyTarget } from './composables/useConversationIntents';
+import AvatarStack from '@kit/AvatarStack';
 import Button from '@kit/Button';
+import IconButton from '@kit/IconButton';
+import Popover from '@kit/Popover';
 import { isRevealed } from '@kit/protectedView';
 import { liveStage, retryLiveConnection } from '@kit/liveConnection';
 import SlotSections from '@kit/SlotSections';
@@ -39,6 +42,16 @@ const props = defineProps<{
 
 const page = usePage();
 const conversation = computed(() => props.chat.conversation);
+const isRosterOpen = ref(false);
+// The members as their avatars: agents by their driver's mark, people by their initial.
+const members = computed(() =>
+    (conversation.value?.participants ?? []).map((member) => ({
+        kind: member.driver === null ? ('user' as const) : ('agent' as const),
+        driver: member.driver ?? undefined,
+        initials: member.label.slice(0, 1).toUpperCase(),
+        name: member.label,
+    })),
+);
 /**
  * The agent whose session controls show: the one chosen from the roster, else the chat's own agent, else the first
  * agent in it. Each agent keeps its own controls, keyed by its id and session generation; a chat with no agent has
@@ -256,12 +269,36 @@ function retryFocused(): void {
                 </section>
                 <p role="status" aria-live="polite" class="sr-only">Session controls for {{ selected.name }}</p>
             </template>
-            <ChatRoster
-                :conversation="conversation"
-                :conversation-prop="protectedProp"
-                :chosen-agent-id="selected?.id ?? null"
-                @choose-agent="chooseAgent"
-            />
+            <div class="relative flex items-center justify-end gap-1.5" aria-label="Who is in this chat">
+                <template v-if="conversation.participants.length > 2">
+                    <Button
+                        size="small"
+                        variant="ghost"
+                        :aria-expanded="isRosterOpen"
+                        aria-haspopup="dialog"
+                        @click="isRosterOpen = !isRosterOpen"
+                    >
+                        <AvatarStack :members="members" />
+                        {{ conversation.participants.length }} in this chat
+                    </Button>
+                </template>
+                <IconButton
+                    icon="users"
+                    label="Add someone to this chat"
+                    size="sm"
+                    haspopup="dialog"
+                    :expanded="isRosterOpen"
+                    @click="isRosterOpen = !isRosterOpen"
+                />
+                <Popover v-model:open="isRosterOpen" label="Members of this chat" align="right">
+                    <ChatRoster
+                        :conversation="conversation"
+                        :conversation-prop="protectedProp"
+                        :chosen-agent-id="selected?.id ?? null"
+                        @choose-agent="chooseAgent"
+                    />
+                </Popover>
+            </div>
             <template v-if="isShown">
                 <template v-if="chat.focusedQuestionId !== undefined">
                     <FocusedQuestion
