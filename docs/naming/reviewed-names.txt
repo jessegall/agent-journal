@@ -7106,6 +7106,7 @@ constant	CoreMcpTools::ORIENTATION_RESOURCES
 constant	CoreMcpTools::ORIENTATION_TOOLS
 constant	CoreSkills::OWNER
 constant	CreateDocumentCommand::MOST_LINKS
+constant	CreateGroupChatController::CREATED_CHAT
 constant	CreateReportCommand::MOST_LINKS
 constant	DatabaseAssignmentTransaction::ATTEMPTS
 constant	DatabaseAssignmentTransaction::RETRYABLE_STATES
@@ -7485,6 +7486,7 @@ constant	PlanReviewView::RECIPIENTS_SHOWN
 constant	PlanShareProvider::SUMMARY_COLUMNS
 constant	PlanTaskPoolFactory::KEY
 constant	PlanTaskRequest::RETURN_KEYS
+constant	PostCommentController::POSTED_COMMENT
 constant	PostCommentRequest::ANCHOR_FIELDS
 constant	PostCommentRequest::FIELDS_OF_TYPE
 constant	PrepareSkillPublicationHandler::MOST_FILES

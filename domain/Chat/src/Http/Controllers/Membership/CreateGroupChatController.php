@@ -7,26 +7,26 @@ namespace Domain\Chat\Http\Controllers\Membership;
 use App\Contracts\CommandBus;
 use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;
 use Domain\Chat\Data\CreateGroupInput;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Routing\Redirector;
+use Inertia\ResponseFactory;
 
 final readonly class CreateGroupChatController
 {
+    /**
+     * The flash key of the new chat's inbox id.
+     */
+    public const string CREATED_CHAT = 'createdInboxId';
+
     /**
      * Opens a group chat with the users named and shows it. The command rechecks every rule on submission.
      */
     public function __invoke(
         CreateGroupInput $input,
-        Request $request,
         CommandBus $commands,
-        Redirector $redirect,
-    ): JsonResponse|RedirectResponse {
+        ResponseFactory $inertia,
+    ): RedirectResponse {
         $inboxId = $commands->run(new CreateGroupChatCommand($input->title, $input->userIds));
 
-        return $request->expectsJson()
-            ? new JsonResponse(['inboxId' => $inboxId])
-            : $redirect->back(303);
+        return $inertia->flash(self::CREATED_CHAT, $inboxId)->back(303);
     }
 }
