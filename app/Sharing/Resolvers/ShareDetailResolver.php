@@ -42,6 +42,7 @@ final readonly class ShareDetailResolver implements PageResolver
     public function read(): DeclaredLayoutData
     {
         $share = Share::byId($this->request->shareId())->getOrThrow(ShareUnavailable::for($this->request->shareId()));
+
         $controls = ShareControlsPartData::from([
             'id' => $share->id,
             'state' => $share->state,
@@ -49,6 +50,7 @@ final readonly class ShareDetailResolver implements PageResolver
             'mayRetry' => $share->state->mayRetry() && $share->expires_at->isFuture(),
             'mayRevoke' => ! $share->state->isTerminal(),
         ]);
+
         $title = ($share->state === ShareState::Proposed ? 'Proposal' : 'Share')." {$share->number}";
 
         return PublicationPage::make(
@@ -86,6 +88,7 @@ final readonly class ShareDetailResolver implements PageResolver
     private function factsOf(Share $share): LayoutPartData
     {
         $members = array_map(ShareMemberData::fromMember(...), ShareMember::currentOf($share));
+
         $parts = [
             LayoutPartData::collection('facts', 'facts', [
                 new LayoutRowData('state', 'State', $share->state->value),

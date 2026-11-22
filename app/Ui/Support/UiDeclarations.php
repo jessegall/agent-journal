@@ -67,6 +67,7 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
 
         foreach ($domains as $owner) {
             self::assertUniqueKeys($owner, 'page', array_map(fn ($page) => $page->key, $owner->pages));
+
             self::assertUniqueKeys(
                 $owner,
                 'sidebar group',
@@ -137,6 +138,7 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
         }
 
         $actions = self::actionsOf($pages, $sections);
+
         $declarations = new self(
             $pages,
             $sections,
@@ -147,6 +149,7 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
             $menus,
             self::menuItemsOf($domains, $menus, $pages, $actions),
         );
+
         $declarations->refuseRepeatedRoutes();
         $declarations->refuseRepeatedPropNames();
 

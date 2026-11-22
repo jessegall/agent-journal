@@ -33,4 +33,12 @@ final class RuntimeStatus extends Data
         public readonly DriverVariant $variant,
         public readonly int $watchers,
     ) {}
+
+    /**
+     * Whether the runtime runs in a terminal a user can watch.
+     */
+    public function hasTerminal(): bool
+    {
+        return $this->variant === DriverVariant::Terminal;
+    }
 }

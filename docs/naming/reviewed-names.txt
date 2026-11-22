@@ -7457,6 +7457,7 @@ constant	VerbNamedTypes::VERBS
 constant	WordLines::DRIVER_WORDS
 constant	WordLines::EXTENSIONS
 constant	WordLines::GENERATED
+constant	WordLines::GO_DRIVER_WORDS
 constant	WordLines::USER_WORDS
 constant	WorkingOnPlanStateReference::TYPE_KEY
 constant	WorkingOnTaskStateReference::TYPE_KEY
@@ -8439,6 +8440,8 @@ method	AccountUses::counts()
 method	AccountUses::history()
 method	AccountsChanged::__construct()
 method	AccountsWindowResolver::__construct()
+method	AccountsWindowResolver::list()
+method	AccountsWindowResolver::listOf()
 method	AccountsWindowResolver::read()
 method	AccountsWindowResolver::startsOf()
 method	ActionRoute::__construct()
@@ -20309,6 +20312,7 @@ method	RuntimeStart::__construct()
 method	RuntimeStart::of()
 method	RuntimeStart::toArray()
 method	RuntimeStatus::__construct()
+method	RuntimeStatus::hasTerminal()
 method	RuntimeStatusResolver::__construct()
 method	RuntimeStatusResolver::cardOf()
 method	RuntimeStatusResolver::read()

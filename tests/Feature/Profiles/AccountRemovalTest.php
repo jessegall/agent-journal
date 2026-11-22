@@ -377,7 +377,7 @@ final class AccountRemovalTest extends TestCase
         }
 
         $this->assertNull($this->asHost(new ClaimCleanup('host')));
-        $listed = $this->app->make(AccountsWindowResolver::class)->read()->pendingCleanups;
+        $listed = $this->app->make(AccountsWindowResolver::class)->list()->pendingCleanups;
         $this->assertSame([$started->attemptId, true], [$listed[0]->attemptId, $listed[0]->awaitsRetry]);
 
         $this->asOwner(new RetryAttemptCleanup($started->attemptId));

@@ -10,7 +10,7 @@ namespace Tests\Fixtures\Modules\Handbook\Values;
 final readonly class HandbookEntry
 {
     public function __construct(
-        public int $ownerId,
+        public string $ownerId,
         public int $number,
         public string $title,
         public string $edition,

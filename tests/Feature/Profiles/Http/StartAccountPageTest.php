@@ -38,7 +38,7 @@ final class StartAccountPageTest extends TestCase
         $sessionId = $this->start();
 
         $this->actingAs($this->owner)->get('/accounts')->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.rows.0.recentStarts.0.sessionId', $sessionId));
+            ->where('page.data.root.children.1.native.props.rows.0.recentStarts.0.sessionId', $sessionId));
 
         $this->startUserRequestAs($this->owner->id);
         $this->app->make(CommandBus::class)->run(new RemoveAccount($account->id));

@@ -60,6 +60,7 @@ final readonly class GatewaySettingsResolver implements PageResolver
                 'paragraph',
             ),
         );
+
         $parts[] = $revisions === []
             ? LayoutPartData::notice('revisions', 'empty', 'No gateway is configured yet.')
             : LayoutPartData::box(
@@ -67,7 +68,9 @@ final readonly class GatewaySettingsResolver implements PageResolver
                 'stack',
                 ...array_map(fn (GatewayRevisionData $revision) => $this->rowOf($revision), $revisions),
             );
+
         $configure = GatewayConfigurePartData::from(['gatewayKeys' => $this->gateways->keys()]);
+
         $parts[] = LayoutPartData::native(
             'configure',
             LayoutNativeData::of('sharing/GatewayConfigureForm', $configure),
@@ -170,9 +173,11 @@ final readonly class GatewaySettingsResolver implements PageResolver
         }
 
         $revoked = count($revision->dependentShares);
+
         $question = $revoked === 0
             ? 'Disable this gateway? No share uses it.'
             : "Disable this gateway and revoke the {$revoked} shares that use it?";
+
         $actions[] = LayoutPartData::form(
             'disable',
             new LayoutFormData(

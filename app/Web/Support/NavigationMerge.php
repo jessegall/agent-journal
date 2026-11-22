@@ -92,10 +92,10 @@ final readonly class NavigationMerge
      * dropped, so no install order chooses between them. Each is logged with its owner and path.
      *
      * @param  array<string, list<int|null>>  $occurrences
-     * @param  array<int, list<string>>  $contributionPaths
+     * @param  array<int, list<string>>  $paths
      * @return array<int, true>
      */
-    private function droppedContributions(array $occurrences, array $contributionPaths): array
+    private function droppedContributions(array $occurrences, array $paths): array
     {
         $declaredKeys = array_fill_keys($this->declaredKeys(), true);
         $dropped = [];
@@ -109,10 +109,11 @@ final readonly class NavigationMerge
 
             foreach ($listed as $contribution) {
                 $dropped[$contribution] = true;
-                $path = implode(' > ', $contributionPaths[$contribution]);
+                $path = implode(' > ', $paths[$contribution]);
+
                 $this->log->warning(
                     "The navigation item {$key} listed at {$path} was dropped: its key is declared or listed twice.",
-                    ['key' => $key, 'path' => $contributionPaths[$contribution]],
+                    ['key' => $key, 'path' => $paths[$contribution]],
                 );
             }
         }
@@ -164,6 +165,7 @@ final readonly class NavigationMerge
 
         foreach ($roots as $root) {
             $group = (string) $root->navigation->navigationItem->group;
+
             $groupPositions[$group] = min(
                 $groupPositions[$group] ?? PHP_INT_MAX,
                 $root->navigation->navigationItem->position,

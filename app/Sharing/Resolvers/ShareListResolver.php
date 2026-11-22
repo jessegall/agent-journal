@@ -47,6 +47,7 @@ final readonly class ShareListResolver implements PageResolver
 
         $last = $rows === [] ? null : $rows[array_key_last($rows)];
         $shown = array_map(fn (Share $share) => ShareRowData::fromShare($share, $gatewayKeys), $rows);
+
         $parts = [
             LayoutPartData::box('header', 'header', LayoutPartData::text('title', 'Shares', 'heading')),
             $this->filtersOf($filters),
@@ -64,6 +65,7 @@ final readonly class ShareListResolver implements PageResolver
     private function filtersOf(ShareFiltersData $filters): LayoutPartData
     {
         $chosen = $filters->state instanceof ShareState ? $filters->state->value : '';
+
         $states = [
             new LayoutRowData('any', 'Any', query: ['state' => '', 'after' => ''], isCurrent: $chosen === ''),
             ...array_map(fn (ShareState $state) => new LayoutRowData(

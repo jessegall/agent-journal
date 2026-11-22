@@ -22,17 +22,17 @@ final class HandbookEntries
     public int $referenceReads = 0;
 
     /**
-     * @var array<int, array<int, HandbookEntry>> by owner id, then number
+     * @var array<string, array<int, HandbookEntry>> by owner id, then number
      */
     private array $headers = [];
 
     /**
-     * @var array<int, array<int, string>> by owner id, then number
+     * @var array<string, array<int, string>> by owner id, then number
      */
     private array $texts = [];
 
     /**
-     * @var array<int, array<int, list<int>>> the numbers each entry refers to, by owner id, then number
+     * @var array<string, array<int, list<int>>> the numbers each entry refers to, by owner id, then number
      */
     private array $references = [];
 
@@ -49,7 +49,7 @@ final class HandbookEntries
     /**
      * The owner's entry with that number; another owner's entry of the same number is not theirs.
      */
-    public function visibleTo(int $ownerId, int $number): HandbookEntry
+    public function visibleTo(string $ownerId, int $number): HandbookEntry
     {
         $this->headerReads++;
 

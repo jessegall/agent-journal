@@ -1360,6 +1360,8 @@ use App\Ui\Layout\LayoutBodyData;
 use App\Ui\Layout\LayoutFieldData;
 use App\Ui\Layout\LayoutFormData;
 use App\Ui\Layout\LayoutMenuData;
+use App\Ui\Layout\LayoutMenuGroupData;
+use App\Ui\Layout\LayoutMenuItemData;
 use App\Ui\Layout\LayoutNativeData;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
@@ -2143,6 +2145,8 @@ final class CoreApi
                 UiMenu::class,
                 MenuItem::class,
                 LayoutMenuData::class,
+                LayoutMenuGroupData::class,
+                LayoutMenuItemData::class,
                 UiPage::class,
                 PaneChoice::class,
                 Section::class,

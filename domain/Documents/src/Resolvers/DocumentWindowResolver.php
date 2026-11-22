@@ -118,6 +118,7 @@ final readonly class DocumentWindowResolver implements PageResolver
             'reads' => $this->reads->of($identity),
             'version' => $document->revision,
         ]);
+
         $parts[] = LayoutPartData::native('comments', LayoutNativeData::of('documents/RecordComments', $comments));
 
         return LayoutPartData::box('text', 'stack', ...$parts);

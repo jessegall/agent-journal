@@ -38,6 +38,30 @@ final readonly class AccountsWindowResolver implements PageResolver
     {
         $accounts = Account::listed();
         $selections = ActiveAccount::listed();
+        $list = LayoutNativeData::of('accounts/AccountsWindow', $this->listOf($accounts, $selections));
+
+        return DeclaredLayoutData::of(LayoutPartData::box(
+            'accounts-page',
+            'stack',
+            $this->startsOf($accounts, $selections),
+            LayoutPartData::native('accounts', $list),
+        ));
+    }
+
+    /**
+     * The saved accounts with their use and usage, the sign-in attempts and cleanups, and each driver's methods.
+     */
+    public function list(): AccountListData
+    {
+        return $this->listOf(Account::listed(), ActiveAccount::listed());
+    }
+
+    /**
+     * @param  list<Account>  $accounts
+     * @param  list<ActiveAccount>  $selections
+     */
+    private function listOf(array $accounts, array $selections): AccountListData
+    {
         $chosen = array_map(fn (ActiveAccount $selection) => $selection->account_id, $selections);
         $counts = $this->uses->counts(array_map(fn (Account $account) => $account->recordIdentity(), $accounts));
         $now = CarbonImmutable::now();
@@ -45,7 +69,7 @@ final readonly class AccountsWindowResolver implements PageResolver
         $costs = AccountUsageCost::monthTotals(array_map(fn (Account $account) => $account->id, $accounts), $now);
         $threads = AccountUsageTokens::newestOf($accounts);
 
-        $list = AccountListData::from([
+        return AccountListData::from([
             'rows' => array_map(fn (Account $account) => AccountRowData::fromAccount(
                 $account,
                 in_array($account->id, $chosen, true),
@@ -68,13 +92,6 @@ final readonly class AccountsWindowResolver implements PageResolver
                 HookDriver::cases(),
             ),
         ]);
-
-        return DeclaredLayoutData::of(LayoutPartData::box(
-            'accounts-page',
-            'stack',
-            $this->startsOf($accounts, $selections),
-            LayoutPartData::native('accounts', LayoutNativeData::of('accounts/AccountsWindow', $list)),
-        ));
     }
 
     /**
