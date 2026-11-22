@@ -124,6 +124,7 @@ use App\Assignments\Support\ActivityDefinition;
 use App\Assignments\Support\AssigneeDefinition;
 use App\Autoload\Support\FolderClasses;
 use App\Contracts\StartTransaction;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Files\Values\FilePath;
@@ -182,6 +183,7 @@ final class AgentsServiceProvider extends ServiceProvider
 
         $this->app->bind(StartExecutor::class, fn () => new HostStartExecutor(
             $this->app->make(Repository::class)->string('agents.host_start_socket'),
+            $this->app->make(DriverCatalogue::class),
         ));
 
         $this->app->bind(RuntimeResolver::class, RuntimeRecords::class);

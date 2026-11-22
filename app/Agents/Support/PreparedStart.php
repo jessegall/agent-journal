@@ -23,12 +23,4 @@ final readonly class PreparedStart
         public string $workspace,
         public string $accountReference,
     ) {}
-
-    /**
-     * The name the protected host knows the selected driver by.
-     */
-    public function hostDriver(): string
-    {
-        return $this->selectedDriver->driver->hostName();
-    }
 }

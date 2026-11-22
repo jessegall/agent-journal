@@ -7,6 +7,7 @@ namespace App\Profiles\Support;
 use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Exceptions\ActorUnavailable;
 use App\Bus\Contracts\CommandFacts;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Exceptions\SignInAttemptStale;
@@ -29,6 +30,7 @@ final readonly class SignInCompletion
         private TargetAuthorizer $authorizer,
         private AccountNotices $notices,
         private CommandFacts $facts,
+        private DriverCatalogue $drivers,
     ) {}
 
     /**
@@ -74,7 +76,7 @@ final readonly class SignInCompletion
         }
 
         if ($attempt->account_id === null) {
-            $fallback = $attempt->method->accountNameFor($driver->displayName());
+            $fallback = $attempt->method->accountNameFor($this->drivers->family($driver->value)->label);
             $proposed = AccountLabel::proposedFrom($identity->display, $fallback);
             $account = Account::create($driver, Account::freeLabel($driver, $proposed), $staging);
             $attempt->completeWith($account);

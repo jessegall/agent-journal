@@ -12,8 +12,10 @@ use App\Drivers\Capabilities\TerminalCapabilities;
 use App\Drivers\Contracts\DriverCapabilities;
 use App\Drivers\Enums\DriverCapability;
 use App\Drivers\Enums\HookDriver;
+use App\Drivers\Values\DriverFamily;
 use App\Drivers\Values\DriverKey;
 use App\Drivers\Values\DriverRegistration;
+use App\Drivers\Values\ProviderKey;
 
 /**
  * The four drivers every journal ships: Claude Code and Codex, each in a terminal and headless (doc 103, section 3).
@@ -21,6 +23,18 @@ use App\Drivers\Values\DriverRegistration;
 final readonly class DefaultDrivers
 {
     public const int PROTOCOL_VERSION = 1;
+
+    /**
+     * @return list<DriverFamily>
+     */
+    public static function families(): array
+    {
+        return [
+            new DriverFamily('claude-code', 'Claude Code', ProviderKey::from('anthropic'), 'claude', true),
+            // Codex scopes its hooks per installation, not per thread, so a connected folder cannot run it isolated yet.
+            new DriverFamily('codex', 'Codex', ProviderKey::from('openai'), 'codex', false),
+        ];
+    }
 
     /**
      * @return list<DriverRegistration>

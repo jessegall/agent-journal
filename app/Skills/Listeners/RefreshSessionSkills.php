@@ -7,6 +7,7 @@ namespace App\Skills\Listeners;
 use App\Agents\Models\AgentSession;
 use App\Bus\Contracts\CommandFacts;
 use App\Contracts\Listener;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Drivers\Values\DriverKey;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Events\ContextStarted;
@@ -41,12 +42,13 @@ final readonly class RefreshSessionSkills implements Listener
         private AgentStack $stacks,
         private CommandFacts $facts,
         private SkillPublications $publications,
+        private DriverCatalogue $drivers,
     ) {}
 
     public function handle(ContextStarted $event): void
     {
         $session = AgentSession::byId($event->target->sessionId);
-        $driver = StartDriver::of($session->driver_key)->driver;
+        $driver = StartDriver::of($session->driver_key, $this->drivers)->driver;
         $generation = SkillGeneration::latestReady();
 
         if ($driver === null || ! $this->adapters->supports($driver) || $generation === null) {

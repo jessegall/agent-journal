@@ -9,6 +9,7 @@ use App\Agents\Exceptions\HostStartRefused;
 use App\Agents\Support\ExecutionReference;
 use App\Agents\Support\HostStartExecutor;
 use App\Agents\Support\PreparedStart;
+use App\Drivers\Contracts\DriverCatalogue;
 use Symfony\Component\Process\Process;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\TestCase;
@@ -39,7 +40,7 @@ final class HostStartExecutorTest extends TestCase
         $host = $this->hostAnswering(['startId' => 'start-1', 'execution' => 'execution-9',
             'executionMode' => 'protected_host', 'startedAt' => '2026-11-20T01:00:00Z']);
 
-        $receipt = new HostStartExecutor($this->socket)->start($this->prepared());
+        $receipt = new HostStartExecutor($this->socket, $this->app->make(DriverCatalogue::class))->start($this->prepared());
         $host->wait();
 
         $this->assertSame('execution-9', $receipt->execution->id);
@@ -55,7 +56,7 @@ final class HostStartExecutorTest extends TestCase
         $host = $this->hostAnswering(['execution' => 'execution-9', 'exitCode' => 3,
             'endedAt' => '2026-11-20T01:05:00Z']);
 
-        $receipt = new HostStartExecutor($this->socket)->stop(new ExecutionReference('execution-9'));
+        $receipt = new HostStartExecutor($this->socket, $this->app->make(DriverCatalogue::class))->stop(new ExecutionReference('execution-9'));
         $host->wait();
 
         $this->assertSame(3, $receipt->exitCode->get());
@@ -66,7 +67,7 @@ final class HostStartExecutorTest extends TestCase
         $host = $this->hostAnswering(['startId' => 'start-1', 'refusal' => self::REFUSAL]);
 
         try {
-            new HostStartExecutor($this->socket)->start($this->prepared());
+            new HostStartExecutor($this->socket, $this->app->make(DriverCatalogue::class))->start($this->prepared());
             $this->fail('A refused start returned a receipt.');
         } catch (HostStartRefused $refused) {
             $this->assertStringContainsString(self::REFUSAL, $refused->getMessage());
@@ -79,7 +80,7 @@ final class HostStartExecutorTest extends TestCase
     {
         $this->expectException(HostStartRefused::class);
 
-        new HostStartExecutor($this->socket)->start($this->prepared());
+        new HostStartExecutor($this->socket, $this->app->make(DriverCatalogue::class))->start($this->prepared());
     }
 
     /**

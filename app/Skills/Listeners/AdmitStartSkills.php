@@ -10,6 +10,7 @@ use App\Agents\Models\AgentSession;
 use App\Bus\Contracts\CommandFacts;
 use App\Contracts\Attributes\InCommandTransaction;
 use App\Contracts\Listener;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Drivers\DriverSkillAdapters;
 use App\Skills\Events\SessionSkillsIntended;
@@ -36,12 +37,13 @@ final readonly class AdmitStartSkills implements Listener
         private SkillResolver $skills,
         private CommandFacts $facts,
         private SkillPublications $publications,
+        private DriverCatalogue $drivers,
     ) {}
 
     public function handle(SessionOpened $event): void
     {
         $session = AgentSession::byId($event->sessionId);
-        $driver = StartDriver::of($session->driver_key)->driver;
+        $driver = StartDriver::of($session->driver_key, $this->drivers)->driver;
 
         if ($driver === null || ! $this->adapters->supports($driver)) {
             throw StartRefused::skillsUnsupported((string) $session->driver_key);

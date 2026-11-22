@@ -10,10 +10,13 @@ use App\Drivers\Contracts\Driver;
 use App\Drivers\Contracts\DriverCapabilities;
 use App\Drivers\Contracts\DriverCatalogue;
 use App\Drivers\Exceptions\DriverCapabilityUnsupported;
+use App\Drivers\Exceptions\DriverFamilyRegisteredTwice;
+use App\Drivers\Exceptions\DriverFamilyUnknown;
 use App\Drivers\Exceptions\DriverModeAmbiguous;
 use App\Drivers\Exceptions\DriverRegisteredTwice;
 use App\Drivers\Exceptions\DriverUnknown;
 use App\Drivers\Values\BoundTarget;
+use App\Drivers\Values\DriverFamily;
 use App\Drivers\Values\DriverKey;
 use App\Drivers\Values\DriverRegistration;
 use App\Drivers\Values\PinnedDriver;
@@ -31,20 +34,39 @@ final class DriverRegistry implements DriverCatalogue
      */
     private readonly Registry $registrations;
 
+    /**
+     * @var Registry<DriverFamily>
+     */
+    private readonly Registry $families;
+
     private int $revision = 0;
 
     public function __construct(private readonly Container $container)
     {
         $this->registrations = Registry::once(DriverUnknown::for(...), DriverRegisteredTwice::for(...));
+        $this->families = Registry::once(DriverFamilyUnknown::for(...), DriverFamilyRegisteredTwice::for(...));
     }
 
     /**
+     * @throws DriverFamilyRegisteredTwice
+     */
+    public function registerFamily(DriverFamily $family): void
+    {
+        $this->families->put($family->key, $family);
+    }
+
+    /**
+     * @throws DriverFamilyUnknown when no family is registered under the registration's family
      * @throws DriverRegisteredTwice
      * @throws DriverModeAmbiguous
      */
     public function register(DriverRegistration $registration): void
     {
         $key = (string) $registration->key;
+
+        if (! $this->families->has($registration->family)) {
+            throw DriverFamilyUnknown::for($registration->family);
+        }
 
         if ($this->registrations->has($key)) {
             throw DriverRegisteredTwice::for($key);
@@ -112,6 +134,24 @@ final class DriverRegistry implements DriverCatalogue
     public function catalogue(): array
     {
         return array_values($this->registrations->all());
+    }
+
+    public function hasFamily(string $key): bool
+    {
+        return $this->families->has($key);
+    }
+
+    public function family(string $key): DriverFamily
+    {
+        return $this->families->get($key);
+    }
+
+    /**
+     * @return list<DriverFamily>
+     */
+    public function families(): array
+    {
+        return array_values($this->families->all());
     }
 
     public function revision(): int

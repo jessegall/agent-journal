@@ -6,7 +6,7 @@ namespace App\Http\Data\Connections;
 
 use App\Connections\Enums\BindingReadiness;
 use App\Connections\Models\ProjectBinding;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Values\DriverFamily;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -48,12 +48,14 @@ final class ProjectBindingRowData extends Data
     ) {}
 
     /**
+     * @param  list<DriverFamily>  $families  the driver families a folder could start
      * @param  list<TerminalSignInRowData>  $signIns
      * @param  list<SupportRecordRowData>  $supportRecord
      */
     public static function fromBinding(
         ProjectBinding $binding,
         CarbonImmutable $serverTime,
+        array $families,
         array $signIns = [],
         string $currentRelease = '',
         array $supportRecord = [],
@@ -69,7 +71,7 @@ final class ProjectBindingRowData extends Data
             'projectId' => $binding->project_id,
             'environmentId' => $binding->environment_id,
             'environmentLabel' => $binding->environment->label ?? 'No environment',
-            'capabilities' => self::providersOf($binding, $state),
+            'capabilities' => self::providersOf($binding, $state, $families),
             'presenceExpiresAt' => $binding->presence_expires_at?->toIso8601String(),
             'revokedAt' => $binding->revoked_at?->toIso8601String(),
             'stateText' => self::stateTextOf($binding, $state, $currentRelease)
@@ -85,12 +87,13 @@ final class ProjectBindingRowData extends Data
      * Each driver the folder could start, offered only when the binding may start it and the folder is ready with an
      * environment; otherwise the row shows its status alone, with the reason for each driver.
      *
+     * @param  list<DriverFamily>  $families
      * @return list<array<string, bool|string>>
      */
-    private static function providersOf(ProjectBinding $binding, BindingReadiness $state): array
+    private static function providersOf(ProjectBinding $binding, BindingReadiness $state, array $families): array
     {
-        return array_map(function (HookDriver $driver) use ($binding, $state): array {
-            $reason = $binding->eligibilityOf($driver)->unavailableReason;
+        return array_map(function (DriverFamily $family) use ($binding, $state): array {
+            $reason = $binding->eligibilityOf($family)->unavailableReason;
 
             if ($reason === '' && $state !== BindingReadiness::Ready) {
                 $reason = 'Start waits until the folder is ready.';
@@ -105,13 +108,13 @@ final class ProjectBindingRowData extends Data
             }
 
             return [
-                'driver' => $driver->value,
-                'label' => $driver->displayName(),
+                'driver' => $family->key,
+                'label' => $family->label,
                 'canStart' => $reason === '',
-                'startCommand' => 'journal '.$driver->hostName(),
+                'startCommand' => 'journal '.$family->hostName,
                 'unavailableReason' => $reason,
             ];
-        }, HookDriver::cases());
+        }, $families);
     }
 
     /**

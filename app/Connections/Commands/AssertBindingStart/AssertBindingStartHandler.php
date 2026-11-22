@@ -9,6 +9,7 @@ use App\Connections\Enums\BindingReadiness;
 use App\Connections\Exceptions\BindingStartRefused;
 use App\Connections\Models\ProjectBinding;
 use App\Contracts\CommandHandler;
+use App\Drivers\Contracts\DriverCatalogue;
 
 /**
  * Checks a binding's start against what the binding registered: its host, root id, root folder and main agent, a
@@ -17,6 +18,8 @@ use App\Contracts\CommandHandler;
  */
 final readonly class AssertBindingStartHandler implements CommandHandler
 {
+    public function __construct(private DriverCatalogue $drivers) {}
+
     public function handle(AssertBindingStartCommand $command): void
     {
         $binding = ProjectBinding::lockById($command->bindingId);
@@ -47,7 +50,7 @@ final readonly class AssertBindingStartHandler implements CommandHandler
             throw BindingStartRefused::notTheMainAgent($binding->id);
         }
 
-        $eligibility = $binding->eligibilityOf($command->driver);
+        $eligibility = $binding->eligibilityOf($this->drivers->family($command->driver->value));
 
         if (! $eligibility->isEligible()) {
             throw BindingStartRefused::providerUnavailable($binding->id, $eligibility->unavailableReason);

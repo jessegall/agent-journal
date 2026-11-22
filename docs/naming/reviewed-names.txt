@@ -2986,6 +2986,9 @@ class	DriverConversationRecords
 class	DriverConversationSummary
 class	DriverEventName
 class	DriverFailed
+class	DriverFamily
+class	DriverFamilyRegisteredTwice
+class	DriverFamilyUnknown
 class	DriverHeartbeatSource
 class	DriverKey
 class	DriverKeyInvalid
@@ -9951,6 +9954,7 @@ method	AskTypeRegistry::all()
 method	AskTypeRegistry::get()
 method	AskTypeRegistry::register()
 method	AssertBindingStartCommand::__construct()
+method	AssertBindingStartHandler::__construct()
 method	AssertBindingStartHandler::handle()
 method	AssessPartOutputCommand::__construct()
 method	AssessPartOutputHandler::__construct()
@@ -12669,6 +12673,7 @@ method	DeclineChatQuestionHandler::__construct()
 method	DeclineChatQuestionHandler::handle()
 method	DeclineInput::__construct()
 method	DeclineQuestionController::__invoke()
+method	DefaultDrivers::families()
 method	DefaultDrivers::registration()
 method	DefaultDrivers::registrations()
 method	DefaultUnavailable::forStart()
@@ -13563,7 +13568,10 @@ method	DriverCapabilityUnsupported::for()
 method	DriverCapabilityUnsupported::refusalCode()
 method	DriverCapabilityUnsupported::status()
 method	DriverCatalogue::catalogue()
+method	DriverCatalogue::families()
+method	DriverCatalogue::family()
 method	DriverCatalogue::forKey()
+method	DriverCatalogue::hasFamily()
 method	DriverCatalogue::keyFor()
 method	DriverCatalogue::pinned()
 method	DriverCatalogue::revision()
@@ -13595,6 +13603,9 @@ method	DriverEvidence::isNativeShown()
 method	DriverFailed::__construct()
 method	DriverFailure::fromCheckedCode()
 method	DriverFailure::isAccountCheckNeeded()
+method	DriverFamily::__construct()
+method	DriverFamilyRegisteredTwice::for()
+method	DriverFamilyUnknown::for()
 method	DriverHeartbeatSource::__construct()
 method	DriverHeartbeatSource::record()
 method	DriverHeartbeatSource::recordExit()
@@ -13618,10 +13629,14 @@ method	DriverRegistration::__construct()
 method	DriverRegistration::sharesModeWith()
 method	DriverRegistry::__construct()
 method	DriverRegistry::catalogue()
+method	DriverRegistry::families()
+method	DriverRegistry::family()
 method	DriverRegistry::forKey()
+method	DriverRegistry::hasFamily()
 method	DriverRegistry::keyFor()
 method	DriverRegistry::pinned()
 method	DriverRegistry::register()
+method	DriverRegistry::registerFamily()
 method	DriverRegistry::revision()
 method	DriverReplies::allowTool()
 method	DriverReplies::denyProtected()
@@ -14993,11 +15008,6 @@ method	HookController::__invoke()
 method	HookController::failure()
 method	HookDeadlineExpired::forCall()
 method	HookDigestChanged::forCall()
-method	HookDriver::displayName()
-method	HookDriver::driverKey()
-method	HookDriver::hostName()
-method	HookDriver::isolatesHooksPerSession()
-method	HookDriver::provider()
 method	HookEvent::isSessionStart()
 method	HookEvent::isToolCall()
 method	HookFailure::__construct()
@@ -18284,7 +18294,6 @@ method	PreparedAgentCall::url()
 method	PreparedCall::__construct()
 method	PreparedCall::restored()
 method	PreparedStart::__construct()
-method	PreparedStart::hostDriver()
 method	PresencePolicy::model()
 method	PresenceReceipt::__construct()
 method	PresenceReceipt::toArray()
@@ -27015,6 +27024,7 @@ parameter	$failures
 parameter	$fallback
 parameter	$fallbacks
 parameter	$fallthrough
+parameter	$families
 parameter	$family
 parameter	$feed
 parameter	$feedbackAddress
@@ -27213,6 +27223,7 @@ parameter	$hops
 parameter	$host
 parameter	$hostCredential
 parameter	$hostId
+parameter	$hostName
 parameter	$hostSecret
 parameter	$hosts
 parameter	$href
@@ -27380,6 +27391,7 @@ parameter	$isUnread
 parameter	$isWaitingForAgents
 parameter	$isWholeText
 parameter	$isWorkRequired
+parameter	$isolatesHooksPerSession
 parameter	$isolation
 parameter	$issuanceKey
 parameter	$issue
@@ -29441,6 +29453,7 @@ property	AdmitStack::$admission
 property	AdmitStack::$deadline
 property	AdmitStartSkills::$adapters
 property	AdmitStartSkills::$contexts
+property	AdmitStartSkills::$drivers
 property	AdmitStartSkills::$facts
 property	AdmitStartSkills::$publications
 property	AdmitStartSkills::$selection
@@ -29898,6 +29911,7 @@ property	AssertBindingStartCommand::$driver
 property	AssertBindingStartCommand::$folder
 property	AssertBindingStartCommand::$hostId
 property	AssertBindingStartCommand::$rootId
+property	AssertBindingStartHandler::$drivers
 property	AssessPartOutputCommand::$partRunId
 property	AssessPartOutputHandler::$assessments
 property	AssignBindingEnvironmentCommand::$bindingId
@@ -31132,6 +31146,7 @@ property	ConnectProjectWindowData::$release
 property	ConnectProjectWindowData::$serverName
 property	ConnectProjectWindowResolver::$attempts
 property	ConnectProjectWindowResolver::$availability
+property	ConnectProjectWindowResolver::$drivers
 property	ConnectProjectWindowResolver::$labels
 property	ConnectProjectWindowResolver::$origin
 property	ConnectProjectWindowResolver::$releases
@@ -31973,6 +31988,11 @@ property	DriverFailed::$agentId
 property	DriverFailed::$driver
 property	DriverFailed::$failure
 property	DriverFailed::$sessionId
+property	DriverFamily::$hostName
+property	DriverFamily::$isolatesHooksPerSession
+property	DriverFamily::$key
+property	DriverFamily::$label
+property	DriverFamily::$provider
 property	DriverHeartbeatSource::$beats
 property	DriverHeartbeatSource::$heartbeats
 property	DriverKey::$key
@@ -31996,6 +32016,7 @@ property	DriverRegistration::$profileRequirements
 property	DriverRegistration::$protocolVersion
 property	DriverRegistration::$skillProtocol
 property	DriverRegistry::$container
+property	DriverRegistry::$families
 property	DriverRegistry::$registrations
 property	DriverRegistry::$revision
 property	DriverReply::$exitCode
@@ -32884,6 +32905,7 @@ property	HostDescriptorsData::$protocolVersion
 property	HostRefusalData::$refusal
 property	HostSkillPublisher::$files
 property	HostSkillPublisher::$targets
+property	HostStartExecutor::$drivers
 property	HostStartExecutor::$socket
 property	HostStartPreflight::$drivers
 property	HostStartReplyData::$execution
@@ -35280,7 +35302,7 @@ property	ProvenBranch::$processRunId
 property	ProvenBranch::$status
 property	ProvenSkillRead::$evidence
 property	ProvenSkillRead::$skillKey
-property	ProviderEligibility::$driver
+property	ProviderEligibility::$family
 property	ProviderEligibility::$unavailableReason
 property	ProviderKey::$key
 property	Providers::$keys
@@ -35960,6 +35982,7 @@ property	RefreshResult::$reused
 property	RefreshRunActivity::$updates
 property	RefreshSessionSkills::$adapters
 property	RefreshSessionSkills::$contexts
+property	RefreshSessionSkills::$drivers
 property	RefreshSessionSkills::$facts
 property	RefreshSessionSkills::$publications
 property	RefreshSessionSkills::$selection
@@ -37902,6 +37925,7 @@ property	SignInChallenges::$cache
 property	SignInChallenges::$encrypter
 property	SignInCode::$code
 property	SignInCompletion::$authorizer
+property	SignInCompletion::$drivers
 property	SignInCompletion::$facts
 property	SignInCompletion::$notices
 property	SignInDeadline::$attemptId
@@ -37977,6 +38001,7 @@ property	SkillContext::$profile
 property	SkillContext::$provider
 property	SkillContext::$sessionId
 property	SkillContextResolver::$agents
+property	SkillContextResolver::$drivers
 property	SkillContextResolver::$profiles
 property	SkillContextResolver::$session
 property	SkillCopyCommand::$description
@@ -40355,6 +40380,7 @@ variable	$failure
 variable	$failures
 variable	$fallback
 variable	$fallthrough
+variable	$family
 variable	$fault
 variable	$faults
 variable	$fence

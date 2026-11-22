@@ -10,6 +10,7 @@ use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Values\ProfileKey;
 use App\Skills\Exceptions\SkillAgentHidden;
@@ -33,6 +34,7 @@ final readonly class SkillContextResolver
         private CurrentSession $session,
         private AgentResolver $agents,
         private ProfileResolver $profiles,
+        private DriverCatalogue $drivers,
     ) {}
 
     /**
@@ -126,7 +128,7 @@ final readonly class SkillContextResolver
 
     private function contextOf(Agent $agent, AgentSession $session, StartProfile $profile): SkillContext
     {
-        $driver = StartDriver::of($session->driver_key);
+        $driver = StartDriver::of($session->driver_key, $this->drivers);
 
         return new SkillContext(
             actor: new ActorIdentity(ActorType::Agent, $agent->id),

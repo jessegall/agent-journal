@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace App\Connections\Values;
 
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Values\DriverFamily;
 
 /**
  * Whether a connected folder may start one driver: eligible, or unavailable with the reason the owner reads.
  */
 final readonly class ProviderEligibility
 {
-    private function __construct(public HookDriver $driver, public string $unavailableReason) {}
+    private function __construct(public DriverFamily $family, public string $unavailableReason) {}
 
-    public static function eligible(HookDriver $driver): self
+    public static function eligible(DriverFamily $family): self
     {
-        return new self($driver, '');
+        return new self($family, '');
     }
 
-    public static function unavailable(HookDriver $driver, string $reason): self
+    public static function unavailable(DriverFamily $family, string $reason): self
     {
-        return new self($driver, $reason);
+        return new self($family, $reason);
     }
 
     public function isEligible(): bool

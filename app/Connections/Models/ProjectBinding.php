@@ -22,7 +22,7 @@ use App\Connections\Values\PresenceReport;
 use App\Connections\Values\ProviderEligibility;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
-use App\Drivers\Enums\HookDriver;
+use App\Drivers\Values\DriverFamily;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -418,23 +418,23 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      * Whether the binding may start the driver: one whose hooks run isolated per session, that its relay reported it
      * can run with isolated hooks, start grants and a lease.
      */
-    public function eligibilityOf(HookDriver $driver): ProviderEligibility
+    public function eligibilityOf(DriverFamily $family): ProviderEligibility
     {
-        if (! $driver->isolatesHooksPerSession()) {
+        if (! $family->isolatesHooksPerSession) {
             return ProviderEligibility::unavailable(
-                $driver,
-                "{$driver->displayName()} does not keep its hooks to one session yet, so a connected folder cannot run it isolated.",
+                $family,
+                "{$family->label} does not keep its hooks to one session yet, so a connected folder cannot run it isolated.",
             );
         }
 
-        if (! $this->host->declaresDriver($driver)) {
+        if (! $this->host->declaresDriver($family->key)) {
             return ProviderEligibility::unavailable(
-                $driver,
-                "This folder's relay has not reported it can run {$driver->displayName()} with isolated hooks and a lease.",
+                $family,
+                "This folder's relay has not reported it can run {$family->label} with isolated hooks and a lease.",
             );
         }
 
-        return ProviderEligibility::eligible($driver);
+        return ProviderEligibility::eligible($family);
     }
 
     /**

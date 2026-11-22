@@ -18,6 +18,7 @@ use App\Connections\Models\Environment;
 use App\Connections\Models\Project;
 use App\Connections\Models\ProjectBinding;
 use App\Connections\Support\InstallAttemptList;
+use App\Drivers\Contracts\DriverCatalogue;
 use App\Http\Data\Connections\BindingListData;
 use App\Http\Data\Connections\ConnectProjectWindowData;
 use App\Http\Data\Connections\InstallAttemptListData;
@@ -43,6 +44,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
         private InstallAttemptList $attempts,
         private ActorLabels $labels,
         private Request $request,
+        private DriverCatalogue $drivers,
     ) {}
 
     public function read(): ConnectProjectWindowData
@@ -126,6 +128,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
         return array_map(fn (ProjectBinding $binding) => ProjectBindingRowData::fromBinding(
             $binding,
             $now,
+            $this->drivers->families(),
             array_map(
                 fn (DeviceGrant $grant) => TerminalSignInRowData::fromGrant(
                     $grant,

@@ -777,6 +777,7 @@ use App\Drivers\Exceptions\DriverRequestMismatch;
 use App\Drivers\Exceptions\DriverUnknown;
 use App\Drivers\Exceptions\ProviderKeyInvalid;
 use App\Drivers\Values\BoundTarget;
+use App\Drivers\Values\DriverFamily;
 use App\Drivers\Values\DriverKey;
 use App\Drivers\Values\DriverRegistration;
 use App\Drivers\Values\DriverResult;
@@ -2003,6 +2004,7 @@ final class CoreApi
                 ResumableConversation::class,
                 StackTarget::class,
                 DriverRegistration::class,
+                DriverFamily::class,
                 PinnedDriver::class,
                 SupportSnapshot::class,
                 OperationSupport::class,

@@ -9,6 +9,7 @@ use App\Agents\Data\HostRefusalData;
 use App\Agents\Data\HostStartReplyData;
 use App\Agents\Data\HostStopReplyData;
 use App\Agents\Exceptions\HostStartRefused;
+use App\Drivers\Contracts\DriverCatalogue;
 use Carbon\CarbonImmutable;
 use PhpOption\Option;
 use Spatie\LaravelData\Exceptions\CannotCreateData;
@@ -22,7 +23,7 @@ final readonly class HostStartExecutor implements StartExecutor
 {
     private const int REPLY_SECONDS = 60;
 
-    public function __construct(private string $socket) {}
+    public function __construct(private string $socket, private DriverCatalogue $drivers) {}
 
     public function start(PreparedStart $start): ExecutionReceipt
     {
@@ -30,7 +31,7 @@ final readonly class HostStartExecutor implements StartExecutor
             'startId' => $start->startId,
             'runtimeId' => $start->runtimeId,
             'sessionId' => $start->sessionId,
-            'driver' => $start->hostDriver(),
+            'driver' => $this->drivers->family($start->selectedDriver->driver->value)->hostName,
             'executionMode' => $start->executionMode->value,
             'policyReference' => $start->policyReference,
             'workspace' => $start->workspace,

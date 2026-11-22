@@ -19,6 +19,10 @@ final class DriversServiceProvider extends ServiceProvider
         $this->app->singleton(DriverRegistry::class, function (): DriverRegistry {
             $registry = new DriverRegistry($this->app);
 
+            foreach (DefaultDrivers::families() as $family) {
+                $registry->registerFamily($family);
+            }
+
             foreach (DefaultDrivers::registrations() as $registration) {
                 $registry->register($registration);
             }

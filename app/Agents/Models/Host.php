@@ -290,10 +290,10 @@ final class Host extends Model implements ReadableModel
     /**
      * Whether the host enrolled any available driver of the family, in any build, placement or mode.
      */
-    public function declaresDriver(HookDriver $driver): bool
+    public function declaresDriver(string $family): bool
     {
         foreach ($this->availableDescriptors() as $descriptor) {
-            if ($descriptor['family'] === $driver->value) {
+            if ($descriptor['family'] === $family) {
                 return true;
             }
         }
