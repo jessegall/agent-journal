@@ -46,6 +46,11 @@ final class ChatStateConflict extends RuntimeException implements CodedRefusal, 
         return new self("Speech opportunity {$opportunityId} is not claimed.", 'opportunity-not-claimed');
     }
 
+    public static function batchSettled(string $batchId): self
+    {
+        return new self("Presentation batch {$batchId} is already settled.", 'batch-settled');
+    }
+
     protected function status(): int
     {
         return 409;
