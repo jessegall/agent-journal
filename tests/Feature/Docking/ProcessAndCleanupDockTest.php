@@ -164,7 +164,7 @@ final class ProcessAndCleanupDockTest extends TestCase
         $this->callMcpTool($this->agent, 'dock_add', [
             'type' => Note::LINK_TYPE,
             'id' => $note->id,
-            'chat' => $elsewhere->id,
+            'chat' => $elsewhere->inbox_id,
             'request_key' => 'dock-elsewhere',
         ])->assertJsonPath('result.structuredContent.outcome', 'added');
 

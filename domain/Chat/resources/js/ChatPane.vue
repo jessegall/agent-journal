@@ -188,6 +188,7 @@ function retryFocused(): void {
                     :key="conversation.inboxId"
                     :dock="conversation.dock"
                     :agent-id="conversation.agentId"
+                    :inbox-id="conversation.inboxId"
                     :load-more="loadMore"
                 />
                 <Composer

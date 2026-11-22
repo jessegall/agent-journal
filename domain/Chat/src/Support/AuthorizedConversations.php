@@ -5,64 +5,34 @@ declare(strict_types=1);
 namespace Domain\Chat\Support;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\AgentDirectory;
-use App\Agents\Exceptions\StackTargetRefused;
-use App\Agents\Support\AgentOption;
-use App\Communication\Contracts\ActorInboxResolver;
-use App\Communication\Contracts\InboxDestinationResolver;
+use App\Communication\Contracts\InboxResolver;
 use App\Communication\Exceptions\InboxUnavailable;
 use Domain\Chat\Exceptions\ConversationUnavailable;
+use Domain\Chat\Models\Conversation;
 
 /**
- * The current actor and one agent it may see, with their desk inboxes, as the key to their direct chat. Two inbox ids
- * alone never authorize, and every refusal reads the same, before any placement or source is looked up.
+ * The chat the current actor names by its inbox, when it holds an active interval in it. An inbox id alone never
+ * authorizes, and a chat the actor takes no part in is refused the same way as one that does not exist.
  */
 final readonly class AuthorizedConversations
 {
     public function __construct(
         private CurrentActor $actors,
-        private AgentDirectory $agents,
-        private ActorInboxResolver $ownInboxes,
-        private InboxDestinationResolver $destinations,
+        private InboxResolver $inboxes,
     ) {}
-
-    /**
-     * The conversation with an agent the reader already sees: a missing own inbox is a setup problem, told apart from a
-     * peer the actor may not see, and answered as it is.
-     *
-     * @throws InboxUnavailable
-     */
-    public function withVisibleAgent(AgentOption $agent): ConversationPeers
-    {
-        return $this->peersWith($agent);
-    }
 
     /**
      * @throws ConversationUnavailable
      */
-    public function withAgent(string $agentId): ConversationPeers
+    public function inInbox(string $inboxId): Conversation
     {
         try {
-            return $this->peersWith($this->agents->visibleAgent($agentId));
-        } catch (StackTargetRefused|InboxUnavailable $refused) {
+            $inbox = $this->inboxes->resolve($inboxId);
+            $this->inboxes->accessFor($inbox)->membership($inbox, $this->actors->actor());
+        } catch (InboxUnavailable $refused) {
             throw ConversationUnavailable::withPeer($refused);
         }
-    }
 
-    /**
-     * @throws InboxUnavailable
-     */
-    private function peersWith(AgentOption $agent): ConversationPeers
-    {
-        $actor = $this->actors->actor();
-
-        return new ConversationPeers(
-            $this->ownInboxes->preferredFor($actor)->inboxId(),
-            $this->destinations->resolve($agent->assignee)->inboxId(),
-            ActorIdentity::of($actor),
-            new ActorIdentity(ActorType::Agent, $agent->agentId),
-        );
+        return Conversation::forInbox($inboxId);
     }
 }

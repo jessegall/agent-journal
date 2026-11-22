@@ -13,9 +13,8 @@ use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Data\DockPageData;
+use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\DockPlacement;
-use Domain\Chat\Support\AuthorizedConversations;
-use Domain\Chat\Support\ConversationPeers;
 use Domain\Chat\Support\DockProjection;
 use Domain\Chat\Tests\TestCase;
 use Tests\Fixtures\Docking\ProjectionDockable;
@@ -61,7 +60,7 @@ final class DockProjectionTest extends TestCase
 
     private User $owner;
 
-    private ConversationPeers $peers;
+    private Conversation $conversation;
 
     protected function setUp(): void
     {
@@ -70,7 +69,10 @@ final class DockProjectionTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $agentId = $this->startedMainAgentSession()->agent_id;
-        $this->pairChat(ActorIdentity::of($this->owner), new ActorIdentity(ActorType::Agent, $agentId));
+        $this->conversation = $this->pairChat(
+            ActorIdentity::of($this->owner),
+            new ActorIdentity(ActorType::Agent, $agentId),
+        );
 
         $this->app->make(DockRegistration::class)->register(
             self::TYPE,
@@ -79,7 +81,6 @@ final class DockProjectionTest extends TestCase
         );
 
         $this->startUserRequestAs($this->owner->id);
-        $this->peers = $this->app->make(AuthorizedConversations::class)->withAgent($agentId);
     }
 
     public function test_three_unreadable_batches_give_an_empty_page_and_the_readable_card_comes_next(): void
@@ -127,7 +128,7 @@ final class DockProjectionTest extends TestCase
      */
     private function dock(array $ids): void
     {
-        $conversation = $this->peers->conversation();
+        $conversation = $this->conversation;
         $at = CarbonImmutable::now()->subDay();
 
         foreach ($ids as $id) {
@@ -142,7 +143,7 @@ final class DockProjectionTest extends TestCase
 
     private function page(string|null $token): DockPageData
     {
-        return $this->app->make(DockProjection::class)->page($this->peers->existingConversation(), $token);
+        return $this->app->make(DockProjection::class)->page($this->conversation, $token);
     }
 
     /**

@@ -78,7 +78,7 @@ final class DockAdmissionTest extends TestCase
         $this->pairChat(ActorIdentity::of($this->owner), new ActorIdentity(ActorType::Agent, $this->agentId));
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);
         $this->startUserRequestAs($this->owner->id);
-        $this->conversationId = $this->app->make(DockRequests::class)->conversationWith($this->agentId)->id;
+        $this->conversationId = $this->app->make(DockRequests::class)->conversationWith($this->agentId)->inbox_id;
     }
 
     public function test_a_second_dock_of_one_source_answers_its_one_placement(): void
@@ -113,6 +113,7 @@ final class DockAdmissionTest extends TestCase
         $chat = "/chat?agent={$this->agentId}&dock=page-2";
 
         $this->actingAs($this->owner)->from($chat)->post('/chat/dock/remove', [
+            'inboxId' => $this->conversationId,
             'agent' => $this->agentId,
             'placementId' => $added->placementId,
             'type' => 'tasks.task',
@@ -155,7 +156,7 @@ final class DockAdmissionTest extends TestCase
 
         $this->expectException(ConversationUnavailable::class);
 
-        $this->runKeyed(new DockSource($strangers->id, 'tasks.task', $this->task->id), (string) Str::ulid());
+        $this->runKeyed(new DockSource($strangers->inbox_id, 'tasks.task', $this->task->id), (string) Str::ulid());
     }
 
     private function dockTask(): DockSource

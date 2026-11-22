@@ -23,7 +23,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 #[IsReadOnly]
 #[Name('dock_list')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper)]
-#[Description('The records docked above your conversation: placement id, type, source id, title and state, never a card body. Give chat when you take part in several conversations.')]
+#[Description('The records docked above your conversation: placement id, type, source id, title and state, never a card body. Give chat (the chat's inbox id) when you are in several chats.')]
 final class DockListTool extends JournalReadTool
 {
     public function __construct(private readonly DockRequests $requests, private readonly DockListing $listing) {}

@@ -11,23 +11,21 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Models\Concerns\PlacedInConversation;
-use Domain\Chat\Support\ConversationPair;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * One message a user or agent pinned in one conversation, its own and nobody else's: a seat change never moves it.
+ * One message a user or agent pinned in one chat, its own and nobody else's: leaving and rejoining never moves it.
  *
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
- * @property string $source_inbox_id
- * @property string $destination_inbox_id
+ * @property string $inbox_id
  * @property string $message_id
  * @property CarbonImmutable $pinned_at
  */
-#[Fillable(['source_inbox_id', 'destination_inbox_id', 'message_id', 'pinned_at'])]
+#[Fillable(['inbox_id', 'message_id', 'pinned_at'])]
 final class MessagePin extends Model implements ReadableModel
 {
     use BelongsToOneActor;
@@ -55,12 +53,12 @@ final class MessagePin extends Model implements ReadableModel
      */
     public static function pinFor(
         ActorIdentity $owner,
-        ConversationPair $conversation,
+        string $inboxId,
         string $messageId,
     ): self {
         $existing = self::query()
             ->ownedBy($owner)
-            ->inConversation($conversation)
+            ->inConversation($inboxId)
             ->where('message_id', $messageId)
             ->first();
 
@@ -69,8 +67,7 @@ final class MessagePin extends Model implements ReadableModel
         }
 
         $pin = new self([
-            'source_inbox_id' => $conversation->sourceInboxId,
-            'destination_inbox_id' => $conversation->destinationInboxId,
+            'inbox_id' => $inboxId,
             'message_id' => $messageId,
             'pinned_at' => CarbonImmutable::now(),
         ]);

@@ -19,6 +19,7 @@ use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\OpensPairChats;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\StartsMainAgents;
 use Tests\Support\WritesInboxMessages;
@@ -29,6 +30,7 @@ use Tests\Support\WritesInboxMessages;
  */
 final class DockSectionTest extends TestCase
 {
+    use OpensPairChats;
     use CommitsHookRows;
     use StartsAgentRequests;
     use StartsMainAgents;
@@ -72,7 +74,7 @@ final class DockSectionTest extends TestCase
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         $this->app->make(CommandBus::class)->run(
-            new DockSource($conversation->id, 'tasks.task', $task->id),
+            new DockSource($conversation->inbox_id, 'tasks.task', $task->id),
         );
 
         $this->assertSame(['Ship the dock'], $this->dockedTitles($owner, $window));
@@ -90,7 +92,11 @@ final class DockSectionTest extends TestCase
             "Build ready\nAll checks passed.",
         );
 
-        $dock = ['agent' => $session->agent_id, 'type' => Message::LINK_TYPE, 'id' => $message->id];
+        $inboxId = $this->pairChat(
+            ActorIdentity::of($owner),
+            new ActorIdentity(ActorType::Agent, $session->agent_id),
+        )->inbox_id;
+        $dock = ['inboxId' => $inboxId, 'type' => Message::LINK_TYPE, 'id' => $message->id];
 
         $this->actingAs($owner)->postJson('/chat/dock', $dock)->assertSuccessful()->assertJson(['outcome' => 'added']);
         $again = $this->actingAs($owner)->postJson('/chat/dock', $dock);

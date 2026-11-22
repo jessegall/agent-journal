@@ -177,14 +177,6 @@ final class Conversation extends Model implements ReadableModel
             : new ActorIdentity(ActorType::from($this->owner_type), $this->owner_id));
     }
 
-    /**
-     * Whether the actor takes part in the chat: its owner, or one side of its direct pair.
-     */
-    public function joins(ActorIdentity $actor): bool
-    {
-        return $this->isOwnedBy($actor) || $this->directChat?->holds($actor) === true;
-    }
-
     // ----------[ Relations ]----------
 
     /**
@@ -224,18 +216,5 @@ final class Conversation extends Model implements ReadableModel
     protected function ownedBy(Builder $query, ActorIdentity $actor): void
     {
         $query->where('owner_type', $actor->type->value)->where('owner_id', $actor->id);
-    }
-
-    /**
-     * The chats the actor takes part in.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function joinedBy(Builder $query, ActorIdentity $actor): void
-    {
-        $query->where(fn (Builder $member) => $member
-            ->ownedBy($actor)
-            ->orWhereHas('directChat', fn (Builder $direct) => $direct->heldBy($actor)));
     }
 }
