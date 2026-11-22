@@ -20,7 +20,16 @@ const readerId = useId();
 const snapshot = ref<string | null>(null);
 
 function snapshotText(): string {
-    return (drawn.value?.rows ?? []).map((row) => row.runs.map((run) => run.text).join('')).join('\n');
+    const rows = (drawn.value?.rows ?? []).map((row) => row.runs.map((run) => run.text).join('')).join('\n');
+    const menu = drawn.value?.menu;
+
+    if (menu === undefined || menu === null) {
+        return rows;
+    }
+
+    const options = menu.labels.map((label, index) => `${index === menu.highlighted ? '(highlighted) ' : ''}${label}`);
+
+    return `${rows}\n\nMenu options:\n${options.join('\n')}`;
 }
 
 function readScreen(): void {

@@ -79,6 +79,7 @@ useTerminalResize(area, control);
                     :other-view-controls="presentation.screen.frame?.inputOwner === 'browser' && !control.holdsGrant()"
                     :agent-id="agentId"
                     :identity="presentation.screen.identity"
+                :menu="presentation.screen.frame?.menu ?? null"
                     @owner="(label: string) => emit('owner', label)"
                 />
                 <template v-if="sessionChanged">

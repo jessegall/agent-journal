@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
 import Button from '@/components/kit/Button.vue';
-import type { TerminalScreenIdentityData } from '@generated/types/core';
+import type { ScreenMenuData, TerminalScreenIdentityData } from '@generated/types/core';
 import { PASTE_BYTE_LIMIT } from './terminalControl';
 import TerminalStopAction from './TerminalStopAction.vue';
 import type { TerminalControlHandle } from './useTerminalControl';
@@ -16,6 +16,8 @@ const props = defineProps<{
     otherViewControls: boolean;
     agentId: string;
     identity: TerminalScreenIdentityData | null;
+    // The recognized menu the shown screen holds, with its labels and highlight.
+    menu: ScreenMenuData | null;
 }>();
 
 const emit = defineEmits<{ owner: [label: string] }>();
@@ -169,6 +171,60 @@ function cancelPrivate(): void {
     (privateButton.value ?? controlsButton.value)?.focus();
 }
 
+/**
+ * The menu choice: Previous option and Next option send one arrow each; Confirm is enabled only for the highlight the
+ * screen showed after the last move, at that same revision, never for a count of presses.
+ */
+const awaitingHighlight = ref(false);
+const seen = ref<{ label: string; revision: number } | null>(null);
+const highlightedLabel = computed(() => {
+    const menu = props.menu;
+
+    return menu === null || menu.highlighted < 0 ? '' : (menu.labels[menu.highlighted] ?? '');
+});
+
+function moveHighlight(key: 'up' | 'down'): void {
+    seen.value = null;
+    awaitingHighlight.value = true;
+    void props.control.sendKey(key);
+}
+
+watch(
+    () => [props.menu?.revision, props.menu?.highlighted],
+    () => {
+        const menu = props.menu;
+
+        if (menu === null || menu.highlighted < 0) {
+            seen.value = null;
+
+            return;
+        }
+        if (awaitingHighlight.value || seen.value === null) {
+            seen.value = { label: highlightedLabel.value, revision: menu.revision };
+            awaitingHighlight.value = false;
+        }
+    },
+    { immediate: true },
+);
+
+const mayConfirm = computed(
+    () =>
+        props.menu !== null &&
+        seen.value !== null &&
+        !awaitingHighlight.value &&
+        props.menu.revision === seen.value.revision &&
+        highlightedLabel.value === seen.value.label,
+);
+
+function confirmChoice(): void {
+    if (!mayConfirm.value) {
+        return;
+    }
+
+    void props.control.send('', true);
+    seen.value = null;
+}
+
 // Keys typed while control was gone are dropped, never replayed, and a private value never outlives its field.
 watch(
     () => view.value.state,
@@ -315,6 +371,33 @@ async function copy(text: string): Promise<void> {
                 <Button variant="primary" size="sm" type="submit">Send privately</Button>
                 <Button variant="ghost" size="sm" @click="cancelPrivate">Cancel</Button>
             </form>
+        </template>
+        <template v-if="menu !== null">
+            <section class="flex flex-col gap-1.5" aria-label="Driver menu">
+                <ul class="flex flex-col text-small">
+                    <template v-for="(label, index) in menu.labels" :key="`${index}:${label}`">
+                        <li :class="index === menu.highlighted ? 'font-semibold text-text' : 'text-text-2'">
+                            {{ index === menu.highlighted ? '› ' : '  ' }}{{ label }}
+                        </li>
+                    </template>
+                </ul>
+                <p class="sr-only" role="status" aria-live="polite">
+                    {{ highlightedLabel ? `Highlighted: ${highlightedLabel}` : '' }}
+                </p>
+                <template v-if="menu.highlighted < 0">
+                    <p class="text-small text-warn">The highlighted option cannot be told; refresh or go back.</p>
+                </template>
+                <template v-if="view.state === 'controlling'">
+                    <div class="flex flex-wrap gap-1.5">
+                        <Button variant="bordered" size="sm" @click="moveHighlight('up')">Previous option</Button>
+                        <Button variant="bordered" size="sm" @click="moveHighlight('down')">Next option</Button>
+                        <Button variant="primary" size="sm" :disabled="!mayConfirm" @click="confirmChoice">
+                            Confirm {{ mayConfirm ? highlightedLabel : '' }}
+                        </Button>
+                        <Button variant="ghost" size="sm" @click="control.check()">Refresh</Button>
+                    </div>
+                </template>
+            </section>
         </template>
         <template v-if="view.state === 'choosing'">
             <div class="flex flex-col gap-1.5" role="group" aria-label="The unfinished line">

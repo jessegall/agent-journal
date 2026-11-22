@@ -46,6 +46,8 @@ type Frame struct {
 	Attachment        string `json:"attachment"`
 	ContainerInstance string `json:"container_instance"`
 	ConnectionLost    bool   `json:"connection_lost"`
+	// Menu is the recognized menu on a public screen, with its labels and highlight, for a choice made by name.
+	Menu *FrameMenu `json:"menu,omitempty"`
 }
 
 // FrameLimit is the most bytes of JSON one frame may take.
@@ -83,11 +85,17 @@ func (reader *EmulatorReader) ExportFrame(layout Layout, epoch string, sequence 
 	reader.lock.Lock()
 	defer reader.lock.Unlock()
 
-	if !layout.Exportable(reader.snapshot()) {
+	snapshot := reader.snapshot()
+	if !layout.Exportable(snapshot) {
 		return reader.shieldFrame(epoch, sequence, now)
 	}
 
-	return reader.frame(epoch, sequence, now)
+	frame := reader.frame(epoch, sequence, now)
+	if menu, found := layout.frameMenu(snapshot, reader.screenGeneration); found {
+		frame.Menu = &menu
+	}
+
+	return frame
 }
 
 // ShieldFrame is the placeholder that stands for the screen while a capture barrier is closed: no rows, no cursor.

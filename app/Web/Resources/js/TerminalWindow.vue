@@ -45,6 +45,7 @@ const backToChat = {
                     :other-view-controls="presentation.screen.frame?.inputOwner === 'browser' && !control.holdsGrant()"
                     :agent-id="data.agentId"
                     :identity="presentation.screen.identity"
+                    :menu="presentation.screen.frame?.menu ?? null"
                     @owner="(label: string) => (ownerLabel = label)"
                 />
                 <template v-if="state === 'not_reporting' || state === 'refused' || state === 'connection_lost'">

@@ -53,5 +53,6 @@ final class ScreenFrameData extends Data
         public readonly ?string $attachment = null,
         public readonly ?string $containerInstance = null,
         public readonly bool $connectionLost = false,
+        public readonly ScreenMenuData|null $menu = null,
     ) {}
 }
