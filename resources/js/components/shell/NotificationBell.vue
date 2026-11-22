@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
 import IconAction from '@/components/kit/IconAction.vue';
-import Modal from '@/components/kit/Modal.vue';
+import Sheet from '@/components/kit/Sheet.vue';
 import { useBellPanel } from '@/composables/useBellPanel';
 import { useNotifications } from '@/composables/useNotifications';
 import { useToasts } from '@/composables/useToasts';
@@ -10,8 +10,8 @@ import NotificationList from './NotificationList.vue';
 
 /**
  * The shell's bell: its button names the exact unread count, a badge shows it to the eye (none at zero, 99+ from a
- * hundred), and it opens the list beside it on a desktop or as a dialog on a phone. Opening marks nothing; Escape and
- * closing return focus to the bell.
+ * hundred), and it opens the list beside it on a desktop or as a titled sheet on a phone. Opening marks nothing;
+ * Escape and closing return focus to the bell.
  */
 const notifications = useNotifications();
 const { state, shown, items, hasOlder, olderFailed, hasNewItems, pending, canChange } = notifications;
@@ -20,7 +20,6 @@ const { isOpen, registerFocus } = useBellPanel();
 const isCompact = ref(false);
 const lastOpenedId = ref<string | undefined>(undefined);
 const bell = ref<InstanceType<typeof IconAction> | null>(null);
-const list = ref<InstanceType<typeof NotificationList> | null>(null);
 
 registerFocus(() => bell.value?.focus());
 
@@ -137,9 +136,8 @@ function followed(receiptId: string): void {
             </div>
         </template>
         <template v-if="isCompact">
-            <Modal :is-open="isOpen" title="Notifications" @close="close" @opened="list?.focusHeading()">
+            <Sheet :is-open="isOpen" title="Notifications" @close="close">
                 <NotificationList
-                    ref="list"
                     :id="panelId"
                     :state="state"
                     :page="shown"
@@ -162,7 +160,7 @@ function followed(receiptId: string): void {
                         Resume toasts
                     </button>
                 </template>
-            </Modal>
+            </Sheet>
         </template>
     </div>
 </template>
