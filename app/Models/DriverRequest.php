@@ -528,9 +528,11 @@ final class DriverRequest extends Model implements ReadableModel
     public function carry(DriverRequestPayload $envelope): void
     {
         $this->message = $envelope->message;
+
         $this->parts = $envelope->parts === []
             ? null
             : array_map(fn (MessagePart $part): array => $part->toArray(), $envelope->parts);
+
         $this->model = $envelope->model;
         $this->effort = $envelope->effort;
         $this->script_id = $envelope->scriptId;

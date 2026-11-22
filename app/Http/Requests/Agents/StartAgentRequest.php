@@ -46,6 +46,7 @@ final class StartAgentRequest extends FormRequest
         StartPreviews $previews,
     ): StartAgentCommand {
         $agent = Agent::query()->findOrFail(strtolower((string) $this->route('agent')));
+
         $selection = SelectedDriver::resolve(
             $this->filled('driver') ? $this->string('driver')->toString() : null,
             ModelSelection::fromInput($this->filled('model') ? $this->string('model')->toString() : null),
@@ -53,6 +54,7 @@ final class StartAgentRequest extends FormRequest
             null,
             $drivers,
         );
+
         [$variant] = $previews->modeFor(
             $agent,
             $selection->driver,

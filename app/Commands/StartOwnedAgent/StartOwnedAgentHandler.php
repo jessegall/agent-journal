@@ -33,6 +33,7 @@ final readonly class StartOwnedAgentHandler implements CommandHandler
         $request = $command->request;
         $parentSessionId = $this->sessions->hasSession() ? $this->sessions->sessionId() : null;
         $agent = Agent::query()->findOrFail($request->agent->id);
+
         [$variant] = $this->previews->modeFor(
             $agent,
             $request->selection->driver,

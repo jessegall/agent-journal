@@ -107,6 +107,7 @@ final class TextUploadTest extends TestCase
             DriverRequestRefused::class,
             DriverRequestRefused::attachmentMissing($id)->getMessage(),
         );
+
         $this->assertThrows(
             fn () => $attachments->assertReadable(MessagePart::attachment($id, 'older', 'notes.md'), $recipient->session->id),
             DriverRequestRefused::class,

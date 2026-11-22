@@ -120,6 +120,7 @@ final readonly class StartAgentHandler implements CommandHandler
                 $request->chosenAccount->accountId,
                 $request->chosenAccount->reviewedSignIn,
             );
+
         $this->accountSharing->assertMayStart($pinned, $account);
 
         $parent = $request->parentSessionId === null

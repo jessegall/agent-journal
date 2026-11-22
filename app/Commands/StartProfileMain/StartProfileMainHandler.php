@@ -44,6 +44,7 @@ final readonly class StartProfileMainHandler implements CommandHandler
         }
 
         $agent = Agent::query()->findOrFail($command->agentId);
+
         $variant = $this->previews->preview(
             $agent,
             $command->driverKey,
@@ -52,6 +53,7 @@ final readonly class StartProfileMainHandler implements CommandHandler
             $profile->defaults,
             null,
         )->mode;
+
         $this->preflight->assertAdmitted($profile->proposal($variant, $command->requested->model));
 
         $target = $command->conversationId === null
