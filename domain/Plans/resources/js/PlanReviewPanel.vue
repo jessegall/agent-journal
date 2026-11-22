@@ -5,6 +5,7 @@ import { keyedPost } from '@kit/keyedPost';
 import { approveReview, requestChanges, requestReview, withdrawReview } from '@generated/routes/plans';
 import type { PlanReviewData, PlanState } from '@generated/types/plans';
 import PlanEndDialog from './PlanEndDialog.vue';
+import PlanWorkDialog from './PlanWorkDialog.vue';
 import { useHostProp } from '@/framework/hostProp';
 
 /**
@@ -14,7 +15,14 @@ import { useHostProp } from '@/framework/hostProp';
  * the edition before. One post at a time under its request key, reloading only the window's prop; a lost answer shows
  * Outcome unknown and Check plan, which sends the same request under the same key again only when chosen.
  */
-const props = defineProps<{ review: PlanReviewData; number: string; state: PlanState }>();
+const props = defineProps<{
+    review: PlanReviewData;
+    number: string;
+    state: PlanState;
+    holder: { type: string; id: string; name: string; reference: string } | undefined;
+}>();
+
+const isAssigning = ref(false);
 
 const ending = ref<'cancel' | 'finish' | null>(null);
 const notice = ref('');
@@ -144,6 +152,11 @@ function decidedText(decidedById: string, decidedByType: string, decidedAt: stri
             <p role="alert" class="text-small text-text-2">{{ notice }}</p>
         </template>
         <div class="flex flex-wrap gap-2">
+            <template v-if="review.work.mayAssign">
+                <Button size="small" variant="bordered" @click="isAssigning = true">{{
+                    holder === undefined ? 'Assign' : 'Reassign'
+                }}</Button>
+            </template>
             <template v-if="review.mayFinish">
                 <Button size="small" variant="primary" @click="ending = 'finish'">Finish plan</Button>
             </template>
@@ -183,6 +196,9 @@ function decidedText(decidedById: string, decidedByType: string, decidedAt: stri
             <div>
                 <Button size="small" :pending="pending" @click="askForChanges">Request changes</Button>
             </div>
+        </template>
+        <template v-if="isAssigning">
+            <PlanWorkDialog :number="number" :work="review.work" :holder="holder" @close="isAssigning = false" />
         </template>
         <template v-if="ending !== null">
             <PlanEndDialog

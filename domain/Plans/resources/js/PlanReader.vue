@@ -85,6 +85,7 @@ const paragraphs = computed(() =>
                     :review="reader.review"
                     :number="reader.card.number"
                     :state="reader.card.state"
+                    :holder="reader.card.holder"
                 />
             </template>
             <template v-if="reader.card.phase === undefined">

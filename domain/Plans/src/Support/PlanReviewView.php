@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Domain\Plans\Support;
 
 use App\Actors\Contracts\CurrentAuthorizer;
+use App\Assignments\Contracts\AssigneeResolver;
+use App\Assignments\Support\AssigneeName;
+use App\Assignments\Support\AssignmentGroup;
+use App\Assignments\Support\Page;
 use App\Operations\Enums\AccessType;
 use Domain\Plans\Data\PlanEditionChangesData;
 use Domain\Plans\Data\PlanReviewData;
@@ -12,6 +16,8 @@ use Domain\Plans\Data\PlanReviewEditionData;
 use Domain\Plans\Data\PlanReviewMemberData;
 use Domain\Plans\Data\PlanReviewPhaseData;
 use Domain\Plans\Data\PlanReviewReceiptData;
+use Domain\Plans\Data\PlanWorkPreviewData;
+use Domain\Plans\Data\PlanWorkRecipientData;
 use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
@@ -35,9 +41,12 @@ final readonly class PlanReviewView
 
     public const int BRIEF_SHOWN = 400;
 
+    public const int RECIPIENTS_SHOWN = 20;
+
     public function __construct(
         private CurrentAuthorizer $authorizer,
         private PlanEditionComparison $comparison,
+        private AssigneeResolver $assignees,
     ) {}
 
     public function of(string $planId): PlanReviewData
@@ -56,6 +65,7 @@ final readonly class PlanReviewView
             'mayCancel' => $mayEdit && ! in_array($plan->state, [PlanState::Done, PlanState::Cancelled], true),
             'mayFinish' => $mayEdit && $plan->state === PlanState::Started && $plan->progress->unfinished() === 0,
             'revision' => $plan->revision,
+            'work' => $this->workOf($plan, $mayEdit),
             'edition' => $requested === null ? Optional::create() : self::editionOf($requested),
             'receipt' => $approval === null ? Optional::create() : self::receiptOf($approval),
             'changesRequested' => $latest !== null && $latest->state === PlanReviewState::ChangesRequested
@@ -63,6 +73,29 @@ final readonly class PlanReviewView
                 : Optional::create(),
             'changes' => $this->changesOf($latest),
         ]);
+    }
+
+    /**
+     * What assigning the plan's work would move, from its tallies and one count of its phases, and the first eligible
+     * workers; a plan over the one limit can be previewed but not assigned.
+     */
+    private function workOf(Plan $plan, bool $mayEdit): PlanWorkPreviewData
+    {
+        $phaseCount = $plan->phases()->count();
+        $progress = $plan->progress;
+
+        return new PlanWorkPreviewData(
+            $mayEdit && ! in_array($plan->state, [PlanState::Done, PlanState::Cancelled], true),
+            $phaseCount,
+            $progress->total,
+            $progress->unfinished(),
+            $progress->finished + $progress->cancelled,
+            1 + $phaseCount + $progress->total > AssignmentGroup::LARGEST,
+            array_map(
+                fn (AssigneeName $name) => PlanWorkRecipientData::ofName($name),
+                $this->assignees->eligible('agent', new Page(null, self::RECIPIENTS_SHOWN))->assignees,
+            ),
+        );
     }
 
     private function changesOf(PlanReviewEdition|null $latest): PlanEditionChangesData|Optional

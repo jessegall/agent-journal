@@ -69,9 +69,11 @@ use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Http\Controllers\ApprovePlanReviewPageController;
+use Domain\Plans\Http\Controllers\AssignPlanWorkPageController;
 use Domain\Plans\Http\Controllers\CancelPlanPageController;
 use Domain\Plans\Http\Controllers\FinishPlanPageController;
 use Domain\Plans\Http\Controllers\RequestPlanChangesPageController;
+use Domain\Plans\Http\Controllers\ReassignPlanWorkPageController;
 use Domain\Plans\Http\Controllers\RequestPlanReviewPageController;
 use Domain\Plans\Http\Controllers\StartPlanController;
 use Domain\Plans\Http\Controllers\WithdrawPlanReviewPageController;
@@ -247,6 +249,8 @@ final class PlansDomain extends Domain implements
                 ->inInspector()
                 ->actions(
                     ActionRoute::post('{plan}/cancel', CancelPlanPageController::class, 'cancel'),
+                    ActionRoute::post('{plan}/work', AssignPlanWorkPageController::class, 'assign-work'),
+                    ActionRoute::post('{plan}/work/reassign', ReassignPlanWorkPageController::class, 'reassign-work'),
                     ActionRoute::post('{plan}/finish', FinishPlanPageController::class, 'finish'),
                     ActionRoute::post('{plan}/review', RequestPlanReviewPageController::class, 'request-review'),
                     ActionRoute::post(
