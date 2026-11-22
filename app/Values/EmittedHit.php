@@ -38,6 +38,31 @@ final readonly class EmittedHit
         );
     }
 
+    /**
+     * The same hit with its optional excerpt left out, for an answer whose bytes are nearly full.
+     */
+    public function withoutSnippet(): self
+    {
+        return new self(
+            $this->sourceKey,
+            $this->sourceLabel,
+            $this->title,
+            '',
+            $this->reference,
+            $this->score,
+            $this->location,
+            $this->open,
+        );
+    }
+
+    /**
+     * The bytes the hit takes in an answer.
+     */
+    public function byteSize(): int
+    {
+        return strlen(json_encode($this->toArray(), JSON_THROW_ON_ERROR));
+    }
+
     public function identity(): HitIdentity
     {
         return new HitIdentity($this->sourceKey, $this->reference->type, $this->reference->id, $this->location?->id);

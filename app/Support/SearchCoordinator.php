@@ -7,10 +7,14 @@ namespace App\Support;
 use App\Contracts\RecordResolver;
 use App\Enums\ScoreTier;
 use App\Enums\SearchStatus;
+use App\Exceptions\SearchBatchInvalid;
 use App\Exceptions\SearchHandleRefused;
 use App\Exceptions\SearchRequestInvalid;
 use App\Exceptions\SearchRestartRequired;
 use App\Exceptions\SearchStateFull;
+use App\Exceptions\SearchValueInvalid;
+use App\Exceptions\StatementTimedOut;
+use App\Exceptions\WorkBudgetSpent;
 use App\Values\BufferedHit;
 use App\Values\DeclaredSearchable;
 use App\Values\EmittedHit;
@@ -44,7 +48,14 @@ final readonly class SearchCoordinator
 
     public const int CALL_MILLISECONDS = 1000;
 
-    public const int ROUND_LIMIT = 8;
+    public const int BATCH_LIMIT = 8;
+
+    public const int RESPONSE_BYTE_LIMIT = 49_152;
+
+    private const string SOURCE_STALLED = 'A source did not answer in time; search one of the other sources instead.';
+
+    private const string LIMIT_REACHED = 'The search reached its work limit before it found more; search again with '
+        .'other words.';
 
     public const int STALL_LIMIT = 2;
 
@@ -150,8 +161,9 @@ final readonly class SearchCoordinator
     }
 
     /**
-     * Asks the sources in rounds until the page is full, every source is done, one stalls for good, the call's time
-     * runs out or a source timed out once, then answers with the status that fits.
+     * Asks the sources that have no head, at most eight batches a call, until the page is full, every source is
+     * done, one stalls for good, the call's time runs out or a source timed out once, then answers with the status
+     * that fits.
      *
      * @param  array<string, DeclaredSearchable>  $sources
      * @param  array<string, SearchResult>  $fresh
@@ -166,12 +178,18 @@ final readonly class SearchCoordinator
         $emitted = [];
         $timedOut = false;
         $visible = [];
+        $batches = 0;
 
-        for ($round = 0; $round < self::ROUND_LIMIT; $round++) {
+        while (true) {
+            $asked = 0;
+
             foreach ($progress->sources as $key => $source) {
-                if (! $source->needsRefill() || ! self::hasTime($deadline)) {
+                if (! $source->needsRefill() || $batches >= self::BATCH_LIMIT || ! self::hasTime($deadline)) {
                     continue;
                 }
+
+                $batches++;
+                $asked++;
 
                 if ($this->ask($reader, $progress, $sources[$key], $deadline, $fresh)) {
                     $source->stalls = 0;
@@ -182,28 +200,43 @@ final readonly class SearchCoordinator
                 $source->stalls++;
 
                 if ($source->stalls >= self::STALL_LIMIT) {
-                    return $this->incomplete($progress, $sources, $emitted, $key);
+                    return self::withFailures($progress, $this->incomplete($progress, $sources, $emitted, $key));
                 }
 
                 $timedOut = true;
             }
 
             $this->markVisible($progress->sources, $visible);
-            $this->emit($reader, $progress, $sources, $fresh, $visible, $emitted);
+            $bytesFull = $this->emit($reader, $progress, $sources, $fresh, $visible, $emitted);
 
-            $pageFull = count($emitted) >= $progress->limit;
+            if ($bytesFull && $emitted === []) {
+                return SearchAnswer::resultTooLarge();
+            }
 
-            if ($pageFull || $progress->isFinished() || $timedOut || ! self::hasTime($deadline)) {
+            $pageFull = $bytesFull || count($emitted) >= $progress->limit;
+
+            if ($asked === 0 || $pageFull || $progress->isFinished() || $timedOut || ! self::hasTime($deadline)) {
                 break;
             }
         }
 
-        return $this->ended($progress, $sources, $emitted, $timedOut);
+        return self::withFailures($progress, $this->ended($progress, $sources, $emitted, $timedOut));
     }
 
     /**
-     * Asks one source for its next batch and keeps its certified hits; false when it ran past its deadline or
-     * reported the same work position again, so its answer is discarded.
+     * The answer naming the sources that failed during the search, so the caller knows what it does not cover.
+     */
+    private static function withFailures(SearchProgress $progress, SearchAnswer $answer): SearchAnswer
+    {
+        $failed = array_keys(array_filter($progress->sources, fn (SourceProgress $source): bool => $source->failed));
+
+        return $answer->withFailedSources(array_values($failed));
+    }
+
+    /**
+     * Asks one source for its next batch and keeps its certified hits; false when it ran past its deadline, spent
+     * its work allowance or reported the same work position again, so its answer is discarded. A batch the search
+     * cannot use, too large or malformed, marks the source failed and the rest go on.
      *
      * @param  array<string, SearchResult>  $fresh
      */
@@ -227,10 +260,25 @@ final readonly class SearchCoordinator
         );
 
         $started = hrtime(true);
-        $batch = $declared->searchable->providerFrom($this->container)->search($query);
+
+        try {
+            $batch = $declared->searchable->providerFrom($this->container)->search($query);
+        } catch (WorkBudgetSpent|StatementTimedOut) {
+            return false;
+        } catch (SearchBatchInvalid|SearchValueInvalid) {
+            $source->fail();
+
+            return true;
+        }
 
         if (hrtime(true) - $started > self::SOURCE_MILLISECONDS * 1_000_000) {
             return false;
+        }
+
+        if (self::byteSizeOf($batch) > WorkBudget::BYTE_LIMIT) {
+            $source->fail();
+
+            return true;
         }
 
         return $this->keep($source, $declared, $batch, $fresh);
@@ -254,8 +302,7 @@ final readonly class SearchCoordinator
         }
 
         if ($outcome instanceof FailedOutcome) {
-            $source->exhausted = true;
-            $source->buffer = [];
+            $source->fail();
 
             return true;
         }
@@ -276,7 +323,24 @@ final readonly class SearchCoordinator
     }
 
     /**
-     * Shows heads in the one global order while every unfinished source has a head to compare.
+     * The bytes of a batch's hits as a search would carry them, to refuse a provider whose output is too large.
+     */
+    private static function byteSizeOf(SearchBatch $batch): int
+    {
+        $bytes = 0;
+
+        foreach ($batch->hits as $hit) {
+            $bytes += strlen($hit->title) + strlen($hit->snippet) + strlen($hit->reference->id)
+                + strlen((string) $hit->location?->id) + strlen((string) $hit->location?->label);
+        }
+
+        return $bytes;
+    }
+
+    /**
+     * Shows heads in the one global order while every unfinished source has a head to compare, and while the answer
+     * has room: a hit that does not fit, even without its optional excerpt, stays held for the next call. True when
+     * the answer's bytes are full.
      *
      * @param  array<string, DeclaredSearchable>  $sources
      * @param  array<string, SearchResult>  $fresh
@@ -290,22 +354,22 @@ final readonly class SearchCoordinator
         array $fresh,
         array $visible,
         array &$emitted,
-    ): void {
+    ): bool {
         while (count($emitted) < $progress->limit) {
             if (array_any($progress->sources, fn (SourceProgress $source): bool => $source->needsRefill())) {
-                return;
+                return false;
             }
 
             $leader = self::leader($progress);
+            $head = $leader?->head();
 
-            if ($leader === null) {
-                return;
+            if ($leader === null || $head === null) {
+                return false;
             }
 
-            $head = $leader->head();
             $leader->dropHead();
 
-            if ($head === null || $progress->wasDelivered($head->identity) || ! $progress->isPastFrontier($head)) {
+            if ($progress->wasDelivered($head->identity) || ! $progress->isPastFrontier($head)) {
                 continue;
             }
 
@@ -315,11 +379,41 @@ final readonly class SearchCoordinator
 
             $hit = $this->shown($reader, $sources[$leader->sourceKey], $fresh[$head->identity->key()] ?? null);
 
-            if ($hit !== null) {
-                $emitted[] = $hit;
-                $progress->deliver($head);
+            if ($hit === null) {
+                continue;
             }
+
+            $fitting = self::fitting($hit, $emitted);
+
+            if ($fitting === null) {
+                $leader->putBack($head);
+
+                return true;
+            }
+
+            $emitted[] = $fitting;
+            $progress->deliver($head);
         }
+
+        return false;
+    }
+
+    /**
+     * The hit as it fits the answer's remaining bytes: whole, or without its optional excerpt; null when neither fits.
+     *
+     * @param  list<EmittedHit>  $emitted
+     */
+    private static function fitting(EmittedHit $hit, array $emitted): EmittedHit|null
+    {
+        $used = array_sum(array_map(fn (EmittedHit $shown): int => $shown->byteSize(), $emitted));
+
+        if ($used + $hit->byteSize() <= self::RESPONSE_BYTE_LIMIT) {
+            return $hit;
+        }
+
+        $bare = $hit->withoutSnippet();
+
+        return $used + $bare->byteSize() <= self::RESPONSE_BYTE_LIMIT ? $bare : null;
     }
 
     /**
@@ -529,6 +623,7 @@ final readonly class SearchCoordinator
             $emitted,
             narrowerScopes: $narrower,
             words: $narrower === [] ? null : $progress->words->text,
+            reason: $narrower === [] ? self::LIMIT_REACHED : self::SOURCE_STALLED,
         );
     }
 

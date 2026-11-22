@@ -8,6 +8,7 @@ use App\Contracts\SearchProvider;
 use App\Contracts\ServedEnvironment;
 use App\Enums\ScoreTier;
 use App\Support\RecordIdentity;
+use App\Support\StatementDeadline;
 use App\Values\AdmittedConstraints;
 use App\Values\HitIdentity;
 use App\Values\RefreshCandidates;
@@ -52,6 +53,7 @@ final readonly class TaskSearchProvider implements SearchProvider
         private TaskReferenceRecognizer $recognizer,
         private TaskReferenceLookup $lookup,
         private ServedEnvironment $environment,
+        private StatementDeadline $deadline,
     ) {}
 
     public function search(SearchQuery $query): SearchBatch
@@ -111,14 +113,15 @@ final readonly class TaskSearchProvider implements SearchProvider
         $tier = ScoreTier::from($position->integer(self::TIER));
         $highWater = $position->text(self::HIGH_WATER);
         $referenceId = $position->text(self::REFERENCE);
-        $blockSize = max(1, min(self::BLOCK_SIZE, $query->budget->candidates));
+        $blockSize = max(1, min(self::BLOCK_SIZE, $query->budget->remainingCandidates()));
+        $query->budget->chargeCandidates($blockSize);
 
-        $block = $this->admitted($constraints)
+        $block = $this->deadline->within($query->budget->remainingMilliseconds(), fn () => $this->admitted($constraints)
             ->where('id', '>', $position->text(self::AFTER))
             ->where('id', '<=', $highWater)
             ->orderBy('id')
             ->limit($blockSize)
-            ->get(['id', 'number', 'title']);
+            ->get(['id', 'number', 'title']));
 
         $hits = [];
         $lastExamined = $position->text(self::AFTER);
@@ -160,8 +163,10 @@ final readonly class TaskSearchProvider implements SearchProvider
         $record = $position->text(self::RECORD);
         $start = $record === '' ? 1 : $position->integer(self::OFFSET);
         $rowLimit = $record === '' ? self::briefRowsFor($query) : 1;
+        $query->budget->chargeCandidates($rowLimit);
+        $query->budget->chargeBytes($rowLimit * self::SEGMENT_CHARACTERS * self::BYTES_PER_CHARACTER);
 
-        $rows = $this->admitted($constraints)
+        $rows = $this->deadline->within($query->budget->remainingMilliseconds(), fn () => $this->admitted($constraints)
             ->where('id', '<=', $highWater)
             ->when(
                 $record === '',
@@ -173,7 +178,7 @@ final readonly class TaskSearchProvider implements SearchProvider
             ->select(['id', 'number', 'title', 'revision'])
             ->selectRaw('substr(brief, ?, ?) as brief_segment', [$start, self::SEGMENT_CHARACTERS])
             ->selectRaw('length(brief) as brief_length')
-            ->get();
+            ->get());
 
         $hits = [];
         $overlap = max(0, mb_strlen($query->words->text) - 1);
@@ -242,12 +247,13 @@ final readonly class TaskSearchProvider implements SearchProvider
     {
         $ids = $query->recordIds();
         $reference = $this->recognizer->recognize($query->words->text);
+        $query->budget->chargePolicyChecks(count($ids));
 
-        $tasks = $this->admitted($constraints)
+        $tasks = $this->deadline->within($query->budget->remainingMilliseconds(), fn () => $this->admitted($constraints)
             ->whereKey($ids)
             ->readExactly(count($ids))
             ->get(['id', 'number', 'title', 'revision', 'brief'])
-            ->keyBy('id');
+            ->keyBy('id'));
 
         $matches = [];
 
@@ -345,9 +351,9 @@ final readonly class TaskSearchProvider implements SearchProvider
      */
     private static function briefRowsFor(SearchQuery $query): int
     {
-        $byBytes = intdiv($query->budget->bytes, self::SEGMENT_CHARACTERS * self::BYTES_PER_CHARACTER);
+        $byBytes = intdiv($query->budget->remainingBytes(), self::SEGMENT_CHARACTERS * self::BYTES_PER_CHARACTER);
 
-        return max(1, min(self::BLOCK_SIZE, $query->budget->candidates, $byBytes));
+        return max(1, min(self::BLOCK_SIZE, $query->budget->remainingCandidates(), $byBytes));
     }
 
     /**

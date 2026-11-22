@@ -19,6 +19,7 @@ final readonly class SearchAnswer
      * @param  list<EmittedHit>  $hits
      * @param  list<string>  $sourceChoices  qualified keys of the sources that recognized the reference
      * @param  list<string>  $narrowerScopes  qualified keys a fresh scoped search may use instead
+     * @param  list<string>  $failedSources  qualified keys of the sources whose batch the search could not use
      */
     public function __construct(
         public SearchStatus $status,
@@ -29,6 +30,8 @@ final readonly class SearchAnswer
         public array $narrowerScopes = [],
         public ScopeResolution|null $scope = null,
         public string|null $words = null,
+        public string|null $reason = null,
+        public array $failedSources = [],
     ) {}
 
     public static function noSources(): self
@@ -39,6 +42,17 @@ final readonly class SearchAnswer
     public static function restart(): self
     {
         return new self(SearchStatus::Restart);
+    }
+
+    /**
+     * Not even one hit with its open action fits an answer: a terminal outcome, with no continuation to repeat.
+     */
+    public static function resultTooLarge(): self
+    {
+        return new self(
+            SearchStatus::ResultTooLarge,
+            reason: 'A matching hit is too large to show; search with words that name it more closely.',
+        );
     }
 
     public static function forScope(ScopeResolution $scope): self
@@ -62,6 +76,25 @@ final readonly class SearchAnswer
         return array_map(fn (string $key) => ['query' => $this->words, 'within' => $key], $this->narrowerScopes);
     }
 
+    /**
+     * @param  list<string>  $failedSources
+     */
+    public function withFailedSources(array $failedSources): self
+    {
+        return new self(
+            $this->status,
+            $this->hits,
+            $this->directOpen,
+            $this->sourceChoices,
+            $this->continuation,
+            $this->narrowerScopes,
+            $this->scope,
+            $this->words,
+            $this->reason,
+            $failedSources,
+        );
+    }
+
     public function withContinuation(string|null $continuation): self
     {
         return new self(
@@ -73,6 +106,8 @@ final readonly class SearchAnswer
             $this->narrowerScopes,
             $this->scope,
             $this->words,
+            $this->reason,
+            $this->failedSources,
         );
     }
 }

@@ -177,6 +177,62 @@ final class SearchCoordinatorTest extends TestCase
         $this->assertSame([self::RULE_D], self::ids($second));
     }
 
+    public function test_the_nine_source_exercise_ends_incomplete_on_call_three_with_tasks_as_the_narrower_scope(): void
+    {
+        $task = Task::factory()->create(['title' => 'Driver']);
+        $grant = new MutableReadGrant([$task->id]);
+        $fixtures = [];
+
+        foreach (range(1, 7) as $index) {
+            $fixtures["fast{$index}"] = [$this->fast('note')];
+        }
+
+        $fixtures['zslow'] = [$this->hanging()];
+        $coordinator = $this->coordinator($grant, $fixtures);
+
+        $first = $coordinator->search(self::owner(), self::agent(), SearchRequest::parse(query: 'driver'));
+        $second = $this->resume($coordinator, $first);
+        $third = $this->resume($coordinator, $second);
+
+        $this->assertSame(SearchStatus::Pending, $first->status);
+        $this->assertSame(SearchStatus::Retryable, $second->status);
+        $this->assertSame(SearchStatus::Incomplete, $third->status);
+        $this->assertNull($third->continuation);
+        $this->assertContains(['query' => 'driver', 'within' => 'tasks.task'], $third->narrowerSearches());
+
+        $scoped = $coordinator->search(
+            self::owner(),
+            self::agent(),
+            SearchRequest::parse(query: 'driver', within: 'tasks.task'),
+        );
+
+        $this->assertSame([$task->id], self::ids($scoped));
+        $this->assertSame(['task_id' => $task->id], $scoped->hits[0]->open->arguments);
+    }
+
+    public function test_a_provider_returning_oversized_output_fails_without_breaking_the_others(): void
+    {
+        $tooMany = function (SearchQuery $query): SearchBatch {
+            $hits = array_map(fn (int $index) => new SearchResult(
+                "Driver {$index}",
+                'Driver',
+                new RecordIdentity('fixtures.note', sprintf('01ARZ3NDEKTSV4RRFFQ69G%04d', $index)),
+                ScoreTier::TitlePrefix,
+            ), range(1, SearchQuery::HIT_LIMIT + 1));
+
+            return SearchBatch::exhausted('1', $hits);
+        };
+        $oversized = Searchable::make('big', 'Big', OpenSearchAccess::class, $tooMany);
+        $grant = new MutableReadGrant([self::NOTE_ID]);
+        $coordinator = $this->coordinator($grant, ['notes' => [$this->fast('note')], 'large' => [$oversized]]);
+
+        $answer = $coordinator->search(self::owner(), self::agent(), SearchRequest::parse(query: 'driver'));
+
+        $this->assertSame([self::NOTE_ID], self::ids($answer));
+        $this->assertSame(['large.big'], $answer->failedSources);
+        $this->assertSame(SearchStatus::Complete, $answer->status);
+    }
+
     /**
      * @return list<string>
      */

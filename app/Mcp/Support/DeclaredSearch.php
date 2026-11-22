@@ -121,6 +121,14 @@ final readonly class DeclaredSearch implements SearchEntry
             $next[] = new NextAction($answer->directOpen->open->tool, $answer->directOpen->open->arguments);
         }
 
+        if ($answer->reason !== null) {
+            $fields['reason'] = $answer->reason;
+        }
+
+        if ($answer->failedSources !== []) {
+            $fields['failed_sources'] = $answer->failedSources;
+        }
+
         if ($answer->sourceChoices !== []) {
             $fields['source_choices'] = $answer->sourceChoices;
         }

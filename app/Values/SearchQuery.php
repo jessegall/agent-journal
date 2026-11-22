@@ -33,7 +33,7 @@ readonly class SearchQuery
     }
 
     /**
-     * The same query, resumed from the position the source reported last.
+     * The same query, resumed from the position the source reported last, with its allowance renewed.
      */
     public function from(SourcePosition $position): self
     {
@@ -43,7 +43,7 @@ readonly class SearchQuery
             $this->scope,
             $this->sourceKey,
             $this->pageAllowance,
-            $this->budget,
+            $this->budget->renewed(),
             $position,
         );
     }

@@ -19,6 +19,7 @@ final class SourceProgress
         public bool $exhausted = false,
         public array $buffer = [],
         public int $stalls = 0,
+        public bool $failed = false,
     ) {}
 
     /**
@@ -45,6 +46,24 @@ final class SourceProgress
     }
 
     /**
+     * Holds a head again that was taken but not shown, so the next call shows it first.
+     */
+    public function putBack(BufferedHit $head): void
+    {
+        array_unshift($this->buffer, $head);
+    }
+
+    /**
+     * Ends this source for the search after a batch it could not use; its held hits are dropped with it.
+     */
+    public function fail(): void
+    {
+        $this->exhausted = true;
+        $this->failed = true;
+        $this->buffer = [];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -55,6 +74,7 @@ final class SourceProgress
             'exhausted' => $this->exhausted,
             'buffer' => array_map(fn (BufferedHit $hit) => $hit->toArray(), $this->buffer),
             'stalls' => $this->stalls,
+            'failed' => $this->failed,
         ];
     }
 
@@ -65,6 +85,7 @@ final class SourceProgress
      *     exhausted: bool,
      *     buffer: list<array{source: string, type: string, id: string, location: string|null, score: int}>,
      *     stalls: int,
+     *     failed: bool,
      * }  $fields
      */
     public static function fromArray(array $fields): self
@@ -75,6 +96,7 @@ final class SourceProgress
             $fields['exhausted'],
             array_map(BufferedHit::fromArray(...), $fields['buffer']),
             $fields['stalls'],
+            $fields['failed'],
         );
     }
 }
