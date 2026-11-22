@@ -23,5 +23,8 @@ final class PresentationBatchData extends Data
         #[DataCollectionOf(PresentationItemData::class)]
         public readonly array $items,
         public readonly bool $more,
+        // The single grant an actionable batch carries for claiming a turn in this very turn; none for a batch with
+        // nothing to answer.
+        public readonly string|null $claimGrant = null,
     ) {}
 }

@@ -23,6 +23,9 @@ return new class extends Migration
             $table->timestampTz('last_progress_at');
             $table->timestampTz('lease_expires_at');
             $table->unsignedSmallInteger('attempt')->default(1);
+            // The digest of the grant an actionable batch carries: only a claim presenting it, within the batch's
+            // lease, may take a turn to speak. A batch with nothing to answer carries none.
+            $table->char('claim_grant_digest', 64)->nullable();
             $table->timestampsTz();
 
             $table->index(['state', 'lease_expires_at']);

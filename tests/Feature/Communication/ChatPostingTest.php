@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\ClaimSpeech;
 use App\Communication\Commands\PostChatMessage;
 use App\Communication\Commands\ReplyInChat;
 use App\Communication\Enums\MessageType;
@@ -15,6 +14,7 @@ use App\Communication\Models\MessageReceipt;
 use App\Communication\Models\TimelineEvent;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;
+use Tests\Support\PresentsChatText;
 use Tests\Support\OpensPairChats;
 
 /**
@@ -23,6 +23,7 @@ use Tests\Support\OpensPairChats;
  */
 final class ChatPostingTest extends MessagingTestCase
 {
+    use PresentsChatText;
     use OpensPairChats;
 
     private Conversation $chat;
@@ -40,7 +41,7 @@ final class ChatPostingTest extends MessagingTestCase
         $question = $this->runOnBus(new PostChatMessage($this->chat->inbox_id, 'Can you look?', 'first-key'));
 
         $this->asAgent($this->builder);
-        $token = $this->runOnBus(new ClaimSpeech($this->chat->inbox_id, $question));
+        $token = $this->runOnBus($this->claimSpeech($this->chat->inbox_id, $question));
         $answer = $this->runOnBus(new ReplyInChat($question, 'Looking now.', 'reply-key', null, $token));
 
         $this->assertSame($question, Message::visibleById($question)->id);

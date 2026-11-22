@@ -16,7 +16,7 @@ final readonly class ClaimSpeechController
 {
     public function __invoke(ClaimSpeechCall $call, CommandBus $commands): SpeechClaim
     {
-        $token = $commands->run(new ClaimSpeech($call->inboxId, $call->rootId));
+        $token = $commands->run(new ClaimSpeech($call->inboxId, $call->rootId, $call->batchId, $call->grant));
 
         return SpeechClaim::from(['rootId' => $call->rootId, 'claimToken' => $token]);
     }

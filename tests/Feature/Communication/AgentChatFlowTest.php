@@ -6,7 +6,6 @@ namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Commands\AskChatQuestion;
-use App\Communication\Commands\ClaimSpeech;
 use App\Communication\Commands\ReadMessages;
 use App\Communication\Commands\ReplyToMessage;
 use App\Communication\Contracts\AgentMessageReader;
@@ -47,7 +46,7 @@ final class AgentChatFlowTest extends MessagingTestCase
         $this->assertSame($questionId, $card->chat?->claimableRootId);
         $this->assertSame(1, $pending->pendingCount($this->actorOf($this->builder)));
 
-        $this->runOnBus(new ClaimSpeech($this->chat->inbox_id, $questionId));
+        $this->runOnBus($this->claimSpeech($this->chat->inbox_id, $questionId));
         $this->runOnBus(new ReplyToMessage($questionId, null, 'Yes.'));
         $this->runOnBus(new ReadMessages($this->chat->inbox_id, [$questionId]));
         $this->assertSame(1, $pending->pendingCount($this->actorOf($this->builder)));

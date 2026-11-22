@@ -101,11 +101,15 @@ final readonly class CommunicationCalls
     public function claimSpeech(
         string $inboxId,
         string $rootId,
+        string $batchId,
+        string $grant,
         CallKey $requestKey = new CallKey(),
     ): SpeechClaim {
         return $this->sender->send(ClaimSpeechCall::from([
             'inboxId' => $inboxId,
             'rootId' => $rootId,
+            'batchId' => $batchId,
+            'grant' => $grant,
             'requestKey' => $requestKey,
         ]));
     }

@@ -6,12 +6,14 @@ namespace App\Communication\Support;
 
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Contracts\CurrentSession;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Enums\SpeechOpportunityState;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Exceptions\SpeechRefused;
 use App\Communication\Models\InboxInterval;
+use App\Communication\Models\PresentationBatch;
 use App\Communication\Models\Message;
 use App\Communication\Models\SpeechOpportunity;
 use Carbon\CarbonImmutable;
@@ -26,7 +28,7 @@ final readonly class SpeechAllowance
 
     private const int TOKEN_BYTES = 32;
 
-    public function __construct(private InboxResolver $inboxes) {}
+    public function __construct(private InboxResolver $inboxes, private CurrentSession $session) {}
 
     /**
      * One turn for each agent member present when the user's message was accepted; a question asked of one agent,
@@ -112,9 +114,16 @@ final readonly class SpeechAllowance
      * @throws InboxUnavailable
      * @throws SpeechRefused
      */
-    public function claim(string $inboxId, ActorContext $actor, string $rootId, CarbonImmutable $at): string
-    {
+    public function claim(
+        string $inboxId,
+        ActorContext $actor,
+        string $rootId,
+        string $batchId,
+        string $grant,
+        CarbonImmutable $at,
+    ): string {
         $opportunity = $this->lockedTurn($inboxId, $actor, $rootId);
+        $this->assertGrant($opportunity, $rootId, $batchId, $grant, $at);
         $token = bin2hex(random_bytes(self::TOKEN_BYTES));
         $opportunity->claim(self::digestOf($token), $at->addSeconds(self::LEASE_SECONDS));
 
@@ -145,6 +154,33 @@ final readonly class SpeechAllowance
         $opportunity->claim(self::digestOf($unsharedToken), $at->addSeconds(self::LEASE_SECONDS));
 
         return true;
+    }
+
+    /**
+     * A claim must come from the turn that was shown the text: the actionable batch of the agent's own session and
+     * interval, its grant, its lease still running and the user message among what it carried.
+     *
+     * @throws SpeechRefused
+     */
+    private function assertGrant(
+        SpeechOpportunity $opportunity,
+        string $rootId,
+        string $batchId,
+        string $grant,
+        CarbonImmutable $at,
+    ): void {
+        $batch = PresentationBatch::query()->whereKey($batchId)->lockForUpdate()->first();
+
+        $isOwnTurn = $batch !== null
+            && $batch->interval_id === $opportunity->interval_id
+            && $this->session->hasSession()
+            && $batch->agent_session_id === $this->session->sessionId()
+            && $batch->admitsClaim(hash('sha256', $grant), $at)
+            && $batch->carriesRoot($rootId);
+
+        if (! $isOwnTurn) {
+            throw SpeechRefused::notThisTurn();
+        }
     }
 
     /**

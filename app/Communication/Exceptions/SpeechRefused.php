@@ -42,6 +42,14 @@ final class SpeechRefused extends RuntimeException implements CodedRefusal, Stal
         return new self("Your turn is kept for question {$questionId}: answer or decline it.", 'speech-reserved');
     }
 
+    public static function notThisTurn(): self
+    {
+        return new self(
+            'Claim your turn with the batch id and claim grant of the turn that showed you the message.',
+            'speech-not-this-turn',
+        );
+    }
+
     public static function targetBusy(string $agentId): self
     {
         return new self(

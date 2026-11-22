@@ -10,7 +10,6 @@ use App\Actors\Support\AttentionOrigin;
 use App\Actors\Support\AttentionOutcome;
 use App\Communication\Commands\AnswerChatQuestion;
 use App\Communication\Commands\AskChatQuestion;
-use App\Communication\Commands\ClaimSpeech;
 use App\Communication\Enums\MessageState;
 use App\Communication\Exceptions\SpeechRefused;
 use App\Communication\Models\Message;
@@ -68,8 +67,8 @@ final class PairChatDemonstrationTest extends MessagingTestCase
         $this->assertSame(0, $pending->pendingCount(ActorIdentity::of($this->owner)));
 
         $this->asAgent($this->builder);
-        $stale = $this->runOnBus(new ClaimSpeech($inboxId, $questionId));
-        $live = $this->runOnBus(new ClaimSpeech($inboxId, $questionId));
+        $stale = $this->runOnBus($this->claimSpeech($inboxId, $questionId));
+        $live = $this->runOnBus($this->claimSpeech($inboxId, $questionId));
 
         $this->assertThrows(
             fn () => $this->runOnBus(new AnswerChatQuestion($questionId, 'Yes.', 'answer-stale', $stale)),

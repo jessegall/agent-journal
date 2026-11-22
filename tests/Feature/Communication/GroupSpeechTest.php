@@ -6,7 +6,6 @@ namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Commands\AskChatQuestion;
-use App\Communication\Commands\ClaimSpeech;
 use App\Communication\Commands\PostChatMessage;
 use App\Communication\Enums\IntervalRole;
 use App\Communication\Exceptions\SpeechRefused;
@@ -18,6 +17,7 @@ use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\ChatInbox;
 use Illuminate\Support\Str;
 use Tests\Support\MessagingTestCase;
+use Tests\Support\PresentsChatText;
 
 /**
  * Turns to speak in a room with two agents: a broadcast gives each agent one turn, a post addressed to one agent gives
@@ -25,6 +25,7 @@ use Tests\Support\MessagingTestCase;
  */
 final class GroupSpeechTest extends MessagingTestCase
 {
+    use PresentsChatText;
     private string $inboxId;
 
     protected function setUp(): void
@@ -62,7 +63,7 @@ final class GroupSpeechTest extends MessagingTestCase
         $root = $this->runOnBus(new PostChatMessage($this->inboxId, 'Thoughts?', 'all'));
 
         $this->asAgent($this->builder);
-        $builderToken = $this->runOnBus(new ClaimSpeech($this->inboxId, $root));
+        $builderToken = $this->runOnBus($this->claimSpeech($this->inboxId, $root));
         $ask = new AskChatQuestion(
             $this->inboxId,
             'Reviewer, agree?',
@@ -72,7 +73,7 @@ final class GroupSpeechTest extends MessagingTestCase
         );
 
         $this->asAgent($this->reviewer);
-        $this->runOnBus(new ClaimSpeech($this->inboxId, $root));
+        $this->runOnBus($this->claimSpeech($this->inboxId, $root));
 
         $this->asAgent($this->builder);
         $this->assertThrows(fn () => $this->runOnBus($ask), SpeechRefused::class);

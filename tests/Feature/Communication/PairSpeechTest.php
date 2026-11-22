@@ -17,6 +17,7 @@ use App\Communication\Models\Message;
 use App\Communication\Models\SpeechOpportunity;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;
+use Tests\Support\PresentsChatText;
 use Tests\Support\OpensPairChats;
 
 /**
@@ -25,6 +26,7 @@ use Tests\Support\OpensPairChats;
  */
 final class PairSpeechTest extends MessagingTestCase
 {
+    use PresentsChatText;
     use OpensPairChats;
 
     private Conversation $chat;
@@ -48,7 +50,7 @@ final class PairSpeechTest extends MessagingTestCase
             SpeechRefused::class,
         );
 
-        $token = $this->runOnBus(new ClaimSpeech($this->chat->inbox_id, $this->questionId));
+        $token = $this->runOnBus($this->claimSpeech($this->chat->inbox_id, $this->questionId));
 
         $this->assertThrows(
             fn () => $this->runOnBus(new PostChatMessage($this->chat->inbox_id, 'Hi.', 'beside', $token)),
@@ -58,7 +60,7 @@ final class PairSpeechTest extends MessagingTestCase
 
     public function test_the_agent_answers_once_and_the_question_closes_once(): void
     {
-        $token = $this->runOnBus(new ClaimSpeech($this->chat->inbox_id, $this->questionId));
+        $token = $this->runOnBus($this->claimSpeech($this->chat->inbox_id, $this->questionId));
         $answerId = $this->runOnBus(new AnswerChatQuestion($this->questionId, 'Yes.', 'answer-key', $token));
 
         $question = Message::query()->acrossInboxes()->findOrFail($this->questionId);
@@ -77,8 +79,8 @@ final class PairSpeechTest extends MessagingTestCase
 
     public function test_a_token_replaced_by_a_later_claim_is_refused(): void
     {
-        $old = $this->runOnBus(new ClaimSpeech($this->chat->inbox_id, $this->questionId));
-        $new = $this->runOnBus(new ClaimSpeech($this->chat->inbox_id, $this->questionId));
+        $old = $this->runOnBus($this->claimSpeech($this->chat->inbox_id, $this->questionId));
+        $new = $this->runOnBus($this->claimSpeech($this->chat->inbox_id, $this->questionId));
 
         $this->assertThrows(
             fn () => $this->runOnBus(new AnswerChatQuestion($this->questionId, 'Late.', 'old-key', $old)),
@@ -87,5 +89,26 @@ final class PairSpeechTest extends MessagingTestCase
 
         $this->runOnBus(new AnswerChatQuestion($this->questionId, 'Now.', 'new-key', $new));
         $this->assertSame(2, SpeechOpportunity::query()->onRoot($this->questionId)->sole()->lease_version);
+    }
+
+    public function test_a_claim_without_its_turns_grant_or_from_another_batch_is_refused(): void
+    {
+        $this->assertThrows(
+            fn () => $this->runOnBus(new ClaimSpeech($this->chat->inbox_id, $this->questionId, '', '')),
+            SpeechRefused::class,
+        );
+
+        $earlier = $this->claimSpeech($this->chat->inbox_id, $this->questionId);
+        $later = $this->claimSpeech($this->chat->inbox_id, $this->questionId);
+
+        $this->assertThrows(
+            fn () => $this->runOnBus(new ClaimSpeech(
+                $this->chat->inbox_id,
+                $this->questionId,
+                $later->batchId,
+                $earlier->grant,
+            )),
+            SpeechRefused::class,
+        );
     }
 }

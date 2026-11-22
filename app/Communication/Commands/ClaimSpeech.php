@@ -25,5 +25,7 @@ final readonly class ClaimSpeech extends Command
     public function __construct(
         public string $inboxId,
         public string $rootId,
+        public string $batchId,
+        public string $grant,
     ) {}
 }

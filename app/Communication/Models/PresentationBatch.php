@@ -31,6 +31,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property CarbonImmutable $last_progress_at
  * @property CarbonImmutable $lease_expires_at
  * @property int $attempt
+ * @property string|null $claim_grant_digest
  */
 #[Table('presentation_batches')]
 #[Fillable([
@@ -157,6 +158,40 @@ final class PresentationBatch extends Model implements ReadableModel
     public function expire(CarbonImmutable $at): void
     {
         $this->settle(PresentationBatchState::Expired, $at);
+    }
+
+    /**
+     * Makes the batch actionable: it carries the digest of a grant only the receiving turn holds.
+     */
+    public function grantClaims(string $grantDigest): void
+    {
+        $this->claim_grant_digest = $grantDigest;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * Whether the grant belongs to this batch and its turn still runs, so a claim may present it.
+     */
+    public function admitsClaim(string $grantDigest, CarbonImmutable $at): bool
+    {
+        return ! $this->state->isSettled()
+            && $this->claim_grant_digest !== null
+            && hash_equals($this->claim_grant_digest, $grantDigest)
+            && $this->lease_expires_at->greaterThan($at);
+    }
+
+    /**
+     * Whether the batch carried a piece of a message under the user message.
+     */
+    public function carriesRoot(string $rootId): bool
+    {
+        $underRoot = Message::query()->acrossInboxes()->where('user_root_id', $rootId)->select('id');
+
+        return $this->ranges()
+            ->whereIn('receipt_id', MessageReceipt::query()->whereIn('message_id', $underRoot)->select('id'))
+            ->exists();
     }
 
     // ----------[ Relations ]----------

@@ -19,6 +19,8 @@ final readonly class ClaimSpeechHandler implements CommandHandler
             $command->inboxId,
             $command->dispatchedBy(),
             $command->rootId,
+            $command->batchId,
+            $command->grant,
             CarbonImmutable::now(),
         );
     }

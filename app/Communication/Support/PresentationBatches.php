@@ -109,7 +109,15 @@ final readonly class PresentationBatches
             $shown++;
         }
 
+        $grant = null;
+
+        if (array_any($items, fn (PresentationItemData $item) => $item->claimableRootId !== null)) {
+            $grant = bin2hex(random_bytes(self::HANDLE_BYTES));
+            $batch->grantClaims(hash('sha256', $grant));
+        }
+
         return PresentationBatchData::from([
+            'claimGrant' => $grant,
             'batchId' => $batch->id,
             'inboxId' => $locked->inbox_id,
             'inboxLabel' => $this->inboxes->resolve($locked->inbox_id)->inboxLabel(),

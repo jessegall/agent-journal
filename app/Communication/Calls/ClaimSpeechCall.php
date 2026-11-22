@@ -20,7 +20,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
 /**
- * Claims your turn to speak on one user message of a chat for two minutes.
+ * Claims your turn to speak on one user message of a chat for two minutes, presenting the batch id and claim grant of
+ * the turn that showed you the message; a claim from any other turn is refused.
  *
  * @implements JournalCall<SpeechClaim>
  */
@@ -33,6 +34,9 @@ final class ClaimSpeechCall extends Data implements JournalCall
         public readonly string $inboxId,
         #[Size(26)]
         public readonly string $rootId,
+        #[Size(26)]
+        public readonly string $batchId,
+        public readonly string $grant,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public readonly CallKey $requestKey,
