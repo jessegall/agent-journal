@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews\States;
 
-use App\Hooks\Contracts\ConditionalState;
-use App\Hooks\States\AgentState;
-use App\Settings\Contracts\EnabledSettingsGroup;
-use App\Settings\Support\DisabledSettingsGroup;
+use App\Contracts\ConditionalState;
+use App\Support\States\AgentState;
+use App\Contracts\EnabledSettingsGroup;
+use App\Support\DisabledSettingsGroup;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 
 /**

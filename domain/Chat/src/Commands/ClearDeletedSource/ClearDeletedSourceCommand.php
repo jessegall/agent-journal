@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands\ClearDeletedSource;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Support\Command;
-use App\Docking\Cards\DockIdentity;
-use App\Operations\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Enums\AccessType;
+use App\Support\Cards\DockIdentity;
+use App\Support\Command;
 use Domain\Chat\Policies\ConversationPolicy;
 
 /**

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Actors\Contracts\Actor;
-use App\Actors\Contracts\ChatEligibility;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Contracts\Inbox;
-use App\Communication\Contracts\InboxAccess;
-use App\Communication\Exceptions\InboxUnavailable;
-use App\Communication\Support\ChatInboxes;
-use App\Communication\Support\ChatInterval;
-use App\Communication\Support\InboxMembers;
-use App\Communication\Support\InboxMembership;
+use App\Contracts\Actor;
+use App\Contracts\ChatEligibility;
+use App\Contracts\Inbox;
+use App\Contracts\InboxAccess;
+use App\Exceptions\InboxUnavailable;
+use App\Support\ActorIdentity;
+use App\Support\ChatInboxes;
+use App\Support\ChatInterval;
+use App\Support\InboxMembers;
+use App\Support\InboxMembership;
 use Domain\Chat\Models\Conversation;
 use Illuminate\Database\Eloquent\Builder;
 

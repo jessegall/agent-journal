@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Actors\Contracts\Actor;
-use App\Agents\Models\Agent;
-use App\Settings\Contracts\SettingsAccessPolicy;
-use App\Settings\Exceptions\SettingsAccessDenied;
-use App\Settings\Providers\SettingsServiceProvider;
-use App\Settings\Support\ClosedSettingsAccess;
-use App\Web\Support\OwnerSettingsAccess;
+use App\Contracts\Actor;
+use App\Contracts\SettingsAccessPolicy;
+use App\Exceptions\SettingsAccessDenied;
+use App\Models\Agent;
+use App\Providers\SettingsServiceProvider;
+use App\Support\ClosedSettingsAccess;
+use App\Support\OwnerSettingsAccess;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Foundation\Application;

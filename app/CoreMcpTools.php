@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Autoload\Support\FolderClasses;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Resources\OverviewResource;
@@ -12,6 +11,7 @@ use App\Mcp\Tools\CapabilitiesReadTool;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\OverviewReadTool;
 use App\Mcp\Tools\SearchTool;
+use App\Support\FolderClasses;
 
 /**
  * Core's own MCP tools and resources, added to the catalogue before the domains'.
@@ -33,10 +33,7 @@ final class CoreMcpTools
      */
     public static function tools(): array
     {
-        $found = [
-            ...FolderClasses::in(__DIR__.'/Mcp/Tools', JournalTool::class),
-            ...FolderClasses::in(__DIR__.'/*/Mcp', JournalTool::class),
-        ];
+        $found = FolderClasses::in(__DIR__.'/Mcp/Tools', JournalTool::class);
 
         return [...self::ORIENTATION_TOOLS, ...array_values(array_diff($found, self::ORIENTATION_TOOLS))];
     }

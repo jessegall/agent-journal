@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Exceptions\MainAgentMissing;
-use App\Agents\Models\Agent;
-use App\Agents\Models\MainAgentDesignation;
-use App\Profiles\Values\ProfileBase;
+use App\Exceptions\MainAgentMissing;
+use App\Models\Agent;
+use App\Models\MainAgentDesignation;
+use App\Values\ProfileBase;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsDeskInstall;
 use Tests\TestCase;

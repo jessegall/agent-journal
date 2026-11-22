@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Values\CommitObservation;
-use App\Agents\Values\WorkspaceFacts;
-use App\Connections\Enums\ChildRole;
-use App\Connections\Enums\DeliveryOutcome;
-use App\Connections\Models\ChildClaim;
-use App\Connections\Models\ProjectBinding;
-use App\Connections\Models\WorktreeDelivery;
+use App\Enums\ChildRole;
+use App\Enums\DeliveryOutcome;
+use App\Enums\HostProtocolVersion;
+use App\Models\ChildClaim;
+use App\Models\ProjectBinding;
+use App\Models\WorktreeDelivery;
+use App\Values\CommitObservation;
+use App\Values\WorkspaceFacts;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

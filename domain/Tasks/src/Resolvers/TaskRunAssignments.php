@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Assignments\Contracts\Assignable;
-use App\Assignments\Contracts\AssignableProvider;
-use App\Records\Exceptions\RecordUnavailable;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\Assignable;
+use App\Contracts\AssignableProvider;
+use App\Exceptions\RecordUnavailable;
+use App\Support\RecordIdentity;
 use Domain\Tasks\Enums\TaskRunState;
 use Domain\Tasks\Models\TaskRun;
 

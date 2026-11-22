@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Agents\Actions\AgentSessions;
-use App\Agents\Models\Agent;
-use App\Agents\Values\StackTarget;
-use App\Hooks\Enums\NoSubject;
-use App\Hooks\Models\AgentStackRow;
-use App\Hooks\References\StateReference;
-use App\Hooks\References\SubjectReference;
-use App\Hooks\Stack\StateTypes;
-use App\Hooks\Storage\FrameRecord;
-use App\Hooks\Storage\FrameRecords;
+use App\Enums\NoSubject;
+use App\Models\Agent;
+use App\Models\AgentStackRow;
+use App\Support\AgentSessions;
+use App\Support\References\StateReference;
+use App\Support\References\SubjectReference;
+use App\Support\Stack\StateTypes;
+use App\Support\Storage\FrameRecord;
+use App\Support\Storage\FrameRecords;
+use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestSelections;
 

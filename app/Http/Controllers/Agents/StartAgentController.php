@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Bus\Contracts\CommandBus;
-use App\Drivers\Contracts\DriverCatalogue;
+use App\Contracts\CommandBus;
+use App\Contracts\DriverCatalogue;
 use App\Http\Requests\Agents\StartAgentRequest;
 use Illuminate\Http\JsonResponse;
 

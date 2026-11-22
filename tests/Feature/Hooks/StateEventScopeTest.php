@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Values\TrustedEntryAuthority;
-use App\Bus\Contracts\StackAdmission;
-use App\Bus\Support\OperationDeadline;
-use App\Engine\Support\EngineAccess;
-use App\Engine\Support\EngineActor;
-use App\Hooks\Delivery\StateEventBridge;
-use App\Hooks\StateEvents\StateEventScope;
-use App\Hooks\Values\FrameGrant;
+use App\Contracts\CurrentActorSetter;
+use App\Contracts\StackAdmission;
+use App\Support\Delivery\StateEventBridge;
+use App\Support\EngineAccess;
+use App\Support\EngineActor;
+use App\Support\OperationDeadline;
+use App\Support\StateEvents\StateEventScope;
+use App\Values\FrameGrant;
+use App\Values\TrustedEntryAuthority;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Events\Dispatcher;
 use Tests\Fixtures\Hooks\AfterCommitStateEvent;

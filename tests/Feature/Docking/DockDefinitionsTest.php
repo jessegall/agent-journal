@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Docking;
 
-use App\Actors\Support\ActorContext;
-use App\Communication\Models\Message;
-use App\Docking\Exceptions\DockDefinitionInvalid;
-use App\Docking\Sources\Contracts\DockRegistration;
-use App\Docking\Support\DockDefinitions;
-use App\Records\Contracts\RecordResolver;
-use App\Records\Data\RecordCard;
-use App\Records\Docking\LegacyDockable;
-use App\Records\Docking\LegacyDockableProvider;
+use App\Contracts\RecordResolver;
+use App\Data\RecordCard;
+use App\Exceptions\DockDefinitionInvalid;
+use App\Models\Message;
+use App\Support\ActorContext;
+use App\Support\DockDefinitions;
+use App\Support\Docking\LegacyDockable;
+use App\Support\Docking\LegacyDockableProvider;
+use App\Support\Sources\Contracts\DockRegistration;
 use Tests\Fixtures\Docking\FixtureDockable;
 use Tests\Fixtures\Docking\FixtureDockableProvider;
 use Tests\Fixtures\Docking\OpenGate;

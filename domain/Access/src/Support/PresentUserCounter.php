@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Actors\Contracts\ActiveActorCounter;
-use App\Actors\Contracts\AdmittedRecipients;
-use App\Actors\Contracts\UserPresences;
-use App\Actors\Enums\ActorType;
+use App\Contracts\ActiveActorCounter;
+use App\Contracts\AdmittedRecipients;
+use App\Contracts\UserPresences;
+use App\Enums\ActorType;
 use Carbon\CarbonImmutable;
 
 /**

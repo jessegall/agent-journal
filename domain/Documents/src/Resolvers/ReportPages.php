@@ -9,13 +9,13 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Support\Continuation;
 use App\Mcp\Support\ToolArguments;
-use App\Records\Support\RecordIdentity;
-use App\Text\Support\MarkdownText;
+use App\Support\MarkdownText;
+use App\Support\RecordIdentity;
 use Domain\Documents\Contracts\ReportReader;
 use Domain\Documents\Enums\PublicationView;
-use Domain\Documents\Mcp\PublicationChunks;
-use Domain\Documents\Mcp\PublicationPages;
 use Domain\Documents\Models\Report;
+use Domain\Documents\Support\Mcp\PublicationChunks;
+use Domain\Documents\Support\Mcp\PublicationPages;
 use Domain\Documents\Values\ReportReadCard;
 
 final readonly class ReportPages implements ReportReader

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks\Drivers;
 
-use App\Hooks\Contracts\JournalToolNames;
-use App\Hooks\Drivers\Adapters\ClaudeCodeAdapter;
-use App\Hooks\Drivers\Adapters\CodexAdapter;
-use App\Hooks\Drivers\Adapters\JournalToolCall;
-use App\Hooks\Drivers\Adapters\JudgedCall;
-use App\Hooks\Drivers\Contracts\DriverAdapter;
-use App\Hooks\Drivers\HookPayload;
-use App\Hooks\Exceptions\UnsupportedHook;
+use App\Contracts\JournalToolNames;
+use App\Exceptions\UnsupportedHook;
 use App\Mcp\Support\McpCatalogue;
+use App\Support\Drivers\Adapters\ClaudeCodeAdapter;
+use App\Support\Drivers\Adapters\CodexAdapter;
+use App\Support\Drivers\Adapters\JournalToolCall;
+use App\Support\Drivers\Adapters\JudgedCall;
+use App\Support\Drivers\Contracts\DriverAdapter;
+use App\Support\Drivers\HookPayload;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\ChecksProgramFixtures;
 use Tests\Support\RefreshHookDatabase;

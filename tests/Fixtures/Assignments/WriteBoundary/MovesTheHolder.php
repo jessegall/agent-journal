@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Assignments\WriteBoundary;
 
-use App\Assignments\Models\AssignmentRecord;
+use App\Models\AssignmentRecord;
 
 /**
  * A listener that moves an assignment's holder by writing the column, which the assignment write check refuses.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Database\Factories;
 
-use App\Actors\Support\ActorIdentity;
+use App\Support\ActorIdentity;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

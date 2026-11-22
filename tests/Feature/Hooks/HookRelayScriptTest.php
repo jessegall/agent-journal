@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\AgentRequests\Support\StartProfilePin;
-use App\Agents\Enums\OfflineReplyMode;
-use App\Agents\Support\OfflineReplySeal;
+use App\Enums\OfflineReplyMode;
+use App\Support\OfflineReplySeal;
+use App\Support\StartProfilePin;
 use Illuminate\Support\Facades\Process;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Exceptions\HostProtocolMismatch;
-use App\Agents\Models\Host;
-use App\Agents\Models\StartRecord;
-use App\Agents\Support\EnrolledHost;
-use App\Agents\Support\HostDescriptorEnrollment;
-use App\Drivers\Support\DefaultDrivers;
+use App\Enums\HostProtocolVersion;
+use App\Exceptions\HostProtocolMismatch;
+use App\Models\Host;
+use App\Models\StartRecord;
+use App\Support\DefaultDrivers;
+use App\Support\EnrolledHost;
+use App\Support\HostDescriptorEnrollment;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;

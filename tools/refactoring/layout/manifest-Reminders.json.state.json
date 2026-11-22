@@ -1,0 +1,17 @@
+{
+    "moved": {
+        "domain/Reminders/src/Skills/RemindersSkill.php": "45d2d1dcb89eef105931171606532be68b86235b"
+    },
+    "edits": {
+        "domain/Reminders/src/RemindersDomain.php": {
+            "prior": "bd8d97b175e4aee26b7ab27c6a7149e0db552265",
+            "result": "d44ea554b6b414cdb69182d4c99ea78bff304d94",
+            "move": "batch"
+        },
+        "tests/Unit/Skills/ShippedSkillFilesTest.php": {
+            "prior": "4360d31742bf33a3a1193f1f7ce4eebd59f725a7",
+            "result": "840f4540520e398ef61d36cde4c2c1b35097ec2f",
+            "move": "batch"
+        }
+    }
+}

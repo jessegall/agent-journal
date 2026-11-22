@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
-use App\Agents\Contracts\AgentDirectory;
-use App\Bus\Contracts\CommandBus;
-use App\Communication\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\AskChatQuestion\AskChatQuestionCommand;
+use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Contracts\AgentDirectory;
+use App\Contracts\CommandBus;
 use Domain\Chat\Data\MessageInput;
 use Domain\Chat\Support\SentMessageAnswer;
 use Illuminate\Http\JsonResponse;

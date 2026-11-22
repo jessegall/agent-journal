@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Commands\ReplyToMessage\ReplyToMessageCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class ReplyToMessageRequest extends FormRequest

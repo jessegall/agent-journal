@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\ReportRequestProgress\ReportRequestProgressCommand;
-use App\Agents\Values\HostContext;
-use App\Bus\Contracts\CommandBus;
-use App\Http\Data\Agents\RequestProgressReportData;
+use App\Commands\ReportRequestProgress\ReportRequestProgressCommand;
+use App\Contracts\CommandBus;
+use App\Data\Agents\RequestProgressReportData;
+use App\Values\HostContext;
 use Illuminate\Http\Response;
 
 /**

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
-use App\Agents\Enums\DriverVariant;
-use App\Agents\Values\ChosenAccount;
-use App\Agents\Values\DriverSwitchTarget;
-use App\Agents\Values\ModelSelection;
-use App\Drivers\Contracts\DriverCatalogue;
-use App\Profiles\Commands\SwitchAgentDriver\SwitchAgentDriverCommand;
-use App\Profiles\Values\ProfileKey;
+use App\Commands\SwitchAgentDriver\SwitchAgentDriverCommand;
+use App\Contracts\DriverCatalogue;
+use App\Enums\DriverVariant;
+use App\Values\ChosenAccount;
+use App\Values\DriverSwitchTarget;
+use App\Values\ModelSelection;
+use App\Values\ProfileKey;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;

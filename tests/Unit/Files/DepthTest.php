@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Files\Exceptions\DepthTooDeep;
-use App\Files\Values\Depth;
+use App\Exceptions\DepthTooDeep;
+use App\Values\Depth;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

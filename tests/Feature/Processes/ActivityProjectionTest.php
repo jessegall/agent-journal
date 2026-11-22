@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Support\ActorIdentity;
-use App\Processes\Enums\OutputStream;
-use App\Processes\Events\RunChanged;
-use App\Processes\Models\PartRun;
-use App\Processes\Models\ProcessRun;
-use App\Processes\Resolvers\Support\ActivityProjection;
-use App\Processes\Support\SpoolRecorder;
-use App\Processes\Values\CapturedChunk;
-use App\Processes\Values\PartActivity;
-use App\Processes\Values\PartEnd;
-use App\Processes\Values\PartKey;
+use App\Enums\OutputStream;
+use App\Events\RunChanged;
+use App\Models\PartRun;
+use App\Models\ProcessRun;
+use App\Resolvers\Support\ActivityProjection;
+use App\Support\ActorIdentity;
+use App\Support\SpoolRecorder;
+use App\Values\CapturedChunk;
+use App\Values\PartActivity;
+use App\Values\PartEnd;
+use App\Values\PartKey;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\Processes\ProcessOutputDisk;

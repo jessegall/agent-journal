@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reflection;
 
-use App\Reflection\Enums\TypeShape;
-use App\Reflection\Exceptions\MethodMissing;
-use App\Reflection\Exceptions\TypeNotNamed;
-use App\Reflection\Support\ReflectedProperty;
-use App\Reflection\Support\Reflector;
+use App\Enums\TypeShape;
+use App\Exceptions\MethodMissing;
+use App\Exceptions\TypeNotNamed;
+use App\Support\ReflectedProperty;
+use App\Support\Reflector;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Reflection\Attributes\MemberMarker;
 use Tests\Fixtures\Reflection\Labelled;

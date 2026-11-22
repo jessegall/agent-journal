@@ -7,7 +7,7 @@ import (
 )
 
 // Hold reasons the screen raises besides a menu family's own, as the server names them
-// (app/Agents/Enums/HoldReason.php).
+// (app/Enums/HoldReason.php).
 const (
 	// HoldNone is a screen that holds nothing: a ready prompt or a turn being drawn.
 	HoldNone = "none"

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\ReportRuntimeHeartbeat\ReportRuntimeHeartbeatCommand;
-use App\Agents\Values\HostContext;
-use App\Bus\Contracts\CommandBus;
-use App\Http\Data\Agents\RuntimeLivenessReportData;
+use App\Commands\ReportRuntimeHeartbeat\ReportRuntimeHeartbeatCommand;
+use App\Contracts\CommandBus;
+use App\Data\Agents\RuntimeLivenessReportData;
+use App\Values\HostContext;
 use Illuminate\Http\Response;
 
 /**

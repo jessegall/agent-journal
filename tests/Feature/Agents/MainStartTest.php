@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
+use App\Models\Agent;
+use App\Models\AgentSession;
 use Illuminate\Support\Str;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\Agents\ServesEveryCombination;

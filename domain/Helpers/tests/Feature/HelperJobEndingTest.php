@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Events\LaunchCancelled;
-use App\Agents\Models\Agent;
-use App\Hooks\Events\HelperCompletionCertified;
-use App\Hooks\Events\HelperStopHeld;
-use App\Hooks\Values\StopAttemptReference;
-use App\Records\Support\RecordIdentity;
+use App\Events\HelperCompletionCertified;
+use App\Events\HelperStopHeld;
+use App\Events\LaunchCancelled;
+use App\Models\Agent;
+use App\Support\ActorIdentity;
+use App\Support\RecordIdentity;
+use App\Values\StopAttemptReference;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Listeners\HoldFailingJob;
 use Domain\Helpers\Models\HelperIdentity;

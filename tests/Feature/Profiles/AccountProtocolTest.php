@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Agents\Enums\DriverVariant;
-use App\Drivers\Contracts\DriverCatalogue;
-use App\Drivers\Support\DefaultDrivers;
-use App\Profiles\Models\Account;
-use App\Profiles\Values\AccountLabel;
+use App\Contracts\DriverCatalogue;
+use App\Enums\DriverVariant;
+use App\Models\Account;
+use App\Support\DefaultDrivers;
+use App\Values\AccountLabel;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 

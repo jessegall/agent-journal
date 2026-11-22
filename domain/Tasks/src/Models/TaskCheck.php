@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
 use App\Contracts\EventSource;
-use App\Contracts\Support\RaisesEvents;
-use App\Links\Support\Linkable;
-use App\Processes\Values\PublishedResult;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
-use App\Reads\Values\ReadOrder;
+use App\Contracts\ReadableModel;
+use App\Enums\ActorType;
+use App\Support\ActorIdentity;
+use App\Values\PublishedResult;
+use App\Values\ReadOrder;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Api\Events\TaskCheckRecorded;
-use Domain\Tasks\Api\TaskProof;
+use Domain\Tasks\Events\TaskCheckRecorded;
+use Domain\Tasks\Values\TaskProof;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;

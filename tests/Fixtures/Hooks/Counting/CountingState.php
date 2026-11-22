@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Counting;
 
-use App\Hooks\Contracts\OwnValuesState;
-use App\Hooks\States\AgentState;
+use App\Contracts\OwnValuesState;
+use App\Support\States\AgentState;
 
 /**
  * A state for tests that keeps a count of its own, as a plan review keeps its count of reviewers still out.

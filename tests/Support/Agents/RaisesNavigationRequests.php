@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Enums\NavigationReason;
-use App\Agents\Models\DriverRequest;
-use App\Agents\Models\NavigationRequest;
-use App\Agents\Values\NavigationScreen;
-use App\Agents\Values\NavigationUncertainty;
+use App\Enums\ActorType;
+use App\Enums\NavigationReason;
+use App\Models\DriverRequest;
+use App\Models\NavigationRequest;
+use App\Support\ActorIdentity;
+use App\Values\NavigationScreen;
+use App\Values\NavigationUncertainty;
 use Carbon\CarbonImmutable;
 
 /**

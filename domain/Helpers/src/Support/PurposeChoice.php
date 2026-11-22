@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Actors\Support\ActorIdentity;
-use App\Records\Support\RecordIdentity;
+use App\Support\ActorIdentity;
+use App\Support\RecordIdentity;
 
 /**
  * What a parent says a helper job is for: exactly one of a subject record, an existing purpose or a new purpose in

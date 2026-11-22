@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Bus\Shop\Commands\BaselessItem;
 
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
-use App\Operations\Enums\AccessType;
-use App\Bus\Attributes\Authorize;
-use App\Actors\Support\ActorContext;
-use App\Bus\Contracts\Command;
-use App\Bus\Exceptions\CommandDispatcherMissing;
+use App\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Support\ActorContext;
+use App\Contracts\Command;
+use App\Exceptions\CommandDispatcherMissing;
 
 /**
  * A final readonly command that implements the interface itself instead of extending the base command.

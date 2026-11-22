@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reads;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Values\OwnerAuthority;
-use App\Reads\Contracts\ReadMeter;
-use App\Reads\Exceptions\RepeatedReadRefused;
-use App\Reads\Support\ScopedReadMeter;
+use App\Contracts\CurrentActorSetter;
+use App\Contracts\ReadMeter;
+use App\Exceptions\RepeatedReadRefused;
+use App\Support\ScopedReadMeter;
+use App\Values\OwnerAuthority;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Resolvers\TaskRecords;
 use Illuminate\Database\Eloquent\Factories\Sequence;

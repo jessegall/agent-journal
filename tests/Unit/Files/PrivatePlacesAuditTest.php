@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Files\Contracts\Files;
-use App\Files\Enums\Place;
-use App\Files\Exceptions\FileMissing;
-use App\Files\Exceptions\FolderClosed;
-use App\Files\Exceptions\LinkLeavesPlace;
-use App\Files\Values\Depth;
-use App\Files\Values\FilePath;
-use App\Files\Values\FolderEntry;
+use App\Contracts\Files;
+use App\Enums\Place;
+use App\Exceptions\FileMissing;
+use App\Exceptions\FolderClosed;
+use App\Exceptions\LinkLeavesPlace;
+use App\Values\Depth;
+use App\Values\FilePath;
+use App\Values\FolderEntry;
 use RuntimeException;
 use Tests\Support\Files\UsesTemporaryPlaces;
 use Tests\TestCase;

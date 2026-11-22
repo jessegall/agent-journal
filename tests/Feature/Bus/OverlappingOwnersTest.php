@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Bus\Exceptions\OverlappingTransactionOwner;
-use App\Bus\Support\ActiveEventUnits;
+use App\Exceptions\OverlappingTransactionOwner;
+use App\Support\ActiveEventUnits;
 use Illuminate\Database\DatabaseManager;
 use Tests\TestCase;
 

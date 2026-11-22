@@ -48,33 +48,62 @@ if (isset($options['dry-run'])) {
     exit(0);
 }
 
-foreach ($batch as $row) {
-    if ($row['status'] !== 'move' || isset($state['moved'][$row['old_path']])) {
-        continue;
-    }
+$pending = array_values(array_filter(
+    $batch,
+    fn (array $row) => $row['status'] === 'move' && ! isset($state['moved'][$row['old_path']]),
+));
+$classRows = array_values(array_filter($pending, fn (array $row) => $row['kind'] === 'class'));
 
+// Every class of the batch moves in one batch-move.php pass: each file is parsed once and rewritten once for the whole
+// rename map, where one move.php run per class read and rewrote every source once per class. Each row is then checked
+// on its own below.
+if ($classRows !== []) {
     $before = trackedBlobs($root);
-    $failure = $row['kind'] === 'class' ? moveClass($root, $row) : moveFile($root, $row);
+    $listFailure = moveClasses($root, $classRows);
     $after = trackedBlobs($root);
+    recordEdits($state, $before, $after, $classRows);
 
-    foreach (array_keys($after + $before) as $file) {
-        if (($before[$file] ?? null) !== ($after[$file] ?? null) && $file !== $row['old_path'] && $file !== $row['final_path']) {
-            $state['edits'][$file] = [
-                'prior' => $before[$file] ?? null,
-                'result' => $after[$file] ?? null,
-                'move' => $row['old_path'],
-            ];
+    // One hash run and one state write for the whole batch: per row they took minutes on two thousand rows.
+    $landed = blobsOf($root, array_values(array_filter(array_column($classRows, 'final_path'), fn (string $path) => is_file("{$root}/{$path}"))));
+    $failures = [];
+
+    foreach ($classRows as $row) {
+        $failure = $listFailure ?? classMoveFailure($root, $row);
+
+        if ($failure === null) {
+            $state['moved'][$row['old_path']] = $landed[$row['final_path']] ?? null;
+        } else {
+            $failures[] = $failure;
         }
-    }
-
-    if ($failure === null) {
-        $state['moved'][$row['old_path']] = blobOf($root, $row['final_path']);
     }
 
     file_put_contents($statePath, json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
 
-    if ($failure !== null) {
-        exit(failWith([$failure, 'The rows before it are kept in '.$statePath.'; run again to retry the rest.']));
+    if ($failures !== []) {
+        exit(failWith([...$failures, 'The rows moved are kept in '.$statePath.'; make the manifest again before a retry.']));
+    }
+}
+
+// The other rows move one after another with git mv, but their edits are tracked and their state written once.
+$fileRows = array_values(array_filter($pending, fn (array $row) => $row['kind'] !== 'class'));
+
+if ($fileRows !== []) {
+    $before = trackedBlobs($root);
+    $failures = array_values(array_filter(array_map(fn (array $row) => moveFile($root, $row), $fileRows)));
+    $after = trackedBlobs($root);
+    recordEdits($state, $before, $after, $fileRows);
+    $landed = blobsOf($root, array_values(array_filter(array_column($fileRows, 'final_path'), fn (string $path) => is_file("{$root}/{$path}"))));
+
+    foreach ($fileRows as $row) {
+        if (isset($landed[$row['final_path']]) && ! file_exists("{$root}/{$row['old_path']}")) {
+            $state['moved'][$row['old_path']] = $landed[$row['final_path']];
+        }
+    }
+
+    file_put_contents($statePath, json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
+
+    if ($failures !== []) {
+        exit(failWith([...$failures, 'The rows moved are kept in '.$statePath.'; make the manifest again before a retry.']));
     }
 }
 
@@ -182,24 +211,58 @@ function admissionFailures(string $root, array $rows, array $batch, array $state
 }
 
 /**
- * Moves one class through move.php and fails when the file did not move or its old name is still named anywhere.
+ * Moves every class row in one batch-move.php pass over the tree; a failure of that pass fails the batch.
+ *
+ * @param  list<array<string, mixed>>  $rows
+ */
+function moveClasses(string $root, array $rows): string|null
+{
+    $list = (string) tempnam(sys_get_temp_dir(), 'layout-moves-');
+    file_put_contents($list, implode("\n", array_map(
+        fn (array $row) => "{$row['old_class']} {$row['final_class']} {$row['old_path']} {$row['final_path']}",
+        $rows,
+    ))."\n");
+    $command = [PHP_BINARY, __DIR__.'/batch-move.php', $list, "--root={$root}"];
+    exec(implode(' ', array_map('escapeshellarg', $command)).' 2>&1', $output, $exit);
+    unlink($list);
+    echo implode("\n", $output)."\n";
+
+    return $exit === 0 ? null : 'batch-move.php failed on the batch: '.implode(' ', array_slice($output, -8));
+}
+
+/**
+ * The edits one move made to files other than the moved ones, kept so a resumed batch can tell them from edits
+ * nobody recorded.
+ *
+ * @param  array<string, mixed>  $state
+ * @param  array<string, string>  $before
+ * @param  array<string, string>  $after
+ * @param  list<array<string, mixed>>  $rows
+ */
+function recordEdits(array &$state, array $before, array $after, array $rows): void
+{
+    $moved = [...array_column($rows, 'old_path'), ...array_column($rows, 'final_path')];
+
+    foreach (array_keys($after + $before) as $file) {
+        if (($before[$file] ?? null) !== ($after[$file] ?? null) && ! in_array($file, $moved, true)) {
+            $state['edits'][$file] = ['prior' => $before[$file] ?? null, 'result' => $after[$file] ?? null, 'move' => 'batch'];
+        }
+    }
+}
+
+/**
+ * Why a class row did not land: its file is still at the old place or missing at the new one.
  *
  * @param  array<string, mixed>  $row
  */
-function moveClass(string $root, array $row): string|null
+function classMoveFailure(string $root, array $row): string|null
 {
-    $command = [PHP_BINARY, dirname(__DIR__).'/move.php', $row['old_class'], $row['final_class']];
-    exec(implode(' ', array_map('escapeshellarg', $command)).' 2>&1', $output, $exit);
-
-    if ($exit !== 0 || file_exists("{$root}/{$row['old_path']}") || ! file_exists("{$root}/{$row['final_path']}")) {
-        return "move.php did not move {$row['old_class']} to {$row['final_path']}: ".implode(' ', array_slice($output, -3));
+    if (file_exists("{$root}/{$row['old_path']}") || ! file_exists("{$root}/{$row['final_path']}")) {
+        return "batch-move.php did not move {$row['old_class']} to {$row['final_path']}.";
     }
 
-    $residual = trim((string) shell_exec(
-        'cd '.escapeshellarg($root).' && git grep -l -F '.escapeshellarg($row['old_class']).' -- app domain tests routes config database bootstrap',
-    ));
-
-    return $residual === '' ? null : "{$row['old_class']} is still named in: ".str_replace("\n", ', ', $residual).'.';
+    // batch-move.php has already searched every PHP file for the old names of the whole batch at once.
+    return null;
 }
 
 /**
@@ -295,9 +358,23 @@ function rowOf(array $rows, string $oldPath): array|null
  */
 function trackedBlobs(string $root): array
 {
-    $listing = (string) shell_exec('cd '.escapeshellarg($root).' && git ls-files -c -o --exclude-standard 2>/dev/null');
+    // The index already knows the blob of every file Git has not seen change, so only the changed and new files are
+    // hashed: hashing the whole tree twice a row made a batch take an hour.
+    $blobs = [];
 
-    return blobsOf($root, array_values(array_unique(array_filter(explode("\n", $listing)))));
+    foreach (array_filter(explode("\n", (string) shell_exec('cd '.escapeshellarg($root).' && git ls-files -s'))) as $line) {
+        [$meta, $file] = explode("\t", $line, 2);
+        $blobs[$file] = explode(' ', $meta)[1];
+    }
+
+    $changed = (string) shell_exec('cd '.escapeshellarg($root).' && git ls-files -m -o -d --exclude-standard 2>/dev/null');
+    $files = array_values(array_unique(array_filter(explode("\n", $changed))));
+
+    foreach ($files as $file) {
+        unset($blobs[$file]);
+    }
+
+    return [...$blobs, ...blobsOf($root, array_values(array_filter($files, fn (string $file) => is_file("{$root}/{$file}"))))];
 }
 
 /**

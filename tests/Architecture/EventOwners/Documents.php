@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-use App\Actors\Support\ActorContext;
-use Domain\Documents\Api\Events\DocumentClosed;
-use Domain\Documents\Api\Events\DocumentCreated;
-use Domain\Documents\Api\Events\DocumentDraftSaved;
-use Domain\Documents\Api\Events\DocumentOpened;
-use Domain\Documents\Api\Events\DocumentPublished;
-use Domain\Documents\Api\Events\DraftKept;
-use Domain\Documents\Api\Events\RecordSettled;
-use Domain\Documents\Api\Events\ReportFiled;
+use App\Support\ActorContext;
+use Domain\Documents\Events\DocumentClosed;
+use Domain\Documents\Events\DocumentCreated;
+use Domain\Documents\Events\DocumentDraftSaved;
+use Domain\Documents\Events\DocumentOpened;
+use Domain\Documents\Events\DocumentPublished;
+use Domain\Documents\Events\DraftKept;
+use Domain\Documents\Events\RecordSettled;
+use Domain\Documents\Events\ReportFiled;
 use Tests\Architecture\Support\EventRole;
 
 /**

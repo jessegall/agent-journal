@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Listeners;
 
-use App\Communication\Contracts\InboxNotices;
+use App\Contracts\InboxNotices;
 use App\Contracts\Listener;
-use Domain\Documents\Api\Events\DraftKept;
+use Domain\Documents\Events\DraftKept;
 
 final readonly class NoticeKeptDraft implements Listener
 {

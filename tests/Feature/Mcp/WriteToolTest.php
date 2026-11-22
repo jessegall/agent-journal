@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\CommandRegistry;
-use App\Bus\Support\CommandScope;
-use App\Bus\Support\MiddlewareDeclaration;
-use App\Bus\Support\RequestKey;
+use App\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Contracts\CommandBus;
 use App\Mcp\Exceptions\McpCommandMissing;
 use App\Mcp\Support\McpCatalogue;
-use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Profiles\Values\ProfileBase;
-use App\Reflection\Support\CatalogueReflectorFactory;
+use App\Support\CatalogueReflectorFactory;
+use App\Support\CommandRegistry;
+use App\Support\CommandScope;
+use App\Support\MiddlewareDeclaration;
+use App\Support\RequestKey;
+use App\Values\ProfileBase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Tests\Feature\Bus\CommandBusTestCase;

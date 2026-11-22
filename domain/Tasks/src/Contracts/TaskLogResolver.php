@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
-use Domain\Tasks\Api\TaskLogPage;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Values\TaskLogPage;
 
 /**
  * Reads a task's log for whoever may read the task, a bounded page at a time: the newest lines, the lines before a

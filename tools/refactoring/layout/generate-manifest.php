@@ -102,6 +102,14 @@ function destinationOf(string $old, string $scope, array $rules): string
 
         $top = $segments[0];
 
+        // A class in a role folder (app/Values/Operation.php, app/Data/Agents/UsageReportData.php) is already where
+        // the layout wants it; Pipelines and Contracts were areas too, so only their direct files count.
+        $roleRoot = in_array($top, [...$rules['kind_roots'], 'Support', 'Concerns'], true);
+
+        if ($roleRoot && (count($segments) === 2 || ! in_array($top, ['Pipelines', 'Contracts'], true))) {
+            return $old;
+        }
+
         if (in_array($top, $rules['core_flat_roots'], true)) {
             return 'app/'.(mapInArea(null, $relative, $rules, 'app') ?? $relative);
         }

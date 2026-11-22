@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Commands\RetireAgent\RetireAgentCommand;
-use App\Agents\Support\AgentChatAccess;
-use App\Communication\Support\ChatInboxes;
+use App\Commands\RetireAgent\RetireAgentCommand;
+use App\Enums\ActorType;
+use App\Support\ActorIdentity;
+use App\Support\AgentChatAccess;
+use App\Support\ChatInboxes;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Commands\AddChatParticipant\AddChatParticipantCommand;
 use Domain\Chat\Commands\CreateGroupChat\CreateGroupChatCommand;

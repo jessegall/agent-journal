@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Sharing\Exceptions\GatewayOpenFailed;
-use App\Sharing\Gateways\Ngrok\NgrokGateway;
-use App\Sharing\Support\GatewayConfiguration;
-use App\Sharing\Support\GatewayOperation;
-use App\Sharing\Support\GatewaySettings;
+use App\Exceptions\GatewayOpenFailed;
+use App\Support\GatewayConfiguration;
+use App\Support\GatewayOperation;
+use App\Support\Gateways\Ngrok\NgrokGateway;
+use App\Support\GatewaySettings;
 use Illuminate\Http\Client\Factory as HttpClient;
 use Illuminate\Process\Factory as Processes;
 use Tests\TestCase;

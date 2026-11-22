@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Models\AgentRuntime;
-use App\Agents\Models\TerminalView;
+use App\Models\AgentRuntime;
+use App\Models\TerminalView;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;

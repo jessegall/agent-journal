@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Sharing;
 
-use App\Files\Contracts\Files;
-use App\Files\Enums\Place;
-use App\Files\Values\FilePath;
+use App\Contracts\Files;
+use App\Enums\Place;
 use App\Http\Responses\Sharing\SharingAssets;
+use App\Values\FilePath;
 use Carbon\CarbonImmutable;
 use Tests\Support\Files\UsesTemporaryPlaces;
 use Tests\TestCase;

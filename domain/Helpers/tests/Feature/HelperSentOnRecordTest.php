@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Assignments\Contracts\RecordVisibility;
-use App\Bus\Contracts\CommandBus;
-use App\Hooks\Events\HelperSentOnRecord;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\CommandBus;
+use App\Contracts\RecordVisibility;
+use App\Events\HelperSentOnRecord;
+use App\Support\RecordIdentity;
 use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;

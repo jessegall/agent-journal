@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
-use App\Ui\Contracts\DraftProducers;
-use App\Ui\Enums\ActionMethod;
-use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\LayoutActionData;
-use App\Ui\Layout\LayoutBackData;
-use App\Ui\Layout\LayoutDialogData;
-use App\Ui\Layout\LayoutFieldData;
-use App\Ui\Layout\LayoutFormData;
-use App\Ui\Layout\LayoutPartData;
-use App\Ui\Layout\LayoutRowData;
-use App\Ui\Layout\ListEmpty;
-use App\Ui\Layout\ListPage;
-use App\Ui\Layout\ListPaging;
-use Domain\Tasks\Api\TaskCard;
+use App\Contracts\DraftProducers;
+use App\Enums\ActionMethod;
+use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\LayoutActionData;
+use App\Support\Layout\LayoutBackData;
+use App\Support\Layout\LayoutDialogData;
+use App\Support\Layout\LayoutFieldData;
+use App\Support\Layout\LayoutFormData;
+use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\LayoutRowData;
+use App\Support\Layout\ListEmpty;
+use App\Support\Layout\ListPage;
+use App\Support\Layout\ListPaging;
 use Domain\Tasks\Contracts\TaskListResolver;
+use Domain\Tasks\Data\TaskFiltersData;
 use Domain\Tasks\Enums\TaskHolderFilter;
 use Domain\Tasks\Enums\TaskState;
-use Domain\Tasks\Http\Data\TaskFiltersData;
+use Domain\Tasks\Values\TaskCard;
 use Spatie\LaravelData\Optional;
 
 /**

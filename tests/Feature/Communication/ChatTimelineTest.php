@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Enums\ChatPermission;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Communication\Contracts\ChatTimeline;
-use App\Communication\Exceptions\ChatCursorRefused;
+use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Contracts\ChatTimeline;
+use App\Enums\ChatPermission;
+use App\Exceptions\ChatCursorRefused;
+use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;

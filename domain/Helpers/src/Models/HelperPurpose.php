@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
-use App\Actors\Models\Support\BelongsToOneActor;
-use App\Actors\Support\ActorIdentity;
-use App\Contracts\Support\InsertsAbsentRows;
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
-use App\Records\Support\RecordIdentity;
+use App\Concerns\BoundedReads;
+use App\Concerns\InsertsAbsentRows;
+use App\Concerns\Linkable;
+use App\Contracts\ReadableModel;
+use App\Models\Support\BelongsToOneActor;
+use App\Support\ActorIdentity;
+use App\Support\RecordIdentity;
 use Domain\Helpers\Enums\PurposeType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;

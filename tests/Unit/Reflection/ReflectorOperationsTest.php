@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reflection;
 
-use App\Reflection\Support\ReflectedEnumCase;
-use App\Reflection\Support\Reflector;
+use App\Support\ReflectedEnumCase;
+use App\Support\Reflector;
 use ArrayObject;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Reflection\Attributes\CaseMarker;

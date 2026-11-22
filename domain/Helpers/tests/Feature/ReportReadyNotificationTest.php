@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Models\Agent;
-use App\Communication\Models\NotificationOccurrence;
-use App\Communication\Models\NotificationReceipt;
-use App\Communication\Models\NotificationScope;
+use App\Models\Agent;
+use App\Models\NotificationOccurrence;
+use App\Models\NotificationReceipt;
+use App\Models\NotificationScope;
+use App\Support\ActorIdentity;
 use Domain\Helpers\Events\ReportJobLinked;
 use Domain\Helpers\Listeners\DeliverReportReadyNotification;
 use Domain\Helpers\Models\HelperIdentity;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Hooks\Decisions\MessageLine;
-use App\Hooks\Inputs\FileEditRequested;
-use App\Hooks\Inputs\StopRequested;
-use App\Hooks\States\AgentState;
+use App\Support\Decisions\MessageLine;
+use App\Support\Inputs\FileEditRequested;
+use App\Support\Inputs\StopRequested;
+use App\Support\States\AgentState;
 
 /**
  * A test state that sends its agent one message on a stop and on a file edit, and passes every other hook.

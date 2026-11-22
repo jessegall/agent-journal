@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Assignments\Support\ProvedClaims;
-use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
-use App\Communication\Data\MessageReadBatch;
-use App\Communication\Exceptions\InboxUnavailable;
-use App\Communication\Exceptions\MessageMissing;
-use App\Communication\Models\Message;
+use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Data\MessageReadBatch;
+use App\Exceptions\InboxUnavailable;
+use App\Exceptions\MessageMissing;
+use App\Models\Message;
+use App\Support\ProvedClaims;
 use Tests\Support\MessagingTestCase;
 
 /**

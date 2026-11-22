@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Pamphlets;
 
-use App\Records\Support\RecordIdentity;
-use App\Sharing\Contracts\ShareBudget;
-use App\Sharing\Contracts\ShareRecordProvider;
-use App\Sharing\Support\ShareContentRead;
-use App\Sharing\Support\SharedContent;
-use App\Sharing\Support\ShareRecordCard;
-use App\Sharing\Support\ShareRecords;
-use App\Sharing\Support\ShareRelationRead;
-use App\Sharing\Support\ShareSelection;
-use App\Sharing\Support\ShareTargetRead;
+use App\Support\RecordIdentity;
+use App\Contracts\ShareBudget;
+use App\Contracts\ShareRecordProvider;
+use App\Support\ShareContentRead;
+use App\Support\SharedContent;
+use App\Support\ShareRecordCard;
+use App\Support\ShareRecords;
+use App\Support\ShareRelationRead;
+use App\Support\ShareSelection;
+use App\Support\ShareTargetRead;
 
 /**
  * Discloses pamphlets but not their notes, and answers every pamphlet as one fixed published card with no linked

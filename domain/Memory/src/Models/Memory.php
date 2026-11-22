@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Models;
 
-use App\Actors\Models\Support\BelongsToOneActor;
-use App\Actors\Support\ActorIdentity;
-use App\Links\Support\Linkable;
-use App\Numbers\Contracts\Numbered;
-use App\Numbers\Support\HasNumber;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
+use App\Concerns\BoundedReads;
+use App\Concerns\HasNumber;
+use App\Concerns\Linkable;
+use App\Contracts\Numbered;
+use App\Contracts\ReadableModel;
+use App\Models\Support\BelongsToOneActor;
+use App\Support\ActorIdentity;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Calls;
 
-use App\AgentRequests\Contracts\CallSender;
-use App\AgentRequests\Support\CallKey;
-use App\AgentRequests\Values\CallAccepted;
-use App\Text\Support\TextSelection;
+use App\Contracts\CallSender;
+use App\Support\CallKey;
+use App\Support\TextSelection;
+use App\Values\CallAccepted;
 use Domain\Documents\Data\DraftView;
 use Domain\Documents\Data\PublicationList;
 use Domain\Documents\Data\RecordInspection;

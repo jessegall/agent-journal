@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Domains\Support\DomainEntry;
+use App\Support\DomainEntry;
 
 /**
  * A domain or Core as the owner of the tables its migrations create: only its own files use them.
@@ -26,15 +26,21 @@ final readonly class TableOwner
     }
 
     /**
-     * Core, with the migrations of each of its areas, such as app/Hooks/Database/Migrations.
+     * Core, with its migrations in database/migrations beside app.
      */
     public static function core(string $coreFolder): self
     {
-        return new self('Core', $coreFolder, glob("{$coreFolder}/*/Database/Migrations", GLOB_ONLYDIR) ?: []);
+        return new self('Core', $coreFolder, [dirname($coreFolder).'/database/migrations']);
     }
 
+    /**
+     * Whether the file is in the owner's code or in one of its migration folders, such as Core's database/migrations.
+     */
     public function holdsFile(string $path): bool
     {
-        return str_starts_with($path, $this->folder.DIRECTORY_SEPARATOR);
+        return array_any(
+            [$this->folder, ...$this->migrationFolders],
+            fn (string $folder) => str_starts_with($path, $folder.DIRECTORY_SEPARATOR),
+        );
     }
 }

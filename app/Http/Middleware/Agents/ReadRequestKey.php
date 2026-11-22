@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Agents;
 
-use App\AgentRequests\Enums\CallEffect;
-use App\AgentRequests\Enums\ReceiptOwner;
-use App\AgentRequests\Exceptions\KeyedWriteWithoutReceipt;
-use App\AgentRequests\Support\CallDeclaration;
-use App\AgentRequests\Support\CallRoutes;
-use App\Agents\Support\ReadGrant;
-use App\Agents\Values\ReadRequest;
-use App\Bus\Support\RequestKey;
-use App\Reflection\Contracts\ReflectorFactory;
+use App\Contracts\ReflectorFactory;
+use App\Enums\CallEffect;
+use App\Enums\ReceiptOwner;
+use App\Exceptions\KeyedWriteWithoutReceipt;
+use App\Support\CallDeclaration;
+use App\Support\CallRoutes;
+use App\Support\ReadGrant;
+use App\Support\RequestKey;
+use App\Values\ReadRequest;
 use Closure;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Foundation\Application;

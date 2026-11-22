@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Values\ReleaseManifest;
-use App\Agents\Values\ReleaseTarget;
-use App\Bus\Contracts\CommandBus;
-use App\Connections\Models\ProjectInvitation;
-use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
-use App\Settings\Values\SettingReference;
+use App\Commands\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Enums\HostProtocolVersion;
+use App\Models\ProjectInvitation;
+use App\Support\ActorContext;
+use App\Values\OwnerAuthority;
+use App\Values\ReleaseManifest;
+use App\Values\ReleaseTarget;
+use App\Values\SettingReference;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Log\Events\MessageLogged;

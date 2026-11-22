@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Data;
 
-use App\Comments\Data\RecordCommentLocation;
-use App\Comments\Data\TextCommentLocation;
-use App\Text\Data\TextSections;
-use App\Text\Support\TextPart;
+use App\Data\RecordCommentLocation;
+use App\Data\TextCommentLocation;
+use App\Data\TextSections;
+use App\Support\TextPart;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

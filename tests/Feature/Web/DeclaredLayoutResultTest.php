@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Actors\Support\ActorStore;
-use App\Domains\Support\DomainEntry;
-use App\Ui\Contracts\PageResolver;
-use App\Ui\Declarations\ResolverDefinition;
-use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\LayoutPartData;
-use App\Web\Support\WindowResults;
+use App\Contracts\PageResolver;
+use App\Declarations\ResolverDefinition;
+use App\Support\ActorStore;
+use App\Support\DomainEntry;
+use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\LayoutPartData;
+use App\Support\WindowResults;
 use Closure;
 use Spatie\LaravelData\Data;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfDomain;

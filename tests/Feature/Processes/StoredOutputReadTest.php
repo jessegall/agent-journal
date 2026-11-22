@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Processes\Enums\OutputStream;
-use App\Processes\Models\PartRun;
-use App\Processes\Models\ProcessRun;
-use App\Processes\Support\SpoolRecorder;
-use App\Processes\Values\CapturedChunk;
-use App\Processes\Values\PartEnd;
-use App\Processes\Values\PartKey;
+use App\Enums\ActorType;
+use App\Enums\OutputStream;
+use App\Models\PartRun;
+use App\Models\ProcessRun;
+use App\Support\ActorIdentity;
+use App\Support\SpoolRecorder;
+use App\Values\CapturedChunk;
+use App\Values\PartEnd;
+use App\Values\PartKey;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Processes\ProcessOutputDisk;

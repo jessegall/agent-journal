@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Autoload;
 
-use App\Autoload\Support\FolderClasses;
-use App\Autoload\Support\Psr4ClassNames;
 use App\CoreApi;
-use App\Files\Enums\Place;
-use App\Files\Support\CodeFiles;
-use App\Files\Values\FilePath;
+use App\Enums\Place;
+use App\Support\CodeFiles;
+use App\Support\FolderClasses;
+use App\Support\Psr4ClassNames;
+use App\Values\FilePath;
 use Illuminate\Console\Command;
 use PHPUnit\Framework\TestCase;
 

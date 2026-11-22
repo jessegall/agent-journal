@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\KeepNote;
 
-use App\Operations\Enums\AccessType;
-use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\RequiresRequestKey;
-use App\Bus\Support\Command;
+use App\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Attributes\RequiresRequestKey;
+use App\Support\Command;
 use Tests\Fixtures\Modules\Notes\Models\NotePage;
 use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
 

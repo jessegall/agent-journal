@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Proof;
 
-use App\Bus\Support\Command;
+use App\Support\Command;
 
 /**
  * A command outside every Commands folder that proves how the base binds its dispatcher.

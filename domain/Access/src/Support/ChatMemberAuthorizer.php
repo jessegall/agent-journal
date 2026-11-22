@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Actors\Contracts\Actor;
-use App\Actors\Contracts\Authorizer;
-use App\Actors\Contracts\ChatMemberPolicies;
-use App\Operations\Enums\AccessType;
+use App\Contracts\Actor;
+use App\Contracts\Authorizer;
+use App\Contracts\ChatMemberPolicies;
+use App\Enums\AccessType;
 use Illuminate\Auth\Access\Response;
 
 /**

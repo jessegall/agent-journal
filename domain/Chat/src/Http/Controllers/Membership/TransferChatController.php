@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Membership;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use Domain\Chat\Commands\TransferChatOwnership\TransferChatOwnershipCommand;
 use Domain\Chat\Data\ParticipantInput;
 use Illuminate\Http\JsonResponse;

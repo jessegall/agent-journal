@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Books;
 
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
+use App\Support\Domain;
+use App\Support\Exports;
 
 final class BooksDomain extends Domain
 {

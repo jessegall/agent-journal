@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Agents\Enums\HostProtocolVersion;
-use App\Connections\Models\ProjectBinding;
+use App\Enums\HostProtocolVersion;
+use App\Models\ProjectBinding;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;

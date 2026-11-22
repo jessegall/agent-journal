@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Web;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\ChatMemberAuthority;
 use App\Contracts\CommandRefusal;
-use App\Sharing\Contracts\SharePolicy;
-use App\Web\Contracts\CurrentUserResolver;
-use App\Web\Contracts\InstalledVersion;
-use App\Web\Contracts\NavigationRecords;
-use App\Web\Data\CurrentUserData;
-use App\Web\Data\SharedData;
+use App\Contracts\CurrentActor;
+use App\Contracts\CurrentUserResolver;
+use App\Contracts\InstalledVersion;
+use App\Contracts\NavigationRecords;
+use App\Contracts\SharePolicy;
+use App\Data\CurrentUserData;
+use App\Data\SharedData;
+use App\Support\ActorContext;
+use App\Values\ChatMemberAuthority;
 use Illuminate\Container\Attributes\Config;
 use Illuminate\Http\Request;
 use Inertia\Middleware;

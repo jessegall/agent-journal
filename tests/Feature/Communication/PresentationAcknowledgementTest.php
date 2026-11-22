@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\AcknowledgePresentation\AcknowledgePresentationCommand;
-use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
-use App\Communication\Models\MessageReceipt;
-use App\Communication\Support\PresentationBatches;
+use App\Commands\AcknowledgePresentation\AcknowledgePresentationCommand;
+use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Models\MessageReceipt;
+use App\Support\ActorIdentity;
+use App\Support\PresentationBatches;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;

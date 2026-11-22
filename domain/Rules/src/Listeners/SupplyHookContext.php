@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Rules\Listeners;
 
 use App\Contracts\Listener;
-use App\Hooks\Events\ContextStarted;
+use App\Events\ContextStarted;
 use Domain\Rules\Support\ActiveRules;
 
 /**

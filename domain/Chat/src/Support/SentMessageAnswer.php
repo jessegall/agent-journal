@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Bus\Contracts\RequestKey;
-use App\Communication\Contracts\ConversationResolver;
+use App\Contracts\ConversationResolver;
+use App\Contracts\RequestKey;
 use Domain\Chat\Exceptions\ConversationUnavailable;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Illuminate\Http\JsonResponse;

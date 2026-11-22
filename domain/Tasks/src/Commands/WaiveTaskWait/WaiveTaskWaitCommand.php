@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\WaiveTaskWait;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\RequiresRequestKey;
-use App\Bus\Support\Command;
-use App\Operations\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Attributes\RequiresRequestKey;
+use App\Enums\AccessType;
+use App\Support\Command;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;

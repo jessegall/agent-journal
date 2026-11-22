@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use Domain\Tasks\Api\TaskHistoryPage;
 use Domain\Tasks\Contracts\TaskHistoryResolver;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Models\TaskHistoryEntry;
+use Domain\Tasks\Values\TaskHistoryPage;
 
 /**
  * Reads a task's history a page at a time for a caller who may read the task: newest first by (sequence, id), one more

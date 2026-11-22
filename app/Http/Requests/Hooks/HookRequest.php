@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Hooks;
 
-use App\Hooks\Drivers\HookPayload;
+use App\Support\Drivers\HookPayload;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Actors\Contracts\Actor;
+use App\Contracts\Actor;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\RecordSettlement;
 use Domain\Documents\Models\Report;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Sharing\Enums\ShareState;
-use App\Sharing\Models\Share;
-use App\Sharing\Models\ShareGatewayConfiguration;
-use App\Sharing\Support\ShareGatewayRegistry;
-use App\Sharing\Support\ShareGrant;
-use App\Sharing\Support\ShareToken;
+use App\Enums\ShareState;
+use App\Models\Share;
+use App\Models\ShareGatewayConfiguration;
+use App\Support\ShareGatewayRegistry;
+use App\Support\ShareGrant;
+use App\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;

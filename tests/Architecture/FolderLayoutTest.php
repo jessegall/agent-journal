@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\AgentRequests\Console\GenerateCallsCommand;
-use App\Reflection\Support\Reflector;
+use App\Console\Commands\GenerateCallsCommand;
+use App\Support\Reflector;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\FolderType;
 use Tests\Architecture\Support\LayoutRoots;

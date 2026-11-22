@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Reflection\Support\Reflector;
+use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Support\ScanCache\ScanCache;
 
@@ -31,7 +31,7 @@ final readonly class ModelWrites
     public static function across(string $projectRoot): self
     {
         $folders = [
-            ...glob("{$projectRoot}/app/*/Models", GLOB_ONLYDIR) ?: [],
+            "{$projectRoot}/app/Models",
             ...glob("{$projectRoot}/domain/*/src/Models", GLOB_ONLYDIR) ?: [],
         ];
 

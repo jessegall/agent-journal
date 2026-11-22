@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Agents\Actions\AgentRuntimes;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Enums\DriverVariant;
-use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentRuntime;
-use App\Agents\Values\RuntimeIntent;
-use App\Connections\Models\ProjectBinding;
+use App\Enums\DriverVariant;
+use App\Enums\HostProtocolVersion;
+use App\Models\Agent;
+use App\Models\AgentRuntime;
+use App\Models\ProjectBinding;
+use App\Support\AgentRuntimes;
+use App\Support\StartSessions;
+use App\Values\RuntimeIntent;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

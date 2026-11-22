@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Support\ActorContext;
+use App\Values\OwnerAuthority;
 use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;

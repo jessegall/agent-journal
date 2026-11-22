@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Communication\Enums\IntervalRole;
-use App\Communication\Exceptions\SpeechRefused;
-use App\Communication\Models\Message;
-use App\Communication\Models\SpeechOpportunity;
-use App\Communication\Support\ChatInboxes;
-use App\Communication\Support\InboxIntervals;
+use App\Commands\AskChatQuestion\AskChatQuestionCommand;
+use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Enums\IntervalRole;
+use App\Exceptions\SpeechRefused;
+use App\Models\Message;
+use App\Models\SpeechOpportunity;
+use App\Support\ActorIdentity;
+use App\Support\ChatInboxes;
+use App\Support\InboxIntervals;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\ChatInbox;
 use Illuminate\Support\Str;

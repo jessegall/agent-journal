@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Processes\Contracts\ShellAdmission;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Values\Admission;
-use App\Processes\Values\ExecutionContext;
+use App\Contracts\ShellAdmission;
+use App\Enums\ShellDialect;
+use App\Values\Admission;
+use App\Values\ExecutionContext;
 
 /**
  * A fixture admission that counts the lines it is asked to admit and hands each to Core's own admission.

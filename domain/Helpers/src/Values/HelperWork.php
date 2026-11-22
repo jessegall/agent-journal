@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Values;
 
-use App\Records\Support\RecordIdentity;
+use App\Support\RecordIdentity;
 
 /**
  * The work a dispatch hands a helper: what it is for (one of a subject, an existing purpose or a purpose in words),

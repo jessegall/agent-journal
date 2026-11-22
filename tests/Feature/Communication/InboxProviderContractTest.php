@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Bus\Exceptions\StackLockTimedOut;
-use App\Bus\Support\OperationDeadline;
-use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
-use App\Communication\Contracts\ConversationResolver;
-use App\Communication\Contracts\InboxRegistration;
-use App\Communication\Models\InboxRecord;
-use App\Communication\Models\Message;
-use App\Communication\Models\MessageAttention;
+use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Contracts\ConversationResolver;
+use App\Contracts\InboxRegistration;
+use App\Exceptions\StackLockTimedOut;
+use App\Models\InboxRecord;
+use App\Models\Message;
+use App\Models\MessageAttention;
+use App\Support\OperationDeadline;
 use Tests\Fixtures\Communication\TeamInboxAccess;
 use Tests\Fixtures\Communication\TeamInboxProvider;
 use Tests\Fixtures\Communication\TeamRoster;

@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
-use App\Actors\Contracts\Actor;
-use App\Actors\Enums\ActorType;
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Actor;
 use App\Contracts\EventSource;
-use App\Contracts\Support\RaisesEvents;
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
+use App\Contracts\ReadableModel;
+use App\Enums\ActorType;
 use Carbon\CarbonImmutable;
-use Domain\Documents\Api\CloseResult;
-use Domain\Documents\Api\Events\DocumentClosed;
 use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Enums\CloseCause;
+use Domain\Documents\Events\DocumentClosed;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Support\RecordViews;
+use Domain\Documents\Values\CloseResult;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;

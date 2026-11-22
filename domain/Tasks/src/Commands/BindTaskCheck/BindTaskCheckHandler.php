@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\BindTaskCheck;
 
-use App\Processes\Contracts\ResultReceipts;
-use App\Processes\Enums\AssessmentOutcome;
+use App\Contracts\ResultReceipts;
+use App\Enums\AssessmentOutcome;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Models\TaskCheck;
 

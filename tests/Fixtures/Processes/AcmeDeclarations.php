@@ -4,30 +4,30 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Processes;
 
-use App\Processes\Declarations\VerificationContract;
-use App\Processes\Enums\CommandClass;
-use App\Processes\Enums\CommandType;
-use App\Processes\Enums\EmptySelection;
-use App\Processes\Enums\FramingType;
-use App\Processes\Enums\Outcome;
-use App\Processes\Enums\OutputEncoding;
-use App\Processes\Enums\StreamUse;
-use App\Processes\Enums\SummaryRule;
-use App\Processes\Enums\ToolType;
-use App\Processes\Values\ArgumentGrammar;
-use App\Processes\Values\CommandClassSet;
-use App\Processes\Values\CommandRule;
-use App\Processes\Values\EmptyRunPolicy;
-use App\Processes\Values\ExecutableBinding;
-use App\Processes\Values\ExitBranch;
-use App\Processes\Values\ExitPolicy;
-use App\Processes\Values\OutputContract;
-use App\Processes\Values\ProgramSpellings;
-use App\Processes\Values\ProgressPolicy;
-use App\Processes\Values\ProposedRule;
-use App\Processes\Values\ReaderReference;
-use App\Processes\Values\RuleExample;
-use App\Processes\Values\RuleScope;
+use App\Declarations\VerificationContract;
+use App\Enums\CommandClass;
+use App\Enums\CommandType;
+use App\Enums\EmptySelection;
+use App\Enums\FramingType;
+use App\Enums\Outcome;
+use App\Enums\OutputEncoding;
+use App\Enums\StreamUse;
+use App\Enums\SummaryRule;
+use App\Enums\ToolType;
+use App\Values\ArgumentGrammar;
+use App\Values\CommandClassSet;
+use App\Values\CommandRule;
+use App\Values\EmptyRunPolicy;
+use App\Values\ExecutableBinding;
+use App\Values\ExitBranch;
+use App\Values\ExitPolicy;
+use App\Values\OutputContract;
+use App\Values\ProgramSpellings;
+use App\Values\ProgressPolicy;
+use App\Values\ProposedRule;
+use App\Values\ReaderReference;
+use App\Values\RuleExample;
+use App\Values\RuleScope;
 
 /**
  * The hypothetical acme verify check of doc 21 revision 6, section 72, as a project declaration with its proven exits.

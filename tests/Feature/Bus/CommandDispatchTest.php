@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\CommandNestingTooDeep;
-use App\Bus\Exceptions\CommandNotRegistered;
-use App\Bus\Support\CommandNesting;
-use App\Bus\Support\LaravelCommandBus;
+use App\Contracts\CommandBus;
+use App\Exceptions\CommandNestingTooDeep;
+use App\Exceptions\CommandNotRegistered;
+use App\Support\CommandNesting;
+use App\Support\LaravelCommandBus;
 use Illuminate\Support\Facades\Log;
 use Mockery;
 use Tests\Fixtures\Bus\Shop\Commands\AddItem\AddItemCommand;

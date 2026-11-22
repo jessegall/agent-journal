@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Accounts;
 
-use App\Profiles\Support\PrivateAccountProcess;
+use App\Support\PrivateAccountProcess;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\TimeLimits\TimeLimit;
 

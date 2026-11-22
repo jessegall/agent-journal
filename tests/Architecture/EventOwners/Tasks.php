@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-use App\Actors\Support\ActorIdentity;
-use Domain\Tasks\Api\Events\TaskBlocked;
-use Domain\Tasks\Api\Events\TaskCancelled;
-use Domain\Tasks\Api\Events\TaskCheckRecorded;
-use Domain\Tasks\Api\Events\TaskFinished;
-use Domain\Tasks\Api\Events\TaskLogged;
-use Domain\Tasks\Api\Events\TaskStartCommitted;
-use Domain\Tasks\Api\Events\TaskWaitChanged;
+use App\Support\ActorIdentity;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWaitChange;
+use Domain\Tasks\Events\TaskBlocked;
+use Domain\Tasks\Events\TaskCancelled;
+use Domain\Tasks\Events\TaskCheckRecorded;
 use Domain\Tasks\Events\TaskDescribed;
+use Domain\Tasks\Events\TaskFinished;
+use Domain\Tasks\Events\TaskLogged;
+use Domain\Tasks\Events\TaskStartCommitted;
 use Domain\Tasks\Events\TaskStarted;
+use Domain\Tasks\Events\TaskWaitChanged;
 use Tests\Architecture\Support\EventRole;
 
 /**

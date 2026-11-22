@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Database\Factories;
 
-use App\Actors\Support\ActorIdentity;
+use App\Support\ActorIdentity;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Illuminate\Database\Eloquent\Factories\Factory;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Profiles\Exceptions\HostSecretUnreadable;
-use App\Profiles\Support\HostSecret;
+use App\Exceptions\HostSecretUnreadable;
+use App\Support\HostSecret;
 use PHPUnit\Framework\TestCase;
 
 final class HostSecretTest extends TestCase

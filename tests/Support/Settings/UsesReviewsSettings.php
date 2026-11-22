@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Support\Settings;
 
-use App\Actors\Support\ActorContext;
-use App\Domains\Support\DomainRegistry;
-use App\Domains\Support\DomainSwitches;
-use App\Reflection\Support\CatalogueReflectorFactory;
-use App\Settings\Contracts\SettingCommands;
-use App\Settings\Support\CoreSettings;
-use App\Settings\Support\RegisteredSettingCommands;
-use App\Settings\Support\SettingRegistry;
+use App\Contracts\SettingCommands;
+use App\Support\ActorContext;
+use App\Support\CatalogueReflectorFactory;
+use App\Support\CoreSettings;
+use App\Support\DomainRegistry;
+use App\Support\DomainSwitches;
+use App\Support\RegisteredSettingCommands;
+use App\Support\SettingRegistry;
 use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;

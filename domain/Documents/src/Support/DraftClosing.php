@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Actors\Contracts\Actor;
-use App\Agents\Contracts\SessionProvenance;
-use App\Numbers\Support\RecordReference;
-use Domain\Documents\Api\CloseResult;
-use Domain\Documents\Api\DraftTarget;
+use App\Contracts\Actor;
+use App\Contracts\SessionProvenance;
+use App\Support\RecordReference;
+use Domain\Documents\Concerns\RefusesOtherDrafts;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Exceptions\DraftMarkdownInvalid;
 use Domain\Documents\Exceptions\DraftMissing;
@@ -17,7 +16,8 @@ use Domain\Documents\Models\DocumentClose;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\RetainedDraft;
-use Domain\Documents\Support\Concerns\RefusesOtherDrafts;
+use Domain\Documents\Values\CloseResult;
+use Domain\Documents\Values\DraftTarget;
 
 /**
  * Closes a draft under its document's lock, the one way every close goes: a close already recorded for the token

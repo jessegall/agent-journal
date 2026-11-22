@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\ReassignPlanWork;
 
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\AssignmentReference;
-use App\Assignments\Support\AssignmentResult;
-use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\RepeatableRead;
-use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Support\Command;
-use App\Operations\Enums\AccessType;
-use App\Records\Support\RecordIdentity;
+use App\Attributes\Authorize;
+use App\Attributes\RepeatableRead;
+use App\Attributes\RetainedActorRequestKey;
+use App\Enums\AccessType;
+use App\Support\AssigneeIdentity;
+use App\Support\AssignmentReference;
+use App\Support\AssignmentResult;
+use App\Support\Command;
+use App\Support\RecordIdentity;
 use Domain\Plans\Policies\PlanPolicy;
 
 /**

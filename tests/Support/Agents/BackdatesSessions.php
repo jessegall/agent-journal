@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
-use App\Actors\Support\DatabaseClock;
-use App\Agents\Support\StartedAgent;
+use App\Support\DatabaseClock;
+use App\Support\StartedAgent;
 use Illuminate\Support\Facades\DB;
 
 /**

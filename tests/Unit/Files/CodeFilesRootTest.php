@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Files\Support\CodeFiles;
+use App\Support\CodeFiles;
 use Tests\TestCase;
 
 /**

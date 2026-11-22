@@ -8,8 +8,8 @@ use App\Mcp\Contracts\Continuations;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\Continuation;
 use Domain\Documents\Contracts\AttachmentReader;
-use Domain\Documents\Mcp\PublicationChunks;
 use Domain\Documents\Models\TextUpload;
+use Domain\Documents\Support\Mcp\PublicationChunks;
 
 final readonly class AttachmentPages implements AttachmentReader
 {

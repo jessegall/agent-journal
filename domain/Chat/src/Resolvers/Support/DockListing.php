@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers\Support;
 
-use App\Docking\Wire\EncodedCard;
+use App\Support\Wire\EncodedCard;
 use Domain\Chat\Data\DockedSourceData;
 use Domain\Chat\Data\DockListData;
 use Domain\Chat\Enums\DockedState;

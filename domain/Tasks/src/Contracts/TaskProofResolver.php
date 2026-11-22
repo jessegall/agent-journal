@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
-use Domain\Tasks\Api\TaskProofPage;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Values\TaskProofPage;
 
 /**
  * Reads a task's proofs for whoever may read the task: a bounded page, newest first, after a proof or from the newest.

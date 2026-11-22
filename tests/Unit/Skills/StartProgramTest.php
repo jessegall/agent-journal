@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
+use App\Contracts\DriverCatalogue;
 use App\CoreApi;
-use App\Drivers\Contracts\DriverCatalogue;
-use App\Drivers\Values\DriverKey;
-use App\Drivers\Values\ProviderKey;
-use App\Skills\Support\StartDriver;
+use App\Support\StartDriver;
+use App\Values\DriverKey;
+use App\Values\ProviderKey;
 use Tests\TestCase;
 
 /**

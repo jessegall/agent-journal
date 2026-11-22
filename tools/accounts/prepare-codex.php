@@ -14,12 +14,12 @@ declare(strict_types=1);
  *   echo '{"account":"...","working_roots":"...","root":"...","tables":["..."]}' | php tools/accounts/prepare-codex.php
  */
 
-use App\Agents\Enums\TransportProfileType;
-use App\Drivers\Support\DefaultDrivers;
-use App\Hooks\Compatibility\DriverCompatibility;
-use App\Hooks\Drivers\AccountConfigurationWrite;
-use App\Hooks\Drivers\CodexFolderTrust;
-use App\Hooks\Drivers\CodexJournalServer;
+use App\Enums\TransportProfileType;
+use App\Support\Compatibility\DriverCompatibility;
+use App\Support\DefaultDrivers;
+use App\Support\Drivers\AccountConfigurationWrite;
+use App\Support\Drivers\CodexFolderTrust;
+use App\Support\Drivers\CodexJournalServer;
 
 require __DIR__.'/../../vendor/autoload.php';
 

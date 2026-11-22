@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Processes;
 
-use App\Processes\Contracts\OutputRecorder;
-use App\Processes\Models\PartRun;
-use App\Processes\Values\CapturedChunk;
-use App\Processes\Values\OutputPosition;
-use App\Processes\Values\PartEnd;
+use App\Contracts\OutputRecorder;
+use App\Models\PartRun;
+use App\Values\CapturedChunk;
+use App\Values\OutputPosition;
+use App\Values\PartEnd;
 
 /**
  * An output recorder for tests: it keeps each part's bytes per stream in memory.

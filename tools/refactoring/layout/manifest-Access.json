@@ -1,7 +1,7 @@
 [
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d0d116f74d6c552e163baedf0d1156a82fe2d181",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "eb0ea84732014218c84db20cdde28439cb906b24",
         "old_path": "domain/Access/database/factories/UserFactory.php",
         "old_class": "Domain\\Access\\Database\\Factories\\UserFactory",
         "final_path": "domain/Access/database/factories/UserFactory.php",
@@ -19,7 +19,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e7c975c151b1cbaad3a3228e6fb7db0bc2d3cdfe",
         "old_path": "domain/Access/database/migrations/0001_01_01_000000_create_users_table.php",
         "old_class": null,
@@ -38,7 +38,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "efbf7bafdf9c08a231ed52213a67cb50cb8fcf69",
         "old_path": "domain/Access/database/migrations/2024_01_01_000000_create_passkeys_table.php",
         "old_class": null,
@@ -57,7 +57,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "27665db2cf91860183517e6520c7664b6c8e0b9c",
         "old_path": "domain/Access/database/migrations/2026_11_22_000001_create_environment_user_grants_table.php",
         "old_class": null,
@@ -76,8 +76,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ca3ebd3f536fec260ca4e0fce31b979608bb93ec",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "91abc86de13688af9dc94da089531f1bfe12acf7",
         "old_path": "domain/Access/database/seeders/OwnerSeeder.php",
         "old_class": "Domain\\Access\\Database\\Seeders\\OwnerSeeder",
         "final_path": "domain/Access/database/seeders/OwnerSeeder.php",
@@ -95,7 +95,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c3bc9473c2109e49f43fbd3f5c3e2fac51bddf16",
         "old_path": "domain/Access/resources/skills/access.md",
         "old_class": null,
@@ -114,8 +114,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "372148ef86c90ef600b685afc6a1f4ca78c8edd1",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5a2b2d48002e6138c241695ae1619943c44b9eb8",
         "old_path": "domain/Access/src/AccessDomain.php",
         "old_class": "Domain\\Access\\AccessDomain",
         "final_path": "domain/Access/src/AccessDomain.php",
@@ -133,8 +133,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "07d99a1e3ef3a28dd6b5a04afae0cbd0383a7702",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "002b1699a674db3e5e5dadf2324ec1c750fd8272",
         "old_path": "domain/Access/src/Actions/CreateNewUser.php",
         "old_class": "Domain\\Access\\Actions\\CreateNewUser",
         "final_path": "domain/Access/src/Actions/CreateNewUser.php",
@@ -152,7 +152,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6cacc44492cec1c3f0c823c79258f40042d723b6",
         "old_path": "domain/Access/src/Actions/ResetUserPassword.php",
         "old_class": "Domain\\Access\\Actions\\ResetUserPassword",
@@ -171,8 +171,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "147379e6c0a14b0016bded4b192f550cf7bdb3ba",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "697896cbf98d42c5e626d118f9723aef59448a37",
         "old_path": "domain/Access/src/Commands/DisableUser/DisableUserCommand.php",
         "old_class": "Domain\\Access\\Commands\\DisableUser\\DisableUserCommand",
         "final_path": "domain/Access/src/Commands/DisableUser/DisableUserCommand.php",
@@ -190,7 +190,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3ad04e0439400be083ca1356c3fc46f512ee5bda",
         "old_path": "domain/Access/src/Commands/DisableUser/DisableUserHandler.php",
         "old_class": "Domain\\Access\\Commands\\DisableUser\\DisableUserHandler",
@@ -209,8 +209,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "30460c15d494d950af082b8f9334cffadc3bdf0c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4b4480bc2d4c01d35c29c894545381083200352e",
         "old_path": "domain/Access/src/Commands/GrantEnvironmentAccess/GrantEnvironmentAccessCommand.php",
         "old_class": "Domain\\Access\\Commands\\GrantEnvironmentAccess\\GrantEnvironmentAccessCommand",
         "final_path": "domain/Access/src/Commands/GrantEnvironmentAccess/GrantEnvironmentAccessCommand.php",
@@ -228,7 +228,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f9b931ab5cf36a7befa9913c6394a2c539d29364",
         "old_path": "domain/Access/src/Commands/GrantEnvironmentAccess/GrantEnvironmentAccessHandler.php",
         "old_class": "Domain\\Access\\Commands\\GrantEnvironmentAccess\\GrantEnvironmentAccessHandler",
@@ -247,8 +247,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7f2122429a1791dded7af05647b821a5551ae57c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "99fc6c853aa921280e8bfb883e235b19b2781b8e",
         "old_path": "domain/Access/src/Commands/RevokeEnvironmentAccess/RevokeEnvironmentAccessCommand.php",
         "old_class": "Domain\\Access\\Commands\\RevokeEnvironmentAccess\\RevokeEnvironmentAccessCommand",
         "final_path": "domain/Access/src/Commands/RevokeEnvironmentAccess/RevokeEnvironmentAccessCommand.php",
@@ -266,7 +266,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1291fff1aeec451f8fa9deddad125e50681702de",
         "old_path": "domain/Access/src/Commands/RevokeEnvironmentAccess/RevokeEnvironmentAccessHandler.php",
         "old_class": "Domain\\Access\\Commands\\RevokeEnvironmentAccess\\RevokeEnvironmentAccessHandler",
@@ -285,7 +285,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "021690c913641cc2a52766d6d931c96106d08eae",
         "old_path": "domain/Access/src/Commands/Support/AccessCommandHandler.php",
         "old_class": "Domain\\Access\\Commands\\Support\\AccessCommandHandler",
@@ -304,7 +304,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "96c38d9e285909b3bd114fa4ed85cb702ea9cbe7",
         "old_path": "domain/Access/src/Concerns/PasswordValidationRules.php",
         "old_class": "Domain\\Access\\Concerns\\PasswordValidationRules",
@@ -323,7 +323,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0d3850d9d1445905b462cfbd9d4bf28ce684c523",
         "old_path": "domain/Access/src/Console/CreateUserCommand.php",
         "old_class": "Domain\\Access\\Console\\CreateUserCommand",
@@ -337,13 +337,15 @@
         },
         "phase": 4,
         "batch": "Access",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Access.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b7572029a7e8d0026d834ab8e03b3d66e2852ab2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bdde7549731d56a3f5b05838f63917f533898272",
         "old_path": "domain/Access/src/Console/DisableUserCommand.php",
         "old_class": "Domain\\Access\\Console\\DisableUserCommand",
         "final_path": "domain/Access/src/Console/Commands/DisableUserCommand.php",
@@ -356,13 +358,15 @@
         },
         "phase": 4,
         "batch": "Access",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Access.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "21914584090b287b5eae8fe3af3b63b41d222f63",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "adc937edd404b29e8da67724f9f3427f26e1a32b",
         "old_path": "domain/Access/src/Console/GrantEnvironmentCommand.php",
         "old_class": "Domain\\Access\\Console\\GrantEnvironmentCommand",
         "final_path": "domain/Access/src/Console/Commands/GrantEnvironmentCommand.php",
@@ -375,12 +379,14 @@
         },
         "phase": 4,
         "batch": "Access",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Access.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a5060143467d1e93ebdb02ca7da25aa1e325afe1",
         "old_path": "domain/Access/src/Exceptions/JournalAccessDenied.php",
         "old_class": "Domain\\Access\\Exceptions\\JournalAccessDenied",
@@ -399,8 +405,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7bf514877cfe8e0760378c54700e24b08e2210fc",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f1b90f210b415d6c6bf8a33fb9c1b3b88d092aa5",
         "old_path": "domain/Access/src/Http/Middleware/AuthenticateUser.php",
         "old_class": "Domain\\Access\\Http\\Middleware\\AuthenticateUser",
         "final_path": "domain/Access/src/Http/Middleware/AuthenticateUser.php",
@@ -418,8 +424,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4153dd818290a06ce12889f3776df68aa129cca5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d546a70892bb319d0b7045c2a96d80daafa455b6",
         "old_path": "domain/Access/src/Models/EnvironmentUserGrant.php",
         "old_class": "Domain\\Access\\Models\\EnvironmentUserGrant",
         "final_path": "domain/Access/src/Models/EnvironmentUserGrant.php",
@@ -437,8 +443,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "29fc8982497574bbdc573a86b6c8b537fb7da7bd",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2ebdbe78892c46c24456fd9f28e3ae27da32324c",
         "old_path": "domain/Access/src/Models/Passkey.php",
         "old_class": "Domain\\Access\\Models\\Passkey",
         "final_path": "domain/Access/src/Models/Passkey.php",
@@ -456,8 +462,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2c2768755cdafd470ead5812ab55d860b95e3034",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8223ad5951a98eb2f1bb61d64a7660da6bf68618",
         "old_path": "domain/Access/src/Models/User.php",
         "old_class": "Domain\\Access\\Models\\User",
         "final_path": "domain/Access/src/Models/User.php",
@@ -475,8 +481,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "26cbd6e877110550f113a2e52d6129e184c621a4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e235784abb7b3e1c4449f50a489a27bc23dd9f80",
         "old_path": "domain/Access/src/Policies/EnvironmentAccessPolicy.php",
         "old_class": "Domain\\Access\\Policies\\EnvironmentAccessPolicy",
         "final_path": "domain/Access/src/Policies/EnvironmentAccessPolicy.php",
@@ -494,8 +500,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "fd8f0e0c516e5fae0b1007f3be8d962786e6e567",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7a132299a5c1521e9dd44846f1ef702da5c8ae7b",
         "old_path": "domain/Access/src/Providers/AccessServiceProvider.php",
         "old_class": "Domain\\Access\\Providers\\AccessServiceProvider",
         "final_path": "domain/Access/src/Providers/AccessServiceProvider.php",
@@ -513,8 +519,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1aaaadc5d193a7e3efe5b1b9bed665b3c4bb5dd2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c9fc6369888bf3c703b93bfc714c803bef613963",
         "old_path": "domain/Access/src/Resolvers/CurrentUserRecords.php",
         "old_class": "Domain\\Access\\Resolvers\\CurrentUserRecords",
         "final_path": "domain/Access/src/Resolvers/CurrentUserRecords.php",
@@ -532,8 +538,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f74cbef65bf18e5afa73795038d6810884c012e9",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7e3a0caca261dba89c5979e7a9ad0e81aa3444a3",
         "old_path": "domain/Access/src/Skills/AccessSkill.php",
         "old_class": "Domain\\Access\\Skills\\AccessSkill",
         "final_path": "domain/Access/src/Support/Skills/AccessSkill.php",
@@ -546,12 +552,14 @@
         },
         "phase": 3,
         "batch": "Access",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Access.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "042623180004f0a90e159d1c0f42877a4330c511",
         "old_path": "domain/Access/src/Support/AccessSettings.php",
         "old_class": "Domain\\Access\\Support\\AccessSettings",
@@ -570,8 +578,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "51d986161fb16c8cf71715d67ed1cccade7b99c7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ede85f42e8f39b05e86c407de6883fce1c25c165",
         "old_path": "domain/Access/src/Support/AdmittedUsers.php",
         "old_class": "Domain\\Access\\Support\\AdmittedUsers",
         "final_path": "domain/Access/src/Support/AdmittedUsers.php",
@@ -589,8 +597,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7f3496d68dabfbabb6c4d8121fe8c5f44ed14bd5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9c031b499918ed935a596008effb1f98e3c6d0f5",
         "old_path": "domain/Access/src/Support/ChatMemberAuthorizer.php",
         "old_class": "Domain\\Access\\Support\\ChatMemberAuthorizer",
         "final_path": "domain/Access/src/Support/ChatMemberAuthorizer.php",
@@ -608,8 +616,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "52d3f4b0b57a390b853dece75b2b3677c3feb2c8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "fa72fed416e0329fedc42176ba0f23fd341ee1fd",
         "old_path": "domain/Access/src/Support/EnvironmentAccess.php",
         "old_class": "Domain\\Access\\Support\\EnvironmentAccess",
         "final_path": "domain/Access/src/Support/EnvironmentAccess.php",
@@ -627,8 +635,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7e7516885a1bbb5f6d5aa5aba7dcb4f97714a45d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "dca3a4e2c2e06475d6260066da6a78e18efc035c",
         "old_path": "domain/Access/src/Support/EnvironmentChatEligibility.php",
         "old_class": "Domain\\Access\\Support\\EnvironmentChatEligibility",
         "final_path": "domain/Access/src/Support/EnvironmentChatEligibility.php",
@@ -646,8 +654,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "54807eea8fd953ff9f74884eff4bc58ddaedaa30",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ffed5403613870d150bcd1c6177445b00efdcd0d",
         "old_path": "domain/Access/src/Support/OwnerAdmission.php",
         "old_class": "Domain\\Access\\Support\\OwnerAdmission",
         "final_path": "domain/Access/src/Support/OwnerAdmission.php",
@@ -665,8 +673,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7d282dddcf556fda477d3e0a67cf347fa3196334",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "fbb8816ceed848f383e9bcf53b54f0a103df9c25",
         "old_path": "domain/Access/src/Support/OwnerAuthorizerProvider.php",
         "old_class": "Domain\\Access\\Support\\OwnerAuthorizerProvider",
         "final_path": "domain/Access/src/Support/OwnerAuthorizerProvider.php",
@@ -684,8 +692,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "53e7a5f84447471723a05c03e66b5513a0db077e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e6c7a3b0cf64c049183192f6597d710a0c258ed5",
         "old_path": "domain/Access/src/Support/PresentUserCounter.php",
         "old_class": "Domain\\Access\\Support\\PresentUserCounter",
         "final_path": "domain/Access/src/Support/PresentUserCounter.php",
@@ -703,8 +711,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c2d267ee4d494ea6264a6f31f0e629f95bec10f9",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "29c16bad151db74dc553822a378652a836a87e3a",
         "old_path": "domain/Access/src/Support/UserActivity.php",
         "old_class": "Domain\\Access\\Support\\UserActivity",
         "final_path": "domain/Access/src/Support/UserActivity.php",
@@ -722,8 +730,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "da8945dc52bb9059b017a32a2504da63fa0b1f8c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0014139dcef607faadbf163648e729b57df373c0",
         "old_path": "domain/Access/src/Support/UserActors.php",
         "old_class": "Domain\\Access\\Support\\UserActors",
         "final_path": "domain/Access/src/Support/UserActors.php",
@@ -741,8 +749,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "169f1a2e97c114fd0e965ba149628df5867f4c7c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e5083f1e86345928045e2acbfb5e12e39539c3af",
         "old_path": "domain/Access/src/Support/UserAssignees.php",
         "old_class": "Domain\\Access\\Support\\UserAssignees",
         "final_path": "domain/Access/src/Support/UserAssignees.php",
@@ -760,8 +768,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a95f453051e03283b5243dc2b9eba860e64939d1",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "96e8dccc985b819c1aa6eaaf37b94b1c31035a55",
         "old_path": "domain/Access/src/Support/UserLabels.php",
         "old_class": "Domain\\Access\\Support\\UserLabels",
         "final_path": "domain/Access/src/Support/UserLabels.php",
@@ -779,8 +787,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c20a59e426f85a3aa9d2b6e5224baf9f7c278b0b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d82714a778e1b56c0d6928558fb1ad46b168dc7f",
         "old_path": "domain/Access/src/Support/UserVisibility.php",
         "old_class": "Domain\\Access\\Support\\UserVisibility",
         "final_path": "domain/Access/src/Support/UserVisibility.php",

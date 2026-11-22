@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Unit\States;
 
-use App\Hooks\Decisions\Denied;
-use App\Hooks\Inputs\Contracts\HookInput;
-use App\Hooks\Inputs\StopRequested;
-use App\Hooks\Inputs\Values\HookIdentity;
-use App\Hooks\Inputs\Values\StopDetails;
+use App\Support\Decisions\Denied;
+use App\Support\Inputs\Contracts\HookInput;
+use App\Support\Inputs\StopRequested;
+use App\Support\Inputs\Values\HookIdentity;
+use App\Support\Inputs\Values\StopDetails;
 use Domain\Tasks\Enums\TaskState;
-use Domain\Tasks\States\WorkingOnTaskState;
+use Domain\Tasks\Support\States\WorkingOnTaskState;
 use Domain\Tasks\Support\TaskWork;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;

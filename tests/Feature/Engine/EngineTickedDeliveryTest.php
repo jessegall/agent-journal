@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Engine\Events\EngineTicked;
-use App\Engine\Exceptions\EngineAccessRefused;
-use App\Engine\Support\EngineAccess;
-use App\Engine\Support\EngineListenerSet;
-use App\Engine\Support\EngineTickedDelivery;
-use App\Hooks\Ticks\ElapsedTime;
+use App\Events\EngineTicked;
+use App\Exceptions\EngineAccessRefused;
+use App\Support\EngineAccess;
+use App\Support\EngineListenerSet;
+use App\Support\EngineTickedDelivery;
+use App\Support\Ticks\ElapsedTime;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;

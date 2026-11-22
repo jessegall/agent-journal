@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\AgentRequests\Support\SignedCall;
-use App\Agents\Support\AgentContext;
-use App\Bus\Support\OperationDeadline;
-use App\Hooks\Support\StackTransaction;
 use App\Http\Middleware\Mcp\SetCallDeadline;
+use App\Support\AgentContext;
+use App\Support\OperationDeadline;
+use App\Support\SignedCall;
+use App\Support\StackTransaction;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\ConnectionInterface;

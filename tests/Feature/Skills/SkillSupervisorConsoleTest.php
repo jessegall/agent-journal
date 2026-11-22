@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Skills\Contracts\SkillPublisher;
-use App\Skills\Drivers\DriverSkillAdapters;
-use App\Skills\Enums\PublicationState;
-use App\Skills\Models\SkillGeneration;
-use App\Skills\Models\SkillPublication;
-use App\Skills\Support\HostSkillPublisher;
-use App\Skills\Support\PublicationFiles;
-use App\Skills\Support\SkillPublishing;
-use App\Skills\Support\SkillTables;
-use App\Skills\Support\SkillTargets;
+use App\Contracts\SkillPublisher;
+use App\Enums\PublicationState;
+use App\Models\SkillGeneration;
+use App\Models\SkillPublication;
+use App\Support\Drivers\DriverSkillAdapters;
+use App\Support\HostSkillPublisher;
+use App\Support\PublicationFiles;
+use App\Support\SkillPublishing;
+use App\Support\SkillTables;
+use App\Support\SkillTargets;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\File;

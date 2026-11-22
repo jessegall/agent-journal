@@ -1,6 +1,6 @@
 [
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d350aac85fbf5954610e0f6cdeda5f59c0b73c55",
         "old_path": "domain/Chat/database/migrations/2026_11_19_000001_create_message_pins_table.php",
         "old_class": null,
@@ -19,7 +19,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d2d913c1ba4420d0d7b4eb7df2015411298fe24b",
         "old_path": "domain/Chat/database/migrations/2026_11_21_000001_create_conversations_table.php",
         "old_class": null,
@@ -38,7 +38,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "88295e0d7f025b10ee3d232d4fa01faf26de4e8c",
         "old_path": "domain/Chat/database/migrations/2026_11_21_000002_create_dock_placements_table.php",
         "old_class": null,
@@ -57,7 +57,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e7a76003e73ef87021b0ddd1c421ff6bf1f35410",
         "old_path": "domain/Chat/database/migrations/2026_11_21_000003_create_direct_chats_table.php",
         "old_class": null,
@@ -76,7 +76,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7340fe31f6dd200aa1017a1ec989e938d38b7234",
         "old_path": "domain/Chat/resources/js/AgentMenu.test.ts",
         "old_class": null,
@@ -95,7 +95,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "54a87efd135c3c446f7010ea05bac9671358d23c",
         "old_path": "domain/Chat/resources/js/AgentMenu.vue",
         "old_class": null,
@@ -114,7 +114,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5f6aaa97b4f081bf530a57bc47758b144fd869cb",
         "old_path": "domain/Chat/resources/js/AgentPicker.test.ts",
         "old_class": null,
@@ -133,7 +133,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b2167cc5e34135b32c8fe5c55b1c8cfcc1af8c51",
         "old_path": "domain/Chat/resources/js/AgentPicker.vue",
         "old_class": null,
@@ -152,7 +152,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a6755d54c788ecad2e33f9ccdc2daece1ea6bb3c",
         "old_path": "domain/Chat/resources/js/AgentSessionActions.vue",
         "old_class": null,
@@ -171,7 +171,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a75c3ee5b5214196ff305b0426ec436c711e7723",
         "old_path": "domain/Chat/resources/js/ChatPane.test.ts",
         "old_class": null,
@@ -190,7 +190,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "59bd46916b4f32f0615bc6a55b370cd524bd7b7d",
         "old_path": "domain/Chat/resources/js/ChatPane.vue",
         "old_class": null,
@@ -209,7 +209,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c0f556471d96acac7faf715f7c19e8fb32d320c8",
         "old_path": "domain/Chat/resources/js/ChatWindow.vue",
         "old_class": null,
@@ -228,7 +228,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7e108e2b0acfa46d04f41de0cfc03a9ff270f0d0",
         "old_path": "domain/Chat/resources/js/ChatWithTerminal.vue",
         "old_class": null,
@@ -247,7 +247,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "deb0c3571dfdcc9480c63d90d8f915ef124c5941",
         "old_path": "domain/Chat/resources/js/ChosenAgent.vue",
         "old_class": null,
@@ -266,7 +266,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a6261ff3634c3f496d0bde2090b34871a46e77c8",
         "old_path": "domain/Chat/resources/js/Composer.test.ts",
         "old_class": null,
@@ -285,7 +285,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "abe76cf50f40ad9c3446a209c78d7d76e5e48cfa",
         "old_path": "domain/Chat/resources/js/Composer.vue",
         "old_class": null,
@@ -304,7 +304,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1587d2b03a0580cd16555abe3a9ce1e302258195",
         "old_path": "domain/Chat/resources/js/DockedTerminal.vue",
         "old_class": null,
@@ -323,7 +323,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1f0dcf7f121a357c531c3f84105f0f928bd17c42",
         "old_path": "domain/Chat/resources/js/FocusedQuestion.vue",
         "old_class": null,
@@ -342,7 +342,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3a9d33df551bdba0d98e8065666cf193311411a6",
         "old_path": "domain/Chat/resources/js/InboxMessageList.vue",
         "old_class": null,
@@ -361,7 +361,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b03aa3143e68cb1950d594c5cfde7d1352880c2c",
         "old_path": "domain/Chat/resources/js/InboxMessages.vue",
         "old_class": null,
@@ -380,7 +380,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d2f7d3cb8223de180768359d154f52da7466213f",
         "old_path": "domain/Chat/resources/js/MessageDeliveries.vue",
         "old_class": null,
@@ -399,7 +399,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2722a3eb1f44455cac414acb8b0e4b027845f70e",
         "old_path": "domain/Chat/resources/js/MessageList.test.ts",
         "old_class": null,
@@ -418,7 +418,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2e8e020d8a3c060f6daca3b17b9b717e00ea4f5b",
         "old_path": "domain/Chat/resources/js/MessageList.vue",
         "old_class": null,
@@ -437,7 +437,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "186d686a89cc33830769de98b83aaab1547b7816",
         "old_path": "domain/Chat/resources/js/PendingMessage.vue",
         "old_class": null,
@@ -456,7 +456,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "35558bb25d5f07b13a0c124c638ea6269e773902",
         "old_path": "domain/Chat/resources/js/RefusedSend.vue",
         "old_class": null,
@@ -475,7 +475,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "31affaacd3c763a4ea9022250d7a3829e10efaae",
         "old_path": "domain/Chat/resources/js/SessionAction.vue",
         "old_class": null,
@@ -494,7 +494,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "607b40e29304223bcaf59c75ec0bde566f14623e",
         "old_path": "domain/Chat/resources/js/SessionForm.test.ts",
         "old_class": null,
@@ -513,7 +513,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "358e523e60750b069db60419c042e77d45cd8788",
         "old_path": "domain/Chat/resources/js/SessionForm.vue",
         "old_class": null,
@@ -532,7 +532,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5add5e58dd0a0daa29664ee65b20a98315be3064",
         "old_path": "domain/Chat/resources/js/StopConfirmation.vue",
         "old_class": null,
@@ -551,7 +551,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "af53370767ece2107e7a2bd429a23a69e2313743",
         "old_path": "domain/Chat/resources/js/agentLinks.ts",
         "old_class": null,
@@ -570,7 +570,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1e53edae4f9848ccf70f83d52983b7c217eedd67",
         "old_path": "domain/Chat/resources/js/chats/ChatRoster.test.ts",
         "old_class": null,
@@ -589,7 +589,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6966780d58eaf67c9adcae8fb8979b1eb4ec36c1",
         "old_path": "domain/Chat/resources/js/chats/ChatRoster.vue",
         "old_class": null,
@@ -608,7 +608,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a03bc1dbdeb498addc8583055a8477c474ebcf63",
         "old_path": "domain/Chat/resources/js/chats/CreateChatForm.vue",
         "old_class": null,
@@ -627,7 +627,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e6452a7ba458de126756fe25a3641ac5ce83ab64",
         "old_path": "domain/Chat/resources/js/chats/InboxSelector.vue",
         "old_class": null,
@@ -646,7 +646,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "81d756f35f34542b00620eccfa54aab3f795b21d",
         "old_path": "domain/Chat/resources/js/chats/ParticipantRow.vue",
         "old_class": null,
@@ -665,7 +665,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6dd25e54b4fec831803663c7526225bba5c93877",
         "old_path": "domain/Chat/resources/js/composables/arrivalAnnouncement.test.ts",
         "old_class": null,
@@ -684,7 +684,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5213b0e498e16dd03cec27f0436f331a6de57259",
         "old_path": "domain/Chat/resources/js/composables/arrivalAnnouncement.ts",
         "old_class": null,
@@ -703,7 +703,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f8d7e7ae005a1265e721b44b02b6067876f69fc8",
         "old_path": "domain/Chat/resources/js/composables/chatTimeline.test.ts",
         "old_class": null,
@@ -722,7 +722,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "da1828ef86148884ab00efba91f3a13829154875",
         "old_path": "domain/Chat/resources/js/composables/chatTimeline.ts",
         "old_class": null,
@@ -741,7 +741,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7fa544cea086ddbdeae83c63e9d91842463c5590",
         "old_path": "domain/Chat/resources/js/composables/useChatTimeline.test.ts",
         "old_class": null,
@@ -760,7 +760,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e329b7c276ac8661083c0b23e837af24fb153897",
         "old_path": "domain/Chat/resources/js/composables/useChatTimeline.ts",
         "old_class": null,
@@ -779,7 +779,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "92e9e89cbb46250ed83c322a7bb648b4a74efb6d",
         "old_path": "domain/Chat/resources/js/composables/useChosenAgent.test.ts",
         "old_class": null,
@@ -798,7 +798,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7eba9487891984714a9a84fc8069a706fa943dd3",
         "old_path": "domain/Chat/resources/js/composables/useChosenAgent.ts",
         "old_class": null,
@@ -817,7 +817,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3c8d40d6f08e1a42ebd6259e807872aa05ef3670",
         "old_path": "domain/Chat/resources/js/composables/useComposerHeight.ts",
         "old_class": null,
@@ -836,7 +836,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d2318233012c3220df34f5c252bce7103bdfc2b1",
         "old_path": "domain/Chat/resources/js/composables/useConversationIntents.test.ts",
         "old_class": null,
@@ -855,7 +855,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5bd45393036ed7559374aba063ded4cb5c6bd8f6",
         "old_path": "domain/Chat/resources/js/composables/useConversationIntents.ts",
         "old_class": null,
@@ -874,7 +874,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "35676d4b1ebfd71138e6dbbebdf13a3f6af44f2b",
         "old_path": "domain/Chat/resources/js/composables/useMessageDrafts.test.ts",
         "old_class": null,
@@ -893,7 +893,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a4e452b3de1cd440db70e25638a6b39f78a17d94",
         "old_path": "domain/Chat/resources/js/composables/useMessageDrafts.ts",
         "old_class": null,
@@ -912,7 +912,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "43ebf560ad60761ec6b57c1063ca5657a00dc0f1",
         "old_path": "domain/Chat/resources/js/composables/useStartRestoration.ts",
         "old_class": null,
@@ -931,7 +931,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d87108c4ecf8ff85f16aa385084b6d5cdeecccfe",
         "old_path": "domain/Chat/resources/js/composables/useStatusAnnouncement.test.ts",
         "old_class": null,
@@ -950,7 +950,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c998981fefbeec945fcbf41ebc4a9a5ffb55866a",
         "old_path": "domain/Chat/resources/js/composables/useStatusAnnouncement.ts",
         "old_class": null,
@@ -969,7 +969,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "706073adf77d40107eb1a21fc713ef61f5f8fcf1",
         "old_path": "domain/Chat/resources/js/composables/useSwitchOperation.test.ts",
         "old_class": null,
@@ -988,7 +988,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2c6e8d72f3e4fa4776cca3ebece626d758164d56",
         "old_path": "domain/Chat/resources/js/composables/useSwitchOperation.ts",
         "old_class": null,
@@ -1007,7 +1007,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "bd3d8379fbfcd0b769a4484d0668be7f130af052",
         "old_path": "domain/Chat/resources/js/composables/useTerminalDock.ts",
         "old_class": null,
@@ -1026,7 +1026,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3d18e9f04d46275bfb671754f6a5b39625c18450",
         "old_path": "domain/Chat/resources/js/dock/DockCard.vue",
         "old_class": null,
@@ -1045,7 +1045,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0e8fd5849df33714259d1c03d2c0e10f196478b0",
         "old_path": "domain/Chat/resources/js/dock/DockPart.vue",
         "old_class": null,
@@ -1064,7 +1064,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a9dc9487aa9b407031b6ca9e6d5135db63d51d15",
         "old_path": "domain/Chat/resources/js/dock/DockStack.vue",
         "old_class": null,
@@ -1083,7 +1083,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8d307406402795794bbc8510f548c9e583b02441",
         "old_path": "domain/Chat/resources/js/dock/dockFolds.ts",
         "old_class": null,
@@ -1102,7 +1102,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4390514f377ae6cedfd4dc8300e044c81de4c4ec",
         "old_path": "domain/Chat/resources/js/dock/parts/ButtonPart.vue",
         "old_class": null,
@@ -1121,7 +1121,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "986cdf39c614accc81744e80dcda5de8bcc4bc3e",
         "old_path": "domain/Chat/resources/js/dock/parts/ChatExcerptPart.vue",
         "old_class": null,
@@ -1140,7 +1140,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8eefb1b5ade1e648892fdd2783a3c0bf77dd6df0",
         "old_path": "domain/Chat/resources/js/dock/parts/ConsoleOutputPart.vue",
         "old_class": null,
@@ -1159,7 +1159,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "32e74d169203f981a12beb6d4fa6bb443f7048f9",
         "old_path": "domain/Chat/resources/js/dock/parts/CountedProgressPart.vue",
         "old_class": null,
@@ -1178,7 +1178,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "296974517667dd4463e7db18d65dd6bbb72e54f9",
         "old_path": "domain/Chat/resources/js/dock/parts/DisclosurePart.vue",
         "old_class": null,
@@ -1197,7 +1197,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e4fdc7d9f176f2a28d0d9aa2cc5dbc10ae5076f7",
         "old_path": "domain/Chat/resources/js/dock/parts/DurationPart.vue",
         "old_class": null,
@@ -1216,7 +1216,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a26dbcf9b371272b178d57a114f6dbfdac886159",
         "old_path": "domain/Chat/resources/js/dock/parts/GroupPart.vue",
         "old_class": null,
@@ -1235,7 +1235,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8d39c17792fc8a0a0fc2a1cb1a848bf39f58239c",
         "old_path": "domain/Chat/resources/js/dock/parts/IndeterminateProgressPart.vue",
         "old_class": null,
@@ -1254,7 +1254,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2ef39c1600a8bce8ece3fb7bdda3a53c1b3ac4c8",
         "old_path": "domain/Chat/resources/js/dock/parts/RowPart.vue",
         "old_class": null,
@@ -1273,7 +1273,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e9e4fef3a59cfb1747e68d25c484f9f19385885c",
         "old_path": "domain/Chat/resources/js/dock/parts/StackPart.vue",
         "old_class": null,
@@ -1292,7 +1292,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7f3628632a6d0df7416f30b689d4f003375eb3fd",
         "old_path": "domain/Chat/resources/js/dock/parts/StateLabelPart.vue",
         "old_class": null,
@@ -1311,7 +1311,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2f17e49d34dd2b2326215b527c33f61aee72bd29",
         "old_path": "domain/Chat/resources/js/dock/parts/SubtitlePart.vue",
         "old_class": null,
@@ -1330,7 +1330,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "cdb79c103417d6ae2d13a7896e4b4f0a1a70dde0",
         "old_path": "domain/Chat/resources/js/dock/parts/TitlePart.vue",
         "old_class": null,
@@ -1349,7 +1349,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "453d75310e254dd04f5242ca4b39d357fe9237bc",
         "old_path": "domain/Chat/resources/js/sendStates.test.ts",
         "old_class": null,
@@ -1368,7 +1368,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e4b3daf5b9f6eca6375aec44db94ecdb43fb1f67",
         "old_path": "domain/Chat/resources/js/terminalPlacement.test.ts",
         "old_class": null,
@@ -1387,7 +1387,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "81a9047feea8b475a9ef9446f332824a9fefc85c",
         "old_path": "domain/Chat/resources/js/terminalPlacement.ts",
         "old_class": null,
@@ -1406,7 +1406,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7c878f27097a73d17fff02310033b79b181318d4",
         "old_path": "domain/Chat/resources/skills/messages.md",
         "old_class": null,
@@ -1425,8 +1425,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1ea79805332faac74bbfe731f1183e2d1bd898a3",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0b6e3d612398319a2feb8dcdfde1e235630949c2",
         "old_path": "domain/Chat/src/Calls/ChatCalls.php",
         "old_class": "Domain\\Chat\\Calls\\ChatCalls",
         "final_path": "domain/Chat/src/Calls/ChatCalls.php",
@@ -1444,8 +1444,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7d05b2c757a2a53673cf48c0ba5472fc4ff000f5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "07c6c8696b4c7a10975ec21f7ca57a2c55f04658",
         "old_path": "domain/Chat/src/Calls/DockAddCall.php",
         "old_class": "Domain\\Chat\\Calls\\DockAddCall",
         "final_path": "domain/Chat/src/Calls/DockAddCall.php",
@@ -1463,8 +1463,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a53af5aa8d4ab270dddb34d884ac20d9a2f77ba5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6564399bb792a5c830025950652e8c52cd69d0ad",
         "old_path": "domain/Chat/src/Calls/DockListCall.php",
         "old_class": "Domain\\Chat\\Calls\\DockListCall",
         "final_path": "domain/Chat/src/Calls/DockListCall.php",
@@ -1482,8 +1482,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "973f60092bcf2a2b19bb3efd712fcbf25c9bc891",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8ec9f8f9ab2ac362dbcdd051f1495c55e3b40d42",
         "old_path": "domain/Chat/src/Calls/DockRemoveCall.php",
         "old_class": "Domain\\Chat\\Calls\\DockRemoveCall",
         "final_path": "domain/Chat/src/Calls/DockRemoveCall.php",
@@ -1501,8 +1501,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "23a6d48d988c00dd9463a633216810e72ffc802f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f01c392db3de2be49a4dee1fe5bb917d7c23a0ea",
         "old_path": "domain/Chat/src/ChatDomain.php",
         "old_class": "Domain\\Chat\\ChatDomain",
         "final_path": "domain/Chat/src/ChatDomain.php",
@@ -1520,8 +1520,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "94a0709c8bf590d8d8aad75b9cb91b314996eb77",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4df874c7c62fc585fe40f9a05c85d29b89282226",
         "old_path": "domain/Chat/src/Commands/AddChatParticipant/AddChatParticipantCommand.php",
         "old_class": "Domain\\Chat\\Commands\\AddChatParticipant\\AddChatParticipantCommand",
         "final_path": "domain/Chat/src/Commands/AddChatParticipant/AddChatParticipantCommand.php",
@@ -1539,8 +1539,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ed23bda717c548fe2ed87398601f5be0acfe8a2b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b72e84d17de47dc7f844876c7a813cd55867c6e0",
         "old_path": "domain/Chat/src/Commands/AddChatParticipant/AddChatParticipantHandler.php",
         "old_class": "Domain\\Chat\\Commands\\AddChatParticipant\\AddChatParticipantHandler",
         "final_path": "domain/Chat/src/Commands/AddChatParticipant/AddChatParticipantHandler.php",
@@ -1558,8 +1558,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8dc9127d0d77df91e34511c4f809c61b5b55bb3e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "136c77fc7fbb3abc8bfe52da707dfa0af01ea905",
         "old_path": "domain/Chat/src/Commands/ClearDeletedSource/ClearDeletedSourceCommand.php",
         "old_class": "Domain\\Chat\\Commands\\ClearDeletedSource\\ClearDeletedSourceCommand",
         "final_path": "domain/Chat/src/Commands/ClearDeletedSource/ClearDeletedSourceCommand.php",
@@ -1577,7 +1577,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6e6af6aa33e2b6e17e0d84b3141100325a213fa4",
         "old_path": "domain/Chat/src/Commands/ClearDeletedSource/ClearDeletedSourceHandler.php",
         "old_class": "Domain\\Chat\\Commands\\ClearDeletedSource\\ClearDeletedSourceHandler",
@@ -1596,8 +1596,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "496acb1d4d63727488fba2bec2bd1a02233fafbd",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "37624ab28aedd4c82f78bcccac24bd190967ef5a",
         "old_path": "domain/Chat/src/Commands/CloseChat/CloseChatCommand.php",
         "old_class": "Domain\\Chat\\Commands\\CloseChat\\CloseChatCommand",
         "final_path": "domain/Chat/src/Commands/CloseChat/CloseChatCommand.php",
@@ -1615,8 +1615,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "83b43f7b1c64ff1d2a1f26d472e1f6419d872c1a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a2dce23eda5c088530cda3931e22eb68b4bc5059",
         "old_path": "domain/Chat/src/Commands/CloseChat/CloseChatHandler.php",
         "old_class": "Domain\\Chat\\Commands\\CloseChat\\CloseChatHandler",
         "final_path": "domain/Chat/src/Commands/CloseChat/CloseChatHandler.php",
@@ -1634,8 +1634,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "199f44fc99e7fb03613b15d7fef36be0af6f005a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f6d58bba42be8a3a44649893c6fdc33b2049ae5f",
         "old_path": "domain/Chat/src/Commands/CreateGroupChat/CreateGroupChatCommand.php",
         "old_class": "Domain\\Chat\\Commands\\CreateGroupChat\\CreateGroupChatCommand",
         "final_path": "domain/Chat/src/Commands/CreateGroupChat/CreateGroupChatCommand.php",
@@ -1653,8 +1653,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "27249c24d7168f8b7c2a31c241bb99a9cc140ba6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "429cd91efbc47ad416bd4ce795c706ad3c4dfe38",
         "old_path": "domain/Chat/src/Commands/CreateGroupChat/CreateGroupChatHandler.php",
         "old_class": "Domain\\Chat\\Commands\\CreateGroupChat\\CreateGroupChatHandler",
         "final_path": "domain/Chat/src/Commands/CreateGroupChat/CreateGroupChatHandler.php",
@@ -1672,8 +1672,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d1311f6b6fd4e29afa4f93aef8202b3a65c1362f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "357bca59f8eaa9e1bad14b14161acdbb64192a1e",
         "old_path": "domain/Chat/src/Commands/DockSource/DockSourceCommand.php",
         "old_class": "Domain\\Chat\\Commands\\DockSource\\DockSourceCommand",
         "final_path": "domain/Chat/src/Commands/DockSource/DockSourceCommand.php",
@@ -1691,8 +1691,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "faf461ee5629f64fcd8d89360c10d03d341d7f37",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7aee346b65369aed74f908fbce337fc0834b2105",
         "old_path": "domain/Chat/src/Commands/DockSource/DockSourceHandler.php",
         "old_class": "Domain\\Chat\\Commands\\DockSource\\DockSourceHandler",
         "final_path": "domain/Chat/src/Commands/DockSource/DockSourceHandler.php",
@@ -1710,8 +1710,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c35fb406244334adf7147c16347da4f3ff000bd5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b4fd754e44709310de80a00cab612470427303a2",
         "old_path": "domain/Chat/src/Commands/LeaveChat/LeaveChatCommand.php",
         "old_class": "Domain\\Chat\\Commands\\LeaveChat\\LeaveChatCommand",
         "final_path": "domain/Chat/src/Commands/LeaveChat/LeaveChatCommand.php",
@@ -1729,8 +1729,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f3c0f6fc8a8f109a511e6df7124d17e1b955ff96",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5a5721b68a97204788ac0ec0a9d73d568b83aea3",
         "old_path": "domain/Chat/src/Commands/LeaveChat/LeaveChatHandler.php",
         "old_class": "Domain\\Chat\\Commands\\LeaveChat\\LeaveChatHandler",
         "final_path": "domain/Chat/src/Commands/LeaveChat/LeaveChatHandler.php",
@@ -1748,8 +1748,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7bd51bf9593028e99d966d2ee09f329bff762aa7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "927ce5b954846ea60db47d2e1b5836fbe7a34f19",
         "old_path": "domain/Chat/src/Commands/OpenPairChat/OpenPairChatCommand.php",
         "old_class": "Domain\\Chat\\Commands\\OpenPairChat\\OpenPairChatCommand",
         "final_path": "domain/Chat/src/Commands/OpenPairChat/OpenPairChatCommand.php",
@@ -1767,8 +1767,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ae2f61134480e859a468fcb40f3f79525a5c0d62",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5dade8aa814616f2fc7569cea5a95b9894811b02",
         "old_path": "domain/Chat/src/Commands/OpenPairChat/OpenPairChatHandler.php",
         "old_class": "Domain\\Chat\\Commands\\OpenPairChat\\OpenPairChatHandler",
         "final_path": "domain/Chat/src/Commands/OpenPairChat/OpenPairChatHandler.php",
@@ -1786,8 +1786,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6a6f2de5009b0ebe6e7a7d08d2b66016ab31bc60",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "000133ee43aa945d3ad263a61a2152e9e747b3c1",
         "old_path": "domain/Chat/src/Commands/PinMessage/PinMessageCommand.php",
         "old_class": "Domain\\Chat\\Commands\\PinMessage\\PinMessageCommand",
         "final_path": "domain/Chat/src/Commands/PinMessage/PinMessageCommand.php",
@@ -1805,8 +1805,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4f1d837c1e99308fe933c8d631e13d94336e23bb",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7782bba09231c74c9a2f77f34c4e3f888d1a2cb7",
         "old_path": "domain/Chat/src/Commands/PinMessage/PinMessageHandler.php",
         "old_class": "Domain\\Chat\\Commands\\PinMessage\\PinMessageHandler",
         "final_path": "domain/Chat/src/Commands/PinMessage/PinMessageHandler.php",
@@ -1824,8 +1824,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a50b55958ad5a2fccb83be6842af1cfca736ec08",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1d8425dce65811d147a7f862f2afd20360dade69",
         "old_path": "domain/Chat/src/Commands/RemoveChatParticipant/RemoveChatParticipantCommand.php",
         "old_class": "Domain\\Chat\\Commands\\RemoveChatParticipant\\RemoveChatParticipantCommand",
         "final_path": "domain/Chat/src/Commands/RemoveChatParticipant/RemoveChatParticipantCommand.php",
@@ -1843,8 +1843,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "bfef8b70afa1c3804b84aebc79521f4eeb2ebf91",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "de9c9873cfe01d19bdb1d22bd512724b4a434571",
         "old_path": "domain/Chat/src/Commands/RemoveChatParticipant/RemoveChatParticipantHandler.php",
         "old_class": "Domain\\Chat\\Commands\\RemoveChatParticipant\\RemoveChatParticipantHandler",
         "final_path": "domain/Chat/src/Commands/RemoveChatParticipant/RemoveChatParticipantHandler.php",
@@ -1862,7 +1862,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b7c25dfaa83df3fa6358071e0fb1946fd5909cdd",
         "old_path": "domain/Chat/src/Commands/Support/ChatCommandHandler.php",
         "old_class": "Domain\\Chat\\Commands\\Support\\ChatCommandHandler",
@@ -1881,8 +1881,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ab908c381793aa4bd4c8eca364836837c5ca8fc3",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c8a0878d88b8a1cee6ee5019f37df0a3d966e6c2",
         "old_path": "domain/Chat/src/Commands/TransferChatOwnership/TransferChatOwnershipCommand.php",
         "old_class": "Domain\\Chat\\Commands\\TransferChatOwnership\\TransferChatOwnershipCommand",
         "final_path": "domain/Chat/src/Commands/TransferChatOwnership/TransferChatOwnershipCommand.php",
@@ -1900,8 +1900,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3349950c483afaaefadbf754fb0d6032d94fd16a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "50e6ff4a2acdda9f83369a89a600b2c3d8bdbffa",
         "old_path": "domain/Chat/src/Commands/TransferChatOwnership/TransferChatOwnershipHandler.php",
         "old_class": "Domain\\Chat\\Commands\\TransferChatOwnership\\TransferChatOwnershipHandler",
         "final_path": "domain/Chat/src/Commands/TransferChatOwnership/TransferChatOwnershipHandler.php",
@@ -1919,8 +1919,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c179f1773509c86a7890b735d22c7402730b9c0a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "997760e700d9a9e23dbfb657252888703c4b7351",
         "old_path": "domain/Chat/src/Commands/UndockSource/UndockSourceCommand.php",
         "old_class": "Domain\\Chat\\Commands\\UndockSource\\UndockSourceCommand",
         "final_path": "domain/Chat/src/Commands/UndockSource/UndockSourceCommand.php",
@@ -1938,8 +1938,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6ac397f7809a7687f533cead3ebd3d400516c708",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9af0a0c3465746122dea55470a8f32f044ae7678",
         "old_path": "domain/Chat/src/Commands/UndockSource/UndockSourceHandler.php",
         "old_class": "Domain\\Chat\\Commands\\UndockSource\\UndockSourceHandler",
         "final_path": "domain/Chat/src/Commands/UndockSource/UndockSourceHandler.php",
@@ -1957,8 +1957,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8180e46f52a4ac5d7500b6761c8d74f32d93a4b7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e90e2af3b8191fb93cec034c4614cd8711633df0",
         "old_path": "domain/Chat/src/Commands/UnpinMessage/UnpinMessageCommand.php",
         "old_class": "Domain\\Chat\\Commands\\UnpinMessage\\UnpinMessageCommand",
         "final_path": "domain/Chat/src/Commands/UnpinMessage/UnpinMessageCommand.php",
@@ -1976,8 +1976,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a1aa02d98226ba428c691258b3266b787c98490c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "128293721473e1c275db67b9a6d1d5583193bec6",
         "old_path": "domain/Chat/src/Commands/UnpinMessage/UnpinMessageHandler.php",
         "old_class": "Domain\\Chat\\Commands\\UnpinMessage\\UnpinMessageHandler",
         "final_path": "domain/Chat/src/Commands/UnpinMessage/UnpinMessageHandler.php",
@@ -1995,7 +1995,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f4e6cec45d072adf4cea3369e76eb56d13af207a",
         "old_path": "domain/Chat/src/Console/Concerns/ChoosesChat.php",
         "old_class": "Domain\\Chat\\Console\\Concerns\\ChoosesChat",
@@ -2014,8 +2014,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8553237c29e20cb90d35b3d66cfceaf9de0c6b36",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "fe489c0c42ad4967eb9ea6dc84687e294d781940",
         "old_path": "domain/Chat/src/Console/DockAddCommand.php",
         "old_class": "Domain\\Chat\\Console\\DockAddCommand",
         "final_path": "domain/Chat/src/Console/Commands/DockAddCommand.php",
@@ -2028,13 +2028,16 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "76657059ca5d8d9c59bc9562ef75f9f10743580b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2f8bfa631d86f5a0bbb48d6268c3616d131ddf6c",
         "old_path": "domain/Chat/src/Console/DockListCommand.php",
         "old_class": "Domain\\Chat\\Console\\DockListCommand",
         "final_path": "domain/Chat/src/Console/Commands/DockListCommand.php",
@@ -2047,13 +2050,16 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "97f5fdc409286202a055cec43dd96cc8d0f5ffbd",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6427cad97b5b76fd92e05dd078411de85437c464",
         "old_path": "domain/Chat/src/Console/DockRemoveCommand.php",
         "old_class": "Domain\\Chat\\Console\\DockRemoveCommand",
         "final_path": "domain/Chat/src/Console/Commands/DockRemoveCommand.php",
@@ -2066,13 +2072,16 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "dee269a4166fe832895dd738f832022503a5d6cc",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bcff2e7c3e8c7d47d27880fa252d7c5af8d61b1d",
         "old_path": "domain/Chat/src/Data/AgentOptionData.php",
         "old_class": "Domain\\Chat\\Data\\AgentOptionData",
         "final_path": "domain/Chat/src/Data/AgentOptionData.php",
@@ -2090,8 +2099,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0fce287aacb4df32bb725fc4adf44172c523c4cc",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "24ba518fa0bf59eb82e0a243f2765b7c2ac748dd",
         "old_path": "domain/Chat/src/Data/AgentStatusData.php",
         "old_class": "Domain\\Chat\\Data\\AgentStatusData",
         "final_path": "domain/Chat/src/Data/AgentStatusData.php",
@@ -2109,7 +2118,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2942fb65237a1f05618d071c97b9fcfe8d606eb4",
         "old_path": "domain/Chat/src/Data/CancelInput.php",
         "old_class": "Domain\\Chat\\Data\\CancelInput",
@@ -2128,7 +2137,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f8ba2eaf436265cbc47fce2ae087884c208e6fa2",
         "old_path": "domain/Chat/src/Data/ChatCapabilitiesData.php",
         "old_class": "Domain\\Chat\\Data\\ChatCapabilitiesData",
@@ -2147,8 +2156,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ab6a94f177122bb0ed7f19def699f929662620f8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a382c5f7992dc4d573dfeb480c268be76daf59c6",
         "old_path": "domain/Chat/src/Data/ChatData.php",
         "old_class": "Domain\\Chat\\Data\\ChatData",
         "final_path": "domain/Chat/src/Data/ChatData.php",
@@ -2166,8 +2175,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c733404442305d45445a17c4a9c376a5604e664e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "444b5452c5092582784aa9b25bac254cd4ebaf3b",
         "old_path": "domain/Chat/src/Data/ChatEventData.php",
         "old_class": "Domain\\Chat\\Data\\ChatEventData",
         "final_path": "domain/Chat/src/Data/ChatEventData.php",
@@ -2185,7 +2194,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "19070bfd3c0639319235411e8440b43b13b9c169",
         "old_path": "domain/Chat/src/Data/ChatEventsInput.php",
         "old_class": "Domain\\Chat\\Data\\ChatEventsInput",
@@ -2204,8 +2213,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a3e9a5aeb5310e5fe65c73909be99517b5b2bf8e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "597e8adadc8e0222ba55eef20bcf93600442ff99",
         "old_path": "domain/Chat/src/Data/ChatEventsPageData.php",
         "old_class": "Domain\\Chat\\Data\\ChatEventsPageData",
         "final_path": "domain/Chat/src/Data/ChatEventsPageData.php",
@@ -2223,7 +2232,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "626880d183244052499e2f8ec6992b83327046ce",
         "old_path": "domain/Chat/src/Data/ChatInput.php",
         "old_class": "Domain\\Chat\\Data\\ChatInput",
@@ -2242,8 +2251,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "760243321c32a42aea8c992a73b634951871a21e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bd4e8fe3d0638c5e8dd65af108f1d16b45967829",
         "old_path": "domain/Chat/src/Data/ChatMessageData.php",
         "old_class": "Domain\\Chat\\Data\\ChatMessageData",
         "final_path": "domain/Chat/src/Data/ChatMessageData.php",
@@ -2261,7 +2270,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "315f0aaeb72c796a2395758250659e88073db976",
         "old_path": "domain/Chat/src/Data/ChatRowsInput.php",
         "old_class": "Domain\\Chat\\Data\\ChatRowsInput",
@@ -2280,7 +2289,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8324034d7f34ce4e049995ae073ac340dcf4efe5",
         "old_path": "domain/Chat/src/Data/ChatRowsPageData.php",
         "old_class": "Domain\\Chat\\Data\\ChatRowsPageData",
@@ -2299,7 +2308,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "bdcfd696cffcb25a720d6388aa31cec5a8e05300",
         "old_path": "domain/Chat/src/Data/ChatSummaryData.php",
         "old_class": "Domain\\Chat\\Data\\ChatSummaryData",
@@ -2318,7 +2327,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "70326db96a0e9c4930dbde1395cd3f64390ad94e",
         "old_path": "domain/Chat/src/Data/ConversationData.php",
         "old_class": "Domain\\Chat\\Data\\ConversationData",
@@ -2337,7 +2346,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "81490a323d9329fdbb235a0011417b910061ed9c",
         "old_path": "domain/Chat/src/Data/CreateGroupInput.php",
         "old_class": "Domain\\Chat\\Data\\CreateGroupInput",
@@ -2356,7 +2365,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "13e2667a7502c8d479840064c0b8901777646c43",
         "old_path": "domain/Chat/src/Data/DeclineInput.php",
         "old_class": "Domain\\Chat\\Data\\DeclineInput",
@@ -2375,8 +2384,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a7609cfc6e6fdaadf50429e33535e200d7c45814",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a2b4637db9df1104f13aa5a42e434be183a259b1",
         "old_path": "domain/Chat/src/Data/DeliveryData.php",
         "old_class": "Domain\\Chat\\Data\\DeliveryData",
         "final_path": "domain/Chat/src/Data/DeliveryData.php",
@@ -2394,7 +2403,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "99952159ceb6a20a001e66742a45a09ca05ff07c",
         "old_path": "domain/Chat/src/Data/DockAnswerData.php",
         "old_class": "Domain\\Chat\\Data\\DockAnswerData",
@@ -2413,7 +2422,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c889e4994fd2c2fd04d848deeef70948c55364f8",
         "old_path": "domain/Chat/src/Data/DockCursorData.php",
         "old_class": "Domain\\Chat\\Data\\DockCursorData",
@@ -2432,8 +2441,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b0ca37cc274195d2540d18ea36cc8db6a5c07f53",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c4787d78265ed7aa02b7b48d62d3eec860e4f30a",
         "old_path": "domain/Chat/src/Data/DockInput.php",
         "old_class": "Domain\\Chat\\Data\\DockInput",
         "final_path": "domain/Chat/src/Data/DockInput.php",
@@ -2451,7 +2460,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b9442a3acde366f33dab18c31c19bbca41a4a9bc",
         "old_path": "domain/Chat/src/Data/DockListData.php",
         "old_class": "Domain\\Chat\\Data\\DockListData",
@@ -2470,8 +2479,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "bd5b520f8eb19f670edfaa5038eabaabd5bc5629",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6941de7ccbc3c6a85a7a86f7afcf39eec9d0f15f",
         "old_path": "domain/Chat/src/Data/DockPageData.php",
         "old_class": "Domain\\Chat\\Data\\DockPageData",
         "final_path": "domain/Chat/src/Data/DockPageData.php",
@@ -2489,7 +2498,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9bb7722d888def75cd0663e1b4668cd4b65ac00c",
         "old_path": "domain/Chat/src/Data/DockedSourceData.php",
         "old_class": "Domain\\Chat\\Data\\DockedSourceData",
@@ -2508,8 +2517,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b7232ffffaac066d14f8ecf708925088adea7943",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b4f82623225285c11f8d197c876a6bf5b8c067d5",
         "old_path": "domain/Chat/src/Data/DriverChoiceData.php",
         "old_class": "Domain\\Chat\\Data\\DriverChoiceData",
         "final_path": "domain/Chat/src/Data/DriverChoiceData.php",
@@ -2527,8 +2536,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e8dedaa9233e92c3e429a1ac829e9a8d71a520a5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6949704e3553b8ec4244ca785cd78df7f09d6d4e",
         "old_path": "domain/Chat/src/Data/FocusedQuestionData.php",
         "old_class": "Domain\\Chat\\Data\\FocusedQuestionData",
         "final_path": "domain/Chat/src/Data/FocusedQuestionData.php",
@@ -2546,8 +2555,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "550e65b1f83b08a2fcf4db7ed6c3a5ca05f7cb45",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "87dd63aa9743553b719ba9cd4364843e0ebe1c34",
         "old_path": "domain/Chat/src/Data/InboxMessagesPartData.php",
         "old_class": "Domain\\Chat\\Data\\InboxMessagesPartData",
         "final_path": "domain/Chat/src/Data/InboxMessagesPartData.php",
@@ -2565,7 +2574,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9f009af6e2b55f3bdcaa775617ab4dd77b5b5955",
         "old_path": "domain/Chat/src/Data/MessageInput.php",
         "old_class": "Domain\\Chat\\Data\\MessageInput",
@@ -2584,8 +2593,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3231a5dda0f33bfe900488a14db0c078b809ed24",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1bb0cd804789d9b9e457decff831737f6eca2aad",
         "old_path": "domain/Chat/src/Data/ParticipantData.php",
         "old_class": "Domain\\Chat\\Data\\ParticipantData",
         "final_path": "domain/Chat/src/Data/ParticipantData.php",
@@ -2603,7 +2612,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "13279b1f01a2c7d36e3b87127b6c0889f49ca2ee",
         "old_path": "domain/Chat/src/Data/ParticipantInput.php",
         "old_class": "Domain\\Chat\\Data\\ParticipantInput",
@@ -2622,7 +2631,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "61f651eed1d8888a154bdee65d29d6241a1d9a1e",
         "old_path": "domain/Chat/src/Data/QuestionActionsData.php",
         "old_class": "Domain\\Chat\\Data\\QuestionActionsData",
@@ -2641,7 +2650,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1cec5377843db39b1c451e996f1e3fc8439e44f8",
         "old_path": "domain/Chat/src/Data/ReadShownInput.php",
         "old_class": "Domain\\Chat\\Data\\ReadShownInput",
@@ -2660,7 +2669,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a307ba5335aac17ff457a35630e0f5bfcc88c7eb",
         "old_path": "domain/Chat/src/Data/ReplyInput.php",
         "old_class": "Domain\\Chat\\Data\\ReplyInput",
@@ -2679,7 +2688,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0a0a9bb8de212a457bbe88d59daeb3fe8f7e8007",
         "old_path": "domain/Chat/src/Data/ReplyTargetData.php",
         "old_class": "Domain\\Chat\\Data\\ReplyTargetData",
@@ -2698,7 +2707,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d11143192ce9ac4edb045e86c4fbec31712d36cc",
         "old_path": "domain/Chat/src/Data/RequestOutcomeData.php",
         "old_class": "Domain\\Chat\\Data\\RequestOutcomeData",
@@ -2717,8 +2726,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e331827d8208f41da9e2aa9a30a4e3d395cd6f28",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6fdcdbe72dfbfe0fd85402aa60be920b5e69a517",
         "old_path": "domain/Chat/src/Data/RequestOutcomeInput.php",
         "old_class": "Domain\\Chat\\Data\\RequestOutcomeInput",
         "final_path": "domain/Chat/src/Data/RequestOutcomeInput.php",
@@ -2736,8 +2745,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "978ad878ffd2b5b7d93aebc6e0643250148a2ac8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1f0c2dfcbb279e8b84159e8a6ae1b59bd5670126",
         "old_path": "domain/Chat/src/Data/ResumableConversationData.php",
         "old_class": "Domain\\Chat\\Data\\ResumableConversationData",
         "final_path": "domain/Chat/src/Data/ResumableConversationData.php",
@@ -2755,7 +2764,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0551032e2148619c87ca73be948c19c5e5b38ac5",
         "old_path": "domain/Chat/src/Data/RetryDeliveryInput.php",
         "old_class": "Domain\\Chat\\Data\\RetryDeliveryInput",
@@ -2774,7 +2783,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4c780c9ba9ae2ce9d71e0e434d3616ec96b85b2a",
         "old_path": "domain/Chat/src/Data/SpeakerData.php",
         "old_class": "Domain\\Chat\\Data\\SpeakerData",
@@ -2793,8 +2802,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7b53996ef60697e3a25a7e015cd897d59c6523e3",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "54306b26094cb9b5bedfd7a5a2c6131583819c03",
         "old_path": "domain/Chat/src/Data/StatusActionData.php",
         "old_class": "Domain\\Chat\\Data\\StatusActionData",
         "final_path": "domain/Chat/src/Data/StatusActionData.php",
@@ -2812,8 +2821,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a13a3e90719f69b58bbbf006ee9cfc12b3133b68",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d606ce7391294214a4e86e99f6f71c8a0a938c54",
         "old_path": "domain/Chat/src/Data/StatusOperationData.php",
         "old_class": "Domain\\Chat\\Data\\StatusOperationData",
         "final_path": "domain/Chat/src/Data/StatusOperationData.php",
@@ -2831,7 +2840,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "cef183572a7b16a7b19170d6b3be34257949e602",
         "old_path": "domain/Chat/src/Data/TakeNextInput.php",
         "old_class": "Domain\\Chat\\Data\\TakeNextInput",
@@ -2850,7 +2859,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "230b2148b8aaf6530bf91d2a4fac079ea925093c",
         "old_path": "domain/Chat/src/Data/UndockInput.php",
         "old_class": "Domain\\Chat\\Data\\UndockInput",
@@ -2869,7 +2878,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "99342296fcd0f6c905e8682c49d769eb0e9cbf13",
         "old_path": "domain/Chat/src/Enums/ConversationState.php",
         "old_class": "Domain\\Chat\\Enums\\ConversationState",
@@ -2888,7 +2897,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d534b931e3993cb01511d5c4323d7deadf5f0744",
         "old_path": "domain/Chat/src/Enums/DockOutcome.php",
         "old_class": "Domain\\Chat\\Enums\\DockOutcome",
@@ -2907,7 +2916,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e7df4015376fce477c68e11d9014029b6e5437a8",
         "old_path": "domain/Chat/src/Enums/DockedState.php",
         "old_class": "Domain\\Chat\\Enums\\DockedState",
@@ -2926,7 +2935,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "431988cacd79f6593576349a94a5860cc523e725",
         "old_path": "domain/Chat/src/Enums/RequestOutcome.php",
         "old_class": "Domain\\Chat\\Enums\\RequestOutcome",
@@ -2945,8 +2954,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "08b52c9f34712a9dcfcd85ad3a452e0049814b84",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "fcad8624f3489931f9dd5295c09785bf023ac4c5",
         "old_path": "domain/Chat/src/Enums/SentOperation.php",
         "old_class": "Domain\\Chat\\Enums\\SentOperation",
         "final_path": "domain/Chat/src/Enums/SentOperation.php",
@@ -2964,8 +2973,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "07f83660c0ae3b375873178e55896f6cbeaa0fef",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "01f57dd8fc783f09de4470dde40a36c62dbe7708",
         "old_path": "domain/Chat/src/Events/DockChanged.php",
         "old_class": "Domain\\Chat\\Events\\DockChanged",
         "final_path": "domain/Chat/src/Events/DockChanged.php",
@@ -2983,8 +2992,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2ac2051246f969244069752ea9e49ecf198a99ea",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1c6086141af11d971e26f9dfbe475cd986950c47",
         "old_path": "domain/Chat/src/Exceptions/ChatMembershipRefused.php",
         "old_class": "Domain\\Chat\\Exceptions\\ChatMembershipRefused",
         "final_path": "domain/Chat/src/Exceptions/ChatMembershipRefused.php",
@@ -3002,7 +3011,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "602c0f451773e852d8c8b7705b573efc3d27e081",
         "old_path": "domain/Chat/src/Exceptions/ConversationUnavailable.php",
         "old_class": "Domain\\Chat\\Exceptions\\ConversationUnavailable",
@@ -3021,8 +3030,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "59dcaa0cbc6bb088efafa9ae6b8fb2e12674eaa2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "fdc128fa613f0f4c4b9f2c8517a9b818497d97d9",
         "old_path": "domain/Chat/src/Http/Controllers/Calls/DockAddController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\Calls\\DockAddController",
         "final_path": "domain/Chat/src/Http/Controllers/Calls/DockAddController.php",
@@ -3040,7 +3049,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "edaa6f0968406cbb5f85b4dec9a602596e3d9366",
         "old_path": "domain/Chat/src/Http/Controllers/Calls/DockListController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\Calls\\DockListController",
@@ -3059,8 +3068,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "600cc84ccb1f008efa7028ad85a3cec1da66eb47",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5e2b4fea615310bca006e7e1b41b58e5708b2f72",
         "old_path": "domain/Chat/src/Http/Controllers/Calls/DockRemoveController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\Calls\\DockRemoveController",
         "final_path": "domain/Chat/src/Http/Controllers/Calls/DockRemoveController.php",
@@ -3078,8 +3087,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "21ca79e4c80bac8a8a962d0b5db25db567fad083",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "004e8ea16af17fff552383924ee7c87751bda928",
         "old_path": "domain/Chat/src/Http/Controllers/CancelMessageController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\CancelMessageController",
         "final_path": "domain/Chat/src/Http/Controllers/CancelMessageController.php",
@@ -3097,8 +3106,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ec1544007acfe26aefba713211ef0c3a1b16721d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "86ba044cb7be43f6206caf70205972c8ad92edcf",
         "old_path": "domain/Chat/src/Http/Controllers/ChatEventsController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\ChatEventsController",
         "final_path": "domain/Chat/src/Http/Controllers/ChatEventsController.php",
@@ -3116,7 +3125,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e7e3d49faee341047993c6c5894af8f75d1db4de",
         "old_path": "domain/Chat/src/Http/Controllers/ChatRowsController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\ChatRowsController",
@@ -3135,8 +3144,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e0b171f8fa7f9a8234c2f96730b831e75715a893",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b1345e9d944f50545ea91ba2166af0cd2e127ddd",
         "old_path": "domain/Chat/src/Http/Controllers/DeclineQuestionController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\DeclineQuestionController",
         "final_path": "domain/Chat/src/Http/Controllers/DeclineQuestionController.php",
@@ -3154,8 +3163,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "de62d96c575ff85da85316240e8c69c295ca079f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "743e3bcfd937e37a1dc00841d8a7ddad12b28111",
         "old_path": "domain/Chat/src/Http/Controllers/DockController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\DockController",
         "final_path": "domain/Chat/src/Http/Controllers/DockController.php",
@@ -3173,8 +3182,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1351761a7f892cc276b81533c6998ebdd380b45b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8fb005991b9f58556f6d69edc2fb7ffe6d38ae37",
         "old_path": "domain/Chat/src/Http/Controllers/Membership/AddParticipantController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\Membership\\AddParticipantController",
         "final_path": "domain/Chat/src/Http/Controllers/Membership/AddParticipantController.php",
@@ -3192,8 +3201,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "650f1fde715af993ce19aced5adb2f3ff15411cb",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "61bdd34330cfb38a192120dc1b0c960bc7b2e04a",
         "old_path": "domain/Chat/src/Http/Controllers/Membership/ChatCandidatesController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\Membership\\ChatCandidatesController",
         "final_path": "domain/Chat/src/Http/Controllers/Membership/ChatCandidatesController.php",
@@ -3211,8 +3220,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "00d642643926931d4bf0693a0ea13669e5622c68",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6993e228c5cc35572ab3cc325e70bf98ba8bf430",
         "old_path": "domain/Chat/src/Http/Controllers/Membership/CloseChatController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\Membership\\CloseChatController",
         "final_path": "domain/Chat/src/Http/Controllers/Membership/CloseChatController.php",
@@ -3230,8 +3239,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b1302cb0cf10ad554e3cb9061d0e3d70563f815a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "17ad6cc866c7eb8a994f07f2574f28b5912adbf6",
         "old_path": "domain/Chat/src/Http/Controllers/Membership/CreateGroupChatController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\Membership\\CreateGroupChatController",
         "final_path": "domain/Chat/src/Http/Controllers/Membership/CreateGroupChatController.php",
@@ -3249,8 +3258,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2555e078b8fd4a46ea2ca1a9edee7c6f3ee9183e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "837f0dea3eb153802ee21f12f49d91211cac237d",
         "old_path": "domain/Chat/src/Http/Controllers/Membership/LeaveChatController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\Membership\\LeaveChatController",
         "final_path": "domain/Chat/src/Http/Controllers/Membership/LeaveChatController.php",
@@ -3268,8 +3277,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d83e19137242d406f2ec03787360b5ffe6e11c0c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a535555bf10fe88842bebe15be69b4cda090acb5",
         "old_path": "domain/Chat/src/Http/Controllers/Membership/RemoveParticipantController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\Membership\\RemoveParticipantController",
         "final_path": "domain/Chat/src/Http/Controllers/Membership/RemoveParticipantController.php",
@@ -3287,8 +3296,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c109301378489463b32f240a6e5a19b724e07234",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c67d2fdf90209eed17e8ed6c9aa9fbb279f6be8e",
         "old_path": "domain/Chat/src/Http/Controllers/Membership/TransferChatController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\Membership\\TransferChatController",
         "final_path": "domain/Chat/src/Http/Controllers/Membership/TransferChatController.php",
@@ -3306,8 +3315,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ec7cb9476e207657c9d12303253929f047ed0416",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e4402a1d4ae4c9e448dc9b766b770f478e7af686",
         "old_path": "domain/Chat/src/Http/Controllers/ReadShownController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\ReadShownController",
         "final_path": "domain/Chat/src/Http/Controllers/ReadShownController.php",
@@ -3325,8 +3334,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5a1552488133a6774a1d34bfe15dbdd62d6b86bc",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "69a3e434661ad24a2f94de7a150ed6bf73d25e59",
         "old_path": "domain/Chat/src/Http/Controllers/ReplyController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\ReplyController",
         "final_path": "domain/Chat/src/Http/Controllers/ReplyController.php",
@@ -3344,7 +3353,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f208e1eb0ba9af50f1fa4f9c3522a80de9770898",
         "old_path": "domain/Chat/src/Http/Controllers/RequestOutcomeController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\RequestOutcomeController",
@@ -3363,8 +3372,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a09eb312ba0cf24363020bfaee2a9cd47197f7e0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d36732e0d49bf8a3da45363aaace5063c000d68a",
         "old_path": "domain/Chat/src/Http/Controllers/RetryDeliveryController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\RetryDeliveryController",
         "final_path": "domain/Chat/src/Http/Controllers/RetryDeliveryController.php",
@@ -3382,8 +3391,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c7c49a98ca4169ca1b83e3a1455ceb09ebc1c49d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "3b2c0818fff3fb95703dc60f2fe4670954ea6ed2",
         "old_path": "domain/Chat/src/Http/Controllers/SendMessageController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\SendMessageController",
         "final_path": "domain/Chat/src/Http/Controllers/SendMessageController.php",
@@ -3401,8 +3410,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0603599c78b0f70e6753cc4a390447984f4efbdc",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "932c8a9edb3855b29753ed5632ef1d1e9e4ea2fb",
         "old_path": "domain/Chat/src/Http/Controllers/TakeNextController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\TakeNextController",
         "final_path": "domain/Chat/src/Http/Controllers/TakeNextController.php",
@@ -3420,8 +3429,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1d12adfc0afb64cf7d809e215acf27e2e2cabe93",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "cf345916050a5dfb052bdc1c4800e7a5c5b2a175",
         "old_path": "domain/Chat/src/Http/Controllers/UndockController.php",
         "old_class": "Domain\\Chat\\Http\\Controllers\\UndockController",
         "final_path": "domain/Chat/src/Http/Controllers/UndockController.php",
@@ -3439,8 +3448,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4c6963169ee1d26f24b016f2c1ff4a0d8d0ebb21",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ba3547433fd7462b8a7ababcf7bbce1c8e89d455",
         "old_path": "domain/Chat/src/Http/Requests/ConversationRequest.php",
         "old_class": "Domain\\Chat\\Http\\Requests\\ConversationRequest",
         "final_path": "domain/Chat/src/Http/Requests/ConversationRequest.php",
@@ -3458,7 +3467,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d81d46c1fb5c98add9211ddb08446a2217e2945d",
         "old_path": "domain/Chat/src/Http/Requests/HistoryRequest.php",
         "old_class": "Domain\\Chat\\Http\\Requests\\HistoryRequest",
@@ -3477,8 +3486,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "bb2c77c7ad050151eb0c8eeae4c7670648a7e49a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "dc160d8f244ce5a35317d9c7fa3e2b361a0423a4",
         "old_path": "domain/Chat/src/Listeners/RemoveDeletedSource.php",
         "old_class": "Domain\\Chat\\Listeners\\RemoveDeletedSource",
         "final_path": "domain/Chat/src/Listeners/RemoveDeletedSource.php",
@@ -3496,8 +3505,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "49f1670ceb4be49b364124bfa38cf7a42097e1a6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a59410d58bb78dac07f6f9f747c880d5e8fd710d",
         "old_path": "domain/Chat/src/Mcp/AnswerMessageTool.php",
         "old_class": "Domain\\Chat\\Mcp\\AnswerMessageTool",
         "final_path": "domain/Chat/src/Mcp/Tools/AnswerMessageTool.php",
@@ -3510,13 +3519,16 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a2a11e42bea685caaf3f4a2bc31230a09b35f530",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b64fe9227e2fa2ec66ab7a5e8d920a8c1df1c77a",
         "old_path": "domain/Chat/src/Mcp/AskQuestionTool.php",
         "old_class": "Domain\\Chat\\Mcp\\AskQuestionTool",
         "final_path": "domain/Chat/src/Mcp/Tools/AskQuestionTool.php",
@@ -3529,13 +3541,16 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9b180c98039a359b014ba03a88db2054c3d06fbf",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1c452ff9db7de741bdef16157c3cf60166327e90",
         "old_path": "domain/Chat/src/Mcp/DismissMessageTool.php",
         "old_class": "Domain\\Chat\\Mcp\\DismissMessageTool",
         "final_path": "domain/Chat/src/Mcp/Tools/DismissMessageTool.php",
@@ -3548,12 +3563,15 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0e1a1db00db784769f022a4b6aace2ed7871a4c3",
         "old_path": "domain/Chat/src/Mcp/DockAddTool.php",
         "old_class": "Domain\\Chat\\Mcp\\DockAddTool",
@@ -3567,12 +3585,14 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f0335d98d365bdfaa4a106bc0e162da83e5da8dc",
         "old_path": "domain/Chat/src/Mcp/DockListTool.php",
         "old_class": "Domain\\Chat\\Mcp\\DockListTool",
@@ -3586,12 +3606,14 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d5acaa0fff017be991ae2b16122baffcd008d274",
         "old_path": "domain/Chat/src/Mcp/DockRemoveTool.php",
         "old_class": "Domain\\Chat\\Mcp\\DockRemoveTool",
@@ -3605,13 +3627,15 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b963725b82163dea62481705b684a2e40d8d7865",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "06986aee5a30f513a48fc21494edf38fa32a1c54",
         "old_path": "domain/Chat/src/Mcp/MessageContextTool.php",
         "old_class": "Domain\\Chat\\Mcp\\MessageContextTool",
         "final_path": "domain/Chat/src/Mcp/Tools/MessageContextTool.php",
@@ -3624,13 +3648,15 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "aba9e914da0d90347b9f84e098f337bac891d5fd",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b7deb6ebd3dc0a063ae9328a0171b5b567f5b070",
         "old_path": "domain/Chat/src/Mcp/MessageDetailsTool.php",
         "old_class": "Domain\\Chat\\Mcp\\MessageDetailsTool",
         "final_path": "domain/Chat/src/Mcp/Tools/MessageDetailsTool.php",
@@ -3643,13 +3669,15 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c649d5b6a605c1237457dce25c0e756827077511",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a2b76d5bc8a4f9220e9c888030be8152e6f52b15",
         "old_path": "domain/Chat/src/Mcp/MessageReadResult.php",
         "old_class": "Domain\\Chat\\Mcp\\MessageReadResult",
         "final_path": "domain/Chat/src/Support/Mcp/MessageReadResult.php",
@@ -3662,13 +3690,15 @@
         },
         "phase": 3,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ce84c3e62f00f098ee3260193abab7496e12142e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5198da73c37a5674ecd7cdccd390d669d861da32",
         "old_path": "domain/Chat/src/Mcp/MessageReadTool.php",
         "old_class": "Domain\\Chat\\Mcp\\MessageReadTool",
         "final_path": "domain/Chat/src/Mcp/Tools/MessageReadTool.php",
@@ -3681,13 +3711,15 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f5bb7cb9d632254f33dddbc634f93a5af2e1c9fe",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0dab53913c133488889f63c6623e40171df245da",
         "old_path": "domain/Chat/src/Mcp/MessageResource.php",
         "old_class": "Domain\\Chat\\Mcp\\MessageResource",
         "final_path": "domain/Chat/src/Mcp/Resources/MessageResource.php",
@@ -3700,13 +3732,15 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3830ac4a0b10e104b65528edaea3261f45bc448b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "41b240d8af88fecfc83fb99cdd25832d90caa96d",
         "old_path": "domain/Chat/src/Mcp/MessageSearch.php",
         "old_class": "Domain\\Chat\\Mcp\\MessageSearch",
         "final_path": "domain/Chat/src/Support/Mcp/MessageSearch.php",
@@ -3719,13 +3753,15 @@
         },
         "phase": 3,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6cb39cfc1b134a7e090e2d89a7eae53b438cfd30",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "69172c2bd06a42fa9065619207ab601f90a8d360",
         "old_path": "domain/Chat/src/Mcp/MessagesListTool.php",
         "old_class": "Domain\\Chat\\Mcp\\MessagesListTool",
         "final_path": "domain/Chat/src/Mcp/Tools/MessagesListTool.php",
@@ -3738,13 +3774,15 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0a79bbe4470083a06ad85deb12fb854fe74c93a7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4d1f382cb9a6103b90531831afbd80ab38d895d7",
         "old_path": "domain/Chat/src/Mcp/PendingMessagesOverview.php",
         "old_class": "Domain\\Chat\\Mcp\\PendingMessagesOverview",
         "final_path": "domain/Chat/src/Support/Mcp/PendingMessagesOverview.php",
@@ -3757,13 +3795,15 @@
         },
         "phase": 3,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0d4acef30a31697dba641fffaa40d8c3114c207e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ba2b5ac6852757f793ee41d6c533cd6a11a4bb3a",
         "old_path": "domain/Chat/src/Mcp/ReplyToMessageTool.php",
         "old_class": "Domain\\Chat\\Mcp\\ReplyToMessageTool",
         "final_path": "domain/Chat/src/Mcp/Tools/ReplyToMessageTool.php",
@@ -3776,13 +3816,16 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b3fd186a9fbde99907897d555475534e209c3176",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e97047d8f061230b34da8cef59a54e7c662c4dc9",
         "old_path": "domain/Chat/src/Mcp/SelectMessageTool.php",
         "old_class": "Domain\\Chat\\Mcp\\SelectMessageTool",
         "final_path": "domain/Chat/src/Mcp/Tools/SelectMessageTool.php",
@@ -3795,12 +3838,15 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8cf24d77ec92a5746e5e6d20d3f556dc6a64e666",
         "old_path": "domain/Chat/src/Models/Concerns/PlacedInConversation.php",
         "old_class": "Domain\\Chat\\Models\\Concerns\\PlacedInConversation",
@@ -3819,8 +3865,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b526fbfdd039d0859560b96afbc5949148bbb462",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "723e71176684da8805cd7385f73fc4c823cafe4d",
         "old_path": "domain/Chat/src/Models/Conversation.php",
         "old_class": "Domain\\Chat\\Models\\Conversation",
         "final_path": "domain/Chat/src/Models/Conversation.php",
@@ -3838,8 +3884,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ef7528f4365e38cecb520ab1b6c8edc1cebaacdd",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e7dadd9a169886d7f8d4bb9194ee508b231d913f",
         "old_path": "domain/Chat/src/Models/DirectChat.php",
         "old_class": "Domain\\Chat\\Models\\DirectChat",
         "final_path": "domain/Chat/src/Models/DirectChat.php",
@@ -3857,8 +3903,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9b0b4d2cb3044acfad0267ede9cb0c8b9ef51d14",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ec6b1cca1e2e448c93c0b97cf8c1fbd8541e544a",
         "old_path": "domain/Chat/src/Models/DockPlacement.php",
         "old_class": "Domain\\Chat\\Models\\DockPlacement",
         "final_path": "domain/Chat/src/Models/DockPlacement.php",
@@ -3876,8 +3922,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5a648f8abbb2c5c289eb62a1bb7e0bfe038e3ffe",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e47b0d5955c32204d8902af505420f1fe012d2ac",
         "old_path": "domain/Chat/src/Models/MessagePin.php",
         "old_class": "Domain\\Chat\\Models\\MessagePin",
         "final_path": "domain/Chat/src/Models/MessagePin.php",
@@ -3895,8 +3941,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c48f8f9eae9787fc7b97e712c663798d9a3696e8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a90fbb357c96461303f9585a3b115604b5cfb80c",
         "old_path": "domain/Chat/src/Policies/ConversationPolicy.php",
         "old_class": "Domain\\Chat\\Policies\\ConversationPolicy",
         "final_path": "domain/Chat/src/Policies/ConversationPolicy.php",
@@ -3914,8 +3960,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b3747fae8569bd7e7ca96464eb36d42182163ef7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f19b508171d3630cf78c147a2b0e2014f3655111",
         "old_path": "domain/Chat/src/Policies/MessagePinPolicy.php",
         "old_class": "Domain\\Chat\\Policies\\MessagePinPolicy",
         "final_path": "domain/Chat/src/Policies/MessagePinPolicy.php",
@@ -3933,8 +3979,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6f3b6a71912b477e190f4f9f3b09b7678805f69a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2864f8f90012d7de051f33022eba8ff27462f111",
         "old_path": "domain/Chat/src/Providers/ChatServiceProvider.php",
         "old_class": "Domain\\Chat\\Providers\\ChatServiceProvider",
         "final_path": "domain/Chat/src/Providers/ChatServiceProvider.php",
@@ -3952,8 +3998,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "80b1ce034c7e2d3789597a661385df4d98fb7f7e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a76a5883984b556bd62a1e8a48dc10f363ddbf65",
         "old_path": "domain/Chat/src/Resolvers/ChatWindowResolver.php",
         "old_class": "Domain\\Chat\\Resolvers\\ChatWindowResolver",
         "final_path": "domain/Chat/src/Resolvers/ChatWindowResolver.php",
@@ -3971,8 +4017,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2d5be83b477d65e0d88f919a742b34372e05130b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "cf906ba156d3eb2dae9e46943ac6cfc796d23621",
         "old_path": "domain/Chat/src/Resolvers/ChosenAgentSection.php",
         "old_class": "Domain\\Chat\\Resolvers\\ChosenAgentSection",
         "final_path": "domain/Chat/src/Resolvers/ChosenAgentSection.php",
@@ -3990,8 +4036,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b07c4707a37d0e45b9c1f543f76b5198ef9b8639",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "636467e6a5290db31a66d3a02b89c2b450330005",
         "old_path": "domain/Chat/src/Resolvers/HistoryPageResolver.php",
         "old_class": "Domain\\Chat\\Resolvers\\HistoryPageResolver",
         "final_path": "domain/Chat/src/Resolvers/HistoryPageResolver.php",
@@ -4009,8 +4055,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f6bc028540147553aed3d4e0e96c566dcebe0f91",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "35665b73248a85eabe369239658f2c6d07e0bc27",
         "old_path": "domain/Chat/src/Resolvers/InboxPageResolver.php",
         "old_class": "Domain\\Chat\\Resolvers\\InboxPageResolver",
         "final_path": "domain/Chat/src/Resolvers/InboxPageResolver.php",
@@ -4028,8 +4074,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a82ce8fb05dbed342da48bf8ce63a10da4ba33b9",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "30bee1a0f24b61c5cd02da1cc177d1c421153d4e",
         "old_path": "domain/Chat/src/Resolvers/Support/ChatConversations.php",
         "old_class": "Domain\\Chat\\Resolvers\\Support\\ChatConversations",
         "final_path": "domain/Chat/src/Resolvers/Support/ChatConversations.php",
@@ -4047,8 +4093,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b96d4cde8f2f801f82225fe12c42a5dabe88fce0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "566377d2f720f44f0b18de16ff74064d9f63fba0",
         "old_path": "domain/Chat/src/Resolvers/Support/DockListing.php",
         "old_class": "Domain\\Chat\\Resolvers\\Support\\DockListing",
         "final_path": "domain/Chat/src/Resolvers/Support/DockListing.php",
@@ -4066,8 +4112,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "510e68a653b8f0a3ba13b86c0ff8704ad008790e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "69d06c4f902ec5f8e24456b230ad09b30379c207",
         "old_path": "domain/Chat/src/Resolvers/Support/MessagePinRecords.php",
         "old_class": "Domain\\Chat\\Resolvers\\Support\\MessagePinRecords",
         "final_path": "domain/Chat/src/Resolvers/Support/MessagePinRecords.php",
@@ -4085,8 +4131,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "aa3645ad75299d1411706a6009e59093be0dbbbf",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "29135a5c264e1ab44ba46dedd82d3cb046a284a0",
         "old_path": "domain/Chat/src/Routes/agent.php",
         "old_class": null,
         "final_path": "domain/Chat/routes/agent.php",
@@ -4099,13 +4145,15 @@
         },
         "phase": 4,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "33e163c9c5bb16cf163ff27f4400b1a8c1f992a7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c01eb0a47931ea40c864afe591ecd789897f1cc9",
         "old_path": "domain/Chat/src/Skills/ChatSkill.php",
         "old_class": "Domain\\Chat\\Skills\\ChatSkill",
         "final_path": "domain/Chat/src/Support/Skills/ChatSkill.php",
@@ -4118,13 +4166,15 @@
         },
         "phase": 3,
         "batch": "Chat",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Chat.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7b263c395e6e1c4fb6c8650cbafff75c5b0030f0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5c79c6074d7e031e91d1b9e5ff0629b7332cc80c",
         "old_path": "domain/Chat/src/Support/AgentDockOffers.php",
         "old_class": "Domain\\Chat\\Support\\AgentDockOffers",
         "final_path": "domain/Chat/src/Support/AgentDockOffers.php",
@@ -4142,8 +4192,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3318c99fc7a5b7c6f6d444b75d8cff0670858b6f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a85aacac8770212e3668a7e9a8d29842bdbff07e",
         "old_path": "domain/Chat/src/Support/AuthorizedConversations.php",
         "old_class": "Domain\\Chat\\Support\\AuthorizedConversations",
         "final_path": "domain/Chat/src/Support/AuthorizedConversations.php",
@@ -4161,8 +4211,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "dc5216fbc37e3648933ace299d355e402304b339",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "644adb38595a156317466d29418bbf1bc0d92b93",
         "old_path": "domain/Chat/src/Support/ChatAdmissionPolicy.php",
         "old_class": "Domain\\Chat\\Support\\ChatAdmissionPolicy",
         "final_path": "domain/Chat/src/Support/ChatAdmissionPolicy.php",
@@ -4180,8 +4230,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "30cec4e4dab9b532121d5dcb14a814416fb324af",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0818ed9f55035aabd7ee0b1219cbcb2473efa2e4",
         "old_path": "domain/Chat/src/Support/ChatInbox.php",
         "old_class": "Domain\\Chat\\Support\\ChatInbox",
         "final_path": "domain/Chat/src/Support/ChatInbox.php",
@@ -4199,8 +4249,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "fcb1f8732fdacd8b7dd3cf422d7a3ce729a53c67",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "3f0a38e875561e059900cf0a66b2b23c3e61bf6a",
         "old_path": "domain/Chat/src/Support/ChatInboxAccess.php",
         "old_class": "Domain\\Chat\\Support\\ChatInboxAccess",
         "final_path": "domain/Chat/src/Support/ChatInboxAccess.php",
@@ -4218,8 +4268,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "18578ce6b63daa7cf51e687c5bd76b4c89acc6b4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0003df05a58820fdb66962676d599a00f6f6e970",
         "old_path": "domain/Chat/src/Support/ChatInboxProvider.php",
         "old_class": "Domain\\Chat\\Support\\ChatInboxProvider",
         "final_path": "domain/Chat/src/Support/ChatInboxProvider.php",
@@ -4237,8 +4287,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ecdf61b33a95e379bbb9536182949d5b693a2469",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "76cd71ecca7382e1ee2d5781d72bf427f40749fd",
         "old_path": "domain/Chat/src/Support/ChatMembership.php",
         "old_class": "Domain\\Chat\\Support\\ChatMembership",
         "final_path": "domain/Chat/src/Support/ChatMembership.php",
@@ -4256,8 +4306,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2df78b6231ab7ec33da4b44b13efefe3b4a6de19",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "12c3e8b1467481c4d2e8681d51aea80d5bcc2b84",
         "old_path": "domain/Chat/src/Support/ChatRevocation.php",
         "old_class": "Domain\\Chat\\Support\\ChatRevocation",
         "final_path": "domain/Chat/src/Support/ChatRevocation.php",
@@ -4275,8 +4325,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a6d933e852807e81e3fa8d6a64eb4bff632cd876",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "88cf9d39364741fb97659f080bd66acadaf3563a",
         "old_path": "domain/Chat/src/Support/DockCards.php",
         "old_class": "Domain\\Chat\\Support\\DockCards",
         "final_path": "domain/Chat/src/Support/DockCards.php",
@@ -4294,7 +4344,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "59ff5cf6372461115b2175673b48fb7d1972f6e2",
         "old_path": "domain/Chat/src/Support/DockCursor.php",
         "old_class": "Domain\\Chat\\Support\\DockCursor",
@@ -4313,8 +4363,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d2cd237c6b4d448671d4be0636a7637a41e85fc1",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ebf72feb35974bafcffe0294c1397bc0b89550f6",
         "old_path": "domain/Chat/src/Support/DockProjection.php",
         "old_class": "Domain\\Chat\\Support\\DockProjection",
         "final_path": "domain/Chat/src/Support/DockProjection.php",
@@ -4332,8 +4382,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "38c05ec6533f7f8d349f0c7f874aff758717e6b0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "cadd669620140431b1f7e9695e8cad197beba8c9",
         "old_path": "domain/Chat/src/Support/DockRequests.php",
         "old_class": "Domain\\Chat\\Support\\DockRequests",
         "final_path": "domain/Chat/src/Support/DockRequests.php",
@@ -4351,8 +4401,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f7984bf5a99daa39efe0f6016e3c67b092dc8e3b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9ec60dda099090d2967cdbf33e66de03117ed348",
         "old_path": "domain/Chat/src/Support/PairChats.php",
         "old_class": "Domain\\Chat\\Support\\PairChats",
         "final_path": "domain/Chat/src/Support/PairChats.php",
@@ -4370,8 +4420,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "561c624c93fff3502b05e8dbe13ccdb30712d7e4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "56c2ab6e877709e9d22d9a190345afcb44e2c4a8",
         "old_path": "domain/Chat/src/Support/PinnableMessages.php",
         "old_class": "Domain\\Chat\\Support\\PinnableMessages",
         "final_path": "domain/Chat/src/Support/PinnableMessages.php",
@@ -4389,8 +4439,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "76b39af0ebfdedc84c5ad282d8c52e84f68e5122",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "62e89f132f9ca961433a264d24de5a306af8e465",
         "old_path": "domain/Chat/src/Support/PlacedSources.php",
         "old_class": "Domain\\Chat\\Support\\PlacedSources",
         "final_path": "domain/Chat/src/Support/PlacedSources.php",
@@ -4408,8 +4458,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0dfcb0cd6143af68545bdb2494e015fb9596bf2f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2d9242eae1a34a34681cc8a3078622e9c924daa5",
         "old_path": "domain/Chat/src/Support/RequestOutcomes.php",
         "old_class": "Domain\\Chat\\Support\\RequestOutcomes",
         "final_path": "domain/Chat/src/Support/RequestOutcomes.php",
@@ -4427,8 +4477,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1cf1aba38636a4f5762e809926280a95f6212deb",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "13b2f88741c18b0d1c5dd671ef22ea773129f957",
         "old_path": "domain/Chat/src/Support/SentMessageAnswer.php",
         "old_class": "Domain\\Chat\\Support\\SentMessageAnswer",
         "final_path": "domain/Chat/src/Support/SentMessageAnswer.php",
@@ -4446,7 +4496,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0a57d3490d4c92e765a12a59a8f401819f9155ac",
         "old_path": "domain/Chat/src/Values/DockResult.php",
         "old_class": "Domain\\Chat\\Values\\DockResult",

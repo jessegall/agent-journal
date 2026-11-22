@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Models;
 
-use App\Actors\Support\ActorIdentity;
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
 use App\Contracts\EventSource;
-use App\Contracts\Support\RaisesEvents;
-use App\Docking\Cards\DockIdentity;
-use App\Docking\Sources\DockDefinition;
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
+use App\Contracts\ReadableModel;
+use App\Support\ActorIdentity;
+use App\Support\Cards\DockIdentity;
+use App\Support\Sources\DockDefinition;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Events\DockChanged;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

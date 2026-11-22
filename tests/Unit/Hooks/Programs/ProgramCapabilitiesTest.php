@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Drivers;
 
-use App\Agents\Values\StackTarget;
-use App\Hooks\Decisions\Decision;
-use App\Hooks\Drivers\DriverCapabilities;
-use App\Hooks\Drivers\DriverReplies;
-use App\Hooks\Enums\RewriteSupport;
-use App\Hooks\Exceptions\UnsupportedHook;
-use App\Hooks\Inputs\Values\DriverToolInput;
-use App\Hooks\Stack\AgentStack;
-use App\Hooks\Stack\HookAnswer;
-use App\Hooks\States\AgentState;
-use App\Reflection\Support\ReflectedMethod;
-use App\Reflection\Support\Reflector;
+use App\Enums\RewriteSupport;
+use App\Exceptions\UnsupportedHook;
+use App\Support\Decisions\Decision;
+use App\Support\Drivers\DriverCapabilities;
+use App\Support\Drivers\DriverReplies;
+use App\Support\Inputs\Values\DriverToolInput;
+use App\Support\ReflectedMethod;
+use App\Support\Reflector;
+use App\Support\Stack\AgentStack;
+use App\Support\Stack\HookAnswer;
+use App\Support\States\AgentState;
+use App\Values\StackTarget;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\TestCase;
 

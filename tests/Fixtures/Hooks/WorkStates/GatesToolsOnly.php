@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\WorkStates;
 
-use App\Hooks\Decisions\Decision;
-use App\Hooks\Inputs\FileEditRequested;
-use App\Hooks\States\AgentState;
+use App\Support\Decisions\Decision;
+use App\Support\Inputs\FileEditRequested;
+use App\Support\States\AgentState;
 
 /**
  * A passive state that only gates file edits, which names no work record and owes no instruction.

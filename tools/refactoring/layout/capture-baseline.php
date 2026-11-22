@@ -11,10 +11,11 @@ declare(strict_types=1);
  *   php tools/refactoring/layout/capture-baseline.php
  */
 
-use App\Bus\Support\CommandName;
 use App\CoreApi;
-use App\Domains\Providers\DomainEventServiceProvider;
 use App\Mcp\Support\McpCatalogue;
+use App\Providers\DomainEventServiceProvider;
+use App\Support\CommandName;
+use App\Support\Reflector;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
@@ -69,9 +70,9 @@ $snapshots['artisan-signatures'] = sorted(array_keys(Artisan::all()));
 $snapshots['routes-normal'] = routesOf($app->make(Router::class));
 
 $catalogue = $app->make(McpCatalogue::class);
-$snapshots['mcp-tools'] = sorted(array_map(fn (string $tool) => \App\Reflection\Support\Reflector::of($tool)->newInstanceWithoutConstructor()->name(), $catalogue->toolClasses()));
+$snapshots['mcp-tools'] = sorted(array_map(fn (string $tool) => Reflector::of($tool)->newInstanceWithoutConstructor()->name(), $catalogue->toolClasses()));
 $snapshots['mcp-resources'] = sorted(array_map(
-    fn (string $resource) => \App\Reflection\Support\Reflector::of($resource)->newInstanceWithoutConstructor()->uri(),
+    fn (string $resource) => Reflector::of($resource)->newInstanceWithoutConstructor()->uri(),
     $catalogue->resourceClasses(),
 ));
 

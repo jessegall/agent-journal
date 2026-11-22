@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
-use Domain\Plans\Api\Events\PlanCancelled;
-use Domain\Plans\Api\Events\PlanFinished;
-use Domain\Plans\Api\Events\PlanProgressChanged;
-use Domain\Plans\Api\Events\PlanReviewDecided;
-use Domain\Plans\Api\Events\PlanReviewRequested;
-use Domain\Plans\Api\Events\PlanReviewWithdrawn;
-use Domain\Plans\Api\Events\PlanStarted;
+use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use Domain\Plans\Enums\PlanReviewState;
+use Domain\Plans\Events\PlanCancelled;
+use Domain\Plans\Events\PlanFinished;
+use Domain\Plans\Events\PlanProgressChanged;
+use Domain\Plans\Events\PlanReviewDecided;
+use Domain\Plans\Events\PlanReviewRequested;
+use Domain\Plans\Events\PlanReviewWithdrawn;
+use Domain\Plans\Events\PlanStarted;
 use Tests\Architecture\Support\EventRole;
 
 /**

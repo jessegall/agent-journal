@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Sharing\Exceptions\GatewayOpenFailed;
-use App\Sharing\Gateways\Tunler\TunlerGateway;
-use App\Sharing\Support\GatewayConfiguration;
-use App\Sharing\Support\GatewayEndpoint;
-use App\Sharing\Support\GatewayOperation;
-use App\Sharing\Support\GatewaySettings;
-use App\Sharing\Support\PublicAddresses;
+use App\Exceptions\GatewayOpenFailed;
+use App\Support\GatewayConfiguration;
+use App\Support\GatewayEndpoint;
+use App\Support\GatewayOperation;
+use App\Support\Gateways\Tunler\TunlerGateway;
+use App\Support\GatewaySettings;
+use App\Support\PublicAddresses;
 use Illuminate\Http\Client\Factory as HttpClient;
 use Illuminate\Http\Client\Request;
 use Illuminate\Process\Factory as Processes;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Mcp\Models;
 
-use App\Actors\Contracts\ActorVisibility;
-use App\Agents\Support\AgentContext;
-use App\Hooks\Models\Support\AgentSessionScope;
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Contracts\ActorVisibility;
+use App\Contracts\ReadableModel;
+use App\Models\Support\AgentSessionScope;
+use App\Support\AgentContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

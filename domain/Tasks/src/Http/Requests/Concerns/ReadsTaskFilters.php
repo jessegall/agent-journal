@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Http\Requests\Concerns;
 
+use Domain\Tasks\Data\TaskFiltersData;
 use Domain\Tasks\Enums\TaskHolderFilter;
 use Domain\Tasks\Enums\TaskState;
-use Domain\Tasks\Http\Data\TaskFiltersData;
 use Illuminate\Validation\Rule;
 
 /**

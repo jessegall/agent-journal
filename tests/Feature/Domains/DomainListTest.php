@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Domains\Providers\DomainEventServiceProvider;
-use App\Domains\Support\DomainEntry;
-use App\Domains\Support\DomainRegistry;
+use App\Providers\DomainEventServiceProvider;
+use App\Support\DomainEntry;
+use App\Support\DomainRegistry;
 use Domain\Documents\DocumentsDomain;
 use Domain\Tasks\TasksDomain;
 use Tests\TestCase;

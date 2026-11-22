@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
 use App\Contracts\EventSource;
-use App\Contracts\Support\RaisesEvents;
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
+use App\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Events\ReportJobLinked;
 use Domain\Helpers\Values\FiledReport;

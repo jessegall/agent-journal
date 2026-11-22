@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Domains\Support\DomainEntry;
-use App\Domains\Support\DomainRegistry;
+use App\Support\DomainEntry;
+use App\Support\DomainRegistry;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ModelTables;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use App\Http\Requests\Profiles\StartProfileMainRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;

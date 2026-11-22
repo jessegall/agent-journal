@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
-use App\Profiles\Enums\SignInOutcome;
-use App\Profiles\Values\SignInIdentity;
+use App\Enums\SignInOutcome;
+use App\Values\SignInIdentity;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

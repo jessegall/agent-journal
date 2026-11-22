@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Agents\Values\CommitObservation;
-use App\Agents\Values\WorkspaceFacts;
-use App\Connections\Enums\ChildRole;
-use App\Connections\Exceptions\ChildClaimRefused;
-use App\Connections\Models\ChildClaim;
-use App\Connections\Models\ProjectBinding;
+use App\Enums\ChildRole;
+use App\Exceptions\ChildClaimRefused;
+use App\Models\ChildClaim;
+use App\Models\ProjectBinding;
+use App\Values\CommitObservation;
+use App\Values\WorkspaceFacts;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;

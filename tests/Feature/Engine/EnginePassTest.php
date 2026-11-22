@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\DatabaseClock;
-use App\Bus\Support\OperationDeadline;
-use App\Engine\Contracts\MonotonicClock;
-use App\Engine\Support\EnginePass;
-use App\Engine\Support\EngineSettings;
-use App\Reads\Exceptions\RepeatedReadRefused;
-use App\Reads\Support\ScopedReadMeter;
+use App\Contracts\CurrentActor;
+use App\Contracts\MonotonicClock;
+use App\Enums\ActorType;
+use App\Exceptions\RepeatedReadRefused;
+use App\Support\DatabaseClock;
+use App\Support\EnginePass;
+use App\Support\EngineSettings;
+use App\Support\OperationDeadline;
+use App\Support\ScopedReadMeter;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;

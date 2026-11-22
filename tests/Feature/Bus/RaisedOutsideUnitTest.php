@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Bus\Exceptions\RaisedOutsideUnit;
-use App\Bus\Support\ActiveEventUnits;
-use App\Bus\Support\OutsideCommandAllowance;
+use App\Exceptions\RaisedOutsideUnit;
+use App\Support\ActiveEventUnits;
+use App\Support\OutsideCommandAllowance;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Contracts\RaisingRow;

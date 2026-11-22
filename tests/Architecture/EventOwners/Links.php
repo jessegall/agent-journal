@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Links\Events\LinksRemoved;
+use App\Events\LinksRemoved;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -15,7 +15,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Records/Support/LinkRemoval.php',
+            'app/Support/LinkRemoval.php',
         ],
     ],
 ];

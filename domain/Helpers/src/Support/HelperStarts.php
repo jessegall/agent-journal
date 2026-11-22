@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Agents\Contracts\StartRecordResolver;
-use App\Agents\Support\OwnerStartRequest;
-use App\Agents\Support\StartRecordDetails;
+use App\Contracts\StartRecordResolver;
+use App\Support\OwnerStartRequest;
+use App\Support\StartRecordDetails;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Models\HelperJob;
 

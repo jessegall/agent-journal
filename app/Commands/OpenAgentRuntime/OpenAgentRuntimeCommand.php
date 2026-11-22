@@ -1,0 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Commands\OpenAgentRuntime;
+
+use App\Attributes\Authorize;
+use App\Contracts\AgentStartCommand;
+use App\Enums\AccessType;
+use App\Enums\DriverVariant;
+use App\Policies\AgentPolicy;
+use App\Support\Command;
+use App\Support\OpenedRuntime;
+
+/**
+ * Opens a runtime for an agent on an enrolled host: a user may pick any host and permitted folder, an agent only
+ * opens a child on its own session's host inside its own folder. One commit holds the session, the runtime in
+ * Starting and the first delivery (doc 40, section 11).
+ *
+ * @extends Command<OpenedRuntime>
+ */
+#[Authorize(AgentPolicy::class, AccessType::Create)]
+final readonly class OpenAgentRuntimeCommand extends Command implements AgentStartCommand
+{
+    public function __construct(
+        public string $agentId,
+        public string $hostId,
+        public string $folder,
+        public string $driver,
+        public string $driverBuild,
+        public string $profile,
+        public DriverVariant $variant,
+        public string|null $model = null,
+        public string|null $effort = null,
+        public string|null $firstMessage = null,
+        public bool $saveVariant = false,
+    ) {}
+
+    public function startedAgentId(): string
+    {
+        return $this->agentId;
+    }
+}

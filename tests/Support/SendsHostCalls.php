@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\AgentRequests\Support\SignedCall;
-use App\Agents\Commands\EnrollHost\EnrollHostCommand;
-use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Support\EnrolledHost;
-use App\Bus\Contracts\Command;
+use App\Commands\EnrollHost\EnrollHostCommand;
+use App\Contracts\Command;
+use App\Enums\HostProtocolVersion;
+use App\Support\EnrolledHost;
+use App\Support\SignedCall;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

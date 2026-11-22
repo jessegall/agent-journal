@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models\Concerns;
 
-use App\Queries\Support\TextSearch;
+use App\Support\TextSearch;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 

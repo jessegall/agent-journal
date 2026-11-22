@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Contracts\ConversationResolver;
-use App\Communication\Contracts\InboxResolver;
-use App\Communication\Data\InboxView;
-use App\Communication\Enums\LeaveReason;
-use App\Communication\Exceptions\InboxUnavailable;
-use App\Communication\Support\ChatInboxes;
-use App\Communication\Support\InboxIntervals;
-use App\Communication\Support\RegisteredInboxes;
+use App\Contracts\ConversationResolver;
+use App\Contracts\InboxResolver;
+use App\Data\InboxView;
+use App\Enums\LeaveReason;
+use App\Exceptions\InboxUnavailable;
+use App\Support\ActorContext;
+use App\Support\ActorIdentity;
+use App\Support\ChatInboxes;
+use App\Support\InboxIntervals;
+use App\Support\RegisteredInboxes;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\OpensPairChats;

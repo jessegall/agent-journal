@@ -1,27 +1,14 @@
 {
-    "app/AgentRequests/Console/GenerateCallsCommand.php": {
-        "hash": "74242c775e37c88bcd90289a67c900650e23356a1cbaaa0363088b5ea0236d79",
-        "methods": [
-            "handle"
-        ]
-    },
-    "app/AgentRequests/Support/CallGroups.php": {
-        "hash": "862162ab6da5042bd0810c021dc64673b6268ad81f3a4c47790cdd7631ae34f8",
-        "methods": [
-            "__construct",
-            "__construct"
-        ]
-    },
-    "app/Agents/Calls/AgentCalls.php": {
-        "hash": "df3b680290c22d51e29f8e7b880b515a8389da392086ac6a54b70f8b4db34a7c",
+    "app/Calls/Agents/AgentCalls.php": {
+        "hash": "850d6131fbd730f766ceb4bf9e7ab232688623c84bdf336494fd0e6dbaa59f01",
         "methods": [
             "__construct",
             "recordHeartbeat",
             "retireAgent"
         ]
     },
-    "app/Assignments/Calls/AssignmentCalls.php": {
-        "hash": "3e11313cf80205b9651094e4c1447bf730243e254fac9f2c528ee7cdc8de8278",
+    "app/Calls/Assignments/AssignmentCalls.php": {
+        "hash": "ae287986fadc552717becad67ccb34418a1b3816cb16edf9b2897c27de8bc9fb",
         "methods": [
             "__construct",
             "assignRecord",
@@ -36,14 +23,8 @@
             "unassignRecord"
         ]
     },
-    "app/Client/Support/JournalClient.php": {
-        "hash": "bd8306b529add9b4a73ae25be134d9bc02463447bf183a8e401c52e2bd0d87b0",
-        "methods": [
-            "__construct"
-        ]
-    },
-    "app/Comments/Calls/CommentCalls.php": {
-        "hash": "e54a22f1d493fcc87969ed286266021d6a059a92d58559c24c60d0f0dc7a6564",
+    "app/Calls/Comments/CommentCalls.php": {
+        "hash": "9c8197c39e1175e93f473662da8f609ab1a6951063f2a2285bb143147c9dd68e",
         "methods": [
             "__construct",
             "listComments",
@@ -51,8 +32,8 @@
             "postComment"
         ]
     },
-    "app/Communication/Calls/CommunicationCalls.php": {
-        "hash": "516d399686e9234332043400ad1039ca4faa872b4b4dfdf547cc60387d86030b",
+    "app/Calls/Communication/CommunicationCalls.php": {
+        "hash": "13c8d6d0aaf4f31978ae4fcee72c2cadbadceeca92b12cde03c87632499fa3a1",
         "methods": [
             "__construct",
             "acknowledgePresentation",
@@ -81,8 +62,8 @@
             "takeNextMessages"
         ]
     },
-    "app/Connections/Calls/ConnectionCalls.php": {
-        "hash": "ea365b33f8bff6e4ea670a706cfec5d807e576c4589846e7a04306e1fca27ad1",
+    "app/Calls/Connections/ConnectionCalls.php": {
+        "hash": "eff76616886f072011caccc2c280c6366d848ff72e1f312b3beac32dd278d3cf",
         "methods": [
             "__construct",
             "cancelProjectCommand",
@@ -90,8 +71,8 @@
             "runProjectCommand"
         ]
     },
-    "app/Processes/Calls/ProcessCalls.php": {
-        "hash": "0516482a977b320398274cd0f2ddcc50d5a0cd7d381005d0f4b79c6797e40cc7",
+    "app/Calls/Processes/ProcessCalls.php": {
+        "hash": "2246d889adf095ba70663d431b89ac1ed52bd7cced1ab64ffea6857145f98ac8",
         "methods": [
             "__construct",
             "admitLine",
@@ -124,16 +105,16 @@
             "withdrawProposal"
         ]
     },
-    "app/Records/Calls/RecordCalls.php": {
-        "hash": "82f7462b23ce97553e2d0b71253883d716398b9183599c6580db6df3820e258b",
+    "app/Calls/Records/RecordCalls.php": {
+        "hash": "0344169c1393df3aa86cd643183ea4d99638de25936f228d7e9be01008e791c4",
         "methods": [
             "__construct",
             "addLink",
             "removeLink"
         ]
     },
-    "app/Scripts/Calls/ScriptCalls.php": {
-        "hash": "d1d97b3f55a43a960f68437883f94fed8ec3616f316d0be7dfed4cc44f837d30",
+    "app/Calls/Scripts/ScriptCalls.php": {
+        "hash": "58180911ebb3d65c82130f1f8fe377903ffbe56d3b246baa29bb8aa8fdb19597",
         "methods": [
             "__construct",
             "checkProfileScript",
@@ -143,16 +124,16 @@
             "showProfileRun"
         ]
     },
-    "app/Sharing/Calls/SharingCalls.php": {
-        "hash": "e300930a650accc7764bf6e9ab2689071bac12cc68d7da1a5e5085701d5494d8",
+    "app/Calls/Sharing/SharingCalls.php": {
+        "hash": "e276159fc2905349f4c6b6be8e04bc280fc86245ef8c2e4a02e4a0a777b67613",
         "methods": [
             "__construct",
             "requestShare",
             "shareStatus"
         ]
     },
-    "app/Supervision/Calls/SupervisionCalls.php": {
-        "hash": "5f9fbca7c0cad13a10f30a131c613f1a420940c06295c2ddf5d6f657112464db",
+    "app/Calls/Supervision/SupervisionCalls.php": {
+        "hash": "077bd05a80cba8cdb4eb48e00824dc909a2b5e96dc5594190eec29ad9125d2eb",
         "methods": [
             "__construct",
             "listAsks",
@@ -162,8 +143,8 @@
             "withdrawAsk"
         ]
     },
-    "app/Text/Calls/TextCalls.php": {
-        "hash": "15cac76e2b2b5ecca9a394c6f5d1628b29abbbe9f5b8015d13f2bb291ea936f6",
+    "app/Calls/Text/TextCalls.php": {
+        "hash": "ce882b135795c78b77fb297f3b52e94b787cc8cbf5b083dd01a085aa870780ce",
         "methods": [
             "__construct",
             "listTextSections",
@@ -171,8 +152,27 @@
             "readTextVersion"
         ]
     },
+    "app/Console/Commands/GenerateCallsCommand.php": {
+        "hash": "58187618c464da60f81afdf0577990afd66c0908aef5e7bf61ee2e5e01776a49",
+        "methods": [
+            "handle"
+        ]
+    },
+    "app/Support/CallGroups.php": {
+        "hash": "097bb430b71970f644ab5b18c3a02ec2788cc26b83203a90e4ba151ab2617348",
+        "methods": [
+            "__construct",
+            "__construct"
+        ]
+    },
+    "app/Support/JournalClient.php": {
+        "hash": "5a77044605dfe45dd0b865ab44309a3a9daf762f712071c93208c298fe122695",
+        "methods": [
+            "__construct"
+        ]
+    },
     "domain/Chat/src/Calls/ChatCalls.php": {
-        "hash": "afcdb50c9cadb26e405ed1ecf8dfcecae9a05fa2d7baf9a2ec738fd05d7451d7",
+        "hash": "92d90f3589d9b71a098652884071ba50e348f320ba36a92f4f95a9ac090dcff1",
         "methods": [
             "__construct",
             "dockAdd",
@@ -181,7 +181,7 @@
         ]
     },
     "domain/Documents/src/Calls/DocumentCalls.php": {
-        "hash": "327cc960db51087d6612baaddc82f5ed8ce962e2d89343750a3aa47001266bf2",
+        "hash": "3b0a9c611a730cc09ac6c81fb6163ae1c21318962b444717144605f6ae090c38",
         "methods": [
             "__construct",
             "closeDocument",
@@ -206,7 +206,7 @@
         ]
     },
     "domain/Helpers/src/Calls/HelperCalls.php": {
-        "hash": "090711c39edd7521bcefec5a1c694e56ab6dade4f10452abe4ff1323bafb7b21",
+        "hash": "790946dcbb19b2d17ff2fffa42be31f9b6d067aa228b8a8b0ce1af326c910fb0",
         "methods": [
             "__construct",
             "cancelHelperJob",
@@ -218,7 +218,7 @@
         ]
     },
     "domain/Memory/src/Calls/MemoryCalls.php": {
-        "hash": "3df69635b8ef6b574f50fd118d2c3c93eec905388c249efc76b9fd67db0e7b3c",
+        "hash": "5d4cab962d46ec33b7cea22f0263b7721f986c8a133d40237ca37891165d0ebf",
         "methods": [
             "__construct",
             "editMemory",
@@ -228,7 +228,7 @@
         ]
     },
     "domain/Plans/src/Calls/PlanCalls.php": {
-        "hash": "5ebec632348931e60dc0b0d4c8876df32a247d792189cdbd1f1683c479e4dc17",
+        "hash": "01b72b069b948728f7a5f707116a39a0c89c8e51c8a50c15c26617ca9205e60e",
         "methods": [
             "__construct",
             "addPhase",
@@ -246,7 +246,7 @@
         ]
     },
     "domain/Tasks/src/Calls/TaskCalls.php": {
-        "hash": "a9abbb4840cc1e023e20b8028ccc7b907d6b991d558bb76967e2bd016bd6c466",
+        "hash": "0dd890d12a986adfddf39dccb7d0ec5143f1b5bcd987e6d43811553fbbbe336e",
         "methods": [
             "__construct",
             "createTask",

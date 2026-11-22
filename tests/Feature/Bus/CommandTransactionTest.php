@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\CommandRefused;
-use App\Bus\Exceptions\CommandTransactionMismatch;
-use App\Bus\Exceptions\ExplicitTransactionInCommand;
-use App\Bus\Exceptions\NestedCommandFailureIgnored;
-use App\Hooks\Support\StackTransaction;
+use App\Contracts\CommandBus;
+use App\Exceptions\CommandRefused;
+use App\Exceptions\CommandTransactionMismatch;
+use App\Exceptions\ExplicitTransactionInCommand;
+use App\Exceptions\NestedCommandFailureIgnored;
+use App\Support\StackTransaction;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Modules\Notes\Commands\CopyNote\CopyNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote\IgnoreFailedNoteCommand;

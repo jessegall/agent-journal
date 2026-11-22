@@ -20,8 +20,8 @@ use Tests\Support\ScanCache\FileScan;
 final readonly class AssignmentWriteScan implements FileScan
 {
     public const array MODELS = [
-        'App\\Assignments\\Models\\AssignmentRecord',
-        'App\\Assignments\\Models\\ClaimAuthorization',
+        'App\\Models\\AssignmentRecord',
+        'App\\Models\\ClaimAuthorization',
     ];
 
     /**

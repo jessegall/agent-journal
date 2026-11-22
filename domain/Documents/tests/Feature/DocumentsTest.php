@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\CommandInputInvalid;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\CommandBus;
+use App\Exceptions\CommandInputInvalid;
+use App\Support\RecordIdentity;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Contracts\DocumentResolver;

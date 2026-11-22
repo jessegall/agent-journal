@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Agents\Support\AgentContext;
-use App\Agents\Values\StackTarget;
-use App\Reflection\Enums\TypeShape;
-use App\Reflection\Support\DeclaredType;
-use App\Reflection\Support\ReflectedMethod;
-use App\Reflection\Support\ReflectedParameter;
-use App\Reflection\Support\Reflector;
+use App\Enums\TypeShape;
+use App\Support\AgentContext;
+use App\Support\DeclaredType;
+use App\Support\ReflectedMethod;
+use App\Support\ReflectedParameter;
+use App\Support\Reflector;
+use App\Values\StackTarget;
 use PhpOption\Option;
 use Tests\Architecture\Support\Exceptions\FileDeclaresNoClass;
 

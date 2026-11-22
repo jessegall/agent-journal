@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\Assignment;
-use App\Assignments\Support\ProvedClaims;
-use App\Communication\Commands\AskMessage\AskMessageCommand;
-use App\Communication\Commands\SendMessage\SendMessageCommand;
-use App\Communication\Models\Message;
+use App\Commands\AskMessage\AskMessageCommand;
+use App\Commands\SendMessage\SendMessageCommand;
+use App\Enums\ActorType;
+use App\Models\Agent;
+use App\Models\AgentSession;
+use App\Models\Message;
+use App\Support\ActorIdentity;
+use App\Support\AssigneeIdentity;
+use App\Support\Assignment;
+use App\Support\ProvedClaims;
+use App\Support\StartSessions;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestSelections;

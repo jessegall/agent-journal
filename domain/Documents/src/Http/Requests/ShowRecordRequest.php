@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Requests;
 
-use App\Numbers\Support\RecordReference;
-use App\Text\Support\TextSelection;
+use App\Support\RecordReference;
+use App\Support\TextSelection;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

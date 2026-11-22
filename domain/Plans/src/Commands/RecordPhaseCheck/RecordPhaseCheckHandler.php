@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\RecordPhaseCheck;
 
-use App\Actors\Support\ActorIdentity;
-use App\Processes\Contracts\ResultReceipts;
-use App\Processes\Enums\AssessmentOutcome;
+use App\Contracts\ResultReceipts;
+use App\Enums\AssessmentOutcome;
+use App\Support\ActorIdentity;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Exceptions\PhaseCheckRefused;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseCheck;
-use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Values\TaskSummary;
 
 /**
  * Accepts a check result for a phase only through Core's one result gate: a current receipt (never an evidence run,

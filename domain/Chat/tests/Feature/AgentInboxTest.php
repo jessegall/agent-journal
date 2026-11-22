@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Contracts\RequestSource;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Communication\Contracts\AgentMessageReader;
-use App\Communication\Enums\AgentInboxState;
-use App\Communication\Exceptions\MessageMissing;
-use App\Communication\Models\Message;
-use App\Reads\Enums\ReadView;
+use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Contracts\AgentMessageReader;
+use App\Contracts\RequestSource;
+use App\Enums\AgentInboxState;
+use App\Enums\ReadView;
+use App\Exceptions\MessageMissing;
+use App\Models\Agent;
+use App\Models\AgentSession;
+use App\Models\Message;
+use App\Support\ActorIdentity;
+use App\Support\StartSessions;
 use Domain\Chat\Tests\TestCase;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestSelections;

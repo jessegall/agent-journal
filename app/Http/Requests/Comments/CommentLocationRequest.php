@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Comments;
 
 use App\Http\Requests\RecordTargetRequest;
-use App\Text\Support\TextSelection;
+use App\Support\TextSelection;
 
 /**
  * Where one comment of a record points, with an optional span of lines to read instead of the default window.

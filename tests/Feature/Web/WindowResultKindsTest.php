@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Actors\Support\ActorStore;
-use App\Domains\Support\DomainEntry;
-use App\Ui\Contracts\PageResolver;
-use App\Ui\Declarations\ResolverDefinition;
-use App\Ui\Enums\LayoutTag;
-use App\Ui\Exceptions\LayoutRefused;
-use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\LayoutPartData;
-use App\Web\Data\FailedWindow;
-use App\Web\Exceptions\PrivateRecordMissing;
-use App\Web\Support\WindowResults;
+use App\Contracts\PageResolver;
+use App\Data\FailedWindow;
+use App\Declarations\ResolverDefinition;
+use App\Enums\LayoutTag;
+use App\Exceptions\LayoutRefused;
+use App\Exceptions\PrivateRecordMissing;
+use App\Support\ActorStore;
+use App\Support\DomainEntry;
+use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\LayoutPartData;
+use App\Support\WindowResults;
 use Closure;
 use Psr\Log\LoggerInterface;
 use RuntimeException;

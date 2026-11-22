@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
-use Domain\Plans\Api\PlanFilters;
-use Domain\Plans\Api\PlanProgress;
+use App\Contracts\CommandBus;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
+use Domain\Plans\Values\PlanFilters;
+use Domain\Plans\Values\PlanProgress;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
-use App\Agents\Contracts\HostCapabilities;
-use App\Agents\Enums\CapabilityStatusType;
-use App\Agents\Support\HostCapability;
-use App\Agents\Support\HostCapabilityQuery;
+use App\Contracts\HostCapabilities;
+use App\Enums\CapabilityStatusType;
+use App\Support\HostCapability;
+use App\Support\HostCapabilityQuery;
 
 trait HasContainerSupport
 {

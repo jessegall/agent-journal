@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
-use App\Assignments\Contracts\AssignmentTransaction;
-use App\Bus\Models\CommandReceipt;
-use App\Bus\Support\ReceiptCaller;
-use App\Bus\Support\ReceiptRetention;
-use App\Communication\Models\Message;
-use App\Communication\Support\AcceptedOperation;
-use App\Communication\Support\MessageBody;
-use App\Communication\Support\MessageEnvelope;
-use App\Desks\Contracts\ActorDesks;
-use App\Desks\Models\DeskRecord;
-use App\Desks\Support\DeskOpening;
+use App\Contracts\ActorDesks;
+use App\Contracts\AssignmentTransaction;
+use App\Models\CommandReceipt;
+use App\Models\DeskRecord;
+use App\Models\Message;
+use App\Support\AcceptedOperation;
+use App\Support\ActorContext;
+use App\Support\ActorIdentity;
+use App\Support\DeskOpening;
+use App\Support\MessageBody;
+use App\Support\MessageEnvelope;
+use App\Support\ReceiptCaller;
+use App\Support\ReceiptRetention;
 use stdClass;
 
 /**

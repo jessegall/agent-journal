@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Pipelines;
 
-use App\Pipelines\Contracts\PipelineDefinition;
-use App\Pipelines\Support\Step;
+use App\Contracts\PipelineDefinition;
+use App\Support\Step;
 
 /**
  * A fixture pipeline with steps listed inline: it drops all words but the last, one each round, then counts what is

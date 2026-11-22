@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers;
 
-use App\Bus\Contracts\CommandBus;
-use App\Records\Contracts\RecordResolver;
+use App\Contracts\CommandBus;
+use App\Contracts\RecordResolver;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Http\Requests\CreateRecordRequest;
 use Illuminate\Http\RedirectResponse;

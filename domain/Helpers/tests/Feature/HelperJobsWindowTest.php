@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Models\Agent;
-use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\LayoutPartData;
+use App\Models\Agent;
+use App\Support\ActorIdentity;
+use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\LayoutPartData;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperPurpose;

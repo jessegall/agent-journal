@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Feature\Http;
 
-use App\Actors\Support\ActorContext;
+use App\Support\ActorContext;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Rules\Enums\RuleState;

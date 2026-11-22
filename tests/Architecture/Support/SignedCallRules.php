@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\AgentRequests\Contracts\JournalCall;
-use App\AgentRequests\Enums\CallEffect;
-use App\AgentRequests\Support\CallDeclaration;
-use App\Reflection\Support\DeclaredType;
-use App\Reflection\Support\Reflector;
+use App\Contracts\JournalCall;
+use App\Enums\CallEffect;
+use App\Support\CallDeclaration;
+use App\Support\DeclaredType;
+use App\Support\Reflector;
 use PhpOption\Option;
 
 /**

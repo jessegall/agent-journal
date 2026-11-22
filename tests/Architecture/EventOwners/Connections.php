@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-use App\Connections\Enums\BindingReadiness;
-use App\Connections\Events\BindingStartRecorded;
-use App\Connections\Events\EnvironmentOpened;
-use App\Connections\Events\InstallAttemptCancelled;
-use App\Connections\Events\InstallAttemptOpened;
-use App\Connections\Events\InstallAttemptReplaced;
-use App\Connections\Events\InstallAttemptSpent;
-use App\Connections\Events\ProjectBindingCreated;
-use App\Connections\Events\ProjectBindingEnvironmentAssigned;
-use App\Connections\Events\ProjectBindingReadinessChanged;
-use App\Connections\Events\ProjectBindingRevoked;
-use App\Connections\Events\ProjectCreated;
-use App\Connections\Events\ProjectInvitationIssued;
-use App\Connections\Events\ProjectInvitationRevoked;
-use App\Connections\Events\ProjectInvitationSpent;
+use App\Enums\BindingReadiness;
+use App\Events\BindingStartRecorded;
+use App\Events\EnvironmentOpened;
+use App\Events\InstallAttemptCancelled;
+use App\Events\InstallAttemptOpened;
+use App\Events\InstallAttemptReplaced;
+use App\Events\InstallAttemptSpent;
+use App\Events\ProjectBindingCreated;
+use App\Events\ProjectBindingEnvironmentAssigned;
+use App\Events\ProjectBindingReadinessChanged;
+use App\Events\ProjectBindingRevoked;
+use App\Events\ProjectCreated;
+use App\Events\ProjectInvitationIssued;
+use App\Events\ProjectInvitationRevoked;
+use App\Events\ProjectInvitationSpent;
 use Tests\Architecture\Support\EventRole;
 
 /**

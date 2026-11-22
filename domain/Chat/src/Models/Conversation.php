@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Models;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Support\ChatInboxes;
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Contracts\ReadableModel;
+use App\Enums\ActorType;
+use App\Support\ActorIdentity;
+use App\Support\ChatInboxes;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Enums\ConversationState;
 use Domain\Chat\Exceptions\ConversationUnavailable;

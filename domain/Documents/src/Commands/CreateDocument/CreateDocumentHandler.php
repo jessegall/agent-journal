@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\CreateDocument;
 
-use App\Agents\Contracts\SessionProvenance;
-use App\Records\Contracts\RecordLinker;
-use App\Text\Support\MarkdownText;
-use Domain\Documents\Api\CreatedRecord;
+use App\Contracts\RecordLinker;
+use App\Contracts\SessionProvenance;
+use App\Support\MarkdownText;
 use Domain\Documents\Commands\Support\DocumentCommandHandler;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Support\DocumentBody;
+use Domain\Documents\Values\CreatedRecord;
 
 final readonly class CreateDocumentHandler extends DocumentCommandHandler
 {

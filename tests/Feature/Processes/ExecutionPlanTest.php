@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Enums\StepType;
-use App\Processes\Exceptions\ExecutionPlanRefused;
-use App\Processes\Support\ExecutionPlanner;
-use App\Processes\Syntax\TreeParser;
-use App\Processes\Values\ExecutionContext;
-use App\Processes\Values\ExecutionPlan;
-use App\Processes\Values\PlanWord;
+use App\Contracts\CommandClassifier;
+use App\Enums\ShellDialect;
+use App\Enums\StepType;
+use App\Exceptions\ExecutionPlanRefused;
+use App\Support\ExecutionPlanner;
+use App\Support\Syntax\TreeParser;
+use App\Values\ExecutionContext;
+use App\Values\ExecutionPlan;
+use App\Values\PlanWord;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 

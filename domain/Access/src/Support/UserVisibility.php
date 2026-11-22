@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Actors\Contracts\ActorVisibilityProvider;
+use App\Contracts\ActorVisibilityProvider;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;

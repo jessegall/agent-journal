@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use Domain\Tasks\Api\TaskProofPage;
 use Domain\Tasks\Contracts\TaskProofResolver;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Models\TaskCheck;
+use Domain\Tasks\Values\TaskProofPage;
 
 /**
  * Reads a task's proofs a page at a time for a caller who may read the task, newest first by id, one more row than

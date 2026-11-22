@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Mcp\Support\McpCatalogue;
-use App\Reflection\Support\Reflector;
+use App\Support\Reflector;
 use Tests\TestCase;
 
 /**

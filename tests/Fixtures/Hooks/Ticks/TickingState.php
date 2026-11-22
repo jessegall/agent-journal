@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Ticks;
 
-use App\Hooks\Contracts\TickableState;
-use App\Hooks\References\StateReference;
-use App\Hooks\References\SubjectReference;
-use App\Hooks\States\AgentState;
-use App\Hooks\Ticks\TickCommands;
-use App\Hooks\Ticks\TickContext;
+use App\Contracts\TickableState;
+use App\Support\References\StateReference;
+use App\Support\References\SubjectReference;
+use App\Support\States\AgentState;
+use App\Support\Ticks\TickCommands;
+use App\Support\Ticks\TickContext;
 
 /**
  * A fixture state that ticks and asks for nothing; a test says whether its work is done.

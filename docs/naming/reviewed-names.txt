@@ -1737,6 +1737,7 @@ class	AgentMessageCard
 class	AgentMessageDelivery
 class	AgentMessageDetails
 class	AgentMessages
+class	AgentNavigationRecords
 class	AgentNotAvailable
 class	AgentOption
 class	AgentOptionData
@@ -2764,7 +2765,6 @@ class	DeskSeatEvidence
 class	DeskSeatProvider
 class	DeskSeating
 class	DeskUnavailable
-class	DesksSeeder
 class	DesksServiceProvider
 class	DestinationArgument
 class	DestinationEncoder
@@ -3182,6 +3182,7 @@ class	ExplanationData
 class	Explanations
 class	ExplicitTransactionInCommand
 class	ExportBuilder
+class	ExportValidator
 class	Exports
 class	FailDriverSwitchLaunchCommand
 class	FailDriverSwitchLaunchHandler
@@ -4004,7 +4005,6 @@ class	NavigationProofRefused
 class	NavigationRaiseAnswer
 class	NavigationRaiseData
 class	NavigationRaiseRefused
-class	NavigationRecords
 class	NavigationRequest
 class	NavigationRequestProvider
 class	NavigationRound
@@ -4086,7 +4086,6 @@ class	NumberedModelUndeclared
 class	NumberedPage
 class	NumberedPageContent
 class	NumberedTypeRegistry
-class	NumbersSeeder
 class	NumbersServiceProvider
 class	ObjectDefinition
 class	ObjectMember
@@ -6719,6 +6718,7 @@ class	TunlerStatusData
 class	TunlerStatusUnreadable
 class	TurnReportController
 class	TypeNotNamed
+class	TypeOwnerRepeated
 class	TypeOwners
 class	TypeScriptServiceProvider
 class	TypedSecret
@@ -6845,6 +6845,7 @@ class	WalkStep
 class	WalkedCall
 class	WatchedRuntime
 class	WatchedRuntimes
+class	WebNavigationRecords
 class	WebPages
 class	WebServiceProvider
 class	WindowResults
@@ -7101,7 +7102,6 @@ constant	ContractSnapshot::PATH
 constant	Conversation::CHAT_INBOX_PROVIDER
 constant	CoreMcpTools::ORIENTATION_RESOURCES
 constant	CoreMcpTools::ORIENTATION_TOOLS
-constant	CoreServiceProvider::AREAS
 constant	CoreSkills::OWNER
 constant	CreateDocumentCommand::MOST_LINKS
 constant	CreateReportCommand::MOST_LINKS
@@ -7227,7 +7227,7 @@ constant	ExpireNavigationRequestsCommand::MAINTENANCE_SCOPE
 constant	ExpireSharesHandler::MOST_PER_RUN
 constant	ExplainCommandController::NOTICE
 constant	Explanations::SNIPPET_BYTES
-constant	Exports::CORE_SUPPORT
+constant	ExportValidator::CORE_SUPPORT
 constant	FailedWindow::MESSAGE
 constant	FileChange::DECLARATION_REVISION
 constant	FileChange::SURFACE
@@ -7345,7 +7345,6 @@ constant	McpCatalogue::SNAKE_CASE
 constant	McpInstructions::TOOLS
 constant	McpInstructions::USER_ONLY
 constant	McpServiceProvider::CALLS_PER_MINUTE
-constant	McpToolDirectory::FLAT_ROOT_OWNERS
 constant	MeasureReads::SECRET_PATH
 constant	Memory::HEAVIEST
 constant	Memory::LIGHTEST
@@ -8647,6 +8646,7 @@ interface	TickSubjectLocks
 interface	TickableState
 interface	TickableStateLoader
 interface	ToolDiscovery
+interface	TypeProvider
 interface	TypeReflections
 interface	UiOwnerAvailability
 interface	UnitOwner
@@ -9369,6 +9369,13 @@ method	AgentMessages::reader()
 method	AgentMessages::search()
 method	AgentMessages::selected()
 method	AgentMessages::source()
+method	AgentNavigationRecords::__construct()
+method	AgentNavigationRecords::menuEntries()
+method	AgentNavigationRecords::menuEntry()
+method	AgentNavigationRecords::menuEntryCount()
+method	AgentNavigationRecords::menuQuery()
+method	AgentNavigationRecords::navigationRequest()
+method	AgentNavigationRecords::staleHint()
 method	AgentNotAvailable::forAgent()
 method	AgentNotAvailable::refusalCode()
 method	AgentNotAvailable::status()
@@ -12203,6 +12210,7 @@ method	ConnectionsOwnerCheck::allows()
 method	ConnectionsPages::declarations()
 method	ConnectionsPages::navigation()
 method	ConnectionsPages::pages()
+method	ConnectionsPages::types()
 method	ConnectionsPolicy::model()
 method	ConnectionsServiceProvider::boot()
 method	ConnectionsServiceProvider::register()
@@ -12657,7 +12665,6 @@ method	DeclaredReads::declare()
 method	DeclaredReads::of()
 method	DeclaredRouteKey::of()
 method	DeclaredRoutes::__construct()
-method	DeclaredRoutes::ownedBy()
 method	DeclaredRoutes::prefixes()
 method	DeclaredRoutes::refuseTakenPrefixes()
 method	DeclaredRoutes::register()
@@ -12800,7 +12807,6 @@ method	DeskUnavailable::forId()
 method	DeskUnavailable::forSeat()
 method	DeskUnavailable::refusalCode()
 method	DeskUnavailable::status()
-method	DesksSeeder::run()
 method	DesksServiceProvider::boot()
 method	DesksServiceProvider::register()
 method	DestinationArgument::__construct()
@@ -13443,6 +13449,7 @@ method	DomainUi::componentFile()
 method	DomainUi::declaring()
 method	DomainUi::fullKey()
 method	DomainUi::of()
+method	DomainUi::owns()
 method	DomainUi::presentationFile()
 method	DomainUi::presentationName()
 method	DomainUi::uri()
@@ -14287,13 +14294,18 @@ method	ExportBuilder::make()
 method	ExportBuilder::plainList()
 method	ExportBuilder::support()
 method	ExportBuilder::values()
+method	ExportValidator::__construct()
+method	ExportValidator::check()
+method	ExportValidator::command()
+method	ExportValidator::contract()
+method	ExportValidator::event()
+method	ExportValidator::exception()
+method	ExportValidator::ownType()
+method	ExportValidator::reasonNotAValue()
+method	ExportValidator::support()
+method	ExportValidator::value()
 method	Exports::__construct()
 method	Exports::all()
-method	Exports::check()
-method	Exports::command()
-method	Exports::contract()
-method	Exports::event()
-method	Exports::exception()
 method	Exports::has()
 method	Exports::hasCommand()
 method	Exports::hasEvent()
@@ -14301,10 +14313,6 @@ method	Exports::listHolds()
 method	Exports::make()
 method	Exports::normalized()
 method	Exports::of()
-method	Exports::ownType()
-method	Exports::reasonNotAValue()
-method	Exports::support()
-method	Exports::value()
 method	FactOrigin::reference()
 method	FactStaging::deliver()
 method	FactStaging::stage()
@@ -16975,20 +16983,8 @@ method	NavigationReader::menuEntries()
 method	NavigationReader::menuEntry()
 method	NavigationReader::menuEntryCount()
 method	NavigationReader::navigationRequest()
-method	NavigationRecords::__construct()
 method	NavigationRecords::counts()
-method	NavigationRecords::current()
-method	NavigationRecords::itemData()
-method	NavigationRecords::matchScore()
-method	NavigationRecords::menuEntries()
-method	NavigationRecords::menuEntry()
-method	NavigationRecords::menuEntryCount()
-method	NavigationRecords::menuQuery()
-method	NavigationRecords::navigationRequest()
-method	NavigationRecords::outranks()
-method	NavigationRecords::staleHint()
 method	NavigationRecords::tree()
-method	NavigationRecords::urlOf()
 method	NavigationRequest::abandon()
 method	NavigationRequest::answer()
 method	NavigationRequest::assignmentIdentity()
@@ -17234,7 +17230,6 @@ method	NumberedPageContent::__construct()
 method	NumberedPages::answer()
 method	NumberedTypeRegistry::assertNumbered()
 method	NumberedTypeRegistry::checkDeclarations()
-method	NumbersSeeder::run()
 method	NumbersServiceProvider::boot()
 method	NumbersServiceProvider::register()
 method	ObjectDefinition::__construct()
@@ -18488,6 +18483,7 @@ method	ProcessPages::requestPage()
 method	ProcessPages::runOutcomePage()
 method	ProcessPages::runPage()
 method	ProcessPages::runsPage()
+method	ProcessPages::types()
 method	ProcessPolicy::model()
 method	ProcessReconcileCommand::handle()
 method	ProcessRestoreCheckCommand::handle()
@@ -18811,6 +18807,7 @@ method	ProfilesPages::nativeParts()
 method	ProfilesPages::navigation()
 method	ProfilesPages::pages()
 method	ProfilesPages::sections()
+method	ProfilesPages::types()
 method	ProfilesServiceProvider::boot()
 method	ProfilesServiceProvider::register()
 method	ProfilesServiceProvider::scopeAccountsToOwner()
@@ -21783,6 +21780,7 @@ method	ScriptSyntaxError::at()
 method	ScriptTrigger::policy()
 method	ScriptsPages::declarations()
 method	ScriptsPages::pages()
+method	ScriptsPages::types()
 method	ScriptsServiceProvider::boot()
 method	ScriptsServiceProvider::register()
 method	SealedUploads::consume()
@@ -22213,6 +22211,7 @@ method	SettingsPage::make()
 method	SettingsPages::declarations()
 method	SettingsPages::navigation()
 method	SettingsPages::pages()
+method	SettingsPages::types()
 method	SettingsProvider::settings()
 method	SettingsRecord::casts()
 method	SettingsRecord::lockedForOwner()
@@ -22762,6 +22761,7 @@ method	SharingOwnerCheck::allows()
 method	SharingPages::declarations()
 method	SharingPages::nativeParts()
 method	SharingPages::pages()
+method	SharingPages::types()
 method	SharingPolicy::model()
 method	SharingServiceProvider::boot()
 method	SharingServiceProvider::register()
@@ -25552,10 +25552,14 @@ method	TunlerStatusData::__construct()
 method	TunlerStatusUnreadable::because()
 method	TurnReportController::__invoke()
 method	TypeNotNamed::for()
+method	TypeOwnerRepeated::forClass()
+method	TypeOwnerRepeated::forSymbol()
 method	TypeOwners::__construct()
+method	TypeOwners::claims()
 method	TypeOwners::keys()
 method	TypeOwners::of()
 method	TypeOwners::ownerOf()
+method	TypeProvider::types()
 method	TypeReflections::of()
 method	TypeScriptServiceProvider::configure()
 method	TypeScriptServiceProvider::register()
@@ -25882,11 +25886,20 @@ method	WatchedRuntimes::forHost()
 method	WatchedRuntimes::isWatched()
 method	WatchedRuntimes::version()
 method	WatchedRuntimes::versionOf()
+method	WebNavigationRecords::__construct()
+method	WebNavigationRecords::counts()
+method	WebNavigationRecords::current()
+method	WebNavigationRecords::itemData()
+method	WebNavigationRecords::matchScore()
+method	WebNavigationRecords::outranks()
+method	WebNavigationRecords::tree()
+method	WebNavigationRecords::urlOf()
 method	WebPages::declarations()
 method	WebPages::nativeParts()
 method	WebPages::navigation()
 method	WebPages::pages()
 method	WebPages::sidebarGroups()
+method	WebPages::types()
 method	WebServiceProvider::boot()
 method	WebServiceProvider::fieldOf()
 method	WebServiceProvider::refusalAnswer()
@@ -26919,11 +26932,11 @@ parameter	$enteredAt
 parameter	$entitlement
 parameter	$entrance
 parameter	$entries
-parameter	$entries	app/Files/Values/FolderEntries.php
-parameter	$entries	app/Reflection/Support/Attributes.php
-parameter	$entries	app/Sharing/Support/ShareAuditPage.php
-parameter	$entries	app/Skills/Commands/RefreshSkills/RefreshSkillsHandler.php
-parameter	$entries	app/Skills/Resolvers/Support/SkillStatusResolver.php
+parameter	$entries	app/Commands/RefreshSkills/RefreshSkillsHandler.php
+parameter	$entries	app/Resolvers/Support/SkillStatusResolver.php
+parameter	$entries	app/Support/Attributes.php
+parameter	$entries	app/Support/ShareAuditPage.php
+parameter	$entries	app/Values/FolderEntries.php
 parameter	$entry
 parameter	$entryDispatchers
 parameter	$entryGroup
@@ -27414,25 +27427,25 @@ parameter	$issue
 parameter	$issued
 parameter	$issuedAt
 parameter	$italic
-parameter	$item	app/Agents/Data/ProtectedItemData.php
-parameter	$item	app/Agents/Data/ProtectionReportData.php
-parameter	$item	app/Agents/Support/PresentationPrompts.php
-parameter	$item	app/Agents/Values/ProtectedItem.php
-parameter	$item	app/Agents/Values/ProtectionReport.php
-parameter	$item	app/Communication/Data/NotificationChangeItem.php
-parameter	$item	app/Communication/Resolvers/Support/NotificationFeed.php
-parameter	$item	app/Communication/Support/PresentationBatches.php
-parameter	$item	app/Ui/Declarations/RegisteredMenuItem.php
-parameter	$item	app/Ui/Declarations/RegisteredNavigation.php
-parameter	$item	app/Ui/Exceptions/InvalidMenuDeclaration.php
-parameter	$item	app/Ui/Support/UiDeclarations.php
-parameter	$item	app/Web/Support/RecordMenus.php
+parameter	$item	app/Data/NotificationChangeItem.php
+parameter	$item	app/Data/ProtectedItemData.php
+parameter	$item	app/Data/ProtectionReportData.php
+parameter	$item	app/Declarations/RegisteredMenuItem.php
+parameter	$item	app/Declarations/RegisteredNavigation.php
+parameter	$item	app/Exceptions/InvalidMenuDeclaration.php
+parameter	$item	app/Resolvers/Support/NotificationFeed.php
+parameter	$item	app/Support/PresentationBatches.php
+parameter	$item	app/Support/PresentationPrompts.php
+parameter	$item	app/Support/RecordMenus.php
+parameter	$item	app/Support/UiDeclarations.php
+parameter	$item	app/Values/ProtectedItem.php
+parameter	$item	app/Values/ProtectionReport.php
 parameter	$itemValue
-parameter	$items	app/Agents/Data/ProtectionReportData.php
-parameter	$items	app/Agents/Values/ProtectionReport.php
-parameter	$items	app/Communication/Data/NotificationPage.php
-parameter	$items	app/Communication/Data/PresentationBatchData.php
-parameter	$items	app/Ui/Layout/LayoutMenuGroupData.php
+parameter	$items	app/Data/NotificationPage.php
+parameter	$items	app/Data/PresentationBatchData.php
+parameter	$items	app/Data/ProtectionReportData.php
+parameter	$items	app/Support/Layout/LayoutMenuGroupData.php
+parameter	$items	app/Values/ProtectionReport.php
 parameter	$job
 parameter	$jobId
 parameter	$jobState
@@ -27535,7 +27548,7 @@ parameter	$linked
 parameter	$linking
 parameter	$links
 parameter	$list
-parameter	$list	app/Ui/Layout/LayoutPartData.php
+parameter	$list	app/Support/Layout/LayoutPartData.php
 parameter	$listCursor
 parameter	$listName
 parameter	$listRead
@@ -27855,6 +27868,7 @@ parameter	$originals
 parameter	$origins
 parameter	$other
 parameter	$otherId
+parameter	$otherOwner
 parameter	$others
 parameter	$outcome
 parameter	$outcomeUserId
@@ -27894,7 +27908,6 @@ parameter	$ownerUserId
 parameter	$owners
 parameter	$ownership
 parameter	$packageFile
-parameter	$packageName
 parameter	$packages
 parameter	$page
 parameter	$pageId
@@ -27954,7 +27967,7 @@ parameter	$pathsByConversation
 parameter	$pattern
 parameter	$patterns
 parameter	$pause
-parameter	$payload	app/Hooks/Delivery/StateEventDispatcher.php
+parameter	$payload	app/Support/Delivery/StateEventDispatcher.php
 parameter	$payloadDigest
 parameter	$pending
 parameter	$pendingCleanups
@@ -28382,30 +28395,30 @@ parameter	$responsibilities
 parameter	$restored
 parameter	$restorer
 parameter	$result
-parameter	$result	app/Agents/Models/MergeAttempt.php
-parameter	$result	app/Agents/Support/ProtectedMerge.php
-parameter	$result	app/Agents/Values/MergeOutcome.php
-parameter	$result	app/Bus/Values/ReceiptAnswer.php
-parameter	$result	app/Connections/Values/BindingOutcome.php
-parameter	$result	app/Hooks/Readers/SessionInspections.php
+parameter	$result	app/Commands/ResolveMergeAttempt/ResolveMergeAttemptCommand.php
+parameter	$result	app/Data/AskDetail.php
+parameter	$result	app/Data/ClaudeAnswerData.php
+parameter	$result	app/Data/CodexMessageData.php
+parameter	$result	app/Data/ProfileStepData.php
+parameter	$result	app/Data/RunOutcomeSummaryData.php
+parameter	$result	app/Events/RunOutcomeRecorded.php
 parameter	$result	app/Mcp/Data/JsonRpcReplyData.php
-parameter	$result	app/Processes/Data/RunOutcomeSummaryData.php
-parameter	$result	app/Processes/Events/RunOutcomeRecorded.php
-parameter	$result	app/Processes/Models/ProcessRun.php
-parameter	$result	app/Processes/Models/RunOutcome.php
-parameter	$result	app/Processes/Support/RunOutcomes.php
-parameter	$result	app/Profiles/Data/ClaudeAnswerData.php
-parameter	$result	app/Profiles/Data/CodexMessageData.php
-parameter	$result	app/Scripts/Data/ProfileStepData.php
-parameter	$result	app/Supervision/Commands/ResolveMergeAttempt/ResolveMergeAttemptCommand.php
-parameter	$result	app/Supervision/Data/AskDetail.php
+parameter	$result	app/Models/MergeAttempt.php
+parameter	$result	app/Models/ProcessRun.php
+parameter	$result	app/Models/RunOutcome.php
+parameter	$result	app/Support/ProtectedMerge.php
+parameter	$result	app/Support/Readers/SessionInspections.php
+parameter	$result	app/Support/RunOutcomes.php
+parameter	$result	app/Values/BindingOutcome.php
+parameter	$result	app/Values/MergeOutcome.php
+parameter	$result	app/Values/ReceiptAnswer.php
 parameter	$resultAccountId
 parameter	$resultLabel
 parameter	$resultNote
 parameter	$resultNumber
 parameter	$resultRevision
 parameter	$resultingTargetOid
-parameter	$results	app/Hooks/StateEvents/StateEventEffects.php
+parameter	$results	app/Support/StateEvents/StateEventEffects.php
 parameter	$resumable
 parameter	$resumedNumber
 parameter	$resumedSessionId
@@ -28850,6 +28863,7 @@ parameter	$switchStageLabel
 parameter	$switchable
 parameter	$switchedOn
 parameter	$switches
+parameter	$symbol
 parameter	$syntax
 parameter	$syntaxFacts
 parameter	$system
@@ -29029,48 +29043,48 @@ parameter	$validation
 parameter	$validator
 parameter	$validators
 parameter	$value
-parameter	$value	app/Actors/Models/Support/ReadsForActor.php
-parameter	$value	app/AgentRequests/Casts/CallKeyCast.php
-parameter	$value	app/AgentRequests/Transformers/CallKeyTransformer.php
-parameter	$value	app/Agents/Casts/NavigationScreenCast.php
-parameter	$value	app/Agents/Exceptions/ArrangementUnknown.php
-parameter	$value	app/Agents/Support/ArrangementSetting.php
-parameter	$value	app/Agents/Support/PrivateValues.php
-parameter	$value	app/Assignments/Casts/PoolReferenceCast.php
-parameter	$value	app/Bus/Support/OneLineRule.php
-parameter	$value	app/Comments/Casts/CommentViewsCast.php
-parameter	$value	app/Docking/Cards/DestinationArgument.php
-parameter	$value	app/Docking/Data/DockDestinationOptionData.php
-parameter	$value	app/Hooks/Storage/FrameRecordsCast.php
-parameter	$value	app/Hooks/Storage/RecordedAnswerCast.php
-parameter	$value	app/Hooks/Storage/RecordedStepsCast.php
-parameter	$value	app/Processes/Casts/RuleScopeCast.php
-parameter	$value	app/Processes/Casts/StoredValueCast.php
-parameter	$value	app/Processes/Casts/StoredValuesCast.php
-parameter	$value	app/Profiles/Casts/ProfileAuthorizationCast.php
-parameter	$value	app/Profiles/Casts/ProfileBaseCast.php
-parameter	$value	app/Profiles/Casts/ProfileStartPolicyCast.php
-parameter	$value	app/Profiles/Casts/SupervisorRoutesCast.php
-parameter	$value	app/Profiles/Exceptions/ProfileProposalRefused.php
-parameter	$value	app/Reads/Support/BoundedReads.php
-parameter	$value	app/Reflection/Support/CatalogueReflectorFactory.php
-parameter	$value	app/Reflection/Support/ReflectedProperty.php
-parameter	$value	app/Reflection/Support/Reflector.php
-parameter	$value	app/Scripts/Values/ObjectRead.php
-parameter	$value	app/Settings/Casts/SettingsDocumentCast.php
-parameter	$value	app/Sharing/Casts/GatewaySettingsCast.php
-parameter	$value	app/Sharing/Casts/SelectedTargetsCast.php
-parameter	$value	app/Skills/Casts/SkillSectionsCast.php
-parameter	$value	app/Ui/Layout/LayoutFieldData.php
-parameter	$value	app/Ui/Layout/LayoutPartData.php
-parameter	$value	app/Ui/Layout/LayoutProgressData.php
-parameter	$value	app/Ui/Layout/LayoutRowData.php
-parameter	$value	app/Ui/Layout/SettingsRow.php
+parameter	$value	app/Casts/CallKeyCast.php
+parameter	$value	app/Casts/CommentViewsCast.php
+parameter	$value	app/Casts/GatewaySettingsCast.php
+parameter	$value	app/Casts/NavigationScreenCast.php
+parameter	$value	app/Casts/PoolReferenceCast.php
+parameter	$value	app/Casts/ProfileAuthorizationCast.php
+parameter	$value	app/Casts/ProfileBaseCast.php
+parameter	$value	app/Casts/ProfileStartPolicyCast.php
+parameter	$value	app/Casts/RuleScopeCast.php
+parameter	$value	app/Casts/SelectedTargetsCast.php
+parameter	$value	app/Casts/SettingsDocumentCast.php
+parameter	$value	app/Casts/SkillSectionsCast.php
+parameter	$value	app/Casts/StoredValueCast.php
+parameter	$value	app/Casts/StoredValuesCast.php
+parameter	$value	app/Casts/SupervisorRoutesCast.php
+parameter	$value	app/Concerns/BoundedReads.php
+parameter	$value	app/Data/DockDestinationOptionData.php
+parameter	$value	app/Exceptions/ArrangementUnknown.php
+parameter	$value	app/Exceptions/ProfileProposalRefused.php
+parameter	$value	app/Models/Support/ReadsForActor.php
+parameter	$value	app/Support/ArrangementSetting.php
+parameter	$value	app/Support/Cards/DestinationArgument.php
+parameter	$value	app/Support/CatalogueReflectorFactory.php
+parameter	$value	app/Support/Layout/LayoutFieldData.php
+parameter	$value	app/Support/Layout/LayoutPartData.php
+parameter	$value	app/Support/Layout/LayoutProgressData.php
+parameter	$value	app/Support/Layout/LayoutRowData.php
+parameter	$value	app/Support/Layout/SettingsRow.php
+parameter	$value	app/Support/OneLineRule.php
+parameter	$value	app/Support/PrivateValues.php
+parameter	$value	app/Support/ReflectedProperty.php
+parameter	$value	app/Support/Reflector.php
+parameter	$value	app/Support/Storage/FrameRecordsCast.php
+parameter	$value	app/Support/Storage/RecordedAnswerCast.php
+parameter	$value	app/Support/Storage/RecordedStepsCast.php
+parameter	$value	app/Support/Transformers/CallKeyTransformer.php
+parameter	$value	app/Values/ObjectRead.php
 parameter	$valueClass
 parameter	$valueClasses
-parameter	$values	app/Hooks/Storage/FrameRecord.php
-parameter	$values	app/Hooks/Storage/StoredFrame.php
-parameter	$values	app/Web/Http/Controllers/Terminal/SubmitPrivateInputController.php
+parameter	$values	app/Http/Controllers/Terminal/SubmitPrivateInputController.php
+parameter	$values	app/Support/Storage/FrameRecord.php
+parameter	$values	app/Support/Storage/StoredFrame.php
 parameter	$variable
 parameter	$variableText
 parameter	$variables
@@ -29617,6 +29631,8 @@ property	AgentMessages::$actors
 property	AgentMessages::$continuations
 property	AgentMessages::$inboxes
 property	AgentMessages::$session
+property	AgentNavigationRecords::$answering
+property	AgentNavigationRecords::$transaction
 property	AgentOption::$actions
 property	AgentOption::$agentId
 property	AgentOption::$assignee
@@ -31912,6 +31928,7 @@ property	DomainUi::$pages
 property	DomainUi::$scriptFolder
 property	DomainUi::$sections
 property	DomainUi::$sidebarGroups
+property	DomainUi::$types
 property	DraftClosed::$published
 property	DraftClosed::$revisionNumber
 property	DraftClosing::$editors
@@ -32457,12 +32474,12 @@ property	ExportBuilder::$events
 property	ExportBuilder::$exceptions
 property	ExportBuilder::$support
 property	ExportBuilder::$valueClasses
+property	ExportValidator::$namespace
+property	ExportValidator::$owner
 property	Exports::$commands
 property	Exports::$contracts
 property	Exports::$events
 property	Exports::$exceptions
-property	Exports::$namespace
-property	Exports::$owner
 property	Exports::$support
 property	Exports::$valueClasses
 property	FailDriverSwitchLaunchCommand::$reason
@@ -33938,13 +33955,6 @@ property	NavigationRaiseData::$rows
 property	NavigationRaiseData::$sentSteps
 property	NavigationRaiseData::$staleEntry
 property	NavigationRaiseData::$step
-property	NavigationRecords::$answering
-property	NavigationRecords::$container
-property	NavigationRecords::$declarations
-property	NavigationRecords::$log
-property	NavigationRecords::$merge
-property	NavigationRecords::$transaction
-property	NavigationRecords::$urls
 property	NavigationRequest::$attributes
 property	NavigationRound::$choose
 property	NavigationRound::$completes
@@ -39484,6 +39494,7 @@ property	TunlerStatus::$isLoggedIn
 property	TunlerStatusData::$host
 property	TunlerStatusData::$isAuthenticated
 property	TunlerStatusData::$loggedIn
+property	TypeOwners::$claims
 property	TypeOwners::$owners
 property	TypedSecret::$name
 property	TypedSecret::$secretText
@@ -39662,6 +39673,11 @@ property	WalkedCall::$row
 property	WalkedCall::$stackBefore
 property	WatchedRuntime::$intervalMs
 property	WatchedRuntime::$runtimeId
+property	WebNavigationRecords::$container
+property	WebNavigationRecords::$declarations
+property	WebNavigationRecords::$log
+property	WebNavigationRecords::$merge
+property	WebNavigationRecords::$urls
 property	WindowResults::$app
 property	WindowResults::$log
 property	WindowResults::$offers
@@ -40331,10 +40347,10 @@ variable	$entered
 variable	$enteredState
 variable	$entitlement
 variable	$entries
-variable	$entries	app/Agents/Support/WorkspaceSources.php
-variable	$entries	app/Bus/Support/DeclaredCommand.php
-variable	$entries	app/Files/Support/FileWriter.php
-variable	$entries	app/Files/Support/FolderWalker.php
+variable	$entries	app/Support/DeclaredCommand.php
+variable	$entries	app/Support/FileWriter.php
+variable	$entries	app/Support/FolderWalker.php
+variable	$entries	app/Support/WorkspaceSources.php
 variable	$entry
 variable	$enum
 variable	$envelopes
@@ -40714,14 +40730,14 @@ variable	$issuedAt
 variable	$issuedHere
 variable	$issuerIsOwner
 variable	$item
-variable	$item	app/Bus/Support/CommandGrammar.php
-variable	$item	app/Communication/Resolvers/Support/NotificationChanges.php
-variable	$items	app/Agents/Support/PresentationPrompts.php
-variable	$items	app/Communication/Resolvers/Support/NotificationChanges.php
-variable	$items	app/Communication/Resolvers/Support/NotificationFeed.php
-variable	$items	app/Communication/Support/PresentationBatches.php
-variable	$items	app/Ui/Support/UiDeclarations.php
-variable	$items	app/Web/Support/RecordMenus.php
+variable	$item	app/Resolvers/Support/NotificationChanges.php
+variable	$item	app/Support/CommandGrammar.php
+variable	$items	app/Resolvers/Support/NotificationChanges.php
+variable	$items	app/Resolvers/Support/NotificationFeed.php
+variable	$items	app/Support/PresentationBatches.php
+variable	$items	app/Support/PresentationPrompts.php
+variable	$items	app/Support/RecordMenus.php
+variable	$items	app/Support/UiDeclarations.php
 variable	$job
 variable	$jobId
 variable	$jobs
@@ -40782,7 +40798,7 @@ variable	$linkType
 variable	$linked
 variable	$links
 variable	$list
-variable	$list	app/Processes/Resolvers/RunListResolver.php
+variable	$list	app/Resolvers/RunListResolver.php
 variable	$listed
 variable	$listedClasses
 variable	$listener
@@ -41330,14 +41346,14 @@ variable	$response
 variable	$rest
 variable	$restored
 variable	$result
-variable	$result	app/Bus/Support/EventUnit.php
-variable	$result	app/Bus/Support/EventUnitLifecycle.php
-variable	$result	app/Http/Support/Web/PageProps.php
-variable	$result	app/Scripts/Models/ProfileRun.php
-variable	$result	app/Scripts/Models/ProfileStepResult.php
-variable	$result	app/Supervision/Readers/AskRecords.php
-variable	$result	app/Supervision/Resolvers/MergeAskNotificationTarget.php
-variable	$result	app/Ui/Declarations/Page.php
+variable	$result	app/Declarations/Page.php
+variable	$result	app/Models/ProfileRun.php
+variable	$result	app/Models/ProfileStepResult.php
+variable	$result	app/Resolvers/MergeAskNotificationTarget.php
+variable	$result	app/Support/EventUnit.php
+variable	$result	app/Support/EventUnitLifecycle.php
+variable	$result	app/Support/Readers/AskRecords.php
+variable	$result	app/Support/Web/PageProps.php
 variable	$resultBytes
 variable	$resumable
 variable	$resumedConversation
@@ -41593,6 +41609,7 @@ variable	$switch
 variable	$switchable
 variable	$switchedOn
 variable	$switches
+variable	$symbols
 variable	$syntaxFacts
 variable	$tab
 variable	$table
@@ -41729,16 +41746,16 @@ variable	$valid
 variable	$validation
 variable	$validator
 variable	$value
-variable	$value	app/Connections/Logging/InstallSecretRedaction.php
-variable	$value	app/Docking/Wire/Fields/DestinationField.php
-variable	$value	app/Docking/Wire/Fields/EnumField.php
-variable	$value	app/Docking/Wire/Fields/FlagField.php
-variable	$value	app/Docking/Wire/Fields/InstantField.php
-variable	$value	app/Docking/Wire/Fields/LinesField.php
-variable	$value	app/Docking/Wire/Fields/NumberField.php
-variable	$value	app/Docking/Wire/Fields/TextField.php
-variable	$value	app/Scripts/Support/ObjectReader.php
-variable	$value	app/Settings/Support/SettingsValues.php
+variable	$value	app/Support/Logging/InstallSecretRedaction.php
+variable	$value	app/Support/ObjectReader.php
+variable	$value	app/Support/SettingsValues.php
+variable	$value	app/Support/Wire/Fields/DestinationField.php
+variable	$value	app/Support/Wire/Fields/EnumField.php
+variable	$value	app/Support/Wire/Fields/FlagField.php
+variable	$value	app/Support/Wire/Fields/InstantField.php
+variable	$value	app/Support/Wire/Fields/LinesField.php
+variable	$value	app/Support/Wire/Fields/NumberField.php
+variable	$value	app/Support/Wire/Fields/TextField.php
 variable	$values
 variable	$variable
 variable	$variables

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger;
 
-use App\Operations\Enums\AccessType;
-use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Values\PolicyDefinition;
-use App\Bus\Contracts\CommandProvider;
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
+use App\Enums\AccessType;
+use App\Contracts\PolicyProvider;
+use App\Values\PolicyDefinition;
+use App\Contracts\CommandProvider;
+use App\Support\Domain;
+use App\Support\Exports;
 use Tests\Fixtures\Modules\Ledger\Bootstrappers\RegisterLedgerLinkTypes;
 use Tests\Fixtures\Modules\Ledger\Commands\OpenLedger\OpenLedgerCommand;
 use Tests\Fixtures\Modules\Ledger\Commands\WriteEntry\WriteEntryCommand;

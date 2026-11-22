@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Contracts\MainSeatTakeover;
-use App\Agents\Models\Agent;
-use App\Assignments\Contracts\AssignmentTransaction;
-use App\Bus\Enums\CommandEntry;
-use App\Bus\Support\EntryDispatchers;
-use App\Desks\Commands\InstallDesks\InstallDesksCommand;
-use App\Desks\Models\DeskRecord;
-use App\Desks\Support\BuiltInDesks;
+use App\Commands\InstallDesks\InstallDesksCommand;
+use App\Contracts\AssignmentTransaction;
+use App\Contracts\MainSeatTakeover;
+use App\Enums\ActorType;
+use App\Enums\CommandEntry;
+use App\Models\Agent;
+use App\Models\DeskRecord;
+use App\Support\ActorIdentity;
+use App\Support\BuiltInDesks;
+use App\Support\EntryDispatchers;
+use App\Support\StartSessions;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Http\Requests\ConversationRequest;

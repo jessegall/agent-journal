@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Actors\Exceptions\ActorContextMissing;
-use App\Actors\Exceptions\CrossOwnerReadRefused;
-use App\Actors\Support\ActorIdentity;
+use App\Exceptions\ActorContextMissing;
+use App\Exceptions\CrossOwnerReadRefused;
+use App\Support\ActorIdentity;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
 use Domain\Sequences\Models\SequenceRun;

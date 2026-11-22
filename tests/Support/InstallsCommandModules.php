@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Values\PolicyDefinition;
-use App\Bus\Support\CommandOwner;
-use App\Bus\Support\CommandRegistry;
-use App\Bus\Support\MiddlewareDeclaration;
+use App\Contracts\PipelineRunner;
+use App\Contracts\PolicyCatalogue;
 use App\CoreCommands;
-use App\Domains\Support\DomainEntry;
-use App\Domains\Support\DomainRegistry;
-use App\Numbers\Support\NumberedTypeRegistry;
-use App\Operations\Enums\AccessType;
-use App\Pipelines\Contracts\PipelineRunner;
+use App\Enums\AccessType;
+use App\Support\CommandOwner;
+use App\Support\CommandRegistry;
+use App\Support\DomainEntry;
+use App\Support\DomainRegistry;
+use App\Support\MiddlewareDeclaration;
+use App\Support\NumberedTypeRegistry;
+use App\Values\PolicyDefinition;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;

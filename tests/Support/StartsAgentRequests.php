@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\ChatMemberAuthority;
-use App\Actors\Values\OwnerAuthority;
-use App\AgentRequests\Support\SignedCall;
-use App\Agents\Support\AgentContext;
+use App\Contracts\CurrentActorSetter;
+use App\Support\ActorContext;
+use App\Support\AgentContext;
+use App\Support\SignedCall;
+use App\Values\ChatMemberAuthority;
+use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
 

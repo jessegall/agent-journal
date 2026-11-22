@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\Bus\Contracts\CommandBus;
-use Domain\Rules\Api\Events\RuleApproved;
-use Domain\Rules\Api\Events\RuleDenied;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Support\ActorContext;
+use App\Values\OwnerAuthority;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
 use Domain\Rules\Enums\RuleState;
+use Domain\Rules\Events\RuleApproved;
+use Domain\Rules\Events\RuleDenied;
 use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Support\ActiveRules;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Skills;
 
-use App\Skills\Support\SkillPublishing;
+use App\Support\SkillPublishing;
 
 /**
  * The shipped skills published into a temporary folder before each test.

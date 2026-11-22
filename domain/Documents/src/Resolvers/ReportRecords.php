@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
-use App\Records\Contracts\RecordResolver;
-use App\Text\Support\TextSelection;
+use App\Contracts\RecordResolver;
+use App\Support\TextSelection;
 use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\PublicationList;

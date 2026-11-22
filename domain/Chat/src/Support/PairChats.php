@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Support\AgentOption;
-use App\Communication\Enums\IntervalRole;
-use App\Communication\Support\ChatInboxes;
-use App\Communication\Support\InboxIntervals;
+use App\Enums\ActorType;
+use App\Enums\IntervalRole;
+use App\Support\ActorIdentity;
+use App\Support\AgentOption;
+use App\Support\ChatInboxes;
+use App\Support\InboxIntervals;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\DirectChat;
 use Illuminate\Support\Str;

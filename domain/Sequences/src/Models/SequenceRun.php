@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Models;
 
-use App\Actors\Models\Support\BelongsToOneActor;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Values\StackTarget;
+use App\Concerns\BoundedReads;
+use App\Concerns\HasNumber;
+use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
 use App\Contracts\EventSource;
-use App\Contracts\Support\RaisesEvents;
-use App\Links\Support\Linkable;
-use App\Numbers\Contracts\Numbered;
-use App\Numbers\Support\HasNumber;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
+use App\Contracts\Numbered;
+use App\Contracts\ReadableModel;
+use App\Models\Support\BelongsToOneActor;
+use App\Support\ActorIdentity;
+use App\Values\StackTarget;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Exceptions\SequenceRunMissing;

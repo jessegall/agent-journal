@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Web;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Http\Support\Web\DeclaredRouteKey;
-use App\Ui\Support\UiDeclarations;
-use App\Web\Contracts\UiOwnerAvailability;
+use App\Contracts\CurrentActor;
+use App\Contracts\UiOwnerAvailability;
+use App\Support\UiDeclarations;
+use App\Support\Web\DeclaredRouteKey;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;

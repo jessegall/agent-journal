@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use App\Hooks\Events\ContextStarted;
-use App\Hooks\Events\HelperCompletionCertified;
-use App\Hooks\Events\HelperReportedOnRecord;
-use App\Hooks\Events\HelperSentOnRecord;
-use App\Hooks\Events\HelperStopHeld;
-use App\Hooks\Events\HookCommandAnswered;
-use App\Hooks\Events\StateTypesRequested;
-use App\Hooks\Events\ToolCallFinished;
+use App\Events\ContextStarted;
+use App\Events\HelperCompletionCertified;
+use App\Events\HelperReportedOnRecord;
+use App\Events\HelperSentOnRecord;
+use App\Events\HelperStopHeld;
+use App\Events\HookCommandAnswered;
+use App\Events\StateTypesRequested;
+use App\Events\ToolCallFinished;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -22,56 +22,56 @@ return [
         'role' => EventRole::Request,
         'migrated' => false,
         'producers' => [
-            'app/Hooks/Support/ContextCollection.php',
+            'app/Support/ContextCollection.php',
         ],
     ],
     HelperCompletionCertified::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Hooks/Support/StopCertification.php',
+            'app/Support/StopCertification.php',
         ],
     ],
     HelperSentOnRecord::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Hooks/Actions/HelperRecordFactSender.php',
+            'app/Support/HelperRecordFactSender.php',
         ],
     ],
     HelperReportedOnRecord::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Hooks/Actions/HelperRecordFactSender.php',
+            'app/Support/HelperRecordFactSender.php',
         ],
     ],
     HelperStopHeld::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Hooks/Support/StopAttemptGate.php',
+            'app/Support/StopAttemptGate.php',
         ],
     ],
     HookCommandAnswered::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Hooks/Pipes/Answer/PublishHookEffects.php',
+            'app/Pipes/Answer/PublishHookEffects.php',
         ],
     ],
     StateTypesRequested::class => [
         'role' => EventRole::Request,
         'migrated' => false,
         'producers' => [
-            'app/Hooks/Stack/StateTypes.php',
+            'app/Support/Stack/StateTypes.php',
         ],
     ],
     ToolCallFinished::class => [
         'role' => EventRole::Request,
         'migrated' => false,
         'producers' => [
-            'app/Hooks/Support/FinishedToolCalls.php',
+            'app/Support/FinishedToolCalls.php',
         ],
     ],
 ];

@@ -1,8 +1,4 @@
 {
-    "resources/js/actions/App/Connections/Http/Controllers/DeviceGrantController.ts": [
-        "poll",
-        "start"
-    ],
     "resources/js/actions/App/Http/Controllers/Agents/Host/CleanupReportController.ts": [
         "index"
     ],
@@ -11,6 +7,10 @@
     ],
     "resources/js/actions/App/Http/Controllers/Agents/Host/WorkspaceReadController.ts": [
         "index"
+    ],
+    "resources/js/actions/App/Http/Controllers/DeviceGrantController.ts": [
+        "poll",
+        "start"
     ],
     "resources/js/actions/App/Http/Controllers/Web/LayoutsController.ts": [
         "destroy",

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Actors\Contracts\ChatParticipationEnding;
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ChatPermission;
-use App\Actors\Support\ActorIdentity;
+use App\Contracts\ChatParticipationEnding;
+use App\Contracts\CurrentActor;
+use App\Enums\ChatPermission;
+use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;

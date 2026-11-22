@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Http\Controllers\Calls;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use Domain\Helpers\Calls\CancelHelperJobCall;
 use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
-use Domain\Helpers\Http\Data\HelperJobNamed;
+use Domain\Helpers\Data\HelperJobNamed;
 
 /**
  * Cancels the caller's helper job and answers its id.

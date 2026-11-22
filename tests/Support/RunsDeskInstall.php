@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Bus\Enums\CommandEntry;
-use App\Bus\Support\EntryDispatchers;
-use App\Desks\Commands\InstallDesks\InstallDesksCommand;
+use App\Commands\InstallDesks\InstallDesksCommand;
+use App\Enums\CommandEntry;
+use App\Support\EntryDispatchers;
 
 /**
  * Installs the journal's desks as the host does when the journal starts.

@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Actors\Contracts\Actor;
+use App\Contracts\Actor;
 use App\Contracts\Event;
 use App\CoreApi;
-use App\Domains\Exceptions\AmbiguousDomainRoot;
-use App\Domains\Exceptions\InvalidExports;
-use App\Domains\Support\DomainRegistry;
-use App\Domains\Support\Exports;
-use App\Exports\Support\ExportBuilder;
-use App\Exports\Support\Exports as DeclaredExports;
-use Domain\Tasks\Api\Events\TaskFinished;
-use Domain\Tasks\Api\TaskSummary;
+use App\Exceptions\AmbiguousDomainRoot;
+use App\Exceptions\InvalidExports;
+use App\Support\DomainRegistry;
+use App\Support\ExportBuilder;
+use App\Support\Exports as DeclaredExports;
+use App\Support\ExportValidator;
 use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Resolvers\VisibleTasks;
+use Domain\Tasks\Values\TaskSummary;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Domains\Leaky\LeakyDomain;
@@ -32,12 +32,12 @@ final class ExportsTest extends TestCase
 {
     public function test_empty_exports_export_nothing_and_are_no_wildcard(): void
     {
-        $this->assertSame([], Exports::check('Tasks', 'Domain\\Tasks', DeclaredExports::make()->build())->all());
+        $this->assertSame([], ExportValidator::check('Tasks', 'Domain\\Tasks', DeclaredExports::make()->build())->all());
     }
 
     public function test_each_name_comes_back_without_its_leading_backslash(): void
     {
-        $checked = Exports::check(
+        $checked = ExportValidator::check(
             'Tasks',
             'Domain\\Tasks',
             DeclaredExports::make()->contracts('\\'.TaskResolver::class)->build(),
@@ -50,7 +50,7 @@ final class ExportsTest extends TestCase
     {
         $this->expectExceptionObject(InvalidExports::missing('Tasks', 'values', 'Domain\\Tasks\\Api\\TaskSumary'));
 
-        Exports::check(
+        ExportValidator::check(
             'Tasks',
             'Domain\\Tasks',
             DeclaredExports::make()->values('Domain\\Tasks\\Api\\TaskSumary')->build(),
@@ -61,7 +61,7 @@ final class ExportsTest extends TestCase
     {
         $this->expectExceptionObject(InvalidExports::outsideOwner('Task', TaskResolver::class, 'Domain\\Task'));
 
-        Exports::check('Task', 'Domain\\Task', DeclaredExports::make()->contracts(TaskResolver::class)->build());
+        ExportValidator::check('Task', 'Domain\\Task', DeclaredExports::make()->contracts(TaskResolver::class)->build());
     }
 
     public function test_a_domain_exporting_another_owners_class_cannot_be_registered(): void
@@ -111,14 +111,14 @@ final class ExportsTest extends TestCase
     ): void {
         $this->expectExceptionObject($refusal);
 
-        Exports::check('Tasks', 'Domain\\Tasks', $exports->build());
+        ExportValidator::check('Tasks', 'Domain\\Tasks', $exports->build());
     }
 
     public function test_the_event_marker_itself_is_no_event(): void
     {
         $this->expectExceptionObject(InvalidExports::notAnEvent('Core', Event::class));
 
-        Exports::check('Core', 'App', DeclaredExports::make()->events(Event::class)->build());
+        ExportValidator::check('Core', 'App', DeclaredExports::make()->events(Event::class)->build());
     }
 
     public function test_a_domain_inside_another_domains_root_is_refused(): void
@@ -130,6 +130,6 @@ final class ExportsTest extends TestCase
 
     public function test_cores_exports_pass_the_same_check(): void
     {
-        $this->assertContains(Actor::class, Exports::check('Core', 'App', CoreApi::exports())->contracts);
+        $this->assertContains(Actor::class, ExportValidator::check('Core', 'App', CoreApi::exports())->contracts);
     }
 }

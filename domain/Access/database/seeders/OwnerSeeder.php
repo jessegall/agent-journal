@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Access\Database\Seeders;
 
-use App\Actors\Support\ActorIdentity;
-use App\Bus\Contracts\JournalCommands;
-use App\Bus\Enums\CommandEntry;
-use App\Desks\Commands\ProvisionActorDesk\ProvisionActorDeskCommand;
+use App\Commands\ProvisionActorDesk\ProvisionActorDeskCommand;
+use App\Contracts\JournalCommands;
+use App\Enums\CommandEntry;
+use App\Support\ActorIdentity;
 use Domain\Access\Models\User;
 use Illuminate\Database\Seeder;
 

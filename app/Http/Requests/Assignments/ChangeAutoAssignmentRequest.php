@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assignments;
 
-use App\Assignments\Commands\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
-use App\Assignments\Commands\EnableAutoAssignment\EnableAutoAssignmentCommand;
+use App\Commands\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
+use App\Commands\EnableAutoAssignment\EnableAutoAssignmentCommand;
+use App\Contracts\RecordResolver;
 use App\Http\Requests\Assignments\Concerns\ReadsAutoAssignmentInput;
-use App\Records\Contracts\RecordResolver;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

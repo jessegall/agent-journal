@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Docking\Cards\DockIdentity;
-use App\Docking\Sources\Contracts\DockedSources;
+use App\Support\Cards\DockIdentity;
+use App\Support\Sources\Contracts\DockedSources;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\DockPlacement;
 

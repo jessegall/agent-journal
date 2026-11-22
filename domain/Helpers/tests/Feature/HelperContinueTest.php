@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Agents\Events\LaunchEnded;
-use App\Agents\Models\StartRecord;
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
+use App\Events\LaunchEnded;
+use App\Models\StartRecord;
 use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
 use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
 use Domain\Helpers\Commands\SteerHelper\SteerHelperCommand;

@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Actors\Contracts\Actor;
-use App\Actors\Contracts\Authorizer;
-use App\Actors\Contracts\AuthorizerProvider;
-use App\Actors\Contracts\ChatEligibility;
-use App\Actors\Contracts\ChatMemberPolicies;
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Contracts\JournalAdmission;
-use App\Actors\Exceptions\ActorNotAllowed;
-use App\Actors\Support\ActorIdentity;
-use App\Actors\Support\UnrestrictedAuthorizer;
-use App\Actors\Values\ChatMemberAuthority;
-use App\Actors\Values\OwnerAuthority;
+use App\Contracts\Actor;
+use App\Contracts\Authorizer;
+use App\Contracts\AuthorizerProvider;
+use App\Contracts\ChatEligibility;
+use App\Contracts\ChatMemberPolicies;
+use App\Contracts\CurrentActor;
+use App\Contracts\JournalAdmission;
+use App\Exceptions\ActorNotAllowed;
+use App\Support\ActorIdentity;
+use App\Support\UnrestrictedAuthorizer;
+use App\Values\ChatMemberAuthority;
+use App\Values\OwnerAuthority;
 
 /**
  * A user's authorizer: an owner the journal's access policy admits may do anything; anyone else may do nothing. A

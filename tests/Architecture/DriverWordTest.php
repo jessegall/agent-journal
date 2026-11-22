@@ -34,9 +34,9 @@ final class DriverWordTest extends TestCase
         'app/Processes/',
         'app/Shell/',
         'app/Sharing/',
-        'app/Files/Enums/PlaceExemption.php',
-        'app/Hooks/Support/ShellOperations.php',
-        'app/Profiles/Exceptions/SignInProtocolMissing.php',
+        'app/Enums/PlaceExemption.php',
+        'app/Support/ShellOperations.php',
+        'app/Exceptions/SignInProtocolMissing.php',
     ];
 
     /**

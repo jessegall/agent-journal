@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
-use App\Numbers\Support\RecordReference;
-use App\Reads\Values\PageSize;
-use App\Records\Contracts\RecordResolver;
-use App\Records\Support\RecordIdentity;
-use App\Text\Contracts\TextResolver;
-use App\Text\Exceptions\TextLineTooLong;
-use App\Text\Exceptions\TextSelectionRefused;
-use App\Text\Exceptions\TextVersionUnavailable;
-use App\Text\Support\TextSelection;
+use App\Contracts\CommandBus;
+use App\Contracts\RecordResolver;
+use App\Contracts\TextResolver;
+use App\Exceptions\TextLineTooLong;
+use App\Exceptions\TextSelectionRefused;
+use App\Exceptions\TextVersionUnavailable;
+use App\Support\RecordIdentity;
+use App\Support\RecordReference;
+use App\Support\TextSelection;
+use App\Values\PageSize;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Tests\TestCase;

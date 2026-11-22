@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Assignments\Contracts\AssignmentQuery;
-use App\Assignments\Support\PoolMembers;
-use Domain\Tasks\Api\TaskType;
+use App\Contracts\AssignmentQuery;
+use App\Support\PoolMembers;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
@@ -14,6 +13,7 @@ use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Commands\WaiveTaskWait\WaiveTaskWaitCommand;
 use Domain\Tasks\Exceptions\TaskWaitsUnmet;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail;
 
-use App\Operations\Enums\AccessType;
-use App\Bus\Attributes\Authorize;
-use App\Bus\Support\Command;
-use App\Settings\Values\SettingReference;
+use App\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Support\Command;
+use App\Values\SettingReference;
 use Tests\Fixtures\Modules\Notes\Models\NotePage;
 use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Skills;
 
-use App\Files\Enums\Place;
-use App\Skills\Support\SkillTargets;
+use App\Enums\Place;
+use App\Support\SkillTargets;
 use Tests\Support\UsesTemporaryFolder;
 
 /**

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\AgentRequests\Support\AgentCallReply;
-use App\Bus\Contracts\CodedRefusal;
-use App\Bus\Enums\RefusalCode;
+use App\Contracts\CodedRefusal;
+use App\Enums\RefusalCode;
 use App\Http\Middleware\Mcp\LimitMcpMessage;
 use App\Mcp\Data\BusyReplyData;
 use App\Mcp\Data\InitializeResultData;
 use App\Mcp\Data\JsonRpcIdData;
 use App\Mcp\Data\JsonRpcMessageData;
 use App\Mcp\Data\JsonRpcReplyData;
+use App\Support\AgentCallReply;
 use Carbon\CarbonImmutable;
 use JsonException;
 use Spatie\LaravelData\Exceptions\CannotCreateData;

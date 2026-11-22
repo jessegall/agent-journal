@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\ActorContextMissing;
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorStore;
-use App\Actors\Values\TrustedEntryAuthority;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Enums\CommandEntry;
-use App\Bus\Exceptions\CommandNotRegistered;
-use App\Bus\Support\CommandEntrance;
-use App\Engine\Support\EngineAccess;
-use App\Engine\Support\EngineActor;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Enums\CommandEntry;
+use App\Exceptions\ActorContextMissing;
+use App\Exceptions\CommandNotRegistered;
+use App\Support\ActorContext;
+use App\Support\ActorStore;
+use App\Support\CommandEntrance;
+use App\Support\EngineAccess;
+use App\Support\EngineActor;
+use App\Values\TrustedEntryAuthority;
 use Closure;
 use Illuminate\Support\Facades\Log;
 use Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote\EngineCopyNoteCommand;

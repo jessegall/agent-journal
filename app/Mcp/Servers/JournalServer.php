@@ -6,7 +6,7 @@ namespace App\Mcp\Servers;
 
 use App\Mcp\Methods\ListToolsAndRecordDiscovery;
 use App\Mcp\Support\McpCatalogue;
-use App\Reflection\Support\Reflector;
+use App\Support\Reflector;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;

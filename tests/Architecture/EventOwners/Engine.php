@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Engine\Events\EngineTicked;
+use App\Events\EngineTicked;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -15,7 +15,7 @@ return [
         'role' => EventRole::Infrastructure,
         'migrated' => false,
         'producers' => [
-            'app/Engine/Support/EngineTickedDelivery.php',
+            'app/Support/EngineTickedDelivery.php',
         ],
     ],
 ];

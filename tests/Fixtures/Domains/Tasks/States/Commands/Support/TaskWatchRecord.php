@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Tasks\States\Commands\Support;
 
-use App\Bus\Support\Command;
+use App\Support\Command;
 
 /**
  * @extends Command<void>

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Communication;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use App\Http\Controllers\Communication\Concerns\AnswersMessageCommands;
 use App\Http\Requests\Communication\TakeNextMessagesRequest;
 use Illuminate\Http\JsonResponse;

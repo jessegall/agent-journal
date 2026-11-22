@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\EditDocument;
 
-use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Commands\Support\DocumentCommandHandler;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Support\DocumentBody;
 use Domain\Documents\Support\DraftEditing;
 use Domain\Documents\Support\DraftText;
+use Domain\Documents\Values\DraftReference;
 
 final readonly class EditDocumentHandler extends DocumentCommandHandler
 {

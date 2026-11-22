@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Contracts\RequestKey;
-use App\Comments\Commands\PostComment\PostCommentCommand;
-use App\Records\Support\RecordIdentity;
+use App\Commands\PostComment\PostCommentCommand;
+use App\Contracts\CommandBus;
+use App\Contracts\RequestKey;
+use App\Support\RecordIdentity;
 
 final readonly class RecordComments
 {

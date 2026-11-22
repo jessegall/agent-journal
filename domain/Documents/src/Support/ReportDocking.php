@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Docking\Cards\ComposedCard;
-use App\Docking\Exceptions\DockSourceUnavailable;
-use App\Docking\Sources\Contracts\CardContext;
-use App\Docking\Sources\Contracts\Dockable;
-use App\Docking\Sources\Contracts\DockableProvider;
-use App\Docking\Sources\DockDefinition;
+use App\Exceptions\DockSourceUnavailable;
+use App\Support\Cards\ComposedCard;
+use App\Support\Sources\Contracts\CardContext;
+use App\Support\Sources\Contracts\Dockable;
+use App\Support\Sources\Contracts\DockableProvider;
+use App\Support\Sources\DockDefinition;
 use Domain\Documents\Models\Report;
 
 /**

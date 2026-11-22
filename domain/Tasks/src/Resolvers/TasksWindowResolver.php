@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Ui\Contracts\PageResolver;
-use App\Ui\Layout\DeclaredLayoutData;
+use App\Contracts\PageResolver;
+use App\Support\Layout\DeclaredLayoutData;
 use Domain\Tasks\Http\Requests\TasksRequest;
 use Domain\Tasks\Support\TaskIndexLayout;
 

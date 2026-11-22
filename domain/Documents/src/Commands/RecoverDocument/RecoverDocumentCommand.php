@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\RecoverDocument;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Support\Command;
-use App\Operations\Enums\AccessType;
-use Domain\Documents\Api\CloseResult;
-use Domain\Documents\Api\DraftTarget;
+use App\Attributes\Authorize;
+use App\Enums\AccessType;
+use App\Support\Command;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
+use Domain\Documents\Values\CloseResult;
+use Domain\Documents\Values\DraftTarget;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Required;
 

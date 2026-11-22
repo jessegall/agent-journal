@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
-use App\Ui\Contracts\PageResolver;
-use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\LayoutActionData;
-use App\Ui\Layout\LayoutBodyData;
-use App\Ui\Layout\LayoutPartData;
-use App\Ui\Layout\PublicationPage;
+use App\Contracts\PageResolver;
+use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\LayoutActionData;
+use App\Support\Layout\LayoutBodyData;
+use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\PublicationPage;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Http\Requests\RevisionPageRequest;
 

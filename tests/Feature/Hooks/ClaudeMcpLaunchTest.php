@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Agents\Events\StartSettingsRequested;
-use App\Agents\Support\IsolatedHookSettings;
-use App\Drivers\Support\DefaultDrivers;
-use App\Hooks\Drivers\Adapters\ClaudeCodeAdapter;
-use App\Hooks\Listeners\SupplyHookSettings;
+use App\Events\StartSettingsRequested;
+use App\Listeners\SupplyHookSettings;
+use App\Support\DefaultDrivers;
+use App\Support\Drivers\Adapters\ClaudeCodeAdapter;
+use App\Support\IsolatedHookSettings;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 

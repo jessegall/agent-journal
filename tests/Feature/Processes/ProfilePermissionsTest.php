@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Models\Agent;
-use App\Processes\Contracts\CommandPermissionResolver;
-use App\Processes\Enums\CommandClass;
-use App\Processes\Values\CommandClassSet;
-use App\Processes\Values\CommandPattern;
-use App\Processes\Values\CommandPatternSet;
-use App\Processes\Values\CommandPermissions;
-use App\Processes\Values\ProcessGrants;
+use App\Contracts\CommandPermissionResolver;
+use App\Enums\CommandClass;
+use App\Models\Agent;
+use App\Support\ActorIdentity;
+use App\Support\StartSessions;
+use App\Values\CommandClassSet;
+use App\Values\CommandPattern;
+use App\Values\CommandPatternSet;
+use App\Values\CommandPermissions;
+use App\Values\ProcessGrants;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestSelections;

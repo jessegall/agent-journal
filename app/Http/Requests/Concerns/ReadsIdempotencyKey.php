@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Concerns;
 
-use App\Bus\Support\RequestKey;
+use App\Support\RequestKey;
 
 /**
  * An owner write that needs its Idempotency-Key header: the header is validated with the body, and its value is the

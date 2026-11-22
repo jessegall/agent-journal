@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Data\NotificationTarget;
-use App\Communication\Enums\NotificationMutationType;
-use App\Communication\Enums\NotificationSourceType;
-use App\Communication\Models\Message;
-use App\Communication\Models\NotificationChange;
-use App\Communication\Models\NotificationReceipt;
-use App\Communication\Models\NotificationScope;
-use App\Communication\Resolvers\QuestionNotificationTarget;
-use App\Communication\Resolvers\Support\NotificationChanges;
-use App\Communication\Support\NotificationChangeCursor;
-use App\Communication\Support\NotificationChangePruning;
-use App\Communication\Support\NotificationDelivery;
-use App\Communication\Support\NotificationReceipts;
-use App\Communication\Support\NotificationScopes;
+use App\Data\NotificationTarget;
+use App\Enums\NotificationMutationType;
+use App\Enums\NotificationSourceType;
+use App\Models\Message;
+use App\Models\NotificationChange;
+use App\Models\NotificationReceipt;
+use App\Models\NotificationScope;
+use App\Resolvers\QuestionNotificationTarget;
+use App\Resolvers\Support\NotificationChanges;
+use App\Support\ActorIdentity;
+use App\Support\NotificationChangeCursor;
+use App\Support\NotificationChangePruning;
+use App\Support\NotificationDelivery;
+use App\Support\NotificationReceipts;
+use App\Support\NotificationScopes;
 use Carbon\CarbonImmutable;
 use Tests\Support\MessagingTestCase;
 

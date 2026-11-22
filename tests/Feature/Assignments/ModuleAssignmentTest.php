@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Exceptions\ActorContextMissing;
-use App\Agents\Commands\RetireAgent\RetireAgentCommand;
-use App\Agents\Models\Agent;
-use App\Assignments\Contracts\AssignmentResolver;
-use App\Assignments\Exceptions\AssignmentTypeUnavailable;
-use App\Assignments\Models\AssignmentRecord;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Bus\Contracts\CommandBus;
-use App\Records\Exceptions\RecordUnavailable;
-use App\Records\Support\RecordIdentity;
+use App\Commands\RetireAgent\RetireAgentCommand;
+use App\Contracts\AssignmentResolver;
+use App\Contracts\CommandBus;
+use App\Exceptions\ActorContextMissing;
+use App\Exceptions\AssignmentTypeUnavailable;
+use App\Exceptions\RecordUnavailable;
+use App\Models\Agent;
+use App\Models\AssignmentRecord;
+use App\Support\AssigneeIdentity;
+use App\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Str;

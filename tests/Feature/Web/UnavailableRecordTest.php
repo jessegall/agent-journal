@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Actors\Support\ActorStore;
+use App\Data\UnavailableWindow;
+use App\Declarations\RegisteredPage;
 use App\Http\Requests\Web\DeclaredPageRequest;
-use App\Http\Support\Web\PageProps;
-use App\Ui\Declarations\RegisteredPage;
-use App\Ui\Support\UiDeclarations;
-use App\Web\Data\UnavailableWindow;
+use App\Support\ActorStore;
+use App\Support\UiDeclarations;
+use App\Support\Web\PageProps;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

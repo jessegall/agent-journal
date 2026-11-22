@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models\Concerns;
 
-use App\Actors\Contracts\Actor;
-use Domain\Documents\Api\Events\RecordSettled;
+use App\Contracts\Actor;
 use Domain\Documents\Data\SettlementCard;
 use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Events\RecordSettled;
 use Domain\Documents\Exceptions\SettlementDenied;
 use Domain\Documents\Models\RecordSettlement;
 

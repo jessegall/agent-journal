@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Actors\Support\ActorContext;
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
+use App\Support\ActorContext;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanState;

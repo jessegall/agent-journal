@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Enums\CapacityResource;
-use App\Agents\Enums\ConversationModeType;
-use App\Agents\Enums\StartOriginType;
-use App\Agents\Exceptions\CapacityUnavailable;
-use App\Agents\Models\Agent;
-use App\Agents\Models\StartRecord;
-use App\Agents\Values\StartPolicy;
-use App\Agents\Values\StartRequest;
+use App\Enums\CapacityResource;
+use App\Enums\ConversationModeType;
+use App\Enums\StartOriginType;
+use App\Exceptions\CapacityUnavailable;
+use App\Models\Agent;
+use App\Models\StartRecord;
+use App\Support\ActorContext;
+use App\Support\ActorIdentity;
+use App\Support\StartSessions;
+use App\Values\StartPolicy;
+use App\Values\StartRequest;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use PhpOption\None;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
-use App\Records\Support\RecordIdentity;
-use Domain\Tasks\Api\TaskAssignmentCompletion;
+use App\Support\RecordIdentity;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Values\TaskAssignmentCompletion;
 
 /**
  * What another domain needs of tasks to assign their work: their record identities and, per group, how many are over.

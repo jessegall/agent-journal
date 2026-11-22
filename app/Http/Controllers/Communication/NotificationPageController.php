@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Communication;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Resolvers\Support\NotificationFeed;
+use App\Contracts\CurrentActor;
 use App\Http\Requests\Communication\NotificationPageRequest;
+use App\Resolvers\Support\NotificationFeed;
+use App\Support\ActorIdentity;
 use Illuminate\Http\JsonResponse;
 
 final readonly class NotificationPageController

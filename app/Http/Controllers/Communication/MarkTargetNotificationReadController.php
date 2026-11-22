@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Communication;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorIdentity;
-use App\Bus\Contracts\CommandBus;
-use App\Communication\Resolvers\Support\NotificationFeed;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActor;
 use App\Http\Requests\Communication\MarkTargetNotificationReadRequest;
+use App\Resolvers\Support\NotificationFeed;
+use App\Support\ActorIdentity;
 use Illuminate\Http\JsonResponse;
 
 /**

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Bus\Contracts\CallerReceipts;
-use App\Bus\Enums\ReceiptState;
-use App\Communication\Contracts\ConversationResolver;
+use App\Contracts\CallerReceipts;
+use App\Contracts\ConversationResolver;
+use App\Enums\ReceiptState;
 use Domain\Chat\Data\RequestOutcomeData;
 use Domain\Chat\Data\RequestOutcomeInput;
 use Domain\Chat\Enums\RequestOutcome;

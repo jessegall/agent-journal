@@ -1,0 +1,35 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support;
+
+use App\Contracts\CurrentActor;
+use App\Contracts\OperationPolicy;
+use App\Enums\AccessRuleType;
+use App\Values\AccessDecision;
+use App\Values\Operation;
+use App\Values\StartProfileAuthority;
+
+/**
+ * Decides a native operation by the acting agent's pinned profile, the access its session started under; no caller
+ * chooses another. An actor acting without a profile, such as the owner, is not held to one.
+ */
+final readonly class ProfileOperationPolicy implements OperationPolicy
+{
+    public function __construct(private CurrentActor $actors) {}
+
+    public function assess(Operation $operation): AccessDecision
+    {
+        $authority = $this->actors->authority();
+
+        if (! $authority instanceof StartProfileAuthority) {
+            return AccessDecision::allowed(
+                AccessRuleType::ScopeGrant,
+                'An actor without a profile is not held to one.',
+            );
+        }
+
+        return $authority->profile->start->access->decide($operation);
+    }
+}

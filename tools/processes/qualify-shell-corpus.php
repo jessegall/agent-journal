@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Processes\Enums\ShellDialect;
+use App\Enums\ShellDialect;
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 

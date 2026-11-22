@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Files\Contracts\Files;
-use App\Files\Enums\Place;
-use App\Files\Exceptions\FolderTooDeep;
-use App\Files\Exceptions\LinkLeavesPlace;
-use App\Files\Values\Depth;
-use App\Files\Values\FilePath;
+use App\Contracts\Files;
+use App\Enums\Place;
+use App\Exceptions\FolderTooDeep;
+use App\Exceptions\LinkLeavesPlace;
+use App\Values\Depth;
+use App\Values\FilePath;
 use RuntimeException;
 use Tests\Support\Files\UsesTemporaryPlaces;
 use Tests\TestCase;

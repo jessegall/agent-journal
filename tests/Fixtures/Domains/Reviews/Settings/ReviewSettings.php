@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews\Settings;
 
-use App\Settings\Contracts\SettingsDefinition;
-use App\Settings\Declarations\BooleanSetting;
-use App\Settings\Declarations\ChoiceSetting;
-use App\Settings\Declarations\DecimalSetting;
-use App\Settings\Declarations\EnumSetting;
-use App\Settings\Declarations\IntegerSetting;
-use App\Settings\Declarations\SettingGroup;
-use App\Settings\Declarations\StringSetting;
-use App\Settings\Declarations\ToggleGroup;
-use App\Settings\Values\Choice;
-use App\Settings\Values\Decimal;
+use App\Contracts\SettingsDefinition;
+use App\Declarations\BooleanSetting;
+use App\Declarations\ChoiceSetting;
+use App\Declarations\DecimalSetting;
+use App\Declarations\EnumSetting;
+use App\Declarations\IntegerSetting;
+use App\Declarations\SettingGroup;
+use App\Declarations\StringSetting;
+use App\Declarations\ToggleGroup;
+use App\Values\Choice;
+use App\Values\Decimal;
 use Tests\Fixtures\Domains\Reviews\Enums\ReviewLevel;
 use Tests\Fixtures\Domains\Reviews\Enums\ReviewMode;
 

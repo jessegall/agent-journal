@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Support\DockerImageVerifier;
-use App\Files\Contracts\Files;
+use App\Contracts\Files;
+use App\Support\DockerImageVerifier;
 use Tests\TestCase;
 
 final class DockerImageVerifierTest extends TestCase

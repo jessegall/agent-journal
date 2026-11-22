@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reads;
 
-use App\Agents\Models\AgentSession;
-use App\Reads\Exceptions\LazyLoadRefused;
-use App\Reads\Exceptions\QueryInValueRead;
-use App\Reads\Support\ScopedReadMeter;
+use App\Exceptions\LazyLoadRefused;
+use App\Exceptions\QueryInValueRead;
+use App\Models\AgentSession;
+use App\Support\ScopedReadMeter;
 use Domain\Access\Models\User;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CountsReads;

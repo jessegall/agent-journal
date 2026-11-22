@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Models\AgentSession;
-use App\Communication\Models\Message;
+use App\Models\AgentSession;
+use App\Models\Message;
+use App\Support\ActorIdentity;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\SendsMcpFrames;

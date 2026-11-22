@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\Command;
-use App\Bus\Support\RequestKey;
+use App\Contracts\CommandBus;
+use App\Enums\ActorType;
+use App\Support\ActorIdentity;
+use App\Support\Command;
+use App\Support\RequestKey;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Commands\DockSource\DockSourceCommand;

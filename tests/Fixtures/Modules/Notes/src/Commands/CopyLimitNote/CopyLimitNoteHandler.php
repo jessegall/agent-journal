@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\CopyLimitNote;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use App\Contracts\CommandHandler;
 use Tests\Fixtures\Modules\Notes\Commands\CopyLimitNote\CopyLimitNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\LimitNote\LimitNoteCommand;

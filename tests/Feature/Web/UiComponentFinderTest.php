@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Domains\Support\DomainEntry;
-use App\Ui\Declarations\Page;
-use App\Ui\Enums\Icon;
-use App\Ui\Support\UiDeclarations;
+use App\Declarations\Page;
+use App\Enums\Icon;
+use App\Support\DomainEntry;
+use App\Support\UiDeclarations;
 use InvalidArgumentException;
 use Tests\Fixtures\UiDeclarations\Library\BooksResolver;
 use Tests\Fixtures\UiDeclarations\Library\LibraryDomain;

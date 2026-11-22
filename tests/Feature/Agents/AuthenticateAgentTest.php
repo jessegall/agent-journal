@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Actions\AgentSessions;
-use App\Agents\Actions\StartTokens;
-use App\Agents\Exceptions\AgentContextMissing;
-use App\Agents\Support\AgentContext;
+use App\Exceptions\AgentContextMissing;
+use App\Support\AgentContext;
+use App\Support\AgentSessions;
+use App\Support\StartTokens;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;

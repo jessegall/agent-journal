@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Actors\Support\ActorContext;
-use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Models\CommandReceipt;
-use App\Bus\Support\ReceiptCaller;
-use App\Bus\Support\ReceiptRetention;
-use App\Bus\Support\RequestKey;
+use App\Commands\AssignRecord\AssignRecordCommand;
+use App\Contracts\CommandBus;
+use App\Models\CommandReceipt;
+use App\Support\ActorContext;
+use App\Support\AssigneeIdentity;
+use App\Support\ReceiptCaller;
+use App\Support\ReceiptRetention;
+use App\Support\RequestKey;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\ConnectionInterface;
 use stdClass;

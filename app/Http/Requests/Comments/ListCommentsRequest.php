@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Comments;
 
-use App\Assignments\Support\Page;
 use App\Http\Requests\RecordTargetRequest;
-use App\Reads\Values\PageSize;
+use App\Support\Page;
+use App\Values\PageSize;
 
 /**
  * A page of one record's comments, after a comment id when reading on.

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
-use App\Reflection\Support\Reflector;
-use App\Ui\Contracts\UserInterfaceUpdater;
-use Domain\Tasks\Api\Events\TaskBlocked;
-use Domain\Tasks\Api\Events\TaskCancelled;
-use Domain\Tasks\Api\Events\TaskFinished;
-use Domain\Tasks\Api\Events\TaskStartCommitted;
+use App\Contracts\CommandBus;
+use App\Contracts\UserInterfaceUpdater;
+use App\Support\Reflector;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
+use Domain\Tasks\Events\TaskBlocked;
+use Domain\Tasks\Events\TaskCancelled;
+use Domain\Tasks\Events\TaskFinished;
+use Domain\Tasks\Events\TaskStartCommitted;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\Event;

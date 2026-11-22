@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\Agents\Commands\EnrollHost\EnrollHostCommand;
-use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Agents\Commands\RunKeyScript\RunKeyScriptCommand;
-use App\Agents\Enums\DriverVariant;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Agents\Support\EnrolledHost;
-use App\Agents\Support\OpenedRuntime;
-use App\Agents\Values\ScriptParameter;
-use App\Bus\Contracts\Command;
-use App\Bus\Contracts\CommandBus;
+use App\Commands\EnrollHost\EnrollHostCommand;
+use App\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Commands\RunKeyScript\RunKeyScriptCommand;
+use App\Contracts\Command;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Enums\DriverVariant;
+use App\Models\Agent;
+use App\Models\AgentSession;
+use App\Support\ActorContext;
+use App\Support\EnrolledHost;
+use App\Support\OpenedRuntime;
+use App\Values\OwnerAuthority;
+use App\Values\ScriptParameter;
 use Illuminate\Support\Str;
 use Tests\Support\WithActiveAccount;
 

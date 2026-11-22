@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Enums\ChatPermission;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Enums\LeaveReason;
-use App\Communication\Events\ChatMemberLeft;
-use App\Communication\Events\ChatMessageAccepted;
-use App\Web\Events\ChatAccessEnded;
-use App\Web\Events\PageChanged;
-use App\Web\Listeners\BroadcastPageChange;
-use App\Web\Support\UserChannel;
+use App\Enums\ChatPermission;
+use App\Enums\LeaveReason;
+use App\Events\ChatAccessEnded;
+use App\Events\ChatMemberLeft;
+use App\Events\ChatMessageAccepted;
+use App\Events\PageChanged;
+use App\Listeners\BroadcastPageChange;
+use App\Support\ActorIdentity;
+use App\Support\UserChannel;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;

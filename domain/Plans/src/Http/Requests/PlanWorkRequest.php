@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Requests;
 
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\AssignmentReference;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
-use App\Records\Support\RecordIdentity;
+use App\Support\AssigneeIdentity;
+use App\Support\AssignmentReference;
+use App\Support\RecordIdentity;
 use Domain\Plans\Models\Plan;
 use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;

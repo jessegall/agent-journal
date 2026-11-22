@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Listeners;
 
-use App\Agents\Contracts\SessionProvenance;
-use App\Agents\Events\SessionClosed;
-use App\Contracts\Attributes\InCommandTransaction;
+use App\Attributes\InCommandTransaction;
 use App\Contracts\Listener;
+use App\Contracts\SessionProvenance;
+use App\Events\SessionClosed;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Support\DraftClosing;
 

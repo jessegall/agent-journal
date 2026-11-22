@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Agents\Enums\HostProtocolVersion;
-use App\Connections\Models\Environment;
-use App\Connections\Models\Project;
-use App\Connections\Models\ProjectBinding;
-use App\Connections\Models\ProjectInvitation;
+use App\Enums\HostProtocolVersion;
+use App\Models\Environment;
+use App\Models\Project;
+use App\Models\ProjectBinding;
+use App\Models\ProjectInvitation;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Profiles\Support\ClaudeDriver;
-use App\Profiles\Support\CodexDriver;
-use App\Profiles\Support\SignInEgress;
+use App\Support\ClaudeDriver;
+use App\Support\CodexDriver;
+use App\Support\SignInEgress;
 use Tests\TestCase;
 
 /**

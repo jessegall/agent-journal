@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Communication;
 
-use App\Actors\Contracts\Actor;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Contracts\Inbox;
-use App\Communication\Contracts\InboxAccess;
-use App\Communication\Exceptions\InboxUnavailable;
-use App\Communication\Models\InboxRecord;
-use App\Communication\Support\InboxMembers;
-use App\Communication\Support\InboxMembership;
+use App\Contracts\Actor;
+use App\Support\ActorIdentity;
+use App\Contracts\Inbox;
+use App\Contracts\InboxAccess;
+use App\Exceptions\InboxUnavailable;
+use App\Models\InboxRecord;
+use App\Support\InboxMembers;
+use App\Support\InboxMembership;
 use Illuminate\Database\Eloquent\Builder;
 
 /**

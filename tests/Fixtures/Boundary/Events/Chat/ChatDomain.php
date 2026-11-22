@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Events\Chat;
 
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
+use App\Support\Domain;
+use App\Support\Exports;
 
 final class ChatDomain extends Domain
 {

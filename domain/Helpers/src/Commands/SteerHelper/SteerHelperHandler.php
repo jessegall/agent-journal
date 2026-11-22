@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Commands\SteerHelper;
 
-use App\Actors\Support\ActorIdentity;
+use App\Support\ActorIdentity;
 use Domain\Helpers\Commands\Support\HelperCommandHandler;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperUnavailable;

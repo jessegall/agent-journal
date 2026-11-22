@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Contracts\ToolDiscovery;
-use App\Agents\Models\AgentRuntime;
-use App\Agents\Values\HostContext;
+use App\Contracts\ToolDiscovery;
+use App\Models\AgentRuntime;
+use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 
 /**

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\CommandRefused;
-use App\Bus\Exceptions\StackLockTimedOut;
-use App\Bus\Support\OperationDeadline;
-use App\Hooks\Admission\AdvisoryStackAdmission;
+use App\Contracts\CommandBus;
+use App\Exceptions\CommandRefused;
+use App\Exceptions\StackLockTimedOut;
+use App\Support\Admission\AdvisoryStackAdmission;
+use App\Support\OperationDeadline;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;
 use Tests\Fixtures\Modules\Notes\Commands\CopyNote\CopyNoteCommand;

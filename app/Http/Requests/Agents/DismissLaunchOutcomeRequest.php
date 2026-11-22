@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Agents\Commands\DismissLaunchOutcome\DismissLaunchOutcomeCommand;
-use App\Agents\Enums\StartDisposition;
+use App\Commands\DismissLaunchOutcome\DismissLaunchOutcomeCommand;
+use App\Enums\StartDisposition;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

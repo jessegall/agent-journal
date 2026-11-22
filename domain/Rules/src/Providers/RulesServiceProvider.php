@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Providers;
 
-use App\Actors\Contracts\ReadEntitlements;
-use App\Actors\Values\ReadEntitlement;
-use App\Links\Support\LinkTypeRegistry;
+use App\Contracts\ReadEntitlements;
+use App\Support\LinkTypeRegistry;
+use App\Values\ReadEntitlement;
 use Domain\Rules\Contracts\RuleDetailsResolver;
 use Domain\Rules\Contracts\RuleResolver;
 use Domain\Rules\Exceptions\RuleMissing;

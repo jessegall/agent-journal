@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
+use App\Declarations\RegisteredSection;
 use App\Http\Middleware\Web\HandleInertiaRequests;
-use App\Ui\Declarations\RegisteredSection;
-use App\Ui\Support\UiDeclarations;
+use App\Support\UiDeclarations;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Resolvers\OpenPlansCount;

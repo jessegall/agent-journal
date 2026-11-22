@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Commands\ImportHelperCommits\ImportHelperCommitsCommand;
-use App\Agents\Commands\ImportHelperCommits\ImportHelperCommitsHandler;
-use App\Agents\Exceptions\HelperWorkUncertified;
-use App\Agents\Values\HelperImportReceipt;
-use App\Records\Support\RecordIdentity;
+use App\Commands\ImportHelperCommits\ImportHelperCommitsCommand;
+use App\Commands\ImportHelperCommits\ImportHelperCommitsHandler;
+use App\Exceptions\HelperWorkUncertified;
+use App\Support\RecordIdentity;
+use App\Values\HelperImportReceipt;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\CertifiesHelperWork;
 use Tests\Support\RefreshHookDatabase;

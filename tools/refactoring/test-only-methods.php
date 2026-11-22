@@ -16,7 +16,7 @@ declare(strict_types=1);
  * Laravel's Model already declares are left out, as the framework calls them.
  */
 
-use App\Reflection\Support\Reflector;
+use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeFinder;

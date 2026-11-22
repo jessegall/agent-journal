@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
-use App\Drivers\Support\DefaultDrivers;
-use App\Profiles\Enums\InstancePolicy;
-use App\Profiles\Support\PolicyOverride;
-use App\Profiles\Support\ProfileProposal;
-use App\Profiles\Support\ProposedProfile;
-use App\Profiles\Values\ProfileBase;
-use App\Profiles\Values\ProfileKey;
-use App\Profiles\Values\WithheldGrant;
+use App\Support\DefaultDrivers;
+use App\Enums\InstancePolicy;
+use App\Support\PolicyOverride;
+use App\Support\ProfileProposal;
+use App\Support\ProposedProfile;
+use App\Values\ProfileBase;
+use App\Values\ProfileKey;
+use App\Values\WithheldGrant;
 
 /**
  * Proposals of profiles that take every policy field from their type's defaults, as tests that only need some

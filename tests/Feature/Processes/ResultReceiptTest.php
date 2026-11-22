@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Commands\AssessPartOutput\AssessPartOutputCommand;
-use App\Processes\Contracts\ResultReceipts;
-use App\Processes\Enums\AssessmentOutcome;
-use App\Processes\Enums\ProblemCode;
-use App\Processes\Enums\RunMode;
-use App\Processes\Events\EvidenceInvalid;
-use App\Processes\Models\OutputAssessment;
-use App\Processes\Models\PartRun;
-use App\Processes\Models\ResultReceipt;
-use App\Processes\Values\OutputProblem;
+use App\Commands\AssessPartOutput\AssessPartOutputCommand;
+use App\Contracts\ResultReceipts;
+use App\Enums\AssessmentOutcome;
+use App\Enums\ProblemCode;
+use App\Enums\RunMode;
+use App\Events\EvidenceInvalid;
+use App\Models\OutputAssessment;
+use App\Models\PartRun;
+use App\Models\ResultReceipt;
+use App\Values\OutputProblem;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\Processes\StartsWithApprovedAcmePair;
 use Tests\Support\RefreshHookDatabase;

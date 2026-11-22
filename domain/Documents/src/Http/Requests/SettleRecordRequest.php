@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Http\Requests;
 
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
-use App\Numbers\Support\RecordReference;
+use App\Support\RecordReference;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Actors\Contracts\Actor;
-use App\Actors\Contracts\JournalAdmission;
-use App\Actors\Exceptions\ConsoleOwnerMissing;
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
+use App\Contracts\Actor;
+use App\Contracts\JournalAdmission;
+use App\Exceptions\ConsoleOwnerMissing;
+use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 
 /**
  * Only the configured owner joins the journal. With no owner configured, nobody gets in; signing up or being the first

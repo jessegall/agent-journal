@@ -1,0 +1,148 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Providers;
+
+use App\Contracts\AgentMessageReader;
+use App\Contracts\AssignmentRegistration;
+use App\Contracts\ChatDepartures;
+use App\Contracts\ChatMemberPolicies;
+use App\Contracts\ChatTimeline;
+use App\Contracts\ConversationResolver;
+use App\Contracts\InboxNotices as InboxNoticesContract;
+use App\Contracts\InboxRegistration;
+use App\Contracts\InboxResolver;
+use App\Contracts\IncomingWorkRegistration;
+use App\Contracts\Notifications;
+use App\Contracts\NotificationTargets;
+use App\Contracts\PolicyCatalogue;
+use App\Contracts\ReadEntitlements;
+use App\Contracts\RecordProviderRegistration;
+use App\Contracts\RequestSource;
+use App\Enums\AccessType;
+use App\Enums\AssignmentPurpose;
+use App\Models\Message;
+use App\Policies\MessageAdministrationPolicy;
+use App\Policies\MessagePolicy;
+use App\Resolvers\AgentMessages;
+use App\Resolvers\MessageRecords;
+use App\Resolvers\QuestionNotificationTarget;
+use App\Resolvers\Support\IntervalChatTimeline;
+use App\Support\InboxNotices;
+use App\Support\IntervalChatDepartures;
+use App\Support\Links\MessageLinkRecords;
+use App\Support\LinkTypeRegistry;
+use App\Support\MessageAnswerActivation;
+use App\Support\MessageClaimProvider;
+use App\Support\NotificationChangePruning;
+use App\Support\NotificationTargetRegistry;
+use App\Support\PendingInboxWork;
+use App\Support\PendingWorkSources;
+use App\Support\PresentationSweep;
+use App\Support\ReceiptDeliveries;
+use App\Support\RecipientNotifications;
+use App\Support\RegisteredInboxes;
+use App\Support\SelectedMessages;
+use App\Support\SystemEntryPolicies;
+use App\Values\PolicyDefinition;
+use App\Values\ReadEntitlement;
+use Carbon\CarbonImmutable;
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\ServiceProvider;
+
+/**
+ * Core's messaging between actors: the message as a numbered, linkable record.
+ */
+final class CommunicationServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        $this->app->singleton(RegisteredInboxes::class);
+        $this->app->singleton(InboxRegistration::class, RegisteredInboxes::class);
+        $this->app->singleton(InboxResolver::class, RegisteredInboxes::class);
+        $this->app->singleton(RegisteredInboxes::class);
+        $this->app->scoped(ConversationResolver::class, MessageRecords::class);
+        $this->app->bind(InboxNoticesContract::class, InboxNotices::class);
+        $this->app->bind(ChatDepartures::class, IntervalChatDepartures::class);
+        $this->app->bind(ChatTimeline::class, IntervalChatTimeline::class);
+        $this->app->scoped(AgentMessageReader::class, AgentMessages::class);
+        $this->app->scoped(RequestSource::class, SelectedMessages::class);
+        $this->app->singleton(NotificationTargetRegistry::class);
+        $this->app->singleton(NotificationTargets::class, NotificationTargetRegistry::class);
+        $this->app->bind(Notifications::class, RecipientNotifications::class);
+    }
+
+    public function boot(
+        LinkTypeRegistry $links,
+        RecordProviderRegistration $records,
+        PolicyCatalogue $policies,
+        AssignmentRegistration $assignments,
+        PendingWorkSources $pendingWork,
+        IncomingWorkRegistration $incoming,
+        SystemEntryPolicies $system,
+        ReadEntitlements $reads,
+        NotificationTargetRegistry $notificationTargets,
+        ChatMemberPolicies $chatMembers,
+    ): void {
+        $chatMembers->allow(MessagePolicy::class);
+        $readGrant = ReadEntitlement::grant(MessagePolicy::class);
+
+        $reads->declare('messages_show', $readGrant);
+        $reads->declare('messages_read', $readGrant);
+        $reads->declare('messages_list', $readGrant);
+        $reads->declare('messages_context', $readGrant);
+        $reads->declare('inbox_history', $readGrant);
+        $reads->declare('inbox_counts', $readGrant);
+        $reads->declare('attachments_read', $readGrant);
+        $system->allow(InboxNotices::SYSTEM_ENTRY, MessagePolicy::class);
+
+        $policies->register('Core', new PolicyDefinition(
+            MessagePolicy::class,
+            [AccessType::Read, AccessType::Create, AccessType::Edit],
+        ));
+
+        $policies->register('Core', new PolicyDefinition(
+            MessageAdministrationPolicy::class,
+            [AccessType::Read, AccessType::Edit],
+        ));
+
+        $links->register([Message::LINK_TYPE => Message::class]);
+        $pendingWork->register(PendingInboxWork::class);
+        $notificationTargets->register(QuestionNotificationTarget::KEY, QuestionNotificationTarget::class);
+
+        $this->callAfterResolving(
+            Schedule::class,
+            fn (Schedule $schedule) => $schedule
+                ->call(fn (NotificationChangePruning $pruning) => $pruning->prune(CarbonImmutable::now()))
+                ->hourly(),
+        );
+
+        $this->callAfterResolving(
+            Schedule::class,
+            fn (Schedule $schedule) => $schedule
+                ->call(fn (ReceiptDeliveries $deliveries) => $deliveries->deliverDue(CarbonImmutable::now()))
+                ->everyMinute(),
+        );
+
+        $this->callAfterResolving(
+            Schedule::class,
+            fn (Schedule $schedule) => $schedule
+                ->call(fn (PresentationSweep $sweep) => $sweep->sweep(CarbonImmutable::now()))
+                ->everyMinute(),
+        );
+
+        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/communication/communication.php');
+        $incoming->register(MessageAnswerActivation::class);
+        $assignments->registerOwner('Communication', []);
+
+        $assignments->registerRecord(
+            Message::LINK_TYPE,
+            MessageClaimProvider::class,
+            'Communication',
+            AssignmentPurpose::InternalResponsibility,
+        );
+
+        $records->register(Message::LINK_TYPE, MessageLinkRecords::class);
+    }
+}

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hooks\Host;
 
-use App\Agents\Contracts\SessionPolicyReader;
-use App\Agents\Models\ProcessStart;
-use App\Agents\Values\HostContext;
-use App\Hooks\Models\StopAttempt;
-use App\Http\Data\Hooks\PendingStopAttemptData;
+use App\Contracts\SessionPolicyReader;
+use App\Data\Hooks\PendingStopAttemptData;
+use App\Models\ProcessStart;
+use App\Models\StopAttempt;
+use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 
 /**

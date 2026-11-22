@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Data;
 
-use App\Assignments\Support\AssigneeName;
+use App\Support\AssigneeName;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

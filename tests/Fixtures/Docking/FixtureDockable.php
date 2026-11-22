@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Docking;
 
-use App\Docking\Sources\Contracts\Dockable;
-use App\Docking\Cards\Stack;
-use App\Docking\Cards\Title;
-use App\Docking\Sources\Contracts\CardContext;
-use App\Docking\Cards\DockCard;
-use App\Docking\Sources\DockDefinition;
-use App\Docking\Cards\DockIdentity;
+use App\Support\Sources\Contracts\Dockable;
+use App\Support\Cards\Stack;
+use App\Support\Cards\Title;
+use App\Support\Sources\Contracts\CardContext;
+use App\Support\Cards\DockCard;
+use App\Support\Sources\DockDefinition;
+use App\Support\Cards\DockIdentity;
 
 /**
  * A source an owner composes its own card for, standing in for a rich owner in the registry's tests.

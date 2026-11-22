@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
-use Domain\Tasks\Api\TaskProgress;
+use Domain\Tasks\Values\TaskProgress;
 
 /**
  * Counts how far tasks named by id have got, for a domain that groups tasks without reading them.

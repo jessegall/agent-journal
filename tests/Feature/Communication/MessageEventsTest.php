@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\SendMessage\SendMessageCommand;
-use App\Communication\Events\MessageSent;
-use App\Communication\Exceptions\InboxUnavailable;
-use App\Communication\Models\Message;
-use App\Domains\Support\FailureLoggingListener;
-use App\Reflection\Support\DeclaredType;
-use App\Reflection\Support\ReflectedMethod;
-use App\Reflection\Support\Reflector;
+use App\Commands\SendMessage\SendMessageCommand;
+use App\Events\MessageSent;
+use App\Exceptions\InboxUnavailable;
+use App\Models\Message;
+use App\Support\DeclaredType;
+use App\Support\FailureLoggingListener;
+use App\Support\ReflectedMethod;
+use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;

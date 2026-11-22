@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Membership;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use Domain\Chat\Commands\CloseChat\CloseChatCommand;
 use Domain\Chat\Data\ChatInput;
 use Illuminate\Http\JsonResponse;

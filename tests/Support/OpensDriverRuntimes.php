@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Agents\Actions\AgentRuntimes;
-use App\Agents\Enums\DriverVariant;
-use App\Agents\Models\AgentSession;
-use App\Agents\Values\RuntimeIntent;
+use App\Enums\DriverVariant;
+use App\Models\AgentSession;
+use App\Support\AgentRuntimes;
+use App\Values\RuntimeIntent;
 
 /**
  * Opens a process driver's runtime for a started session, so the agent has a runtime that can be woken.

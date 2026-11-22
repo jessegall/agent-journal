@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Exceptions;
 
-use App\Bus\Contracts\CodedRefusal;
-use App\Bus\Contracts\RefusalDetails;
-use App\Bus\Enums\RefusalCode;
-use App\Bus\Exceptions\Concerns\RendersRefusal;
-use App\Bus\Values\RecoveryCall;
+use App\Concerns\RendersRefusal;
+use App\Contracts\CodedRefusal;
 use App\Contracts\CommandRefusal;
+use App\Contracts\RefusalDetails;
+use App\Enums\RefusalCode;
+use App\Values\RecoveryCall;
 use Domain\Tasks\Models\Task;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;

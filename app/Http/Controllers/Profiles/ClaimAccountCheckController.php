@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Agents\Values\HostContext;
-use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\ClaimAccountCheck\ClaimAccountCheckCommand;
+use App\Commands\ClaimAccountCheck\ClaimAccountCheckCommand;
+use App\Contracts\CommandBus;
+use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 

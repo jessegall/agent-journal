@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Names\Plans;
 
-use App\Contracts\Attributes\RequiresListener;
+use App\Attributes\RequiresListener;
 
 /**
  * An event whose write owner admits another domain's listener by its name as text, which is no use of that listener.

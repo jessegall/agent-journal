@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Http\Controllers\Calls;
 
-use App\Assignments\Support\NumberedPage;
-use Domain\Tasks\Api\TaskFilters;
+use App\Support\NumberedPage;
 use Domain\Tasks\Calls\ListAssignedTasksCall;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
+use Domain\Tasks\Data\AssignedTaskListData;
 use Domain\Tasks\Enums\TaskState;
-use Domain\Tasks\Http\Data\AssignedTaskListData;
+use Domain\Tasks\Values\TaskFilters;
 
 /**
  * Answers the tasks assigned to the caller.

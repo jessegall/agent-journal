@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles\Http;
 
-use App\Drivers\Support\DefaultDrivers;
-use App\Profiles\Models\Account;
-use App\Profiles\Models\ActiveAccount;
-use App\Profiles\Values\AccountLabel;
-use App\Ui\Support\UiDeclarations;
+use App\Models\Account;
+use App\Models\ActiveAccount;
+use App\Support\DefaultDrivers;
+use App\Support\UiDeclarations;
+use App\Values\AccountLabel;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Process;

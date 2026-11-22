@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Commands\SetStringChoice;
+
+use App\Attributes\Authorize;
+use App\Enums\AccessType;
+use App\Policies\SettingPolicy;
+use App\Support\Command;
+use App\Values\SettingReference;
+use App\Values\SettingsChange;
+
+/**
+ * Stores the chosen text option of a choice or string-backed enum setting as the owner's next revision.
+ *
+ * @extends Command<SettingsChange>
+ */
+#[Authorize(SettingPolicy::class, AccessType::Edit)]
+final readonly class SetStringChoiceCommand extends Command
+{
+    public function __construct(
+        public SettingReference $setting,
+        public string $selectedKey,
+        public int $expectedRevision,
+    ) {}
+}

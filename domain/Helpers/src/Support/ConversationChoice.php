@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Agents\Enums\ConversationModeType;
-use Domain\Helpers\Readers\HelperCandidate;
+use App\Enums\ConversationModeType;
+use Domain\Helpers\Support\Readers\HelperCandidate;
 
 /**
  * What a dispatch chose for the helper it launches: whether the identity is new, whether its conversation resumes

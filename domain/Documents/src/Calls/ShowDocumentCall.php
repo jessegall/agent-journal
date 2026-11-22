@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Calls;
 
-use App\AgentRequests\Attributes\Endpoint;
-use App\AgentRequests\Contracts\JournalCall;
-use App\AgentRequests\Enums\CallEffect;
-use App\Text\Support\TextSelection;
+use App\Attributes\Endpoint;
+use App\Contracts\JournalCall;
+use App\Enums\CallEffect;
+use App\Support\TextSelection;
 use Domain\Documents\Data\RecordText;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;

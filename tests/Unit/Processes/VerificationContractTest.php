@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Processes\Declarations\VerificationContract;
-use App\Processes\Enums\EmptySelection;
-use App\Processes\Enums\FramingType;
-use App\Processes\Enums\Outcome;
-use App\Processes\Enums\OutputEncoding;
-use App\Processes\Enums\StreamUse;
-use App\Processes\Enums\SummaryRule;
-use App\Processes\Enums\ToolType;
-use App\Processes\Exceptions\VerificationContractInvalid;
-use App\Processes\Values\EmptyRunPolicy;
-use App\Processes\Values\ExecutableBinding;
-use App\Processes\Values\ExitBranch;
-use App\Processes\Values\ExitPolicy;
-use App\Processes\Values\OutputContract;
-use App\Processes\Values\ProgressPolicy;
-use App\Processes\Values\ReaderReference;
+use App\Declarations\VerificationContract;
+use App\Enums\EmptySelection;
+use App\Enums\FramingType;
+use App\Enums\Outcome;
+use App\Enums\OutputEncoding;
+use App\Enums\StreamUse;
+use App\Enums\SummaryRule;
+use App\Enums\ToolType;
+use App\Exceptions\VerificationContractInvalid;
+use App\Values\EmptyRunPolicy;
+use App\Values\ExecutableBinding;
+use App\Values\ExitBranch;
+use App\Values\ExitPolicy;
+use App\Values\OutputContract;
+use App\Values\ProgressPolicy;
+use App\Values\ReaderReference;
 use PHPUnit\Framework\TestCase;
 
 /**

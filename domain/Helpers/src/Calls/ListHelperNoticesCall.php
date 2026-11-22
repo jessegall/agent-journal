@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Calls;
 
-use App\AgentRequests\Attributes\Endpoint;
-use App\AgentRequests\Contracts\JournalCall;
-use App\AgentRequests\Enums\CallEffect;
-use Domain\Helpers\Http\Data\HelperNoticeListData;
+use App\Attributes\Endpoint;
+use App\Contracts\JournalCall;
+use App\Enums\CallEffect;
+use Domain\Helpers\Data\HelperNoticeListData;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;

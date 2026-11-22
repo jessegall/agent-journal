@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Domains\Exceptions\NotADomain;
-use App\Domains\Exceptions\RequiredDomainMissing;
-use App\Domains\Providers\DomainEventServiceProvider;
-use App\Domains\Providers\DomainServiceProvider;
-use App\Domains\Support\DomainRegistry;
-use App\Hooks\Stack\StateTypes;
-use App\Hooks\StateLoading\Loaders\ReadyStateLoader;
-use App\Reflection\Support\ReflectedProperty;
-use App\Reflection\Support\Reflector;
-use App\Sharing\Events\ShareActivated;
-use App\Web\Listeners\BroadcastPageChange;
+use App\Events\ShareActivated;
+use App\Exceptions\NotADomain;
+use App\Exceptions\RequiredDomainMissing;
+use App\Listeners\BroadcastPageChange;
+use App\Providers\DomainEventServiceProvider;
+use App\Providers\DomainServiceProvider;
+use App\Support\DomainRegistry;
+use App\Support\ReflectedProperty;
+use App\Support\Reflector;
+use App\Support\Stack\StateTypes;
+use App\Support\StateLoading\Loaders\ReadyStateLoader;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Events\Dispatcher;

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Drivers\Support\DefaultDrivers;
-use App\Files\Contracts\Files;
-use App\Files\Enums\Place;
-use App\Files\Values\FilePath;
-use App\Hooks\Drivers\DriverReply;
-use App\Hooks\Drivers\OutageReply;
-use App\Hooks\Enums\CallFailure;
-use App\Hooks\Relay\HookRelay;
-use App\Hooks\Relay\PreparationState;
-use App\Hooks\Relay\RelaySettings;
+use App\Contracts\Files;
+use App\Enums\CallFailure;
+use App\Enums\Place;
+use App\Support\DefaultDrivers;
+use App\Support\Drivers\DriverReply;
+use App\Support\Drivers\OutageReply;
+use App\Support\Relay\HookRelay;
+use App\Support\Relay\PreparationState;
+use App\Support\Relay\RelaySettings;
+use App\Values\FilePath;
 use Illuminate\Support\Facades\Http;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Hooks\JournalUnreachable;

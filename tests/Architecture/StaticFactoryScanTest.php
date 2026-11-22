@@ -23,9 +23,9 @@ final class StaticFactoryScanTest extends TestCase
 
         $this->assertSame(
             [
-                [22, 'App\Reflection\Support\Reflector::of', StaticFactoryScan::INJECTABLE],
-                [24, 'App\Reflection\Support\Reflector::of', StaticFactoryScan::INJECTABLE],
-                [24, 'App\Reflection\Support\Reflector::of($this->name)', StaticFactoryScan::REPEATED],
+                [22, 'App\Support\Reflector::of', StaticFactoryScan::INJECTABLE],
+                [24, 'App\Support\Reflector::of', StaticFactoryScan::INJECTABLE],
+                [24, 'App\Support\Reflector::of($this->name)', StaticFactoryScan::REPEATED],
             ],
             array_map(fn (array $finding) => [$finding['line'], $finding['call'], $finding['reason']], $findings),
         );

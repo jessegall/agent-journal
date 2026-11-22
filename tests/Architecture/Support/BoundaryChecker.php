@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Contracts\Event;
-use App\Domains\Support\DomainEntry;
-use App\Exports\Support\Exports;
-use App\Reflection\Support\Reflector;
+use App\Support\DomainEntry;
+use App\Support\Exports;
+use App\Support\Reflector;
 
 /**
  * Judges name uses against the domain each file belongs to, the domains it declares it requires and what each owner
@@ -346,10 +346,7 @@ final readonly class BoundaryChecker
     {
         $name = ltrim($name, '\\');
 
-        return stripos($name, 'App\\') === 0 && stripos(
-            $name,
-            'App\\Domains\\',
-        ) !== 0 && self::isDeclared($name) && ! $this->coreExports->has($name);
+        return stripos($name, 'App\\') === 0 && self::isDeclared($name) && ! $this->coreExports->has($name);
     }
 
     /**
@@ -357,8 +354,8 @@ final readonly class BoundaryChecker
      */
     private static function isCheckedRegistrationSite(string $file): bool
     {
-        return str_ends_with($file, 'app/Domains/Bootstrappers/RegisterStates.php')
-            || str_ends_with($file, 'app/Domains/Providers/DomainEventServiceProvider.php');
+        return str_ends_with($file, 'app/Support/Bootstrappers/RegisterStates.php')
+            || str_ends_with($file, 'app/Providers/DomainEventServiceProvider.php');
     }
 
     /**
@@ -368,10 +365,7 @@ final readonly class BoundaryChecker
     {
         $name = ltrim($name, '\\');
 
-        return stripos($name, 'App\\') === 0 && stripos(
-            $name,
-            'App\\Domains\\',
-        ) !== 0 && Reflector::find($name)
+        return stripos($name, 'App\\') === 0 && Reflector::find($name)
             ->filter(fn (Reflector $type) => $type->isSubclassOf(Event::class))
             ->isDefined();
     }

@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Contracts\CurrentAuthorizer;
-use App\Agents\Contracts\SessionProvenance;
-use App\Agents\Values\Operation;
-use App\Agents\Values\ResourceRequest;
-use App\Operations\Enums\AccessType;
-use Domain\Documents\Api\RetainedDraftView;
+use App\Contracts\CurrentActor;
+use App\Contracts\CurrentAuthorizer;
+use App\Contracts\SessionProvenance;
+use App\Enums\AccessType;
+use App\Values\Operation;
+use App\Values\ResourceRequest;
 use Domain\Documents\Contracts\DraftReader;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\RetainedDraft;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
+use Domain\Documents\Values\RetainedDraftView;
 
 final readonly class RetainedDrafts implements DraftReader
 {

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Bus\Contracts\CommandMiddleware as CommandMiddlewareContract;
-use App\Bus\Support\Command;
-use App\Hooks\States\AgentState;
-use App\Reflection\Support\Reflector;
+use App\Contracts\CommandMiddleware as CommandMiddlewareContract;
+use App\Support\Command;
+use App\Support\Reflector;
+use App\Support\States\AgentState;
 use Illuminate\Console\Command as ArtisanCommand;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
@@ -117,7 +117,7 @@ enum FolderType: string
             self::Exceptions => 'an exception',
             self::Listeners => 'a listener (it has a handle method)',
             self::Providers => 'a service provider',
-            self::Commands => 'a command (a final readonly class extending App\Bus\Support\Command)',
+            self::Commands => 'a command (a final readonly class extending App\Support\Command)',
             self::Handlers => 'a handler (a final class with a public handle method)',
             self::CommandMiddleware => 'a command middleware (it implements CommandMiddleware)',
             self::ArtisanCommands => 'an Artisan command (it extends Illuminate\Console\Command)',

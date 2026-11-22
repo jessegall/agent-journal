@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Contracts;
+
+use App\Values\SkillConditionDefinition;
+
+/**
+ * A domain or module that supplies named condition types, such as plans.active-plan, for skills to use.
+ */
+interface SkillConditionProvider
+{
+    /**
+     * @return list<SkillConditionDefinition>
+     */
+    public function skillConditions(): array;
+}

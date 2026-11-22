@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Domains\Support\DomainEntry;
-use App\Domains\Support\DomainRegistry;
+use App\Support\DomainEntry;
+use App\Support\DomainRegistry;
 
 /**
  * The tests a set of changed files can break, read from the domain boundaries and Core's areas: a change inside one

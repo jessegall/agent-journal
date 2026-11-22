@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers\Calls;
 
-use App\Assignments\Support\NumberedPage;
-use Domain\Plans\Api\AssignedPlanFilters;
+use App\Support\NumberedPage;
 use Domain\Plans\Calls\ListAssignedPlansCall;
 use Domain\Plans\Contracts\PlanResolver;
+use Domain\Plans\Data\AssignedPlanListData;
 use Domain\Plans\Enums\PlanState;
-use Domain\Plans\Http\Data\AssignedPlanListData;
+use Domain\Plans\Values\AssignedPlanFilters;
 
 /**
  * Answers the plans assigned to the caller.

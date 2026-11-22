@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Processes;
 
-use App\Processes\Contracts\RunEvents;
-use App\Processes\Enums\OutputStream;
-use App\Processes\Models\ProcessRun;
-use App\Processes\Values\PartEnd;
-use App\Processes\Values\PartKey;
+use App\Contracts\RunEvents;
+use App\Enums\OutputStream;
+use App\Models\ProcessRun;
+use App\Values\PartEnd;
+use App\Values\PartKey;
 
 /**
  * Records a run's events and retires its rules, as an owner would mid-run, as soon as its first part ended.

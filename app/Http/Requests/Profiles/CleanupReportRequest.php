@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
-use App\Profiles\Values\CleanupProgress;
+use App\Values\CleanupProgress;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

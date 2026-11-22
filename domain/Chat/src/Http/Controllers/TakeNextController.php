@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
-use App\Bus\Contracts\CommandBus;
-use App\Communication\Commands\TakeNextMessages\TakeNextMessagesCommand;
+use App\Commands\TakeNextMessages\TakeNextMessagesCommand;
+use App\Contracts\CommandBus;
 use Domain\Chat\Data\TakeNextInput;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

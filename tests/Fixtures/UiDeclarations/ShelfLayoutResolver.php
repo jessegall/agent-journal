@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations;
 
-use App\Ui\Contracts\PageResolver;
-use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\LayoutPartData;
-use App\Ui\Layout\LayoutRowData;
+use App\Contracts\PageResolver;
+use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\LayoutRowData;
 
 /**
  * A declared page's reader: a header, a list of two books and an empty notice.

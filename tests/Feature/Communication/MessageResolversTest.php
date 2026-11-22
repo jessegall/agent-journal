@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
-use App\Communication\Contracts\ConversationResolver;
-use App\Communication\Exceptions\MessageMissing;
-use App\Communication\Models\Message;
+use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Contracts\ConversationResolver;
+use App\Exceptions\MessageMissing;
+use App\Models\Message;
 use Tests\Support\MessagingTestCase;
 
 /**

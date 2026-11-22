@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Engine\Contracts\EngineListener;
-use App\Reflection\Support\Reflector;
+use App\Contracts\EngineListener;
+use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Support\ScanCache\ScanCache;
 

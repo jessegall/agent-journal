@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Pamphlets;
 
-use App\Records\Support\RecordIdentity;
-use App\Sharing\Contracts\Shareable;
-use App\Sharing\Support\ShareRelationSet;
+use App\Support\RecordIdentity;
+use App\Contracts\Shareable;
+use App\Support\ShareRelationSet;
 
 final class Pamphlet implements Shareable
 {

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Agents\Enums\StartRefusalType;
-use App\Agents\Models\Agent;
-use App\Agents\Support\CapacityCheck;
-use App\Agents\Support\StartRemedyWords;
+use App\Enums\StartRefusalType;
 use App\Http\Requests\Agents\CheckCapacityRequest;
+use App\Models\Agent;
+use App\Support\CapacityCheck;
+use App\Support\StartRemedyWords;
 use Illuminate\Http\JsonResponse;
 
 /**

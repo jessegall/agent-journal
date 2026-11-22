@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Connections\Logging\RedactInstallSecrets;
+use App\Support\Logging\RedactInstallSecrets;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;

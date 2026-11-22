@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools\Concerns;
 
-use App\Actors\Enums\ActorType;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\AssignmentReference;
+use App\Enums\ActorType;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Support\ToolArguments;
+use App\Support\AssigneeIdentity;
+use App\Support\AssignmentReference;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\ObjectType;
 

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\AskMessage\AskMessageCommand;
-use App\Communication\Commands\DismissMessage\DismissMessageCommand;
-use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
-use App\Communication\Enums\DismissalType;
-use App\Communication\Enums\MessageState;
-use App\Communication\Exceptions\MessageMissing;
-use App\Communication\Models\Message;
+use App\Commands\AskMessage\AskMessageCommand;
+use App\Commands\DismissMessage\DismissMessageCommand;
+use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Enums\DismissalType;
+use App\Enums\MessageState;
+use App\Exceptions\MessageMissing;
+use App\Models\Message;
 use Tests\Support\MessagingTestCase;
 
 /**

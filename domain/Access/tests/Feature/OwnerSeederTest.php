@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Tests\Feature;
 
-use App\Desks\Models\DeskRecord;
+use App\Models\DeskRecord;
 use Domain\Access\Database\Seeders\OwnerSeeder;
 use Domain\Access\Models\User;
 use Domain\Access\Tests\TestCase;

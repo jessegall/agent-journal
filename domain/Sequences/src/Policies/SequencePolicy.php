@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Policies;
 
-use App\Actors\Contracts\Policy;
+use App\Contracts\Policy;
 use Domain\Sequences\Models\SequenceRun;
 
 /**

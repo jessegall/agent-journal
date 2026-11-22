@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Links\Models\Link;
-use App\Reads\Contracts\ReadMeter;
-use App\Records\Exceptions\RecordUnavailable;
-use App\Records\Support\RecordIdentity;
-use App\Sharing\Exceptions\ShareScopeTooLarge;
-use App\Sharing\Exceptions\UnknownShareRecordType;
-use App\Sharing\Support\MeteredShareBudget;
-use App\Sharing\Support\ShareLinkedCandidate;
-use App\Sharing\Support\ShareRecordRegistry;
-use App\Sharing\Support\ShareScope;
+use App\Contracts\ReadMeter;
+use App\Exceptions\RecordUnavailable;
+use App\Exceptions\ShareScopeTooLarge;
+use App\Exceptions\UnknownShareRecordType;
+use App\Models\Link;
+use App\Support\MeteredShareBudget;
+use App\Support\RecordIdentity;
+use App\Support\ShareLinkedCandidate;
+use App\Support\ShareRecordRegistry;
+use App\Support\ShareScope;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Fixtures\Domains\Binders\BinderShareProvider;

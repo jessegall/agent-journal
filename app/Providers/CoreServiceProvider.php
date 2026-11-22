@@ -4,50 +4,52 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Actors\Models\UserPresence;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Agents\Models\CapacityReservation;
-use App\Agents\Models\ConversationVisit;
-use App\Agents\Models\DriverConversation;
-use App\Agents\Models\StartBypass;
-use App\Agents\Models\StartToken;
-use App\Assignments\Contracts\AssignmentRegistration;
-use App\Assignments\Enums\AssignmentPurpose;
-use App\Assignments\Models\ClaimAuthorization;
-use App\Bus\Models\CommandReceipt;
-use App\Comments\Models\Comment;
-use App\Engine\Models\EngineFrameTime;
-use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Models\HookCall;
-use App\Links\Models\Link;
-use App\Links\Support\LinkTypeRegistry;
+use App\Contracts\AssignmentRegistration;
+use App\Contracts\PipelineRunner as PipelineRunnerContract;
+use App\Enums\AssignmentPurpose;
 use App\Mcp\Models\RetainedPage;
-use App\Pipelines\Contracts\PipelineRunner as PipelineRunnerContract;
-use App\Pipelines\Support\PipelineRunner;
-use App\Profiles\Models\Account;
-use App\Profiles\Models\ActiveAccount;
-use App\Profiles\Models\Profile;
-use App\Profiles\Models\ProfileDraft;
-use App\Profiles\Models\ProfileDraftRevision;
-use App\Profiles\Models\ProfileRevision;
-use App\Profiles\Models\SignInAttempt;
-use App\Settings\Models\SettingsRecord;
-use App\Sharing\Models\Share;
-use App\Sharing\Models\ShareAudit;
-use App\Sharing\Models\ShareGatewayConfiguration;
-use App\Sharing\Models\ShareGatewayEndpoint;
-use App\Sharing\Models\ShareGatewayOperation;
-use App\Sharing\Models\ShareInstallation;
-use App\Sharing\Models\ShareMember;
-use App\Sharing\Models\SharePreview;
-use App\Skills\Models\Skill;
-use App\Skills\Models\SkillGeneration;
-use App\Skills\Models\SkillPublication;
-use App\Skills\Models\SkillRequest;
-use App\Skills\Models\SkillRevision;
-use App\Supervision\Models\Ask;
-use App\Supervision\Support\AskAssignments;
+use App\Models\Account;
+use App\Models\ActiveAccount;
+use App\Models\Agent;
+use App\Models\AgentSession;
+use App\Models\AgentStackRow;
+use App\Models\Ask;
+use App\Models\CapacityReservation;
+use App\Models\ClaimAuthorization;
+use App\Models\CommandReceipt;
+use App\Models\Comment;
+use App\Models\ConversationVisit;
+use App\Models\DriverConversation;
+use App\Models\EngineFrameTime;
+use App\Models\HookCall;
+use App\Models\Link;
+use App\Models\Profile;
+use App\Models\ProfileDraft;
+use App\Models\ProfileDraftRevision;
+use App\Models\ProfileRevision;
+use App\Models\SettingsRecord;
+use App\Models\Share;
+use App\Models\ShareAudit;
+use App\Models\ShareGatewayConfiguration;
+use App\Models\ShareGatewayEndpoint;
+use App\Models\ShareGatewayOperation;
+use App\Models\ShareInstallation;
+use App\Models\ShareMember;
+use App\Models\SharePreview;
+use App\Models\SignInAttempt;
+use App\Models\Skill;
+use App\Models\SkillGeneration;
+use App\Models\SkillPublication;
+use App\Models\SkillRequest;
+use App\Models\SkillRevision;
+use App\Models\StartBypass;
+use App\Models\StartToken;
+use App\Models\UserPresence;
+use App\Support\AskAssignments;
+use App\Support\FolderClasses;
+use App\Support\LinkTypeRegistry;
+use App\Support\PipelineRunner;
+use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -56,30 +58,6 @@ use Illuminate\Support\ServiceProvider;
  */
 final class CoreServiceProvider extends ServiceProvider
 {
-    private const array AREAS = [
-        'Actors',
-        'Agents',
-        'Assignments',
-        'Bus',
-        'Comments',
-        'Communication',
-        'Connections',
-        'Desks',
-        'Engine',
-        'Hooks',
-        'Links',
-        'Mcp',
-        'Numbers',
-        'Processes',
-        'Profiles',
-        'Scripts',
-        'Settings',
-        'Sharing',
-        'Skills',
-        'Supervision',
-        'Web',
-    ];
-
     public function register(): void
     {
         $this->app->bind(PipelineRunnerContract::class, PipelineRunner::class);
@@ -87,6 +65,9 @@ final class CoreServiceProvider extends ServiceProvider
 
     public function boot(LinkTypeRegistry $links, AssignmentRegistration $assignments): void
     {
+        // Core's Artisan commands, app/Console/Commands, for the console and for the journal routes that list them.
+        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console/Commands', Command::class));
+
         $assignments->registerOwner('Supervision', []);
 
         $assignments->registerRecord(
@@ -135,9 +116,5 @@ final class CoreServiceProvider extends ServiceProvider
             SkillRevision::LINK_TYPE => SkillRevision::class,
             SkillGeneration::LINK_TYPE => SkillGeneration::class,
         ]);
-
-        foreach (self::AREAS as $area) {
-            $this->loadMigrationsFrom(dirname(__DIR__)."/{$area}/Database/Migrations");
-        }
     }
 }

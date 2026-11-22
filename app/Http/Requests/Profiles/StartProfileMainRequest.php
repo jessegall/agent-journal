@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
-use App\Agents\Enums\DriverVariant;
-use App\Agents\Values\ChosenAccount;
-use App\Agents\Values\ModelSelection;
-use App\Profiles\Commands\StartProfileMain\StartProfileMainCommand;
-use App\Profiles\Values\ProfileKey;
+use App\Commands\StartProfileMain\StartProfileMainCommand;
+use App\Enums\DriverVariant;
+use App\Values\ChosenAccount;
+use App\Values\ModelSelection;
+use App\Values\ProfileKey;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\InvalidActorText;
-use App\Actors\Support\ActorIdentity;
-use App\Assignments\Contracts\AssignmentProviders;
-use App\Assignments\Exceptions\AssignmentTypeUnavailable;
-use App\Assignments\Models\AssignmentRecord;
-use App\Engine\Support\EngineActor;
+use App\Contracts\AssignmentProviders;
+use App\Enums\ActorType;
+use App\Exceptions\AssignmentTypeUnavailable;
+use App\Exceptions\InvalidActorText;
+use App\Models\AssignmentRecord;
+use App\Support\ActorIdentity;
+use App\Support\EngineActor;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Models\Agent;
-use App\Records\Support\RecordIdentity;
+use App\Models\Agent;
+use App\Support\ActorIdentity;
+use App\Support\RecordIdentity;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperIdentityFixed;
 use Domain\Helpers\Exceptions\HelperJobFinished;

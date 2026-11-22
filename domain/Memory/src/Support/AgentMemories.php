@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Support;
 
-use App\Actors\Support\ActorIdentity;
+use App\Support\ActorIdentity;
 use Domain\Memory\Models\Memory;
 
 /**

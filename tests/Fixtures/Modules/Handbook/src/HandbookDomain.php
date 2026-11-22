@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Handbook;
 
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
-use App\Ui\Contracts\PageProvider;
-use App\Ui\Declarations\Page;
-use App\Ui\Enums\Icon;
+use App\Support\Domain;
+use App\Support\Exports;
+use App\Contracts\PageProvider;
+use App\Declarations\Page;
+use App\Enums\Icon;
 use Tests\Fixtures\Modules\Handbook\Policies\ReadHandbook;
 use Tests\Fixtures\Modules\Handbook\Resolvers\EntryLayoutResolver;
 

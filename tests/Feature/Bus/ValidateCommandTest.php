@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Actors\Support\ActorStore;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Contracts\OperationResolver;
-use App\Bus\Exceptions\CommandInputInvalid;
-use App\Bus\Exceptions\CommandNotRegistered;
-use App\Bus\Exceptions\OperationUnavailable;
-use App\Bus\Support\RequestKey;
+use App\Contracts\CommandBus;
+use App\Contracts\OperationResolver;
+use App\Exceptions\CommandInputInvalid;
+use App\Exceptions\CommandNotRegistered;
+use App\Exceptions\OperationUnavailable;
+use App\Support\ActorStore;
+use App\Support\RequestKey;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Commands\CopyLimitNote\CopyLimitNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\LimitNote\LimitNoteCommand;

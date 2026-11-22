@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Pipelines;
 
-use App\Pipelines\Contracts\Pipe;
+use App\Contracts\Pipe;
 
 /**
  * A fixture pipe that counts an empty text as nothing at all.

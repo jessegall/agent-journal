@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Assignments\Events\AssignmentsChanged;
+use App\Events\AssignmentsChanged;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -15,7 +15,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Assignments/Support/AssignmentFacts.php',
+            'app/Support/AssignmentFacts.php',
         ],
     ],
 ];

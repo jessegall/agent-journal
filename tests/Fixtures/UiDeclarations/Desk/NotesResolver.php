@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Desk;
 
-use App\Ui\Contracts\SectionResolver;
-use App\Ui\Declarations\SlotContext;
+use App\Contracts\SectionResolver;
+use App\Declarations\SlotContext;
 use Tests\Fixtures\UiDeclarations\RecentNotesData;
 
 final class NotesResolver implements SectionResolver

@@ -154,11 +154,11 @@ if ($missed !== []) {
 
 if ($namespace !== null && ! $dry) {
     foreach (sources() as $file) {
-        $body = (string) file_get_contents($file);
+        $body = (string) sourceText($file);
         $repointed = namespaceImportRepointed($body, $namespace, $into);
 
         if ($repointed !== $body) {
-            file_put_contents($file, $repointed);
+            writeSource($file, $repointed);
         }
     }
 }
@@ -241,7 +241,7 @@ function move(
 
     // the moved file leaves its neighbours behind, and it named them without an import because they
     // stood beside it — each of those now needs one, or the class resolves under its NEW namespace
-    $pending[$where] = keepingNeighbours($pending[$where] ?? file_get_contents($where), $where, $to);
+    $pending[$where] = keepingNeighbours($pending[$where] ?? sourceText($where), $where, $to);
     $pending = array_map(contractsAliased(...), $pending);
 
     $refused = unparsable($pending);
@@ -258,7 +258,7 @@ function move(
 
     if (! $dry) {
         foreach ($pending as $file => $body) {
-            file_put_contents($file, $body);
+            writeSource($file, $body);
         }
 
         namespaced($where, $to);
@@ -355,7 +355,7 @@ function replace(
 
     if (! $dry) {
         foreach ($pending as $file => $body) {
-            file_put_contents($file, $body);
+            writeSource($file, $body);
         }
 
         deleted($where);
@@ -400,7 +400,7 @@ function rewrite(
     $touched = 0;
 
     foreach ($files as $file) {
-        $was = $pending[$file] ?? file_get_contents($file);
+        $was = $pending[$file] ?? sourceText($file);
         $ours = meansOurs($file, $was, $from, $old, $declaring);
 
         // what this file will CALL the class, decided before anything is written: a file that already
@@ -539,7 +539,7 @@ function imports(array $files, string $onward, string $new, array $declaring, bo
             continue;
         }
 
-        $body = $pending[$file] ?? file_get_contents($file);
+        $body = $pending[$file] ?? sourceText($file);
 
         // an import already reaching it needs nothing added — including one under an ALIAS, which is how
         // a file that means another class by the short name reached it before the move, and still does
@@ -1049,7 +1049,7 @@ function declaredIn(string $class, array $files, string|null $scope = null): str
             continue;
         }
 
-        if (preg_match('/^\s*(final\s+|abstract\s+|readonly\s+)*(class|interface|trait|enum)\s+'.preg_quote($wanted, '/').'\b/m', file_get_contents($file))) {
+        if (preg_match('/^\s*(final\s+|abstract\s+|readonly\s+)*(class|interface|trait|enum)\s+'.preg_quote($wanted, '/').'\b/m', sourceText($file))) {
             $found[] = $file;
         }
     }
@@ -1127,10 +1127,11 @@ function namespaced(string $from, string $to): void
         rename($from, $to);
     }
 
+    forgetSource($from);
     $namespace = namespaceOf($to);
-    $body = file_get_contents($to);
+    $body = sourceText($to);
 
-    file_put_contents($to, preg_replace('/^namespace\s+[^;]+;/m', 'namespace '.$namespace.';', $body, 1));
+    writeSource($to, preg_replace('/^namespace\s+[^;]+;/m', 'namespace '.$namespace.';', $body, 1));
 }
 
 /**
@@ -1145,6 +1146,7 @@ function deleted(string $file): void
         unlink($file);
     }
 
+    forgetSource($file);
     @rmdir(dirname($file));
 }
 
@@ -1171,6 +1173,10 @@ function namespaceOf(string $file): string
  */
 function sources(): array
 {
+    if (SourceCache::$listing !== null) {
+        return SourceCache::$listing;
+    }
+
     $found = [];
 
     foreach (SEARCHED as $where) {
@@ -1198,6 +1204,8 @@ function sources(): array
             $found[] = $path;
         }
     }
+
+    SourceCache::$listing = $found;
 
     return $found;
 }
@@ -1277,7 +1285,7 @@ function declaredUnder(string $namespace): array
             continue;
         }
 
-        if (preg_match('/^\s*(?:final\s+|abstract\s+|readonly\s+)*(?:class|interface|trait|enum)\s+([A-Za-z0-9_]+)/m', file_get_contents($file), $found)) {
+        if (preg_match('/^\s*(?:final\s+|abstract\s+|readonly\s+)*(?:class|interface|trait|enum)\s+([A-Za-z0-9_]+)/m', sourceText($file), $found)) {
             $under = $declares === $full ? '' : substr($declares, strlen($full) + 1).'\\';
 
             $names[] = $under.$found[1];
@@ -1361,7 +1369,7 @@ function dangling(array $was, array $files): array
 
     foreach (array_unique($was) as $gone) {
         foreach ($files as $file) {
-            if (! namesClass(file_get_contents($file), $gone)) {
+            if (! namesClass(sourceText($file), $gone)) {
                 continue;
             }
 
@@ -1733,4 +1741,34 @@ function usage(): int
     TEXT;
 
     return 1;
+}
+
+/**
+ * The project's PHP sources held in memory for one run, so a list of moves reads each file once instead of once per
+ * move; every write goes through it and to the disk, and a moved or deleted file leaves it and the listing.
+ */
+final class SourceCache
+{
+    /** @var array<string, string> */
+    public static array $texts = [];
+
+    /** @var list<string>|null */
+    public static array|null $listing = null;
+}
+
+function sourceText(string $file): string
+{
+    return SourceCache::$texts[$file] ??= (string) \file_get_contents($file);
+}
+
+function writeSource(string $file, string $body): void
+{
+    SourceCache::$texts[$file] = $body;
+    \file_put_contents($file, $body);
+}
+
+function forgetSource(string $file): void
+{
+    unset(SourceCache::$texts[$file]);
+    SourceCache::$listing = null;
 }

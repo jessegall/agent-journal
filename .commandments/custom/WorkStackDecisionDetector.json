@@ -23,7 +23,7 @@
                     {
                         "all": [
                             {"nameIn": ["current", "currentRecord", "pruneCurrent", "push", "pushFor", "offerFor"]},
-                            {"resolves": "App\\Hooks\\Contracts\\ActorWorkStacks", "of": "child:var"}
+                            {"resolves": "App\\Contracts\\ActorWorkStacks", "of": "child:var"}
                         ]
                     }
                 ]
@@ -34,7 +34,7 @@
             {"file": "domain/Plans/src/Listeners/PushPlanState.php"},
             {"file": "domain/Sequences/src/Listeners/PushSequenceState.php"},
             {"file": "domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunHandler.php"},
-            {"file": "app/Supervision/Commands/AskSupervisor/AskSupervisorHandler.php"},
+            {"file": "app/Commands/AskSupervisor/AskSupervisorHandler.php"},
             {"file": "tests/**"}
         ]
     },

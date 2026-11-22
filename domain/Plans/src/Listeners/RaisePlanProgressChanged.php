@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\Plans\Listeners;
 
 use App\Contracts\Listener;
-use Domain\Plans\Api\Events\PlanProgressChanged;
+use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Models\Phase;
-use Domain\Tasks\Api\Events\TaskBlocked;
-use Domain\Tasks\Api\Events\TaskCancelled;
-use Domain\Tasks\Api\Events\TaskFinished;
+use Domain\Tasks\Events\TaskBlocked;
+use Domain\Tasks\Events\TaskCancelled;
+use Domain\Tasks\Events\TaskFinished;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

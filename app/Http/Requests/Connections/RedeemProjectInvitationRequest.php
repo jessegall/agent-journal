@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Connections;
 
-use App\Connections\Commands\RedeemProjectInvitation\RedeemProjectInvitationCommand;
-use App\Connections\Values\BindingFolder;
+use App\Commands\RedeemProjectInvitation\RedeemProjectInvitationCommand;
+use App\Values\BindingFolder;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

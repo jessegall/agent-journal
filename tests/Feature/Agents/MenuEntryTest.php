@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\OwnerAuthority;
-use App\Agents\Enums\MenuEntryState;
-use App\Agents\Enums\NavigationCompletion;
-use App\Agents\Models\MenuEntry;
-use App\Agents\Values\MenuStep;
-use App\Agents\Values\ScriptGoal;
+use App\Contracts\CurrentActorSetter;
+use App\Enums\ActorType;
+use App\Enums\MenuEntryState;
+use App\Enums\NavigationCompletion;
+use App\Models\MenuEntry;
+use App\Support\ActorContext;
+use App\Support\ActorIdentity;
+use App\Values\MenuStep;
+use App\Values\OwnerAuthority;
+use App\Values\ScriptGoal;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;

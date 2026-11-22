@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Drivers\Values\DriverKey;
+use App\Values\DriverKey;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\OperationDeadline;
-use App\Hooks\Drivers\DriverCapabilities;
-use App\Hooks\Drivers\DriverReply;
-use App\Hooks\Enums\RewriteSupport;
-use App\Hooks\Exceptions\StackAlreadyClosed;
-use App\Hooks\Inputs\ContextCompacted;
-use App\Hooks\Inputs\Values\CompactionDetails;
-use App\Hooks\Inputs\Values\HookIdentity;
-use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Stack\HookAnswer;
+use App\Contracts\CommandBus;
+use App\Enums\RewriteSupport;
+use App\Exceptions\StackAlreadyClosed;
+use App\Models\AgentStackRow;
+use App\Support\Drivers\DriverCapabilities;
+use App\Support\Drivers\DriverReply;
+use App\Support\Inputs\ContextCompacted;
+use App\Support\Inputs\Values\CompactionDetails;
+use App\Support\Inputs\Values\HookIdentity;
+use App\Support\OperationDeadline;
+use App\Support\Stack\HookAnswer;
 use Carbon\CarbonImmutable;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Enums\SequenceRunState;

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorIdentity;
+use App\Contracts\CurrentActor;
+use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Api\TaskWaitLink;
-use Domain\Tasks\Api\TaskWaits;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskWait;
+use Domain\Tasks\Values\TaskWaitLink;
+use Domain\Tasks\Values\TaskWaits;
 
 /**
  * Reads the waits between tasks with a fixed number of queries: the waits, then the other tasks of the page in one

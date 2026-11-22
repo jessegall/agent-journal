@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\CommandAdmissionRefused;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Enums\ActorType;
+use App\Exceptions\CommandAdmissionRefused;
+use App\Support\ActorContext;
+use App\Values\OwnerAuthority;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
 use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Contracts\CurrentAuthorizer;
-use App\Actors\Exceptions\ActorNotAllowed;
-use App\Agents\Policies\AgentTerminalControlPolicy;
-use App\Operations\Enums\AccessType;
+use App\Contracts\CurrentAuthorizer;
+use App\Enums\AccessType;
+use App\Exceptions\ActorNotAllowed;
+use App\Policies\AgentTerminalControlPolicy;
 
 /**
  * An authorizer that lets the actor inspect anything and control nothing, as an inspect-only grant does.

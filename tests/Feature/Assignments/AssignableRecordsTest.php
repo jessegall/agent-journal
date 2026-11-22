@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Exceptions\ActorContextMissing;
-use App\Assignments\Registry\AssignmentRegistry;
-use App\Records\Exceptions\RecordUnavailable;
-use App\Records\Support\RecordIdentity;
+use App\Exceptions\ActorContextMissing;
+use App\Exceptions\RecordUnavailable;
+use App\Support\RecordIdentity;
+use App\Support\Registry\AssignmentRegistry;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;

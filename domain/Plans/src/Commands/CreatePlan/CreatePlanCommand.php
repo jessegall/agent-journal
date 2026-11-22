@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\CreatePlan;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\OneLine;
-use App\Bus\Support\Command;
-use App\Operations\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Attributes\OneLine;
+use App\Enums\AccessType;
+use App\Support\Command;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;

@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Values\PolicyDefinition;
-use App\Agents\Commands\RetireAgent\RetireAgentCommand;
-use App\Bus\Attributes\Authorize;
-use App\Bus\Enums\CommandEntry;
-use App\Bus\Exceptions\CommandDeclarationInvalid;
-use App\Bus\Exceptions\CommandHandlerMissing;
-use App\Bus\Exceptions\CommandListedTwice;
-use App\Bus\Exceptions\CommandOperationListedTwice;
-use App\Bus\Exceptions\MiddlewareDeclarationInvalid;
-use App\Bus\Exceptions\MiddlewareListedTwice;
-use App\Bus\Support\CommandName;
-use App\Bus\Support\CommandOwner;
-use App\Bus\Support\CommandRegistry;
-use App\Bus\Support\CommandScope;
-use App\Bus\Support\MiddlewareDeclaration;
-use App\Bus\Support\RegisteredMiddleware;
+use App\Attributes\Authorize;
+use App\Commands\RetireAgent\RetireAgentCommand;
+use App\Contracts\PipelineRunner;
+use App\Contracts\PolicyCatalogue;
 use App\CoreCommands;
-use App\Domains\Support\DomainRegistry;
-use App\Exports\Support\Exports;
-use App\Operations\Enums\AccessType;
-use App\Pipelines\Contracts\PipelineRunner;
+use App\Enums\AccessType;
+use App\Enums\CommandEntry;
+use App\Exceptions\CommandDeclarationInvalid;
+use App\Exceptions\CommandHandlerMissing;
+use App\Exceptions\CommandListedTwice;
+use App\Exceptions\CommandOperationListedTwice;
+use App\Exceptions\MiddlewareDeclarationInvalid;
+use App\Exceptions\MiddlewareListedTwice;
+use App\Support\CommandName;
+use App\Support\CommandOwner;
+use App\Support\CommandRegistry;
+use App\Support\CommandScope;
+use App\Support\DomainRegistry;
+use App\Support\Exports;
+use App\Support\MiddlewareDeclaration;
+use App\Support\RegisteredMiddleware;
+use App\Values\PolicyDefinition;
 use Tests\Fixtures\Bus\Garden\CommandMiddleware\Fence;
 use Tests\Fixtures\Bus\Garden\Commands\Water\WaterCommand;
 use Tests\Fixtures\Bus\Garden\Commands\Water\WaterHandler;
@@ -168,7 +168,7 @@ final class CommandRegistryTest extends TestCase
     {
         $this->refusedWith(
             CommandDeclarationInvalid::class,
-            'extends App\\Bus\\Support\\Command',
+            'extends App\\Support\\Command',
             [$this->shop([BaselessItemCommand::class])],
         );
     }

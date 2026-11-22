@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\InvalidActorText;
-use App\Actors\Support\ActorIdentity;
-use App\Actors\Support\ActorStore;
+use App\Contracts\CurrentActor;
+use App\Enums\ActorType;
+use App\Exceptions\InvalidActorText;
+use App\Support\ActorIdentity;
+use App\Support\ActorStore;
 use Tests\TestCase;
 
 /**

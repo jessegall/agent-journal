@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Bus\Support\RunningCommand;
-use App\Hooks\Octane\GiveRequestContainerToEvents;
+use App\Support\Octane\GiveRequestContainerToEvents;
+use App\Support\RunningCommand;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Fixtures\Hooks\Octane\ContainerRecordingListener;
 use Tests\TestCase;

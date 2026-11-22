@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers\Support;
 
-use App\Actors\Contracts\ActorLabels;
-use App\Desks\Contracts\RunClaims;
-use Domain\Tasks\Api\TaskExecution;
+use App\Contracts\ActorLabels;
+use App\Contracts\RunClaims;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
+use Domain\Tasks\Values\TaskExecution;
 use Illuminate\Support\Collection;
 
 /**

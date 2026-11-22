@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Agents\Values\StackTarget;
-use App\Bus\Enums\CommandEntry;
-use App\Bus\Support\CommandEntrance;
-use App\Engine\Support\EngineAccess;
-use App\Engine\Support\EnginePass;
-use App\Hooks\Support\StackTransaction;
+use App\Enums\CommandEntry;
+use App\Support\CommandEntrance;
+use App\Support\EngineAccess;
+use App\Support\EnginePass;
+use App\Support\StackTransaction;
+use App\Values\StackTarget;
 use Closure;
 
 /**

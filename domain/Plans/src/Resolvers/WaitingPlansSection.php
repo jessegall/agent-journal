@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Resolvers;
 
-use App\Agents\Contracts\SessionResolver;
-use App\Assignments\Support\AssignmentData;
-use App\Ui\Contracts\SectionResolver;
-use App\Ui\Declarations\SlotContext;
-use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\LayoutPartData;
-use App\Ui\Layout\LayoutRowData;
-use Domain\Plans\Api\PlanFilters;
+use App\Contracts\SectionResolver;
+use App\Contracts\SessionResolver;
+use App\Declarations\SlotContext;
+use App\Support\AssignmentData;
+use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\LayoutRowData;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Data\PlanCardData;
 use Domain\Plans\Enums\PlanStateGroup;
+use Domain\Plans\Values\PlanFilters;
 
 /**
  * The plans waiting for review, in Chat's dock, as a read-only list layout: each plan's number and title, its state,

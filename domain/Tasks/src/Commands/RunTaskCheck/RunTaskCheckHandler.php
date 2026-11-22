@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\RunTaskCheck;
 
-use App\Actors\Support\ActorIdentity;
-use App\Processes\Contracts\ProcessRunCallers;
+use App\Contracts\ProcessRunCallers;
+use App\Support\ActorIdentity;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Exceptions\TaskCheckRefused;
 use Domain\Tasks\Exceptions\TaskRunNotYours;

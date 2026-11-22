@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Actors\Contracts\CurrentAuthorizer;
-use App\Actors\Values\AccessRequirement;
-use App\Assignments\Policies\AssignmentRecipientPolicy;
-use App\Operations\Enums\AccessType;
+use App\Contracts\CurrentAuthorizer;
+use App\Enums\AccessType;
+use App\Policies\AssignmentRecipientPolicy;
+use App\Values\AccessRequirement;
 
 /**
  * What a started agent is told about the journal's MCP tools at every context start, by what its profile grants: how

@@ -1,0 +1,55 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support;
+
+use App\Contracts\CurrentAuthorizer;
+use App\Contracts\ProfileResolver;
+use App\Contracts\StartAccounts;
+use App\Data\Profiles\EligibleAccountsData;
+use App\Enums\AccessType;
+use App\Models\Account;
+use App\Models\ActiveAccount;
+use App\Models\Profile;
+use App\Policies\ProfileAdministrationPolicy;
+use App\Values\ProfileKey;
+
+/**
+ * The accounts the owner may choose for a start of one driver, read under the authority the start itself needs, so
+ * whoever may not start one learns no account label.
+ */
+final readonly class EligibleAccounts implements StartAccounts
+{
+    public function __construct(
+        private CurrentAuthorizer $authorizer,
+        private ProfileResolver $profiles,
+    ) {}
+
+    public function forProfileStart(string $driver, string $profileKey): EligibleAccountsData
+    {
+        $accounts = $this->forDriver($driver);
+        $profile = $this->profiles->snapshotFor(ProfileKey::from($profileKey));
+
+        return EligibleAccountsData::from([
+            'driver' => $accounts->driver,
+            'accounts' => $accounts->accounts,
+            'modelChoices' => array_values(array_unique([$profile->model, ...$profile->start->allowedModels])),
+        ]);
+    }
+
+    public function forDriver(string $driver): EligibleAccountsData
+    {
+        $this->authorizer->authorize(ProfileAdministrationPolicy::class, Profile::class, AccessType::Create);
+        $default = ActiveAccount::defaultAccountIdOf($driver);
+        $accounts = array_filter(Account::listed(), fn (Account $account) => $account->account_protocol === $driver);
+
+        return EligibleAccountsData::from([
+            'driver' => $driver,
+            'accounts' => array_values(array_map(
+                fn (Account $account) => EligibleAccountFactory::of($account, $account->id === $default),
+                $accounts,
+            )),
+        ]);
+    }
+}

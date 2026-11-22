@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\RequestKey;
-use App\Communication\Commands\AskMessage\AskMessageCommand;
-use App\Communication\Enums\DismissalType;
-use App\Communication\Models\Message;
+use App\Commands\AskMessage\AskMessageCommand;
+use App\Contracts\CommandBus;
+use App\Enums\ActorType;
+use App\Enums\DismissalType;
+use App\Models\Message;
+use App\Support\ActorIdentity;
+use App\Support\RequestKey;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Tests\TestCase;

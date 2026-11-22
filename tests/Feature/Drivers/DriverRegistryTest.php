@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Drivers;
 
-use App\Agents\Enums\DriverVariant;
-use App\Drivers\Capabilities\CodexHeadlessCapabilities;
-use App\Drivers\Capabilities\CodexTerminalCapabilities;
-use App\Drivers\Capabilities\HeadlessCapabilities;
-use App\Drivers\Contracts\Driver;
-use App\Drivers\Contracts\DriverCatalogue;
-use App\Drivers\Enums\DriverCapability;
-use App\Drivers\Enums\SupportState;
-use App\Drivers\Exceptions\DriverCapabilityUnsupported;
-use App\Drivers\Exceptions\DriverKeyInvalid;
-use App\Drivers\Exceptions\DriverModeAmbiguous;
-use App\Drivers\Exceptions\DriverRegisteredTwice;
-use App\Drivers\Exceptions\DriverUnknown;
-use App\Drivers\Support\DefaultDrivers;
-use App\Drivers\Support\DriverRegistry;
-use App\Drivers\Values\BoundTarget;
-use App\Drivers\Values\DriverKey;
-use App\Drivers\Values\DriverRegistration;
+use App\Contracts\Driver;
+use App\Contracts\DriverCatalogue;
+use App\Enums\DriverCapability;
+use App\Enums\DriverVariant;
+use App\Enums\SupportState;
+use App\Exceptions\DriverCapabilityUnsupported;
+use App\Exceptions\DriverKeyInvalid;
+use App\Exceptions\DriverModeAmbiguous;
+use App\Exceptions\DriverRegisteredTwice;
+use App\Exceptions\DriverUnknown;
+use App\Support\Capabilities\CodexHeadlessCapabilities;
+use App\Support\Capabilities\CodexTerminalCapabilities;
+use App\Support\Capabilities\HeadlessCapabilities;
+use App\Support\DefaultDrivers;
+use App\Support\DriverRegistry;
+use App\Values\BoundTarget;
+use App\Values\DriverKey;
+use App\Values\DriverRegistration;
 use Tests\TestCase;
 
 /**

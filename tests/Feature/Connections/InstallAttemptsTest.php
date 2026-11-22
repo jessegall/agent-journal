@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\Connections\Models\InstallAttempt;
-use App\Connections\Models\ProjectInvitation;
-use App\Connections\Support\InstallAttemptList;
+use App\Contracts\CurrentActorSetter;
+use App\Models\InstallAttempt;
+use App\Models\ProjectInvitation;
+use App\Support\ActorContext;
+use App\Support\InstallAttemptList;
+use App\Values\OwnerAuthority;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;

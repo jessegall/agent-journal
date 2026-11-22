@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews\Messaging;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Bus\Contracts\CommandBus;
-use App\Communication\Commands\AskMessage\AskMessageCommand;
-use App\Communication\Contracts\ActorInboxResolver;
-use App\Communication\Contracts\ConversationResolver;
-use App\Communication\Contracts\InboxDestinationResolver;
-use App\Communication\Data\MessageView;
+use App\Contracts\CurrentActor;
+use App\Support\AssigneeIdentity;
+use App\Contracts\CommandBus;
+use App\Commands\AskMessage\AskMessageCommand;
+use App\Contracts\ActorInboxResolver;
+use App\Contracts\ConversationResolver;
+use App\Contracts\InboxDestinationResolver;
+use App\Data\MessageView;
 
 /**
  * A domain asking an assignee for a review through Core alone: the asker's own inbox, the assignee's resolved inbox,

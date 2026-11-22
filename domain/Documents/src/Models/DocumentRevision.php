@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
-use App\Actors\Contracts\Actor;
-use App\Actors\Enums\ActorType;
-use App\Links\Support\Linkable;
-use App\Numbers\Contracts\Numbered;
-use App\Numbers\Support\HasNumber;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
+use App\Concerns\BoundedReads;
+use App\Concerns\HasNumber;
+use App\Concerns\Linkable;
+use App\Contracts\Actor;
+use App\Contracts\Numbered;
+use App\Contracts\ReadableModel;
+use App\Enums\ActorType;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\RevisionCard;
 use Domain\Documents\Data\RevisionView;

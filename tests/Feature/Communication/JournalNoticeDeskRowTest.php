@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Bus\Enums\CommandEntry;
-use App\Bus\Support\EntryDispatchers;
-use App\Communication\Contracts\InboxNotices;
-use App\Communication\Enums\MessageType;
-use App\Communication\Models\Message;
-use App\Desks\Commands\InstallDesks\InstallDesksCommand;
+use App\Commands\InstallDesks\InstallDesksCommand;
+use App\Contracts\InboxNotices;
+use App\Enums\CommandEntry;
+use App\Enums\MessageType;
+use App\Models\Message;
+use App\Support\EntryDispatchers;
 use Tests\Support\MessagingTestCase;
 
 /**

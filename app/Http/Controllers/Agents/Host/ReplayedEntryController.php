@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\ReportEntryReplayed\ReportEntryReplayedCommand;
-use App\Agents\Values\HostContext;
-use App\Bus\Contracts\CommandBus;
-use App\Http\Data\Agents\EntryReplayedData;
+use App\Commands\ReportEntryReplayed\ReportEntryReplayedCommand;
+use App\Contracts\CommandBus;
+use App\Data\Agents\EntryReplayedData;
+use App\Values\HostContext;
 use Illuminate\Http\Response;
 
 /**

@@ -12,8 +12,8 @@ declare(strict_types=1);
  *       [--host=<journal-agent>] [--host-state=<its state folder>]
  */
 
-use App\Drivers\Support\DefaultDrivers;
-use App\Hooks\Compatibility\DriverCompatibility;
+use App\Support\Compatibility\DriverCompatibility;
+use App\Support\DefaultDrivers;
 
 use function Tools\Accounts\empty_folder;
 use function Tools\Accounts\installed_build;

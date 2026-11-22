@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Shop\Commands\MisnamedFieldItem;
 
-use App\Operations\Enums\AccessType;
-use App\Bus\Attributes\Authorize;
-use App\Bus\Support\Command;
+use App\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\RequiredWithout;
 use Tests\Fixtures\Bus\Models\FixtureWork;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;

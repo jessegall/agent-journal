@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Actors\Contracts\ServerClock;
-use App\Agents\Data\ScreenFrameData;
-use App\Agents\Data\TerminalFrameData;
-use App\Agents\Models\AgentRuntime;
-use App\Agents\Models\TerminalView;
-use App\Agents\Support\EnrolledHost;
-use App\Agents\Support\HeldFrame;
-use App\Agents\Support\RuntimeScreen;
-use App\Agents\Support\ScreenRegistration;
-use App\Agents\Support\TerminalViews;
+use App\Contracts\ServerClock;
+use App\Data\ScreenFrameData;
+use App\Data\TerminalFrameData;
+use App\Models\AgentRuntime;
+use App\Models\TerminalView;
+use App\Support\EnrolledHost;
+use App\Support\HeldFrame;
+use App\Support\RuntimeScreen;
+use App\Support\ScreenRegistration;
+use App\Support\TerminalViews;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

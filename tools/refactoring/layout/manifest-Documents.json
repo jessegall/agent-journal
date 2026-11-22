@@ -1,6 +1,6 @@
 [
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "old_path": "domain/Documents/database/factories/.gitkeep",
         "old_class": null,
@@ -19,7 +19,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "old_path": "domain/Documents/database/migrations/.gitkeep",
         "old_class": null,
@@ -38,7 +38,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d56b36e9fbeabaf26c36ba99510fa1a93f03fbf8",
         "old_path": "domain/Documents/database/migrations/2026_11_18_000010_create_documents_tables.php",
         "old_class": null,
@@ -57,7 +57,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "73df13419e0ab619bd24baa04e8d08979c5c4603",
         "old_path": "domain/Documents/database/migrations/2026_11_18_000011_create_document_drafts_tables.php",
         "old_class": null,
@@ -76,7 +76,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b935bef4dae6377157f184325b5afca25d6afa44",
         "old_path": "domain/Documents/database/migrations/2026_11_18_000013_create_record_settlements_table.php",
         "old_class": null,
@@ -95,7 +95,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f3cf230363240d9f4b2150fc6f7289ce4ffc7b88",
         "old_path": "domain/Documents/database/migrations/2026_11_22_000010_create_text_uploads_tables.php",
         "old_class": null,
@@ -114,7 +114,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "old_path": "domain/Documents/database/seeders/.gitkeep",
         "old_class": null,
@@ -133,7 +133,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "old_path": "domain/Documents/resources/js/.gitkeep",
         "old_class": null,
@@ -152,7 +152,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d1084631e00d40c8c9c417fec6ba259b4c75515d",
         "old_path": "domain/Documents/resources/js/DocumentComments.test.ts",
         "old_class": null,
@@ -171,7 +171,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6d9160190be682020ac893fbd2d5e54989f6b01e",
         "old_path": "domain/Documents/resources/js/DocumentComments.vue",
         "old_class": null,
@@ -190,7 +190,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "bf57ff4a347210b07cd70b76c46434668f60090a",
         "old_path": "domain/Documents/resources/js/DocumentDock.vue",
         "old_class": null,
@@ -209,7 +209,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "26f69a7805880f2867dee793c682f293e6e260be",
         "old_path": "domain/Documents/resources/js/DraftEditor.vue",
         "old_class": null,
@@ -228,7 +228,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4e43e6e92ec4c52c0ec86ad8cc774dd07a5f4631",
         "old_path": "domain/Documents/resources/js/LinksPanel.vue",
         "old_class": null,
@@ -247,7 +247,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a342cb75bc9e3850bc14c2d8b516fd21609ccb6b",
         "old_path": "domain/Documents/resources/js/RecordComments.vue",
         "old_class": null,
@@ -266,7 +266,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7460a3427a6778381c96690aeb0f728b02a6cf22",
         "old_path": "domain/Documents/resources/js/RecordLinks.vue",
         "old_class": null,
@@ -285,7 +285,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "25896b76c3c8f5eb82b83e324e0de70e4c7f7192",
         "old_path": "domain/Documents/resources/js/RecordShare.vue",
         "old_class": null,
@@ -304,7 +304,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "16e9db0d287a0a88b0810bb130699be05e7186e9",
         "old_path": "domain/Documents/resources/js/RecoverForm.vue",
         "old_class": null,
@@ -323,7 +323,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2fb889abd20c4d61a3561c5e9374a38ca068e705",
         "old_path": "domain/Documents/resources/js/ReportReceipt.vue",
         "old_class": null,
@@ -342,7 +342,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7b724d7345edb978ffebbc830650644161e81a33",
         "old_path": "domain/Documents/resources/js/documentCommentDrafts.ts",
         "old_class": null,
@@ -361,7 +361,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0394685a7d0b85f6e6da2ddb7594a6b92ebb87c1",
         "old_path": "domain/Documents/src/Api/CloseResult.php",
         "old_class": "Domain\\Documents\\Api\\CloseResult",
@@ -375,12 +375,14 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ef034d24cfd1ae3f4d76eeecfa825a818980f4dd",
         "old_path": "domain/Documents/src/Api/CreatedRecord.php",
         "old_class": "Domain\\Documents\\Api\\CreatedRecord",
@@ -394,12 +396,14 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "98a614452391f62cf12e01fb56bcf47647f5c361",
         "old_path": "domain/Documents/src/Api/DocumentType.php",
         "old_class": "Domain\\Documents\\Api\\DocumentType",
@@ -413,12 +417,14 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7e4d96ddb2fb18d26dc664b86606e9d524d9f849",
         "old_path": "domain/Documents/src/Api/DraftReference.php",
         "old_class": "Domain\\Documents\\Api\\DraftReference",
@@ -432,12 +438,14 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0bea9500418f4bcb25bd021f940c2cbddf1505a7",
         "old_path": "domain/Documents/src/Api/DraftTarget.php",
         "old_class": "Domain\\Documents\\Api\\DraftTarget",
@@ -456,14 +464,15 @@
             "domain/Documents/tests/Feature/DocumentEditTest.php",
             "domain/Documents/tests/Feature/DocumentReaderTest.php",
             "domain/Documents/tests/Feature/DraftsTest.php",
-            "domain/Documents/tests/Feature/SettleAndRecoverTest.php"
+            "domain/Documents/tests/Feature/SettleAndRecoverTest.php",
+            "tools/refactoring/layout/manifest-Documents.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b673951fdd9e8742e481d78cf1b7d15daff78fb8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2f86acc31ef88cf50a90ce8070d9ab8325f358f2",
         "old_path": "domain/Documents/src/Api/Events/DocumentClosed.php",
         "old_class": "Domain\\Documents\\Api\\Events\\DocumentClosed",
         "final_path": "domain/Documents/src/Events/DocumentClosed.php",
@@ -477,14 +486,16 @@
         "phase": 3,
         "batch": "Documents",
         "consumers": [
-            "domain/Documents/tests/Feature/DocumentFactsTest.php"
+            "domain/Documents/tests/Feature/DocumentFactsTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Documents.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7586a86572303189bec07600b16e9475d59a6acd",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a3db2c2579133e5325aeb3d9cf7594b7abf7e0a8",
         "old_path": "domain/Documents/src/Api/Events/DocumentCreated.php",
         "old_class": "Domain\\Documents\\Api\\Events\\DocumentCreated",
         "final_path": "domain/Documents/src/Events/DocumentCreated.php",
@@ -499,13 +510,15 @@
         "batch": "Documents",
         "consumers": [
             "domain/Documents/tests/Feature/DocumentFactsTest.php",
-            "domain/Documents/tests/Feature/IsolationTest.php"
+            "domain/Documents/tests/Feature/IsolationTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Documents.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "29ef14c54d104b0f3be6f0d080ef9a8c5878595c",
         "old_path": "domain/Documents/src/Api/Events/DocumentDraftSaved.php",
         "old_class": "Domain\\Documents\\Api\\Events\\DocumentDraftSaved",
@@ -520,14 +533,15 @@
         "phase": 3,
         "batch": "Documents",
         "consumers": [
-            "domain/Documents/tests/Feature/DocumentFactsTest.php"
+            "domain/Documents/tests/Feature/DocumentFactsTest.php",
+            "tools/refactoring/layout/manifest-Documents.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "98f0fe5b52542e8009777561697cede68a1911ed",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "583b300f8d3f8865a833366256e9aac6b94ad09a",
         "old_path": "domain/Documents/src/Api/Events/DocumentOpened.php",
         "old_class": "Domain\\Documents\\Api\\Events\\DocumentOpened",
         "final_path": "domain/Documents/src/Events/DocumentOpened.php",
@@ -541,14 +555,16 @@
         "phase": 3,
         "batch": "Documents",
         "consumers": [
-            "domain/Documents/tests/Feature/DocumentFactsTest.php"
+            "domain/Documents/tests/Feature/DocumentFactsTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Documents.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "bcb5287bf213be72af44ea8d57b7dc46e4894292",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "807df7b1245c68b07f79e2ba673325d5b71cc76b",
         "old_path": "domain/Documents/src/Api/Events/DocumentPublished.php",
         "old_class": "Domain\\Documents\\Api\\Events\\DocumentPublished",
         "final_path": "domain/Documents/src/Events/DocumentPublished.php",
@@ -562,14 +578,16 @@
         "phase": 3,
         "batch": "Documents",
         "consumers": [
-            "domain/Documents/tests/Feature/DocumentFactsTest.php"
+            "domain/Documents/tests/Feature/DocumentFactsTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Documents.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0b6ae2cf9adb60c84b17af02b9b7648a4dca5c99",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "491040772e006bfa9dab62a2b5c825316eb27dba",
         "old_path": "domain/Documents/src/Api/Events/DraftKept.php",
         "old_class": "Domain\\Documents\\Api\\Events\\DraftKept",
         "final_path": "domain/Documents/src/Events/DraftKept.php",
@@ -582,13 +600,16 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e939885538047312bfd641a293c2a3db24f21f9b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6f53e64822fe5e50b77f4e4d3e5df59733819318",
         "old_path": "domain/Documents/src/Api/Events/RecordSettled.php",
         "old_class": "Domain\\Documents\\Api\\Events\\RecordSettled",
         "final_path": "domain/Documents/src/Events/RecordSettled.php",
@@ -602,14 +623,16 @@
         "phase": 3,
         "batch": "Documents",
         "consumers": [
-            "domain/Documents/tests/Feature/DocumentFactsTest.php"
+            "domain/Documents/tests/Feature/DocumentFactsTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Documents.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "bcf835383d0f8c77523b622195c6d68c9cbe4036",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "34ccbd78253a970ac28a2302c063330594abe5a2",
         "old_path": "domain/Documents/src/Api/Events/ReportFiled.php",
         "old_class": "Domain\\Documents\\Api\\Events\\ReportFiled",
         "final_path": "domain/Documents/src/Events/ReportFiled.php",
@@ -624,13 +647,15 @@
         "batch": "Documents",
         "consumers": [
             "domain/Documents/tests/Feature/DocumentFactsTest.php",
-            "domain/Helpers/src/Listeners/LinkReportToJob.php"
+            "domain/Helpers/src/Listeners/LinkReportToJob.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Documents.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c6a18982574479e33914f74b1c788f91d8598576",
         "old_path": "domain/Documents/src/Api/RetainedDraftView.php",
         "old_class": "Domain\\Documents\\Api\\RetainedDraftView",
@@ -644,13 +669,15 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ad3d62a54050866ab6b086129c476ffc04437d8e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "76a0c68cc05e9a5742c1afed8a11a96f14d1940e",
         "old_path": "domain/Documents/src/Calls/CloseDocumentCall.php",
         "old_class": "Domain\\Documents\\Calls\\CloseDocumentCall",
         "final_path": "domain/Documents/src/Calls/CloseDocumentCall.php",
@@ -668,7 +695,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "08c61341179b45e8d4dfe8187b3e19dca645baf0",
         "old_path": "domain/Documents/src/Calls/Concerns/NamesDraft.php",
         "old_class": "Domain\\Documents\\Calls\\Concerns\\NamesDraft",
@@ -687,8 +714,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "075153fb26bb1d6fac4c84e3453a27a43ed7b284",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "992f51710a7b9ef6c9bd860dc7f1825849cdd6a2",
         "old_path": "domain/Documents/src/Calls/DocumentCalls.php",
         "old_class": "Domain\\Documents\\Calls\\DocumentCalls",
         "final_path": "domain/Documents/src/Calls/DocumentCalls.php",
@@ -706,8 +733,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ce78cb36656bca3e777f5605cd5a9505c7f37246",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b2f9f91a1652b4d80c1682cf60d45cc92546977a",
         "old_path": "domain/Documents/src/Calls/DocumentCommentCall.php",
         "old_class": "Domain\\Documents\\Calls\\DocumentCommentCall",
         "final_path": "domain/Documents/src/Calls/DocumentCommentCall.php",
@@ -725,7 +752,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f8b75fc1c0338a683edd3a9aeab8ae2e19561f27",
         "old_path": "domain/Documents/src/Calls/DraftClosed.php",
         "old_class": "Domain\\Documents\\Calls\\DraftClosed",
@@ -744,7 +771,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "041f520c6e4aef2b6619a70ea316ad8180355b7b",
         "old_path": "domain/Documents/src/Calls/DraftHeld.php",
         "old_class": "Domain\\Documents\\Calls\\DraftHeld",
@@ -763,8 +790,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "41096c5124c7b48541ed6c657f00e16e9589ad13",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d5e4e8de9f837295f8b5a0b7e1e469f11216ef57",
         "old_path": "domain/Documents/src/Calls/EditDocumentCall.php",
         "old_class": "Domain\\Documents\\Calls\\EditDocumentCall",
         "final_path": "domain/Documents/src/Calls/EditDocumentCall.php",
@@ -782,8 +809,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8668a078f53b272b22e28a8e75900e74f6f2915f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0642a04491973b53313d7e860be40d77331d9847",
         "old_path": "domain/Documents/src/Calls/EditReportCall.php",
         "old_class": "Domain\\Documents\\Calls\\EditReportCall",
         "final_path": "domain/Documents/src/Calls/EditReportCall.php",
@@ -801,8 +828,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "958b6a5f3919c688cb58c0fb7da9c34dc9ed428e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "58ba17eb76575a7aacf6356444b362f9770fa8ce",
         "old_path": "domain/Documents/src/Calls/InspectDocumentCall.php",
         "old_class": "Domain\\Documents\\Calls\\InspectDocumentCall",
         "final_path": "domain/Documents/src/Calls/InspectDocumentCall.php",
@@ -820,8 +847,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "447f09c48fe1afc37e52dcb14cdeb02e3a353d21",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "356e1238007e6c39fe0dfae43ab8bf09702ad60e",
         "old_path": "domain/Documents/src/Calls/InspectReportCall.php",
         "old_class": "Domain\\Documents\\Calls\\InspectReportCall",
         "final_path": "domain/Documents/src/Calls/InspectReportCall.php",
@@ -839,8 +866,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6a9e40d038165f711400029501b5a5ba2e60683c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ffd3abe70b8bd1b9eab8ceb5b3931ab98b6a2353",
         "old_path": "domain/Documents/src/Calls/ListDocumentRevisionsCall.php",
         "old_class": "Domain\\Documents\\Calls\\ListDocumentRevisionsCall",
         "final_path": "domain/Documents/src/Calls/ListDocumentRevisionsCall.php",
@@ -858,8 +885,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7168ff79b1a051bc2b7b4069f473deda41b2bc7b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "91852f015272110f2181f8530281639c46d50263",
         "old_path": "domain/Documents/src/Calls/ListDocumentsCall.php",
         "old_class": "Domain\\Documents\\Calls\\ListDocumentsCall",
         "final_path": "domain/Documents/src/Calls/ListDocumentsCall.php",
@@ -877,8 +904,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c9ffdd02f000672d5787f37f74b640ec658ebd18",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9a12ec9b2e2f836342be6f37a2cc0dac6019decc",
         "old_path": "domain/Documents/src/Calls/ListReportsCall.php",
         "old_class": "Domain\\Documents\\Calls\\ListReportsCall",
         "final_path": "domain/Documents/src/Calls/ListReportsCall.php",
@@ -896,8 +923,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8f79653b2c52d1cb7cf97a269eea7dee0af27ef3",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1d1003016c576f2e96998431f621e587a1211e68",
         "old_path": "domain/Documents/src/Calls/MakeDocumentCall.php",
         "old_class": "Domain\\Documents\\Calls\\MakeDocumentCall",
         "final_path": "domain/Documents/src/Calls/MakeDocumentCall.php",
@@ -915,8 +942,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "065a89a9b81fa0a2817815f09b56ebac23f089a8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "19edca872870692d0e097db5afb0cf8e7194d59e",
         "old_path": "domain/Documents/src/Calls/MakeReportCall.php",
         "old_class": "Domain\\Documents\\Calls\\MakeReportCall",
         "final_path": "domain/Documents/src/Calls/MakeReportCall.php",
@@ -934,8 +961,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "653145ca0447f99088c4c35515eefa0323dd2708",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f852b1d4c40f93182cff7fadd1739fbbc27742bd",
         "old_path": "domain/Documents/src/Calls/OpenDocumentCall.php",
         "old_class": "Domain\\Documents\\Calls\\OpenDocumentCall",
         "final_path": "domain/Documents/src/Calls/OpenDocumentCall.php",
@@ -953,7 +980,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c4da8a64e57f5f4f7d6109a56915bb64bcf653a1",
         "old_path": "domain/Documents/src/Calls/RecordCommented.php",
         "old_class": "Domain\\Documents\\Calls\\RecordCommented",
@@ -972,7 +999,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "004ff1808a153213aeb6a0fef7dc1cd1d5b3893f",
         "old_path": "domain/Documents/src/Calls/RecordFiled.php",
         "old_class": "Domain\\Documents\\Calls\\RecordFiled",
@@ -991,8 +1018,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c156cc68f11b31492e4f911036d1b6ba440edd93",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f52ec44943a15efed961375e8eab98a6bc6bd0c0",
         "old_path": "domain/Documents/src/Calls/ReportCommentCall.php",
         "old_class": "Domain\\Documents\\Calls\\ReportCommentCall",
         "final_path": "domain/Documents/src/Calls/ReportCommentCall.php",
@@ -1010,7 +1037,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a84ec45c710812f44f2d4d9906f442e026668f18",
         "old_path": "domain/Documents/src/Calls/RevisionList.php",
         "old_class": "Domain\\Documents\\Calls\\RevisionList",
@@ -1029,8 +1056,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "883846306b4dd2e8284ae9c874200f1c79a18aec",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "abace4192c307f661486a36d78eddf7b599fecd8",
         "old_path": "domain/Documents/src/Calls/SettleDocumentCall.php",
         "old_class": "Domain\\Documents\\Calls\\SettleDocumentCall",
         "final_path": "domain/Documents/src/Calls/SettleDocumentCall.php",
@@ -1048,8 +1075,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1e499ec291ea6658998d5568c7de870b8e9ddc7b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a43b3925317b3cd761851bd09cc8bc5fa31700ed",
         "old_path": "domain/Documents/src/Calls/SettleReportCall.php",
         "old_class": "Domain\\Documents\\Calls\\SettleReportCall",
         "final_path": "domain/Documents/src/Calls/SettleReportCall.php",
@@ -1067,8 +1094,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f54879c89b9e7ef63487c7702bffb31685ee1ef6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "da87df57c1cda40cc43f4fb79a8778bb9ed26520",
         "old_path": "domain/Documents/src/Calls/ShowDocumentCall.php",
         "old_class": "Domain\\Documents\\Calls\\ShowDocumentCall",
         "final_path": "domain/Documents/src/Calls/ShowDocumentCall.php",
@@ -1086,8 +1113,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f4df6c686e31319eb2715adb951d42a4e090ce3f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "fa7d884fb9118a6fc5658d8b37ab2b3c895e07e6",
         "old_path": "domain/Documents/src/Calls/ShowDocumentRevisionCall.php",
         "old_class": "Domain\\Documents\\Calls\\ShowDocumentRevisionCall",
         "final_path": "domain/Documents/src/Calls/ShowDocumentRevisionCall.php",
@@ -1105,8 +1132,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "af945ae3c374052fa7527ce7bb217ef15b918c2f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "cce82c2531552c2a9515ffef5a4c72e75c6cccf5",
         "old_path": "domain/Documents/src/Calls/ShowDraftCall.php",
         "old_class": "Domain\\Documents\\Calls\\ShowDraftCall",
         "final_path": "domain/Documents/src/Calls/ShowDraftCall.php",
@@ -1124,8 +1151,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "06a6507d97015778fc1c803a822c540c3585391d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4674d32818fa4c65ff86154103324d5453093844",
         "old_path": "domain/Documents/src/Calls/ShowReportCall.php",
         "old_class": "Domain\\Documents\\Calls\\ShowReportCall",
         "final_path": "domain/Documents/src/Calls/ShowReportCall.php",
@@ -1143,8 +1170,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8081d2794672398b09c59fb9cad77b4dece05808",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "134024421e82ee3eddc1e54da1229e970b7ac185",
         "old_path": "domain/Documents/src/Cards/DocumentDockCard.php",
         "old_class": "Domain\\Documents\\Cards\\DocumentDockCard",
         "final_path": "domain/Documents/src/Support/Cards/DocumentDockCard.php",
@@ -1157,13 +1184,15 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "fde9925e0aec5bccd2aac90ffab8790221531bed",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "fdb3b96c9d259e613aa3e561ae11b70e1f9cb0ec",
         "old_path": "domain/Documents/src/Cards/ReportDockCard.php",
         "old_class": "Domain\\Documents\\Cards\\ReportDockCard",
         "final_path": "domain/Documents/src/Support/Cards/ReportDockCard.php",
@@ -1176,13 +1205,15 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ae5035a7c91178b20d45f1ae53d12d3f9ad8a560",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f594509b630db2407d4c513355c5e4e77eecd75c",
         "old_path": "domain/Documents/src/Commands/AppendUpload/AppendUploadCommand.php",
         "old_class": "Domain\\Documents\\Commands\\AppendUpload\\AppendUploadCommand",
         "final_path": "domain/Documents/src/Commands/AppendUpload/AppendUploadCommand.php",
@@ -1200,7 +1231,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3d8f94bf746916a3df98b4361a29a4a51f2f8b65",
         "old_path": "domain/Documents/src/Commands/AppendUpload/AppendUploadHandler.php",
         "old_class": "Domain\\Documents\\Commands\\AppendUpload\\AppendUploadHandler",
@@ -1219,8 +1250,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8f0cebeb68c984361e7246e1680af5bb7979a9da",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4c087abc606837f06f2d3e5b3e2d05fc8f391d83",
         "old_path": "domain/Documents/src/Commands/BeginUpload/BeginUploadCommand.php",
         "old_class": "Domain\\Documents\\Commands\\BeginUpload\\BeginUploadCommand",
         "final_path": "domain/Documents/src/Commands/BeginUpload/BeginUploadCommand.php",
@@ -1238,7 +1269,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5f11dfd0a5ca4230ee01965e3b8605f0f4ce8ee0",
         "old_path": "domain/Documents/src/Commands/BeginUpload/BeginUploadHandler.php",
         "old_class": "Domain\\Documents\\Commands\\BeginUpload\\BeginUploadHandler",
@@ -1257,8 +1288,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "618a49987c31489bb9db2e43e809d196043eed78",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "19878e3f54129b961a1a46644bc7dfb6bbc35eea",
         "old_path": "domain/Documents/src/Commands/ChangeDocumentDetails/ChangeDocumentDetailsCommand.php",
         "old_class": "Domain\\Documents\\Commands\\ChangeDocumentDetails\\ChangeDocumentDetailsCommand",
         "final_path": "domain/Documents/src/Commands/ChangeDocumentDetails/ChangeDocumentDetailsCommand.php",
@@ -1276,7 +1307,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7a2956b1687887059d7000007fdb39807745a8d6",
         "old_path": "domain/Documents/src/Commands/ChangeDocumentDetails/ChangeDocumentDetailsHandler.php",
         "old_class": "Domain\\Documents\\Commands\\ChangeDocumentDetails\\ChangeDocumentDetailsHandler",
@@ -1295,8 +1326,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9704e7d773ea2c574f468b93cfe8eef3750b2a08",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "3ea1442364943aef518969a8b4ff93ea4906d7b7",
         "old_path": "domain/Documents/src/Commands/CloseDocument/CloseDocumentCommand.php",
         "old_class": "Domain\\Documents\\Commands\\CloseDocument\\CloseDocumentCommand",
         "final_path": "domain/Documents/src/Commands/CloseDocument/CloseDocumentCommand.php",
@@ -1314,7 +1345,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9a41642c9a6fd7fa2984d3a5e6c1ca81023e5ca7",
         "old_path": "domain/Documents/src/Commands/CloseDocument/CloseDocumentHandler.php",
         "old_class": "Domain\\Documents\\Commands\\CloseDocument\\CloseDocumentHandler",
@@ -1333,8 +1364,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "24f81d64cfb35307a9857b1a549c736491963a50",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9ce42464a34d728afa926b7a99b816aee3a64e0c",
         "old_path": "domain/Documents/src/Commands/CloseReport/CloseReportCommand.php",
         "old_class": "Domain\\Documents\\Commands\\CloseReport\\CloseReportCommand",
         "final_path": "domain/Documents/src/Commands/CloseReport/CloseReportCommand.php",
@@ -1352,8 +1383,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "23e1c9d1aae9c90cce1a49a88c05ea1f764bd149",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "3b62ddebb684d48afc2aede0cc3022c25f2988ef",
         "old_path": "domain/Documents/src/Commands/CloseReport/CloseReportHandler.php",
         "old_class": "Domain\\Documents\\Commands\\CloseReport\\CloseReportHandler",
         "final_path": "domain/Documents/src/Commands/CloseReport/CloseReportHandler.php",
@@ -1371,8 +1402,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "409b2e0dcbe369506db7d5e58ae347bf6594c475",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "982c5767d2a0fa14b5523b84871348ed2bfcd7c1",
         "old_path": "domain/Documents/src/Commands/CommentOnDocument/CommentOnDocumentCommand.php",
         "old_class": "Domain\\Documents\\Commands\\CommentOnDocument\\CommentOnDocumentCommand",
         "final_path": "domain/Documents/src/Commands/CommentOnDocument/CommentOnDocumentCommand.php",
@@ -1390,8 +1421,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "99f173f0c25d0c18e9609cffa3f45a4a813f560e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "79b6e7ad3aef868e71c1e2f35a4f24229409e2ce",
         "old_path": "domain/Documents/src/Commands/CommentOnDocument/CommentOnDocumentHandler.php",
         "old_class": "Domain\\Documents\\Commands\\CommentOnDocument\\CommentOnDocumentHandler",
         "final_path": "domain/Documents/src/Commands/CommentOnDocument/CommentOnDocumentHandler.php",
@@ -1409,8 +1440,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f0a9d67451c30f78d0ae49e499fc6d2a8b9777c2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "cd25931102d29405ff77b01c950b8262069c48c0",
         "old_path": "domain/Documents/src/Commands/CommentOnReport/CommentOnReportCommand.php",
         "old_class": "Domain\\Documents\\Commands\\CommentOnReport\\CommentOnReportCommand",
         "final_path": "domain/Documents/src/Commands/CommentOnReport/CommentOnReportCommand.php",
@@ -1428,8 +1459,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b1b6f32f666a53696de921911987de1b59437101",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bc1fe07c9e2627e594088983c1d5344d06bb4538",
         "old_path": "domain/Documents/src/Commands/CommentOnReport/CommentOnReportHandler.php",
         "old_class": "Domain\\Documents\\Commands\\CommentOnReport\\CommentOnReportHandler",
         "final_path": "domain/Documents/src/Commands/CommentOnReport/CommentOnReportHandler.php",
@@ -1447,8 +1478,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3c590b706566b831063e063a8ee5c673b3a84505",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "99ffce8d446efa634ea7f5e325e106d437758821",
         "old_path": "domain/Documents/src/Commands/CommitUpload/CommitUploadCommand.php",
         "old_class": "Domain\\Documents\\Commands\\CommitUpload\\CommitUploadCommand",
         "final_path": "domain/Documents/src/Commands/CommitUpload/CommitUploadCommand.php",
@@ -1466,7 +1497,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c6a800900825f851950fc4f64a09202f22ce0491",
         "old_path": "domain/Documents/src/Commands/CommitUpload/CommitUploadHandler.php",
         "old_class": "Domain\\Documents\\Commands\\CommitUpload\\CommitUploadHandler",
@@ -1485,8 +1516,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "385481a7b49430d1800a483478aa5c90c71934e4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b3b7ff241ff5181ba23fbb6bf9e2f779f55a1cf2",
         "old_path": "domain/Documents/src/Commands/CreateDocument/CreateDocumentCommand.php",
         "old_class": "Domain\\Documents\\Commands\\CreateDocument\\CreateDocumentCommand",
         "final_path": "domain/Documents/src/Commands/CreateDocument/CreateDocumentCommand.php",
@@ -1504,8 +1535,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2248c7b6631d829e9cc3f91e6819cacd7a3748cf",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "dee4f1651372beab006bcbb8d7f4c634b18eb763",
         "old_path": "domain/Documents/src/Commands/CreateDocument/CreateDocumentHandler.php",
         "old_class": "Domain\\Documents\\Commands\\CreateDocument\\CreateDocumentHandler",
         "final_path": "domain/Documents/src/Commands/CreateDocument/CreateDocumentHandler.php",
@@ -1523,8 +1554,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a35d4529580f5be7469c8c4187a4e98cba30e676",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bc8c6f2295fa20a29c90b0674ca2ff15fc13c70e",
         "old_path": "domain/Documents/src/Commands/CreateReport/CreateReportCommand.php",
         "old_class": "Domain\\Documents\\Commands\\CreateReport\\CreateReportCommand",
         "final_path": "domain/Documents/src/Commands/CreateReport/CreateReportCommand.php",
@@ -1542,8 +1573,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3b658efadd2ed231eb3a7a12f378eb4e5d01237b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "318061fcdba8594411cb421952c3b60999672269",
         "old_path": "domain/Documents/src/Commands/CreateReport/CreateReportHandler.php",
         "old_class": "Domain\\Documents\\Commands\\CreateReport\\CreateReportHandler",
         "final_path": "domain/Documents/src/Commands/CreateReport/CreateReportHandler.php",
@@ -1561,8 +1592,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "be19ca930db2a961494727d7707b982ef5ae37ab",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b7f9223054acf40563e3abc18584b0d0d605fe1d",
         "old_path": "domain/Documents/src/Commands/DiscardUpload/DiscardUploadCommand.php",
         "old_class": "Domain\\Documents\\Commands\\DiscardUpload\\DiscardUploadCommand",
         "final_path": "domain/Documents/src/Commands/DiscardUpload/DiscardUploadCommand.php",
@@ -1580,7 +1611,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7b13e7cddc51db9d571d7ac682696cc43d337759",
         "old_path": "domain/Documents/src/Commands/DiscardUpload/DiscardUploadHandler.php",
         "old_class": "Domain\\Documents\\Commands\\DiscardUpload\\DiscardUploadHandler",
@@ -1599,8 +1630,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f6b4e10c3d0712f9d7fb6e7822f840c527fda436",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8b7a4fffa169aa6ddc252e21e2b0f97d746dccdc",
         "old_path": "domain/Documents/src/Commands/EditDocument/EditDocumentCommand.php",
         "old_class": "Domain\\Documents\\Commands\\EditDocument\\EditDocumentCommand",
         "final_path": "domain/Documents/src/Commands/EditDocument/EditDocumentCommand.php",
@@ -1618,7 +1649,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d5df608e0f4f577710f07d783ed3261536e75992",
         "old_path": "domain/Documents/src/Commands/EditDocument/EditDocumentHandler.php",
         "old_class": "Domain\\Documents\\Commands\\EditDocument\\EditDocumentHandler",
@@ -1637,8 +1668,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e7f414b818aa40a174a03705413b3ad2881c45c7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7dbfbda0c01f580e44812d5242479970dc3aad2d",
         "old_path": "domain/Documents/src/Commands/OpenDocument/OpenDocumentCommand.php",
         "old_class": "Domain\\Documents\\Commands\\OpenDocument\\OpenDocumentCommand",
         "final_path": "domain/Documents/src/Commands/OpenDocument/OpenDocumentCommand.php",
@@ -1656,8 +1687,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7f2a0d6c40f51041bc286f143250fc3f4b38871a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ca57f4d8ad7591ff80eef9951b3420548fd23df0",
         "old_path": "domain/Documents/src/Commands/OpenDocument/OpenDocumentHandler.php",
         "old_class": "Domain\\Documents\\Commands\\OpenDocument\\OpenDocumentHandler",
         "final_path": "domain/Documents/src/Commands/OpenDocument/OpenDocumentHandler.php",
@@ -1675,8 +1706,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f42e005528f5a5c1afcc82621db669672e3693fe",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "033f408b6674ad0db7e856e0beb519932edf7bbb",
         "old_path": "domain/Documents/src/Commands/RecoverDocument/RecoverDocumentCommand.php",
         "old_class": "Domain\\Documents\\Commands\\RecoverDocument\\RecoverDocumentCommand",
         "final_path": "domain/Documents/src/Commands/RecoverDocument/RecoverDocumentCommand.php",
@@ -1694,7 +1725,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9b879d44f4d5fff41cf432e71b63cffe83cdf8ef",
         "old_path": "domain/Documents/src/Commands/RecoverDocument/RecoverDocumentHandler.php",
         "old_class": "Domain\\Documents\\Commands\\RecoverDocument\\RecoverDocumentHandler",
@@ -1713,8 +1744,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c4fd5566430c046e464f484c2e084f8cd36b7bc6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "449a0d6fb387e68c7c9e4d4e8cad9e98f93143c6",
         "old_path": "domain/Documents/src/Commands/RecoverDraft/RecoverDraftCommand.php",
         "old_class": "Domain\\Documents\\Commands\\RecoverDraft\\RecoverDraftCommand",
         "final_path": "domain/Documents/src/Commands/RecoverDraft/RecoverDraftCommand.php",
@@ -1732,8 +1763,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "257305d2b6d11442188400a493268aa3839f7f27",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5c11a05300472d17f27cb2391b8aee43d2543e40",
         "old_path": "domain/Documents/src/Commands/RecoverDraft/RecoverDraftHandler.php",
         "old_class": "Domain\\Documents\\Commands\\RecoverDraft\\RecoverDraftHandler",
         "final_path": "domain/Documents/src/Commands/RecoverDraft/RecoverDraftHandler.php",
@@ -1751,8 +1782,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8bc205260b8cf324b6cadfca97ca3977c79ba86f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2dfa02a386b0df06f87ff67240e224860a73ec1e",
         "old_path": "domain/Documents/src/Commands/ReplaceDocumentBody/ReplaceDocumentBodyCommand.php",
         "old_class": "Domain\\Documents\\Commands\\ReplaceDocumentBody\\ReplaceDocumentBodyCommand",
         "final_path": "domain/Documents/src/Commands/ReplaceDocumentBody/ReplaceDocumentBodyCommand.php",
@@ -1770,8 +1801,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0513ce5637e84d794d51d349c675d668a4449a51",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ba0235745e6ea90aa14f7e7f2002ac4e88f0c91f",
         "old_path": "domain/Documents/src/Commands/ReplaceDocumentBody/ReplaceDocumentBodyHandler.php",
         "old_class": "Domain\\Documents\\Commands\\ReplaceDocumentBody\\ReplaceDocumentBodyHandler",
         "final_path": "domain/Documents/src/Commands/ReplaceDocumentBody/ReplaceDocumentBodyHandler.php",
@@ -1789,8 +1820,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5c96b6d91073d3afd94afb65b61f74d0004ba127",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1aebda9f48789cb525a55639c078b1dd0830573c",
         "old_path": "domain/Documents/src/Commands/ReplaceDocumentText/ReplaceDocumentTextCommand.php",
         "old_class": "Domain\\Documents\\Commands\\ReplaceDocumentText\\ReplaceDocumentTextCommand",
         "final_path": "domain/Documents/src/Commands/ReplaceDocumentText/ReplaceDocumentTextCommand.php",
@@ -1808,7 +1839,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5a970883043eb589ac91230ebfc1eb124c911ac1",
         "old_path": "domain/Documents/src/Commands/ReplaceDocumentText/ReplaceDocumentTextHandler.php",
         "old_class": "Domain\\Documents\\Commands\\ReplaceDocumentText\\ReplaceDocumentTextHandler",
@@ -1827,8 +1858,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "df0416319c2e77f1948ceb57e00c94b2ff6f2c08",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f3931b44d193a234fb71990e81df7c34cd8f41c5",
         "old_path": "domain/Documents/src/Commands/SettleDocument/SettleDocumentCommand.php",
         "old_class": "Domain\\Documents\\Commands\\SettleDocument\\SettleDocumentCommand",
         "final_path": "domain/Documents/src/Commands/SettleDocument/SettleDocumentCommand.php",
@@ -1846,7 +1877,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1ac835fe95928663d79b179290cbdaa0df92afd0",
         "old_path": "domain/Documents/src/Commands/SettleDocument/SettleDocumentHandler.php",
         "old_class": "Domain\\Documents\\Commands\\SettleDocument\\SettleDocumentHandler",
@@ -1865,7 +1896,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2b07cd83e903ed8484e6c3c1435de48b4119d7ab",
         "old_path": "domain/Documents/src/Commands/Support/DocumentCommandHandler.php",
         "old_class": "Domain\\Documents\\Commands\\Support\\DocumentCommandHandler",
@@ -1884,8 +1915,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ba0c9f14b6dc0f3159f18e466647ce979e39c0b2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9898926a80443c6bc0e52304cc9168980719716f",
         "old_path": "domain/Documents/src/Console/Concerns/PrintsComments.php",
         "old_class": "Domain\\Documents\\Console\\Concerns\\PrintsComments",
         "final_path": "domain/Documents/src/Console/Concerns/PrintsComments.php",
@@ -1903,8 +1934,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ce41792b6ffd72cc092bd9070a31d7336ec190cb",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "26310dbb8d9293c65c69822c13fe8736725c7997",
         "old_path": "domain/Documents/src/Console/Concerns/PrintsInspection.php",
         "old_class": "Domain\\Documents\\Console\\Concerns\\PrintsInspection",
         "final_path": "domain/Documents/src/Console/Concerns/PrintsInspection.php",
@@ -1922,8 +1953,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "09fe563ca02a3da4efebb6389332d6072cc475b3",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b6cf8e39ff0a3d609d7ec136422515c2816aafc6",
         "old_path": "domain/Documents/src/Console/Concerns/PrintsRecordText.php",
         "old_class": "Domain\\Documents\\Console\\Concerns\\PrintsRecordText",
         "final_path": "domain/Documents/src/Console/Concerns/PrintsRecordText.php",
@@ -1941,8 +1972,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "41a6de23d79e34601b2d15548917d89816f768af",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0862a12cbccd0bbd5d29dcd4399d0d6d2a5ba79c",
         "old_path": "domain/Documents/src/Console/Concerns/ReadsRecordBody.php",
         "old_class": "Domain\\Documents\\Console\\Concerns\\ReadsRecordBody",
         "final_path": "domain/Documents/src/Console/Concerns/ReadsRecordBody.php",
@@ -1960,8 +1991,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "cf9e327f5ef6a08942419e835eb0543572d6ffd4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2f82be4808bba363271c3f8037eb0fe49d5e113b",
         "old_path": "domain/Documents/src/Console/Concerns/ReportsRecordCards.php",
         "old_class": "Domain\\Documents\\Console\\Concerns\\ReportsRecordCards",
         "final_path": "domain/Documents/src/Console/Concerns/ReportsRecordCards.php",
@@ -1979,8 +2010,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "acf53d356b2a1b2361415f220d3fcefcbba69251",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b8d9da3bbadd14b7c749cf0ae888f18df4d7ecd3",
         "old_path": "domain/Documents/src/Console/DocCloseCommand.php",
         "old_class": "Domain\\Documents\\Console\\DocCloseCommand",
         "final_path": "domain/Documents/src/Console/Commands/DocCloseCommand.php",
@@ -1993,13 +2024,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9b0dc85002231d7dc091c96894a3b3cfee928a7f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "82f31b69e1b2c8db0336ff0a883a05431e2d3a0f",
         "old_path": "domain/Documents/src/Console/DocCommentsCommand.php",
         "old_class": "Domain\\Documents\\Console\\DocCommentsCommand",
         "final_path": "domain/Documents/src/Console/Commands/DocCommentsCommand.php",
@@ -2012,13 +2046,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c1d26d2b794d7fc14e92913ec36bb5691b145b87",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f680f50fce45d0c9494eddf56fc21809f3a1856e",
         "old_path": "domain/Documents/src/Console/DocEditCommand.php",
         "old_class": "Domain\\Documents\\Console\\DocEditCommand",
         "final_path": "domain/Documents/src/Console/Commands/DocEditCommand.php",
@@ -2031,13 +2068,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b36ae0720786e4095055d178c2f067d850089d4f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2938e9540a09528e065e85eb481bea4f289c6244",
         "old_path": "domain/Documents/src/Console/DocInspectCommand.php",
         "old_class": "Domain\\Documents\\Console\\DocInspectCommand",
         "final_path": "domain/Documents/src/Console/Commands/DocInspectCommand.php",
@@ -2050,13 +2090,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b24f14defd3cc66dbc9422a44068226d2f8a4f84",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ebb1ed1967e73fc653373ad3dbd4a68105e8e08b",
         "old_path": "domain/Documents/src/Console/DocListCommand.php",
         "old_class": "Domain\\Documents\\Console\\DocListCommand",
         "final_path": "domain/Documents/src/Console/Commands/DocListCommand.php",
@@ -2069,13 +2112,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d44bd1d8408e5c863a54ca0af89978733f4f9c70",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ddeb7a069f7143934b3096a59c3c7408572aa0af",
         "old_path": "domain/Documents/src/Console/DocMakeCommand.php",
         "old_class": "Domain\\Documents\\Console\\DocMakeCommand",
         "final_path": "domain/Documents/src/Console/Commands/DocMakeCommand.php",
@@ -2088,13 +2134,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4cf785bf6c7ea158d3ba841df29e087dcedbd6c4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "64f306824133d8070f1e60dabb13f6fadeb1a0e8",
         "old_path": "domain/Documents/src/Console/DocOpenCommand.php",
         "old_class": "Domain\\Documents\\Console\\DocOpenCommand",
         "final_path": "domain/Documents/src/Console/Commands/DocOpenCommand.php",
@@ -2107,13 +2156,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "de4eb8d2b27bd02bcafa7d00a4a96f232c0d2e03",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2b35cb462aaf68da9802b782374133887536ae91",
         "old_path": "domain/Documents/src/Console/DocRevisionCommand.php",
         "old_class": "Domain\\Documents\\Console\\DocRevisionCommand",
         "final_path": "domain/Documents/src/Console/Commands/DocRevisionCommand.php",
@@ -2126,13 +2178,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a7978a92e426cce7e34e1a4c2dc0a0cbee573673",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6a1c52c05d1bff460f6fe04971fee4e84086b526",
         "old_path": "domain/Documents/src/Console/DocRevisionsCommand.php",
         "old_class": "Domain\\Documents\\Console\\DocRevisionsCommand",
         "final_path": "domain/Documents/src/Console/Commands/DocRevisionsCommand.php",
@@ -2145,13 +2200,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4cfe4d29f32be2a03325a829899e918e46cd35fa",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2311c39abfbf4086c690daf87aa78542e32f8299",
         "old_path": "domain/Documents/src/Console/DocSettleCommand.php",
         "old_class": "Domain\\Documents\\Console\\DocSettleCommand",
         "final_path": "domain/Documents/src/Console/Commands/DocSettleCommand.php",
@@ -2164,13 +2222,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "632e49c9806fe28b72932669f51b3f10b428480e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "556aee0931a4c46c76fc3f3d690cee96abbdb93f",
         "old_path": "domain/Documents/src/Console/DocShowCommand.php",
         "old_class": "Domain\\Documents\\Console\\DocShowCommand",
         "final_path": "domain/Documents/src/Console/Commands/DocShowCommand.php",
@@ -2183,13 +2244,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6a593ae305dd68ae581308b739a880ac681e85e4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8a520f2f41a1ed155c90de6dd834c7a2b9b26b50",
         "old_path": "domain/Documents/src/Console/ReportCommentsCommand.php",
         "old_class": "Domain\\Documents\\Console\\ReportCommentsCommand",
         "final_path": "domain/Documents/src/Console/Commands/ReportCommentsCommand.php",
@@ -2202,13 +2266,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ba59cc8c43996adc792ee7277273622dcbabd8a3",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f85a6cf95768a1852a771131aef3bfa51571b087",
         "old_path": "domain/Documents/src/Console/ReportEditCommand.php",
         "old_class": "Domain\\Documents\\Console\\ReportEditCommand",
         "final_path": "domain/Documents/src/Console/Commands/ReportEditCommand.php",
@@ -2221,13 +2288,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9a4413c2d2bd35708ff23e1034d7cdaccae6a781",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "36ff10d7ed4a0969cbeff1a35e3b2143ae25228a",
         "old_path": "domain/Documents/src/Console/ReportInspectCommand.php",
         "old_class": "Domain\\Documents\\Console\\ReportInspectCommand",
         "final_path": "domain/Documents/src/Console/Commands/ReportInspectCommand.php",
@@ -2240,13 +2310,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a8bf07d9a122b35247b1f307405eaba4e60a47d2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "47a712585c5d75581bc1672b65c876587609ce02",
         "old_path": "domain/Documents/src/Console/ReportListCommand.php",
         "old_class": "Domain\\Documents\\Console\\ReportListCommand",
         "final_path": "domain/Documents/src/Console/Commands/ReportListCommand.php",
@@ -2259,13 +2332,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "08331aca025d260409127752d7ed40c813950ccd",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b9015371531a7116b5f06df427766a9d3ccb8d8f",
         "old_path": "domain/Documents/src/Console/ReportMakeCommand.php",
         "old_class": "Domain\\Documents\\Console\\ReportMakeCommand",
         "final_path": "domain/Documents/src/Console/Commands/ReportMakeCommand.php",
@@ -2278,13 +2354,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "80a6387074cf65cf2dcb8fe3e6bf5e2f2f12ae2f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "594285b286079ad287f297df406a7293d4b38760",
         "old_path": "domain/Documents/src/Console/ReportSettleCommand.php",
         "old_class": "Domain\\Documents\\Console\\ReportSettleCommand",
         "final_path": "domain/Documents/src/Console/Commands/ReportSettleCommand.php",
@@ -2297,13 +2376,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "dd8b0bfee204382e56c07fa15e0f1bdd7099661c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6899ac6f74d24047413f17c7bdcd6b1a6fd79bf0",
         "old_path": "domain/Documents/src/Console/ReportShowCommand.php",
         "old_class": "Domain\\Documents\\Console\\ReportShowCommand",
         "final_path": "domain/Documents/src/Console/Commands/ReportShowCommand.php",
@@ -2316,13 +2398,16 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8740181d648057805790294d75f09b2237468384",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "31936184385b07030e567c2ea22bdf16f19c0da7",
         "old_path": "domain/Documents/src/Console/Support/DraftTokens.php",
         "old_class": "Domain\\Documents\\Console\\Support\\DraftTokens",
         "final_path": "domain/Documents/src/Console/Commands/Support/DraftTokens.php",
@@ -2335,12 +2420,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f7a315c0f80883e242c4f54525a4ffabbee501b2",
         "old_path": "domain/Documents/src/Contracts/AttachmentReader.php",
         "old_class": "Domain\\Documents\\Contracts\\AttachmentReader",
@@ -2359,7 +2446,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "98e03d13b9c70ad990f3e559ae1177cd8f6de6b4",
         "old_path": "domain/Documents/src/Contracts/DocumentReader.php",
         "old_class": "Domain\\Documents\\Contracts\\DocumentReader",
@@ -2378,8 +2465,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d20d5f8685ae16019c2f312981842949d0428d55",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d9907b8ac0ee5baacc976f93dd212283f0df7acc",
         "old_path": "domain/Documents/src/Contracts/DocumentResolver.php",
         "old_class": "Domain\\Documents\\Contracts\\DocumentResolver",
         "final_path": "domain/Documents/src/Contracts/DocumentResolver.php",
@@ -2397,7 +2484,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "349796af4efe27486b54fb418ce6d84a3180dee2",
         "old_path": "domain/Documents/src/Contracts/DraftReader.php",
         "old_class": "Domain\\Documents\\Contracts\\DraftReader",
@@ -2416,7 +2503,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "bbb1eb39e108a06a6faf7b49da111886ff505c02",
         "old_path": "domain/Documents/src/Contracts/DraftResolver.php",
         "old_class": "Domain\\Documents\\Contracts\\DraftResolver",
@@ -2435,7 +2522,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f94ceaba52260803a633e2e1799bb960f2d589fc",
         "old_path": "domain/Documents/src/Contracts/ReportReader.php",
         "old_class": "Domain\\Documents\\Contracts\\ReportReader",
@@ -2454,8 +2541,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3408cfbeae4c812ce8297800360d7c84999d1e35",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f7330e076ecea5087335e52d7527b6a141fbdc39",
         "old_path": "domain/Documents/src/Contracts/ReportResolver.php",
         "old_class": "Domain\\Documents\\Contracts\\ReportResolver",
         "final_path": "domain/Documents/src/Contracts/ReportResolver.php",
@@ -2473,7 +2560,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d4858cdb61cc55280d7df805c82376aabd08b9a4",
         "old_path": "domain/Documents/src/Contracts/SealedUploads.php",
         "old_class": "Domain\\Documents\\Contracts\\SealedUploads",
@@ -2492,7 +2579,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "82bcb0782bbeb56f47cc6a8373015929f310a2cd",
         "old_path": "domain/Documents/src/Data/CloseCard.php",
         "old_class": "Domain\\Documents\\Data\\CloseCard",
@@ -2511,7 +2598,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "14f1ec1d5bf7bbdfb54b508e8cfd543f711928ac",
         "old_path": "domain/Documents/src/Data/DockData.php",
         "old_class": "Domain\\Documents\\Data\\DockData",
@@ -2530,7 +2617,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "54a67607595e670144c9430d0e1e1ce809a46745",
         "old_path": "domain/Documents/src/Data/DockSuggestion.php",
         "old_class": "Domain\\Documents\\Data\\DockSuggestion",
@@ -2549,7 +2636,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d9273707d8e8d2c7ba448bb9aea4fba21a3f5522",
         "old_path": "domain/Documents/src/Data/DocumentBlockData.php",
         "old_class": "Domain\\Documents\\Data\\DocumentBlockData",
@@ -2568,8 +2655,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "50e632b133252071f6bdfaa63b273a9045ee92b0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c080e759417424432ffec41b8a7d912db64b9e95",
         "old_path": "domain/Documents/src/Data/DocumentCommentsPartData.php",
         "old_class": "Domain\\Documents\\Data\\DocumentCommentsPartData",
         "final_path": "domain/Documents/src/Data/DocumentCommentsPartData.php",
@@ -2587,8 +2674,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "079ae4106414376dd1fbdc1f9f1c6d93996e3ebe",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2d3086493345d34e74937dd2a4aa0f37fa3d35c8",
         "old_path": "domain/Documents/src/Data/DocumentFilters.php",
         "old_class": "Domain\\Documents\\Data\\DocumentFilters",
         "final_path": "domain/Documents/src/Data/DocumentFilters.php",
@@ -2606,7 +2693,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "91f36b8e0548447f9e546ee90c6e69fe6138b18e",
         "old_path": "domain/Documents/src/Data/DocumentRecipientData.php",
         "old_class": "Domain\\Documents\\Data\\DocumentRecipientData",
@@ -2625,7 +2712,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "951eb89fed4c18d5f821fc7c9b4630c282c328e6",
         "old_path": "domain/Documents/src/Data/DocumentThreadData.php",
         "old_class": "Domain\\Documents\\Data\\DocumentThreadData",
@@ -2644,7 +2731,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2dd06f212d7b1115b309aa58a4ad0b0b59948458",
         "old_path": "domain/Documents/src/Data/DocumentView.php",
         "old_class": "Domain\\Documents\\Data\\DocumentView",
@@ -2663,7 +2750,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5c41666df5c55e66fb58855dcc7a05744e1546f9",
         "old_path": "domain/Documents/src/Data/DraftEditorPartData.php",
         "old_class": "Domain\\Documents\\Data\\DraftEditorPartData",
@@ -2682,7 +2769,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c95af6ba5c528cdbded51e8782cb2d3da6f4bc72",
         "old_path": "domain/Documents/src/Data/DraftState.php",
         "old_class": "Domain\\Documents\\Data\\DraftState",
@@ -2701,7 +2788,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "cd5c781278c0c6eb44e313c971e0d750ab1f4bba",
         "old_path": "domain/Documents/src/Data/DraftView.php",
         "old_class": "Domain\\Documents\\Data\\DraftView",
@@ -2720,7 +2807,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9613c760dc6f7ef495aee61ebf81e06cd40432ab",
         "old_path": "domain/Documents/src/Data/PublicationCard.php",
         "old_class": "Domain\\Documents\\Data\\PublicationCard",
@@ -2739,7 +2826,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f489390a3e9b397cec3c140d964afa6b656f1db6",
         "old_path": "domain/Documents/src/Data/PublicationList.php",
         "old_class": "Domain\\Documents\\Data\\PublicationList",
@@ -2758,8 +2845,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "137cbb16a07c5ec5bc21ed5c61c1143675db09de",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "64c6491d808b47bc467433b253bcf5b2f7f58777",
         "old_path": "domain/Documents/src/Data/RecordCommentsPartData.php",
         "old_class": "Domain\\Documents\\Data\\RecordCommentsPartData",
         "final_path": "domain/Documents/src/Data/RecordCommentsPartData.php",
@@ -2777,8 +2864,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c6b7ece7041381805a583b36a3d8a2431f4d80da",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "add1d3987fddc0db49002c776c90d7b49410d83a",
         "old_path": "domain/Documents/src/Data/RecordInspection.php",
         "old_class": "Domain\\Documents\\Data\\RecordInspection",
         "final_path": "domain/Documents/src/Data/RecordInspection.php",
@@ -2796,8 +2883,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "201792c3a8a2ddfdc4c8080f76ca718ccb85d1da",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4ede5de3e6a1960915f58e3ed2c2d477d2935ba5",
         "old_path": "domain/Documents/src/Data/RecordLinksPartData.php",
         "old_class": "Domain\\Documents\\Data\\RecordLinksPartData",
         "final_path": "domain/Documents/src/Data/RecordLinksPartData.php",
@@ -2815,8 +2902,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0880716e4d0151a5d807f7fcadbb2e5a1c35cea7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "356053b3467dffd769419a651017ca234a764d5d",
         "old_path": "domain/Documents/src/Data/RecordReadsData.php",
         "old_class": "Domain\\Documents\\Data\\RecordReadsData",
         "final_path": "domain/Documents/src/Data/RecordReadsData.php",
@@ -2834,7 +2921,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "aa41ccf4fe7d5391c1f63eff0b9fea67439b59ea",
         "old_path": "domain/Documents/src/Data/RecordSharePartData.php",
         "old_class": "Domain\\Documents\\Data\\RecordSharePartData",
@@ -2853,7 +2940,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a5cee928ddf773611aefa87cb59378e476ddf7f1",
         "old_path": "domain/Documents/src/Data/RecordText.php",
         "old_class": "Domain\\Documents\\Data\\RecordText",
@@ -2872,7 +2959,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4a90809ba9a7d2e586ee23bbc2db59b119bbcd16",
         "old_path": "domain/Documents/src/Data/RecoverDraftPartData.php",
         "old_class": "Domain\\Documents\\Data\\RecoverDraftPartData",
@@ -2891,7 +2978,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "68cf8009bb61c25563a059d9b5c270fd073b6210",
         "old_path": "domain/Documents/src/Data/ReportReceiptPartData.php",
         "old_class": "Domain\\Documents\\Data\\ReportReceiptPartData",
@@ -2910,7 +2997,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c373700fa5704f6b801fa275d375cbb83c270f5b",
         "old_path": "domain/Documents/src/Data/ReportView.php",
         "old_class": "Domain\\Documents\\Data\\ReportView",
@@ -2929,7 +3016,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d8e9dd33bcef9d279c7bb9a94571c7346faffc3d",
         "old_path": "domain/Documents/src/Data/RevisionCard.php",
         "old_class": "Domain\\Documents\\Data\\RevisionCard",
@@ -2948,7 +3035,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "06488905819a111d90c233566e5f1301e23a36ee",
         "old_path": "domain/Documents/src/Data/RevisionView.php",
         "old_class": "Domain\\Documents\\Data\\RevisionView",
@@ -2967,7 +3054,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4c341d3f44d9fe58b3a4b27a1568434806c9bd2d",
         "old_path": "domain/Documents/src/Data/SettlementCard.php",
         "old_class": "Domain\\Documents\\Data\\SettlementCard",
@@ -2986,8 +3073,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ce8e17b3f39d8b685274432636fb8ea1253cb89f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5d241c311c6e6bd496862f55fbaf1eec7830b796",
         "old_path": "domain/Documents/src/DocumentsDomain.php",
         "old_class": "Domain\\Documents\\DocumentsDomain",
         "final_path": "domain/Documents/src/DocumentsDomain.php",
@@ -3005,7 +3092,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1c9f88a5b1f56c1a79547df6ea43be12d9a0c717",
         "old_path": "domain/Documents/src/Enums/AttentionFilter.php",
         "old_class": "Domain\\Documents\\Enums\\AttentionFilter",
@@ -3024,8 +3111,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ea40685b018cd9fd2eb07d278df2701f774035a3",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1a00f41e02899bafaa3542b6e9c789bbafad4896",
         "old_path": "domain/Documents/src/Enums/AttentionState.php",
         "old_class": "Domain\\Documents\\Enums\\AttentionState",
         "final_path": "domain/Documents/src/Enums/AttentionState.php",
@@ -3043,7 +3130,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1d8f797f4963d75a4ae2951f57ab833082cb23c5",
         "old_path": "domain/Documents/src/Enums/CloseCause.php",
         "old_class": "Domain\\Documents\\Enums\\CloseCause",
@@ -3062,7 +3149,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d3806e99b4ededa5978c735d96f38a7a912c0bdd",
         "old_path": "domain/Documents/src/Enums/EditingState.php",
         "old_class": "Domain\\Documents\\Enums\\EditingState",
@@ -3081,7 +3168,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "18adfe347f45dd132a1a4236af2063f0a2c1370e",
         "old_path": "domain/Documents/src/Enums/LibraryTypeFilter.php",
         "old_class": "Domain\\Documents\\Enums\\LibraryTypeFilter",
@@ -3100,7 +3187,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7835adeb3bcdb9a9bd647e2368c5630ef41856a4",
         "old_path": "domain/Documents/src/Enums/PublicationView.php",
         "old_class": "Domain\\Documents\\Enums\\PublicationView",
@@ -3119,7 +3206,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5e7037e9746769169b8deee0599d6ad396c5946a",
         "old_path": "domain/Documents/src/Enums/UploadType.php",
         "old_class": "Domain\\Documents\\Enums\\UploadType",
@@ -3138,8 +3225,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "78f4f3fa315bdf2c0184b8f32aa5636d34b7cdd2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "77d0fbec314c1910b7cd8070dab8867df39a6b3f",
         "old_path": "domain/Documents/src/Exceptions/DocumentBodyMissing.php",
         "old_class": "Domain\\Documents\\Exceptions\\DocumentBodyMissing",
         "final_path": "domain/Documents/src/Exceptions/DocumentBodyMissing.php",
@@ -3157,8 +3244,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0c3e88f545d3853e1110cdbd392943bbfe8d1ffa",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a07cc68f326bd25ea24e909dbd6c8587c2835592",
         "old_path": "domain/Documents/src/Exceptions/DocumentMissing.php",
         "old_class": "Domain\\Documents\\Exceptions\\DocumentMissing",
         "final_path": "domain/Documents/src/Exceptions/DocumentMissing.php",
@@ -3176,8 +3263,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "cef5b24a83846fdcaaf0b4efa728f4e3c961f438",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "dd933fa8e1ee1a6eea1de6d7bc32e9009cb6d5e8",
         "old_path": "domain/Documents/src/Exceptions/DraftConflict.php",
         "old_class": "Domain\\Documents\\Exceptions\\DraftConflict",
         "final_path": "domain/Documents/src/Exceptions/DraftConflict.php",
@@ -3195,8 +3282,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6d4bb8efbd7ece540eba8029918365d0e7f337c9",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8185940c49606df59456b296904578070388d809",
         "old_path": "domain/Documents/src/Exceptions/DraftHeld.php",
         "old_class": "Domain\\Documents\\Exceptions\\DraftHeld",
         "final_path": "domain/Documents/src/Exceptions/DraftHeld.php",
@@ -3214,8 +3301,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "680b2f8b6c5b41d0959dce892cd499c55f55d920",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8a35e2c7c2091ac35a9a309349b477a47df69f76",
         "old_path": "domain/Documents/src/Exceptions/DraftMarkdownInvalid.php",
         "old_class": "Domain\\Documents\\Exceptions\\DraftMarkdownInvalid",
         "final_path": "domain/Documents/src/Exceptions/DraftMarkdownInvalid.php",
@@ -3233,8 +3320,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1172741a477d58b7b1827a11576f47f346910953",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6e4388a317675290f81418dbd40ff253b3df5181",
         "old_path": "domain/Documents/src/Exceptions/DraftMissing.php",
         "old_class": "Domain\\Documents\\Exceptions\\DraftMissing",
         "final_path": "domain/Documents/src/Exceptions/DraftMissing.php",
@@ -3252,7 +3339,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "90d6009ba2b358c9dd4fd4d2129d5ebc5d78fceb",
         "old_path": "domain/Documents/src/Exceptions/RecordImmutable.php",
         "old_class": "Domain\\Documents\\Exceptions\\RecordImmutable",
@@ -3271,8 +3358,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "18231d687f7566f65a5fe1047314fa9a6a092de2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "187b4bb1c17ff8fe93f4c2b05108f87167d1f09e",
         "old_path": "domain/Documents/src/Exceptions/ReportMissing.php",
         "old_class": "Domain\\Documents\\Exceptions\\ReportMissing",
         "final_path": "domain/Documents/src/Exceptions/ReportMissing.php",
@@ -3290,8 +3377,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4b4c6f3b8ba1a467c8e5e13d00db49ba6bf685db",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4b75f02eb031a544dc1feb9f92673cefbb0484c9",
         "old_path": "domain/Documents/src/Exceptions/ReportUnchangeable.php",
         "old_class": "Domain\\Documents\\Exceptions\\ReportUnchangeable",
         "final_path": "domain/Documents/src/Exceptions/ReportUnchangeable.php",
@@ -3309,7 +3396,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "066c6c061397c394f1428d7181e25dc022e2bbdc",
         "old_path": "domain/Documents/src/Exceptions/SettlementDenied.php",
         "old_class": "Domain\\Documents\\Exceptions\\SettlementDenied",
@@ -3328,8 +3415,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "74494779b5905119d097fa4ff981f0ebd65817c1",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5f9bd4c1a0d25947151aa0e3f6f8770e6793c3da",
         "old_path": "domain/Documents/src/Exceptions/StaleRead.php",
         "old_class": "Domain\\Documents\\Exceptions\\StaleRead",
         "final_path": "domain/Documents/src/Exceptions/StaleRead.php",
@@ -3347,8 +3434,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0c5aa51f6f33f08a2f98657cf86ca68c52a174ce",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "3922b9ab1011127384dfd5c399b92ca81a128c41",
         "old_path": "domain/Documents/src/Exceptions/UploadChunkConflict.php",
         "old_class": "Domain\\Documents\\Exceptions\\UploadChunkConflict",
         "final_path": "domain/Documents/src/Exceptions/UploadChunkConflict.php",
@@ -3366,8 +3453,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e2d94ecfa4f4c4f24b950fe436e15e063010c096",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f4b102a5c0427e7efb5896015f1aad2cd1555519",
         "old_path": "domain/Documents/src/Exceptions/UploadExpired.php",
         "old_class": "Domain\\Documents\\Exceptions\\UploadExpired",
         "final_path": "domain/Documents/src/Exceptions/UploadExpired.php",
@@ -3385,8 +3472,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "bdf17ca3f188d93edf54b7e601652800271c1831",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "83791d2c9b9cfccb0bce96799a4849a5ecf82c81",
         "old_path": "domain/Documents/src/Exceptions/UploadIncomplete.php",
         "old_class": "Domain\\Documents\\Exceptions\\UploadIncomplete",
         "final_path": "domain/Documents/src/Exceptions/UploadIncomplete.php",
@@ -3404,8 +3491,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f92abcd5eb376436b48bd41432f217025766759d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "3c987c02e7c646eea32ce571cb358ed3b5b3ab90",
         "old_path": "domain/Documents/src/Exceptions/UploadInvalid.php",
         "old_class": "Domain\\Documents\\Exceptions\\UploadInvalid",
         "final_path": "domain/Documents/src/Exceptions/UploadInvalid.php",
@@ -3423,8 +3510,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "89d2d6e8d819cfb40a59e94cd2542cd6e52a26f8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8d9753d688d6f172bcb30d0adb79b9c426b91cc8",
         "old_path": "domain/Documents/src/Exceptions/UploadLimitReached.php",
         "old_class": "Domain\\Documents\\Exceptions\\UploadLimitReached",
         "final_path": "domain/Documents/src/Exceptions/UploadLimitReached.php",
@@ -3442,8 +3529,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f3c657fac8763e3b77a1e64e1144bc6eefa9fe6f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f7ecc0279af778aef023e5a909dc6410518d239d",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/CloseDocumentController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\CloseDocumentController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/CloseDocumentController.php",
@@ -3461,8 +3548,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "55d605afdae0f101fa98e755d92454ec7f6cd1f0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2ccd4a1558c2dd92740495df27b408fa2df980e4",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/CommentDocumentController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\CommentDocumentController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/CommentDocumentController.php",
@@ -3480,8 +3567,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "07f77b67fefd4401b256ba2f32feb4750bbe2180",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7d2030bd449464c3fd92bc836cf09514734074d6",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/CommentReportController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\CommentReportController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/CommentReportController.php",
@@ -3499,8 +3586,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6dabe6b6be2df1b144bdf8ec40cfe857b91e04cd",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6bf81f68dd90a1d9eb99ccaee7abe5bddcb9d5e2",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/EditDocumentController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\EditDocumentController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/EditDocumentController.php",
@@ -3518,8 +3605,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6a8ae00aea5fa67e66a9672571013ea937d5a4fe",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1300b6a4ead59fe0194e001ae955c5ec0d0743ce",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/EditReportController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\EditReportController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/EditReportController.php",
@@ -3537,8 +3624,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e2582f4e9b3ed446873e4abd6f2dd6bb7932bbb7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bc004d6b0ffdaf64ee4f28436e4f39268d81ab88",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/InspectDocumentController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\InspectDocumentController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/InspectDocumentController.php",
@@ -3556,8 +3643,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ca143f52f97e3dba1d5a2aac97a5c44446aed288",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "3dc1b1af1984c1b28de51b32039216d2303f7e51",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/InspectReportController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\InspectReportController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/InspectReportController.php",
@@ -3575,8 +3662,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6a07347c17294392a129745f4e85bd91925a50a0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7eb557873567979fa445d8b4a49f77657a109a2b",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/ListDocumentRevisionsController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\ListDocumentRevisionsController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/ListDocumentRevisionsController.php",
@@ -3594,7 +3681,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7dce078df9c99b00b7ce378cc3528adac2fda6eb",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/ListDocumentsController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\ListDocumentsController",
@@ -3613,7 +3700,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0ef9d8cb5bd91795185cdef1d76c63986e994861",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/ListReportsController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\ListReportsController",
@@ -3632,8 +3719,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c594017d4142135782f36ef342c760a4f5f5846b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "30880fbc042c852602d8f091e24388247043e193",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/MakeDocumentController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\MakeDocumentController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/MakeDocumentController.php",
@@ -3651,8 +3738,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d5c124f36180560e53a20278e360c32cbb3b5516",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "391de5f387791d79a02e52716248953337af84f9",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/MakeReportController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\MakeReportController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/MakeReportController.php",
@@ -3670,8 +3757,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "991ea5c27bd084a6b373b85a7886c01b551ad5ce",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7fa6dc327c2f79ccfae8b198604500f3f59398b4",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/OpenDocumentController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\OpenDocumentController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/OpenDocumentController.php",
@@ -3689,8 +3776,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "77cbe21a808c3fc631cbfcccf5b75a8f5b8577c8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4d979619accbb958865dd3cf3340d133f4b53ac1",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/SettleDocumentController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\SettleDocumentController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/SettleDocumentController.php",
@@ -3708,8 +3795,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4986b162afaa57ef5f6b0ffc88137f25389e05f4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "71eb475f9f31999aa8b3d2c216d0a6906d20a747",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/SettleReportController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\SettleReportController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/SettleReportController.php",
@@ -3727,8 +3814,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f31d2c7bd0a515ad23788476f75b8f0b2b07d2d9",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "12ca3c906af485a3e5f3c22e18345f33e005d953",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/ShowDocumentController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\ShowDocumentController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/ShowDocumentController.php",
@@ -3746,8 +3833,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "46e5c9fb135260026f7e7e338a3f3b334aeb5483",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5d850e3b406835b7ac14240939acdac99513fb81",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/ShowDocumentRevisionController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\ShowDocumentRevisionController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/ShowDocumentRevisionController.php",
@@ -3765,8 +3852,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ad55dba10a3f8e8a9874faa27c4aba00185658fa",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "680848db1b26e80c604bf61bccf10c8a15f1a4fa",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/ShowDraftController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\ShowDraftController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/ShowDraftController.php",
@@ -3784,8 +3871,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1ac581c8d64e1221633f0c59671845cecca69f6a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d31cf577351044ef249113c95fb33a2cfcc66430",
         "old_path": "domain/Documents/src/Http/Controllers/Calls/ShowReportController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\Calls\\ShowReportController",
         "final_path": "domain/Documents/src/Http/Controllers/Calls/ShowReportController.php",
@@ -3803,8 +3890,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ca743a3f627c8bb2a039539e501c500370aa7b12",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d2a56200a1d8c88f844264cfd9c8466790ab9cfc",
         "old_path": "domain/Documents/src/Http/Controllers/CloseDraftPageController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\CloseDraftPageController",
         "final_path": "domain/Documents/src/Http/Controllers/CloseDraftPageController.php",
@@ -3822,8 +3909,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "df31df29b39785f2515cdb1505f1a723669b1450",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f38113689599831e5e10340c4f0c2c3fb382261d",
         "old_path": "domain/Documents/src/Http/Controllers/CreateDocumentPageController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\CreateDocumentPageController",
         "final_path": "domain/Documents/src/Http/Controllers/CreateDocumentPageController.php",
@@ -3841,8 +3928,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "93085b486a0d546dad4ac4e6228255e36a952cf9",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6cdda2066095c26ec875a6a8dd4b63eb325ba627",
         "old_path": "domain/Documents/src/Http/Controllers/CreateReportPageController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\CreateReportPageController",
         "final_path": "domain/Documents/src/Http/Controllers/CreateReportPageController.php",
@@ -3860,8 +3947,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "addafd87bb9d8bb4bedbafcc0faeca07adf03e66",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "983738a024f731b96ea3d8c7cd3a7d0354d17d51",
         "old_path": "domain/Documents/src/Http/Controllers/OpenDocumentPageController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\OpenDocumentPageController",
         "final_path": "domain/Documents/src/Http/Controllers/OpenDocumentPageController.php",
@@ -3879,8 +3966,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "27e0b121b3d39cccdba091cdeae7a52a77eb7081",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e5ab88888ee4bb2685f86243dcd2e0d3bd41448f",
         "old_path": "domain/Documents/src/Http/Controllers/RecoverDocumentPageController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\RecoverDocumentPageController",
         "final_path": "domain/Documents/src/Http/Controllers/RecoverDocumentPageController.php",
@@ -3898,8 +3985,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4eadfa372bc1a9d6f97f4840239f7a1f5b518758",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "72191f12662e331fae5be4798d77dfc0de9288f7",
         "old_path": "domain/Documents/src/Http/Controllers/SaveDraftPageController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\SaveDraftPageController",
         "final_path": "domain/Documents/src/Http/Controllers/SaveDraftPageController.php",
@@ -3917,8 +4004,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d47f3ba3fe4e6db00d07f05945f6d20415afef89",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8d76cb2504b976e01afe1a7f99839f0854137c96",
         "old_path": "domain/Documents/src/Http/Controllers/SettleDocumentPageController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\SettleDocumentPageController",
         "final_path": "domain/Documents/src/Http/Controllers/SettleDocumentPageController.php",
@@ -3936,8 +4023,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d68389bb419fb1128066a37b1936dc77d9694a29",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a72288c563bc0901a6770856b58fb32466270225",
         "old_path": "domain/Documents/src/Http/Controllers/SettleReportPageController.php",
         "old_class": "Domain\\Documents\\Http\\Controllers\\SettleReportPageController",
         "final_path": "domain/Documents/src/Http/Controllers/SettleReportPageController.php",
@@ -3955,8 +4042,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0f75abf10ce64e3291b7f3ea4ba0073ed29f5a0b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b89440fc2c0985165ec52fc95cbc0497db0ea046",
         "old_path": "domain/Documents/src/Http/Requests/CreateRecordRequest.php",
         "old_class": "Domain\\Documents\\Http\\Requests\\CreateRecordRequest",
         "final_path": "domain/Documents/src/Http/Requests/CreateRecordRequest.php",
@@ -3974,7 +4061,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "32965f47ddf52b9abf1b30b2e78ae60bc915462c",
         "old_path": "domain/Documents/src/Http/Requests/DraftPageRequest.php",
         "old_class": "Domain\\Documents\\Http\\Requests\\DraftPageRequest",
@@ -3993,8 +4080,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "fcd7e9ea480c60652dccd6807395e71d1b81a0fa",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bd6dc28df102543ec166745b44450a7dfedd9c8b",
         "old_path": "domain/Documents/src/Http/Requests/DraftRequest.php",
         "old_class": "Domain\\Documents\\Http\\Requests\\DraftRequest",
         "final_path": "domain/Documents/src/Http/Requests/DraftRequest.php",
@@ -4012,7 +4099,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2a6bde54111e03342d6312f394cef6970f8064af",
         "old_path": "domain/Documents/src/Http/Requests/ListRecordsRequest.php",
         "old_class": "Domain\\Documents\\Http\\Requests\\ListRecordsRequest",
@@ -4031,8 +4118,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9057c33beb47308296a55039cc142413c9d19b81",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "134307611b9664dacbb43567c0f78b160b47b1b3",
         "old_path": "domain/Documents/src/Http/Requests/RecordPageRequest.php",
         "old_class": "Domain\\Documents\\Http\\Requests\\RecordPageRequest",
         "final_path": "domain/Documents/src/Http/Requests/RecordPageRequest.php",
@@ -4050,7 +4137,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1f94af50fab5f4a6a71c221a5a8c07922647e5c2",
         "old_path": "domain/Documents/src/Http/Requests/RevisionPageRequest.php",
         "old_class": "Domain\\Documents\\Http\\Requests\\RevisionPageRequest",
@@ -4069,8 +4156,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "05422a8a6125a0bf13c42f364ad39f0b424558e4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f31e9fdf9d2c7fb8e4ed1fef00ceb498d0d687f3",
         "old_path": "domain/Documents/src/Http/Requests/SettleRecordRequest.php",
         "old_class": "Domain\\Documents\\Http\\Requests\\SettleRecordRequest",
         "final_path": "domain/Documents/src/Http/Requests/SettleRecordRequest.php",
@@ -4088,8 +4175,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "63a57c581b424e42d47d1fb1c529f5e603cf4f4c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5a0a8b7caa6deeae6a2a37de0f3b53aec9d02cc3",
         "old_path": "domain/Documents/src/Http/Requests/ShowRecordRequest.php",
         "old_class": "Domain\\Documents\\Http\\Requests\\ShowRecordRequest",
         "final_path": "domain/Documents/src/Http/Requests/ShowRecordRequest.php",
@@ -4107,8 +4194,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b9e64a1f5ac4cada0fc557237d7114187b7804b5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "22a7019df804d453db1af6e55daf57bac1c28a12",
         "old_path": "domain/Documents/src/Links/DocumentLinkRecords.php",
         "old_class": "Domain\\Documents\\Links\\DocumentLinkRecords",
         "final_path": "domain/Documents/src/Support/Links/DocumentLinkRecords.php",
@@ -4121,13 +4208,15 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0e8039c63a578672799a1dd73847b4ea9d7f0a5a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "424e4758917317cfac05863cd58bac19177be276",
         "old_path": "domain/Documents/src/Links/ReportLinkRecords.php",
         "old_class": "Domain\\Documents\\Links\\ReportLinkRecords",
         "final_path": "domain/Documents/src/Support/Links/ReportLinkRecords.php",
@@ -4140,13 +4229,15 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "71f4155680b4a6281ebe20b4d3b907dbd69ba8db",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ffee1f47baadc7fca2d05d42865e0825cfe6df31",
         "old_path": "domain/Documents/src/Listeners/CloseEndedSessionDraft.php",
         "old_class": "Domain\\Documents\\Listeners\\CloseEndedSessionDraft",
         "final_path": "domain/Documents/src/Listeners/CloseEndedSessionDraft.php",
@@ -4164,8 +4255,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "99298502ede85bba5018e96af26bed53a402ddbd",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a9c5c4356e1c3ef34e85e31ea02ef95b555aa6b0",
         "old_path": "domain/Documents/src/Listeners/NoticeKeptDraft.php",
         "old_class": "Domain\\Documents\\Listeners\\NoticeKeptDraft",
         "final_path": "domain/Documents/src/Listeners/NoticeKeptDraft.php",
@@ -4183,7 +4274,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2f988f3b2098783f0f9498571363488b85010ea4",
         "old_path": "domain/Documents/src/Mcp/AppendUploadTool.php",
         "old_class": "Domain\\Documents\\Mcp\\AppendUploadTool",
@@ -4197,12 +4288,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3f501268ad3dac6a4985344075f767c46b5ff32d",
         "old_path": "domain/Documents/src/Mcp/BeginUploadTool.php",
         "old_class": "Domain\\Documents\\Mcp\\BeginUploadTool",
@@ -4216,12 +4309,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4376c9d9d8b767499b09898107e65a306b9c7cfe",
         "old_path": "domain/Documents/src/Mcp/CloseDocumentTool.php",
         "old_class": "Domain\\Documents\\Mcp\\CloseDocumentTool",
@@ -4235,12 +4330,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e62af05c0caefbd50651dc2e0a10a946459ad97d",
         "old_path": "domain/Documents/src/Mcp/CloseReportTool.php",
         "old_class": "Domain\\Documents\\Mcp\\CloseReportTool",
@@ -4254,12 +4351,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9830e99d0fac28a72bddddd8f731c256171256b5",
         "old_path": "domain/Documents/src/Mcp/CommentOnDocumentTool.php",
         "old_class": "Domain\\Documents\\Mcp\\CommentOnDocumentTool",
@@ -4273,12 +4372,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ca5946c4197f9748a1ce49b279e895d37c556a0a",
         "old_path": "domain/Documents/src/Mcp/CommentOnReportTool.php",
         "old_class": "Domain\\Documents\\Mcp\\CommentOnReportTool",
@@ -4292,12 +4393,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3f6fc93ca74dc30c79818e1cc3459ca6483c2813",
         "old_path": "domain/Documents/src/Mcp/CommitUploadTool.php",
         "old_class": "Domain\\Documents\\Mcp\\CommitUploadTool",
@@ -4311,13 +4414,15 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5e53862848e473a5b39570d7cd9af7c7005d3242",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "99ccc4984dfb06f6981df811ab3d78ea169f8b17",
         "old_path": "domain/Documents/src/Mcp/Concerns/PublicationArguments.php",
         "old_class": "Domain\\Documents\\Mcp\\Concerns\\PublicationArguments",
         "final_path": "domain/Documents/src/Support/Mcp/Concerns/PublicationArguments.php",
@@ -4330,12 +4435,14 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5b4fe2863553bc6cc4f9c4a131f0a0093fdb14d0",
         "old_path": "domain/Documents/src/Mcp/CreateDocumentTool.php",
         "old_class": "Domain\\Documents\\Mcp\\CreateDocumentTool",
@@ -4349,12 +4456,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "09d11265c692b38d6d007b29482111e266921b7b",
         "old_path": "domain/Documents/src/Mcp/CreateReportTool.php",
         "old_class": "Domain\\Documents\\Mcp\\CreateReportTool",
@@ -4368,12 +4477,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "861545688553885a99eb661631637a7edc8b6fcf",
         "old_path": "domain/Documents/src/Mcp/DiscardUploadTool.php",
         "old_class": "Domain\\Documents\\Mcp\\DiscardUploadTool",
@@ -4387,13 +4498,15 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1ed7c803b9b518558d6675faff0eab3a53919f35",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "fb402b5b715c141e9ec26e38fd84fa0c1503a7d5",
         "old_path": "domain/Documents/src/Mcp/DocumentRevisionResource.php",
         "old_class": "Domain\\Documents\\Mcp\\DocumentRevisionResource",
         "final_path": "domain/Documents/src/Mcp/Resources/DocumentRevisionResource.php",
@@ -4406,13 +4519,15 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "77b83c68e07b9c3ee02be406e0265f8cec9173e4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4ef9cd4f9099b6cdc33779507dd35760755b7d8f",
         "old_path": "domain/Documents/src/Mcp/DocumentSearch.php",
         "old_class": "Domain\\Documents\\Mcp\\DocumentSearch",
         "final_path": "domain/Documents/src/Support/Mcp/DocumentSearch.php",
@@ -4425,12 +4540,14 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c9f3c55112b64fbaea2fba063e69aef69e280f5a",
         "old_path": "domain/Documents/src/Mcp/DocumentsListTool.php",
         "old_class": "Domain\\Documents\\Mcp\\DocumentsListTool",
@@ -4444,13 +4561,15 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "02bd9cfba663b423756aef7ac063f388d6d8e142",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "86a8203a9354abbbe85f8d5f0dfffd2aaaa8115c",
         "old_path": "domain/Documents/src/Mcp/DraftWriteTool.php",
         "old_class": "Domain\\Documents\\Mcp\\DraftWriteTool",
         "final_path": "domain/Documents/src/Mcp/Tools/DraftWriteTool.php",
@@ -4463,12 +4582,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a7b68abb70443cf3fa969c78ea35e44657eb6887",
         "old_path": "domain/Documents/src/Mcp/EditDocumentTool.php",
         "old_class": "Domain\\Documents\\Mcp\\EditDocumentTool",
@@ -4482,12 +4603,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2a5047f513cf1097ffdd8a7c1c958b7a77d49ad2",
         "old_path": "domain/Documents/src/Mcp/OpenDocumentTool.php",
         "old_class": "Domain\\Documents\\Mcp\\OpenDocumentTool",
@@ -4501,12 +4624,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6f0bd9a9669d79b4f42bc32829e48f9d974fc94a",
         "old_path": "domain/Documents/src/Mcp/OpenReportsOverview.php",
         "old_class": "Domain\\Documents\\Mcp\\OpenReportsOverview",
@@ -4520,13 +4645,15 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2af15f323681ebe36d4fb807d93e80033ec10226",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "54699a1a811050e7440d47821d6a8b22505dd0a1",
         "old_path": "domain/Documents/src/Mcp/PublicationChunks.php",
         "old_class": "Domain\\Documents\\Mcp\\PublicationChunks",
         "final_path": "domain/Documents/src/Support/Mcp/PublicationChunks.php",
@@ -4539,13 +4666,15 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "72e401bb7d0ac0d879bb584c99e990df63119af3",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "70354996bb92d008ed8d4ae263e12267754e1b63",
         "old_path": "domain/Documents/src/Mcp/PublicationLists.php",
         "old_class": "Domain\\Documents\\Mcp\\PublicationLists",
         "final_path": "domain/Documents/src/Support/Mcp/PublicationLists.php",
@@ -4558,13 +4687,15 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "cc3f50cb4976e15286275c22a0a986ef8be8f4f3",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c504063f1c636dcb7c97cca25e0d1db07faefea2",
         "old_path": "domain/Documents/src/Mcp/PublicationPages.php",
         "old_class": "Domain\\Documents\\Mcp\\PublicationPages",
         "final_path": "domain/Documents/src/Support/Mcp/PublicationPages.php",
@@ -4577,13 +4708,15 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "828bdfa9ce099e175c035edb3644f4bdb1c6b68b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "28c14140ce573baa292186801e7ce3b1b77b1331",
         "old_path": "domain/Documents/src/Mcp/PublicationReadTool.php",
         "old_class": "Domain\\Documents\\Mcp\\PublicationReadTool",
         "final_path": "domain/Documents/src/Mcp/Tools/PublicationReadTool.php",
@@ -4596,12 +4729,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "bf36659eb506df08e3a48789bd22dd8a47ff4411",
         "old_path": "domain/Documents/src/Mcp/PublicationResource.php",
         "old_class": "Domain\\Documents\\Mcp\\PublicationResource",
@@ -4615,12 +4750,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "334589aa0fdd4dfb41edb6c5668c6b60ee03d21e",
         "old_path": "domain/Documents/src/Mcp/ReadAttachmentTool.php",
         "old_class": "Domain\\Documents\\Mcp\\ReadAttachmentTool",
@@ -4634,12 +4771,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "73c187cb81636d5f2e9a35286ac233ca018bfa15",
         "old_path": "domain/Documents/src/Mcp/ReadDocumentTool.php",
         "old_class": "Domain\\Documents\\Mcp\\ReadDocumentTool",
@@ -4653,12 +4792,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "42d3b08603379449e555700642c84f7e19c5eb58",
         "old_path": "domain/Documents/src/Mcp/ReadReportTool.php",
         "old_class": "Domain\\Documents\\Mcp\\ReadReportTool",
@@ -4672,12 +4813,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "49d0f637f97609fbf2a9c43912bb5e2b3c1ff2f1",
         "old_path": "domain/Documents/src/Mcp/ReadRetainedDraftTool.php",
         "old_class": "Domain\\Documents\\Mcp\\ReadRetainedDraftTool",
@@ -4691,12 +4834,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "98da5633502f4546c87cdbdae4980c348634aa30",
         "old_path": "domain/Documents/src/Mcp/RecoverDraftTool.php",
         "old_class": "Domain\\Documents\\Mcp\\RecoverDraftTool",
@@ -4710,13 +4855,15 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6760614c49a1da1c8f6d60f99ef0031682d2742d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "47187a45a511f6d698b877d21b4688ebea7b307d",
         "old_path": "domain/Documents/src/Mcp/ReportResource.php",
         "old_class": "Domain\\Documents\\Mcp\\ReportResource",
         "final_path": "domain/Documents/src/Mcp/Resources/ReportResource.php",
@@ -4729,13 +4876,15 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ab79c51813d07a47a2cf83e3704873096a10035b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "aac8fadfb65291418d85c5c8fa07885d9ce095e4",
         "old_path": "domain/Documents/src/Mcp/ReportSearch.php",
         "old_class": "Domain\\Documents\\Mcp\\ReportSearch",
         "final_path": "domain/Documents/src/Support/Mcp/ReportSearch.php",
@@ -4748,12 +4897,14 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8b21c9d49141b74643ad62097612e4fa6d02ec83",
         "old_path": "domain/Documents/src/Mcp/ReportsListTool.php",
         "old_class": "Domain\\Documents\\Mcp\\ReportsListTool",
@@ -4767,13 +4918,15 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "117ff54505826e83cb3380466758d5fdd2211cc9",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bc2a604da407b635d5302bc6c46a167d81ce5f79",
         "old_path": "domain/Documents/src/Models/Concerns/CreatedWithAttention.php",
         "old_class": "Domain\\Documents\\Models\\Concerns\\CreatedWithAttention",
         "final_path": "domain/Documents/src/Models/Concerns/CreatedWithAttention.php",
@@ -4791,7 +4944,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ca944e2f096320efb6012669d630f0c7ff730940",
         "old_path": "domain/Documents/src/Models/Concerns/MeasuresBody.php",
         "old_class": "Domain\\Documents\\Models\\Concerns\\MeasuresBody",
@@ -4810,8 +4963,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7c91f1e174f3b744782d181e286b1fedfbc9d7ac",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1ea83f712e20c78e260346f54ffb3c4d804a1c17",
         "old_path": "domain/Documents/src/Models/Concerns/SearchesText.php",
         "old_class": "Domain\\Documents\\Models\\Concerns\\SearchesText",
         "final_path": "domain/Documents/src/Models/Concerns/SearchesText.php",
@@ -4829,8 +4982,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3e9c57d0fa5b76649c55e4e38c77c1781c4c136f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "38777f019e2050d3a62a7966ee1286537239e08c",
         "old_path": "domain/Documents/src/Models/Concerns/Settles.php",
         "old_class": "Domain\\Documents\\Models\\Concerns\\Settles",
         "final_path": "domain/Documents/src/Models/Concerns/Settles.php",
@@ -4848,8 +5001,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a8ba5235f2e95d582b1aee36ac165c019752fd54",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c1a1fc5720cd431456d586d85ec37d7e25d6390d",
         "old_path": "domain/Documents/src/Models/Concerns/SharedWithComments.php",
         "old_class": "Domain\\Documents\\Models\\Concerns\\SharedWithComments",
         "final_path": "domain/Documents/src/Models/Concerns/SharedWithComments.php",
@@ -4867,8 +5020,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a1e04bc903363505da51440d01a7eb241e5c6b1f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "28a1b0d921faae4ebb6c9ce93a47ba80f329fca8",
         "old_path": "domain/Documents/src/Models/Document.php",
         "old_class": "Domain\\Documents\\Models\\Document",
         "final_path": "domain/Documents/src/Models/Document.php",
@@ -4886,8 +5039,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "19b7f0df2d0f2e26ee11a048bf76aa4050fd8251",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f1b69eb6c5513c878ef1003f3b406546e5c48c90",
         "old_path": "domain/Documents/src/Models/DocumentClose.php",
         "old_class": "Domain\\Documents\\Models\\DocumentClose",
         "final_path": "domain/Documents/src/Models/DocumentClose.php",
@@ -4905,8 +5058,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0bf7002641a4a9c1142778f910d9f2bb8de1b495",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a7c07989df31fa87fc60e3d559b1abf3fe21a84b",
         "old_path": "domain/Documents/src/Models/DocumentDraft.php",
         "old_class": "Domain\\Documents\\Models\\DocumentDraft",
         "final_path": "domain/Documents/src/Models/DocumentDraft.php",
@@ -4924,8 +5077,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a387861564a1dcbf850fbfc4fbfe3e81a627b24a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a54c97671caf90c78bad61e237a1429e3448f0ad",
         "old_path": "domain/Documents/src/Models/DocumentRevision.php",
         "old_class": "Domain\\Documents\\Models\\DocumentRevision",
         "final_path": "domain/Documents/src/Models/DocumentRevision.php",
@@ -4943,8 +5096,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "51d0827af201b137f20218c29f97cbf65f365254",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "45b94aac0cb5791b66257d6f66235bbc6eae773a",
         "old_path": "domain/Documents/src/Models/RecordSettlement.php",
         "old_class": "Domain\\Documents\\Models\\RecordSettlement",
         "final_path": "domain/Documents/src/Models/RecordSettlement.php",
@@ -4962,8 +5115,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3518e521b4ca72fe51319e91a7700b1b60643376",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "88a47b7423081ee9de01672b8e4a22129413dbe1",
         "old_path": "domain/Documents/src/Models/Report.php",
         "old_class": "Domain\\Documents\\Models\\Report",
         "final_path": "domain/Documents/src/Models/Report.php",
@@ -4981,8 +5134,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8287a44edc9ea30a44cc195229098fa90124fa7d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2771a4ff026e235a9f44137b161f81f89654cadc",
         "old_path": "domain/Documents/src/Models/RetainedDraft.php",
         "old_class": "Domain\\Documents\\Models\\RetainedDraft",
         "final_path": "domain/Documents/src/Models/RetainedDraft.php",
@@ -5000,8 +5153,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6df808cc5289f37de9cdc7ec5a4aee3d971c2b17",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "84b0248cffc008f4d1b1e015a2754c456b2f8a6b",
         "old_path": "domain/Documents/src/Models/TextUpload.php",
         "old_class": "Domain\\Documents\\Models\\TextUpload",
         "final_path": "domain/Documents/src/Models/TextUpload.php",
@@ -5019,8 +5172,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3bef758696e8dac648d103b62cba10d793c7efc2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9487f9db77bb5e100242e510294c7fa86037c9da",
         "old_path": "domain/Documents/src/Models/TextUploadChunk.php",
         "old_class": "Domain\\Documents\\Models\\TextUploadChunk",
         "final_path": "domain/Documents/src/Models/TextUploadChunk.php",
@@ -5038,8 +5191,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "427da272261bcf6fe605fecaff318d56e12e8d18",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f6d2ddc8bab52f46ea7fbc10598ae3d3743cb47f",
         "old_path": "domain/Documents/src/Policies/DocumentAdministrationPolicy.php",
         "old_class": "Domain\\Documents\\Policies\\DocumentAdministrationPolicy",
         "final_path": "domain/Documents/src/Policies/DocumentAdministrationPolicy.php",
@@ -5057,8 +5210,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "28ba2a095658fe713f5c55f98f99135cb65f8e91",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "81150e295a9b5d4ccad45a4e49c1270366416050",
         "old_path": "domain/Documents/src/Policies/DocumentPolicy.php",
         "old_class": "Domain\\Documents\\Policies\\DocumentPolicy",
         "final_path": "domain/Documents/src/Policies/DocumentPolicy.php",
@@ -5076,8 +5229,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "cc0399b927f6bae8f7e9ec0fd3de3d5e83d448d5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8786157abf3e6bd36b510228fce45d2146180ed2",
         "old_path": "domain/Documents/src/Policies/ReportPolicy.php",
         "old_class": "Domain\\Documents\\Policies\\ReportPolicy",
         "final_path": "domain/Documents/src/Policies/ReportPolicy.php",
@@ -5095,8 +5248,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d83e4160ff5d5ff8ca376b29d9d6aba89e080f3e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "766ffc20f735f5f128d2d65fd98140f56c487045",
         "old_path": "domain/Documents/src/Policies/UploadPolicy.php",
         "old_class": "Domain\\Documents\\Policies\\UploadPolicy",
         "final_path": "domain/Documents/src/Policies/UploadPolicy.php",
@@ -5114,8 +5267,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c055dfb6cd07d364955ff0d5bc28a7cde73879fa",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "86c5d9a9b96d2f147aa2a65dfe3c37e69e9f7a73",
         "old_path": "domain/Documents/src/Providers/DocumentsServiceProvider.php",
         "old_class": "Domain\\Documents\\Providers\\DocumentsServiceProvider",
         "final_path": "domain/Documents/src/Providers/DocumentsServiceProvider.php",
@@ -5133,7 +5286,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "78a29353185b9fec228ae344356c9e4644616a1f",
         "old_path": "domain/Documents/src/Resolvers/AttachmentPages.php",
         "old_class": "Domain\\Documents\\Resolvers\\AttachmentPages",
@@ -5152,8 +5305,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0994e3d338569bdf87ec57e78153ca376da0ab10",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c714ec83b74e2effc4cee6a50283cd1a8f3c77f0",
         "old_path": "domain/Documents/src/Resolvers/DocumentDockResolver.php",
         "old_class": "Domain\\Documents\\Resolvers\\DocumentDockResolver",
         "final_path": "domain/Documents/src/Resolvers/DocumentDockResolver.php",
@@ -5171,8 +5324,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b6f80ddc5b5a93534826c81d34bd8da841caf705",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "fa8f832b1ff1d1642625fdc2250c074826123455",
         "old_path": "domain/Documents/src/Resolvers/DocumentPages.php",
         "old_class": "Domain\\Documents\\Resolvers\\DocumentPages",
         "final_path": "domain/Documents/src/Resolvers/DocumentPages.php",
@@ -5190,8 +5343,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "80cde8a070dd625c7fc0617e3c8bca1447450d91",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a554c021306a44becb860c2363de3da9f28648a2",
         "old_path": "domain/Documents/src/Resolvers/DocumentRecords.php",
         "old_class": "Domain\\Documents\\Resolvers\\DocumentRecords",
         "final_path": "domain/Documents/src/Resolvers/DocumentRecords.php",
@@ -5209,8 +5362,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d31155b4b7e3ad1f611e26f1d5b53fb881d7d5eb",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a1c44bc3b9ab623fa3f21fb8eafece39955225fa",
         "old_path": "domain/Documents/src/Resolvers/DocumentWindowResolver.php",
         "old_class": "Domain\\Documents\\Resolvers\\DocumentWindowResolver",
         "final_path": "domain/Documents/src/Resolvers/DocumentWindowResolver.php",
@@ -5228,8 +5381,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d0a6f8d9a155ca9f6cc19acf3c89532c9e62de93",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d30588cadf713df4921be8a0dca9616d19ceddd0",
         "old_path": "domain/Documents/src/Resolvers/DraftRecords.php",
         "old_class": "Domain\\Documents\\Resolvers\\DraftRecords",
         "final_path": "domain/Documents/src/Resolvers/DraftRecords.php",
@@ -5247,8 +5400,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2b153759c2b741a4446ddf656c456c5e6016edec",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "703350c01eaa4beb66125eec115bd46e61732995",
         "old_path": "domain/Documents/src/Resolvers/LibraryWindowResolver.php",
         "old_class": "Domain\\Documents\\Resolvers\\LibraryWindowResolver",
         "final_path": "domain/Documents/src/Resolvers/LibraryWindowResolver.php",
@@ -5266,8 +5419,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5e91bb1d6839489dee6db573ae0c16dfe1e8a1d7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "74fcd6f385985d4d8b2d118db0082dd722bbae99",
         "old_path": "domain/Documents/src/Resolvers/ReportNotificationTarget.php",
         "old_class": "Domain\\Documents\\Resolvers\\ReportNotificationTarget",
         "final_path": "domain/Documents/src/Resolvers/ReportNotificationTarget.php",
@@ -5285,8 +5438,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "131ce3c6a7c2deab03898db0649292c307d9162a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d1f7f8c10cdbd9552569300a03dd1fdd5d4b6d90",
         "old_path": "domain/Documents/src/Resolvers/ReportPages.php",
         "old_class": "Domain\\Documents\\Resolvers\\ReportPages",
         "final_path": "domain/Documents/src/Resolvers/ReportPages.php",
@@ -5304,8 +5457,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "74aeaabcee227d4b07af2d10a2f9c3fafb761549",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "df6e70a65ed713ef34fa1063cb21afec5a990e58",
         "old_path": "domain/Documents/src/Resolvers/ReportRecords.php",
         "old_class": "Domain\\Documents\\Resolvers\\ReportRecords",
         "final_path": "domain/Documents/src/Resolvers/ReportRecords.php",
@@ -5323,8 +5476,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "86bb943a00410d9bce850e3cccb1fc9d7f17c582",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "971c12b81958c63629323f593e08e059c9c55afd",
         "old_path": "domain/Documents/src/Resolvers/ReportWindowResolver.php",
         "old_class": "Domain\\Documents\\Resolvers\\ReportWindowResolver",
         "final_path": "domain/Documents/src/Resolvers/ReportWindowResolver.php",
@@ -5342,8 +5495,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7f3d72ca379e073dba684fb3e597bb9728c915ca",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5c5d9f71c5874a0571f1073560080cb488d4fec9",
         "old_path": "domain/Documents/src/Resolvers/RetainedDrafts.php",
         "old_class": "Domain\\Documents\\Resolvers\\RetainedDrafts",
         "final_path": "domain/Documents/src/Resolvers/RetainedDrafts.php",
@@ -5361,8 +5514,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "68ad7e5a6c857d42e8b921197fdc3e9e2bfb19d8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "306036786d14f31f03cf8ba1c5bc4c7c91d5dec7",
         "old_path": "domain/Documents/src/Resolvers/RevisionWindowResolver.php",
         "old_class": "Domain\\Documents\\Resolvers\\RevisionWindowResolver",
         "final_path": "domain/Documents/src/Resolvers/RevisionWindowResolver.php",
@@ -5380,8 +5533,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f584a3a3c7dbed5f9bedfcd57431d76cc66b4021",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "323400216d3b60eddd760b7614ce892dd1b6442c",
         "old_path": "domain/Documents/src/Routes/agent.php",
         "old_class": null,
         "final_path": "domain/Documents/routes/agent.php",
@@ -5394,12 +5547,14 @@
         },
         "phase": 4,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9931baebeb1043c7c8e9d974c65b0c7c15ec1339",
         "old_path": "domain/Documents/src/Support/Concerns/RefusesOtherDrafts.php",
         "old_class": "Domain\\Documents\\Support\\Concerns\\RefusesOtherDrafts",
@@ -5413,13 +5568,15 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f68251e4e5e86e3ada14aea2f55be89928f05eca",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6ab62b3935c176e1ae1268241292f13997493021",
         "old_path": "domain/Documents/src/Support/Concerns/SharesPublishedRecords.php",
         "old_class": "Domain\\Documents\\Support\\Concerns\\SharesPublishedRecords",
         "final_path": "domain/Documents/src/Concerns/SharesPublishedRecords.php",
@@ -5432,12 +5589,14 @@
         },
         "phase": 3,
         "batch": "Documents",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Documents.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5ba96c90f3138688ae1b38ae905c173960c2d419",
         "old_path": "domain/Documents/src/Support/DocumentBody.php",
         "old_class": "Domain\\Documents\\Support\\DocumentBody",
@@ -5456,8 +5615,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "bca62deadebb01a8921d8a744f6808199ec22661",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e91224ad2f248e50241a7ce9b93d834055e9bf86",
         "old_path": "domain/Documents/src/Support/DocumentDocking.php",
         "old_class": "Domain\\Documents\\Support\\DocumentDocking",
         "final_path": "domain/Documents/src/Support/DocumentDocking.php",
@@ -5475,8 +5634,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "01792dd21eeb5ddd5e74f48f469aa9f678e7ec25",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "aad7fb9aed92fedb16c13c4c07065c7ad1a9677d",
         "old_path": "domain/Documents/src/Support/DocumentShareProvider.php",
         "old_class": "Domain\\Documents\\Support\\DocumentShareProvider",
         "final_path": "domain/Documents/src/Support/DocumentShareProvider.php",
@@ -5494,8 +5653,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6b14233d61e0db3b8e7e5cedb0ea445bf27c8f31",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "513c8f7cacd07e45a4e4c738ab11503b8f5e72cd",
         "old_path": "domain/Documents/src/Support/DraftClosing.php",
         "old_class": "Domain\\Documents\\Support\\DraftClosing",
         "final_path": "domain/Documents/src/Support/DraftClosing.php",
@@ -5513,8 +5672,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "88eb875a6ef9dc69c0de6195504b3d4ec0eae682",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c460637cdc4f71aca0bbe186b129de4323e0e156",
         "old_path": "domain/Documents/src/Support/DraftEditing.php",
         "old_class": "Domain\\Documents\\Support\\DraftEditing",
         "final_path": "domain/Documents/src/Support/DraftEditing.php",
@@ -5532,8 +5691,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ea9954930765a0b109dc6e5e6b02715593471c8a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5c471f6a41deb4dfdd3798dc9efaca8d308b9c0a",
         "old_path": "domain/Documents/src/Support/DraftText.php",
         "old_class": "Domain\\Documents\\Support\\DraftText",
         "final_path": "domain/Documents/src/Support/DraftText.php",
@@ -5551,8 +5710,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4b2b5b31cd62187555f22d7f1da431f1e56b686f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "01cd73b5f1aad1162c0a7158e2588c330e45e4ee",
         "old_path": "domain/Documents/src/Support/MarkdownCheck.php",
         "old_class": "Domain\\Documents\\Support\\MarkdownCheck",
         "final_path": "domain/Documents/src/Support/MarkdownCheck.php",
@@ -5570,8 +5729,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f40d7316c77855eb5d555354c325697ff88563f6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "712130821be6045dd0725c755de0ee98a3a9da8a",
         "old_path": "domain/Documents/src/Support/RecordChanges.php",
         "old_class": "Domain\\Documents\\Support\\RecordChanges",
         "final_path": "domain/Documents/src/Support/RecordChanges.php",
@@ -5589,8 +5748,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "78a00cd914066511263d168470dda7025fd3957f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "faa03b9ae0ecf23a3a2ee14b8312194af1951ede",
         "old_path": "domain/Documents/src/Support/RecordComments.php",
         "old_class": "Domain\\Documents\\Support\\RecordComments",
         "final_path": "domain/Documents/src/Support/RecordComments.php",
@@ -5608,8 +5767,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c5624c6e4d1633ade95eb744329e8da9fec8a9ab",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "94e953a5f18d292defe9fabb3a602901e3c6b8a0",
         "old_path": "domain/Documents/src/Support/RecordPageReads.php",
         "old_class": "Domain\\Documents\\Support\\RecordPageReads",
         "final_path": "domain/Documents/src/Support/RecordPageReads.php",
@@ -5627,8 +5786,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "20e5fda139ca22b087071b1ae4b817cb4a96de54",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "60c2efc4e1702f96879936a74876742a1db7c35d",
         "old_path": "domain/Documents/src/Support/RecordReading.php",
         "old_class": "Domain\\Documents\\Support\\RecordReading",
         "final_path": "domain/Documents/src/Support/RecordReading.php",
@@ -5646,8 +5805,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "029f26faa37ae732c856ae9235d95a771cfd6e85",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "619f7edf54d31d9fa1799a02efaa42e6f92e2428",
         "old_path": "domain/Documents/src/Support/RecordSettling.php",
         "old_class": "Domain\\Documents\\Support\\RecordSettling",
         "final_path": "domain/Documents/src/Support/RecordSettling.php",
@@ -5665,7 +5824,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1e39f0d011fb0f0a7b7a7881068bfb22388b8bdc",
         "old_path": "domain/Documents/src/Support/RecordViews.php",
         "old_class": "Domain\\Documents\\Support\\RecordViews",
@@ -5684,8 +5843,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7b5719d587000a99c7cd35b9630fe5a1119d94b2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6987df50c352f8c6ec5c9b8ea3ece2a2cea8703b",
         "old_path": "domain/Documents/src/Support/ReportDocking.php",
         "old_class": "Domain\\Documents\\Support\\ReportDocking",
         "final_path": "domain/Documents/src/Support/ReportDocking.php",
@@ -5703,8 +5862,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7c118afc8b6819ddcf2377435e9a069419d5f96c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9f86fa245f1bb83110e457ff9d0b4e73e03fb6ee",
         "old_path": "domain/Documents/src/Support/ReportShareProvider.php",
         "old_class": "Domain\\Documents\\Support\\ReportShareProvider",
         "final_path": "domain/Documents/src/Support/ReportShareProvider.php",
@@ -5722,8 +5881,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1cfa348d5f5b6bd4851c2fdc06f472eb8a77cdee",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "373a28a175c0f0cb58d203b7ed9a27c5645608ac",
         "old_path": "domain/Documents/src/Support/RequestEditor.php",
         "old_class": "Domain\\Documents\\Support\\RequestEditor",
         "final_path": "domain/Documents/src/Support/RequestEditor.php",
@@ -5741,8 +5900,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a0c07c943b5245e2325c9acc54dc6178b7175842",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d1c047e74f34ed92ff005a92ea28a4b45259ed07",
         "old_path": "domain/Documents/src/Support/UploadStore.php",
         "old_class": "Domain\\Documents\\Support\\UploadStore",
         "final_path": "domain/Documents/src/Support/UploadStore.php",
@@ -5760,7 +5919,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1072351d9fa300bef27514a46b656b96eaaa4d85",
         "old_path": "domain/Documents/src/Values/DocumentReadCard.php",
         "old_class": "Domain\\Documents\\Values\\DocumentReadCard",
@@ -5779,7 +5938,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6ae0662f1b56152ad34f06257fc18512519475f7",
         "old_path": "domain/Documents/src/Values/ReportReadCard.php",
         "old_class": "Domain\\Documents\\Values\\ReportReadCard",

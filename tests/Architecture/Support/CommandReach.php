@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Bus\Support\CommandRegistry;
-use App\Reflection\Support\DeclaredType;
-use App\Reflection\Support\ReflectedMethod;
-use App\Reflection\Support\Reflector;
+use App\Support\CommandRegistry;
+use App\Support\DeclaredType;
+use App\Support\ReflectedMethod;
+use App\Support\Reflector;
 
 /**
  * The code each registered command runs: its handler, the module middleware it passes, and every project class they

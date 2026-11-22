@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Membership;
 
-use App\Actors\Contracts\ActorLabels;
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Support\AgentDrivers;
+use App\Contracts\ActorLabels;
+use App\Contracts\CurrentActor;
+use App\Support\ActorIdentity;
+use App\Support\AgentDrivers;
 use Domain\Chat\Data\ChatInput;
 use Domain\Chat\Data\SpeakerData;
 use Domain\Chat\Support\AuthorizedConversations;

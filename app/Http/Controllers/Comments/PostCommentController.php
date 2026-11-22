@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Comments;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
+use App\Contracts\RecordResolver;
 use App\Http\Requests\Comments\PostCommentRequest;
-use App\Records\Contracts\RecordResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

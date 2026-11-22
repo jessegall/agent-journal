@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Profiles\Exceptions\SignInCodeInvalid;
-use App\Profiles\Support\ClaudeSignIn;
-use App\Profiles\Support\PrivateAccountProcess;
-use App\Profiles\Support\SignInProtocols;
-use App\Profiles\Values\SignInVerification;
+use App\Exceptions\SignInCodeInvalid;
+use App\Support\ClaudeSignIn;
+use App\Support\PrivateAccountProcess;
+use App\Support\SignInProtocols;
+use App\Values\SignInVerification;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 

@@ -32,7 +32,7 @@ final class AssignmentWriteBoundaryTest extends TestCase
     public function test_a_listener_writing_a_holder_and_a_state_reaching_a_writer_are_named(): void
     {
         $this->assertSame([
-            self::FIXTURES.'/AssignsFromAState.php:15 state names App\\Assignments\\Contracts\\AssignmentWriter',
+            self::FIXTURES.'/AssignsFromAState.php:15 state names App\\Contracts\\AssignmentWriter',
             self::FIXTURES.'/MovesTheHolder.php:17 writes holder_id',
         ], $this->writesIn([self::FIXTURES]));
     }

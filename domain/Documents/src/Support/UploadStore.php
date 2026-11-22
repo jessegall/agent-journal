@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Agents\Contracts\SessionProvenance;
-use App\Bus\Contracts\CommandTransaction;
+use App\Contracts\CommandTransaction;
+use App\Contracts\SessionProvenance;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Contracts\SealedUploads;
 use Domain\Documents\Enums\UploadType;

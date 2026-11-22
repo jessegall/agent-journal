@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Web;
 
 use App\Http\Requests\Web\DeclaredPageRequest;
-use App\Http\Support\Web\DeclaredRouteKey;
-use App\Http\Support\Web\PageProps;
-use App\Ui\Support\UiDeclarations;
+use App\Support\UiDeclarations;
+use App\Support\Web\DeclaredRouteKey;
+use App\Support\Web\PageProps;
 use Illuminate\Routing\Route;
 use Inertia\Response;
 use Inertia\ResponseFactory;

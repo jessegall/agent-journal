@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Scripts;
 
-use App\Domains\Contracts\ScriptKeywordProvider;
-use App\Domains\Contracts\ScriptObjectProvider;
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
+use App\Contracts\ScriptKeywordProvider;
+use App\Contracts\ScriptObjectProvider;
+use App\Support\Domain;
+use App\Support\Exports;
 
 final class ScriptFixtureDomain extends Domain implements ScriptKeywordProvider, ScriptObjectProvider
 {

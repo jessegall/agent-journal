@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\AgentRequests\Exceptions\InputRefused;
-use App\Bus\Enums\RefusalCode;
-use App\Bus\Exceptions\CommandInputInvalid;
-use App\Bus\Exceptions\CommandRefused;
-use App\Bus\Support\OneLineRule;
-use App\Bus\Support\RefusalMapper;
+use App\Enums\RefusalCode;
+use App\Exceptions\CommandInputInvalid;
+use App\Exceptions\CommandRefused;
+use App\Exceptions\InputRefused;
+use App\Support\OneLineRule;
+use App\Support\RefusalMapper;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;

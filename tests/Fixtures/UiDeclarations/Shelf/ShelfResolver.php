@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Shelf;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Ui\Contracts\PageResolver;
+use App\Contracts\CurrentActor;
+use App\Contracts\PageResolver;
 use Tests\Fixtures\UiDeclarations\RecentNotesData;
 
 /**

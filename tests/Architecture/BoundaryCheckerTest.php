@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\CoreApi;
-use App\Domains\Support\DomainRegistry;
+use App\Support\DomainRegistry;
 use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
@@ -100,13 +100,13 @@ final class BoundaryCheckerTest extends TestCase
             new NameUse(
                 $this->fixtureFolder().'/Plans/UsesAllowed.php',
                 3,
-                'App\Actors\Contracts\Actor',
+                'App\Contracts\Actor',
                 NameType::Type,
             ),
             new NameUse(
                 $this->fixtureFolder().'/Plans/Listeners/HearsStateTypes.php',
                 4,
-                'App\Hooks\Events\StateTypesRequested',
+                'App\Events\StateTypesRequested',
                 NameType::Type,
             ),
         ];
@@ -129,7 +129,7 @@ final class BoundaryCheckerTest extends TestCase
         $use = new NameUse(
             $this->fixtureFolder().'/Plans/UsesAllowed.php',
             4,
-            'App\Hooks\Events\StateTypesRequested',
+            'App\Events\StateTypesRequested',
             NameType::Type,
         );
 
@@ -163,7 +163,7 @@ final class BoundaryCheckerTest extends TestCase
         $use = new NameUse(
             $this->fixtureFolder().'/Plans/UsesAllowed.php',
             3,
-            'App\Hooks\Actions\AgentStacks',
+            'App\Support\AgentStacks',
             NameType::Type,
         );
 
@@ -181,7 +181,7 @@ final class BoundaryCheckerTest extends TestCase
         $uses = [
             new NameUse("{$base}/bootstrap/domains.php", 4, ChatDomain::class, NameType::Import),
             new NameUse("{$base}/bootstrap/app.php", 5, 'Tests\Fixtures\Boundary\Chat\Message', NameType::Import),
-            new NameUse("{$base}/config/auth.php", 6, 'App\Hooks\Actions\AgentStacks', NameType::Import),
+            new NameUse("{$base}/config/auth.php", 6, 'App\Support\AgentStacks', NameType::Import),
         ];
 
         $this->assertSame(

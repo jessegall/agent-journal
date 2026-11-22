@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Assignments\Commands\ReassignRecord\ReassignRecordCommand;
+use App\Commands\ReassignRecord\ReassignRecordCommand;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Enums\DiscoveryProfile;

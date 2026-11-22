@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Agents\Commands\AnswerNavigation\AnswerNavigationCommand;
-use App\Agents\Exceptions\NavigationAnswerRefused;
-use App\Agents\Values\NavigationAnswer;
+use App\Commands\AnswerNavigation\AnswerNavigationCommand;
+use App\Exceptions\NavigationAnswerRefused;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
+use App\Values\NavigationAnswer;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;

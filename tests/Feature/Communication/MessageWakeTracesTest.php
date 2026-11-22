@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Agents\Enums\DriverOperation;
-use App\Agents\Enums\RequestProgress;
-use App\Agents\Models\AgentRuntime;
-use App\Agents\Models\AgentSession;
-use App\Agents\Models\DriverRequest;
-use App\Communication\Commands\AskMessage\AskMessageCommand;
-use App\Communication\Contracts\ConversationResolver;
-use App\Communication\Models\Message;
-use App\Settings\Commands\DisableSettingGroup\DisableSettingGroupCommand;
-use App\Settings\Values\GroupReference;
+use App\Commands\AskMessage\AskMessageCommand;
+use App\Commands\DisableSettingGroup\DisableSettingGroupCommand;
+use App\Contracts\ConversationResolver;
+use App\Enums\DriverOperation;
+use App\Enums\RequestProgress;
+use App\Models\AgentRuntime;
+use App\Models\AgentSession;
+use App\Models\DriverRequest;
+use App\Models\Message;
+use App\Values\GroupReference;
 use Tests\Support\MessagingTestCase;
 
 /**

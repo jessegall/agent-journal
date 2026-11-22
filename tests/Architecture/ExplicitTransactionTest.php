@@ -48,7 +48,7 @@ final class ExplicitTransactionTest extends TestCase
      */
     private const array ALLOWED = [
         // The bus's own frame step: the one place that opens a command's transaction.
-        'app/Bus/CommandMiddleware/RunInTransaction.php',
+        'app/CommandMiddleware/RunInTransaction.php',
         'tests/Fixtures/Modules/Notes/src/Commands/OpenTransactionNote/OpenTransactionNoteHandler.php',
     ];
 
@@ -57,15 +57,15 @@ final class ExplicitTransactionTest extends TestCase
      * decision: an owner of an event unit, one that joins a unit, or one that holds no unit.
      */
     public const array OPENERS = [
-        'app/Bus/CommandMiddleware/RunInTransaction.php' => 'owns a unit: the command attempt',
-        'app/Hooks/Support/StackTransaction.php' => 'owns a unit: the stack transaction',
-        'app/Assignments/Storage/DatabaseAssignmentTransaction.php' => 'joins the open unit inside a command',
-        'app/Agents/Support/DatabaseStartTransaction.php' => 'joins the open unit inside a command',
-        'app/Actors/Support/ActiveActorsResolver.php' => 'no unit: a read-only snapshot',
-        'app/Engine/Support/EnginePass.php' => 'no unit: rolls back what a pass left open',
-        'app/Agents/Support/AgentChatAccess.php' => 'owns a unit: the console change of an agent\'s chat access',
-        'app/Communication/Support/PresentationSweep.php' => 'owns a unit: each settled batch of the sweep',
-        'app/Communication/Support/ReceiptDeliveries.php' => 'owns a unit: each delivery the queue tries',
+        'app/CommandMiddleware/RunInTransaction.php' => 'owns a unit: the command attempt',
+        'app/Support/StackTransaction.php' => 'owns a unit: the stack transaction',
+        'app/Support/Storage/DatabaseAssignmentTransaction.php' => 'joins the open unit inside a command',
+        'app/Support/DatabaseStartTransaction.php' => 'joins the open unit inside a command',
+        'app/Support/ActiveActorsResolver.php' => 'no unit: a read-only snapshot',
+        'app/Support/EnginePass.php' => 'no unit: rolls back what a pass left open',
+        'app/Support/AgentChatAccess.php' => 'owns a unit: the console change of an agent\'s chat access',
+        'app/Support/PresentationSweep.php' => 'owns a unit: each settled batch of the sweep',
+        'app/Support/ReceiptDeliveries.php' => 'owns a unit: each delivery the queue tries',
     ];
 
     public function test_every_transaction_opener_of_the_application_is_named(): void

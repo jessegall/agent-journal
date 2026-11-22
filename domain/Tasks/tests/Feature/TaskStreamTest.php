@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\LogTaskRun\LogTaskRunCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
+use Domain\Tasks\Data\TaskStreamEntryData;
 use Domain\Tasks\Enums\TaskStreamEntryType;
-use Domain\Tasks\Http\Data\TaskStreamEntryData;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskStream;
 use Domain\Tasks\Tests\TestCase;

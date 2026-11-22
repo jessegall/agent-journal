@@ -1,0 +1,139 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Declarations;
+
+use App\Contracts\CatalogueConstraints;
+use App\Contracts\CatalogueValue;
+use App\Contracts\ChoiceLabel;
+use App\Contracts\OptionSetting;
+use App\Enums\SettingType;
+use App\Exceptions\SettingDeclarationInvalid;
+use App\Support\ChoiceOptions;
+use App\Support\Reflector;
+use App\Support\SettingKey;
+use App\Values\Choice;
+use App\Values\Decimal;
+use BackedEnum;
+use Illuminate\Support\Str;
+use Spatie\LaravelData\Optional;
+
+/**
+ * A setting that holds one case of a backed enum; its options are the cases in order, labelled by the enum when it
+ * names them and by the case name otherwise.
+ *
+ * @template TEnum of BackedEnum
+ */
+final readonly class EnumSetting implements OptionSetting
+{
+    /**
+     * @param  class-string<TEnum>  $enum
+     * @param  TEnum  $default
+     * @param  ChoiceOptions<string|int>  $options
+     */
+    private function __construct(
+        public string $key,
+        public string $label,
+        public string $enum,
+        public BackedEnum $default,
+        public SettingType $backing,
+        public ChoiceOptions $options,
+    ) {}
+
+    /**
+     * @template TCase of BackedEnum
+     *
+     * @param  class-string<TCase>  $enum
+     * @param  TCase  $default
+     * @return self<TCase>
+     *
+     * @throws SettingDeclarationInvalid
+     */
+    public static function make(string $key, string $label, string $enum, BackedEnum $default): self
+    {
+        SettingKey::require($key, $label);
+
+        $type = Reflector::of($enum);
+
+        if ($type->backingType()->isEmpty()) {
+            throw SettingDeclarationInvalid::notABackedEnum($key);
+        }
+
+        if ($type->asInstance($default)->isEmpty()) {
+            throw SettingDeclarationInvalid::defaultNotAnOption($key);
+        }
+
+        $backing = $type->backingType()->get() === 'int'
+            ? SettingType::Integer
+            : SettingType::String;
+
+        $options = array_map(fn (BackedEnum $case) => self::choiceOf($case), $enum::cases());
+
+        return new self($key, $label, $enum, $default, $backing, ChoiceOptions::check($key, $options, $default->value));
+    }
+
+    public function key(): string
+    {
+        return $this->key;
+    }
+
+    public function label(): string
+    {
+        return $this->label;
+    }
+
+    public function type(): SettingType
+    {
+        return SettingType::Choice;
+    }
+
+    /**
+     * @return list<Choice<string|int>>
+     */
+    public function options(): array
+    {
+        return $this->options->options;
+    }
+
+    /**
+     * Whether a value is exactly the backing value of one of the cases.
+     */
+    public function accepts(string|int $input): bool
+    {
+        return $this->options->contains($input);
+    }
+
+    /**
+     * The case a stored backing value names, or null when the enum no longer has it.
+     *
+     * @return TEnum|null
+     */
+    public function caseOf(string|int $input): BackedEnum|null
+    {
+        return ($this->enum)::tryFrom($input);
+    }
+
+    /**
+     * @return Choice<string|int>
+     */
+    private static function choiceOf(BackedEnum $case): Choice
+    {
+        return Choice::make($case->value, $case instanceof ChoiceLabel ? $case->label() : Str::headline($case->name));
+    }
+
+    public function defaultValue(): BackedEnum
+    {
+        return $this->default;
+    }
+
+    public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue
+    {
+        return ChoiceOptions::valueData($input instanceof BackedEnum ? $input->value : $input);
+    }
+
+    public function catalogueConstraints(): CatalogueConstraints|Optional
+    {
+        return ChoiceOptions::constraintsData($this->options());
+    }
+}

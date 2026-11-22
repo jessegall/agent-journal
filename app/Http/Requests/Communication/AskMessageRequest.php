@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Communication\Commands\AskMessage\AskMessageCommand;
+use App\Commands\AskMessage\AskMessageCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class AskMessageRequest extends FormRequest

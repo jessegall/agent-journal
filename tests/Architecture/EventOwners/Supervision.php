@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Supervision\Events\AskClosed;
-use App\Supervision\Events\AskHopAssigned;
+use App\Enums\ActorType;
+use App\Events\AskClosed;
+use App\Events\AskHopAssigned;
+use App\Support\ActorIdentity;
 use Tests\Architecture\Support\EventRole;
 
 /**

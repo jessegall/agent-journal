@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Pipes\Grammar;
+
+use App\Contracts\Pipe;
+use App\Support\Grammar\ListItems;
+use App\Support\Grammar\ListToParse;
+
+/**
+ * Starts a list with no item read yet, so no ; may come first.
+ */
+final readonly class CollectListItems implements Pipe
+{
+    public function handle(ListToParse $toParse): ListItems
+    {
+        return new ListItems($toParse, false);
+    }
+}

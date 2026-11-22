@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Actors\Support\ActorIdentity;
-use App\Assignments\Contracts\AssignmentTransaction;
-use App\Communication\Commands\AskMessage\AskMessageCommand;
-use App\Communication\Models\Message;
-use App\Desks\Commands\CreateDesk\CreateDeskCommand;
-use App\Desks\Models\DeskRecord;
-use App\Desks\Support\DeskSeating;
+use App\Commands\AskMessage\AskMessageCommand;
+use App\Commands\CreateDesk\CreateDeskCommand;
+use App\Contracts\AssignmentTransaction;
+use App\Models\DeskRecord;
+use App\Models\Message;
+use App\Support\ActorIdentity;
+use App\Support\DeskSeating;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Tests\TestCase;

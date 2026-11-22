@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Assignments\Exceptions\AssignmentGroupTooLarge;
-use App\Assignments\Exceptions\AssignmentRootFinished;
-use App\Assignments\Models\AssignmentRecord;
-use App\Assignments\Support\AssignmentGroup;
-use App\Records\Support\RecordIdentity;
+use App\Exceptions\AssignmentGroupTooLarge;
+use App\Exceptions\AssignmentRootFinished;
+use App\Models\AssignmentRecord;
+use App\Support\AssignmentGroup;
+use App\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanState;

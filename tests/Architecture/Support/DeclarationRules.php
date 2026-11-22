@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Domains\Support\Domain;
-use App\Domains\Support\DomainEntry;
-use App\Reflection\Support\Reflector;
+use App\Support\Domain;
+use App\Support\DomainEntry;
+use App\Support\Reflector;
 use Tests\Support\ScanCache\ScanCache;
 
 /**

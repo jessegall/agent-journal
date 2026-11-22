@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Assignments\Contracts\AssignmentTransaction;
-use App\Communication\Commands\TakeNextMessages\TakeNextMessagesCommand;
-use App\Communication\Data\MessageReadBatch;
-use App\Desks\Commands\CreateDesk\CreateDeskCommand;
-use App\Desks\Models\DeskRecord;
-use App\Desks\Support\DeskSeating;
+use App\Commands\CreateDesk\CreateDeskCommand;
+use App\Commands\TakeNextMessages\TakeNextMessagesCommand;
+use App\Contracts\AssignmentTransaction;
+use App\Data\MessageReadBatch;
+use App\Models\DeskRecord;
+use App\Support\DeskSeating;
 use Tests\Support\MessagingTestCase;
 
 /**

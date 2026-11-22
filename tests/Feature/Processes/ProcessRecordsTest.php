@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Support\ActorIdentity;
-use App\Processes\Enums\LifecycleState;
-use App\Processes\Enums\PartEndType;
-use App\Processes\Enums\RunMode;
-use App\Processes\Exceptions\PartTransitionRefused;
-use App\Processes\Models\PartRun;
-use App\Processes\Models\ProcessEvent;
-use App\Processes\Models\ProcessRun;
-use App\Processes\Values\PartEnd;
-use App\Processes\Values\PartKey;
+use App\Enums\LifecycleState;
+use App\Enums\PartEndType;
+use App\Enums\RunMode;
+use App\Exceptions\PartTransitionRefused;
+use App\Models\PartRun;
+use App\Models\ProcessEvent;
+use App\Models\ProcessRun;
+use App\Support\ActorIdentity;
+use App\Values\PartEnd;
+use App\Values\PartKey;
 use Tests\Support\ChecksSchemaTables;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestRunAdmissions;

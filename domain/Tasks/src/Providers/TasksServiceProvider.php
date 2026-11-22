@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Providers;
 
-use App\Actors\Contracts\ReadEntitlements;
-use App\Actors\Contracts\SystemEntryPolicies;
-use App\Actors\Values\ReadEntitlement;
-use App\Connections\Contracts\EnvironmentTasks;
-use App\Docking\Sources\Contracts\DockRegistration;
-use App\Links\Support\LinkTypeRegistry;
-use Domain\Tasks\Console\AssignedTasksCommand;
+use App\Contracts\EnvironmentTasks;
+use App\Contracts\ReadEntitlements;
+use App\Contracts\SystemEntryPolicies;
+use App\Support\LinkTypeRegistry;
+use App\Support\Sources\Contracts\DockRegistration;
+use App\Values\ReadEntitlement;
+use Domain\Tasks\Console\Commands\AssignedTasksCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
@@ -77,7 +77,7 @@ final class TasksServiceProvider extends ServiceProvider
         $reads->declare('tasks_list', $readGrant);
         $reads->declare('tasks_assigned', $readGrant);
         $systemEntries->allow(BindTaskCheckResults::ENTRY, TaskPolicy::class);
-        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
+        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
         $this->commands([AssignedTasksCommand::class]);
 
         $links->register([

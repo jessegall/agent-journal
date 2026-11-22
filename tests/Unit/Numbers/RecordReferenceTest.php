@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Numbers;
 
-use App\Numbers\Exceptions\InvalidRecordReference;
-use App\Numbers\Support\RecordReference;
+use App\Exceptions\InvalidRecordReference;
+use App\Support\RecordReference;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

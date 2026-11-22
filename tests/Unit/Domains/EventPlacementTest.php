@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Unit\Domains;
 
 use App\Contracts\Event;
-use App\Domains\Support\Exports;
-use App\Exports\Support\Exports as ExportList;
-use App\Reflection\Support\Reflector;
+use App\Support\Exports as ExportList;
+use App\Support\ExportValidator;
+use App\Support\Reflector;
 use Tests\Fixtures\ExportedEvents\Api\Events\DraftSaved;
 use Tests\Fixtures\ExportedEvents\Support\ReportReady;
 use Tests\TestCase;
@@ -20,7 +20,7 @@ final class EventPlacementTest extends TestCase
 {
     public function test_the_exports_list_and_not_the_folder_decides_which_event_is_public(): void
     {
-        $checked = Exports::check(
+        $checked = ExportValidator::check(
             'Fixture',
             'Tests\\Fixtures\\ExportedEvents',
             ExportList::make()->events(ReportReady::class)->build(),

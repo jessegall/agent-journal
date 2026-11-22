@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\CurrentSession;
-use App\Agents\Models\AgentSession;
-use App\Communication\Commands\AcknowledgePresentation\AcknowledgePresentationCommand;
-use App\Communication\Commands\ClaimSpeech\ClaimSpeechCommand;
-use App\Communication\Data\PresentationItemData;
-use App\Communication\Support\PresentationBatches;
+use App\Commands\AcknowledgePresentation\AcknowledgePresentationCommand;
+use App\Commands\ClaimSpeech\ClaimSpeechCommand;
+use App\Contracts\CurrentSession;
+use App\Data\PresentationItemData;
+use App\Enums\ActorType;
+use App\Models\AgentSession;
+use App\Support\ActorIdentity;
+use App\Support\PresentationBatches;
 use Carbon\CarbonImmutable;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers\Calls;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use Domain\Documents\Calls\DraftHeld;
 use Domain\Documents\Calls\OpenDocumentCall;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Mcp\Console;
 
-use App\AgentRequests\Contracts\StartTokenSource;
-use App\AgentRequests\Exceptions\CallDeadlinePassed;
-use App\AgentRequests\Exceptions\JournalUnreachable;
-use App\AgentRequests\Exceptions\StartSettingMissing;
-use App\AgentRequests\Exceptions\StartTokenRefused;
-use App\AgentRequests\Support\AgentRequestClient;
+use App\Contracts\StartTokenSource;
+use App\Exceptions\CallDeadlinePassed;
+use App\Exceptions\JournalUnreachable;
+use App\Exceptions\StartSettingMissing;
+use App\Exceptions\StartTokenRefused;
 use App\Mcp\Servers\JournalServer;
 use App\Mcp\Support\RelayFrames;
+use App\Support\AgentRequestClient;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 

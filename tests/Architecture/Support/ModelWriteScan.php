@@ -35,12 +35,12 @@ final readonly class ModelWriteScan implements FileScan
      */
     public const string EVENT_SOURCE = 'App\Contracts\EventSource';
 
-    public const string RAISES_EVENTS = 'App\Contracts\Support\RaisesEvents';
+    public const string RAISES_EVENTS = 'App\Concerns\RaisesEvents';
 
     /**
      * The trait whose insert of a model's own new row the capture of an event source sees.
      */
-    public const string INSERTS_ABSENT_ROWS = 'App\Contracts\Support\InsertsAbsentRows';
+    public const string INSERTS_ABSENT_ROWS = 'App\Concerns\InsertsAbsentRows';
 
     /**
      * The Eloquent calls that write a row, a relation or a pivot.
@@ -108,7 +108,7 @@ final readonly class ModelWriteScan implements FileScan
      */
     private const array WRITING_SERVICES = [
         'Illuminate\Contracts\Events\Dispatcher', 'Illuminate\Events\Dispatcher', 'Illuminate\Contracts\Bus\Dispatcher',
-        'Illuminate\Bus\Dispatcher', 'App\Bus\Contracts\CommandBus', 'Illuminate\Contracts\Queue\Queue',
+        'Illuminate\Bus\Dispatcher', 'App\Contracts\CommandBus', 'Illuminate\Contracts\Queue\Queue',
         'Illuminate\Database\DatabaseManager', 'Illuminate\Database\ConnectionInterface',
         'Illuminate\Contracts\Filesystem\Filesystem', 'Illuminate\Filesystem\Filesystem', 'events', 'db', 'bus',
         'queue', 'files', 'filesystem',

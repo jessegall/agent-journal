@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use Domain\Plans\Commands\FinishPlan\FinishPlanCommand;
 use Domain\Plans\Http\Requests\PlanEndRequest;
 use Illuminate\Http\RedirectResponse;

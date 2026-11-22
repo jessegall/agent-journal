@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Desks;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Models\Agent;
-use App\Assignments\Contracts\AssignmentResolver;
-use App\Assignments\Contracts\AssignmentTransaction;
-use App\Assignments\Models\AssignmentRecord;
-use App\Desks\Support\DeskOpening;
-use App\Desks\Support\DeskSeating;
+use App\Contracts\AssignmentResolver;
+use App\Contracts\AssignmentTransaction;
+use App\Models\Agent;
+use App\Models\AssignmentRecord;
+use App\Support\ActorIdentity;
+use App\Support\DeskOpening;
+use App\Support\DeskSeating;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Models\Plan;

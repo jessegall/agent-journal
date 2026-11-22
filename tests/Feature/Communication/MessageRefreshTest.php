@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Assignments\Contracts\AssignmentTransaction;
-use App\Assignments\Storage\AssignmentStore;
-use App\Communication\Contracts\ConversationResolver;
-use App\Desks\Commands\CreateDesk\CreateDeskCommand;
-use App\Desks\Models\DeskRecord;
-use App\Desks\Models\DeskSeat;
-use App\Desks\Support\DeskSeating;
-use App\Desks\Support\SeatChange;
-use App\Web\Events\PageChanged;
-use App\Web\Support\UserChannel;
+use App\Commands\CreateDesk\CreateDeskCommand;
+use App\Contracts\AssignmentTransaction;
+use App\Contracts\ConversationResolver;
+use App\Events\PageChanged;
+use App\Models\DeskRecord;
+use App\Models\DeskSeat;
+use App\Support\DeskSeating;
+use App\Support\SeatChange;
+use App\Support\Storage\AssignmentStore;
+use App\Support\UserChannel;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\MessagingTestCase;
 

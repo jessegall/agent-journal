@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Scripts;
 
-use App\Scripts\Attributes\ScriptMember;
-use App\Scripts\Attributes\ScriptObject;
-use App\Scripts\Values\ScriptContext;
+use App\Attributes\ScriptMember;
+use App\Attributes\ScriptObject;
+use App\Values\ScriptContext;
 
 #[ScriptObject('invalid')]
 final readonly class InvalidScriptObject

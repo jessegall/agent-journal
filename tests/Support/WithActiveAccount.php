@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\Drivers\Support\DefaultDrivers;
-use App\Profiles\Models\Account;
-use App\Profiles\Models\ActiveAccount;
-use App\Profiles\Values\AccountLabel;
+use App\Contracts\CurrentActorSetter;
+use App\Models\Account;
+use App\Models\ActiveAccount;
+use App\Support\ActorContext;
+use App\Support\DefaultDrivers;
+use App\Values\AccountLabel;
+use App\Values\OwnerAuthority;
 
 /**
  * For a test that starts agents through the real start path: saves a signed-in account for each driver and

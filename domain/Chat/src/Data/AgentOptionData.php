@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use App\Agents\Enums\AgentAction;
-use App\Agents\Enums\AgentPresence;
-use App\Agents\Enums\DriverSwitchStage;
-use App\Agents\Support\AgentOption;
+use App\Enums\AgentAction;
+use App\Enums\AgentPresence;
+use App\Enums\DriverSwitchStage;
+use App\Support\AgentOption;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

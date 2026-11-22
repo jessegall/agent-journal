@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
-use App\Communication\Contracts\ChatTimeline;
+use App\Contracts\ChatTimeline;
 use Domain\Chat\Data\ChatEventsInput;
 use Domain\Chat\Data\ChatEventsPageData;
 use Illuminate\Http\JsonResponse;

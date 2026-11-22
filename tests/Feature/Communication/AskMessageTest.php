@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Enums\MessageState;
-use App\Communication\Exceptions\AnswerImpossible;
-use App\Communication\Models\Message;
-use App\Desks\Support\DeskOpening;
+use App\Enums\MessageState;
+use App\Exceptions\AnswerImpossible;
+use App\Models\Message;
+use App\Support\DeskOpening;
 use Tests\Support\MessagingTestCase;
 
 /**

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Bus\Support\OperationDeadline;
-use App\Hooks\Drivers\DriverCapabilities;
-use App\Hooks\Drivers\DriverReplies;
-use App\Hooks\Enums\ContextStartType;
-use App\Hooks\Enums\HookEvent;
-use App\Hooks\Enums\RewriteSupport;
-use App\Hooks\Events\ContextStarted;
-use App\Hooks\Inputs\SessionStarted;
-use App\Hooks\Inputs\Values\SessionStartDetails;
-use App\Hooks\Stack\HookAnswer;
-use App\Hooks\Support\ContextBudget;
+use App\Enums\ContextStartType;
+use App\Enums\HookEvent;
+use App\Enums\RewriteSupport;
+use App\Events\ContextStarted;
+use App\Support\ContextBudget;
+use App\Support\Drivers\DriverCapabilities;
+use App\Support\Drivers\DriverReplies;
+use App\Support\Inputs\SessionStarted;
+use App\Support\Inputs\Values\SessionStartDetails;
+use App\Support\OperationDeadline;
+use App\Support\Stack\HookAnswer;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
 use Illuminate\Support\Facades\Event;

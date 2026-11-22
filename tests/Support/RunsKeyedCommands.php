@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\RequestKey;
+use App\Contracts\CommandBus;
+use App\Support\RequestKey;
 use Illuminate\Support\Str;
 
 /**

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Skills\Enums\GenerationState;
-use App\Skills\Enums\PublicationState;
-use App\Skills\Exceptions\SkillGenerationImmutable;
-use App\Skills\Exceptions\SkillPublicationFailed;
-use App\Skills\Exceptions\SkillPublicationStale;
-use App\Skills\Models\SkillGeneration;
-use App\Skills\Support\SkillPublications;
-use App\Skills\Values\PublicationManifest;
+use App\Enums\GenerationState;
+use App\Enums\PublicationState;
+use App\Exceptions\SkillGenerationImmutable;
+use App\Exceptions\SkillPublicationFailed;
+use App\Exceptions\SkillPublicationStale;
+use App\Models\SkillGeneration;
+use App\Support\SkillPublications;
+use App\Values\PublicationManifest;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\CommitsHookRows;

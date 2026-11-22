@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
+use App\Support\ActorContext;
+use App\Support\ActorIdentity;
 use Domain\Rules\Models\Rule;
 
 /**

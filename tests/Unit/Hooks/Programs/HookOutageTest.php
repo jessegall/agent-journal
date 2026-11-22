@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Drivers;
 
-use App\Hooks\Drivers\OutageReply;
-use App\Hooks\Enums\CallFailure;
+use App\Enums\CallFailure;
+use App\Support\Drivers\OutageReply;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 

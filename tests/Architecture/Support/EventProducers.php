@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Contracts\Event;
-use App\Reflection\Support\DeclaredType;
-use App\Reflection\Support\Reflector;
+use App\Support\DeclaredType;
+use App\Support\Reflector;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Eloquent\Model;

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Domains\Exceptions\AlwaysOnDomainRequiresSwitchable;
-use App\Domains\Exceptions\DomainCycle;
-use App\Domains\Exceptions\DomainListedTwice;
-use App\Domains\Exceptions\DomainNotFound;
-use App\Domains\Exceptions\DomainRequiresItself;
-use App\Domains\Exceptions\NotADomain;
-use App\Domains\Exceptions\RequiredDomainMissing;
-use App\Domains\Exceptions\RequiredDomainTwice;
-use App\Domains\Support\DomainEntry;
-use App\Domains\Support\DomainRegistry;
+use App\Exceptions\AlwaysOnDomainRequiresSwitchable;
+use App\Exceptions\DomainCycle;
+use App\Exceptions\DomainListedTwice;
+use App\Exceptions\DomainNotFound;
+use App\Exceptions\DomainRequiresItself;
+use App\Exceptions\NotADomain;
+use App\Exceptions\RequiredDomainMissing;
+use App\Exceptions\RequiredDomainTwice;
+use App\Support\DomainEntry;
+use App\Support\DomainRegistry;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Domains\AlwaysOn\AlwaysOnDomain;
 use Tests\Fixtures\Domains\Books\BooksDomain;

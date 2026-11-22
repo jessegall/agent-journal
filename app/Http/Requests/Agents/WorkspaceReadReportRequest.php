@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Agents\Values\CommitObservation;
-use App\Agents\Values\WorkspaceReadReference;
+use App\Values\CommitObservation;
+use App\Values\WorkspaceReadReference;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

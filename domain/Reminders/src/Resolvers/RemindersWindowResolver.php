@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Reminders\Resolvers;
 
-use App\Ui\Contracts\PageResolver;
-use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\LayoutPartData;
+use App\Contracts\PageResolver;
+use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\LayoutPartData;
 
 /**
  * The reminders window: no read provider that a user may see exists yet, so it says reminders are unavailable rather

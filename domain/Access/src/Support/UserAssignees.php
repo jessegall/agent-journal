@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Actors\Contracts\AdmittedRecipients;
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Contracts\JournalAdmission;
-use App\Actors\Enums\ActorType;
-use App\Assignments\Contracts\Assignee;
-use App\Assignments\Contracts\AssigneeProvider;
-use App\Assignments\Exceptions\AssigneeUnavailable;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\AssigneeList;
-use App\Assignments\Support\AssigneeName;
-use App\Assignments\Support\Page;
+use App\Contracts\AdmittedRecipients;
+use App\Contracts\Assignee;
+use App\Contracts\AssigneeProvider;
+use App\Contracts\CurrentActor;
+use App\Contracts\JournalAdmission;
+use App\Enums\ActorType;
+use App\Exceptions\AssigneeUnavailable;
+use App\Support\AssigneeIdentity;
+use App\Support\AssigneeList;
+use App\Support\AssigneeName;
+use App\Support\Page;
 use Domain\Access\Models\User;
 
 /**

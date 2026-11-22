@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use App\Http\Requests\Profiles\SwitchAgentDriverRequest;
-use App\Profiles\Values\DriverSwitchReceipt;
+use App\Values\DriverSwitchReceipt;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

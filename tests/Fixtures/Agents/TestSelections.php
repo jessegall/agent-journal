@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Agents;
 
 use Illuminate\Container\Container;
-use App\Drivers\Values\PinnedDriver;
-use App\Drivers\Contracts\DriverCatalogue;
-use App\Agents\Values\StartRequest;
-use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Values\ExecutionBudgets;
-use App\Agents\Values\ExecutionPolicy;
-use App\Agents\Values\ModelSelection;
-use App\Agents\Values\SelectedDriver;
-use App\Drivers\Support\DefaultDrivers;
+use App\Values\PinnedDriver;
+use App\Contracts\DriverCatalogue;
+use App\Values\StartRequest;
+use App\Enums\ExecutionModeType;
+use App\Values\ExecutionBudgets;
+use App\Values\ExecutionPolicy;
+use App\Values\ModelSelection;
+use App\Values\SelectedDriver;
+use App\Support\DefaultDrivers;
 use Illuminate\Support\Str;
 
 /**

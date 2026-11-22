@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Listeners;
 
-use App\Contracts\Attributes\InCommandTransaction;
+use App\Attributes\InCommandTransaction;
+use App\Contracts\AgentStack;
 use App\Contracts\Listener;
-use App\Hooks\Contracts\AgentStack;
 use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Resolvers\Support\SequenceRecords;
-use Domain\Sequences\States\Support\FollowingSequenceStateReference;
+use Domain\Sequences\Support\States\Support\FollowingSequenceStateReference;
 
 /**
  * Puts the started run on the agent's stack in the same transaction as the start.

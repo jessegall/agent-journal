@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Values\PolicyDefinition;
-use App\Agents\Models\Agent;
-use App\Profiles\Support\BuiltInAuthorizations;
-use App\Profiles\Values\ProfileBase;
-use App\Profiles\Values\ProfileKey;
-use App\Profiles\Values\ProfileSnapshot;
-use App\Profiles\Values\StartProfileAuthority;
+use App\Contracts\PolicyCatalogue;
+use App\Models\Agent;
+use App\Support\BuiltInAuthorizations;
+use App\Values\PolicyDefinition;
+use App\Values\ProfileBase;
+use App\Values\ProfileKey;
+use App\Values\ProfileSnapshot;
+use App\Values\StartProfileAuthority;
 use Illuminate\Container\Container;
 use Tests\Fixtures\Profiles\TestStartPolicies;
 

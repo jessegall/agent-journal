@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Skills\Events\SessionSkillsIntended;
-use App\Skills\Events\SkillsChanged;
+use App\Events\SessionSkillsIntended;
+use App\Events\SkillsChanged;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -16,8 +16,8 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Skills/Listeners/AdmitStartSkills.php',
-            'app/Skills/Listeners/RefreshSessionSkills.php',
+            'app/Listeners/AdmitStartSkills.php',
+            'app/Listeners/RefreshSessionSkills.php',
         ],
     ],
     SkillsChanged::class => [

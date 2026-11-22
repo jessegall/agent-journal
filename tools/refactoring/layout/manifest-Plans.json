@@ -1,7 +1,7 @@
 [
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0abc2dbff1a349a6433a04212d339f59e0568c9b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "094e6a33ed6cacfcbedc6756c8baaef88b043b7a",
         "old_path": "domain/Plans/database/factories/PlanFactory.php",
         "old_class": "Domain\\Plans\\Database\\Factories\\PlanFactory",
         "final_path": "domain/Plans/database/factories/PlanFactory.php",
@@ -19,7 +19,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1df23f7ef6312e3bc329e653bf29443da928a2b4",
         "old_path": "domain/Plans/database/migrations/2026_11_18_000001_create_plans_tables.php",
         "old_class": null,
@@ -38,7 +38,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "40ae2b1c1787d40f3c7853398fb550a9fa87a31a",
         "old_path": "domain/Plans/database/migrations/2026_11_18_000002_create_phase_checks_table.php",
         "old_class": null,
@@ -57,7 +57,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e2b16a337b785f4f7153fccc9b26de3abd453a20",
         "old_path": "domain/Plans/database/migrations/2026_11_22_000001_create_plan_review_editions_table.php",
         "old_class": null,
@@ -76,7 +76,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f0691cd9cb66495386bd7314cb8f8745b37cb7d2",
         "old_path": "domain/Plans/database/seeders/PlansSeeder.php",
         "old_class": "Domain\\Plans\\Database\\Seeders\\PlansSeeder",
@@ -95,7 +95,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "902e41d35838f6259fb09d0438373a1653cfc1e8",
         "old_path": "domain/Plans/resources/js/CountedProgressPlaces.test.ts",
         "old_class": null,
@@ -114,7 +114,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "304bc76ea3544582189070941d69237bac63451d",
         "old_path": "domain/Plans/resources/js/PhaseOutline.test.ts",
         "old_class": null,
@@ -133,7 +133,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7319f91d0572cba4b8fe64c613712da36f1e46e9",
         "old_path": "domain/Plans/resources/js/PhaseOutline.vue",
         "old_class": null,
@@ -152,7 +152,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "cbd702e42ee7ba90065feba83bcea9023c94d46f",
         "old_path": "domain/Plans/resources/js/PhaseTaskList.vue",
         "old_class": null,
@@ -171,7 +171,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "370f8fc295bee2228b0b7cd2eef081cc91f64fc8",
         "old_path": "domain/Plans/resources/js/PhaseWindow.vue",
         "old_class": null,
@@ -190,7 +190,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "051b371de781112b1e3a3c918b4303d0f7c3fa14",
         "old_path": "domain/Plans/resources/js/PlanCard.test.ts",
         "old_class": null,
@@ -209,7 +209,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "449cc3fb7d682f414021c676753f0a91b9ff6f3d",
         "old_path": "domain/Plans/resources/js/PlanCard.vue",
         "old_class": null,
@@ -228,7 +228,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "921c7f352f717b59fda31944b01d30520708f7ea",
         "old_path": "domain/Plans/resources/js/PlanEndDialog.vue",
         "old_class": null,
@@ -247,7 +247,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ac3ba98b863341c4e099117a68130b0905a795c6",
         "old_path": "domain/Plans/resources/js/PlanReader.test.ts",
         "old_class": null,
@@ -266,7 +266,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ffd75be19f1a936c91d765e769f6fc4033b78f33",
         "old_path": "domain/Plans/resources/js/PlanReader.vue",
         "old_class": null,
@@ -285,7 +285,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "09526851d542f2be6cae9bc7cca8a53eab5faf9f",
         "old_path": "domain/Plans/resources/js/PlanReviewPanel.vue",
         "old_class": null,
@@ -304,7 +304,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e6b3af359ef642262b0709139ccf50474e7a5b08",
         "old_path": "domain/Plans/resources/js/PlanWindow.vue",
         "old_class": null,
@@ -323,7 +323,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1d573bad3fb027920feca5c8b46c91210b925c0c",
         "old_path": "domain/Plans/resources/js/PlanWorkDialog.vue",
         "old_class": null,
@@ -342,7 +342,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "78227c22e650c8231a83d9fbe69641c0557fca4b",
         "old_path": "domain/Plans/resources/js/StartPlanForm.test.ts",
         "old_class": null,
@@ -361,7 +361,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2d965178e1462a0849b7de5b44097e636999b69f",
         "old_path": "domain/Plans/resources/js/StartPlanForm.vue",
         "old_class": null,
@@ -380,7 +380,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "faf587e04ad28ff61fcad55e1c1ea4f3aecd5347",
         "old_path": "domain/Plans/resources/js/TaskPlanSection.vue",
         "old_class": null,
@@ -399,7 +399,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1ce901caaae896e1d02382ad4f5be61529e9e059",
         "old_path": "domain/Plans/resources/js/openedPlans.ts",
         "old_class": null,
@@ -418,7 +418,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "abc8bb58dfb6f11dc7f0c0941e06bad8debf7cc2",
         "old_path": "domain/Plans/resources/js/planLooks.ts",
         "old_class": null,
@@ -437,7 +437,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ff3910b4717dee07bb81c65a25be1c46afb2f3ef",
         "old_path": "domain/Plans/resources/js/planUrls.ts",
         "old_class": null,
@@ -456,7 +456,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a763b69961789ae430adb120ab501fed7ea97a08",
         "old_path": "domain/Plans/resources/js/usePhasePages.ts",
         "old_class": null,
@@ -475,7 +475,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3002f9130c4291aa5ae8e16431f0582d985901fc",
         "old_path": "domain/Plans/resources/skills/plans.md",
         "old_class": null,
@@ -494,8 +494,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "022ee1207f56e84aabeddc31387bff4c96b42adb",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ab09f83573bc02b225669fb11409a74ed2f43b88",
         "old_path": "domain/Plans/src/Api/AssignedPlanFilters.php",
         "old_class": "Domain\\Plans\\Api\\AssignedPlanFilters",
         "final_path": "domain/Plans/src/Values/AssignedPlanFilters.php",
@@ -508,13 +508,15 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "082828c0ac40d334851f78698298798a454abddb",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "319967038342a837bd5c515ae6c36ef54c0bb529",
         "old_path": "domain/Plans/src/Api/AssignedPlanList.php",
         "old_class": "Domain\\Plans\\Api\\AssignedPlanList",
         "final_path": "domain/Plans/src/Values/AssignedPlanList.php",
@@ -527,13 +529,15 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "828726ca00ffb0ed7d700c6a4b607dd8704c4eae",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1235419624171569b3c38016e626a536b1a9154e",
         "old_path": "domain/Plans/src/Api/Events/PlanCancelled.php",
         "old_class": "Domain\\Plans\\Api\\Events\\PlanCancelled",
         "final_path": "domain/Plans/src/Events/PlanCancelled.php",
@@ -547,14 +551,16 @@
         "phase": 3,
         "batch": "Plans",
         "consumers": [
-            "domain/Plans/tests/Feature/PlanFinishCancelTest.php"
+            "domain/Plans/tests/Feature/PlanFinishCancelTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Plans.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6b55932fc59de5aa6a3e0db9ecbf6f0fc5eb3fa0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ddbacb085558e418976e1e20f07256ff9e4cbd48",
         "old_path": "domain/Plans/src/Api/Events/PlanFinished.php",
         "old_class": "Domain\\Plans\\Api\\Events\\PlanFinished",
         "final_path": "domain/Plans/src/Events/PlanFinished.php",
@@ -568,14 +574,16 @@
         "phase": 3,
         "batch": "Plans",
         "consumers": [
-            "domain/Plans/tests/Feature/PlanFinishCancelTest.php"
+            "domain/Plans/tests/Feature/PlanFinishCancelTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Plans.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a3fe95e593c5396513eb4b16f5c85e77ddb6ddbf",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "539dab26bf3bfdd77f98e3cc4629d7b2da1b0583",
         "old_path": "domain/Plans/src/Api/Events/PlanProgressChanged.php",
         "old_class": "Domain\\Plans\\Api\\Events\\PlanProgressChanged",
         "final_path": "domain/Plans/src/Events/PlanProgressChanged.php",
@@ -588,13 +596,16 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1d7ada5a8e0002eaf87c4b23deda6615b39f0182",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "89aeba2af4d02f97827cf702fd5e743cb52b3b3b",
         "old_path": "domain/Plans/src/Api/Events/PlanReviewDecided.php",
         "old_class": "Domain\\Plans\\Api\\Events\\PlanReviewDecided",
         "final_path": "domain/Plans/src/Events/PlanReviewDecided.php",
@@ -607,13 +618,16 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6c94468dbd9e2bf75279a8afd8152ebc61108841",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "266b327045027b2abb95353e7dcd93476b062bf3",
         "old_path": "domain/Plans/src/Api/Events/PlanReviewRequested.php",
         "old_class": "Domain\\Plans\\Api\\Events\\PlanReviewRequested",
         "final_path": "domain/Plans/src/Events/PlanReviewRequested.php",
@@ -626,13 +640,16 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "bee1e5bf44975833bb2c5fcfd77401e61ad216d2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d6da8a4a995538984556f8ba277dfb78c04f51f8",
         "old_path": "domain/Plans/src/Api/Events/PlanReviewWithdrawn.php",
         "old_class": "Domain\\Plans\\Api\\Events\\PlanReviewWithdrawn",
         "final_path": "domain/Plans/src/Events/PlanReviewWithdrawn.php",
@@ -645,13 +662,16 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "44ee2de0f26f5a3bde16474dec931fbe02a5f081",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "fe4ad5a6edfa30a439fbe7c8aadfde66d6311ceb",
         "old_path": "domain/Plans/src/Api/Events/PlanStarted.php",
         "old_class": "Domain\\Plans\\Api\\Events\\PlanStarted",
         "final_path": "domain/Plans/src/Events/PlanStarted.php",
@@ -667,13 +687,15 @@
         "consumers": [
             "domain/Plans/tests/Feature/Http/StartPlanTest.php",
             "domain/Plans/tests/Feature/PlanFinishCancelTest.php",
-            "domain/Plans/tests/Feature/StartPlanTest.php"
+            "domain/Plans/tests/Feature/StartPlanTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Plans.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "95b074afccd0464489a9031d5642da2ec7bcb859",
         "old_path": "domain/Plans/src/Api/PhaseDetails.php",
         "old_class": "Domain\\Plans\\Api\\PhaseDetails",
@@ -687,13 +709,15 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0df50e2da197aa3ca4716b09fd3d3898f2c4d8a5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ea237b90d9515aca8fd86cc7ac71f2792c8a978c",
         "old_path": "domain/Plans/src/Api/PlanCard.php",
         "old_class": "Domain\\Plans\\Api\\PlanCard",
         "final_path": "domain/Plans/src/Values/PlanCard.php",
@@ -707,14 +731,15 @@
         "phase": 3,
         "batch": "Plans",
         "consumers": [
-            "domain/Plans/tests/Feature/PlanRecordsTest.php"
+            "domain/Plans/tests/Feature/PlanRecordsTest.php",
+            "tools/refactoring/layout/manifest-Plans.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "39b9c9145da1a93a75d9c2e23b421c402fc4d507",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5f777ded96e64aeef0aa055b12c3b7d2b691a9a7",
         "old_path": "domain/Plans/src/Api/PlanDetails.php",
         "old_class": "Domain\\Plans\\Api\\PlanDetails",
         "final_path": "domain/Plans/src/Values/PlanDetails.php",
@@ -727,12 +752,14 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "affc1e0502effd045327d69e39baac1fd5e15bd8",
         "old_path": "domain/Plans/src/Api/PlanFilters.php",
         "old_class": "Domain\\Plans\\Api\\PlanFilters",
@@ -750,13 +777,14 @@
             "domain/Plans/tests/Feature/PlanDetailsResolverTest.php",
             "domain/Plans/tests/Feature/PlanRecordsTest.php",
             "domain/Plans/tests/Feature/PlanTalliesTest.php",
-            "domain/Plans/tests/Feature/StartPlanTest.php"
+            "domain/Plans/tests/Feature/StartPlanTest.php",
+            "tools/refactoring/layout/manifest-Plans.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0c2e2410800da2cf690a5091bb5b8bbe088474af",
         "old_path": "domain/Plans/src/Api/PlanList.php",
         "old_class": "Domain\\Plans\\Api\\PlanList",
@@ -770,12 +798,14 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "aacc428728cd7f2661016de4df5d42ba9d3f11e6",
         "old_path": "domain/Plans/src/Api/PlanPhaseTasks.php",
         "old_class": "Domain\\Plans\\Api\\PlanPhaseTasks",
@@ -790,13 +820,14 @@
         "phase": 3,
         "batch": "Plans",
         "consumers": [
-            "domain/Plans/tests/Feature/PlanDetailsResolverTest.php"
+            "domain/Plans/tests/Feature/PlanDetailsResolverTest.php",
+            "tools/refactoring/layout/manifest-Plans.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6566a7ee12d33ef9a1f74efaae1e3a1dc3172446",
         "old_path": "domain/Plans/src/Api/PlanProgress.php",
         "old_class": "Domain\\Plans\\Api\\PlanProgress",
@@ -811,13 +842,14 @@
         "phase": 3,
         "batch": "Plans",
         "consumers": [
-            "domain/Plans/tests/Feature/PlanTalliesTest.php"
+            "domain/Plans/tests/Feature/PlanTalliesTest.php",
+            "tools/refactoring/layout/manifest-Plans.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1fd1336a0d48a3fe6731eaad992e4aefd956f65a",
         "old_path": "domain/Plans/src/Api/PlanSelection.php",
         "old_class": "Domain\\Plans\\Api\\PlanSelection",
@@ -831,13 +863,15 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9b98fc96e19277786395e45db16bb04cb3f463bc",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c019eb07d2be3862e30d094d57f7a0d5a3715a6c",
         "old_path": "domain/Plans/src/Assignments/PlanTaskPool.php",
         "old_class": "Domain\\Plans\\Assignments\\PlanTaskPool",
         "final_path": "domain/Plans/src/Support/Assignments/PlanTaskPool.php",
@@ -851,14 +885,15 @@
         "phase": 3,
         "batch": "Plans",
         "consumers": [
-            "domain/Plans/tests/Feature/PlanTaskPoolTest.php"
+            "domain/Plans/tests/Feature/PlanTaskPoolTest.php",
+            "tools/refactoring/layout/manifest-Plans.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5cb7eda359f5ed138005f74e1f83727fc6351544",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a5b82c7f9769c8aadf8e5b1316a2dc976635efe1",
         "old_path": "domain/Plans/src/Assignments/PlanTaskPoolFactory.php",
         "old_class": "Domain\\Plans\\Assignments\\PlanTaskPoolFactory",
         "final_path": "domain/Plans/src/Support/Assignments/PlanTaskPoolFactory.php",
@@ -872,14 +907,15 @@
         "phase": 3,
         "batch": "Plans",
         "consumers": [
-            "domain/Plans/tests/Feature/PlanTaskPoolTest.php"
+            "domain/Plans/tests/Feature/PlanTaskPoolTest.php",
+            "tools/refactoring/layout/manifest-Plans.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "09f55ea884b7320d158bc48ae7915bd2ba0cccf7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "681ca5d4e3d51e73f7bbf4d429a903964a6316ee",
         "old_path": "domain/Plans/src/Calls/AddPhaseCall.php",
         "old_class": "Domain\\Plans\\Calls\\AddPhaseCall",
         "final_path": "domain/Plans/src/Calls/AddPhaseCall.php",
@@ -897,8 +933,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "db77809ed056d175b2d8adf4d5ebcef2d9037dd3",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d3c09f08e4eec02c34f914a1a6b1cf8d9e088f01",
         "old_path": "domain/Plans/src/Calls/AddPhaseTasksCall.php",
         "old_class": "Domain\\Plans\\Calls\\AddPhaseTasksCall",
         "final_path": "domain/Plans/src/Calls/AddPhaseTasksCall.php",
@@ -916,8 +952,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "fe742431d2c13ea73cb41c454f77d4067f370b28",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "16658a343487fd329067684a867484be682ae3d5",
         "old_path": "domain/Plans/src/Calls/AssignPlanWorkCall.php",
         "old_class": "Domain\\Plans\\Calls\\AssignPlanWorkCall",
         "final_path": "domain/Plans/src/Calls/AssignPlanWorkCall.php",
@@ -935,8 +971,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e021615e58fb9a9838a44a14a22b05d8506c5cd7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "07a4f99e1e01c8d1cc36ca112b99959ed02ba0ff",
         "old_path": "domain/Plans/src/Calls/CancelPlanCall.php",
         "old_class": "Domain\\Plans\\Calls\\CancelPlanCall",
         "final_path": "domain/Plans/src/Calls/CancelPlanCall.php",
@@ -954,7 +990,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d1736347154fa0ed8e727d6f40970abf030b9082",
         "old_path": "domain/Plans/src/Calls/Concerns/NamesPlanPhase.php",
         "old_class": "Domain\\Plans\\Calls\\Concerns\\NamesPlanPhase",
@@ -973,8 +1009,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "99ab42e6547df544b013d5a6a206cea6f2a40266",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "223ba905fcd013a782e91943e22e63c3d5bb6567",
         "old_path": "domain/Plans/src/Calls/Concerns/NamesPlanWorkRoot.php",
         "old_class": "Domain\\Plans\\Calls\\Concerns\\NamesPlanWorkRoot",
         "final_path": "domain/Plans/src/Calls/Concerns/NamesPlanWorkRoot.php",
@@ -992,8 +1028,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "26a317cd1fab8030cd54ef0caca6194579fd77e1",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7eccf074dabae1970dc3dcd513647795623ee196",
         "old_path": "domain/Plans/src/Calls/CreatePlanCall.php",
         "old_class": "Domain\\Plans\\Calls\\CreatePlanCall",
         "final_path": "domain/Plans/src/Calls/CreatePlanCall.php",
@@ -1011,8 +1047,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5d37ef70b8800a2344af7bcae575cfbb4e3d65bb",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "eddf46d16ab97dcf3f13b0a030cd800cc645df9a",
         "old_path": "domain/Plans/src/Calls/EditPlanCall.php",
         "old_class": "Domain\\Plans\\Calls\\EditPlanCall",
         "final_path": "domain/Plans/src/Calls/EditPlanCall.php",
@@ -1030,8 +1066,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6e28540bbfd326692656a8b74f25a05e453819f4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2363dc9c5fbaf1d753debed48d5690faf386b6c4",
         "old_path": "domain/Plans/src/Calls/FinishPlanCall.php",
         "old_class": "Domain\\Plans\\Calls\\FinishPlanCall",
         "final_path": "domain/Plans/src/Calls/FinishPlanCall.php",
@@ -1049,8 +1085,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9ad29ae66da9d2f02cf0c33895814ac8c5f09cee",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ffacd64d3fc4fe6ec737eccd6b889b3440717e27",
         "old_path": "domain/Plans/src/Calls/ListAssignedPlansCall.php",
         "old_class": "Domain\\Plans\\Calls\\ListAssignedPlansCall",
         "final_path": "domain/Plans/src/Calls/ListAssignedPlansCall.php",
@@ -1068,8 +1104,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2c88e7c860297bc8bfff29949a99340a962b38e8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "453cb1bbecc2c6bcecc67282fb4283afa4d5ea2b",
         "old_path": "domain/Plans/src/Calls/ListPhaseChecksCall.php",
         "old_class": "Domain\\Plans\\Calls\\ListPhaseChecksCall",
         "final_path": "domain/Plans/src/Calls/ListPhaseChecksCall.php",
@@ -1087,7 +1123,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b3a1d5200814eefc9bf98580a81f37d54f377a14",
         "old_path": "domain/Plans/src/Calls/PhaseCheckRecorded.php",
         "old_class": "Domain\\Plans\\Calls\\PhaseCheckRecorded",
@@ -1106,7 +1142,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "67f9469b25de78aceef0618f0d6db775902f5ecf",
         "old_path": "domain/Plans/src/Calls/PhaseChecks.php",
         "old_class": "Domain\\Plans\\Calls\\PhaseChecks",
@@ -1125,7 +1161,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3b26dc053b111c49c2b0039c3120a5c122e74e00",
         "old_path": "domain/Plans/src/Calls/PhaseNamed.php",
         "old_class": "Domain\\Plans\\Calls\\PhaseNamed",
@@ -1144,7 +1180,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d0e5068ac352942aef31998ffed96e8f02a52b4a",
         "old_path": "domain/Plans/src/Calls/PhaseTasksAdded.php",
         "old_class": "Domain\\Plans\\Calls\\PhaseTasksAdded",
@@ -1163,8 +1199,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c9bc72bbf1208345ba87a3ae69ae5cfbabbbbde7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "611f8ff2ff487f29401be94991d5d76dcf68f133",
         "old_path": "domain/Plans/src/Calls/PlanCalls.php",
         "old_class": "Domain\\Plans\\Calls\\PlanCalls",
         "final_path": "domain/Plans/src/Calls/PlanCalls.php",
@@ -1182,7 +1218,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4013dd37022a9c415c73499c9a5ed4fc4623490c",
         "old_path": "domain/Plans/src/Calls/PlanEdited.php",
         "old_class": "Domain\\Plans\\Calls\\PlanEdited",
@@ -1201,7 +1237,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "db27351fb0000446639fa851b26f0a6514c5f866",
         "old_path": "domain/Plans/src/Calls/PlanNamed.php",
         "old_class": "Domain\\Plans\\Calls\\PlanNamed",
@@ -1220,8 +1256,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7cdbce7a54a4595e22e45468151696d94dd4c576",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bfe1415a80eaf9c7a0a16d0c89fa8eac9c015b8a",
         "old_path": "domain/Plans/src/Calls/ReassignPlanWorkCall.php",
         "old_class": "Domain\\Plans\\Calls\\ReassignPlanWorkCall",
         "final_path": "domain/Plans/src/Calls/ReassignPlanWorkCall.php",
@@ -1239,8 +1275,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e03a0960ff881c990c4e7505b17bc702d562abb3",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f196ef996c62f70ee4e3441a13cfb4ebf4582ce9",
         "old_path": "domain/Plans/src/Calls/RecordPhaseCheckCall.php",
         "old_class": "Domain\\Plans\\Calls\\RecordPhaseCheckCall",
         "final_path": "domain/Plans/src/Calls/RecordPhaseCheckCall.php",
@@ -1258,8 +1294,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c66923c21a41252613b61929210f9816b6a87204",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "71b3fc50491d51883273708d0e5492966dc4f723",
         "old_path": "domain/Plans/src/Calls/UnassignPlanWorkCall.php",
         "old_class": "Domain\\Plans\\Calls\\UnassignPlanWorkCall",
         "final_path": "domain/Plans/src/Calls/UnassignPlanWorkCall.php",
@@ -1277,8 +1313,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "254096ab64bff0defc1af657a26e58103ede9119",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5fa91327d01618ce0ee8ecac70bf974bf8c996c0",
         "old_path": "domain/Plans/src/Commands/AddPhase/AddPhaseCommand.php",
         "old_class": "Domain\\Plans\\Commands\\AddPhase\\AddPhaseCommand",
         "final_path": "domain/Plans/src/Commands/AddPhase/AddPhaseCommand.php",
@@ -1296,7 +1332,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "85e27d00222d6d702306be8c943b8a1585c7a788",
         "old_path": "domain/Plans/src/Commands/AddPhase/AddPhaseHandler.php",
         "old_class": "Domain\\Plans\\Commands\\AddPhase\\AddPhaseHandler",
@@ -1315,8 +1351,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9b4d17902d0c85e4181ad0fc51e7cf39bb22e441",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "10a4a5cf4281d2223eeac015f142b992b5614251",
         "old_path": "domain/Plans/src/Commands/AddPhaseTasks/AddPhaseTasksCommand.php",
         "old_class": "Domain\\Plans\\Commands\\AddPhaseTasks\\AddPhaseTasksCommand",
         "final_path": "domain/Plans/src/Commands/AddPhaseTasks/AddPhaseTasksCommand.php",
@@ -1334,7 +1370,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "41bb21f7b5fbfab324a9b819796e043a8c89577e",
         "old_path": "domain/Plans/src/Commands/AddPhaseTasks/AddPhaseTasksHandler.php",
         "old_class": "Domain\\Plans\\Commands\\AddPhaseTasks\\AddPhaseTasksHandler",
@@ -1353,8 +1389,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d69c7ca695f16f6043b2dc675b13d0ef77554627",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d063d71a74ecb343aade4ace410557ead0ddaea2",
         "old_path": "domain/Plans/src/Commands/ApprovePlanReview/ApprovePlanReviewCommand.php",
         "old_class": "Domain\\Plans\\Commands\\ApprovePlanReview\\ApprovePlanReviewCommand",
         "final_path": "domain/Plans/src/Commands/ApprovePlanReview/ApprovePlanReviewCommand.php",
@@ -1372,8 +1408,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3574f1aa21f69115d64e88fdf90a8edc99e280d6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "72dae43c6b1480a54aae788ef2098a64db0b2f75",
         "old_path": "domain/Plans/src/Commands/ApprovePlanReview/ApprovePlanReviewHandler.php",
         "old_class": "Domain\\Plans\\Commands\\ApprovePlanReview\\ApprovePlanReviewHandler",
         "final_path": "domain/Plans/src/Commands/ApprovePlanReview/ApprovePlanReviewHandler.php",
@@ -1391,8 +1427,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "31e45542a855d551ed646a343f2ca69dc1f1e7df",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b879227089c515da89080e4f2770589ce7c757af",
         "old_path": "domain/Plans/src/Commands/AssignPlanWork/AssignPlanWorkCommand.php",
         "old_class": "Domain\\Plans\\Commands\\AssignPlanWork\\AssignPlanWorkCommand",
         "final_path": "domain/Plans/src/Commands/AssignPlanWork/AssignPlanWorkCommand.php",
@@ -1410,8 +1446,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "08ce21e84355807ebd2237659d629b651baa19c6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "dc477f3ce420adbad86e22b3f03b42e3dc01e754",
         "old_path": "domain/Plans/src/Commands/AssignPlanWork/AssignPlanWorkHandler.php",
         "old_class": "Domain\\Plans\\Commands\\AssignPlanWork\\AssignPlanWorkHandler",
         "final_path": "domain/Plans/src/Commands/AssignPlanWork/AssignPlanWorkHandler.php",
@@ -1429,8 +1465,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "75118472c6983d00848a1bfd447a115c5d72d8d1",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "52f4968f718555692fe464b27e25dfdbbbc28e49",
         "old_path": "domain/Plans/src/Commands/CancelPlan/CancelPlanCommand.php",
         "old_class": "Domain\\Plans\\Commands\\CancelPlan\\CancelPlanCommand",
         "final_path": "domain/Plans/src/Commands/CancelPlan/CancelPlanCommand.php",
@@ -1448,7 +1484,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0ca5ffe5475ede4e805353e7a58e53c07bbc6be6",
         "old_path": "domain/Plans/src/Commands/CancelPlan/CancelPlanHandler.php",
         "old_class": "Domain\\Plans\\Commands\\CancelPlan\\CancelPlanHandler",
@@ -1467,8 +1503,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "53a8e0a1a73ee11a09d00d6170f08ed62460e499",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "47265c1e3e5332cc59609196153a2605fa32d920",
         "old_path": "domain/Plans/src/Commands/CreatePlan/CreatePlanCommand.php",
         "old_class": "Domain\\Plans\\Commands\\CreatePlan\\CreatePlanCommand",
         "final_path": "domain/Plans/src/Commands/CreatePlan/CreatePlanCommand.php",
@@ -1486,7 +1522,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "234aea059a23f2e38002dcfd87923ea47e16cd10",
         "old_path": "domain/Plans/src/Commands/CreatePlan/CreatePlanHandler.php",
         "old_class": "Domain\\Plans\\Commands\\CreatePlan\\CreatePlanHandler",
@@ -1505,8 +1541,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f30978a735c709c6d684af45e7b6ecd2d369181d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "dcc66a7fbbf2c8d40482a631eb1805353db8bd30",
         "old_path": "domain/Plans/src/Commands/EditPlan/EditPlanCommand.php",
         "old_class": "Domain\\Plans\\Commands\\EditPlan\\EditPlanCommand",
         "final_path": "domain/Plans/src/Commands/EditPlan/EditPlanCommand.php",
@@ -1524,7 +1560,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "210cb3342a688ad043db8ed1d3f20aef2a66c58d",
         "old_path": "domain/Plans/src/Commands/EditPlan/EditPlanHandler.php",
         "old_class": "Domain\\Plans\\Commands\\EditPlan\\EditPlanHandler",
@@ -1543,8 +1579,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1bbf084109e836cba585016b96d8423a527a21d1",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "57d52237bfd694b2122f1daa0299ac1dacd0cdf9",
         "old_path": "domain/Plans/src/Commands/FinishPlan/FinishPlanCommand.php",
         "old_class": "Domain\\Plans\\Commands\\FinishPlan\\FinishPlanCommand",
         "final_path": "domain/Plans/src/Commands/FinishPlan/FinishPlanCommand.php",
@@ -1562,7 +1598,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b1460c21028e13d8980c0589ef2b9cba23bb3d30",
         "old_path": "domain/Plans/src/Commands/FinishPlan/FinishPlanHandler.php",
         "old_class": "Domain\\Plans\\Commands\\FinishPlan\\FinishPlanHandler",
@@ -1581,8 +1617,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a354830000a9eea2aea4d426403a532d12cd0a22",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2e773ecaef2064097e0069bba224c874f90361ed",
         "old_path": "domain/Plans/src/Commands/ReassignPlanWork/ReassignPlanWorkCommand.php",
         "old_class": "Domain\\Plans\\Commands\\ReassignPlanWork\\ReassignPlanWorkCommand",
         "final_path": "domain/Plans/src/Commands/ReassignPlanWork/ReassignPlanWorkCommand.php",
@@ -1600,8 +1636,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "39e2556d22ffcb839d8e5564b8d8a9ffb4252bf1",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "022c29781a19868c3f9fd18e619cda7cddaaf766",
         "old_path": "domain/Plans/src/Commands/ReassignPlanWork/ReassignPlanWorkHandler.php",
         "old_class": "Domain\\Plans\\Commands\\ReassignPlanWork\\ReassignPlanWorkHandler",
         "final_path": "domain/Plans/src/Commands/ReassignPlanWork/ReassignPlanWorkHandler.php",
@@ -1619,8 +1655,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2e4007913cfea2bab18027190fbdb8615a2e6d5a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f1d30334175a5d65dcfc4d0d9ab80eb91080acab",
         "old_path": "domain/Plans/src/Commands/RecordPhaseCheck/RecordPhaseCheckCommand.php",
         "old_class": "Domain\\Plans\\Commands\\RecordPhaseCheck\\RecordPhaseCheckCommand",
         "final_path": "domain/Plans/src/Commands/RecordPhaseCheck/RecordPhaseCheckCommand.php",
@@ -1638,8 +1674,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f6f960912936653a32230198d7a6204f51758b5a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9013778289e5ec0bae1c2f4c34168fc16b4e5b49",
         "old_path": "domain/Plans/src/Commands/RecordPhaseCheck/RecordPhaseCheckHandler.php",
         "old_class": "Domain\\Plans\\Commands\\RecordPhaseCheck\\RecordPhaseCheckHandler",
         "final_path": "domain/Plans/src/Commands/RecordPhaseCheck/RecordPhaseCheckHandler.php",
@@ -1657,8 +1693,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "83fed9c630d6fcf4f7e2b10fadd284cb9f6607ee",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6ba3cdb0743102c82e003bdd29d345a00106410b",
         "old_path": "domain/Plans/src/Commands/RequestPlanChanges/RequestPlanChangesCommand.php",
         "old_class": "Domain\\Plans\\Commands\\RequestPlanChanges\\RequestPlanChangesCommand",
         "final_path": "domain/Plans/src/Commands/RequestPlanChanges/RequestPlanChangesCommand.php",
@@ -1676,8 +1712,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d8bc204903dfa6ee61cb4d9f5855ddb734f43df2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d50def0bec855d7a909e6e5b812e80e009524e16",
         "old_path": "domain/Plans/src/Commands/RequestPlanChanges/RequestPlanChangesHandler.php",
         "old_class": "Domain\\Plans\\Commands\\RequestPlanChanges\\RequestPlanChangesHandler",
         "final_path": "domain/Plans/src/Commands/RequestPlanChanges/RequestPlanChangesHandler.php",
@@ -1695,8 +1731,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "65a33e1e53221c66ea68a5d401855767efeb4c54",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bb3554987a909368317ed3697a8417bc25cb1cb5",
         "old_path": "domain/Plans/src/Commands/RequestPlanReview/RequestPlanReviewCommand.php",
         "old_class": "Domain\\Plans\\Commands\\RequestPlanReview\\RequestPlanReviewCommand",
         "final_path": "domain/Plans/src/Commands/RequestPlanReview/RequestPlanReviewCommand.php",
@@ -1714,8 +1750,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "677d43297be9e9d2efab98af0e3b1236ff699808",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d808ca2f0bdf8c59cee7d12efe892e1af1e69a85",
         "old_path": "domain/Plans/src/Commands/RequestPlanReview/RequestPlanReviewHandler.php",
         "old_class": "Domain\\Plans\\Commands\\RequestPlanReview\\RequestPlanReviewHandler",
         "final_path": "domain/Plans/src/Commands/RequestPlanReview/RequestPlanReviewHandler.php",
@@ -1733,8 +1769,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c0a037b4b3fd266d295310c25beade6fc57c404f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e298c4a0b76eefcafb46080b666b4d6aa96488ab",
         "old_path": "domain/Plans/src/Commands/StartPlan/StartPlanCommand.php",
         "old_class": "Domain\\Plans\\Commands\\StartPlan\\StartPlanCommand",
         "final_path": "domain/Plans/src/Commands/StartPlan/StartPlanCommand.php",
@@ -1752,7 +1788,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "042cadb11585888b829d1b95d9af58edc17e37bd",
         "old_path": "domain/Plans/src/Commands/StartPlan/StartPlanHandler.php",
         "old_class": "Domain\\Plans\\Commands\\StartPlan\\StartPlanHandler",
@@ -1771,7 +1807,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "734cd8531526fb2acc0d8af9b4130c3b85824835",
         "old_path": "domain/Plans/src/Commands/Support/PlanCommandHandler.php",
         "old_class": "Domain\\Plans\\Commands\\Support\\PlanCommandHandler",
@@ -1790,8 +1826,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0e19010e140e391d1de22363b2622f6954aff04c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2805d496ea56cc672c4bd02bcc94dd04d9a8e64a",
         "old_path": "domain/Plans/src/Commands/UnassignPlanWork/UnassignPlanWorkCommand.php",
         "old_class": "Domain\\Plans\\Commands\\UnassignPlanWork\\UnassignPlanWorkCommand",
         "final_path": "domain/Plans/src/Commands/UnassignPlanWork/UnassignPlanWorkCommand.php",
@@ -1809,8 +1845,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1329344964ced3a3b65f6842bd1b246b98a6b2d6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "589c7a62bb9757292aabb9fc11f382a032eba0cc",
         "old_path": "domain/Plans/src/Commands/UnassignPlanWork/UnassignPlanWorkHandler.php",
         "old_class": "Domain\\Plans\\Commands\\UnassignPlanWork\\UnassignPlanWorkHandler",
         "final_path": "domain/Plans/src/Commands/UnassignPlanWork/UnassignPlanWorkHandler.php",
@@ -1828,8 +1864,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4ebf400a28512c70de834b43a15e85df79cbcee1",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "669a76adab3253169fba2827f68f645e1103cece",
         "old_path": "domain/Plans/src/Commands/WithdrawPlanReview/WithdrawPlanReviewCommand.php",
         "old_class": "Domain\\Plans\\Commands\\WithdrawPlanReview\\WithdrawPlanReviewCommand",
         "final_path": "domain/Plans/src/Commands/WithdrawPlanReview/WithdrawPlanReviewCommand.php",
@@ -1847,8 +1883,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1a3066b243077c2cbd6a439d5bc0f0cd04161387",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "645f54f687ba8a69e4d273802681add4c72ab96a",
         "old_path": "domain/Plans/src/Commands/WithdrawPlanReview/WithdrawPlanReviewHandler.php",
         "old_class": "Domain\\Plans\\Commands\\WithdrawPlanReview\\WithdrawPlanReviewHandler",
         "final_path": "domain/Plans/src/Commands/WithdrawPlanReview/WithdrawPlanReviewHandler.php",
@@ -1866,8 +1902,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a6c6757a65680006cb2d16da86fad765347ff92a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9a98ece4cf8b0f2d1d78711be669fd295a090b1e",
         "old_path": "domain/Plans/src/Console/AssignPlanWorkCommand.php",
         "old_class": "Domain\\Plans\\Console\\AssignPlanWorkCommand",
         "final_path": "domain/Plans/src/Console/Commands/AssignPlanWorkCommand.php",
@@ -1880,13 +1916,16 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "71bc5ab16d5cb433f8ad03c1ac075164889d860d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "564b9e7a2a8dc1aec05f3d782f9b790d17673202",
         "old_path": "domain/Plans/src/Console/AssignedPlansCommand.php",
         "old_class": "Domain\\Plans\\Console\\AssignedPlansCommand",
         "final_path": "domain/Plans/src/Console/Commands/AssignedPlansCommand.php",
@@ -1899,13 +1938,16 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5c5ce02b872708fd2e7e251fea920ff900eaeb45",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8efcc0cca3d901dd88ff4d154b7b0ebcbb2994de",
         "old_path": "domain/Plans/src/Console/Concerns/ReportsPlanWork.php",
         "old_class": "Domain\\Plans\\Console\\Concerns\\ReportsPlanWork",
         "final_path": "domain/Plans/src/Console/Concerns/ReportsPlanWork.php",
@@ -1923,8 +1965,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5bd2ccfcce245897a3d137ff20c6fbda344df47a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2519b09ae14c7cd74acbcbb514a079602b4359db",
         "old_path": "domain/Plans/src/Console/PhaseCheckCommand.php",
         "old_class": "Domain\\Plans\\Console\\PhaseCheckCommand",
         "final_path": "domain/Plans/src/Console/Commands/PhaseCheckCommand.php",
@@ -1937,13 +1979,16 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "74cf4002d89be0ef12a0297da301e8a4825e37e5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2b2fbf1ec94dbd09b8325af40c9f8966fc0fca06",
         "old_path": "domain/Plans/src/Console/PhaseShowCommand.php",
         "old_class": "Domain\\Plans\\Console\\PhaseShowCommand",
         "final_path": "domain/Plans/src/Console/Commands/PhaseShowCommand.php",
@@ -1956,13 +2001,16 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ca9a2ada7e41c03f7523520b6761915dcee0e3ee",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "eb11aa8c682cbf3df12b39b16281b851edd59fe1",
         "old_path": "domain/Plans/src/Console/ReassignPlanWorkCommand.php",
         "old_class": "Domain\\Plans\\Console\\ReassignPlanWorkCommand",
         "final_path": "domain/Plans/src/Console/Commands/ReassignPlanWorkCommand.php",
@@ -1975,13 +2023,16 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c7088d6ad0a68ce1dd092f6fe46df61de77d3034",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "35ca0dbf9fec9bf0600438157b36e4312a0311fb",
         "old_path": "domain/Plans/src/Console/UnassignPlanWorkCommand.php",
         "old_class": "Domain\\Plans\\Console\\UnassignPlanWorkCommand",
         "final_path": "domain/Plans/src/Console/Commands/UnassignPlanWorkCommand.php",
@@ -1994,13 +2045,16 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c712345f941416fd6d37fa789bdd775be1c6a00d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "74546bb64a4ee724d055b594433de6f9f16533eb",
         "old_path": "domain/Plans/src/Contracts/PlanDetailsResolver.php",
         "old_class": "Domain\\Plans\\Contracts\\PlanDetailsResolver",
         "final_path": "domain/Plans/src/Contracts/PlanDetailsResolver.php",
@@ -2018,8 +2072,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7a799d33f9f5bc2f557e06dc77881c65d743eec8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d3c372f0fe1c653b9bb3f6180b42264218cfba05",
         "old_path": "domain/Plans/src/Contracts/PlanResolver.php",
         "old_class": "Domain\\Plans\\Contracts\\PlanResolver",
         "final_path": "domain/Plans/src/Contracts/PlanResolver.php",
@@ -2037,7 +2091,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8ed37cf631931f9fa40b76138fb830c9b49fafec",
         "old_path": "domain/Plans/src/Data/PhaseCheckData.php",
         "old_class": "Domain\\Plans\\Data\\PhaseCheckData",
@@ -2056,7 +2110,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "36988be8a890c52422b2add74a3f65bc978b81bd",
         "old_path": "domain/Plans/src/Data/PhaseHeadingData.php",
         "old_class": "Domain\\Plans\\Data\\PhaseHeadingData",
@@ -2075,7 +2129,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "615a47d9866cdb0c1c8c0e069e4b383a69e0101d",
         "old_path": "domain/Plans/src/Data/PhaseReaderData.php",
         "old_class": "Domain\\Plans\\Data\\PhaseReaderData",
@@ -2094,8 +2148,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "513e6fc46e8ac5c72716246aa1cf1ab378736c79",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b56121239abe14f4bf5a6809cf7e2fa836fd737e",
         "old_path": "domain/Plans/src/Data/PhaseTaskData.php",
         "old_class": "Domain\\Plans\\Data\\PhaseTaskData",
         "final_path": "domain/Plans/src/Data/PhaseTaskData.php",
@@ -2113,7 +2167,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "43e407fda12f48d28934c558c886a30bf192441a",
         "old_path": "domain/Plans/src/Data/PhaseTaskPageData.php",
         "old_class": "Domain\\Plans\\Data\\PhaseTaskPageData",
@@ -2132,8 +2186,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3f8318b5b2a71a76b1bdd97810d1ffb2e4890de8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "59419f343c9d64853ca96443c1bb518f2d13c3ab",
         "old_path": "domain/Plans/src/Data/PlanCardData.php",
         "old_class": "Domain\\Plans\\Data\\PlanCardData",
         "final_path": "domain/Plans/src/Data/PlanCardData.php",
@@ -2151,7 +2205,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "12ccea973fa1d047e0ca4061d52b5de946ebd0fb",
         "old_path": "domain/Plans/src/Data/PlanFiltersData.php",
         "old_class": "Domain\\Plans\\Data\\PlanFiltersData",
@@ -2170,8 +2224,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "57972a6da967a94d0c6539fb70fac56f05eb691c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "73ebd592d3a24f3d17375866ede374a7ed4a6d20",
         "old_path": "domain/Plans/src/Data/PlanListData.php",
         "old_class": "Domain\\Plans\\Data\\PlanListData",
         "final_path": "domain/Plans/src/Data/PlanListData.php",
@@ -2189,7 +2243,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "88a5f42a9f89f89716ee84ece124d4f99c1916aa",
         "old_path": "domain/Plans/src/Data/PlanOutlineData.php",
         "old_class": "Domain\\Plans\\Data\\PlanOutlineData",
@@ -2208,7 +2262,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "461a2852de9e8ad7bbeae83fbdc583f2432b7867",
         "old_path": "domain/Plans/src/Data/PlanReaderData.php",
         "old_class": "Domain\\Plans\\Data\\PlanReaderData",
@@ -2227,7 +2281,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4f77ebf2afec7e7924f708a459829720866833c9",
         "old_path": "domain/Plans/src/Data/PlanReviewData.php",
         "old_class": "Domain\\Plans\\Data\\PlanReviewData",
@@ -2246,8 +2300,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "182416c9f61bc72f6cf208c09b6e24d4eb2c38b9",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "802c057c55539af3f58177ebdbb27ed520977574",
         "old_path": "domain/Plans/src/Data/PlanReviewReceiptData.php",
         "old_class": "Domain\\Plans\\Data\\PlanReviewReceiptData",
         "final_path": "domain/Plans/src/Data/PlanReviewReceiptData.php",
@@ -2265,7 +2319,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "eff48962ba8352826c4943fc8bf8beaf200951ef",
         "old_path": "domain/Plans/src/Data/PlanWorkPreviewData.php",
         "old_class": "Domain\\Plans\\Data\\PlanWorkPreviewData",
@@ -2284,8 +2338,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "583b958afef97df146b189944001d9abb8533d4f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a112eaefc4c8754bcc8ac0e57e693160145dc109",
         "old_path": "domain/Plans/src/Data/PlanWorkRecipientData.php",
         "old_class": "Domain\\Plans\\Data\\PlanWorkRecipientData",
         "final_path": "domain/Plans/src/Data/PlanWorkRecipientData.php",
@@ -2303,7 +2357,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "36a2df7db8341d63b8429ac6ea0a05db80c31c9d",
         "old_path": "domain/Plans/src/Data/ReviewersOutData.php",
         "old_class": "Domain\\Plans\\Data\\ReviewersOutData",
@@ -2322,7 +2376,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ce2c93162faa3e93b0e5137190450f525b68a529",
         "old_path": "domain/Plans/src/Data/StartPlanData.php",
         "old_class": "Domain\\Plans\\Data\\StartPlanData",
@@ -2341,7 +2395,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "12ddcffadcfbc1464d2d718f38fff1e348fdf91f",
         "old_path": "domain/Plans/src/Data/TaskPlanData.php",
         "old_class": "Domain\\Plans\\Data\\TaskPlanData",
@@ -2360,7 +2414,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3f2550c8aca0c5b60b9a332237b66c6d9b5b3659",
         "old_path": "domain/Plans/src/Enums/PlanEndType.php",
         "old_class": "Domain\\Plans\\Enums\\PlanEndType",
@@ -2379,7 +2433,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7dc02c48a7318aa937adaeb03b5963e8d476371d",
         "old_path": "domain/Plans/src/Enums/PlanReviewState.php",
         "old_class": "Domain\\Plans\\Enums\\PlanReviewState",
@@ -2398,7 +2452,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5387503170d349b66196c08b02c61eb0b7849205",
         "old_path": "domain/Plans/src/Enums/PlanState.php",
         "old_class": "Domain\\Plans\\Enums\\PlanState",
@@ -2417,7 +2471,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6650992c4aec1aa169501124f9ad443fbf7ef041",
         "old_path": "domain/Plans/src/Enums/PlanStateGroup.php",
         "old_class": "Domain\\Plans\\Enums\\PlanStateGroup",
@@ -2436,7 +2490,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "bb296aa7f9a23fcec98612d2e0798b66b7dac625",
         "old_path": "domain/Plans/src/Enums/PlanTextLimit.php",
         "old_class": "Domain\\Plans\\Enums\\PlanTextLimit",
@@ -2455,7 +2509,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a1e07ac9ea9f16427b4abf743205dd05140e639e",
         "old_path": "domain/Plans/src/Enums/PlanType.php",
         "old_class": "Domain\\Plans\\Enums\\PlanType",
@@ -2474,8 +2528,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a39a6dad84f8d8ac8fbc4026135808f5a9e3d849",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f0b0273f2ab779a767f1a9e668ce3b5b9d06aa28",
         "old_path": "domain/Plans/src/Exceptions/PhaseCheckRefused.php",
         "old_class": "Domain\\Plans\\Exceptions\\PhaseCheckRefused",
         "final_path": "domain/Plans/src/Exceptions/PhaseCheckRefused.php",
@@ -2493,7 +2547,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "13f7ea0629c2846600f132a63ba068d829d0eae7",
         "old_path": "domain/Plans/src/Exceptions/PhaseMissing.php",
         "old_class": "Domain\\Plans\\Exceptions\\PhaseMissing",
@@ -2512,8 +2566,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "73b6f7238d28b752e41d684865427e176e15101e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "cece620cdc9af5b0cf5cf1793e1075495e88cd84",
         "old_path": "domain/Plans/src/Exceptions/PhaseRevisionChanged.php",
         "old_class": "Domain\\Plans\\Exceptions\\PhaseRevisionChanged",
         "final_path": "domain/Plans/src/Exceptions/PhaseRevisionChanged.php",
@@ -2531,8 +2585,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b2700e907567dfd20e7cb1377dbb2f99d44211de",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d4f7fd853dfcdb21a205525bcc0971260c9f69f9",
         "old_path": "domain/Plans/src/Exceptions/PlanHasUnfinishedTasks.php",
         "old_class": "Domain\\Plans\\Exceptions\\PlanHasUnfinishedTasks",
         "final_path": "domain/Plans/src/Exceptions/PlanHasUnfinishedTasks.php",
@@ -2550,7 +2604,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "dbf4200da5bf244c12ebcf7867d49a4bf2bdcea2",
         "old_path": "domain/Plans/src/Exceptions/PlanMissing.php",
         "old_class": "Domain\\Plans\\Exceptions\\PlanMissing",
@@ -2569,7 +2623,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7dd2731f06ee99b34ac3010eb4767c3c073844d0",
         "old_path": "domain/Plans/src/Exceptions/PlanPoolRefused.php",
         "old_class": "Domain\\Plans\\Exceptions\\PlanPoolRefused",
@@ -2588,7 +2642,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "157322c588035beb310b8762c784cb7b543b8270",
         "old_path": "domain/Plans/src/Exceptions/PlanReviewRefused.php",
         "old_class": "Domain\\Plans\\Exceptions\\PlanReviewRefused",
@@ -2607,8 +2661,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c44ccc776b2c8e4ac04f03f80846754090d07315",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0d5f142eb2f6ed2eaeb95ad7832df6d78926c37f",
         "old_path": "domain/Plans/src/Exceptions/PlanRevisionChanged.php",
         "old_class": "Domain\\Plans\\Exceptions\\PlanRevisionChanged",
         "final_path": "domain/Plans/src/Exceptions/PlanRevisionChanged.php",
@@ -2626,7 +2680,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f66b250614497eb7407af90ec050cb4a8f95eeb2",
         "old_path": "domain/Plans/src/Exceptions/PlanUnderReview.php",
         "old_class": "Domain\\Plans\\Exceptions\\PlanUnderReview",
@@ -2645,7 +2699,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8c7014a399894203b67e8f9f94f4300caea5365e",
         "old_path": "domain/Plans/src/Exceptions/StartDenied.php",
         "old_class": "Domain\\Plans\\Exceptions\\StartDenied",
@@ -2664,7 +2718,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e4f0ae11f19a0b2360d8e7c74ecbbf7d490d7650",
         "old_path": "domain/Plans/src/Exceptions/TaskAlreadyInAPhase.php",
         "old_class": "Domain\\Plans\\Exceptions\\TaskAlreadyInAPhase",
@@ -2683,8 +2737,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f1a9626d1d6c6e2fb033e6a0ab326a7da8c6d158",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "47bd0f5c21e39d3392317c38bfc8441f5718b4b3",
         "old_path": "domain/Plans/src/Http/Controllers/ApprovePlanReviewPageController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\ApprovePlanReviewPageController",
         "final_path": "domain/Plans/src/Http/Controllers/ApprovePlanReviewPageController.php",
@@ -2702,8 +2756,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "483c78da353932ffd600ad6faea49057d784de8c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4a9c66a26e4561fba38ee0a9d4a418834bd9cd98",
         "old_path": "domain/Plans/src/Http/Controllers/AssignPlanWorkPageController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\AssignPlanWorkPageController",
         "final_path": "domain/Plans/src/Http/Controllers/AssignPlanWorkPageController.php",
@@ -2721,8 +2775,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ca2c0320d4828364112a1223ff4abb1f0929532f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f9ca1ba7ad52bf4de649ec3a14b85bf3ffd1c82d",
         "old_path": "domain/Plans/src/Http/Controllers/Calls/AddPhaseController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\Calls\\AddPhaseController",
         "final_path": "domain/Plans/src/Http/Controllers/Calls/AddPhaseController.php",
@@ -2740,8 +2794,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "bcf1d73bc09f2133ef352b0d746081aeed2a0747",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "96d84af165a3071b8ab0782a433655fed131e452",
         "old_path": "domain/Plans/src/Http/Controllers/Calls/AddPhaseTasksController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\Calls\\AddPhaseTasksController",
         "final_path": "domain/Plans/src/Http/Controllers/Calls/AddPhaseTasksController.php",
@@ -2759,8 +2813,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "cd14af8081b1a3ee35fcc2f43eab14e4c77aa989",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1ce60e94c1437f1632b02310c196ab99a6c449c5",
         "old_path": "domain/Plans/src/Http/Controllers/Calls/AssignPlanWorkController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\Calls\\AssignPlanWorkController",
         "final_path": "domain/Plans/src/Http/Controllers/Calls/AssignPlanWorkController.php",
@@ -2778,8 +2832,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "572d0f9acfe292a7c86f889ca2bf08ced6cc8710",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "845ab4262670a4feb78c4a6d6c7ac77ec112ff86",
         "old_path": "domain/Plans/src/Http/Controllers/Calls/CancelPlanController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\Calls\\CancelPlanController",
         "final_path": "domain/Plans/src/Http/Controllers/Calls/CancelPlanController.php",
@@ -2797,8 +2851,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d1b2fe326367c08604d6125287d4c12c5b7a9699",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9c9db36096ce87fd4d301697c358b3c430753631",
         "old_path": "domain/Plans/src/Http/Controllers/Calls/CreatePlanController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\Calls\\CreatePlanController",
         "final_path": "domain/Plans/src/Http/Controllers/Calls/CreatePlanController.php",
@@ -2816,8 +2870,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "759f7b68522b3f8f1d8768234e3eb3193abc2697",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "57f46cb74c71892c71fc83eaf744ee2292a9e739",
         "old_path": "domain/Plans/src/Http/Controllers/Calls/EditPlanController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\Calls\\EditPlanController",
         "final_path": "domain/Plans/src/Http/Controllers/Calls/EditPlanController.php",
@@ -2835,8 +2889,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "20a50ce1435de1b11d7d457b7dc56fe695cb85fb",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "cb6055d397daab0707c00a5aaa07690de09bdf51",
         "old_path": "domain/Plans/src/Http/Controllers/Calls/FinishPlanController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\Calls\\FinishPlanController",
         "final_path": "domain/Plans/src/Http/Controllers/Calls/FinishPlanController.php",
@@ -2854,8 +2908,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "77f5325e2998606fc42ce4fdcbd847ec826ce198",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d27b05ae41dc8f021ff05b5a8e63730b08c90662",
         "old_path": "domain/Plans/src/Http/Controllers/Calls/ListAssignedPlansController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\Calls\\ListAssignedPlansController",
         "final_path": "domain/Plans/src/Http/Controllers/Calls/ListAssignedPlansController.php",
@@ -2873,7 +2927,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "399b7b02e339cfd63d8e642f4db2b5a45947a78c",
         "old_path": "domain/Plans/src/Http/Controllers/Calls/ListPhaseChecksController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\Calls\\ListPhaseChecksController",
@@ -2892,8 +2946,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e1fbf52f24a5445750310d28593546099e0e1612",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "dfb77ca8c489d560d9a635143c2db5efee648a95",
         "old_path": "domain/Plans/src/Http/Controllers/Calls/ReassignPlanWorkController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\Calls\\ReassignPlanWorkController",
         "final_path": "domain/Plans/src/Http/Controllers/Calls/ReassignPlanWorkController.php",
@@ -2911,8 +2965,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f083274e3cb568b16284248b6df964667d9a6b13",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "718d7e898d6c2eb0d1ef0b543487c62f3d9bb430",
         "old_path": "domain/Plans/src/Http/Controllers/Calls/RecordPhaseCheckController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\Calls\\RecordPhaseCheckController",
         "final_path": "domain/Plans/src/Http/Controllers/Calls/RecordPhaseCheckController.php",
@@ -2930,8 +2984,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c0ad4aaac29d0f2d92d0e609fbc09d276d08d442",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bc7df36ff6da850610a7834924b18ca875841627",
         "old_path": "domain/Plans/src/Http/Controllers/Calls/UnassignPlanWorkController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\Calls\\UnassignPlanWorkController",
         "final_path": "domain/Plans/src/Http/Controllers/Calls/UnassignPlanWorkController.php",
@@ -2949,8 +3003,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f7a65e1ceeebc5fd1056a51c94ca0aa0eae6a95e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "275c29f8cd7d3d404e18893f0176417796ee5ac4",
         "old_path": "domain/Plans/src/Http/Controllers/CancelPlanPageController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\CancelPlanPageController",
         "final_path": "domain/Plans/src/Http/Controllers/CancelPlanPageController.php",
@@ -2968,8 +3022,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7cde8de1e038f7e225809f15649ba2e87dab777b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "109ea55a02155ee86cabe9e74003c41b5e57931c",
         "old_path": "domain/Plans/src/Http/Controllers/CreatePlanPageController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\CreatePlanPageController",
         "final_path": "domain/Plans/src/Http/Controllers/CreatePlanPageController.php",
@@ -2987,8 +3041,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "12e982ebfdce6a9f42f4dcb135132ca89348dc47",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7998647894f2dcbe8fee5c00744c9c1238bcc7ce",
         "old_path": "domain/Plans/src/Http/Controllers/FinishPlanPageController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\FinishPlanPageController",
         "final_path": "domain/Plans/src/Http/Controllers/FinishPlanPageController.php",
@@ -3006,8 +3060,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e819260fd511e5de332f258e3813beac2dddf22b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d751cabcc248f40fa3b3eb100728357ad8129ba4",
         "old_path": "domain/Plans/src/Http/Controllers/ReassignPlanWorkPageController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\ReassignPlanWorkPageController",
         "final_path": "domain/Plans/src/Http/Controllers/ReassignPlanWorkPageController.php",
@@ -3025,8 +3079,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ef70a5ab64d16519060973793db594b183cbc8a6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d437cf0ad72a1b9e871bb03c34b58845e5d50737",
         "old_path": "domain/Plans/src/Http/Controllers/RequestPlanChangesPageController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\RequestPlanChangesPageController",
         "final_path": "domain/Plans/src/Http/Controllers/RequestPlanChangesPageController.php",
@@ -3044,8 +3098,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a181f2723edaff8caaab1fc1cbd2b62752abe6ca",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "266fbaaf71026fb520c103ee687517824c0d1f21",
         "old_path": "domain/Plans/src/Http/Controllers/RequestPlanReviewPageController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\RequestPlanReviewPageController",
         "final_path": "domain/Plans/src/Http/Controllers/RequestPlanReviewPageController.php",
@@ -3063,8 +3117,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a004cd4d2aca742422d70fac06d8c0a3a0efe195",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9c946d73c10059a69b23a10c70666c304a56ae82",
         "old_path": "domain/Plans/src/Http/Controllers/StartPlanController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\StartPlanController",
         "final_path": "domain/Plans/src/Http/Controllers/StartPlanController.php",
@@ -3082,8 +3136,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "949bb53950964df77d6338b98273964591c8f242",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "61fbb9814bd8bd09dde958e24665a9aafa5ddb9b",
         "old_path": "domain/Plans/src/Http/Controllers/WithdrawPlanReviewPageController.php",
         "old_class": "Domain\\Plans\\Http\\Controllers\\WithdrawPlanReviewPageController",
         "final_path": "domain/Plans/src/Http/Controllers/WithdrawPlanReviewPageController.php",
@@ -3101,8 +3155,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "442c11144de482ca73a2dd877a24ceae2acc9d69",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2e6bab45b63f488211525dc34ecfc667e0bdc35e",
         "old_path": "domain/Plans/src/Http/Data/AssignedPlanCardData.php",
         "old_class": "Domain\\Plans\\Http\\Data\\AssignedPlanCardData",
         "final_path": "domain/Plans/src/Data/AssignedPlanCardData.php",
@@ -3115,12 +3169,14 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f5d0cf6f2bd320b60b6ca8196bd3548a0b035f79",
         "old_path": "domain/Plans/src/Http/Data/AssignedPlanListData.php",
         "old_class": "Domain\\Plans\\Http\\Data\\AssignedPlanListData",
@@ -3134,13 +3190,15 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "23a52c2458b3f3ea22a2b3bb726f8ae2ec53bb7f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "33a2e7accaee8df5ed7f2fe0947177e8e0178118",
         "old_path": "domain/Plans/src/Http/Data/PlanWorkResultData.php",
         "old_class": "Domain\\Plans\\Http\\Data\\PlanWorkResultData",
         "final_path": "domain/Plans/src/Data/PlanWorkResultData.php",
@@ -3153,12 +3211,14 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "cda262a31fbe21e894c87b8041528a917cb51b92",
         "old_path": "domain/Plans/src/Http/Requests/Concerns/ReadsOutlinePages.php",
         "old_class": "Domain\\Plans\\Http\\Requests\\Concerns\\ReadsOutlinePages",
@@ -3177,7 +3237,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2562204645f43435b72a7da1852253634b268029",
         "old_path": "domain/Plans/src/Http/Requests/Concerns/ReadsPlanFilters.php",
         "old_class": "Domain\\Plans\\Http\\Requests\\Concerns\\ReadsPlanFilters",
@@ -3196,7 +3256,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d4045b67b0582af395294495a383cf31f0f8df1f",
         "old_path": "domain/Plans/src/Http/Requests/CreatePlanRequest.php",
         "old_class": "Domain\\Plans\\Http\\Requests\\CreatePlanRequest",
@@ -3215,7 +3275,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f235bb7e9e30034cb3bcb8004ef24454d88bd084",
         "old_path": "domain/Plans/src/Http/Requests/PhaseRequest.php",
         "old_class": "Domain\\Plans\\Http\\Requests\\PhaseRequest",
@@ -3234,7 +3294,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b51e0210d2e35b450deb3f8fbd383fd3f7770ed1",
         "old_path": "domain/Plans/src/Http/Requests/PlanEndRequest.php",
         "old_class": "Domain\\Plans\\Http\\Requests\\PlanEndRequest",
@@ -3253,7 +3313,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "dc1875fb1eb79c936080633de428d4142ff55e6c",
         "old_path": "domain/Plans/src/Http/Requests/PlanRequest.php",
         "old_class": "Domain\\Plans\\Http\\Requests\\PlanRequest",
@@ -3272,7 +3332,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9244b899ce5cb4d3e14f748f59eda97f3b4207d2",
         "old_path": "domain/Plans/src/Http/Requests/PlanReviewRequest.php",
         "old_class": "Domain\\Plans\\Http\\Requests\\PlanReviewRequest",
@@ -3291,7 +3351,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "fd943c9ebb5d4b8c4e6e26b22671f7a04d5747d3",
         "old_path": "domain/Plans/src/Http/Requests/PlanTaskRequest.php",
         "old_class": "Domain\\Plans\\Http\\Requests\\PlanTaskRequest",
@@ -3310,8 +3370,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9c29d60514044524abbd8fff09799040b1b8c9d9",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "be8ce44f1aadcc8d42bab99802fa70ba18fe0d86",
         "old_path": "domain/Plans/src/Http/Requests/PlanWorkRequest.php",
         "old_class": "Domain\\Plans\\Http\\Requests\\PlanWorkRequest",
         "final_path": "domain/Plans/src/Http/Requests/PlanWorkRequest.php",
@@ -3329,7 +3389,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b3adebd3b8c43f1685487744b0d674f9491f008c",
         "old_path": "domain/Plans/src/Http/Requests/PlansRequest.php",
         "old_class": "Domain\\Plans\\Http\\Requests\\PlansRequest",
@@ -3348,7 +3408,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f094760d7740af10ad137bab7d045d84cb68ab0a",
         "old_path": "domain/Plans/src/Http/Requests/StartPlanRequest.php",
         "old_class": "Domain\\Plans\\Http\\Requests\\StartPlanRequest",
@@ -3367,8 +3427,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "aff0c9a817f45200ce643f0ec2db780716db9080",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e1b753d90dedfc9817ca2002b268236ac6ded9cd",
         "old_path": "domain/Plans/src/Listeners/CountPhaseTaskStates.php",
         "old_class": "Domain\\Plans\\Listeners\\CountPhaseTaskStates",
         "final_path": "domain/Plans/src/Listeners/CountPhaseTaskStates.php",
@@ -3386,8 +3446,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "264d3dbd1c10c75690178f6190dc464173a947fd",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "eaea06080261ea4a58cbdac3d615c058aea751fc",
         "old_path": "domain/Plans/src/Listeners/PushPlanReviewState.php",
         "old_class": "Domain\\Plans\\Listeners\\PushPlanReviewState",
         "final_path": "domain/Plans/src/Listeners/PushPlanReviewState.php",
@@ -3405,8 +3465,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8ecd4890da46866f4e4d7acf2d3c168186d87a6c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4a4bcb9168b6dfb31b2dd090194ce70ab49d933b",
         "old_path": "domain/Plans/src/Listeners/PushPlanState.php",
         "old_class": "Domain\\Plans\\Listeners\\PushPlanState",
         "final_path": "domain/Plans/src/Listeners/PushPlanState.php",
@@ -3424,8 +3484,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d6b0d8e871fe067af02bf789db156dde70057225",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "88f68b58918daff747f104965a4922cb8d8dbeab",
         "old_path": "domain/Plans/src/Listeners/RaisePlanProgressChanged.php",
         "old_class": "Domain\\Plans\\Listeners\\RaisePlanProgressChanged",
         "final_path": "domain/Plans/src/Listeners/RaisePlanProgressChanged.php",
@@ -3443,8 +3503,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f417c716c6e0e1f97ce3c80560b1a017df2f272a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1e529defe73ec04860569d1b90e193a45940f92f",
         "old_path": "domain/Plans/src/Listeners/RefuseTaskChangeUnderReview.php",
         "old_class": "Domain\\Plans\\Listeners\\RefuseTaskChangeUnderReview",
         "final_path": "domain/Plans/src/Listeners/RefuseTaskChangeUnderReview.php",
@@ -3462,8 +3522,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "70de5ea83dfd2ff20cc4979fc4dc1de8e8499e27",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "65caa5e5d5ee56451bde60badf9d5649221d1cd4",
         "old_path": "domain/Plans/src/Listeners/SamplePlanOfStartedTask.php",
         "old_class": "Domain\\Plans\\Listeners\\SamplePlanOfStartedTask",
         "final_path": "domain/Plans/src/Listeners/SamplePlanOfStartedTask.php",
@@ -3481,7 +3541,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "90d6e91d1d3c6cb92550651d506a4a7bbc84da56",
         "old_path": "domain/Plans/src/Mcp/AddPhaseTasksTool.php",
         "old_class": "Domain\\Plans\\Mcp\\AddPhaseTasksTool",
@@ -3495,12 +3555,14 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8a56f343c1d0a5e8be4c0b25eac8e04461a3174b",
         "old_path": "domain/Plans/src/Mcp/AssignPlanWorkTool.php",
         "old_class": "Domain\\Plans\\Mcp\\AssignPlanWorkTool",
@@ -3514,13 +3576,15 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7f163fc3d3ef2056dacf4682300087968489b47a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "68dcfbe08e65565401f7a2c91d6c5bff29b229ca",
         "old_path": "domain/Plans/src/Mcp/AssignedPlansTool.php",
         "old_class": "Domain\\Plans\\Mcp\\AssignedPlansTool",
         "final_path": "domain/Plans/src/Mcp/Tools/AssignedPlansTool.php",
@@ -3533,12 +3597,14 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2d5a78a85d37bd29f135bf295a71b1f603afe255",
         "old_path": "domain/Plans/src/Mcp/CancelPlanTool.php",
         "old_class": "Domain\\Plans\\Mcp\\CancelPlanTool",
@@ -3552,12 +3618,14 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7b098fc0ba193ac4a32d4a3ded7b353bb0e22dbb",
         "old_path": "domain/Plans/src/Mcp/CreatePhaseTool.php",
         "old_class": "Domain\\Plans\\Mcp\\CreatePhaseTool",
@@ -3571,12 +3639,14 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ed3d99090d117ab035ab66717304a2a375911972",
         "old_path": "domain/Plans/src/Mcp/CreatePlanTool.php",
         "old_class": "Domain\\Plans\\Mcp\\CreatePlanTool",
@@ -3590,12 +3660,14 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "eb7bfe38ad6650fe84a8e642b2d311aa623048d6",
         "old_path": "domain/Plans/src/Mcp/EditPlanTool.php",
         "old_class": "Domain\\Plans\\Mcp\\EditPlanTool",
@@ -3609,12 +3681,14 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e5106aece925443b3c3e456720faa111fc98a010",
         "old_path": "domain/Plans/src/Mcp/FinishPlanTool.php",
         "old_class": "Domain\\Plans\\Mcp\\FinishPlanTool",
@@ -3628,13 +3702,15 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "df7ce2b6a53cecf089912466f4f0d783766a7c5c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d95f359ce199fa15a35ebc77b8740763772bbcd0",
         "old_path": "domain/Plans/src/Mcp/HeldPlansOverview.php",
         "old_class": "Domain\\Plans\\Mcp\\HeldPlansOverview",
         "final_path": "domain/Plans/src/Support/Mcp/HeldPlansOverview.php",
@@ -3647,12 +3723,14 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "06a2adbe357932bdae6c0db851c3559526251255",
         "old_path": "domain/Plans/src/Mcp/PhaseReadTool.php",
         "old_class": "Domain\\Plans\\Mcp\\PhaseReadTool",
@@ -3666,13 +3744,15 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f861e2b2f352e2986da6a40ea9f71c930589660c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f59447f4cc87e1e2aaad7c4a8f1b885576479518",
         "old_path": "domain/Plans/src/Mcp/PlanCascadeTool.php",
         "old_class": "Domain\\Plans\\Mcp\\PlanCascadeTool",
         "final_path": "domain/Plans/src/Mcp/Tools/PlanCascadeTool.php",
@@ -3685,13 +3765,15 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "731d53275a4dedafb551618890b8da9c53d9bf9b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "cd42ca5d5f85103de004aff85feb9c21cd08ef57",
         "old_path": "domain/Plans/src/Mcp/PlanReadResult.php",
         "old_class": "Domain\\Plans\\Mcp\\PlanReadResult",
         "final_path": "domain/Plans/src/Support/Mcp/PlanReadResult.php",
@@ -3704,13 +3786,15 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "74d5e11d8e6e5f73f5b08df7db92dcc76a725460",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e722f130218466e3afc6ddddff88c602c53d53a8",
         "old_path": "domain/Plans/src/Mcp/PlanReadTool.php",
         "old_class": "Domain\\Plans\\Mcp\\PlanReadTool",
         "final_path": "domain/Plans/src/Mcp/Tools/PlanReadTool.php",
@@ -3723,13 +3807,15 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "41de9f64b597785e22c453afdb0a5a9f8b1acd80",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d53be9e4700c8c6a8cfcd2835f0a50426fca7a5e",
         "old_path": "domain/Plans/src/Mcp/PlanResource.php",
         "old_class": "Domain\\Plans\\Mcp\\PlanResource",
         "final_path": "domain/Plans/src/Mcp/Resources/PlanResource.php",
@@ -3742,13 +3828,15 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ff439b35da0a368cb90f97a397ccd7b67859d53c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2ad6165946968d4a65fb9bd6ed971a1657c06383",
         "old_path": "domain/Plans/src/Mcp/PlanSearch.php",
         "old_class": "Domain\\Plans\\Mcp\\PlanSearch",
         "final_path": "domain/Plans/src/Support/Mcp/PlanSearch.php",
@@ -3761,12 +3849,14 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8b1cbdcfb467c280967b5c206a66304fbd06a0cc",
         "old_path": "domain/Plans/src/Mcp/PlanWriteTool.php",
         "old_class": "Domain\\Plans\\Mcp\\PlanWriteTool",
@@ -3780,12 +3870,14 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b6677ede7a1213b6fdf18bd2ed13e9f5cd47d4e5",
         "old_path": "domain/Plans/src/Mcp/PlansListTool.php",
         "old_class": "Domain\\Plans\\Mcp\\PlansListTool",
@@ -3799,12 +3891,14 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "345619c7aa90f5117017a4a9496ebd66dc637f68",
         "old_path": "domain/Plans/src/Mcp/ReassignPlanWorkTool.php",
         "old_class": "Domain\\Plans\\Mcp\\ReassignPlanWorkTool",
@@ -3818,12 +3912,14 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2cb799ae0eaacfd33c49f8cf1e8a1b844395aa6a",
         "old_path": "domain/Plans/src/Mcp/StartPlanTool.php",
         "old_class": "Domain\\Plans\\Mcp\\StartPlanTool",
@@ -3837,12 +3933,14 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b5410f7101f384b807d30e77a4aa3f4ad4207bb3",
         "old_path": "domain/Plans/src/Mcp/UnassignPlanWorkTool.php",
         "old_class": "Domain\\Plans\\Mcp\\UnassignPlanWorkTool",
@@ -3856,13 +3954,15 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5f82697a4dafbed46b902a4187432373a0380ed2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "87ab67e3834e2647a80b7088309ee56ddb2a5d55",
         "old_path": "domain/Plans/src/Models/Phase.php",
         "old_class": "Domain\\Plans\\Models\\Phase",
         "final_path": "domain/Plans/src/Models/Phase.php",
@@ -3880,8 +3980,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ae1eb9e08d9e54b6fd87b03c80a937e1b0d8b3c2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "503ba179727505f0df6b932a74e3be77b26b06f1",
         "old_path": "domain/Plans/src/Models/PhaseCheck.php",
         "old_class": "Domain\\Plans\\Models\\PhaseCheck",
         "final_path": "domain/Plans/src/Models/PhaseCheck.php",
@@ -3899,8 +3999,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f6df28cfa7208f5c9a1517cb0526b602ade5224b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e013cd4376a196c026563ec2e9886047ca07f64a",
         "old_path": "domain/Plans/src/Models/PhaseTask.php",
         "old_class": "Domain\\Plans\\Models\\PhaseTask",
         "final_path": "domain/Plans/src/Models/PhaseTask.php",
@@ -3918,8 +4018,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8b9f72c59ee859eddf124fa7bc6cb376dc9242a1",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b9e928f8d316bd67b223df4921509cf3dd3b1f3b",
         "old_path": "domain/Plans/src/Models/Plan.php",
         "old_class": "Domain\\Plans\\Models\\Plan",
         "final_path": "domain/Plans/src/Models/Plan.php",
@@ -3937,8 +4037,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "88b0cde734024dff42f3b10152b80ca074c3fc4d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c0906d505098910924cf29d2a2c20eac2f0a07b4",
         "old_path": "domain/Plans/src/Models/PlanReviewEdition.php",
         "old_class": "Domain\\Plans\\Models\\PlanReviewEdition",
         "final_path": "domain/Plans/src/Models/PlanReviewEdition.php",
@@ -3956,8 +4056,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f96f62033a0d8058b2a56bd9131a42646aed8480",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "455fea641c2b4b26a827c65b5922685a96961efc",
         "old_path": "domain/Plans/src/PlansDomain.php",
         "old_class": "Domain\\Plans\\PlansDomain",
         "final_path": "domain/Plans/src/PlansDomain.php",
@@ -3975,8 +4075,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1d7acaa06ffa9d3b826f794b14b706af456842e6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2ffed287d1f8b8cfb1ac6cabf4b4898c7a927548",
         "old_path": "domain/Plans/src/Policies/PlanPolicy.php",
         "old_class": "Domain\\Plans\\Policies\\PlanPolicy",
         "final_path": "domain/Plans/src/Policies/PlanPolicy.php",
@@ -3994,8 +4094,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d9e937bf097d73944509622314d5552131fdbd29",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4e327d15924f40dc6877e15b5be790261a19263c",
         "old_path": "domain/Plans/src/Providers/PlansServiceProvider.php",
         "old_class": "Domain\\Plans\\Providers\\PlansServiceProvider",
         "final_path": "domain/Plans/src/Providers/PlansServiceProvider.php",
@@ -4013,8 +4113,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f99d675a028660b01759a7deee9df4834a2d7232",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1a578eb57c8950d2a590b72daa94428c7755e9e5",
         "old_path": "domain/Plans/src/Resolvers/OpenPlansCount.php",
         "old_class": "Domain\\Plans\\Resolvers\\OpenPlansCount",
         "final_path": "domain/Plans/src/Resolvers/OpenPlansCount.php",
@@ -4032,8 +4132,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "45147949d4392f5b552f31ff1bc182afc78a9913",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c0a4a7ae562133649ab6db53d825420e9f64136a",
         "old_path": "domain/Plans/src/Resolvers/PhaseWindowResolver.php",
         "old_class": "Domain\\Plans\\Resolvers\\PhaseWindowResolver",
         "final_path": "domain/Plans/src/Resolvers/PhaseWindowResolver.php",
@@ -4051,8 +4151,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "dc80dff041f43e37d6a4b25f951a5c0514ab026a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c83ad74fe6d620018e7f7ee7302eaa83e3c96e38",
         "old_path": "domain/Plans/src/Resolvers/PlanDetailRecords.php",
         "old_class": "Domain\\Plans\\Resolvers\\PlanDetailRecords",
         "final_path": "domain/Plans/src/Resolvers/PlanDetailRecords.php",
@@ -4070,8 +4170,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f25f54fc8dfbc9d5b56bd5256a180701a98fb955",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "3d765900a7ad322002a4fada8370d8ad155d80e5",
         "old_path": "domain/Plans/src/Resolvers/PlanRecords.php",
         "old_class": "Domain\\Plans\\Resolvers\\PlanRecords",
         "final_path": "domain/Plans/src/Resolvers/PlanRecords.php",
@@ -4089,8 +4189,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "34a315a8316f7712fd000114c96068750be4e990",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8df29a1760529ca7662b50447f8c264b98cc598e",
         "old_path": "domain/Plans/src/Resolvers/PlanTaskWindowResolver.php",
         "old_class": "Domain\\Plans\\Resolvers\\PlanTaskWindowResolver",
         "final_path": "domain/Plans/src/Resolvers/PlanTaskWindowResolver.php",
@@ -4108,8 +4208,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "020117499f28befb9261cb9c117ca29cc6db22d2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a7f9d184362161e807b9c2ea11218cf35a29a5ab",
         "old_path": "domain/Plans/src/Resolvers/PlanWindowResolver.php",
         "old_class": "Domain\\Plans\\Resolvers\\PlanWindowResolver",
         "final_path": "domain/Plans/src/Resolvers/PlanWindowResolver.php",
@@ -4127,8 +4227,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "19af3031ae0d6a0fde4262bfe25496530d6285a6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "cfdbb0e0ee660b22a83abc9c3d9b3ea5829fd736",
         "old_path": "domain/Plans/src/Resolvers/PlansWindowResolver.php",
         "old_class": "Domain\\Plans\\Resolvers\\PlansWindowResolver",
         "final_path": "domain/Plans/src/Resolvers/PlansWindowResolver.php",
@@ -4146,8 +4246,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "45d30482fd507fb74e87ddf2a9728f5cc5d72b96",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "34753d81144d54335e21ad1f10ba85fc0a65314a",
         "old_path": "domain/Plans/src/Resolvers/TaskPlanSection.php",
         "old_class": "Domain\\Plans\\Resolvers\\TaskPlanSection",
         "final_path": "domain/Plans/src/Resolvers/TaskPlanSection.php",
@@ -4165,8 +4265,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "14f75fa93715618b524d2788d5e8a0ef3b853e53",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "389fa4911f84b11e87e6c3d4118bde7d15bea15f",
         "old_path": "domain/Plans/src/Resolvers/WaitingPlansCount.php",
         "old_class": "Domain\\Plans\\Resolvers\\WaitingPlansCount",
         "final_path": "domain/Plans/src/Resolvers/WaitingPlansCount.php",
@@ -4184,8 +4284,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f45322141d41517709b69624d94b9c3dafd2f5f4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ee13a04feb24f6b13cbfb4c78c6bec477a8bdd27",
         "old_path": "domain/Plans/src/Resolvers/WaitingPlansSection.php",
         "old_class": "Domain\\Plans\\Resolvers\\WaitingPlansSection",
         "final_path": "domain/Plans/src/Resolvers/WaitingPlansSection.php",
@@ -4203,8 +4303,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "72d66966947be8a0cf41812ac0305209e96ff766",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "df8fd466063b9576afa910dab2ef29653751b120",
         "old_path": "domain/Plans/src/Routes/agent.php",
         "old_class": null,
         "final_path": "domain/Plans/routes/agent.php",
@@ -4217,13 +4317,15 @@
         },
         "phase": 4,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4eee778934e7ae104a911abb349cd74ed1e32cbd",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4cb4d4217bb810f4fd46fee2c26da1af59a58cb0",
         "old_path": "domain/Plans/src/Skills/PlanSkill.php",
         "old_class": "Domain\\Plans\\Skills\\PlanSkill",
         "final_path": "domain/Plans/src/Support/Skills/PlanSkill.php",
@@ -4236,13 +4338,15 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "273ab0198868c0161f7e188cb6df11dee5e8156b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b277080ee155765c11aebde4897e714abd044af7",
         "old_path": "domain/Plans/src/States/ReviewingPlanState.php",
         "old_class": "Domain\\Plans\\States\\ReviewingPlanState",
         "final_path": "domain/Plans/src/Support/States/ReviewingPlanState.php",
@@ -4256,14 +4360,16 @@
         "phase": 3,
         "batch": "Plans",
         "consumers": [
-            "domain/Plans/tests/Unit/States/ReviewingPlanStateTest.php"
+            "domain/Plans/tests/Unit/States/ReviewingPlanStateTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Plans.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7e0bc6d68e61a0d9768acb8325392a7e5d7d508c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c97708d170c768823a74fa273b47d75216512752",
         "old_path": "domain/Plans/src/States/Support/ReviewingPlanStateFactory.php",
         "old_class": "Domain\\Plans\\States\\Support\\ReviewingPlanStateFactory",
         "final_path": "domain/Plans/src/Support/States/Support/ReviewingPlanStateFactory.php",
@@ -4276,13 +4382,15 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c0b7229dd8b30311492c0a8750a810f8b7abe9e4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "72c1081614ef55b5e0c549fa53c68f9e17833733",
         "old_path": "domain/Plans/src/States/Support/ReviewingPlanStateReference.php",
         "old_class": "Domain\\Plans\\States\\Support\\ReviewingPlanStateReference",
         "final_path": "domain/Plans/src/Support/States/Support/ReviewingPlanStateReference.php",
@@ -4296,14 +4404,15 @@
         "phase": 3,
         "batch": "Plans",
         "consumers": [
-            "domain/Plans/tests/Feature/PlanReviewStateTest.php"
+            "domain/Plans/tests/Feature/PlanReviewStateTest.php",
+            "tools/refactoring/layout/manifest-Plans.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "bc53f8ddf2057f63357632ae5ee7e71dd345720d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7da82a7cb82ddd27c437a0a365431c795f5733a7",
         "old_path": "domain/Plans/src/States/Support/WorkingOnPlanStateFactory.php",
         "old_class": "Domain\\Plans\\States\\Support\\WorkingOnPlanStateFactory",
         "final_path": "domain/Plans/src/Support/States/Support/WorkingOnPlanStateFactory.php",
@@ -4316,13 +4425,15 @@
         },
         "phase": 3,
         "batch": "Plans",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Plans.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "40760e3c507c25e86d852fdcbbffe27a3d65141f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f8532d9196139507b24d45d627a5986578fe3627",
         "old_path": "domain/Plans/src/States/Support/WorkingOnPlanStateReference.php",
         "old_class": "Domain\\Plans\\States\\Support\\WorkingOnPlanStateReference",
         "final_path": "domain/Plans/src/Support/States/Support/WorkingOnPlanStateReference.php",
@@ -4337,14 +4448,15 @@
         "batch": "Plans",
         "consumers": [
             "domain/Plans/tests/Feature/PlanRecordsTest.php",
-            "domain/Plans/tests/Feature/PlanWorkingStateTest.php"
+            "domain/Plans/tests/Feature/PlanWorkingStateTest.php",
+            "tools/refactoring/layout/manifest-Plans.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4b51d0accaa07990a34e249b4b7a10a5314c3af5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2c722106458a6238aaf25d5f5ccef61b046e33a7",
         "old_path": "domain/Plans/src/States/WorkingOnPlanState.php",
         "old_class": "Domain\\Plans\\States\\WorkingOnPlanState",
         "final_path": "domain/Plans/src/Support/States/WorkingOnPlanState.php",
@@ -4358,14 +4470,15 @@
         "phase": 3,
         "batch": "Plans",
         "consumers": [
-            "domain/Plans/tests/Feature/PlanWorkingStateTest.php"
+            "domain/Plans/tests/Feature/PlanWorkingStateTest.php",
+            "tools/refactoring/layout/manifest-Plans.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4ebc55ad163c3d98fbdc03b3b7b9d3137d8470e5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ea9f4c0f4d201b788bcd73070955b13e6425bc9e",
         "old_path": "domain/Plans/src/Support/DockedPlan.php",
         "old_class": "Domain\\Plans\\Support\\DockedPlan",
         "final_path": "domain/Plans/src/Support/DockedPlan.php",
@@ -4383,7 +4496,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "68a999a5deb3e354c62003278515ae894c4ef59b",
         "old_path": "domain/Plans/src/Support/OutlinePageAsk.php",
         "old_class": "Domain\\Plans\\Support\\OutlinePageAsk",
@@ -4402,8 +4515,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c12760a5b065c10ccdd73defdb08fa19e2ab5b3a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0b4240a0d6eea652315920a89ec68cfed26529dd",
         "old_path": "domain/Plans/src/Support/PhaseAssignmentProvider.php",
         "old_class": "Domain\\Plans\\Support\\PhaseAssignmentProvider",
         "final_path": "domain/Plans/src/Support/PhaseAssignmentProvider.php",
@@ -4421,8 +4534,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "862ab55f96ab58c96fb054794c65836e349d4760",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "09cfcaa6e1dec74591339be60717f74efe606909",
         "old_path": "domain/Plans/src/Support/PhaseRecords.php",
         "old_class": "Domain\\Plans\\Support\\PhaseRecords",
         "final_path": "domain/Plans/src/Support/PhaseRecords.php",
@@ -4440,8 +4553,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "814cf4e7a4c3b877cf10b06f7102a7f2b15e6f90",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7a8266fc7783b88fe9475d35ef21db3edfd63ece",
         "old_path": "domain/Plans/src/Support/PhaseTiming.php",
         "old_class": "Domain\\Plans\\Support\\PhaseTiming",
         "final_path": "domain/Plans/src/Support/PhaseTiming.php",
@@ -4459,8 +4572,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "46676b076a3d6f4997013bb006b8d1856cdd8628",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f437cfa92e54f8caa8b62804d6d92c97292f7ece",
         "old_path": "domain/Plans/src/Support/PlanAssignmentGroup.php",
         "old_class": "Domain\\Plans\\Support\\PlanAssignmentGroup",
         "final_path": "domain/Plans/src/Support/PlanAssignmentGroup.php",
@@ -4478,8 +4591,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "523c32455826b7ee01d34de61adff90e7de6aee6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "04a6d4175de4073d81cae8a35d8da3d6a8b4e580",
         "old_path": "domain/Plans/src/Support/PlanAssignmentProvider.php",
         "old_class": "Domain\\Plans\\Support\\PlanAssignmentProvider",
         "final_path": "domain/Plans/src/Support/PlanAssignmentProvider.php",
@@ -4497,8 +4610,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7c0e64b8c99ce8d5a4c4960281b2fe105167da1c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7de04db5919b5d455fab84e8400868acc87ed6d3",
         "old_path": "domain/Plans/src/Support/PlanDocking.php",
         "old_class": "Domain\\Plans\\Support\\PlanDocking",
         "final_path": "domain/Plans/src/Support/PlanDocking.php",
@@ -4516,8 +4629,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "60c8f15adb183714039cd0e760958faf0776b2d5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7c1c9820a0637b09ce9ad99d67d64274d155a008",
         "old_path": "domain/Plans/src/Support/PlanIndexLayout.php",
         "old_class": "Domain\\Plans\\Support\\PlanIndexLayout",
         "final_path": "domain/Plans/src/Support/PlanIndexLayout.php",
@@ -4535,8 +4648,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6deaf062e265a0772ebcd9a4cadad83e3280eefe",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "90230e18a55eed29d6d73382f23878aa9e56e773",
         "old_path": "domain/Plans/src/Support/PlanOutline.php",
         "old_class": "Domain\\Plans\\Support\\PlanOutline",
         "final_path": "domain/Plans/src/Support/PlanOutline.php",
@@ -4554,8 +4667,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f7460712b1134da6b47b03557e0dca7d2bf5745a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1264079106270c254a9d4c252b260d60cff7d2bd",
         "old_path": "domain/Plans/src/Support/PlanProgressCount.php",
         "old_class": "Domain\\Plans\\Support\\PlanProgressCount",
         "final_path": "domain/Plans/src/Support/PlanProgressCount.php",
@@ -4573,8 +4686,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "bb47ba67b7ce1a8f185d87a24aa644c027a6786b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "659cfa2895b74176cfb5fe115eaf72678ec7df63",
         "old_path": "domain/Plans/src/Support/PlanRecords.php",
         "old_class": "Domain\\Plans\\Support\\PlanRecords",
         "final_path": "domain/Plans/src/Support/PlanRecords.php",
@@ -4592,7 +4705,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7a32643209f3973be2c48b46775b1a7c9b32a91f",
         "old_path": "domain/Plans/src/Support/PlanReviewDecision.php",
         "old_class": "Domain\\Plans\\Support\\PlanReviewDecision",
@@ -4611,8 +4724,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "831381d43892bfd544b67de0e185fcde8b389303",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8329912f4a106d1fbdaf61fa4ac89b7d66e53d1e",
         "old_path": "domain/Plans/src/Support/PlanReviewView.php",
         "old_class": "Domain\\Plans\\Support\\PlanReviewView",
         "final_path": "domain/Plans/src/Support/PlanReviewView.php",
@@ -4630,8 +4743,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0ddeada8f23ad52ea964ad7b63baeb48d6350ca0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "21051d7e49a8c73c41f60cd16b77ddf11ca9f33d",
         "old_path": "domain/Plans/src/Support/PlanShareProvider.php",
         "old_class": "Domain\\Plans\\Support\\PlanShareProvider",
         "final_path": "domain/Plans/src/Support/PlanShareProvider.php",
@@ -4649,7 +4762,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "288ca36a9e3ad66ccaefe8b9e357a808021000e6",
         "old_path": "domain/Plans/src/Support/PlanStructure.php",
         "old_class": "Domain\\Plans\\Support\\PlanStructure",
@@ -4668,7 +4781,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d5a491484418135cba79d79bcd04e04c8f32f793",
         "old_path": "domain/Plans/src/Support/PlanWork.php",
         "old_class": "Domain\\Plans\\Support\\PlanWork",

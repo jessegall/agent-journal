@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Connections;
 
-use App\Connections\Logging\InstallSecretRedaction;
+use App\Support\Logging\InstallSecretRedaction;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Log;
 use Monolog\Level;

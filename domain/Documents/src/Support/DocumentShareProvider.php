@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Comments\Contracts\PublicCommentResolver;
-use App\Reads\Support\ReadBuilder;
-use App\Records\Exceptions\RecordUnavailable;
-use App\Records\Support\RecordIdentity;
-use App\Sharing\Contracts\ShareBudget;
-use App\Sharing\Contracts\ShareRecordProvider;
-use App\Sharing\Support\ShareContentRead;
-use App\Sharing\Support\SharedContent;
-use App\Text\Exceptions\ContentTooLarge;
-use App\Text\Support\MarkdownText;
+use App\Contracts\PublicCommentResolver;
+use App\Contracts\ShareBudget;
+use App\Contracts\ShareRecordProvider;
+use App\Exceptions\ContentTooLarge;
+use App\Exceptions\RecordUnavailable;
+use App\Support\MarkdownText;
+use App\Support\ReadBuilder;
+use App\Support\RecordIdentity;
+use App\Support\ShareContentRead;
+use App\Support\SharedContent;
+use Domain\Documents\Concerns\SharesPublishedRecords;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
-use Domain\Documents\Support\Concerns\SharesPublishedRecords;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Agents\Enums\ArrangementType;
-use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Models\Agent;
-use App\Agents\Models\Host;
-use App\Connections\Models\Environment;
-use App\Connections\Models\Project;
-use App\Connections\Models\ProjectBinding;
-use App\Connections\Values\BindingFolder;
+use App\Enums\ArrangementType;
+use App\Enums\HostProtocolVersion;
+use App\Models\Agent;
+use App\Models\Environment;
+use App\Models\Host;
+use App\Models\Project;
+use App\Models\ProjectBinding;
+use App\Values\BindingFolder;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Illuminate\Support\Str;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Tasks;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\RequiredListenerRegistry;
-use App\Hooks\Models\AgentStackRow;
-use Domain\Plans\Api\Events\PlanProgressChanged;
+use App\Contracts\CommandBus;
+use App\Models\Agent;
+use App\Models\AgentSession;
+use App\Models\AgentStackRow;
+use App\Support\ActorIdentity;
+use App\Support\RequiredListenerRegistry;
+use App\Support\StartSessions;
+use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Listeners\SamplePlanOfStartedTask;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;

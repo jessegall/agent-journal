@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Actors\Contracts\CurrentAuthorizer;
-use App\Operations\Enums\AccessType;
-use Domain\Tasks\Api\TaskGraph;
-use Domain\Tasks\Api\TaskGraphEdge;
-use Domain\Tasks\Api\TaskGraphNode;
+use App\Contracts\CurrentAuthorizer;
+use App\Enums\AccessType;
 use Domain\Tasks\Contracts\TaskGraphResolver;
 use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Data\TaskGraph;
+use Domain\Tasks\Data\TaskGraphEdge;
+use Domain\Tasks\Data\TaskGraphNode;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskWait;
 use Domain\Tasks\Policies\TaskPolicy;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Domains\Exceptions\InvalidListener;
-use App\Domains\Providers\DomainEventServiceProvider;
-use App\Hooks\Delivery\StateEventBridge;
+use App\Exceptions\InvalidListener;
+use App\Providers\DomainEventServiceProvider;
+use App\Support\Delivery\StateEventBridge;
 use Illuminate\Events\Dispatcher;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 use Tests\Fixtures\Modules\Notes\WritingNoteState;

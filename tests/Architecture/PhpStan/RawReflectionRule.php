@@ -42,17 +42,17 @@ final class RawReflectionRule implements Rule
      * The files that implement the wrapper on native reflection, relative to the project root.
      */
     public const array WRAPPER_FILES = [
-        'app/Reflection/Enums/AttributeMatch.php',
-        'app/Reflection/Support/AttributeEntry.php',
-        'app/Reflection/Support/DeclarationAttributes.php',
-        'app/Reflection/Support/DeclaredType.php',
-        'app/Reflection/Support/ReflectedEnumCase.php',
-        'app/Reflection/Support/ReflectedMethod.php',
-        'app/Reflection/Support/ReflectedParameter.php',
-        'app/Reflection/Support/ReflectedProperty.php',
-        'app/Reflection/Support/ReflectionCatalogue.php',
-        'app/Reflection/Support/SourceNodeAttributes.php',
-        'app/Reflection/Support/Reflector.php',
+        'app/Enums/AttributeMatch.php',
+        'app/Support/AttributeEntry.php',
+        'app/Support/DeclarationAttributes.php',
+        'app/Support/DeclaredType.php',
+        'app/Support/ReflectedEnumCase.php',
+        'app/Support/ReflectedMethod.php',
+        'app/Support/ReflectedParameter.php',
+        'app/Support/ReflectedProperty.php',
+        'app/Support/ReflectionCatalogue.php',
+        'app/Support/SourceNodeAttributes.php',
+        'app/Support/Reflector.php',
     ];
 
     /**
@@ -444,7 +444,7 @@ final class RawReflectionRule implements Rule
     }
 
     /**
-     * The class and member the node sits in, such as App\Bus\Support\DeclaredCommand::retention.
+     * The class and member the node sits in, such as App\Support\DeclaredCommand::retention.
      */
     private function declarationOf(Scope $scope): string
     {

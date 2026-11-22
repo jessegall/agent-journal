@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Resolvers;
 
-use App\Ui\Contracts\PageResolver;
-use App\Ui\Enums\ActionMethod;
-use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\LayoutActionData;
-use App\Ui\Layout\LayoutFieldData;
-use App\Ui\Layout\LayoutFormData;
-use App\Ui\Layout\LayoutPartData;
-use App\Ui\Layout\LayoutRowData;
-use Domain\Rules\Api\RuleList;
-use Domain\Rules\Api\RuleView;
+use App\Contracts\PageResolver;
+use App\Enums\ActionMethod;
+use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\LayoutActionData;
+use App\Support\Layout\LayoutFieldData;
+use App\Support\Layout\LayoutFormData;
+use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\LayoutRowData;
 use Domain\Rules\Contracts\RuleResolver;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Http\Requests\RulesRequest;
+use Domain\Rules\Values\RuleList;
+use Domain\Rules\Values\RuleView;
 
 /**
  * The rules window, on Home and on its own page, declared as a layout: the search, one page of rules beside the

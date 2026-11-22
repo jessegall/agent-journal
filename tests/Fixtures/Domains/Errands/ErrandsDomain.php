@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Errands;
 
-use App\Assignments\Contracts\AutoAssignmentProvider;
-use App\Assignments\Support\AutoAssignerDefinition;
-use App\Assignments\Support\PoolDefinition;
-use App\Domains\Concerns\HasAssignables;
-use App\Domains\Contracts\AssignableContributor;
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
+use App\Contracts\AutoAssignmentProvider;
+use App\Support\AutoAssignerDefinition;
+use App\Support\PoolDefinition;
+use App\Concerns\HasAssignables;
+use App\Contracts\AssignableContributor;
+use App\Support\Domain;
+use App\Support\Exports;
 
 /**
  * A fixture domain whose errands actors hold, with an auto-assigner and a pool of open errands.

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Values\StackTarget;
-use App\Hooks\Inputs\Values\HookIdentity;
-use App\Records\Support\RecordIdentity;
+use App\Enums\ActorType;
+use App\Support\ActorContext;
+use App\Support\ActorIdentity;
+use App\Support\Inputs\Values\HookIdentity;
+use App\Support\RecordIdentity;
+use App\Values\StackTarget;
 use Domain\Access\Support\AccessSettings;
 
 /**

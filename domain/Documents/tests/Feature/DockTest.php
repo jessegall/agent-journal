@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\AgentRequests\Support\SignedCall;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Agents\Support\AgentContext;
-use App\Bus\Contracts\CommandBus;
-use App\Ui\Declarations\SlotContext;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Declarations\SlotContext;
+use App\Models\Agent;
+use App\Models\AgentSession;
+use App\Support\ActorContext;
+use App\Support\AgentContext;
+use App\Support\SignedCall;
+use App\Support\StartSessions;
+use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;

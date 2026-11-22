@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger\Bootstrappers;
 
-use App\Domains\Contracts\DomainBootstrapper;
-use App\Domains\Support\DomainEntry;
-use App\Links\Support\LinkTypeRegistry;
+use App\Contracts\DomainBootstrapper;
+use App\Support\DomainEntry;
+use App\Support\LinkTypeRegistry;
 use Tests\Fixtures\Modules\Ledger\Models\Ledger;
 use Tests\Fixtures\Modules\Ledger\Models\LedgerEntry;
 

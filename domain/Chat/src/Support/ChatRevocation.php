@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Actors\Contracts\ChatEligibility;
-use App\Actors\Contracts\ChatParticipationEnding;
-use App\Actors\Enums\ChatPermission;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Contracts\ChatDepartures;
-use App\Communication\Contracts\InboxResolver;
-use App\Communication\Enums\LeaveReason;
-use App\Communication\Support\ChatInboxes;
-use App\Communication\Support\ChatInterval;
-use App\Communication\Support\InboxIntervals;
+use App\Contracts\ChatDepartures;
+use App\Contracts\ChatEligibility;
+use App\Contracts\ChatParticipationEnding;
+use App\Contracts\InboxResolver;
+use App\Enums\ChatPermission;
+use App\Enums\LeaveReason;
+use App\Support\ActorIdentity;
+use App\Support\ChatInboxes;
+use App\Support\ChatInterval;
+use App\Support\InboxIntervals;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Enums\ConversationState;
 use Domain\Chat\Models\Conversation;

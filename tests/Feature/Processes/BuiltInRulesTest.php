@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Data\ExplainedNodeData;
-use App\Processes\Enums\CommandClass;
-use App\Processes\Enums\CommandType;
-use App\Processes\Enums\OutputRequirement;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Enums\UnresolvedType;
-use App\Processes\Support\Explanations;
-use App\Processes\Values\ReaderReference;
+use App\Data\ExplainedNodeData;
+use App\Enums\CommandClass;
+use App\Enums\CommandType;
+use App\Enums\OutputRequirement;
+use App\Enums\ShellDialect;
+use App\Enums\UnresolvedType;
+use App\Support\Explanations;
+use App\Values\ReaderReference;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\Processes\ClassifiesLines;
 use Tests\Support\RefreshHookDatabase;

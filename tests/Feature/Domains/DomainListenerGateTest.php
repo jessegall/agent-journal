@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Bus\Support\RequiredListenerRegistry;
 use App\Contracts\DomainAvailability;
-use App\Domains\Providers\DomainEventServiceProvider;
-use App\Domains\Support\AvailableListener;
-use App\Hooks\Stack\StateTypes;
+use App\Providers\DomainEventServiceProvider;
+use App\Support\AvailableListener;
+use App\Support\RequiredListenerRegistry;
+use App\Support\Stack\StateTypes;
 use Domain\Memory\Listeners\SupplyMemories;
 use Domain\Plans\Listeners\RaisePlanProgressChanged;
 use stdClass;

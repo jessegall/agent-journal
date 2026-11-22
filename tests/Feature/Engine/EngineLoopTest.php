@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Engine\Contracts\MonotonicClock;
-use App\Engine\Contracts\Sleeper;
-use App\Engine\Contracts\Watchdog;
-use App\Engine\Support\AdvisoryEngineLock;
-use App\Engine\Support\EngineListenerSet;
-use App\Engine\Support\EngineLoop;
-use App\Engine\Support\EngineSettings;
+use App\Contracts\MonotonicClock;
+use App\Contracts\Sleeper;
+use App\Contracts\Watchdog;
+use App\Support\AdvisoryEngineLock;
+use App\Support\EngineListenerSet;
+use App\Support\EngineLoop;
+use App\Support\EngineSettings;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Log;
 use Tests\Fixtures\Engine\StoppingEngineListener;

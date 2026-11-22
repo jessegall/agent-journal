@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Profiles\Exceptions\ProfileKeyInvalid;
-use App\Profiles\Values\ProfileKey;
+use App\Exceptions\ProfileKeyInvalid;
+use App\Values\ProfileKey;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

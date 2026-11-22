@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Stacks;
 
-use App\Hooks\States\AgentState;
+use App\Support\States\AgentState;
 
 /**
  * A fixture state for one subject that a test can mark finished.

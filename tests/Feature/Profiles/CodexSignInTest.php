@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Profiles\Support\CodexSignIn;
-use App\Profiles\Support\SignInProtocols;
-use App\Profiles\Values\SignInVerification;
+use App\Support\CodexSignIn;
+use App\Support\SignInProtocols;
+use App\Values\SignInVerification;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 

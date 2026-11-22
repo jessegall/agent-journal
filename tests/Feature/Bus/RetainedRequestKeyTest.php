@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\RequestKeyConflict;
-use App\Bus\Exceptions\RequestKeyExpired;
-use App\Bus\Exceptions\RequestKeyMissing;
-use App\Bus\Models\CommandReceipt;
-use App\Bus\Support\RequestKey;
+use App\Contracts\CommandBus;
+use App\Exceptions\RequestKeyConflict;
+use App\Exceptions\RequestKeyExpired;
+use App\Exceptions\RequestKeyMissing;
+use App\Models\CommandReceipt;
+use App\Support\RequestKey;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Modules\Notes\Commands\RetainNote\RetainNoteCommand;
 use Tests\Support\TestIds;

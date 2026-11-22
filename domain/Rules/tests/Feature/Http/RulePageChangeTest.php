@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Feature\Http;
 
-use App\Actors\Support\ActorContext;
-use App\Bus\Contracts\CommandBus;
-use App\Web\Events\PageChanged;
-use App\Web\Support\UserChannel;
+use App\Contracts\CommandBus;
+use App\Events\PageChanged;
+use App\Support\ActorContext;
+use App\Support\UserChannel;
 use Domain\Access\Support\AccessSettings;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Commands\RemoveRule\RemoveRuleCommand;

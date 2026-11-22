@@ -21,12 +21,12 @@ final class StackPersistenceTest extends TestCase
      * stack, history pruning and the stack row itself.
      */
     private const array SHARED_PATH = [
-        'app/Hooks/Mutations/StatePush.php',
-        'app/Hooks/Actions/EngineStacks.php',
-        'app/Hooks/Pipes/Answer/SaveCall.php',
-        'app/Hooks/Actions/StartStacks.php',
-        'app/Hooks/Actions/PruneHookHistory.php',
-        'app/Hooks/Models/AgentStackRow.php',
+        'app/Support/Mutations/StatePush.php',
+        'app/Support/EngineStacks.php',
+        'app/Pipes/Answer/SaveCall.php',
+        'app/Support/StartStacks.php',
+        'app/Support/PruneHookHistory.php',
+        'app/Models/AgentStackRow.php',
     ];
 
     private const string FIXTURES = 'tests/Fixtures/Hooks/StackPersistence';

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Exports;
 
-use App\Exports\Exceptions\MalformedExports;
-use App\Exports\Support\Exports;
+use App\Exceptions\MalformedExports;
+use App\Support\Exports;
 use ArrayObject;
-use Domain\Plans\Api\Events\PlanProgressChanged;
-use Domain\Plans\Api\Events\PlanStarted;
+use Domain\Plans\Events\PlanProgressChanged;
+use Domain\Plans\Events\PlanStarted;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use stdClass;

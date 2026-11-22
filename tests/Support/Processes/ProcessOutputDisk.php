@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Processes;
 
-use App\Processes\Support\SpoolRecorder;
+use App\Support\SpoolRecorder;
 use Illuminate\Support\Facades\Storage;
 
 /**

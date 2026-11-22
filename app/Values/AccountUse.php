@@ -1,0 +1,31 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Values;
+
+use App\Enums\AccountProcessRole;
+use App\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
+
+/**
+ * One start that used an account: the account by identity, the session and agent, and when it started and ended.
+ * A use still running has no end yet.
+ */
+final readonly class AccountUse
+{
+    public function __construct(
+        public RecordIdentity $account,
+        public string $sessionId,
+        public string $agentId,
+        public string $driver,
+        public AccountProcessRole $role,
+        public CarbonImmutable $startedAt,
+        public CarbonImmutable|null $endedAt,
+    ) {}
+
+    public function isRunning(): bool
+    {
+        return $this->endedAt === null;
+    }
+}

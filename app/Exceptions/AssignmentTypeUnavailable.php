@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Exceptions;
+
+use App\Concerns\RendersRefusal;
+use App\Contracts\CodedRefusal;
+use App\Contracts\CommandRefusal;
+use App\Enums\ActorType;
+use App\Enums\RefusalCode;
+use RuntimeException;
+
+final class AssignmentTypeUnavailable extends RuntimeException implements CodedRefusal, CommandRefusal
+{
+    use RendersRefusal;
+
+    public static function forType(string $type): self
+    {
+        return new self("Records of type {$type} cannot be assigned here.");
+    }
+
+    public static function forAutoAssignment(string $type): self
+    {
+        return new self("Records of type {$type} cannot be assigned automatically here.");
+    }
+
+    public static function forPool(string $key): self
+    {
+        return new self("No pool {$key} exists here.");
+    }
+
+    public static function forActorType(ActorType $type): self
+    {
+        return new self("An actor of type {$type->value} cannot hold records here.");
+    }
+
+    protected function status(): int
+    {
+        return 404;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::RecordUnavailable;
+    }
+}

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
+use App\Contracts\CurrentUserResolver;
 use App\Http\Requests\Web\LayoutRequest;
-use App\Web\Contracts\CurrentUserResolver;
-use App\Web\Models\Layout;
+use App\Models\Layout;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 

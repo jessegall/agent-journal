@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\OwnerAuthority;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\CommandInputInvalid;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Enums\ActorType;
+use App\Exceptions\CommandInputInvalid;
+use App\Support\ActorContext;
+use App\Support\ActorIdentity;
+use App\Values\OwnerAuthority;
 use Domain\Tasks\Commands\CreateTask\CreateTaskCommand;
 use Domain\Tasks\Commands\EditTask\EditTaskCommand;
 use Domain\Tasks\Enums\TaskState;

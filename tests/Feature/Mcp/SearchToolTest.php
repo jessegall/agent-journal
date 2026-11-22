@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Actors\Support\ActorIdentity;
+use App\Support\ActorIdentity;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;

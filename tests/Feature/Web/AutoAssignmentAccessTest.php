@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Models\Agent;
-use App\Assignments\Contracts\AutoAssignmentAccess;
-use App\Assignments\Exceptions\AssignmentDenied;
-use App\Assignments\Exceptions\AutoAssignmentDenied;
-use App\Assignments\Providers\AssignmentsServiceProvider;
-use App\Assignments\Support\ClosedAutoAssignmentAccess;
-use App\Engine\Support\EngineActor;
-use App\Web\Support\OwnerAutoAssignmentAccess;
+use App\Contracts\AutoAssignmentAccess;
+use App\Exceptions\AssignmentDenied;
+use App\Exceptions\AutoAssignmentDenied;
+use App\Models\Agent;
+use App\Providers\AssignmentsServiceProvider;
+use App\Support\ActorIdentity;
+use App\Support\ClosedAutoAssignmentAccess;
+use App\Support\EngineActor;
+use App\Support\OwnerAutoAssignmentAccess;
+use App\Support\StartSessions;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestSelections;

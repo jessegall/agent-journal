@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Assignments\Support\AssigneeIdentity;
+use App\Contracts\CurrentActorSetter;
+use App\Support\AssigneeIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanType;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Tests\Feature;
 
-use App\Communication\Contracts\ActorInboxResolver;
+use App\Contracts\ActorInboxResolver;
 use Domain\Access\Actions\CreateNewUser;
 use Domain\Access\Models\User;
 use Domain\Access\Tests\TestCase;

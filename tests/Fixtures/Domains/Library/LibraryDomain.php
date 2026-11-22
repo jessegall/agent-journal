@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Library;
 
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
-use App\Settings\Contracts\SettingsProvider;
+use App\Support\Domain;
+use App\Support\Exports;
+use App\Contracts\SettingsProvider;
 
 final class LibraryDomain extends Domain implements SettingsProvider
 {

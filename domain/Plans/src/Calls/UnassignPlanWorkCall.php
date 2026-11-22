@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Calls;
 
-use App\Actors\Enums\ActorType;
-use App\AgentRequests\Attributes\Endpoint;
-use App\AgentRequests\Casts\CallKeyCast;
-use App\AgentRequests\Contracts\JournalCall;
-use App\AgentRequests\Enums\CallEffect;
-use App\AgentRequests\Enums\ReceiptOwner;
-use App\AgentRequests\Support\CallKey;
-use App\AgentRequests\Transformers\CallKeyTransformer;
-use App\Assignments\Calls\Concerns\NamesExpectedAssignment;
+use App\Attributes\Endpoint;
+use App\Calls\Assignments\Concerns\NamesExpectedAssignment;
+use App\Casts\CallKeyCast;
+use App\Contracts\JournalCall;
+use App\Enums\ActorType;
+use App\Enums\CallEffect;
+use App\Enums\ReceiptOwner;
+use App\Support\CallKey;
+use App\Support\Transformers\CallKeyTransformer;
 use Domain\Plans\Calls\Concerns\NamesPlanWorkRoot;
-use Domain\Plans\Http\Data\PlanWorkResultData;
+use Domain\Plans\Data\PlanWorkResultData;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\In;
 use Spatie\LaravelData\Attributes\Validation\Max;

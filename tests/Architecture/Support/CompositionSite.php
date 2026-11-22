@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Domains\Support\Domain;
-use App\Reflection\Support\Reflector;
+use App\Support\Domain;
+use App\Support\Reflector;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\ServiceProvider;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Domains\Support\DomainEntry;
-use App\Processes\Enums\RequestState;
-use App\Processes\Models\ModuleRuleBundle;
-use App\Processes\Models\RuleProposal;
-use App\Processes\Support\CommandRuleRegistry;
+use App\Enums\RequestState;
+use App\Models\ModuleRuleBundle;
+use App\Models\RuleProposal;
+use App\Support\CommandRuleRegistry;
+use App\Support\DomainEntry;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Modules\Notes\NotesDomain;

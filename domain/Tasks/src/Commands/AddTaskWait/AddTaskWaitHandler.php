@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\AddTaskWait;
 
-use App\Actors\Support\ActorIdentity;
+use App\Support\ActorIdentity;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Enums\TaskState;

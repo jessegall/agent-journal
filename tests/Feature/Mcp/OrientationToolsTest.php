@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Assignments\Support\AssigneeIdentity;
 use App\Mcp\Servers\JournalServer;
+use App\Support\AssigneeIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\AgentRequests\Invalid;
 
-use App\AgentRequests\Attributes\Endpoint;
-use App\AgentRequests\Contracts\JournalCall;
-use App\AgentRequests\Enums\CallEffect;
-use App\AgentRequests\Enums\ReceiptOwner;
+use App\Attributes\Endpoint;
+use App\Contracts\JournalCall;
+use App\Enums\CallEffect;
+use App\Enums\ReceiptOwner;
 use Spatie\LaravelData\Data;
 use Tests\Fixtures\AgentRequests\NoteAnswer;
 

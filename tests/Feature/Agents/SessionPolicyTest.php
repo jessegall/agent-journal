@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Commands\StartAgent\StartAgentCommand;
-use App\Agents\Contracts\SessionPolicyReader;
-use App\Agents\Enums\ConversationModeType;
-use App\Agents\Enums\StartOriginType;
-use App\Agents\Exceptions\SessionPolicyFrozen;
-use App\Agents\Models\Agent;
-use App\Agents\Models\SessionPolicy;
-use App\Agents\Support\StartReceipt;
-use App\Agents\Values\StartPolicy;
-use App\Agents\Values\StartRequest;
-use App\Bus\Contracts\CommandBus;
+use App\Commands\StartAgent\StartAgentCommand;
+use App\Contracts\CommandBus;
+use App\Contracts\SessionPolicyReader;
+use App\Enums\ConversationModeType;
+use App\Enums\StartOriginType;
+use App\Exceptions\SessionPolicyFrozen;
+use App\Models\Agent;
+use App\Models\SessionPolicy;
+use App\Support\StartReceipt;
+use App\Values\StartPolicy;
+use App\Values\StartRequest;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\ServesEveryCombination;
 use Tests\Support\RefreshHookDatabase;

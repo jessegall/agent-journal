@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ContinuationStale;
 use App\Mcp\Support\ToolArguments;
-use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
@@ -21,6 +20,7 @@ use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Exceptions\UploadExpired;
 use Domain\Documents\Tests\TestCase;
+use Domain\Documents\Values\DraftTarget;
 use Laravel\Mcp\Request;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;

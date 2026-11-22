@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers\Calls;
 
-use App\AgentRequests\Values\CallAccepted;
-use App\Bus\Contracts\CommandBus;
-use App\Numbers\Support\RecordReference;
+use App\Contracts\CommandBus;
+use App\Support\RecordReference;
+use App\Values\CallAccepted;
 use Domain\Documents\Calls\SettleDocumentCall;
 use Domain\Documents\Commands\SettleDocument\SettleDocumentCommand;
 

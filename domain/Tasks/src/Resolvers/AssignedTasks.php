@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Assignments\Contracts\AssigneeResolver;
-use App\Assignments\Contracts\AssignmentResolver;
-use App\Assignments\Contracts\AssignmentTransaction;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Hooks\Contracts\ActorWorkStacks;
-use App\Hooks\References\StateReference;
-use Domain\Tasks\Api\TaskFilters;
-use Domain\Tasks\Api\TaskList;
+use App\Contracts\ActorWorkStacks;
+use App\Contracts\AssigneeResolver;
+use App\Contracts\AssignmentResolver;
+use App\Contracts\AssignmentTransaction;
+use App\Contracts\CurrentActor;
+use App\Support\AssigneeIdentity;
+use App\Support\References\StateReference;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Resolvers\Support\TaskExecutions;
-use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
+use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
+use Domain\Tasks\Values\TaskFilters;
+use Domain\Tasks\Values\TaskList;
 use PhpOption\Option;
 
 /**

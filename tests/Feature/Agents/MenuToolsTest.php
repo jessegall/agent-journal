@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Commands\RetireMenuEntry\RetireMenuEntryCommand;
-use App\Agents\Enums\MenuEntryState;
-use App\Agents\Enums\NavigationCompletion;
-use App\Agents\Models\MenuEntry;
-use App\Agents\Values\MenuStep;
+use App\Commands\RetireMenuEntry\RetireMenuEntryCommand;
+use App\Enums\ActorType;
+use App\Enums\MenuEntryState;
+use App\Enums\NavigationCompletion;
+use App\Models\MenuEntry;
+use App\Support\ActorIdentity;
+use App\Values\MenuStep;
 use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\RaisesNavigationRequests;

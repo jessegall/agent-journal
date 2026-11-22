@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Bus\Support\CommandRegistry;
+use App\Support\CommandRegistry;
 use Tests\Architecture\Support\CommandReach;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\RaiseCallers;
@@ -30,7 +30,7 @@ final class ModelRaiseCallerTest extends TestCase
     /**
      * The attribute that marks a listener required in the command's transaction (plan 40 task 1579).
      */
-    private const string REQUIRED_LISTENER = 'App\Contracts\Attributes\InCommandTransaction';
+    private const string REQUIRED_LISTENER = 'App\Attributes\InCommandTransaction';
 
     private const string FIXTURES = 'tests/Fixtures/RaiseCallers';
 

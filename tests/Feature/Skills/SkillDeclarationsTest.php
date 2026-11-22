@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Domains\Exceptions\SkillDeclarationRefused;
-use App\Domains\Support\DomainRegistry;
-use App\Skills\Contracts\Skill;
-use App\Skills\Support\CoreSkills;
-use App\Skills\Values\SkillOwner;
+use App\Contracts\Skill;
+use App\Exceptions\SkillDeclarationRefused;
+use App\Support\CoreSkills;
+use App\Support\DomainRegistry;
+use App\Values\SkillOwner;
 use Tests\Fixtures\Domains\FalseSkills\FalseSkillsDomain;
 use Tests\Fixtures\Domains\StraySkills\StraySkillsDomain;
 use Tests\Fixtures\Modules\Cards\CardsDomain;

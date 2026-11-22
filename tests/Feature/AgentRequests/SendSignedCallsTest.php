@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\AgentRequests;
 
-use App\AgentRequests\Contracts\CallSender;
-use App\AgentRequests\Exceptions\AnswerUnreadable;
-use App\AgentRequests\Exceptions\CallTooLarge;
-use App\AgentRequests\Exceptions\JournalUnavailable;
-use App\AgentRequests\Exceptions\StateBlocked;
-use App\AgentRequests\Support\AgentClientSettings;
-use App\AgentRequests\Support\StartProfilePin;
+use App\Contracts\CallSender;
+use App\Exceptions\AnswerUnreadable;
+use App\Exceptions\CallTooLarge;
+use App\Exceptions\JournalUnavailable;
+use App\Exceptions\StateBlocked;
+use App\Support\AgentClientSettings;
+use App\Support\StartProfilePin;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Sleep;

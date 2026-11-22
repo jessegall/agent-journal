@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Models\AgentRuntime;
-use App\Connections\Enums\BindingReadiness;
-use App\Connections\Models\ProjectBinding;
+use App\Enums\BindingReadiness;
+use App\Enums\HostProtocolVersion;
+use App\Models\AgentRuntime;
+use App\Models\ProjectBinding;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

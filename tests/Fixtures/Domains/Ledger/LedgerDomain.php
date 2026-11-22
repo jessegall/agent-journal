@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Ledger;
 
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
+use App\Support\Domain;
+use App\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
 use Tests\Fixtures\Domains\Ledger\Mcp\LedgerReadTool;
 

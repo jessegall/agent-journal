@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Reads\Contracts\ReadableModel;
-use App\Reflection\Support\Reflector;
+use App\Contracts\ReadableModel;
+use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\RefreshHookDatabase;

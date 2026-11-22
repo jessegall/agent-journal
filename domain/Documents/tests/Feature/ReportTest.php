@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
-use App\Comments\Models\Comment;
-use App\Records\Contracts\IdentityLinks;
+use App\Contracts\CommandBus;
+use App\Contracts\IdentityLinks;
+use App\Models\Comment;
 use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reads;
 
-use App\Reads\Exceptions\ModelReadAllRefused;
-use App\Reads\Exceptions\ReadLimitInvalid;
-use App\Reads\Exceptions\ReadLimitTooLarge;
-use App\Reads\Exceptions\ReadReasonMissing;
-use App\Reads\Exceptions\ReadShapeUnsupported;
+use App\Exceptions\ModelReadAllRefused;
+use App\Exceptions\ReadLimitInvalid;
+use App\Exceptions\ReadLimitTooLarge;
+use App\Exceptions\ReadReasonMissing;
+use App\Exceptions\ReadShapeUnsupported;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;

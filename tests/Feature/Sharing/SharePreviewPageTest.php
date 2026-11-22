@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\Bus\Contracts\CommandBus;
-use App\Links\Models\Link;
-use App\Sharing\Models\ShareGatewayConfiguration;
-use App\Sharing\Models\SharePreview;
-use App\Sharing\Support\GatewaySettings;
-use App\Sharing\Support\ShareSelectedTarget;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Models\Link;
+use App\Models\ShareGatewayConfiguration;
+use App\Models\SharePreview;
+use App\Support\ActorContext;
+use App\Support\GatewaySettings;
+use App\Support\ShareSelectedTarget;
+use App\Values\OwnerAuthority;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;

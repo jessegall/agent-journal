@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Actors\Contracts\MessageRecipient;
-use App\Actors\Contracts\MessageSender;
-use App\Actors\Support\SystemActor;
-use App\Agents\Models\Agent;
+use App\Contracts\MessageRecipient;
+use App\Contracts\MessageSender;
+use App\Models\Agent;
+use App\Support\SystemActor;
 use Domain\Access\Models\User;
 use Tests\TestCase;
 

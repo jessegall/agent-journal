@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Domains\Support\DomainRegistry;
-use App\Skills\Contracts\SkillResolver;
-use App\Skills\Support\CoreSkills;
-use App\Skills\Support\SkillRegistry;
-use App\Skills\Values\SkillKey;
-use App\Skills\Values\SkillOwner;
+use App\Contracts\SkillResolver;
+use App\Support\CoreSkills;
+use App\Support\DomainRegistry;
+use App\Support\SkillRegistry;
+use App\Values\SkillKey;
+use App\Values\SkillOwner;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\NotesDomain;

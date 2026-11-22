@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Actors\Enums\ChatPermission;
-use App\Actors\Support\ActorIdentity;
+use App\Enums\ChatPermission;
+use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;

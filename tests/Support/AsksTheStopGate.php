@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Hooks\Decisions\ContextLine;
-use App\Hooks\Decisions\MessageLine;
-use App\Hooks\Enums\AnswerType;
-use App\Hooks\Inputs\Values\HookIdentity;
-use App\Hooks\Stack\StateAnswer;
-use App\Hooks\States\Contracts\StopConditionGate;
+use App\Enums\AnswerType;
+use App\Support\Decisions\ContextLine;
+use App\Support\Decisions\MessageLine;
+use App\Support\Inputs\Values\HookIdentity;
+use App\Support\Stack\StateAnswer;
+use App\Support\States\Contracts\StopConditionGate;
 use Tests\Fixtures\Agents\TestStart;
 
 /**

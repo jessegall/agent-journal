@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Access\Database\Factories;
 
-use App\Actors\Support\ActorIdentity;
-use App\Bus\Enums\CommandEntry;
-use App\Bus\Support\EntryDispatchers;
-use App\Desks\Commands\ProvisionActorDesk\ProvisionActorDeskCommand;
+use App\Commands\ProvisionActorDesk\ProvisionActorDeskCommand;
+use App\Enums\CommandEntry;
+use App\Support\ActorIdentity;
+use App\Support\EntryDispatchers;
 use Domain\Access\Models\User;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Factories\Factory;

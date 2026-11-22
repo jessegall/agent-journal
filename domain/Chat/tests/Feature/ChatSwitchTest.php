@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Models\Agent;
-use App\Communication\Commands\AskMessage\AskMessageCommand;
-use App\Communication\Models\MessageAttention;
-use App\Settings\Commands\DisableSettingGroup\DisableSettingGroupCommand;
-use App\Settings\Commands\EnableSettingGroup\EnableSettingGroupCommand;
-use App\Settings\Values\GroupReference;
+use App\Commands\AskMessage\AskMessageCommand;
+use App\Commands\DisableSettingGroup\DisableSettingGroupCommand;
+use App\Commands\EnableSettingGroup\EnableSettingGroupCommand;
+use App\Enums\ActorType;
+use App\Models\Agent;
+use App\Models\MessageAttention;
+use App\Support\ActorIdentity;
+use App\Support\StartSessions;
+use App\Values\GroupReference;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Tests\TestCase;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers\Calls;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use Domain\Plans\Calls\EditPlanCall;
 use Domain\Plans\Calls\PlanEdited;
 use Domain\Plans\Commands\EditPlan\EditPlanCommand;

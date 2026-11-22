@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Providers;
 
-use App\Agents\Support\AgentContext;
-use App\Hooks\Contracts\JournalToolNames;
+use App\Contracts\JournalToolNames;
 use App\Mcp\Console\ContractSnapshotCommand;
 use App\Mcp\Console\RelayCommand;
 use App\Mcp\Contracts\Continuations as ContinuationsContract;
@@ -20,6 +19,7 @@ use App\Mcp\Support\LoggedMcpCall;
 use App\Mcp\Support\McpCatalogue;
 use App\Mcp\Support\RetainedNumberedPages;
 use App\Mcp\Support\TextFields;
+use App\Support\AgentContext;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;

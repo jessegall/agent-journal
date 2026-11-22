@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Shop\Commands\AddItem;
 
-use App\Operations\Enums\AccessType;
-use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\RepeatableRead;
-use App\Bus\Support\Command;
+use App\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Attributes\RepeatableRead;
+use App\Support\Command;
 use Tests\Fixtures\Bus\Models\FixtureWork;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 use Tests\Fixtures\Bus\Shop\Enums\ItemSize;

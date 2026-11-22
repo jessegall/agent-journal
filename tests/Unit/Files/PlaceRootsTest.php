@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Files\Enums\Place;
-use App\Files\Exceptions\FileOutsidePlaces;
-use App\Files\Exceptions\FolderClosed;
-use App\Files\Exceptions\PlaceUnavailable;
-use App\Files\Support\PlaceRoots;
-use App\Files\Values\FilePath;
+use App\Enums\Place;
+use App\Exceptions\FileOutsidePlaces;
+use App\Exceptions\FolderClosed;
+use App\Exceptions\PlaceUnavailable;
+use App\Support\PlaceRoots;
+use App\Values\FilePath;
 use Tests\TestCase;
 
 /**
@@ -94,7 +94,7 @@ final class PlaceRootsTest extends TestCase
     public function test_an_absolute_project_path_is_placed_in_the_project(): void
     {
         $this->assertEquals(
-            FilePath::in(Place::Project, 'app/Files/Values/FilePath.php'),
+            FilePath::in(Place::Project, 'app/Values/FilePath.php'),
             $this->roots()->filePathOf(base_path('app/Files/../Files/Values/FilePath.php')),
         );
         $this->assertEquals(

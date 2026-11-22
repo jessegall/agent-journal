@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assignments;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Assignments\Support\Page;
+use App\Enums\ActorType;
+use App\Support\ActorIdentity;
+use App\Support\Page;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

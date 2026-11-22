@@ -1,6 +1,6 @@
 [
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "fc44a2c73fc470e9f6b4f288f2e122334cd3e58b",
         "old_path": "domain/Rules/database/migrations/2026_11_17_000011_create_rules_table.php",
         "old_class": null,
@@ -19,7 +19,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "56234caac63448e9ffe4d178ac5ea3f4c4da9e42",
         "old_path": "domain/Rules/resources/skills/rules.md",
         "old_class": null,
@@ -38,8 +38,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b26ac730dd0718e469974253f53bd191a42193d4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ab003bc60bb2258e841fe66d1f2339c98f035130",
         "old_path": "domain/Rules/src/Api/Events/RuleApproved.php",
         "old_class": "Domain\\Rules\\Api\\Events\\RuleApproved",
         "final_path": "domain/Rules/src/Events/RuleApproved.php",
@@ -53,14 +53,16 @@
         "phase": 3,
         "batch": "Rules",
         "consumers": [
-            "domain/Rules/tests/Feature/ReviewRuleTest.php"
+            "domain/Rules/tests/Feature/ReviewRuleTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Rules.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4a4c51232cf3deaf4327415b02abdb2a1dbafd65",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c00c84fc930d314b882e7d12fb6dd890f8969d63",
         "old_path": "domain/Rules/src/Api/Events/RuleDenied.php",
         "old_class": "Domain\\Rules\\Api\\Events\\RuleDenied",
         "final_path": "domain/Rules/src/Events/RuleDenied.php",
@@ -74,14 +76,16 @@
         "phase": 3,
         "batch": "Rules",
         "consumers": [
-            "domain/Rules/tests/Feature/ReviewRuleTest.php"
+            "domain/Rules/tests/Feature/ReviewRuleTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Rules.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4c62984e8dbef7f26b907581b511f1e17e84b5c0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "3c900140925ff4aa8446682be20d32fe56755100",
         "old_path": "domain/Rules/src/Api/Events/RuleRemoved.php",
         "old_class": "Domain\\Rules\\Api\\Events\\RuleRemoved",
         "final_path": "domain/Rules/src/Events/RuleRemoved.php",
@@ -95,14 +99,16 @@
         "phase": 3,
         "batch": "Rules",
         "consumers": [
-            "domain/Rules/tests/Feature/RuleCommandsTest.php"
+            "domain/Rules/tests/Feature/RuleCommandsTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Rules.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e34adebbb8471abef4b9ece9ef5d0d4144f1c80c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "fe3938cbce609211c011debf3d77600fb52f601f",
         "old_path": "domain/Rules/src/Api/RuleDetails.php",
         "old_class": "Domain\\Rules\\Api\\RuleDetails",
         "final_path": "domain/Rules/src/Values/RuleDetails.php",
@@ -115,12 +121,14 @@
         },
         "phase": 3,
         "batch": "Rules",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Rules.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a6c4ca624b48ca1a4dbda7090ab33c0fd2ae58dc",
         "old_path": "domain/Rules/src/Api/RuleFilters.php",
         "old_class": "Domain\\Rules\\Api\\RuleFilters",
@@ -134,12 +142,14 @@
         },
         "phase": 3,
         "batch": "Rules",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Rules.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "27720a543354c0f2c43e786c555f91c4fbc767ad",
         "old_path": "domain/Rules/src/Api/RuleList.php",
         "old_class": "Domain\\Rules\\Api\\RuleList",
@@ -153,12 +163,14 @@
         },
         "phase": 3,
         "batch": "Rules",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Rules.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "983d7e6930867833bbeecf7e6fade8e6fa617464",
         "old_path": "domain/Rules/src/Api/RuleView.php",
         "old_class": "Domain\\Rules\\Api\\RuleView",
@@ -172,13 +184,15 @@
         },
         "phase": 3,
         "batch": "Rules",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Rules.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5588f1beca2878c51cc796a0624c19d548a11230",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d8b3fe2cf5b84c41a6f81bdeae53cc36820f2c46",
         "old_path": "domain/Rules/src/Commands/ApproveRule/ApproveRuleCommand.php",
         "old_class": "Domain\\Rules\\Commands\\ApproveRule\\ApproveRuleCommand",
         "final_path": "domain/Rules/src/Commands/ApproveRule/ApproveRuleCommand.php",
@@ -196,8 +210,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "152244fc71ad98239dbdc090c2d1a93e46896bc6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ed8a60f9a495356c6edcfaeffb35b207c02abd9a",
         "old_path": "domain/Rules/src/Commands/ApproveRule/ApproveRuleHandler.php",
         "old_class": "Domain\\Rules\\Commands\\ApproveRule\\ApproveRuleHandler",
         "final_path": "domain/Rules/src/Commands/ApproveRule/ApproveRuleHandler.php",
@@ -215,8 +229,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b4d181d5e25c120949f121c7921f0a8d2d3d9226",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "496acb824d1095aa48fc65f105522387b709cb67",
         "old_path": "domain/Rules/src/Commands/DenyRule/DenyRuleCommand.php",
         "old_class": "Domain\\Rules\\Commands\\DenyRule\\DenyRuleCommand",
         "final_path": "domain/Rules/src/Commands/DenyRule/DenyRuleCommand.php",
@@ -234,7 +248,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "30d0aef22c1ad2746d51b6fbe80259b5e076fae3",
         "old_path": "domain/Rules/src/Commands/DenyRule/DenyRuleHandler.php",
         "old_class": "Domain\\Rules\\Commands\\DenyRule\\DenyRuleHandler",
@@ -253,8 +267,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b25dc95f9dd34151dd978ba270513c7585bd8524",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "567a3a0b0b72f26808de8fa75cddae10431e45ea",
         "old_path": "domain/Rules/src/Commands/ProposeRule/ProposeRuleCommand.php",
         "old_class": "Domain\\Rules\\Commands\\ProposeRule\\ProposeRuleCommand",
         "final_path": "domain/Rules/src/Commands/ProposeRule/ProposeRuleCommand.php",
@@ -272,7 +286,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7836c3ad5cfedb222456c485b1b173776dffa06f",
         "old_path": "domain/Rules/src/Commands/ProposeRule/ProposeRuleHandler.php",
         "old_class": "Domain\\Rules\\Commands\\ProposeRule\\ProposeRuleHandler",
@@ -291,8 +305,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "28d00687e084979140e82b9d0346a8022b62402e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5a96757202ec8614adc1f5e14e4cea324c12074e",
         "old_path": "domain/Rules/src/Commands/RemoveRule/RemoveRuleCommand.php",
         "old_class": "Domain\\Rules\\Commands\\RemoveRule\\RemoveRuleCommand",
         "final_path": "domain/Rules/src/Commands/RemoveRule/RemoveRuleCommand.php",
@@ -310,7 +324,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8328364bc5009cb929051e24d6a9859a2ac3d6ba",
         "old_path": "domain/Rules/src/Commands/RemoveRule/RemoveRuleHandler.php",
         "old_class": "Domain\\Rules\\Commands\\RemoveRule\\RemoveRuleHandler",
@@ -329,7 +343,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "43eaa920c69312f90f30c7e931bed1149c3a4b73",
         "old_path": "domain/Rules/src/Commands/Support/RuleCommandHandler.php",
         "old_class": "Domain\\Rules\\Commands\\Support\\RuleCommandHandler",
@@ -348,7 +362,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "bb5c1adfa7ff977ce05f4739699ca43bc4db8f9e",
         "old_path": "domain/Rules/src/Contracts/RuleDetailsResolver.php",
         "old_class": "Domain\\Rules\\Contracts\\RuleDetailsResolver",
@@ -367,7 +381,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5f08d4dcfb8b35a5338aa2d9e5dbb4b506812d83",
         "old_path": "domain/Rules/src/Contracts/RuleResolver.php",
         "old_class": "Domain\\Rules\\Contracts\\RuleResolver",
@@ -386,7 +400,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4b5056a894e530e884237ed73377fc8e513072ec",
         "old_path": "domain/Rules/src/Data/RuleFiltersData.php",
         "old_class": "Domain\\Rules\\Data\\RuleFiltersData",
@@ -405,7 +419,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "89b5c0fe0237aa8aa80b5f47b385b191338baab7",
         "old_path": "domain/Rules/src/Enums/RuleState.php",
         "old_class": "Domain\\Rules\\Enums\\RuleState",
@@ -424,7 +438,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4a8741894ba7d1b943012505247295d199b1df09",
         "old_path": "domain/Rules/src/Exceptions/RuleMissing.php",
         "old_class": "Domain\\Rules\\Exceptions\\RuleMissing",
@@ -443,7 +457,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0da11e5a8c56294349565f56b31b60cb1e55e56d",
         "old_path": "domain/Rules/src/Exceptions/RuleNotProposed.php",
         "old_class": "Domain\\Rules\\Exceptions\\RuleNotProposed",
@@ -462,7 +476,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8b7f2b12a34c75477f01d9f202546cf16fb7a7ad",
         "old_path": "domain/Rules/src/Exceptions/RuleSelfApproval.php",
         "old_class": "Domain\\Rules\\Exceptions\\RuleSelfApproval",
@@ -481,8 +495,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2ccf53058adeaccfde5929ce5b55af9dc8786f2d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "db45766f2365acb4eb452a6478fbad173822d5a6",
         "old_path": "domain/Rules/src/Http/Controllers/ApproveRuleController.php",
         "old_class": "Domain\\Rules\\Http\\Controllers\\ApproveRuleController",
         "final_path": "domain/Rules/src/Http/Controllers/ApproveRuleController.php",
@@ -500,8 +514,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "81be127a23bdc80ddb535ad817939f8a7bab3e12",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4891f3387ec929566fa2f1c527b6c386e841fa50",
         "old_path": "domain/Rules/src/Http/Controllers/DenyRuleController.php",
         "old_class": "Domain\\Rules\\Http\\Controllers\\DenyRuleController",
         "final_path": "domain/Rules/src/Http/Controllers/DenyRuleController.php",
@@ -519,7 +533,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e613a801cc96822cff5de34b589d481bc8d83d71",
         "old_path": "domain/Rules/src/Http/Requests/Concerns/ReadsRuleFilters.php",
         "old_class": "Domain\\Rules\\Http\\Requests\\Concerns\\ReadsRuleFilters",
@@ -538,7 +552,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9490c7ea490900cba9445a91b13dfc23c3b831b3",
         "old_path": "domain/Rules/src/Http/Requests/ReviewRuleRequest.php",
         "old_class": "Domain\\Rules\\Http\\Requests\\ReviewRuleRequest",
@@ -557,7 +571,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "608703db91f18fc865ccf0f8f25bf15ba3425cd5",
         "old_path": "domain/Rules/src/Http/Requests/RulesRequest.php",
         "old_class": "Domain\\Rules\\Http\\Requests\\RulesRequest",
@@ -576,8 +590,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "789d517a27827a0c9772ef7fbf0a9d3935528c78",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b2aee2fe01ce6e70b133739034699a1193edc9b0",
         "old_path": "domain/Rules/src/Listeners/SupplyHookContext.php",
         "old_class": "Domain\\Rules\\Listeners\\SupplyHookContext",
         "final_path": "domain/Rules/src/Listeners/SupplyHookContext.php",
@@ -595,7 +609,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "cc0e2967662f16d97ae077c267dc3571b8fa27de",
         "old_path": "domain/Rules/src/Mcp/ActiveRulesOverview.php",
         "old_class": "Domain\\Rules\\Mcp\\ActiveRulesOverview",
@@ -609,12 +623,14 @@
         },
         "phase": 3,
         "batch": "Rules",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Rules.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "695a9811d23d770d27c346d0e6174bdb93d7312b",
         "old_path": "domain/Rules/src/Mcp/ProposeRuleTool.php",
         "old_class": "Domain\\Rules\\Mcp\\ProposeRuleTool",
@@ -628,12 +644,14 @@
         },
         "phase": 4,
         "batch": "Rules",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Rules.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "fd5b9dea4b98c84332fb41ebe44c8f6b1a4491fa",
         "old_path": "domain/Rules/src/Mcp/RuleReadTool.php",
         "old_class": "Domain\\Rules\\Mcp\\RuleReadTool",
@@ -647,13 +665,15 @@
         },
         "phase": 4,
         "batch": "Rules",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Rules.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8b5e50b0c5c8e694bff94c4a23977d352bf4e125",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1733a1f06b091ef3325525238b9156edb933bcfa",
         "old_path": "domain/Rules/src/Mcp/RuleSearch.php",
         "old_class": "Domain\\Rules\\Mcp\\RuleSearch",
         "final_path": "domain/Rules/src/Support/Mcp/RuleSearch.php",
@@ -666,12 +686,14 @@
         },
         "phase": 3,
         "batch": "Rules",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Rules.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "16ca4e23560e4d30ce9c1f707999226295a5511e",
         "old_path": "domain/Rules/src/Mcp/RulesListResult.php",
         "old_class": "Domain\\Rules\\Mcp\\RulesListResult",
@@ -685,12 +707,14 @@
         },
         "phase": 3,
         "batch": "Rules",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Rules.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "fbf580857e4be581f65fdff8f7224d4c20ef5e95",
         "old_path": "domain/Rules/src/Mcp/RulesListTool.php",
         "old_class": "Domain\\Rules\\Mcp\\RulesListTool",
@@ -704,12 +728,14 @@
         },
         "phase": 4,
         "batch": "Rules",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Rules.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "95696808c000a824c550ec17b07449bfe9f264a6",
         "old_path": "domain/Rules/src/Mcp/RulesResource.php",
         "old_class": "Domain\\Rules\\Mcp\\RulesResource",
@@ -723,13 +749,15 @@
         },
         "phase": 4,
         "batch": "Rules",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Rules.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5246656a0b31241d776481de78be2bc21edbcd02",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "be2a20f9efb9be66ab931ee0cd5d515d4522baca",
         "old_path": "domain/Rules/src/Models/Rule.php",
         "old_class": "Domain\\Rules\\Models\\Rule",
         "final_path": "domain/Rules/src/Models/Rule.php",
@@ -747,8 +775,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6fb8951952898f4689d40c6ba255c0f8ba27b208",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1550d23c441c95ecad36d71a0f408ccafe7d9f5e",
         "old_path": "domain/Rules/src/Policies/RulePolicy.php",
         "old_class": "Domain\\Rules\\Policies\\RulePolicy",
         "final_path": "domain/Rules/src/Policies/RulePolicy.php",
@@ -766,8 +794,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9f3e415ae6cdf1bc2d6feaf84d79a2771d4f4d1f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e12b5352c0ba43bf2da748e4527ac35d2ed717bc",
         "old_path": "domain/Rules/src/Providers/RulesServiceProvider.php",
         "old_class": "Domain\\Rules\\Providers\\RulesServiceProvider",
         "final_path": "domain/Rules/src/Providers/RulesServiceProvider.php",
@@ -785,8 +813,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4759ffe53be51b45c556ddc8c6f1ab75a0f4de39",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "774c438eef667da965166fe7d7bd86d1e634daab",
         "old_path": "domain/Rules/src/Resolvers/RuleDetailRecords.php",
         "old_class": "Domain\\Rules\\Resolvers\\RuleDetailRecords",
         "final_path": "domain/Rules/src/Resolvers/RuleDetailRecords.php",
@@ -804,8 +832,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3c3768946859da87138149d24c648d7c0fdbeefb",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a06e8e5b98cd77650ecb4e4fbdf60921aa3ed315",
         "old_path": "domain/Rules/src/Resolvers/RuleRecords.php",
         "old_class": "Domain\\Rules\\Resolvers\\RuleRecords",
         "final_path": "domain/Rules/src/Resolvers/RuleRecords.php",
@@ -823,8 +851,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "dbc711eca1d6fca3da033e603ddbb87719ba3e96",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "75475a9670a9cdc46b563e47e4b414e6d2491bc6",
         "old_path": "domain/Rules/src/Resolvers/RulesWindowResolver.php",
         "old_class": "Domain\\Rules\\Resolvers\\RulesWindowResolver",
         "final_path": "domain/Rules/src/Resolvers/RulesWindowResolver.php",
@@ -842,8 +870,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "16884f013b2b2f78743cfb0bc50b78d1447996a3",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d84658ba9ba41f0cfab003c68ad169eee96571c4",
         "old_path": "domain/Rules/src/RulesDomain.php",
         "old_class": "Domain\\Rules\\RulesDomain",
         "final_path": "domain/Rules/src/RulesDomain.php",
@@ -861,8 +889,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c1d2b102b859b739a758868c14b366ac9c78f093",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "3fe9e82869bca9a4ee523516144d5777cdf72e6c",
         "old_path": "domain/Rules/src/Skills/RulesSkill.php",
         "old_class": "Domain\\Rules\\Skills\\RulesSkill",
         "final_path": "domain/Rules/src/Support/Skills/RulesSkill.php",
@@ -875,12 +903,14 @@
         },
         "phase": 3,
         "batch": "Rules",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Rules.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b04d92c1a305eda8cc6e5bcfdb63a2cd313352e2",
         "old_path": "domain/Rules/src/Support/ActiveRules.php",
         "old_class": "Domain\\Rules\\Support\\ActiveRules",

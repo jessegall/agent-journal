@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Domains\Support\DomainRegistry;
+use App\Support\DomainRegistry;
 use Illuminate\Contracts\Console\Kernel;
 use Tests\Support\AffectedTests;
 

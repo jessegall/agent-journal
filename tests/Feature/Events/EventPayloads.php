@@ -4,94 +4,94 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Events;
 
-use App\Agents\Events\AccountSettingsRequested;
-use App\Agents\Events\AccountUseChanged;
-use App\Agents\Events\AgentHoldReleased;
-use App\Agents\Events\AgentRuntimeReassigned;
-use App\Agents\Events\DriverFailed;
-use App\Agents\Events\DriverRequestRecovered;
-use App\Agents\Events\LaunchCancelled;
-use App\Agents\Events\LaunchEnded;
-use App\Agents\Events\MergeOutcomeRecorded;
-use App\Agents\Events\SessionClosed;
-use App\Agents\Events\SessionOpened;
-use App\Agents\Events\StartAccepted;
-use App\Agents\Events\StartGrantRequested;
-use App\Agents\Events\StartSettingsRequested;
-use App\Agents\Events\StartUnavailable;
-use App\Assignments\Events\AssignmentsChanged;
-use App\Comments\Events\CommentPosted;
-use App\Communication\Events\ChatMemberJoined;
-use App\Communication\Events\ChatMemberLeft;
-use App\Communication\Events\ChatMessageAccepted;
-use App\Communication\Events\ChatReceiptPresented;
-use App\Communication\Events\ChatRoleChanged;
-use App\Communication\Events\MessageAnswered;
-use App\Communication\Events\MessageAnswerRequired;
-use App\Communication\Events\MessageClaimReleased;
-use App\Communication\Events\MessageDismissed;
-use App\Communication\Events\MessageRead;
-use App\Communication\Events\MessageSent;
-use App\Communication\Events\MessageTakenUp;
-use App\Communication\Events\ReceiptDeliveriesScheduled;
-use App\Communication\Events\ReceiptDeliveryChanged;
-use App\Communication\Events\SpeechOpportunitySettled;
-use App\Engine\Events\EngineTicked;
-use App\Hooks\Events\ContextStarted;
-use App\Hooks\Events\HelperCompletionCertified;
-use App\Hooks\Events\HelperStopHeld;
-use App\Hooks\Events\StateTypesRequested;
-use App\Hooks\Events\ToolCallFinished;
-use App\Links\Events\LinksRemoved;
-use App\Processes\Events\BundleActivated;
-use App\Processes\Events\EvidenceInvalid;
-use App\Processes\Events\OutputChunkCommitted;
-use App\Processes\Events\RuleActivated;
-use App\Processes\Events\RuleRejected;
-use App\Processes\Events\RuleRetired;
-use App\Processes\Events\RunChanged;
-use App\Profiles\Events\AccountsChanged;
-use App\Profiles\Events\ProfileRevisionRevoked;
-use App\Settings\Events\SettingsChanged;
-use App\Sharing\Events\ShareActivated;
-use App\Sharing\Events\ShareCreated;
-use App\Sharing\Events\ShareExpired;
-use App\Sharing\Events\ShareFailed;
-use App\Sharing\Events\ShareGatewayChanged;
-use App\Sharing\Events\ShareRequested;
-use App\Sharing\Events\ShareRevoked;
-use App\Sharing\Events\ShareScopeChanged;
-use App\Skills\Events\SessionSkillsIntended;
-use App\Skills\Events\SkillsChanged;
-use App\Web\Events\PageChanged;
-use Domain\Documents\Api\Events\DocumentClosed;
-use Domain\Documents\Api\Events\DocumentCreated;
-use Domain\Documents\Api\Events\DocumentDraftSaved;
-use Domain\Documents\Api\Events\DocumentOpened;
-use Domain\Documents\Api\Events\DocumentPublished;
-use Domain\Documents\Api\Events\DraftKept;
-use Domain\Documents\Api\Events\RecordSettled;
-use Domain\Documents\Api\Events\ReportFiled;
-use Domain\Plans\Api\Events\PlanCancelled;
-use Domain\Plans\Api\Events\PlanFinished;
-use Domain\Plans\Api\Events\PlanProgressChanged;
-use Domain\Plans\Api\Events\PlanReviewDecided;
-use Domain\Plans\Api\Events\PlanReviewRequested;
-use Domain\Plans\Api\Events\PlanReviewWithdrawn;
-use Domain\Plans\Api\Events\PlanStarted;
-use Domain\Rules\Api\Events\RuleApproved;
-use Domain\Rules\Api\Events\RuleDenied;
-use Domain\Rules\Api\Events\RuleRemoved;
+use App\Events\AccountsChanged;
+use App\Events\AccountSettingsRequested;
+use App\Events\AccountUseChanged;
+use App\Events\AgentHoldReleased;
+use App\Events\AgentRuntimeReassigned;
+use App\Events\AssignmentsChanged;
+use App\Events\BundleActivated;
+use App\Events\ChatMemberJoined;
+use App\Events\ChatMemberLeft;
+use App\Events\ChatMessageAccepted;
+use App\Events\ChatReceiptPresented;
+use App\Events\ChatRoleChanged;
+use App\Events\CommentPosted;
+use App\Events\ContextStarted;
+use App\Events\DriverFailed;
+use App\Events\DriverRequestRecovered;
+use App\Events\EngineTicked;
+use App\Events\EvidenceInvalid;
+use App\Events\HelperCompletionCertified;
+use App\Events\HelperStopHeld;
+use App\Events\LaunchCancelled;
+use App\Events\LaunchEnded;
+use App\Events\LinksRemoved;
+use App\Events\MergeOutcomeRecorded;
+use App\Events\MessageAnswered;
+use App\Events\MessageAnswerRequired;
+use App\Events\MessageClaimReleased;
+use App\Events\MessageDismissed;
+use App\Events\MessageRead;
+use App\Events\MessageSent;
+use App\Events\MessageTakenUp;
+use App\Events\OutputChunkCommitted;
+use App\Events\PageChanged;
+use App\Events\ProfileRevisionRevoked;
+use App\Events\ReceiptDeliveriesScheduled;
+use App\Events\ReceiptDeliveryChanged;
+use App\Events\RuleActivated;
+use App\Events\RuleRejected;
+use App\Events\RuleRetired;
+use App\Events\RunChanged;
+use App\Events\SessionClosed;
+use App\Events\SessionOpened;
+use App\Events\SessionSkillsIntended;
+use App\Events\SettingsChanged;
+use App\Events\ShareActivated;
+use App\Events\ShareCreated;
+use App\Events\ShareExpired;
+use App\Events\ShareFailed;
+use App\Events\ShareGatewayChanged;
+use App\Events\ShareRequested;
+use App\Events\ShareRevoked;
+use App\Events\ShareScopeChanged;
+use App\Events\SkillsChanged;
+use App\Events\SpeechOpportunitySettled;
+use App\Events\StartAccepted;
+use App\Events\StartGrantRequested;
+use App\Events\StartSettingsRequested;
+use App\Events\StartUnavailable;
+use App\Events\StateTypesRequested;
+use App\Events\ToolCallFinished;
+use Domain\Documents\Events\DocumentClosed;
+use Domain\Documents\Events\DocumentCreated;
+use Domain\Documents\Events\DocumentDraftSaved;
+use Domain\Documents\Events\DocumentOpened;
+use Domain\Documents\Events\DocumentPublished;
+use Domain\Documents\Events\DraftKept;
+use Domain\Documents\Events\RecordSettled;
+use Domain\Documents\Events\ReportFiled;
+use Domain\Plans\Events\PlanCancelled;
+use Domain\Plans\Events\PlanFinished;
+use Domain\Plans\Events\PlanProgressChanged;
+use Domain\Plans\Events\PlanReviewDecided;
+use Domain\Plans\Events\PlanReviewRequested;
+use Domain\Plans\Events\PlanReviewWithdrawn;
+use Domain\Plans\Events\PlanStarted;
+use Domain\Rules\Events\RuleApproved;
+use Domain\Rules\Events\RuleDenied;
+use Domain\Rules\Events\RuleRemoved;
 use Domain\Sequences\Events\SequenceStarted;
-use Domain\Tasks\Api\Events\TaskBlocked;
-use Domain\Tasks\Api\Events\TaskCancelled;
-use Domain\Tasks\Api\Events\TaskCheckRecorded;
-use Domain\Tasks\Api\Events\TaskFinished;
-use Domain\Tasks\Api\Events\TaskLogged;
-use Domain\Tasks\Api\Events\TaskStartCommitted;
-use Domain\Tasks\Api\Events\TaskWaitChanged;
+use Domain\Tasks\Events\TaskBlocked;
+use Domain\Tasks\Events\TaskCancelled;
+use Domain\Tasks\Events\TaskCheckRecorded;
 use Domain\Tasks\Events\TaskDescribed;
+use Domain\Tasks\Events\TaskFinished;
+use Domain\Tasks\Events\TaskLogged;
+use Domain\Tasks\Events\TaskStartCommitted;
 use Domain\Tasks\Events\TaskStarted;
+use Domain\Tasks\Events\TaskWaitChanged;
 
 /**
  * The published shape of every event of doc 70 table 1 as it is before plan 40 moves it: whether it is delivered
@@ -109,8 +109,8 @@ final class EventPayloads
             AgentHoldReleased::class => [
                 'fields' => [
                     'runtimeId' => 'string',
-                    'hold' => 'App\Agents\Enums\HoldReason',
-                    'actor' => 'App\Actors\Support\ActorIdentity',
+                    'hold' => 'App\Enums\HoldReason',
+                    'actor' => 'App\Support\ActorIdentity',
                     'reason' => 'string',
                 ],
             ],
@@ -120,7 +120,7 @@ final class EventPayloads
                     'fromHostId' => 'string',
                     'toHostId' => 'string',
                     'processGeneration' => 'int',
-                    'actor' => 'App\Actors\Support\ActorIdentity',
+                    'actor' => 'App\Support\ActorIdentity',
                     'proof' => 'string',
                     'reason' => 'string',
                 ],
@@ -128,14 +128,14 @@ final class EventPayloads
             DriverRequestRecovered::class => [
                 'fields' => [
                     'requestId' => 'string',
-                    'action' => 'App\Agents\Enums\RecoveryAction',
-                    'actor' => 'App\Actors\Support\ActorIdentity',
+                    'action' => 'App\Enums\RecoveryAction',
+                    'actor' => 'App\Support\ActorIdentity',
                     'reason' => 'string',
                 ],
             ],
             LaunchCancelled::class => [
                 'fields' => [
-                    'work' => 'App\Records\Support\RecordIdentity',
+                    'work' => 'App\Support\RecordIdentity',
                 ],
             ],
             MergeOutcomeRecorded::class => [
@@ -148,8 +148,8 @@ final class EventPayloads
                     'agentId' => 'string',
                     'sessionId' => 'string',
                     'driver' => 'string',
-                    'failure' => 'App\Agents\Enums\DriverFailure',
-                    'account' => '?App\Records\Support\RecordIdentity',
+                    'failure' => 'App\Enums\DriverFailure',
+                    'account' => '?App\Support\RecordIdentity',
                     'accountGeneration' => '?int',
                 ],
             ],
@@ -163,7 +163,7 @@ final class EventPayloads
                 'fields' => [
                     'agentId' => 'string',
                     'sessionId' => 'string',
-                    'authorizedSource' => '?App\Records\Support\RecordIdentity',
+                    'authorizedSource' => '?App\Support\RecordIdentity',
                 ],
             ],
             StartAccepted::class => [
@@ -171,21 +171,21 @@ final class EventPayloads
                     'requestId' => 'string',
                     'agentId' => 'string',
                     'sessionId' => 'string',
-                    'authorizedSource' => '?App\Records\Support\RecordIdentity',
+                    'authorizedSource' => '?App\Support\RecordIdentity',
                 ],
             ],
             StartUnavailable::class => [
                 'fields' => [
                     'agentId' => 'string',
                     'driver' => 'string',
-                    'reason' => 'App\Agents\Enums\StartUnavailableReason',
+                    'reason' => 'App\Enums\StartUnavailableReason',
                 ],
             ],
             AssignmentsChanged::class => [
                 'fields' => [
                     'operationId' => 'string',
-                    'actor' => 'App\Actors\Support\ActorIdentity',
-                    'reason' => 'App\Assignments\Enums\AssignmentReason',
+                    'actor' => 'App\Support\ActorIdentity',
+                    'reason' => 'App\Enums\AssignmentReason',
                     'changes' => 'array',
                     'occurredAt' => 'DateTimeImmutable',
                 ],
@@ -193,7 +193,7 @@ final class EventPayloads
             CommentPosted::class => [
                 'fields' => [
                     'commentId' => 'string',
-                    'target' => 'App\Records\Support\RecordIdentity',
+                    'target' => 'App\Support\RecordIdentity',
                 ],
             ],
             MessageAnswerRequired::class => [
@@ -206,33 +206,33 @@ final class EventPayloads
                 'fields' => [
                     'messageId' => 'string',
                     'replyId' => 'string',
-                    'answeredBy' => 'App\Actors\Support\ActorIdentity',
+                    'answeredBy' => 'App\Support\ActorIdentity',
                 ],
             ],
             MessageClaimReleased::class => [
                 'fields' => [
                     'messageId' => 'string',
-                    'claim' => 'App\Assignments\Support\AssignmentReference',
+                    'claim' => 'App\Support\AssignmentReference',
                 ],
             ],
             MessageDismissed::class => [
                 'fields' => [
                     'messageId' => 'string',
-                    'dismissedBy' => 'App\Actors\Support\ActorIdentity',
-                    'type' => 'App\Communication\Enums\DismissalType',
+                    'dismissedBy' => 'App\Support\ActorIdentity',
+                    'type' => 'App\Enums\DismissalType',
                 ],
             ],
             MessageRead::class => [
                 'fields' => [
                     'messageId' => 'string',
                     'inboxId' => 'string',
-                    'reader' => 'App\Actors\Support\ActorIdentity',
+                    'reader' => 'App\Support\ActorIdentity',
                 ],
             ],
             MessageSent::class => [
                 'fields' => [
                     'messageId' => 'string',
-                    'author' => 'App\Actors\Support\ActorIdentity',
+                    'author' => 'App\Support\ActorIdentity',
                     'sourceInboxId' => 'string',
                     'destinationInboxId' => 'string',
                 ],
@@ -240,13 +240,13 @@ final class EventPayloads
             MessageTakenUp::class => [
                 'fields' => [
                     'messageId' => 'string',
-                    'claimant' => 'App\Actors\Support\ActorIdentity',
+                    'claimant' => 'App\Support\ActorIdentity',
                 ],
             ],
             ChatMessageAccepted::class => [
                 'fields' => [
                     'messageId' => 'string',
-                    'author' => 'App\Actors\Support\ActorIdentity',
+                    'author' => 'App\Support\ActorIdentity',
                     'inboxId' => 'string',
                 ],
             ],
@@ -254,23 +254,23 @@ final class EventPayloads
                 'fields' => [
                     'intervalId' => 'string',
                     'inboxId' => 'string',
-                    'member' => 'App\Actors\Support\ActorIdentity',
+                    'member' => 'App\Support\ActorIdentity',
                 ],
             ],
             ChatMemberLeft::class => [
                 'fields' => [
                     'intervalId' => 'string',
                     'inboxId' => 'string',
-                    'member' => 'App\Actors\Support\ActorIdentity',
-                    'reason' => 'App\Communication\Enums\LeaveReason',
+                    'member' => 'App\Support\ActorIdentity',
+                    'reason' => 'App\Enums\LeaveReason',
                 ],
             ],
             ChatRoleChanged::class => [
                 'fields' => [
                     'intervalId' => 'string',
                     'inboxId' => 'string',
-                    'member' => 'App\Actors\Support\ActorIdentity',
-                    'role' => 'App\Communication\Enums\IntervalRole',
+                    'member' => 'App\Support\ActorIdentity',
+                    'role' => 'App\Enums\IntervalRole',
                 ],
             ],
             ChatReceiptPresented::class => [
@@ -289,33 +289,33 @@ final class EventPayloads
                 'fields' => [
                     'deliveryId' => 'string',
                     'receiptId' => 'string',
-                    'state' => 'App\Communication\Enums\ReceiptDeliveryState',
+                    'state' => 'App\Enums\ReceiptDeliveryState',
                 ],
             ],
             SpeechOpportunitySettled::class => [
                 'fields' => [
                     'opportunityId' => 'string',
                     'userRootId' => 'string',
-                    'speaker' => 'App\Actors\Support\ActorIdentity',
-                    'state' => 'App\Communication\Enums\SpeechOpportunityState',
+                    'speaker' => 'App\Support\ActorIdentity',
+                    'state' => 'App\Enums\SpeechOpportunityState',
                 ],
             ],
             EngineTicked::class => [
                 'fields' => [
                     'now' => 'Carbon\CarbonImmutable',
-                    'sincePrevious' => 'App\Hooks\Ticks\ElapsedTime',
+                    'sincePrevious' => 'App\Support\Ticks\ElapsedTime',
                 ],
             ],
             HelperCompletionCertified::class => [
                 'fields' => [
-                    'work' => 'App\Records\Support\RecordIdentity',
-                    'attempt' => 'App\Hooks\Values\StopAttemptReference',
+                    'work' => 'App\Support\RecordIdentity',
+                    'attempt' => 'App\Values\StopAttemptReference',
                 ],
             ],
             HelperStopHeld::class => [
                 'fields' => [
-                    'work' => 'App\Records\Support\RecordIdentity',
-                    'attempt' => 'App\Hooks\Values\StopAttemptReference',
+                    'work' => 'App\Support\RecordIdentity',
+                    'attempt' => 'App\Values\StopAttemptReference',
                 ],
             ],
             LinksRemoved::class => [
@@ -374,7 +374,7 @@ final class EventPayloads
             ],
             ProfileRevisionRevoked::class => [
                 'fields' => [
-                    'key' => 'App\Profiles\Values\ProfileKey',
+                    'key' => 'App\Values\ProfileKey',
                     'revision' => 'int',
                     'revisionReference' => 'string',
                 ],
@@ -382,29 +382,29 @@ final class EventPayloads
             SettingsChanged::class => [
                 'fields' => [
                     'owner' => 'string',
-                    'target' => 'App\Settings\Enums\SettingTarget',
+                    'target' => 'App\Enums\SettingTarget',
                     'key' => 'string',
                     'revision' => 'int',
                 ],
             ],
             ShareActivated::class => [
                 'fields' => [
-                    'share' => 'App\Sharing\Support\ShareFact',
+                    'share' => 'App\Support\ShareFact',
                 ],
             ],
             ShareCreated::class => [
                 'fields' => [
-                    'share' => 'App\Sharing\Support\ShareFact',
+                    'share' => 'App\Support\ShareFact',
                 ],
             ],
             ShareExpired::class => [
                 'fields' => [
-                    'share' => 'App\Sharing\Support\ShareFact',
+                    'share' => 'App\Support\ShareFact',
                 ],
             ],
             ShareFailed::class => [
                 'fields' => [
-                    'share' => 'App\Sharing\Support\ShareFact',
+                    'share' => 'App\Support\ShareFact',
                 ],
             ],
             ShareGatewayChanged::class => [
@@ -417,17 +417,17 @@ final class EventPayloads
             ],
             ShareRequested::class => [
                 'fields' => [
-                    'share' => 'App\Sharing\Support\ShareFact',
+                    'share' => 'App\Support\ShareFact',
                 ],
             ],
             ShareRevoked::class => [
                 'fields' => [
-                    'share' => 'App\Sharing\Support\ShareFact',
+                    'share' => 'App\Support\ShareFact',
                 ],
             ],
             ShareScopeChanged::class => [
                 'fields' => [
-                    'share' => 'App\Sharing\Support\ShareFact',
+                    'share' => 'App\Support\ShareFact',
                 ],
             ],
             SessionSkillsIntended::class => [
@@ -452,7 +452,7 @@ final class EventPayloads
                 'fields' => [
                     'documentId' => 'string',
                     'number' => 'int',
-                    'actor' => 'App\Actors\Support\ActorContext',
+                    'actor' => 'App\Support\ActorContext',
                 ],
             ],
             DocumentDraftSaved::class => [
@@ -478,7 +478,7 @@ final class EventPayloads
                 'fields' => [
                     'draftId' => 'string',
                     'documentId' => 'string',
-                    'parent' => '?App\Actors\Support\ActorContext',
+                    'parent' => '?App\Support\ActorContext',
                 ],
             ],
             RecordSettled::class => [
@@ -491,19 +491,19 @@ final class EventPayloads
                 'fields' => [
                     'reportId' => 'string',
                     'number' => 'int',
-                    'actor' => 'App\Actors\Support\ActorContext',
+                    'actor' => 'App\Support\ActorContext',
                 ],
             ],
             PlanCancelled::class => [
                 'fields' => [
                     'planId' => 'string',
-                    'cancelledBy' => 'App\Actors\Support\ActorContext',
+                    'cancelledBy' => 'App\Support\ActorContext',
                 ],
             ],
             PlanFinished::class => [
                 'fields' => [
                     'planId' => 'string',
-                    'finishedBy' => 'App\Actors\Support\ActorContext',
+                    'finishedBy' => 'App\Support\ActorContext',
                 ],
             ],
             PlanReviewDecided::class => [
@@ -529,7 +529,7 @@ final class EventPayloads
             PlanStarted::class => [
                 'fields' => [
                     'planId' => 'string',
-                    'startedBy' => 'App\Actors\Support\ActorContext',
+                    'startedBy' => 'App\Support\ActorContext',
                 ],
             ],
             RuleApproved::class => [
@@ -550,7 +550,7 @@ final class EventPayloads
             SequenceStarted::class => [
                 'fields' => [
                     'runId' => 'string',
-                    'target' => 'App\Agents\Values\StackTarget',
+                    'target' => 'App\Values\StackTarget',
                 ],
             ],
             TaskBlocked::class => [
@@ -600,7 +600,7 @@ final class EventPayloads
             TaskStarted::class => [
                 'fields' => [
                     'taskId' => 'string',
-                    'actor' => 'App\Actors\Support\ActorIdentity',
+                    'actor' => 'App\Support\ActorIdentity',
                     'previousState' => 'Domain\Tasks\Enums\TaskState',
                     'historyEntryId' => 'string',
                 ],

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Reflection\Support\Reflector;
+use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Support\ScanCache\ScanCache;
 

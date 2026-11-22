@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Profiles\Support\ClaudeKeySignIn;
-use App\Profiles\Support\ClaudeSecretSignIn;
-use App\Profiles\Support\ClaudeTokenSignIn;
-use App\Profiles\Values\SignInVerification;
+use App\Support\ClaudeKeySignIn;
+use App\Support\ClaudeSecretSignIn;
+use App\Support\ClaudeTokenSignIn;
+use App\Values\SignInVerification;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 

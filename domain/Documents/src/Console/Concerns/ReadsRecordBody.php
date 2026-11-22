@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Concerns;
 
-use App\Files\Contracts\Files;
-use App\Files\Exceptions\FileMissing;
-use App\Files\Exceptions\FileUnreadable;
+use App\Contracts\Files;
+use App\Exceptions\FileMissing;
+use App\Exceptions\FileUnreadable;
 
 /**
  * Reads the text of a new document or report from exactly one of --body, --body - (standard input) or --file, read

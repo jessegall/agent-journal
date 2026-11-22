@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Ui;
 
-use App\Ui\Enums\LayoutTag;
-use App\Ui\Enums\NarrowView;
-use App\Ui\Enums\ReaderWidth;
-use App\Ui\Layout\LayoutActionData;
-use App\Ui\Layout\LayoutBackData;
-use App\Ui\Layout\LayoutFieldData;
-use App\Ui\Layout\LayoutPartData;
-use App\Ui\Layout\LayoutRowData;
-use App\Ui\Layout\LayoutTabData;
-use App\Ui\Layout\ListEmpty;
-use App\Ui\Layout\ListPage;
-use App\Ui\Layout\ListPaging;
+use App\Enums\LayoutTag;
+use App\Enums\NarrowView;
+use App\Enums\ReaderWidth;
+use App\Support\Layout\LayoutActionData;
+use App\Support\Layout\LayoutBackData;
+use App\Support\Layout\LayoutFieldData;
+use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\LayoutRowData;
+use App\Support\Layout\LayoutTabData;
+use App\Support\Layout\ListEmpty;
+use App\Support\Layout\ListPage;
+use App\Support\Layout\ListPaging;
 use Spatie\LaravelData\Optional;
 use Tests\TestCase;
 

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Actors\Contracts\ActorProviderRegistration;
-use App\Actors\Contracts\ActorResolver;
-use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\ActorProviderRepeated;
-use App\Actors\Exceptions\ActorUnavailable;
-use App\Actors\Support\ActorIdentity;
-use App\Actors\Support\SystemActor;
-use App\Actors\Support\SystemActors;
-use App\Agents\Models\Agent;
+use App\Contracts\ActorProviderRegistration;
+use App\Contracts\ActorResolver;
+use App\Enums\ActorType;
+use App\Exceptions\ActorProviderRepeated;
+use App\Exceptions\ActorUnavailable;
+use App\Models\Agent;
+use App\Support\ActorIdentity;
+use App\Support\SystemActor;
+use App\Support\SystemActors;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Str;

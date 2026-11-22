@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\ActorContextMissing;
-use App\Actors\Support\ActorContext;
-use App\AgentRequests\Support\SignedCall;
-use App\Agents\Support\AgentContext;
+use App\Contracts\CurrentActor;
+use App\Contracts\CurrentActorSetter;
+use App\Enums\ActorType;
+use App\Exceptions\ActorContextMissing;
+use App\Support\ActorContext;
+use App\Support\AgentContext;
+use App\Support\SignedCall;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;

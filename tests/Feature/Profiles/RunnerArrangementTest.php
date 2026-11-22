@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Agents\Enums\ArrangementType;
-use App\Agents\Exceptions\RunnerArrangementRefused;
-use App\Agents\Support\ArrangementSetting;
+use App\Enums\ArrangementType;
+use App\Exceptions\RunnerArrangementRefused;
+use App\Support\ArrangementSetting;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;

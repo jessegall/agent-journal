@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Domain\Rules\Api\Events\RuleApproved;
-use Domain\Rules\Api\Events\RuleDenied;
-use Domain\Rules\Api\Events\RuleRemoved;
+use Domain\Rules\Events\RuleApproved;
+use Domain\Rules\Events\RuleDenied;
+use Domain\Rules\Events\RuleRemoved;
 use Tests\Architecture\Support\EventRole;
 
 /**

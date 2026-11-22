@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers\Calls;
 
-use App\Bus\Contracts\CommandBus;
-use App\Numbers\Support\RecordReference;
-use App\Records\Contracts\RecordResolver;
+use App\Contracts\CommandBus;
+use App\Contracts\RecordResolver;
+use App\Support\RecordReference;
 use Domain\Documents\Calls\MakeReportCall;
 use Domain\Documents\Calls\RecordFiled;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;

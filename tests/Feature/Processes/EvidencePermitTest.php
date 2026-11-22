@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Processes\Enums\RunMode;
-use App\Processes\Exceptions\EvidencePermitRefused;
-use App\Processes\Models\EvidencePermit;
-use App\Processes\Models\PartRun;
-use App\Processes\Models\ProcessRun;
-use App\Processes\Support\EvidenceRuns;
-use App\Processes\Values\PermitLimits;
+use App\Enums\ActorType;
+use App\Enums\RunMode;
+use App\Exceptions\EvidencePermitRefused;
+use App\Models\EvidencePermit;
+use App\Models\PartRun;
+use App\Models\ProcessRun;
+use App\Support\ActorIdentity;
+use App\Support\EvidenceRuns;
+use App\Values\PermitLimits;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;

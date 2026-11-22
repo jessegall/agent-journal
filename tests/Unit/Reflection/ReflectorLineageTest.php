@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reflection;
 
-use App\Reflection\Support\ReflectedMethod;
-use App\Reflection\Support\Reflector;
+use App\Support\ReflectedMethod;
+use App\Support\Reflector;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Reflection\Attributes\MemberMarker;
 use Tests\Fixtures\Reflection\DefaultsParcel;

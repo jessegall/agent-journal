@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Tasks\States;
 
-use App\Hooks\Decisions\ContextLine;
-use App\Hooks\Inputs\StopRequested;
-use App\Hooks\References\SubjectReference;
-use App\Hooks\States\AgentState;
-use Domain\Tasks\Api\Events\TaskCancelled;
-use Domain\Tasks\Api\Events\TaskFinished;
+use App\Support\Decisions\ContextLine;
+use App\Support\Inputs\StopRequested;
+use App\Support\References\SubjectReference;
+use App\Support\States\AgentState;
+use Domain\Tasks\Events\TaskCancelled;
+use Domain\Tasks\Events\TaskFinished;
 use Tests\Fixtures\Domains\Tasks\States\Commands\RecordCancelledTask\RecordCancelledTaskCommand;
 use Tests\Fixtures\Domains\Tasks\States\Commands\RecordFinishedTask\RecordFinishedTaskCommand;
 

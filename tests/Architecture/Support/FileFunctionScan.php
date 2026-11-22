@@ -83,7 +83,7 @@ final readonly class FileFunctionScan implements FileScan
     /**
      * The attribute that marks a method whose file access the user settled as outside the places.
      */
-    private const string EXEMPTION_MARK = 'App\Files\Attributes\OutsideThePlaces';
+    private const string EXEMPTION_MARK = 'App\Attributes\OutsideThePlaces';
 
     public function key(): string
     {

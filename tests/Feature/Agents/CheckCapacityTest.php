@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Models\Agent;
-use App\Agents\Models\CapacityReservation;
-use App\Agents\Values\ExecutionBudgets;
-use App\Agents\Values\HostCapacity;
+use App\Enums\ExecutionModeType;
+use App\Models\Agent;
+use App\Models\CapacityReservation;
+use App\Values\ExecutionBudgets;
+use App\Values\HostCapacity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Tests\Support\RefreshHookDatabase;

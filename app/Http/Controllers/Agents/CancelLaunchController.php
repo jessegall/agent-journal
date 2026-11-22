@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Agents\Commands\CancelLaunch\CancelLaunchCommand;
-use App\Bus\Contracts\CommandBus;
+use App\Commands\CancelLaunch\CancelLaunchCommand;
+use App\Contracts\CommandBus;
 use App\Http\Requests\Agents\CancelLaunchRequest;
 use Illuminate\Http\JsonResponse;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Communication\Exceptions\MessageMissing;
+use App\Exceptions\MessageMissing;
 use Domain\Chat\Commands\PinMessage\PinMessageCommand;
 use Domain\Chat\Models\MessagePin;
 use Domain\Chat\Resolvers\Support\MessagePinRecords;

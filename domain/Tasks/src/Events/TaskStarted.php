@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Events;
 
-use App\Actors\Support\ActorIdentity;
-use App\Contracts\Attributes\RequiresListener;
+use App\Attributes\RequiresListener;
 use App\Contracts\Event;
+use App\Support\ActorIdentity;
 use Domain\Tasks\Enums\TaskState;
 
 /**

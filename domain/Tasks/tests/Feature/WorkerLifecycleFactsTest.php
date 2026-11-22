@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\ActiveEventUnits;
-use Domain\Tasks\Api\Events\TaskCancelled;
-use Domain\Tasks\Api\Events\TaskFinished;
+use App\Contracts\CommandBus;
+use App\Support\ActiveEventUnits;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
+use Domain\Tasks\Events\TaskCancelled;
+use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Database\ConnectionInterface;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\PostChatMessage\PostChatMessageCommand;
-use App\Communication\Exceptions\MessageMissing;
+use App\Commands\PostChatMessage\PostChatMessageCommand;
+use App\Exceptions\MessageMissing;
+use App\Support\ActorIdentity;
 use Domain\Chat\Commands\PinMessage\PinMessageCommand;
 use Domain\Chat\Models\MessagePin;
 use Tests\Support\MessagingTestCase;

@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
-use App\Ui\Enums\ActionMethod;
-use App\Ui\Layout\DetailPage;
-use App\Ui\Layout\LayoutActionData;
-use App\Ui\Layout\LayoutFieldData;
-use App\Ui\Layout\LayoutFormData;
-use App\Ui\Layout\LayoutNativeData;
-use App\Ui\Layout\LayoutPartData;
-use App\Ui\Layout\LayoutRowData;
-use App\Ui\Layout\PublicationTab;
-use Domain\Tasks\Http\Data\TaskCommentsData;
-use Domain\Tasks\Http\Data\TaskLogsPartData;
-use Domain\Tasks\Http\Data\TaskProofsPartData;
-use Domain\Tasks\Http\Data\TaskReaderData;
-use Domain\Tasks\Http\Data\TaskWaitsPartData;
+use App\Enums\ActionMethod;
+use App\Support\Layout\DetailPage;
+use App\Support\Layout\LayoutActionData;
+use App\Support\Layout\LayoutFieldData;
+use App\Support\Layout\LayoutFormData;
+use App\Support\Layout\LayoutNativeData;
+use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\LayoutRowData;
+use App\Support\Layout\PublicationTab;
+use Domain\Tasks\Data\TaskCommentsData;
+use Domain\Tasks\Data\TaskLogsPartData;
+use Domain\Tasks\Data\TaskProofsPartData;
+use Domain\Tasks\Data\TaskReaderData;
+use Domain\Tasks\Data\TaskWaitsPartData;
 use Spatie\LaravelData\Optional;
 
 /**

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
-use App\Actors\Support\ActorIdentity;
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Contracts\ReadableModel;
+use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\ReportJobDiscrepancyReason;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

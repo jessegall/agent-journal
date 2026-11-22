@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Assignments\Contracts\AssignmentResolver;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Connections\Contracts\EnvironmentTasks;
-use App\Connections\Values\EnvironmentTask;
-use App\Connections\Values\EnvironmentTaskList;
+use App\Contracts\AssignmentResolver;
+use App\Contracts\CurrentActor;
+use App\Contracts\EnvironmentTasks;
+use App\Support\AssigneeIdentity;
+use App\Values\EnvironmentTask;
+use App\Values\EnvironmentTaskList;
 use Domain\Tasks\Models\Task;
 
 /**

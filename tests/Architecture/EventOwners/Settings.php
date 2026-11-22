@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Settings\Events\SettingsChanged;
+use App\Events\SettingsChanged;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -15,7 +15,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Settings/Support/SettingsWriter.php',
+            'app/Support/SettingsWriter.php',
         ],
     ],
 ];

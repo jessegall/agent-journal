@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Agents;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\PendingWorkSource;
+use App\Support\ActorIdentity;
+use App\Contracts\PendingWorkSource;
 
 /**
  * A module's pending work as a test sets it: the same count for every actor.

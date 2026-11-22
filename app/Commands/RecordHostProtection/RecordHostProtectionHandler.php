@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Commands\RecordHostProtection;
+
+use App\Contracts\CommandHandler;
+use App\Models\Host;
+
+final readonly class RecordHostProtectionHandler implements CommandHandler
+{
+    public function handle(RecordHostProtectionCommand $command): void
+    {
+        Host::query()->lockForUpdate()->findOrFail($command->hostId)->recordProtection($command->report);
+    }
+}

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Agents\Support\ReadGrant;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\SearchHit;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
+use App\Support\ReadGrant;
 use Illuminate\Contracts\Container\Container;
 
 final readonly class JournalSearch

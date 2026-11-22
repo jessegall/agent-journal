@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Communication\Contracts\ConversationResolver;
-use App\Communication\Data\MessageView;
-use App\Communication\Exceptions\MessageMissing;
+use App\Contracts\ConversationResolver;
+use App\Data\MessageView;
+use App\Exceptions\MessageMissing;
 
 /**
  * Which messages the asker may pin: one it can see now, posted in the chat it pins it in.

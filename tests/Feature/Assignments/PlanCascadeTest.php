@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Agents\Models\Agent;
-use App\Assignments\Models\AssignmentRecord;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\AssignmentReference;
-use App\Assignments\Support\AssignmentResult;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\RequestKey;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\CommandBus;
+use App\Models\Agent;
+use App\Models\AssignmentRecord;
+use App\Support\AssigneeIdentity;
+use App\Support\AssignmentReference;
+use App\Support\AssignmentResult;
+use App\Support\RecordIdentity;
+use App\Support\RequestKey;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support\Sharing;
 
-use App\Domains\Support\Domain;
-use App\Domains\Support\DomainEntry;
-use App\Sharing\Support\ShareGatewayRegistry;
-use App\Sharing\Support\ShareRecordRegistry;
+use App\Support\Domain;
+use App\Support\DomainEntry;
+use App\Support\ShareGatewayRegistry;
+use App\Support\ShareRecordRegistry;
 
 /**
  * Registers a fixture domain's share records and gateways as the sharing provider does at boot.

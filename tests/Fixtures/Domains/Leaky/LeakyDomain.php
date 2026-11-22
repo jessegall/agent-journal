@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Leaky;
 
-use App\Actors\Contracts\Actor;
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
+use App\Contracts\Actor;
+use App\Support\Domain;
+use App\Support\Exports;
 
 final class LeakyDomain extends Domain
 {

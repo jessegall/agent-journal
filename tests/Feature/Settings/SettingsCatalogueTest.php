@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorContext;
-use App\Bus\Contracts\CommandBus;
-use App\Settings\Contracts\SettingsCatalogue;
-use App\Settings\Exceptions\SettingsAccessDenied;
-use App\Settings\Exceptions\SettingsOwnerUnknown;
-use App\Settings\Models\SettingsRecord;
-use App\Settings\Storage\EncodedSetting;
-use App\Settings\Storage\EncodedToggle;
-use App\Settings\Storage\EncodedValue;
-use App\Settings\Storage\SettingsDocument;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActor;
+use App\Contracts\SettingsCatalogue;
+use App\Exceptions\SettingsAccessDenied;
+use App\Exceptions\SettingsOwnerUnknown;
+use App\Models\SettingsRecord;
+use App\Support\ActorContext;
+use App\Support\Storage\EncodedSetting;
+use App\Support\Storage\EncodedToggle;
+use App\Support\Storage\EncodedValue;
+use App\Support\Storage\SettingsDocument;
 use Closure;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\CountsReads;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\StateEffects;
 
-use App\Hooks\Inputs\StopRequested;
-use App\Hooks\States\AgentState;
+use App\Support\Inputs\StopRequested;
+use App\Support\States\AgentState;
 use Illuminate\Database\Eloquent\Model;
 
 /**

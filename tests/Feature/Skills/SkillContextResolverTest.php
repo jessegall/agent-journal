@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Agents\Enums\SessionStatus;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Profiles\Values\ProfileBase;
-use App\Skills\Conditions\Conditions;
-use App\Skills\Enums\ConditionOutcome;
-use App\Skills\Exceptions\SkillAgentHidden;
-use App\Skills\Resolvers\Support\SkillContextResolver;
-use App\Skills\Values\SkillContext;
+use App\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Contracts\CommandBus;
+use App\Enums\ConditionOutcome;
+use App\Enums\SessionStatus;
+use App\Exceptions\SkillAgentHidden;
+use App\Models\Agent;
+use App\Models\AgentSession;
+use App\Resolvers\Support\SkillContextResolver;
+use App\Support\Conditions\Conditions;
+use App\Values\ProfileBase;
+use App\Values\SkillContext;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\ActsAsActors;

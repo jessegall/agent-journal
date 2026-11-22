@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Commands\AskChatQuestion\AskChatQuestionCommand;
-use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
-use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Communication\Contracts\AgentMessageReader;
-use App\Communication\Support\PendingInboxWork;
-use App\Reads\Enums\ReadView;
+use App\Commands\AskChatQuestion\AskChatQuestionCommand;
+use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Contracts\AgentMessageReader;
+use App\Enums\ReadView;
+use App\Support\ActorIdentity;
+use App\Support\PendingInboxWork;
 use Domain\Chat\Models\Conversation;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\OpensPairChats;

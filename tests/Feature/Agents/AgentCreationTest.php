@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Commands\CreateAgent\CreateAgentCommand;
-use App\Agents\Contracts\AgentResolver;
-use App\Agents\Models\Agent;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\CommandInputInvalid;
+use App\Commands\CreateAgent\CreateAgentCommand;
+use App\Contracts\AgentResolver;
+use App\Contracts\CommandBus;
+use App\Exceptions\CommandInputInvalid;
+use App\Models\Agent;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;

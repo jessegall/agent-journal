@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Ticks;
 
-use App\Hooks\StateLoading\Contracts\TickableStateLoader;
-use App\Hooks\Contracts\WorkOccurrenceGuard;
-use App\Hooks\References\StateReference;
-use App\Hooks\Decisions\StateReferences;
-use App\Hooks\StateLoading\StateSet;
-use App\Hooks\Enums\SessionTransferType;
-use App\Hooks\States\AgentState;
+use App\Support\StateLoading\Contracts\TickableStateLoader;
+use App\Contracts\WorkOccurrenceGuard;
+use App\Support\References\StateReference;
+use App\Support\Decisions\StateReferences;
+use App\Support\StateLoading\StateSet;
+use App\Enums\SessionTransferType;
+use App\Support\States\AgentState;
 
 /**
  * A ticking state type that keeps the size of every batch it was asked to restore; subjects a test names are done.

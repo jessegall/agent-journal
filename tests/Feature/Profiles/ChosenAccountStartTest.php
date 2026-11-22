@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Agents\Contracts\ActiveAccountReader;
-use App\Agents\Enums\StartUnavailableReason;
-use App\Agents\Exceptions\AccountUnavailable;
-use App\Drivers\Support\DefaultDrivers;
-use App\Profiles\Models\Account;
-use App\Profiles\Models\ActiveAccount;
-use App\Profiles\Values\AccountLabel;
+use App\Contracts\ActiveAccountReader;
+use App\Contracts\CurrentActorSetter;
+use App\Enums\StartUnavailableReason;
+use App\Exceptions\AccountUnavailable;
+use App\Models\Account;
+use App\Models\ActiveAccount;
+use App\Support\ActorContext;
+use App\Support\DefaultDrivers;
+use App\Values\AccountLabel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;

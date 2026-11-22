@@ -226,6 +226,7 @@
     "plan:unassign-work",
     "process:clean",
     "process:export",
+    "process:install-shipped-readers",
     "process:reconcile",
     "process:restore-check",
     "process:run",

@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Domains\Support\DomainEntry;
-use App\Ui\Declarations\DomainUi;
-use App\Ui\Declarations\NavigationItem;
-use App\Ui\Declarations\Page;
-use App\Ui\Declarations\SidebarGroup;
-use App\Ui\Enums\Icon;
-use App\Ui\Support\UiDeclarations;
-use App\Web\Data\NavigationData;
-use App\Web\Data\NavigationGroupData;
-use App\Web\Data\NavigationItemData;
-use App\Web\Routes\DeclaredRoutes;
-use App\Web\Support\NavigationRecords;
+use App\Data\NavigationData;
+use App\Data\NavigationGroupData;
+use App\Data\NavigationItemData;
+use App\Declarations\DomainUi;
+use App\Declarations\NavigationItem;
+use App\Declarations\Page;
+use App\Declarations\SidebarGroup;
+use App\Enums\Icon;
+use App\Support\DeclaredRoutes;
+use App\Support\DomainEntry;
+use App\Support\UiDeclarations;
+use App\Support\WebNavigationRecords;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Tests\Fixtures\UiDeclarations\Library\BookCount;
@@ -257,9 +257,9 @@ final class NavigationTest extends TestCase
         );
     }
 
-    private function navigation(): NavigationRecords
+    private function navigation(): WebNavigationRecords
     {
-        return $this->app->make(NavigationRecords::class);
+        return $this->app->make(WebNavigationRecords::class);
     }
 
     private function requestTo(string $path): Request

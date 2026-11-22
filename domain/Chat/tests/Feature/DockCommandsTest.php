@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
+use App\Enums\ActorType;
+use App\Support\ActorIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Models\DockPlacement;

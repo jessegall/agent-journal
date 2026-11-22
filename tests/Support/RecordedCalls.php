@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\AgentRequests\Contracts\CallSender;
-use App\AgentRequests\Contracts\JournalCall;
-use App\AgentRequests\Exceptions\CallRefused;
-use App\AgentRequests\Exceptions\JournalUnreachable;
-use App\AgentRequests\Support\SignedCallSender;
+use App\Contracts\CallSender;
+use App\Contracts\JournalCall;
+use App\Exceptions\CallRefused;
+use App\Exceptions\JournalUnreachable;
+use App\Support\SignedCallSender;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Assert;
 use RuntimeException;

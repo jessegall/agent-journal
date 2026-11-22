@@ -1,0 +1,35 @@
+{
+    "moved": {
+        "domain/Sequences/src/Skills/SequencesSkill.php": "eaf3e9f1aa51b01c9d2cbbbf671eb27ac80f5a06",
+        "domain/Sequences/src/States/FollowingSequenceState.php": "4bad855b6416e95fdbbe722199946549ef89ed19",
+        "domain/Sequences/src/States/Support/FollowingSequenceStateFactory.php": "3363ded39239a12c8881aef286c9e2edcb725811",
+        "domain/Sequences/src/States/Support/FollowingSequenceStateReference.php": "dae374b37ad8a1dadc0cff901e43fc59a5a94a41"
+    },
+    "edits": {
+        "domain/Sequences/src/Listeners/PushSequenceState.php": {
+            "prior": "e11204e2f340c82d73f6a8f53478a4a432694eea",
+            "result": "94562594ced678fc12376d349ff19c4b32b57168",
+            "move": "batch"
+        },
+        "domain/Sequences/src/SequencesDomain.php": {
+            "prior": "62b3bb73f5d257d875ce20334ea0ecc07c332e86",
+            "result": "344669c400b8a55eaee3e0ae7fafd9d4ce1a61a6",
+            "move": "batch"
+        },
+        "domain/Sequences/tests/Unit/States/FollowingSequenceTest.php": {
+            "prior": "7f1694f6c1d5a09fd5a37d140e28ad53bfdb8dd5",
+            "result": "e2d3acf77597fc6142f186c4d029fc3e44785171",
+            "move": "batch"
+        },
+        "tests/Unit/Hooks/AgentStackTest.php": {
+            "prior": "676b69999ad75e520d6bf53c57b150d7e049b61e",
+            "result": "025ce2603a0b8891530895726c1112e23e183196",
+            "move": "batch"
+        },
+        "tests/Unit/Skills/ShippedSkillFilesTest.php": {
+            "prior": "b81798bb6550903a63d2f7c260189e854d179307",
+            "result": "4360d31742bf33a3a1193f1f7ce4eebd59f725a7",
+            "move": "batch"
+        }
+    }
+}

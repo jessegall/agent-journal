@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Concerns;
 
-use App\AgentRequests\Values\CommandReport;
+use App\Values\CommandReport;
 use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Enums\EditingState;
 

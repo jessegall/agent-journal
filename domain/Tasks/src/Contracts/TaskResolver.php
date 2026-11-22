@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
-use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Values\TaskSummary;
 
 /**
  * Checks that tasks named by id exist and may be read by whoever acts in this request. It changes nothing; a check

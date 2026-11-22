@@ -1,0 +1,332 @@
+{
+    "moved": {
+        "domain/Documents/src/Api/CloseResult.php": "05288f1044007f5409316f570754620888530fe3",
+        "domain/Documents/src/Api/CreatedRecord.php": "c7094c78f948493520c6795f142848ef49268c0a",
+        "domain/Documents/src/Api/DocumentType.php": "b91eb4d2b8e3382b474b91a4db5f3adf15496d3e",
+        "domain/Documents/src/Api/DraftReference.php": "be210afd86c507f75a8e4154af6a3cc0295d31da",
+        "domain/Documents/src/Api/DraftTarget.php": "556a4ac757f0fe2392f32bf566c3d88c475a39b8",
+        "domain/Documents/src/Api/Events/DocumentClosed.php": "03ef7061d7bd997924503f1f24c37d5bd3e2214e",
+        "domain/Documents/src/Api/Events/DocumentCreated.php": "e9436c6b05ded87f8c52d5e6e560e7d225acfd8e",
+        "domain/Documents/src/Api/Events/DocumentDraftSaved.php": "6ca87d46d6efdc2d305447b1ea1b23891c872ef2",
+        "domain/Documents/src/Api/Events/DocumentOpened.php": "ced9545a74389c0e809bb78cabcfe449186e2d87",
+        "domain/Documents/src/Api/Events/DocumentPublished.php": "89f6e326deed0987a1b65ed5c4c3889834b197f3",
+        "domain/Documents/src/Api/Events/DraftKept.php": "78d52310b63b809df2811d0e7938bcbb1d7b8220",
+        "domain/Documents/src/Api/Events/RecordSettled.php": "c777f7f795c4bb02217bacb4a5780a72eebe7b8f",
+        "domain/Documents/src/Api/Events/ReportFiled.php": "961814db480eb2abaf17f519cd5db84a471faae7",
+        "domain/Documents/src/Api/RetainedDraftView.php": "891ca6df45497e0ecc5c5d5af3aa688aeb7ed179",
+        "domain/Documents/src/Cards/DocumentDockCard.php": "1bd887032a1658802327cb29ad9ae97acae9ce1c",
+        "domain/Documents/src/Cards/ReportDockCard.php": "b7fff308fdd424b4b51d87de7a549dc276b983cd",
+        "domain/Documents/src/Console/DocCloseCommand.php": "9b8ef1e61f7ba55dfa800f69d93f6de24bc582d6",
+        "domain/Documents/src/Console/DocCommentsCommand.php": "fa6bdd81045c3b13e2569cb0a9ad7a3cb82f5ac6",
+        "domain/Documents/src/Console/DocEditCommand.php": "86091bac84668701dbfe93f0ba20fab50a17159b",
+        "domain/Documents/src/Console/DocInspectCommand.php": "9929c9794a87b77c1818483f30b53e9c435fcb4d",
+        "domain/Documents/src/Console/DocListCommand.php": "bb8894f991968ed6102a78e970929636d10b0d75",
+        "domain/Documents/src/Console/DocMakeCommand.php": "402aac86bbc01b988c3df81b550e3e4ce3810040",
+        "domain/Documents/src/Console/DocOpenCommand.php": "606b5c5a2f594e50955bccc97ae35f447a4a9cc2",
+        "domain/Documents/src/Console/DocRevisionCommand.php": "d7c1da214a5406bd178b42ca7e9bf46f93fa7af4",
+        "domain/Documents/src/Console/DocRevisionsCommand.php": "42fbf06a2da268c62ac815bdfdcbd07b33620958",
+        "domain/Documents/src/Console/DocSettleCommand.php": "bf83697430e001135c57f09464b056109d30da02",
+        "domain/Documents/src/Console/DocShowCommand.php": "38a8efc0f5d9ca9e00d9a2bcdd8d7c067beed0c0",
+        "domain/Documents/src/Console/ReportCommentsCommand.php": "57851bee2a249d40c73d350b55871421649120d0",
+        "domain/Documents/src/Console/ReportEditCommand.php": "8a4c024c4919ed5fa2bcbe492459cf5bfebecb9f",
+        "domain/Documents/src/Console/ReportInspectCommand.php": "ad75df1062f1bf0a329dd08e8f0930d69c7d575f",
+        "domain/Documents/src/Console/ReportListCommand.php": "cda0ca45f5886e0fbd45c9042d66b00610764a7a",
+        "domain/Documents/src/Console/ReportMakeCommand.php": "b0f6525ae0463ef17fc068fd9b7a277f37cd11e6",
+        "domain/Documents/src/Console/ReportSettleCommand.php": "418ac1d44616e7335eb97a94df99ff0060d3510a",
+        "domain/Documents/src/Console/ReportShowCommand.php": "5058251e2da749300e7f464b62014a1ca9c26771",
+        "domain/Documents/src/Console/Support/DraftTokens.php": "7695dfde16a23c6c1e8fd7d7d382cd7bbd4ccdbe",
+        "domain/Documents/src/Links/DocumentLinkRecords.php": "67965b882b58fa02641ff3b42b11b8d8ae1b99c7",
+        "domain/Documents/src/Links/ReportLinkRecords.php": "3611fb0f8bccb8984b66b47566449803b1c85436",
+        "domain/Documents/src/Mcp/AppendUploadTool.php": "546d72e884d0ffe5c9591950b096c1aa5651e502",
+        "domain/Documents/src/Mcp/BeginUploadTool.php": "5610e2dfcccaf09f8c43d7bf313803ee4071d39c",
+        "domain/Documents/src/Mcp/CloseDocumentTool.php": "e08d58d4beee3d254d577f2a09570c1d0a99f856",
+        "domain/Documents/src/Mcp/CloseReportTool.php": "4978812374f7c9ac6aefc808a96a2ba387ab4890",
+        "domain/Documents/src/Mcp/CommentOnDocumentTool.php": "b0d7fbf957d978f6c16dd15394aa2a1989298026",
+        "domain/Documents/src/Mcp/CommentOnReportTool.php": "6d44929ba50e23de0600b262dbcefd02a5347b6f",
+        "domain/Documents/src/Mcp/CommitUploadTool.php": "91ec4c77f4da0fd7a91214b1cf5f1bfa7d3cdca3",
+        "domain/Documents/src/Mcp/Concerns/PublicationArguments.php": "6d738b3f332cf8fe52711cd28c9091d6b4398481",
+        "domain/Documents/src/Mcp/CreateDocumentTool.php": "9448e77198018a27178c27e59750e877603d16ee",
+        "domain/Documents/src/Mcp/CreateReportTool.php": "2f7cb2680abf6f59a2786b3057951a1778489886",
+        "domain/Documents/src/Mcp/DiscardUploadTool.php": "9a1a8e9b953c132a706fe090c8df4c2df1540cad",
+        "domain/Documents/src/Mcp/DocumentRevisionResource.php": "65800bc3bfe1d0bc399e7c8fb66f3d2436e9bda4",
+        "domain/Documents/src/Mcp/DocumentSearch.php": "927441cc45d991191277edec9a0b90b0da3c74b6",
+        "domain/Documents/src/Mcp/DocumentsListTool.php": "28be3fb2b7c5b2c05990372daed5ea3075749474",
+        "domain/Documents/src/Mcp/DraftWriteTool.php": "3c77dd10f221fec10bc84af9ca6a3b03bbcfb877",
+        "domain/Documents/src/Mcp/EditDocumentTool.php": "52513dbd72ea0e5c3af91e2bccc44b97d2e38f91",
+        "domain/Documents/src/Mcp/OpenDocumentTool.php": "e09e04ab65cdfef209db773b40f8965ea5937e25",
+        "domain/Documents/src/Mcp/OpenReportsOverview.php": "c4509d219416920445a3eb98b0a6f0b6b9d9f007",
+        "domain/Documents/src/Mcp/PublicationChunks.php": "72e909a53e16dadd6515c2f7f6adca0278e2b694",
+        "domain/Documents/src/Mcp/PublicationLists.php": "ae2665625201eafd3d4a1708a61c7ff55988d3b8",
+        "domain/Documents/src/Mcp/PublicationPages.php": "1d1aa05a224e69161104814debf158672948a9fa",
+        "domain/Documents/src/Mcp/PublicationReadTool.php": "b176839df29a26328cfc5f8984b286a4f7b2a107",
+        "domain/Documents/src/Mcp/PublicationResource.php": "83ccf861d66036535140626e007970633c95c3bf",
+        "domain/Documents/src/Mcp/ReadAttachmentTool.php": "915e5ef376d9f5a02835e362a653d68b15f8f93a",
+        "domain/Documents/src/Mcp/ReadDocumentTool.php": "396f021b58800290f08860b2d1203e53a7dae76a",
+        "domain/Documents/src/Mcp/ReadReportTool.php": "2dcfcb4bde778ff19d674f2bf8b1b04db1d3447a",
+        "domain/Documents/src/Mcp/ReadRetainedDraftTool.php": "6ed280ccad76b325fb94739d13afdd8bec571612",
+        "domain/Documents/src/Mcp/RecoverDraftTool.php": "cf0f2fe1059cce2119457280500a3c084ad3d043",
+        "domain/Documents/src/Mcp/ReportResource.php": "df98bfb98f4be08d9bcc63ed495d64fab49b9803",
+        "domain/Documents/src/Mcp/ReportSearch.php": "4632a9f9b989a2de04c086a436a1d83f6fbffe1c",
+        "domain/Documents/src/Mcp/ReportsListTool.php": "da9a331fec2c3fd5fff80fc2e56e8bf4f54f61e7",
+        "domain/Documents/src/Support/Concerns/RefusesOtherDrafts.php": "863a4feae5b98368ee139cd08a44274637ea3763",
+        "domain/Documents/src/Support/Concerns/SharesPublishedRecords.php": "81bd10414585d026f1508f4e6a09b5d567453ab6",
+        "domain/Documents/src/Routes/agent.php": "323400216d3b60eddd760b7614ce892dd1b6442c"
+    },
+    "edits": {
+        "domain/Documents/src/Calls/Concerns/NamesDraft.php": {
+            "prior": "08c61341179b45e8d4dfe8187b3e19dca645baf0",
+            "result": "e28055f79f07b9cb29917d1e3a3f4d29a3fc95d7",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/ChangeDocumentDetails/ChangeDocumentDetailsCommand.php": {
+            "prior": "19878e3f54129b961a1a46644bc7dfb6bbc35eea",
+            "result": "d7f6100bb41354fa98e2834ba57c3162f02caf4d",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/ChangeDocumentDetails/ChangeDocumentDetailsHandler.php": {
+            "prior": "7a2956b1687887059d7000007fdb39807745a8d6",
+            "result": "cac96a549e5d3d98a8c7b1b936fba1a742c49bbc",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/CloseDocument/CloseDocumentCommand.php": {
+            "prior": "3ea1442364943aef518969a8b4ff93ea4906d7b7",
+            "result": "3d6a702086818b186682d86b2a36ff5ba9bd4b76",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/CloseDocument/CloseDocumentHandler.php": {
+            "prior": "9a41642c9a6fd7fa2984d3a5e6c1ca81023e5ca7",
+            "result": "1fd3b8f83460ad3dfdbc9df6df4408604d3f531e",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/CreateDocument/CreateDocumentCommand.php": {
+            "prior": "b3b7ff241ff5181ba23fbb6bf9e2f779f55a1cf2",
+            "result": "f837d5b3451266ddf0b56393885439c976240f63",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/CreateDocument/CreateDocumentHandler.php": {
+            "prior": "dee4f1651372beab006bcbb8d7f4c634b18eb763",
+            "result": "076f014ced00c18646568c634e70751c334be549",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/CreateReport/CreateReportCommand.php": {
+            "prior": "bc8c6f2295fa20a29c90b0674ca2ff15fc13c70e",
+            "result": "f19167cba5ee9c66bba0c577042a7d8359f18a95",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/CreateReport/CreateReportHandler.php": {
+            "prior": "318061fcdba8594411cb421952c3b60999672269",
+            "result": "0d6952d8fe31d2dcc320f1168cb606bd8e898145",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/EditDocument/EditDocumentCommand.php": {
+            "prior": "8b7a4fffa169aa6ddc252e21e2b0f97d746dccdc",
+            "result": "1e9ef9f34b1966b07f3ec19c1fe55e104108a4d6",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/EditDocument/EditDocumentHandler.php": {
+            "prior": "d5df608e0f4f577710f07d783ed3261536e75992",
+            "result": "597829cdd92776acd6425186b7fe3a68c8b33ccb",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/OpenDocument/OpenDocumentCommand.php": {
+            "prior": "7dbfbda0c01f580e44812d5242479970dc3aad2d",
+            "result": "eadb4589fd67a8fc15b5c87a52131ba87009cdcd",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/OpenDocument/OpenDocumentHandler.php": {
+            "prior": "ca57f4d8ad7591ff80eef9951b3420548fd23df0",
+            "result": "e8e9911458099e40820ca047ee97575b67ccc166",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/RecoverDocument/RecoverDocumentCommand.php": {
+            "prior": "033f408b6674ad0db7e856e0beb519932edf7bbb",
+            "result": "172d407a3b8ee7c95657159099fba8c134dd7803",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/RecoverDocument/RecoverDocumentHandler.php": {
+            "prior": "9b879d44f4d5fff41cf432e71b63cffe83cdf8ef",
+            "result": "519f3abe7ae7e9f5098764609b8826d64ed910cd",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/RecoverDraft/RecoverDraftCommand.php": {
+            "prior": "449a0d6fb387e68c7c9e4d4e8cad9e98f93143c6",
+            "result": "bba126566dd868d70f9ad77f45c5c8c04a3bb049",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/RecoverDraft/RecoverDraftHandler.php": {
+            "prior": "5c11a05300472d17f27cb2391b8aee43d2543e40",
+            "result": "acee8f912d79b044424a234874c0055aeda0a2b8",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/ReplaceDocumentBody/ReplaceDocumentBodyCommand.php": {
+            "prior": "2dfa02a386b0df06f87ff67240e224860a73ec1e",
+            "result": "7749f46292455cb3e8d8ae54bbd9dbb5d8e9aa94",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/ReplaceDocumentBody/ReplaceDocumentBodyHandler.php": {
+            "prior": "ba0235745e6ea90aa14f7e7f2002ac4e88f0c91f",
+            "result": "ce8c953ad3b289c5e8d82b144a5be7f8e8354627",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/ReplaceDocumentText/ReplaceDocumentTextCommand.php": {
+            "prior": "1aebda9f48789cb525a55639c078b1dd0830573c",
+            "result": "f291c5afd0f75b2191c834b2c756ce742420e1bd",
+            "move": "batch"
+        },
+        "domain/Documents/src/Commands/ReplaceDocumentText/ReplaceDocumentTextHandler.php": {
+            "prior": "5a970883043eb589ac91230ebfc1eb124c911ac1",
+            "result": "41e95143566efa1b57e5cd8ee047ba5c584c73f4",
+            "move": "batch"
+        },
+        "domain/Documents/src/Contracts/DraftReader.php": {
+            "prior": "349796af4efe27486b54fb418ce6d84a3180dee2",
+            "result": "dceb7deceb6df632fed51a5f05905e085c20df44",
+            "move": "batch"
+        },
+        "domain/Documents/src/DocumentsDomain.php": {
+            "prior": "5d241c311c6e6bd496862f55fbaf1eec7830b796",
+            "result": "c14b0b249b79ff3dadabcd69fd62842ee73644f2",
+            "move": "batch"
+        },
+        "domain/Documents/src/Http/Requests/DraftPageRequest.php": {
+            "prior": "32965f47ddf52b9abf1b30b2e78ae60bc915462c",
+            "result": "1645637e1af38ebdbb0818434bb2cdff9856df8e",
+            "move": "batch"
+        },
+        "domain/Documents/src/Http/Requests/DraftRequest.php": {
+            "prior": "bd6dc28df102543ec166745b44450a7dfedd9c8b",
+            "result": "ecb4ae893967545ade3e8ed9094e6416c92f6f59",
+            "move": "batch"
+        },
+        "domain/Documents/src/Listeners/NoticeKeptDraft.php": {
+            "prior": "a9c5c4356e1c3ef34e85e31ea02ef95b555aa6b0",
+            "result": "f1bc96d01be0dcacaa701d93354d549b6056b213",
+            "move": "batch"
+        },
+        "domain/Documents/src/Models/Concerns/Settles.php": {
+            "prior": "38777f019e2050d3a62a7966ee1286537239e08c",
+            "result": "789bd07b763edb45dbc58712b4ef7cf63bd73854",
+            "move": "batch"
+        },
+        "domain/Documents/src/Models/Document.php": {
+            "prior": "28a1b0d921faae4ebb6c9ce93a47ba80f329fca8",
+            "result": "2864db949e7ac97bf51f9e0dbbde0e663f2269be",
+            "move": "batch"
+        },
+        "domain/Documents/src/Models/DocumentClose.php": {
+            "prior": "f1b69eb6c5513c878ef1003f3b406546e5c48c90",
+            "result": "b7d0b3130374e5b1fef6320e5ecceb0b5a3f08b0",
+            "move": "batch"
+        },
+        "domain/Documents/src/Models/DocumentDraft.php": {
+            "prior": "a7c07989df31fa87fc60e3d559b1abf3fe21a84b",
+            "result": "63b27e26b471afee988811e6ce2b667e0af29b7b",
+            "move": "batch"
+        },
+        "domain/Documents/src/Models/Report.php": {
+            "prior": "88a47b7423081ee9de01672b8e4a22129413dbe1",
+            "result": "1d987f66cef0250d7acf89e358d6a5d73a0b0702",
+            "move": "batch"
+        },
+        "domain/Documents/src/Models/RetainedDraft.php": {
+            "prior": "2771a4ff026e235a9f44137b161f81f89654cadc",
+            "result": "cf1571f1a76d1385190147faad8cc097cb6ca5dc",
+            "move": "batch"
+        },
+        "domain/Documents/src/Resolvers/AttachmentPages.php": {
+            "prior": "78a29353185b9fec228ae344356c9e4644616a1f",
+            "result": "5f81696ac2f0dac49af4f63cac38a8590d7c053c",
+            "move": "batch"
+        },
+        "domain/Documents/src/Resolvers/DocumentPages.php": {
+            "prior": "fa8f832b1ff1d1642625fdc2250c074826123455",
+            "result": "5466bdbaeeb0183b13c3595fd17cf92dc5b7b965",
+            "move": "batch"
+        },
+        "domain/Documents/src/Resolvers/ReportPages.php": {
+            "prior": "d1f7f8c10cdbd9552569300a03dd1fdd5d4b6d90",
+            "result": "e8e8d63bbd0aacbf056a68a6d9e6d39a0dea090b",
+            "move": "batch"
+        },
+        "domain/Documents/src/Resolvers/RetainedDrafts.php": {
+            "prior": "5c5d9f71c5874a0571f1073560080cb488d4fec9",
+            "result": "cb1bba026a0352ecac97fc36b6142d310b31eced",
+            "move": "batch"
+        },
+        "domain/Documents/src/Support/DocumentShareProvider.php": {
+            "prior": "aad7fb9aed92fedb16c13c4c07065c7ad1a9677d",
+            "result": "bc480f18bb82453d8bb387a8874c5a23c09ec1f0",
+            "move": "batch"
+        },
+        "domain/Documents/src/Support/DraftClosing.php": {
+            "prior": "513c8f7cacd07e45a4e4c738ab11503b8f5e72cd",
+            "result": "8f910c8994dd87d17f6797e5a0616e13dec792ba",
+            "move": "batch"
+        },
+        "domain/Documents/src/Support/DraftEditing.php": {
+            "prior": "c460637cdc4f71aca0bbe186b129de4323e0e156",
+            "result": "7782740911968620a76354f65428fdef3e5e6935",
+            "move": "batch"
+        },
+        "domain/Documents/src/Support/ReportShareProvider.php": {
+            "prior": "9f86fa245f1bb83110e457ff9d0b4e73e03fb6ee",
+            "result": "e670c3966ae5da7c66aa65eb6b5446475feab6ca",
+            "move": "batch"
+        },
+        "domain/Documents/tests/Feature/DocumentDraftTest.php": {
+            "prior": "a81b0c385ee3a66d11a9b8c3ad396f4ba6bb00ef",
+            "result": "56c21da9d98b4dd4bbc0a2d2e4455995a0db9efe",
+            "move": "batch"
+        },
+        "domain/Documents/tests/Feature/DocumentEditTest.php": {
+            "prior": "1757cc4ddf94cce3ce2051ccedb12af1893ea233",
+            "result": "ffaf7b52b8fda283b6136b40577675e86a0b8c3d",
+            "move": "batch"
+        },
+        "domain/Documents/tests/Feature/DocumentFactsTest.php": {
+            "prior": "5fb898a53a5070dfc720b4a0d3049c65167c8dce",
+            "result": "56bd58c2fbdc8a22eac129624943d65f601b8c5a",
+            "move": "batch"
+        },
+        "domain/Documents/tests/Feature/DocumentReaderTest.php": {
+            "prior": "e2e6576dbb0cab5de12d17fec089f76021fefbb2",
+            "result": "313a5dd3a9a438c29746031cc98f82de7d28125e",
+            "move": "batch"
+        },
+        "domain/Documents/tests/Feature/DraftsTest.php": {
+            "prior": "df720ba7e2c403c7fe71fa2fda1b78d539e3939c",
+            "result": "b9835ddb168083f5dd0db68493b1ae4f001b9ec2",
+            "move": "batch"
+        },
+        "domain/Documents/tests/Feature/IsolationTest.php": {
+            "prior": "981b0b3bd46fea9934f0041bc734246be1458fee",
+            "result": "c5912ae3eb0ec545fca6e6ac6214269657deb0c7",
+            "move": "batch"
+        },
+        "domain/Documents/tests/Feature/SettleAndRecoverTest.php": {
+            "prior": "4e6e373a96fbdc50a234e3df1e57ec50315dc5f9",
+            "result": "46189e1e5b5cd0ce4723c34798e4aff4751459de",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Listeners/LinkReportToJob.php": {
+            "prior": "d9c71c1c01c92d7c637f356f7d43e27a14012090",
+            "result": "7066d36a47a2f1cbe02821387202e0f01fb7ee78",
+            "move": "batch"
+        },
+        "tests/Architecture/EventOwners/Documents.php": {
+            "prior": "970518b05e26f1a3187bd1d1306434e9a1b8e4f5",
+            "result": "9a35aa06c02781de642a00096c3898bd8e006135",
+            "move": "batch"
+        },
+        "tests/Feature/Domains/RequiredListenerLaneTest.php": {
+            "prior": "64db55475d2e55b73ee1dc6188c6c5702ae723e8",
+            "result": "2f1f2e1c221d9cf2889dfe970a6da82bc68108bf",
+            "move": "batch"
+        },
+        "tests/Feature/Events/EventPayloads.php": {
+            "prior": "e716aa761f862b6a1de8fd6fa89c3996e978f027",
+            "result": "73415a2d3b7d6a759ad1695f4f358f2431114867",
+            "move": "batch"
+        }
+    }
+}

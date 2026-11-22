@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\ChangeDocumentDetails;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\OneLine;
-use App\Bus\Support\Command;
-use App\Operations\Enums\AccessType;
-use Domain\Documents\Api\DraftReference;
-use Domain\Documents\Api\DraftTarget;
+use App\Attributes\Authorize;
+use App\Attributes\OneLine;
+use App\Enums\AccessType;
+use App\Support\Command;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentPolicy;
+use Domain\Documents\Values\DraftReference;
+use Domain\Documents\Values\DraftTarget;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Required;
 

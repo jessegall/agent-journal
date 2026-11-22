@@ -1,6 +1,6 @@
 [
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4c212b1451d0630ae78c65ad19fef1b14bd4473b",
         "old_path": "domain/Helpers/database/migrations/2026_11_19_100000_create_helper_records_tables.php",
         "old_class": null,
@@ -19,7 +19,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "eb6b15c78d90ca09d24d0d5173210e6aa90452e6",
         "old_path": "domain/Helpers/database/migrations/2026_11_22_100000_create_report_job_links_table.php",
         "old_class": null,
@@ -38,7 +38,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "849617b5d84363f0adfdca4c8e6131c87923e396",
         "old_path": "domain/Helpers/database/migrations/2026_11_22_100001_create_report_job_discrepancies_table.php",
         "old_class": null,
@@ -57,8 +57,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "684295eea964f998928efb85ce2c3673ef94ebee",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "de0dc931b7269215fb27e86f9b3b06b1832b609e",
         "old_path": "domain/Helpers/src/Calls/CancelHelperJobCall.php",
         "old_class": "Domain\\Helpers\\Calls\\CancelHelperJobCall",
         "final_path": "domain/Helpers/src/Calls/CancelHelperJobCall.php",
@@ -76,8 +76,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5fef54eb36346224b9f06acd857ee8924bb503e8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "3f2e3aea858ee815bb2d5998f9738eb8146308f1",
         "old_path": "domain/Helpers/src/Calls/ContinueHelperCall.php",
         "old_class": "Domain\\Helpers\\Calls\\ContinueHelperCall",
         "final_path": "domain/Helpers/src/Calls/ContinueHelperCall.php",
@@ -95,8 +95,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7ef5200335dccad778ed1456831f5db99d40cbab",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9b096f3661463a00e56d8fa265c23ab807d9791d",
         "old_path": "domain/Helpers/src/Calls/HelperCalls.php",
         "old_class": "Domain\\Helpers\\Calls\\HelperCalls",
         "final_path": "domain/Helpers/src/Calls/HelperCalls.php",
@@ -114,8 +114,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0856d889f4bd0dff6bd87db3e4e9843a29dd4b0c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b125720b5d0244df19de45df875b4fc1ca17b711",
         "old_path": "domain/Helpers/src/Calls/ListHelperNoticesCall.php",
         "old_class": "Domain\\Helpers\\Calls\\ListHelperNoticesCall",
         "final_path": "domain/Helpers/src/Calls/ListHelperNoticesCall.php",
@@ -133,8 +133,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "074f5ca031d4c61046509b1571a1b3336dfba96f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4ae4edc97671bef35f6d0dd71265cab220350a3b",
         "old_path": "domain/Helpers/src/Calls/SendHelperCall.php",
         "old_class": "Domain\\Helpers\\Calls\\SendHelperCall",
         "final_path": "domain/Helpers/src/Calls/SendHelperCall.php",
@@ -152,8 +152,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9d3f35a2bd5bac1e2864201d1e145545a0d5a3d2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "420a1f8a50a26731ec0fb25bed73fbe73ed8eda6",
         "old_path": "domain/Helpers/src/Calls/StartHelperCall.php",
         "old_class": "Domain\\Helpers\\Calls\\StartHelperCall",
         "final_path": "domain/Helpers/src/Calls/StartHelperCall.php",
@@ -171,8 +171,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "079aa9f0accb6d89010645eab9042cc821ffe0f7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "821c5632458cc8c720b7910c046799882122cb00",
         "old_path": "domain/Helpers/src/Calls/SteerHelperCall.php",
         "old_class": "Domain\\Helpers\\Calls\\SteerHelperCall",
         "final_path": "domain/Helpers/src/Calls/SteerHelperCall.php",
@@ -190,8 +190,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "850246ad9eb47301554b88a2481309d483a4a69a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "54e6037dfe329675b7687f269f1415e7906e1cc6",
         "old_path": "domain/Helpers/src/Commands/CancelHelperJob/CancelHelperJobCommand.php",
         "old_class": "Domain\\Helpers\\Commands\\CancelHelperJob\\CancelHelperJobCommand",
         "final_path": "domain/Helpers/src/Commands/CancelHelperJob/CancelHelperJobCommand.php",
@@ -209,8 +209,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a7f5a181ef859e926343393468aa5a4a4c44055f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1dccbfe1aaa406cbc1ee57b130321fe584126e7b",
         "old_path": "domain/Helpers/src/Commands/CancelHelperJob/CancelHelperJobHandler.php",
         "old_class": "Domain\\Helpers\\Commands\\CancelHelperJob\\CancelHelperJobHandler",
         "final_path": "domain/Helpers/src/Commands/CancelHelperJob/CancelHelperJobHandler.php",
@@ -228,8 +228,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4d019328882df87443ac803163bc4f4408a72fd8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "844f8e3f875a73aa59bfb3432576f1f111d8f449",
         "old_path": "domain/Helpers/src/Commands/CancelLaunchedHelperJob/CancelLaunchedHelperJobCommand.php",
         "old_class": "Domain\\Helpers\\Commands\\CancelLaunchedHelperJob\\CancelLaunchedHelperJobCommand",
         "final_path": "domain/Helpers/src/Commands/CancelLaunchedHelperJob/CancelLaunchedHelperJobCommand.php",
@@ -247,7 +247,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "83f0fb3c285c97f5906d5c9004443eea3303a4ab",
         "old_path": "domain/Helpers/src/Commands/CancelLaunchedHelperJob/CancelLaunchedHelperJobHandler.php",
         "old_class": "Domain\\Helpers\\Commands\\CancelLaunchedHelperJob\\CancelLaunchedHelperJobHandler",
@@ -266,8 +266,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1e30214f2d3c7625d952e0899eb945af16b69eb2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "af5c80ccb529f3a568e8b36277995c54986441ae",
         "old_path": "domain/Helpers/src/Commands/ContinueHelper/ContinueHelperCommand.php",
         "old_class": "Domain\\Helpers\\Commands\\ContinueHelper\\ContinueHelperCommand",
         "final_path": "domain/Helpers/src/Commands/ContinueHelper/ContinueHelperCommand.php",
@@ -285,7 +285,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6aa6e47048b419d7cf4eae8561fbce9681460605",
         "old_path": "domain/Helpers/src/Commands/ContinueHelper/ContinueHelperHandler.php",
         "old_class": "Domain\\Helpers\\Commands\\ContinueHelper\\ContinueHelperHandler",
@@ -304,8 +304,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f0a4f44d377e0c1a95a73bda0d93add20069c17e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8351996f9acc364477e6078f0e0754007fd7d685",
         "old_path": "domain/Helpers/src/Commands/FinishHelperJob/FinishHelperJobCommand.php",
         "old_class": "Domain\\Helpers\\Commands\\FinishHelperJob\\FinishHelperJobCommand",
         "final_path": "domain/Helpers/src/Commands/FinishHelperJob/FinishHelperJobCommand.php",
@@ -323,7 +323,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "abe341ac834df1aaf78d2dee6a7beba2fa03c2b0",
         "old_path": "domain/Helpers/src/Commands/FinishHelperJob/FinishHelperJobHandler.php",
         "old_class": "Domain\\Helpers\\Commands\\FinishHelperJob\\FinishHelperJobHandler",
@@ -342,8 +342,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2aff9768a216fb483590f86894b8d76625e3fcf8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "48aceea860253a89e8d955d33985ea8f2179d7ef",
         "old_path": "domain/Helpers/src/Commands/HoldHelperJob/HoldHelperJobCommand.php",
         "old_class": "Domain\\Helpers\\Commands\\HoldHelperJob\\HoldHelperJobCommand",
         "final_path": "domain/Helpers/src/Commands/HoldHelperJob/HoldHelperJobCommand.php",
@@ -361,7 +361,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "fe5ed5285c206000586bb561c768916b3f59a497",
         "old_path": "domain/Helpers/src/Commands/HoldHelperJob/HoldHelperJobHandler.php",
         "old_class": "Domain\\Helpers\\Commands\\HoldHelperJob\\HoldHelperJobHandler",
@@ -380,8 +380,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d9accae95591c5ff2c9589c8179c7926ea70455d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ce777232c1135a0ad61d0ab4eae63f7d3bc1763b",
         "old_path": "domain/Helpers/src/Commands/MarkHelperJobUnfinished/MarkHelperJobUnfinishedCommand.php",
         "old_class": "Domain\\Helpers\\Commands\\MarkHelperJobUnfinished\\MarkHelperJobUnfinishedCommand",
         "final_path": "domain/Helpers/src/Commands/MarkHelperJobUnfinished/MarkHelperJobUnfinishedCommand.php",
@@ -399,7 +399,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3b014e2e50ea65e7b45c9e1b38f2a9fa5cd1c341",
         "old_path": "domain/Helpers/src/Commands/MarkHelperJobUnfinished/MarkHelperJobUnfinishedHandler.php",
         "old_class": "Domain\\Helpers\\Commands\\MarkHelperJobUnfinished\\MarkHelperJobUnfinishedHandler",
@@ -418,8 +418,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c14e627cc4ee3153d2d60f6ee6f184056277dc5f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6a1184032b7a6987bb060ddd3beb376d65b17120",
         "old_path": "domain/Helpers/src/Commands/SendHelper/SendHelperCommand.php",
         "old_class": "Domain\\Helpers\\Commands\\SendHelper\\SendHelperCommand",
         "final_path": "domain/Helpers/src/Commands/SendHelper/SendHelperCommand.php",
@@ -437,8 +437,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "aa46e1d3cd0fe77a3248b312861f6101beea07cd",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "967dbbef70e69221dc063394e8f4e4f72e923889",
         "old_path": "domain/Helpers/src/Commands/SendHelper/SendHelperHandler.php",
         "old_class": "Domain\\Helpers\\Commands\\SendHelper\\SendHelperHandler",
         "final_path": "domain/Helpers/src/Commands/SendHelper/SendHelperHandler.php",
@@ -456,8 +456,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ba03d4e41ecc98bf734076d0d56c3d62c05d0ac4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1b0f0f219ab5ede6ac31d2a180ac5889904d4d3a",
         "old_path": "domain/Helpers/src/Commands/StartHelper/StartHelperCommand.php",
         "old_class": "Domain\\Helpers\\Commands\\StartHelper\\StartHelperCommand",
         "final_path": "domain/Helpers/src/Commands/StartHelper/StartHelperCommand.php",
@@ -475,8 +475,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "09af6629baf894fe734b1a68647a66dd8d6bf001",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "37831f9e400d0bdae87a535d6ab1a669f9e7a880",
         "old_path": "domain/Helpers/src/Commands/StartHelper/StartHelperHandler.php",
         "old_class": "Domain\\Helpers\\Commands\\StartHelper\\StartHelperHandler",
         "final_path": "domain/Helpers/src/Commands/StartHelper/StartHelperHandler.php",
@@ -494,8 +494,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7b5a15edb13bddaa784edbc6f5621d581ed92a3d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "57600bffac5fc0872748500ac43ed6c41b0292b9",
         "old_path": "domain/Helpers/src/Commands/SteerHelper/SteerHelperCommand.php",
         "old_class": "Domain\\Helpers\\Commands\\SteerHelper\\SteerHelperCommand",
         "final_path": "domain/Helpers/src/Commands/SteerHelper/SteerHelperCommand.php",
@@ -513,8 +513,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "01458eb2400eb5080363971b3529407079ea97c0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f6a267973bf491e854ddbd37d3f333fddd1776af",
         "old_path": "domain/Helpers/src/Commands/SteerHelper/SteerHelperHandler.php",
         "old_class": "Domain\\Helpers\\Commands\\SteerHelper\\SteerHelperHandler",
         "final_path": "domain/Helpers/src/Commands/SteerHelper/SteerHelperHandler.php",
@@ -532,7 +532,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ed390f9b59be14018c4d3831179b546fa7ec0d91",
         "old_path": "domain/Helpers/src/Commands/Support/HelperCommandHandler.php",
         "old_class": "Domain\\Helpers\\Commands\\Support\\HelperCommandHandler",
@@ -551,8 +551,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e564c059b92cf7defc0b1e7cdf5d86a024649e21",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a9ecfaf9fb85b0b01692d531ce5556b12fc99963",
         "old_path": "domain/Helpers/src/Console/Concerns/PrintsHelperReceipts.php",
         "old_class": "Domain\\Helpers\\Console\\Concerns\\PrintsHelperReceipts",
         "final_path": "domain/Helpers/src/Console/Concerns/PrintsHelperReceipts.php",
@@ -570,8 +570,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e57aa5eb7c247da0ea867467ce51b52d1ee3aa33",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e29f944b69b9469854d25cb752a430821e1e8a84",
         "old_path": "domain/Helpers/src/Console/HelperCancelCommand.php",
         "old_class": "Domain\\Helpers\\Console\\HelperCancelCommand",
         "final_path": "domain/Helpers/src/Console/Commands/HelperCancelCommand.php",
@@ -584,13 +584,16 @@
         },
         "phase": 4,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "eb7d50d0d2bbe4f42547b056deaa3c5a8d14d90d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1bea061522aac3e496b899f3aa73e0490d41c1a3",
         "old_path": "domain/Helpers/src/Console/HelperContinueCommand.php",
         "old_class": "Domain\\Helpers\\Console\\HelperContinueCommand",
         "final_path": "domain/Helpers/src/Console/Commands/HelperContinueCommand.php",
@@ -603,13 +606,16 @@
         },
         "phase": 4,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "02c97fab9c5d0d1d20a53fdcc546fcd9440102ea",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9d074ff96b8a5b0a0028e77d60559d07a1b86272",
         "old_path": "domain/Helpers/src/Console/HelperNoticesCommand.php",
         "old_class": "Domain\\Helpers\\Console\\HelperNoticesCommand",
         "final_path": "domain/Helpers/src/Console/Commands/HelperNoticesCommand.php",
@@ -622,13 +628,16 @@
         },
         "phase": 4,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a8f41edbad2bdf840776cc2aa2dcfeb008d0187c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "257604acb28f1844b8f6d3a97216db1fab95a469",
         "old_path": "domain/Helpers/src/Console/HelperSendCommand.php",
         "old_class": "Domain\\Helpers\\Console\\HelperSendCommand",
         "final_path": "domain/Helpers/src/Console/Commands/HelperSendCommand.php",
@@ -641,13 +650,16 @@
         },
         "phase": 4,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "749e642bd874f78e1d6f9338a01403e6a325d930",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1372ce48a78bf504e3172575da81067abc990f54",
         "old_path": "domain/Helpers/src/Console/HelperStartCommand.php",
         "old_class": "Domain\\Helpers\\Console\\HelperStartCommand",
         "final_path": "domain/Helpers/src/Console/Commands/HelperStartCommand.php",
@@ -660,13 +672,16 @@
         },
         "phase": 4,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "57269bf209323cf924443984c8ab8af242cd3a8a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b8600edab47e17e19daa8e7f2785a00d3f66860e",
         "old_path": "domain/Helpers/src/Console/HelperSteerCommand.php",
         "old_class": "Domain\\Helpers\\Console\\HelperSteerCommand",
         "final_path": "domain/Helpers/src/Console/Commands/HelperSteerCommand.php",
@@ -679,12 +694,15 @@
         },
         "phase": 4,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5d9ad3d72e0d5212b69f699812c3e06f22a45ffb",
         "old_path": "domain/Helpers/src/Enums/JobState.php",
         "old_class": "Domain\\Helpers\\Enums\\JobState",
@@ -703,7 +721,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3d68c98c1ef74ed3767aca67a0fe4ab5b0bc12ed",
         "old_path": "domain/Helpers/src/Enums/PurposeType.php",
         "old_class": "Domain\\Helpers\\Enums\\PurposeType",
@@ -722,7 +740,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ae13db98b29d010d90befc953786b0dde8f7cb36",
         "old_path": "domain/Helpers/src/Enums/ReportJobDiscrepancyReason.php",
         "old_class": "Domain\\Helpers\\Enums\\ReportJobDiscrepancyReason",
@@ -741,7 +759,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "fe1a03018ad94827df42469c7171106c502de088",
         "old_path": "domain/Helpers/src/Events/ReportJobLinked.php",
         "old_class": "Domain\\Helpers\\Events\\ReportJobLinked",
@@ -760,7 +778,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "599ac179f0f3712520608b28d7b50e2b88694715",
         "old_path": "domain/Helpers/src/Exceptions/ContextUnavailable.php",
         "old_class": "Domain\\Helpers\\Exceptions\\ContextUnavailable",
@@ -779,7 +797,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e2a47e0a780dabe89613aae2618ce28622794915",
         "old_path": "domain/Helpers/src/Exceptions/HelperBusy.php",
         "old_class": "Domain\\Helpers\\Exceptions\\HelperBusy",
@@ -798,7 +816,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2d6db462c0f53b58528fcabd65cd32be8dd3ff54",
         "old_path": "domain/Helpers/src/Exceptions/HelperIdentityFixed.php",
         "old_class": "Domain\\Helpers\\Exceptions\\HelperIdentityFixed",
@@ -817,7 +835,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c556946dd9909ca9dbc6d972eb71518f70d068d3",
         "old_path": "domain/Helpers/src/Exceptions/HelperJobAlreadyEnded.php",
         "old_class": "Domain\\Helpers\\Exceptions\\HelperJobAlreadyEnded",
@@ -836,7 +854,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2e0e2faa2acd1f070ca08734a6332206446df0f9",
         "old_path": "domain/Helpers/src/Exceptions/HelperJobFinished.php",
         "old_class": "Domain\\Helpers\\Exceptions\\HelperJobFinished",
@@ -855,7 +873,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e4e2d00c96fa9b0551493f24f1b8655654798b51",
         "old_path": "domain/Helpers/src/Exceptions/HelperJobUnfinished.php",
         "old_class": "Domain\\Helpers\\Exceptions\\HelperJobUnfinished",
@@ -874,7 +892,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ea287b5a76d32a64582755e3e4f3c5d242352fba",
         "old_path": "domain/Helpers/src/Exceptions/HelperLaunchUncertain.php",
         "old_class": "Domain\\Helpers\\Exceptions\\HelperLaunchUncertain",
@@ -893,7 +911,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8c36d42da136c5073de434b0aa3fd59cc08d7062",
         "old_path": "domain/Helpers/src/Exceptions/HelperProfileMismatch.php",
         "old_class": "Domain\\Helpers\\Exceptions\\HelperProfileMismatch",
@@ -912,7 +930,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5b87774bfe6de8c79101c854ef37567d9e578326",
         "old_path": "domain/Helpers/src/Exceptions/HelperProfileTypeConflict.php",
         "old_class": "Domain\\Helpers\\Exceptions\\HelperProfileTypeConflict",
@@ -931,7 +949,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "70e51c9cc11dae531853c61a200bb5ff5656e551",
         "old_path": "domain/Helpers/src/Exceptions/HelperProfilesUnavailable.php",
         "old_class": "Domain\\Helpers\\Exceptions\\HelperProfilesUnavailable",
@@ -950,7 +968,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e24dc36a6f4853e1c78ad4eb086e27255f33dbee",
         "old_path": "domain/Helpers/src/Exceptions/HelperRequestConflict.php",
         "old_class": "Domain\\Helpers\\Exceptions\\HelperRequestConflict",
@@ -969,7 +987,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "84affdafa3a68c40d5017ef229e8ed0c163078bb",
         "old_path": "domain/Helpers/src/Exceptions/HelperRetired.php",
         "old_class": "Domain\\Helpers\\Exceptions\\HelperRetired",
@@ -988,7 +1006,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ce92c166ac4d5bbfc48935bcbc6df7057150088c",
         "old_path": "domain/Helpers/src/Exceptions/HelperUnavailable.php",
         "old_class": "Domain\\Helpers\\Exceptions\\HelperUnavailable",
@@ -1007,7 +1025,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c9e6174f1acd430d0d34bde9da00bb6aba60657d",
         "old_path": "domain/Helpers/src/Exceptions/PurposeConflict.php",
         "old_class": "Domain\\Helpers\\Exceptions\\PurposeConflict",
@@ -1026,7 +1044,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ff1a1ad965dbe001914ab045afdd70daed39a148",
         "old_path": "domain/Helpers/src/Exceptions/PurposeRequired.php",
         "old_class": "Domain\\Helpers\\Exceptions\\PurposeRequired",
@@ -1045,7 +1063,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "95a4b5e21b3003ae578f0459ec2064b3676f3d8b",
         "old_path": "domain/Helpers/src/Exceptions/SubjectUnavailable.php",
         "old_class": "Domain\\Helpers\\Exceptions\\SubjectUnavailable",
@@ -1064,8 +1082,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "23e5f790efbe8ec10543466973f50c2bf2daafba",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "718b000ebbb25e598adf3f5d55d24e02237cb761",
         "old_path": "domain/Helpers/src/HelpersDomain.php",
         "old_class": "Domain\\Helpers\\HelpersDomain",
         "final_path": "domain/Helpers/src/HelpersDomain.php",
@@ -1083,8 +1101,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8d7e0fe4a1c738d2875055ebb0388301fe442b15",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "dbf97e48498ccbafa8d5a1f2ebcf49aea95f54a5",
         "old_path": "domain/Helpers/src/Http/Controllers/Calls/CancelHelperJobController.php",
         "old_class": "Domain\\Helpers\\Http\\Controllers\\Calls\\CancelHelperJobController",
         "final_path": "domain/Helpers/src/Http/Controllers/Calls/CancelHelperJobController.php",
@@ -1102,8 +1120,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d9ed83e236b742b471a6eb21ae2f9c9bc61fb57f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4675fb871ee9a2aa4e35fa4030e8ea77423cebe7",
         "old_path": "domain/Helpers/src/Http/Controllers/Calls/ContinueHelperController.php",
         "old_class": "Domain\\Helpers\\Http\\Controllers\\Calls\\ContinueHelperController",
         "final_path": "domain/Helpers/src/Http/Controllers/Calls/ContinueHelperController.php",
@@ -1121,7 +1139,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "99d512fbdb15e0733c6cac369910b9e31866ebbf",
         "old_path": "domain/Helpers/src/Http/Controllers/Calls/ListHelperNoticesController.php",
         "old_class": "Domain\\Helpers\\Http\\Controllers\\Calls\\ListHelperNoticesController",
@@ -1140,8 +1158,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a5f8a76fc08f3aee7ec80856795604d215b432de",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "94bfad8de406a53d03de3b2ed6c9b6be12b49d03",
         "old_path": "domain/Helpers/src/Http/Controllers/Calls/SendHelperController.php",
         "old_class": "Domain\\Helpers\\Http\\Controllers\\Calls\\SendHelperController",
         "final_path": "domain/Helpers/src/Http/Controllers/Calls/SendHelperController.php",
@@ -1159,8 +1177,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f3bd4218deaf7c3f38c4d287b6a3e82a1c4df1f0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8991f0bbecebb58441bbfea2ec82f60fd70dbc85",
         "old_path": "domain/Helpers/src/Http/Controllers/Calls/StartHelperController.php",
         "old_class": "Domain\\Helpers\\Http\\Controllers\\Calls\\StartHelperController",
         "final_path": "domain/Helpers/src/Http/Controllers/Calls/StartHelperController.php",
@@ -1178,8 +1196,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e6a3a373e729384a2c3ceca5958226f4fe4c9850",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d9a769e0c3fd9c46ae4283a0dd5ebe6baf6f24fc",
         "old_path": "domain/Helpers/src/Http/Controllers/Calls/SteerHelperController.php",
         "old_class": "Domain\\Helpers\\Http\\Controllers\\Calls\\SteerHelperController",
         "final_path": "domain/Helpers/src/Http/Controllers/Calls/SteerHelperController.php",
@@ -1197,7 +1215,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1e775646ccd8fc515988b34550345e37161041bd",
         "old_path": "domain/Helpers/src/Http/Data/HelperJobNamed.php",
         "old_class": "Domain\\Helpers\\Http\\Data\\HelperJobNamed",
@@ -1211,12 +1229,14 @@
         },
         "phase": 3,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3bc342708410774279498459e3c1c16677d62a6b",
         "old_path": "domain/Helpers/src/Http/Data/HelperNoticeData.php",
         "old_class": "Domain\\Helpers\\Http\\Data\\HelperNoticeData",
@@ -1230,12 +1250,14 @@
         },
         "phase": 3,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f029b7f1e43c5b70e37da048172b06080733cf49",
         "old_path": "domain/Helpers/src/Http/Data/HelperNoticeListData.php",
         "old_class": "Domain\\Helpers\\Http\\Data\\HelperNoticeListData",
@@ -1249,12 +1271,14 @@
         },
         "phase": 3,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6e72b081fa0e7667533785d4a58335b4724a2789",
         "old_path": "domain/Helpers/src/Http/Data/HelperReceiptData.php",
         "old_class": "Domain\\Helpers\\Http\\Data\\HelperReceiptData",
@@ -1268,12 +1292,14 @@
         },
         "phase": 3,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3fad09696634898d7d783fbfb19d7c80c59dde3b",
         "old_path": "domain/Helpers/src/Http/Data/HelperSteerData.php",
         "old_class": "Domain\\Helpers\\Http\\Data\\HelperSteerData",
@@ -1287,13 +1313,15 @@
         },
         "phase": 3,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ff3cd43e3dd3b9cf5610aeaebff98437ae6b0a6a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "85dbb6176c2b428797e0e30b43ef1018e36c2538",
         "old_path": "domain/Helpers/src/Listeners/CancelLaunchedJob.php",
         "old_class": "Domain\\Helpers\\Listeners\\CancelLaunchedJob",
         "final_path": "domain/Helpers/src/Listeners/CancelLaunchedJob.php",
@@ -1311,8 +1339,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "760bd641efe7dbd9ccf306c995ac9222a872a7e7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "06e548775caa70c02fbff5a54ea07644429c808f",
         "old_path": "domain/Helpers/src/Listeners/DeliverReportReadyNotification.php",
         "old_class": "Domain\\Helpers\\Listeners\\DeliverReportReadyNotification",
         "final_path": "domain/Helpers/src/Listeners/DeliverReportReadyNotification.php",
@@ -1330,8 +1358,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3c363fe37c7a67055a73d10fe64e1be75667018d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9324b0b15b0333d7fd2bc10316f2ffab6421ae54",
         "old_path": "domain/Helpers/src/Listeners/FinishCertifiedJob.php",
         "old_class": "Domain\\Helpers\\Listeners\\FinishCertifiedJob",
         "final_path": "domain/Helpers/src/Listeners/FinishCertifiedJob.php",
@@ -1349,8 +1377,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "75ade499559f1ae2c9039907516b71c443b65fbe",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a171e8d4d1a893f40bf1ba7b9888d402143a267d",
         "old_path": "domain/Helpers/src/Listeners/HoldFailingJob.php",
         "old_class": "Domain\\Helpers\\Listeners\\HoldFailingJob",
         "final_path": "domain/Helpers/src/Listeners/HoldFailingJob.php",
@@ -1368,8 +1396,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f6bec062210d5ec9d085bc6320705ce8bf4b1532",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7066d36a47a2f1cbe02821387202e0f01fb7ee78",
         "old_path": "domain/Helpers/src/Listeners/LinkReportToJob.php",
         "old_class": "Domain\\Helpers\\Listeners\\LinkReportToJob",
         "final_path": "domain/Helpers/src/Listeners/LinkReportToJob.php",
@@ -1387,8 +1415,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "efbaf4a2c4217d764d4a1aa281ece49f3d6baf2d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "620c337a85e7fe2ae49ab12199f557520597d482",
         "old_path": "domain/Helpers/src/Listeners/RecordAttemptEnded.php",
         "old_class": "Domain\\Helpers\\Listeners\\RecordAttemptEnded",
         "final_path": "domain/Helpers/src/Listeners/RecordAttemptEnded.php",
@@ -1406,8 +1434,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "49b6f7f1ad64ea66e65f2e9edd329425b8a58a21",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "008a5f910219814ef1631066067db9dc2ccc9696",
         "old_path": "domain/Helpers/src/Listeners/SupplyHelperContext.php",
         "old_class": "Domain\\Helpers\\Listeners\\SupplyHelperContext",
         "final_path": "domain/Helpers/src/Listeners/SupplyHelperContext.php",
@@ -1425,7 +1453,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ac55ec2f3d85caacf09a3627e3c990e958c0267b",
         "old_path": "domain/Helpers/src/Mcp/CancelHelperJobTool.php",
         "old_class": "Domain\\Helpers\\Mcp\\CancelHelperJobTool",
@@ -1439,12 +1467,14 @@
         },
         "phase": 4,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "34de26015afb1b0f3564bc0fcb31380eaa93dc2f",
         "old_path": "domain/Helpers/src/Mcp/Concerns/HelperWorkArguments.php",
         "old_class": "Domain\\Helpers\\Mcp\\Concerns\\HelperWorkArguments",
@@ -1458,12 +1488,14 @@
         },
         "phase": 3,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f2589c2906778ed1ab3c3049934a7ff93c8c0837",
         "old_path": "domain/Helpers/src/Mcp/ContinueHelperTool.php",
         "old_class": "Domain\\Helpers\\Mcp\\ContinueHelperTool",
@@ -1477,12 +1509,14 @@
         },
         "phase": 4,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "93905bd455689c58b155ce9bbb9aff884e1d6d2b",
         "old_path": "domain/Helpers/src/Mcp/SendHelperTool.php",
         "old_class": "Domain\\Helpers\\Mcp\\SendHelperTool",
@@ -1496,12 +1530,14 @@
         },
         "phase": 4,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8ff0e540ee73a8a7a15986dfa53efa406f127367",
         "old_path": "domain/Helpers/src/Mcp/StartHelperTool.php",
         "old_class": "Domain\\Helpers\\Mcp\\StartHelperTool",
@@ -1515,12 +1551,14 @@
         },
         "phase": 4,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "78ed4432c3416655dfbfa50cf22d7acb1100167b",
         "old_path": "domain/Helpers/src/Mcp/SteerHelperTool.php",
         "old_class": "Domain\\Helpers\\Mcp\\SteerHelperTool",
@@ -1534,13 +1572,15 @@
         },
         "phase": 4,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4417441ce97b542c042671e3ff64feec25c5b73a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6e2d15ca52272c8205dc5c85c2f8f3043b229905",
         "old_path": "domain/Helpers/src/Models/HelperIdentity.php",
         "old_class": "Domain\\Helpers\\Models\\HelperIdentity",
         "final_path": "domain/Helpers/src/Models/HelperIdentity.php",
@@ -1558,8 +1598,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a2ecc8db85b107eb378545bb8e7ab2a1fe304436",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "872b86f557b917fe61b6e8db83fa08ed724d5b1c",
         "old_path": "domain/Helpers/src/Models/HelperJob.php",
         "old_class": "Domain\\Helpers\\Models\\HelperJob",
         "final_path": "domain/Helpers/src/Models/HelperJob.php",
@@ -1577,8 +1617,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8e73c0f6e0e31b3102a4fbae2f3bb9373dc314e2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bb405040c3c0d0135ac3fba829e88b899a3b23c9",
         "old_path": "domain/Helpers/src/Models/HelperMessage.php",
         "old_class": "Domain\\Helpers\\Models\\HelperMessage",
         "final_path": "domain/Helpers/src/Models/HelperMessage.php",
@@ -1596,8 +1636,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "45f8e37b02f7d1476979d0942196ea27de7943f5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d4c83535446241e341432ba23c2861b71fda0137",
         "old_path": "domain/Helpers/src/Models/HelperNotice.php",
         "old_class": "Domain\\Helpers\\Models\\HelperNotice",
         "final_path": "domain/Helpers/src/Models/HelperNotice.php",
@@ -1615,8 +1655,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5476a7a25c1683406f1c3a1596c770fbe3bb244d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bc5cf6faa9bdec027bc7226a43207893774500e9",
         "old_path": "domain/Helpers/src/Models/HelperPurpose.php",
         "old_class": "Domain\\Helpers\\Models\\HelperPurpose",
         "final_path": "domain/Helpers/src/Models/HelperPurpose.php",
@@ -1634,8 +1674,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ff66457741f67c38f964b34bcc2ab05c5ecfe27c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2b7ef62950e501fa653585a36c9ecab8be80045b",
         "old_path": "domain/Helpers/src/Models/ReportJobDiscrepancy.php",
         "old_class": "Domain\\Helpers\\Models\\ReportJobDiscrepancy",
         "final_path": "domain/Helpers/src/Models/ReportJobDiscrepancy.php",
@@ -1653,8 +1693,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d685041422620f1adca286b9e6653c2eb5c4f8a0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "689f6a19490287aa5beb481089e0d9aa62487ae7",
         "old_path": "domain/Helpers/src/Models/ReportJobLink.php",
         "old_class": "Domain\\Helpers\\Models\\ReportJobLink",
         "final_path": "domain/Helpers/src/Models/ReportJobLink.php",
@@ -1672,8 +1712,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e8c2f0f0b656f70560fff78a4ca33e777e046b6d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8283f567faa4cb6bac20d1b2625b9a956e5183c4",
         "old_path": "domain/Helpers/src/Policies/HelperPolicy.php",
         "old_class": "Domain\\Helpers\\Policies\\HelperPolicy",
         "final_path": "domain/Helpers/src/Policies/HelperPolicy.php",
@@ -1691,8 +1731,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "12400f632c317798dc1fbca48fe37a7c888d2278",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9fc189b5f7606404a3e8178d132106373336e893",
         "old_path": "domain/Helpers/src/Providers/HelpersServiceProvider.php",
         "old_class": "Domain\\Helpers\\Providers\\HelpersServiceProvider",
         "final_path": "domain/Helpers/src/Providers/HelpersServiceProvider.php",
@@ -1710,8 +1750,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "33ae45735f555d5d1b15c7d3335ab9d379eedae3",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "56a6f5531419690c12c87400ed832454f71a76ea",
         "old_path": "domain/Helpers/src/Readers/CandidateQuery.php",
         "old_class": "Domain\\Helpers\\Readers\\CandidateQuery",
         "final_path": "domain/Helpers/src/Support/Readers/CandidateQuery.php",
@@ -1725,14 +1765,15 @@
         "phase": 3,
         "batch": "Helpers",
         "consumers": [
-            "domain/Helpers/tests/Feature/HelperSelectionTest.php"
+            "domain/Helpers/tests/Feature/HelperSelectionTest.php",
+            "tools/refactoring/layout/manifest-Helpers.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8162c38b7e35f62a87f3fe598f298f8f9f941bb7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "76bb01c4640d42578d6558a762adb1f1b6e24f16",
         "old_path": "domain/Helpers/src/Readers/HelperCandidate.php",
         "old_class": "Domain\\Helpers\\Readers\\HelperCandidate",
         "final_path": "domain/Helpers/src/Support/Readers/HelperCandidate.php",
@@ -1746,14 +1787,15 @@
         "phase": 3,
         "batch": "Helpers",
         "consumers": [
-            "domain/Helpers/tests/Feature/HelperSelectionTest.php"
+            "domain/Helpers/tests/Feature/HelperSelectionTest.php",
+            "tools/refactoring/layout/manifest-Helpers.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "accbb83a2d080b8d36a73b5a7bf73ecdf1b3ced2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "344b039aa21b5b0bcd61eaf573c4f94d8db08499",
         "old_path": "domain/Helpers/src/Readers/HelperCandidates.php",
         "old_class": "Domain\\Helpers\\Readers\\HelperCandidates",
         "final_path": "domain/Helpers/src/Support/Readers/HelperCandidates.php",
@@ -1767,13 +1809,14 @@
         "phase": 3,
         "batch": "Helpers",
         "consumers": [
-            "domain/Helpers/tests/Feature/HelperSelectionTest.php"
+            "domain/Helpers/tests/Feature/HelperSelectionTest.php",
+            "tools/refactoring/layout/manifest-Helpers.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "fbe6d00c84f98cab9c46a62ede5bfd0630286295",
         "old_path": "domain/Helpers/src/Readers/HelperNotices.php",
         "old_class": "Domain\\Helpers\\Readers\\HelperNotices",
@@ -1787,13 +1830,15 @@
         },
         "phase": 3,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d684e5b351c640cf96fc4a71d0c1822edb239dd5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a633cba325283d3aeb5658b921d0e3718ddcfc08",
         "old_path": "domain/Helpers/src/Readers/HelperRecords.php",
         "old_class": "Domain\\Helpers\\Readers\\HelperRecords",
         "final_path": "domain/Helpers/src/Support/Readers/HelperRecords.php",
@@ -1807,14 +1852,15 @@
         "phase": 3,
         "batch": "Helpers",
         "consumers": [
-            "domain/Helpers/tests/Feature/HelperDispatchTest.php"
+            "domain/Helpers/tests/Feature/HelperDispatchTest.php",
+            "tools/refactoring/layout/manifest-Helpers.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6ff6f611ffa7b12884b4a6e795c9a9b35bcdb275",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1a5c7464e5b5faadc62bbba308a035e0285bddd9",
         "old_path": "domain/Helpers/src/Resolvers/HelperJobAssignments.php",
         "old_class": "Domain\\Helpers\\Resolvers\\HelperJobAssignments",
         "final_path": "domain/Helpers/src/Resolvers/HelperJobAssignments.php",
@@ -1832,8 +1878,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4ff18ba7dfd285ed3cef7fc54f7592e95a65f67f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "cce48222609eeb2d4a06ed853a31b50d26df20c1",
         "old_path": "domain/Helpers/src/Resolvers/HelperJobsLayoutResolver.php",
         "old_class": "Domain\\Helpers\\Resolvers\\HelperJobsLayoutResolver",
         "final_path": "domain/Helpers/src/Resolvers/HelperJobsLayoutResolver.php",
@@ -1851,8 +1897,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6016b535651e269d69e8a634a8b46cecad383669",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "77a9b966e0f1295d32eae8ff44172ce8ef73546a",
         "old_path": "domain/Helpers/src/Routes/agent.php",
         "old_class": null,
         "final_path": "domain/Helpers/routes/agent.php",
@@ -1865,13 +1911,15 @@
         },
         "phase": 4,
         "batch": "Helpers",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Helpers.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "bfc0cae0d24dcc3f4dd58eb822d4a7be7fa049b1",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0e1bb67aefc8dae42e12de67136b704479db69d8",
         "old_path": "domain/Helpers/src/Support/ConversationChoice.php",
         "old_class": "Domain\\Helpers\\Support\\ConversationChoice",
         "final_path": "domain/Helpers/src/Support/ConversationChoice.php",
@@ -1889,8 +1937,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "56ce7ef3cc4ae52631a757c00d1fec75a6e7e0ea",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d1fde15149c4a47811b54324b2a26d72e6d4f78f",
         "old_path": "domain/Helpers/src/Support/DispatchRequest.php",
         "old_class": "Domain\\Helpers\\Support\\DispatchRequest",
         "final_path": "domain/Helpers/src/Support/DispatchRequest.php",
@@ -1908,8 +1956,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "fd72ca8a90dfca5d51a4e1c48294ed53f9a11f08",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4f13ca0c2fba9150867679a5b86d332107ed6690",
         "old_path": "domain/Helpers/src/Support/HelperDispatch.php",
         "old_class": "Domain\\Helpers\\Support\\HelperDispatch",
         "final_path": "domain/Helpers/src/Support/HelperDispatch.php",
@@ -1927,7 +1975,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "75c61569d786e6bbc168e1e43f7d0c530718946f",
         "old_path": "domain/Helpers/src/Support/HelperLifecycleEntry.php",
         "old_class": "Domain\\Helpers\\Support\\HelperLifecycleEntry",
@@ -1946,8 +1994,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "cd486c26fecf69f11a871d05b31e4e2349bf8705",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "83241a51c35befb30b776c9ef721da11fe1f985b",
         "old_path": "domain/Helpers/src/Support/HelperStarts.php",
         "old_class": "Domain\\Helpers\\Support\\HelperStarts",
         "final_path": "domain/Helpers/src/Support/HelperStarts.php",
@@ -1965,8 +2013,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "13b1db93c13758938219c27849f9ebb836934406",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "748186cdf555c2a3c591c78eaee30fa7cd492138",
         "old_path": "domain/Helpers/src/Support/HelperSupervisorDispatch.php",
         "old_class": "Domain\\Helpers\\Support\\HelperSupervisorDispatch",
         "final_path": "domain/Helpers/src/Support/HelperSupervisorDispatch.php",
@@ -1984,8 +2032,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "04ba5037d7ad9fca3ec552b5f3bbd5d34e389df9",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "049f3ba040b951e093b0f04c97c4159ff0dd3449",
         "old_path": "domain/Helpers/src/Support/HelperWorkRepair.php",
         "old_class": "Domain\\Helpers\\Support\\HelperWorkRepair",
         "final_path": "domain/Helpers/src/Support/HelperWorkRepair.php",
@@ -2003,8 +2051,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "04dc7d8973fb874a274ca6bf5ff51b72d19f1815",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "01736f11c3ef9ad18fdd3b4327d62e016fe1095a",
         "old_path": "domain/Helpers/src/Support/JobContext.php",
         "old_class": "Domain\\Helpers\\Support\\JobContext",
         "final_path": "domain/Helpers/src/Support/JobContext.php",
@@ -2022,8 +2070,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "27a326ade13af3239baf0eaccba2832335cacf56",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "32f6d6d368f993bd8b85e482d759eff267a2b6d3",
         "old_path": "domain/Helpers/src/Support/JobStopEvidence.php",
         "old_class": "Domain\\Helpers\\Support\\JobStopEvidence",
         "final_path": "domain/Helpers/src/Support/JobStopEvidence.php",
@@ -2041,8 +2089,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "554e707d76438abdbff9ca313c7e56eb41d8be64",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "49d4d5d24f92694a23aec563aa3a20bc56d3cfa3",
         "old_path": "domain/Helpers/src/Support/PurposeChoice.php",
         "old_class": "Domain\\Helpers\\Support\\PurposeChoice",
         "final_path": "domain/Helpers/src/Support/PurposeChoice.php",
@@ -2060,8 +2108,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "234a680923f63887dbc2f0b1932f05619418ea71",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "897cf842213d0def1c3944f50583f06aeca2f4fd",
         "old_path": "domain/Helpers/src/Support/PurposeResolver.php",
         "old_class": "Domain\\Helpers\\Support\\PurposeResolver",
         "final_path": "domain/Helpers/src/Support/PurposeResolver.php",
@@ -2079,8 +2127,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d91e7293b70f4dbe49d1a51c85f80e97498de125",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7ba574cfede1621d27e15e30900b37b63853d5af",
         "old_path": "domain/Helpers/src/Support/ReportJobLinking.php",
         "old_class": "Domain\\Helpers\\Support\\ReportJobLinking",
         "final_path": "domain/Helpers/src/Support/ReportJobLinking.php",
@@ -2098,7 +2146,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d611c34f04e27ba2ed2e6525f181c5cf9de11432",
         "old_path": "domain/Helpers/src/Values/FiledReport.php",
         "old_class": "Domain\\Helpers\\Values\\FiledReport",
@@ -2117,8 +2165,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1041bebe511e93d168bb3906ad4ecfa15f977443",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "72fc82cacb737aaae54e04dda1d1547d68276c88",
         "old_path": "domain/Helpers/src/Values/HelperReceipt.php",
         "old_class": "Domain\\Helpers\\Values\\HelperReceipt",
         "final_path": "domain/Helpers/src/Values/HelperReceipt.php",
@@ -2136,8 +2184,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c2faee019323a779a46d952aa26ea3ad83c14020",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4fe69ed9486f07404572ff53c7e0b6db122de306",
         "old_path": "domain/Helpers/src/Values/HelperWork.php",
         "old_class": "Domain\\Helpers\\Values\\HelperWork",
         "final_path": "domain/Helpers/src/Values/HelperWork.php",
@@ -2155,8 +2203,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0b252428aa8d6f8395bf128bd15d88d0e1e6662d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b5132a139943f048bd203a18a66ef43c8a66ce12",
         "old_path": "domain/Helpers/src/Values/JobLaunch.php",
         "old_class": "Domain\\Helpers\\Values\\JobLaunch",
         "final_path": "domain/Helpers/src/Values/JobLaunch.php",
@@ -2174,7 +2222,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b510f4a3df498cfbfae3c95093a5fd0d1cb80952",
         "old_path": "domain/Helpers/src/Values/SteerReceipt.php",
         "old_class": "Domain\\Helpers\\Values\\SteerReceipt",

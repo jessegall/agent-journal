@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Actions\AgentRuntimes;
-use App\Agents\Contracts\ToolDiscovery;
-use App\Agents\Enums\DriverVariant;
-use App\Agents\Enums\HoldReason;
-use App\Agents\Enums\RuntimeActivity;
-use App\Agents\Models\AgentRuntime;
-use App\Agents\Values\RuntimeIntent;
+use App\Contracts\ToolDiscovery;
+use App\Enums\DriverVariant;
+use App\Enums\HoldReason;
+use App\Enums\RuntimeActivity;
+use App\Models\AgentRuntime;
+use App\Support\AgentRuntimes;
+use App\Values\RuntimeIntent;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Assignments\Contracts\Assignable;
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
-use App\Reads\Support\BoundedReads;
-use App\Records\Exceptions\RecordUnavailable;
-use App\Records\Support\RecordIdentity;
+use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
+use App\Contracts\Assignable;
+use App\Contracts\ReadableModel;
+use App\Enums\ActorType;
+use App\Exceptions\RecordUnavailable;
+use App\Support\ActorIdentity;
+use App\Support\RecordIdentity;
 use Domain\Tasks\Enums\TaskRunState;
 use Domain\Tasks\Exceptions\TaskRunFinished;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

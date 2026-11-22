@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Skills\Guide;
 
-use App\Skills\Conditions\Conditions;
-use App\Skills\Contracts\Skill;
-use App\Skills\Contracts\SkillCondition;
-use App\Skills\Values\MarkdownPart;
-use App\Skills\Values\SkillSection;
-use App\Skills\Values\SkillSections;
+use App\Support\Conditions\Conditions;
+use App\Contracts\Skill;
+use App\Contracts\SkillCondition;
+use App\Values\MarkdownPart;
+use App\Values\SkillSection;
+use App\Values\SkillSections;
 
 /**
  * A fixture skill with one written section and one taken from a heading of a Markdown file.

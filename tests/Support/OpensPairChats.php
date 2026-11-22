@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Enums\IntervalRole;
-use App\Communication\Support\ChatInboxes;
-use App\Communication\Support\InboxIntervals;
-use App\Desks\Models\DeskRecord;
+use App\Enums\IntervalRole;
+use App\Models\DeskRecord;
+use App\Support\ActorIdentity;
+use App\Support\ChatInboxes;
+use App\Support\InboxIntervals;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\DirectChat;
 use Domain\Chat\Support\ChatInbox;

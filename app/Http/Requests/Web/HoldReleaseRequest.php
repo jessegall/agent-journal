@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Web;
 
-use App\Agents\Enums\HoldReason;
+use App\Enums\HoldReason;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

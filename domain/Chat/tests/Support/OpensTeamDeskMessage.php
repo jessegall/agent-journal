@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Support;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Assignments\Contracts\AssignmentTransaction;
-use App\Assignments\Storage\AssignmentStore;
-use App\Communication\Commands\SendMessage\SendMessageCommand;
-use App\Desks\Commands\CreateDesk\CreateDeskCommand;
-use App\Desks\Models\DeskRecord;
-use App\Desks\Models\DeskSeat;
-use App\Desks\Support\DeskSeating;
-use App\Desks\Support\SeatChange;
+use App\Commands\CreateDesk\CreateDeskCommand;
+use App\Commands\SendMessage\SendMessageCommand;
+use App\Contracts\AssignmentTransaction;
+use App\Enums\ActorType;
+use App\Models\DeskRecord;
+use App\Models\DeskSeat;
+use App\Support\ActorIdentity;
+use App\Support\DeskSeating;
+use App\Support\SeatChange;
+use App\Support\Storage\AssignmentStore;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Tests\Support\StartsMainAgents;

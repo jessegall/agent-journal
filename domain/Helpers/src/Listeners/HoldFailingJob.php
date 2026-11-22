@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Listeners;
 
-use App\Bus\Contracts\JournalCommands;
-use App\Bus\Enums\CommandEntry;
+use App\Contracts\JournalCommands;
 use App\Contracts\Listener;
-use App\Hooks\Events\HelperStopHeld;
+use App\Enums\CommandEntry;
+use App\Events\HelperStopHeld;
 use Domain\Helpers\Commands\HoldHelperJob\HoldHelperJobCommand;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\HelperLifecycleEntry;

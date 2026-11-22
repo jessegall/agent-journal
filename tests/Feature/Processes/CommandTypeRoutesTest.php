@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Declarations\RuleDeclaration;
-use App\Processes\Enums\RequestState;
-use App\Processes\Models\ClassificationRule;
-use App\Processes\Models\CommandRequest;
-use App\Processes\Models\RuleProposal;
-use App\Processes\Values\AdmissionRefusal;
-use App\Processes\Values\RuleExample;
+use App\Declarations\RuleDeclaration;
+use App\Enums\RequestState;
+use App\Models\ClassificationRule;
+use App\Models\CommandRequest;
+use App\Models\RuleProposal;
+use App\Values\AdmissionRefusal;
+use App\Values\RuleExample;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;

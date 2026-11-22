@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\ReportWorkspaceRead\ReportWorkspaceReadCommand;
-use App\Agents\Models\WorkspaceRead;
-use App\Agents\Values\HostContext;
-use App\Bus\Contracts\CommandBus;
+use App\Commands\ReportWorkspaceRead\ReportWorkspaceReadCommand;
+use App\Contracts\CommandBus;
 use App\Http\Requests\Agents\WorkspaceReadReportRequest;
+use App\Models\WorkspaceRead;
+use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 

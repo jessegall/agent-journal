@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Docking;
 
-use App\Actors\Support\ActorIdentity;
-use App\Bus\Contracts\CommandBus;
-use App\Web\Events\PageChanged;
+use App\Contracts\CommandBus;
+use App\Events\PageChanged;
+use App\Support\ActorIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Models\Conversation;
@@ -14,8 +14,8 @@ use Domain\Chat\Support\DockProjection;
 use Domain\Documents\Commands\CloseReport\CloseReportCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Plans\Models\Plan;
-use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;

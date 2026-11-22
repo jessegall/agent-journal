@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews\States;
 
-use App\Hooks\StateLoading\Contracts\StateLoader;
-use App\Hooks\Decisions\StateReferences;
-use App\Hooks\StateLoading\StateSet;
-use App\Hooks\Enums\SessionTransferType;
-use App\Hooks\States\AgentState;
-use App\Settings\Support\CurrentSettingsResolver;
+use App\Support\StateLoading\Contracts\StateLoader;
+use App\Support\Decisions\StateReferences;
+use App\Support\StateLoading\StateSet;
+use App\Enums\SessionTransferType;
+use App\Support\States\AgentState;
+use App\Support\CurrentSettingsResolver;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 
 /**

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Rounds;
 
-use App\Assignments\Contracts\AutoAssignmentProvider;
-use App\Assignments\Support\PoolDefinition;
-use App\Domains\Concerns\HasAssignables;
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
+use App\Contracts\AutoAssignmentProvider;
+use App\Support\PoolDefinition;
+use App\Concerns\HasAssignables;
+use App\Support\Domain;
+use App\Support\Exports;
 use Tests\Fixtures\Domains\Errands\ErrandsDomain;
 use Tests\Fixtures\Domains\Errands\OpenErrandPools;
 

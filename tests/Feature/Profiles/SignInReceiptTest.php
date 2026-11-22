@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Profiles\Jobs\SignInDeadline;
-use App\Profiles\Models\SignInAttempt;
+use App\Jobs\SignInDeadline;
+use App\Models\SignInAttempt;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Bus;

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Enums\CommandClass;
-use App\Processes\Enums\CommandType;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Enums\UnresolvedType;
-use App\Processes\Models\CommandAlias;
-use App\Processes\Syntax\TreeParser;
-use App\Processes\Values\Classification;
-use App\Processes\Values\ExecutionContext;
+use App\Contracts\CommandClassifier;
+use App\Enums\CommandClass;
+use App\Enums\CommandType;
+use App\Enums\ShellDialect;
+use App\Enums\UnresolvedType;
+use App\Models\CommandAlias;
+use App\Support\Syntax\TreeParser;
+use App\Values\Classification;
+use App\Values\ExecutionContext;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

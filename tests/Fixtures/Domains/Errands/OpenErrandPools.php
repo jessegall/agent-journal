@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Errands;
 
-use App\Actors\Support\ActorIdentity;
-use App\Assignments\Contracts\AssignmentPool;
-use App\Assignments\Contracts\AssignmentPoolFactory;
-use App\Assignments\Enums\PoolInputType;
-use App\Assignments\Support\PoolDescription;
-use App\Assignments\Support\PoolMembers;
-use App\Assignments\Support\PoolReference;
+use App\Support\ActorIdentity;
+use App\Contracts\AssignmentPool;
+use App\Contracts\AssignmentPoolFactory;
+use App\Enums\PoolInputType;
+use App\Support\PoolDescription;
+use App\Support\PoolMembers;
+use App\Support\PoolReference;
 
 /**
  * Opens the pool of every errand.

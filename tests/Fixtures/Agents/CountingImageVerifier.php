@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Agents;
 
-use App\Agents\Contracts\DockerImageVerifier;
+use App\Contracts\DockerImageVerifier;
 
 /**
  * Verifies every image and counts how often it was asked, so a test sees whether an admission ran.

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Files\Enums\Place;
-use App\Files\Exceptions\FileReadReentered;
-use App\Files\Exceptions\FolderClosed;
-use App\Files\Exceptions\FolderMissing;
-use App\Files\Exceptions\PlaceUnavailable;
-use App\Files\Support\LocalFiles;
-use App\Files\Values\Depth;
-use App\Files\Values\FilePath;
-use App\Files\Values\FolderEntry;
-use App\Reflection\Support\Reflector;
+use App\Enums\Place;
+use App\Exceptions\FileReadReentered;
+use App\Exceptions\FolderClosed;
+use App\Exceptions\FolderMissing;
+use App\Exceptions\PlaceUnavailable;
+use App\Support\LocalFiles;
+use App\Support\Reflector;
+use App\Values\Depth;
+use App\Values\FilePath;
+use App\Values\FolderEntry;
 use Illuminate\Filesystem\Filesystem;
 use Tests\TestCase;
 

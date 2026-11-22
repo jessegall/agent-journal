@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use App\Docking\Cards\Button;
-use App\Docking\Cards\CountedProgress;
-use App\Docking\Cards\DestinationArgument;
-use App\Docking\Cards\DockCard;
-use App\Docking\Cards\DockDestination;
-use App\Docking\Cards\DockIdentity;
-use App\Docking\Cards\Stack;
-use App\Docking\Cards\Subtitle;
-use App\Docking\Cards\Title;
-use App\Docking\Enums\Emphasis;
-use App\Docking\Sources\Contracts\CardContext;
-use App\Docking\Sources\Contracts\Dockable;
-use App\Docking\Sources\DockDefinition;
-use Domain\Plans\Api\PlanCard;
+use App\Enums\Emphasis;
+use App\Support\Cards\Button;
+use App\Support\Cards\CountedProgress;
+use App\Support\Cards\DestinationArgument;
+use App\Support\Cards\DockCard;
+use App\Support\Cards\DockDestination;
+use App\Support\Cards\DockIdentity;
+use App\Support\Cards\Stack;
+use App\Support\Cards\Subtitle;
+use App\Support\Cards\Title;
+use App\Support\Sources\Contracts\CardContext;
+use App\Support\Sources\Contracts\Dockable;
+use App\Support\Sources\DockDefinition;
+use Domain\Plans\Values\PlanCard;
 
 /**
  * A plan as a dock shows it: its title, the phase it is at (the first unfinished one, as every plan card reads it),

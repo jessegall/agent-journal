@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Assignments\Policies\AssignmentRecipientPolicy;
-use App\Skills\Models\Skill;
+use App\Models\Skill;
+use App\Policies\AssignmentRecipientPolicy;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Support\CommitsHookRows;

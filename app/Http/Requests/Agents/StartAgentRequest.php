@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Agents\Commands\StartAgent\StartAgentCommand;
-use App\Agents\Enums\ConversationModeType;
-use App\Agents\Enums\StartOriginType;
-use App\Agents\Values\ModelSelection;
-use App\Agents\Values\SelectedDriver;
-use App\Agents\Values\StartPolicy;
-use App\Agents\Values\StartRequest;
-use App\Drivers\Contracts\DriverCatalogue;
+use App\Commands\StartAgent\StartAgentCommand;
+use App\Contracts\DriverCatalogue;
+use App\Enums\ConversationModeType;
+use App\Enums\StartOriginType;
+use App\Values\ModelSelection;
+use App\Values\SelectedDriver;
+use App\Values\StartPolicy;
+use App\Values\StartRequest;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\StateEffects;
 
-use App\Bus\Contracts\CommandBus as Runner;
-use App\Hooks\Inputs\StopRequested;
-use App\Hooks\States\AgentState;
-use App\Records\Commands\UnlinkRecords\UnlinkRecordsCommand;
-use App\Records\Support\RecordIdentity;
+use App\Contracts\CommandBus as Runner;
+use App\Support\Inputs\StopRequested;
+use App\Support\States\AgentState;
+use App\Commands\UnlinkRecords\UnlinkRecordsCommand;
+use App\Support\RecordIdentity;
 
 /**
  * A state that runs a command itself through an aliased import, which the state effects check refuses.

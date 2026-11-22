@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Providers;
 
-use App\Actors\Contracts\SystemEntryPolicies;
-use App\Autoload\Support\FolderClasses;
-use App\Links\Support\LinkTypeRegistry;
-use App\Supervision\Contracts\SupervisorDispatch;
-use App\Supervision\Contracts\WorkRepair;
+use App\Contracts\SupervisorDispatch;
+use App\Contracts\SystemEntryPolicies;
+use App\Contracts\WorkRepair;
+use App\Support\FolderClasses;
+use App\Support\LinkTypeRegistry;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Policies\HelperPolicy;
 use Domain\Helpers\Support\HelperLifecycleEntry;
@@ -33,8 +33,8 @@ final class HelpersServiceProvider extends ServiceProvider
 
     public function boot(LinkTypeRegistry $links, SystemEntryPolicies $systemEntries): void
     {
-        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
-        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
+        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
+        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console/Commands', Command::class));
         $links->register([HelperJob::LINK_TYPE => HelperJob::class]);
         $systemEntries->allow(HelperLifecycleEntry::NAME, HelperPolicy::class);
     }

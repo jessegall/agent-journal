@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Agents\Contracts\ReadGrant;
-use App\Bus\Support\CommandRegistry;
+use App\Contracts\CurrentActor;
+use App\Contracts\ReadGrant;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Contracts\JobPermissionReader as JobPermissionReaderContract;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalTool;
-use App\Profiles\Values\StartProfileAuthority;
+use App\Support\CommandRegistry;
+use App\Values\StartProfileAuthority;
 
 final readonly class JobPermissionReader implements JobPermissionReaderContract
 {

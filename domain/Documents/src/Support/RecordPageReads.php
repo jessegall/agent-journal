@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Comments\Contracts\CommentResolver;
-use App\Records\Support\RecordIdentity;
-use App\Text\Contracts\TextResolver;
-use App\Text\Support\TextSelection;
+use App\Contracts\CommentResolver;
+use App\Contracts\TextResolver;
+use App\Support\RecordIdentity;
+use App\Support\TextSelection;
 use Domain\Documents\Data\RecordReadsData;
 use Domain\Documents\Http\Requests\RecordPageRequest;
 

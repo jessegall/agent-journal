@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Contracts\CommandHandler;
-use App\Reflection\Support\Reflector;
+use App\Support\Reflector;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\Finder;
 use Tests\TestCase;

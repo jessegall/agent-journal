@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reflection;
 
-use App\Reflection\Exceptions\ClassMissing;
-use App\Reflection\Support\Reflector;
+use App\Exceptions\ClassMissing;
+use App\Support\Reflector;
 use ArrayObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
@@ -81,7 +81,7 @@ final class ReflectorCatalogueTest extends TestCase
 
     public function test_a_new_process_builds_its_own_catalogue_before_any_application_exists(): void
     {
-        $script = 'require "vendor/autoload.php"; echo App\Reflection\Support\Reflector::of("arrayobject")->name();';
+        $script = 'require "vendor/autoload.php"; echo App\Support\Reflector::of("arrayobject")->name();';
         $process = new Process([PHP_BINARY, '-r', $script], dirname(__DIR__, 3));
 
         $process->mustRun();

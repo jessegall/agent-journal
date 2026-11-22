@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Hooks\Exceptions\OutputGrantsInvalid;
-use App\Hooks\Relay\OutputGrants;
-use App\Hooks\Relay\OutputGrantSeal;
+use App\Exceptions\OutputGrantsInvalid;
+use App\Support\Relay\OutputGrants;
+use App\Support\Relay\OutputGrantSeal;
 use Illuminate\Filesystem\Filesystem;
 use Tests\TestCase;
 

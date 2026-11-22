@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Skills\Contracts\SkillResolver;
-use App\Skills\Values\SkillKey;
+use App\Contracts\SkillResolver;
+use App\Values\SkillKey;
 use Illuminate\Support\Facades\Artisan;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\RefreshHookDatabase;

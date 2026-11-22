@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\States\WorkingOnPlanState;
 use Domain\Plans\Support\PlanWork;
+use Domain\Plans\Support\States\WorkingOnPlanState;
+use Domain\Plans\Values\PlanProgress;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\States\WorkingOnTaskState;
+use Domain\Tasks\Support\States\WorkingOnTaskState;
 use Domain\Tasks\Support\TaskWork;
 use PHPUnit\Framework\TestCase;
 

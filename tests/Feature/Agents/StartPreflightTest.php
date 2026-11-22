@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Contracts\StartPreflight;
-use App\Agents\Enums\ArrangementType;
-use App\Agents\Enums\DriverVariant;
-use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Enums\HostProtocolVersion;
-use App\Agents\Enums\StartPreflightRefusal;
-use App\Agents\Exceptions\StartPreflightRefused;
-use App\Agents\Models\AgentRuntime;
-use App\Agents\Models\Host;
-use App\Agents\Support\HostDescriptorEnrollment;
-use App\Agents\Values\EnrolledDescriptor;
-use App\Agents\Values\HostDescriptor;
-use App\Agents\Values\ProfileDefaults;
-use App\Agents\Values\StartProposal;
-use App\Drivers\Contracts\DriverCatalogue;
-use App\Drivers\Support\DefaultDrivers;
+use App\Contracts\DriverCatalogue;
+use App\Contracts\StartPreflight;
+use App\Enums\ArrangementType;
+use App\Enums\DriverVariant;
+use App\Enums\ExecutionModeType;
+use App\Enums\HostProtocolVersion;
+use App\Enums\StartPreflightRefusal;
+use App\Exceptions\StartPreflightRefused;
+use App\Models\AgentRuntime;
+use App\Models\Host;
+use App\Support\DefaultDrivers;
+use App\Support\HostDescriptorEnrollment;
+use App\Values\EnrolledDescriptor;
+use App\Values\HostDescriptor;
+use App\Values\ProfileDefaults;
+use App\Values\StartProposal;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 

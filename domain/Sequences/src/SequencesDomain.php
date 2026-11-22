@@ -4,26 +4,26 @@ declare(strict_types=1);
 
 namespace Domain\Sequences;
 
-use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Values\PolicyDefinition;
-use App\Bus\Contracts\CommandProvider;
-use App\Domains\Concerns\HasStates;
-use App\Domains\Contracts\StateProvider;
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
-use App\Operations\Enums\AccessType;
-use App\Skills\Contracts\SkillProvider;
-use App\Ui\Contracts\NativePartProvider;
-use App\Ui\Contracts\PageProvider;
-use App\Ui\Declarations\Page;
-use App\Ui\Enums\Icon;
+use App\Concerns\HasStates;
+use App\Contracts\CommandProvider;
+use App\Contracts\NativePartProvider;
+use App\Contracts\PageProvider;
+use App\Contracts\PolicyProvider;
+use App\Contracts\SkillProvider;
+use App\Contracts\StateProvider;
+use App\Declarations\Page;
+use App\Enums\AccessType;
+use App\Enums\Icon;
+use App\Support\Domain;
+use App\Support\Exports;
+use App\Values\PolicyDefinition;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Policies\SequencePolicy;
 use Domain\Sequences\Resolvers\SequenceIndexResolver;
 use Domain\Sequences\Resolvers\SequenceRunWindowResolver;
-use Domain\Sequences\Skills\SequencesSkill;
-use Domain\Sequences\States\Support\FollowingSequenceStateFactory;
-use Domain\Sequences\States\Support\FollowingSequenceStateReference;
+use Domain\Sequences\Support\Skills\SequencesSkill;
+use Domain\Sequences\Support\States\Support\FollowingSequenceStateFactory;
+use Domain\Sequences\Support\States\Support\FollowingSequenceStateReference;
 
 final class SequencesDomain extends Domain implements
     CommandProvider,

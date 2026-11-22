@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\AgentRequests\Contracts\JournalCall;
-use App\AgentRequests\Support\CallRoutes;
-use App\Agents\Calls\RecordHeartbeatCall;
+use App\Attributes\JournalRoute;
+use App\Calls\Agents\RecordHeartbeatCall;
+use App\Contracts\JournalCall;
+use App\Enums\JournalRouteType;
 use App\Mcp\Servers\JournalServer;
-use App\Processes\Attributes\JournalRoute;
-use App\Processes\Enums\JournalRouteType;
-use App\Reflection\Support\Reflector;
+use App\Support\CallRoutes;
+use App\Support\Reflector;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Route as Routes;
 use Spatie\LaravelData\Data;

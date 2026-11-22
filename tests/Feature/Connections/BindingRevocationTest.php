@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Agents\Enums\HostProtocolVersion;
-use App\Connections\Enums\BindingReadiness;
-use App\Connections\Enums\ConnectionAuditType;
-use App\Connections\Models\ConnectionAudit;
-use App\Connections\Models\Environment;
-use App\Connections\Models\InstallAttempt;
-use App\Connections\Models\Project;
-use App\Connections\Models\ProjectBinding;
-use App\Connections\Models\ProjectInvitation;
-use App\Connections\Values\InstallTicket;
+use App\Enums\BindingReadiness;
+use App\Enums\ConnectionAuditType;
+use App\Enums\HostProtocolVersion;
+use App\Models\ConnectionAudit;
+use App\Models\Environment;
+use App\Models\InstallAttempt;
+use App\Models\Project;
+use App\Models\ProjectBinding;
+use App\Models\ProjectInvitation;
+use App\Values\InstallTicket;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

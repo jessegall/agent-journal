@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Actors\Contracts\ServerClock;
-use App\Agents\Data\ScreenFrameData;
-use App\Agents\Enums\TerminalFrameState;
-use App\Agents\Models\AgentRuntime;
-use App\Agents\Support\RuntimeScreen;
-use App\Agents\Support\ScreenRegistration;
-use App\Bus\Enums\RefusalCode;
+use App\Contracts\ServerClock;
+use App\Data\ScreenFrameData;
+use App\Enums\RefusalCode;
+use App\Enums\TerminalFrameState;
+use App\Models\AgentRuntime;
+use App\Support\RuntimeScreen;
+use App\Support\ScreenRegistration;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Skills\Exceptions\SkillSourceInvalid;
-use App\Skills\Support\MarkdownParts;
-use App\Skills\Values\SkillOwner;
-use App\Skills\Values\SkillSection;
-use App\Skills\Values\SkillSections;
+use App\Exceptions\SkillSourceInvalid;
+use App\Support\MarkdownParts;
+use App\Values\SkillOwner;
+use App\Values\SkillSection;
+use App\Values\SkillSections;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 

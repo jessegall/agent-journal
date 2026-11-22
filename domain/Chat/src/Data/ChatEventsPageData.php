@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use App\Communication\Data\ChatEventPage;
-use App\Communication\Data\ChatEventView;
+use App\Data\ChatEventPage;
+use App\Data\ChatEventView;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

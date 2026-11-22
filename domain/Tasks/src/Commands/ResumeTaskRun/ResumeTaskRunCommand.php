@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\ResumeTaskRun;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\RepeatableRead;
-use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Contracts\RecordCommand;
-use App\Bus\Support\Command;
-use App\Operations\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Attributes\RepeatableRead;
+use App\Attributes\RetainedActorRequestKey;
+use App\Contracts\RecordCommand;
+use App\Enums\AccessType;
+use App\Support\Command;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Policies\TaskRunPolicy;

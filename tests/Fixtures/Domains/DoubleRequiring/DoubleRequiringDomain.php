@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\DoubleRequiring;
 
-use App\Domains\Support\Domain;
-use App\Exports\Support\Exports;
+use App\Support\Domain;
+use App\Support\Exports;
 use Tests\Fixtures\Domains\Tasks\TasksDomain;
 
 final class DoubleRequiringDomain extends Domain

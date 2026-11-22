@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Exceptions;
 
-use App\Bus\Contracts\CodedRefusal;
-use App\Bus\Enums\RefusalCode;
-use App\Bus\Exceptions\Concerns\RendersRefusal;
+use App\Concerns\RendersRefusal;
+use App\Contracts\CodedRefusal;
 use App\Contracts\CommandRefusal;
+use App\Enums\RefusalCode;
 use RuntimeException;
 
 /**

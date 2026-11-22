@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Hooks\Drivers\Adapters\JudgedCall;
-use App\Hooks\Drivers\Contracts\DriverCall;
-use App\Hooks\Drivers\HookPayload;
-use App\Hooks\Inputs\Contracts\HookInput;
-use App\Hooks\Inputs\Values\HookIdentity;
+use App\Support\Drivers\Adapters\JudgedCall;
+use App\Support\Drivers\Contracts\DriverCall;
+use App\Support\Drivers\HookPayload;
+use App\Support\Inputs\Contracts\HookInput;
+use App\Support\Inputs\Values\HookIdentity;
 
 /**
  * What the adapter tests of every driver share: its recorded fixture, its mapping as a data provider, and reading a

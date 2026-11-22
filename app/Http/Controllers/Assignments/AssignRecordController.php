@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Assignments;
 
-use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
-use App\Assignments\Contracts\AssigneeResolver;
-use App\Bus\Contracts\CommandBus;
-use App\Http\Data\Assignments\AssignmentResultData;
+use App\Commands\AssignRecord\AssignRecordCommand;
+use App\Contracts\AssigneeResolver;
+use App\Contracts\CommandBus;
+use App\Data\Assignments\AssignmentResultData;
 use App\Http\Requests\Assignments\AssignRecordRequest;
 use Illuminate\Http\JsonResponse;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Agents\Commands\RecheckDriverSwitch\RecheckDriverSwitchCommand;
-use App\Bus\Contracts\CommandBus;
+use App\Commands\RecheckDriverSwitch\RecheckDriverSwitchCommand;
+use App\Contracts\CommandBus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;

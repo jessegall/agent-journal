@@ -10,7 +10,7 @@ use App\Mcp\Contracts\JobPermissionReader;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use App\Mcp\Support\ToolArguments;
-use App\Reflection\Support\Reflector;
+use App\Support\Reflector;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Server\Tool;

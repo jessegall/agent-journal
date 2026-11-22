@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\StartSessions;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentRuntime;
-use App\Agents\Models\AgentSession;
-use App\Communication\Enums\LeaveReason;
-use App\Communication\Models\InboxInterval;
-use App\Communication\Models\Message;
+use App\Enums\LeaveReason;
+use App\Models\Agent;
+use App\Models\AgentRuntime;
+use App\Models\AgentSession;
+use App\Models\InboxInterval;
+use App\Models\Message;
+use App\Support\ActorIdentity;
+use App\Support\StartSessions;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;

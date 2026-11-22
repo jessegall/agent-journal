@@ -1,7 +1,7 @@
 [
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2a4d6da1166ceb59a60fe05f570605e353d2171c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "41c16e52be3f1db75f4aca7eece7e1dede2bbda1",
         "old_path": "domain/Tasks/database/factories/TaskFactory.php",
         "old_class": "Domain\\Tasks\\Database\\Factories\\TaskFactory",
         "final_path": "domain/Tasks/database/factories/TaskFactory.php",
@@ -19,7 +19,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d82ada9620db5531743c98e90d66c7078a32e1e1",
         "old_path": "domain/Tasks/database/migrations/2026_11_17_000006_create_tasks_table.php",
         "old_class": null,
@@ -38,7 +38,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d2d689b67e1c266cea8a1d9b55219e2c4be85b62",
         "old_path": "domain/Tasks/database/migrations/2026_11_17_000010_create_task_runs_table.php",
         "old_class": null,
@@ -57,7 +57,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "373c2e7779bb93ebfc3a26017471a73f47de72e2",
         "old_path": "domain/Tasks/database/migrations/2026_11_22_000001_create_task_history_table.php",
         "old_class": null,
@@ -76,7 +76,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c3ddc4dd350b12cdc2dfac65ffb35946a344537a",
         "old_path": "domain/Tasks/database/migrations/2026_11_22_000002_create_task_log_entries_table.php",
         "old_class": null,
@@ -95,7 +95,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "55854d92687ac011c61a8448f323d4c2f2aea3b9",
         "old_path": "domain/Tasks/database/migrations/2026_11_22_000003_create_task_checks_table.php",
         "old_class": null,
@@ -114,7 +114,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c2ee262fe8b1ed17ba7a8c4df645bab720020924",
         "old_path": "domain/Tasks/database/migrations/2026_11_22_000004_create_task_waits_table.php",
         "old_class": null,
@@ -133,7 +133,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6e6441e6ac7aca249aaf96dcbf7dc849e3314564",
         "old_path": "domain/Tasks/database/migrations/2026_11_22_000005_create_task_wait_history_table.php",
         "old_class": null,
@@ -152,7 +152,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "046ecbc46f12c8ba88bf93494d9ecda51ce06131",
         "old_path": "domain/Tasks/database/seeders/PlanTasksSeeder.php",
         "old_class": "Domain\\Tasks\\Database\\Seeders\\PlanTasksSeeder",
@@ -171,7 +171,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2b8a366e28bc6c15020c4e2e694cd717d22eabb0",
         "old_path": "domain/Tasks/resources/js/TaskCommentsTab.vue",
         "old_class": null,
@@ -190,7 +190,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "dd88752cd01853f93862d3618db3aa8b50e8dca6",
         "old_path": "domain/Tasks/resources/js/TaskEvidenceTabs.test.ts",
         "old_class": null,
@@ -209,7 +209,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7ab45d4aeab1eea36fd42e79018766d1c33fa408",
         "old_path": "domain/Tasks/resources/js/TaskGraph.vue",
         "old_class": null,
@@ -228,7 +228,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2329b1e3477c9ee978d465f005cd8cda1dc4c24d",
         "old_path": "domain/Tasks/resources/js/TaskGraphCanvas.vue",
         "old_class": null,
@@ -247,7 +247,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8860328b02a13137aad8a4af1f0477d28f639b7c",
         "old_path": "domain/Tasks/resources/js/TaskLogsTab.vue",
         "old_class": null,
@@ -266,7 +266,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2a27097433c293e8fd23d232d0b74e5c9a5ed1a4",
         "old_path": "domain/Tasks/resources/js/TaskProofsTab.vue",
         "old_class": null,
@@ -285,7 +285,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2beca3fa743c97034980e29c58e46e8eafc7f9c9",
         "old_path": "domain/Tasks/resources/js/TaskWaitDialog.vue",
         "old_class": null,
@@ -304,7 +304,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6096717abe2562adb81903eb648e47a929299695",
         "old_path": "domain/Tasks/resources/js/TaskWaitsTab.test.ts",
         "old_class": null,
@@ -323,7 +323,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "62fdc81d2348616d98763d8f673be1f61dcc692f",
         "old_path": "domain/Tasks/resources/js/TaskWaitsTab.vue",
         "old_class": null,
@@ -342,7 +342,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f18af99f2cf489d3047e12fe3eecb754156bcb81",
         "old_path": "domain/Tasks/resources/js/openedWaits.ts",
         "old_class": null,
@@ -361,7 +361,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7f0439497602de979c580d70f5f0702f13378d4a",
         "old_path": "domain/Tasks/resources/js/taskGraph.test.ts",
         "old_class": null,
@@ -380,7 +380,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "75fa22d7b2484f2e00c464e594137ba88fad740b",
         "old_path": "domain/Tasks/resources/js/taskGraph.ts",
         "old_class": null,
@@ -399,7 +399,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "27ec20cc995e009c75220b24ee0497eee6b57bc6",
         "old_path": "domain/Tasks/resources/js/taskLooks.ts",
         "old_class": null,
@@ -418,7 +418,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a593aba7515d1ec6de57d4d561145b4f64dbd637",
         "old_path": "domain/Tasks/resources/js/useTaskLogs.ts",
         "old_class": null,
@@ -437,7 +437,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4bbcfb1e0521dc4ffb6acd0ad278dba7ac3b6157",
         "old_path": "domain/Tasks/resources/skills/tasks.md",
         "old_class": null,
@@ -456,8 +456,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d29826fcad1a38541c05eb58aa7e310298d27383",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bfc9f9600b71f990cb12402a11fc56303f7df4ab",
         "old_path": "domain/Tasks/src/Api/Events/TaskBlocked.php",
         "old_class": "Domain\\Tasks\\Api\\Events\\TaskBlocked",
         "final_path": "domain/Tasks/src/Events/TaskBlocked.php",
@@ -474,14 +474,16 @@
             "domain/Plans/src/Listeners/CountPhaseTaskStates.php",
             "domain/Plans/src/Listeners/RaisePlanProgressChanged.php",
             "domain/Tasks/tests/Feature/TaskCommandsTest.php",
-            "domain/Tasks/tests/Feature/TaskPageSignalsTest.php"
+            "domain/Tasks/tests/Feature/TaskPageSignalsTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d8ff7ebbaabcdb0e519f9a544470f4f2c1fa14c5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "867bc26f91604cc64e8252a21a3d87316544cafc",
         "old_path": "domain/Tasks/src/Api/Events/TaskCancelled.php",
         "old_class": "Domain\\Tasks\\Api\\Events\\TaskCancelled",
         "final_path": "domain/Tasks/src/Events/TaskCancelled.php",
@@ -499,14 +501,16 @@
             "domain/Plans/src/Listeners/RaisePlanProgressChanged.php",
             "domain/Tasks/tests/Feature/TaskCommandsTest.php",
             "domain/Tasks/tests/Feature/TaskPageSignalsTest.php",
-            "domain/Tasks/tests/Feature/WorkerLifecycleFactsTest.php"
+            "domain/Tasks/tests/Feature/WorkerLifecycleFactsTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "14f833b07cd52efd6f1a6e0aa791cdf7662d2ce9",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ed1ce1ee91417cfd68ea0bac3872e6c430896bd1",
         "old_path": "domain/Tasks/src/Api/Events/TaskCheckRecorded.php",
         "old_class": "Domain\\Tasks\\Api\\Events\\TaskCheckRecorded",
         "final_path": "domain/Tasks/src/Events/TaskCheckRecorded.php",
@@ -520,14 +524,16 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Tasks/tests/Feature/TaskCheckTest.php"
+            "domain/Tasks/tests/Feature/TaskCheckTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2fd93511f04c9bf89a4297d7880ee1191489718f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "73d6038a9256fbb3ff91e4cb91ea2023045c4310",
         "old_path": "domain/Tasks/src/Api/Events/TaskFinished.php",
         "old_class": "Domain\\Tasks\\Api\\Events\\TaskFinished",
         "final_path": "domain/Tasks/src/Events/TaskFinished.php",
@@ -545,14 +551,16 @@
             "domain/Plans/src/Listeners/RaisePlanProgressChanged.php",
             "domain/Tasks/tests/Feature/TaskCommandsTest.php",
             "domain/Tasks/tests/Feature/TaskPageSignalsTest.php",
-            "domain/Tasks/tests/Feature/WorkerLifecycleFactsTest.php"
+            "domain/Tasks/tests/Feature/WorkerLifecycleFactsTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d676d3a43790af11e072f5e9f687fd3da40653e2",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "46c7f66cfa386ab40db7aa8b0581b61167343675",
         "old_path": "domain/Tasks/src/Api/Events/TaskLogged.php",
         "old_class": "Domain\\Tasks\\Api\\Events\\TaskLogged",
         "final_path": "domain/Tasks/src/Events/TaskLogged.php",
@@ -565,13 +573,16 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d467520cff9e5e607da2c7efa4055dd0a994f7da",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ec76a13ff84f0a7c0ddbe093c64db98d94567a30",
         "old_path": "domain/Tasks/src/Api/Events/TaskStartCommitted.php",
         "old_class": "Domain\\Tasks\\Api\\Events\\TaskStartCommitted",
         "final_path": "domain/Tasks/src/Events/TaskStartCommitted.php",
@@ -585,14 +596,16 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Tasks/tests/Feature/TaskPageSignalsTest.php"
+            "domain/Tasks/tests/Feature/TaskPageSignalsTest.php",
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3b0a54342c72c8dd9a9de30d6ed73c9def4ee596",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f43a20cffad4581ecaba1895c1609933dedae650",
         "old_path": "domain/Tasks/src/Api/Events/TaskWaitChanged.php",
         "old_class": "Domain\\Tasks\\Api\\Events\\TaskWaitChanged",
         "final_path": "domain/Tasks/src/Events/TaskWaitChanged.php",
@@ -605,12 +618,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/listener-lanes.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "60e6c38919eed4490abb157a6e3f7d7331a8983e",
         "old_path": "domain/Tasks/src/Api/TaskAssignmentCompletion.php",
         "old_class": "Domain\\Tasks\\Api\\TaskAssignmentCompletion",
@@ -624,13 +640,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ceadb77980c5f238a818eafdfa453e68447e7a0e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "75d7b2f7fbd4ae721034ee1c7ddbb83a6ad3dce7",
         "old_path": "domain/Tasks/src/Api/TaskCard.php",
         "old_class": "Domain\\Tasks\\Api\\TaskCard",
         "final_path": "domain/Tasks/src/Values/TaskCard.php",
@@ -643,13 +661,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "574f7cda82d8bc24befee1e25ef1cc220faf7487",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "49dc12b44361e6cdd7adb07f144583d5e287dec6",
         "old_path": "domain/Tasks/src/Api/TaskDetails.php",
         "old_class": "Domain\\Tasks\\Api\\TaskDetails",
         "final_path": "domain/Tasks/src/Data/TaskDetails.php",
@@ -662,13 +682,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "fb9cadc1d94e9f4d577d525568591dc99708b37b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "72bb05b16d3bd0d1687357d6d246e1383528bc4b",
         "old_path": "domain/Tasks/src/Api/TaskExecution.php",
         "old_class": "Domain\\Tasks\\Api\\TaskExecution",
         "final_path": "domain/Tasks/src/Values/TaskExecution.php",
@@ -681,13 +703,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "38cbdd105794c048ce7ae0908479f299ef903692",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "3cb1861e17eb9e6243cd7faa1d5904e75207a69b",
         "old_path": "domain/Tasks/src/Api/TaskFilters.php",
         "old_class": "Domain\\Tasks\\Api\\TaskFilters",
         "final_path": "domain/Tasks/src/Values/TaskFilters.php",
@@ -701,13 +725,14 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Tasks/tests/Feature/TaskDetailsResolverTest.php"
+            "domain/Tasks/tests/Feature/TaskDetailsResolverTest.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "783005d31101d3fccefd3a68ec1a4f9ee72b5035",
         "old_path": "domain/Tasks/src/Api/TaskGraph.php",
         "old_class": "Domain\\Tasks\\Api\\TaskGraph",
@@ -721,12 +746,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a749bfa22235e6b99337cbdab29ff95380c767b4",
         "old_path": "domain/Tasks/src/Api/TaskGraphDestinations.php",
         "old_class": "Domain\\Tasks\\Api\\TaskGraphDestinations",
@@ -740,12 +768,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6d38de41f7d01ad0af57d4adff1fdd9889e80ec9",
         "old_path": "domain/Tasks/src/Api/TaskGraphEdge.php",
         "old_class": "Domain\\Tasks\\Api\\TaskGraphEdge",
@@ -759,12 +790,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "bf66d67bd03e3d815d06a993b2fcfacbff2d65f2",
         "old_path": "domain/Tasks/src/Api/TaskGraphNode.php",
         "old_class": "Domain\\Tasks\\Api\\TaskGraphNode",
@@ -778,12 +812,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "718150aee52797afb6f58b290c863f5e0e44a3ee",
         "old_path": "domain/Tasks/src/Api/TaskGraphSuggestion.php",
         "old_class": "Domain\\Tasks\\Api\\TaskGraphSuggestion",
@@ -797,12 +834,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7383435e4b475ca768e4e3e1cb935a624a926d63",
         "old_path": "domain/Tasks/src/Api/TaskHistoryPage.php",
         "old_class": "Domain\\Tasks\\Api\\TaskHistoryPage",
@@ -816,13 +856,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d7e458a8df7c31696b4fdedf2ce0c3b84beae10d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c257ae59558f40f9cee5a01340210d745a637e0a",
         "old_path": "domain/Tasks/src/Api/TaskList.php",
         "old_class": "Domain\\Tasks\\Api\\TaskList",
         "final_path": "domain/Tasks/src/Values/TaskList.php",
@@ -835,13 +877,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "1adf4b2d61f2eee1ae5d698af709a19132b02880",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0ec681118c18adba4f9eae23e5f99cd817f4046b",
         "old_path": "domain/Tasks/src/Api/TaskLogLine.php",
         "old_class": "Domain\\Tasks\\Api\\TaskLogLine",
         "final_path": "domain/Tasks/src/Values/TaskLogLine.php",
@@ -855,13 +899,14 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Tasks/tests/Feature/TaskLogTest.php"
+            "domain/Tasks/tests/Feature/TaskLogTest.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7f920f8eb480447165c04131ca7581c2b6996d41",
         "old_path": "domain/Tasks/src/Api/TaskLogPage.php",
         "old_class": "Domain\\Tasks\\Api\\TaskLogPage",
@@ -875,12 +920,14 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b7472388d895e618dc8f0b1e81df9d7aba63dbbe",
         "old_path": "domain/Tasks/src/Api/TaskProgress.php",
         "old_class": "Domain\\Tasks\\Api\\TaskProgress",
@@ -895,14 +942,15 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Plans/src/Support/PlanProgressCount.php"
+            "domain/Plans/src/Support/PlanProgressCount.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a5abee2300c1d16b484f7a1dfab515876ed56d88",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1ca6b470679381f7d18cd20ca99513c5ff1e2295",
         "old_path": "domain/Tasks/src/Api/TaskProof.php",
         "old_class": "Domain\\Tasks\\Api\\TaskProof",
         "final_path": "domain/Tasks/src/Values/TaskProof.php",
@@ -916,13 +964,14 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Tasks/tests/Feature/TaskCheckTest.php"
+            "domain/Tasks/tests/Feature/TaskCheckTest.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a5776cc6f1d86bada5e91c796ae31c9331127924",
         "old_path": "domain/Tasks/src/Api/TaskProofPage.php",
         "old_class": "Domain\\Tasks\\Api\\TaskProofPage",
@@ -936,12 +985,14 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "09507da0f363b066fa5c9bc379da8bece45f75d9",
         "old_path": "domain/Tasks/src/Api/TaskSummary.php",
         "old_class": "Domain\\Tasks\\Api\\TaskSummary",
@@ -960,13 +1011,14 @@
             "domain/Plans/src/Data/PhaseTaskData.php",
             "domain/Plans/src/Resolvers/PlanTaskWindowResolver.php",
             "domain/Plans/src/Support/PhaseTiming.php",
-            "domain/Plans/src/Support/PlanOutline.php"
+            "domain/Plans/src/Support/PlanOutline.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4f086489530d773f40d2cf5e1ee425b41bcf14d6",
         "old_path": "domain/Tasks/src/Api/TaskText.php",
         "old_class": "Domain\\Tasks\\Api\\TaskText",
@@ -981,14 +1033,15 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Plans/src/Resolvers/PlanTaskWindowResolver.php"
+            "domain/Plans/src/Resolvers/PlanTaskWindowResolver.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8f0d3340574139d81b8510f3f465ad4061823c61",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "adfd3435edc41b40a8b8ac9ee2bff93a3e9721ff",
         "old_path": "domain/Tasks/src/Api/TaskTransition.php",
         "old_class": "Domain\\Tasks\\Api\\TaskTransition",
         "final_path": "domain/Tasks/src/Values/TaskTransition.php",
@@ -1002,13 +1055,14 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Tasks/tests/Feature/TaskHistoryTest.php"
+            "domain/Tasks/tests/Feature/TaskHistoryTest.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9a55e5ad1f1e59fccdbed07b4176a26843d17366",
         "old_path": "domain/Tasks/src/Api/TaskType.php",
         "old_class": "Domain\\Tasks\\Api\\TaskType",
@@ -1027,14 +1081,15 @@
             "domain/Plans/tests/Feature/PlanTaskPoolTest.php",
             "domain/Tasks/tests/Feature/TaskAssignerTest.php",
             "domain/Tasks/tests/Feature/TaskPoolsTest.php",
-            "domain/Tasks/tests/Feature/TaskStartWaitsTest.php"
+            "domain/Tasks/tests/Feature/TaskStartWaitsTest.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "891307d93660ed77a47f30cc894520bd82d5d46c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "77e693e54a010504287fb5b7edcbce95223996a3",
         "old_path": "domain/Tasks/src/Api/TaskWaitLink.php",
         "old_class": "Domain\\Tasks\\Api\\TaskWaitLink",
         "final_path": "domain/Tasks/src/Values/TaskWaitLink.php",
@@ -1047,12 +1102,14 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2e24d26447d8fc3a90c9e8c90d5bbcc22797ff40",
         "old_path": "domain/Tasks/src/Api/TaskWaits.php",
         "old_class": "Domain\\Tasks\\Api\\TaskWaits",
@@ -1066,13 +1123,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "787ebce19a48f8fe1cfa25782e5ab8bf747ea1ba",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "01a36a056f55c8091ce2912d15cf578e7ddf5415",
         "old_path": "domain/Tasks/src/Assignments/ActiveTaskAssignments.php",
         "old_class": "Domain\\Tasks\\Assignments\\ActiveTaskAssignments",
         "final_path": "domain/Tasks/src/Support/Assignments/ActiveTaskAssignments.php",
@@ -1087,14 +1146,15 @@
         "batch": "Tasks",
         "consumers": [
             "domain/Tasks/tests/Feature/TaskAssignerTest.php",
-            "domain/Tasks/tests/Feature/TaskPoolsTest.php"
+            "domain/Tasks/tests/Feature/TaskPoolsTest.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3a7852711b768f671411dc1ac5eb5e6a70df255d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "be0b289238d76c6849e6fde851c10c4a3fc39144",
         "old_path": "domain/Tasks/src/Assignments/NamedTaskPool.php",
         "old_class": "Domain\\Tasks\\Assignments\\NamedTaskPool",
         "final_path": "domain/Tasks/src/Support/Assignments/NamedTaskPool.php",
@@ -1108,14 +1168,15 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Tasks/tests/Feature/TaskPoolsTest.php"
+            "domain/Tasks/tests/Feature/TaskPoolsTest.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8dbd5b0e5845267ca97edcb6f86ec618340d134f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "dadf7316de21e2759b4c4ac23a6139a331f17c1c",
         "old_path": "domain/Tasks/src/Assignments/NamedTaskPoolFactory.php",
         "old_class": "Domain\\Tasks\\Assignments\\NamedTaskPoolFactory",
         "final_path": "domain/Tasks/src/Support/Assignments/NamedTaskPoolFactory.php",
@@ -1129,14 +1190,15 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Tasks/tests/Feature/TaskPoolsTest.php"
+            "domain/Tasks/tests/Feature/TaskPoolsTest.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6162487e47fe012706577b2d405fb7decf1517ee",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ea6c02d1786d698d794de98a5c49e17f0f402653",
         "old_path": "domain/Tasks/src/Assignments/OpenTaskPool.php",
         "old_class": "Domain\\Tasks\\Assignments\\OpenTaskPool",
         "final_path": "domain/Tasks/src/Support/Assignments/OpenTaskPool.php",
@@ -1150,14 +1212,15 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Tasks/tests/Feature/TaskPoolsTest.php"
+            "domain/Tasks/tests/Feature/TaskPoolsTest.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "dd65486d92acfa91f1cc0bf537ded5974f78251d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "fe0aff41303fed174b0141ad8df9073f04c51adf",
         "old_path": "domain/Tasks/src/Assignments/OpenTaskPoolFactory.php",
         "old_class": "Domain\\Tasks\\Assignments\\OpenTaskPoolFactory",
         "final_path": "domain/Tasks/src/Support/Assignments/OpenTaskPoolFactory.php",
@@ -1171,14 +1234,15 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Tasks/tests/Feature/TaskPoolsTest.php"
+            "domain/Tasks/tests/Feature/TaskPoolsTest.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "93ebd1d55f6f6b9aa552fa18df3f4384ab16d17f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "25fb775e108992d50f6a0c7f94722628f4a21dbc",
         "old_path": "domain/Tasks/src/Assignments/TaskAssigner.php",
         "old_class": "Domain\\Tasks\\Assignments\\TaskAssigner",
         "final_path": "domain/Tasks/src/Support/Assignments/TaskAssigner.php",
@@ -1193,14 +1257,15 @@
         "batch": "Tasks",
         "consumers": [
             "domain/Tasks/tests/Feature/TaskAssignerTest.php",
-            "domain/Tasks/tests/Feature/TaskPoolsTest.php"
+            "domain/Tasks/tests/Feature/TaskPoolsTest.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0e5bc5336b25cbc3739d19bbb159b7be77ed61e8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2ce59642f05394037087f6001dd34d24d99f92db",
         "old_path": "domain/Tasks/src/Calls/CreateTaskCall.php",
         "old_class": "Domain\\Tasks\\Calls\\CreateTaskCall",
         "final_path": "domain/Tasks/src/Calls/CreateTaskCall.php",
@@ -1218,8 +1283,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c20f34abf7f31916c6f5182a41bd6bb8d31ffe92",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4ad49ee764bad2915d168f3fc226f0683c0b1ce9",
         "old_path": "domain/Tasks/src/Calls/EditTaskCall.php",
         "old_class": "Domain\\Tasks\\Calls\\EditTaskCall",
         "final_path": "domain/Tasks/src/Calls/EditTaskCall.php",
@@ -1237,8 +1302,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c98b322665229acd46ec023b23583fbce4053094",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "52860b91ff7d172a68ebaf122cedcfb0f4b270ab",
         "old_path": "domain/Tasks/src/Calls/ListAssignedTasksCall.php",
         "old_class": "Domain\\Tasks\\Calls\\ListAssignedTasksCall",
         "final_path": "domain/Tasks/src/Calls/ListAssignedTasksCall.php",
@@ -1256,8 +1321,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "b966c4193cdcd720576ace24cc3356f48977ddfc",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c214c4e8e469227eec2333c185729f40fda099b0",
         "old_path": "domain/Tasks/src/Calls/TaskCalls.php",
         "old_class": "Domain\\Tasks\\Calls\\TaskCalls",
         "final_path": "domain/Tasks/src/Calls/TaskCalls.php",
@@ -1275,7 +1340,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "bd6b71bf9b43a012f477962af43bdbda90cd21cb",
         "old_path": "domain/Tasks/src/Calls/TaskEdited.php",
         "old_class": "Domain\\Tasks\\Calls\\TaskEdited",
@@ -1294,7 +1359,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7dd4e9e2f52a1aabeb032b51b92b15101c0957d2",
         "old_path": "domain/Tasks/src/Calls/TaskNamed.php",
         "old_class": "Domain\\Tasks\\Calls\\TaskNamed",
@@ -1313,8 +1378,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d845bced35e3062228f441c46353fe28e4a61a74",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7fd89dddc95c23f3f63520e40797f1b186092828",
         "old_path": "domain/Tasks/src/Commands/AddTaskWait/AddTaskWaitCommand.php",
         "old_class": "Domain\\Tasks\\Commands\\AddTaskWait\\AddTaskWaitCommand",
         "final_path": "domain/Tasks/src/Commands/AddTaskWait/AddTaskWaitCommand.php",
@@ -1332,8 +1397,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "26e14a2dca3f468c6ec50b4bf939cf04422164a6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4850f68ccf7f252779c39cb50285ac6065ad20e8",
         "old_path": "domain/Tasks/src/Commands/AddTaskWait/AddTaskWaitHandler.php",
         "old_class": "Domain\\Tasks\\Commands\\AddTaskWait\\AddTaskWaitHandler",
         "final_path": "domain/Tasks/src/Commands/AddTaskWait/AddTaskWaitHandler.php",
@@ -1351,8 +1416,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3438d9f31def9ed238c1036080acccda11c49be4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "5b9816bcab442c759833d46f49548451a83e2523",
         "old_path": "domain/Tasks/src/Commands/BindTaskCheck/BindTaskCheckCommand.php",
         "old_class": "Domain\\Tasks\\Commands\\BindTaskCheck\\BindTaskCheckCommand",
         "final_path": "domain/Tasks/src/Commands/BindTaskCheck/BindTaskCheckCommand.php",
@@ -1370,8 +1435,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "925dd8f2f15f6b8d1f5ca6ada856d6912a293ebb",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "dd36e20b4882b3439d660b3c975aaf4e3bc4f353",
         "old_path": "domain/Tasks/src/Commands/BindTaskCheck/BindTaskCheckHandler.php",
         "old_class": "Domain\\Tasks\\Commands\\BindTaskCheck\\BindTaskCheckHandler",
         "final_path": "domain/Tasks/src/Commands/BindTaskCheck/BindTaskCheckHandler.php",
@@ -1389,8 +1454,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e7105815233e474e4ad0a6dfd832fdd6e673ed0e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "794605f1d28d140630bf920b7bfb6f52b7bbfab1",
         "old_path": "domain/Tasks/src/Commands/BlockTask/BlockTaskCommand.php",
         "old_class": "Domain\\Tasks\\Commands\\BlockTask\\BlockTaskCommand",
         "final_path": "domain/Tasks/src/Commands/BlockTask/BlockTaskCommand.php",
@@ -1408,7 +1473,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "71334c9766dd2c85450833ad19724e09289662df",
         "old_path": "domain/Tasks/src/Commands/BlockTask/BlockTaskHandler.php",
         "old_class": "Domain\\Tasks\\Commands\\BlockTask\\BlockTaskHandler",
@@ -1427,8 +1492,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "031fd518b75aca46ff5a2b6d001e4355e51013d5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f86bbea3f6ce593b3b0c0ff1aea319b97a8d8e61",
         "old_path": "domain/Tasks/src/Commands/CancelTask/CancelTaskCommand.php",
         "old_class": "Domain\\Tasks\\Commands\\CancelTask\\CancelTaskCommand",
         "final_path": "domain/Tasks/src/Commands/CancelTask/CancelTaskCommand.php",
@@ -1446,7 +1511,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ed868407525abeeb6440d5c5a5e56ede50383977",
         "old_path": "domain/Tasks/src/Commands/CancelTask/CancelTaskHandler.php",
         "old_class": "Domain\\Tasks\\Commands\\CancelTask\\CancelTaskHandler",
@@ -1465,8 +1530,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9b2dcddf38ed5ab60d1a86782716be345d5a07cc",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "fadd3a239d375c8d962261273fd86c4f111452e8",
         "old_path": "domain/Tasks/src/Commands/CreateTask/CreateTaskCommand.php",
         "old_class": "Domain\\Tasks\\Commands\\CreateTask\\CreateTaskCommand",
         "final_path": "domain/Tasks/src/Commands/CreateTask/CreateTaskCommand.php",
@@ -1484,8 +1549,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8f700247a25d496a744d6b21b1a1dc5efc950c20",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0bf6fdb73b35040aacf16960d60490fdbeac00e5",
         "old_path": "domain/Tasks/src/Commands/CreateTask/CreateTaskHandler.php",
         "old_class": "Domain\\Tasks\\Commands\\CreateTask\\CreateTaskHandler",
         "final_path": "domain/Tasks/src/Commands/CreateTask/CreateTaskHandler.php",
@@ -1503,8 +1568,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e90c1154ee05278ecd241583caa58bcb6af1c9f1",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "73d5bead7ada6b2a6aaa3492e453425e553b4ce7",
         "old_path": "domain/Tasks/src/Commands/EditTask/EditTaskCommand.php",
         "old_class": "Domain\\Tasks\\Commands\\EditTask\\EditTaskCommand",
         "final_path": "domain/Tasks/src/Commands/EditTask/EditTaskCommand.php",
@@ -1522,7 +1587,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "68771cdba875ac88b626d1e6a4ebd1cb19f3b5ff",
         "old_path": "domain/Tasks/src/Commands/EditTask/EditTaskHandler.php",
         "old_class": "Domain\\Tasks\\Commands\\EditTask\\EditTaskHandler",
@@ -1541,8 +1606,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "64bd8cf647406dacb8408c1835048cfa725f4b9a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "088326a1ba55654a91ab930d8d69e758ef941707",
         "old_path": "domain/Tasks/src/Commands/FinishTask/FinishTaskCommand.php",
         "old_class": "Domain\\Tasks\\Commands\\FinishTask\\FinishTaskCommand",
         "final_path": "domain/Tasks/src/Commands/FinishTask/FinishTaskCommand.php",
@@ -1560,8 +1625,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "860f2470839869b2cfc538ca80a6b803f1644160",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ca2ab957c14ad2af1dc063ac73b6a57dc3b9e990",
         "old_path": "domain/Tasks/src/Commands/FinishTask/FinishTaskHandler.php",
         "old_class": "Domain\\Tasks\\Commands\\FinishTask\\FinishTaskHandler",
         "final_path": "domain/Tasks/src/Commands/FinishTask/FinishTaskHandler.php",
@@ -1579,8 +1644,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "505e4a90200a05f9eb284902420c0134aa044d7b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6cc35b9e7867eadf07d80b963e30a5705ba9774b",
         "old_path": "domain/Tasks/src/Commands/LogTaskRun/LogTaskRunCommand.php",
         "old_class": "Domain\\Tasks\\Commands\\LogTaskRun\\LogTaskRunCommand",
         "final_path": "domain/Tasks/src/Commands/LogTaskRun/LogTaskRunCommand.php",
@@ -1598,8 +1663,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ae9545cf58acc1c06349aa2795e6091a4a21e99b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "54ae019bb126d11ea2f43855cdd65d3eee3acd41",
         "old_path": "domain/Tasks/src/Commands/LogTaskRun/LogTaskRunHandler.php",
         "old_class": "Domain\\Tasks\\Commands\\LogTaskRun\\LogTaskRunHandler",
         "final_path": "domain/Tasks/src/Commands/LogTaskRun/LogTaskRunHandler.php",
@@ -1617,8 +1682,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "681e30136e45fd8b274bef09827572ec3b5bad45",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2b1346c30d1a18bfe46ee793113029b137877903",
         "old_path": "domain/Tasks/src/Commands/RemoveTaskWait/RemoveTaskWaitCommand.php",
         "old_class": "Domain\\Tasks\\Commands\\RemoveTaskWait\\RemoveTaskWaitCommand",
         "final_path": "domain/Tasks/src/Commands/RemoveTaskWait/RemoveTaskWaitCommand.php",
@@ -1636,8 +1701,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0a316683028b1e439e9e6707e7a77663a72ecab5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "eeb1b044b9c997379164d469f13e5fe6fdf86a0d",
         "old_path": "domain/Tasks/src/Commands/RemoveTaskWait/RemoveTaskWaitHandler.php",
         "old_class": "Domain\\Tasks\\Commands\\RemoveTaskWait\\RemoveTaskWaitHandler",
         "final_path": "domain/Tasks/src/Commands/RemoveTaskWait/RemoveTaskWaitHandler.php",
@@ -1655,8 +1720,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d9a0424cff7b249aaf9e59535038ba3c53911fa4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "cc7bbc70ab034f8789da91fee58ecf6e35d34ee1",
         "old_path": "domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunCommand.php",
         "old_class": "Domain\\Tasks\\Commands\\ResumeTaskRun\\ResumeTaskRunCommand",
         "final_path": "domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunCommand.php",
@@ -1674,8 +1739,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ffb9a4e844932da186d62be9de3e181f2ae082e5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a8ae3c9f7a4a95ad0ebcaf896f59e80111285e79",
         "old_path": "domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunHandler.php",
         "old_class": "Domain\\Tasks\\Commands\\ResumeTaskRun\\ResumeTaskRunHandler",
         "final_path": "domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunHandler.php",
@@ -1693,8 +1758,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "883718ed66ae8efbf0f37e6cb2a00617c0a52ba1",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e4cfce366fa6ee25a42a68eec79b4afcc42569d9",
         "old_path": "domain/Tasks/src/Commands/RunTaskCheck/RunTaskCheckCommand.php",
         "old_class": "Domain\\Tasks\\Commands\\RunTaskCheck\\RunTaskCheckCommand",
         "final_path": "domain/Tasks/src/Commands/RunTaskCheck/RunTaskCheckCommand.php",
@@ -1712,8 +1777,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "48e64c7cfcdf2123d2a57e3126b5ef101c40f00a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f351a60a47a0d7e4b769dd23ef98e8b95b6fe2bc",
         "old_path": "domain/Tasks/src/Commands/RunTaskCheck/RunTaskCheckHandler.php",
         "old_class": "Domain\\Tasks\\Commands\\RunTaskCheck\\RunTaskCheckHandler",
         "final_path": "domain/Tasks/src/Commands/RunTaskCheck/RunTaskCheckHandler.php",
@@ -1731,8 +1796,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ee8ecd3a79eb15e54f3bd8c517f4abc8317e0cde",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "98cd9e0ccda07f3a56a6ade91f90b10eb17bc66a",
         "old_path": "domain/Tasks/src/Commands/StartTask/StartTaskCommand.php",
         "old_class": "Domain\\Tasks\\Commands\\StartTask\\StartTaskCommand",
         "final_path": "domain/Tasks/src/Commands/StartTask/StartTaskCommand.php",
@@ -1750,8 +1815,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4de77b92c8f7087554b764d035393b110ddc3902",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a264383ea1751dcb4a9547483301b285d196ee7b",
         "old_path": "domain/Tasks/src/Commands/StartTask/StartTaskHandler.php",
         "old_class": "Domain\\Tasks\\Commands\\StartTask\\StartTaskHandler",
         "final_path": "domain/Tasks/src/Commands/StartTask/StartTaskHandler.php",
@@ -1769,7 +1834,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "4bce5e722b49d2d296f1cbb50ffc0666811953f8",
         "old_path": "domain/Tasks/src/Commands/Support/TaskCommandHandler.php",
         "old_class": "Domain\\Tasks\\Commands\\Support\\TaskCommandHandler",
@@ -1788,8 +1853,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4c7fb3bbcd1a0cf685afb65c620de362de82edc9",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "24c23ddd135af1f2d6384ba1f4c3823252325bc8",
         "old_path": "domain/Tasks/src/Commands/WaiveTaskWait/WaiveTaskWaitCommand.php",
         "old_class": "Domain\\Tasks\\Commands\\WaiveTaskWait\\WaiveTaskWaitCommand",
         "final_path": "domain/Tasks/src/Commands/WaiveTaskWait/WaiveTaskWaitCommand.php",
@@ -1807,8 +1872,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2a31e53880524fda72469f39db02ba697943aaf6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b0573423bbc66c5ac4cbcc97529cbc6a19ec0d63",
         "old_path": "domain/Tasks/src/Commands/WaiveTaskWait/WaiveTaskWaitHandler.php",
         "old_class": "Domain\\Tasks\\Commands\\WaiveTaskWait\\WaiveTaskWaitHandler",
         "final_path": "domain/Tasks/src/Commands/WaiveTaskWait/WaiveTaskWaitHandler.php",
@@ -1826,8 +1891,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "913d70208df4ae61681a4bdd58ec78bf49453422",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "67d15cb21adebed4ab5d89e979d937d29132a1a5",
         "old_path": "domain/Tasks/src/Console/AssignedTasksCommand.php",
         "old_class": "Domain\\Tasks\\Console\\AssignedTasksCommand",
         "final_path": "domain/Tasks/src/Console/Commands/AssignedTasksCommand.php",
@@ -1840,13 +1905,16 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json",
+            "tools/refactoring/layout/manifest-core.json.state.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "78693f39d36f9273d6056644e1c8362e120559be",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ee9fe357ad1141c6c252e54e796226d30eca0409",
         "old_path": "domain/Tasks/src/Contracts/AssignedTaskResolver.php",
         "old_class": "Domain\\Tasks\\Contracts\\AssignedTaskResolver",
         "final_path": "domain/Tasks/src/Contracts/AssignedTaskResolver.php",
@@ -1864,8 +1932,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "75fb9a26e994b3ec6b02b9eee2061d914565b970",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9b8bf46afc51b24ecd9361335a7e52a3a5b145ce",
         "old_path": "domain/Tasks/src/Contracts/TaskAssignmentResolver.php",
         "old_class": "Domain\\Tasks\\Contracts\\TaskAssignmentResolver",
         "final_path": "domain/Tasks/src/Contracts/TaskAssignmentResolver.php",
@@ -1883,8 +1951,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ac98f38832fc691fdd7b9624ed77f36d194f30c5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7d8dfeec72cd5ea1d080c669fb4b26d2df76c487",
         "old_path": "domain/Tasks/src/Contracts/TaskDetailsResolver.php",
         "old_class": "Domain\\Tasks\\Contracts\\TaskDetailsResolver",
         "final_path": "domain/Tasks/src/Contracts/TaskDetailsResolver.php",
@@ -1902,7 +1970,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "de782d79c3ce98b0604fff05080a1fc6a700e773",
         "old_path": "domain/Tasks/src/Contracts/TaskGraphResolver.php",
         "old_class": "Domain\\Tasks\\Contracts\\TaskGraphResolver",
@@ -1921,7 +1989,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e1cc42460fccc868f8da80c8f43ab7434a7d91d6",
         "old_path": "domain/Tasks/src/Contracts/TaskHistoryResolver.php",
         "old_class": "Domain\\Tasks\\Contracts\\TaskHistoryResolver",
@@ -1940,7 +2008,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b820cde081072b3568ac19401e200b58718655b6",
         "old_path": "domain/Tasks/src/Contracts/TaskListResolver.php",
         "old_class": "Domain\\Tasks\\Contracts\\TaskListResolver",
@@ -1959,7 +2027,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b2e27f0e22ea42fe0ecef63b8de6fa59a6f71472",
         "old_path": "domain/Tasks/src/Contracts/TaskLogResolver.php",
         "old_class": "Domain\\Tasks\\Contracts\\TaskLogResolver",
@@ -1978,7 +2046,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2eeaaaa4ae1abe2ab0ed989e995e02fe013c387a",
         "old_path": "domain/Tasks/src/Contracts/TaskProgressCounter.php",
         "old_class": "Domain\\Tasks\\Contracts\\TaskProgressCounter",
@@ -1997,7 +2065,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "222cd83b30f2117e51cd7bef773d130247949699",
         "old_path": "domain/Tasks/src/Contracts/TaskProofResolver.php",
         "old_class": "Domain\\Tasks\\Contracts\\TaskProofResolver",
@@ -2016,7 +2084,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ee5abd7a13464fdbf4bda443a5673fbf07a8a005",
         "old_path": "domain/Tasks/src/Contracts/TaskResolver.php",
         "old_class": "Domain\\Tasks\\Contracts\\TaskResolver",
@@ -2035,7 +2103,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e5c667fe5e42694ae4cb4371d5ba19c1c29020e9",
         "old_path": "domain/Tasks/src/Contracts/TaskWaitResolver.php",
         "old_class": "Domain\\Tasks\\Contracts\\TaskWaitResolver",
@@ -2054,7 +2122,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "736ad9589070647097b0c20b002492964560566d",
         "old_path": "domain/Tasks/src/Enums/TaskHolderFilter.php",
         "old_class": "Domain\\Tasks\\Enums\\TaskHolderFilter",
@@ -2073,7 +2141,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "62513233dbde9ed1098d6497c50b0d264a219b08",
         "old_path": "domain/Tasks/src/Enums/TaskRunState.php",
         "old_class": "Domain\\Tasks\\Enums\\TaskRunState",
@@ -2092,8 +2160,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ba7c559d4077c70c5e5e226447dc74254f01ec66",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8813e22e339840d1d693813baa92792183382620",
         "old_path": "domain/Tasks/src/Enums/TaskState.php",
         "old_class": "Domain\\Tasks\\Enums\\TaskState",
         "final_path": "domain/Tasks/src/Enums/TaskState.php",
@@ -2111,7 +2179,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9f8a11b1daa8001e274903cd96c9b0cb0882959e",
         "old_path": "domain/Tasks/src/Enums/TaskStreamEntryType.php",
         "old_class": "Domain\\Tasks\\Enums\\TaskStreamEntryType",
@@ -2130,7 +2198,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "974500478c2fdc5590519e00981bf30689ab11ef",
         "old_path": "domain/Tasks/src/Enums/TaskTextLimit.php",
         "old_class": "Domain\\Tasks\\Enums\\TaskTextLimit",
@@ -2149,7 +2217,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "db23efcf88a91e51e71f93a1708fae96e9a8d0c9",
         "old_path": "domain/Tasks/src/Enums/TaskWaitChange.php",
         "old_class": "Domain\\Tasks\\Enums\\TaskWaitChange",
@@ -2168,7 +2236,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "6d86ed99c38b061c37c14900c458142ea8455a2c",
         "old_path": "domain/Tasks/src/Enums/TaskWaitTargetType.php",
         "old_class": "Domain\\Tasks\\Enums\\TaskWaitTargetType",
@@ -2187,8 +2255,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "61cc9f677e021763a895d524309f19a1eacd956d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "ada651f91d3e535aca5f66bffd066d2f449df3ff",
         "old_path": "domain/Tasks/src/Events/TaskDescribed.php",
         "old_class": "Domain\\Tasks\\Events\\TaskDescribed",
         "final_path": "domain/Tasks/src/Events/TaskDescribed.php",
@@ -2206,8 +2274,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4a9e1a1bfbae2daa43a548e20ae6e14bc83ab1c8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9fd0a1cad037f0810425d592ccb848f73ea7be51",
         "old_path": "domain/Tasks/src/Events/TaskStarted.php",
         "old_class": "Domain\\Tasks\\Events\\TaskStarted",
         "final_path": "domain/Tasks/src/Events/TaskStarted.php",
@@ -2225,7 +2293,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "708a964d3c5be1c6cb7112399201e31a6db8d965",
         "old_path": "domain/Tasks/src/Exceptions/CandidateLimitInvalid.php",
         "old_class": "Domain\\Tasks\\Exceptions\\CandidateLimitInvalid",
@@ -2244,8 +2312,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8652c9d0d48615b75eddfcc8b2b42f9f713de515",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0f9e90a4f9d73e5db23aa99673dbb3108ead0f40",
         "old_path": "domain/Tasks/src/Exceptions/TaskChangedSinceRead.php",
         "old_class": "Domain\\Tasks\\Exceptions\\TaskChangedSinceRead",
         "final_path": "domain/Tasks/src/Exceptions/TaskChangedSinceRead.php",
@@ -2263,7 +2331,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "98f1841f73b94b5858da669eaa6d8864ccb6e778",
         "old_path": "domain/Tasks/src/Exceptions/TaskCheckRefused.php",
         "old_class": "Domain\\Tasks\\Exceptions\\TaskCheckRefused",
@@ -2282,8 +2350,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "db116ffd1f261d8dea748e3561093895177cf7f4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b008fc2c0ccfdf4a46abb6aa74fce0ec063476d4",
         "old_path": "domain/Tasks/src/Exceptions/TaskMissing.php",
         "old_class": "Domain\\Tasks\\Exceptions\\TaskMissing",
         "final_path": "domain/Tasks/src/Exceptions/TaskMissing.php",
@@ -2301,8 +2369,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f0df75886dcf9b1ab9a82ff7bea577cfe04b721f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "52e2c9cd03e60baf7daa331aeaf4f01b859d8c8b",
         "old_path": "domain/Tasks/src/Exceptions/TaskNotOpenForAssignment.php",
         "old_class": "Domain\\Tasks\\Exceptions\\TaskNotOpenForAssignment",
         "final_path": "domain/Tasks/src/Exceptions/TaskNotOpenForAssignment.php",
@@ -2320,7 +2388,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "419fb256ae54f9777d429ca0996b19ab9bd4f18f",
         "old_path": "domain/Tasks/src/Exceptions/TaskPoolRefused.php",
         "old_class": "Domain\\Tasks\\Exceptions\\TaskPoolRefused",
@@ -2339,8 +2407,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3de2014d2b797758943f82b4f97544624e1af801",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e5a5cc857665b29ed380892c1d221d4009119e56",
         "old_path": "domain/Tasks/src/Exceptions/TaskRestartRefused.php",
         "old_class": "Domain\\Tasks\\Exceptions\\TaskRestartRefused",
         "final_path": "domain/Tasks/src/Exceptions/TaskRestartRefused.php",
@@ -2358,8 +2426,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "180909491c4263a281d865805da1ae98ba4d26bc",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "afeaaf610787f0c482cbeb4be478601adcaaef74",
         "old_path": "domain/Tasks/src/Exceptions/TaskResumeCovered.php",
         "old_class": "Domain\\Tasks\\Exceptions\\TaskResumeCovered",
         "final_path": "domain/Tasks/src/Exceptions/TaskResumeCovered.php",
@@ -2377,8 +2445,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "824028f22823cc78c03df755c15e955b8451e6c7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6c6dc64a24cbab00b13e8f8166a2403cd3c33bfe",
         "old_path": "domain/Tasks/src/Exceptions/TaskRevisionChanged.php",
         "old_class": "Domain\\Tasks\\Exceptions\\TaskRevisionChanged",
         "final_path": "domain/Tasks/src/Exceptions/TaskRevisionChanged.php",
@@ -2396,8 +2464,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "dad629dfd8c941e6033beb386e62534ca49b06a3",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a886fa5156b882c15e50c60c37ffbbc377d67a2a",
         "old_path": "domain/Tasks/src/Exceptions/TaskRunFinished.php",
         "old_class": "Domain\\Tasks\\Exceptions\\TaskRunFinished",
         "final_path": "domain/Tasks/src/Exceptions/TaskRunFinished.php",
@@ -2415,8 +2483,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "94cffbdbd3d11f3b04870a6c4f175a1fbdefce5d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6ab58d3b8b4b68e327e052b3c94f764d8216c1b8",
         "old_path": "domain/Tasks/src/Exceptions/TaskRunNotYours.php",
         "old_class": "Domain\\Tasks\\Exceptions\\TaskRunNotYours",
         "final_path": "domain/Tasks/src/Exceptions/TaskRunNotYours.php",
@@ -2434,8 +2502,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ccf0a0a29a49191bad5c33b55972e02318773594",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7de167775d1d885e71e424c9fcf13da587ebfd48",
         "old_path": "domain/Tasks/src/Exceptions/TaskRunStale.php",
         "old_class": "Domain\\Tasks\\Exceptions\\TaskRunStale",
         "final_path": "domain/Tasks/src/Exceptions/TaskRunStale.php",
@@ -2453,8 +2521,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "06575f624087b7706b003a7ae143636e6b1a3877",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "02e6cebcd832a2e7d90ec0c5029851d2bf5dfa85",
         "old_path": "domain/Tasks/src/Exceptions/TaskRunTaken.php",
         "old_class": "Domain\\Tasks\\Exceptions\\TaskRunTaken",
         "final_path": "domain/Tasks/src/Exceptions/TaskRunTaken.php",
@@ -2472,7 +2540,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "53e2ce78fe281ff0e5c642294783801c003147c2",
         "old_path": "domain/Tasks/src/Exceptions/TaskWaitRefused.php",
         "old_class": "Domain\\Tasks\\Exceptions\\TaskWaitRefused",
@@ -2491,7 +2559,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "32407f47c99229a81d071312af5f0c84f08c2ddd",
         "old_path": "domain/Tasks/src/Exceptions/TaskWaitsUnmet.php",
         "old_class": "Domain\\Tasks\\Exceptions\\TaskWaitsUnmet",
@@ -2510,8 +2578,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "81769299ce93161c763793bcbba953715d5e4b76",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "15b6458b5104e6c4b2acbcf67a337b894d2b9be6",
         "old_path": "domain/Tasks/src/Http/Controllers/AddTaskWaitPageController.php",
         "old_class": "Domain\\Tasks\\Http\\Controllers\\AddTaskWaitPageController",
         "final_path": "domain/Tasks/src/Http/Controllers/AddTaskWaitPageController.php",
@@ -2529,8 +2597,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e7083673b054df1e78b9b639ce512b8223b00d5f",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bcd5d3cab29112a95c822c880e48ad5dce75d18e",
         "old_path": "domain/Tasks/src/Http/Controllers/BlockTaskPageController.php",
         "old_class": "Domain\\Tasks\\Http\\Controllers\\BlockTaskPageController",
         "final_path": "domain/Tasks/src/Http/Controllers/BlockTaskPageController.php",
@@ -2548,8 +2616,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "78974b552acd3a612ac5976b15d697e2a5246066",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "50f831dcb1c4743d0225ae9b4cf6df1904c19ea1",
         "old_path": "domain/Tasks/src/Http/Controllers/Calls/CreateTaskController.php",
         "old_class": "Domain\\Tasks\\Http\\Controllers\\Calls\\CreateTaskController",
         "final_path": "domain/Tasks/src/Http/Controllers/Calls/CreateTaskController.php",
@@ -2567,8 +2635,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2278b577339d3427b4b92857b1234d7c230a7f15",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "56cb5376f6c71eeaa382b44bb2c2765f46bae421",
         "old_path": "domain/Tasks/src/Http/Controllers/Calls/EditTaskController.php",
         "old_class": "Domain\\Tasks\\Http\\Controllers\\Calls\\EditTaskController",
         "final_path": "domain/Tasks/src/Http/Controllers/Calls/EditTaskController.php",
@@ -2586,8 +2654,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9f13c5225e1295a44815c04ee04029fd03567078",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "699d81efe1176d39e99815babc907ae3df1a51c0",
         "old_path": "domain/Tasks/src/Http/Controllers/Calls/ListAssignedTasksController.php",
         "old_class": "Domain\\Tasks\\Http\\Controllers\\Calls\\ListAssignedTasksController",
         "final_path": "domain/Tasks/src/Http/Controllers/Calls/ListAssignedTasksController.php",
@@ -2605,8 +2673,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e424cbb8a6ce734dd1b0c84f1cba0a3abcadaddd",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "b3a36a15ead6a1409db50b8ebca74f8852c1a8fc",
         "old_path": "domain/Tasks/src/Http/Controllers/CancelTaskPageController.php",
         "old_class": "Domain\\Tasks\\Http\\Controllers\\CancelTaskPageController",
         "final_path": "domain/Tasks/src/Http/Controllers/CancelTaskPageController.php",
@@ -2624,8 +2692,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "6a567126a52a9593d20eb73f9a76375dc6f34f64",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "82fe3f010fa57ce4a55d72fb00c31e4d007378d6",
         "old_path": "domain/Tasks/src/Http/Controllers/CreateTaskPageController.php",
         "old_class": "Domain\\Tasks\\Http\\Controllers\\CreateTaskPageController",
         "final_path": "domain/Tasks/src/Http/Controllers/CreateTaskPageController.php",
@@ -2643,8 +2711,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4a835c312abe9e71e7456679e0fbaaa9bd5aae7b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d173734974984c0d2ab82bd6eb92b1dcfc5ad20b",
         "old_path": "domain/Tasks/src/Http/Controllers/RemoveTaskWaitPageController.php",
         "old_class": "Domain\\Tasks\\Http\\Controllers\\RemoveTaskWaitPageController",
         "final_path": "domain/Tasks/src/Http/Controllers/RemoveTaskWaitPageController.php",
@@ -2662,8 +2730,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5961c70d478939690a269e174f2f45b80c42a7e4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a2ba2f118f1d697a21342e913fdb9007696de081",
         "old_path": "domain/Tasks/src/Http/Controllers/StartTaskPageController.php",
         "old_class": "Domain\\Tasks\\Http\\Controllers\\StartTaskPageController",
         "final_path": "domain/Tasks/src/Http/Controllers/StartTaskPageController.php",
@@ -2681,8 +2749,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7c0e887c0e50f183bfb8bdeff55ce456daec2ca1",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "77185368bc97c0ddb308bc981227062c8a087292",
         "old_path": "domain/Tasks/src/Http/Controllers/WaiveTaskWaitPageController.php",
         "old_class": "Domain\\Tasks\\Http\\Controllers\\WaiveTaskWaitPageController",
         "final_path": "domain/Tasks/src/Http/Controllers/WaiveTaskWaitPageController.php",
@@ -2700,8 +2768,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e529e42c408ec985030b74ab5eaa01b3e66aae0a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "adf7afc9a244e94bd7c8110c081ae8ba87c37992",
         "old_path": "domain/Tasks/src/Http/Data/AssignedTaskCardData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\AssignedTaskCardData",
         "final_path": "domain/Tasks/src/Data/AssignedTaskCardData.php",
@@ -2714,12 +2782,14 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "687b58fb8b06ef4e0efcf8b0e4c2737b4bbbb459",
         "old_path": "domain/Tasks/src/Http/Data/AssignedTaskListData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\AssignedTaskListData",
@@ -2733,12 +2803,14 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d4f7ec34a7fb944e883c3752c0dcd3ce74820051",
         "old_path": "domain/Tasks/src/Http/Data/TaskActionsData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskActionsData",
@@ -2752,13 +2824,16 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "523ce54df3b91ce86499b2139fab0261ef723585",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2f24f038345d46c384a0a5fb173cb5fdc4176717",
         "old_path": "domain/Tasks/src/Http/Data/TaskCommentsData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskCommentsData",
         "final_path": "domain/Tasks/src/Data/TaskCommentsData.php",
@@ -2771,13 +2846,16 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f2eb914dd501fe39750aea5340b14bfb8da36147",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8fae4c40b2f021b0b18458a52a592fbfc46c0db3",
         "old_path": "domain/Tasks/src/Http/Data/TaskExecutionData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskExecutionData",
         "final_path": "domain/Tasks/src/Data/TaskExecutionData.php",
@@ -2790,13 +2868,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "38aa2c5b33d8d5f79270e37589a6ea963d1ef06c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "24e4888ffcd56c298f69cb3e9298c7a61f3a3b08",
         "old_path": "domain/Tasks/src/Http/Data/TaskFiltersData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskFiltersData",
         "final_path": "domain/Tasks/src/Data/TaskFiltersData.php",
@@ -2809,13 +2889,16 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "91a83bd3653cc005b2ee0b3cb495a42eb1a7d35a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "982ca30611b2ae6d465de3b44e3d6cfb5b963424",
         "old_path": "domain/Tasks/src/Http/Data/TaskListData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskListData",
         "final_path": "domain/Tasks/src/Data/TaskListData.php",
@@ -2828,12 +2911,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "cfd9e478654fc638dc4539f91ec01040e69329be",
         "old_path": "domain/Tasks/src/Http/Data/TaskLogsData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskLogsData",
@@ -2847,12 +2933,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a63727e4b1d9862a35460784fbfe64ae4e1be71e",
         "old_path": "domain/Tasks/src/Http/Data/TaskLogsPartData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskLogsPartData",
@@ -2866,13 +2955,16 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4a10a6868190ad05f5c0ee0f0030e6c730bf8d95",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "82668888af5bf87d071ea6790907226f5a3d374e",
         "old_path": "domain/Tasks/src/Http/Data/TaskProofData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskProofData",
         "final_path": "domain/Tasks/src/Data/TaskProofData.php",
@@ -2885,12 +2977,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "7f74cc0372fe66de56f10d5c83d8058a6b05643c",
         "old_path": "domain/Tasks/src/Http/Data/TaskProofsData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskProofsData",
@@ -2904,12 +2999,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e7e5859eb6d92161a28660e5e4d80abf4fc79841",
         "old_path": "domain/Tasks/src/Http/Data/TaskProofsPartData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskProofsPartData",
@@ -2923,13 +3021,16 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f8530e4f9151d09e80e015e4fa985828c60d9415",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "40b5bd890bbbcbf6d8ed89cef5609330cc9d977d",
         "old_path": "domain/Tasks/src/Http/Data/TaskReaderData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskReaderData",
         "final_path": "domain/Tasks/src/Data/TaskReaderData.php",
@@ -2942,13 +3043,16 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9832639a58b84ae4a294a3ea9fb4247db3f2f0cb",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "25686a8ccd32d0cd4b4f7010a37869e5313fb93f",
         "old_path": "domain/Tasks/src/Http/Data/TaskRowData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskRowData",
         "final_path": "domain/Tasks/src/Data/TaskRowData.php",
@@ -2961,13 +3065,16 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d518a7019defd26e2fde05476c1b7c116243c691",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c8afe187a6ecd3a6b6d32360ec1f9fd0cb410bae",
         "old_path": "domain/Tasks/src/Http/Data/TaskRunnerData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskRunnerData",
         "final_path": "domain/Tasks/src/Data/TaskRunnerData.php",
@@ -2980,13 +3087,16 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9c3cc63a131c047fd27d470b9af972189d2c4fee",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2726c24a73f3bb18742a5842ba7c53832b0411ee",
         "old_path": "domain/Tasks/src/Http/Data/TaskStreamEntryData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskStreamEntryData",
         "final_path": "domain/Tasks/src/Data/TaskStreamEntryData.php",
@@ -3000,13 +3110,15 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Tasks/tests/Feature/TaskStreamTest.php"
+            "domain/Tasks/tests/Feature/TaskStreamTest.php",
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d0a834a2b6f6194d4ebb6d099c1d4a9f60da83a6",
         "old_path": "domain/Tasks/src/Http/Data/TaskStreamPageData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskStreamPageData",
@@ -3020,12 +3132,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "af1475853e253e548dc13e03c99b2d90fbbe7ce8",
         "old_path": "domain/Tasks/src/Http/Data/TaskWaitActionsData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskWaitActionsData",
@@ -3039,12 +3154,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "865ad8c6f603ce883573c4fbcf6ff7069e7ca022",
         "old_path": "domain/Tasks/src/Http/Data/TaskWaitChoiceData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskWaitChoiceData",
@@ -3058,13 +3176,16 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f14086303d0456af763ce8c1230a4c1ffc60d2a0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "cdbc6e5033ca652dea0cee0b5b75c0c2d98e8bae",
         "old_path": "domain/Tasks/src/Http/Data/TaskWaitItemData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskWaitItemData",
         "final_path": "domain/Tasks/src/Data/TaskWaitItemData.php",
@@ -3077,12 +3198,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2e4777adf2a214b5d73aef5896c9fcb54ddd799f",
         "old_path": "domain/Tasks/src/Http/Data/TaskWaitsData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskWaitsData",
@@ -3096,12 +3220,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "3dd760b91c0cb0c4ba8fdb0dc792eda12887e54d",
         "old_path": "domain/Tasks/src/Http/Data/TaskWaitsPartData.php",
         "old_class": "Domain\\Tasks\\Http\\Data\\TaskWaitsPartData",
@@ -3115,12 +3242,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/baseline/type-owners.json",
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e74a99b6055a558024e0f39b7ae683cd1a872d67",
         "old_path": "domain/Tasks/src/Http/Requests/Concerns/ReadsTaskFilters.php",
         "old_class": "Domain\\Tasks\\Http\\Requests\\Concerns\\ReadsTaskFilters",
@@ -3139,7 +3269,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9813fe46ca9465538172d3a5ec8ab79cc97e93e9",
         "old_path": "domain/Tasks/src/Http/Requests/CreateTaskRequest.php",
         "old_class": "Domain\\Tasks\\Http\\Requests\\CreateTaskRequest",
@@ -3158,7 +3288,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e8d2e217743c0e108190593af38014583d754c10",
         "old_path": "domain/Tasks/src/Http/Requests/TaskActionRequest.php",
         "old_class": "Domain\\Tasks\\Http\\Requests\\TaskActionRequest",
@@ -3177,8 +3307,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2742fe1bf4fbbcbb9945a8dc6e5c7428ff79eed5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "702c544b2f413e95c2f461bcffed5e9da6e34e86",
         "old_path": "domain/Tasks/src/Http/Requests/TaskRequest.php",
         "old_class": "Domain\\Tasks\\Http\\Requests\\TaskRequest",
         "final_path": "domain/Tasks/src/Http/Requests/TaskRequest.php",
@@ -3196,7 +3326,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8953e972b68b59d51f9d0d745a556041ccf31d4b",
         "old_path": "domain/Tasks/src/Http/Requests/TaskWaitRequest.php",
         "old_class": "Domain\\Tasks\\Http\\Requests\\TaskWaitRequest",
@@ -3215,7 +3345,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "852d54f5797928ccf672f51eb647edb910205fe9",
         "old_path": "domain/Tasks/src/Http/Requests/TasksRequest.php",
         "old_class": "Domain\\Tasks\\Http\\Requests\\TasksRequest",
@@ -3234,8 +3364,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "73e8503106b8bfb6a99e6bd0fee953f27249d0ae",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "a5de0c02697c9198ae9d834668ad648de577c8fc",
         "old_path": "domain/Tasks/src/Listeners/AnnounceTaskStart.php",
         "old_class": "Domain\\Tasks\\Listeners\\AnnounceTaskStart",
         "final_path": "domain/Tasks/src/Listeners/AnnounceTaskStart.php",
@@ -3253,8 +3383,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "216826c97d572d7e1bc3b5d7bf0e0c665a4cc626",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7328a89ed0b7542d95844955ca798aba896dee75",
         "old_path": "domain/Tasks/src/Listeners/BindTaskCheckResults.php",
         "old_class": "Domain\\Tasks\\Listeners\\BindTaskCheckResults",
         "final_path": "domain/Tasks/src/Listeners/BindTaskCheckResults.php",
@@ -3272,8 +3402,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "3bf35a3ae1fb03d377bb61f690491124172adde4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4a7137e3a5dd0cd35dd692e271475751262ad3fc",
         "old_path": "domain/Tasks/src/Listeners/PushTaskState.php",
         "old_class": "Domain\\Tasks\\Listeners\\PushTaskState",
         "final_path": "domain/Tasks/src/Listeners/PushTaskState.php",
@@ -3291,8 +3421,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9a659c2457f352dfa4c5420a2fae444bac043a84",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f6ca62fc98c9f71c907557adc68850db23d789d1",
         "old_path": "domain/Tasks/src/Listeners/RecordTaskHistory.php",
         "old_class": "Domain\\Tasks\\Listeners\\RecordTaskHistory",
         "final_path": "domain/Tasks/src/Listeners/RecordTaskHistory.php",
@@ -3310,7 +3440,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "2ccbb7fc2d659fbc8748e3b5f47eb6163bb5c440",
         "old_path": "domain/Tasks/src/Mcp/AssignedTasksTool.php",
         "old_class": "Domain\\Tasks\\Mcp\\AssignedTasksTool",
@@ -3324,12 +3454,14 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "42f7684ca929d32c3152ae3cd364e2251ed5666f",
         "old_path": "domain/Tasks/src/Mcp/BlockTaskTool.php",
         "old_class": "Domain\\Tasks\\Mcp\\BlockTaskTool",
@@ -3343,12 +3475,14 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "047f53f3634164f271950805e2dbdebef5f04114",
         "old_path": "domain/Tasks/src/Mcp/CancelTaskTool.php",
         "old_class": "Domain\\Tasks\\Mcp\\CancelTaskTool",
@@ -3362,12 +3496,14 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e5f950b1665146b017017a409fd185687f8b72ef",
         "old_path": "domain/Tasks/src/Mcp/CreateTaskTool.php",
         "old_class": "Domain\\Tasks\\Mcp\\CreateTaskTool",
@@ -3381,12 +3517,14 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c4e0de60c2b8ef99ab815556dc0dcae7c88db0be",
         "old_path": "domain/Tasks/src/Mcp/EditTaskTool.php",
         "old_class": "Domain\\Tasks\\Mcp\\EditTaskTool",
@@ -3400,12 +3538,14 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "dce434c746b1152ee00e3aa9ef562aa0981afb87",
         "old_path": "domain/Tasks/src/Mcp/FinishTaskTool.php",
         "old_class": "Domain\\Tasks\\Mcp\\FinishTaskTool",
@@ -3419,13 +3559,15 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ecb0779c7502761b8f3d6c56b3ea65cd756f63f0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "35f8c9b433d677971cc77370cd30492f3f13dded",
         "old_path": "domain/Tasks/src/Mcp/HeldTasksOverview.php",
         "old_class": "Domain\\Tasks\\Mcp\\HeldTasksOverview",
         "final_path": "domain/Tasks/src/Support/Mcp/HeldTasksOverview.php",
@@ -3438,12 +3580,14 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "8d6e71806b6025022bae3cf93aad8cdc88b49181",
         "old_path": "domain/Tasks/src/Mcp/LogTaskTool.php",
         "old_class": "Domain\\Tasks\\Mcp\\LogTaskTool",
@@ -3457,12 +3601,14 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "45c788f1ee77fdbef23786e756308a2b6f713fb2",
         "old_path": "domain/Tasks/src/Mcp/RunTaskCheckTool.php",
         "old_class": "Domain\\Tasks\\Mcp\\RunTaskCheckTool",
@@ -3476,12 +3622,14 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "ce6b62652133f083c5f7cb220777c788c7d89277",
         "old_path": "domain/Tasks/src/Mcp/StartTaskTool.php",
         "old_class": "Domain\\Tasks\\Mcp\\StartTaskTool",
@@ -3495,13 +3643,15 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c50829e381f35c52faeb6905ec6a21fd2158198d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "fdfd30f36648ad378a5a97f63a4aa5a269b02e66",
         "old_path": "domain/Tasks/src/Mcp/TaskListTool.php",
         "old_class": "Domain\\Tasks\\Mcp\\TaskListTool",
         "final_path": "domain/Tasks/src/Mcp/Tools/TaskListTool.php",
@@ -3514,13 +3664,15 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c0e51e680ad1d05f5e751b803c94a5fcb21b217b",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "74f7b6c21d786de0a8c4bddcaca42b016f1788ec",
         "old_path": "domain/Tasks/src/Mcp/TaskReadResult.php",
         "old_class": "Domain\\Tasks\\Mcp\\TaskReadResult",
         "final_path": "domain/Tasks/src/Support/Mcp/TaskReadResult.php",
@@ -3533,13 +3685,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a5f92bf46e702a1069d46c1818a148d0c57714ab",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6fcce045e0abefec9376ae944f9d82fa0c8338d4",
         "old_path": "domain/Tasks/src/Mcp/TaskReadTool.php",
         "old_class": "Domain\\Tasks\\Mcp\\TaskReadTool",
         "final_path": "domain/Tasks/src/Mcp/Tools/TaskReadTool.php",
@@ -3552,13 +3706,15 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "f3a0d6aa63ab4c19b89e8cf6aab21093805d314c",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "cb8cb39af7b8562830b6cccb1242405a459414a7",
         "old_path": "domain/Tasks/src/Mcp/TaskResource.php",
         "old_class": "Domain\\Tasks\\Mcp\\TaskResource",
         "final_path": "domain/Tasks/src/Mcp/Resources/TaskResource.php",
@@ -3571,13 +3727,15 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ee9bf5d94e5fb0dc4560626f9a9677cb26adec64",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "065ba16772d027b00cd376e736fb38f3fb59ca82",
         "old_path": "domain/Tasks/src/Mcp/TaskSearch.php",
         "old_class": "Domain\\Tasks\\Mcp\\TaskSearch",
         "final_path": "domain/Tasks/src/Support/Mcp/TaskSearch.php",
@@ -3590,12 +3748,14 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "87d849a5bdc3777712c274123ec696a4559c5c33",
         "old_path": "domain/Tasks/src/Mcp/TaskWriteTool.php",
         "old_class": "Domain\\Tasks\\Mcp\\TaskWriteTool",
@@ -3609,12 +3769,14 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d99d97bb21e4841b970e6c0a415b9e53fcdaf0bd",
         "old_path": "domain/Tasks/src/Mcp/TasksListTool.php",
         "old_class": "Domain\\Tasks\\Mcp\\TasksListTool",
@@ -3628,13 +3790,15 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5f4c9d7f7fdef52e059fdd2b6fb2e5c6151baedc",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "8c0608f2c6ee618e697795857fb0f5bcb64dc1db",
         "old_path": "domain/Tasks/src/Models/Task.php",
         "old_class": "Domain\\Tasks\\Models\\Task",
         "final_path": "domain/Tasks/src/Models/Task.php",
@@ -3652,8 +3816,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "837a81d396d316c578d900bf186bae0bbfe0e92a",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "282bbef71509fccb617a4614dd9a803a62d13bc6",
         "old_path": "domain/Tasks/src/Models/TaskCheck.php",
         "old_class": "Domain\\Tasks\\Models\\TaskCheck",
         "final_path": "domain/Tasks/src/Models/TaskCheck.php",
@@ -3671,8 +3835,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e205ec2dc82615a6ef8c24799a1acb04621543f6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7ee008399236df22b2cb0372386855aa841b71f4",
         "old_path": "domain/Tasks/src/Models/TaskHistoryEntry.php",
         "old_class": "Domain\\Tasks\\Models\\TaskHistoryEntry",
         "final_path": "domain/Tasks/src/Models/TaskHistoryEntry.php",
@@ -3690,8 +3854,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2058279cdc372fbb92a6c6c26499289d6b400463",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "95c34f00e63dabe747338878003b99d21eebdb15",
         "old_path": "domain/Tasks/src/Models/TaskLogEntry.php",
         "old_class": "Domain\\Tasks\\Models\\TaskLogEntry",
         "final_path": "domain/Tasks/src/Models/TaskLogEntry.php",
@@ -3709,8 +3873,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "8d0d5cf0a1e0eea134cc2ef0b24821bc3b5027a5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "e3019720ea42e27f761a1a7fd9935811b2e9cb90",
         "old_path": "domain/Tasks/src/Models/TaskRun.php",
         "old_class": "Domain\\Tasks\\Models\\TaskRun",
         "final_path": "domain/Tasks/src/Models/TaskRun.php",
@@ -3728,8 +3892,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "79d8d46c0db57dbcf72f161a495df96b6fc862f0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4d1243f110a660eef1dfc3861618c675b4116e5c",
         "old_path": "domain/Tasks/src/Models/TaskWait.php",
         "old_class": "Domain\\Tasks\\Models\\TaskWait",
         "final_path": "domain/Tasks/src/Models/TaskWait.php",
@@ -3747,8 +3911,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9d04812689aad6ee1506bb6fb4d47ff35fd119ac",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2bd534e815ad685d503f0fd62501de26fea76218",
         "old_path": "domain/Tasks/src/Models/TaskWaitHistory.php",
         "old_class": "Domain\\Tasks\\Models\\TaskWaitHistory",
         "final_path": "domain/Tasks/src/Models/TaskWaitHistory.php",
@@ -3766,8 +3930,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5f001bec74dfa4940397e7288b9166b32255cabd",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "6170858e3c2bfe36e60d62cb1f0987bf661bfa65",
         "old_path": "domain/Tasks/src/Policies/TaskPolicy.php",
         "old_class": "Domain\\Tasks\\Policies\\TaskPolicy",
         "final_path": "domain/Tasks/src/Policies/TaskPolicy.php",
@@ -3785,8 +3949,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a8c9c9d617a3d57c2abe6e551fc50e6fd5885a97",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "05151636c7aa1c681cbfbdc63102551bc7a6530c",
         "old_path": "domain/Tasks/src/Policies/TaskRunPolicy.php",
         "old_class": "Domain\\Tasks\\Policies\\TaskRunPolicy",
         "final_path": "domain/Tasks/src/Policies/TaskRunPolicy.php",
@@ -3804,8 +3968,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0104e6a5d8e1a3f500184d27b3befd62cad60979",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "766d615260954215b4a498889ed05ca35e01895f",
         "old_path": "domain/Tasks/src/Providers/TasksServiceProvider.php",
         "old_class": "Domain\\Tasks\\Providers\\TasksServiceProvider",
         "final_path": "domain/Tasks/src/Providers/TasksServiceProvider.php",
@@ -3823,8 +3987,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9b19017ec573ed57b779710f39ac2237dd14e9b7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "33cdb9c603be9f3ce6d76d56b6c5aed0ec241b0b",
         "old_path": "domain/Tasks/src/Resolvers/AssignedTasks.php",
         "old_class": "Domain\\Tasks\\Resolvers\\AssignedTasks",
         "final_path": "domain/Tasks/src/Resolvers/AssignedTasks.php",
@@ -3842,8 +4006,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "85054d319b84b7f3f05b8b0af2ea8465838124cb",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "44461cbf00cfe83aa4a4de0f4d85b273b82442d4",
         "old_path": "domain/Tasks/src/Resolvers/ListedTasks.php",
         "old_class": "Domain\\Tasks\\Resolvers\\ListedTasks",
         "final_path": "domain/Tasks/src/Resolvers/ListedTasks.php",
@@ -3861,8 +4025,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "11ffd62eb09b7e3d3a09e796bbbbd849b6dd68a8",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "52d54fdc315cb0c0a881736b7dec12fa424a5931",
         "old_path": "domain/Tasks/src/Resolvers/Support/TaskExecutions.php",
         "old_class": "Domain\\Tasks\\Resolvers\\Support\\TaskExecutions",
         "final_path": "domain/Tasks/src/Resolvers/Support/TaskExecutions.php",
@@ -3880,7 +4044,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "03336936d7d13fd4544de4cb86bc7ba4b14b94aa",
         "old_path": "domain/Tasks/src/Resolvers/Support/TaskRecords.php",
         "old_class": "Domain\\Tasks\\Resolvers\\Support\\TaskRecords",
@@ -3899,8 +4063,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "4922b1bb63172f29631d697a9b3338e14b267fb9",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "4840a6eef0ee5a7af64932e8328c897d5fbeebd0",
         "old_path": "domain/Tasks/src/Resolvers/TaskAssignmentRecords.php",
         "old_class": "Domain\\Tasks\\Resolvers\\TaskAssignmentRecords",
         "final_path": "domain/Tasks/src/Resolvers/TaskAssignmentRecords.php",
@@ -3918,8 +4082,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "2faa7a94388cffcf52767e66c2cfae171a771029",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "9086e4a3eb898c6e4a0887b3c0ac3f074677cd43",
         "old_path": "domain/Tasks/src/Resolvers/TaskAssignments.php",
         "old_class": "Domain\\Tasks\\Resolvers\\TaskAssignments",
         "final_path": "domain/Tasks/src/Resolvers/TaskAssignments.php",
@@ -3937,8 +4101,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "db7f250ae604cd5021d73f391edebfd6f48b8ff0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bcc18464ea551ce36283ac482135dfb0261955f3",
         "old_path": "domain/Tasks/src/Resolvers/TaskCounts.php",
         "old_class": "Domain\\Tasks\\Resolvers\\TaskCounts",
         "final_path": "domain/Tasks/src/Resolvers/TaskCounts.php",
@@ -3956,8 +4120,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a24ec517987c84218f5cdaa7d4630f46f25ff3ce",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d4a47c3027fc6175390e88a5bbe32f0837a73c67",
         "old_path": "domain/Tasks/src/Resolvers/TaskDetailRecords.php",
         "old_class": "Domain\\Tasks\\Resolvers\\TaskDetailRecords",
         "final_path": "domain/Tasks/src/Resolvers/TaskDetailRecords.php",
@@ -3975,8 +4139,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "ae042fbe57eb8a036d4d94a4fee71ded5625d9e7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "47307af662a9ad14273d9906021f12e648adce67",
         "old_path": "domain/Tasks/src/Resolvers/TaskGraphRecords.php",
         "old_class": "Domain\\Tasks\\Resolvers\\TaskGraphRecords",
         "final_path": "domain/Tasks/src/Resolvers/TaskGraphRecords.php",
@@ -3994,7 +4158,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "cbf609aaf2f69dd8cbc6cbdf70270b945fcb7607",
         "old_path": "domain/Tasks/src/Resolvers/TaskHistoryRecords.php",
         "old_class": "Domain\\Tasks\\Resolvers\\TaskHistoryRecords",
@@ -4013,7 +4177,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d1e9a9cacd425217ea5d5aad1884c0039891a59d",
         "old_path": "domain/Tasks/src/Resolvers/TaskLogRecords.php",
         "old_class": "Domain\\Tasks\\Resolvers\\TaskLogRecords",
@@ -4032,7 +4196,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "26b2701bcceca53f42fb50bf0b2341044eef0053",
         "old_path": "domain/Tasks/src/Resolvers/TaskProofRecords.php",
         "old_class": "Domain\\Tasks\\Resolvers\\TaskProofRecords",
@@ -4051,8 +4215,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7f6fac57cb7b5d48a0e5d5a069090358f0a6f2db",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "96abdc57592f73db222f8d84d16dd5fd46f9685d",
         "old_path": "domain/Tasks/src/Resolvers/TaskRecords.php",
         "old_class": "Domain\\Tasks\\Resolvers\\TaskRecords",
         "final_path": "domain/Tasks/src/Resolvers/TaskRecords.php",
@@ -4070,8 +4234,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a25d84177f0342c42435123203e6b8577c040105",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1d7d661776a8b83d4e1964b96f6a40cd7a395025",
         "old_path": "domain/Tasks/src/Resolvers/TaskRunAssignments.php",
         "old_class": "Domain\\Tasks\\Resolvers\\TaskRunAssignments",
         "final_path": "domain/Tasks/src/Resolvers/TaskRunAssignments.php",
@@ -4089,8 +4253,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "fe83237904f46a19bcb26319760495eed1bbee03",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "c99c44efdeac2219371e8935d8c723af732ab2b8",
         "old_path": "domain/Tasks/src/Resolvers/TaskWaitRecords.php",
         "old_class": "Domain\\Tasks\\Resolvers\\TaskWaitRecords",
         "final_path": "domain/Tasks/src/Resolvers/TaskWaitRecords.php",
@@ -4108,8 +4272,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "0aadfc099b2bdc2d6d6ead00c03dc78461fd81d0",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "7351f36777e635a14231b774c6d32442b34316c4",
         "old_path": "domain/Tasks/src/Resolvers/TaskWindowResolver.php",
         "old_class": "Domain\\Tasks\\Resolvers\\TaskWindowResolver",
         "final_path": "domain/Tasks/src/Resolvers/TaskWindowResolver.php",
@@ -4127,8 +4291,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7a2cb329c547cfbf8c4669e2fad6e676d0d6f928",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "143bb3788086317cc03afd0c4e3bcdf11d06614e",
         "old_path": "domain/Tasks/src/Resolvers/TasksWindowResolver.php",
         "old_class": "Domain\\Tasks\\Resolvers\\TasksWindowResolver",
         "final_path": "domain/Tasks/src/Resolvers/TasksWindowResolver.php",
@@ -4146,8 +4310,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "64b310a0eeb896eacc1dff9ef7f162af40634fc1",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "2cf87fdb05cd956fd2dc1755e8499a63c71e4697",
         "old_path": "domain/Tasks/src/Resolvers/VisibleTasks.php",
         "old_class": "Domain\\Tasks\\Resolvers\\VisibleTasks",
         "final_path": "domain/Tasks/src/Resolvers/VisibleTasks.php",
@@ -4165,8 +4329,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "828dd64dadb008b3c5d594c667815ffac6130f6e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "401c6f0e3d845c2973929f6076747cd80f9268d9",
         "old_path": "domain/Tasks/src/Routes/agent.php",
         "old_class": null,
         "final_path": "domain/Tasks/routes/agent.php",
@@ -4179,13 +4343,15 @@
         },
         "phase": 4,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "7409224454e3e6d6301329215570e9d7f46dd432",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0c851b777b31c58f109dbccbd4c3d519a1cac2a0",
         "old_path": "domain/Tasks/src/Skills/TasksSkill.php",
         "old_class": "Domain\\Tasks\\Skills\\TasksSkill",
         "final_path": "domain/Tasks/src/Support/Skills/TasksSkill.php",
@@ -4198,13 +4364,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "a5bd602ee63c104d3d3e5bad50df19ef841914a7",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "3fe036e8b4730021eca51c6ea497cc69e0271215",
         "old_path": "domain/Tasks/src/States/Support/WorkingOnTaskStateFactory.php",
         "old_class": "Domain\\Tasks\\States\\Support\\WorkingOnTaskStateFactory",
         "final_path": "domain/Tasks/src/Support/States/Support/WorkingOnTaskStateFactory.php",
@@ -4217,13 +4385,15 @@
         },
         "phase": 3,
         "batch": "Tasks",
-        "consumers": [],
+        "consumers": [
+            "tools/refactoring/layout/manifest-Tasks.json"
+        ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "c2b295b1d4533d1cbc4db5b4546a1bd17283c003",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0ab588f6581f174c372caa06e8ec83d0e712fb9b",
         "old_path": "domain/Tasks/src/States/Support/WorkingOnTaskStateReference.php",
         "old_class": "Domain\\Tasks\\States\\Support\\WorkingOnTaskStateReference",
         "final_path": "domain/Tasks/src/Support/States/Support/WorkingOnTaskStateReference.php",
@@ -4237,14 +4407,15 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Tasks/tests/Feature/TaskStateContributionTest.php"
+            "domain/Tasks/tests/Feature/TaskStateContributionTest.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "5cc90ebe163b1e0c404d88c37eaa48961a6be445",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "1ef895c8e29be7e7c26215d8a9f482d6ff6bddab",
         "old_path": "domain/Tasks/src/States/WorkingOnTaskState.php",
         "old_class": "Domain\\Tasks\\States\\WorkingOnTaskState",
         "final_path": "domain/Tasks/src/Support/States/WorkingOnTaskState.php",
@@ -4258,14 +4429,15 @@
         "phase": 3,
         "batch": "Tasks",
         "consumers": [
-            "domain/Tasks/tests/Unit/States/WorkingOnTaskTest.php"
+            "domain/Tasks/tests/Unit/States/WorkingOnTaskTest.php",
+            "tools/refactoring/layout/manifest-Tasks.json"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "9e25b30a817120fdfc59018071ea747923197a9d",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "88d7497dd00574a0e0144c6af30b2db356978550",
         "old_path": "domain/Tasks/src/Support/DockedTask.php",
         "old_class": "Domain\\Tasks\\Support\\DockedTask",
         "final_path": "domain/Tasks/src/Support/DockedTask.php",
@@ -4283,8 +4455,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "571f8be7817278c3886efaed9f7f7e6e68fadf4e",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "bfb23bd5016c0be95ce2a3a36062875a79354e3e",
         "old_path": "domain/Tasks/src/Support/EnvironmentAssignedTasks.php",
         "old_class": "Domain\\Tasks\\Support\\EnvironmentAssignedTasks",
         "final_path": "domain/Tasks/src/Support/EnvironmentAssignedTasks.php",
@@ -4302,8 +4474,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "63994cface5b05e74a965ab3a04c1d234c01f7af",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "f9222f1e432aeb7000e5eeb804abf40d5458a99f",
         "old_path": "domain/Tasks/src/Support/TaskDetailsFactory.php",
         "old_class": "Domain\\Tasks\\Support\\TaskDetailsFactory",
         "final_path": "domain/Tasks/src/Support/TaskDetailsFactory.php",
@@ -4321,8 +4493,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "fb49320fc6bb70d48b3ed4beff744bd422bfcb54",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "d314b3c985ad492b3ea34b7fab35dbac3e47ed0f",
         "old_path": "domain/Tasks/src/Support/TaskDocking.php",
         "old_class": "Domain\\Tasks\\Support\\TaskDocking",
         "final_path": "domain/Tasks/src/Support/TaskDocking.php",
@@ -4340,7 +4512,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "82e4a2840c8f5b3d027f3705313f95a9395a3c67",
         "old_path": "domain/Tasks/src/Support/TaskGraphLock.php",
         "old_class": "Domain\\Tasks\\Support\\TaskGraphLock",
@@ -4359,8 +4531,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "872de599356f5e067344506da463ae7bf045f0b6",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "da7d6cb744eee9e12632cf1350a92674a9b9d63c",
         "old_path": "domain/Tasks/src/Support/TaskIndexLayout.php",
         "old_class": "Domain\\Tasks\\Support\\TaskIndexLayout",
         "final_path": "domain/Tasks/src/Support/TaskIndexLayout.php",
@@ -4378,8 +4550,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "d745b87246ea3e10e90938785c949752649603cb",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "50ebf67c727d3e093f6b99015305978f2352f950",
         "old_path": "domain/Tasks/src/Support/TaskReaderLayout.php",
         "old_class": "Domain\\Tasks\\Support\\TaskReaderLayout",
         "final_path": "domain/Tasks/src/Support/TaskReaderLayout.php",
@@ -4397,7 +4569,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "690d38e61a82afab6469b6e6e173e5887433bb65",
         "old_path": "domain/Tasks/src/Support/TaskStream.php",
         "old_class": "Domain\\Tasks\\Support\\TaskStream",
@@ -4416,7 +4588,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1c13a06fbd055137a815c7c6cc7d2958e7c43eab",
         "old_path": "domain/Tasks/src/Support/TaskWaitGraph.php",
         "old_class": "Domain\\Tasks\\Support\\TaskWaitGraph",
@@ -4435,7 +4607,7 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "9b635a98926838866aeb4551dd3af77d1e64c1a4",
         "old_path": "domain/Tasks/src/Support/TaskWork.php",
         "old_class": "Domain\\Tasks\\Support\\TaskWork",
@@ -4454,8 +4626,8 @@
         "detector_dependencies": []
     },
     {
-        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
-        "blob": "e3de44c565999607519f78d16364bf178faee1d4",
+        "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
+        "blob": "0ccf4644b4b2f8d80805e634ddfb3370a48d8a55",
         "old_path": "domain/Tasks/src/TasksDomain.php",
         "old_class": "Domain\\Tasks\\TasksDomain",
         "final_path": "domain/Tasks/src/TasksDomain.php",

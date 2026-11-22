@@ -13,12 +13,12 @@ declare(strict_types=1);
  */
 
 use App\Processes\Contracts\AliasReader;
-use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Enums\ParseOutcome;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Syntax\TreeParser;
-use App\Processes\Values\ExecutionContext;
-use App\Processes\Values\ShellNode;
+use App\Contracts\CommandClassifier;
+use App\Enums\ParseOutcome;
+use App\Enums\ShellDialect;
+use App\Values\ExecutionContext;
+use App\Values\ShellNode;
+use App\Support\Syntax\TreeParser;
 use Illuminate\Contracts\Console\Kernel;
 use Tests\Fixtures\Processes\NoAliases;
 

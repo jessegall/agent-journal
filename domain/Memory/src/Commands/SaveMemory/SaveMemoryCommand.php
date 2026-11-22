@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Commands\SaveMemory;
 
-use App\Bus\Attributes\Authorize;
-use App\Bus\Support\Command;
-use App\Operations\Enums\AccessType;
+use App\Attributes\Authorize;
+use App\Enums\AccessType;
+use App\Support\Command;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Policies\MemoryPolicy;
 use Spatie\LaravelData\Attributes\Validation\Between;

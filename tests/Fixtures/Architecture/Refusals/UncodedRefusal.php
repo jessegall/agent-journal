@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Architecture\Refusals;
 
-use App\Bus\Exceptions\Concerns\RendersRefusal;
-use App\Bus\Enums\RefusalCode;
+use App\Concerns\RendersRefusal;
+use App\Enums\RefusalCode;
 use RuntimeException;
 
 /**

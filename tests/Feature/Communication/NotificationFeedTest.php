@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Data\NotificationTarget;
-use App\Communication\Enums\NotificationSourceType;
-use App\Communication\Models\Message;
-use App\Communication\Models\NotificationReceipt;
-use App\Communication\Resolvers\QuestionNotificationTarget;
-use App\Communication\Support\NotificationDelivery;
+use App\Data\NotificationTarget;
+use App\Enums\NotificationSourceType;
+use App\Models\Message;
+use App\Models\NotificationReceipt;
+use App\Resolvers\QuestionNotificationTarget;
+use App\Support\ActorIdentity;
+use App\Support\NotificationDelivery;
 use Tests\Support\MessagingTestCase;
 
 /**

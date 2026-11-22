@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Actors\Support\ActorIdentity;
-use App\Supervision\Contracts\SupervisorDispatch;
-use App\Supervision\Enums\SupervisorDispatchOutcome;
-use App\Supervision\Support\UnavailableSupervisorDispatch;
-use App\Supervision\Values\SupervisorRequest;
+use App\Contracts\SupervisorDispatch;
+use App\Enums\SupervisorDispatchOutcome;
+use App\Support\ActorIdentity;
+use App\Support\UnavailableSupervisorDispatch;
+use App\Values\SupervisorRequest;
 use Domain\Access\Support\AccessSettings;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Tests\Support\DispatchesHelpers;

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Bus\Contracts\CommandBus;
-use App\Reflection\Support\ReflectedMethod;
-use App\Reflection\Support\ReflectedParameter;
-use App\Reflection\Support\Reflector;
-use App\Text\Exceptions\ContentMissing;
-use Domain\Documents\Api\Events\DocumentCreated;
+use App\Contracts\CommandBus;
+use App\Exceptions\ContentMissing;
+use App\Support\ReflectedMethod;
+use App\Support\ReflectedParameter;
+use App\Support\Reflector;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Contracts\DraftResolver;
 use Domain\Documents\Enums\EditingState;
+use Domain\Documents\Events\DocumentCreated;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Tests\TestCase;

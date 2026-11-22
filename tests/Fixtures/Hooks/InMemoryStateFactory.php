@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Agents\Values\StackTarget;
-use App\Hooks\Stack\Contracts\StateFactory;
-use App\Hooks\References\StateReference;
-use App\Hooks\Stack\Frames\Frame;
-use App\Hooks\States\AgentState;
+use App\Values\StackTarget;
+use App\Support\Stack\Contracts\StateFactory;
+use App\Support\References\StateReference;
+use App\Support\Stack\Frames\Frame;
+use App\Support\States\AgentState;
 use Carbon\CarbonImmutable;
 use Closure;
 

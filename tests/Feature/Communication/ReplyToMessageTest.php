@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Communication\Commands\ReadMessages\ReadMessagesCommand;
-use App\Communication\Commands\ReplyToMessage\ReplyToMessageCommand;
-use App\Communication\Enums\MessageState;
-use App\Communication\Events\MessageAnswered;
-use App\Communication\Exceptions\MessageStateConflict;
-use App\Communication\Models\Message;
+use App\Commands\ReadMessages\ReadMessagesCommand;
+use App\Commands\ReplyToMessage\ReplyToMessageCommand;
+use App\Enums\MessageState;
+use App\Events\MessageAnswered;
+use App\Exceptions\MessageStateConflict;
+use App\Models\Message;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\MessagingTestCase;
 

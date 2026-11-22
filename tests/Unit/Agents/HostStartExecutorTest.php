@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
-use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Exceptions\HostStartRefused;
-use App\Agents\Support\ExecutionReference;
-use App\Agents\Support\HostStartExecutor;
-use App\Agents\Support\PreparedStart;
-use App\Drivers\Contracts\DriverCatalogue;
+use App\Contracts\DriverCatalogue;
+use App\Enums\ExecutionModeType;
+use App\Exceptions\HostStartRefused;
+use App\Support\ExecutionReference;
+use App\Support\HostStartExecutor;
+use App\Support\PreparedStart;
 use Symfony\Component\Process\Process;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\TestCase;

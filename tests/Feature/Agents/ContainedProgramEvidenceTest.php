@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Commands\EnrollHost\EnrollHostCommand;
-use App\Agents\Enums\ArrangementType;
-use App\Agents\Support\ArrangementSetting;
-use App\Agents\Support\EnrolledHost;
-use App\Drivers\Support\DefaultDrivers;
-use App\Hooks\Compatibility\DriverCompatibility;
-use App\Hooks\Compatibility\Exceptions\DriverArrangementUnproven;
-use App\Hooks\Compatibility\Exceptions\DriverUnstartableInContainer;
-use App\Hooks\Contracts\DriverCompatibilities;
+use App\Commands\EnrollHost\EnrollHostCommand;
+use App\Contracts\DriverCompatibilities;
+use App\Enums\ArrangementType;
+use App\Support\ArrangementSetting;
+use App\Support\Compatibility\DriverCompatibility;
+use App\Support\Compatibility\Exceptions\DriverArrangementUnproven;
+use App\Support\Compatibility\Exceptions\DriverUnstartableInContainer;
+use App\Support\DefaultDrivers;
+use App\Support\EnrolledHost;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\RefreshHookDatabase;

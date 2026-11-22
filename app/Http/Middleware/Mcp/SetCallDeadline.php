@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Mcp;
 
-use App\Agents\Contracts\AgentCallContext;
-use App\Agents\Exceptions\AgentContextMissing;
-use App\Bus\Enums\RefusalCode;
-use App\Bus\Support\OperationDeadline;
+use App\Contracts\AgentCallContext;
+use App\Enums\RefusalCode;
+use App\Exceptions\AgentContextMissing;
 use App\Mcp\Data\JsonRpcIdData;
+use App\Support\OperationDeadline;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Container\Container;

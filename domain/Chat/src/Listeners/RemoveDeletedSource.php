@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Listeners;
 
-use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandBus;
 use App\Contracts\Listener;
-use App\Docking\Sources\Contracts\DockSourceDeleted;
+use App\Support\Sources\Contracts\DockSourceDeleted;
 use Domain\Chat\Commands\ClearDeletedSource\ClearDeletedSourceCommand;
 
 /**

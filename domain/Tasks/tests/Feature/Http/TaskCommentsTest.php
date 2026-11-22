@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature\Http;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Bus\Contracts\CommandBus;
-use App\Comments\Commands\PostComment\PostCommentCommand;
-use App\Records\Support\RecordIdentity;
+use App\Commands\PostComment\PostCommentCommand;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;

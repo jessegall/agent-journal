@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Engine;
 
-use App\Engine\Contracts\EngineListener;
-use App\Engine\Events\EngineTicked;
-use App\Engine\Support\EngineAccess;
+use App\Contracts\EngineListener;
+use App\Events\EngineTicked;
+use App\Support\EngineAccess;
 use Tests\Support\Exceptions\SimulatedFailure;
 
 /**

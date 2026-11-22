@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support\Grammar;
+
+use App\Values\WordSegment;
+
+/**
+ * One segment of a word still to search for substitutions, with the reading it belongs to.
+ */
+final readonly class PendingSegment
+{
+    public function __construct(public SubstitutionsToParse $toParse, public WordSegment $segment) {}
+
+    /**
+     * @return list<self>
+     */
+    public static function allOf(SubstitutionsToParse $toParse): array
+    {
+        return array_map(fn (WordSegment $segment): self => new self($toParse, $segment), $toParse->word->segments);
+    }
+}

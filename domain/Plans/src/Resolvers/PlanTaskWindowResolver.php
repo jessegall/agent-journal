@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Resolvers;
 
-use App\Reads\Enums\ReadView;
-use App\Ui\Contracts\PageResolver;
-use App\Ui\Layout\DeclaredLayoutData;
-use App\Ui\Layout\DetailPage;
-use App\Ui\Layout\LayoutActionData;
-use App\Ui\Layout\LayoutPartData;
-use App\Ui\Layout\LayoutRowData;
+use App\Contracts\PageResolver;
+use App\Enums\ReadView;
+use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\DetailPage;
+use App\Support\Layout\LayoutActionData;
+use App\Support\Layout\LayoutPartData;
+use App\Support\Layout\LayoutRowData;
 use Domain\Plans\Data\PlanFiltersData;
 use Domain\Plans\Http\Requests\PlanTaskRequest;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanIndexLayout;
-use Domain\Tasks\Api\TaskSummary;
-use Domain\Tasks\Api\TaskText;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Data\TaskText;
+use Domain\Tasks\Values\TaskSummary;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**

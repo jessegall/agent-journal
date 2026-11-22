@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Processes\Enums\RunMode;
-use App\Processes\Enums\RunRequestIntent;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Enums\StepType;
-use App\Processes\Values\ExecutionPlan;
-use App\Processes\Values\RunAdmission;
+use App\Enums\RunMode;
+use App\Enums\RunRequestIntent;
+use App\Enums\ShellDialect;
+use App\Enums\StepType;
+use App\Values\ExecutionPlan;
+use App\Values\RunAdmission;
 
 /**
  * Admissions for tests that store a run: the given plan and line, or an empty plan under fixed test digests.

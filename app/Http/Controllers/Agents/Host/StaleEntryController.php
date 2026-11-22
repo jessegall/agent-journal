@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Agents\Commands\MarkMenuEntryStale\MarkMenuEntryStaleCommand;
-use App\Agents\Values\HostContext;
-use App\Bus\Contracts\CommandBus;
-use App\Http\Data\Agents\MenuEntryStaleData;
+use App\Commands\MarkMenuEntryStale\MarkMenuEntryStaleCommand;
+use App\Contracts\CommandBus;
+use App\Data\Agents\MenuEntryStaleData;
+use App\Values\HostContext;
 use Illuminate\Http\Response;
 
 /**

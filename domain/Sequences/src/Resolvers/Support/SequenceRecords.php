@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Resolvers\Support;
 
-use App\Agents\Values\StackTarget;
+use App\Values\StackTarget;
 use Domain\Sequences\Exceptions\SequenceRunMissing;
 use Domain\Sequences\Models\SequenceRun;
 

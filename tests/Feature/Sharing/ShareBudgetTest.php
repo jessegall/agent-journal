@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Reads\Contracts\ReadMeter;
-use App\Reads\Support\ScopedReadMeter;
-use App\Sharing\Exceptions\ShareBudgetExceeded;
-use App\Sharing\Support\MeteredShareBudget;
+use App\Contracts\ReadMeter;
+use App\Exceptions\ShareBudgetExceeded;
+use App\Support\MeteredShareBudget;
+use App\Support\ScopedReadMeter;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\RefreshHookDatabase;

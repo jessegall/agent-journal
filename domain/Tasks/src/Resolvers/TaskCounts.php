@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Actors\Contracts\CurrentActor;
-use Domain\Tasks\Api\TaskProgress;
+use App\Contracts\CurrentActor;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Values\TaskProgress;
 use Illuminate\Container\Attributes\Scoped;
 
 /**

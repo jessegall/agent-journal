@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Bus\Contracts\Command;
-use App\Hooks\Contracts\AgentStack;
-use App\Hooks\Contracts\StackEditor;
-use App\Hooks\Contracts\StackTransactionRunner;
+use App\Contracts\AgentStack;
+use App\Contracts\Command;
+use App\Contracts\StackEditor;
+use App\Contracts\StackTransactionRunner;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalWriteTool;
-use App\Reflection\Support\Reflector;
+use App\Support\Reflector;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;

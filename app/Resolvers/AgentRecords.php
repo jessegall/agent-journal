@@ -1,0 +1,231 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Resolvers;
+
+use App\Contracts\AgentDirectory;
+use App\Contracts\CurrentActor;
+use App\Contracts\CurrentAuthorizer;
+use App\Contracts\ServerClock;
+use App\Enums\AccessType;
+use App\Enums\AgentAction;
+use App\Enums\AgentPresence;
+use App\Enums\HoldReason;
+use App\Exceptions\StackTargetRefused;
+use App\Models\Agent;
+use App\Models\AgentRuntime;
+use App\Models\AgentSession;
+use App\Models\DriverConversation;
+use App\Models\DriverRequest;
+use App\Models\DriverSwitch;
+use App\Models\LaunchOutcomeDismissal;
+use App\Models\MainAgentDesignation;
+use App\Models\ProcessStart;
+use App\Models\StartRecord;
+use App\Policies\AgentPolicy;
+use App\Support\ActorIdentity;
+use App\Support\AgentFacts;
+use App\Support\AgentInspection;
+use App\Support\AgentOption;
+use App\Support\AgentStatusRules;
+use App\Support\LaunchOutcome;
+use App\Support\ResumableConversation;
+use App\Support\StartRemedyWords;
+use Illuminate\Support\Collection;
+use PhpOption\Option;
+
+/**
+ * Reads the agents for Home in a fixed number of queries: the agents, their running sessions and runtimes, the
+ * refusals of their starts, their latest launch outcomes the viewer has not dismissed, their latest switches and their
+ * latest conversations, each for every shown agent at once.
+ */
+final readonly class AgentRecords implements AgentDirectory
+{
+    /**
+     * How many agents Home lists; more agents than this is not a working setup.
+     */
+    public const int AGENTS_SHOWN = 50;
+
+    /**
+     * How many conversations Home offers to resume per agent.
+     */
+    public const int CONVERSATIONS_SHOWN = 5;
+
+    public function __construct(
+        private CurrentActor $actors,
+        private AgentInspection $inspection,
+        private StartRemedyWords $remedyWords,
+        private ServerClock $clock,
+        private CurrentAuthorizer $authorizer,
+    ) {}
+
+    public function visible(): array
+    {
+        $query = Agent::query()->orderBy('created_at')->orderBy('id');
+
+        $agents = ($this->inspection->seesEveryAgent() ? $query : $query->whereKey($this->actors->actor()->id))
+            ->limit(self::AGENTS_SHOWN)
+            ->get();
+
+        $ids = $agents->modelKeys();
+
+        $sessions = AgentSession::query()->whereIn('agent_id', $ids)->running()
+            ->limit(self::AGENTS_SHOWN)->get()->keyBy('agent_id');
+
+        $runtimes = AgentRuntime::query()->whereIn('agent_session_id', $sessions->pluck('id')->all())
+            ->limit(self::AGENTS_SHOWN)->get()->keyBy('agent_session_id');
+
+        $starts = ProcessStart::supervised()->whereIn('session_id', $sessions->pluck('id')->all())
+            ->orderByDesc('created_at')->limit(self::AGENTS_SHOWN * 2)->get()->unique('session_id')
+            ->keyBy('session_id');
+
+        $requests = DriverRequest::query()->whereIn('agent_runtime_id', $runtimes->pluck('id')->all())
+            ->orderByDesc('sequence')->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_runtime_id')
+            ->keyBy('agent_runtime_id');
+
+        $waitingOnHelpers = AgentRuntime::sessionsWaitingOnHelpers(array_values(array_map(
+            strval(...),
+            $sessions->pluck('id')->all(),
+        )));
+
+        $canStop = $this->authorizer->filterActions(AgentPolicy::class, Agent::class, [AccessType::Edit]) !== [];
+
+        $switches = DriverSwitch::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
+            ->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_id')->keyBy('agent_id');
+
+        $refusals = ProcessStart::refusalsOf(array_values(array_map(strval(...), $ids)));
+
+        $launches = $this->launchOutcomesOf(array_values(array_map(strval(...), $ids)));
+
+        $conversations = DriverConversation::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
+            ->readLimit(self::AGENTS_SHOWN * self::CONVERSATIONS_SHOWN)->get()->groupBy('agent_id');
+
+        return array_values($agents->map(function (Agent $agent) use (
+            $sessions,
+            $runtimes,
+            $starts,
+            $requests,
+            $switches,
+            $conversations,
+            $refusals,
+            $launches,
+            $waitingOnHelpers,
+            $canStop,
+        ): AgentOption {
+            $session = $sessions->get($agent->id);
+            $runtime = $runtimes->get((string) $session?->id);
+
+            return $this->optionOf(
+                $agent,
+                new AgentFacts(
+                    $session,
+                    $runtime,
+                    $starts->get((string) $session?->id),
+                    $requests->get((string) $runtime?->id),
+                    $switches->get($agent->id),
+                    $launches[$agent->id] ?? null,
+                    in_array($session?->id, $waitingOnHelpers, true),
+                ),
+                $conversations->get($agent->id, new Collection()),
+                $refusals[$agent->id] ?? null,
+                $canStop,
+            );
+        })->all());
+    }
+
+    public function visibleAgent(string $agentId): AgentOption
+    {
+        foreach ($this->visible() as $agent) {
+            if ($agent->agentId === $agentId) {
+                return $agent;
+            }
+        }
+
+        throw StackTargetRefused::forTarget("agent {$agentId}");
+    }
+
+    public function mainAgentId(): Option
+    {
+        return MainAgentDesignation::designatedAgentId();
+    }
+
+    /**
+     * The latest launch outcome of each agent, by agent, unless the viewer dismissed that version of it; an older
+     * outcome never stands in for a dismissed newer one.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, LaunchOutcome>
+     */
+    private function launchOutcomesOf(array $ids): array
+    {
+        $launches = StartRecord::latestOf($ids)->map(fn (StartRecord $record) => new LaunchOutcome(
+            $record->agent_id,
+            $record->request_id,
+            $record->disposition,
+            $record->session_id,
+            $record->refusal_reason,
+        ));
+
+        $dismissed = LaunchOutcomeDismissal::dismissedKeysOf(
+            ActorIdentity::of($this->actors->actor()),
+            array_values($launches->map(fn (LaunchOutcome $launch) => $launch->requestId)->all()),
+        );
+
+        return $launches->reject(fn (LaunchOutcome $launch) => in_array($launch->key(), $dismissed, true))->all();
+    }
+
+    /**
+     * @param  Collection<int, DriverConversation>  $conversations
+     */
+    private function optionOf(
+        Agent $agent,
+        AgentFacts $facts,
+        Collection $conversations,
+        string|null $startRefusal,
+        bool $canStop,
+    ): AgentOption {
+        $session = $facts->session;
+        $runtime = $facts->runtime;
+        $switch = $facts->switch;
+
+        $resumable = array_values($conversations->take(self::CONVERSATIONS_SHOWN)->map(
+            fn (DriverConversation $conversation) => new ResumableConversation(
+                $conversation->id,
+                $conversation->resume_protocol,
+                $conversation->created_at->toImmutable(),
+            ),
+        )->all());
+
+        return new AgentOption(
+            $agent->id,
+            $agent->name,
+            $agent->profile_key,
+            $agent->assigneeIdentity(),
+            $agent->isRetired(),
+            AgentPresence::of($agent->isRetired(), $session !== null, $switch?->stage, $startRefusal !== null),
+            $session?->id,
+            $runtime === null ? 0 : $runtime->process_generation,
+            $runtime?->hasScreen() === true,
+            $switch?->id,
+            $switch?->stage,
+            AgentAction::offeredFor(
+                $agent->isRetired(),
+                $session !== null,
+                $runtime?->hasScreen() === true,
+                $resumable !== [],
+                $switch?->stage,
+            ),
+            $resumable,
+            $startRefusal,
+            $facts->launch,
+            AgentStatusRules::of(
+                $facts->evidence($agent->isRetired(), $resumable !== [], $canStop, $this->clock->now()),
+                $this->remedyWords,
+            ),
+            $session?->driver_key,
+            $session?->driver_label,
+            $runtime === null ? HoldReason::None : $runtime->hold_reason,
+        );
+    }
+}

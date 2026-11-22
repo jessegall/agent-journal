@@ -18,7 +18,7 @@ use Tests\Support\ScanCache\FileScan;
  */
 final readonly class StackWriteScan implements FileScan
 {
-    public const string ROW = 'App\\Hooks\\Models\\AgentStackRow';
+    public const string ROW = 'App\\Models\\AgentStackRow';
 
     /**
      * The stack row's persisting methods, named only by the stack row.

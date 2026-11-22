@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Values\OwnerAuthority;
-use App\Bus\Contracts\CommandBus;
-use App\Links\Models\Link;
-use App\Reads\Contracts\ReadMeter;
-use App\Sharing\Support\MeteredShareBudget;
-use App\Sharing\Support\ShareContentRead;
-use App\Sharing\Support\ShareLinkedCandidate;
-use App\Sharing\Support\ShareRecordRegistry;
-use App\Sharing\Support\ShareScope;
+use App\Contracts\CommandBus;
+use App\Contracts\CurrentActorSetter;
+use App\Contracts\ReadMeter;
+use App\Models\Link;
+use App\Support\MeteredShareBudget;
+use App\Support\ShareContentRead;
+use App\Support\ShareLinkedCandidate;
+use App\Support\ShareRecordRegistry;
+use App\Support\ShareScope;
+use App\Values\OwnerAuthority;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
 use Domain\Plans\Enums\PlanType;

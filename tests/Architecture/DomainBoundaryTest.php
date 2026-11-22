@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\CoreApi;
-use App\Domains\Support\Domain;
-use App\Domains\Support\DomainRegistry;
+use App\Support\Domain;
+use App\Support\DomainRegistry;
 use Domain\Plans\Support\PlanStructure;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
@@ -76,7 +76,7 @@ final class DomainBoundaryTest extends TestCase
             $violations = $this->checker($registry)->violations(DomainFiles::usesIn([$route, $seeder], $roots));
             $flagged = array_values(array_unique(array_map(fn (Violation $violation) => $violation->file, $violations)));
             sort($flagged);
-            $numbers = glob(base_path('{app/*/Database/Migrations,database/migrations}/0001_01_01_000001_create_number_groups_tables.php'), GLOB_BRACE) ?: [];
+            $numbers = glob(base_path('database/migrations/0001_01_01_000001_create_number_groups_tables.php')) ?: [];
 
             $this->assertCount(1, $numbers);
             $this->assertContains($numbers[0], $files);

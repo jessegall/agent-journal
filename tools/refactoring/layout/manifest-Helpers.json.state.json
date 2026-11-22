@@ -1,0 +1,124 @@
+{
+    "moved": {
+        "domain/Helpers/src/Console/HelperCancelCommand.php": "b555ba80794a89bad8bd3e5db2d69359759f4824",
+        "domain/Helpers/src/Console/HelperContinueCommand.php": "cd9363fb82884675d8523fbeff57e18feceb82c1",
+        "domain/Helpers/src/Console/HelperNoticesCommand.php": "ac0df9bd43298c46ff982ee5bb76998c353bb503",
+        "domain/Helpers/src/Console/HelperSendCommand.php": "afc49f93b183b52d2536fffc4571ccb390ea0bcd",
+        "domain/Helpers/src/Console/HelperStartCommand.php": "e3dad47e904162f993a4610de465f447d2fc730b",
+        "domain/Helpers/src/Console/HelperSteerCommand.php": "27318465939530f6651f4a251eb66525637b834d",
+        "domain/Helpers/src/Http/Data/HelperJobNamed.php": "b1c771778e81fe0897b1939f861b60032e9b53ae",
+        "domain/Helpers/src/Http/Data/HelperNoticeData.php": "51ec3ad74676ea87b6dab5be6fbda8946238c5dd",
+        "domain/Helpers/src/Http/Data/HelperNoticeListData.php": "9384498786ee44d3a81d0e3cbb410d3e3bd5f6ed",
+        "domain/Helpers/src/Http/Data/HelperReceiptData.php": "6135f375ecf1be9468a3f845a5f4f1db7d9a04ce",
+        "domain/Helpers/src/Http/Data/HelperSteerData.php": "fb3c953242d3eb0c777307a66af74cc3891a65cf",
+        "domain/Helpers/src/Mcp/CancelHelperJobTool.php": "a0d6a9c8afa4d8db0db3cd0f78615eb2d20538df",
+        "domain/Helpers/src/Mcp/Concerns/HelperWorkArguments.php": "38570a9177ed8b3aaf5ef7fed2f0b8756ccf3abd",
+        "domain/Helpers/src/Mcp/ContinueHelperTool.php": "db1936c64e3d24675973c0532cf2e1a79d7f9a3e",
+        "domain/Helpers/src/Mcp/SendHelperTool.php": "bf56815a7d188eb9434d3f197330b92757d39216",
+        "domain/Helpers/src/Mcp/StartHelperTool.php": "be2633d14919f06c550748c016e9b15f572680c5",
+        "domain/Helpers/src/Mcp/SteerHelperTool.php": "69b5d18ae00eabcaa266ac5b6aa4f970b4ca98d1",
+        "domain/Helpers/src/Readers/CandidateQuery.php": "a5c9d323ab5029ec5664a9c429ed8daad8ba05d9",
+        "domain/Helpers/src/Readers/HelperCandidate.php": "b07611af0b5ae008dccac04c1e71170d9c96a1e9",
+        "domain/Helpers/src/Readers/HelperCandidates.php": "aac71ecf3f546b7d633876d7ba51b9deaaf9abd0",
+        "domain/Helpers/src/Readers/HelperNotices.php": "3a3f6b26eef54aee0af24bdc925fa79902a0fb52",
+        "domain/Helpers/src/Readers/HelperRecords.php": "a34801dc11d01b769989a027cba8f2f1d89961b7",
+        "domain/Helpers/src/Routes/agent.php": "77a9b966e0f1295d32eae8ff44172ce8ef73546a"
+    },
+    "edits": {
+        "domain/Helpers/src/Calls/CancelHelperJobCall.php": {
+            "prior": "de0dc931b7269215fb27e86f9b3b06b1832b609e",
+            "result": "423ddeaa5ce685f1816a49cd721c9ce76dd0914a",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Calls/ContinueHelperCall.php": {
+            "prior": "3f2e3aea858ee815bb2d5998f9738eb8146308f1",
+            "result": "c836686b847da553d686360dc37aab2f076b7b6e",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Calls/HelperCalls.php": {
+            "prior": "9b096f3661463a00e56d8fa265c23ab807d9791d",
+            "result": "7745fd9e805ffaa1852932ec050bb34268af7144",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Calls/ListHelperNoticesCall.php": {
+            "prior": "b125720b5d0244df19de45df875b4fc1ca17b711",
+            "result": "d999545eb2fb763bddc946eefe8aa3aefb51b514",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Calls/SendHelperCall.php": {
+            "prior": "4ae4edc97671bef35f6d0dd71265cab220350a3b",
+            "result": "19c76fa5a6d0bf73fefd8dfb233baa6b4666fb6f",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Calls/StartHelperCall.php": {
+            "prior": "420a1f8a50a26731ec0fb25bed73fbe73ed8eda6",
+            "result": "01bd4417fe768f37ea6c74e326f600b358f1adba",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Calls/SteerHelperCall.php": {
+            "prior": "821c5632458cc8c720b7910c046799882122cb00",
+            "result": "d49fa52ad5397b0000034b4fecd72ac2618eed4d",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Commands/ContinueHelper/ContinueHelperHandler.php": {
+            "prior": "6aa6e47048b419d7cf4eae8561fbce9681460605",
+            "result": "9d810c460d1717fedf907d7d3a452141162445d4",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Console/Concerns/PrintsHelperReceipts.php": {
+            "prior": "a9ecfaf9fb85b0b01692d531ce5556b12fc99963",
+            "result": "2163d5db744fa586461336ddfe4b0cecb523950a",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Http/Controllers/Calls/CancelHelperJobController.php": {
+            "prior": "dbf97e48498ccbafa8d5a1f2ebcf49aea95f54a5",
+            "result": "c647b5b827487dd12eaf777a6d99d038aa7c98c4",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Http/Controllers/Calls/ContinueHelperController.php": {
+            "prior": "4675fb871ee9a2aa4e35fa4030e8ea77423cebe7",
+            "result": "5dcb7a739b4cb8abacd57051c141123e40d156f1",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Http/Controllers/Calls/ListHelperNoticesController.php": {
+            "prior": "99d512fbdb15e0733c6cac369910b9e31866ebbf",
+            "result": "2c4253e2de0b3c2ec6a46c23c0f4801dcf0be959",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Http/Controllers/Calls/SendHelperController.php": {
+            "prior": "94bfad8de406a53d03de3b2ed6c9b6be12b49d03",
+            "result": "2d561dfdc266c6f3251a534fdadd8c62e7348b6c",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Http/Controllers/Calls/StartHelperController.php": {
+            "prior": "8991f0bbecebb58441bbfea2ec82f60fd70dbc85",
+            "result": "2ea5e9526213f338e29712b6e12a695e1a2f8e46",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Http/Controllers/Calls/SteerHelperController.php": {
+            "prior": "d9a769e0c3fd9c46ae4283a0dd5ebe6baf6f24fc",
+            "result": "3b65ebb144064f149395f6ef326721e8fa204221",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Support/ConversationChoice.php": {
+            "prior": "0e1bb67aefc8dae42e12de67136b704479db69d8",
+            "result": "47566ff932837b14797e38b030f80c5883c5213d",
+            "move": "batch"
+        },
+        "domain/Helpers/src/Support/HelperDispatch.php": {
+            "prior": "4f13ca0c2fba9150867679a5b86d332107ed6690",
+            "result": "e3b8a3204786e218bfc7bd3875bb34786528eaa9",
+            "move": "batch"
+        },
+        "domain/Helpers/tests/Feature/HelperDispatchTest.php": {
+            "prior": "33dd43056fa004bdac6067cc634c35d0018defe8",
+            "result": "1ad77c02bc3a9cd8df3a5d28d3acd0d493d603d9",
+            "move": "batch"
+        },
+        "domain/Helpers/tests/Feature/HelperSelectionTest.php": {
+            "prior": "2453c59ed3ab18c561c0d770c124132eaa0c1c2a",
+            "result": "caf6fd6a056688f39d55a0e6000923dead462b60",
+            "move": "batch"
+        }
+    }
+}

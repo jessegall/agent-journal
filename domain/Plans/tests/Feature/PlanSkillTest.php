@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Skills\Contracts\SkillResolver;
-use App\Skills\Values\SkillKey;
+use App\Contracts\SkillResolver;
+use App\Values\SkillKey;
 use Domain\Plans\Tests\TestCase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Support\RefreshHookDatabase;
