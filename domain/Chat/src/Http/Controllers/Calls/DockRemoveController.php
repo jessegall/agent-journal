@@ -28,7 +28,7 @@ final readonly class DockRemoveController
         }
 
         return DockAnswerData::fromDockResult($commands->run(new UndockSourceCommand(
-            $conversation->id,
+            $call->chat,
             $placement->id,
             $placement->dockable_type,
             $placement->dockable_id,

@@ -108,7 +108,7 @@ final class ChatWindowTest extends TestCase
                 ->missing('page.data'));
     }
 
-    public function test_a_missing_own_inbox_is_a_setup_notice_not_a_failure(): void
+    public function test_a_missing_own_desk_inbox_no_longer_blocks_the_pair_chat(): void
     {
         $this->app->instance(ActorInboxResolver::class, new class implements ActorInboxResolver
         {
@@ -122,8 +122,8 @@ final class ChatWindowTest extends TestCase
             ->get('/chat?agent='.$this->session->agent_id)
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('page.state', 'ready')
-                ->where('page.data.setupNotice', 'Ask the project administrator to restore your inbox.')
-                ->missing('page.data.conversation'));
+                ->where('page.data.conversation.agentId', $this->session->agent_id)
+                ->missing('page.data.setupNotice'));
     }
 
     public function test_reading_marks_only_the_shown_incoming_messages(): void
