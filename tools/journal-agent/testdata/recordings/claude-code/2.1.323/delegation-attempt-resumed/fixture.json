@@ -1,6 +1,6 @@
 {
-  "program": "claude",
-  "program_version": "2.1.323 (Claude Code)",
+  "driver": "claude",
+  "driver_version": "2.1.323 (Claude Code)",
   "profile": "claude@2.1.323",
   "mode": "process",
   "geometry": {

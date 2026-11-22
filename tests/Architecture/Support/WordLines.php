@@ -24,6 +24,12 @@ final readonly class WordLines
      */
     public const string DRIVER_WORDS = '/program/i';
 
+    /**
+     * Task 2207: the Go host names a driver a program only in these shapes; program alone there is an OS executable.
+     */
+    public const string GO_DRIVER_WORDS = '/agent programs?\b|ProgramProfile|\.Program\(\)|keyscripts\.Program\b|'
+        .'flags\.String\("program"|json:"program/i';
+
     private const array EXTENSIONS = ['php', 'go', 'ts', 'vue'];
 
     private const array GENERATED = ['/resources/js/generated/', '/resources/js/actions/', '/resources/js/routes/'];

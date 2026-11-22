@@ -45,7 +45,7 @@ func TestEveryRecordingGivesFramesWhoseTextIsTheScreen(t *testing.T) {
 			if err := reader.Feed(chunk.Bytes); err != nil {
 				t.Fatal(err)
 			}
-			requireFrameTextEqualsSnapshot(t, reader, fixture.Program+" "+fixture.Profile)
+			requireFrameTextEqualsSnapshot(t, reader, fixture.Driver+" "+fixture.Profile)
 		}
 	}
 }

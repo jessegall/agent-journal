@@ -276,10 +276,10 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 	if contained {
 		return opener.containedRuntime(runtimeID, prepared, profile, manifest)
 	}
-	if profile.Program() == "codex" && confined != nil {
+	if profile.Driver() == "codex" && confined != nil {
 		return nil, fmt.Errorf("runtime %s: %w", runtimeID, ErrCodexChildUnconfined)
 	}
-	if profile.Program() == "codex" {
+	if profile.Driver() == "codex" {
 		return opener.codexRuntime(runtimeID, prepared, environment)
 	}
 	switch grant.Runtime.Variant {
@@ -348,7 +348,7 @@ func (opener runtimeOpener) inChildWorktree(
 func (opener runtimeOpener) containedRuntime(
 	runtimeID string,
 	prepared host.PreparedStart,
-	profile contracts.ProgramProfile,
+	profile contracts.DriverProfile,
 	manifest host.ContainerManifest,
 ) (serving.Runtime, error) {
 	variant := prepared.Grant.Runtime.Variant
@@ -422,7 +422,7 @@ func (opener runtimeOpener) codexRuntime(
 func (opener runtimeOpener) headlessRuntime(
 	runtimeID string,
 	prepared host.PreparedStart,
-	profile contracts.ProgramProfile,
+	profile contracts.DriverProfile,
 	environment []string,
 	confined *host.ChildConfinement,
 ) (serving.Runtime, error) {
@@ -475,7 +475,7 @@ func (opener runtimeOpener) headlessRuntime(
 func (opener runtimeOpener) terminalRuntime(
 	runtimeID string,
 	prepared host.PreparedStart,
-	profile contracts.ProgramProfile,
+	profile contracts.DriverProfile,
 	environment []string,
 	confined *host.ChildConfinement,
 ) (serving.Runtime, error) {
@@ -504,22 +504,22 @@ func (opener runtimeOpener) terminalRuntime(
 
 // terminalDriverOf builds the terminal driver of a program the host runs, with its key script runner reading the
 // menus through the profile's layout and reporting each step through the driver's progress relay.
-func terminalDriverOf(profile contracts.ProgramProfile, opened host.Terminal, generation int) *drivers.TerminalDriver {
+func terminalDriverOf(profile contracts.DriverProfile, opened host.Terminal, generation int) *drivers.TerminalDriver {
 	layout := profile.Screens()
 	classifier := screen.NewClassifier(layout, opened.Reader)
 	relay := &drivers.ProgressRelay{}
 	clock := keyscripts.WallClock{}
 	view := screen.NewView(layout, opened.Reader)
-	program := keyscripts.Program{Name: profile.Program(), Layout: layout}
+	driver := keyscripts.Driver{Name: profile.Driver(), Layout: layout}
 
 	return drivers.NewTerminalDriver(drivers.TerminalRuntime{
-		Profile:           profile.Program() + "@" + profile.Build(),
+		Profile:           profile.Driver() + "@" + profile.Build(),
 		Classifier:        classifier,
 		Gate:              opened.Gate,
 		Composer:          layout.Composer.Name(),
 		Generation:        opened.Reader.Generation,
 		Scripts:           scripts.Registered(),
-		Runner:            keyscripts.NewRunner(opened.Gate, classifier, clock, view, program, relay.Report),
+		Runner:            keyscripts.NewRunner(opened.Gate, classifier, clock, view, driver, relay.Report),
 		Clock:             clock,
 		ProcessGeneration: generation,
 		Progress:          relay,
@@ -554,7 +554,7 @@ func attach(arguments []string) error {
 	agentID := flags.String("agent", "", "the agent whose main runtime to open")
 	runtimeID := flags.String("runtime", "", "a runtime the host already runs, to attach to again")
 	folder := flags.String("folder", "", "the folder the agent works in")
-	program := flags.String("program", "claude", "claude or codex")
+	driver := flags.String("driver", "claude", "claude or codex")
 	hookCommand := flags.String("hook-command", "", "the hook relay command the program calls")
 	installationFolder := flags.String("installation", "", "the protected installation saved-account starts run from")
 	if err := flags.Parse(arguments); err != nil {
@@ -563,7 +563,7 @@ func attach(arguments []string) error {
 	rows, columns := terminalSize()
 	request := host.AttachRequest{RuntimeID: *runtimeID, Rows: rows, Columns: columns}
 	if *runtimeID == "" {
-		opened, err := openMainRuntime(*stateFolder, *installationFolder, *agentID, *folder, *program, *hookCommand)
+		opened, err := openMainRuntime(*stateFolder, *installationFolder, *agentID, *folder, *driver, *hookCommand)
 		if err != nil {
 			return err
 		}
@@ -626,8 +626,8 @@ var errCodexHasNoTerminal = errors.New("a Codex runtime runs as a thread on its 
 	"no terminal to attach to")
 
 // installedProgram is the absolute path of the program in the protected installation, which a prepared start runs.
-func installedProgram(installationFolder string, profile contracts.ProgramProfile) string {
-	return host.Installation{Folder: installationFolder}.Path(filepath.Join("bin", profile.Program()))
+func installedProgram(installationFolder string, profile contracts.DriverProfile) string {
+	return host.Installation{Folder: installationFolder}.Path(filepath.Join("bin", profile.Driver()))
 }
 
 // accountOf is the saved account a prepared start signs in with, the journal's MCP server from the protected
@@ -717,17 +717,17 @@ func protectionProved(platform host.ProtectionPlatform, stateFolder string, gran
 		return fmt.Errorf("%q has no pinned profile", grant.Runtime.Driver)
 	}
 	if claim.Recipe.DriverVersion != grant.Runtime.DriverBuild {
-		return fmt.Errorf("the account recipe is for %s %s, the runtime for %s", profile.Program(),
+		return fmt.Errorf("the account recipe is for %s %s, the runtime for %s", profile.Driver(),
 			claim.Recipe.DriverVersion, grant.Runtime.DriverBuild)
 	}
-	capability, err := host.InspectProtection(platform, profile.Program(), claim.Recipe.DriverVersion,
+	capability, err := host.InspectProtection(platform, profile.Driver(), claim.Recipe.DriverVersion,
 		host.NativeEvidence{Folder: stateFolder})
 	if err != nil {
 		return err
 	}
 	if !capability.Available {
 		return fmt.Errorf("the protected arrangement of %s %s is not available on this host: journal-agent protection "+
-			"names what is missing", profile.Program(), claim.Recipe.DriverVersion)
+			"names what is missing", profile.Driver(), claim.Recipe.DriverVersion)
 	}
 	return nil
 }
@@ -739,9 +739,9 @@ func openMainRuntime(
 ) (host.AttachRequest, error) {
 	profile, known := profileFor[program]
 	if !known || agentID == "" || folder == "" {
-		return host.AttachRequest{}, errors.New("attach needs --agent, --folder and --program claude or codex")
+		return host.AttachRequest{}, errors.New("attach needs --agent, --folder and --driver claude or codex")
 	}
-	if profile.Program() == "codex" {
+	if profile.Driver() == "codex" {
 		return host.AttachRequest{}, errCodexHasNoTerminal
 	}
 	enrollment, err := (host.State{Folder: stateFolder}).Load()
@@ -754,7 +754,7 @@ func openMainRuntime(
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
-	opened, err := journal.OpenMainRuntime(ctx, client.MainRuntimeRequest{AgentID: agentID, Folder: absolute, Driver: profile.Program(), DriverBuild: profile.Build(), Profile: program})
+	opened, err := journal.OpenMainRuntime(ctx, client.MainRuntimeRequest{AgentID: agentID, Folder: absolute, Driver: profile.Driver(), DriverBuild: profile.Build(), Profile: program})
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
@@ -780,7 +780,7 @@ func openMainRuntime(
 // generation and the bypass log for the hook relay. Attaching a user and serving a terminal runtime both start
 // the program through it.
 func startOf(
-	profile contracts.ProgramProfile,
+	profile contracts.DriverProfile,
 	stateFolder, journalURL, hookCommand, runtimeID string,
 	grant client.Grant,
 	environment []string,
@@ -823,14 +823,14 @@ func startOf(
 	startEnvironment = append(startEnvironment, relayVariables...)
 	return host.AttachRequest{
 		RuntimeID: runtimeID,
-		Program:   profile.Program(),
+		Driver:    profile.Driver(),
 		Command:   append([]string{executable}, startArguments...),
 		Folder:    grant.Runtime.Folder,
 		Env:       startEnvironment,
 	}, nil
 }
 
-func writeSettings(profile contracts.ProgramProfile, start contracts.Start) error {
+func writeSettings(profile contracts.DriverProfile, start contracts.Start) error {
 	files, err := profile.SettingsFiles(start)
 	if err != nil {
 		return err
@@ -884,9 +884,9 @@ func newConversationID() (string, error) {
 
 // layoutOf is the screen layout of the program an attach request starts, from the profile of the program it names.
 func layoutOf(request host.AttachRequest) (screen.Layout, error) {
-	profile, known := profileFor[request.Program]
+	profile, known := profileFor[request.Driver]
 	if !known {
-		return screen.Layout{}, fmt.Errorf("no profile for the program %q", request.Program)
+		return screen.Layout{}, fmt.Errorf("no profile for the program %q", request.Driver)
 	}
 
 	return profile.Screens(), nil
@@ -894,13 +894,13 @@ func layoutOf(request host.AttachRequest) (screen.Layout, error) {
 
 // pinnedBuild refuses a runtime opened for another build than the profile pins, and a program on this host whose
 // installed version is not that build, before any work starts.
-func pinnedBuild(profile contracts.ProgramProfile, requested string) error {
+func pinnedBuild(profile contracts.DriverProfile, requested string) error {
 	if requested != profile.Build() {
-		return fmt.Errorf("build %s of %s is not the pinned build %s", requested, profile.Program(), profile.Build())
+		return fmt.Errorf("build %s of %s is not the pinned build %s", requested, profile.Driver(), profile.Build())
 	}
-	output, err := exec.Command(profile.Program(), "--version").Output()
+	output, err := exec.Command(profile.Driver(), "--version").Output()
 	if err != nil {
-		return fmt.Errorf("the version of %s could not be read: %w", profile.Program(), err)
+		return fmt.Errorf("the version of %s could not be read: %w", profile.Driver(), err)
 	}
 
 	return profile.CheckBuild(strings.TrimSpace(string(output)))
@@ -920,9 +920,9 @@ func (opener runtimeOpener) usageOf(prepared host.PreparedStart) drivers.UsageOb
 func (opener runtimeOpener) statusLineOf(
 	runtimeID string,
 	prepared host.PreparedStart,
-	profile contracts.ProgramProfile,
+	profile contracts.DriverProfile,
 ) string {
-	if profile.Program() != "claude" || prepared.Claim.SignInMethod != oauthSignIn || opener.statusLines == nil {
+	if profile.Driver() != "claude" || prepared.Claim.SignInMethod != oauthSignIn || opener.statusLines == nil {
 		return ""
 	}
 	program, err := os.Executable()

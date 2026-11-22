@@ -150,7 +150,7 @@ func copiedFolder(t *testing.T) string {
 	files := map[string]string{
 		filepath.Join(".journal", "connection.json"): `{"protocol":2,"binding":"binding-1","rootId":"root-1"}`,
 		filepath.Join(".journal", "setup.json"):      `{"done":["connection","hooks","ignore"],"generation":3}`,
-		"notes.txt": "the user's own notes",
+		"notes.txt":                                  "the user's own notes",
 	}
 	for name, content := range files {
 		if err := os.WriteFile(filepath.Join(root, name), []byte(content), 0o600); err != nil {

@@ -19,7 +19,7 @@ import (
 // resume only by the conversation ID Codex acknowledged.
 type Codex struct{}
 
-var _ contracts.ProgramProfile = Codex{}
+var _ contracts.DriverProfile = Codex{}
 
 // codexAgentFeatures are the features of 0.165.0 that start or coordinate another agent; all of them stay off.
 var codexAgentFeatures = []string{"multi_agent", "multi_agent_mode", "multi_agent_v2", "multi_agent_v2_dynamic_tools", "agent_message_board", "runtime_agent_instances"}
@@ -75,7 +75,7 @@ func CodexAgentFeaturesOff() []string {
 	return lines
 }
 
-func (Codex) Program() string {
+func (Codex) Driver() string {
 	return "codex"
 }
 

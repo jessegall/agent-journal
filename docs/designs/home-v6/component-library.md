@@ -109,7 +109,7 @@ Every reusable component, nested as it composes. A name in brackets is a compone
 Library
 ├── Primitives
 │   ├── Icon
-│   ├── ProgramMark
+│   ├── DriverMark
 │   ├── Logo
 │   ├── Dot
 │   ├── Spinner
@@ -130,7 +130,7 @@ Library
 │   │   ├── [Dot] | [Spinner] | [Icon]
 │   │   └── word
 │   ├── Avatar (agent | person | you | journal; sm | lg)
-│   │   └── [ProgramMark] | initials | "J"
+│   │   └── [DriverMark] | initials | "J"
 │   ├── AvatarStack
 │   │   ├── [Avatar] × n
 │   │   └── [Chip] "+N"
@@ -198,7 +198,7 @@ Library
 │   │   ├── [Button] chevron
 │   │   └── [Menu]
 │   ├── ListRow (single | two | grid | static)
-│   │   ├── lead: num | [ProgramMark] | [Icon]
+│   │   ├── lead: num | [DriverMark] | [Icon]
 │   │   ├── NameBlock
 │   │   │   ├── title
 │   │   │   └── subline
@@ -308,7 +308,7 @@ App
 │   └── SequenceEditor: Button × 2, DraftedBanner (Card, Avatar), StepEditor (Field sm × 3, IconButton × 3), Button "Add a step"
 ├── Profiles (page): PageShell, ListRow two
 │   └── ProfileDetail: DetailReader, SettingGroup (SettingRow, Chip faint), GroupLabel
-├── Accounts (page): PageShell (SplitButton), AccountRow (ListRow grid, ProgramMark, UsageMeter row, Status)
+├── Accounts (page): PageShell (SplitButton), AccountRow (ListRow grid, DriverMark, UsageMeter row, Status)
 │   └── AccountDetail: DetailReader, SettingGroup (Field, Toggle, Status, Button), UsageMeter group | spend (Meter, SegmentedControl)
 ├── Settings (page): PageHeader, SettingsSection × n (GroupLabel, Button Reset, Toggle, SettingGroup, SettingRow, Field + FieldError)
 │   └── ConnectProject: SettingRow block, CommandBox (Button × 2), ConnectStatus (Status, Spinner, Button), ProjectRow (Status, Button)
@@ -382,9 +382,9 @@ In short:
 - **Props:** name, size sm 13, md 14 or lg 16 (default 16). It is always aria-hidden: the label goes on the control that holds it.
 - **Used:** everywhere.
 
-### ProgramMark and Logo
+### DriverMark and Logo
 
-- **ProgramMark:** the agent's program. Claude is a spark in --mark-claude; Codex is a knot in --text; anything else is the users icon. Sizes 11 (in a small avatar), 16 (rows, large avatar).
+- **DriverMark:** the agent's driver. Claude is a spark in --mark-claude; Codex is a knot in --text; anything else is the users icon. Sizes 11 (in a small avatar), 16 (rows, large avatar).
 - **Logo:** a 20px square, radius 6, --brand fill, a "J" in --on-brand at --text-meta. It appears only in the BrandRow.
 - **Used:** Avatar, AccountRow, BrandRow.
 
@@ -505,7 +505,7 @@ In short:
 
 ### Avatar
 
-- **For:** a participant. Agents are rounded squares holding their ProgramMark; people are circles with initials. The journal is a square holding "J".
+- **For:** a participant. Agents are rounded squares holding their DriverMark; people are circles with initials. The journal is a square holding "J".
 - **Props:** participant (kind agent, person, you or journal; program; initials; name; role), size, label (needed only when the avatar stands alone).
 - **Sizes:**
   - sm 16: radius 4, --border-2 border, mark 11. A person is a circle with a --border-3 border, --raised fill and initials in --text-meta 600 --text-2.
@@ -762,7 +762,7 @@ SplitButton
 
 ```text
 ListRow
-├── lead (num 40 | ProgramMark 16 | Icon)
+├── lead (num 40 | DriverMark 16 | Icon)
 ├── NameBlock
 │   ├── title (ellipsis, dim)
 │   └── subline (small, one line)
@@ -1676,7 +1676,7 @@ DocumentReader
 ### AccountRow and UsageMeter
 
 - **AccountRow:**
-  - A grid ListRow: ProgramMark; NameBlock (the name, then the type with " · default" in small muted text); UsageMeter row; Status.
+  - A grid ListRow: DriverMark; NameBlock (the name, then the type with " · default" in small muted text); UsageMeter row; Status.
   - The states are Signed in, Not signed in and Expired.
 - **UsageMeter:**
   - row: a md Meter 84 wide at the larger of week and session, with both numbers in its Tooltip. An API key shows the amount left instead (--text-2, tabular).

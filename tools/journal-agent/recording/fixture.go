@@ -1,4 +1,4 @@
-// Package recording holds the evidence fixtures of agent program sessions: what a program printed, what was typed
+// Package recording holds the evidence fixtures of agent driver sessions: what a program printed, what was typed
 // and when, and the slots later phases fill with the screen, key and state they expect.
 package recording
 
@@ -82,10 +82,10 @@ type ExpectedTransition struct {
 	Receipt string        `json:"receipt"`
 }
 
-// Fixture is one recorded session of an agent program.
+// Fixture is one recorded session of an agent driver.
 type Fixture struct {
-	Program             string               `json:"program"`
-	ProgramVersion      string               `json:"program_version"`
+	Driver              string               `json:"driver"`
+	DriverVersion       string               `json:"driver_version"`
 	Profile             string               `json:"profile"`
 	Mode                Mode                 `json:"mode"`
 	Geometry            Geometry             `json:"geometry"`

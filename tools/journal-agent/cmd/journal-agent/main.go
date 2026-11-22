@@ -1,4 +1,4 @@
-// Command journal-agent is the journal's host for agent programs. For now it records evidence sessions.
+// Command journal-agent is the journal's host for agent drivers. For now it records evidence sessions.
 package main
 
 import (
@@ -27,7 +27,7 @@ import (
 )
 
 // profileFor is the pinned start profile of each program, by its command name and by the name the journal gives it.
-var profileFor = map[string]contracts.ProgramProfile{
+var profileFor = map[string]contracts.DriverProfile{
 	"claude":      profiles.ClaudeCode{},
 	"claude-code": profiles.ClaudeCode{},
 	"codex":       profiles.Codex{},
@@ -80,7 +80,7 @@ func main() {
 	}
 
 	if len(os.Args) < 2 || os.Args[1] != "record" {
-		fmt.Fprintln(os.Stderr, "usage: journal-agent record --program <claude|codex> --mode <process|terminal> --out <dir> -- <args> | enroll --journal <url> --host <id> < secret | serve | attach --agent <id> --folder <dir> [--program claude|codex] | attach --runtime <id> | protection --program claude|codex --build <version> | install --manifest <file> --into <dir> | installation --folder <dir>")
+		fmt.Fprintln(os.Stderr, "usage: journal-agent record --driver <claude|codex> --mode <process|terminal> --out <dir> -- <args> | enroll --journal <url> --host <id> < secret | serve | attach --agent <id> --folder <dir> [--program claude|codex] | attach --runtime <id> | protection --program claude|codex --build <version> | install --manifest <file> --into <dir> | installation --folder <dir>")
 		os.Exit(2)
 	}
 
@@ -96,7 +96,7 @@ func main() {
 // record runs the program once, forwards the user's keys and resizes, and writes the session as a fixture.
 func record(arguments []string) (int, error) {
 	flags := flag.NewFlagSet("record", flag.ContinueOnError)
-	program := flags.String("program", "", "the agent program: claude or codex")
+	driver := flags.String("driver", "", "the agent driver: claude or codex")
 	mode := flags.String("mode", "", "process or terminal")
 	out := flags.String("out", "", "the recording folder")
 	useProfile := flags.Bool("use-profile", false, "start the program through its pinned profile; the words after -- are the prompt")
@@ -113,8 +113,8 @@ func record(arguments []string) (int, error) {
 	}
 
 	command := flags.Args()
-	if *program != "claude" && *program != "codex" {
-		return 2, errors.New("--program must be claude or codex")
+	if *driver != "claude" && *driver != "codex" {
+		return 2, errors.New("--driver must be claude or codex")
 	}
 	if *folder != "" {
 		if err := os.Chdir(*folder); err != nil {
@@ -128,9 +128,9 @@ func record(arguments []string) (int, error) {
 	profileName := ""
 	environment := os.Environ()
 	if *useProfile {
-		profile, known := profileFor[*program]
+		profile, known := profileFor[*driver]
 		if !known {
-			return 2, fmt.Errorf("no pinned profile for %s yet", *program)
+			return 2, fmt.Errorf("no pinned profile for %s yet", *driver)
 		}
 		hookCommand := ""
 		if *captureHooks {
@@ -150,15 +150,15 @@ func record(arguments []string) (int, error) {
 		}
 		command = started
 		environment = profile.Environment(environment, start)
-		profileName = profile.Program() + "@" + profile.Build()
+		profileName = profile.Driver() + "@" + profile.Build()
 	}
 
 	recorder := recording.NewRecorder(recording.Fixture{
-		Program:        *program,
-		ProgramVersion: programVersion(command[0]),
-		Profile:        profileName,
-		Mode:           recording.Mode(*mode),
-		InitialState:   initialState(command),
+		Driver:        *driver,
+		DriverVersion: programVersion(command[0]),
+		Profile:       profileName,
+		Mode:          recording.Mode(*mode),
+		InitialState:  initialState(command),
 	}, time.Now)
 
 	var exitCode int
@@ -328,10 +328,10 @@ func exitCodeOf(err error) (int, error) {
 
 // profiledCommand builds the start of a program through its pinned profile: it refuses another build, writes the
 // isolated settings files into the recording folder and gives the full command line with the start it made.
-func profiledCommand(profile contracts.ProgramProfile, mode recording.Mode, out, sessionID string, resume bool, prompt, hookCommand string) ([]string, contracts.Start, error) {
+func profiledCommand(profile contracts.DriverProfile, mode recording.Mode, out, sessionID string, resume bool, prompt, hookCommand string) ([]string, contracts.Start, error) {
 	start := contracts.Start{Mode: mode, SessionID: sessionID, Resume: resume, Prompt: prompt, HookCommand: hookCommand}
 
-	if err := profile.CheckBuild(programVersion(profile.Program())); err != nil {
+	if err := profile.CheckBuild(programVersion(profile.Driver())); err != nil {
 		return nil, start, err
 	}
 
@@ -359,7 +359,7 @@ func profiledCommand(profile contracts.ProgramProfile, mode recording.Mode, out,
 		return nil, start, err
 	}
 
-	return append([]string{profile.Program()}, arguments...), start, nil
+	return append([]string{profile.Driver()}, arguments...), start, nil
 }
 
 // writeSettingsFile writes one isolated settings file.

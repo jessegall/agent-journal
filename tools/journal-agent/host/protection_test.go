@@ -84,8 +84,8 @@ func TestEvidenceOthersCanReadIsRefused(t *testing.T) {
 }
 
 func TestAnUnknownProgramIsRefused(t *testing.T) {
-	if _, err := InspectProtection(LocalPlatform(), "gemini", "1.0.0", NativeEvidence{Folder: t.TempDir()}); err != ErrUnknownProgram {
-		t.Fatalf("got %v, want ErrUnknownProgram", err)
+	if _, err := InspectProtection(LocalPlatform(), "gemini", "1.0.0", NativeEvidence{Folder: t.TempDir()}); err != ErrUnknownDriver {
+		t.Fatalf("got %v, want ErrUnknownDriver", err)
 	}
 }
 

@@ -56,7 +56,7 @@ func TestTheManagedPolicyCarriesEveryRuleAndHookOfTheLaunch(t *testing.T) {
 		t.Fatalf("MCP servers allowed: %+v", settings.AllowedMcpServers)
 	}
 
-	for _, rule := range append(slices.Clone(claudeCodeDelegationTools), claudeCodeNestedPrograms...) {
+	for _, rule := range append(slices.Clone(claudeCodeDelegationTools), claudeCodeNestedDrivers...) {
 		if !slices.Contains(settings.Permissions.Deny, rule) {
 			t.Errorf("the policy does not deny %s", rule)
 		}

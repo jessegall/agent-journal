@@ -14,7 +14,7 @@ import (
 // A contained host asks about the agent image on the agent daemon, where its tools run.
 func protection(arguments []string) error {
 	flags := flag.NewFlagSet("protection", flag.ContinueOnError)
-	program := flags.String("program", "", "the agent program: claude or codex")
+	driver := flags.String("driver", "", "the agent driver: claude or codex")
 	build := flags.String("build", "", "the pinned build the arrangement is for")
 	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
 	arrangementFlag := flags.String("arrangement", string(host.Local), "where agents run: local, contained or local-project")
@@ -45,7 +45,7 @@ func protection(arguments []string) error {
 		containers := host.Containers{Docker: "docker", Host: *dockerSocket, Rules: rules}
 		platform = host.ContainedPlatform(context.Background(), containers, *seccomp)
 	}
-	capability, err := host.InspectProtection(platform, *program, *build, host.NativeEvidence{Folder: *stateFolder})
+	capability, err := host.InspectProtection(platform, *driver, *build, host.NativeEvidence{Folder: *stateFolder})
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-// Package profiles holds the start profile of each supported agent program build.
+// Package profiles holds the start profile of each supported agent driver build.
 package profiles
 
 import (
@@ -19,7 +19,7 @@ import (
 // MCP servers, an explicit tool set without any route that starts another agent, and exact session IDs.
 type ClaudeCode struct{}
 
-var _ contracts.ProgramProfile = ClaudeCode{}
+var _ contracts.DriverProfile = ClaudeCode{}
 
 // claudeCodeAllowedTools is the evidence-checked inventory of 2.1.323 (task 887). It leaves out Agent, Task,
 // Workflow, SendMessage, ListAgents, RemoteTrigger, Skill, the cron and wake-up tools and the worktree tools.
@@ -48,18 +48,18 @@ const (
 	// and starts it as a login shell, so the bridge takes the shell's place and hands every command, unparsed, to the
 	// executor's user (docs/accounts/claude-integration.md, section Shell handoff).
 	claudeCodeProtectedShell = "/opt/journal/shell/bash"
-	claudeCodeMcpToolTimeout  = "30000"
-	claudeCodeJournalTimeout  = 30000
+	claudeCodeMcpToolTimeout = "30000"
+	claudeCodeJournalTimeout = 30000
 )
 
 // errUnresolvedLaunchSetting refuses a launch whose generated settings would hold an empty, relative or placeholder
 // path: the program would resolve it from a folder the model controls.
 var errUnresolvedLaunchSetting = errors.New("the launch has an unresolved setting")
 
-// claudeCodeNestedPrograms are agent programs a shell command could start as an unseen child; Bash may not run them.
-var claudeCodeNestedPrograms = []string{"Bash(claude:*)", "Bash(codex:*)", "Bash(*claude -p*)", "Bash(*codex exec*)"}
+// claudeCodeNestedDrivers are agent drivers a shell command could start as an unseen child; Bash may not run them.
+var claudeCodeNestedDrivers = []string{"Bash(claude:*)", "Bash(codex:*)", "Bash(*claude -p*)", "Bash(*codex exec*)"}
 
-func (ClaudeCode) Program() string {
+func (ClaudeCode) Driver() string {
 	return "claude"
 }
 
@@ -155,7 +155,7 @@ func (ClaudeCode) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile
 	settings := map[string]any{
 		"permissions": map[string]any{
 			"allow": claudeCodeAllowedWithoutAsking,
-			"deny":  append(slices.Clone(claudeCodeDelegationTools), claudeCodeNestedPrograms...),
+			"deny":  append(slices.Clone(claudeCodeDelegationTools), claudeCodeNestedDrivers...),
 		},
 	}
 

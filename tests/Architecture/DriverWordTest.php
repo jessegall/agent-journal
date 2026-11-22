@@ -54,6 +54,20 @@ final class DriverWordTest extends TestCase
         $this->assertSame([], $found, 'Say driver, not program, for Claude Code, Codex and the like.');
     }
 
+    public function test_the_go_host_calls_a_driver_a_driver(): void
+    {
+        $found = WordLines::in(WordLines::GO_DRIVER_WORDS, [base_path('tools/journal-agent')]);
+
+        $this->assertSame([], $found, 'Say driver, not program, for Claude Code and Codex in the Go host.');
+    }
+
+    public function test_the_go_check_catches_a_driver_called_a_program(): void
+    {
+        $this->assertMatchesRegularExpression(WordLines::GO_DRIVER_WORDS, 'name := profile.Program()');
+        $this->assertMatchesRegularExpression(WordLines::GO_DRIVER_WORDS, '// Package profiles holds each agent program.');
+        $this->assertDoesNotMatchRegularExpression(WordLines::GO_DRIVER_WORDS, 'program, err := os.Executable()');
+    }
+
     /**
      * The text of the line a `path:line` names.
      */

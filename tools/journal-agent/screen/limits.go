@@ -1,4 +1,4 @@
-// Package screen reads the screen of an agent program's terminal from its raw output.
+// Package screen reads the screen of an agent driver's terminal from its raw output.
 package screen
 
 import "fmt"
