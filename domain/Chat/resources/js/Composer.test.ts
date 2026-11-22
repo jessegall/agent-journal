@@ -46,6 +46,8 @@ function mountComposer() {
             inboxId: 'inbox-chat',
             replyingTo: null,
             conversationProp: 'window_chat_conversation',
+            participants: [],
+            viewer: 'user:user-1',
         },
     });
 }

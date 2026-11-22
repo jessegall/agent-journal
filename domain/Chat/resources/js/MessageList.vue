@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import type { ChatMessageData } from '@generated/types/chat';
+import type { ChatMessageData, ParticipantData } from '@generated/types/chat';
 import type { ConversationIntent } from './composables/useConversationIntents';
 import type { RecoveryEntry } from './composables/useMessageDrafts';
 import PendingMessage from './PendingMessage.vue';
@@ -19,12 +19,14 @@ const props = defineProps<{
     refused: { entry: RecoveryEntry; reason: string }[];
     // The viewing actor as type:id, the speaker of the viewer's own rows.
     viewer: string;
+    participants: ParticipantData[];
     // The address that opens one question passively, as a notification opens it.
     questionUrl: (messageId: string) => string;
 }>();
 
 const emit = defineEmits<{
     reply: [message: ChatMessageData];
+    decline: [message: ChatMessageData];
     checkAgain: [intent: ConversationIntent];
     restore: [intentKey: string];
     discard: [intentKey: string];
@@ -36,6 +38,13 @@ function isOwn(message: ChatMessageData): boolean {
 
 function speakerOf(message: ChatMessageData): string {
     return message.speaker.driver === null ? message.speaker.label : `${message.speaker.label} · ${message.speaker.driver}`;
+}
+
+/**
+ * The name the roster shows for a member, or the words someone who left for one no longer in the chat.
+ */
+function labelOf(actor: string): string {
+    return props.participants.find((member) => member.actor === actor)?.label ?? 'someone who left';
 }
 
 function stateOf(message: ChatMessageData): string | null {
@@ -59,18 +68,23 @@ function stateOf(message: ChatMessageData): string | null {
         </template>
         <template v-for="message in messages" :key="message.id">
             <div
+                :id="`message-${message.id}`"
                 :class="[
                     'flex max-w-[85%] flex-col gap-0.5',
                     isOwn(message) ? 'ml-auto items-end' : 'mr-auto items-start',
                 ]"
             >
-                <template v-if="!isOwn(message)">
-                    <span class="text-small text-text-3">
-                        {{ speakerOf(message) }}
-                    </span>
+                <span class="text-small text-text-3">
+                    <template v-if="!isOwn(message)">{{ speakerOf(message) }}</template>
+                    <template v-if="message.addressedTo !== null"> → {{ labelOf(message.addressedTo) }}</template>
+                </span>
+                <template v-if="message.replyTo !== null && message.replyTo.visible">
+                    <a :href="`#message-${message.replyTo.id}`" class="text-small text-text-3 underline">
+                        Replying to an earlier message
+                    </a>
                 </template>
                 <template v-if="message.replyTo !== null && !message.replyTo.visible">
-                    <span class="text-small text-text-3">Replying to a message you cannot see</span>
+                    <span class="text-small text-text-3">Original unavailable</span>
                 </template>
                 <p
                     class="rounded-bubble bg-raised px-3 py-2 text-body whitespace-pre-wrap text-text"
@@ -81,10 +95,15 @@ function stateOf(message: ChatMessageData): string | null {
                     <template v-if="stateOf(message) !== null">
                         <span>{{ stateOf(message) }}</span>
                     </template>
-                    <template v-if="!isOwn(message) && message.state === 'waiting_for_answer'">
+                    <template v-if="!isOwn(message)">
                         <button type="button" class="underline" @click="emit('reply', message)">
-                            Reply
+                            {{ message.actions.answer ? 'Answer' : 'Reply' }}
                         </button>
+                    </template>
+                    <template v-if="message.actions.decline">
+                        <button type="button" class="underline" @click="emit('decline', message)">Decline</button>
+                    </template>
+                    <template v-if="message.state === 'waiting_for_answer'">
                         <Link :href="questionUrl(message.id)" class="underline" preserve-scroll>
                             Open question
                         </Link>

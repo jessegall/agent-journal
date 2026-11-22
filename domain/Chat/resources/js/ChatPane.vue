@@ -7,7 +7,7 @@ import type { AgentOptionData, ChatData } from '@generated/types/chat';
 import type { ReplyTarget } from './composables/useConversationIntents';
 import { isRevealed } from '@kit/protectedView';
 import SlotSections from '@kit/SlotSections';
-import { read as readRoute } from '@generated/routes/chat';
+import { decline as declineRoute, read as readRoute } from '@generated/routes/chat';
 import AgentPicker from './AgentPicker.vue';
 import AgentSessionActions from './AgentSessionActions.vue';
 import Composer from './Composer.vue';
@@ -125,6 +125,17 @@ watch(
 watch(isShown, readOnOpen);
 
 /**
+ * Declines a question the viewer was asked; the server checks it is the respondent and records why.
+ */
+function decline(message: ReplyTarget): void {
+    router.post(
+        declineRoute().url,
+        { messageId: message.id, reason: 'Declined in the chat.' },
+        { preserveScroll: true, preserveState: true, only: [props.protectedProp] },
+    );
+}
+
+/**
  * Reads the chat window again for a question that failed to show; it marks nothing.
  */
 function retryFocused(): void {
@@ -180,8 +191,10 @@ function retryFocused(): void {
                     :pending="pending"
                     :refused="refused"
                     :viewer="conversation.viewer"
+                    :participants="conversation.participants"
                     :question-url="questionUrl"
                     @reply="(message) => (replyingTo = message)"
+                    @decline="decline"
                     @check-again="(intent) => owner?.retry(intent, protectedProp)"
                     @restore="(intentKey) => owner?.restore(intentKey)"
                     @discard="(intentKey) => owner?.discardRecovery(intentKey)"
@@ -211,6 +224,8 @@ function retryFocused(): void {
                     :session-generation="conversation.sessionGeneration"
                     :inbox-id="conversation.inboxId"
                     :replying-to="replyingTo"
+                    :participants="conversation.participants"
+                    :viewer="conversation.viewer"
                     :conversation-prop="protectedProp"
                     @replied="replyingTo = null"
                 />

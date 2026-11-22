@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import type { ConversationIntent } from './composables/useConversationIntents';
 
+vi.mock('@inertiajs/vue3', () => ({ Link: { template: '<a><slot /></a>' } }));
 vi.mock('@generated/routes/chat', () => ({ history: () => ({ url: '/chat/history' }) }));
 
 const { default: MessageList } = await import('./MessageList.vue');
@@ -23,7 +24,7 @@ function intent(status: ConversationIntent['status']): ConversationIntent {
 }
 
 function listOf(pending: ConversationIntent[], refused: { entry: object; reason: string }[] = []) {
-    return mount(MessageList, { props: { messages: [], pending, refused, viewer: 'user:user-1' } as never });
+    return mount(MessageList, { props: { messages: [], pending, refused, viewer: 'user:user-1', participants: [] } as never });
 }
 
 describe('MessageList', () => {
@@ -54,5 +55,41 @@ describe('MessageList', () => {
         await discard.trigger('click');
         expect(list.emitted('restore')).toEqual([['key-1']]);
         expect(list.emitted('discard')).toEqual([['key-1']]);
+    });
+
+    it('shows the addressee arrow, an unavailable original, and answer and decline only from the server actions', () => {
+        const row = (id: string, answer: boolean) => ({
+            id,
+            sequence: 1,
+            rootId: null,
+            speaker: { actor: 'user:ada', label: 'Ada', driver: null },
+            addressedTo: 'user:bea',
+            replyTo: { id: null, visible: false },
+            body: 'Ready?',
+            state: 'waiting_for_answer',
+            stateVersion: 0,
+            respondent: 'user:bea',
+            actions: { answer, decline: answer },
+            readByMe: true,
+            sentAt: '',
+            requestKey: null,
+        });
+        const participants = [
+            { actor: 'user:ada', label: 'Ada', driver: null, role: 'owner' },
+            { actor: 'user:bea', label: 'Bea', driver: null, role: 'member' },
+        ];
+        const asBea = mount(MessageList, {
+            props: { messages: [row('q1', true)], pending: [], refused: [], viewer: 'user:bea', participants, questionUrl: () => '#' } as never,
+        });
+        const asCy = mount(MessageList, {
+            props: { messages: [row('q1', false)], pending: [], refused: [], viewer: 'user:cy', participants, questionUrl: () => '#' } as never,
+        });
+
+        expect(asBea.text()).toContain('Ada → Bea');
+        expect(asBea.text()).toContain('Original unavailable');
+        expect(asBea.text()).toContain('Answer');
+        expect(asBea.text()).toContain('Decline');
+        expect(asCy.text()).toContain('Reply');
+        expect(asCy.text()).not.toContain('Decline');
     });
 });

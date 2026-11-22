@@ -6,6 +6,7 @@ namespace Domain\Chat\Http\Controllers;
 
 use App\Agents\Contracts\AgentDirectory;
 use App\Bus\Contracts\CommandBus;
+use App\Communication\Commands\AskChatQuestion;
 use App\Communication\Commands\PostChatMessage;
 use Domain\Chat\Data\MessageInput;
 use Domain\Chat\Support\SentMessageAnswer;
@@ -35,7 +36,20 @@ final readonly class SendMessageController
             $agents->visibleAgent($input->agent)->assertRuns($input->expectedSessionId, $input->expectedGeneration);
         }
 
-        $messageId = $commands->run(new PostChatMessage($input->inboxId, $input->body, $input->requestKey));
+        $messageId = $input->question
+            ? $commands->run(new AskChatQuestion(
+                $input->inboxId,
+                $input->body,
+                $input->requestKey,
+                $input->addressee,
+            ))
+            : $commands->run(new PostChatMessage(
+                $input->inboxId,
+                $input->body,
+                $input->requestKey,
+                null,
+                $input->addressee,
+            ));
 
         return $answer->to($request, $messageId, $input->agent, $input->inboxId);
     }

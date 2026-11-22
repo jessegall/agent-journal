@@ -44,6 +44,8 @@ type SendDraft = {
     expectedSessionId: string | null;
     expectedGeneration: number;
     inboxId: string;
+    addressee?: string | null;
+    question?: boolean;
 };
 
 /**
@@ -112,6 +114,8 @@ function createOwner(draftKey: string) {
             expectedGeneration: draft.expectedGeneration,
             inboxId: draft.inboxId,
             requestKey: key,
+            addressee: draft.addressee ?? null,
+            question: draft.question ?? false,
         }));
     }
 

@@ -84,7 +84,8 @@ final readonly class ChatPosting
 
     /**
      * A reply lands in its parent's inbox; a parent the author cannot see, or one in another inbox than the one named,
-     * is refused as missing. A reply to a question someone else asked that still waits is its answer and closes it.
+     * is refused as missing. A reply by the respondent of a question that still waits is its answer and closes it;
+     * anyone else's reply to it is a comment that leaves it waiting.
      *
      * @throws MessageMissing
      */
@@ -92,7 +93,10 @@ final readonly class ChatPosting
     {
         $parent = $this->visibleParent($command->parentId, $command->inboxId);
         $author = $command->dispatchedBy();
-        $answers = $parent->needsReply() && ! $parent->isWrittenBy(ActorIdentity::of($author));
+        $identity = ActorIdentity::of($author);
+        $answers = $parent->needsReply()
+            && ! $parent->isWrittenBy($identity)
+            && $parent->mayBeSettledBy($identity);
         $body = MessageBody::from($command->body);
         $key = $command->requestKey;
 
