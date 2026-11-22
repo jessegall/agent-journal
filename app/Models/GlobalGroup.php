@@ -10,6 +10,8 @@ use App\Concerns\Linkable;
 use App\Contracts\ReadableModel;
 use App\Exceptions\GlobalGroupMissing;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -54,5 +56,16 @@ final class GlobalGroup extends Model implements ReadableModel
         $group->insertIfAbsent();
 
         return self::query()->where('name', self::JOURNAL)->sole();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function named(Builder $query, string $name): void
+    {
+        $query->where('name', $name);
     }
 }

@@ -6,7 +6,10 @@ namespace App\Concerns;
 
 use App\Exceptions\NumberChanged;
 use App\Models\GlobalGroup;
+use App\Models\NumberGroup;
 use App\Observers\NumberObserver;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -42,6 +45,21 @@ trait HasNumber
         $id = static::query()->where('number', $number)->value((new static())->getKeyName());
 
         return is_string($id) ? $id : null;
+    }
+
+    /**
+     * The record with this number in the journal's group for its type, found in one statement through the unique
+     * (number_group_id, number) index; the group is read inside it, never created.
+     *
+     * @param  Builder<static>  $query
+     */
+    #[Scope]
+    protected function numberedInJournal(Builder $query, int $number): void
+    {
+        $query->where($query->qualifyColumn('number'), $number)->whereIn(
+            $query->qualifyColumn('number_group_id'),
+            NumberGroup::query()->ofJournal($query->getModel()->getMorphClass())->select('id'),
+        );
     }
 
     public function assignNumber(string $groupId, int $number): void

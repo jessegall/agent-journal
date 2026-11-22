@@ -33,6 +33,7 @@ use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\FolderClasses;
 use App\Support\PoolDefinition;
+use App\Support\Searchable;
 use App\Support\ShareRecordDefinition;
 use App\Values\PolicyDefinition;
 use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;
@@ -78,11 +79,13 @@ use Domain\Plans\Resolvers\WaitingPlansCount;
 use Domain\Plans\Resolvers\WaitingPlansSection;
 use Domain\Plans\Support\Assignments\PlanTaskPoolFactory;
 use Domain\Plans\Support\Mcp\HeldPlansOverview;
-use Domain\Plans\Support\Mcp\PlanSearch;
 use Domain\Plans\Support\PhaseAssignmentProvider;
 use Domain\Plans\Support\PhaseRecords;
 use Domain\Plans\Support\PlanAssignmentProvider;
 use Domain\Plans\Support\PlanRecords;
+use Domain\Plans\Support\PlanReferenceRecognizer;
+use Domain\Plans\Support\PlanSearchAccess;
+use Domain\Plans\Support\PlanSearchProvider;
 use Domain\Plans\Support\PlanShareProvider;
 use Domain\Plans\Support\Skills\PlanSkill;
 use Domain\Plans\Support\States\Support\ReviewingPlanStateFactory;
@@ -341,8 +344,16 @@ final class PlansDomain extends Domain implements
         return [HeldPlansOverview::class];
     }
 
-    public function searchContributions(): array
+    public function searchables(): array
     {
-        return [PlanSearch::class];
+        return [
+            Searchable::make(
+                'plan',
+                'Plans',
+                PlanSearchAccess::class,
+                PlanSearchProvider::class,
+                PlanReferenceRecognizer::class,
+            ),
+        ];
     }
 }

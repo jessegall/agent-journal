@@ -21,6 +21,8 @@ final readonly class PlanReadResult
 {
     public const string TOOL = 'plans_read';
 
+    public const string ID_ARGUMENT = 'plan_id';
+
     private const int PHASES_PER_RESULT = 2;
 
     private const int INLINE_TEXT_BYTES = 600;

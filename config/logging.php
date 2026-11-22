@@ -69,6 +69,14 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'search' => [
+            'driver' => 'daily',
+            'tap' => [RedactInstallSecrets::class],
+            'path' => storage_path('logs/search.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'max_files' => env('LOG_DAILY_DAYS', 14),
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'tap' => [RedactInstallSecrets::class],

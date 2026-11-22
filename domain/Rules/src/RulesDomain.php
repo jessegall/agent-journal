@@ -17,6 +17,7 @@ use App\Enums\Icon;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Support\Domain;
 use App\Support\Exports;
+use App\Support\Searchable;
 use App\Values\PolicyDefinition;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
@@ -39,7 +40,9 @@ use Domain\Rules\Mcp\Tools\RulesListTool;
 use Domain\Rules\Policies\RulePolicy;
 use Domain\Rules\Resolvers\RulesWindowResolver;
 use Domain\Rules\Support\Mcp\ActiveRulesOverview;
-use Domain\Rules\Support\Mcp\RuleSearch;
+use Domain\Rules\Support\RuleReferenceRecognizer;
+use Domain\Rules\Support\RuleSearchAccess;
+use Domain\Rules\Support\RuleSearchProvider;
 use Domain\Rules\Support\Skills\RulesSkill;
 use Domain\Rules\Values\RuleDetails;
 use Domain\Rules\Values\RuleFilters;
@@ -135,9 +138,17 @@ final class RulesDomain extends Domain implements
         return [ActiveRulesOverview::class];
     }
 
-    public function searchContributions(): array
+    public function searchables(): array
     {
-        return [RuleSearch::class];
+        return [
+            Searchable::make(
+                'rule',
+                'Rules',
+                RuleSearchAccess::class,
+                RuleSearchProvider::class,
+                RuleReferenceRecognizer::class,
+            ),
+        ];
     }
 
     public function skills(): array

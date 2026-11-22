@@ -25,7 +25,7 @@ const appName = computed(() => page.props.name);
 const userName = computed(() => page.props.currentUser?.name);
 const { appearance, update } = useAppearance();
 const { toggle: toggleSidebar, isMini } = useSidebar();
-const { isPaletteOpen, isHelpOpen } = useShellOverlays();
+const { isPaletteOpen, isHelpOpen, isSearchOpen } = useShellOverlays();
 
 const schemes: { value: Appearance; label: string }[] = [
     { value: 'system', label: 'System' },
@@ -59,8 +59,11 @@ function toggleFullScreen(): void {
         <span class="flex-1"></span>
         <div class="flex items-center gap-2" role="group" aria-label="Shell actions">
             <EnvironmentMenu />
+            <Button variant="bordered" size="small" @click="isSearchOpen = true"
+                ><Icon name="search" :size="13" /><span>Search records and passages</span></Button
+            >
             <Button variant="icon" aria-label="Open commands" @click="isPaletteOpen = true"
-                ><Icon name="search" :size="13"
+                ><Icon name="list" :size="13"
             /></Button>
             <Button variant="icon" aria-label="Keyboard help" @click="isHelpOpen = true"
                 ><Icon name="question" :size="13"

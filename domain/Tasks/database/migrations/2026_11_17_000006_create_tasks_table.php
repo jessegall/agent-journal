@@ -34,6 +34,12 @@ return new class extends Migration
         });
 
         DB::statement('ALTER TABLE tasks ADD CONSTRAINT tasks_number_positive CHECK (number > 0)');
+
+        // Search narrows each title tier and the brief tier through trigram indexes, so a miss or a rare late hit
+        // is found without walking every task.
+        DB::statement('CREATE EXTENSION IF NOT EXISTS pg_trgm');
+        DB::statement('CREATE INDEX tasks_title_search ON tasks USING gin (title gin_trgm_ops)');
+        DB::statement('CREATE INDEX tasks_brief_search ON tasks USING gin (brief gin_trgm_ops)');
     }
 
     public function down(): void

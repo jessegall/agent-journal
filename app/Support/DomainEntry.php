@@ -537,10 +537,16 @@ final readonly class DomainEntry
         foreach ($domain->overviewContributions() as $contribution) {
             $registration->registerOverviewContribution($contribution);
         }
+    }
 
-        foreach ($domain->searchContributions() as $contribution) {
-            $registration->registerSearchContribution($contribution);
-        }
+    /**
+     * The sources this domain offers to search, as its Domain class declares them.
+     *
+     * @return list<Searchable>
+     */
+    public function searchables(): array
+    {
+        return $this->domain->searchables();
     }
 
     /**

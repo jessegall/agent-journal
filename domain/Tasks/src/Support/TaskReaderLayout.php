@@ -18,6 +18,7 @@ use Domain\Tasks\Data\TaskLogsPartData;
 use Domain\Tasks\Data\TaskProofsPartData;
 use Domain\Tasks\Data\TaskReaderData;
 use Domain\Tasks\Data\TaskWaitsPartData;
+use Domain\Tasks\Values\TaskBriefPassage;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -27,7 +28,31 @@ use Spatie\LaravelData\Optional;
  */
 final readonly class TaskReaderLayout
 {
+    public const int PASSAGE_CHARACTERS = 2000;
+
+    private const string PASSAGE_GONE = 'That passage of the brief is no longer there; search again.';
+
     public function page(TaskReaderData $reader): DetailPage
+    {
+        return $this->pageWithBrief($reader, LayoutPartData::text('brief', $reader->brief));
+    }
+
+    /**
+     * The reader opened at a brief passage search found: the Brief tab shows the brief from that passage on, or says
+     * the passage is gone when the brief changed since, with no fallback to the summary.
+     */
+    public function pageAtPassage(TaskReaderData $reader, TaskBriefPassage $passage): DetailPage
+    {
+        if (! $passage->isOpenIn($reader->brief, $reader->revision)) {
+            return $this->pageWithBrief($reader, LayoutPartData::text('brief', self::PASSAGE_GONE, 'muted'));
+        }
+
+        $excerpt = $passage->excerptOf($reader->brief, $reader->revision, self::PASSAGE_CHARACTERS);
+
+        return $this->pageWithBrief($reader, LayoutPartData::text('brief', $excerpt));
+    }
+
+    private function pageWithBrief(TaskReaderData $reader, LayoutPartData $brief): DetailPage
     {
         return DetailPage::make($reader->title)
             ->above(LayoutPartData::text('number', "Task {$reader->number}", 'code'))
@@ -42,6 +67,7 @@ final readonly class TaskReaderLayout
                     'comments',
                     LayoutNativeData::of('tasks/TaskCommentsTab', new TaskCommentsData($reader->comments, $reader->label)),
                 )),
+                PublicationTab::deferred('brief', 'Brief', fn () => $brief),
             );
     }
 

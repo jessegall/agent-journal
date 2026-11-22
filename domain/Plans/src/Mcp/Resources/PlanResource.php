@@ -35,7 +35,7 @@ final class PlanResource extends JournalResource implements HasUriTemplate
     {
         $planId = ToolArguments::uriId($request);
         $view = ToolArguments::query($this->name(), $request, ['view', 'continuation']);
-        $this->reads->assertAllowed(new ReadRequest(PlanReadResult::TOOL, arguments: ['plan_id' => $planId]));
+        $this->reads->assertAllowed(ReadRequest::forRecord(PlanReadResult::TOOL, PlanReadResult::ID_ARGUMENT, $planId));
 
         return Response::text(json_encode(
             $this->plans->read($planId, $view)->structuredContent(),

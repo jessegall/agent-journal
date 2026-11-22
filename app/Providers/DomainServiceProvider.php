@@ -23,6 +23,8 @@ use App\Support\EmptySettingsDefinition;
 use App\Support\ExportValidator as ExportsCheck;
 use App\Support\Psr4ClassNames;
 use App\Support\RecordPolicyMappings;
+use App\Support\SearchablesRegistry;
+use App\Support\SearchDiagnostics;
 use App\Support\Rules\CoreRules;
 use App\Support\SettingRegistry;
 use App\Support\SettingsDomainAvailability;
@@ -86,6 +88,16 @@ class DomainServiceProvider extends ServiceProvider
 
         $this->app->scoped(DomainAvailability::class, SettingsDomainAvailability::class);
 
+        $this->app->singleton(
+            SearchablesRegistry::class,
+            fn () => SearchablesRegistry::publishing($registry->searchableDeclarations()),
+        );
+
+        $this->app->bind(
+            SearchDiagnostics::class,
+            fn (Application $app): SearchDiagnostics => new SearchDiagnostics($app->make('log')->channel('search')),
+        );
+
         $classNames = Psr4ClassNames::fromComposer();
 
         DiscoverEvents::guessClassNamesUsing(
@@ -95,8 +107,8 @@ class DomainServiceProvider extends ServiceProvider
 
     /**
      * The domains' policies are registered during boot like Core's; once every provider has booted, the command and
-     * settings registries, the MCP catalogue and the record policy mappings are checked, so a declaration the
-     * application cannot start with fails the boot whichever provider registered its policy.
+     * settings registries, the MCP catalogue, the searchables and the record policy mappings are checked, so a
+     * declaration the application cannot start with fails the boot whichever provider registered its policy.
      */
     public function boot(
         DomainRegistry $registry,
@@ -114,6 +126,7 @@ class DomainServiceProvider extends ServiceProvider
             $this->app->make(CommandRegistry::class);
             $this->app->make(SettingRegistry::class);
             $this->app->make(McpCatalogue::class);
+            $this->app->make(SearchablesRegistry::class);
             $this->app->make(RecordPolicyMappings::class)->assertResolved();
             $this->app->forgetScopedInstances();
         });

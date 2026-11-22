@@ -13,6 +13,8 @@ use App\Enums\CommandEffectType;
 use App\Enums\ReadEntitlementType;
 use App\Support\Stack\Contracts\StackPermission;
 use App\Values\AccessDecision;
+use App\Values\AllowedNames;
+use App\Values\ProfileAuthorization;
 use App\Values\ReadRequest;
 use App\Values\StackTarget;
 use App\Values\StartProfileAuthority;
@@ -53,12 +55,65 @@ final readonly class PolicyReadAdmission implements ReadAdmission
             ),
             ReadEntitlementType::Grant => $entitlement->isGrantedBy($profile->authorization->grants(...))
                 ? AccessDecision::allowed(AccessRuleType::ScopeGrant, 'The profile grants the read.')
-                : AccessDecision::refused(AccessRuleType::NotGranted, "The profile does not grant {$request->name}."),
+                : $this->scoped($request, $profile->authorization),
             ReadEntitlementType::Named => $this->named($request, $profile->authorization->holdsRead(
                 $request->name,
                 $request->target,
             )),
         };
+    }
+
+    /**
+     * The targets the caller may run the named read for: every one without a start profile, through a read that
+     * checks each record itself or through the policy grant; else those the profile's scoped reads name.
+     */
+    public function allowedTargets(string $name): AllowedNames
+    {
+        $authority = $this->actors->hasActor() ? $this->actors->authority() : null;
+
+        if (! $authority instanceof StartProfileAuthority) {
+            return AllowedNames::all();
+        }
+
+        $profile = $authority->profile;
+
+        if ($profile->deniesOperation($name)) {
+            return AllowedNames::only([]);
+        }
+
+        $entitlement = $this->reads->of($name);
+
+        return match ($entitlement->type) {
+            ReadEntitlementType::Resolver => AllowedNames::all(),
+            ReadEntitlementType::Grant => $entitlement->isGrantedBy($profile->authorization->grants(...))
+                ? AllowedNames::all()
+                : $profile->authorization->readTargets($name),
+            ReadEntitlementType::Named => $profile->authorization->readTargets($name),
+        };
+    }
+
+    /**
+     * A granted read the policy grant does not cover still runs for a target the profile holds it for, and its
+     * discovery runs while the profile holds it for any target, so a grant for task A needs no dummy id.
+     */
+    private function scoped(ReadRequest $request, ProfileAuthorization $authorization): AccessDecision
+    {
+        return self::holds($authorization->readTargets($request->name), $request)
+            ? AccessDecision::allowed(AccessRuleType::OperationGrant, "The profile holds {$request->name} for it.")
+            : AccessDecision::refused(AccessRuleType::NotGranted, "The profile does not grant {$request->name}.");
+    }
+
+    private static function holds(AllowedNames $targets, ReadRequest $request): bool
+    {
+        if ($request->discovery) {
+            return ! $targets->admitsNone();
+        }
+
+        if ($request->target === null) {
+            return ! $targets->isRestricted();
+        }
+
+        return $targets->admits($request->target);
     }
 
     private function named(ReadRequest $request, bool $held): AccessDecision

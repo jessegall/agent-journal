@@ -71,6 +71,17 @@ abstract class Domain
     abstract public function exports(): Exports;
 
     /**
+     * The sources this domain offers to search, each with a local key the registry qualifies with the domain name;
+     * none unless it overrides this.
+     *
+     * @return list<Searchable>
+     */
+    public function searchables(): array
+    {
+        return [];
+    }
+
+    /**
      * @return list<class-string<JournalTool>>
      */
     public function mcpTools(): array

@@ -28,6 +28,7 @@ final class TaskReadTool extends JournalReadTool
             'task_id' => $schema->string()->max(26)->required(),
             'view' => $schema->string()->enum(array_column(ReadView::cases(), 'value')),
             'continuation' => $schema->string(),
+            'passage' => $schema->string()->max(64),
         ];
     }
 
@@ -37,7 +38,7 @@ final class TaskReadTool extends JournalReadTool
             return parent::readRequest();
         }
 
-        return new ReadRequest($this->name(), arguments: ['task_id' => $arguments->ulid('task_id')]);
+        return TaskReadResult::requestFor($arguments->ulid('task_id'));
     }
 
     protected function read(ToolArguments $arguments): ToolResult

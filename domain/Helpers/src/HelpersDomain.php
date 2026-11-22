@@ -138,9 +138,4 @@ final class HelpersDomain extends Domain implements
     {
         return [];
     }
-
-    public function searchContributions(): array
-    {
-        return [];
-    }
 }

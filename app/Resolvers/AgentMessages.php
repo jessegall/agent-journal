@@ -15,9 +15,6 @@ use App\Data\AgentMessageDetails;
 use App\Enums\AgentInboxState;
 use App\Enums\ReadView;
 use App\Mcp\Contracts\Continuations;
-use App\Mcp\Contracts\SearchContribution;
-use App\Mcp\Data\SearchHit;
-use App\Mcp\Data\SearchPage;
 use App\Mcp\Support\Continuation;
 use App\Mcp\Support\TextChunk;
 use App\Models\AgentSession;
@@ -69,24 +66,6 @@ final readonly class AgentMessages implements AgentMessageReader
             $this->incoming()->unreadBy($reader)->count(),
             $this->incoming()->pendingFor($reader)->count(),
         );
-    }
-
-    public function search(string $query, int $page): SearchPage
-    {
-        $size = SearchContribution::PAGE_SIZE;
-
-        $matching = Message::query()->matchingBody($query)->orderByDesc('created_at')->orderByDesc('id')
-            ->offset(($page - 1) * $size)->readExactly($size + 1)->get();
-
-        $hits = $matching->take($size)->map(fn (Message $message) => SearchHit::matching(
-            self::SEARCH_TYPE,
-            $message->id,
-            "Message {$message->number}",
-            $message->body,
-            $query,
-        ))->all();
-
-        return new SearchPage(array_values($hits), $matching->count() > $size);
     }
 
     public function message(string $messageId, ReadView $view): AgentMessageDetails

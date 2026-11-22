@@ -7,6 +7,7 @@ namespace App\Support;
 use App\Contracts\ReadAdmission;
 use App\Contracts\ReadGrant as ReadGrantContract;
 use App\Exceptions\ReadGrantRefused;
+use App\Values\AllowedNames;
 use App\Values\ReadRequest;
 
 final readonly class ReadGrant implements ReadGrantContract
@@ -25,5 +26,10 @@ final readonly class ReadGrant implements ReadGrantContract
         if (! $decision->allowed) {
             throw ReadGrantRefused::because($decision->reason);
         }
+    }
+
+    public function allowedTargets(string $name): AllowedNames
+    {
+        return $this->admission->allowedTargets($name);
     }
 }

@@ -990,12 +990,9 @@ use App\Mcp\Contracts\McpCall;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Contracts\OverviewContribution;
-use App\Mcp\Contracts\SearchContribution;
 use App\Mcp\Contracts\TextFields;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\OverviewSection;
-use App\Mcp\Data\SearchHit;
-use App\Mcp\Data\SearchPage;
 use App\Mcp\Data\ToolResult as McpToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\ContinuationInvalid;
@@ -1455,6 +1452,47 @@ use App\Values\WorkRepairRequest;
 use App\Values\WorkspaceClone;
 use App\Values\WorkspacePreparation;
 use App\Values\WorkspaceReadReference;
+use App\Contracts\BatchOutcome;
+use App\Contracts\ReferenceRecognizer;
+use App\Contracts\SearchAccess;
+use App\Contracts\SearchProvider;
+use App\Enums\FailureReason;
+use App\Enums\ScoreTier;
+use App\Enums\SearchSurface;
+use App\Exceptions\SearchableInvalid;
+use App\Exceptions\SearchBatchInvalid;
+use App\Exceptions\SearchValueInvalid;
+use App\Exceptions\SearchWordsInvalid;
+use App\Support\Searchable;
+use App\Values\AdmittedConstraints;
+use App\Values\AllowedNames;
+use App\Values\ExhaustedOutcome;
+use App\Values\FailedOutcome;
+use App\Values\HitIdentity;
+use App\Values\MoreOutcome;
+use App\Values\RecognizedReference;
+use App\Values\RecordLocation;
+use App\Values\RefreshCandidates;
+use App\Values\RefreshedOutcome;
+use App\Values\ScanningOutcome;
+use App\Values\SearchBatch;
+use App\Values\SearchQuery;
+use App\Values\SearchReader;
+use App\Values\SearchResult;
+use App\Values\SearchScope;
+use App\Values\SearchWords;
+use App\Values\SourceHit;
+use App\Values\SourcePosition;
+use App\Values\WorkBudget;
+use App\Values\OpenAction;
+use App\Values\TieredSearchSource;
+use App\Values\SearchableBody;
+use App\Support\ReadToolSearchAccess;
+use App\Support\MessageSearchAccess;
+use App\Support\MessageSearchProvider;
+use App\Support\NumberedReferenceRecognizer;
+use App\Support\TieredRecordSearch;
+use App\Support\StatementDeadline;
 
 /**
  * Core's public surface: every type a domain or module may use, written out one by one. Everything else in Core is
@@ -1579,7 +1617,10 @@ final class CoreApi
                 SessionProvenance::class,
                 InboxNotices::class,
                 CurrentSession::class,
-                SearchContribution::class,
+                SearchProvider::class,
+                SearchAccess::class,
+                ReferenceRecognizer::class,
+                BatchOutcome::class,
                 ConversationVisits::class,
                 AutoAssignmentActivity::class,
                 NativeTurnRecords::class,
@@ -1983,8 +2024,32 @@ final class CoreApi
                 ReadRequest::class,
                 Continuation::class,
                 TextChunk::class,
-                SearchHit::class,
-                SearchPage::class,
+                ScoreTier::class,
+                SearchSurface::class,
+                FailureReason::class,
+                SearchWords::class,
+                SearchScope::class,
+                SearchReader::class,
+                WorkBudget::class,
+                SourcePosition::class,
+                SearchQuery::class,
+                RefreshCandidates::class,
+                RecordLocation::class,
+                SearchResult::class,
+                HitIdentity::class,
+                SourceHit::class,
+                SearchBatch::class,
+                ExhaustedOutcome::class,
+                MoreOutcome::class,
+                ScanningOutcome::class,
+                FailedOutcome::class,
+                RefreshedOutcome::class,
+                AllowedNames::class,
+                AdmittedConstraints::class,
+                RecognizedReference::class,
+                OpenAction::class,
+                TieredSearchSource::class,
+                SearchableBody::class,
                 Dispatches::class,
                 VisibleToProfiles::class,
                 DiscoveryProfile::class,
@@ -2791,6 +2856,10 @@ final class CoreApi
                 StackTransactionRequired::class,
                 InvalidAssignmentIdentity::class,
                 InvalidRecordIdentity::class,
+                SearchableInvalid::class,
+                SearchBatchInvalid::class,
+                SearchValueInvalid::class,
+                SearchWordsInvalid::class,
                 AccountUnavailable::class,
                 AccountUseMissing::class,
                 AccountInUse::class,
@@ -2923,6 +2992,13 @@ final class CoreApi
                 LinkTypeRegistry::class,
                 StateReferenceFactory::class,
                 ProvidesModelRecords::class,
+                Searchable::class,
+                ReadToolSearchAccess::class,
+                MessageSearchAccess::class,
+                MessageSearchProvider::class,
+                NumberedReferenceRecognizer::class,
+                TieredRecordSearch::class,
+                StatementDeadline::class,
                 HasNumber::class,
                 AssignableListing::class,
                 TextSearch::class,

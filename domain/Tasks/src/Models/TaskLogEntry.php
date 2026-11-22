@@ -16,6 +16,7 @@ use Carbon\CarbonImmutable;
 use Domain\Tasks\Events\TaskLogged;
 use Domain\Tasks\Values\TaskLogLine;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -135,5 +136,30 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
             $this->sequence,
             CarbonImmutable::parse($this->created_at),
         ));
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * Lines of the tasks the subquery selects, such as the tasks a reader may search.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofTasksIn(Builder $query, Builder $tasks): void
+    {
+        $query->whereIn('task_id', $tasks->select('id'));
+    }
+
+    /**
+     * Lines after one line in the order search walks them: by parent task, then by line id.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function afterSearchKey(Builder $query, string $taskId, string $entryId): void
+    {
+        $query->where(fn (Builder $later) => $later->where('task_id', '>', $taskId)
+            ->orWhere(fn (Builder $same) => $same->where('task_id', $taskId)->where('id', '>', $entryId)));
     }
 }

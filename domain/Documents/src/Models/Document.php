@@ -43,6 +43,7 @@ use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -333,5 +334,21 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     protected function sharedPublished(Builder $query): void
     {
         $query->whereHas('revisions', fn (Builder $revisions) => $revisions->whereNotNull('closed_at'));
+    }
+
+    /**
+     * Each document joined to its latest closed revision as published: its title, number and body, never a draft's.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withPublishedRevision(Builder $query): void
+    {
+        $query->join('document_revisions as published', function (JoinClause $join): void {
+            $join->on('published.document_id', '=', 'documents.id')
+                ->whereNotNull('published.closed_at')
+                ->whereRaw('published.closed_at = (select max(closed.closed_at) from document_revisions as closed '
+                    .'where closed.document_id = documents.id and closed.closed_at is not null)');
+        });
     }
 }

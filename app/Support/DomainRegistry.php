@@ -140,6 +140,22 @@ final readonly class DomainRegistry
     }
 
     /**
+     * Every domain's searchables, by domain name, in bootstrap/domains.php order.
+     *
+     * @return array<string, list<Searchable>>
+     */
+    public function searchableDeclarations(): array
+    {
+        $byOwner = [];
+
+        foreach ($this->all() as $entry) {
+            $byOwner[$entry->name] = $entry->searchables();
+        }
+
+        return $byOwner;
+    }
+
+    /**
      * Core's built-in command rules with every domain's own, which wait for review.
      *
      * @param  list<CommandRule>  $coreRules

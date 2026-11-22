@@ -29,6 +29,7 @@ use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\FolderClasses;
 use App\Support\PoolDefinition;
+use App\Support\Searchable;
 use App\Values\PolicyDefinition;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Contracts\TaskAssignmentResolver;
@@ -83,10 +84,14 @@ use Domain\Tasks\Support\Assignments\NamedTaskPoolFactory;
 use Domain\Tasks\Support\Assignments\OpenTaskPoolFactory;
 use Domain\Tasks\Support\Assignments\TaskAssigner;
 use Domain\Tasks\Support\Mcp\HeldTasksOverview;
-use Domain\Tasks\Support\Mcp\TaskSearch;
 use Domain\Tasks\Support\Skills\TasksSkill;
 use Domain\Tasks\Support\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
+use Domain\Tasks\Support\TaskLogSearchAccess;
+use Domain\Tasks\Support\TaskLogSearchProvider;
+use Domain\Tasks\Support\TaskReferenceRecognizer;
+use Domain\Tasks\Support\TaskSearchAccess;
+use Domain\Tasks\Support\TaskSearchProvider;
 use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\Values\TaskAssignmentCompletion;
 use Domain\Tasks\Values\TaskCard;
@@ -290,9 +295,18 @@ final class TasksDomain extends Domain implements
         return [HeldTasksOverview::class];
     }
 
-    public function searchContributions(): array
+    public function searchables(): array
     {
-        return [TaskSearch::class];
+        return [
+            Searchable::make(
+                'task',
+                'Tasks',
+                TaskSearchAccess::class,
+                TaskSearchProvider::class,
+                TaskReferenceRecognizer::class,
+            ),
+            Searchable::make('log', 'Task log lines', TaskLogSearchAccess::class, TaskLogSearchProvider::class),
+        ];
     }
 
     public function skills(): array

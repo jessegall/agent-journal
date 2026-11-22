@@ -1,0 +1,135 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Documents\Support;
+
+use App\Contracts\SearchProvider;
+use App\Enums\ScoreTier;
+use App\Support\RecordIdentity;
+use App\Support\TieredRecordSearch;
+use App\Values\AdmittedConstraints;
+use App\Values\HitIdentity;
+use App\Values\SearchableBody;
+use App\Values\SearchBatch;
+use App\Values\SearchQuery;
+use App\Values\SearchResult;
+use App\Values\TieredSearchSource;
+use Domain\Documents\Models\Document;
+use Domain\Documents\Values\PublicationPassage;
+use Illuminate\Database\Eloquent\Builder;
+
+/**
+ * Searches documents as published through the shared bounded tiered search: a reference such as doc 104 first, then
+ * the published title, then the published body, whose hits name the revision and line they were found at. A draft's
+ * words and title never reach it, since only the latest closed revision is read.
+ */
+final readonly class DocumentSearchProvider implements SearchProvider
+{
+    private const int SNIPPET_CONTEXT_CHARACTERS = 60;
+
+    public function __construct(
+        private DocumentSearchAccess $access,
+        private DocumentReferenceRecognizer $recognizer,
+        private TieredRecordSearch $tiers,
+    ) {}
+
+    public function search(SearchQuery $query): SearchBatch
+    {
+        $constraints = $this->access->constraints($query->reader);
+
+        if ($constraints->recordIds->admitsNone()) {
+            return SearchBatch::exhausted('', []);
+        }
+
+        return $this->tiers->search($query, new TieredSearchSource(
+            admitted: fn () => self::admitted($constraints),
+            idColumn: 'documents.id',
+            titleColumn: 'published.title',
+            columns: ['documents.id', 'documents.number', 'published.title as title', 'published.number as revision'],
+            titleOf: fn (Document $document): string => (string) $document->getAttribute('title'),
+            hitOf: self::hitOf(...),
+            admitsOpen: fn (string $documentId): bool => $this->access->admitsOpen($query->reader, $documentId),
+            referenceOf: fn (SearchQuery $asked, TieredSearchSource $documents): SearchResult|null => $this->tiers
+                ->numberedReference($asked, $this->recognizer, $documents),
+            body: new SearchableBody('published.body', self::bodyHit(...), self::currentPassage(...)),
+        ));
+    }
+
+    /**
+     * @return Builder<Document>
+     */
+    private static function admitted(AdmittedConstraints $constraints): Builder
+    {
+        $query = Document::query()->withPublishedRevision();
+
+        if ($constraints->recordIds->isRestricted()) {
+            $query->whereIn('documents.id', $constraints->recordIds->names());
+        }
+
+        return $query;
+    }
+
+    private static function hitOf(Document $document, ScoreTier $tier): SearchResult
+    {
+        $title = (string) $document->getAttribute('title');
+
+        return SearchResult::shortened(
+            "Doc {$document->number} · {$title}",
+            $tier === ScoreTier::Reference ? "Doc {$document->number}" : $title,
+            new RecordIdentity(Document::LINK_TYPE, $document->id),
+            $tier,
+        );
+    }
+
+    private static function bodyHit(
+        Document $document,
+        string $text,
+        int $column,
+        int $characterOffset,
+        int $line,
+    ): SearchResult {
+        $passage = new PublicationPassage((int) $document->getAttribute('revision'), $line);
+        $title = (string) $document->getAttribute('title');
+
+        return SearchResult::shortened(
+            "Doc {$document->number} · {$title}",
+            mb_substr($text, max(0, $column - self::SNIPPET_CONTEXT_CHARACTERS), SearchResult::SNIPPET_CHARACTER_LIMIT),
+            new RecordIdentity(Document::LINK_TYPE, $document->id),
+            ScoreTier::BodyContains,
+            $passage->location(),
+        );
+    }
+
+    /**
+     * A held passage as it stands now: the same line of the same published revision that still holds the words,
+     * while the title holds no tier; null when a newer revision was published or the words left that line.
+     */
+    private static function currentPassage(
+        Document $document,
+        string $body,
+        HitIdentity $held,
+        SearchQuery $query,
+    ): SearchResult|null {
+        if ($held->locationId === null || ! PublicationPassage::isId($held->locationId)) {
+            return null;
+        }
+
+        $passage = PublicationPassage::fromId($held->locationId);
+        $excerpt = $passage->excerptOf($body);
+        $current = $passage->revision === (int) $document->getAttribute('revision');
+
+        if (! $current || $query->words->titleTier((string) $document->getAttribute('title')) !== null) {
+            return null;
+        }
+
+        if (! $query->words->isFoundIn($excerpt)) {
+            return null;
+        }
+
+        $found = mb_stripos($excerpt, $query->words->text);
+        $column = $found === false ? 0 : $found;
+
+        return self::bodyHit($document, $excerpt, $column, 0, $passage->line);
+    }
+}

@@ -11,6 +11,7 @@ use App\Contracts\SlotSections;
 use App\Enums\AccessType;
 use App\Enums\ReadView;
 use App\Support\Layout\DeclaredLayoutData;
+use App\Support\Layout\DetailPage;
 use App\Support\NumberedPage;
 use App\Support\RecordIdentity;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
@@ -23,13 +24,16 @@ use Domain\Tasks\Data\TaskLogsData;
 use Domain\Tasks\Data\TaskProofData;
 use Domain\Tasks\Data\TaskProofsData;
 use Domain\Tasks\Data\TaskReaderData;
+use Domain\Tasks\Data\TaskStreamEntryData;
 use Domain\Tasks\Data\TaskWaitActionsData;
 use Domain\Tasks\Data\TaskWaitChoiceData;
 use Domain\Tasks\Data\TaskWaitsData;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Exceptions\TaskPassageUnavailable;
 use Domain\Tasks\Http\Requests\TaskRequest;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Models\TaskLogEntry;
 use Domain\Tasks\Policies\TaskPolicy;
 use Domain\Tasks\Policies\TaskRunPolicy;
 use Domain\Tasks\Support\TaskIndexLayout;
@@ -87,11 +91,25 @@ final readonly class TaskWindowResolver implements PageResolver
 
             return $this->index->of(
                 TaskFiltersData::from([...$this->request->filters()->toArray(), 'task' => $reader->number]),
-                [$this->layout->page($reader)->part($this->request->chosenTab())],
+                [$this->readerPage($reader)->part($this->request->chosenTab())],
             );
-        } catch (TaskMissing $missing) {
+        } catch (TaskMissing|TaskPassageUnavailable $missing) {
             throw new NotFoundHttpException(previous: $missing);
         }
+    }
+
+    /**
+     * The reader, opened at the brief passage a search found when the window names one.
+     *
+     * @throws TaskPassageUnavailable
+     */
+    private function readerPage(TaskReaderData $reader): DetailPage
+    {
+        if (! $this->request->asksForPassage()) {
+            return $this->layout->page($reader);
+        }
+
+        return $this->layout->pageAtPassage($reader, $this->request->passage());
     }
 
     private function logsOf(string $taskId): TaskLogsData|Optional
@@ -105,7 +123,29 @@ final readonly class TaskWindowResolver implements PageResolver
         return TaskLogsData::from([
             'newest' => $this->stream->page($taskId, ''),
             'older' => $before === '' ? Optional::create() : $this->stream->page($taskId, $before),
+            ...$this->selectedLineOf($taskId),
         ]);
+    }
+
+    /**
+     * The log line a search opened the Logs tab at: shown first when the task still has it, else marked gone, never
+     * replaced by another line.
+     *
+     * @return array<string, mixed>
+     */
+    private function selectedLineOf(string $taskId): array
+    {
+        if (! $this->request->asksForEntry()) {
+            return [];
+        }
+
+        $entry = TaskLogEntry::query()->where('task_id', $taskId)->whereKey($this->request->entryId())->first();
+
+        if (! $entry instanceof TaskLogEntry) {
+            return ['selectedGone' => true];
+        }
+
+        return ['selected' => TaskStreamEntryData::ofLine($entry->line)];
     }
 
     private function proofsOf(string $taskId): TaskProofsData|Optional

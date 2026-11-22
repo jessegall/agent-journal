@@ -24,6 +24,14 @@ final class TextSearch
             return;
         }
 
-        $query->whereLike($column, '%'.addcslashes(trim($search), '%_\\').'%', caseSensitive: false);
+        $query->whereLike($column, '%'.self::literal($search).'%', caseSensitive: false);
+    }
+
+    /**
+     * The words as a LIKE pattern matches them literally: trimmed, with %, _ and the escape character escaped.
+     */
+    public static function literal(string $search): string
+    {
+        return addcslashes(trim($search), '%_\\');
     }
 }

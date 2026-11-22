@@ -31,6 +31,7 @@ use App\Mcp\Tools\JournalTool;
 use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\FolderClasses;
+use App\Support\Searchable;
 use App\Support\ShareRecordDefinition;
 use App\Values\PolicyDefinition;
 use Domain\Documents\Commands\ChangeDocumentDetails\ChangeDocumentDetailsCommand;
@@ -105,12 +106,16 @@ use Domain\Documents\Resolvers\DocumentWindowResolver;
 use Domain\Documents\Resolvers\LibraryWindowResolver;
 use Domain\Documents\Resolvers\ReportWindowResolver;
 use Domain\Documents\Resolvers\RevisionWindowResolver;
+use Domain\Documents\Support\DocumentReferenceRecognizer;
+use Domain\Documents\Support\DocumentSearchAccess;
+use Domain\Documents\Support\DocumentSearchProvider;
 use Domain\Documents\Support\DocumentShareProvider;
 use Domain\Documents\Support\Links\DocumentLinkRecords;
 use Domain\Documents\Support\Links\ReportLinkRecords;
-use Domain\Documents\Support\Mcp\DocumentSearch;
 use Domain\Documents\Support\Mcp\OpenReportsOverview;
-use Domain\Documents\Support\Mcp\ReportSearch;
+use Domain\Documents\Support\ReportReferenceRecognizer;
+use Domain\Documents\Support\ReportSearchAccess;
+use Domain\Documents\Support\ReportSearchProvider;
 use Domain\Documents\Support\ReportShareProvider;
 use Domain\Documents\Values\CloseResult;
 use Domain\Documents\Values\CreatedRecord;
@@ -284,9 +289,24 @@ final class DocumentsDomain extends Domain implements
         return [OpenReportsOverview::class];
     }
 
-    public function searchContributions(): array
+    public function searchables(): array
     {
-        return [DocumentSearch::class, ReportSearch::class];
+        return [
+            Searchable::make(
+                'document',
+                'Documents',
+                DocumentSearchAccess::class,
+                DocumentSearchProvider::class,
+                DocumentReferenceRecognizer::class,
+            ),
+            Searchable::make(
+                'report',
+                'Reports',
+                ReportSearchAccess::class,
+                ReportSearchProvider::class,
+                ReportReferenceRecognizer::class,
+            ),
+        ];
     }
 
     /**

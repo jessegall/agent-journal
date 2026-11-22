@@ -2451,22 +2451,24 @@
                         "continuation": {
                             "type": "string"
                         },
-                        "page": {
+                        "discover": {
+                            "type": "boolean"
+                        },
+                        "limit": {
+                            "maximum": 50,
                             "minimum": 1,
                             "type": "integer"
                         },
-                        "query": {
-                            "maxLength": 200,
-                            "minLength": 2,
+                        "prefix": {
+                            "maxLength": 64,
                             "type": "string"
                         },
-                        "types": {
-                            "items": {
-                                "maxLength": 64,
-                                "type": "string"
-                            },
-                            "maxItems": 12,
-                            "type": "array"
+                        "query": {
+                            "type": "string"
+                        },
+                        "within": {
+                            "maxLength": 200,
+                            "type": "string"
                         }
                     },
                     "type": "object"
@@ -2783,11 +2785,38 @@
                 "outputSchema": null,
                 "title": "Log Task Tool"
             },
+            "tasks_log_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "entry_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "task_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "task_id",
+                        "entry_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_log_read",
+                "outputSchema": null,
+                "title": "Task Log Read Tool"
+            },
             "tasks_read": {
                 "inputSchema": {
                     "additionalProperties": false,
                     "properties": {
                         "continuation": {
+                            "type": "string"
+                        },
+                        "passage": {
+                            "maxLength": 64,
                             "type": "string"
                         },
                         "task_id": {
@@ -3588,22 +3617,24 @@
                         "continuation": {
                             "type": "string"
                         },
-                        "page": {
+                        "discover": {
+                            "type": "boolean"
+                        },
+                        "limit": {
+                            "maximum": 50,
                             "minimum": 1,
                             "type": "integer"
                         },
-                        "query": {
-                            "maxLength": 200,
-                            "minLength": 2,
+                        "prefix": {
+                            "maxLength": 64,
                             "type": "string"
                         },
-                        "types": {
-                            "items": {
-                                "maxLength": 64,
-                                "type": "string"
-                            },
-                            "maxItems": 12,
-                            "type": "array"
+                        "query": {
+                            "type": "string"
+                        },
+                        "within": {
+                            "maxLength": 200,
+                            "type": "string"
                         }
                     },
                     "type": "object"
@@ -3612,11 +3643,38 @@
                 "outputSchema": null,
                 "title": "Search Tool"
             },
+            "tasks_log_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "entry_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "task_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "task_id",
+                        "entry_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_log_read",
+                "outputSchema": null,
+                "title": "Task Log Read Tool"
+            },
             "tasks_read": {
                 "inputSchema": {
                     "additionalProperties": false,
                     "properties": {
                         "continuation": {
+                            "type": "string"
+                        },
+                        "passage": {
+                            "maxLength": 64,
                             "type": "string"
                         },
                         "task_id": {
@@ -4930,22 +4988,24 @@
                         "continuation": {
                             "type": "string"
                         },
-                        "page": {
+                        "discover": {
+                            "type": "boolean"
+                        },
+                        "limit": {
+                            "maximum": 50,
                             "minimum": 1,
                             "type": "integer"
                         },
-                        "query": {
-                            "maxLength": 200,
-                            "minLength": 2,
+                        "prefix": {
+                            "maxLength": 64,
                             "type": "string"
                         },
-                        "types": {
-                            "items": {
-                                "maxLength": 64,
-                                "type": "string"
-                            },
-                            "maxItems": 12,
-                            "type": "array"
+                        "query": {
+                            "type": "string"
+                        },
+                        "within": {
+                            "maxLength": 200,
+                            "type": "string"
                         }
                     },
                     "type": "object"
@@ -5027,11 +5087,38 @@
                 "outputSchema": null,
                 "title": "Finish Task Tool"
             },
+            "tasks_log_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "entry_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "task_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "task_id",
+                        "entry_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_log_read",
+                "outputSchema": null,
+                "title": "Task Log Read Tool"
+            },
             "tasks_read": {
                 "inputSchema": {
                     "additionalProperties": false,
                     "properties": {
                         "continuation": {
+                            "type": "string"
+                        },
+                        "passage": {
+                            "maxLength": 64,
                             "type": "string"
                         },
                         "task_id": {

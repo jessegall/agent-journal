@@ -37,7 +37,7 @@ final class PlanReadTool extends JournalReadTool
             return parent::readRequest();
         }
 
-        return new ReadRequest($this->name(), arguments: ['plan_id' => $arguments->ulid('plan_id')]);
+        return ReadRequest::forRecord(PlanReadResult::TOOL, PlanReadResult::ID_ARGUMENT, $arguments->ulid('plan_id'));
     }
 
     protected function read(ToolArguments $arguments): ToolResult
