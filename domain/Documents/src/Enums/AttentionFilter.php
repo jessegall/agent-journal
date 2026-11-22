@@ -24,4 +24,13 @@ enum AttentionFilter: string
             self::All => null,
         };
     }
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Active => 'Active',
+            self::Settled => 'Settled',
+            self::All => 'All',
+        };
+    }
 }

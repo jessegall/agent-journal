@@ -5,13 +5,25 @@ declare(strict_types=1);
 namespace Domain\Documents\Resolvers;
 
 use App\Ui\Contracts\PageResolver;
+use App\Ui\Layout\DeclaredLayoutData;
+use App\Ui\Layout\LayoutActionData;
+use App\Ui\Layout\LayoutFieldData;
+use App\Ui\Layout\LayoutNativeData;
+use App\Ui\Layout\LayoutPartData;
+use App\Ui\Layout\LayoutRowData;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\ReportResolver;
-use Domain\Documents\Data\LibraryData;
+use Domain\Documents\Data\CreateRecordPartData;
+use Domain\Documents\Data\PublicationCard;
+use Domain\Documents\Data\PublicationList;
+use Domain\Documents\Enums\AttentionFilter;
+use Domain\Documents\Enums\LibraryTypeFilter;
 use Domain\Documents\Http\Requests\ListRecordsRequest;
 
 /**
- * The library: the newest documents and reports, read through their readers.
+ * The library as a declared layout: who sees its records, the search and the type and attention choices, then a
+ * section per type with its newest records by number, each opening its own page, a way to the next page, and the
+ * form that files a new one. A library with nothing to show says whether the search or a fresh journal is why.
  */
 final readonly class LibraryWindowResolver implements PageResolver
 {
@@ -23,16 +35,122 @@ final readonly class LibraryWindowResolver implements PageResolver
         private ListRecordsRequest $request,
     ) {}
 
-    public function read(): LibraryData
+    public function read(): DeclaredLayoutData
     {
         $filters = $this->request->filters();
+        $type = $this->request->typeFilter();
+        $documents = $type->isForDocuments() ? $this->documents->list($filters) : null;
+        $reports = $type->isForReports() ? $this->reports->list($filters) : null;
 
-        return LibraryData::from([
-            'documents' => $this->documents->list($filters),
-            'reports' => $this->reports->list($filters),
-            'sharingNotice' => self::SHARING_NOTICE,
-            'query' => $filters->query,
-            'attention' => $filters->attention,
+        $parts = [
+            LayoutPartData::text('sharing', self::SHARING_NOTICE, 'muted'),
+            LayoutPartData::field(
+                'search',
+                'Search titles, abstracts and text',
+                new LayoutFieldData('query', $filters->query, ['after', 'page']),
+            ),
+            LayoutPartData::box(
+                'filters',
+                'row',
+                $this->choicesOf('type', LibraryTypeFilter::cases(), $type),
+                $this->choicesOf('attention', AttentionFilter::cases(), $filters->attention),
+            ),
+        ];
+
+        if ($this->isEmpty($documents) && $this->isEmpty($reports)) {
+            $parts[] = $this->emptyOf($filters->query);
+        }
+
+        if ($documents !== null) {
+            $parts[] = $this->sectionOf('documents', 'Documents', 'doc', 'docs', $documents, $type);
+        }
+
+        if ($reports !== null) {
+            $parts[] = $this->sectionOf('reports', 'Reports', 'report', 'reports', $reports, $type);
+        }
+
+        return DeclaredLayoutData::of(LayoutPartData::box('library', 'stack', ...$parts));
+    }
+
+    /**
+     * @param  list<LibraryTypeFilter|AttentionFilter>  $cases
+     */
+    private function choicesOf(string $key, array $cases, LibraryTypeFilter|AttentionFilter $chosen): LayoutPartData
+    {
+        return LayoutPartData::collection($key, 'choices', array_map(fn ($case) => LayoutRowData::from([
+            'key' => $case->value,
+            'label' => $case->label(),
+            'query' => [$key => $case->value, 'after' => ''],
+            'isCurrent' => $case === $chosen,
+        ]), $cases));
+    }
+
+    private function isEmpty(PublicationList|null $list): bool
+    {
+        return $list === null || $list->rows === [];
+    }
+
+    private function emptyOf(string $query): LayoutPartData
+    {
+        if ($query === '') {
+            return LayoutPartData::notice(
+                'empty',
+                'empty',
+                'No documents or reports yet.',
+                'A document is lasting knowledge kept as revisions; a report says what was checked or found, once.',
+            );
+        }
+
+        return LayoutPartData::box(
+            'empty',
+            'stack',
+            LayoutPartData::notice('notice', 'empty', "Nothing matches \"{$query}\"."),
+            LayoutPartData::action('clear', 'Clear search', LayoutActionData::changing(['query' => '', 'after' => ''])),
+        );
+    }
+
+    /**
+     * One type's records, each opening its own page; past the first page, the next one, reached in the list of that
+     * type alone, since the two types do not share a cursor.
+     */
+    private function sectionOf(
+        string $key,
+        string $heading,
+        string $label,
+        string $path,
+        PublicationList $list,
+        LibraryTypeFilter $type,
+    ): LayoutPartData {
+        $rows = array_map(fn (PublicationCard $card) => LayoutRowData::from([
+            'key' => $card->id,
+            'label' => "{$label} {$card->number} · {$card->title}",
+            'value' => $card->attention->value,
+            'detail' => $card->summaryLine(),
+            'href' => "/documents/{$path}/{$card->number}",
+        ]), $list->rows);
+
+        $parts = [LayoutPartData::text('heading', $heading, 'heading')];
+
+        if ($rows !== []) {
+            $parts[] = LayoutPartData::collection('rows', 'list', $rows);
+        }
+
+        if ($list->hasNextPage && $type === LibraryTypeFilter::All) {
+            $more = LayoutActionData::changing(['type' => $label]);
+            $parts[] = LayoutPartData::action('more', "More {$heading}", $more);
+        }
+
+        if ($list->next !== null && $type !== LibraryTypeFilter::All) {
+            $next = LayoutActionData::changing(['after' => $list->next]);
+            $parts[] = LayoutPartData::action('next', 'Next page', $next);
+        }
+
+        $form = CreateRecordPartData::from([
+            'action' => "/documents/{$path}",
+            'label' => $label === 'doc' ? 'File document' : 'File report',
         ]);
+        $parts[] = LayoutPartData::native('create', LayoutNativeData::of('documents/CreateRecordForm', $form));
+
+        return LayoutPartData::box($key, 'section', ...$parts);
     }
 }

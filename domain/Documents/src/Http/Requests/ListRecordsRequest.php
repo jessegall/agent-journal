@@ -6,6 +6,7 @@ namespace Domain\Documents\Http\Requests;
 
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Enums\AttentionFilter;
+use Domain\Documents\Enums\LibraryTypeFilter;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,6 +26,7 @@ final class ListRecordsRequest extends FormRequest
             'query' => ['nullable', 'string', 'max:200'],
             'revisions' => ['nullable', 'boolean'],
             'after' => ['nullable', 'string', 'ulid'],
+            'type' => ['nullable', Rule::enum(LibraryTypeFilter::class)],
         ];
     }
 
@@ -37,5 +39,13 @@ final class ListRecordsRequest extends FormRequest
             revisions: $this->boolean('revisions'),
             after: $this->string('after')->toString(),
         );
+    }
+
+    /**
+     * Which records the library lists; none lists documents and reports.
+     */
+    public function typeFilter(): LibraryTypeFilter
+    {
+        return $this->enum('type', LibraryTypeFilter::class) ?? LibraryTypeFilter::All;
     }
 }
