@@ -23,8 +23,8 @@ const statusLabels: Record<ConversationIntent['status'], string> = {
 </script>
 
 <template>
-    <div class="ml-auto flex max-w-[85%] flex-col items-end gap-0.5">
-        <p class="rounded-bubble bg-raised px-3 py-2 text-body whitespace-pre-wrap text-text opacity-70">
+    <div class="flex max-w-[78%] flex-col items-end gap-0.5 self-end">
+        <p class="rounded-[10px_10px_4px_10px] bg-bubble px-3 py-2 text-body whitespace-pre-wrap text-text opacity-70">
             {{ intent.text }}
         </p>
         <span class="flex gap-2 text-small text-text-3">

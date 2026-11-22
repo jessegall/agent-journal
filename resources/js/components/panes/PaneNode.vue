@@ -23,10 +23,6 @@ const boxSize = useElementSize(splitBox);
 const span = computed(() =>
     props.node.type === 'split' && props.node.axis === 'row' ? boxSize.width.value : boxSize.height.value,
 );
-
-function move(splitId: string, ratio: number, spaceSize: number): void {
-    store.change(withRatio(store.layout.value, splitId, ratio, spaceSize));
-}
 </script>
 
 <template>
@@ -62,7 +58,7 @@ function move(splitId: string, ratio: number, spaceSize: number): void {
                         ? { left: `calc(${node.ratio * 100}% - 4px)` }
                         : { top: `calc(${node.ratio * 100}% - 4px)` }
                 "
-                @update:model-value="(ratio: number) => move(node.id, ratio, span)"
+                @update:model-value="(ratio: number) => store.change(withRatio(store.layout.value, node.id, ratio, span))"
             />
             <div
                 class="min-h-0 min-w-0 flex-1 border-border"

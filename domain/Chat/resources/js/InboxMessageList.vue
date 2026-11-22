@@ -50,7 +50,7 @@ function stateOf(message: MessageView): string | null {
 </script>
 
 <template>
-    <div class="flex flex-1 flex-col gap-2.5 overflow-y-auto pt-4.5 pb-2">
+    <div class="flex flex-1 flex-col gap-3.5 overflow-y-auto pt-[22px] pb-[18px]">
         <template v-if="messages.length === 0 && pending.length === 0 && refused.length === 0">
             <div class="m-auto flex flex-col items-center gap-1 text-center">
                 <p class="text-empty text-text-2">No messages yet</p>
@@ -62,18 +62,18 @@ function stateOf(message: MessageView): string | null {
         <template v-for="message in messages" :key="message.id">
             <div
                 :class="[
-                    'flex max-w-[85%] flex-col gap-0.5',
-                    isOwn(message) ? 'ml-auto items-end' : 'mr-auto items-start',
+                    'flex flex-col gap-0.5',
+                    isOwn(message)
+                        ? 'max-w-[78%] self-end rounded-[10px_10px_4px_10px] bg-bubble px-3 py-2'
+                        : 'max-w-[92%] self-start',
                 ]"
             >
                 <template v-if="!isOwn(message)">
-                    <span class="text-small text-text-3">
+                    <span class="mb-0.5 text-badge font-medium text-text-2">
                         {{ message.authorLabel ?? message.sourceInboxLabel }}
                     </span>
                 </template>
-                <p
-                    class="rounded-bubble bg-raised px-3 py-2 text-body whitespace-pre-wrap text-text"
-                >
+                <p class="text-body whitespace-pre-wrap text-text">
                     {{ message.body }}
                 </p>
                 <span class="flex gap-2 text-small text-text-3">

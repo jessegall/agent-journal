@@ -71,7 +71,7 @@ describe('MessageList', () => {
             respondent: 'user:bea',
             actions: { answer, decline: answer, retryDelivery: false },
             readByMe: true,
-            sentAt: '',
+            sentAt: '2026-11-22T13:42:00Z',
             requestKey: null,
             deliveries: [],
         });
@@ -86,7 +86,8 @@ describe('MessageList', () => {
             props: { messages: [row('q1', false)], pending: [], refused: [], viewer: 'user:cy', participants, questionUrl: () => '#' } as never,
         });
 
-        expect(asBea.text()).toContain('Ada → Bea');
+        expect(asBea.text()).toContain('Ada');
+        expect(asBea.text()).toContain('→ Bea');
         expect(asBea.text()).toContain('The original was removed');
         expect(asBea.find('article').attributes('aria-label')).toBe('Ada to Bea');
         expect(asBea.find('article').attributes('tabindex')).toBe('0');
@@ -111,7 +112,7 @@ describe('MessageList', () => {
             respondent: null,
             actions: { answer: false, decline: false, retryDelivery },
             readByMe: true,
-            sentAt: '',
+            sentAt: '2026-11-22T13:42:00Z',
             requestKey: null,
             deliveries: [
                 { recipient: 'agent:claude', label: 'Claude', state: 'accepted', reason: null, pendingFrom: null, rangeId: null },

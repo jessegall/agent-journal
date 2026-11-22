@@ -5,7 +5,7 @@ import { usePaneLayout } from '@/components/panes/usePaneLayout';
 import DetachedWindowFrame from './DetachedWindowFrame.vue';
 import DragGhost from '@/components/kit/DragGhost.vue';
 import PaneNode from './PaneNode.vue';
-import { windowsIn } from './paneLayout';
+import { shownWindows } from './arrangement';
 
 /**
  * Version 5's pane grid (panes/PaneGrid.vue): the layout's panes side by side and above each other, split by
@@ -30,7 +30,8 @@ const grid = ref<HTMLElement | null>(null);
 const isNarrow = ref(false);
 let watcher: ResizeObserver | null = null;
 
-const openKeys = computed(() => windowsIn(store.layout.value));
+// On a phone every open window is one of the switcher's, the floating ones too: a phone has no room to float.
+const openKeys = computed(() => shownWindows(store.arrangement.value));
 const activeKey = ref('');
 const items = computed(() =>
     openKeys.value.map((key) => ({ value: key, label: store.windowOf(key)?.title ?? key })),
@@ -85,10 +86,12 @@ onBeforeUnmount(() => watcher?.disconnect());
                 </template>
             </PaneNode>
         </template>
-        <template v-for="detached in store.detached.value" :key="detached.key">
-            <DetachedWindowFrame :window="detached">
-                <slot :window-key="detached.key" />
-            </DetachedWindowFrame>
+        <template v-if="!isNarrow">
+            <template v-for="detached in store.detached.value" :key="detached.key">
+                <DetachedWindowFrame :window="detached">
+                    <slot :window-key="detached.key" />
+                </DetachedWindowFrame>
+            </template>
         </template>
         <template v-if="dragged">
             <DragGhost

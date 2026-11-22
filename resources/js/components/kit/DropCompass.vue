@@ -14,9 +14,13 @@ const props = defineProps<{ center: Point; pointer?: Point; aimed?: CompassTarge
 const emit = defineEmits<{ aim: [target: CompassTarget | null] }>();
 
 // A drag that already knows its target names it; else the pointer aims, within 14px of a cell.
-const aimed = computed(() =>
-    props.aimed !== undefined ? props.aimed : props.pointer ? compassTargetAt(props.pointer, props.center) : null,
-);
+const aimed = computed(() => {
+    if (props.aimed !== undefined) {
+        return props.aimed;
+    }
+
+    return props.pointer ? compassTargetAt(props.pointer, props.center) : null;
+});
 const place = computed(() => ({
     left: `${props.center.x - compassSize / 2}px`,
     top: `${props.center.y - compassSize / 2}px`,

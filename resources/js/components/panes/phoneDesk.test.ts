@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { defineComponent, h, nextTick } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
 import PaneGrid from './PaneGrid.vue';
+import { floatNewWindow } from './arrangement';
 import type { PaneWindow } from './paneLayout';
 import { providePaneLayout } from './usePaneLayout';
 
@@ -18,6 +19,8 @@ class FakeObserver {
     disconnect(): void {}
 }
 
+const phone = { width: 390, height: 844 };
+
 const windows = [
     { key: 'chat', title: 'Chat', icon: 'chat' },
     { key: 'tasks', title: 'Tasks', icon: 'todos' },
@@ -28,7 +31,9 @@ describe('the desk on a phone', () => {
         vi.stubGlobal('ResizeObserver', FakeObserver);
         const Harness = defineComponent({
             setup() {
-                providePaneLayout('phone-desk', () => windows);
+                const store = providePaneLayout('phone-desk', () => windows);
+                // Home opens with the chat alone; Tasks is added from the bar, so it floats.
+                store.apply(floatNewWindow(store.arrangement.value, 'tasks', phone, { top: 0, right: phone.width }));
 
                 return () =>
                     h(PaneGrid, null, {
