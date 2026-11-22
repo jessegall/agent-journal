@@ -28,7 +28,7 @@ final class TaskRequest extends FormRequest
     {
         return [
             'section' => ['nullable', 'string', 'in:logs,proofs,waits'],
-            'tab' => ['nullable', 'string', 'in:logs,proofs,waits'],
+            'tab' => ['nullable', 'string', 'in:logs,proofs,waits,comments'],
             'logs_before' => ['nullable', 'string', 'regex:/^(n|[0-9]{1,10}),(n|[0-9]{1,10})$/'],
             'proofs_after' => ['nullable', 'string', 'max:26'],
             'commentsAfter' => ['nullable', 'string', 'max:26'],

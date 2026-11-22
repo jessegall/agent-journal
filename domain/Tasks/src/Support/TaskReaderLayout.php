@@ -13,6 +13,7 @@ use App\Ui\Layout\LayoutNativeData;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
 use App\Ui\Layout\PublicationTab;
+use Domain\Tasks\Http\Data\TaskCommentsData;
 use Domain\Tasks\Http\Data\TaskLogsPartData;
 use Domain\Tasks\Http\Data\TaskProofsPartData;
 use Domain\Tasks\Http\Data\TaskReaderData;
@@ -37,6 +38,10 @@ final readonly class TaskReaderLayout
                 PublicationTab::deferred('waits', 'Waits', fn () => $this->waitsOf($reader)),
                 PublicationTab::deferred('logs', 'Logs', fn () => $this->logsOf($reader)),
                 PublicationTab::deferred('proofs', 'Proofs', fn () => $this->proofsOf($reader)),
+                PublicationTab::deferred('comments', 'Comments', fn () => LayoutPartData::native(
+                    'comments',
+                    LayoutNativeData::of('tasks/TaskCommentsTab', new TaskCommentsData($reader->comments, $reader->label)),
+                )),
             );
     }
 

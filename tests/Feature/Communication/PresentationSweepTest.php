@@ -52,7 +52,7 @@ final class PresentationSweepTest extends TestCase
         foreach (range(1, 5) as $attempt) {
             $at = $start->addMinutes($attempt * 10);
             $batch = PresentationBatch::create($interval->id, TestIds::of(5), 1, 'thread-1', $attempt, $at, $at);
-            $suffix = OutstandingRange::create($receipt, 100);
+            $suffix = OutstandingRange::waitingAt($receipt, 100) ?? OutstandingRange::create($receipt, 100);
             PresentationRange::create($batch, $suffix, 200, hash('sha256', "suffix-{$attempt}"));
 
             $sweep->sweep($at->addMinutes(5));

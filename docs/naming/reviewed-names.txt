@@ -6469,6 +6469,7 @@ class	TaskCheck
 class	TaskCheckRecorded
 class	TaskCheckRefused
 class	TaskCommandHandler
+class	TaskCommentsData
 class	TaskCounts
 class	TaskDescribed
 class	TaskDetailRecords
@@ -24486,6 +24487,7 @@ method	TaskCheckRecorded::__construct()
 method	TaskCheckRefused::alreadyRegistered()
 method	TaskCheckRefused::notYourRun()
 method	TaskCommandHandler::assertCurrentTaskRun()
+method	TaskCommentsData::__construct()
 method	TaskCounts::__construct()
 method	TaskCounts::progressByGroup()
 method	TaskCounts::progressOf()
@@ -38577,6 +38579,8 @@ property	TaskCard::$state
 property	TaskCard::$title
 property	TaskCheckRecorded::$checkId
 property	TaskCheckRecorded::$taskId
+property	TaskCommentsData::$comments
+property	TaskCommentsData::$target
 property	TaskCounts::$actors
 property	TaskDescribed::$taskId
 property	TaskDetailRecords::$assignees

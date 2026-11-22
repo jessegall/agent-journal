@@ -49,11 +49,11 @@ final class TaskCommentsTest extends TestCase
             (string) Str::uuid(),
         ));
 
-        $taskPage = $this->actingAs($this->owner)->get("/tasks/{$task->number}")->assertOk();
+        $taskPage = $this->actingAs($this->owner)->get("/tasks/{$task->number}?tab=comments")->assertOk();
 
         $taskPage->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.label', "task {$task->number}")
-            ->where('page.data.comments.items.0.comment.body', 'Is the schema settled?'));
+            ->where('page.data.root.children.1.children.1.children.5.children.0.native.props.target', "task {$task->number}")
+            ->where('page.data.root.children.1.children.1.children.5.children.0.native.props.comments.items.0.comment.body', 'Is the schema settled?'));
     }
 
     public function test_a_caller_with_no_access_writes_nothing_and_sees_nothing(): void
@@ -69,7 +69,7 @@ final class TaskCommentsTest extends TestCase
             )),
         );
 
-        $this->get("/tasks/{$task->number}")->assertRedirect('/login');
+        $this->get("/tasks/{$task->number}?tab=comments")->assertRedirect('/login');
         $this->assertSame(0, $task->comments()->count());
     }
 }

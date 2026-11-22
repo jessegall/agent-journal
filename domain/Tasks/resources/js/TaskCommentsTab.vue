@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import type { TaskCommentsData } from '@generated/types/tasks';
+import CommentsPanel from '@kit/CommentsPanel';
+
+/**
+ * A task's comments as its Comments tab: the kit's panel with its composer.
+ */
+defineProps<TaskCommentsData>();
+</script>
+
+<template>
+    <CommentsPanel :comments="comments" :target="target" />
+</template>

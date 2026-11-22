@@ -47,19 +47,20 @@ final class OutstandingRange extends Model implements ReadableModel
     }
 
     /**
-     * The piece of the receipt's body starting at the offset, still waiting for its confirmation: the one already open
-     * there, or a new one.
+     * The piece of the receipt's body starting at the offset, still waiting for its confirmation.
      */
     public static function create(MessageReceipt $receipt, int $startOffset): self
     {
-        return self::query()->firstOrCreate(
-            [
-                'receipt_id' => $receipt->id,
-                'start_offset' => $startOffset,
-                'state' => OutstandingRangeState::Outstanding,
-            ],
-            ['consecutive_failures' => 0],
-        );
+        $range = new self([
+            'receipt_id' => $receipt->id,
+            'start_offset' => $startOffset,
+            'state' => OutstandingRangeState::Outstanding,
+            'consecutive_failures' => 0,
+        ]);
+
+        $range->save();
+
+        return $range;
     }
 
     /**

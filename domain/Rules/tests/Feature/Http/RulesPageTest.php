@@ -62,7 +62,7 @@ final class RulesPageTest extends TestCase
             ->component('layout/DeclaredLayout')
             ->where('page.state', 'ready')
             ->where('page.data.root.children.0.children.0.text', 'Rules (1)')
-            ->where('page.data.root.children.0.children.1.field', ['name' => 'q', 'value' => 'phase', 'clears' => ['page', 'rule']])
+            ->where('page.data.root.children.0.children.1.field', ['name' => 'q', 'value' => 'phase', 'clears' => ['page', 'rule'], 'options' => []])
             ->where('page.data.root.children.1.children.0.children.0.rows.0.key', (string) $this->proposed->id)
             ->where('page.data.root.children.1.children.0.children.0.rows.0.isCurrent', true)
             ->where('page.data.root.children.1.children.0.children.0.rows.0.query', ['rule' => (string) $this->proposed->id])
