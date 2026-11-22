@@ -102,14 +102,14 @@ function followed(receiptId: string): void {
         >
             <template v-if="badge !== null">
                 <span
-                    class="pointer-events-none absolute -top-1 -right-1 min-w-4 rounded-full border border-border-2 bg-bg px-1 text-center text-[10px] leading-4 text-text"
+                    class="pointer-events-none absolute -top-1 -right-1 min-w-4 rounded-badge border border-border-3 bg-bg px-1 text-center text-meta leading-4 font-semibold text-text"
                     aria-hidden="true"
                     >{{ badge }}</span
                 >
             </template>
         </IconAction>
         <template v-if="isOpen && !isCompact">
-            <div class="absolute top-8 right-0 z-90 rounded-menu border border-border-2 bg-raised p-1.5 shadow-[0_14px_36px_rgba(0,0,0,.45)]">
+            <div class="absolute top-8 right-0 z-90 rounded-menu border border-border-2 bg-raised p-1.5 shadow-(--tip-shadow)">
                 <NotificationList
                     :id="panelId"
                     :state="state"

@@ -93,7 +93,8 @@ function quiet(event: Event): void {
             >
                 <template v-for="toast in shown" :key="toast.key">
                     <div
-                        class="flex items-start gap-2 rounded-card border border-border-2 bg-raised p-3 text-small shadow-[0_14px_36px_rgba(0,0,0,.25)]"
+                        class="flex items-start gap-2 rounded-card border bg-raised p-3 text-small shadow-(--tip-shadow)"
+                        :class="toast.type === 'failure' ? 'border-danger' : 'border-border-2'"
                         @mouseenter="toasts.hold(toast.key, 'hover')"
                         @mouseleave="toasts.release(toast.key, 'hover')"
                         @focusin="toasts.hold(toast.key, 'focus')"
@@ -103,8 +104,10 @@ function quiet(event: Event): void {
                             <Icon name="warn" :size="14" class="mt-0.5 shrink-0 text-danger" />
                         </template>
                         <div class="flex min-w-0 flex-1 flex-col gap-1">
-                            <p class="[overflow-wrap:anywhere] text-text">{{ toast.title }}</p>
-                            <span class="flex gap-3 text-text-3">
+                            <p class="line-clamp-3 [overflow-wrap:anywhere] text-text" :title="toast.title">
+                                {{ toast.title }}
+                            </p>
+                            <span class="flex flex-wrap gap-x-3 gap-y-1 text-text-3">
                                 <Link :href="toast.href" class="underline">Open</Link>
                                 <button type="button" class="underline" @click="dismiss(toast.key, $event)">
                                     Dismiss

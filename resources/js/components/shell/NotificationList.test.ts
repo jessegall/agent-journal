@@ -115,4 +115,15 @@ describe('NotificationList', () => {
 
         expect(list.emitted('markAll')).toHaveLength(1);
     });
+
+    it('keeps a long title inside its row with the whole title in both actions and no accent marker', () => {
+        const long = 'A'.repeat(200);
+        const page = pageOf(1, null);
+        const list = listOf('loaded', { ...page, items: [{ ...page.items[0], title: long }] });
+
+        expect(list.find('a[data-open="receipt-1"]').attributes('aria-label')).toBe(`Open ${long}`);
+        expect(list.findAll('button').some((button) => button.attributes('aria-label') === `Mark ${long} read`)).toBe(true);
+        expect(list.find('p.line-clamp-2').attributes('title')).toBe(long);
+        expect(list.html()).not.toContain('bg-brand');
+    });
 });
