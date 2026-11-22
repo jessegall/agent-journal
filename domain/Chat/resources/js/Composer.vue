@@ -3,6 +3,11 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import Button from '@kit/Button';
 import { onPurge } from '@kit/protectedView';
 import Icon from '@kit/Icon';
+import IconButton from '@kit/IconButton';
+import Menu from '@kit/Menu';
+import MenuGroup from '@kit/MenuGroup';
+import MenuItem from '@kit/MenuItem';
+import MenuSeparator from '@kit/MenuSeparator';
 import { useComposerHeight } from './composables/useComposerHeight';
 import { useConversationIntents, type ReplyTarget } from './composables/useConversationIntents';
 import type { ParticipantData } from '@generated/types/chat';
@@ -35,6 +40,8 @@ const textarea = ref<HTMLTextAreaElement | null>(null);
 const hasText = computed(() => body.value.trim() !== '');
 const addressee = ref('');
 const asking = ref(false);
+// The field names whom the message goes to, as the design's composer does: Message Ada, or the whole chat.
+const placeholder = computed(() => `Message ${props.addresseeName ?? 'everyone in this chat'}`);
 const others = computed(() => props.participants.filter((member) => member.actor !== props.viewer));
 // A question among more than two people must name who settles it; in a pair the other member is implied.
 const needsRespondent = computed(() => asking.value && others.value.length > 1 && addressee.value === '');
@@ -116,76 +123,51 @@ function sendOnEnter(event: KeyboardEvent): void {
 
 <template>
     <form
-        class="flex flex-col gap-1.5 rounded-composer border border-border-2 px-3 py-2.5"
+        class="mb-3.5 flex flex-col rounded-composer border border-border-3 bg-bg pt-2.5 pr-2.5 pb-2 pl-3"
         @submit.prevent="submit"
     >
-        <p class="text-small text-text-3">
-            <template v-if="addresseeName !== null">
-                To {{ addresseeName }}<template v-if="sessionId === null">, no session</template>
-            </template>
-            <template v-else>To everyone in this chat</template>
-        </p>
-        <div class="flex items-center gap-2 text-small text-text-3">
-            <label class="flex items-center gap-1">
-                <span>To</span>
-                <select v-model="addressee" name="addressee" aria-label="Address the message to" class="bg-transparent">
-                    <option value="">Everyone</option>
-                    <template v-for="member in others" :key="member.actor">
-                        <option :value="member.actor">{{ optionLabel(member) }}</option>
-                    </template>
-                </select>
-            </label>
-            <label class="flex items-center gap-1">
-                <input v-model="asking" type="checkbox" name="question" />
-                <span>Ask as a question</span>
-            </label>
-        </div>
         <template v-if="needsRespondent">
-            <p class="text-small text-danger" role="alert">Choose who should answer this question.</p>
+            <p class="mb-1.5 text-small text-danger" role="alert">Choose who should answer this question.</p>
         </template>
         <template v-if="replyingTo">
-            <p class="text-small text-text-3">
-                Replying to: {{ replyingTo.body.slice(0, 80) }}
+            <p class="mb-1.5 flex items-center gap-1.5 text-small text-text-3">
+                <Icon name="reply" :size="14" />
+                <span class="truncate">Replying to “{{ replyingTo.body.slice(0, 80) }}”</span>
             </p>
         </template>
         <textarea
             ref="textarea"
             v-model="body"
             name="body"
-            rows="3"
-            placeholder="Write a message"
-            aria-label="Write a message"
-            class="resize-none border-0 bg-transparent p-0 text-body leading-[1.45] text-text transition-[height] duration-160 outline-none placeholder:text-text-3"
+            rows="1"
+            :placeholder="placeholder"
+            :aria-label="placeholder"
+            class="block w-full resize-none border-0 bg-transparent p-0 text-body leading-[1.45] text-text transition-[height] duration-160 outline-none placeholder:text-text-4"
             @keydown.enter="sendOnEnter"
         />
-        <div class="flex items-center gap-2">
-            <span
-                class="text-text-4"
-                title="Attaching files is not available yet"
-                aria-label="Attaching files is not available yet"
-            >
-                <Icon name="docs" :size="16" />
-            </span>
-            <span class="ml-auto">
-                <template v-if="hasText">
-                    <Button
-                        type="submit"
-                        size="small"
-                        variant="primary"
-                        >Send</Button
-                    >
-                </template>
-                <template v-else>
-                    <Button
-                        type="button"
-                        size="small"
-                        variant="bordered"
-                        disabled
-                        title="Dumping files is not available yet"
-                        >Dump files</Button
-                    >
-                </template>
-            </span>
+        <div class="mt-2 flex items-center gap-1.5">
+            <IconButton icon="attach" label="Attaching files is not available yet" size="sm" disabled />
+            <span class="flex-1"></span>
+            <template v-if="asking">
+                <span class="text-badge text-text-3">Question</span>
+            </template>
+            <Menu label="Message options">
+                <MenuGroup label="Send to">
+                    <MenuItem radio :checked="addressee === ''" @click="addressee = ''">Everyone</MenuItem>
+                    <template v-for="member in others" :key="member.actor">
+                        <MenuItem radio :checked="addressee === member.actor" @click="addressee = member.actor">
+                            {{ optionLabel(member) }}
+                        </MenuItem>
+                    </template>
+                </MenuGroup>
+                <MenuSeparator />
+                <MenuItem :checked="asking" @click="asking = !asking">Ask as a question</MenuItem>
+                <MenuItem disabled>Dump files</MenuItem>
+            </Menu>
+            <Button type="submit" size="small" :variant="hasText ? 'primary' : 'bordered'" :disabled="!hasText">
+                <Icon name="arrow" :size="14" />
+                Send
+            </Button>
         </div>
     </form>
 </template>
