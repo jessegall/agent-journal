@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Console\Commands\GenerateUiManifest;
 use App\Contracts\AutoAssignmentAccess;
+use App\Contracts\CodedRefusal;
 use App\Contracts\CommandRefusal;
 use App\Contracts\CurrentUserResolver;
 use App\Contracts\DeclaredPages;
@@ -53,6 +54,7 @@ use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Routing\Redirector;
 use Illuminate\Routing\Router;
@@ -175,6 +177,20 @@ final class WebServiceProvider extends ServiceProvider
                     ->back(303)
                     ->withErrors([self::fieldOf($failure) => $failure->getMessage()])
                     ->with(CommandRefusal::CODE_FLASH_KEY, $reason->code);
+        });
+
+        // A coded refusal of a read, such as a chat cursor that no longer fits, answers with its own status, so a
+        // partial reload hears why its read was refused.
+        $exceptions->renderable(function (CodedRefusal $refused, Request $request): JsonResponse|Response|null {
+            if (! $request->hasSession() || $refused instanceof CommandRefusal) {
+                return null;
+            }
+
+            $status = $refused->refusalCode()->status();
+
+            return $request->expectsJson()
+                ? $this->refusalAnswer($refused->refusalCode()->value, $refused->getMessage(), [], $status)
+                : new Response($refused->getMessage(), $status);
         });
 
         $exceptions->renderable(function (ValidationException $refused, Request $request): JsonResponse|null {

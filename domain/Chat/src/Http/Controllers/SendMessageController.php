@@ -10,9 +10,7 @@ use App\Contracts\AgentDirectory;
 use App\Contracts\CommandBus;
 use Domain\Chat\Data\MessageInput;
 use Domain\Chat\Support\SentMessageAnswer;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 /**
  * Sends the composer's message to the chosen agent through Chat, once per request key. Core says whether the agent is
@@ -23,15 +21,14 @@ final readonly class SendMessageController
 {
     /**
      * Posts in the chat inbox the conversation showed, so a send keeps its room even when the window has moved on,
-     * and answers with its message or returns to Home with the same agent chosen.
+     * and goes back to the page with the message id flashed, or to Home with the same agent chosen.
      */
     public function __invoke(
         MessageInput $input,
-        Request $request,
         AgentDirectory $agents,
         CommandBus $commands,
         SentMessageAnswer $answer,
-    ): JsonResponse|RedirectResponse {
+    ): RedirectResponse {
         if ($input->agent !== null) {
             $agents->visibleAgent($input->agent)->assertRuns($input->expectedSessionId, $input->expectedGeneration);
         }
@@ -51,6 +48,6 @@ final readonly class SendMessageController
                 $input->addressee,
             ));
 
-        return $answer->to($request, $messageId, $input->agent, $input->inboxId);
+        return $answer->to($messageId, $input->agent, $input->inboxId);
     }
 }

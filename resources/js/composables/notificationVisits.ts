@@ -2,6 +2,7 @@ import type { VisitOptions } from '@inertiajs/core';
 import type { NotificationChangePage, NotificationPage } from '@/generated/types/core';
 import { read, readAll, readQuestion, readTarget } from '@/routes/communication/notifications';
 import { router } from '@inertiajs/vue3';
+import { PropReadFailed, reloadProp } from '@kit/pageReads';
 import { NotificationRequestFailed } from './notificationStore';
 import type { NotificationClient } from './notificationStore';
 
@@ -12,31 +13,11 @@ const NOTIFICATIONS = 'notifications';
 const CHANGES = 'notificationChanges';
 
 /**
- * Runs one visit that reloads only the prop, without holding up or replacing anything else on the page, and settles
- * with what the server answered for it: a refusal is refused, a server failure or a lost answer is lost.
+ * The bell's failures in its store's words: a refusal is refused, a server failure or a lost answer is lost.
  */
 function reloadOnly<T>(prop: string, visit: (options: VisitOptions) => void): Promise<T> {
-    return new Promise((resolve, reject) => {
-        visit({
-            only: [prop],
-            async: true,
-            preserveState: true,
-            preserveScroll: true,
-            preserveUrl: true,
-            onSuccess: (page) => resolve(page.props[prop] as T),
-            onError: () => reject(new NotificationRequestFailed('refused')),
-            onHttpException: (response) => {
-                reject(new NotificationRequestFailed(response.status >= 500 ? 'lost' : 'refused'));
-
-                return false;
-            },
-            onNetworkError: () => {
-                reject(new NotificationRequestFailed('lost'));
-
-                return false;
-            },
-            onCancel: () => reject(new NotificationRequestFailed('lost')),
-        });
+    return reloadProp<T>(prop, visit).catch((failure: PropReadFailed) => {
+        throw new NotificationRequestFailed(failure.status === null || failure.status >= 500 ? 'lost' : 'refused');
     });
 }
 

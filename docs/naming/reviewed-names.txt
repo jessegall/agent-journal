@@ -4209,7 +4209,9 @@ class	PageChanged
 class	PageController
 class	PagePropTypes
 class	PageProps
+class	PageReadProps
 class	PageSize
+class	PageVisibility
 class	PaginationData
 class	PairChats
 class	PaneChoice
@@ -7453,6 +7455,7 @@ constant	PackageScripts::PACKAGE_FILES
 constant	Page::LARGEST_LIMIT
 constant	PageActionAnswers::NOTICE
 constant	PageChanged::NAME
+constant	PageReadProps::QUERY
 constant	PathConfinement::LINK_LIMIT
 constant	PendingAgentMessage::DELIVERY_LIMIT
 constant	Phase::LINK_TYPE
@@ -7674,6 +7677,8 @@ constant	SearchContribution::PAGE_SIZE
 constant	SeatLossRepair::PERSONAL_LABEL
 constant	SecureShareResponse::HEADERS
 constant	SendDriverRequestAgainHandler::KEY_PREFIX
+constant	SentMessageAnswer::REQUEST_KEY
+constant	SentMessageAnswer::SENT_MESSAGE
 constant	SeparateRequiredListeners::DEFERRING_INTERFACES
 constant	SessionOutputGrant::MOST_GRANTS
 constant	SessionOutputPaths::DOT_SEGMENT
@@ -17587,9 +17592,17 @@ method	PageProps::pageResult()
 method	PageProps::sectionResult()
 method	PageProps::sectionsOf()
 method	PageProvider::pages()
+method	PageReadProps::__construct()
+method	PageReadProps::answer()
+method	PageReadProps::argumentFor()
+method	PageReadProps::of()
+method	PageReadProps::propName()
+method	PageReadProps::queryOf()
 method	PageResolver::read()
 method	PageSize::__construct()
 method	PageSize::from()
+method	PageVisibility::__construct()
+method	PageVisibility::assertVisible()
 method	PaginationData::__construct()
 method	PairChats::__construct()
 method	PairChats::open()
@@ -27924,6 +27937,7 @@ parameter	$page
 parameter	$pageId
 parameter	$pageMax
 parameter	$pageName
+parameter	$pageReads
 parameter	$pages
 parameter	$pagination
 parameter	$paging
@@ -28127,6 +28141,7 @@ parameter	$proof
 parameter	$proofId
 parameter	$proofValue
 parameter	$proofs
+parameter	$prop
 parameter	$propName
 parameter	$propTypes
 parameter	$properties
@@ -30658,10 +30673,7 @@ property	CheckFailedAccount::$journal
 property	CheckJobGrant::$admission
 property	CheckJobGrant::$nesting
 property	CheckJobGrant::$registry
-property	CheckPageVisibility::$actors
-property	CheckPageVisibility::$container
-property	CheckPageVisibility::$declarations
-property	CheckPageVisibility::$owners
+property	CheckPageVisibility::$visibility
 property	CheckProfileScriptCall::$commands
 property	CheckProfileScriptCall::$profile
 property	CheckProfileScriptCall::$source
@@ -32709,6 +32721,7 @@ property	HandleInertiaRequests::$appName
 property	HandleInertiaRequests::$inertia
 property	HandleInertiaRequests::$navigation
 property	HandleInertiaRequests::$notifications
+property	HandleInertiaRequests::$pageReads
 property	HandleInertiaRequests::$rootView
 property	HandleInertiaRequests::$sharing
 property	HandleInertiaRequests::$users
@@ -34373,7 +34386,16 @@ property	PageProps::$inertia
 property	PageProps::$owners
 property	PageProps::$readers
 property	PageProps::$windowResults
+property	PageReadProps::$container
+property	PageReadProps::$declarations
+property	PageReadProps::$inertia
+property	PageReadProps::$owners
+property	PageReadProps::$visibility
 property	PageSize::$rows
+property	PageVisibility::$actors
+property	PageVisibility::$container
+property	PageVisibility::$declarations
+property	PageVisibility::$owners
 property	PaginationData::$lastPage
 property	PaginationData::$page
 property	PaginationData::$total
@@ -37444,6 +37466,7 @@ property	SendTerminalInputCommand::$input
 property	SendTerminalInputHandler::$clock
 property	SendTerminalInputHandler::$controls
 property	SentMessageAnswer::$conversations
+property	SentMessageAnswer::$inertia
 property	SentMessageAnswer::$key
 property	SentMessageAnswer::$redirect
 property	SequenceEditorPartData::$cancelAddress

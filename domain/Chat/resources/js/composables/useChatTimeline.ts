@@ -1,7 +1,7 @@
-import { xsrfToken } from '@kit/xsrfToken';
-import { events as eventsRoute, rows as rowsRoute } from '@generated/routes/chat';
 import type { ChatEventsPageData, ChatMessageData, ChatRowsPageData, ConversationData } from '@generated/types/chat';
 import { onChatAccessEnded } from '@kit/chatAccess';
+import { readPage } from '@kit/pageReads';
+import type { PropReadFailed } from '@kit/pageReads';
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import type { ComputedRef, Ref } from 'vue';
 import { chatTimeline } from './chatTimeline';
@@ -34,34 +34,20 @@ export type ChatTimelineClient = {
     rows(inboxId: string, olderCursor: string | null): Promise<ChatRowsPageData>;
 };
 
-async function readJson<Page>(url: string): Promise<Page> {
-    let response: Response;
-
-    try {
-        response = await fetch(url, {
-            credentials: 'same-origin',
-            headers: {
-                Accept: 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-XSRF-TOKEN': xsrfToken(),
-            },
-        });
-    } catch {
-        throw new ChatTimelineReadFailed(false);
-    }
-
-    if (!response.ok) {
-        throw new ChatTimelineReadFailed(response.status === 409);
-    }
-
-    return (await response.json()) as Page;
+/**
+ * Reads one of the chat page's reads by a partial reload: a refused cursor (409) is refused, anything else did not
+ * arrive.
+ */
+function readTimeline<Page>(routeName: string, query: Record<string, string>): Promise<Page> {
+    return readPage<Page>(routeName, query).catch((failure: PropReadFailed) => {
+        throw new ChatTimelineReadFailed(failure.status === 409);
+    });
 }
 
 export const chatTimelineClient: ChatTimelineClient = {
-    events: (inboxId, cursor) =>
-        readJson(eventsRoute({ query: cursor === null ? { inboxId } : { inboxId, cursor } }).url),
+    events: (inboxId, cursor) => readTimeline('chat.events', cursor === null ? { inboxId } : { inboxId, cursor }),
     rows: (inboxId, olderCursor) =>
-        readJson(rowsRoute({ query: olderCursor === null ? { inboxId } : { inboxId, olderCursor } }).url),
+        readTimeline('chat.rows', olderCursor === null ? { inboxId } : { inboxId, olderCursor }),
 };
 
 export type ChatTimelineView = {

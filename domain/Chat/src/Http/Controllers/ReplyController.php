@@ -8,9 +8,7 @@ use App\Commands\ReplyInChat\ReplyInChatCommand;
 use App\Contracts\CommandBus;
 use Domain\Chat\Data\ReplyInput;
 use Domain\Chat\Support\SentMessageAnswer;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 /**
  * Replies from the chat once per request key, bound to the message, the version shown, the text and the agent.
@@ -22,12 +20,11 @@ final readonly class ReplyController
      */
     public function __invoke(
         ReplyInput $input,
-        Request $request,
         CommandBus $commands,
         SentMessageAnswer $answer,
-    ): JsonResponse|RedirectResponse {
+    ): RedirectResponse {
         $replyId = $commands->run(new ReplyInChatCommand($input->messageId, $input->body, $input->requestKey, $input->inboxId));
 
-        return $answer->to($request, $replyId, $input->agent, $input->inboxId);
+        return $answer->to($replyId, $input->agent, $input->inboxId);
     }
 }

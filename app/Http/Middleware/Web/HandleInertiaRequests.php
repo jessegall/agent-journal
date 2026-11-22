@@ -14,6 +14,7 @@ use App\Data\CurrentUserData;
 use App\Data\SharedData;
 use App\Http\Responses\NotificationProps;
 use App\Support\ActorContext;
+use App\Support\Web\PageReadProps;
 use App\Values\ChatMemberAuthority;
 use Illuminate\Container\Attributes\Config;
 use Illuminate\Http\Request;
@@ -44,6 +45,7 @@ class HandleInertiaRequests extends Middleware
         private readonly InstalledVersion $version,
         private readonly CurrentActor $actors,
         private readonly NotificationProps $notifications,
+        private readonly PageReadProps $pageReads,
     ) {}
 
     /**
@@ -94,6 +96,8 @@ class HandleInertiaRequests extends Middleware
                 : $this->inertia->defer(fn () => $this->navigation->counts(), 'navigation-counts'),
             // The bell's notifications, read only by a partial reload that names them.
             ...($this->isChatMember() ? [] : $this->notifications->of($request)),
+            // The reads pages declare beside their own result, each read only by a partial reload that names it.
+            ...$this->pageReads->of($request),
         ];
     }
 
