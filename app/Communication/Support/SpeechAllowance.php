@@ -8,6 +8,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxResolver;
+use App\Communication\Enums\SpeechOpportunityState;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Exceptions\SpeechRefused;
 use App\Communication\Models\InboxInterval;
@@ -65,6 +66,32 @@ final readonly class SpeechAllowance
     }
 
     /**
+     * Claims the reader's turn kept for the question it takes up, without handing out a token: the agent then answers
+     * or declines through the ordinary commands while the lease runs. Answers whether a turn was claimed.
+     */
+    public function claimOnTakeUp(
+        Message $question,
+        ActorIdentity $reader,
+        string $intervalId,
+        CarbonImmutable $at,
+    ): bool {
+        $opportunity = SpeechOpportunity::query()
+            ->where('reserved_question_id', $question->id)
+            ->openFor($reader)
+            ->lockForUpdate()
+            ->first();
+
+        if ($opportunity === null || $opportunity->interval_id !== $intervalId) {
+            return false;
+        }
+
+        $unsharedToken = bin2hex(random_bytes(self::TOKEN_BYTES));
+        $opportunity->claim(self::digestOf($unsharedToken), $at->addSeconds(self::LEASE_SECONDS));
+
+        return true;
+    }
+
+    /**
      * @throws InboxUnavailable
      * @throws SpeechRefused
      */
@@ -86,7 +113,9 @@ final readonly class SpeechAllowance
         string|null $token,
         ChatEnvelope $chat,
     ): SpeechOpportunity {
-        $opportunity = $this->claimedTurn($inbox, $actor, $intervalId, $token);
+        $opportunity = $token === null
+            ? $this->liveClaimOn($inbox, $actor, $intervalId, $chat->userRootId)
+            : $this->claimedTurn($inbox, $actor, $intervalId, $token);
 
         if ($opportunity->isReserved() && ! $chat->isAnswerTo((string) $opportunity->reserved_question_id)) {
             throw SpeechRefused::reservedFor((string) $opportunity->reserved_question_id);
@@ -107,7 +136,9 @@ final readonly class SpeechAllowance
         string|null $token,
         Message $question,
     ): void {
-        $opportunity = $this->claimedTurn($inbox, $actor, $intervalId, $token);
+        $opportunity = $token === null
+            ? $this->liveClaimOn($inbox, $actor, $intervalId, $question->user_root_id)
+            : $this->claimedTurn($inbox, $actor, $intervalId, $token);
 
         if ($opportunity->reserved_question_id !== $question->id) {
             throw SpeechRefused::noTurn($question->id);
@@ -141,6 +172,38 @@ final readonly class SpeechAllowance
             || $opportunity->interval_id !== $intervalId
             || ! $opportunity->isLeasedTo($digest, CarbonImmutable::now())) {
             throw SpeechRefused::staleClaim();
+        }
+
+        return $opportunity;
+    }
+
+    /**
+     * The actor's claimed turn on the user message a token-less write belongs under, while its lease still runs: a
+     * claim the journal took for the agent on take-up, used through the ordinary reply and answer commands.
+     *
+     * @throws SpeechRefused
+     */
+    private function liveClaimOn(
+        Inbox $inbox,
+        ActorIdentity $actor,
+        string $intervalId,
+        string|null $rootId,
+    ): SpeechOpportunity {
+        if ($rootId === null) {
+            throw SpeechRefused::unclaimed();
+        }
+
+        $opportunity = SpeechOpportunity::query()
+            ->where('inbox_id', $inbox->inboxId())
+            ->onRoot($rootId)
+            ->openFor($actor)
+            ->where('state', SpeechOpportunityState::Claimed)
+            ->where('lease_expires_at', '>', CarbonImmutable::now())
+            ->lockForUpdate()
+            ->first();
+
+        if ($opportunity === null || $opportunity->interval_id !== $intervalId) {
+            throw SpeechRefused::unclaimed();
         }
 
         return $opportunity;

@@ -16,7 +16,9 @@ use App\Communication\Commands\SendMessage;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Exceptions\AnswerImpossible;
+use App\Communication\Exceptions\ChatInboxRefused;
 use App\Communication\Exceptions\InboxUnavailable;
+use App\Communication\Models\InboxRecord;
 use App\Communication\Models\Message;
 use Closure;
 
@@ -111,6 +113,7 @@ final readonly class MessageSending
      * @param  Closure(Inbox, Inbox, ActorIdentity): MessageEnvelope  $envelope
      *
      * @throws InboxUnavailable
+     * @throws ChatInboxRefused
      */
     private function deliver(
         string $sourceInboxId,
@@ -118,6 +121,12 @@ final readonly class MessageSending
         ActorContext $author,
         Closure $envelope,
     ): Message {
+        foreach ([$sourceInboxId, $destinationInboxId] as $inboxId) {
+            if (InboxRecord::isChatInbox($inboxId)) {
+                throw ChatInboxRefused::forDeskPosting($inboxId);
+            }
+        }
+
         $source = $this->inboxes->resolve($sourceInboxId);
         $destination = $this->inboxes->resolve($destinationInboxId);
         $this->lockShared([$source, $destination]);

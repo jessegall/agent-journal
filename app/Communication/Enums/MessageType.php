@@ -11,4 +11,12 @@ enum MessageType: string
 {
     case Desk = 'desk';
     case Chat = 'chat';
+
+    /**
+     * Whether the message lives in a chat, where the chat commands and their rules settle it, not the desk ones.
+     */
+    public function isChat(): bool
+    {
+        return $this === self::Chat;
+    }
 }

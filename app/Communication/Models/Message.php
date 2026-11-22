@@ -400,9 +400,18 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         return Attribute::get(fn () => (int) $this->getAttribute('timeline_sequence'));
     }
 
+    /**
+     * Whether the actor may settle this question: anyone may when it names no respondent, else only the one it names.
+     */
+    public function mayBeSettledBy(ActorIdentity $actor): bool
+    {
+        return $this->respondent_type === null
+            || ($this->respondent_type === $actor->type->value && $this->respondent_id === $actor->id);
+    }
+
     public function isChat(): bool
     {
-        return $this->message_type === MessageType::Chat;
+        return $this->message_type->isChat();
     }
 
     public function hasDigest(string $digest): bool

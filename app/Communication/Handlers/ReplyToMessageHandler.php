@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace App\Communication\Handlers;
 
 use App\Actors\Support\ActorIdentity;
+use App\Bus\Support\RequestKey;
+use App\Communication\Commands\ReplyInChat;
 use App\Communication\Commands\ReplyToMessage;
 use App\Communication\Exceptions\AnswerImpossible;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Models\Message;
+use App\Communication\Support\ChatPosting;
 use App\Communication\Support\MessageAnswers;
 use App\Communication\Support\MessageReading;
 use App\Communication\Support\MessageSending;
 use App\Contracts\CommandHandler;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Str;
 
 final readonly class ReplyToMessageHandler implements CommandHandler
 {
@@ -22,6 +26,8 @@ final readonly class ReplyToMessageHandler implements CommandHandler
         private MessageReading $reading,
         private MessageSending $sending,
         private MessageAnswers $answers,
+        private ChatPosting $chats,
+        private RequestKey $key,
     ) {}
 
     /**
@@ -34,6 +40,14 @@ final readonly class ReplyToMessageHandler implements CommandHandler
      */
     public function handle(ReplyToMessage $command): string
     {
+        $parent = Message::visibleById($command->messageId);
+
+        if ($parent->message_type->isChat()) {
+            $reply = new ReplyInChat($parent->id, $command->body, $this->requestKey());
+
+            return $this->chats->reply($reply->withDispatcher($command->dispatchedBy()));
+        }
+
         $membership = $this->reading->recipientOf($command->messageId, $command->dispatchedBy());
         $original = Message::lockedById($command->messageId);
 
@@ -54,5 +68,13 @@ final readonly class ReplyToMessageHandler implements CommandHandler
         }
 
         return $reply->id;
+    }
+
+    /**
+     * The chat request key a desk reply carries into a chat: the key of the request itself, or a fresh one.
+     */
+    private function requestKey(): string
+    {
+        return $this->key->key() ?? (string) Str::ulid();
     }
 }

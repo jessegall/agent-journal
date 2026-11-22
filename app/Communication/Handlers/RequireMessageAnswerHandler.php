@@ -13,6 +13,7 @@ use App\Assignments\Support\AssignmentReference;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Exceptions\AnswerImpossible;
+use App\Communication\Exceptions\ChatMessageRefused;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Models\Message;
@@ -39,6 +40,10 @@ final readonly class RequireMessageAnswerHandler implements CommandHandler
 
         if (! $message->isWrittenBy($author)) {
             throw MessageMissing::forId($command->messageId);
+        }
+
+        if ($message->isChat()) {
+            throw ChatMessageRefused::conversion($message->id);
         }
 
         if ($message->needsReply()) {

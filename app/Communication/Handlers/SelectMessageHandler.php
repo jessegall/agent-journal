@@ -7,6 +7,7 @@ namespace App\Communication\Handlers;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Models\AgentSession;
 use App\Communication\Commands\SelectMessage;
+use App\Communication\Exceptions\ChatMessageRefused;
 use App\Communication\Models\Message;
 use App\Contracts\CommandHandler;
 
@@ -17,6 +18,11 @@ final readonly class SelectMessageHandler implements CommandHandler
     public function handle(SelectMessage $command): string
     {
         $message = Message::visibleById($command->messageId);
+
+        if ($message->isChat()) {
+            throw ChatMessageRefused::notSelectable($message->id);
+        }
+
         $this->selectMessage($this->session->sessionId(), $message->id);
 
         return $message->id;

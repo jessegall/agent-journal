@@ -19,6 +19,14 @@ final class ChatInboxRefused extends RuntimeException implements CodedRefusal, C
         return new self("Inbox {$inboxId} is a chat: read it through the chat itself.");
     }
 
+    /**
+     * Desk mail sent, asked or replied into a chat inbox, which only chat posting writes to.
+     */
+    public static function forDeskPosting(string $inboxId): self
+    {
+        return new self("Inbox {$inboxId} is a chat: post in it as a chat message.");
+    }
+
     public function refusalCode(): RefusalCode
     {
         return RefusalCode::RecordUnavailable;

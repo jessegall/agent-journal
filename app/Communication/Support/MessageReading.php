@@ -35,6 +35,7 @@ final readonly class MessageReading
         private AssignmentStorage $store,
         private ResponsibilityWriter $responsibilities,
         private CommandFacts $facts,
+        private SpeechAllowance $speech,
     ) {}
 
     /**
@@ -128,7 +129,11 @@ final readonly class MessageReading
         bool $held,
     ): MessageReadResult {
         if ($membership->isChat()) {
-            return new MessageReadResult($message->id, $this->present($message, $membership->interval(), $now), false);
+            $shown = $this->present($message, $membership->interval(), $now);
+            $takenUp = $message->needsReply()
+                && $this->speech->claimOnTakeUp($message, $membership->actor, $membership->interval(), $now);
+
+            return new MessageReadResult($message->id, $shown, $takenUp);
         }
 
         $firstRead = $message->acknowledge($membership, $now);

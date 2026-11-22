@@ -18,6 +18,7 @@ use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\TimelineEventType;
+use App\Communication\Exceptions\ChatMessageRefused;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageRequestConflict;
@@ -153,6 +154,25 @@ final readonly class ChatPosting
     }
 
     /**
+     * Records a reply the author already posted under a waiting chat question as its answer, and closes it.
+     *
+     * @throws MessageMissing
+     * @throws MessageStateConflict
+     */
+    public function linkAnswer(Message $question, Message $reply, ActorContext $author): string
+    {
+        $answersQuestion = $reply->isChat() && $reply->reply_to_id === $question->id;
+
+        if (! $answersQuestion || ! $reply->isWrittenBy(ActorIdentity::of($author))) {
+            throw MessageMissing::forId($reply->id);
+        }
+
+        $this->close($question, $reply, $author);
+
+        return $reply->id;
+    }
+
+    /**
      * Declines a waiting question with a reason: an agent spends the turn reserved for it, and the question closes
      * as declined.
      *
@@ -169,6 +189,10 @@ final readonly class ChatPosting
         $access = $this->inboxes->accessFor($inbox);
         $access->lockExclusive($inbox);
         $intervalId = $access->membership($inbox, $author)->interval();
+
+        if (! $question->mayBeSettledBy($identity)) {
+            throw ChatMessageRefused::notRespondent($question->id);
+        }
 
         if ($identity->type->isAgent()) {
             $this->speech->declineWith($inbox, $identity, $intervalId, $command->claimToken, $question);

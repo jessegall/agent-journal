@@ -9,6 +9,7 @@ use App\Agents\Contracts\CurrentSession;
 use App\Communication\Commands\AnswerMessage;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Models\Message;
+use App\Communication\Support\ChatPosting;
 use App\Communication\Support\MessageAnswers;
 use App\Communication\Support\MessageReading;
 use App\Contracts\CommandHandler;
@@ -20,11 +21,18 @@ final readonly class AnswerMessageHandler implements CommandHandler
         private CurrentSession $session,
         private MessageReading $reading,
         private MessageAnswers $answers,
+        private ChatPosting $chats,
     ) {}
 
     public function handle(AnswerMessage $command): string
     {
         $dispatcher = $command->dispatchedBy();
+        $question = Message::visibleById($command->messageId);
+
+        if ($question->isChat()) {
+            return $this->chats->linkAnswer($question, Message::visibleById($command->replyId), $dispatcher);
+        }
+
         $member = $this->reading->recipientOf($command->messageId, $dispatcher);
         $message = Message::lockedById($command->messageId);
         $reply = Message::visibleById($command->replyId);
