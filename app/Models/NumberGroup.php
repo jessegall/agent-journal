@@ -101,6 +101,19 @@ final class NumberGroup extends Model implements ReadableModel
     }
 
     /**
+     * The journal's group for one record type, its holder read by name inside the same statement.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofJournal(Builder $query, string $recordType): void
+    {
+        $query->where('holder_type', new GlobalGroup()->getMorphClass())
+            ->whereIn('holder_id', GlobalGroup::query()->named(GlobalGroup::JOURNAL)->select('id'))
+            ->where('record_type', $recordType);
+    }
+
+    /**
      * @param  Builder<self>  $query
      */
     #[Scope]
