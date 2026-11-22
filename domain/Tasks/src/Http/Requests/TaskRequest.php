@@ -29,6 +29,7 @@ final class TaskRequest extends FormRequest
             'logs_before' => ['nullable', 'string', 'regex:/^(n|[0-9]{1,10}),(n|[0-9]{1,10})$/'],
             'proofs_after' => ['nullable', 'string', 'max:26'],
             'commentsAfter' => ['nullable', 'string', 'max:26'],
+            'prerequisite_q' => ['nullable', 'string', 'max:200'],
         ];
     }
 
@@ -46,6 +47,14 @@ final class TaskRequest extends FormRequest
     public function asksForWaits(): bool
     {
         return $this->string('section')->toString() === 'waits';
+    }
+
+    /**
+     * The words a prerequisite search asks for; '' when the reader searches nothing.
+     */
+    public function prerequisiteSearch(): string
+    {
+        return trim($this->string('prerequisite_q')->toString());
     }
 
     /**

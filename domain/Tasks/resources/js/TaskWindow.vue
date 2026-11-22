@@ -129,7 +129,11 @@ function back(): void {
                     </template>
                     <template #waits>
                         <template v-if="opened.has('waits')">
-                            <TaskWaitsTab :waits="data.waits" :number="data.number" />
+                            <TaskWaitsTab
+                                :waits="data.waits"
+                                :actions="data.waitActions"
+                                :number="data.number"
+                            />
                         </template>
                     </template>
                     <template #logs>

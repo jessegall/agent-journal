@@ -4,7 +4,8 @@ import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 import Button from '@kit/Button';
 import { useWindowReload } from '@kit/useWindowQuery';
 import { task as taskRoute } from '@generated/routes/tasks';
-import type { TaskWaitItemData, TaskWaitsData } from '@generated/types/tasks';
+import type { TaskWaitActionsData, TaskWaitItemData, TaskWaitsData } from '@generated/types/tasks';
+import TaskWaitDialog from './TaskWaitDialog.vue';
 import { rememberFollowedWait, takeFollowedWait } from './openedWaits';
 import { taskStateLook } from './taskLooks';
 
@@ -12,9 +13,17 @@ import { taskStateLook } from './taskLooks';
  * A task's waits both ways: Waits for, the tasks it needs finished first, and Holds up, the tasks that need it. Each
  * line says its direction aloud, names the other task with its state and whether the wait is met, and links to it; a
  * removed task stays as unresolved, a task the reader may not see is only a prerequisite they cannot see, and a waived
- * wait says who waived it, when and why. Going back from a task opened here gives its link the focus again.
+ * wait says who waived it, when and why. Going back from a task opened here gives its link the focus again. The
+ * domain says which changes the caller may make: Add prerequisite, Remove and Waive appear only then, each in a
+ * dialog.
  */
-const props = defineProps<{ waits: TaskWaitsData | undefined; number: string }>();
+const props = defineProps<{
+    waits: TaskWaitsData | undefined;
+    actions: TaskWaitActionsData | undefined;
+    number: string;
+}>();
+
+const dialog = ref<{ change: 'add' | 'remove' | 'waive'; prerequisite: string | undefined } | null>(null);
 
 const reload = useWindowReload();
 const list = useTemplateRef<HTMLElement>('list');
@@ -104,6 +113,19 @@ function spoken(direction: 'waitsFor' | 'holdsUp', item: TaskWaitItemData): stri
         <template v-else-if="status === 'loading' && shown === undefined">
             <p role="status" class="text-small text-text-3">Loading the waits</p>
         </template>
+        <template v-if="actions?.reason !== undefined">
+            <p class="text-small text-text-3">{{ actions.reason }}</p>
+        </template>
+        <template v-if="actions?.mayEdit">
+            <div>
+                <Button
+                    size="small"
+                    variant="bordered"
+                    @click="dialog = { change: 'add', prerequisite: undefined }"
+                    >Add prerequisite</Button
+                >
+            </div>
+        </template>
         <template v-if="shown !== undefined">
             <template
                 v-for="direction in (['waitsFor', 'holdsUp'] as const)"
@@ -145,11 +167,40 @@ function spoken(direction: 'waitsFor' | 'holdsUp', item: TaskWaitItemData): stri
                                     <span class="text-text-2">A prerequisite you cannot see</span>
                                 </template>
                                 <span class="text-text-2">{{ metText(item) }}</span>
+                                <template
+                                    v-if="direction === 'waitsFor' && item.number !== undefined"
+                                >
+                                    <template v-if="actions?.mayEdit">
+                                        <Button
+                                            size="small"
+                                            @click="dialog = { change: 'remove', prerequisite: item.number }"
+                                            >Remove</Button
+                                        >
+                                    </template>
+                                    <template
+                                        v-if="actions?.mayWaive && !item.isSatisfied"
+                                    >
+                                        <Button
+                                            size="small"
+                                            @click="dialog = { change: 'waive', prerequisite: item.number }"
+                                            >Waive</Button
+                                        >
+                                    </template>
+                                </template>
                             </li>
                         </template>
                     </ul>
                 </section>
             </template>
+        </template>
+        <template v-if="dialog !== null">
+            <TaskWaitDialog
+                :change="dialog.change"
+                :number="number"
+                :prerequisite="dialog.prerequisite"
+                :choices="actions?.choices ?? []"
+                @close="dialog = null"
+            />
         </template>
     </div>
 </template>

@@ -28,6 +28,7 @@ use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
 use App\Ui\Contracts\PageProvider;
+use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
@@ -75,6 +76,9 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Http\Controllers\AddTaskWaitPageController;
+use Domain\Tasks\Http\Controllers\RemoveTaskWaitPageController;
+use Domain\Tasks\Http\Controllers\WaiveTaskWaitPageController;
 use Domain\Tasks\Mcp\HeldTasksOverview;
 use Domain\Tasks\Mcp\TaskResource;
 use Domain\Tasks\Mcp\TaskSearch;
@@ -139,6 +143,11 @@ final class TasksDomain extends Domain implements
             Page::make('task', 'Task', Icon::Tasks, TaskWindowResolver::class, 'TaskWindow.vue')
                 ->at('{task}')
                 ->inInspector()
+                ->actions(
+                    ActionRoute::post('{task}/waits', AddTaskWaitPageController::class, 'add-wait'),
+                    ActionRoute::post('{task}/waits/remove', RemoveTaskWaitPageController::class, 'remove-wait'),
+                    ActionRoute::post('{task}/waits/waive', WaiveTaskWaitPageController::class, 'waive-wait'),
+                )
                 ->slots(Slot::record('inspector', 'task', 'task')),
         ];
     }

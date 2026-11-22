@@ -10,7 +10,9 @@ use Domain\Access\Support\AccessSettings;
 use App\Bus\Contracts\CommandBus;
 use Domain\Tasks\Commands\AddTaskWait;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Models\TaskWait;
 use Domain\Tasks\Tests\TestCase;
+use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\RefreshHookDatabase;
@@ -62,7 +64,7 @@ final class TaskPageTest extends TestCase
         $first = Task::factory()->create(['title' => 'Prepare records']);
         $second = Task::factory()->create(['title' => 'Publish records']);
         $this->startUserRequestAs($this->owner->id);
-        $this->app->make(CommandBus::class)->run(new AddTaskWait($second->id, $first->id));
+        $this->app->make(CommandBus::class)->run(new AddTaskWait($second->id, $first->id, self::key()));
 
         $waiting = $this->actingAs($this->owner)->get("/tasks/{$second->number}?section=waits")->assertOk();
         $waiting->assertInertia(fn (AssertableInertia $page) => $page
@@ -76,6 +78,42 @@ final class TaskPageTest extends TestCase
             ->where('page.data.waits.holdsUp.0.number', (string) $second->number));
     }
 
+    public function test_an_editor_adds_a_prerequisite_from_the_page_and_a_cycle_or_a_missing_reason_is_refused(): void
+    {
+        $first = Task::factory()->create(['title' => 'Prepare records']);
+        $second = Task::factory()->create(['title' => 'Publish records']);
+
+        $offered = $this->actingAs($this->owner)->get("/tasks/{$second->number}?section=waits")->assertOk();
+        $offered->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.data.waitActions.mayEdit', true)
+            ->where('page.data.waitActions.mayWaive', true));
+
+        $this->actingAs($this->owner)->from("/tasks/{$second->number}")
+            ->withHeader('Idempotency-Key', self::key())
+            ->post("/tasks/{$second->number}/waits", ['prerequisite' => (string) $first->number])
+            ->assertStatus(303)
+            ->assertSessionHasNoErrors();
+
+        $holding = $this->actingAs($this->owner)->get("/tasks/{$first->number}?section=waits");
+        $holding->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.data.waits.holdsUp.0.number', (string) $second->number));
+
+        $this->actingAs($this->owner)->from("/tasks/{$first->number}")
+            ->withHeader('Idempotency-Key', self::key())
+            ->post("/tasks/{$first->number}/waits", ['prerequisite' => (string) $second->number])
+            ->assertStatus(303)
+            ->assertSessionHasErrors();
+
+        $this->actingAs($this->owner)->from("/tasks/{$second->number}")
+            ->withHeader('Idempotency-Key', self::key())
+            ->post("/tasks/{$second->number}/waits/waive", ['prerequisite' => (string) $first->number, 'reason' => ' '])
+            ->assertSessionHasErrors();
+
+        $this->post("/tasks/{$second->number}/waits/remove", ['prerequisite' => (string) $first->number])
+            ->assertRedirect('/login');
+        $this->assertSame(1, TaskWait::query()->count());
+    }
+
     public function test_an_empty_brief_stays_empty_and_an_unknown_number_is_not_found(): void
     {
         $task = Task::factory()->create(['brief' => '']);
@@ -84,5 +122,10 @@ final class TaskPageTest extends TestCase
         $emptyPage->assertInertia(fn (AssertableInertia $page) => $page->where('page.data.brief', ''));
 
         $this->actingAs($this->owner)->get('/tasks/'.TestIds::of(999999))->assertNotFound();
+    }
+
+    private static function key(): string
+    {
+        return (string) Str::uuid();
     }
 }

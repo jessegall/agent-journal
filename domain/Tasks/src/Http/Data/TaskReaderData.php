@@ -44,6 +44,7 @@ final class TaskReaderData extends Data
         public readonly TaskLogsData|Optional $logs = new Optional(),
         public readonly TaskProofsData|Optional $proofs = new Optional(),
         public readonly TaskWaitsData|Optional $waits = new Optional(),
+        public readonly TaskWaitActionsData|Optional $waitActions = new Optional(),
         public readonly string|Optional $blockReason = new Optional(),
     ) {}
 
@@ -60,6 +61,7 @@ final class TaskReaderData extends Data
         TaskLogsData|Optional $logs,
         TaskProofsData|Optional $proofs,
         TaskWaitsData|Optional $waits,
+        TaskWaitActionsData|Optional $waitActions,
     ): self {
         $execution = $details->execution;
 
@@ -80,6 +82,7 @@ final class TaskReaderData extends Data
             'logs' => $logs instanceof Optional ? null : $logs,
             'proofs' => $proofs instanceof Optional ? null : $proofs,
             'waits' => $waits instanceof Optional ? null : $waits,
+            'waitActions' => $waitActions instanceof Optional ? null : $waitActions,
             'blockReason' => $details->state === TaskState::Blocked && $details->text instanceof TaskText
                 ? $details->text->blockReason
                 : null,
