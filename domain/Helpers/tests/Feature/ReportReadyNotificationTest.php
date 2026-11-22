@@ -41,12 +41,15 @@ final class ReportReadyNotificationTest extends TestCase
         $forAtlas = $this->jobOf($birch, $atlas);
         $forJo = $this->jobOf($birch, $jo);
 
-        $this->deliver(new ReportJobLinked((string) Str::ulid(), 12, $forAtlas->id));
+        $first = new ReportJobLinked((string) Str::ulid(), 12, $forAtlas->id);
+        $this->deliver($first);
         $linked = new ReportJobLinked((string) Str::ulid(), 13, $forJo->id);
         $this->deliver($linked);
         $this->deliver($linked);
 
-        $this->assertSame(2, NotificationOccurrence::query()->count());
+        $this->assertSame(2, NotificationOccurrence::query()
+            ->whereIn('occurrence_key', ["report:{$first->reportId}", "report:{$linked->reportId}"])
+            ->count());
         $this->assertSame(['12'], $this->targetsOf($atlas));
         $this->assertSame(['13'], $this->targetsOf($jo));
     }

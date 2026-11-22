@@ -135,7 +135,7 @@
             "@php artisan config:clear --ansi",
             "@lint:check",
             "@types:check",
-            "@php artisan test --parallel --recreate-databases"
+            "@php tests/bin/run-tests.php --recreate-databases"
         ],
         "test:run": [
             "Composer\\Config::disableProcessTimeout",
