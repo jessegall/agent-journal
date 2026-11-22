@@ -6,6 +6,7 @@ namespace App\Profiles\Contracts;
 
 use App\Profiles\Support\PrivateAccountProcess;
 use App\Profiles\Values\SignInChallenge;
+use App\Profiles\Values\SignInHosts;
 use App\Profiles\Values\SignInVerification;
 
 /**
@@ -14,6 +15,11 @@ use App\Profiles\Values\SignInVerification;
  */
 interface SignInProtocol
 {
+    /**
+     * The provider hosts this sign-in's pages live on, the only links a sign-in shows the user.
+     */
+    public function signInHosts(): SignInHosts;
+
     /**
      * Starts the driver's sign-in for the folder and answers its private process.
      */

@@ -13,6 +13,7 @@ use App\Files\Values\FilePath;
 use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Exceptions\SignInSecretUnwritable;
 use App\Profiles\Values\SignInChallenge;
+use App\Profiles\Values\SignInHosts;
 use App\Profiles\Values\SignInIdentity;
 use App\Profiles\Values\SignInVerification;
 
@@ -23,6 +24,11 @@ use App\Profiles\Values\SignInVerification;
  */
 abstract readonly class ClaudeSecretSignIn implements SignInProtocol
 {
+    public function signInHosts(): SignInHosts
+    {
+        return SignInHosts::anthropic();
+    }
+
     public function __construct(protected ClaudeDriver $claude, protected Files $files) {}
 
     public function begin(string $directory): PrivateAccountProcess

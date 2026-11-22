@@ -10,6 +10,7 @@ use App\Profiles\Data\CodexLoginCompletedData;
 use App\Profiles\Data\CodexLoginStartData;
 use App\Profiles\Data\CodexMessageData;
 use App\Profiles\Values\SignInChallenge;
+use App\Profiles\Values\SignInHosts;
 use App\Profiles\Values\SignInIdentity;
 use App\Profiles\Values\SignInVerification;
 use JsonException;
@@ -25,6 +26,11 @@ use TypeError;
  */
 final readonly class CodexSignIn implements SignInProtocol
 {
+    public function signInHosts(): SignInHosts
+    {
+        return SignInHosts::openAi();
+    }
+
     private const int LOGIN_REQUEST = 1;
 
     private const int ACCOUNT_REQUEST = 2;

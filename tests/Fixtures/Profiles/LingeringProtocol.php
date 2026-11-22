@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
+use App\Profiles\Values\SignInHosts;
 use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Support\PrivateAccountProcess;
 use App\Profiles\Values\SignInChallenge;
@@ -16,6 +17,11 @@ use App\Profiles\Values\SignInVerification;
  */
 final readonly class LingeringProtocol implements SignInProtocol
 {
+    public function signInHosts(): SignInHosts
+    {
+        return SignInHosts::anthropic();
+    }
+
     public function begin(string $directory): PrivateAccountProcess
     {
         return PrivateAccountProcess::start(['/bin/sh', '-c', 'sleep 30'], ['PATH' => '/usr/bin:/bin'], $directory);

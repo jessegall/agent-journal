@@ -34,33 +34,6 @@ enum HookDriver: string
     /**
      * The driver's name as people read it, such as on an account named after it.
      */
-    /**
-     * Whether an address is one of the driver's own sign-in pages: HTTPS, on the provider's sign-in hosts or below
-     * them. A sign-in shows the user no other link.
-     */
-    public function isSignInAddress(string $address): bool
-    {
-        $parts = parse_url($address);
-        $host = strtolower((string) ($parts['host'] ?? ''));
-
-        if (($parts['scheme'] ?? '') !== 'https' || isset($parts['user']) || isset($parts['port']) || $host === '') {
-            return false;
-        }
-
-        $hosts = match ($this) {
-            self::ClaudeCode => ['claude.ai', 'claude.com', 'anthropic.com'],
-            self::Codex => ['auth.openai.com', 'chatgpt.com'],
-        };
-
-        foreach ($hosts as $trusted) {
-            if ($host === $trusted || str_ends_with($host, '.'.$trusted)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public function displayName(): string
     {
         return match ($this) {

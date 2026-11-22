@@ -6,6 +6,7 @@ namespace App\Profiles\Support;
 
 use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Values\SignInChallenge;
+use App\Profiles\Values\SignInHosts;
 use App\Profiles\Values\SignInIdentity;
 use App\Profiles\Values\SignInVerification;
 
@@ -16,6 +17,11 @@ use App\Profiles\Values\SignInVerification;
  */
 final readonly class CodexKeySignIn implements SignInProtocol
 {
+    public function signInHosts(): SignInHosts
+    {
+        return SignInHosts::openAi();
+    }
+
     public function __construct(private CodexDriver $codex) {}
 
     public function begin(string $directory): PrivateAccountProcess

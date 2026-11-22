@@ -5984,6 +5984,7 @@ class	SignInCodeInvalid
 class	SignInCompletion
 class	SignInDeadline
 class	SignInEgress
+class	SignInHosts
 class	SignInIdentity
 class	SignInMethodData
 class	SignInMethodMissing
@@ -11380,6 +11381,7 @@ method	ClaudeSecretSignIn::readFiles()
 method	ClaudeSecretSignIn::realFolder()
 method	ClaudeSecretSignIn::secretFile()
 method	ClaudeSecretSignIn::secretPath()
+method	ClaudeSecretSignIn::signInHosts()
 method	ClaudeSecretSignIn::signOut()
 method	ClaudeSecretSignIn::uninstall()
 method	ClaudeSecretSignIn::variables()
@@ -11392,6 +11394,7 @@ method	ClaudeSignIn::canTakeAnswer()
 method	ClaudeSignIn::challengeFrom()
 method	ClaudeSignIn::hasFinished()
 method	ClaudeSignIn::prove()
+method	ClaudeSignIn::signInHosts()
 method	ClaudeSignIn::signOut()
 method	ClaudeSignIn::submitCode()
 method	ClaudeSignIn::verify()
@@ -11564,6 +11567,7 @@ method	CodexKeySignIn::canTakeAnswer()
 method	CodexKeySignIn::challengeFrom()
 method	CodexKeySignIn::hasFinished()
 method	CodexKeySignIn::prove()
+method	CodexKeySignIn::signInHosts()
 method	CodexKeySignIn::signOut()
 method	CodexKeySignIn::verify()
 method	CodexLoginCompletedData::__construct()
@@ -11584,6 +11588,7 @@ method	CodexSignIn::loginStartIn()
 method	CodexSignIn::message()
 method	CodexSignIn::messagesIn()
 method	CodexSignIn::prove()
+method	CodexSignIn::signInHosts()
 method	CodexSignIn::signOut()
 method	CodexSignIn::verify()
 method	CodexSkills::delivery()
@@ -14985,7 +14990,6 @@ method	HookDigestChanged::forCall()
 method	HookDriver::displayName()
 method	HookDriver::driverKey()
 method	HookDriver::hostName()
-method	HookDriver::isSignInAddress()
 method	HookDriver::isolatesHooksPerSession()
 method	HookDriver::provider()
 method	HookEvent::isSessionStart()
@@ -22993,6 +22997,10 @@ method	SignInHost::reconcileSignIns()
 method	SignInHost::report()
 method	SignInHost::reportCheck()
 method	SignInHost::reportCleanup()
+method	SignInHosts::__construct()
+method	SignInHosts::admits()
+method	SignInHosts::anthropic()
+method	SignInHosts::openAi()
 method	SignInIdentity::__construct()
 method	SignInIdentity::expiry()
 method	SignInIdentity::shown()
@@ -23016,6 +23024,7 @@ method	SignInProtocol::canTakeAnswer()
 method	SignInProtocol::challengeFrom()
 method	SignInProtocol::hasFinished()
 method	SignInProtocol::prove()
+method	SignInProtocol::signInHosts()
 method	SignInProtocol::signOut()
 method	SignInProtocol::verify()
 method	SignInProtocolMissing::cannotStart()
@@ -27194,6 +27203,7 @@ parameter	$host
 parameter	$hostCredential
 parameter	$hostId
 parameter	$hostSecret
+parameter	$hosts
 parameter	$href
 parameter	$html
 parameter	$http
@@ -35354,6 +35364,7 @@ property	PublishSignInChallengeCommand::$code
 property	PublishSignInChallengeCommand::$hostId
 property	PublishSignInChallengeHandler::$challenges
 property	PublishSignInChallengeHandler::$facts
+property	PublishSignInChallengeHandler::$protocols
 property	PublishSkillsCommand::$holder
 property	PublishSkillsCommand::$publicationId
 property	PublishSkillsHandler::$adapters
@@ -37878,6 +37889,7 @@ property	SignInCompletion::$facts
 property	SignInCompletion::$notices
 property	SignInDeadline::$attemptId
 property	SignInEgress::$proxy
+property	SignInHosts::$hosts
 property	SignInIdentity::$display
 property	SignInIdentity::$expiresAt
 property	SignInIdentity::$subject

@@ -10,6 +10,7 @@ use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Exceptions\SignInCodeInvalid;
 use App\Profiles\Values\SignInChallenge;
 use App\Profiles\Values\SignInCode;
+use App\Profiles\Values\SignInHosts;
 use App\Profiles\Values\SignInIdentity;
 use App\Profiles\Values\SignInVerification;
 
@@ -21,6 +22,11 @@ use App\Profiles\Values\SignInVerification;
  */
 final readonly class ClaudeSignIn implements SignInProtocol
 {
+    public function signInHosts(): SignInHosts
+    {
+        return SignInHosts::anthropic();
+    }
+
     public function __construct(private ClaudeDriver $claude, private Files $files) {}
 
     public function begin(string $directory): PrivateAccountProcess

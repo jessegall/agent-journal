@@ -6,11 +6,11 @@ namespace App\Profiles\Commands\PublishSignInChallenge;
 
 use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
-use App\Drivers\Enums\HookDriver;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Exceptions\SignInChallengeRefused;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\SignInChallenges;
+use App\Profiles\Support\SignInProtocols;
 use App\Profiles\Values\SignInChallenge;
 
 /**
@@ -18,7 +18,11 @@ use App\Profiles\Values\SignInChallenge;
  */
 final readonly class PublishSignInChallengeHandler implements CommandHandler
 {
-    public function __construct(private SignInChallenges $challenges, private CommandFacts $facts) {}
+    public function __construct(
+        private SignInChallenges $challenges,
+        private CommandFacts $facts,
+        private SignInProtocols $protocols,
+    ) {}
 
     public function handle(PublishSignInChallengeCommand $command): void
     {
@@ -28,7 +32,9 @@ final readonly class PublishSignInChallengeHandler implements CommandHandler
             return;
         }
 
-        if (! HookDriver::from($attempt->account_protocol)->isSignInAddress($command->address)) {
+        $hosts = $this->protocols->for($attempt->account_protocol, $attempt->method)->signInHosts();
+
+        if (! $hosts->admits($command->address)) {
             throw SignInChallengeRefused::untrustedAddress($attempt->id);
         }
 
