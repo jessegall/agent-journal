@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('environment_id')->nullable()->index();
             $table->string('state', 16);
             $table->timestampTz('closed_at')->nullable();
+            $table->boolean('reconcile_pending')->default(false);
             $table->timestampsTz();
         });
 

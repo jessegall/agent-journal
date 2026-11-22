@@ -21,6 +21,7 @@ use App\Actors\Contracts\Authorizer;
 use App\Actors\Contracts\AuthorizerProvider;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Contracts\ChatEligibility;
+use App\Actors\Contracts\ChatParticipationEnding;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\CurrentAuthorizer;
@@ -1441,6 +1442,7 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                ChatParticipationEnding::class,
                 ChatEligibility::class,
                 MembershipEvidence::class,
                 TypeReflections::class,

@@ -9,6 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\EnvironmentUserGrant;
 use Domain\Access\Models\User;
+use Domain\Access\Support\EnvironmentAccess;
 use Illuminate\Console\Command;
 
 final class GrantEnvironmentCommand extends Command
@@ -23,7 +24,7 @@ final class GrantEnvironmentCommand extends Command
 
     protected $description = 'Admit a user to the chats of an environment with the permissions named, or revoke it';
 
-    public function handle(): int
+    public function handle(EnvironmentAccess $access): int
     {
         $user = User::query()->where('email', (string) $this->argument('email'))->firstOrFail();
         $environmentId = $this->option('environment');
@@ -31,7 +32,7 @@ final class GrantEnvironmentCommand extends Command
         $now = CarbonImmutable::now();
 
         if ($this->option('revoke') === true) {
-            EnvironmentUserGrant::query()->activeFor($user->id, $environment)->first()?->revoke($now);
+            $access->revoke($user, $environment, $now);
             $this->info("Revoked the grant of {$user->email}.");
 
             return self::SUCCESS;

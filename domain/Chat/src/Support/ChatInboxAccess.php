@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Domain\Chat\Support;
 
 use App\Actors\Contracts\Actor;
+use App\Actors\Contracts\ChatEligibility;
+use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxAccess;
@@ -22,7 +24,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final readonly class ChatInboxAccess implements InboxAccess
 {
-    public function __construct(private ChatInboxes $chats) {}
+    public function __construct(private ChatInboxes $chats, private ChatEligibility $eligibility) {}
 
     public function lockShared(Inbox $inbox): void
     {
@@ -41,7 +43,15 @@ final readonly class ChatInboxAccess implements InboxAccess
      */
     public function membership(Inbox $inbox, Actor $actor): InboxMembership
     {
-        $interval = $this->chats->activeInterval($inbox, ActorIdentity::of($actor));
+        $identity = ActorIdentity::of($actor);
+        $interval = $this->chats->activeInterval($inbox, $identity);
+
+        // A user who lost its admission is refused at once, even while the cleanup of its chats is still to come.
+        $environmentId = Conversation::forInbox($inbox->inboxId())->environment_id;
+
+        if ($identity->type === ActorType::User && ! $this->eligibility->isAdmitted($identity, $environmentId)) {
+            throw InboxUnavailable::forId($inbox->inboxId());
+        }
 
         return InboxMembership::inInterval($interval->actor, $interval->intervalId);
     }
