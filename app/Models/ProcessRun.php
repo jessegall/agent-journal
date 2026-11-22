@@ -6,6 +6,8 @@ namespace App\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\EventSource;
 use App\Contracts\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\CaptureState;
@@ -16,6 +18,7 @@ use App\Enums\RunMode;
 use App\Enums\RunRequestIntent;
 use App\Enums\ShellDialect;
 use App\Enums\Tone;
+use App\Events\ProcessRunOutlasted;
 use App\Exceptions\RetryRefused;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
@@ -70,6 +73,7 @@ use Illuminate\Support\Carbon;
  * @property ExecutionPlan $plan
  * @property CarbonImmutable|null $consumed_at
  * @property CarbonImmutable|null $heartbeat_at
+ * @property CarbonImmutable|null $shown_in_chat_at when its agent's chat began showing it, once it outlasted a quick command
  * @property CarbonImmutable|null $started_at
  * @property CarbonImmutable|null $ended_at
  * @property RunRequestIntent $request_intent
@@ -93,12 +97,15 @@ use Illuminate\Support\Carbon;
     'working_folder',
     'plan',
 ])]
-final class ProcessRun extends Model implements Dockable, ReadableModel
+final class ProcessRun extends Model implements Dockable, EventSource, ReadableModel
 {
     /**
      * The type a run docks under.
      */
     public const string DOCK_TYPE = 'process.run';
+
+    /** How long a quick command runs at most; a run past it shows in its agent's chat. */
+    public const int QUICK_COMMAND_SECOND_LIMIT = 10;
 
     /**
      * The most parts, attempts included, a docked run loads with its card.
@@ -109,6 +116,7 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * @var array<string, mixed>
@@ -132,6 +140,7 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
             'plan' => ExecutionPlan::class,
             'consumed_at' => 'immutable_datetime',
             'heartbeat_at' => 'immutable_datetime',
+            'shown_in_chat_at' => 'immutable_datetime',
             'request_intent' => RunRequestIntent::class,
         ];
     }
@@ -230,10 +239,34 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
         return $eventKey;
     }
 
+    /**
+     * Notes that the run still lives; an agent's run that has gone on past a quick command's wait is shown in its chat,
+     * once.
+     */
     public function recordHeartbeat(): void
     {
         $this->heartbeat_at = CarbonImmutable::now();
-        $this->save();
+        $outlasted = $this->outlastsAQuickCommand();
+
+        if ($outlasted) {
+            $this->shown_in_chat_at = $this->heartbeat_at;
+        }
+
+        $this->assertSaved($this->save());
+
+        if ($outlasted) {
+            $this->raise(new ProcessRunOutlasted($this->id, new ActorIdentity(ActorType::from((string) $this->actor_type), (string) $this->actor_id)));
+        }
+    }
+
+    /**
+     * Whether an agent's run, not yet shown in its chat, has run longer than a quick command waits.
+     */
+    private function outlastsAQuickCommand(): bool
+    {
+        return $this->shown_in_chat_at === null
+            && $this->actor_type === ActorType::Agent->value
+            && $this->started_at?->addSeconds(self::QUICK_COMMAND_SECOND_LIMIT)->isPast() === true;
     }
 
     /**

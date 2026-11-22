@@ -10,6 +10,7 @@ use App\Exceptions\DockDefinitionInvalid;
 use App\Exceptions\PartMapInvalid;
 use App\Support\ActorIdentity;
 use App\Support\Cards\DockCard;
+use App\Support\Cards\DockIdentity;
 use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\Contracts\DestinationGate;
 use App\Support\Sources\Contracts\DockableProvider;
@@ -123,6 +124,27 @@ final readonly class DockProjection
     }
 
     /**
+     * The cards of records the chat's lines show, by the line that shows each, composed for the actor; a record the
+     * actor may not read, or whose owner no longer composes it, has no card.
+     *
+     * @param  array<string, DockIdentity>  $sources  each record by the key of the line that shows it
+     * @return array<string, EncodedCard>
+     */
+    public function cardsOf(array $sources): array
+    {
+        $composed = $this->composedSources(array_values($sources), $this->gate->contextFor($this->actors->actor()));
+        $cards = [];
+
+        foreach ($sources as $key => $source) {
+            foreach ($composed->find($source) as $card) {
+                $cards[$key] = $this->encoder->encode($card, $key, $source, mb_substr($card->accessibleName, 0, self::SUMMARY_CHARACTER_LIMIT));
+            }
+        }
+
+        return $cards;
+    }
+
+    /**
      * @return Collection<int, DockPlacement>
      */
     private function batchAfter(Conversation $conversation, DockCursor $place): Collection
@@ -144,16 +166,27 @@ final readonly class DockProjection
      */
     private function composed(Collection $placements, CardContext $context): DockCards
     {
+        return $this->composedSources(
+            array_values($placements->map(fn (DockPlacement $placement) => $placement->source())->all()),
+            $context,
+        );
+    }
+
+    /**
+     * @param  list<DockIdentity>  $sources
+     */
+    private function composedSources(array $sources, CardContext $context): DockCards
+    {
         $cards = new DockCards();
 
-        foreach ($placements->groupBy('dockable_type') as $type => $ofType) {
+        foreach (collect($sources)->groupBy(fn (DockIdentity $source) => $source->type) as $type => $ofType) {
             try {
                 $definition = $this->registry->definition((string) $type);
                 /**
                  * @var DockableProvider $provider
                  */
                 $provider = $this->container->make($definition->provider);
-                $ids = array_values($ofType->map(fn (DockPlacement $placement) => $placement->dockable_id)->all());
+                $ids = array_values($ofType->map(fn (DockIdentity $source) => $source->id)->all());
 
                 foreach ($provider->cardsFor($definition, $ids, $context) as $composed) {
                     $cards->add($composed);

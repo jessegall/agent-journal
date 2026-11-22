@@ -1,5 +1,6 @@
 import type { ChatEventsPageData, ChatLineData, ChatMessageData, ChatRowsPageData, ConversationData } from '@generated/types/chat';
 import { onChatAccessEnded } from '@kit/chatAccess';
+import type { DockNode } from '@kit/dockCards';
 import { readPage } from '@kit/pageReads';
 import type { PropReadFailed } from '@kit/pageReads';
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
@@ -40,6 +41,19 @@ export type ChatTimelineClient = {
  */
 /** The timeline event of a plain line a domain posted, which carries no message. */
 const LINE_EVENT = 'line';
+
+/** Whether a card's parts hold a time that has not ended, so what it shows still runs. */
+function isRunning(node: DockNode | null): boolean {
+    if (node === null) {
+        return false;
+    }
+
+    if (node.type === 'duration') {
+        return node.finishedAt === null;
+    }
+
+    return 'children' in node && node.children.some((child) => isRunning(child));
+}
 
 function readTimeline<Page>(routeName: string, query: Record<string, string>): Promise<Page> {
     return readPage<Page>(routeName, query).catch((failure: PropReadFailed) => {
@@ -83,6 +97,17 @@ export function useChatTimeline(
     let reading: Promise<void> | null = null;
     const messages = shallowRef<ChatMessageData[]>([]);
     const lines = shallowRef<ChatLineData[]>([]);
+
+    // A line whose card shows a record still running is read again until it ends, so its state and time stay current.
+    const RUNNING_CARD_READ_MS = 3000;
+    const runningRead = setInterval(() => {
+        const inboxId = conversation.value?.inboxId;
+
+        if (inboxId !== undefined && lines.value.some((line) => isRunning(line.card?.root ?? null))) {
+            void client.rows(inboxId, null).then((page) => keepLines(page.lines));
+        }
+    }, RUNNING_CARD_READ_MS);
+    onBeforeUnmount(() => clearInterval(runningRead));
 
     // Pages overlap, so each plain line is kept once, by its position in the timeline.
     function keepLines(more: ChatLineData[]): void {
