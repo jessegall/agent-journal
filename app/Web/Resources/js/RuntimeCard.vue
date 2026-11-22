@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import type { DriverRequestStatus, RuntimeStatus } from '@/types/generated';
-import { Link } from '@inertiajs/vue3';
-import { terminal } from '@/routes/web';
 import { recover } from './runtimeRecovery';
 import RuntimeSettingDetail from './RuntimeSettingDetail.vue';
 import RuntimeRequestRow from './RuntimeRequestRow.vue';
 
 /**
- * One agent runtime as stored: its driver, activity, hold, settings and latest driver requests, with a button that
- * releases a hold the owner may release, and for a terminal runtime its live terminal and how many people watch it.
+ * The live controls of one agent runtime, a native part under its summary card: a button that releases a hold the
+ * owner may release, its settings and its latest driver requests with their recovery buttons.
  */
 const props = defineProps<{
     status: RuntimeStatus;
@@ -22,32 +20,15 @@ function releaseHold(): void {
         'Why release this hold?',
     );
 }
-
-function age(seconds: number | null): string {
-    return seconds === null ? 'never observed' : `${seconds}s ago`;
-}
 </script>
 
 <template>
-    <section class="flex flex-col gap-2 rounded border border-line p-4">
-        <header class="flex flex-wrap items-baseline gap-3">
-            <span class="font-mono">{{ status.driver }}</span>
-            <span>{{ status.activity }}</span>
-            <span class="text-text-3">hold: {{ status.hold }}</span>
-            <template v-if="status.canReleaseHold">
-                <button type="button" @click="releaseHold">Release hold</button>
-            </template>
-            <span :class="status.isStale ? 'text-warn' : 'text-text-3'">
-                observed {{ age(status.observationAgeSeconds)
-                }}{{ status.isStale ? ', stale' : '' }}
-            </span>
-            <template v-if="status.variant === 'terminal'">
-                <Link :href="terminal.url(status.agentId)">Watch terminal</Link>
-            </template>
-            <template v-if="status.watchers > 0">
-                <span class="text-text-3">{{ status.watchers }} watching</span>
-            </template>
-        </header>
+    <section class="flex flex-col gap-2">
+        <template v-if="status.canReleaseHold">
+            <button type="button" class="self-start" @click="releaseHold">
+                Release hold
+            </button>
+        </template>
         <dl class="grid grid-cols-[auto_1fr] gap-x-4 text-sm">
             <dt class="text-text-3">model</dt>
             <RuntimeSettingDetail :setting="status.model" />

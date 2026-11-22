@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Pages;
 
+use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\SidebarGroupProvider;
@@ -35,8 +36,18 @@ use App\Web\Resolvers\TerminalWindowResolver;
  * /web/runtimes, with the owner's recovery actions; Home, first in the sidebar; and the sidebar groups Work and Agents
  * that any domain may join.
  */
-final class WebPages implements NavigationProvider, PageProvider, SidebarGroupProvider
+final class WebPages implements NativePartProvider, NavigationProvider, PageProvider, SidebarGroupProvider
 {
+    /**
+     * The native parts the runtime status mounts: each runtime's live controls and the refused recovery above them.
+     *
+     * @return list<string>
+     */
+    public function nativeParts(): array
+    {
+        return ['RuntimeCard.vue', 'RuntimeRefusal.vue'];
+    }
+
     public function navigation(): array
     {
         return [NavigationItem::page('home', 'Home', Icon::Home)];
@@ -59,7 +70,7 @@ final class WebPages implements NavigationProvider, PageProvider, SidebarGroupPr
                 ->actions(
                     ActionRoute::post('asks/{ask}/approve-merge', ApproveMergeAskPageController::class, 'approve-merge'),
                 ),
-            Page::make('runtimes', 'Runtimes', Icon::Activity, RuntimeStatusResolver::class, 'Runtimes.vue')
+            Page::layout('runtimes', 'Runtimes', Icon::Activity, RuntimeStatusResolver::class)
                 ->at('runtimes')
                 ->actions(
                     ActionRoute::post(
