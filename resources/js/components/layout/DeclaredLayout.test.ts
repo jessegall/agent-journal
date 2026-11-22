@@ -153,6 +153,7 @@ describe('a declared layout', () => {
                                         method: 'POST',
                                         href: '/documents/reports/42/settle',
                                         fixed: { revision: 1 },
+                                        isKeyed: false,
                                     },
                                     children: [
                                         part({
