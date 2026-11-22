@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Web\Pages;
 
+use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\SidebarGroupProvider;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\DomainUi;
+use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
 use App\Ui\Declarations\SidebarGroup;
 use App\Ui\Declarations\Slot;
@@ -30,10 +32,16 @@ use App\Web\Resolvers\TerminalWindowResolver;
 
 /**
  * The pages Core's Web declares itself, served beside the domains' pages: Home, at /, and the runtime status, at
- * /web/runtimes, with the owner's recovery actions; and the sidebar groups Work and Agents that any domain may join.
+ * /web/runtimes, with the owner's recovery actions; Home, first in the sidebar; and the sidebar groups Work and Agents
+ * that any domain may join.
  */
-final class WebPages implements PageProvider, SidebarGroupProvider
+final class WebPages implements NavigationProvider, PageProvider, SidebarGroupProvider
 {
+    public function navigation(): array
+    {
+        return [NavigationItem::page('home', 'Home', Icon::Home)];
+    }
+
     public function sidebarGroups(): array
     {
         return [SidebarGroup::make('work', 'Work'), SidebarGroup::make('agents', 'Agents')];

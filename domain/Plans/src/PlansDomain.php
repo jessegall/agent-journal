@@ -300,7 +300,7 @@ final class PlansDomain extends Domain implements
     public function navigation(): array
     {
         return [
-            NavigationItem::page('list', 'Plans', Icon::Plan, position: 20)->children([
+            NavigationItem::page('list', 'Plans', Icon::Plan, group: 'web.work', position: 20)->children([
                 NavigationItem::page('open', 'Open', page: 'list', query: ['state' => 'open'], position: 10)
                     ->count(OpenPlansCount::class),
                 NavigationItem::page('waiting', 'Waiting', page: 'list', query: ['state' => 'waiting'], position: 20)
