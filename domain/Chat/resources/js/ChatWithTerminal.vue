@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { readStoredJson, keepStoredJson } from '@kit/browserStorage';
-import PaneSplitter from '@kit/PaneSplitter';
+import Splitter from '@kit/Splitter';
 import PaneTabs from '@kit/PaneTabs';
 import type { PaneTab } from '@kit/PaneTabs';
 import TerminalHeader from '@kit/TerminalHeader';
@@ -85,10 +85,6 @@ const tabs = computed<PaneTab[]>(() => [
     },
 ]);
 const panelRole = computed(() => (isOpen.value && placement.value === 'tabs' ? 'tabpanel' : 'region'));
-const splitLimits = computed(() => ({
-    minimum: boundedChatShare(0, width.value, remPixels()),
-    maximum: boundedChatShare(1, width.value, remPixels()),
-}));
 
 const placementLabel = computed(
     () => ({ dock: 'Beside chat', tabs: 'In a tab', 'full-screen': 'Full screen' })[placement.value],
@@ -171,10 +167,6 @@ async function leaveFullScreen(): Promise<void> {
 function moveSplit(share: number, spaceSize: number): void {
     chatShare.value = boundedChatShare(share, spaceSize, remPixels());
     keepStoredJson('local', SPLIT_STORAGE_KEY, chatShare.value);
-}
-
-function resetSplit(): void {
-    moveSplit(DEFAULT_CHAT_SHARE, width.value);
 }
 
 function pickTab(key: string): void {
@@ -274,7 +266,7 @@ onBeforeUnmount(() => {
                 </p>
             </template>
         </template>
-        <div ref="space" class="flex min-h-0 flex-1 flex-row">
+        <div ref="space" class="relative flex min-h-0 flex-1 flex-row">
             <div
                 :id="panelIds.chat"
                 ref="chatPanel"
@@ -288,14 +280,12 @@ onBeforeUnmount(() => {
                 <slot />
             </div>
             <template v-if="isOpen && placement === 'dock'">
-                <PaneSplitter
-                    axis="row"
-                    :ratio="boundedChatShare(chatShare, width, remPixels())"
-                    :minimum="splitLimits.minimum"
-                    :maximum="splitLimits.maximum"
-                    :step="0.01"
-                    @move="moveSplit"
-                    @reset="resetSplit"
+                <Splitter
+                    axis="x"
+                    :span="width"
+                    :model-value="boundedChatShare(chatShare, width, remPixels())"
+                    :style="{ left: `calc(${boundedChatShare(chatShare, width, remPixels()) * 100}% - 4px)` }"
+                    @update:model-value="(share: number) => moveSplit(share, width)"
                 />
             </template>
             <template v-if="isOpen && agent">
