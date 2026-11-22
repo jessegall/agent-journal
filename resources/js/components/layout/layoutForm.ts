@@ -53,3 +53,19 @@ export function startingValues(form: LayoutPartData): LayoutFormValues {
 
     return values;
 }
+
+const SENT: InjectionKey<() => void> = Symbol('journal.layout-form-sent');
+
+/**
+ * Lets a form stood in by a dialog tell the dialog its submission was accepted.
+ */
+export function provideFormSent(sent: () => void): void {
+    provide(SENT, sent);
+}
+
+/**
+ * What to do once the form this part stands in was accepted; nothing outside a dialog.
+ */
+export function useFormSent(): () => void {
+    return inject(SENT, () => undefined);
+}

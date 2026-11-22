@@ -76,6 +76,15 @@ function showMore(): void {
             }}</span>
         </span>
     </template>
+    <template v-else-if="part.action?.submits">
+        <Button
+            type="submit"
+            :variant="style"
+            :size="size"
+            :pending="form?.processing ?? false"
+            >{{ part.text }}</Button
+        >
+    </template>
     <template v-else-if="part.action?.appends">
         <span class="inline-flex items-center gap-2">
             <Button :variant="style" :size="size" :pending="isReading" @click="showMore">{{

@@ -6,7 +6,7 @@ namespace App\Ui\Enums;
 
 /**
  * The parts a declared layout may hold, as they cross the page wire, with what each accepts: its sizes and
- * styles, default first, and whether it holds children: box, text, collection, notice, action, field, form, tabs, body, native, menu and progress.
+ * styles, default first, and whether it holds children: box, text, collection, notice, action, field, form, tabs, body, native, menu, progress and dialog.
  */
 enum LayoutTag: string
 {
@@ -22,6 +22,7 @@ enum LayoutTag: string
     case Native = 'native';
     case Menu = 'menu';
     case Progress = 'progress';
+    case Dialog = 'dialog';
 
     /**
      * The sizes the part takes, the default first; none for a part that takes no size.
@@ -34,7 +35,7 @@ enum LayoutTag: string
             self::Box, self::Collection => ['normal', 'compact'],
             self::Text, self::Action => ['normal', 'small', 'large'],
             self::Field => ['normal'],
-            self::Notice, self::Form, self::Tabs, self::Body, self::Native, self::Menu, self::Progress => [],
+            self::Notice, self::Form, self::Tabs, self::Body, self::Native, self::Menu, self::Progress, self::Dialog => [],
         };
     }
 
@@ -58,6 +59,7 @@ enum LayoutTag: string
             self::Native => ['native'],
             self::Menu => ['dropdown'],
             self::Progress => ['meter', 'counted'],
+            self::Dialog => ['dialog'],
         };
     }
 
@@ -67,6 +69,9 @@ enum LayoutTag: string
      */
     public function holdsChildren(string $style): bool
     {
-        return $this === self::Form || $this === self::Tabs || $this === self::Box && $style !== 'divider';
+        return $this === self::Form
+            || $this === self::Tabs
+            || $this === self::Dialog
+            || $this === self::Box && $style !== 'divider';
     }
 }

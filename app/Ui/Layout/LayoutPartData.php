@@ -52,6 +52,7 @@ final class LayoutPartData extends Data
         public readonly int|Optional $placeholders = new Optional(),
         public readonly LayoutSplitData|Optional $split = new Optional(),
         public readonly LayoutProgressData|Optional $progress = new Optional(),
+        public readonly LayoutDialogData|Optional $dialog = new Optional(),
     ) {}
 
     public static function box(string $key, string $style, LayoutPartData ...$children): self
@@ -194,6 +195,36 @@ final class LayoutPartData extends Data
     }
 
     /**
+     * A dialog that a part of the layout opens: the opener (an action, or a menu whose item opens it), then one form
+     * with its fields and, last, the footer actions that send it. Cancel and Escape give the focus back to the opener.
+     *
+     * @param  list<LayoutPartData>  $fields
+     * @param  list<LayoutPartData>  $footer
+     */
+    public static function dialog(
+        string $key,
+        LayoutDialogData $dialog,
+        LayoutPartData $opener,
+        LayoutFormData $form,
+        array $fields,
+        array $footer,
+    ): self {
+        $sheet = self::form('form', $form, 'stack', ...[...$fields, self::box('footer', 'row', ...$footer)]);
+
+        return new self(
+            LayoutTag::Dialog,
+            $key,
+            null,
+            'dialog',
+            null,
+            null,
+            [],
+            [$opener, $sheet],
+            dialog: $dialog,
+        );
+    }
+
+    /**
      * A measured reading of a value against its maximum: a labelled meter, or, when it counts pieces such as the
      * finished tasks of a plan, a counted progress.
      */
@@ -297,6 +328,13 @@ final class LayoutPartData extends Data
         }
     }
 
+    private function hasOpenerAndForm(): bool
+    {
+        return count($this->children) === 2
+            && in_array($this->children[0]->tag, [LayoutTag::Action, LayoutTag::Menu], true)
+            && $this->children[1]->tag === LayoutTag::Form;
+    }
+
     /**
      * Only a badge takes a tone, and only a known one; only an action takes an action binding and only a field a
      * field binding, and each of them needs its own.
@@ -324,6 +362,8 @@ final class LayoutPartData extends Data
             || ($this->tag === LayoutTag::Native) === $this->native instanceof Optional
             || ($this->tag === LayoutTag::Menu) === $this->menu instanceof Optional
             || ($this->tag === LayoutTag::Progress) === $this->progress instanceof Optional
+            || ($this->tag === LayoutTag::Dialog) === $this->dialog instanceof Optional
+            || ($this->tag === LayoutTag::Dialog && ! $this->hasOpenerAndForm())
             || ($this->tag === LayoutTag::Tabs) === ($this->tabs === [])
             || ($this->style === 'skeleton') === $this->placeholders instanceof Optional
             || ! $this->split instanceof Optional && ! ($this->tag === LayoutTag::Box && $this->style === 'split')

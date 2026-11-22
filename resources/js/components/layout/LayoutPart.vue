@@ -4,6 +4,7 @@ import LayoutAction from '@/components/layout/LayoutAction.vue';
 import LayoutBody from '@/components/layout/LayoutBody.vue';
 import LayoutBox from '@/components/layout/LayoutBox.vue';
 import LayoutCollection from '@/components/layout/LayoutCollection.vue';
+import LayoutDialog from '@/components/layout/LayoutDialog.vue';
 import LayoutField from '@/components/layout/LayoutField.vue';
 import LayoutForm from '@/components/layout/LayoutForm.vue';
 import LayoutMenu from '@/components/layout/LayoutMenu.vue';
@@ -31,6 +32,7 @@ const partComponents: Record<LayoutTag, Component> = {
     native: LayoutNative,
     menu: LayoutMenu,
     progress: LayoutProgress,
+    dialog: LayoutDialog,
 };
 </script>
 

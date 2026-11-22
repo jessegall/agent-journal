@@ -16,6 +16,8 @@ use App\Ui\Exceptions\InvalidSectionDeclaration;
 use App\Ui\Exceptions\LayoutRefused;
 use App\Ui\Layout\DeclaredLayoutData;
 use App\Ui\Layout\LayoutActionData;
+use App\Ui\Enums\ActionMethod;
+use App\Ui\Layout\LayoutDialogData;
 use App\Ui\Layout\LayoutFactValueData;
 use App\Ui\Layout\LayoutFieldData;
 use App\Ui\Layout\LayoutFormData;
@@ -248,5 +250,25 @@ final class DeclaredLayoutTest extends TestCase
 
         $this->assertSame('/tasks/3', $value->pieces[0]->href);
         $this->assertInstanceOf(Optional::class, $value->pieces[1]->href);
+    }
+
+    public function test_a_dialog_holds_its_opener_then_its_form_with_the_footer_that_sends_it(): void
+    {
+        $dialog = LayoutPartData::dialog(
+            'create',
+            new LayoutDialogData('Create task', 'Task created'),
+            LayoutPartData::action('open', 'Create task', LayoutActionData::changing([])),
+            new LayoutFormData(ActionMethod::Post, '/tasks', isKeyed: true),
+            [LayoutPartData::field('title', 'Title', new LayoutFieldData('title'), 'text')],
+            [LayoutPartData::action('send', 'Create', LayoutActionData::submitting(), 'primary')],
+        );
+
+        $this->assertSame(['open', 'form'], array_map(fn (LayoutPartData $part) => $part->key, $dialog->children));
+        $this->assertSame(['title', 'footer'], array_map(
+            fn (LayoutPartData $part) => $part->key,
+            $dialog->children[1]->children,
+        ));
+        $this->assertGreaterThan(1, $dialog->assertWithinCatalogue());
+        $this->assertInstanceOf(Optional::class, $dialog->dialog->undo);
     }
 }
