@@ -9,11 +9,14 @@ import { type CompassTarget, type Point, compassSize, compassTargetAt, compassTa
  * 29px from the centre for a side (compassTargetAt). The aimed cell is sent through aim. The compass has no keyboard
  * path: every target is also a menu item (compassTargets holds its label) on the window bar and tab menus.
  */
-const props = defineProps<{ center: Point; pointer: Point }>();
+const props = defineProps<{ center: Point; pointer?: Point; aimed?: CompassTarget | null }>();
 
 const emit = defineEmits<{ aim: [target: CompassTarget | null] }>();
 
-const aimed = computed(() => compassTargetAt(props.pointer, props.center));
+// A drag that already knows its target names it; else the pointer aims, within 14px of a cell.
+const aimed = computed(() =>
+    props.aimed !== undefined ? props.aimed : props.pointer ? compassTargetAt(props.pointer, props.center) : null,
+);
 const place = computed(() => ({
     left: `${props.center.x - compassSize / 2}px`,
     top: `${props.center.y - compassSize / 2}px`,
