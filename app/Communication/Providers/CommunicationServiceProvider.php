@@ -6,6 +6,7 @@ namespace App\Communication\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Contracts\ReadEntitlements;
+use App\Actors\Support\ChatMemberPolicies;
 use App\Actors\Support\SystemEntryPolicies;
 use App\Actors\Values\PolicyDefinition;
 use App\Actors\Values\ReadEntitlement;
@@ -77,7 +78,9 @@ final class CommunicationServiceProvider extends ServiceProvider
         SystemEntryPolicies $system,
         ReadEntitlements $reads,
         NotificationTargetRegistry $notificationTargets,
+        ChatMemberPolicies $chatMembers,
     ): void {
+        $chatMembers->allow(MessagePolicy::class);
         $readGrant = ReadEntitlement::grant(MessagePolicy::class);
 
         $reads->declare('messages_show', $readGrant);

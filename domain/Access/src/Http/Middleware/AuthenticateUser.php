@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace Domain\Access\Http\Middleware;
 
 use App\Actors\Contracts\Actor;
+use App\Actors\Contracts\AuthoritySource;
+use App\Actors\Contracts\ChatEligibility;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\JournalAdmission;
+use App\Actors\Support\ActorIdentity;
+use App\Actors\Values\ChatMemberAuthority;
 use App\Actors\Values\OwnerAuthority;
 use Closure;
 use Domain\Access\Exceptions\JournalAccessDenied;
@@ -19,8 +23,14 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class AuthenticateUser
 {
+    /**
+     * The routes a chat member may open: the chat window, its actions and the message reads behind them.
+     */
+    private const array CHAT_ROUTE_PREFIXES = ['chat.', 'communication.'];
+
     public function __construct(
         private JournalAdmission $admission,
+        private ChatEligibility $chats,
         private CurrentActorSetter $actors,
     ) {}
 
@@ -31,16 +41,41 @@ final readonly class AuthenticateUser
     {
         $user = $request->user();
 
-        if (! $user instanceof Actor || ! $this->admission->admits($user)) {
+        if (! $user instanceof Actor) {
             throw JournalAccessDenied::forUser();
         }
 
-        $this->actors->set($user, new OwnerAuthority('the web sign-in'));
+        $this->actors->set($user, $this->authorityOf($user, $request));
 
         try {
             return $next($request);
         } finally {
             $this->actors->clear();
         }
+    }
+
+    /**
+     * The owner gets the owner's authority; a user admitted to chats gets a chat member's, on chat routes alone.
+     *
+     * @throws JournalAccessDenied
+     */
+    private function authorityOf(Actor $user, Request $request): AuthoritySource
+    {
+        if ($this->admission->admits($user)) {
+            return new OwnerAuthority('the web sign-in');
+        }
+
+        if (! $this->chats->isAdmitted(ActorIdentity::of($user), null) || ! $this->isChatRoute($request)) {
+            throw JournalAccessDenied::forUser();
+        }
+
+        return new ChatMemberAuthority('the web sign-in');
+    }
+
+    private function isChatRoute(Request $request): bool
+    {
+        $name = (string) $request->route()?->getName();
+
+        return array_any(self::CHAT_ROUTE_PREFIXES, fn (string $prefix) => str_starts_with($name, $prefix));
     }
 }

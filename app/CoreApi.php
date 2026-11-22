@@ -64,9 +64,11 @@ use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\ActorLabelSet;
+use App\Actors\Support\ChatMemberPolicies;
 use App\Actors\Support\CurrentUser;
 use App\Actors\Support\UnrestrictedAuthorizer;
 use App\Actors\Values\AccessRequirement;
+use App\Actors\Values\ChatMemberAuthority;
 use App\Actors\Values\OwnerAuthority;
 use App\Actors\Values\PolicyDefinition;
 use App\Actors\Values\ReadEntitlement;
@@ -1685,6 +1687,8 @@ final class CoreApi
                 SkillConditionEvaluator::class,
             )
             ->values(
+                ChatMemberAuthority::class,
+                ChatMemberPolicies::class,
                 ChatPermission::class,
                 SeenSession::class,
                 RefusalReason::class,
