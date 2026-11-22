@@ -24,6 +24,7 @@ use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
+use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\Page;
@@ -41,6 +42,9 @@ use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskFilters;
+use Domain\Tasks\Api\TaskGraph;
+use Domain\Tasks\Api\TaskGraphEdge;
+use Domain\Tasks\Api\TaskGraphNode;
 use Domain\Tasks\Api\TaskHistoryPage;
 use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Api\TaskLogLine;
@@ -61,6 +65,7 @@ use Domain\Tasks\Assignments\TaskAssigner;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
+use Domain\Tasks\Contracts\TaskGraphResolver;
 use Domain\Tasks\Contracts\TaskHistoryResolver;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Contracts\TaskLogResolver;
@@ -103,6 +108,7 @@ final class TasksDomain extends Domain implements
     InternalAssignableContributor,
     LinkRecordProvider,
     McpToolProvider,
+    NativePartProvider,
     PageProvider,
     PolicyProvider,
     SkillProvider,
@@ -131,6 +137,16 @@ final class TasksDomain extends Domain implements
     public function requires(): array
     {
         return [];
+    }
+
+    /**
+     * The native part a declared page mounts for a plan's tasks and the waits among them.
+     *
+     * @return list<string>
+     */
+    public function nativeParts(): array
+    {
+        return ['TaskGraph.vue'];
     }
 
     public function pages(): array
@@ -174,6 +190,7 @@ final class TasksDomain extends Domain implements
                 TaskLogResolver::class,
                 TaskProofResolver::class,
                 TaskWaitResolver::class,
+                TaskGraphResolver::class,
                 TaskResolver::class,
                 TaskAssignmentResolver::class,
                 AssignedTaskResolver::class,
@@ -190,6 +207,9 @@ final class TasksDomain extends Domain implements
                 TaskProof::class,
                 TaskWaits::class,
                 TaskWaitLink::class,
+                TaskGraph::class,
+                TaskGraphNode::class,
+                TaskGraphEdge::class,
                 TaskWaitChange::class,
                 TaskSummary::class,
                 TaskAssignmentCompletion::class,
