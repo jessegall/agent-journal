@@ -16,4 +16,9 @@ final readonly class NothingDocked implements DockedSources
     {
         return false;
     }
+
+    public function inboxesDocking(DockIdentity $source): array
+    {
+        return [];
+    }
 }

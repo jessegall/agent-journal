@@ -12,4 +12,11 @@ use App\Docking\Cards\DockIdentity;
 interface DockedSources
 {
     public function isDocked(DockIdentity $source): bool;
+
+    /**
+     * The ids of the inboxes of the chats the source is docked in, at most a hundred.
+     *
+     * @return list<string>
+     */
+    public function inboxesDocking(DockIdentity $source): array;
 }
