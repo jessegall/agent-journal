@@ -304,9 +304,9 @@ func codexHooks(hookFile, command string) ([]byte, string, error) {
 	return hooks, trust.String(), err
 }
 
-// OffersTerminal: Codex has no terminal the host attaches the user to.
+// OffersTerminal: the interactive Codex client runs in a PTY the host owns, which the user attaches to.
 func (Codex) OffersTerminal() bool {
-	return false
+	return true
 }
 
 // KeepsToolsFromSignIn: Codex's sandbox limits writes only, so its tools could read its sign-in (doc 61, decision 8).

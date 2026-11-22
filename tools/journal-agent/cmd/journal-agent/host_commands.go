@@ -305,9 +305,6 @@ type driverRegistration struct {
 	confinementRefusal error
 }
 
-// ErrCodexTerminalUnproven refuses the Codex terminal driver until its terminal is proven on a host.
-var ErrCodexTerminalUnproven = errors.New("the Codex terminal is not proven on any host yet; use Codex headless meanwhile")
-
 // driverRegistrations are the drivers this host opens, by the registration key the journal names in the grant.
 var driverRegistrations = map[string]driverRegistration{
 	"claude-code": {
@@ -327,14 +324,9 @@ var driverRegistrations = map[string]driverRegistration{
 		confinementRefusal: ErrCodexChildUnconfined,
 	},
 	"codex": {
-		open: func(runtimeOpener, string, host.PreparedStart, contracts.DriverProfile, []string,
-			*host.ChildConfinement) (serving.Runtime, error) {
-			return nil, ErrCodexTerminalUnproven
-		},
-		openContained: func(runtimeOpener, string, host.PreparedStart, contracts.DriverProfile,
-			host.ContainerManifest) (serving.Runtime, error) {
-			return nil, ErrCodexTerminalUnproven
-		},
+		open:               runtimeOpener.terminalRuntime,
+		openContained:      inContainer(runtimeOpener.containedTerminalRuntime),
+		confinementRefusal: ErrCodexChildUnconfined,
 	},
 }
 
@@ -678,11 +670,6 @@ func forwardKeys(in io.Reader, connection net.Conn) {
 	}
 }
 
-// errCodexHasNoTerminal refuses to attach to Codex: its runtimes are threads on the account's shared app-server, and
-// a second interactive Codex for the user to type into would be a second sign-in owner.
-var errCodexHasNoTerminal = errors.New("a Codex runtime runs as a thread on its account's shared app-server and has " +
-	"no terminal to attach to")
-
 // installedProgram is the absolute path of the program in the protected installation, which a prepared start runs.
 func installedProgram(installationFolder string, profile contracts.DriverProfile) string {
 	return host.Installation{Folder: installationFolder}.Path(filepath.Join("bin", profile.Driver()))
@@ -798,9 +785,6 @@ func openMainRuntime(
 	profile, known := profileFor[program]
 	if !known || agentID == "" || folder == "" {
 		return host.AttachRequest{}, errors.New("attach needs --agent, --folder and --driver claude or codex")
-	}
-	if !profile.OffersTerminal() {
-		return host.AttachRequest{}, errCodexHasNoTerminal
 	}
 	enrollment, err := (host.State{Folder: stateFolder}).Load()
 	if err != nil {

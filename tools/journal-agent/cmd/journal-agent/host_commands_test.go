@@ -179,6 +179,26 @@ func TestATerminalStartCarriesTheGrantsCredentialAndGeneration(t *testing.T) {
 	}
 }
 
+// The Codex terminal starts the interactive client in its own PTY: no exec, no JSON stream, and the grant's
+// credential and generation in its environment like every terminal start.
+func TestACodexTerminalStartLaunchesTheInteractiveClient(t *testing.T) {
+	folder := t.TempDir()
+	grant := client.Grant{Token: "launch-token", Runtime: client.RuntimeStart{Folder: folder, ProcessGeneration: 2}}
+
+	launch, err := startOf(profiles.Codex{}, folder, "http://journal.test", "", "runtime-1", grant,
+		[]string{"LANG=C"}, nil, nil, "codex")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if launch.Command[0] != "codex" || slices.Contains(launch.Command, "exec") || slices.Contains(launch.Command, "--json") {
+		t.Fatalf("the codex terminal launches %v, want the interactive client", launch.Command)
+	}
+	if !slices.Contains(launch.Env, "JOURNAL_PROCESS_GENERATION=2") {
+		t.Fatalf("the codex terminal's environment has no process generation: %v", launch.Env)
+	}
+}
+
 // A contained host checks an account start in a protected-account container against the protected platform's
 // native evidence, needs no local installation for it, and refuses a grant that names no container.
 func TestAContainedAccountStartIsCheckedAgainstItsContainersProtection(t *testing.T) {

@@ -65,22 +65,16 @@ func TestARelayOffersOnlyTheDriversItRunsIsolatedWithALease(t *testing.T) {
 	}
 }
 
-func TestEachDefaultDriverIsRegisteredByItsKeyAndTheCodexTerminalRefuses(t *testing.T) {
+func TestEachDefaultDriverIsRegisteredByItsKey(t *testing.T) {
 	for _, key := range []string{"claude-code", "claude-code-headless", "codex", "codex-headless"} {
 		if _, found := driverRegistrations[key]; !found {
 			t.Fatalf("the host has no registration for %q", key)
 		}
 	}
-	codex := driverRegistrations["codex"]
-
-	if _, err := codex.open(runtimeOpener{}, "runtime-1", host.PreparedStart{}, nil, nil, nil); !errors.Is(err, ErrCodexTerminalUnproven) {
-		t.Fatalf("the codex terminal opened with %v, want ErrCodexTerminalUnproven", err)
-	}
-	if _, err := codex.openContained(runtimeOpener{}, "runtime-1", host.PreparedStart{}, nil, host.ContainerManifest{}); !errors.Is(err, ErrCodexTerminalUnproven) {
-		t.Fatalf("the contained codex terminal opened with %v, want ErrCodexTerminalUnproven", err)
-	}
-	if !errors.Is(driverRegistrations["codex-headless"].confinementRefusal, ErrCodexChildUnconfined) {
-		t.Fatal("codex headless does not refuse a confined child")
+	for _, key := range []string{"codex", "codex-headless"} {
+		if !errors.Is(driverRegistrations[key].confinementRefusal, ErrCodexChildUnconfined) {
+			t.Fatalf("%s does not refuse a confined child", key)
+		}
 	}
 }
 
