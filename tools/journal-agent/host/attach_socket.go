@@ -110,6 +110,7 @@ func (socket *AttachSocket) serve(connection net.Conn) {
 	}
 	terminal.attach(connection)
 	defer terminal.attach(nil)
+	terminal.gate.LocalResized()
 	terminal.resize(request.Rows, request.Columns)
 
 	for {
@@ -124,6 +125,7 @@ func (socket *AttachSocket) serve(connection net.Conn) {
 			}
 		case frameResize:
 			if len(payload) == 4 {
+				terminal.gate.LocalResized()
 				terminal.resize(binary.BigEndian.Uint16(payload[:2]), binary.BigEndian.Uint16(payload[2:]))
 			}
 		}
