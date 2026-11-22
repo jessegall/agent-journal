@@ -38,6 +38,8 @@ final class SkillReceiptsTest extends TestCase
         'skill_publications',
         'skill_generations',
         'command_receipts',
+        'profile_revisions',
+        'profiles',
         'agents',
         'agent_sessions',
     ];

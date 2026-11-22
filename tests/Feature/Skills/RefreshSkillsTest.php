@@ -52,6 +52,8 @@ final class RefreshSkillsTest extends TestCase
         'skills',
         'number_groups',
         'command_receipts',
+        'profile_revisions',
+        'profiles',
         'agent_sessions',
         'agents',
     ];

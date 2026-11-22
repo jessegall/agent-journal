@@ -48,6 +48,8 @@ final class SessionSkillStatusTest extends TestCase
         'skill_revisions',
         'skills',
         'command_receipts',
+        'profile_revisions',
+        'profiles',
         'agents',
         'agent_sessions',
     ];

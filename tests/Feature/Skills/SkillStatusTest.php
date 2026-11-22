@@ -50,6 +50,8 @@ final class SkillStatusTest extends TestCase
         'skill_publications',
         'skill_generations',
         'command_receipts',
+        'profile_revisions',
+        'profiles',
         'agent_sessions',
         'agents',
     ];
