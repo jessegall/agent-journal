@@ -893,7 +893,7 @@ const H=()=>760-2-40-(infoShown()?30:0)-(ui.barHidden?0:54);
 /* =====================================================================================================================
    Windows: what each key shows
    ===================================================================================================================== */
-const CAT={chat:{t:'Chat',ic:'chat',w:480,h:520},tasks:{t:'Tasks',ic:'todos',n:TASKS.length,w:420,h:330},asks:{t:'Asks',ic:'question',n:1,w:360,h:200},plans:{t:'Plans',ic:'plan',n:2,w:360,h:300},
+const CAT={chat:{t:'Chat',ic:'chat',w:480,h:520},tasks:{t:'Tasks',ic:'todos',n:TASKS.length,w:420,h:330},asks:{t:'Questions',ic:'question',n:1,w:360,h:200},plans:{t:'Plans',ic:'plan',n:2,w:360,h:300},
   docs:{t:'Documents',ic:'docs',n:4,w:380,h:280},helpers:{t:'Helpers',ic:'users',w:340,h:220},project:{t:'Project',ic:'folder',w:280,h:460,key:'⌥1'},activity:{t:'Activity',ic:'pulse',w:520,h:300,key:'⌥2'},reminders:{t:'Reminders',ic:'bell',w:320,h:190}};
 /* A key names a window: 'tasks', 'conv:h262', 'item:task:1711', 'file:<path>' or 'mem:a1'. */
 function spec(k){for(const p of ['conv','item','file','mem'])if(k.startsWith(p+':'))return {type:p,v:k.slice(p.length+1)};return {type:k}}
@@ -1216,8 +1216,8 @@ function chatPlain(){const p=paneOf('chat');if(p&&p.tabs.length===1)p.framed=fal
 const STEPS={
   start:['1 · Day one','A new user sees only the chat in the middle, centred at the reading width, with the composer under it. The + in the agent bar adds a window; ⌘K does everything.'],
   first:['2 · A first window','Tasks floats where it opened. Push it past the right edge of Home to dock it there, or drag it onto the chat\'s compass (the cross of five squares in the middle of a pane).'],
-  docked:['3 · Docked','Asks and Tasks docked on the right; the chat keeps its reading width in the space left. Drag the shared edges, or focus one and use the arrow keys.'],
-  bare:['4 · Without the chat','Tasks, Plans and Asks fill Home in a grid. The chat comes back from the + or ⌘K.'],
+  docked:['3 · Docked','Questions and Tasks docked on the right; the chat keeps its reading width in the space left. Drag the shared edges, or focus one and use the arrow keys.'],
+  bare:['4 · Without the chat','Tasks, Plans and Questions fill Home in a grid. The chat comes back from the + or ⌘K.'],
   helper:['5 · A helper starts','The agent dispatched Designer 262. The journal\'s offer rides on the agent\'s own message as one quiet chip: open Designer 262\'s chat. It docks on the right. The dispatch is an important activity, so it is one quiet line; everything else is in Activity (⌥2).'],
   ide:['6 · Like an IDE','Built by hand from the same pieces: sidebar folded to icons, Project on the left (⌥1), a file in the editor, Activity below it (⌥2), and the chat docked on the right as a tool window. Select lines in the file, then Comment.'],
   group:['7 · A group chat','You, Agent 1 (Claude), Codex 1 (Codex) and Sam in one chat. Everyone receives every message, and agents answer and comment on each other. Hover a message to Reply. Add someone with the person-plus; see who is in it with “4 in this chat”.'],
