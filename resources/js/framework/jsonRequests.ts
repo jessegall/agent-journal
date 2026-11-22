@@ -1,5 +1,8 @@
 import { xsrfToken } from '@/echo';
 
+// The client for the journal's machine streams only, today the terminal's control: a page reads and changes its data
+// through Inertia (page actions and partial reloads), never through this.
+
 /**
  * Why a JSON request failed: the server refused it with a code and message, or no answer came, so nothing is known.
  */

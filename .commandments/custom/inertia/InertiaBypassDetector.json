@@ -8,14 +8,14 @@
         ],
         "reject": [
             {"file": "resources/js/framework/jsonRequests.ts"},
-            {"file": "resources/js/kit/jsonRequests.ts"},
+            {"file": "resources/js/components/terminal/useTerminalControl*.ts"},
             {"testCode": true}
         ]
     },
     "sin": {
         "name": "inertia-bypass",
         "description": "A frontend file reaches the server around Inertia: it imports the JSON request client (jsonRequests) or axios, so its request carries no Inertia headers, its answer is no page and its errors never reach the page's props.",
-        "rule": "Never bypass Inertia (user message 13525): read through the page's props and a partial router.reload({ only: [...] }), and change through router.post/put/delete to the page's own action routes, which answer with only the props they change.",
+        "rule": "Never bypass Inertia (user message 13525): read through the page's props and a partial router.reload({ only: [...] }), and change through router.post/put/delete to the page's own action routes, which answer with only the props they change. The terminal's control stream is the one machine client of the JSON routes.",
         "skill": "inertia-bypass"
     }
 }

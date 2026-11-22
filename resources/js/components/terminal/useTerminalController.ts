@@ -1,5 +1,5 @@
 import type { TerminalFrameData, TerminalInterestData } from '@generated/types/core';
-import { getJson, JsonRequestFailed, postJson } from '@kit/jsonRequests';
+import { getJson, JsonRequestFailed, postJson } from '@/framework/jsonRequests';
 import { seconds, timeOfDay } from '@kit/format';
 import { newRequestId } from '@/kit/requestId';
 import {
