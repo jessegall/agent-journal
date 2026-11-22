@@ -20,8 +20,8 @@ vi.mock('@generated/routes/tasks', () => ({
     block: { url: ({ task }: { task: string }) => `/tasks/${task}/block` },
     cancel: { url: ({ task }: { task: string }) => `/tasks/${task}/cancel` },
 }));
-vi.mock('@kit/Modal', () => ({
-    default: { template: '<div role="dialog"><slot /><slot name="footer" /></div>', props: ['isOpen', 'title'] },
+vi.mock('@kit/Dialog', () => ({
+    default: { template: '<div role="dialog"><slot /><slot name="footer" /></div>', props: ['open', 'title'] },
 }));
 
 const { default: TaskActionDialog } = await import('./TaskActionDialog.vue');

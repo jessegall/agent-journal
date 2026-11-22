@@ -2,7 +2,7 @@
 import { nextTick, ref, useTemplateRef } from 'vue';
 import Button from '@kit/Button';
 import { keyedPost } from '@kit/keyedPost';
-import Modal from '@kit/Modal';
+import Dialog from '@kit/Dialog';
 import { useWindowReload } from '@kit/useWindowQuery';
 import { block, cancel } from '@generated/routes/tasks';
 import { useHostProp } from '@kit/hostProp';
@@ -70,8 +70,8 @@ function checkTask(): void {
 </script>
 
 <template>
-    <Modal
-        :is-open="true"
+    <Dialog
+        :open="true"
         :title="change === 'block' ? `Block task ${number}` : `Cancel task ${number}`"
         @close="emit('close')"
     >
@@ -116,5 +116,5 @@ function checkTask(): void {
                 >
             </template>
         </template>
-    </Modal>
+    </Dialog>
 </template>

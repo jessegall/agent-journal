@@ -108,7 +108,7 @@ defineExpose({ openAt });
                 ref="panel"
                 role="menu"
                 :aria-label="label"
-                class="fixed z-150 flex max-w-82.5 min-w-55 flex-col rounded-menu border border-border-2 bg-raised p-1.5 shadow-pop"
+                class="fixed z-(--z-menu) flex max-w-82.5 min-w-55 flex-col rounded-menu border border-border-2 bg-raised p-1.5 shadow-(--shadow-pop)"
                 :style="{ left: `${placed.x}px`, top: `${placed.y}px` }"
                 @keydown="onKeydown"
                 @keydown.tab="close"

@@ -80,7 +80,7 @@ vi.mock('@inertiajs/vue3', () => ({
         },
     },
 }));
-vi.mock('@kit/Modal', () => ({
+vi.mock('@kit/Dialog', () => ({
     default: { template: '<div><slot /><slot name="footer" /></div>' },
 }));
 vi.mock('@kit/sessionStarts', () => ({

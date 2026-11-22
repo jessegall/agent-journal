@@ -42,7 +42,7 @@ onBeforeUnmount(() => opener?.focus());
             ref="panel"
             role="dialog"
             :aria-labelledby="titleId"
-            class="absolute flex flex-col overflow-hidden rounded-card border border-border-2 bg-raised shadow-pop"
+            class="absolute z-(--z-chat-panel) flex flex-col overflow-hidden rounded-card border border-border-2 bg-raised shadow-(--shadow-pop)"
             :class="
                 placement === 'chat'
                     ? 'top-2 right-1 bottom-2 w-[min(380px,calc(100%-8px))]'

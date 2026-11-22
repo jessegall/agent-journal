@@ -118,7 +118,7 @@ defineExpose({ open: () => openAt('first') });
                 ref="panel"
                 role="menu"
                 :aria-label="label"
-                class="absolute top-full z-150 mt-1 flex max-w-82.5 min-w-55 flex-col rounded-menu border border-border-2 bg-raised p-1.5 shadow-pop"
+                class="absolute top-full z-(--z-menu) mt-1 flex max-w-82.5 min-w-55 flex-col rounded-menu border border-border-2 bg-raised p-1.5 shadow-(--shadow-pop)"
                 :class="align === 'right' ? 'right-0' : 'left-0'"
                 @keydown="onKeydown"
                 @keydown.tab="close"
