@@ -27,6 +27,7 @@ use App\Operations\Enums\AccessType;
 use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Support\ShareRecordDefinition;
 use App\Skills\Contracts\SkillProvider;
+use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\SectionProvider;
@@ -107,6 +108,7 @@ final class PlansDomain extends Domain implements
     CommandProvider,
     LinkRecordProvider,
     McpToolProvider,
+    NativePartProvider,
     NavigationProvider,
     NumberedModelProvider,
     PageProvider,
@@ -237,6 +239,16 @@ final class PlansDomain extends Domain implements
         return [PlanSkill::class];
     }
 
+    /**
+     * The native part the plan layout mounts: the plan's reader with its outline, start and review.
+     *
+     * @return list<string>
+     */
+    public function nativeParts(): array
+    {
+        return ['PlanWindow.vue'];
+    }
+
     public function pages(): array
     {
         return [
@@ -244,7 +256,7 @@ final class PlansDomain extends Domain implements
                 ->at('')
                 ->onHome(20)
                 ->actions(ActionRoute::post('{plan}/start', StartPlanController::class, 'start')),
-            Page::make('plan', 'Plan', Icon::Plan, PlanWindowResolver::class, 'PlanWindow.vue')
+            Page::layout('plan', 'Plan', Icon::Plan, PlanWindowResolver::class)
                 ->at('{plan}')
                 ->inInspector()
                 ->actions(
@@ -278,13 +290,12 @@ final class PlansDomain extends Domain implements
     public function sections(): array
     {
         return [
-            Section::make(
+            Section::layout(
                 'waiting',
                 'Waiting for review',
                 'chat.dock',
                 SlotContextType::Session,
                 WaitingPlansSection::class,
-                'WaitingPlansSection.vue',
             ),
             Section::make(
                 'task-plan',
