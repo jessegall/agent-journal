@@ -4,7 +4,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useConversationIntents } from './composables/useConversationIntents';
 import { draftKey } from './composables/useMessageDrafts';
 import type { AgentOptionData, ChatData } from '@generated/types/chat';
-import type { MessageView } from '@kit/CoreTypes';
+import type { ReplyTarget } from './composables/useConversationIntents';
 import { isRevealed } from '@kit/protectedView';
 import SlotSections from '@kit/SlotSections';
 import { read as readRoute } from '@generated/routes/chat';
@@ -37,9 +37,9 @@ const key = computed(() => {
 
     return conversation.value === undefined || !user
         ? undefined
-        : draftKey(user.id, conversation.value.agentId);
+        : draftKey(user.id, conversation.value.inboxId);
 });
-const replyingTo = ref<MessageView | null>(null);
+const replyingTo = ref<ReplyTarget | null>(null);
 
 /**
  * The owner of the user's sends in this conversation, the same one Home and Chat's page share.
@@ -61,16 +61,12 @@ watch(
 );
 const unreadShown = computed(() =>
     (conversation.value?.messages ?? [])
-        .filter(
-            (message) =>
-                message.sourceInboxId !== conversation.value?.sourceInboxId &&
-                message.firstReader === undefined,
-        )
+        .filter((message) => message.speaker.actor !== conversation.value?.viewer && !message.readByMe)
         .map((message) => message.id),
 );
 
 /**
- * Reads the incoming messages this conversation shows, for everyone at the inbox. It runs when the user opens the
+ * Marks the incoming rows this chat shows as read by the viewer alone. It runs when the user opens the
  * conversation or asks for it, never on a background refresh.
  */
 function readShown(): void {
@@ -83,7 +79,7 @@ function readShown(): void {
     router.post(
         readRoute().url,
         {
-            inboxId: shown.sourceInboxId,
+            inboxId: shown.inboxId,
             messageIds: unreadShown.value,
             agent: shown.agentId,
         },
@@ -103,7 +99,7 @@ let openedConversationId: string | undefined;
  * the same conversation again after a catch-up reads nothing, and neither does opening one question passively.
  */
 function readOnOpen(): void {
-    const id = conversation.value?.id;
+    const id = conversation.value?.inboxId;
 
     const opensOneQuestion = props.chat.focusedQuestionId !== undefined;
 
@@ -117,7 +113,7 @@ function readOnOpen(): void {
 
 onMounted(readOnOpen);
 watch(
-    () => conversation.value?.id,
+    () => conversation.value?.inboxId,
     () => {
         replyingTo.value = null;
         readOnOpen();
@@ -171,10 +167,10 @@ function retryFocused(): void {
                     :messages="conversation.messages"
                     :pending="pending"
                     :refused="refused"
-                    :own-inbox-id="conversation.sourceInboxId"
+                    :viewer="conversation.viewer"
                     :question-url="questionUrl"
                     @reply="(message) => (replyingTo = message)"
-                    @check-again="(intent) => owner?.checkAgain(intent)"
+                    @check-again="(intent) => owner?.retry(intent, protectedProp)"
                     @restore="(intentKey) => owner?.restore(intentKey)"
                     @discard="(intentKey) => owner?.discardRecovery(intentKey)"
                 />
@@ -184,12 +180,12 @@ function retryFocused(): void {
                         <button type="button" class="underline" @click="readShown">
                             Read shown messages
                         </button>
-                        <span>Reading is shared with everyone at this inbox.</span>
+                        <span>Only your own reading changes.</span>
                     </p>
                 </template>
                 <SlotSections :sections="chat.dockSections" />
                 <DockStack
-                    :key="conversation.id"
+                    :key="conversation.inboxId"
                     :dock="conversation.dock"
                     :agent-id="conversation.agentId"
                     :load-more="loadMore"
@@ -200,8 +196,7 @@ function retryFocused(): void {
                     :agent-name="selected.name"
                     :session-id="conversation.sessionId"
                     :session-generation="conversation.sessionGeneration"
-                    :source-inbox-id="conversation.sourceInboxId"
-                    :destination-inbox-id="conversation.destinationInboxId"
+                    :inbox-id="conversation.inboxId"
                     :replying-to="replyingTo"
                     :conversation-prop="protectedProp"
                     @replied="replyingTo = null"

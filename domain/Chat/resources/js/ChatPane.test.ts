@@ -54,35 +54,36 @@ vi.mock('./AgentSessionActions.vue', () => ({
 
 const { default: ChatPane } = await import('./ChatPane.vue');
 
-function chatWith(conversationId: string): ChatData {
+function chatWith(inboxId: string): ChatData {
     return {
         agents: [{ id: 'agent-1', name: 'Main agent' }],
         selectedAgentId: 'agent-1',
         setupRequired: false,
         dockSections: [],
         conversation: {
-            id: conversationId,
+            inboxId,
             agentId: 'agent-1',
-            sourceInboxId: 'inbox-user',
-            destinationInboxId: 'inbox-agent',
+            viewer: 'user:user-1',
+            participants: [],
             sessionId: null,
             sessionGeneration: 0,
             dock: { cards: [], more: null },
             messages: [
                 {
-                    id: `${conversationId}-unread`,
-                    sourceInboxId: 'inbox-agent',
-                    firstReader: undefined,
+                    id: `${inboxId}-unread`,
+                    speaker: { actor: 'agent:agent-1', label: 'Main agent', driver: null },
+                    readByMe: false,
+                    replyTo: null,
                 },
             ],
         },
     } as unknown as ChatData;
 }
 
-function mountPane(conversationId = 'conversation-1') {
+function mountPane(inboxId = 'conversation-1') {
     return mount(ChatPane, {
         props: {
-            chat: chatWith(conversationId),
+            chat: chatWith(inboxId),
             offersChoice: false,
             agentUrl: () => '/chat',
             questionUrl: () => '/chat?question=1',

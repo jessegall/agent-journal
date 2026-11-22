@@ -7,6 +7,7 @@ namespace App\Communication\Commands;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
+use App\Bus\Contracts\TargetedCommand;
 use App\Bus\Support\Command;
 use App\Communication\Policies\MessagePolicy;
 use App\Operations\Enums\AccessType;
@@ -21,7 +22,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 #[RepeatableRead]
 #[RetainedActorRequestKey]
 #[Authorize(MessagePolicy::class, AccessType::Create)]
-final readonly class AnswerChatQuestion extends Command
+final readonly class AnswerChatQuestion extends Command implements TargetedCommand
 {
     public function __construct(
         public string $questionId,
@@ -31,4 +32,14 @@ final readonly class AnswerChatQuestion extends Command
         public string $requestKey,
         public string|null $claimToken = null,
     ) {}
+
+    public static function targetOf(string $questionId): string
+    {
+        return "reply:{$questionId}";
+    }
+
+    public function receiptTarget(): string
+    {
+        return self::targetOf($this->questionId);
+    }
 }

@@ -38,13 +38,12 @@ const { default: Composer } = await import('./Composer.vue');
 function mountComposer() {
     return mount(Composer, {
         props: {
-            draftKey: 'user-1/agent-1',
+            draftKey: 'user-1/inbox-chat',
             agent: 'agent-1',
             agentName: 'Main agent',
             sessionId: null,
             sessionGeneration: 0,
-            sourceInboxId: 'inbox-user',
-            destinationInboxId: 'inbox-agent',
+            inboxId: 'inbox-chat',
             replyingTo: null,
             conversationProp: 'window_chat_conversation',
         },
@@ -63,7 +62,7 @@ describe('Composer', () => {
     });
 
     it('shows the stored draft once mounted, and a purge empties it and removes the stored draft', async () => {
-        useMessageDrafts().write('user-1/agent-1', 'Half a thought');
+        useMessageDrafts().write('user-1/inbox-chat', 'Half a thought');
         const composer = mountComposer();
         await flushPromises();
         expect((composer.find('textarea').element as HTMLTextAreaElement).value).toBe('Half a thought');
@@ -72,6 +71,6 @@ describe('Composer', () => {
         await flushPromises();
 
         expect((composer.find('textarea').element as HTMLTextAreaElement).value).toBe('');
-        expect(useMessageDrafts().read('user-1/agent-1')).toBe('');
+        expect(useMessageDrafts().read('user-1/inbox-chat')).toBe('');
     });
 });

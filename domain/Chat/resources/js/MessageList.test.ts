@@ -23,7 +23,7 @@ function intent(status: ConversationIntent['status']): ConversationIntent {
 }
 
 function listOf(pending: ConversationIntent[], refused: { entry: object; reason: string }[] = []) {
-    return mount(MessageList, { props: { messages: [], pending, refused, ownInboxId: 'inbox-user' } as never });
+    return mount(MessageList, { props: { messages: [], pending, refused, viewer: 'user:user-1' } as never });
 }
 
 describe('MessageList', () => {

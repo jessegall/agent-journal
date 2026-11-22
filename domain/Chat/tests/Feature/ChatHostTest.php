@@ -15,6 +15,7 @@ use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\OpensPairChats;
 use Tests\Support\StartsMainAgents;
 use Tests\Support\WritesInboxMessages;
 
@@ -24,6 +25,7 @@ use Tests\Support\WritesInboxMessages;
  */
 final class ChatHostTest extends TestCase
 {
+    use OpensPairChats;
     use CommitsHookRows;
     use StartsMainAgents;
     use WritesInboxMessages;
@@ -51,14 +53,16 @@ final class ChatHostTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $session = $this->startedMainAgentSession();
-        $ownInboxId = $this->inboxOf(ActorIdentity::of($owner))->inboxId();
-        $agentInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $session->agent_id))->inboxId();
+        $chatInboxId = $this->pairChat(
+            ActorIdentity::of($owner),
+            new ActorIdentity(ActorType::Agent, $session->agent_id),
+        )->inbox_id;
         $window = ConversationRequest::queryFor($session->agent_id);
 
         $this->actingAs($owner)
             ->post('/chat/messages', [
-                'sourceInboxId' => $ownInboxId,
-                'destinationInboxId' => $agentInboxId,
+                'inboxId' => $chatInboxId,
+                'requestKey' => 'host-send-1',
                 'body' => 'Is the build green?',
                 'agent' => $session->agent_id,
                 'expectedSessionId' => $session->id,
@@ -67,12 +71,12 @@ final class ChatHostTest extends TestCase
             ->assertRedirect(route('home', $window, false));
 
         $message = Message::query()->withoutGlobalScopes()->sole();
-        $this->assertSame($ownInboxId, $message->source_inbox_id);
-        $this->assertSame($agentInboxId, $message->destination_inbox_id);
+        $this->assertSame($chatInboxId, $message->source_inbox_id);
+        $this->assertSame($chatInboxId, $message->destination_inbox_id);
 
         $this->actingAs($owner)->get(route('home', $window, false))->assertInertia(fn (AssertableInertia $page) => $page
             ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
-                ->where('window_chat_conversation.data.conversation.id', "{$ownInboxId}-{$agentInboxId}")
+                ->where('window_chat_conversation.data.conversation.inboxId', $chatInboxId)
                 ->where('window_chat_conversation.data.conversation.messages.0.body', 'Is the build green?')));
     }
 }

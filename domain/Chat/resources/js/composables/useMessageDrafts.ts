@@ -2,8 +2,8 @@ import { reactive } from 'vue';
 import { isStorageAvailable, keepStoredJson, readStoredJson } from '@kit/browserStorage';
 
 /**
- * Unsent message text per user and agent, so browsing other agents, a switch to another driver or reloading the page
- * keeps what was typed. Each agent has its own draft. The drafts live in this tab's session storage; when the
+ * Unsent message text per user and chat inbox, so browsing other chats, a switch to another driver or reloading the
+ * page keeps what was typed. Each chat has its own draft. The drafts live in this tab's session storage; when the
  * browser refuses storage they still last for as long as the page stays open.
  *
  * A send or reply the server refused, or whose answer never came, is kept as a recovery entry beside the drafts: its
@@ -15,7 +15,7 @@ const recoveryKey = 'journal.message-recovery';
 const RECOVERY_LIFETIME_MS = 24 * 60 * 60 * 1000;
 
 /**
- * One send or reply to recover: under its request key, in its draft's scope (user and agent), the text and the
+ * One send or reply to recover: under its request key, in its draft's scope (user and chat inbox), the text and the
  * message it replied to, the draft generation it left behind when it cleared the draft, and when it was kept.
  */
 export type RecoveryEntry = {
@@ -64,8 +64,11 @@ function generationOf(key: string): number {
     return generations.get(key) ?? 0;
 }
 
-export function draftKey(userId: string, agentId: string): string {
-    return `${userId}/${agentId}`;
+/**
+ * The scope of one draft: the viewer and the chat inbox it writes in.
+ */
+export function draftKey(userId: string, inboxId: string): string {
+    return `${userId}/${inboxId}`;
 }
 
 export function useMessageDrafts() {

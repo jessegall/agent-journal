@@ -1,6 +1,6 @@
 import type { FormDataConvertible } from '@inertiajs/core';
 import { reactive, ref } from 'vue';
-import type { MessageView } from '@kit/CoreTypes';
+import type { ChatMessageData } from '@generated/types/chat';
 import { keyedPost } from '@kit/keyedPost';
 import { onPurge } from '@kit/protectedView';
 import { newRequestId } from '@kit/requestId';
@@ -34,7 +34,7 @@ export type ConversationIntent = {
  * A row the conversation shows: a message the server returned, or the user's own send still settling.
  */
 export type ConversationRow =
-    | { kind: 'message'; message: MessageView }
+    | { kind: 'message'; message: ChatMessageData }
     | { kind: 'intent'; intent: ConversationIntent };
 
 type SendDraft = {
@@ -43,12 +43,17 @@ type SendDraft = {
     agent: string;
     expectedSessionId: string | null;
     expectedGeneration: number;
-    sourceInboxId: string;
-    destinationInboxId: string;
+    inboxId: string;
 };
 
 /**
- * The owners of the conversations open in this tab, one per draft scope (user and agent), so Home and Chat share it.
+ * What a reply names of the message it answers: its id and the version the user saw.
+ */
+export type ReplyTarget = { id: string; body: string; stateVersion: number };
+
+/**
+ * The owners of the conversations open in this tab, one per draft scope (user and chat inbox), so Home and Chat share
+ * it.
  */
 const owners = new Map<string, ReturnType<typeof createOwner>>();
 
@@ -68,8 +73,14 @@ function createOwner(draftKey: string) {
         drafts.purgeUser(userId);
     });
 
-    function begin(kind: 'send' | 'reply', text: string, replyToId: string | null, body: Record<string, FormDataConvertible>) {
+    function begin(
+        kind: 'send' | 'reply',
+        text: string,
+        replyToId: string | null,
+        bodyFor: (key: string) => Record<string, FormDataConvertible>,
+    ) {
         const key = newRequestId();
+        const body = bodyFor(key);
         drafts.recordRecovery({ intentKey: key, draftKey, text, replyToId });
         drafts.clearSent(draftKey, text);
         const intent: ConversationIntent = {
@@ -94,26 +105,28 @@ function createOwner(draftKey: string) {
      * Starts a send of the draft: its key, its recovery entry, the cleared draft and a Sending row, at once.
      */
     function beginSend(draft: SendDraft): ConversationIntent {
-        return begin('send', draft.text, null, {
+        return begin('send', draft.text, null, (key) => ({
             body: draft.text,
             agent: draft.agent,
             expectedSessionId: draft.expectedSessionId,
             expectedGeneration: draft.expectedGeneration,
-            sourceInboxId: draft.sourceInboxId,
-            destinationInboxId: draft.destinationInboxId,
-        });
+            inboxId: draft.inboxId,
+            requestKey: key,
+        }));
     }
 
     /**
-     * Starts a reply to the message at the version the user saw.
+     * Starts a reply to the message at the version the user saw, in the chat it was posted in.
      */
-    function beginReply(draft: SendDraft, original: MessageView, shownVersion: number): ConversationIntent {
-        return begin('reply', draft.text, original.id, {
+    function beginReply(draft: SendDraft, original: ReplyTarget, shownVersion: number): ConversationIntent {
+        return begin('reply', draft.text, original.id, (key) => ({
             messageId: original.id,
             stateVersion: shownVersion,
             body: draft.text,
             agent: draft.agent,
-        });
+            inboxId: draft.inboxId,
+            requestKey: key,
+        }));
     }
 
     function refuse(intent: ConversationIntent): void {
@@ -208,6 +221,20 @@ function createOwner(draftKey: string) {
     }
 
     /**
+     * Sends an intention left unknown again under its own request key, so the server answers the message it already
+     * made rather than posting a second one.
+     */
+    function retry(intent: ConversationIntent, conversationProp: string): void {
+        if (intent.isTransportOpen) {
+            return;
+        }
+
+        intent.status = 'sending';
+        intent.isTransportOpen = true;
+        submit(intent, conversationProp);
+    }
+
+    /**
      * The request is over, whatever it answered: the composer may send again, and a confirmation stays.
      */
     function finishTransport(intent: ConversationIntent): void {
@@ -218,7 +245,7 @@ function createOwner(draftKey: string) {
      * Whether the messages already show the intention, or a read that began after its confirmation answered, so an
      * older snapshot never takes a confirmed send away and a newer one that lacks it removes it.
      */
-    function isSettledBy(intent: ConversationIntent, messages: MessageView[]): boolean {
+    function isSettledBy(intent: ConversationIntent, messages: ChatMessageData[]): boolean {
         const isShownAsMessage = messages.some((message) => message.requestKey === intent.key);
         const isSuperseded = intent.status === 'confirmed' && appliedReadGeneration.value >= intent.confirmedGeneration;
 
@@ -229,7 +256,7 @@ function createOwner(draftKey: string) {
      * The rows to show: the messages the server returned, with each of the user's own sends still settling after
      * them.
      */
-    function rows(messages: MessageView[]): ConversationRow[] {
+    function rows(messages: ChatMessageData[]): ConversationRow[] {
         return [
             ...messages.map((message): ConversationRow => ({ kind: 'message', message })),
             ...intents
@@ -241,7 +268,7 @@ function createOwner(draftKey: string) {
     /**
      * Forgets the intentions the messages settled; called when a read was applied.
      */
-    function settle(messages: MessageView[]): void {
+    function settle(messages: ChatMessageData[]): void {
         for (const intent of intents.filter((pending) => isSettledBy(pending, messages))) {
             intents.splice(intents.indexOf(intent), 1);
             drafts.confirm(intent.key);
@@ -267,6 +294,7 @@ function createOwner(draftKey: string) {
         beginReply,
         submit,
         checkAgain,
+        retry,
         finishTransport,
         rows,
         settle,
@@ -282,7 +310,7 @@ function createOwner(draftKey: string) {
 export type ConversationIntents = ReturnType<typeof createOwner>;
 
 /**
- * The one owner of the user's sends in a conversation with an agent, the same on Home and on Chat's own page.
+ * The one owner of the user's sends in one chat, the same on Home and on Chat's own page.
  */
 export function useConversationIntents(draftKey: string): ConversationIntents {
     const known = owners.get(draftKey);

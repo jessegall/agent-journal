@@ -93,6 +93,7 @@ final readonly class ChatConversations
             'stateVersion' => $message->stateVersion,
             'readByMe' => $message->shownToViewer,
             'sentAt' => $message->sentAt,
+            'requestKey' => $message->requestKey,
         ]);
     }
 

@@ -4,13 +4,12 @@ import Button from '@kit/Button';
 import { onPurge } from '@kit/protectedView';
 import Icon from '@kit/Icon';
 import { useComposerHeight } from './composables/useComposerHeight';
-import { useConversationIntents } from './composables/useConversationIntents';
+import { useConversationIntents, type ReplyTarget } from './composables/useConversationIntents';
 import { useMessageDrafts } from './composables/useMessageDrafts';
-import type { MessageView } from '@kit/CoreTypes';
 
 /**
- * Asks the chosen agent, from the user's inbox to the agent's (doc 4, 6.5). The text is the draft of this agent, so
- * browsing other agents, a switch or a reload keeps it; a send names the session the user saw the agent run, is
+ * Posts in the chat with the chosen agent, at the chat's own inbox (doc 4, 6.5). The text is the draft of this chat,
+ * so browsing other chats, a switch or a reload keeps it; a send names the session the user saw the agent run, is
  * refused when the agent runs another one by then, and clears only its own draft, only if it was not typed on since.
  */
 const props = defineProps<{
@@ -19,9 +18,8 @@ const props = defineProps<{
     agentName: string;
     sessionId: string | null;
     sessionGeneration: number;
-    sourceInboxId: string;
-    destinationInboxId: string;
-    replyingTo: MessageView | null;
+    inboxId: string;
+    replyingTo: ReplyTarget | null;
     conversationProp: string;
 }>();
 
@@ -70,8 +68,7 @@ function submit(): void {
         agent: props.agent,
         expectedSessionId: props.sessionId,
         expectedGeneration: props.sessionGeneration,
-        sourceInboxId: props.sourceInboxId,
-        destinationInboxId: props.destinationInboxId,
+        inboxId: props.inboxId,
     };
     const replyingTo = props.replyingTo;
     const intent = replyingTo === null

@@ -1,51 +1,49 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import type { MessageView } from '@kit/CoreTypes';
+import type { ChatMessageData } from '@generated/types/chat';
 import type { ConversationIntent } from './composables/useConversationIntents';
 import type { RecoveryEntry } from './composables/useMessageDrafts';
 import PendingMessage from './PendingMessage.vue';
 import RefusedSend from './RefusedSend.vue';
 
 /**
- * The messages between two inboxes, oldest first: the user's own on the right, the other inbox's on the left with
- * the name of whoever wrote it, and for each incoming question whether it is unread, waiting or taken up. After them
+ * The rows of one chat in timeline order: the viewer's own on the right, everyone else's on the left with the name of
+ * whoever wrote it and, for an agent, the driver it runs through; for each incoming row whether the viewer has not
+ * read it yet, and for a question whether it still waits. After them
  * come the user's own sends still settling, and the refused ones to restore or discard. Bodies are shown as text,
  * never as HTML.
  */
 const props = defineProps<{
-    messages: MessageView[];
+    messages: ChatMessageData[];
     pending: ConversationIntent[];
     refused: { entry: RecoveryEntry; reason: string }[];
-    ownInboxId: string;
+    // The viewing actor as type:id, the speaker of the viewer's own rows.
+    viewer: string;
     // The address that opens one question passively, as a notification opens it.
     questionUrl: (messageId: string) => string;
 }>();
 
 const emit = defineEmits<{
-    reply: [message: MessageView];
+    reply: [message: ChatMessageData];
     checkAgain: [intent: ConversationIntent];
     restore: [intentKey: string];
     discard: [intentKey: string];
 }>();
 
-function isOwn(message: MessageView): boolean {
-    return message.sourceInboxId === props.ownInboxId;
+function isOwn(message: ChatMessageData): boolean {
+    return message.speaker.actor === props.viewer;
 }
 
-function stateOf(message: MessageView): string | null {
-    if (isOwn(message)) {
-        return message.state === 'waiting_for_answer' ? 'Waiting for an answer' : null;
+function speakerOf(message: ChatMessageData): string {
+    return message.speaker.driver === null ? message.speaker.label : `${message.speaker.label} · ${message.speaker.driver}`;
+}
+
+function stateOf(message: ChatMessageData): string | null {
+    if (message.state === 'waiting_for_answer') {
+        return isOwn(message) ? 'Waiting for an answer' : 'Waiting for your answer';
     }
 
-    if (message.firstReader === undefined) {
-        return 'Unread';
-    }
-
-    if (message.state !== 'waiting_for_answer') {
-        return null;
-    }
-
-    return message.claimHolder === undefined ? 'Waiting, nobody took it up' : 'Taken up';
+    return isOwn(message) || message.readByMe ? null : 'Unread';
 }
 </script>
 
@@ -68,8 +66,11 @@ function stateOf(message: MessageView): string | null {
             >
                 <template v-if="!isOwn(message)">
                     <span class="text-small text-text-3">
-                        {{ message.authorLabel ?? message.sourceInboxLabel }}
+                        {{ speakerOf(message) }}
                     </span>
+                </template>
+                <template v-if="message.replyTo !== null && !message.replyTo.visible">
+                    <span class="text-small text-text-3">Replying to a message you cannot see</span>
                 </template>
                 <p
                     class="rounded-bubble bg-raised px-3 py-2 text-body whitespace-pre-wrap text-text"

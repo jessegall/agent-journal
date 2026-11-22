@@ -23,6 +23,7 @@ use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\HoldingRules;
+use Tests\Support\OpensPairChats;
 use Tests\Support\TestIds;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
@@ -32,6 +33,7 @@ use Tests\TestCase;
  */
 final class HomePageTest extends TestCase
 {
+    use OpensPairChats;
     use CommitsHookRows;
     use WritesInboxMessages;
 
@@ -55,7 +57,9 @@ final class HomePageTest extends TestCase
         'message_attentions',
     ];
 
-    private string $pairId;
+    private string $chatInboxId;
+
+    private int $sends = 0;
 
     private User $owner;
 
@@ -73,8 +77,7 @@ final class HomePageTest extends TestCase
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;
-        $ownInboxId = $this->inboxOf(ActorIdentity::of($this->owner))->inboxId();
-        $this->pairId = $ownInboxId.'-'.$this->inboxOf(ActorIdentity::of($agent))->inboxId();
+        $this->chatInboxId = $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($agent))->inbox_id;
         Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
     }
 
@@ -160,7 +163,7 @@ final class HomePageTest extends TestCase
         $this->assertSame([$body], Message::query()->withoutGlobalScopes()->pluck('body')->all());
         $this->actingAs($this->owner)->get($home)->assertInertia(fn (AssertableInertia $page) => $page
             ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
-                ->where('window_chat_conversation.data.conversation.id', $this->pairId)
+                ->where('window_chat_conversation.data.conversation.inboxId', $this->chatInboxId)
                 ->where('window_chat_conversation.data.conversation.sessionId', (string) $this->session->id)
                 ->where('window_chat_conversation.data.conversation.messages.0.body', $body)));
     }
@@ -229,7 +232,7 @@ final class HomePageTest extends TestCase
 
     public function test_a_guessed_destination_inbox_is_refused_and_leaves_no_message(): void
     {
-        $guessed = [...$this->pair(), 'destinationInboxId' => TestIds::of(99999)];
+        $guessed = [...$this->pair(), 'inboxId' => TestIds::of(99999)];
 
         $this->actingAs($this->owner)->from('/')
             ->post('/chat/messages', [...$guessed, 'body' => 'Hello', ...$this->seenSession()])
@@ -262,7 +265,7 @@ final class HomePageTest extends TestCase
 
     public function test_a_denied_target_answers_json_with_403_and_an_expired_sign_in_with_401(): void
     {
-        $guessed = [...$this->pair(), 'destinationInboxId' => TestIds::of(99999), 'body' => 'Hello'];
+        $guessed = [...$this->pair(), 'inboxId' => TestIds::of(99999), 'body' => 'Hello'];
 
         $this->actingAs($this->owner)->postJson('/chat/messages', [...$guessed, ...$this->seenSession()])
             ->assertStatus(403)
@@ -345,7 +348,7 @@ final class HomePageTest extends TestCase
         $this->keyedSend('key-1', [...$this->pair(), 'body' => 'Hi', ...$this->seenSession()])->assertOk();
 
         $this->outcomeOf('key-2')->assertExactJson(['outcome' => 'not-yet-observable']);
-        $this->outcomeOf('key-1', ['destinationInboxId' => TestIds::of(99999)])
+        $this->outcomeOf('key-1', ['inboxId' => TestIds::of(99999)])
             ->assertExactJson(['outcome' => 'not-yet-observable']);
         $this->outcomeOf('key-1', ['operation' => 'reply', 'messageId' => TestIds::of(99999)])
             ->assertExactJson(['outcome' => 'not-yet-observable']);
@@ -384,7 +387,12 @@ final class HomePageTest extends TestCase
      */
     private function outcomeOf(string $key, array $changes = []): TestResponse
     {
-        $query = http_build_query(['requestKey' => $key, 'operation' => 'send', ...$this->pair(), ...$changes]);
+        $query = http_build_query([
+            'operation' => 'send',
+            'inboxId' => $this->chatInboxId,
+            'requestKey' => $key,
+            ...$changes,
+        ]);
 
         return $this->actingAs($this->owner)->getJson("/chat/messages/outcome?{$query}");
     }
@@ -396,17 +404,17 @@ final class HomePageTest extends TestCase
     {
         return $this->actingAs($this->owner)
             ->withHeader('Idempotency-Key', $key)
-            ->postJson('/chat/messages', $send);
+            ->postJson('/chat/messages', [...$send, 'requestKey' => $key]);
     }
 
     /**
-     * @return array{sourceInboxId: string, destinationInboxId: string}
+     * The pair's chat inbox and a request key of the send's own.
+     *
+     * @return array{inboxId: string, requestKey: string}
      */
     private function pair(): array
     {
-        [$sourceInboxId, $destinationInboxId] = explode('-', $this->pairId);
-
-        return ['sourceInboxId' => $sourceInboxId, 'destinationInboxId' => $destinationInboxId];
+        return ['inboxId' => $this->chatInboxId, 'requestKey' => 'home-send-'.++$this->sends];
     }
 
     /**

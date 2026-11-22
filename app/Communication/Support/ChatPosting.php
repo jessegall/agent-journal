@@ -80,26 +80,32 @@ final readonly class ChatPosting
 
     /**
      * A reply lands in its parent's inbox; a parent the author cannot see, or one in another inbox than the one named,
-     * is refused as missing.
+     * is refused as missing. A reply to a question someone else asked that still waits is its answer and closes it.
      *
      * @throws MessageMissing
      */
     public function reply(ReplyInChat $command): string
     {
         $parent = $this->visibleParent($command->parentId, $command->inboxId);
+        $author = $command->dispatchedBy();
+        $answers = $parent->needsReply() && ! $parent->isWrittenBy(ActorIdentity::of($author));
+        $body = MessageBody::from($command->body);
+        $key = $command->requestKey;
 
-        return $this->accept(
+        $reply = $this->accept(
             $this->inboxes->resolve($parent->destination_inbox_id),
-            $command->dispatchedBy(),
+            $author,
             $command->claimToken,
-            fn (Inbox $inbox, ActorIdentity $author) => ChatEnvelope::reply(
-                $inbox,
-                $author,
-                MessageBody::from($command->body),
-                $parent,
-                $command->requestKey,
-            ),
-        )->id;
+            fn (Inbox $inbox, ActorIdentity $identity) => $answers
+                ? ChatEnvelope::answer($inbox, $identity, $body, $parent, $key)
+                : ChatEnvelope::reply($inbox, $identity, $body, $parent, $key),
+        );
+
+        if ($answers) {
+            $this->close($parent, $reply, $author);
+        }
+
+        return $reply->id;
     }
 
     /**
@@ -127,13 +133,23 @@ final readonly class ChatPosting
             ),
         );
 
-        $locked = Message::lockedById($question->id);
-
-        if ($locked->answer_message_id !== $reply->id) {
-            $locked->answerWith($reply, ActorIdentity::of($author), CarbonImmutable::now());
-        }
+        $this->close($question, $reply, $author);
 
         return $reply->id;
+    }
+
+    /**
+     * Closes the question with its answer, once: a retried answer finds it already closed by itself.
+     *
+     * @throws MessageStateConflict
+     */
+    private function close(Message $question, Message $answer, ActorContext $author): void
+    {
+        $locked = Message::lockedById($question->id);
+
+        if ($locked->answer_message_id !== $answer->id) {
+            $locked->answerWith($answer, ActorIdentity::of($author), CarbonImmutable::now());
+        }
     }
 
     /**
