@@ -51,18 +51,29 @@ final class MessageReceipt extends Model implements ReadableModel
 
     /**
      * One receipt for each interval the message reached, in one insert; the sender's interval is presented at once.
+     * Answers the receipts written, each holding its interval.
      *
      * @param  list<InboxInterval>  $intervals
+     * @return list<self>
      */
-    public static function forAudience(Message $message, array $intervals, string $senderIntervalId): void
+    public static function forAudience(Message $message, array $intervals, string $senderIntervalId): array
     {
         $now = CarbonImmutable::now();
 
-        self::createAll(array_map(fn (InboxInterval $interval): self => new self([
-            'message_id' => $message->id,
-            'interval_id' => $interval->id,
-            'presented_at' => $interval->id === $senderIntervalId ? $now : null,
-        ]), $intervals));
+        $receipts = array_map(function (InboxInterval $interval) use ($message, $now, $senderIntervalId): self {
+            $receipt = new self([
+                'message_id' => $message->id,
+                'interval_id' => $interval->id,
+                'presented_at' => $interval->id === $senderIntervalId ? $now : null,
+            ]);
+            $receipt->setRelation('interval', $interval);
+
+            return $receipt;
+        }, $intervals);
+
+        self::createAll($receipts);
+
+        return $receipts;
     }
 
     // ----------[ Mutations ]----------

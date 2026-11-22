@@ -25,6 +25,7 @@ use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Models\Scopes\MessageVisibility;
 use App\Communication\Support\AcceptedOperation;
+use App\Communication\Support\ChatEnvelope;
 use App\Communication\Support\InboxMembership;
 use App\Communication\Support\MessageEnvelope;
 use App\Communication\Support\RegisteredInboxes;
@@ -101,6 +102,13 @@ use Spatie\LaravelData\Optional;
     'state_version',
     'origin_receipt_id',
     'reply_to_id',
+    'timeline_event_id',
+    'addressee_type',
+    'addressee_id',
+    'respondent_type',
+    'respondent_id',
+    'request_key',
+    'request_digest',
 ])]
 final class Message extends Model implements Assignable, EventSource, Numbered, ReadableModel
 {
@@ -184,7 +192,66 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         return $message;
     }
 
+    /**
+     * A new chat message at its timeline position, posted in and to the one chat inbox, under the bus receipt of the
+     * operation that posted it. A user's message starts its own user root; any other inherits the envelope's.
+     */
+    public static function createChat(
+        ChatEnvelope $envelope,
+        TimelineEvent $event,
+        AcceptedOperation $operation,
+        string|null $senderSessionId = null,
+    ): self {
+        $author = $envelope->author;
+        $inboxId = $envelope->inbox->inboxId();
+
+        $message = new self([
+            'message_type' => MessageType::Chat,
+            'source_inbox_id' => $inboxId,
+            'destination_inbox_id' => $inboxId,
+            ...$author->asColumns('sender'),
+            'sender_session_id' => $senderSessionId,
+            'body' => $envelope->body->text,
+            'state' => $envelope->state,
+            'is_question' => $envelope->state === MessageState::WaitingForAnswer,
+            'state_version' => 0,
+            'origin_receipt_id' => $operation->receiptId,
+            'reply_to_id' => $envelope->parent?->id,
+            'timeline_event_id' => $event->id,
+            'addressee_type' => $envelope->addressee?->type->value,
+            'addressee_id' => $envelope->addressee?->id,
+            'respondent_type' => $envelope->respondent?->type->value,
+            'respondent_id' => $envelope->respondent?->id,
+            'request_key' => $envelope->requestKey,
+            'request_digest' => $envelope->digest(),
+        ]);
+
+        $message->id = $message->newUniqueId();
+        $message->conversation_id = $envelope->parent === null ? $message->id : $envelope->parent->conversation_id;
+        $message->user_root_id = $author->type === ActorType::User ? $message->id : $envelope->userRootId;
+
+        $message->assertSaved($message->save());
+
+        $message->raise(new MessageSent($message->id, $author, $inboxId, $inboxId));
+
+        return $message;
+    }
+
     // ----------[ Queries ]----------
+
+    /**
+     * The chat message the author already posted in the inbox under the request key, once there is one.
+     */
+    public static function postedUnderKey(string $inboxId, ActorIdentity $author, string $requestKey): self|null
+    {
+        return self::query()
+            ->acrossInboxes()
+            ->where('destination_inbox_id', $inboxId)
+            ->where('sender_type', $author->type->value)
+            ->where('sender_id', $author->id)
+            ->where('request_key', $requestKey)
+            ->first();
+    }
 
     /**
      * @return Builder<self>
@@ -317,6 +384,16 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         $preview = mb_strimwidth($line, 0, 80, '…');
 
         return $line === trim($this->body) || str_ends_with($preview, '…') ? $preview : $preview.'…';
+    }
+
+    public function isChat(): bool
+    {
+        return $this->message_type === MessageType::Chat;
+    }
+
+    public function hasDigest(string $digest): bool
+    {
+        return $this->request_digest !== null && hash_equals($this->request_digest, $digest);
     }
 
     public function isAtStateVersion(int $expected): bool

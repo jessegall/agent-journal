@@ -1,0 +1,93 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Communication\Support;
+
+use App\Actors\Support\ActorIdentity;
+use App\Communication\Contracts\Inbox;
+use App\Communication\Enums\MessageState;
+use App\Communication\Models\Message;
+
+/**
+ * Everything a new chat message is made of: the one chat inbox it is posted in, the member that wrote it, its body,
+ * whether it waits for an answer, the message it replies to, whom it addresses and who may settle it, the user
+ * message it belongs under, and the request key that makes a retry return it.
+ */
+final readonly class ChatEnvelope
+{
+    public function __construct(
+        public Inbox $inbox,
+        public ActorIdentity $author,
+        public MessageBody $body,
+        public MessageState $state,
+        public Message|null $parent,
+        public ActorIdentity|null $addressee,
+        public ActorIdentity|null $respondent,
+        public string|null $userRootId,
+        public string $requestKey,
+    ) {}
+
+    public static function post(Inbox $inbox, ActorIdentity $author, MessageBody $body, string $requestKey): self
+    {
+        return new self($inbox, $author, $body, MessageState::Sent, null, null, null, null, $requestKey);
+    }
+
+    public static function ask(
+        Inbox $inbox,
+        ActorIdentity $author,
+        MessageBody $body,
+        ActorIdentity|null $respondent,
+        string $requestKey,
+    ): self {
+        return new self(
+            $inbox,
+            $author,
+            $body,
+            MessageState::WaitingForAnswer,
+            null,
+            $respondent,
+            $respondent,
+            null,
+            $requestKey,
+        );
+    }
+
+    /**
+     * A reply under its parent, in the parent's inbox and under the parent's user message.
+     */
+    public static function reply(
+        Inbox $inbox,
+        ActorIdentity $author,
+        MessageBody $body,
+        Message $parent,
+        string $requestKey,
+    ): self {
+        return new self(
+            $inbox,
+            $author,
+            $body,
+            MessageState::Sent,
+            $parent,
+            null,
+            null,
+            $parent->user_root_id,
+            $requestKey,
+        );
+    }
+
+    /**
+     * The fingerprint of what the request asks to post, so a retry with the same key is told apart from a different
+     * message under it.
+     */
+    public function digest(): string
+    {
+        return hash('sha256', (string) json_encode([
+            $this->state->value,
+            $this->body->text,
+            $this->parent?->id,
+            $this->addressee?->toArray(),
+            $this->respondent?->toArray(),
+        ]));
+    }
+}
