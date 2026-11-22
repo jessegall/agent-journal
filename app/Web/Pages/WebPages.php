@@ -17,6 +17,8 @@ use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
 use App\Web\Http\Controllers\Asks\ApproveMergeAskPageController;
+use App\Web\Http\Controllers\Drafts\DraftQuestionsController;
+use App\Web\Http\Controllers\Drafts\DraftRecordController;
 use App\Web\Http\Controllers\Runtimes\CancelRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\CancelScriptRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\ReleaseRuntimeHoldController;
@@ -63,7 +65,11 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
         return [
             Page::make('home', 'Home', Icon::Home, HomeWindowResolver::class, 'Home.vue')
                 ->at('')
-                ->slots(Slot::make('bar', SlotContextType::Nothing)),
+                ->slots(Slot::make('bar', SlotContextType::Nothing))
+                ->actions(
+                    ActionRoute::get('drafts/{noun}/questions', DraftQuestionsController::class, 'draft-questions'),
+                    ActionRoute::post('drafts/{noun}', DraftRecordController::class, 'draft-record'),
+                ),
             Page::make('asks', 'Asks', Icon::Chat, AskInboxResolver::class, 'Asks.vue')->at('asks'),
             Page::make('ask', 'Ask', Icon::Chat, AskDetailResolver::class, 'AskDetail.vue')
                 ->at('asks/{ask}')

@@ -16,7 +16,6 @@ use App\Ui\Exceptions\InvalidSectionDeclaration;
 use App\Ui\Exceptions\LayoutRefused;
 use App\Ui\Layout\DeclaredLayoutData;
 use App\Ui\Layout\LayoutActionData;
-use App\Ui\Enums\ActionMethod;
 use App\Ui\Layout\LayoutDialogData;
 use App\Ui\Layout\LayoutFactValueData;
 use App\Ui\Layout\LayoutFieldData;

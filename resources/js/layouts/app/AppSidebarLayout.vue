@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import GuidedChatDialog from '@/components/creation/GuidedChatDialog.vue';
 import AppSidebar from '@/components/shell/AppSidebar.vue';
 import AppTopbar from '@/components/shell/AppTopbar.vue';
 import ToastRegion from '@/components/shell/ToastRegion.vue';
@@ -34,6 +35,7 @@ const title = computed(() => (typeof page.props.title === 'string' ? page.props.
             <main class="min-h-0 flex-1 overflow-hidden"><slot /></main>
         </div>
         <ToastRegion />
+        <GuidedChatDialog />
         <div id="overlay-layer" class="contents"></div>
     </div>
 </template>
