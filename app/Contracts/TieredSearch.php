@@ -21,12 +21,12 @@ interface TieredSearch
     /**
      * The most rows of one title tier a call reads at once.
      */
-    public const int BLOCK_SIZE = 32;
+    public const int BLOCK_ROW_LIMIT = 32;
 
     /**
      * The characters of long text a body read takes from each record at once.
      */
-    public const int SEGMENT_CHARACTERS = 2048;
+    public const int SEGMENT_CHARACTER_LIMIT = 2048;
 
     /**
      * @template TModel of Model

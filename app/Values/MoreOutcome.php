@@ -13,7 +13,7 @@ final readonly class MoreOutcome implements BatchOutcome
 {
     public function __construct(public SourcePosition $nextSeek) {}
 
-    public function carriesHits(): bool
+    public function canCarryHits(): bool
     {
         return true;
     }
@@ -21,5 +21,20 @@ final readonly class MoreOutcome implements BatchOutcome
     public function name(): string
     {
         return 'more';
+    }
+
+    public function isFailure(): bool
+    {
+        return false;
+    }
+
+    public function nextPosition(): SourcePosition
+    {
+        return $this->nextSeek;
+    }
+
+    public function isLastBatch(): bool
+    {
+        return false;
     }
 }

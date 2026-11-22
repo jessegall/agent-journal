@@ -205,6 +205,6 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
      */
     public function declarations(): DomainUi
     {
-        return DomainUi::of($this, 'Accounts', 'App', dirname(__DIR__, 2).'/resources/js/profiles');
+        return DomainUi::ofCore($this, 'Accounts', 'profiles');
     }
 }

@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Values;
+namespace App\Support;
 
+use App\Contracts\BatchOutcome;
+use App\Values\SourcePosition;
+use App\Values\BufferedHit;
 /**
  * Where one source of a search stands: the position to ask it from next, whether its range is exhausted, the
  * certified hits it returned that are not shown yet, and how many calls in a row it timed out or stood still.
@@ -25,7 +28,7 @@ final class SourceProgress
     /**
      * Whether the source must be asked again before the search may emit past it.
      */
-    public function needsRefill(): bool
+    public function awaitsRefill(): bool
     {
         return ! $this->exhausted && $this->buffer === [];
     }
@@ -64,17 +67,39 @@ final class SourceProgress
     }
 
     /**
-     * @return array<string, mixed>
+     * Whether this source's head comes before the other's in the one global order; a source without a head never
+     * leads.
      */
-    public function toArray(): array
+    public function leads(self $other): bool
     {
-        return [
-            'source' => $this->sourceKey,
-            'position' => $this->position?->fields,
-            'exhausted' => $this->exhausted,
-            'buffer' => array_map(fn (BufferedHit $hit) => $hit->toArray(), $this->buffer),
-            'stalls' => $this->stalls,
-            'failed' => $this->failed,
-        ];
+        $head = $this->head();
+        $otherHead = $other->head();
+
+        return $head !== null && ($otherHead === null || $head->compare($otherHead) < 0);
+    }
+
+    /**
+     * Takes a batch's outcome into this progress; false when a scan reported the position already held, so the call
+     * made no progress.
+     */
+    public function take(BatchOutcome $outcome): bool
+    {
+        if ($outcome->isFailure()) {
+            $this->fail();
+
+            return true;
+        }
+
+        $next = $outcome->nextPosition();
+        $isStalled = ! $outcome->canCarryHits() && $next !== null && $this->position?->equals($next) === true;
+
+        if ($isStalled) {
+            return false;
+        }
+
+        $this->position = $next ?? $this->position;
+        $this->exhausted = $outcome->isLastBatch();
+
+        return true;
     }
 }

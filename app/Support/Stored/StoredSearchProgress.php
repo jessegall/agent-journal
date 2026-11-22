@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Stored;
 
+use App\Support\SearchProgress;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
@@ -31,4 +32,18 @@ final class StoredSearchProgress extends Data
         public readonly int $idleCalls,
         public readonly int $calls,
     ) {}
+
+    public static function fromSearchProgress(SearchProgress $progress): self
+    {
+        return self::from([
+            'words' => $progress->words->text,
+            'within' => $progress->within,
+            'limit' => $progress->limit,
+            'sources' => array_values($progress->sources),
+            'delivered' => $progress->delivered,
+            'frontier' => $progress->frontier === null ? null : StoredSearchHit::fromBufferedHit($progress->frontier),
+            'idle_calls' => $progress->idleCalls,
+            'calls' => $progress->calls,
+        ]);
+    }
 }

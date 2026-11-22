@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
+use App\Http\Responses\PageReadProps;
 use App\Support\DraftProducerRegistry;
-use App\Support\Web\PageReadProps;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Testing\TestResponse;

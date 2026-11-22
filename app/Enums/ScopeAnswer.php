@@ -18,7 +18,7 @@ enum ScopeAnswer: string
     /**
      * Whether a search may run on this answer: over every source, or over the one resolved.
      */
-    public function admitsSearch(): bool
+    public function canSearch(): bool
     {
         return match ($this) {
             self::Everywhere, self::Resolved => true,

@@ -25,7 +25,7 @@ final readonly class SearchBatch
         public array $hits,
         public BatchOutcome $outcome,
     ) {
-        if (! $outcome->carriesHits() && $hits !== []) {
+        if (! $outcome->canCarryHits() && $hits !== []) {
             throw SearchBatchInvalid::hitsOnEmptyOutcome($outcome->name());
         }
 
@@ -82,7 +82,7 @@ final readonly class SearchBatch
     public static function refreshed(string $observedVersion, RefreshCandidates $query, array $matches): self
     {
         foreach ($matches as $match) {
-            $identity = $match->identity($query->original->sourceKey);
+            $identity = $match->identity($query->sourceKey());
 
             if (! $query->asks($identity)) {
                 throw SearchBatchInvalid::notRequested($identity->key());
@@ -104,6 +104,14 @@ final readonly class SearchBatch
         }
 
         return null;
+    }
+
+    /**
+     * The bytes of this batch's hits as a search would carry them, to refuse a provider whose output is too large.
+     */
+    public function byteSize(): int
+    {
+        return array_sum(array_map(fn (SearchResult $hit): int => $hit->byteSize(), $this->hits));
     }
 
     public function hasFailed(): bool

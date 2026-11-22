@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\Collection;
  */
 final readonly class TaskLogSearchProvider implements SearchProvider
 {
-    public const int BLOCK_SIZE = 32;
+    public const int BLOCK_ROW_LIMIT = 32;
 
     private const string TIER = 'tier';
 
@@ -53,7 +53,7 @@ final readonly class TaskLogSearchProvider implements SearchProvider
     {
         $constraints = $this->access->constraints($query->reader);
 
-        if ($constraints->recordIds->admitsNone()) {
+        if ($constraints->recordIds->hasNoneAllowed()) {
             return SearchBatch::nothing();
         }
 
@@ -84,7 +84,7 @@ final readonly class TaskLogSearchProvider implements SearchProvider
         $highWater = $position->text(self::HIGH_WATER);
         $afterTask = $position->text(self::AFTER_TASK);
         $afterLine = $position->text(self::AFTER_LINE);
-        $blockSize = max(1, min(self::BLOCK_SIZE, $query->budget->remainingCandidates()));
+        $blockSize = max(1, min(self::BLOCK_ROW_LIMIT, $query->budget->remainingCandidates()));
         $query->budget->chargeCandidates($blockSize);
         $pattern = $tier->likePattern(TextSearch::literal($query->words->text));
 
@@ -134,9 +134,10 @@ final readonly class TaskLogSearchProvider implements SearchProvider
     private function refresh(RefreshCandidates $query, AdmittedConstraints $constraints): SearchBatch
     {
         $entryIds = array_values(array_filter(array_map(fn ($held) => $held->locationId, $query->candidates)));
-        $query->original->budget->chargePolicyChecks(count($entryIds));
+        $query->budget()->chargePolicyChecks(count($entryIds));
 
-        $lines = $this->deadline->within($query->original->budget->remainingMilliseconds(), fn () => $this->lines($constraints)
+        $milliseconds = $query->budget()->remainingMilliseconds();
+        $lines = $this->deadline->within($milliseconds, fn () => $this->lines($constraints)
             ->whereKey($entryIds)
             ->readExactly(count($entryIds))
             ->get(self::COLUMNS));
@@ -145,9 +146,9 @@ final readonly class TaskLogSearchProvider implements SearchProvider
         $matches = [];
 
         foreach ($lines as $entry) {
-            $tier = $query->original->words->titleTier($entry->text);
+            $tier = $query->words()->titleTier($entry->text);
 
-            if ($tier !== null && $this->access->admitsOpen($query->original->reader, $entry->task_id)) {
+            if ($tier !== null && $this->access->admitsOpen($query->reader, $entry->task_id)) {
                 $matches[] = self::hitOf($entry, $numbers[$entry->task_id], $tier);
             }
         }

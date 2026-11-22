@@ -14,7 +14,7 @@ final readonly class FailedOutcome implements BatchOutcome
 {
     public function __construct(public FailureReason $reason) {}
 
-    public function carriesHits(): bool
+    public function canCarryHits(): bool
     {
         return false;
     }
@@ -22,5 +22,20 @@ final readonly class FailedOutcome implements BatchOutcome
     public function name(): string
     {
         return 'failed';
+    }
+
+    public function isFailure(): bool
+    {
+        return true;
+    }
+
+    public function nextPosition(): SourcePosition|null
+    {
+        return null;
+    }
+
+    public function isLastBatch(): bool
+    {
+        return false;
     }
 }

@@ -11,6 +11,8 @@ use App\Exceptions\InboxUnavailable;
 use App\Support\ChatInboxes;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -74,6 +76,18 @@ final class InboxRecord extends Model implements ReadableModel
     public static function lockedForSequence(string $id): self
     {
         return self::query()->whereKey($id)->lockForUpdate()->firstOr(fn () => throw InboxUnavailable::forId($id));
+    }
+
+    /**
+     * The inboxes a subquery of inbox ids selects, at most the given number, locked in one statement and in id order
+     * so two posts to the same inboxes never wait on each other in a circle.
+     *
+     * @param  Builder<InboxInterval>  $ids
+     * @return Collection<int, self>
+     */
+    public static function lockedForSequences(Builder $ids, int $limit): Collection
+    {
+        return self::query()->whereIn('id', $ids)->orderBy('id')->lockForUpdate()->readUpTo($limit)->get();
     }
 
     /**

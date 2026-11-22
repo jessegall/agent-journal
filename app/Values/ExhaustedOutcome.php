@@ -11,7 +11,7 @@ use App\Contracts\BatchOutcome;
  */
 final readonly class ExhaustedOutcome implements BatchOutcome
 {
-    public function carriesHits(): bool
+    public function canCarryHits(): bool
     {
         return true;
     }
@@ -19,5 +19,20 @@ final readonly class ExhaustedOutcome implements BatchOutcome
     public function name(): string
     {
         return 'exhausted';
+    }
+
+    public function isFailure(): bool
+    {
+        return false;
+    }
+
+    public function nextPosition(): SourcePosition|null
+    {
+        return null;
+    }
+
+    public function isLastBatch(): bool
+    {
+        return true;
     }
 }

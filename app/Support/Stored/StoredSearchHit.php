@@ -22,6 +22,17 @@ final class StoredSearchHit extends Data
         public readonly int $score,
     ) {}
 
+    public static function fromBufferedHit(BufferedHit $hit): self
+    {
+        return self::from([
+            'source' => $hit->identity->sourceKey,
+            'type' => $hit->identity->recordType,
+            'id' => $hit->identity->recordId,
+            'location' => $hit->identity->locationId,
+            'score' => $hit->score->value,
+        ]);
+    }
+
     public function toBufferedHit(): BufferedHit
     {
         return new BufferedHit(

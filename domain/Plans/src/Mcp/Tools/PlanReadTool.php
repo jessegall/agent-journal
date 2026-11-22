@@ -33,11 +33,7 @@ final class PlanReadTool extends JournalReadTool
 
     public function readRequest(ToolArguments|null $arguments = null): ReadRequest
     {
-        if ($arguments === null) {
-            return parent::readRequest();
-        }
-
-        return ReadRequest::forRecord(PlanReadResult::TOOL, PlanReadResult::ID_ARGUMENT, $arguments->ulid('plan_id'));
+        return $this->recordReadRequest($arguments, PlanReadResult::ID_ARGUMENT);
     }
 
     protected function read(ToolArguments $arguments): ToolResult

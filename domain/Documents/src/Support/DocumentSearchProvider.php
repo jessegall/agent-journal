@@ -10,6 +10,7 @@ use App\Enums\ScoreTier;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Values\AdmittedConstraints;
+use App\Values\BodyMatch;
 use App\Values\HitIdentity;
 use App\Values\RefreshCandidates;
 use App\Values\SearchableBody;
@@ -40,7 +41,7 @@ final readonly class DocumentSearchProvider implements SearchProvider
     {
         $constraints = $this->access->constraints($query->reader);
 
-        if ($constraints->recordIds->admitsNone()) {
+        if ($constraints->recordIds->hasNoneAllowed()) {
             return SearchBatch::nothing();
         }
 
@@ -84,19 +85,14 @@ final readonly class DocumentSearchProvider implements SearchProvider
         );
     }
 
-    private static function bodyHit(
-        Document $document,
-        string $text,
-        int $column,
-        int $characterOffset,
-        int $line,
-    ): SearchResult {
-        $passage = new PublicationPassage((int) $document->getAttribute('revision'), $line);
+    private static function bodyHit(Document $document, BodyMatch $match): SearchResult
+    {
+        $passage = new PublicationPassage((int) $document->getAttribute('revision'), $match->line);
         $title = (string) $document->getAttribute('title');
 
         return SearchResult::shortened(
             "Doc {$document->number} · {$title}",
-            mb_substr($text, max(0, $column - self::SNIPPET_CONTEXT_CHARACTERS), SearchResult::SNIPPET_CHARACTER_LIMIT),
+            $match->snippet(self::SNIPPET_CONTEXT_CHARACTERS),
             new RecordIdentity(Document::LINK_TYPE, $document->id),
             ScoreTier::BodyContains,
             $passage->location(),
@@ -129,9 +125,6 @@ final readonly class DocumentSearchProvider implements SearchProvider
             return null;
         }
 
-        $found = mb_stripos($excerpt, $words->text);
-        $column = $found === false ? 0 : $found;
-
-        return self::bodyHit($document, $excerpt, $column, 0, $passage->line);
+        return self::bodyHit($document, new BodyMatch($excerpt, $words->columnIn($excerpt), 0, $passage->line));
     }
 }

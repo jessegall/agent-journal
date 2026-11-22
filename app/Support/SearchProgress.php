@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Values;
+namespace App\Support;
 
+use App\Values\SearchWords;
+use App\Values\HitIdentity;
+use App\Values\BufferedHit;
 use App\Exceptions\SearchWordsInvalid;
 use App\Support\Stored\StoredSearchProgress;
 
@@ -75,21 +78,42 @@ final class SearchProgress
      */
     public function hasSourceToRefill(): bool
     {
-        return array_any($this->sources, fn (SourceProgress $source): bool => $source->needsRefill());
+        return array_any($this->sources, fn (SourceProgress $source): bool => $source->awaitsRefill());
+    }
+
+    /**
+     * The keys of the sources that failed during the search, so its answer says what it does not cover.
+     *
+     * @return list<string>
+     */
+    public function failedSourceKeys(): array
+    {
+        return array_keys(array_filter($this->sources, fn (SourceProgress $source): bool => $source->failed));
+    }
+
+    /**
+     * The source whose head leads the one global order, among the sources with a head.
+     */
+    public function leader(): SourceProgress|null
+    {
+        $leader = null;
+
+        foreach ($this->sources as $source) {
+            if ($source->head() === null) {
+                continue;
+            }
+
+            if ($leader === null || $source->leads($leader)) {
+                $leader = $source;
+            }
+        }
+
+        return $leader;
     }
 
     public function toJson(): string
     {
-        return json_encode([
-            'words' => $this->words->text,
-            'within' => $this->within,
-            'limit' => $this->limit,
-            'sources' => array_values(array_map(fn (SourceProgress $source) => $source->toArray(), $this->sources)),
-            'delivered' => $this->delivered,
-            'frontier' => $this->frontier?->toArray(),
-            'idle_calls' => $this->idleCalls,
-            'calls' => $this->calls,
-        ], JSON_THROW_ON_ERROR);
+        return StoredSearchProgress::fromSearchProgress($this)->toJson();
     }
 
     /**

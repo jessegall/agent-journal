@@ -88,7 +88,12 @@ final readonly class TaskReadResult
     {
         $task = $this->tasks->details($taskId, ReadView::Context);
         $text = $this->text($task);
-        [$line, $character] = $passage->startIn($text[TaskBriefPassage::FIELD] ?? '', $task->revision);
+
+        if (! isset($text[TaskBriefPassage::FIELD])) {
+            throw TaskPassageUnavailable::make();
+        }
+
+        [$line, $character] = $passage->startIn($text[TaskBriefPassage::FIELD], $task->revision);
 
         $read = new Continuation(self::TOOL, $taskId, [], 1, revision: $task->revision);
         $position = $this->fields->startAt($read, $text, TaskBriefPassage::FIELD, $line, $character);

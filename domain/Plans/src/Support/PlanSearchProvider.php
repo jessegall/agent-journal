@@ -32,7 +32,7 @@ final readonly class PlanSearchProvider implements SearchProvider
     {
         $constraints = $this->access->constraints($query->reader);
 
-        if ($constraints->recordIds->admitsNone()) {
+        if ($constraints->recordIds->hasNoneAllowed()) {
             return SearchBatch::nothing();
         }
 

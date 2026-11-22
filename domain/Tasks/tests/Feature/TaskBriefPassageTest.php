@@ -93,7 +93,7 @@ final class TaskBriefPassageTest extends TestCase
 
     private function taskWithLatePhrase(): Task
     {
-        $edge = TaskSearchProvider::SEGMENT_CHARACTERS - 8;
+        $edge = TaskSearchProvider::SEGMENT_CHARACTER_LIMIT - 8;
         $brief = str_repeat('a', $edge).' '.self::PHRASE.' '.str_repeat('b', 3000);
 
         return Task::factory()->create(['title' => 'Housekeeping', 'brief' => $brief]);

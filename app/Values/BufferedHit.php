@@ -24,18 +24,4 @@ final readonly class BufferedHit
     {
         return $this->score->compare($other->score) ?: $this->identity->compare($other->identity);
     }
-
-    /**
-     * @return array{source: string, type: string, id: string, location: string|null, score: int}
-     */
-    public function toArray(): array
-    {
-        return [
-            'source' => $this->identity->sourceKey,
-            'type' => $this->identity->recordType,
-            'id' => $this->identity->recordId,
-            'location' => $this->identity->locationId,
-            'score' => $this->score->value,
-        ];
-    }
 }

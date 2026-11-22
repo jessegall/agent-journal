@@ -53,6 +53,17 @@ final readonly class SearchWords
         return mb_convert_case($normal === false ? $text : $normal, MB_CASE_FOLD);
     }
 
+    /**
+     * The character column the words start at in a text that holds them, ignoring case; 0 when only the folded
+     * forms match.
+     */
+    public function columnIn(string $text): int
+    {
+        $found = mb_stripos($text, $this->text);
+
+        return $found === false ? 0 : $found;
+    }
+
     public function isFoundIn(string $text): bool
     {
         return str_contains(self::fold($text), $this->folded);

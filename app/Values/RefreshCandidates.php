@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Contracts\WorkAllowance;
 use App\Exceptions\SearchBatchInvalid;
 
 /**
@@ -32,6 +33,30 @@ final readonly class RefreshCandidates
         if (count($candidates) > SearchQuery::HIT_LIMIT) {
             throw SearchBatchInvalid::tooManyCandidates(SearchQuery::HIT_LIMIT);
         }
+    }
+
+    /**
+     * The work this reread may still do, the original query's allowance.
+     */
+    public function budget(): WorkAllowance
+    {
+        return $this->original->budget;
+    }
+
+    /**
+     * The source whose held hits are reread.
+     */
+    public function sourceKey(): string
+    {
+        return $this->original->sourceKey;
+    }
+
+    /**
+     * The words the held hits must still match.
+     */
+    public function words(): SearchWords
+    {
+        return $this->original->words;
     }
 
     public function asks(HitIdentity $identity): bool

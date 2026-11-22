@@ -53,7 +53,8 @@ final class DocumentSearchTest extends TestCase
     {
         TestStart::start()->startRequest($this->app);
         $body = "# Guide\nFirst paragraph.\n\n## Retry\n".self::RETRY_LINE."\n";
-        $number = $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Guide', 'About keys.', $body))->number;
+        $created = $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Guide', 'About keys.', $body));
+        $number = $created->number;
 
         $hit = $this->firstHit('idempotency key');
 
@@ -65,7 +66,7 @@ final class DocumentSearchTest extends TestCase
         $fields = ['view', 'revision', 'section', 'line_start', 'line_end', 'character_offset', 'continuation'];
         $read = $this->app->make(DocumentReader::class)->document(
             $number,
-            ToolArguments::read('docs_read', new Request(array_diff_key($open->arguments, ['doc_id' => true])), $fields),
+            ToolArguments::read('docs_read', new Request(array_diff_key($open->arguments, ['doc_id' => 1])), $fields),
         );
 
         $this->assertStringStartsWith(self::RETRY_LINE, $read->responseFields['body']);

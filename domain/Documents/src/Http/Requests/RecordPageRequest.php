@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Requests;
 
+use App\Http\Requests\Web\Concerns\ReadsCommentsPage;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use App\Support\Page;
 use App\Values\PageSize;
@@ -15,6 +16,7 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 final class RecordPageRequest extends FormRequest
 {
+    use ReadsCommentsPage;
     use ReadsRouteNumber;
 
     /**
@@ -84,16 +86,6 @@ final class RecordPageRequest extends FormRequest
             'firstLine' => $this->filled('firstLine') ? $this->integer('firstLine') : 1,
             'lastLine' => $this->filled('lastLine') ? $this->integer('lastLine') : null,
         ]];
-    }
-
-    /**
-     * The page of comments the record page shows: the first one, or the one after the comment a reload names.
-     */
-    public function commentsPage(): Page
-    {
-        $after = $this->filled('commentsAfter') ? $this->string('commentsAfter')->toString() : null;
-
-        return new Page($after, PageSize::from(null)->rows);
     }
 
     public function documentNumber(): int

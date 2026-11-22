@@ -10,6 +10,7 @@ use App\Enums\ScoreTier;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Values\AdmittedConstraints;
+use App\Values\BodyMatch;
 use App\Values\HitIdentity;
 use App\Values\RefreshCandidates;
 use App\Values\SearchableBody;
@@ -39,7 +40,7 @@ final readonly class ReportSearchProvider implements SearchProvider
     {
         $constraints = $this->access->constraints($query->reader);
 
-        if ($constraints->recordIds->admitsNone()) {
+        if ($constraints->recordIds->hasNoneAllowed()) {
             return SearchBatch::nothing();
         }
 
@@ -81,19 +82,14 @@ final readonly class ReportSearchProvider implements SearchProvider
         );
     }
 
-    private static function bodyHit(
-        Report $report,
-        string $text,
-        int $column,
-        int $characterOffset,
-        int $line,
-    ): SearchResult {
+    private static function bodyHit(Report $report, BodyMatch $match): SearchResult
+    {
         return SearchResult::shortened(
             "Report {$report->number} · {$report->title}",
-            mb_substr($text, max(0, $column - self::SNIPPET_CONTEXT_CHARACTERS), SearchResult::SNIPPET_CHARACTER_LIMIT),
+            $match->snippet(self::SNIPPET_CONTEXT_CHARACTERS),
             new RecordIdentity(Report::LINK_TYPE, $report->id),
             ScoreTier::BodyContains,
-            new PublicationPassage(null, $line)->location(),
+            new PublicationPassage(null, $match->line)->location(),
         );
     }
 
@@ -117,8 +113,6 @@ final readonly class ReportSearchProvider implements SearchProvider
             return null;
         }
 
-        $found = mb_stripos($excerpt, $words->text);
-
-        return self::bodyHit($report, $excerpt, $found === false ? 0 : $found, 0, $passage->line);
+        return self::bodyHit($report, new BodyMatch($excerpt, $words->columnIn($excerpt), 0, $passage->line));
     }
 }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Support\RecordIdentity;
 use App\Enums\ScoreTier;
 use App\Exceptions\SearchValueInvalid;
+use App\Support\RecordIdentity;
 
 /**
  * One match a source returns: a short plain title, the matching text around the words, the record it belongs to,
@@ -74,6 +74,15 @@ final readonly class SearchResult
     public function compare(self $other): int
     {
         return $this->score->compare($other->score) ?: $this->identity('')->compare($other->identity(''));
+    }
+
+    /**
+     * The bytes this result's texts and identity take as a search carries them.
+     */
+    public function byteSize(): int
+    {
+        return strlen($this->title) + strlen($this->snippet) + strlen($this->reference->id)
+            + strlen((string) $this->location?->id) + strlen((string) $this->location?->label);
     }
 
     private static function cut(string $text, int $limit): string

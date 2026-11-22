@@ -23,6 +23,18 @@ abstract class JournalReadTool extends JournalTool
         return $arguments === null ? ReadRequest::forDiscovery($this->name()) : new ReadRequest($this->name());
     }
 
+    /**
+     * The read of one record, targeted at the record the id argument names so a grant scoped to it admits it.
+     */
+    protected function recordReadRequest(ToolArguments|null $arguments, string $idArgument): ReadRequest
+    {
+        if ($arguments === null) {
+            return ReadRequest::forDiscovery($this->name());
+        }
+
+        return ReadRequest::forRecord($this->name(), $idArgument, $arguments->ulid($idArgument));
+    }
+
     final public function handle(Request $request, McpCall $call, ReadGrant $reads): ResponseFactory
     {
         return $call->answerTool($this->name(), function () use ($request, $reads): ToolResult {

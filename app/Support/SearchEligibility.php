@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\ReadGrant;
 use App\Contracts\DomainAvailability;
+use App\Contracts\ReadGrant;
 use App\Contracts\SearchAccess;
+use App\Contracts\SearchSources;
 use App\Exceptions\SearchableMissing;
 use App\Exceptions\SearchValueInvalid;
 use App\Values\DeclaredSearchable;
@@ -21,7 +22,7 @@ use Illuminate\Contracts\Container\Container;
  * and its access policy lets the reader in. Discovery, scope resolution, dispatch, resume and open all ask here,
  * so a source the reader may not search reads exactly as one that does not exist.
  */
-final readonly class SearchEligibility
+final readonly class SearchEligibility implements SearchSources
 {
     public function __construct(
         private SearchablesRegistry $searchables,
@@ -39,7 +40,7 @@ final readonly class SearchEligibility
     {
         return array_values(array_filter(
             $this->searchables->all(),
-            fn (DeclaredSearchable $source): bool => $this->admits($reader, $source),
+            fn (DeclaredSearchable $source) => $this->admits($reader, $source),
         ));
     }
 
@@ -139,7 +140,7 @@ final readonly class SearchEligibility
         $hints = [];
 
         foreach ($this->eligible($reader) as $source) {
-            $hint = $source->searchable->recognizerFrom($this->container)?->hint($input);
+            $hint = $source->recognizer($this->container)?->hint($input);
 
             if ($hint !== null) {
                 $hints[] = $hint;
@@ -159,8 +160,7 @@ final readonly class SearchEligibility
         string $prefix,
         int $size = DiscoveryPage::DEFAULT_SIZE,
         string|null $after = null,
-    ): DiscoveryPage
-    {
+    ): DiscoveryPage {
         if ($size < 1 || $size > DiscoveryPage::SIZE_LIMIT) {
             throw SearchValueInvalid::outOfRange('discovery page size', 1, DiscoveryPage::SIZE_LIMIT);
         }

@@ -38,7 +38,7 @@ final readonly class SearchRequest
         int|null $limit = null,
         string|null $continuation = null,
         bool $discover = false,
-        string|null $prefix = null,
+        string $prefix = '',
     ): self {
         $checkedLimit = self::checkedLimit($limit);
 
@@ -55,7 +55,7 @@ final readonly class SearchRequest
                 throw SearchRequestInvalid::conflicting('discover', 'within');
             }
 
-            return new self(SearchRequestType::Discovery, null, null, $checkedLimit, null, trim($prefix ?? ''));
+            return new self(SearchRequestType::Discovery, null, null, $checkedLimit, null, trim($prefix));
         }
 
         if ($query === null) {

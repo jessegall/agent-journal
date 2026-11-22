@@ -132,7 +132,11 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
             Page::make('ask', 'Ask', Icon::Chat, AskDetailResolver::class, 'AskDetail.vue')
                 ->at('asks/{ask}')
                 ->actions(
-                    ActionRoute::post('asks/{ask}/approve-merge', ApproveMergeAskPageController::class, 'approve-merge'),
+                    ActionRoute::post(
+                        'asks/{ask}/approve-merge',
+                        ApproveMergeAskPageController::class,
+                        'approve-merge',
+                    ),
                 ),
             Page::layout('runtimes', 'Runtimes', Icon::Activity, RuntimeStatusResolver::class)
                 ->at('runtimes')
@@ -256,6 +260,6 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
      */
     public function declarations(): DomainUi
     {
-        return DomainUi::of($this, 'Web', 'App', dirname(__DIR__, 2).'/resources/js/web');
+        return DomainUi::ofCore($this, 'Web', 'web');
     }
 }

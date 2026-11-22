@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Contracts\ReferenceRecognizer;
+use App\Contracts\SearchProvider;
 use App\Support\Searchable;
+use Illuminate\Contracts\Container\Container;
 
 /**
  * A searchable as the registry published it: the domain that owns it, its qualified key such as tasks.task, and
@@ -17,6 +20,22 @@ final readonly class DeclaredSearchable
         public string $qualifiedKey,
         public Searchable $searchable,
     ) {}
+
+    /**
+     * The provider that searches this source, built when a search reaches it.
+     */
+    public function provider(Container $container): SearchProvider
+    {
+        return $this->searchable->providerFrom($container);
+    }
+
+    /**
+     * The recognizer of this source's complete references, when it declares one.
+     */
+    public function recognizer(Container $container): ReferenceRecognizer|null
+    {
+        return $this->searchable->recognizerFrom($container);
+    }
 
     public function label(): string
     {

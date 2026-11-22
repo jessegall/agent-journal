@@ -30,7 +30,7 @@ final class TaskProofData extends Data
         public readonly string|Optional $boundAt = new Optional(),
     ) {}
 
-    public static function ofProof(TaskProof $proof): self
+    public static function fromTaskProof(TaskProof $proof): self
     {
         return self::from(array_filter([
             'id' => $proof->id,

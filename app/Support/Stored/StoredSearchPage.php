@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Support\Stored;
 
 use App\Enums\SearchStatus;
+use App\Values\BufferedHit;
+use App\Values\EmittedHit;
+use App\Values\SearchAnswer;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
@@ -23,4 +26,20 @@ final class StoredSearchPage extends Data
         public readonly array $hits,
         public readonly array $narrower,
     ) {}
+
+    /**
+     * The page an answer showed, kept so a retained position replays the same hits.
+     */
+    public static function fromAnswer(SearchAnswer $answer): self
+    {
+        $stored = fn (EmittedHit $hit) => StoredSearchHit::fromBufferedHit(
+            new BufferedHit($hit->identity(), $hit->score),
+        );
+
+        return self::from([
+            'status' => $answer->status,
+            'hits' => array_map($stored, $answer->hits),
+            'narrower' => $answer->narrowerScopes,
+        ]);
+    }
 }

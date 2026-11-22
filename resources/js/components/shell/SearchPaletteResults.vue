@@ -82,10 +82,11 @@ defineExpose({ press, listId, activeId });
                             <span class="truncate text-small text-text-3"
                                 ><span>{{ hit.sourceLabel }} · </span
                                 ><template v-for="(part, index) in partsOf(hit.snippet)" :key="index"
-                                    ><mark v-if="part.matched" class="bg-transparent font-medium text-text-2">{{
-                                        part.text
-                                    }}</mark
-                                    ><span v-else>{{ part.text }}</span></template
+                                    ><template v-if="part.matched"
+                                        ><mark class="bg-transparent font-medium text-text-2">{{ part.text }}</mark></template
+                                    ><template v-else
+                                        ><span>{{ part.text }}</span></template
+                                    ></template
                                 ></span
                             >
                         </span>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\RecordResolver;
+use App\Contracts\RecordSearch;
 use App\Enums\ScoreTier;
 use App\Enums\SearchStatus;
 use App\Exceptions\SearchBatchInvalid;
@@ -21,22 +22,16 @@ use App\Support\Stored\StoredSearchProgress;
 use App\Values\BufferedHit;
 use App\Values\DeclaredSearchable;
 use App\Values\EmittedHit;
-use App\Values\ExhaustedOutcome;
-use App\Values\FailedOutcome;
-use App\Values\MoreOutcome;
-use App\Values\ScanningOutcome;
 use App\Values\SearchAnswer;
 use App\Values\SearchBatch;
 use App\Values\SearchCallMeter;
 use App\Values\SearchOwner;
 use App\Values\SearchPosition;
-use App\Values\SearchProgress;
 use App\Values\SearchQuery;
 use App\Values\SearchReader;
 use App\Values\SearchRequest;
 use App\Values\SearchResult;
 use App\Values\SearchScope;
-use App\Values\SourceProgress;
 use App\Values\WorkBudget;
 use Illuminate\Contracts\Container\Container;
 
@@ -46,7 +41,7 @@ use Illuminate\Contracts\Container\Container;
  * are merged into one order by tier and identity, never past or repeating a hit already shown. Hits held from an
  * earlier call are reread and rechecked before they are shown. It reads no model and trusts no saved text.
  */
-final readonly class SearchCoordinator
+final readonly class SearchCoordinator implements RecordSearch
 {
     public const int SOURCE_MILLISECONDS = 150;
 
@@ -94,7 +89,7 @@ final readonly class SearchCoordinator
     {
         $scope = $this->eligibility->scopeOf($reader, $request);
 
-        if (! $scope->answer->admitsSearch()) {
+        if (! $scope->answer->canSearch()) {
             return SearchAnswer::forScope($scope);
         }
 
@@ -202,7 +197,7 @@ final readonly class SearchCoordinator
             $asked = 0;
 
             foreach ($progress->sources as $key => $source) {
-                if (! $source->needsRefill() || $batches >= self::BATCH_LIMIT || ! self::hasTime($deadline)) {
+                if (! $source->awaitsRefill() || $batches >= self::BATCH_LIMIT || ! self::hasTime($deadline)) {
                     continue;
                 }
 
@@ -218,7 +213,8 @@ final readonly class SearchCoordinator
                 $source->stalls++;
 
                 if ($source->stalls >= self::STALL_LIMIT) {
-                    return self::withFailures($progress, $this->incomplete($progress, $sources, $emitted, $key));
+                    return $this->incomplete($progress, $sources, $emitted, $key)
+                        ->withFailedSources($progress->failedSourceKeys());
                 }
 
                 $timedOut = true;
@@ -240,7 +236,7 @@ final readonly class SearchCoordinator
             }
         }
 
-        return self::withFailures($progress, $this->ended($progress, $sources, $emitted, $timedOut));
+        return $this->ended($progress, $sources, $emitted, $timedOut)->withFailedSources($progress->failedSourceKeys());
     }
 
     /**
@@ -251,16 +247,6 @@ final readonly class SearchCoordinator
         $this->diagnostics->record($progress->calls, $meter);
 
         return $answer;
-    }
-
-    /**
-     * The answer naming the sources that failed during the search, so the caller knows what it does not cover.
-     */
-    private static function withFailures(SearchProgress $progress, SearchAnswer $answer): SearchAnswer
-    {
-        $failed = array_keys(array_filter($progress->sources, fn (SourceProgress $source): bool => $source->failed));
-
-        return $answer->withFailedSources($failed);
     }
 
     /**
@@ -293,7 +279,7 @@ final readonly class SearchCoordinator
         $started = hrtime(true);
 
         try {
-            $batch = $declared->searchable->providerFrom($this->container)->search($query);
+            $batch = $declared->provider($this->container)->search($query);
         } catch (WorkBudgetSpent) {
             return self::noted($meter, $declared, $started, $query, 'budget_spent', false);
         } catch (StatementTimedOut) {
@@ -308,7 +294,7 @@ final readonly class SearchCoordinator
             return self::noted($meter, $declared, $started, $query, 'timed_out', false);
         }
 
-        if (self::byteSizeOf($batch) > WorkBudget::BYTE_LIMIT) {
+        if ($batch->byteSize() > WorkBudget::BYTE_LIMIT) {
             $source->fail();
 
             return self::noted($meter, $declared, $started, $query, 'too_large', true);
@@ -341,21 +327,11 @@ final readonly class SearchCoordinator
      */
     private function keep(SourceProgress $source, DeclaredSearchable $declared, SearchBatch $batch, array &$fresh): bool
     {
-        $outcome = $batch->outcome;
-
-        if ($outcome instanceof ScanningOutcome) {
-            if ($source->position !== null && $outcome->nextWork->equals($source->position)) {
-                return false;
-            }
-
-            $source->position = $outcome->nextWork;
-
-            return true;
+        if (! $source->take($batch->outcome)) {
+            return false;
         }
 
-        if ($outcome instanceof FailedOutcome) {
-            $source->fail();
-
+        if (! $batch->outcome->canCarryHits()) {
             return true;
         }
 
@@ -365,28 +341,7 @@ final readonly class SearchCoordinator
             $fresh[$identity->key()] = $hit;
         }
 
-        if ($outcome instanceof MoreOutcome) {
-            $source->position = $outcome->nextSeek;
-        }
-
-        $source->exhausted = $outcome instanceof ExhaustedOutcome;
-
         return true;
-    }
-
-    /**
-     * The bytes of a batch's hits as a search would carry them, to refuse a provider whose output is too large.
-     */
-    private static function byteSizeOf(SearchBatch $batch): int
-    {
-        $bytes = 0;
-
-        foreach ($batch->hits as $hit) {
-            $bytes += strlen($hit->title) + strlen($hit->snippet) + strlen($hit->reference->id)
-                + strlen((string) $hit->location?->id) + strlen((string) $hit->location?->label);
-        }
-
-        return $bytes;
     }
 
     /**
@@ -408,11 +363,11 @@ final readonly class SearchCoordinator
         array &$emitted,
     ): bool {
         while (count($emitted) < $progress->limit) {
-            if (array_any($progress->sources, fn (SourceProgress $source): bool => $source->needsRefill())) {
+            if (array_any($progress->sources, fn (SourceProgress $source): bool => $source->awaitsRefill())) {
                 return false;
             }
 
-            $leader = self::leader($progress);
+            $leader = $progress->leader();
             $head = $leader?->head();
 
             if ($leader === null || $head === null) {
@@ -565,7 +520,7 @@ final readonly class SearchCoordinator
             WorkBudget::forBatch(self::SOURCE_MILLISECONDS),
         );
 
-        return $declared->searchable->providerFrom($this->container)->search(
+        return $declared->provider($this->container)->search(
             $query->refreshing(array_map(fn (BufferedHit $hit) => $hit->identity, $held)),
         );
     }
@@ -739,7 +694,7 @@ final readonly class SearchCoordinator
     {
         return array_filter(
             $sources,
-            fn (DeclaredSearchable $source): bool => $source->searchable->recognizerFrom($this->container)
+            fn (DeclaredSearchable $source): bool => $source->recognizer($this->container)
                 ?->recognize($progress->words->text) !== null,
         );
     }
@@ -776,10 +731,12 @@ final readonly class SearchCoordinator
         $records = [];
 
         foreach ($held as $hit) {
-            if (in_array($hit->identity->recordType, $known, true)) {
-                $key = self::recordKey($hit->identity->recordType, $hit->identity->recordId);
-                $records[$key] = new RecordIdentity($hit->identity->recordType, $hit->identity->recordId);
+            if (! in_array($hit->identity->recordType, $known, true)) {
+                continue;
             }
+
+            $key = self::recordKey($hit->identity->recordType, $hit->identity->recordId);
+            $records[$key] = new RecordIdentity($hit->identity->recordType, $hit->identity->recordId);
         }
 
         if ($records === []) {
@@ -800,34 +757,9 @@ final readonly class SearchCoordinator
         return "{$type}\0{$id}";
     }
 
-    /**
-     * The source whose head leads the one global order, among the sources with a head.
-     */
-    private static function leader(SearchProgress $progress): SourceProgress|null
-    {
-        $leader = null;
-
-        foreach ($progress->sources as $source) {
-            $head = $source->head();
-
-            if ($head !== null && ($leader === null || $head->compare($leader->head()) < 0)) {
-                $leader = $source;
-            }
-        }
-
-        return $leader;
-    }
-
     private static function pageOf(SearchAnswer $answer): string
     {
-        return json_encode([
-            'status' => $answer->status->value,
-            'hits' => array_map(
-                fn (EmittedHit $hit) => new BufferedHit($hit->identity(), $hit->score)->toArray(),
-                $answer->hits,
-            ),
-            'narrower' => $answer->narrowerScopes,
-        ], JSON_THROW_ON_ERROR);
+        return StoredSearchPage::fromAnswer($answer)->toJson();
     }
 
     private static function scopeOf(SearchProgress $progress): SearchScope

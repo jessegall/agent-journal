@@ -64,7 +64,7 @@ final readonly class ScopeResolution
      */
     public function offersDiscovery(): bool
     {
-        return ! $this->answer->admitsSearch();
+        return ! $this->answer->canSearch();
     }
 
     /**

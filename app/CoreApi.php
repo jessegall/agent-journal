@@ -998,6 +998,7 @@ use App\Exceptions\UserActorRequired;
 use App\Exceptions\VerificationContractInvalid;
 use App\Exceptions\WorkBudgetSpent;
 use App\Http\Requests\Concerns\ReadsIdempotencyKey;
+use App\Http\Requests\Web\Concerns\ReadsCommentsPage;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
@@ -1291,6 +1292,7 @@ use App\Values\ArgumentGrammar;
 use App\Values\AskTypeKey;
 use App\Values\BindingFolder;
 use App\Values\BindingOutcome;
+use App\Values\BodyMatch;
 use App\Values\BoundTarget;
 use App\Values\BrowserInputCapabilities;
 use App\Values\CallAccepted;
@@ -2035,6 +2037,7 @@ final class CoreApi
                 SearchSurface::class,
                 FailureReason::class,
                 SearchWords::class,
+                BodyMatch::class,
                 SearchScope::class,
                 SearchReader::class,
                 SourcePosition::class,
@@ -3008,6 +3011,7 @@ final class CoreApi
                 TextSearch::class,
                 ReadsIdempotencyKey::class,
                 ReadsRouteNumber::class,
+                ReadsCommentsPage::class,
                 JournalTool::class,
                 JournalReadTool::class,
                 JournalWriteTool::class,

@@ -65,7 +65,10 @@ final readonly class TaskReaderLayout
                 PublicationTab::deferred('proofs', 'Proofs', fn () => $this->proofsOf($reader)),
                 PublicationTab::deferred('comments', 'Comments', fn () => LayoutPartData::native(
                     'comments',
-                    LayoutNativeData::of('tasks/TaskCommentsTab', new TaskCommentsData($reader->comments, $reader->label)),
+                    LayoutNativeData::of(
+                        'tasks/TaskCommentsTab',
+                        TaskCommentsData::from(['comments' => $reader->comments, 'target' => $reader->label]),
+                    ),
                 )),
                 PublicationTab::deferred('brief', 'Brief', fn () => $brief),
             );
@@ -78,8 +81,16 @@ final readonly class TaskReaderLayout
     {
         $fixed = ['revision' => $reader->revision, 'run' => $reader->actions->runNumber];
         $address = fn (string $name) => route("tasks.{$name}", ['task' => $reader->number], false);
-        $post = fn (string $name) => new LayoutFormData(ActionMethod::Post, $address($name), $fixed, isKeyed: true);
+        $post = fn (string $name) => LayoutFormData::from([
+            'method' => ActionMethod::Post,
+            'href' => $address($name),
+            'fixed' => $fixed,
+            'isKeyed' => true,
+        ]);
 
+        $startRefusal = $reader->actions->startReason instanceof Optional
+            ? 'You may not start this task.'
+            : $reader->actions->startReason;
         $parts = [
             $reader->actions->mayStart
                 ? LayoutPartData::form(
@@ -91,9 +102,7 @@ final readonly class TaskReaderLayout
                 : LayoutPartData::action(
                     'start',
                     'Start',
-                    LayoutActionData::unavailable($reader->actions->startReason instanceof Optional
-                        ? 'You may not start this task.'
-                        : $reader->actions->startReason),
+                    LayoutActionData::unavailable($startRefusal),
                 ),
         ];
 
@@ -117,16 +126,13 @@ final readonly class TaskReaderLayout
      */
     private function factsOf(TaskReaderData $reader): array
     {
-        $facts = [new LayoutRowData('state', 'State', ucfirst($reader->state->value))];
+        $facts = [self::factRow('state', 'State', ucfirst($reader->state->value))];
 
-        $facts[] = new LayoutRowData(
-            'holder',
-            'Held by',
-            $reader->holder instanceof Optional ? 'Nobody yet' : $reader->holder->label(),
-        );
+        $holder = $reader->holder instanceof Optional ? 'Nobody yet' : $reader->holder->label();
+        $facts[] = self::factRow('holder', 'Held by', $holder);
 
         if (! $reader->latestRun instanceof Optional) {
-            $facts[] = new LayoutRowData('run', 'Latest run', (string) $reader->latestRun);
+            $facts[] = self::factRow('run', 'Latest run', (string) $reader->latestRun);
         }
 
         foreach ([
@@ -135,7 +141,7 @@ final readonly class TaskReaderLayout
             'cancel' => ['Cancelled because', $reader->cancelReason],
         ] as $key => [$label, $text]) {
             if (! $text instanceof Optional && $text !== '') {
-                $facts[] = new LayoutRowData($key, $label, $text);
+                $facts[] = self::factRow($key, $label, $text);
             }
         }
 
@@ -150,7 +156,11 @@ final readonly class TaskReaderLayout
 
         return LayoutPartData::native('waits', LayoutNativeData::of(
             'tasks/TaskWaitsTab',
-            new TaskWaitsPartData($reader->waits, $reader->waitActions, $reader->number),
+            TaskWaitsPartData::from([
+                'waits' => $reader->waits,
+                'actions' => $reader->waitActions,
+                'number' => $reader->number,
+            ]),
         ));
     }
 
@@ -162,7 +172,7 @@ final readonly class TaskReaderLayout
 
         return LayoutPartData::native(
             'logs',
-            LayoutNativeData::of('tasks/TaskLogsTab', new TaskLogsPartData($reader->logs)),
+            LayoutNativeData::of('tasks/TaskLogsTab', TaskLogsPartData::from(['logs' => $reader->logs])),
         );
     }
 
@@ -174,7 +184,12 @@ final readonly class TaskReaderLayout
 
         return LayoutPartData::native(
             'proofs',
-            LayoutNativeData::of('tasks/TaskProofsTab', new TaskProofsPartData($reader->proofs)),
+            LayoutNativeData::of('tasks/TaskProofsTab', TaskProofsPartData::from(['proofs' => $reader->proofs])),
         );
+    }
+
+    private static function factRow(string $key, string $label, string $value): LayoutRowData
+    {
+        return LayoutRowData::from(['key' => $key, 'label' => $label, 'value' => $value]);
     }
 }

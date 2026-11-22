@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Http\Requests;
 
+use App\Http\Requests\Web\Concerns\ReadsCommentsPage;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use App\Support\Page;
-use App\Values\PageSize;
-use Domain\Tasks\Http\Requests\Concerns\ReadsTaskFilters;
 use Domain\Tasks\Exceptions\TaskPassageUnavailable;
+use Domain\Tasks\Http\Requests\Concerns\ReadsTaskFilters;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Values\TaskBriefPassage;
 use Illuminate\Foundation\Http\FormRequest;
@@ -20,6 +20,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class TaskRequest extends FormRequest
 {
+    use ReadsCommentsPage;
     use ReadsRouteNumber;
     use ReadsTaskFilters;
 
@@ -49,13 +50,17 @@ final class TaskRequest extends FormRequest
         $tab = $this->string('tab')->toString();
         $section = $this->string('section')->toString();
 
-        return $tab !== '' ? $tab : ($section !== '' ? $section : 'waits');
+        if ($tab !== '') {
+            return $tab;
+        }
+
+        return $section !== '' ? $section : 'waits';
     }
 
     /**
      * Whether the reader opened its Logs tab, so their newest page is read.
      */
-    public function asksForLogs(): bool
+    public function isAskingForLogs(): bool
     {
         return $this->chosenTab() === 'logs';
     }
@@ -63,7 +68,7 @@ final class TaskRequest extends FormRequest
     /**
      * Whether the reader opened its Waits tab, so the task's direct waits both ways are read.
      */
-    public function asksForWaits(): bool
+    public function isAskingForWaits(): bool
     {
         return $this->chosenTab() === 'waits';
     }
@@ -79,7 +84,7 @@ final class TaskRequest extends FormRequest
     /**
      * Whether the reader opened its Proofs tab, so a page of them is read.
      */
-    public function asksForProofs(): bool
+    public function isAskingForProofs(): bool
     {
         return $this->chosenTab() === 'proofs';
     }
@@ -101,17 +106,7 @@ final class TaskRequest extends FormRequest
     }
 
     /**
-     * The page of the task's comments the reader asks for: after a comment, or from the first.
-     */
-    public function commentsPage(): Page
-    {
-        $after = $this->filled('commentsAfter') ? $this->string('commentsAfter')->toString() : null;
-
-        return new Page($after, PageSize::from(null)->rows);
-    }
-
-    /**
-     * The brief passage a search opened the task at; ask asksForPassage() first.
+     * The brief passage a search opened the task at; ask isAskingForPassage() first.
      *
      * @throws TaskPassageUnavailable
      */
@@ -120,7 +115,7 @@ final class TaskRequest extends FormRequest
         return TaskBriefPassage::fromId($this->string('passage')->toString());
     }
 
-    public function asksForPassage(): bool
+    public function isAskingForPassage(): bool
     {
         return $this->filled('passage');
     }
@@ -128,13 +123,13 @@ final class TaskRequest extends FormRequest
     /**
      * Whether a search opened the Logs tab at one log line.
      */
-    public function asksForEntry(): bool
+    public function isAskingForEntry(): bool
     {
         return $this->filled('entry');
     }
 
     /**
-     * The log line a search opened the Logs tab at; ask asksForEntry() first.
+     * The log line a search opened the Logs tab at; ask isAskingForEntry() first.
      */
     public function entryId(): string
     {

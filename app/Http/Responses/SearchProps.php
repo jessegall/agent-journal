@@ -6,17 +6,17 @@ namespace App\Http\Responses;
 
 use App\Contracts\CurrentActor;
 use App\Contracts\RecordResolver;
+use App\Contracts\RecordSearch;
+use App\Contracts\SearchSources;
 use App\Contracts\ServedEnvironment;
 use App\Data\PaletteHitData;
 use App\Data\PaletteSearchData;
-use App\Data\PaletteSourceData;
 use App\Data\PaletteSourcesData;
 use App\Enums\SearchSurface;
+use App\Exceptions\SearchWordsInvalid;
 use App\Mcp\Support\DeclaredSearch;
 use App\Support\ActorContext;
 use App\Support\RecordIdentity;
-use App\Support\SearchCoordinator;
-use App\Support\SearchEligibility;
 use App\Values\DeclaredSearchable;
 use App\Values\EmittedHit;
 use App\Values\SearchAnswer;
@@ -50,8 +50,8 @@ final readonly class SearchProps
     private const string TOO_SHORT = 'too_short';
 
     public function __construct(
-        private SearchCoordinator $coordinator,
-        private SearchEligibility $eligibility,
+        private RecordSearch $coordinator,
+        private SearchSources $eligibility,
         private RecordResolver $records,
         private CurrentActor $actors,
         private ServedEnvironment $environment,
@@ -93,11 +93,11 @@ final readonly class SearchProps
         $prefix = trim((string) self::textOf($request, self::PREFIX));
         $page = $this->eligibility->discover($this->reader(), $prefix, after: self::textOf($request, self::AFTER));
 
-        return new PaletteSourcesData(
-            $page->prefix,
-            array_map(fn (DeclaredSearchable $source) => PaletteSourceData::fromDeclared($source), $page->sources),
-            $page->nextAfter,
-        );
+        return PaletteSourcesData::from([
+            'prefix' => $page->prefix,
+            'sources' => $page->sources,
+            'nextAfter' => $page->nextAfter,
+        ]);
     }
 
     /**
@@ -105,17 +105,16 @@ final readonly class SearchProps
      */
     private function tooShort(string $query): PaletteSearchData
     {
-        return new PaletteSearchData(
-            self::TOO_SHORT,
-            [],
-            null,
-            null,
-            $this->eligibility->hints($this->reader(), $query),
-            [],
-            [],
-            'Type at least '.SearchWords::CHARACTER_MINIMUM.' characters to search.',
-            null,
-        );
+        return PaletteSearchData::from([
+            'status' => self::TOO_SHORT,
+            'hits' => [],
+            'directOpenLabel' => null,
+            'hints' => $this->eligibility->hints($this->reader(), $query),
+            'alternatives' => [],
+            'narrowerScopes' => [],
+            'reason' => SearchWordsInvalid::tooShort(SearchWords::CHARACTER_MINIMUM)->getMessage(),
+            'continuation' => null,
+        ]);
     }
 
     private function dataOf(SearchAnswer $answer): PaletteSearchData
@@ -129,17 +128,24 @@ final readonly class SearchProps
             $hits[] = PaletteHitData::of($hit, $pages[$index + ($direct === null ? 0 : 1)] ?? null);
         }
 
-        return new PaletteSearchData(
-            $answer->status->value,
-            $hits,
-            $direct,
-            $answer->directOpen === null ? null : "Open {$answer->directOpen->snippet}",
-            [],
-            $answer->scope === null ? [] : array_map(PaletteSourceData::fromDeclared(...), $answer->scope->sources),
-            $answer->narrowerScopes,
-            $answer->reason,
-            $answer->continuation,
-        );
+        $alternatives = $answer->scope === null ? [] : $answer->scope->sources;
+
+        $fields = [
+            'status' => $answer->status->value,
+            'hits' => $hits,
+            'directOpenLabel' => $answer->directOpen === null ? null : "Open {$answer->directOpen->snippet}",
+            'hints' => [],
+            'alternatives' => $alternatives,
+            'narrowerScopes' => $answer->narrowerScopes,
+            'reason' => $answer->reason,
+            'continuation' => $answer->continuation,
+        ];
+
+        if ($direct !== null) {
+            $fields['directOpen'] = $direct;
+        }
+
+        return PaletteSearchData::from($fields);
     }
 
     /**

@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import Button from '@kit/Button';
+import SwitchCase from '@kit/SwitchCase';
 import type { TaskLogsData, TaskStreamEntryData } from '@generated/types/tasks';
+import TaskLogFoundLine from './TaskLogFoundLine.vue';
 import { taskStateLook } from './taskLooks';
 import { useTaskLogs } from './useTaskLogs';
 
@@ -13,6 +15,7 @@ import { useTaskLogs } from './useTaskLogs';
  * notice says it is gone.
  */
 const props = defineProps<{ logs: TaskLogsData | undefined }>();
+const found = computed(() => props.logs?.selected);
 
 const { logs, open, showOlder, revealWaiting, retry } = useTaskLogs(
     () => props.logs,
@@ -47,36 +50,26 @@ function changeText(entry: TaskStreamEntryData): string {
                 That log line is no longer available.
             </p>
         </template>
-        <template v-if="props.logs?.selected !== undefined">
-            <section
-                aria-label="Log line found by search"
-                class="flex flex-col gap-0.5 border-l-2 border-brand pl-2"
-            >
-                <span class="flex flex-wrap gap-x-2 text-small text-text-3">
-                    <span>Found by search</span>
-                    <span class="tabular-nums">{{ runText(props.logs.selected) }}</span>
-                </span>
-                <p
-                    class="text-body whitespace-pre-wrap text-text-2 [overflow-wrap:anywhere]"
-                    v-text="props.logs.selected.text"
-                />
-            </section>
+        <template v-if="found !== undefined">
+            <TaskLogFoundLine :run="runText(found)" :entry="found" />
         </template>
-        <template v-if="logs.status === 'restricted'">
-            <p class="text-body text-text-3">You can't read this task's logs.</p>
-        </template>
-        <template v-else-if="logs.status === 'failed'">
-            <p role="alert" class="flex items-center gap-2 text-small text-text-2">
-                <span>{{
-                    logs.entries.length > 0
-                        ? 'Showing the entries read before the connection was lost.'
-                        : 'The logs could not be read.'
-                }}</span>
-                <Button size="small" variant="bordered" @click="retry"
-                    >Retry</Button
-                >
-            </p>
-        </template>
+        <SwitchCase :value="logs.status">
+            <template #restricted>
+                <p class="text-body text-text-3">You can't read this task's logs.</p>
+            </template>
+            <template #failed>
+                <p role="alert" class="flex items-center gap-2 text-small text-text-2">
+                    <span>{{
+                        logs.entries.length > 0
+                            ? 'Showing the entries read before the connection was lost.'
+                            : 'The logs could not be read.'
+                    }}</span>
+                    <Button size="small" variant="bordered" @click="retry"
+                        >Retry</Button
+                    >
+                </p>
+            </template>
+        </SwitchCase>
         <template v-if="logs.status === 'loading' && logs.entries.length === 0">
             <p role="status" class="text-small text-text-3">Loading the logs</p>
         </template>

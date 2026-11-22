@@ -106,7 +106,7 @@ final readonly class PolicyReadAdmission implements ReadAdmission
     private static function holds(AllowedNames $targets, ReadRequest $request): bool
     {
         if ($request->discovery) {
-            return ! $targets->admitsNone();
+            return ! $targets->hasNoneAllowed();
         }
 
         if ($request->target === null) {

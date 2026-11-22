@@ -18,9 +18,7 @@ final readonly class SearchableBody
 {
     /**
      * @param  literal-string  $column  the column of the long text, named by its owner's code
-     * @param  Closure(TModel, string, int, int, int): SearchResult  $hitOf  the row, the segment text, the match's
-     *                                                                       column in it, its character offset in the
-     *                                                                       whole text and its line there, from 1
+     * @param  Closure(TModel, BodyMatch): SearchResult  $hitOf  the row and where the words matched in its text
      * @param  Closure(TModel, string, HitIdentity, SearchWords): (SearchResult|null)  $passageOf  the row, its whole
      *                                                                                             text, the held hit
      *                                                                                             and the words
@@ -34,9 +32,9 @@ final readonly class SearchableBody
     /**
      * @param  TModel  $row
      */
-    public function hit(Model $row, string $segment, int $column, int $characterOffset, int $line): SearchResult
+    public function hit(Model $row, BodyMatch $match): SearchResult
     {
-        return ($this->hitOf)($row, $segment, $column, $characterOffset, $line);
+        return ($this->hitOf)($row, $match);
     }
 
     /**

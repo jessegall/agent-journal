@@ -35,6 +35,7 @@ final class ExportValidator
         'App\Models\Support\AssignableListing',
         'App\Http\Requests\Concerns\ReadsIdempotencyKey',
         'App\Http\Requests\Web\Concerns\ReadsRouteNumber',
+        'App\Http\Requests\Web\Concerns\ReadsCommentsPage',
         'App\Support\LinkAccess',
         'App\Support\LinkTypeRegistry',
         'App\Concerns\ProvidesModelRecords',

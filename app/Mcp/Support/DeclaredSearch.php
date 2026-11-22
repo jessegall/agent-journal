@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
+use App\Contracts\RecordSearch;
+use App\Contracts\SearchSources;
 use App\Contracts\ServedEnvironment;
 use App\Enums\SearchSurface;
 use App\Mcp\Contracts\Continuations as ContinuationsContract;
@@ -13,8 +15,6 @@ use App\Mcp\Exceptions\ContinuationInvalid;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
-use App\Support\SearchCoordinator;
-use App\Support\SearchEligibility;
 use App\Values\DeclaredSearchable;
 use App\Values\EmittedHit;
 use App\Values\ScopeResolution;
@@ -46,8 +46,8 @@ final readonly class DeclaredSearch
     public const string CURRENT_ARGUMENTS = 'query, within, limit, continuation, discover or prefix';
 
     public function __construct(
-        private SearchCoordinator $coordinator,
-        private SearchEligibility $eligibility,
+        private RecordSearch $coordinator,
+        private SearchSources $eligibility,
         private ContinuationsContract $continuations,
         private AgentContext $agent,
         private ServedEnvironment $environment,
@@ -73,7 +73,7 @@ final readonly class DeclaredSearch
             limit: $arguments->optionalPositiveInteger('limit'),
             continuation: $continuation,
             discover: $arguments->flag('discover'),
-            prefix: $arguments->optionalText('prefix'),
+            prefix: $arguments->textOr('prefix', ''),
         );
 
         if ($request->isDiscovery()) {
@@ -136,7 +136,8 @@ final readonly class DeclaredSearch
 
         if ($answer->directOpen !== null) {
             $fields['direct_open'] = $answer->directOpen->toArray();
-            $next[] = new NextAction($answer->directOpen->open->tool, $answer->directOpen->open->arguments);
+            $open = $answer->directOpen->open;
+            $next[] = new NextAction($open->tool, $open->arguments);
         }
 
         if ($answer->reason !== null) {

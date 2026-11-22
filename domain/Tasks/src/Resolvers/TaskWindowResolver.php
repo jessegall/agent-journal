@@ -21,7 +21,6 @@ use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Data\TaskActionsData;
 use Domain\Tasks\Data\TaskFiltersData;
 use Domain\Tasks\Data\TaskLogsData;
-use Domain\Tasks\Data\TaskProofData;
 use Domain\Tasks\Data\TaskProofsData;
 use Domain\Tasks\Data\TaskReaderData;
 use Domain\Tasks\Data\TaskStreamEntryData;
@@ -41,7 +40,6 @@ use Domain\Tasks\Support\TaskReaderLayout;
 use Domain\Tasks\Support\TaskStream;
 use Domain\Tasks\Values\TaskCard;
 use Domain\Tasks\Values\TaskFilters;
-use Domain\Tasks\Values\TaskProof;
 use Spatie\LaravelData\Optional;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -83,10 +81,10 @@ final readonly class TaskWindowResolver implements PageResolver
                 $this->slots->sectionsIn('tasks.task', 'inspector'),
                 $this->logsOf($taskId),
                 $this->proofsOf($taskId),
-                $this->request->asksForWaits()
+                $this->request->isAskingForWaits()
                     ? TaskWaitsData::ofWaits($this->waits->waitsOf($taskId))
                     : Optional::create(),
-                $this->request->asksForWaits() ? $this->waitActionsOf($taskId) : Optional::create(),
+                $this->request->isAskingForWaits() ? $this->waitActionsOf($taskId) : Optional::create(),
             );
 
             return $this->index->of(
@@ -105,7 +103,7 @@ final readonly class TaskWindowResolver implements PageResolver
      */
     private function readerPage(TaskReaderData $reader): DetailPage
     {
-        if (! $this->request->asksForPassage()) {
+        if (! $this->request->isAskingForPassage()) {
             return $this->layout->page($reader);
         }
 
@@ -114,7 +112,7 @@ final readonly class TaskWindowResolver implements PageResolver
 
     private function logsOf(string $taskId): TaskLogsData|Optional
     {
-        if (! $this->request->asksForLogs()) {
+        if (! $this->request->isAskingForLogs()) {
             return Optional::create();
         }
 
@@ -135,7 +133,7 @@ final readonly class TaskWindowResolver implements PageResolver
      */
     private function selectedLineOf(string $taskId): array
     {
-        if (! $this->request->asksForEntry()) {
+        if (! $this->request->isAskingForEntry()) {
             return [];
         }
 
@@ -150,18 +148,20 @@ final readonly class TaskWindowResolver implements PageResolver
 
     private function proofsOf(string $taskId): TaskProofsData|Optional
     {
-        if (! $this->request->asksForProofs()) {
+        if (! $this->request->isAskingForProofs()) {
             return Optional::create();
         }
 
         $after = $this->request->proofsAfter();
         $page = $this->proofs->proofsOf($taskId, $after === '' ? null : $after, self::PROOFS_PER_PAGE);
 
-        return TaskProofsData::from([
-            'after' => $after,
-            'proofs' => array_map(fn (TaskProof $proof) => TaskProofData::ofProof($proof), $page->proofs),
-            'nextAfter' => $page->nextAfter ?? Optional::create(),
-        ]);
+        $fields = ['after' => $after, 'proofs' => $page->proofs];
+
+        if ($page->nextAfter !== null) {
+            $fields['nextAfter'] = $page->nextAfter;
+        }
+
+        return TaskProofsData::from($fields);
     }
 
     /**

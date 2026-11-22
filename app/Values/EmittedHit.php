@@ -43,16 +43,7 @@ final readonly class EmittedHit
      */
     public function withoutSnippet(): self
     {
-        return new self(
-            $this->sourceKey,
-            $this->sourceLabel,
-            $this->title,
-            '',
-            $this->reference,
-            $this->score,
-            $this->location,
-            $this->open,
-        );
+        return clone ($this, ['snippet' => '']);
     }
 
     /**

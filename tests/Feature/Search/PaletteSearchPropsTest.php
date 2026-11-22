@@ -74,7 +74,8 @@ final class PaletteSearchPropsTest extends TestCase
         $short = $this->palette(['searchQuery' => '7']);
 
         $this->assertStringEndsWith((string) $task->number, (string) $direct->directOpenLabel);
-        $this->assertSame($task->id, $direct->directOpen?->recordId);
+        $this->assertInstanceOf(PaletteHitData::class, $direct->directOpen);
+        $this->assertSame($task->id, $direct->directOpen->recordId);
         $this->assertSame('too_short', $short->status);
         $this->assertContains(new TaskReferenceRecognizer()->hint('7'), $short->hints);
     }

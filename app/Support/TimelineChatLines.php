@@ -38,19 +38,12 @@ final readonly class TimelineChatLines implements ChatLines
         DockIdentity|null $source = null,
         LineCardPlacement $placement = LineCardPlacement::Inline,
     ): void {
-        $inboxIds = InboxInterval::query()
-            ->stillOpen()
-            ->heldBy($agent)
-            ->limit(self::CHAT_LIMIT)
-            ->pluck('inbox_id')
-            ->unique()
-            ->all();
+        $inboxIds = InboxInterval::query()->stillOpen()->heldBy($agent)->select('inbox_id');
 
-        foreach ($inboxIds as $inboxId) {
-            $sequence = InboxRecord::lockedForSequence($inboxId)->takeSequence();
+        foreach (InboxRecord::lockedForSequences($inboxIds, self::CHAT_LIMIT) as $inbox) {
             TimelineEvent::create(
-                $inboxId,
-                $sequence,
+                $inbox->id,
+                $inbox->takeSequence(),
                 TimelineEventType::Line,
                 $agent,
                 null,

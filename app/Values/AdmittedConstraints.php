@@ -32,8 +32,8 @@ final readonly class AdmittedConstraints
         return $this->fields->admits($field);
     }
 
-    public function admitsNothing(): bool
+    public function hasNothingAdmitted(): bool
     {
-        return $this->recordIds->admitsNone() || $this->views->admitsNone();
+        return $this->recordIds->hasNoneAllowed() || $this->views->hasNoneAllowed();
     }
 }

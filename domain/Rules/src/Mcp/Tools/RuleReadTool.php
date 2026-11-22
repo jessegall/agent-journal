@@ -39,11 +39,7 @@ final class RuleReadTool extends JournalReadTool
 
     public function readRequest(ToolArguments|null $arguments = null): ReadRequest
     {
-        if ($arguments === null) {
-            return parent::readRequest();
-        }
-
-        return ReadRequest::forRecord(self::NAME, self::ID_ARGUMENT, $arguments->ulid(self::ID_ARGUMENT));
+        return $this->recordReadRequest($arguments, self::ID_ARGUMENT);
     }
 
     protected function read(ToolArguments $arguments): ToolResult

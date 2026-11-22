@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Web;
+namespace App\Http\Responses;
 
 use App\Contracts\ReflectorFactory;
 use App\Contracts\UiOwnerAvailability;
@@ -11,6 +11,7 @@ use App\Enums\ActionMethod;
 use App\Exceptions\PageReadParameterMissing;
 use App\Support\ReflectedParameter;
 use App\Support\UiDeclarations;
+use App\Support\Web\PageVisibility;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
@@ -170,13 +171,13 @@ final readonly class PageReadProps
      */
     private function routeParameterOf(RegisteredAction $action, array $query, string $name): string
     {
-        $value = $query[$name] ?? null;
+        $parameter = $query[$name] ?? null;
 
-        if (! is_string($value) || $value === '') {
+        if (! is_string($parameter) || $parameter === '') {
             throw PageReadParameterMissing::for($action->routeName, $name);
         }
 
-        return $value;
+        return $parameter;
     }
 
     /**

@@ -6,6 +6,7 @@ namespace App\Data;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
@@ -26,7 +27,6 @@ final class PaletteSearchData extends Data
         public readonly string $status,
         #[DataCollectionOf(PaletteHitData::class)]
         public readonly array $hits,
-        public readonly PaletteHitData|null $directOpen,
         public readonly string|null $directOpenLabel,
         public readonly array $hints,
         #[DataCollectionOf(PaletteSourceData::class)]
@@ -34,5 +34,6 @@ final class PaletteSearchData extends Data
         public readonly array $narrowerScopes,
         public readonly string|null $reason,
         public readonly string|null $continuation,
+        public readonly PaletteHitData|Optional $directOpen = new Optional(),
     ) {}
 }

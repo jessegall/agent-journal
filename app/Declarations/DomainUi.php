@@ -63,6 +63,14 @@ final readonly class DomainUi
     ) {}
 
     /**
+     * Reads what one of Core's page modules declares, its scripts in its own folder under Core's resources/js.
+     */
+    public static function ofCore(object $module, string $name, string $scriptFolder): self
+    {
+        return self::of($module, $name, 'App', dirname(__DIR__, 2).'/resources/js/'.$scriptFolder);
+    }
+
+    /**
      * Reads what a domain or module declares through PageProvider, NavigationProvider, SectionProvider,
      * NativePartProvider, SidebarGroupProvider, MenuProvider and TypeProvider, given its name, namespace and folder.
      */

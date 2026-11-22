@@ -8,6 +8,8 @@ use App\Exceptions\SearchHandleRefused;
 use App\Exceptions\SearchRestartRequired;
 use App\Exceptions\SearchStateFull;
 use App\Exceptions\SearchStoreLocksMissing;
+use App\Support\Stored\StoredSearch;
+use App\Support\Stored\StoredSearchPosition;
 use App\Values\SearchOwner;
 use App\Values\SearchPosition;
 use Illuminate\Cache\CacheManager;
@@ -65,11 +67,7 @@ final readonly class SearchStates
     {
         $searchId = self::randomId();
         $positionId = self::randomId();
-        $stored = [
-            'owner' => hash('sha256', $owner->binding()),
-            'order' => [$positionId],
-            'positions' => [$positionId => ['state' => $state, 'page' => null, 'successor' => null]],
-        ];
+        $stored = StoredSearch::starting(self::ownerHash($owner), $positionId, $state);
 
         self::assertFits($stored);
 
@@ -93,7 +91,7 @@ final readonly class SearchStates
     public function resume(SearchOwner $owner, string $handle): SearchPosition
     {
         [$searchId, $positionId] = $this->opened($owner, $handle);
-        $position = $this->storedPosition($owner, $searchId, $positionId);
+        $position = $this->stored($owner, $searchId)->position($positionId);
 
         return $this->positionOf($owner, $searchId, $positionId, $position);
     }
@@ -112,7 +110,7 @@ final readonly class SearchStates
 
         return $this->locks->lock(self::searchKey($searchId).':lock', self::LOCK_SECONDS)->block(
             self::LOCK_WAIT_SECONDS,
-            fn (): SearchPosition => $this->advanceLocked($owner, $searchId, $positionId, $page, $successorState),
+            fn () => $this->advanceLocked($owner, $searchId, $positionId, $page, $successorState),
         );
     }
 
@@ -136,51 +134,39 @@ final readonly class SearchStates
         string $successorState,
     ): SearchPosition {
         $stored = $this->stored($owner, $searchId);
-        $position = $stored['positions'][$positionId] ?? throw SearchRestartRequired::expired();
+        $position = $stored->position($positionId);
+        $current = $this->positionOf($owner, $searchId, $positionId, $position);
 
-        if ($position['successor'] !== null && $position['page'] !== null) {
-            return $this->positionOf($owner, $searchId, $positionId, $position);
+        if ($current->wasResumed()) {
+            return $current;
         }
 
         $successorId = self::randomId();
-        $stored['positions'][$positionId] = [
-            'state' => $position['state'],
-            'page' => $page,
-            'successor' => $successorId,
-        ];
-        $stored['positions'][$successorId] = ['state' => $successorState, 'page' => null, 'successor' => null];
-        $stored['order'][] = $successorId;
+        $advanced = $stored->advanced($positionId, $page, $successorId, $successorState, self::RETAINED_POSITION_LIMIT);
 
-        while (count($stored['order']) > self::RETAINED_POSITION_LIMIT) {
-            unset($stored['positions'][array_shift($stored['order'])]);
-        }
-
-        self::assertFits($stored);
-        $this->cache->put(self::searchKey($searchId), $stored, self::LIFETIME_SECONDS);
+        self::assertFits($advanced);
+        $this->cache->put(self::searchKey($searchId), $advanced, self::LIFETIME_SECONDS);
 
         return new SearchPosition(
             $this->handleOf($owner, $searchId, $positionId),
-            $position['state'],
+            $position->state,
             $page,
             $this->handleOf($owner, $searchId, $successorId),
         );
     }
 
-    /**
-     * @param  array{state: string, page: string|null, successor: string|null}  $position
-     */
     private function positionOf(
         SearchOwner $owner,
         string $searchId,
         string $positionId,
-        array $position,
+        StoredSearchPosition $position,
     ): SearchPosition {
-        $successor = $position['successor'];
+        $successor = $position->successor;
 
         return new SearchPosition(
             $this->handleOf($owner, $searchId, $positionId),
-            $position['state'],
-            $position['page'],
+            $position->state,
+            $position->page,
             $successor === null ? null : $this->handleOf($owner, $searchId, $successor),
         );
     }
@@ -229,61 +215,22 @@ final readonly class SearchStates
     }
 
     /**
-     * @return array{state: string, page: string|null, successor: string|null}
-     *
      * @throws SearchRestartRequired
      */
-    private function storedPosition(SearchOwner $owner, string $searchId, string $positionId): array
-    {
-        return $this->stored($owner, $searchId)['positions'][$positionId] ?? throw SearchRestartRequired::expired();
-    }
-
-    /**
-     * @return array{
-     *     owner: string,
-     *     order: list<string>,
-     *     positions: array<string, array{state: string, page: string|null, successor: string|null}>,
-     * }
-     *
-     * @throws SearchRestartRequired
-     */
-    private function stored(SearchOwner $owner, string $searchId): array
+    private function stored(SearchOwner $owner, string $searchId): StoredSearch
     {
         $stored = $this->cache->get(self::searchKey($searchId));
 
-        if (! self::isStoredSearch($stored) || $stored['owner'] !== hash('sha256', $owner->binding())) {
+        if (! $stored instanceof StoredSearch || ! $stored->isOwnedBy(self::ownerHash($owner))) {
             throw SearchRestartRequired::expired();
         }
 
         return $stored;
     }
 
-    /**
-     * Whether what the cache holds is a search this class wrote: its owner, its order and its positions.
-     *
-     * @phpstan-assert-if-true array{
-     *     owner: string,
-     *     order: list<string>,
-     *     positions: array<string, array{state: string, page: string|null, successor: string|null}>,
-     * } $stored
-     */
-    private static function isStoredSearch(mixed $stored): bool
+    private static function ownerHash(SearchOwner $owner): string
     {
-        return is_array($stored)
-            && is_string($stored['owner'] ?? null)
-            && is_array($stored['order'] ?? null)
-            && array_is_list($stored['order'])
-            && array_all($stored['order'], fn (mixed $id): bool => is_string($id))
-            && is_array($stored['positions'] ?? null)
-            && array_all($stored['positions'], fn (mixed $position): bool => self::isStoredPosition($position));
-    }
-
-    private static function isStoredPosition(mixed $position): bool
-    {
-        return is_array($position)
-            && is_string($position['state'] ?? null)
-            && (is_string($position['page'] ?? null) || ($position['page'] ?? null) === null)
-            && (is_string($position['successor'] ?? null) || ($position['successor'] ?? null) === null);
+        return hash('sha256', $owner->binding());
     }
 
     private function handleOf(SearchOwner $owner, string $searchId, string $positionId): string
@@ -299,11 +246,9 @@ final readonly class SearchStates
     }
 
     /**
-     * @param  array<string, mixed>  $stored
-     *
      * @throws SearchStateFull
      */
-    private static function assertFits(array $stored): void
+    private static function assertFits(StoredSearch $stored): void
     {
         if (strlen(serialize($stored)) > self::STATE_BYTE_LIMIT) {
             throw SearchStateFull::over(self::STATE_BYTE_LIMIT);

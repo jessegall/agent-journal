@@ -7,6 +7,8 @@ namespace App\Providers;
 use App\Contracts\AssignmentRegistration;
 use App\Contracts\MessageSearch;
 use App\Contracts\PipelineRunner as PipelineRunnerContract;
+use App\Contracts\RecordSearch;
+use App\Contracts\SearchSources;
 use App\Contracts\StatementDeadlines;
 use App\Contracts\TieredSearch;
 use App\Enums\AssignmentPurpose;
@@ -53,6 +55,8 @@ use App\Support\FolderClasses;
 use App\Support\LinkTypeRegistry;
 use App\Support\MessageSearchProvider;
 use App\Support\PipelineRunner;
+use App\Support\SearchCoordinator;
+use App\Support\SearchEligibility;
 use App\Support\StatementDeadline;
 use App\Support\TieredRecordSearch;
 use Illuminate\Console\Command;
@@ -68,6 +72,8 @@ final class CoreServiceProvider extends ServiceProvider
     {
         $this->app->bind(PipelineRunnerContract::class, PipelineRunner::class);
         $this->app->bind(TieredSearch::class, TieredRecordSearch::class);
+        $this->app->bind(RecordSearch::class, SearchCoordinator::class);
+        $this->app->bind(SearchSources::class, SearchEligibility::class);
         $this->app->bind(StatementDeadlines::class, StatementDeadline::class);
         $this->app->bind(MessageSearch::class, MessageSearchProvider::class);
     }

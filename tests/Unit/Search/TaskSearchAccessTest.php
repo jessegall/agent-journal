@@ -40,7 +40,7 @@ final class TaskSearchAccessTest extends TestCase
 
         $this->assertTrue($targets->isRestricted());
         $this->assertSame([self::TASK_A], $targets->names());
-        $this->assertTrue($authorization->readTargets('plans_read')->admitsNone());
+        $this->assertTrue($authorization->readTargets('plans_read')->hasNoneAllowed());
     }
 
     public function test_an_unscoped_read_names_every_task(): void

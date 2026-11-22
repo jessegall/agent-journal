@@ -10,6 +10,7 @@ use App\Contracts\TieredSearch;
 use App\Enums\ScoreTier;
 use App\Exceptions\StatementTimedOut;
 use App\Exceptions\WorkBudgetSpent;
+use App\Values\BodyMatch;
 use App\Values\HitIdentity;
 use App\Values\RefreshCandidates;
 use App\Values\SearchableBody;
@@ -155,7 +156,7 @@ final readonly class TieredRecordSearch implements TieredSearch
         $highWater = $position->text(self::HIGH_WATER);
         $referenceId = $position->text(self::REFERENCE);
         $after = $position->text(self::AFTER);
-        $blockSize = max(1, min(self::BLOCK_SIZE, $query->budget->remainingCandidates()));
+        $blockSize = max(1, min(self::BLOCK_ROW_LIMIT, $query->budget->remainingCandidates()));
         $query->budget->chargeCandidates($blockSize);
         $pattern = $tier->likePattern(TextSearch::literal($query->words->text));
 
@@ -218,7 +219,7 @@ final readonly class TieredRecordSearch implements TieredSearch
         $start = $record === '' ? 1 : $position->integer(self::OFFSET);
         $rowLimit = $record === '' ? self::bodyRowsFor($query) : 1;
         $query->budget->chargeCandidates($rowLimit);
-        $query->budget->chargeBytes($rowLimit * self::SEGMENT_CHARACTERS * self::BYTES_PER_CHARACTER);
+        $query->budget->chargeBytes($rowLimit * self::SEGMENT_CHARACTER_LIMIT * self::BYTES_PER_CHARACTER);
         $pattern = ScoreTier::BodyContains->likePattern(TextSearch::literal($query->words->text));
 
         $rows = $this->read($query, fn () => $source->rows()
@@ -232,7 +233,7 @@ final readonly class TieredRecordSearch implements TieredSearch
             ->orderBy($source->idColumn)
             ->limit($rowLimit)
             ->select($source->columns)
-            ->selectRaw("substr({$body->column}, ?, ?) as ".self::SEGMENT, [$start, self::SEGMENT_CHARACTERS])
+            ->selectRaw("substr({$body->column}, ?, ?) as ".self::SEGMENT, [$start, self::SEGMENT_CHARACTER_LIMIT])
             ->selectRaw("length({$body->column}) as ".self::LENGTH)
             ->selectRaw(self::linesBefore($body->column), [$start - 1, $start - 1])
             ->get());
@@ -255,7 +256,7 @@ final readonly class TieredRecordSearch implements TieredSearch
                 continue;
             }
 
-            $read = $start - 1 + self::SEGMENT_CHARACTERS;
+            $read = $start - 1 + self::SEGMENT_CHARACTER_LIMIT;
 
             if ($read < (int) $row->getAttribute(self::LENGTH)) {
                 $next = self::bodyPosition($after, $highWater, $referenceId, $id, $read + 1 - $overlap);
@@ -301,11 +302,10 @@ final readonly class TieredRecordSearch implements TieredSearch
             return null;
         }
 
-        $found = mb_stripos($segment, $query->words->text);
-        $column = $found === false ? 0 : $found;
+        $column = $query->words->columnIn($segment);
         $line = (int) $row->getAttribute(self::LINES_BEFORE) + substr_count(mb_substr($segment, 0, $column), "\n") + 1;
 
-        return $body->hit($row, $segment, $column, $start - 1 + $column, $line);
+        return $body->hit($row, new BodyMatch($segment, $column, $start - 1 + $column, $line));
     }
 
     /**
@@ -319,7 +319,7 @@ final readonly class TieredRecordSearch implements TieredSearch
     private function refresh(RefreshCandidates $query, TieredSearchSource $source): SearchBatch
     {
         $ids = $query->recordIds();
-        $query->original->budget->chargePolicyChecks(count($ids));
+        $query->budget()->chargePolicyChecks(count($ids));
         $reference = $source->referenceHit($query->original);
 
         $rows = $this->read($query->original, fn () => $this->rowsWithText($source, $ids));
@@ -327,7 +327,8 @@ final readonly class TieredRecordSearch implements TieredSearch
         $matches = [];
 
         foreach ($query->candidates as $candidate) {
-            $match = $this->currentMatch($query->original, $source, $candidate, $rows->get($candidate->recordId), $reference);
+            $row = $rows->get($candidate->recordId);
+            $match = $this->currentMatch($query->original, $source, $candidate, $row, $reference);
 
             if ($match !== null) {
                 $matches[] = $match;
@@ -420,9 +421,9 @@ final readonly class TieredRecordSearch implements TieredSearch
      */
     private static function bodyRowsFor(SearchQuery $query): int
     {
-        $byBytes = intdiv($query->budget->remainingBytes(), self::SEGMENT_CHARACTERS * self::BYTES_PER_CHARACTER);
+        $byBytes = intdiv($query->budget->remainingBytes(), self::SEGMENT_CHARACTER_LIMIT * self::BYTES_PER_CHARACTER);
 
-        return max(1, min(self::BLOCK_SIZE, $query->budget->remainingCandidates(), $byBytes));
+        return max(1, min(self::BLOCK_ROW_LIMIT, $query->budget->remainingCandidates(), $byBytes));
     }
 
     /**

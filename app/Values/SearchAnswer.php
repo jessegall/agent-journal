@@ -81,33 +81,11 @@ final readonly class SearchAnswer
      */
     public function withFailedSources(array $sources): self
     {
-        return new self(
-            $this->status,
-            $this->hits,
-            $this->directOpen,
-            $this->sourceChoices,
-            $this->continuation,
-            $this->narrowerScopes,
-            $this->scope,
-            $this->words,
-            $this->reason,
-            $sources,
-        );
+        return clone ($this, ['failedSources' => $sources]);
     }
 
     public function withContinuation(string|null $continuation): self
     {
-        return new self(
-            $this->status,
-            $this->hits,
-            $this->directOpen,
-            $this->sourceChoices,
-            $continuation,
-            $this->narrowerScopes,
-            $this->scope,
-            $this->words,
-            $this->reason,
-            $this->failedSources,
-        );
+        return clone ($this, ['continuation' => $continuation]);
     }
 }

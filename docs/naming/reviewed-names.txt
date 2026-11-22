@@ -2100,6 +2100,7 @@ class	BlockTaskCommand
 class	BlockTaskHandler
 class	BlockTaskPageController
 class	BlockTaskTool
+class	BodyMatch
 class	BooleanOperand
 class	BooleanSetting
 class	BooleanValueData
@@ -4733,6 +4734,7 @@ class	PublicationPassage
 class	PublicationPassageUnknown
 class	PublicationReadTool
 class	PublicationResource
+class	PublicationSearchAccess
 class	PublicationStatus
 class	PublicationTab
 class	PublishHookEffects
@@ -6491,8 +6493,10 @@ class	StoredRuleScope
 class	StoredScopedRead
 class	StoredScreenData
 class	StoredScriptBinding
+class	StoredSearch
 class	StoredSearchHit
 class	StoredSearchPage
+class	StoredSearchPosition
 class	StoredSearchProgress
 class	StoredSelectedTargetData
 class	StoredSettings
@@ -8069,7 +8073,7 @@ constant	TaskLogReadResult::TOOL
 constant	TaskLogRecords::LARGEST_PAGE
 constant	TaskLogSearchProvider::AFTER_LINE
 constant	TaskLogSearchProvider::AFTER_TASK
-constant	TaskLogSearchProvider::BLOCK_SIZE
+constant	TaskLogSearchProvider::BLOCK_ROW_LIMIT
 constant	TaskLogSearchProvider::COLUMNS
 constant	TaskLogSearchProvider::HIGH_WATER
 constant	TaskLogSearchProvider::TIER
@@ -8081,8 +8085,8 @@ constant	TaskReaderLayout::PASSAGE_CHARACTERS
 constant	TaskReaderLayout::PASSAGE_GONE
 constant	TaskResource::TEMPLATE
 constant	TaskRun::LINK_TYPE
-constant	TaskSearchProvider::BLOCK_SIZE
-constant	TaskSearchProvider::SEGMENT_CHARACTERS
+constant	TaskSearchProvider::BLOCK_ROW_LIMIT
+constant	TaskSearchProvider::SEGMENT_CHARACTER_LIMIT
 constant	TaskSearchProvider::SNIPPET_CONTEXT_CHARACTERS
 constant	TaskStream::PAGE
 constant	TaskType::VALUE
@@ -8129,8 +8133,8 @@ constant	TieredRecordSearch::REFERENCE
 constant	TieredRecordSearch::SEGMENT
 constant	TieredRecordSearch::TEXT
 constant	TieredRecordSearch::TIER
-constant	TieredSearch::BLOCK_SIZE
-constant	TieredSearch::SEGMENT_CHARACTERS
+constant	TieredSearch::BLOCK_ROW_LIMIT
+constant	TieredSearch::SEGMENT_CHARACTER_LIMIT
 constant	TimelineChatLines::CHAT_LIMIT
 constant	TimelineChatLines::PAGE_LINE_LIMIT
 constant	TimelineEvent::LINE_CHARACTER_LIMIT
@@ -8775,6 +8779,7 @@ interface	RecordPolicy
 interface	RecordProvider
 interface	RecordProviderRegistration
 interface	RecordResolver
+interface	RecordSearch
 interface	RecordVisibility
 interface	ReferenceRecognizer
 interface	ReflectedType
@@ -8810,6 +8815,7 @@ interface	ScriptTrigger
 interface	SealedUploads
 interface	SearchAccess
 interface	SearchProvider
+interface	SearchSources
 interface	SeatedActor
 interface	SectionProvider
 interface	SectionResolver
@@ -9481,8 +9487,8 @@ method	AdmittedAssignment::__construct()
 method	AdmittedAssignment::request()
 method	AdmittedConstraints::__construct()
 method	AdmittedConstraints::admitsField()
-method	AdmittedConstraints::admitsNothing()
 method	AdmittedConstraints::admitsRecord()
+method	AdmittedConstraints::hasNothingAdmitted()
 method	AdmittedConstraints::unrestricted()
 method	AdmittedPlanChanged::forRun()
 method	AdmittedRecipients::userIds()
@@ -9878,8 +9884,8 @@ method	AllOf::toArray()
 method	AllowAgentInChatsCommand::handle()
 method	AllowedNames::__construct()
 method	AllowedNames::admits()
-method	AllowedNames::admitsNone()
 method	AllowedNames::all()
+method	AllowedNames::hasNoneAllowed()
 method	AllowedNames::isRestricted()
 method	AllowedNames::names()
 method	AllowedNames::only()
@@ -10736,8 +10742,11 @@ method	AwaitingSkillsStateFactory::stateClass()
 method	AwaitingSkillsStateFactory::statesFor()
 method	AwaitingSkillsStateReference::forPublication()
 method	BaseOverride::__construct()
-method	BatchOutcome::carriesHits()
+method	BatchOutcome::canCarryHits()
+method	BatchOutcome::exhaustsSource()
+method	BatchOutcome::failsSource()
 method	BatchOutcome::name()
+method	BatchOutcome::nextPosition()
 method	BeginSignInAgainCommand::__construct()
 method	BeginSignInAgainCommand::receiptTarget()
 method	BeginSignInAgainCommand::targetOf()
@@ -10835,6 +10844,8 @@ method	BlockTaskPageController::__invoke()
 method	BlockTaskTool::command()
 method	BlockTaskTool::present()
 method	BlockTaskTool::writeSchema()
+method	BodyMatch::__construct()
+method	BodyMatch::snippet()
 method	BooleanOperand::__construct()
 method	BooleanOperand::label()
 method	BooleanSetting::__construct()
@@ -10897,7 +10908,6 @@ method	BrowserInputCapabilities::carriesOut()
 method	BrowserInputCapabilities::none()
 method	BufferedHit::__construct()
 method	BufferedHit::compare()
-method	BufferedHit::toArray()
 method	BuildRules::all()
 method	BuildRules::build()
 method	BuildShellTreePipeline::pipes()
@@ -12975,6 +12985,8 @@ method	DeclaredSearchable::__construct()
 method	DeclaredSearchable::display()
 method	DeclaredSearchable::hasLabel()
 method	DeclaredSearchable::label()
+method	DeclaredSearchable::provider()
+method	DeclaredSearchable::recognizer()
 method	DeclaredSearchable::startsWith()
 method	DeclaredType::__construct()
 method	DeclaredType::isBuiltin()
@@ -13591,8 +13603,6 @@ method	DocumentRevisionResource::read()
 method	DocumentRevisionResource::shouldRegister()
 method	DocumentRevisionResource::uriTemplate()
 method	DocumentSearchAccess::idArgument()
-method	DocumentSearchAccess::openAction()
-method	DocumentSearchAccess::pageQuery()
 method	DocumentSearchAccess::readName()
 method	DocumentSearchProvider::__construct()
 method	DocumentSearchProvider::admitted()
@@ -13771,6 +13781,7 @@ method	DomainUi::componentFile()
 method	DomainUi::declaring()
 method	DomainUi::fullKey()
 method	DomainUi::of()
+method	DomainUi::ofCore()
 method	DomainUi::owns()
 method	DomainUi::presentationFile()
 method	DomainUi::presentationName()
@@ -14575,8 +14586,11 @@ method	ExecutionPolicy::make()
 method	ExecutionPolicyInvalid::imageMissing()
 method	ExecutionReceipt::__construct()
 method	ExecutionReference::__construct()
-method	ExhaustedOutcome::carriesHits()
+method	ExhaustedOutcome::canCarryHits()
+method	ExhaustedOutcome::exhaustsSource()
+method	ExhaustedOutcome::failsSource()
 method	ExhaustedOutcome::name()
+method	ExhaustedOutcome::nextPosition()
 method	ExitBranch::__construct()
 method	ExitBranch::of()
 method	ExitPolicy::__construct()
@@ -14651,8 +14665,11 @@ method	FailDriverSwitchLaunchHandler::handle()
 method	FailSkillPublicationCommand::__construct()
 method	FailSkillPublicationHandler::handle()
 method	FailedOutcome::__construct()
-method	FailedOutcome::carriesHits()
+method	FailedOutcome::canCarryHits()
+method	FailedOutcome::exhaustsSource()
+method	FailedOutcome::failsSource()
 method	FailedOutcome::name()
+method	FailedOutcome::nextPosition()
 method	FailedWindow::__construct()
 method	FailedWindow::because()
 method	FailedWindow::make()
@@ -15640,6 +15657,7 @@ method	InboxRecord::casts()
 method	InboxRecord::create()
 method	InboxRecord::isChatInbox()
 method	InboxRecord::lockedForSequence()
+method	InboxRecord::lockedForSequences()
 method	InboxRecord::takeSequence()
 method	InboxRegistration::register()
 method	InboxResolver::accessFor()
@@ -15964,6 +15982,7 @@ method	JournalCommands::runAsJournal()
 method	JournalReadTool::handle()
 method	JournalReadTool::read()
 method	JournalReadTool::readRequest()
+method	JournalReadTool::recordReadRequest()
 method	JournalResource::handle()
 method	JournalResource::mimeType()
 method	JournalResource::read()
@@ -17155,8 +17174,11 @@ method	MonotonicStopTimes::__construct()
 method	MonotonicStopTimes::at()
 method	MonthCost::__construct()
 method	MoreOutcome::__construct()
-method	MoreOutcome::carriesHits()
+method	MoreOutcome::canCarryHits()
+method	MoreOutcome::exhaustsSource()
+method	MoreOutcome::failsSource()
 method	MoreOutcome::name()
+method	MoreOutcome::nextPosition()
 method	MountRules::__construct()
 method	MountRules::accountFolder()
 method	MountRules::accountMounts()
@@ -19573,6 +19595,8 @@ method	PublicationReadTool::readRequest()
 method	PublicationResource::bodyArguments()
 method	PublicationResource::markdown()
 method	PublicationResource::pathArguments()
+method	PublicationSearchAccess::openAction()
+method	PublicationSearchAccess::pageQuery()
 method	PublicationState::awaitsDelivery()
 method	PublicationState::canMoveTo()
 method	PublicationState::isOpen()
@@ -19971,6 +19995,7 @@ method	ReadsAutoAssignmentInput::poolRules()
 method	ReadsAutoAssignmentInput::revisionRules()
 method	ReadsAutoAssignmentInput::target()
 method	ReadsAutoAssignmentKey::keyFields()
+method	ReadsCommentsPage::commentsPage()
 method	ReadsConfirmedPreview::confirmedPreviewRules()
 method	ReadsConfirmedPreview::previewChecksum()
 method	ReadsConfirmedPreview::previewId()
@@ -20225,7 +20250,6 @@ method	RecordPageReads::__construct()
 method	RecordPageReads::of()
 method	RecordPageRequest::chosenTab()
 method	RecordPageRequest::commentIdsToLocate()
-method	RecordPageRequest::commentsPage()
 method	RecordPageRequest::documentNumber()
 method	RecordPageRequest::reportNumber()
 method	RecordPageRequest::rules()
@@ -20310,6 +20334,7 @@ method	RecordRuntimeHandler::handle()
 method	RecordScriptStepResultCommand::__construct()
 method	RecordScriptStepResultHandler::__construct()
 method	RecordScriptStepResultHandler::handle()
+method	RecordSearch::search()
 method	RecordSettled::__construct()
 method	RecordSettled::dockId()
 method	RecordSettled::dockType()
@@ -20566,7 +20591,10 @@ method	ReflectorNegation::isQuestion()
 method	Reflects::reflect()
 method	RefreshCandidates::__construct()
 method	RefreshCandidates::asks()
+method	RefreshCandidates::budget()
 method	RefreshCandidates::recordIds()
+method	RefreshCandidates::sourceKey()
+method	RefreshCandidates::words()
 method	RefreshOnSkillsChanged::__construct()
 method	RefreshOnSkillsChanged::handle()
 method	RefreshResult::__construct()
@@ -20588,8 +20616,11 @@ method	RefreshSkillsHandler::digestOf()
 method	RefreshSkillsHandler::generationEntries()
 method	RefreshSkillsHandler::handle()
 method	RefreshSkillsHandler::intendPublications()
-method	RefreshedOutcome::carriesHits()
+method	RefreshedOutcome::canCarryHits()
+method	RefreshedOutcome::exhaustsSource()
+method	RefreshedOutcome::failsSource()
 method	RefreshedOutcome::name()
+method	RefreshedOutcome::nextPosition()
 method	Refusal::__construct()
 method	Refusal::of()
 method	Refusal::resourceResponse()
@@ -21107,8 +21138,6 @@ method	ReportRuntimeScreenHandler::rateKey()
 method	ReportRuntimeScreenHandler::refusalOf()
 method	ReportRuntimeScreenHandler::refuse()
 method	ReportSearchAccess::idArgument()
-method	ReportSearchAccess::openAction()
-method	ReportSearchAccess::pageQuery()
 method	ReportSearchAccess::readName()
 method	ReportSearchProvider::__construct()
 method	ReportSearchProvider::admitted()
@@ -22050,9 +22079,12 @@ method	ScanTokens::__construct()
 method	ScanTokens::handle()
 method	ScannedSource::__construct()
 method	ScanningOutcome::__construct()
-method	ScanningOutcome::carriesHits()
+method	ScanningOutcome::canCarryHits()
+method	ScanningOutcome::exhaustsSource()
+method	ScanningOutcome::failsSource()
 method	ScanningOutcome::name()
-method	ScopeAnswer::admitsSearch()
+method	ScanningOutcome::nextPosition()
+method	ScopeAnswer::canSearch()
 method	ScopeResolution::__construct()
 method	ScopeResolution::ambiguous()
 method	ScopeResolution::displays()
@@ -22245,6 +22277,7 @@ method	SearchAnswer::withContinuation()
 method	SearchAnswer::withFailedSources()
 method	SearchBatch::__construct()
 method	SearchBatch::assertOrdered()
+method	SearchBatch::byteSize()
 method	SearchBatch::currentMatch()
 method	SearchBatch::exhausted()
 method	SearchBatch::failed()
@@ -22265,7 +22298,6 @@ method	SearchCallMeter::add()
 method	SearchCallMeter::sources()
 method	SearchCoordinator::__construct()
 method	SearchCoordinator::ask()
-method	SearchCoordinator::byteSizeOf()
 method	SearchCoordinator::deadline()
 method	SearchCoordinator::directHit()
 method	SearchCoordinator::emit()
@@ -22274,7 +22306,6 @@ method	SearchCoordinator::fitting()
 method	SearchCoordinator::hasTime()
 method	SearchCoordinator::incomplete()
 method	SearchCoordinator::keep()
-method	SearchCoordinator::leader()
 method	SearchCoordinator::markVisible()
 method	SearchCoordinator::measured()
 method	SearchCoordinator::noted()
@@ -22295,7 +22326,6 @@ method	SearchCoordinator::start()
 method	SearchCoordinator::started()
 method	SearchCoordinator::stillEligible()
 method	SearchCoordinator::visibleAmong()
-method	SearchCoordinator::withFailures()
 method	SearchDiagnostics::__construct()
 method	SearchDiagnostics::record()
 method	SearchEligibility::__construct()
@@ -22320,10 +22350,12 @@ method	SearchPosition::replayedPage()
 method	SearchPosition::wasResumed()
 method	SearchProgress::__construct()
 method	SearchProgress::deliver()
+method	SearchProgress::failedSourceKeys()
 method	SearchProgress::fromStored()
 method	SearchProgress::hasSourceToRefill()
 method	SearchProgress::isFinished()
 method	SearchProgress::isPastFrontier()
+method	SearchProgress::leader()
 method	SearchProgress::starting()
 method	SearchProgress::toJson()
 method	SearchProgress::wasDelivered()
@@ -22363,6 +22395,7 @@ method	SearchRestartRequired::obsolete()
 method	SearchRestartRequired::refusalCode()
 method	SearchRestartRequired::status()
 method	SearchResult::__construct()
+method	SearchResult::byteSize()
 method	SearchResult::compare()
 method	SearchResult::cut()
 method	SearchResult::identity()
@@ -22372,6 +22405,10 @@ method	SearchScope::covers()
 method	SearchScope::everywhere()
 method	SearchScope::isEverywhere()
 method	SearchScope::within()
+method	SearchSources::access()
+method	SearchSources::discover()
+method	SearchSources::hints()
+method	SearchSources::source()
 method	SearchStateFull::over()
 method	SearchStates::__construct()
 method	SearchStates::admitActive()
@@ -22380,9 +22417,8 @@ method	SearchStates::advanceLocked()
 method	SearchStates::assertFits()
 method	SearchStates::finish()
 method	SearchStates::handleOf()
-method	SearchStates::isStoredPosition()
-method	SearchStates::isStoredSearch()
 method	SearchStates::opened()
+method	SearchStates::ownerHash()
 method	SearchStates::positionOf()
 method	SearchStates::principalKey()
 method	SearchStates::randomId()
@@ -22391,7 +22427,6 @@ method	SearchStates::searchKey()
 method	SearchStates::signatureOf()
 method	SearchStates::start()
 method	SearchStates::stored()
-method	SearchStates::storedPosition()
 method	SearchStatus::continues()
 method	SearchStoreLocksMissing::for()
 method	SearchTool::__construct()
@@ -22403,6 +22438,7 @@ method	SearchValueInvalid::forPositionField()
 method	SearchValueInvalid::outOfRange()
 method	SearchValueInvalid::tooLong()
 method	SearchWords::__construct()
+method	SearchWords::columnIn()
 method	SearchWords::equals()
 method	SearchWords::fold()
 method	SearchWords::fromInput()
@@ -24160,13 +24196,14 @@ method	SourcePosition::integer()
 method	SourcePosition::of()
 method	SourcePosition::text()
 method	SourceProgress::__construct()
+method	SourceProgress::awaitsRefill()
 method	SourceProgress::dropHead()
 method	SourceProgress::fail()
 method	SourceProgress::head()
 method	SourceProgress::isDone()
-method	SourceProgress::needsRefill()
+method	SourceProgress::leads()
 method	SourceProgress::putBack()
-method	SourceProgress::toArray()
+method	SourceProgress::take()
 method	SourceRange::__construct()
 method	SourceRange::shiftedBy()
 method	SourceRange::slice()
@@ -25007,10 +25044,21 @@ method	StoredScopedRead::read()
 method	StoredScreenData::__construct()
 method	StoredScriptBinding::__construct()
 method	StoredScriptBinding::binding()
+method	StoredSearch::__construct()
+method	StoredSearch::advanced()
+method	StoredSearch::isOwnedBy()
+method	StoredSearch::position()
+method	StoredSearch::starting()
 method	StoredSearchHit::__construct()
+method	StoredSearchHit::fromBufferedHit()
 method	StoredSearchHit::toBufferedHit()
 method	StoredSearchPage::__construct()
+method	StoredSearchPage::fromAnswer()
+method	StoredSearchPosition::__construct()
+method	StoredSearchPosition::answered()
+method	StoredSearchPosition::hasAnswered()
 method	StoredSearchProgress::__construct()
+method	StoredSearchProgress::fromSearchProgress()
 method	StoredSelectedTargetData::__construct()
 method	StoredSelectedTargetData::target()
 method	StoredSettings::__construct()
@@ -25051,6 +25099,7 @@ method	StoredSkillWrites::once()
 method	StoredSkillWrites::restoreFrom()
 method	StoredSkillWrites::resultOf()
 method	StoredSourceProgress::__construct()
+method	StoredSourceProgress::fromSourceProgress()
 method	StoredSourceProgress::toSourceProgress()
 method	StoredStopCondition::__construct()
 method	StoredStopCondition::fromStopCondition()
@@ -25574,7 +25623,7 @@ method	TaskProgressCounter::progressOf()
 method	TaskProgressCounter::progressOfPlaced()
 method	TaskProof::__construct()
 method	TaskProofData::__construct()
-method	TaskProofData::ofProof()
+method	TaskProofData::fromTaskProof()
 method	TaskProofPage::__construct()
 method	TaskProofRecords::__construct()
 method	TaskProofRecords::proofsOf()
@@ -25594,6 +25643,7 @@ method	TaskReadTool::schema()
 method	TaskReaderData::__construct()
 method	TaskReaderData::fromDetails()
 method	TaskReaderLayout::actionsOf()
+method	TaskReaderLayout::factRow()
 method	TaskReaderLayout::factsOf()
 method	TaskReaderLayout::logsOf()
 method	TaskReaderLayout::page()
@@ -25610,14 +25660,13 @@ method	TaskRecords::mayChange()
 method	TaskRecords::readableRecords()
 method	TaskRecords::referenceWord()
 method	TaskReferenceRecognizer::word()
-method	TaskRequest::asksForEntry()
-method	TaskRequest::asksForLogs()
-method	TaskRequest::asksForPassage()
-method	TaskRequest::asksForProofs()
-method	TaskRequest::asksForWaits()
 method	TaskRequest::chosenTab()
-method	TaskRequest::commentsPage()
 method	TaskRequest::entryId()
+method	TaskRequest::isAskingForEntry()
+method	TaskRequest::isAskingForLogs()
+method	TaskRequest::isAskingForPassage()
+method	TaskRequest::isAskingForProofs()
+method	TaskRequest::isAskingForWaits()
 method	TaskRequest::logsBefore()
 method	TaskRequest::passage()
 method	TaskRequest::prerequisiteSearch()
@@ -27460,6 +27509,7 @@ parameter	$contentDigest
 parameter	$contentLabel
 parameter	$contents
 parameter	$context
+parameter	$contextCharacters
 parameter	$contextCount
 parameter	$contextDigest
 parameter	$contextKey
@@ -28085,6 +28135,7 @@ parameter	$html
 parameter	$http
 parameter	$icon
 parameter	$id
+parameter	$idArgument
 parameter	$idColumn
 parameter	$idGroups
 parameter	$idempotencyKey
@@ -28736,6 +28787,7 @@ parameter	$owned
 parameter	$owner
 parameter	$ownerClasses
 parameter	$ownerDomainClass
+parameter	$ownerHash
 parameter	$ownerId
 parameter	$ownerReference
 parameter	$ownerScope
@@ -28878,6 +28930,7 @@ parameter	$ports
 parameter	$position
 parameter	$positionId
 parameter	$positional
+parameter	$positions
 parameter	$posted
 parameter	$postedAt
 parameter	$posting
@@ -29282,6 +29335,7 @@ parameter	$resumedSessionId
 parameter	$resumesConversation
 parameter	$retained
 parameter	$retainedCards
+parameter	$retainedLimit
 parameter	$retainedPage
 parameter	$retainedPageId
 parameter	$retention
@@ -29703,6 +29757,7 @@ parameter	$substitution
 parameter	$substitutions
 parameter	$success
 parameter	$successor
+parameter	$successorId
 parameter	$successorState
 parameter	$successors
 parameter	$suggest
@@ -31158,6 +31213,10 @@ property	BlockOperand::$whenTrue
 property	BlockTaskCommand::$reason
 property	BlockTaskCommand::$runNumber
 property	BlockTaskCommand::$taskId
+property	BodyMatch::$characterOffset
+property	BodyMatch::$column
+property	BodyMatch::$line
+property	BodyMatch::$segment
 property	BooleanOperand::$isNegated
 property	BooleanOperand::$member
 property	BooleanOperand::$object
@@ -39837,6 +39896,9 @@ property	StoredScreenData::$runtimeId
 property	StoredScriptBinding::$digest
 property	StoredScriptBinding::$packageFile
 property	StoredScriptBinding::$script
+property	StoredSearch::$order
+property	StoredSearch::$ownerHash
+property	StoredSearch::$positions
 property	StoredSearchHit::$id
 property	StoredSearchHit::$location
 property	StoredSearchHit::$score
@@ -39845,6 +39907,9 @@ property	StoredSearchHit::$type
 property	StoredSearchPage::$hits
 property	StoredSearchPage::$narrower
 property	StoredSearchPage::$status
+property	StoredSearchPosition::$page
+property	StoredSearchPosition::$state
+property	StoredSearchPosition::$successor
 property	StoredSearchProgress::$calls
 property	StoredSearchProgress::$delivered
 property	StoredSearchProgress::$frontier
@@ -40985,6 +41050,7 @@ trait	ReadsAudienceOptions
 trait	ReadsAutoAssignmentChange
 trait	ReadsAutoAssignmentInput
 trait	ReadsAutoAssignmentKey
+trait	ReadsCommentsPage
 trait	ReadsConfirmedPreview
 trait	ReadsDeclaredAttributes
 trait	ReadsForActor
@@ -41041,6 +41107,7 @@ variable	$addresses
 variable	$administrativeAccesses
 variable	$admission
 variable	$admitted
+variable	$advanced
 variable	$after
 variable	$afterDigits
 variable	$afterDoubleDash
@@ -41060,6 +41127,7 @@ variable	$allTaskIds
 variable	$allowed
 variable	$allowlist
 variable	$alreadyPlacedTaskId
+variable	$alternatives
 variable	$analysis
 variable	$anotherRow
 variable	$answer
@@ -41880,6 +41948,7 @@ variable	$isSilent
 variable	$isSingleton
 variable	$isSource
 variable	$isStaged
+variable	$isStalled
 variable	$isState
 variable	$isStatic
 variable	$isStoreRemoved
@@ -42196,6 +42265,7 @@ variable	$origin
 variable	$original
 variable	$other
 variable	$otherDocumentDraft
+variable	$otherHead
 variable	$otherRoot
 variable	$otherType
 variable	$others
@@ -42942,7 +43012,6 @@ variable	$value
 variable	$value	app/Support/Logging/InstallSecretRedaction.php
 variable	$value	app/Support/ObjectReader.php
 variable	$value	app/Support/SettingsValues.php
-variable	$value	app/Support/Web/PageReadProps.php
 variable	$value	app/Support/Wire/Fields/DestinationField.php
 variable	$value	app/Support/Wire/Fields/EnumField.php
 variable	$value	app/Support/Wire/Fields/FlagField.php

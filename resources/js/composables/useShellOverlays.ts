@@ -32,7 +32,10 @@ export function useShellShortcuts(): void {
             return;
         }
 
-        if (event.key === '?' && !event.ctrlKey && !event.metaKey && target?.closest(FIELD) === null) {
+        const asksForHelp = event.key === '?' && !event.ctrlKey && !event.metaKey;
+        const isTypingInField = target?.closest(FIELD) !== null;
+
+        if (asksForHelp && !isTypingInField) {
             event.preventDefault();
             isHelpOpen.value = true;
         }

@@ -14,7 +14,7 @@ final readonly class ScanningOutcome implements BatchOutcome
 {
     public function __construct(public SourcePosition $nextWork) {}
 
-    public function carriesHits(): bool
+    public function canCarryHits(): bool
     {
         return false;
     }
@@ -22,5 +22,20 @@ final readonly class ScanningOutcome implements BatchOutcome
     public function name(): string
     {
         return 'scanning';
+    }
+
+    public function isFailure(): bool
+    {
+        return false;
+    }
+
+    public function nextPosition(): SourcePosition
+    {
+        return $this->nextWork;
+    }
+
+    public function isLastBatch(): bool
+    {
+        return false;
     }
 }

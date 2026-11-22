@@ -50,7 +50,7 @@ final readonly class AllowedNames
         return $this->names;
     }
 
-    public function admitsNone(): bool
+    public function hasNoneAllowed(): bool
     {
         return $this->restricted && $this->names === [];
     }

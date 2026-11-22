@@ -18,6 +18,8 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Search\CollectingLogger;
+use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -25,8 +27,11 @@ use Tests\TestCase;
  * scenario is searched cold and warm, counting calls, time to the first certified hit or to a proven miss, time
  * through the open, rows and bytes per source, and the plan of its tier query, and prints the numbers as JSON.
  */
+#[TimeLimit(seconds: 1500, reason: 'It seeds a million tasks once, then measures each scenario cold and warm.')]
 final class TaskSearchMeasurement extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const array SCENARIOS = [
         'rare late hit' => 'zephyr audit',
         'common two-character prefix' => 're',

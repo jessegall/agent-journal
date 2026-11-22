@@ -64,7 +64,9 @@ final readonly class ProfileAuthorization
      */
     public function denying(array $commands): self
     {
-        return clone ($this, ['deniedCommands' => array_values(array_unique([...$this->deniedCommands, ...$commands]))]);
+        $denied = array_values(array_unique([...$this->deniedCommands, ...$commands]));
+
+        return clone ($this, ['deniedCommands' => $denied]);
     }
 
     /**
@@ -173,7 +175,10 @@ final readonly class ProfileAuthorization
                     $this->reads,
                     fn (ScopedRead $held) => $held->name === $read->name && $held->target === null,
                 )))
-            && array_all($this->deniedCommands, fn (string $command) => in_array($command, $other->deniedCommands, true));
+            && array_all(
+                $this->deniedCommands,
+                fn (string $command) => in_array($command, $other->deniedCommands, true),
+            );
     }
 
     /**

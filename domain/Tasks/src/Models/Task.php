@@ -192,10 +192,10 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      */
     public static function lockWaitGraphs(array $environments): void
     {
-        $environments = array_values(array_unique($environments));
-        sort($environments);
+        $ordered = array_values(array_unique($environments));
+        sort($ordered);
 
-        foreach ($environments as $environment) {
+        foreach ($ordered as $environment) {
             self::query()->getConnection()->select('select pg_advisory_xact_lock(hashtext(?))', [
                 "task-waits:{$environment}",
             ]);

@@ -46,11 +46,11 @@ final class TaskSearchProviderTest extends TestCase
 
     public function test_a_match_only_in_the_second_block_comes_after_a_scanning_call(): void
     {
-        foreach (range(1, TaskSearchProvider::BLOCK_SIZE) as $index) {
+        foreach (range(1, TaskSearchProvider::BLOCK_ROW_LIMIT) as $index) {
             self::task($index, 'Driver');
         }
 
-        $match = self::task(TaskSearchProvider::BLOCK_SIZE + 1, 'Old driver');
+        $match = self::task(TaskSearchProvider::BLOCK_ROW_LIMIT + 1, 'Old driver');
         $provider = $this->app->make(TaskSearchProvider::class);
         $query = self::searchQuery('driver', self::user(), SearchQuery::HIT_LIMIT);
         $batch = $provider->search($query);
@@ -72,7 +72,8 @@ final class TaskSearchProviderTest extends TestCase
         $first = self::task(1, 'Rotate the keys');
         $second = self::task(2, 'Rotate the keys');
 
-        $batch = $this->app->make(TaskSearchProvider::class)->search(self::searchQuery('rotate the keys', self::user()));
+        $query = self::searchQuery('rotate the keys', self::user());
+        $batch = $this->app->make(TaskSearchProvider::class)->search($query);
 
         $this->assertSame([$first->id, $second->id], self::ids($batch));
         $this->assertInstanceOf(MoreOutcome::class, $batch->outcome);
@@ -80,7 +81,7 @@ final class TaskSearchProviderTest extends TestCase
 
     public function test_a_two_character_miss_reads_one_block_per_call(): void
     {
-        foreach (range(1, TaskSearchProvider::BLOCK_SIZE * 2) as $index) {
+        foreach (range(1, TaskSearchProvider::BLOCK_ROW_LIMIT * 2) as $index) {
             self::task($index, "Chore {$index}");
         }
 
@@ -94,11 +95,13 @@ final class TaskSearchProviderTest extends TestCase
         $log = DB::getQueryLog();
         DB::disableQueryLog();
 
-        $reads = array_values(array_filter($log, fn (array $entry): bool => str_starts_with($entry['query'], 'select')));
+        $isRead = fn (array $entry): bool => str_starts_with($entry['query'], 'select');
+        $reads = array_values(array_filter($log, $isRead));
 
         $this->assertInstanceOf(ScanningOutcome::class, $second->outcome);
         $this->assertCount(1, $reads);
-        $this->assertMatchesRegularExpression('/\blimit\s+'.TaskSearchProvider::BLOCK_SIZE.'\b/', $reads[0]['query']);
+        $limitClause = '/\blimit\s+'.TaskSearchProvider::BLOCK_ROW_LIMIT.'\b/';
+        $this->assertMatchesRegularExpression($limitClause, $reads[0]['query']);
         $this->assertFalse(self::nextWork($second)->equals($position));
     }
 
@@ -126,7 +129,8 @@ final class TaskSearchProviderTest extends TestCase
     {
         $task = self::task(1, 'Search through everything');
 
-        $batch = $this->app->make(TaskSearchProvider::class)->search(self::searchQuery("task {$task->number}", self::user()));
+        $query = self::searchQuery("task {$task->number}", self::user());
+        $batch = $this->app->make(TaskSearchProvider::class)->search($query);
 
         $this->assertSame([$task->id], self::ids($batch));
         $this->assertSame(ScoreTier::Reference, $batch->hits[0]->score);

@@ -100,6 +100,6 @@ final class ConnectionsPages implements PageProvider, TypeProvider
      */
     public function declarations(): DomainUi
     {
-        return DomainUi::of($this, 'Connections', 'App', dirname(__DIR__, 2).'/resources/js/connections');
+        return DomainUi::ofCore($this, 'Connections', 'connections');
     }
 }

@@ -11,6 +11,7 @@ use App\Enums\ScoreTier;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Values\AdmittedConstraints;
+use App\Values\BodyMatch;
 use App\Values\HitIdentity;
 use App\Values\RefreshCandidates;
 use App\Values\SearchableBody;
@@ -29,9 +30,9 @@ use Domain\Tasks\Values\TaskBriefPassage;
  */
 final readonly class TaskSearchProvider implements SearchProvider
 {
-    public const int BLOCK_SIZE = TieredSearch::BLOCK_SIZE;
+    public const int BLOCK_ROW_LIMIT = TieredSearch::BLOCK_ROW_LIMIT;
 
-    public const int SEGMENT_CHARACTERS = TieredSearch::SEGMENT_CHARACTERS;
+    public const int SEGMENT_CHARACTER_LIMIT = TieredSearch::SEGMENT_CHARACTER_LIMIT;
 
     private const int SNIPPET_CONTEXT_CHARACTERS = 60;
 
@@ -46,7 +47,7 @@ final readonly class TaskSearchProvider implements SearchProvider
     {
         $constraints = $this->access->constraints($query->reader);
 
-        if ($constraints->recordIds->admitsNone()) {
+        if ($constraints->recordIds->hasNoneAllowed()) {
             return SearchBatch::nothing();
         }
 
@@ -93,16 +94,14 @@ final readonly class TaskSearchProvider implements SearchProvider
     /**
      * A brief hit titled with the task, its excerpt the matching text with a little before it, at its passage.
      */
-    private static function briefHit(Task $task, string $text, int $column, int $characterOffset): SearchResult
+    private static function briefHit(Task $task, BodyMatch $match): SearchResult
     {
-        $from = max(0, $column - self::SNIPPET_CONTEXT_CHARACTERS);
-
         return SearchResult::shortened(
             "Task {$task->number} · {$task->title}",
-            mb_substr($text, $from, SearchResult::SNIPPET_CHARACTER_LIMIT),
+            $match->snippet(self::SNIPPET_CONTEXT_CHARACTERS),
             new RecordIdentity(Task::LINK_TYPE, $task->id),
             ScoreTier::BodyContains,
-            new TaskBriefPassage($task->revision, $characterOffset)->location(),
+            new TaskBriefPassage($task->revision, $match->characterOffset)->location(),
         );
     }
 
@@ -126,14 +125,14 @@ final readonly class TaskSearchProvider implements SearchProvider
             return null;
         }
 
-        $excerpt = $passage->excerptOf($brief, $task->revision, self::SEGMENT_CHARACTERS);
+        $excerpt = $passage->excerptOf($brief, $task->revision, self::SEGMENT_CHARACTER_LIMIT);
 
         if (! $words->isFoundIn($excerpt)) {
             return null;
         }
 
-        $found = mb_stripos($excerpt, $words->text);
+        $match = new BodyMatch($excerpt, $words->columnIn($excerpt), $passage->characterOffset, 1);
 
-        return self::briefHit($task, $excerpt, $found === false ? 0 : $found, $passage->characterOffset);
+        return self::briefHit($task, $match);
     }
 }

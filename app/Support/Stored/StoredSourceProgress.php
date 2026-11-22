@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Stored;
 
+use App\Support\SourceProgress;
 use App\Values\BufferedHit;
 use App\Values\SourcePosition;
-use App\Values\SourceProgress;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
@@ -28,6 +28,18 @@ final class StoredSourceProgress extends Data
         public readonly int $stalls,
         public readonly bool $failed,
     ) {}
+
+    public static function fromSourceProgress(SourceProgress $progress): self
+    {
+        return self::from([
+            'source' => $progress->sourceKey,
+            'position' => $progress->position?->fields,
+            'exhausted' => $progress->exhausted,
+            'buffer' => $progress->buffer,
+            'stalls' => $progress->stalls,
+            'failed' => $progress->failed,
+        ]);
+    }
 
     public function toSourceProgress(): SourceProgress
     {
