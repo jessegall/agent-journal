@@ -50,11 +50,34 @@ final class LayoutPartData extends Data
         public readonly LayoutNativeData|Optional $native = new Optional(),
         public readonly LayoutMenuData|Optional $menu = new Optional(),
         public readonly int|Optional $placeholders = new Optional(),
+        public readonly LayoutSplitData|Optional $split = new Optional(),
     ) {}
 
     public static function box(string $key, string $style, LayoutPartData ...$children): self
     {
         return new self(LayoutTag::Box, $key, 'normal', $style, null, null, [], array_values($children));
+    }
+
+    /**
+     * A list beside its reader: the first child is the list, the rest the reader.
+     */
+    public static function split(
+        string $key,
+        LayoutSplitData $split,
+        LayoutPartData $list,
+        LayoutPartData ...$reader,
+    ): self {
+        return new self(
+            LayoutTag::Box,
+            $key,
+            'normal',
+            'split',
+            null,
+            null,
+            [],
+            [$list, ...array_values($reader)],
+            split: $split,
+        );
     }
 
     public static function text(string $key, string $value, string $style = 'plain', string $size = 'normal'): self
@@ -270,6 +293,7 @@ final class LayoutPartData extends Data
             || ($this->tag === LayoutTag::Menu) === $this->menu instanceof Optional
             || ($this->tag === LayoutTag::Tabs) === ($this->tabs === [])
             || ($this->style === 'skeleton') === $this->placeholders instanceof Optional
+            || ! $this->split instanceof Optional && ! ($this->tag === LayoutTag::Box && $this->style === 'split')
         ) {
             throw LayoutRefused::bindingMismatch($path, $this->tag);
         }

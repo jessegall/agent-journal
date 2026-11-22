@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Tests\Unit\Ui;
 
 use App\Ui\Enums\LayoutTag;
+use App\Ui\Enums\NarrowView;
+use App\Ui\Enums\ReaderWidth;
 use App\Ui\Layout\LayoutActionData;
+use App\Ui\Layout\LayoutBackData;
+use App\Ui\Layout\LayoutFieldData;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
 use App\Ui\Layout\LayoutTabData;
@@ -26,21 +30,19 @@ final class ListPageTest extends TestCase
         $without = ListPage::make('Tasks', $this->rows(2), ListEmpty::informing('Empty'))->layout()->root;
         $with = ListPage::make('Tasks', $this->rows(2), ListEmpty::informing('Empty'))->counting(9)->layout()->root;
 
-        $this->assertSame(['title'], array_map(fn (LayoutPartData $part) => $part->key, $without->children[0]->children));
-        $this->assertSame(['title', 'count'], array_map(fn (LayoutPartData $part) => $part->key, $with->children[0]->children));
+        $this->assertSame(['title'], $this->keysOf($without->children[0]->children));
+        $this->assertSame(['title', 'count'], $this->keysOf($with->children[0]->children));
         $this->assertSame('9', $with->children[0]->children[1]->text);
     }
 
     public function test_the_header_ends_with_the_creation_and_the_tabs_hold_the_rows(): void
     {
-        $creation = LayoutPartData::action('create', 'Create', LayoutActionData::to('/tasks/new'));
-
         $root = ListPage::make('Tasks', $this->rows(1), ListEmpty::informing('Empty'))
-            ->creating($creation)
+            ->creating('Create', LayoutActionData::to('/tasks/new'))
             ->withTabs(new LayoutTabData('open', 'Open', true), new LayoutTabData('all', 'All', false))
             ->layout()->root;
 
-        $this->assertSame('create', $root->children[0]->children[1]->key);
+        $this->assertSame('creation', $root->children[0]->children[1]->key);
         $this->assertSame(LayoutTag::Tabs, $root->children[1]->tag);
         $this->assertSame('rows', $root->children[1]->children[0]->children[0]->key);
     }
@@ -50,10 +52,7 @@ final class ListPageTest extends TestCase
         $first = $this->pagingOf(ListPaging::numbered(1, 3));
         $last = $this->pagingOf(ListPaging::numbered(3, 3));
 
-        $this->assertSame(['first', 'previous', 'position', 'next', 'last'], array_map(
-            fn (LayoutPartData $part) => $part->key,
-            $first->children,
-        ));
+        $this->assertSame(['first', 'previous', 'position', 'next', 'last'], $this->keysOf($first->children));
         $this->assertInstanceOf(Optional::class, $first->children[3]->action->reason);
         $this->assertSame(['page' => '2'], $first->children[3]->action->query);
         $this->assertSame(['page' => '3'], $first->children[4]->action->query);
@@ -70,7 +69,7 @@ final class ListPageTest extends TestCase
             ->paged(ListPaging::numbered(1, 1))
             ->layout()->root->children[1];
 
-        $this->assertSame(['rows'], array_map(fn (LayoutPartData $part) => $part->key, $content->children));
+        $this->assertSame(['rows'], $this->keysOf($content->children));
     }
 
     public function test_a_cursor_list_draws_one_show_more_that_appends(): void
@@ -98,24 +97,73 @@ final class ListPageTest extends TestCase
         $offered = ListPage::make('Tasks', [], ListEmpty::offering('None', $clear))->layout()->root->children[1];
         $informed = ListPage::make('Tasks', [], ListEmpty::informing('None'))->layout()->root->children[1];
 
-        $this->assertSame(['empty', 'empty-actions'], array_map(fn (LayoutPartData $part) => $part->key, $offered->children));
+        $this->assertSame(['empty', 'empty-actions'], $this->keysOf($offered->children));
         $this->assertSame('clear', $offered->children[1]->children[0]->key);
-        $this->assertSame(['empty'], array_map(fn (LayoutPartData $part) => $part->key, $informed->children));
+        $this->assertSame(['empty'], $this->keysOf($informed->children));
         $this->assertSame('empty', $informed->children[0]->style);
+    }
+
+    public function test_the_header_puts_the_views_beside_the_title_and_the_search_and_creation_apart(): void
+    {
+        $header = ListPage::make('Tasks', $this->rows(1), ListEmpty::informing('Empty'))
+            ->counting(4)
+            ->withViews(new LayoutRowData('list', 'List', query: ['view' => ''], isCurrent: true))
+            ->searching('Search tasks', new LayoutFieldData('q', '', ['page']))
+            ->creating('Create task', LayoutActionData::to('/tasks/new'))
+            ->layout()->root->children[0];
+
+        $this->assertSame('bar', $header->style);
+        $this->assertSame(
+            ['title', 'count', 'views', 'search', 'creation'],
+            $this->keysOf($header->children),
+        );
+        $this->assertSame('choices', $header->children[2]->style);
     }
 
     public function test_a_populated_index_without_a_selection_shows_nothing_selected_in_the_reader(): void
     {
-        $split = ListPage::make('Tasks', $this->rows(1), ListEmpty::informing('Empty'))->withReader()->layout()->root;
-        $chosen = ListPage::make('Tasks', $this->rows(1), ListEmpty::informing('Empty'))
-            ->withReader(LayoutPartData::text('facts', 'x'))
-            ->layout()->root;
-        $empty = ListPage::make('Tasks', [], ListEmpty::informing('Empty'))->withReader()->layout()->root;
+        $back = new LayoutBackData('/tasks?state=open&page=2', 'Tasks');
+
+        $split = ListPage::make('Tasks', $this->rows(1), ListEmpty::informing('Empty'))
+            ->withReader($back)
+            ->layout()->root->children[1];
+        $empty = ListPage::make('Tasks', [], ListEmpty::informing('Empty'))
+            ->withReader($back)
+            ->layout()->root->children[1];
 
         $this->assertSame('split', $split->style);
-        $this->assertSame(['list', 'nothing-selected'], array_map(fn (LayoutPartData $part) => $part->key, $split->children));
-        $this->assertSame(['list', 'facts'], array_map(fn (LayoutPartData $part) => $part->key, $chosen->children));
-        $this->assertSame(['list'], array_map(fn (LayoutPartData $part) => $part->key, $empty->children));
+        $this->assertSame(['list', 'nothing-selected'], $this->keysOf($split->children));
+        $this->assertSame(['list'], $this->keysOf($empty->children));
+    }
+
+    public function test_an_index_address_shows_the_list_and_a_record_address_the_reader_with_back_to_its_list(): void
+    {
+        $back = new LayoutBackData('/tasks?state=open&page=2', 'Tasks');
+
+        $index = ListPage::make('Tasks', $this->rows(1), ListEmpty::informing('Empty'))
+            ->withReader($back)
+            ->layout()->root->children[1];
+        $record = ListPage::make('Tasks', $this->rows(1), ListEmpty::informing('Empty'))
+            ->withReader($back, LayoutPartData::text('facts', 'x'))
+            ->withReaderWidth(ReaderWidth::Settings)
+            ->layout()->root->children[1];
+
+        $this->assertSame(430, $index->split->listWidth);
+        $this->assertSame(NarrowView::List, $index->split->narrowShows);
+        $this->assertInstanceOf(Optional::class, $index->split->back);
+        $this->assertSame(NarrowView::Reader, $record->split->narrowShows);
+        $this->assertSame(ReaderWidth::Settings, $record->split->readerWidth);
+        $this->assertSame($back->href, $record->split->back->href);
+        $this->assertSame(['list', 'facts'], $this->keysOf($record->children));
+    }
+
+    /**
+     * @param  list<LayoutPartData>  $parts
+     * @return list<string>
+     */
+    private function keysOf(array $parts): array
+    {
+        return array_map(fn (LayoutPartData $part) => $part->key, $parts);
     }
 
     private function pagingOf(ListPaging $paging): LayoutPartData

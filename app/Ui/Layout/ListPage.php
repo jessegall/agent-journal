@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Ui\Layout;
 
+use App\Ui\Enums\ReaderWidth;
+
 /**
- * The shared recipe of an index page: its header with the title, the count when the response supplies a total and an
- * optional creation, then its filters, optional tabs, the rows or the empty state, and the paging; with a reader it
- * is split, and a populated index with nothing chosen shows Nothing selected there. A domain hands in neutral rows
- * and parts only.
+ * The shared recipe of an index page: its header with the title, the count when the response supplies a total, the
+ * views beside them and the search and creation at the other edge, then its filters, optional tabs, the rows or the
+ * empty state, and the paging. With a reader the header stands above a split that shows the list or the reader in a
+ * narrow container by its address, and a populated index with nothing chosen shows Nothing selected there. A domain
+ * hands in neutral rows and parts only.
  */
 final class ListPage
 {
@@ -24,11 +27,20 @@ final class ListPage
      */
     private array $tabs = [];
 
+    /**
+     * @var list<LayoutRowData>
+     */
+    private array $views = [];
+
+    private LayoutPartData|null $search = null;
+
     private LayoutPartData|null $creation = null;
 
     private ListPaging|null $paging = null;
 
-    private bool $hasReader = false;
+    private LayoutBackData|null $back = null;
+
+    private ReaderWidth $readerWidth = ReaderWidth::Standard;
 
     /**
      * @var list<LayoutPartData>
@@ -80,11 +92,41 @@ final class ListPage
     }
 
     /**
-     * The creation the viewer may use, an action or a menu, drawn at the end of the header.
+     * The views of the same records, such as List and Graph, as choices beside the title; each sets the window's query.
      */
-    public function creating(LayoutPartData $creation): self
+    public function withViews(LayoutRowData ...$views): self
     {
-        $this->creation = $creation;
+        $this->views = array_values($views);
+
+        return $this;
+    }
+
+    /**
+     * A search field at the end of the header, writing the window's query.
+     */
+    public function searching(string $label, LayoutFieldData $field): self
+    {
+        $this->search = LayoutPartData::field('search', $label, $field);
+
+        return $this;
+    }
+
+    /**
+     * The creation the viewer may use, drawn at the end of the header.
+     */
+    public function creating(string $label, LayoutActionData $action): self
+    {
+        $this->creation = LayoutPartData::action('creation', $label, $action, 'primary');
+
+        return $this;
+    }
+
+    /**
+     * The creation the viewer may use when it is a menu, such as plain and guided entry.
+     */
+    public function creatingFromMenu(LayoutMenuData $menu): self
+    {
+        $this->creation = LayoutPartData::menu('creation', $menu);
 
         return $this;
     }
@@ -97,25 +139,47 @@ final class ListPage
     }
 
     /**
-     * Splits the page into the index and its reader; with no part, nothing is selected.
+     * Splits the page into the index and its reader. An address that names a record gives its parts, shown alone in a
+     * narrow container with Back to the list; an index address gives none, shows the list, and has Nothing selected.
      */
-    public function withReader(LayoutPartData ...$parts): self
+    public function withReader(LayoutBackData $back, LayoutPartData ...$parts): self
     {
-        $this->hasReader = true;
+        $this->back = $back;
         $this->reader = array_values($parts);
+
+        return $this;
+    }
+
+    public function withReaderWidth(ReaderWidth $width): self
+    {
+        $this->readerWidth = $width;
 
         return $this;
     }
 
     public function layout(): DeclaredLayoutData
     {
-        $list = LayoutPartData::box('list', 'stack', $this->header(), ...[...$this->filters, $this->content()]);
+        $parts = [...$this->filters, $this->content()];
 
-        if (! $this->hasReader) {
-            return DeclaredLayoutData::of($list);
+        if (! $this->back instanceof LayoutBackData) {
+            return DeclaredLayoutData::of(LayoutPartData::box('list', 'stack', $this->header(), ...$parts));
         }
 
-        return DeclaredLayoutData::of(LayoutPartData::box('index', 'split', $list, ...$this->readerParts()));
+        $split = $this->reader === []
+            ? LayoutSplitData::showingList($this->readerWidth)
+            : LayoutSplitData::showingReader($this->back, $this->readerWidth);
+
+        return DeclaredLayoutData::of(LayoutPartData::box(
+            'index',
+            'stack',
+            $this->header(),
+            LayoutPartData::split(
+                'split',
+                $split,
+                LayoutPartData::box('list', 'stack', ...$parts),
+                ...$this->readerParts(),
+            ),
+        ));
     }
 
     private function header(): LayoutPartData
@@ -126,11 +190,17 @@ final class ListPage
             $parts[] = LayoutPartData::text('count', (string) $this->total, 'muted');
         }
 
-        if ($this->creation instanceof LayoutPartData) {
-            $parts[] = $this->creation;
+        if ($this->views !== []) {
+            $parts[] = LayoutPartData::collection('views', 'choices', $this->views);
         }
 
-        return LayoutPartData::box('header', 'header', ...$parts);
+        foreach ([$this->search, $this->creation] as $part) {
+            if ($part instanceof LayoutPartData) {
+                $parts[] = $part;
+            }
+        }
+
+        return LayoutPartData::box('header', 'bar', ...$parts);
     }
 
     private function content(): LayoutPartData

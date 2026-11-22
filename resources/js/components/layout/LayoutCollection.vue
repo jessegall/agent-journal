@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { onMounted, ref, useTemplateRef, watch } from 'vue';
 import RecordMenu from '@/components/kit/RecordMenu.vue';
 import SwitchCase from '@/components/kit/SwitchCase.vue';
 import { useWindowQueryChange } from '@/framework/useWindowQuery';
 import type { LayoutPartData, LayoutRowData } from '@/generated/types/core';
 import { useLayoutAppend } from './layoutAppend';
+import { rememberRow, restoreRow } from './listReturn';
 
 // The keyed rows of a declared layout: facts as term and value pairs, choices that each set the window's query, the
 // chosen one marked current, or a list whose rows open their own page or their own window query. A row with an actions
@@ -15,6 +16,8 @@ import { useLayoutAppend } from './layoutAppend';
 const props = defineProps<{ part: LayoutPartData }>();
 const windowQuery = useWindowQueryChange();
 const isAppending = useLayoutAppend();
+const page = usePage();
+const list = useTemplateRef<HTMLElement>('list');
 const shown = ref<LayoutRowData[]>(props.part.rows);
 
 watch(
@@ -33,6 +36,12 @@ watch(
     { flush: 'sync' },
 );
 const rowMenus = new Map<string, InstanceType<typeof RecordMenu>>();
+
+onMounted(() => {
+    if (list.value !== null && props.part.style === 'list') {
+        restoreRow(list.value, page.url);
+    }
+});
 
 function keepRowMenu(key: string, menu: unknown): void {
     if (menu === null) {
@@ -94,7 +103,7 @@ function destinationOf(row: LayoutRowData): string | null {
             </ul>
         </template>
         <template #default>
-            <ul class="flex flex-col divide-y divide-line">
+            <ul ref="list" class="flex flex-col divide-y divide-line">
                 <template v-for="row in shown" :key="row.key">
                     <li
                         class="flex items-center gap-1"
@@ -103,12 +112,14 @@ function destinationOf(row: LayoutRowData): string | null {
                         <template v-if="destinationOf(row) !== null">
                             <Link
                                 :href="destinationOf(row) ?? ''"
+                                :data-row-key="row.key"
                                 preserve-scroll
                                 :aria-current="
                                     row.isCurrent ? 'true' : undefined
                                 "
                                 class="flex min-w-0 flex-1 justify-between gap-3 px-3 py-2 hover:bg-hover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
                                 :class="{ 'bg-sel': row.isCurrent }"
+                                @click="rememberRow(page.url, row.key)"
                             >
                                 <span class="flex min-w-0 flex-col">
                                     <span class="line-clamp-2 text-text">{{

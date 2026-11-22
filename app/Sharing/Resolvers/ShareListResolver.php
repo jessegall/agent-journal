@@ -13,6 +13,7 @@ use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Layout\DeclaredLayoutData;
 use App\Ui\Layout\LayoutActionData;
+use App\Ui\Layout\LayoutBackData;
 use App\Ui\Layout\LayoutFieldData;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
@@ -55,7 +56,7 @@ final readonly class ShareListResolver implements PageResolver
         $page = ListPage::make('Shares', $this->rowsOf($shown), $this->emptyFor($filters))
             ->filteredBy($this->filtersOf($filters))
             ->paged(ListPaging::cursor($after))
-            ->withReader();
+            ->withReader(new LayoutBackData('/sharing', 'Shares'));
 
         if ($filters->after === null && $after === null) {
             $page->counting(count($shown));
