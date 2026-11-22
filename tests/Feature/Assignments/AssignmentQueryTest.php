@@ -39,6 +39,8 @@ final class AssignmentQueryTest extends TestCase
     use RefreshHookDatabase;
     use StartsAgentRequests;
 
+    private const string COUNT_FAILED = 'The count failed.';
+
     private AssigneeIdentity $builder;
 
     private AssigneeIdentity $reviewer;
@@ -125,7 +127,7 @@ final class AssignmentQueryTest extends TestCase
         $this->assertThrows(
             fn () => $resolver->count(ErrandsDomain::ERRAND, $this->reviewer),
             RuntimeException::class,
-            'The count failed.',
+            self::COUNT_FAILED,
         );
         $this->assertThrows(
             fn () => $resolver->count('errands.unknown', $this->builder),

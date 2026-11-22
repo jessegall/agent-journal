@@ -34,6 +34,8 @@ final class TaskStateContributionTest extends TestCase
 {
     use CommittedHookStack;
 
+    private const string STILL_NEEDS_WORK = 'Task %d still needs work';
+
     public function test_starting_a_task_commits_the_start_and_its_state_together(): void
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
@@ -80,7 +82,7 @@ final class TaskStateContributionTest extends TestCase
         $task->finish('Done.');
         $allowed = $this->answerStop('call-2');
 
-        $this->assertStringContainsString("Task {$task->number} still needs work", $held);
+        $this->assertStringContainsString(sprintf(self::STILL_NEEDS_WORK, $task->number), $held);
         $this->assertSame('{}', $allowed);
         $this->assertSame(["tasks.working {$task->id} 1"], $this->taskFrames());
     }
@@ -101,7 +103,7 @@ final class TaskStateContributionTest extends TestCase
 
         $released = $this->answerStop('call-2');
 
-        $this->assertStringContainsString("Task {$task->number} still needs work", $held);
+        $this->assertStringContainsString(sprintf(self::STILL_NEEDS_WORK, $task->number), $held);
         $this->assertSame('{}', $released);
         $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
     }

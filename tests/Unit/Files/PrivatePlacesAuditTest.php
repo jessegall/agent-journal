@@ -65,7 +65,7 @@ final class PrivatePlacesAuditTest extends TestCase
                 $failure = $this->failureOf(fn () => $this->files()->read($file));
 
                 $this->assertInstanceOf($refusal, $failure);
-                $this->assertStringContainsString("{$file->relative} in the place accounts", $failure->getMessage());
+                $this->assertStringContainsString($file->label(), $failure->getMessage());
 
                 foreach ([$failure->getMessage(), $failure->getTraceAsString()] as $text) {
                     $this->assertStringNotContainsString($this->accounts, $text);

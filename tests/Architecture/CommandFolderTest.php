@@ -32,6 +32,15 @@ final class CommandFolderTest extends TestCase
     use InstallsCommandModules;
     use RefreshHookDatabase;
 
+    private const string UNLISTED = 'These classes sit in a Commands folder but no owner lists them in commands().';
+
+    private const string MISPLACED = 'Command attributes on a class no owner lists as a command do nothing.';
+
+    private const string UNDECLARED = 'These commands declare neither Authorize nor a trusted entry.';
+
+    private const string STATIC_STATE = 'A handler or middleware is built for each command '
+        .'and keeps nothing between requests.';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -47,7 +56,7 @@ final class CommandFolderTest extends TestCase
         $this->assertSame(
             [],
             array_values($unlisted),
-            'These classes sit in a Commands folder but no owner lists them in commands().',
+            self::UNLISTED,
         );
     }
 
@@ -71,7 +80,7 @@ final class CommandFolderTest extends TestCase
             }
         }
 
-        $this->assertSame([], $misplaced, 'Command attributes on a class no owner lists as a command do nothing.');
+        $this->assertSame([], $misplaced, self::MISPLACED);
     }
 
     public function test_every_registered_command_declares_its_authorization_or_a_trusted_entry(): void
@@ -86,7 +95,7 @@ final class CommandFolderTest extends TestCase
         $this->assertSame(
             [],
             array_values($undeclared),
-            'These commands declare neither Authorize nor a trusted entry.',
+            self::UNDECLARED,
         );
     }
 
@@ -105,7 +114,7 @@ final class CommandFolderTest extends TestCase
         $this->assertSame(
             [],
             $static,
-            'A handler or middleware is built for each command and keeps nothing between requests.',
+            self::STATIC_STATE,
         );
     }
 

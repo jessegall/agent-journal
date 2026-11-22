@@ -33,6 +33,8 @@ final class AgentStateMachineTest extends TestCase
 {
     use CommittedHookStack;
 
+    private const string ADMISSION_PREFIX = 'journal process run --admission ';
+
     public function test_a_stop_is_answered_recorded_and_the_stack_saved_in_one_commit(): void
     {
         $this->pushState($this->task(42));
@@ -87,7 +89,7 @@ final class AgentStateMachineTest extends TestCase
         );
 
         $command = json_decode($reply->stdout, true)['hookSpecificOutput']['updatedInput']['command'];
-        $this->assertStringStartsWith('journal process run --admission ', $command);
+        $this->assertStringStartsWith(self::ADMISSION_PREFIX, $command);
         $this->assertSame(['hooks.ready', 'test.rewriting', 'guide'], $this->storedTypeKeys());
         $this->assertSame(AnswerType::Rewrite, HookCall::query()->sole()->answer->type);
     }

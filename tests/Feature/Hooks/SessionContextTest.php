@@ -31,14 +31,25 @@ final class SessionContextTest extends TestCase
 {
     use CommittedHookStack;
 
+    private const string RULE_TEXT = 'No phase waits on the user.';
+
+    private const string RULE_REMINDER = 'Rule %s: %s';
+
+    private const string MEMORY_TEXT = 'Use plain words.';
+
+    private const string MEMORY_REMINDER = 'Memory: %s';
+
+    private const string OMITTED_NOTICE = '1 more reminders did not fit this context; '
+        .'read your memories with journal memory list.';
+
     private Rule $rule;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->rule = HoldingRules::create('No phase waits on the user.');
-        new Memory(['text' => 'Use plain words.', 'weight' => 3])->saveFor(TestActors::agentIdentity(1));
+        $this->rule = HoldingRules::create(self::RULE_TEXT);
+        new Memory(['text' => self::MEMORY_TEXT, 'weight' => 3])->saveFor(TestActors::agentIdentity(1));
     }
 
     public function test_a_start_like_a_codex_start_and_a_clear_like_claude_codes_both_carry_the_reminders(): void
@@ -49,8 +60,8 @@ final class SessionContextTest extends TestCase
         ] as [$callId, $source]) {
             $context = $this->start($callId, $source);
 
-            $this->assertStringContainsString("Rule {$this->rule->id}: No phase waits on the user.", $context);
-            $this->assertStringContainsString('Memory: Use plain words.', $context);
+            $this->assertStringContainsString(sprintf(self::RULE_REMINDER, $this->rule->id, self::RULE_TEXT), $context);
+            $this->assertStringContainsString(sprintf(self::MEMORY_REMINDER, self::MEMORY_TEXT), $context);
         }
     }
 
@@ -73,10 +84,10 @@ final class SessionContextTest extends TestCase
 
         $context = $this->start('call-1', ContextStartType::Start);
 
-        $this->assertStringContainsString("Rule {$this->rule->id}: No phase waits on the user.", $context);
-        $this->assertStringNotContainsString('Memory: Use plain words.', $context);
+        $this->assertStringContainsString(sprintf(self::RULE_REMINDER, $this->rule->id, self::RULE_TEXT), $context);
+        $this->assertStringNotContainsString(sprintf(self::MEMORY_REMINDER, self::MEMORY_TEXT), $context);
         $this->assertStringContainsString(
-            '1 more reminders did not fit this context; read your memories with journal memory list.',
+            self::OMITTED_NOTICE,
             $context,
         );
         $this->assertSame(1, Memory::query()->count());

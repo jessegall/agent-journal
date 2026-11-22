@@ -42,6 +42,10 @@ final class RunOutcomeTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string PLAN_SUMMARY = 'Requested shell plan finished';
+
+    private const string FAILED_LABEL = 'Run failed';
+
     public function test_an_admitted_run_keeps_its_intent_responsible_actor_and_an_attempt(): void
     {
         $run = $this->admittedRun();
@@ -97,7 +101,7 @@ final class RunOutcomeTest extends TestCase
             'tree_digest' => str_repeat('b', 64),
         ]);
 
-        $this->assertSame('Requested shell plan finished', RunLogicalResult::Succeeded->summaryFor($plan));
+        $this->assertSame(self::PLAN_SUMMARY, RunLogicalResult::Succeeded->summaryFor($plan));
     }
 
     public function test_a_signed_root_status_is_recorded_once_and_a_replay_adds_nothing(): void
@@ -165,7 +169,7 @@ final class RunOutcomeTest extends TestCase
         $this->actAs($kim);
         $summary = $this->app->make(RunOutcomeSummaries::class)->summaryOf($run->id)->get();
 
-        $this->assertSame('Run failed', $summary->label);
+        $this->assertSame(self::FAILED_LABEL, $summary->label);
         $this->assertSame(substr($run->attempt_id, -8), $summary->attemptReference);
         $this->assertTrue($summary->mayOpenFullRun);
         $this->assertSame(2, NotificationReceipt::query()->count());

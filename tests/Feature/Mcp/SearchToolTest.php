@@ -18,6 +18,8 @@ final class SearchToolTest extends TestCase
     use SendsMcpFrames;
     use WritesInboxMessages;
 
+    private const string SEARCH_PHRASE = 'violet harbor';
+
     private const array TABLES = [
         'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'number_groups', 'links',
         'tasks', 'plans', 'phases', 'phase_tasks', 'rules', 'documents', 'document_revisions', 'reports',
@@ -50,7 +52,7 @@ final class SearchToolTest extends TestCase
         $this->assertNotContains($hidden->id, array_column($answer['hits'], 'id'));
 
         foreach ($answer['hits'] as $hit) {
-            $this->assertStringContainsString('violet harbor', $hit['excerpt']);
+            $this->assertStringContainsString(self::SEARCH_PHRASE, $hit['excerpt']);
             $this->assertLessThanOrEqual(200, mb_strlen($hit['excerpt']));
         }
     }

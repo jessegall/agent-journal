@@ -26,6 +26,8 @@ final class DocumentRecordsTest extends TestCase
     use CommitsHookRows;
     use StartsAgentRequests;
 
+    private const string PUBLIC_TEXT = 'Public text.';
+
     private const array TABLES = [
         'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'links',
         'document_closes', 'document_drafts', 'document_revisions', 'documents', 'reports', 'number_groups',
@@ -37,7 +39,7 @@ final class DocumentRecordsTest extends TestCase
         $reader = TestStart::start();
         $author->startRequest($this->app);
         $bus = $this->app->make(CommandBus::class);
-        $document = $bus->run(new CreateDocument('Design', 'Current design.', 'Public text.'));
+        $document = $bus->run(new CreateDocument('Design', 'Current design.', self::PUBLIC_TEXT));
         $report = $bus->run(new CreateReport('Evidence', 'First run.', 'Filed text.'));
         $bus->run(new OpenDocument((string) $document->number));
 
@@ -48,7 +50,7 @@ final class DocumentRecordsTest extends TestCase
             $this->assertSame([$author->session->id], array_column($origins, 'id'));
         }
 
-        $this->assertSame('Public text.', trim(
+        $this->assertSame(self::PUBLIC_TEXT, trim(
             $this->app->make(DraftResolver::class)->current($document->number)->body,
         ));
 

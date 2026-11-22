@@ -29,6 +29,8 @@ final class ProfileDraftTest extends TestCase
     use CommitsHookRows;
     use StartsAgentRequests;
 
+    private const string REVISION_TWO = 'revision 2';
+
     private const array TABLES = [
         'profile_draft_revisions', 'profile_drafts', 'profile_revisions', 'profiles', 'agents',
     ];
@@ -58,7 +60,7 @@ final class ProfileDraftTest extends TestCase
         $this->assertThrows(
             fn () => $commands->run(new SaveProfileDraft($profile, 1, ScriptSource::empty())),
             ProfileDraftRefused::class,
-            'revision 2',
+            self::REVISION_TWO,
         );
 
         $this->assertSame(1, ProfileDraft::query()->count());
@@ -85,7 +87,7 @@ final class ProfileDraftTest extends TestCase
         $this->assertTrue($first->profiles[0]->script->after->isEmpty());
 
         $commands->run(new SaveProfileDraft($profile, 1, new ScriptSource('RUN tests')));
-        $this->assertThrows(fn () => $commands->run($activation), ProfileDraftRefused::class, 'revision 2');
+        $this->assertThrows(fn () => $commands->run($activation), ProfileDraftRefused::class, self::REVISION_TWO);
         $updated = new ActivateProfiles($this->proposal(), DraftExpectations::fromOptions(['draft-test=2']));
         $this->assertThrows(
             fn () => $commands->run($updated),

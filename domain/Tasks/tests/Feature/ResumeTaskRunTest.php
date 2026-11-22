@@ -133,7 +133,7 @@ final class ResumeTaskRunTest extends TestCase
         $this->assertThrows(
             fn () => $this->runAs($worker, new ResumeTaskRun($run->id)),
             TaskResumeCovered::class,
-            "Task {$second->number} is current. Finish or block it before resuming task {$first->number}.",
+            TaskResumeCovered::by($second->number, $first->number)->getMessage(),
         );
     }
 

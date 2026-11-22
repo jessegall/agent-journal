@@ -33,6 +33,10 @@ final class SendMessageTest extends TestCase
     use StartsAgentRequests;
     use WritesInboxMessages;
 
+    private const string BUILD_NOTICE = 'The build is green.';
+
+    private const string BODY_REQUIRED = 'body: The body field is required.';
+
     private const array TABLES = [
         'users',
         'agents',
@@ -65,10 +69,10 @@ final class SendMessageTest extends TestCase
 
     public function test_a_sent_message_keeps_its_text_and_both_inboxes_and_waits_for_nobody(): void
     {
-        $messageId = $this->runOnBus(new SendMessage($this->ownInboxId, $this->builderInboxId, 'The build is green.'));
+        $messageId = $this->runOnBus(new SendMessage($this->ownInboxId, $this->builderInboxId, self::BUILD_NOTICE));
 
         $message = Message::query()->findOrFail($messageId);
-        $this->assertSame('The build is green.', $message->body);
+        $this->assertSame(self::BUILD_NOTICE, $message->body);
         $this->assertSame($this->ownInboxId, $message->source_inbox_id);
         $this->assertSame($this->builderInboxId, $message->destination_inbox_id);
         $this->assertSame(MessageState::Sent, $message->state);
@@ -108,7 +112,7 @@ final class SendMessageTest extends TestCase
         $this->assertThrows(
             fn () => $this->runOnBus(new SendMessage($this->ownInboxId, $this->builderInboxId, "  \n")),
             CommandInputInvalid::class,
-            'body: The body field is required.',
+            self::BODY_REQUIRED,
         );
         $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
     }

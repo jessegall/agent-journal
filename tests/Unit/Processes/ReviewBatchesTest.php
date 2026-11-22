@@ -22,7 +22,7 @@ final class ReviewBatchesTest extends TestCase
 
         $this->assertSame([$long], $batches->tooLong);
         $this->assertNotContains($long, array_merge(...$batches->batches));
-        $this->assertStringContainsString('1,000 characters', $long->refusal());
+        $this->assertStringContainsString(ReviewLimit::ShapeCharacters->label(), $long->refusal());
     }
 
     public function test_no_batch_exceeds_its_count_or_character_cap(): void

@@ -19,7 +19,7 @@ trait ChecksSchemaTables
     public function test_the_fresh_schema_has_the_tables_its_records_are_stored_in(): void
     {
         foreach (static::storedTables() as $table) {
-            $this->assertTrue(Schema::hasTable($table), "{$table} is missing.");
+            $this->assertTrue(Schema::hasTable($table), $table);
         }
     }
 }

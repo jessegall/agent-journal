@@ -20,6 +20,8 @@ use Spatie\LaravelData\Data;
  */
 final class RecordedCalls implements CallSender
 {
+    private const string UNEXPECTED_CALL = 'A call was sent.';
+
     /**
      * @var array<class-string, Data>
      */
@@ -106,11 +108,11 @@ final class RecordedCalls implements CallSender
     {
         $classes = array_map(fn (JournalCall $sent) => $sent::class, $this->sent);
 
-        Assert::assertContains($call, $classes, "{$call} was not sent.");
+        Assert::assertContains($call, $classes, $call);
     }
 
     public function assertNothingSent(): void
     {
-        Assert::assertSame([], $this->sent, 'A call was sent.');
+        Assert::assertSame([], $this->sent, self::UNEXPECTED_CALL);
     }
 }

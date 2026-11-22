@@ -24,6 +24,8 @@ final class LocalFilesWriteTest extends TestCase
 {
     use UsesTemporaryPlaces;
 
+    private const string APPENDED_LOG = "one\ntwo\n";
+
     private string $project;
 
     private string $secrets;
@@ -92,7 +94,7 @@ final class LocalFilesWriteTest extends TestCase
         $this->files()->append($this->path('log/bypass.log'), "one\n");
         $this->files()->append($this->path('log/bypass.log'), "two\n");
 
-        $this->assertSame("one\ntwo\n", file_get_contents("{$this->project}/log/bypass.log"));
+        $this->assertSame(self::APPENDED_LOG, file_get_contents("{$this->project}/log/bypass.log"));
     }
 
     public function test_missing_folders_are_made_with_the_place_mode(): void

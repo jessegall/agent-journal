@@ -20,6 +20,7 @@ use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StatusActionType;
 use App\Agents\Support\AgentEvidence;
 use App\Agents\Support\AgentStatusRules;
+use App\Agents\Support\HoldCopy;
 use App\Agents\Support\LaunchOutcome;
 use App\Agents\Support\RuntimeEvidence;
 use App\Agents\Support\StartRemedyWords;
@@ -216,7 +217,7 @@ final class AgentStatusTest extends TestCase
 
         $status = AgentStatusRules::of($evidence, self::words(false));
 
-        $this->assertSame('Ask the host operator to finish setup in the running driver.', $status->reason);
+        $this->assertSame(HoldCopy::of(HoldReason::OnboardingRequired, hasTerminal: false)->reason, $status->reason);
     }
 
     public function test_a_live_session_offers_stop_only_to_an_actor_allowed_to_stop(): void

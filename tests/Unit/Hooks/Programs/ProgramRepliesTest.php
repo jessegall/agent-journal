@@ -19,6 +19,8 @@ use Tests\TestCase;
 
 final class ProgramRepliesTest extends TestCase
 {
+    private const string RUN_ALIAS_ADVICE = 'journal run';
+
     public function test_a_journal_allow_is_a_neutral_reply_that_names_no_permission(): void
     {
         $reply = $this->shell(Decision::allow());
@@ -76,7 +78,7 @@ final class ProgramRepliesTest extends TestCase
 
         $this->assertSame('deny', json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecision']);
         $this->assertStringContainsString(
-            'journal run',
+            self::RUN_ALIAS_ADVICE,
             json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecisionReason'],
         );
         $this->assertArrayNotHasKey('updatedInput', json_decode($reply->stdout, true)['hookSpecificOutput']);

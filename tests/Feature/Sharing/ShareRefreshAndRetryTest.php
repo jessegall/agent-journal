@@ -110,7 +110,7 @@ final class ShareRefreshAndRetryTest extends TestCase
                 fn (string $key) => new RefreshShareScope($share->id, $saved->previewId, $saved->checksum, $key),
             ),
             ShareRefreshRefused::class,
-            'another record',
+            ShareRefreshRefused::otherRoot($share->id)->getMessage(),
         );
         $this->assertSame(Share::FIRST_SCOPE_VERSION, Share::query()->findOrFail($share->id)->scope_version);
     }

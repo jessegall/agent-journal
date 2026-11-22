@@ -38,6 +38,8 @@ final class ProjectCommandsTest extends TestCase
     use CommitsHookRows;
     use SendsSignedCalls;
 
+    private const string SECRET_TASKS = 'Secret tasks';
+
     private const array TABLES = [
         'project_command_runs', 'device_grants', 'connection_audits', 'command_receipts', 'project_bindings',
         'project_environments', 'projects', 'agent_runtimes', 'agent_sessions', 'start_tokens', 'agents', 'hosts',
@@ -71,7 +73,7 @@ final class ProjectCommandsTest extends TestCase
 
         $reply = $this->command($start, 'request-1', $binding->id, ['comment', 'list'], 'other input')->assertConflict();
 
-        $this->assertStringNotContainsString('Secret tasks', (string) $reply->getContent());
+        $this->assertStringNotContainsString(self::SECRET_TASKS, (string) $reply->getContent());
         $this->assertNull($reply->json('frames'));
         $this->assertSame(CommandRunState::Completed, $run->fresh()?->state);
     }

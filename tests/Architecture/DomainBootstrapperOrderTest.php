@@ -17,6 +17,8 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DomainBootstrapperOrderTest extends TestCase
 {
+    private const string HOW_TO_FIX = 'Declare bootstrappers() right below description() (rule 35).';
+
     public function test_bootstrappers_sit_right_below_description(): void
     {
         $misplaced = [];
@@ -36,7 +38,7 @@ final class DomainBootstrapperOrderTest extends TestCase
             }
         }
 
-        $this->assertSame([], $misplaced, 'Declare bootstrappers() right below description() (rule 35).');
+        $this->assertSame([], $misplaced, self::HOW_TO_FIX);
     }
 
     /**

@@ -19,6 +19,10 @@ use PHPUnit\Framework\TestCase;
  */
 final class RefusalExceptionsTest extends TestCase
 {
+    private const string RECORD_ADVICE = 'Check the record';
+
+    private const string RESEND_ADVICE = 'without a key';
+
     public function test_every_shared_refusal_code_maps_to_its_own_class(): void
     {
         $shared = array_values(
@@ -55,7 +59,7 @@ final class RefusalExceptionsTest extends TestCase
         $expired = CallKeyExpired::answered('request_key_expired', 'Expired.', 'call-1', $key, []);
 
         $this->assertSame($key, $expired->retryKey());
-        $this->assertStringContainsString('Check the record', implode("\n", $expired->consoleLines()));
-        $this->assertStringNotContainsStringIgnoringCase('without a key', implode("\n", $expired->consoleLines()));
+        $this->assertStringContainsString(self::RECORD_ADVICE, implode("\n", $expired->consoleLines()));
+        $this->assertStringNotContainsStringIgnoringCase(self::RESEND_ADVICE, implode("\n", $expired->consoleLines()));
     }
 }

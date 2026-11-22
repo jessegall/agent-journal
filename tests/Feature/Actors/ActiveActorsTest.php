@@ -22,6 +22,8 @@ final class ActiveActorsTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string TABLE_GONE = 'The session table is gone.';
+
     private const array TABLES = [];
 
     private ActiveActorCounterRegistry $counters;
@@ -71,7 +73,7 @@ final class ActiveActorsTest extends TestCase
             $this->app->make(ActiveActorsResolver::class)->snapshot();
             $this->fail('The snapshot did not fail.');
         } catch (ActiveActorsUnavailable $unavailable) {
-            $this->assertSame('The session table is gone.', $unavailable->getPrevious()?->getMessage());
+            $this->assertSame(self::TABLE_GONE, $unavailable->getPrevious()?->getMessage());
         }
     }
 

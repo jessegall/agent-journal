@@ -8,6 +8,8 @@ use App\Actors\Support\ActorStore;
 use App\Domains\Support\DomainEntry;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Declarations\ResolverDefinition;
+use App\Ui\Enums\LayoutTag;
+use App\Ui\Exceptions\LayoutRefused;
 use App\Ui\Layout\DeclaredLayoutData;
 use App\Ui\Layout\LayoutPartData;
 use App\Web\Data\FailedWindow;
@@ -85,9 +87,8 @@ final class WindowResultKindsTest extends TestCase
 
         $this->assertSame('failed', $result->toArray()['state']);
         $this->assertStringContainsString('LayoutRefused', $result->toArray()['reason']);
-        $this->assertStringContainsString('the style clock', $result->toArray()['reason']);
         $this->assertStringContainsString(
-            'Styles allowed: plain, heading, muted, badge, code, keyHint, paragraph, time.',
+            LayoutRefused::unknownStyle('root', LayoutTag::Text, 'clock')->getMessage(),
             $result->toArray()['reason'],
         );
     }

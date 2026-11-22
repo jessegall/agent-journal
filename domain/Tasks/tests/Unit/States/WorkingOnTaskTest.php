@@ -53,7 +53,7 @@ final class WorkingOnTaskTest extends TestCase
         $decision = new WorkingOnTaskState($task)->onStop($this->stop());
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertStringContainsString('Task 42 still needs work', $decision->refusalReason());
+        $this->assertStringContainsString($task->unfinishedReason(), $decision->refusalReason());
         $this->assertSame(SimpleTransition::Keep, $decision->transition);
         $this->assertSame(TaskState::Started, $task->state);
     }

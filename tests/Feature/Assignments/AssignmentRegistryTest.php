@@ -118,7 +118,9 @@ final class AssignmentRegistryTest extends TestCase
         $this->app->make(LinkTypeRegistry::class)->register(['tests.late-record' => User::class]);
 
         $this->expectException(AssignmentProviderInvalid::class);
-        $this->expectExceptionMessage('does not implement Assignable');
+        $this->expectExceptionMessage(
+            AssignmentProviderInvalid::forModel('tests.late-record', User::class)->getMessage(),
+        );
 
         $this->registry->checkRecordModels($this->app->make(LinkTypeRegistry::class));
     }

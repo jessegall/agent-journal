@@ -14,6 +14,9 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class TestDatabaseTraitTest extends TestCase
 {
+    private const string HOW_TO_FIX = 'These test files use a Laravel database trait; '
+        .'use Tests\Support\RefreshHookDatabase instead.';
+
     public function test_a_test_case_using_a_laravel_database_trait_is_named(): void
     {
         $this->assertSame(
@@ -32,7 +35,7 @@ final class TestDatabaseTraitTest extends TestCase
         $this->assertSame(
             [],
             $offenders,
-            'These test files use a Laravel database trait; use Tests\Support\RefreshHookDatabase instead.',
+            self::HOW_TO_FIX,
         );
     }
 }

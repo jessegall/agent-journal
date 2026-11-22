@@ -42,6 +42,8 @@ final class RefreshSkillsTest extends TestCase
     use InstallsBuiltInProfiles;
     use RunsTrustedCommands;
 
+    private const string INVALID_SKILL = "Guide's skill journal-guide is invalid";
+
     private const array TABLES = [
         'skill_publications',
         'skill_generations',
@@ -82,7 +84,7 @@ final class RefreshSkillsTest extends TestCase
         $failed = $this->refresh();
 
         $this->assertTrue($failed->failed);
-        $this->assertStringContainsString("Guide's skill journal-guide is invalid", $failed->reason);
+        $this->assertStringContainsString(self::INVALID_SKILL, $failed->reason);
         $this->assertSame(
             GenerationState::Failed,
             SkillGeneration::query()->whereKey($failed->generationId)->firstOrFail()->state,

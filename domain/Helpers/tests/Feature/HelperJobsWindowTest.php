@@ -25,6 +25,10 @@ final class HelperJobsWindowTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string NO_JOBS_TEXT = 'No helper has had a job yet';
+
+    private const string ONE_OPEN_TEXT = '1 job is open';
+
     public function test_no_jobs_reads_as_a_title_and_an_empty_state(): void
     {
         $this->actAsUser('owner');
@@ -32,7 +36,7 @@ final class HelperJobsWindowTest extends TestCase
         $root = $this->read()->root;
 
         $this->assertSame(['title', 'none'], $this->keysOf($root));
-        $this->assertSame('No helper has had a job yet', $root->children[1]->text);
+        $this->assertSame(self::NO_JOBS_TEXT, $root->children[1]->text);
     }
 
     public function test_jobs_read_as_the_open_count_and_the_newest_jobs_in_two_queries(): void
@@ -46,7 +50,7 @@ final class HelperJobsWindowTest extends TestCase
         DB::disableQueryLog();
 
         $this->assertSame(['title', 'open', 'jobs'], $this->keysOf($root));
-        $this->assertSame('1 job is open', $root->children[1]->text);
+        $this->assertSame(self::ONE_OPEN_TEXT, $root->children[1]->text);
         $this->assertSame(['Read the plan'], array_map(fn ($row) => $row->label, $root->children[2]->rows));
         $this->assertLessThanOrEqual(2, $queries);
     }

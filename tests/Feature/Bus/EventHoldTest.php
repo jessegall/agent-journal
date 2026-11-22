@@ -28,6 +28,8 @@ final class EventHoldTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string FAILURE = 'the operation failed';
+
     private const array TABLES = [];
 
     protected function setUp(): void
@@ -76,14 +78,14 @@ final class EventHoldTest extends TestCase
                 $this->lifecycle()->holdUntilReturn(function () use ($held): void {
                     $held->rename('held');
 
-                    throw new RuntimeException('the operation failed');
+                    throw new RuntimeException(self::FAILURE);
                 });
             } catch (RuntimeException $failure) {
                 $caught = $failure->getMessage();
             }
         });
 
-        $this->assertSame('the operation failed', $caught);
+        $this->assertSame(self::FAILURE, $caught);
         $this->assertSame([], $unit->batch());
     }
 

@@ -26,6 +26,10 @@ final class ReaderProofTest extends TestCase
     use RunsAcmeRequests;
     use SendsSignedCalls;
 
+    private const string UNRECOGNIZED_OUTPUT = 'output_unrecognized at stdout bytes 0-16';
+
+    private const string NOT_READ = 'has not read';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -51,7 +55,7 @@ final class ReaderProofTest extends TestCase
 
         $refusal = $this->failedProof($this->reader(), [$passed, $findings]);
 
-        $this->assertStringContainsString('output_unrecognized at stdout bytes 0-16', implode(' ', $refusal->failures));
+        $this->assertStringContainsString(self::UNRECOGNIZED_OUTPUT, implode(' ', $refusal->failures));
         $this->assertSame(0, ReaderProof::query()->count());
     }
 
@@ -62,7 +66,7 @@ final class ReaderProofTest extends TestCase
 
         $refusal = $this->failedProof($this->reader(), [$passed, $findings]);
 
-        $this->assertStringContainsString('has not read', implode(' ', $refusal->failures));
+        $this->assertStringContainsString(self::NOT_READ, implode(' ', $refusal->failures));
     }
 
     public function test_samples_for_every_branch_prove_the_reader_and_the_request_awaits_approval(): void

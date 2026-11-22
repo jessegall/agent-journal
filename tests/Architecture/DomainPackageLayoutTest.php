@@ -14,12 +14,15 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DomainPackageLayoutTest extends TestCase
 {
+    private const string HOW_TO_FIX = 'Move it to domain/<Name>/database, '
+        .'as a Laravel project keeps database/ beside app/.';
+
     public function test_no_domain_keeps_its_database_folder_inside_src(): void
     {
         $this->assertSame([], array_map(
             fn (string $folder) => substr($folder, strlen(base_path()) + 1),
             glob(base_path('domain/*/src/Database'), GLOB_ONLYDIR) ?: [],
-        ), 'Move it to domain/<Name>/database, as a Laravel project keeps database/ beside app/.');
+        ), self::HOW_TO_FIX);
     }
 
     public function test_every_domain_has_its_code_in_src(): void

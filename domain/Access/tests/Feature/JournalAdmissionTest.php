@@ -20,6 +20,8 @@ final class JournalAdmissionTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string OWNER_ACTOR_TEXT = 'user %s';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -41,7 +43,9 @@ final class JournalAdmissionTest extends TestCase
         $owner = User::factory()->create();
         $this->configureOwner($owner->id);
 
-        $this->actingAs($owner)->get('/access-test/actor')->assertOk()->assertSeeText("user {$owner->id}");
+        $page = $this->actingAs($owner)->get('/access-test/actor')->assertOk();
+
+        $page->assertSeeText(sprintf(self::OWNER_ACTOR_TEXT, $owner->id));
     }
 
     public function test_another_user_is_refused(): void

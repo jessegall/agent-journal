@@ -37,6 +37,10 @@ final class HookRecoveryTest extends TestCase
     use BackdatesSessions;
     use CommitsHookRows;
 
+    private const string EXIT_CODE = 'exit code 137';
+
+    private const string EXIT_EVIDENCE = 'host reported exit: %s';
+
     private const array TABLES = [
         'agents',
         'agent_sessions',
@@ -117,10 +121,10 @@ final class HookRecoveryTest extends TestCase
     {
         $started = $this->start();
 
-        $this->heartbeats()->markExited($started->session, 'exit code 137');
+        $this->heartbeats()->markExited($started->session, self::EXIT_CODE);
 
         $this->assertSame(SessionStatus::Ended, $started->session->refresh()->status);
-        $this->assertSame('host reported exit: exit code 137', $started->session->refresh()->end_evidence);
+        $this->assertSame(sprintf(self::EXIT_EVIDENCE, self::EXIT_CODE), $started->session->refresh()->end_evidence);
         $this->assertSame(StackStatus::Closed, $this->stackOf($started)->status);
         $this->expectException(CredentialRejected::class);
         $this->app->make(CredentialLookup::class)->sessionFor($started->token);

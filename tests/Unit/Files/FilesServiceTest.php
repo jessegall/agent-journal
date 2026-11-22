@@ -41,7 +41,7 @@ final class FilesServiceTest extends TestCase
     public function test_core_exports_the_funnel_to_the_domains(): void
     {
         foreach ([Files::class, FilePath::class, Place::class, Depth::class, PlaceUnavailable::class] as $type) {
-            $this->assertTrue(CoreApi::exports()->has($type), "{$type} is not exported");
+            $this->assertTrue(CoreApi::exports()->has($type), $type);
         }
     }
 

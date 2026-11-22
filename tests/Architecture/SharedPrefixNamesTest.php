@@ -16,6 +16,8 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 60, reason: 'It parses every PHP file of app and domain.')]
 final class SharedPrefixNamesTest extends TestCase
 {
+    private const string HOW_TO_FIX = 'Rename these with --fix: ';
+
     public function test_no_parameter_keeps_a_leading_word_its_context_already_says(): void
     {
         $check = new Process(
@@ -24,6 +26,6 @@ final class SharedPrefixNamesTest extends TestCase
         );
         $check->run();
 
-        $this->assertSame('', trim($check->getOutput()), 'Rename these with --fix: '.$check->getOutput());
+        $this->assertSame('', trim($check->getOutput()), self::HOW_TO_FIX.$check->getOutput());
     }
 }

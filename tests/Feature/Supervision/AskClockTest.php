@@ -48,6 +48,8 @@ final class AskClockTest extends TestCase
     use CommitsHookRows;
     use StartsAgentRequests;
 
+    private const string LATE_ANSWER = 'Late, but here it is.';
+
     private const array TABLES = [
         'ask_hops', 'asks', 'ask_requesters', 'supervisor_changes', 'supervisor_links',
         'assignments', 'command_receipts', 'start_tokens', 'agent_sessions', 'agents', 'profile_revisions', 'profiles',
@@ -111,11 +113,11 @@ final class AskClockTest extends TestCase
 
         $this->advanceAt($ask, CarbonImmutable::now()->addHours(Ask::LIFETIME_HOURS));
         $this->startUserRequestAs($this->owner->id);
-        $this->app->make(CommandBus::class)->run(new ReplyToAsk($ask->reference(), 'Late, but here it is.'));
+        $this->app->make(CommandBus::class)->run(new ReplyToAsk($ask->reference(), self::LATE_ANSWER));
 
         $closed = $ask->refresh();
         $this->assertSame(UnansweredReason::TotalExpiry, $closed->outcome);
-        $this->assertSame('Late, but here it is.', $closed->late_answer);
+        $this->assertSame(self::LATE_ANSWER, $closed->late_answer);
         $this->assertFalse($closed->open);
     }
 

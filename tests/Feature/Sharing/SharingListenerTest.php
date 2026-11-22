@@ -43,6 +43,20 @@ final class SharingListenerTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string SHARED_TEXT = 'Ship it.';
+
+    private const string ROBOTS_TAG = 'noindex, nofollow, noarchive';
+
+    private const string DEFAULT_SOURCE = "default-src 'none'";
+
+    private const string NOT_AVAILABLE = 'This share is not available.';
+
+    private const string SITE_LINK = '<a rel="noopener noreferrer" href="https://example.com">site</a>';
+
+    private const string CANNOT_BE_SHOWN = 'This share cannot be shown right now.';
+
+    private const string AUDIT_REFUSAL = 'audit refused';
+
     private const array TABLES = [
         'share_audits',
         'share_members',
@@ -95,13 +109,13 @@ final class SharingListenerTest extends TestCase
     {
         $response = $this->withCookie('journal_session', 'owner')->get("/s/{$this->token}");
 
-        $response->assertOk()->assertSee('Design')->assertSee('Ship it.');
+        $response->assertOk()->assertSee('Design')->assertSee(self::SHARED_TEXT);
         $this->assertStringContainsString('no-store', (string) $response->headers->get('Cache-Control'));
         $response->assertHeader('Referrer-Policy', 'no-referrer');
         $response->assertHeader('X-Frame-Options', 'DENY');
-        $response->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+        $response->assertHeader('X-Robots-Tag', self::ROBOTS_TAG);
         $this->assertStringContainsString(
-            "default-src 'none'",
+            self::DEFAULT_SOURCE,
             (string) $response->headers->get('Content-Security-Policy'),
         );
         $this->assertSame([], $response->headers->getCookies());
@@ -126,7 +140,7 @@ final class SharingListenerTest extends TestCase
         $this->get('/')->assertNotFound();
         $this->get('/mcp')->assertNotFound();
         $this->get('/documents/docs/1')->assertNotFound();
-        $this->get('/s/'.str_repeat('a', 43))->assertNotFound()->assertSee('This share is not available.');
+        $this->get('/s/'.str_repeat('a', 43))->assertNotFound()->assertSee(self::NOT_AVAILABLE);
     }
 
     public function test_a_share_read_too_often_gets_429_while_another_share_still_reads(): void
@@ -178,7 +192,7 @@ final class SharingListenerTest extends TestCase
 
         $this->assertStringNotContainsString('<script', $html);
         $this->assertStringNotContainsString('javascript:', $html);
-        $this->assertStringContainsString('<a rel="noopener noreferrer" href="https://example.com">site</a>', $html);
+        $this->assertStringContainsString(self::SITE_LINK, $html);
         $this->assertStringNotContainsString('href="/s/elsewhere"', $html);
         $this->get('/build/manifest.json')->assertNotFound();
         $this->get('/build-sharing/manifest.json')->assertNotFound();
@@ -201,7 +215,7 @@ final class SharingListenerTest extends TestCase
 
         $response = $this->get("/s/{$this->token}");
 
-        $response->assertStatus(503)->assertSee('This share cannot be shown right now.');
+        $response->assertStatus(503)->assertSee(self::CANNOT_BE_SHOWN);
         $this->assertStringNotContainsString($this->token, (string) $response->getContent());
         $this->assertStringNotContainsString('select', (string) $response->getContent());
     }
@@ -227,11 +241,11 @@ final class SharingListenerTest extends TestCase
             $database->unprepared('DROP TRIGGER refuse_read_audit ON share_audits; DROP FUNCTION refuse_read_audit();');
         }
 
-        $failed->assertStatus(503)->assertSee('This share cannot be shown right now.');
-        $this->assertStringNotContainsString('Ship it.', (string) $failed->getContent());
-        $this->assertStringNotContainsString('audit refused', (string) $failed->getContent());
+        $failed->assertStatus(503)->assertSee(self::CANNOT_BE_SHOWN);
+        $this->assertStringNotContainsString(self::SHARED_TEXT, (string) $failed->getContent());
+        $this->assertStringNotContainsString(self::AUDIT_REFUSAL, (string) $failed->getContent());
 
-        $this->get("/s/{$this->token}")->assertOk()->assertSee('Ship it.');
+        $this->get("/s/{$this->token}")->assertOk()->assertSee(self::SHARED_TEXT);
     }
 
     private function activeShareOf(RecordIdentity $root): string

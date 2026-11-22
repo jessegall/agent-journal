@@ -32,6 +32,8 @@ final class HistoryPageTest extends TestCase
     use StartsMainAgents;
     use WritesInboxMessages;
 
+    private const string CANCEL_REASON = 'Nobody works on this.';
+
     private const array TABLES = [
         'users',
         'agents',
@@ -74,11 +76,11 @@ final class HistoryPageTest extends TestCase
         $this->assertNull($this->stored($questionId)->read_at);
 
         $this->actingAs($owner)
-            ->post('/chat/history/cancel', ['messageId' => $questionId, 'reason' => 'Nobody works on this.'])
+            ->post('/chat/history/cancel', ['messageId' => $questionId, 'reason' => self::CANCEL_REASON])
             ->assertRedirect();
 
         $this->assertSame(DismissalType::Cancelled, $this->stored($questionId)->dismissal_type);
-        $this->assertSame('Nobody works on this.', $this->stored($questionId)->dismissal_reason);
+        $this->assertSame(self::CANCEL_REASON, $this->stored($questionId)->dismissal_reason);
     }
 
     private function stored(string $messageId): Message

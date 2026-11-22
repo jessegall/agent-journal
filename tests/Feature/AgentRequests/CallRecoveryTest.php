@@ -38,6 +38,8 @@ final class CallRecoveryTest extends TestCase
     use RefreshHookDatabase;
     use SendsSignedCalls;
 
+    private const string RECORD_ADVICE = 'Check the record';
+
     private TestStart $start;
 
     protected function setUp(): void
@@ -82,7 +84,7 @@ final class CallRecoveryTest extends TestCase
             $memories->saveMemory('Kept a while.', 5, new CallKey('old-key'));
             $this->fail('The expired key was not refused.');
         } catch (CallKeyExpired $expired) {
-            $this->assertStringContainsString('Check the record', implode("\n", $expired->consoleLines()));
+            $this->assertStringContainsString(self::RECORD_ADVICE, implode("\n", $expired->consoleLines()));
         }
 
         $this->assertSame(1, Memory::query()->withoutGlobalScopes()->count());

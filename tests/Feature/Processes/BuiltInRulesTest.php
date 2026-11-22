@@ -11,6 +11,7 @@ use App\Processes\Enums\OutputRequirement;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\UnresolvedType;
 use App\Processes\Support\Explanations;
+use App\Processes\Values\ReaderReference;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\Processes\ClassifiesLines;
 use Tests\Support\RefreshHookDatabase;
@@ -23,6 +24,8 @@ final class BuiltInRulesTest extends TestCase
 {
     use ClassifiesLines;
     use RefreshHookDatabase;
+
+    private const string PHPSTAN_TOOL = 'tool phpstan';
 
     /**
      * @return iterable<string, array{string, list<CommandClass>}>
@@ -184,9 +187,9 @@ final class BuiltInRulesTest extends TestCase
             array_filter($explanation->nodes, fn (ExplainedNodeData $node): bool => $node->purpose !== ''),
         )[0];
 
-        $this->assertSame('Tests and checks', $part->purpose);
-        $this->assertContains('tool phpstan', $part->contract);
-        $this->assertContains('reader required', $part->contract);
+        $this->assertSame(CommandClass::Verification->label(), $part->purpose);
+        $this->assertContains(self::PHPSTAN_TOOL, $part->contract);
+        $this->assertContains(ReaderReference::required()->label(), $part->contract);
     }
 
     public function test_an_unknown_option_on_a_check_never_runs_it_as_ordinary(): void

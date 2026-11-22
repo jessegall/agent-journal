@@ -31,6 +31,8 @@ final class SupervisorTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string PRINTED_OUTPUT = 'a; b{"status":"complete"}';
+
     private CollectedOutput $output;
 
     private ProcessRun $processRun;
@@ -87,7 +89,7 @@ final class SupervisorTest extends TestCase
         $outcome = $this->supervise("printf '%s' 'a; b' && printf '{\"status\":\"complete\"}'");
 
         $this->assertCount(2, $this->parts());
-        $this->assertSame('a; b{"status":"complete"}', $outcome->output);
+        $this->assertSame(self::PRINTED_OUTPUT, $outcome->output);
         $this->assertSame(LifecycleState::Queued, $this->processRun->refresh()->lifecycle);
     }
 

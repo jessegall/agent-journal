@@ -97,11 +97,7 @@ final class HostCapabilitiesTest extends TestCase
             $this->fail('An unproven combination was admitted.');
         } catch (AccountContainerUnsupported $refusal) {
             $this->assertSame(StartRefusalType::AccountContainerUnsupported, $refusal->reason());
-            $this->assertStringStartsWith(
-                'The journal cannot start account-transport for codex with a subscription account in protected_host mode: ',
-                $refusal->getMessage(),
-            );
-            $this->assertStringEndsWith('Nothing was started.', $refusal->getMessage());
+            $this->assertSame(AccountContainerUnsupported::for($capability)->getMessage(), $refusal->getMessage());
         }
     }
 
@@ -120,10 +116,7 @@ final class HostCapabilitiesTest extends TestCase
             $this->fail('An unproven stop guarantee was admitted.');
         } catch (HostCapabilityUnsupported $refusal) {
             $this->assertSame(StartRefusalType::CapabilityUnsupported, $refusal->reason());
-            $this->assertStringStartsWith(
-                'The journal cannot guarantee stop-deadline for claude-code with a subscription account in required_container mode: ',
-                $refusal->getMessage(),
-            );
+            $this->assertSame(HostCapabilityUnsupported::for($capability)->getMessage(), $refusal->getMessage());
         }
     }
 
@@ -199,7 +192,7 @@ final class HostCapabilitiesTest extends TestCase
     {
         $capability = $this->app->make(HostCapabilities::class)->capability($query);
 
-        $this->assertNotSame(self::UNRECORDED, $capability->reason, "{$query->describe()} has no row.");
+        $this->assertNotSame(self::UNRECORDED, $capability->reason, $query->describe());
         $this->assertFileExists(base_path(strtok($capability->evidence, '#')));
     }
 

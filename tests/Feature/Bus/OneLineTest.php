@@ -15,11 +15,21 @@ use Tests\TestCase;
  */
 final class OneLineTest extends TestCase
 {
+    private const string BLANK_PADDED_TITLE = <<<TEXT
+
+          Release notes \r
+         
+        TEXT;
+
+    private const string ONE_LINE_REFUSAL = 'must be one line';
+
+    private const string TITLE_WITH_BREAK = "Release notes\n";
+
     public function test_a_trailing_line_break_passes(): void
     {
-        $title = $this->titled("Release notes\n");
+        $title = $this->titled(self::TITLE_WITH_BREAK);
 
-        $this->assertSame("Release notes\n", $title->title);
+        $this->assertSame(self::TITLE_WITH_BREAK, $title->title);
     }
 
     public function test_leading_and_trailing_blanks_pass(): void
@@ -30,11 +40,7 @@ final class OneLineTest extends TestCase
          
         TEXT);
 
-        $this->assertSame(<<<TEXT
-
-          Release notes \r
-         
-        TEXT, $title->title);
+        $this->assertSame(self::BLANK_PADDED_TITLE, $title->title);
     }
 
     public function test_a_line_break_between_two_words_fails(): void
@@ -44,7 +50,7 @@ final class OneLineTest extends TestCase
                 $this->titled($text);
                 $this->fail('A text over two lines passed.');
             } catch (ValidationException $refusal) {
-                $this->assertStringContainsString('must be one line', $refusal->errors()['title'][0]);
+                $this->assertStringContainsString(self::ONE_LINE_REFUSAL, $refusal->errors()['title'][0]);
             }
         }
     }

@@ -30,6 +30,8 @@ final class BindingRevocationTest extends TestCase
     use CommitsHookRows;
     use ConnectsProjects;
 
+    private const string ALREADY_REVOKED = 'Already revoked';
+
     private const array TABLES = [
         'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings',
         'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
@@ -74,7 +76,7 @@ final class BindingRevocationTest extends TestCase
 
         $revoked = ProjectBinding::query()->findOrFail($binding);
         $this->assertSame('Revoked', $first->json('result'));
-        $this->assertSame('Already revoked', $second->json('result'));
+        $this->assertSame(self::ALREADY_REVOKED, $second->json('result'));
         $this->assertSame($first->json('revokedAt'), $second->json('revokedAt'));
         $this->assertSame($revoked->revokedAtText(), $second->json('revokedAt'));
         $this->assertSame(2, $revoked->authority_generation);

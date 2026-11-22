@@ -17,7 +17,9 @@ use App\Hooks\Stack\HookAnswer;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
 use Domain\Sequences\Commands\StartSequence;
+use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Models\SequenceRun;
+use Domain\Sequences\Support\SequenceWork;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
@@ -30,6 +32,16 @@ use Tests\TestCase;
 final class HookCompactionTest extends TestCase
 {
     use CommittedHookStack;
+
+    private const string RULE_TEXT = 'No phase waits on the user.';
+
+    private const string RULE_REMINDER = 'Rule %s: %s';
+
+    private const string MEMORY_TEXT = 'Use plain words.';
+
+    private const string QUESTION_TEXT = 'Question 10 is still open.';
+
+    private const string MEMORY_REMINDER = 'Memory: %s';
 
     private Task $task;
 
@@ -44,9 +56,9 @@ final class HookCompactionTest extends TestCase
         $this->run = SequenceRun::create('Close a task', ['Read the brief.', 'Run the phase tests.']);
         $this->app->make(CommandBus::class)->run(new StartSequence($this->run->id, $this->target->sessionId));
 
-        $this->remember('Use plain words.', 2);
-        $this->remember('Question 10 is still open.', 1);
-        HoldingRules::create('No phase waits on the user.');
+        $this->remember(self::MEMORY_TEXT, 2);
+        $this->remember(self::QUESTION_TEXT, 1);
+        HoldingRules::create(self::RULE_TEXT);
         HoldingRules::create('An old rule.')->remove();
     }
 
@@ -54,20 +66,19 @@ final class HookCompactionTest extends TestCase
     {
         $context = json_decode($this->compact('call-1'), true, flags: JSON_THROW_ON_ERROR);
 
-        $this->assertContains(
-            'Rule '.Rule::query()->where(
-                'text',
-                'No phase waits on the user.',
-            )->value('id').': No phase waits on the user.',
-            $context,
-        );
-        $this->assertContains('Memory: Use plain words.', $context);
-        $this->assertContains('Memory: Question 10 is still open.', $context);
+        $ruleId = Rule::query()->where('text', self::RULE_TEXT)->value('id');
+
+        $this->assertContains(sprintf(self::RULE_REMINDER, $ruleId, self::RULE_TEXT), $context);
+        $this->assertContains(sprintf(self::MEMORY_REMINDER, self::MEMORY_TEXT), $context);
+        $this->assertContains(sprintf(self::MEMORY_REMINDER, self::QUESTION_TEXT), $context);
         $this->assertSame(
             [],
             array_values(array_filter($context, fn (string $line) => str_contains($line, 'An old rule.'))),
         );
-        $this->assertContains("Sequence run {$this->run->number} is on step 1: Read the brief.", $context);
+        $this->assertContains(
+            new SequenceWork($this->run->number, 1, 'Read the brief.', SequenceRunState::Running)->currentInstruction(),
+            $context,
+        );
     }
 
     public function test_a_repeated_callback_gets_the_same_reply_and_keeps_every_memory_weight(): void

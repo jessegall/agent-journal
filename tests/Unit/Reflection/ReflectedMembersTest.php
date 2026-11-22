@@ -23,6 +23,8 @@ use Tests\Fixtures\Reflection\Stamps;
  */
 final class ReflectedMembersTest extends TestCase
 {
+    private const string WEIGHT_DOC_COMMENT = "/**\n     * The weight in grams.\n     */";
+
     public function test_a_repeated_read_reuses_the_kept_descriptor(): void
     {
         $reflector = Reflector::of(MemberParcel::class);
@@ -40,7 +42,7 @@ final class ReflectedMembersTest extends TestCase
 
         $this->assertSame('property', $property->attribute(MemberMarker::class)->label);
         $this->assertSame('method', $reflector->method('weight')->attribute(MemberMarker::class)->label);
-        $this->assertSame("/**\n     * The weight in grams.\n     */", $property->docComment()->get());
+        $this->assertSame(self::WEIGHT_DOC_COMMENT, $property->docComment()->get());
         $this->assertTrue($property->isPublic());
         $this->assertFalse($property->isPromoted());
         $this->assertTrue(self::propertyNamed($reflector->properties(), 'label')->isPromoted());
@@ -89,7 +91,7 @@ final class ReflectedMembersTest extends TestCase
     public function test_a_missing_method_fails_by_name(): void
     {
         $this->expectException(MethodMissing::class);
-        $this->expectExceptionMessage('has no method absent');
+        $this->expectExceptionMessage(MethodMissing::on(MemberParcel::class, 'absent')->getMessage());
 
         Reflector::of(MemberParcel::class)->method('absent');
     }

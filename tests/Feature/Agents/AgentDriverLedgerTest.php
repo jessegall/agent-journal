@@ -102,6 +102,12 @@ final class AgentDriverLedgerTest extends TestCase
     use RunsTrustedCommands;
     use SendsHostCalls;
 
+    private const string NO_CONTAINER = 'The host cannot provide a container.';
+
+    private const string STOPPING_LABEL = 'Stopping · Waiting for helpers';
+
+    private const string MENU_EVIDENCE = 'menu login-method, stable';
+
     private const array TABLES = [
         'agents',
         'agent_sessions',
@@ -586,7 +592,7 @@ final class AgentDriverLedgerTest extends TestCase
         $session = AgentSession::query()->findOrFail($opened->sessionId);
         $start = ProcessStart::latestOfSession($opened->sessionId);
         $this->assertSame(SessionStatus::Ended, $session->status);
-        $this->assertSame('The host cannot provide a container.', $start?->refusal);
+        $this->assertSame(self::NO_CONTAINER, $start?->refusal);
     }
 
     public function test_a_generic_refusal_of_the_initial_wake_keeps_the_launch_for_reconciliation(): void
@@ -655,7 +661,7 @@ final class AgentDriverLedgerTest extends TestCase
 
         $this->asOwner(new StopAgent($agentId, $main->sessionId, 'stop-main'));
 
-        $this->assertSame('Stopping · Waiting for helpers', $this->statusOf($agentId)->label);
+        $this->assertSame(self::STOPPING_LABEL, $this->statusOf($agentId)->label);
     }
 
     public function test_retiring_an_agent_with_a_running_runtime_stops_it_through_its_host(): void
@@ -1169,7 +1175,7 @@ final class AgentDriverLedgerTest extends TestCase
         $request->refresh();
         $this->assertSame(2, $request->script_step);
         $this->assertSame(7, $request->script_generation);
-        $this->assertSame('menu login-method, stable', $request->script_evidence);
+        $this->assertSame(self::MENU_EVIDENCE, $request->script_evidence);
     }
 
     /**

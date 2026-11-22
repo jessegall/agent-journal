@@ -52,6 +52,10 @@ use Tests\TestCase;
 
 final class AgentStackTest extends TestCase
 {
+    private const string TOOL_REFUSAL = 'Tool refused.';
+
+    private const string LATER_DENIAL = 'Later denial.';
+
     public function test_live_task_and_message_obligations_both_answer_a_stop(): void
     {
         $stop = $this->stop();
@@ -87,7 +91,7 @@ final class AgentStackTest extends TestCase
     {
         $factory = new InMemoryStateFactory([
             'sequences.following' => fn () => new FollowingSequenceState(
-                new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running),
+                $this->phaseWork(),
             ),
         ]);
         $stack = new AgentStack([
@@ -105,8 +109,14 @@ final class AgentStackTest extends TestCase
 
         $this->assertSame(['ready', 'task-42', 'pushed-1'], $stack->frameIds());
         $this->assertSame(['pushed-1 deny keep', 'task-42 deny keep'], $this->stepsOf($answer));
-        $this->assertStringContainsString('step 3', (string) $answer->steps[0]->denialReason);
-        $this->assertStringContainsString('Task 42 still needs work', $answer->decision->refusalReason());
+        $this->assertStringContainsString(
+            $this->phaseWork()->currentInstruction(),
+            (string) $answer->steps[0]->denialReason,
+        );
+        $this->assertStringContainsString(
+            new TaskWork(42, 1, TaskState::Started)->unfinishedReason(),
+            $answer->decision->refusalReason(),
+        );
     }
 
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
@@ -134,7 +144,7 @@ final class AgentStackTest extends TestCase
 
         $file = $stack->answer(HookInputs::all()['file edit']);
 
-        $this->assertStringContainsString('grants no changes to workspace files', $file->decision->refusalReason());
+        $this->assertStringContainsString(FixedOperationPolicy::NO_CHANGES_REASON, $file->decision->refusalReason());
         $this->assertSame(['guide allow keep', 'ready deny keep'], $this->stepsOf($file));
 
         $pending = $this->frame('skills', new AwaitingSkillsState(PublicationState::Pending));
@@ -149,7 +159,7 @@ final class AgentStackTest extends TestCase
     public function test_a_matching_tool_handler_cannot_hide_the_operation_policy(): void
     {
         $policy = $this->createStub(OperationPolicy::class);
-        $policy->method('assess')->willReturn(AccessDecision::refused(AccessRuleType::NotGranted, 'Tool refused.'));
+        $policy->method('assess')->willReturn(AccessDecision::refused(AccessRuleType::NotGranted, self::TOOL_REFUSAL));
         $ready = new Frame(
             'ready',
             $this->reference('ready'),
@@ -161,14 +171,14 @@ final class AgentStackTest extends TestCase
 
         $answer = $stack->answer(HookInputs::all()['tool requested']);
 
-        $this->assertSame('Tool refused.', $answer->decision->refusalReason());
+        $this->assertSame(self::TOOL_REFUSAL, $answer->decision->refusalReason());
         $this->assertSame(['guide delegate keep', 'ready deny keep'], $this->stepsOf($answer));
     }
 
     public function test_hidden_message_and_sequence_guards_add_no_context_of_their_own_during_the_walk(): void
     {
         $top = $this->frame('guide', new ScriptedState(Decision::allow()));
-        $work = new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running);
+        $work = $this->phaseWork();
         $sequence = new FollowingSequenceState($work);
         $stack = $this->stack($this->ready(), $this->frame('sequence', $sequence), $this->answeringFrame(true), $top);
 
@@ -177,7 +187,7 @@ final class AgentStackTest extends TestCase
 
         $this->assertSame([], $session->context);
         $this->assertSame([], $compaction->context);
-        $this->assertSame('Sequence run 8 is on step 3: Run the phase tests.', $sequence->instructionText());
+        $this->assertSame($work->currentInstruction(), $sequence->instructionText());
     }
 
     public function test_no_state_below_the_answering_state_is_asked(): void
@@ -277,7 +287,7 @@ final class AgentStackTest extends TestCase
     public function test_every_selected_answer_is_recorded_and_the_latest_denial_survives(): void
     {
         $firstDenial = Decision::deny('First denial.')->withMessage('Repeated.');
-        $lateDenial = Decision::deny('Later denial.')->withContext('Later context.');
+        $lateDenial = Decision::deny(self::LATER_DENIAL)->withContext('Later context.');
         $stack = $this->stack(
             $this->ready(),
             $this->frame('delegate', new MarkedStopState(Decision::message('Final context.'))),
@@ -288,10 +298,13 @@ final class AgentStackTest extends TestCase
 
         $answer = $stack->answer($this->stop());
 
-        $this->assertSame('Later denial.', $answer->decision->refusalReason());
+        $this->assertSame(self::LATER_DENIAL, $answer->decision->refusalReason());
         $this->assertSame(['Repeated.', 'Repeated.', 'Later context.', 'Final context.'], $answer->context);
         $this->assertSame(['Repeated.', 'Repeated.', 'Final context.'], $answer->messages);
-        $this->assertSame(['First denial.', null, 'Later denial.', null], array_column($answer->steps, 'denialReason'));
+        $this->assertSame(
+            ['First denial.', null, self::LATER_DENIAL, null],
+            array_column($answer->steps, 'denialReason'),
+        );
         $this->assertSame(
             [
                 SelectionReason::FirstMatch,
@@ -501,6 +514,11 @@ final class AgentStackTest extends TestCase
     private function stack(Frame ...$frames): AgentStack
     {
         return new AgentStack(array_values($frames), new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1'));
+    }
+
+    private function phaseWork(): SequenceWork
+    {
+        return new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running);
     }
 
     private function ready(bool $mayChangeFiles = true): Frame

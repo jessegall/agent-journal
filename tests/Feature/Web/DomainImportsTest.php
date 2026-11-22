@@ -18,6 +18,14 @@ final class DomainImportsTest extends TestCase
 {
     use UsesTemporaryFolder;
 
+    private const string ANOTHER_DOMAIN_COMPONENT = "another domain's component (@domain/rules)";
+
+    private const string THE_SHELL = 'the shell (@/)';
+
+    private const string RELATIVE_PATH = 'a relative path leaves the domain';
+
+    private const string UNPROVEN_IMPORT = 'cannot be proven to stay in the domain';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -63,10 +71,10 @@ final class DomainImportsTest extends TestCase
         $process = $this->check();
 
         $this->assertSame(1, $process->getExitCode());
-        $this->assertStringContainsString("another domain's component (@domain/rules)", $process->getErrorOutput());
-        $this->assertStringContainsString('the shell (@/)', $process->getErrorOutput());
-        $this->assertStringContainsString('a relative path leaves the domain', $process->getErrorOutput());
-        $this->assertStringContainsString('cannot be proven to stay in the domain', $process->getErrorOutput());
+        $this->assertStringContainsString(self::ANOTHER_DOMAIN_COMPONENT, $process->getErrorOutput());
+        $this->assertStringContainsString(self::THE_SHELL, $process->getErrorOutput());
+        $this->assertStringContainsString(self::RELATIVE_PATH, $process->getErrorOutput());
+        $this->assertStringContainsString(self::UNPROVEN_IMPORT, $process->getErrorOutput());
     }
 
     private function check(): Process

@@ -22,6 +22,13 @@ final class InstallScriptTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string CUT_RAN = 'a copy cut at byte %d ran a command';
+
+    private const string NO_COMMAND_RAN = 'the whole script ran no command, so the cuts prove nothing';
+
+    private const string UNUSABLE_LINE = 'journal: this install line cannot be used. '
+        ."Copy a new one from the journal.\n";
+
     private const array TABLES = ['project_invitations', 'install_attempts', 'settings_records'];
 
     private const string VERSION = '1.0.0';
@@ -97,10 +104,10 @@ final class InstallScriptTest extends TestCase
         }
 
         foreach (array_unique(array_filter($cuts, fn (int $cut) => $cut <= $lastLine)) as $cut) {
-            $this->assertFalse($this->runs(substr($script, 0, $cut)), "a copy cut at byte {$cut} ran a command");
+            $this->assertFalse($this->runs(substr($script, 0, $cut)), sprintf(self::CUT_RAN, $cut));
         }
 
-        $this->assertTrue($this->runs($script), 'the whole script ran no command, so the cuts prove nothing');
+        $this->assertTrue($this->runs($script), self::NO_COMMAND_RAN);
     }
 
     public function test_a_ticket_outside_base64url_is_refused(): void
@@ -120,7 +127,7 @@ final class InstallScriptTest extends TestCase
         $response = $this->get('/install/'.self::TICKET);
 
         $response->assertNotFound();
-        $this->assertSame("journal: this install line cannot be used. Copy a new one from the journal.\n", $response->getContent());
+        $this->assertSame(self::UNUSABLE_LINE, $response->getContent());
         $this->assertStringContainsString('no-store', (string) $response->headers->get('Cache-Control'));
         $this->assertStringContainsString('private', (string) $response->headers->get('Cache-Control'));
         $this->assertFalse($response->headers->has('Location'));

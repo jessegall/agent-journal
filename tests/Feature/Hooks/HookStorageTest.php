@@ -36,6 +36,8 @@ final class HookStorageTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    private const string CLOSED_AT = '2026-11-17 08:00:00';
+
     public function test_the_tests_run_on_the_dedicated_postgres_database(): void
     {
         $this->assertSame('pgsql', DB::connection()->getDriverName());
@@ -83,7 +85,7 @@ final class HookStorageTest extends TestCase
         $this->assertSame(2, $stored->version);
         $this->assertEquals($bottomOnly, $stored->frames);
         $this->assertSame(StackStatus::Closed, $stored->status);
-        $this->assertSame('2026-11-17 08:00:00', $stored->closed_at?->format('Y-m-d H:i:s'));
+        $this->assertSame(self::CLOSED_AT, $stored->closed_at?->format('Y-m-d H:i:s'));
     }
 
     public function test_one_agent_and_session_has_one_stack(): void

@@ -35,7 +35,7 @@ final class StartSelectionTest extends TestCase
             } catch (ModelRequired $refusal) {
                 $this->assertSame(StartRefusalType::ModelRequired, $refusal->reason());
                 $this->assertSame(
-                    'Name a model: use --model <model> or --model default with a configured profile default. Nothing was started.',
+                    ModelRequired::forStart()->getMessage(),
                     $refusal->getMessage(),
                 );
             }
@@ -104,19 +104,19 @@ final class StartSelectionTest extends TestCase
         $this->assertRefused(
             DefaultUnavailable::class,
             StartRefusalType::DefaultUnavailable,
-            'This start has no configured model default. Name a model, or select a profile with an allowed default.',
+            DefaultUnavailable::forStart()->getMessage(),
             fn () => SelectedDriver::resolve('codex', ModelSelection::profileDefault(), null, null),
         );
         $this->assertRefused(
             DriverRequired::class,
             StartRefusalType::DriverRequired,
-            'Name a driver for this main-agent start, or select a profile that defines one.',
+            DriverRequired::forStart()->getMessage(),
             fn () => SelectedDriver::resolve(null, ModelSelection::named('m'), null, null),
         );
         $this->assertRefused(
             DriverConflict::class,
             StartRefusalType::DriverConflict,
-            'Profile journal-researcher cannot run on claude-code. Choose a permitted driver or profile.',
+            DriverConflict::for('journal-researcher', 'claude-code')->getMessage(),
             fn () => SelectedDriver::resolve(
                 'claude-code',
                 ModelSelection::named('m'),
@@ -127,7 +127,7 @@ final class StartSelectionTest extends TestCase
         $this->assertRefused(
             ModelUnavailable::class,
             StartRefusalType::ModelUnavailable,
-            'Model gpt-4 is not allowed for codex with this profile. Name an allowed model. Nothing was started.',
+            ModelUnavailable::for('gpt-4', 'codex')->getMessage(),
             fn () => SelectedDriver::resolve(
                 null,
                 ModelSelection::named('gpt-4'),
@@ -138,7 +138,7 @@ final class StartSelectionTest extends TestCase
         $this->assertRefused(
             DriverUnsupported::class,
             StartRefusalType::DriverUnsupported,
-            'The journal cannot run the driver gemini. Name claude-code or codex.',
+            DriverUnsupported::for('gemini')->getMessage(),
             fn () => SelectedDriver::resolve('gemini', ModelSelection::named('m'), null, null),
         );
     }

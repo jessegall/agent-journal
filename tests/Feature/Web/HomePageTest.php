@@ -37,6 +37,10 @@ final class HomePageTest extends TestCase
     use CommitsHookRows;
     use WritesInboxMessages;
 
+    private const string PRIVATE_BODY = 'Private words';
+
+    private const string NO_STORE_HEADER = 'no-store, private';
+
     private const array TABLES = [
         'users',
         'agents',
@@ -329,7 +333,7 @@ final class HomePageTest extends TestCase
 
         $answer->assertStatus(403);
         $this->assertStringNotContainsString($messageId, (string) $answer->getContent());
-        $this->assertStringNotContainsString('Private words', (string) $answer->getContent());
+        $this->assertStringNotContainsString(self::PRIVATE_BODY, (string) $answer->getContent());
     }
 
     public function test_a_confirmed_send_is_looked_up_by_its_key_with_its_id_and_never_cached(): void
@@ -339,7 +343,7 @@ final class HomePageTest extends TestCase
 
         $this->outcomeOf('key-1')
             ->assertOk()
-            ->assertHeader('Cache-Control', 'no-store, private')
+            ->assertHeader('Cache-Control', self::NO_STORE_HEADER)
             ->assertExactJson(['outcome' => 'confirmed', 'messageId' => $messageId]);
     }
 

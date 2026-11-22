@@ -21,6 +21,9 @@ use Tests\TestCase;
  */
 final class ProgramSkillAdaptersTest extends TestCase
 {
+    private const string READ_INSTRUCTION = 'Read the skill journal-plans with the Read tool at %s '
+        .'before work it covers.';
+
     public function test_claude_code_gets_a_plugin_folder_and_is_sent_to_the_file_while_skill_is_denied(): void
     {
         $claude = $this->adapters()->for(DriverKey::from('claude-code'));
@@ -35,7 +38,7 @@ final class ProgramSkillAdaptersTest extends TestCase
         $this->assertSame('journal-session-skills', $plugin['name']);
         $file = "{$target}/skills/journal-plans/SKILL.md";
         $this->assertSame(
-            "Read the skill journal-plans with the Read tool at {$file} before work it covers.",
+            sprintf(self::READ_INSTRUCTION, $file),
             $claude->instruction($this->published($file)),
         );
         $this->assertSame(SkillReload::NewSession, $claude->reloadMode());

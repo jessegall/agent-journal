@@ -9,6 +9,7 @@ use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Section;
 use App\Ui\Enums\ActionMethod;
 use App\Ui\Enums\Icon;
+use App\Ui\Enums\LayoutTag;
 use App\Ui\Enums\SlotContextType;
 use App\Ui\Exceptions\InvalidPageDeclaration;
 use App\Ui\Exceptions\InvalidSectionDeclaration;
@@ -32,6 +33,10 @@ use Tests\Fixtures\UiDeclarations\ShelfSectionLayoutResolver;
  */
 final class DeclaredLayoutTest extends TestCase
 {
+    private const string OWNER_ONLY_REASON = 'Only the owner approves';
+
+    private const array BADGE_TONES = ['quiet', 'good', 'warn', 'danger', 'busy'];
+
     public function test_a_layout_page_is_drawn_by_the_shared_renderer_from_its_readers_layout(): void
     {
         $page = Page::layout('shelf', 'Shelf', Icon::Docs, ShelfLayoutResolver::class)->at('shelf');
@@ -49,7 +54,9 @@ final class DeclaredLayoutTest extends TestCase
     public function test_a_layout_page_whose_reader_returns_other_data_is_refused(): void
     {
         $this->expectException(InvalidPageDeclaration::class);
-        $this->expectExceptionMessage('does not return DeclaredLayoutData');
+        $this->expectExceptionMessage(
+            InvalidPageDeclaration::readerReturnsNoLayout('notes', RecentNotesResolver::class)->getMessage(),
+        );
 
         Page::layout('notes', 'Notes', Icon::Docs, RecentNotesResolver::class);
     }
@@ -69,7 +76,7 @@ final class DeclaredLayoutTest extends TestCase
     public function test_two_children_with_one_key_are_refused_by_their_path(): void
     {
         $this->expectException(LayoutRefused::class);
-        $this->expectExceptionMessage('root.list holds two children keyed same');
+        $this->expectExceptionMessage(LayoutRefused::siblingKeyRepeated('root.list', 'same')->getMessage());
 
         DeclaredLayoutData::of(LayoutPartData::box(
             'root',
@@ -81,7 +88,9 @@ final class DeclaredLayoutTest extends TestCase
     public function test_a_variant_outside_the_catalogue_is_refused(): void
     {
         $this->expectException(LayoutRefused::class);
-        $this->expectExceptionMessage('has the style shout');
+        $this->expectExceptionMessage(
+            LayoutRefused::unknownStyle('root.title', LayoutTag::Text, 'shout')->getMessage(),
+        );
 
         DeclaredLayoutData::of(LayoutPartData::box('root', 'stack', LayoutPartData::text('title', 'Hi', 'shout')));
     }
@@ -93,7 +102,12 @@ final class DeclaredLayoutTest extends TestCase
             'stack',
             LayoutPartData::action('open', 'Open', LayoutActionData::to('/plans/1')),
             LayoutPartData::action('next', 'Next page', LayoutActionData::changing(['cursor' => 'abc'])),
-            LayoutPartData::action('approve', 'Approve', LayoutActionData::unavailable('Only the owner approves'), 'primary'),
+            LayoutPartData::action(
+                'approve',
+                'Approve',
+                LayoutActionData::unavailable(self::OWNER_ONLY_REASON),
+                'primary',
+            ),
             LayoutPartData::field('filter', 'Filter', new LayoutFieldData('q', 'oak')),
             LayoutPartData::badge('state', 'Open', 'good'),
         ));
@@ -105,7 +119,7 @@ final class DeclaredLayoutTest extends TestCase
         $this->assertInstanceOf(LayoutFieldData::class, $filter->field);
         $this->assertSame('/plans/1', $open->action->href);
         $this->assertSame(['cursor' => 'abc'], $next->action->query);
-        $this->assertSame('Only the owner approves', $approve->action->reason);
+        $this->assertSame(self::OWNER_ONLY_REASON, $approve->action->reason);
         $this->assertSame(['q', 'oak'], [$filter->field->name, $filter->field->value]);
         $this->assertSame('good', $state->tone);
     }
@@ -113,7 +127,7 @@ final class DeclaredLayoutTest extends TestCase
     public function test_a_submitting_action_outside_a_form_is_refused(): void
     {
         $this->expectException(LayoutRefused::class);
-        $this->expectExceptionMessage('submits a form, but no form holds it');
+        $this->expectExceptionMessage(LayoutRefused::submitOutsideForm('root.save')->getMessage());
 
         DeclaredLayoutData::of(LayoutPartData::box(
             'root',
@@ -140,7 +154,7 @@ final class DeclaredLayoutTest extends TestCase
     public function test_a_tone_outside_the_badges_tones_is_refused(): void
     {
         $this->expectException(LayoutRefused::class);
-        $this->expectExceptionMessage('has the tone loud');
+        $this->expectExceptionMessage(LayoutRefused::toneNotAllowed('root', 'loud', self::BADGE_TONES)->getMessage());
 
         DeclaredLayoutData::of(LayoutPartData::badge('state', 'Open', 'loud'));
     }
@@ -148,7 +162,7 @@ final class DeclaredLayoutTest extends TestCase
     public function test_a_divider_holding_children_is_refused(): void
     {
         $this->expectException(LayoutRefused::class);
-        $this->expectExceptionMessage('holds children, which it does not take');
+        $this->expectExceptionMessage(LayoutRefused::childrenNotAllowed('root', LayoutTag::Box)->getMessage());
 
         DeclaredLayoutData::of(LayoutPartData::box('root', 'divider', LayoutPartData::text('title', 'Hi')));
     }
@@ -161,8 +175,12 @@ final class DeclaredLayoutTest extends TestCase
             $part = LayoutPartData::box("level-{$level}", 'stack', $part);
         }
 
+        $levels = array_map(fn (int $level) => "level-{$level}", range(LayoutLimits::DEPTH_LIMIT - 1, 0));
+
         $this->expectException(LayoutRefused::class);
-        $this->expectExceptionMessage('sits deeper than');
+        $this->expectExceptionMessage(
+            LayoutRefused::tooDeep('root.'.implode('.', $levels).'.leaf', LayoutLimits::DEPTH_LIMIT)->getMessage(),
+        );
 
         DeclaredLayoutData::of($part);
     }
@@ -175,7 +193,9 @@ final class DeclaredLayoutTest extends TestCase
         );
 
         $this->expectException(LayoutRefused::class);
-        $this->expectExceptionMessage('more than '.LayoutLimits::ROW_LIMIT);
+        $this->expectExceptionMessage(
+            LayoutRefused::tooManyRows('root', count($rows), LayoutLimits::ROW_LIMIT)->getMessage(),
+        );
 
         DeclaredLayoutData::of(LayoutPartData::collection('rows', 'list', $rows));
     }

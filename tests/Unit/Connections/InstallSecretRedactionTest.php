@@ -18,6 +18,8 @@ use Tests\TestCase;
  */
 final class InstallSecretRedactionTest extends TestCase
 {
+    private const string REDACTED_MESSAGE = 'GET /install/[redacted] failed';
+
     private const string TICKET = 'Q2hhbmdlIHRoaXMgdGlja2V0IG5vdyBwbGVhc2UgMTIzNDU2';
 
     public function test_a_ticket_in_a_path_and_the_secret_fields_of_a_body_are_redacted(): void
@@ -37,7 +39,7 @@ final class InstallSecretRedactionTest extends TestCase
         $this->assertStringNotContainsString(self::TICKET, $written);
         $this->assertStringNotContainsString('secret', $written);
         $this->assertSame('/work/shop', $redacted->context['request']['canonicalRoot']);
-        $this->assertSame('GET /install/[redacted] failed', $redacted->message);
+        $this->assertSame(self::REDACTED_MESSAGE, $redacted->message);
     }
 
     public function test_every_log_channel_redacts(): void

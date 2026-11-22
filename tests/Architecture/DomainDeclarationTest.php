@@ -24,6 +24,9 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DomainDeclarationTest extends TestCase
 {
+    private const string STARTER_KIT_REASON = 'is starter-kit code that uses '
+        .'Tests\\Fixtures\\Declarations\\Good\\Thing of Good; starter-kit code may use no domain';
+
     /**
      * The starter-kit files that exist today, relative to app; new behaviour lives in a domain.
      */
@@ -194,7 +197,7 @@ final class DomainDeclarationTest extends TestCase
         $violations = $this->rules($this->registry())->starterKitDomainUses([$this->fixture('App/Http/Listed.php')]);
 
         $this->assertContains(
-            'is starter-kit code that uses Tests\\Fixtures\\Declarations\\Good\\Thing of Good; starter-kit code may use no domain',
+            self::STARTER_KIT_REASON,
             $this->reasons($violations),
         );
     }

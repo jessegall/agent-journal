@@ -34,6 +34,32 @@ final class UiManifestTest extends TestCase
 {
     use UsesTemporaryFolder;
 
+    private const string LIBRARY_COMPONENT = "'library/Index': () => import('";
+
+    private const string SHELF_COMPONENT = "'shelf/Index': () => import('";
+
+    private const string LOGIN_COMPONENT = "'Login': () => import('../../../resources/js/pages/Login.vue')";
+
+    private const string READY_STATE = "| { state: 'ready'; data: T; dockOffer?: DockOfferData }";
+
+    private const string SHARED_IMPORT = "import type { RecentNotesData } from './shared';";
+
+    private const string LIBRARY_PAGE_PROPS = "export type LibraryIndexPageProps = {\n"
+        .'    page: WindowResult<RecentNotesData>;';
+
+    private const string SHELF_WINDOW = 'window_shelf_index?: WindowResult<RecentNotesData>;';
+
+    private const string SHELF_ACCEPTS = 'export const accepts_shelf_index: '
+        ."Accepts<{ data: RecentNotesData }, typeof import('";
+
+    private const string PAGE_PROPS_IMPORT = "import type { RecentNotesData } from './types/page-props';";
+
+    private const string SHELF_CHECK = "Shelf/Resources/js/Index.vue').default> = true;";
+
+    private const string LENT_WINDOW = 'window_shelf_lent?: WindowResult<DeclaredLayoutData>;';
+
+    private const string CORE_IMPORT = "import type { DeclaredLayoutData } from './core';";
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -48,10 +74,10 @@ final class UiManifestTest extends TestCase
         $hash = $this->manifest([$this->library(), $this->shelf()])->write($this->root);
         $components = File::get("{$this->root}/resources/js/generated/ui-manifest.ts");
 
-        $this->assertStringContainsString("'library/Index': () => import('", $components);
-        $this->assertStringContainsString("'shelf/Index': () => import('", $components);
+        $this->assertStringContainsString(self::LIBRARY_COMPONENT, $components);
+        $this->assertStringContainsString(self::SHELF_COMPONENT, $components);
         $this->assertStringContainsString(
-            "'Login': () => import('../../../resources/js/pages/Login.vue')",
+            self::LOGIN_COMPONENT,
             $components,
         );
         $this->assertStringContainsString('tests/Fixtures/UiDeclarations/Shelf/Resources/js/Index.vue', $components);
@@ -122,23 +148,23 @@ final class UiManifestTest extends TestCase
         $props = File::get("{$this->root}/resources/js/generated/types/page-props.ts");
         $checks = File::get("{$this->root}/resources/js/generated/ui-prop-checks.ts");
 
-        $this->assertStringContainsString("| { state: 'ready'; data: T; dockOffer?: DockOfferData }", $props);
-        $this->assertStringContainsString("import type { RecentNotesData } from './shared';", $props);
+        $this->assertStringContainsString(self::READY_STATE, $props);
+        $this->assertStringContainsString(self::SHARED_IMPORT, $props);
         $this->assertStringContainsString(
-            "export type LibraryIndexPageProps = {\n    page: WindowResult<RecentNotesData>;",
+            self::LIBRARY_PAGE_PROPS,
             $props,
         );
-        $this->assertStringContainsString('window_shelf_index?: WindowResult<RecentNotesData>;', $props);
+        $this->assertStringContainsString(self::SHELF_WINDOW, $props);
         $this->assertStringContainsString(
-            "export const accepts_shelf_index: Accepts<{ data: RecentNotesData }, typeof import('",
+            self::SHELF_ACCEPTS,
             $checks,
         );
-        $this->assertStringContainsString("import type { RecentNotesData } from './types/page-props';", $checks);
+        $this->assertStringContainsString(self::PAGE_PROPS_IMPORT, $checks);
         $this->assertStringContainsString(
             "'library/Index',",
             File::get("{$this->root}/resources/js/generated/ui-manifest.ts"),
         );
-        $this->assertStringContainsString("Shelf/Resources/js/Index.vue').default> = true;", $checks);
+        $this->assertStringContainsString(self::SHELF_CHECK, $checks);
     }
 
     public function test_a_declared_layout_page_is_typed_with_the_layout_and_drawn_by_the_shared_renderer(): void
@@ -152,8 +178,8 @@ final class UiManifestTest extends TestCase
         $this->manifest([$this->library(), $shelf])->write($this->root);
         $props = File::get("{$this->root}/resources/js/generated/types/page-props.ts");
 
-        $this->assertStringContainsString('window_shelf_lent?: WindowResult<DeclaredLayoutData>;', $props);
-        $this->assertStringContainsString("import type { DeclaredLayoutData } from './core';", $props);
+        $this->assertStringContainsString(self::LENT_WINDOW, $props);
+        $this->assertStringContainsString(self::CORE_IMPORT, $props);
         $this->assertStringContainsString(
             "'layout/DeclaredLayout',",
             File::get("{$this->root}/resources/js/generated/ui-manifest.ts"),

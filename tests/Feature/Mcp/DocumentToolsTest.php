@@ -16,6 +16,10 @@ final class DocumentToolsTest extends TestCase
     use CommitsHookRows;
     use SendsMcpFrames;
 
+    private const string REVISION_BODY = "# Design\nNew evidence.";
+
+    private const string REPORT_BODY = '# Findings';
+
     private const array TABLES = [
         'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'links', 'number_groups',
         'documents', 'document_revisions', 'document_drafts', 'document_closes', 'retained_drafts', 'reports',
@@ -53,7 +57,7 @@ final class DocumentToolsTest extends TestCase
         $first = $this->callMcpTool($designer, 'docs_read', [
             'doc_id' => $id, 'view' => 'body', 'revision' => 2,
         ])->assertJsonPath('result.isError', false)->json('result.structuredContent');
-        $this->assertStringStartsWith("# Design\nNew evidence.", $first['body']);
+        $this->assertStringStartsWith(self::REVISION_BODY, $first['body']);
         $this->assertNotEmpty($first['next_actions']);
         $this->sendMcp($designer, 'resources/read', ['uri' => "journal://v1/docs/{$id}/revisions/2"])
             ->assertJsonPath('result.contents.0.mimeType', 'text/markdown')
@@ -82,10 +86,10 @@ final class DocumentToolsTest extends TestCase
             'request_key' => 'first-report',
         ])->assertJsonPath('result.isError', false)->json('result.structuredContent.report_id');
         $this->callMcpTool($reviewer, 'reports_read', ['report_id' => $id, 'view' => 'body'])
-            ->assertJsonPath('result.structuredContent.body', '# Findings');
+            ->assertJsonPath('result.structuredContent.body', self::REPORT_BODY);
         $this->sendMcp($reviewer, 'resources/read', ['uri' => "journal://v1/reports/{$id}"])
             ->assertJsonPath('result.contents.0.mimeType', 'text/markdown')
-            ->assertJsonPath('result.contents.0.text', '# Findings');
+            ->assertJsonPath('result.contents.0.text', self::REPORT_BODY);
         $this->assertDatabaseCount('documents', 0);
     }
 

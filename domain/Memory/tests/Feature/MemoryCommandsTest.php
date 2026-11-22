@@ -30,6 +30,8 @@ final class MemoryCommandsTest extends TestCase
     use SendsSignedCalls;
     use StartsAgentRequests;
 
+    private const string MEMORY_TEXT = 'Mine alone.';
+
     private const array TABLES = [
         'users',
         'agents',
@@ -106,7 +108,7 @@ final class MemoryCommandsTest extends TestCase
     public function test_another_agent_cannot_edit_remove_or_list_the_memory(): void
     {
         $this->runCommandsAs($this->owner);
-        $this->artisan('memory:save', ['text' => 'Mine alone.'])->assertExitCode(0);
+        $this->artisan('memory:save', ['text' => self::MEMORY_TEXT])->assertExitCode(0);
         $memory = Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->sole();
 
         $notYours = "Memory {$memory->id} is not one of yours.";
@@ -121,7 +123,7 @@ final class MemoryCommandsTest extends TestCase
         ])->assertJsonPath('message', $notYours);
 
         $this->signed($this->other, '/agent/memory/list', [])->assertJsonPath('memories', []);
-        $this->assertSame('Mine alone.', $memory->refresh()->text);
+        $this->assertSame(self::MEMORY_TEXT, $memory->refresh()->text);
     }
 
     public function test_a_blank_text_and_a_weight_above_ten_are_refused(): void

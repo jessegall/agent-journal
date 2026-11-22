@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
+use App\Assignments\Exceptions\AssignmentGroupTooLarge;
+use App\Assignments\Exceptions\AssignmentRootFinished;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssignmentGroup;
+use App\Records\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanState;
@@ -117,8 +120,10 @@ final class PlanCascadeToolsTest extends TestCase
             ->assertJsonPath('result.structuredContent.next_action.tool', 'plans_read')
             ->assertJsonPath('result.structuredContent.next_action.arguments.plan_id', $plan->id)
             ->assertJsonPath('result.structuredContent.code', 'invalid_input')
-            ->assertJsonPath('result.structuredContent.message', "plans.plan {$plan->id} is finished, "
-                .'so its work is not given out as a whole; assign single records instead.');
+            ->assertJsonPath(
+                'result.structuredContent.message',
+                AssignmentRootFinished::for(new RecordIdentity('plans.plan', $plan->id))->getMessage(),
+            );
         $this->assertSame(0, AssignmentRecord::query()->count());
     }
 
@@ -133,7 +138,7 @@ final class PlanCascadeToolsTest extends TestCase
             ->assertJsonPath('result.isError', true)
             ->assertJsonPath(
                 'result.structuredContent.message',
-                'This work unit exceeds the 1,000-record limit: it would cover 1001 records.',
+                AssignmentGroupTooLarge::for(AssignmentGroup::LARGEST + 1)->getMessage(),
             );
         $this->assertSame(0, AssignmentRecord::query()->count());
     }

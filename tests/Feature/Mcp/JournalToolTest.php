@@ -20,6 +20,8 @@ use Tests\TestCase;
  */
 final class JournalToolTest extends TestCase
 {
+    private const string SECRET_DETAIL = 'secret detail';
+
     private const string CALL_ID = 'call-correlation-1';
 
     protected function setUp(): void
@@ -88,7 +90,7 @@ final class JournalToolTest extends TestCase
 
         FixtureServer::tool(FixtureReadTool::class, ['number' => 4, 'answer' => 'broken'])
             ->assertHasErrors([self::CALL_ID])
-            ->assertDontSee('secret detail')
+            ->assertDontSee(self::SECRET_DETAIL)
             ->assertStructuredContentPath('code', 'unavailable');
 
         Exceptions::assertReported(

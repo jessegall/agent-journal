@@ -29,6 +29,18 @@ final class LibraryReadCostTest extends TestCase
 {
     use CommitsHookRows;
 
+    private const string UNBOUNDED_LIST = 'A list query reads more than a page and one row: ';
+
+    private const string SELECT_EVERY_COLUMN = '/^select \\* from "document_revisions"/';
+
+    private const string WIDE_LIST = 'A list query reads every revision column, bodies included: ';
+
+    private const string INDEX_NAME = '"Index Name": "document_revisions_%s_search"';
+
+    private const string SEQUENTIAL_SCAN = '"Node Type": "Seq Scan"';
+
+    private const string SCANS_EVERY_REVISION = 'The text match scans every revision.';
+
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
@@ -100,7 +112,7 @@ final class LibraryReadCostTest extends TestCase
             $this->assertSame(
                 count($this->queriesOf(fn () => $page(2))),
                 count($this->queriesOf(fn () => $page(10))),
-                "The {$read} runs more queries for a larger page.",
+                $read,
             );
         }
     }
@@ -115,13 +127,13 @@ final class LibraryReadCostTest extends TestCase
         foreach ($queries as $query) {
             $this->assertTrue(
                 self::isBounded($query),
-                'A list query reads more than a page and one row: '.$query['query'],
+                self::UNBOUNDED_LIST.$query['query'],
             );
 
             $this->assertDoesNotMatchRegularExpression(
-                '/^select \* from "document_revisions"/',
+                self::SELECT_EVERY_COLUMN,
                 $query['query'],
-                'A list query reads every revision column, bodies included: '.$query['query'],
+                self::WIDE_LIST.$query['query'],
             );
         }
     }
@@ -141,13 +153,13 @@ final class LibraryReadCostTest extends TestCase
 
         foreach (['title', 'abstract', 'body'] as $column) {
             $this->assertStringContainsString(
-                "\"Index Name\": \"document_revisions_{$column}_search\"",
+                sprintf(self::INDEX_NAME, $column),
                 $plan,
-                "The {$column} match is not served by its trigram index.",
+                $column,
             );
         }
 
-        $this->assertStringNotContainsString('"Node Type": "Seq Scan"', $plan, 'The text match scans every revision.');
+        $this->assertStringNotContainsString(self::SEQUENTIAL_SCAN, $plan, self::SCANS_EVERY_REVISION);
     }
 
     /**

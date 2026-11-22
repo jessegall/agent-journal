@@ -16,11 +16,13 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 60, reason: 'It parses every model and reads the whole application and its tests.')]
 final class TestOnlyModelMethodsTest extends TestCase
 {
+    private const string HOW_TO_FIX = 'Only tests call these model methods: ';
+
     public function test_no_new_model_method_is_called_only_by_tests(): void
     {
         $check = new Process([PHP_BINARY, 'tools/refactoring/test-only-methods.php'], base_path());
         $check->run();
 
-        $this->assertSame('', trim($check->getOutput()), 'Only tests call these model methods: '.$check->getOutput());
+        $this->assertSame('', trim($check->getOutput()), self::HOW_TO_FIX.$check->getOutput());
     }
 }

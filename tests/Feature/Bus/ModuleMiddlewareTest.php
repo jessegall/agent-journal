@@ -75,6 +75,8 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 {
     use WritesInboxMessages;
 
+    private const string TRIMMED_TEXT = 'Trim me';
+
     protected function tearDown(): void
     {
         // The Rules commands commit for real here, so their rows go too.
@@ -260,7 +262,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             "  Trim me  \n",
         ));
 
-        $this->assertSame('Trim me', Message::query()->withoutGlobalScopes()->findOrFail($messageId)->body);
+        $this->assertSame(self::TRIMMED_TEXT, Message::query()->withoutGlobalScopes()->findOrFail($messageId)->body);
     }
 
     public function test_a_message_pointed_at_an_unknown_inbox_is_refused_and_leaves_no_message(): void

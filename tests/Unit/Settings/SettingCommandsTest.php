@@ -108,7 +108,9 @@ final class SettingCommandsTest extends TestCase
     public function test_a_case_of_another_enum_is_refused_before_a_command_exists(): void
     {
         $this->expectException(SettingValueInvalid::class);
-        $this->expectExceptionMessage('review_mode of Reviews');
+        $this->expectExceptionMessage(
+            SettingValueInvalid::for('Reviews', 'review_mode', $this->reviews->reviewMode->type())->getMessage(),
+        );
 
         $this->commands->enumString($this->reviews->reviewMode, ReviewLevel::FirstPass, 0);
     }

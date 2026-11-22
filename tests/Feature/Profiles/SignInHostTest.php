@@ -55,6 +55,8 @@ final class SignInHostTest extends TestCase
     use RunsTrustedCommands;
     use SendsHostCalls;
 
+    private const string FRESH_SIGN_IN = 'start a fresh sign-in';
+
     private const array TABLES = [
         'accounts',
         'active_accounts',
@@ -270,7 +272,7 @@ final class SignInHostTest extends TestCase
         new PrivateSignInProcesses($host, $protocols, static fn () => usleep(10_000), $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->runNext();
 
         $this->assertSame([SignInOutcome::Waiting, SignInOutcome::Interrupted], $host->outcomes);
-        $this->assertStringContainsString('start a fresh sign-in', (string) end($host->refusals));
+        $this->assertStringContainsString(self::FRESH_SIGN_IN, (string) end($host->refusals));
     }
 
     public function test_a_provider_message_outside_the_reasons_shows_the_generic_failure(): void

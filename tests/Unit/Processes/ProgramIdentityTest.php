@@ -29,6 +29,10 @@ use PHPUnit\Framework\TestCase;
  */
 final class ProgramIdentityTest extends TestCase
 {
+    private const string SPACED_PROGRAM = 'my tool';
+
+    private const string STATUS_OPERATION = 'git status';
+
     public function test_a_path_and_a_bare_name_share_the_family_and_keep_their_own_token(): void
     {
         $byPath = $this->program('/opt/tools/acme verify');
@@ -36,7 +40,9 @@ final class ProgramIdentityTest extends TestCase
 
         $this->assertSame(['acme', 'acme'], [$byPath->family, $byName->family]);
         $this->assertSame(['/opt/tools/acme', 'acme'], [$byPath->original, $byName->original]);
-        $this->assertSame('my tool', $this->program('"/Users/x/a dir/my tool" --flag')->family);
+        $spaced = $this->program('"/Users/x/a dir/'.self::SPACED_PROGRAM.'" --flag');
+
+        $this->assertSame(self::SPACED_PROGRAM, $spaced->family);
     }
 
     public function test_operands_and_options_do_not_change_the_identity_or_the_operation(): void
@@ -45,7 +51,7 @@ final class ProgramIdentityTest extends TestCase
         $otherStatus = new CommandOperation($this->program('/usr/bin/git status docs/b.md'), ['status']);
 
         $this->assertTrue($status->isSameOperation($otherStatus));
-        $this->assertSame('git status', $status->name());
+        $this->assertSame(self::STATUS_OPERATION, $status->name());
         $this->assertTrue($this->program('git branch')->isSameProgram($this->program('git branch -D old')));
     }
 

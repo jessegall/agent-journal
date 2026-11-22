@@ -31,6 +31,26 @@ final class DocumentsTest extends TestCase
     use ActsAsFirstUser;
     use CommitsHookRows;
 
+    private const string GOAL_TEXT = <<<'TEXT'
+        # Goal
+        Ship it.
+
+        TEXT;
+    private const string FIRST_DOCUMENT = 'doc 1';
+
+    private const string SECOND_DOCUMENT = 'doc 2';
+
+    private const string FIRST_REPORT = 'report 1';
+
+    private const string GOOD_REPORT = "All good\n";
+
+    private const string TITLE_REQUIRED = 'title: The title field is required.';
+
+    private const string ABSTRACT_ONE_LINE = 'abstract: The abstract must be one line';
+
+    private const string TOO_MANY_RELATED = 'relatedRecords: '
+        .'The related records field must not have more than 50 items.';
+
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
@@ -38,32 +58,24 @@ final class DocumentsTest extends TestCase
 
     public function test_documents_are_numbered_and_each_starts_at_revision_one(): void
     {
-        $first = $this->bus()->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
-        # Goal
-        Ship it.
-
-        TEXT));
+        $first = $this->bus()->run(new CreateDocument('Design', 'What we build', self::GOAL_TEXT));
 
         $second = $this->bus()->run(new CreateDocument('Notes', 'What we saw', "Text\n"));
 
-        $this->assertSame('doc 1', $first->label());
-        $this->assertSame('doc 2', $second->label());
+        $this->assertSame(self::FIRST_DOCUMENT, $first->label());
+        $this->assertSame(self::SECOND_DOCUMENT, $second->label());
         $this->assertSame(['1'], [$this->app->make(DocumentResolver::class)->show(2)->revision]);
 
-        $this->assertSame(<<<'TEXT'
-        # Goal
-        Ship it.
-
-        TEXT, $this->app->make(DocumentResolver::class)->show(1)->body);
+        $this->assertSame(self::GOAL_TEXT, $this->app->make(DocumentResolver::class)->show(1)->body);
     }
 
     public function test_a_report_is_filed_and_a_document_number_never_selects_it(): void
     {
         $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
-        $report = $this->bus()->run(new CreateReport('Check', 'What we found', "All good\n"));
+        $report = $this->bus()->run(new CreateReport('Check', 'What we found', self::GOOD_REPORT));
 
-        $this->assertSame('report 1', $report->label());
-        $this->assertSame('All good'."\n", $this->app->make(ReportResolver::class)->show(1)->body);
+        $this->assertSame(self::FIRST_REPORT, $report->label());
+        $this->assertSame(self::GOOD_REPORT, $this->app->make(ReportResolver::class)->show(1)->body);
         $this->assertCount(1, $this->app->make(DocumentResolver::class)->list(new DocumentFilters())->rows);
         $this->expectException(ReportMissing::class);
         $this->app->make(ReportResolver::class)->show(2);
@@ -74,7 +86,7 @@ final class DocumentsTest extends TestCase
         $this->assertThrows(
             fn () => $this->bus()->run(new CreateDocument(' ', 'What we build', "Text\n")),
             CommandInputInvalid::class,
-            'title: The title field is required.',
+            self::TITLE_REQUIRED,
         );
 
         $this->assertSame(0, Document::query()->count());
@@ -90,13 +102,13 @@ final class DocumentsTest extends TestCase
         $this->assertThrows(
             fn () => $this->bus()->run(new CreateDocument('Design', "What we\nbuild", "Text\n")),
             CommandInputInvalid::class,
-            'abstract: The abstract must be one line',
+            self::ABSTRACT_ONE_LINE,
         );
 
         $this->assertThrows(
             fn () => $this->bus()->run(new CreateReport('Check', 'What we found', "Text\n", $about)),
             CommandInputInvalid::class,
-            'relatedRecords: The related records field must not have more than 50 items.',
+            self::TOO_MANY_RELATED,
         );
 
         $this->assertSame(0, Document::query()->count() + Report::query()->count());

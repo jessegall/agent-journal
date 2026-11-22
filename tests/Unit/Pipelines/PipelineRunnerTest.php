@@ -50,7 +50,7 @@ final class PipelineRunnerTest extends TestCase
         $container->bind(CountWordsPipeline::class, fn () => new CountWordsPipeline(times: 2));
 
         $this->expectException(StepOutOfOrder::class);
-        $this->expectExceptionMessage('['.CountWords::class.'] was handed a ['.Counted::class.']');
+        $this->expectExceptionMessage(StepOutOfOrder::handing(CountWords::class, new Counted(0))->getMessage());
 
         new PipelineRunner($container, new CatalogueReflectorFactory())->run(CountWordsPipeline::class, new Words('a b'), Counted::class);
     }
@@ -58,7 +58,9 @@ final class PipelineRunnerTest extends TestCase
     public function test_a_run_that_ends_on_another_stage_is_named(): void
     {
         $this->expectException(StepOutOfOrder::class);
-        $this->expectExceptionMessage('ended on a ['.Counted::class.'] where a ['.Words::class.'] is read');
+        $this->expectExceptionMessage(
+            StepOutOfOrder::ending(CountWordsPipeline::class, Words::class, new Counted(0))->getMessage(),
+        );
 
         new PipelineRunner(new Container(), new CatalogueReflectorFactory())->run(CountWordsPipeline::class, new Words('a b'), Words::class);
     }

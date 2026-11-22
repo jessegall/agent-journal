@@ -39,6 +39,12 @@ final class StoredSkillCommandsTest extends TestCase
     use ActsAsTestUser;
     use CommitsHookRows;
 
+    private const string REVISION_CONFLICT = 'is at revision 2 now';
+
+    private const string RESERVED_PREFIX = 'whose prefix it does not own';
+
+    private const string NO_SECTIONS = 'has 0 sections';
+
     private const array TABLES = [
         'skill_publications',
         'skill_generations',
@@ -74,7 +80,7 @@ final class StoredSkillCommandsTest extends TestCase
         $this->assertRefused(
             SkillRevisionConflict::class,
             new ReviseSkill($created->skillId, 1, 'revise-2', $this->draft('Third.')),
-            'is at revision 2 now',
+            self::REVISION_CONFLICT,
         );
     }
 
@@ -89,7 +95,7 @@ final class StoredSkillCommandsTest extends TestCase
         $this->assertRefused(
             SkillRequestReused::class,
             new CreateSkill('user-review-notes', 'create-1', $this->draft('Other.')),
-            'already used for other content',
+            SkillRequestReused::for('create-1')->getMessage(),
         );
     }
 
@@ -124,7 +130,7 @@ final class StoredSkillCommandsTest extends TestCase
         $this->assertRefused(
             SkillDeclarationInvalid::class,
             new CreateSkill('journal-mine', 'create-1', $this->draft('First.')),
-            'whose prefix it does not own',
+            self::RESERVED_PREFIX,
         );
         $this->assertRefused(
             SkillConditionInvalid::class,
@@ -143,7 +149,7 @@ final class StoredSkillCommandsTest extends TestCase
         $this->assertRefused(
             SkillDeclarationInvalid::class,
             new CreateSkill('user-notes', 'create-3', new SkillDraft('Notes', 'Read.', [], '')),
-            'has 0 sections',
+            self::NO_SECTIONS,
         );
         $this->assertSame(0, Skill::query()->count());
     }
