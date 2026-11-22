@@ -1939,6 +1939,9 @@ AFTER_RENDER.push(()=>{if(!FORM&&!GUIDE)return;const host=$('#main');
     if(g.focus){g.focus=false;requestAnimationFrame(()=>{const f=$('#cdlg [data-gopen]')||$('#cdlg .gchip');if(f)f.focus()})}}
   $$('[data-cclose]',host).forEach(b=>b.onclick=closeCreate);
   $('#cdlg').onkeydown=ev=>{if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();closeCreate()}}});
+/* A plan made a moment ago has no tasks yet: its graph says so instead of drawing nothing. */
+const baseGraphView=graphView;
+graphView=function(plan){const P=PLANS.find(p=>p[0]===plan);if(!P||!P[3].length)return `<div class="empty"><b>No tasks in this plan yet</b>Its tasks, and what each waits on, show here.</div>`;return baseGraphView(plan)};
 const baseSeqEditor=seqEditor;
 seqEditor=function(s){const h=baseSeqEditor(s);if(!SEQEDIT||!SEQEDIT.drafted)return h;return h.replace('<div style="padding:0 20px 20px" data-seqlist>',`<div class="drafted inseq">${avatar('a1')}<span>Drafted by Agent 1 from your answers: each step has its guard and its check. Change anything, then Save.</span></div><div style="padding:0 20px 20px" data-seqlist>`)};
 WIRE_EXTRA.push(on=>{
