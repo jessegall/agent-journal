@@ -1,81 +1,104 @@
 <script setup lang="ts">
-import { nextTick, useId, useTemplateRef } from 'vue';
+import { computed, nextTick, provide, useId, useTemplateRef } from 'vue';
+import Tab from './Tab.vue';
+import { tabsKey } from './tabs';
+import type { TabItem } from './tabs';
 
 /**
- * A tab strip bound to its panels: each tab names its labelled panel and the panel names its tab; the arrow keys,
- * Home and End move between the tabs and choose the one they reach. The caller gives the tabs and a slot per tab key.
+ * A tab list bound to its panels: tablist, tab and tabpanel roles with aria-controls and aria-labelledby. Left and
+ * Right move and choose the tab, round the ends, and Home and End go to the first and last (roving tabindex). The
+ * caller gives the tabs as data (with a panel slot per tab key) or draws its own Tab parts in the tabs slot. Variants:
+ * inline (margin 10 0 6, a --line rule), pagehead (52 px high, no rule) and filters (padding 0 12, a --line rule); the
+ * gap is 12 px in a strip and 16 px on a page; the chosen line is the brand colour or quiet.
  */
-const props = defineProps<{ tabs: { key: string; label: string }[] }>();
+const props = withDefaults(
+    defineProps<{
+        tabs?: readonly TabItem[];
+        label?: string;
+        variant?: 'inline' | 'pagehead' | 'filters';
+        line?: 'brand' | 'quiet';
+        gap?: 12 | 16;
+    }>(),
+    { tabs: () => [], label: undefined, variant: 'inline', line: 'brand', gap: 12 },
+);
 const active = defineModel<string>({ required: true });
+const emit = defineEmits<{ close: [key: string] }>();
 
 const idPrefix = useId();
-const buttons = useTemplateRef<HTMLButtonElement[]>('buttons');
+const list = useTemplateRef<HTMLElement>('list');
 
-function tabId(key: string): string {
-    return `${idPrefix}-tab-${key}`;
-}
+provide(tabsKey, {
+    active,
+    select: (value) => (active.value = value),
+    close: (value) => emit('close', value),
+    tabId: (value) => `${idPrefix}-tab-${value}`,
+    panelId: (value) => `${idPrefix}-panel-${value}`,
+    line: computed(() => props.line),
+});
 
 function panelId(key: string): string {
     return `${idPrefix}-panel-${key}`;
 }
 
 async function move(event: KeyboardEvent): Promise<void> {
-    const current = props.tabs.findIndex((tab) => tab.key === active.value);
-    const last = props.tabs.length - 1;
+    const tabs = [...(list.value?.querySelectorAll<HTMLElement>('[role="tab"]') ?? [])];
+    const current = tabs.findIndex((tab) => tab.getAttribute('aria-selected') === 'true');
+    const last = tabs.length - 1;
     const targets: Record<string, number> = {
         ArrowRight: current === last ? 0 : current + 1,
-        ArrowLeft: current === 0 ? last : current - 1,
+        ArrowLeft: current <= 0 ? last : current - 1,
         Home: 0,
         End: last,
     };
 
-    if (!(event.key in targets)) {
+    if (!(event.key in targets) || last < 0) {
         return;
     }
 
     event.preventDefault();
-    active.value = props.tabs[targets[event.key]].key;
+    tabs[targets[event.key]].click();
     await nextTick();
-    buttons.value?.[targets[event.key]]?.focus();
+    tabs[targets[event.key]].focus();
 }
 </script>
 
 <template>
     <div class="flex flex-col">
         <div
+            ref="list"
             role="tablist"
-            class="flex gap-1 border-b border-border"
+            :aria-label="label"
+            class="flex"
+            :class="[
+                gap === 12 ? 'gap-3' : 'gap-4',
+                {
+                    inline: 'mt-2.5 mb-1.5 border-b border-line',
+                    pagehead: 'h-13 items-center',
+                    filters: 'border-b border-line px-3',
+                }[variant],
+            ]"
             @keydown="move"
         >
-            <template v-for="tab in tabs" :key="tab.key">
-                <button
-                    :id="tabId(tab.key)"
-                    ref="buttons"
-                    type="button"
-                    role="tab"
-                    :aria-selected="tab.key === active"
-                    :aria-controls="panelId(tab.key)"
-                    :tabindex="tab.key === active ? 0 : -1"
-                    class="-mb-px border-b-2 px-2.5 py-1.5 text-small focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text"
-                    :class="
-                        tab.key === active
-                            ? 'border-brand text-text'
-                            : 'border-transparent text-text-3 hover:text-text'
-                    "
-                    @click="active = tab.key"
-                >
-                    {{ tab.label }}
-                </button>
-            </template>
+            <slot name="tabs">
+                <Tab
+                    v-for="tab in tabs"
+                    :key="tab.key"
+                    :value="tab.key"
+                    :label="tab.label"
+                    :icon="tab.icon"
+                    :count="tab.count"
+                    :closable="tab.closable"
+                />
+            </slot>
         </div>
         <template v-for="tab in tabs" :key="tab.key">
             <div
                 v-show="tab.key === active"
                 :id="panelId(tab.key)"
                 role="tabpanel"
-                :aria-labelledby="tabId(tab.key)"
+                :aria-labelledby="`${idPrefix}-tab-${tab.key}`"
                 tabindex="0"
-                class="pt-3 outline-none focus-visible:outline-2 focus-visible:outline-text"
+                class="pt-3 outline-none focus-visible:outline-2 focus-visible:outline-focus"
             >
                 <slot :name="tab.key" />
             </div>

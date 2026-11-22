@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { ref, useId } from 'vue';
-import TextField from '@/components/kit/TextField.vue';
+import Field from '@/components/kit/Field.vue';
 import { useWindowQueryChange } from '@/framework/useWindowQuery';
 import type { LayoutFieldData, LayoutPartData } from '@/generated/types/core';
 
@@ -33,7 +33,7 @@ function apply(): void {
 
 <template>
     <form role="search" class="flex items-end gap-2" @submit.prevent="apply">
-        <TextField
+        <Field
             :id="fieldId"
             v-model="value"
             :label="part.text ?? ''"

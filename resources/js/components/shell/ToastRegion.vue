@@ -93,7 +93,7 @@ function quiet(event: Event): void {
             >
                 <template v-for="toast in shown" :key="toast.key">
                     <div
-                        class="flex items-start gap-2 rounded-card border bg-raised p-3 text-small shadow-(--tip-shadow)"
+                        class="flex items-start gap-2 rounded-card border bg-raised p-3 text-small shadow-pop"
                         :class="toast.type === 'failure' ? 'border-danger' : 'border-border-2'"
                         @mouseenter="toasts.hold(toast.key, 'hover')"
                         @mouseleave="toasts.release(toast.key, 'hover')"

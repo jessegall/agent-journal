@@ -8,8 +8,8 @@ import {
     revoke as cancelLine,
 } from '@generated/routes/connections/invitations';
 import Button from '@kit/Button';
-import FormField from '@kit/FormField';
-import SegmentedSwitch from '@kit/SegmentedSwitch';
+import Field from '@kit/Field';
+import SegmentedControl from '@kit/SegmentedControl';
 import { keyedPost } from '@kit/keyedPost';
 import { router } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
@@ -165,10 +165,10 @@ function cancel(): void {
 <template>
     <div class="flex flex-col gap-3">
         <template v-if="issued === null">
-            <SegmentedSwitch
+            <SegmentedControl
                 v-model="target"
                 label="What the line connects"
-                :options="[
+                :items="[
                     { value: 'new', label: 'New project' },
                     { value: 'join', label: 'Join a project' },
                 ]"
@@ -181,7 +181,7 @@ function cancel(): void {
                     </p>
                 </template>
                 <template v-else>
-                    <FormField id="join-project" label="Project">
+                    <Field id="join-project" label="Project">
                         <template #default="{ id }">
                             <select :id="id" v-model="projectId" class="input">
                                 <template
@@ -194,8 +194,8 @@ function cancel(): void {
                                 </template>
                             </select>
                         </template>
-                    </FormField>
-                    <FormField id="join-environment" label="Environment">
+                    </Field>
+                    <Field id="join-environment" label="Environment">
                         <template #default="{ id }">
                             <select
                                 :id="id"
@@ -212,7 +212,7 @@ function cancel(): void {
                                 </template>
                             </select>
                         </template>
-                    </FormField>
+                    </Field>
                 </template>
             </template>
             <div>
