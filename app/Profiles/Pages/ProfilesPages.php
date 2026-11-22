@@ -91,7 +91,7 @@ final class ProfilesPages implements NavigationProvider, PageProvider, SectionPr
 
     public function navigation(): array
     {
-        return [NavigationItem::page('accounts', 'Accounts', Icon::Accounts, group: 'Agents', position: 40)];
+        return [NavigationItem::page('accounts', 'Accounts', Icon::Accounts, group: 'web.agents', position: 40)];
     }
 
     /**

@@ -14,6 +14,8 @@ use App\Ui\Declarations\RegisteredAction;
 use App\Ui\Declarations\RegisteredNavigation;
 use App\Ui\Declarations\RegisteredPage;
 use App\Ui\Declarations\RegisteredSection;
+use App\Ui\Declarations\RegisteredSidebarGroup;
+use App\Ui\Declarations\SidebarGroup;
 use App\Ui\Exceptions\InvalidNavigationDeclaration;
 use App\Ui\Exceptions\UiDeclarationMissing;
 use App\Ui\Exceptions\UiKeyRepeated;
@@ -34,6 +36,7 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
      * @param  array<string, RegisteredAction>  $actions  by route name
      * @param  list<RegisteredNavigation>  $navigation  the root items
      * @param  list<DomainUi>  $owners  every domain, also one that declares nothing
+     * @param  array<string, RegisteredSidebarGroup>  $sidebarGroups  by full key
      */
     private function __construct(
         private array $pages,
@@ -41,6 +44,7 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
         private array $actions,
         private array $navigation,
         private array $owners,
+        private array $sidebarGroups,
     ) {}
 
     /**
@@ -50,9 +54,20 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
     {
         $pages = [];
         $slotHosts = [];
+        $sidebarGroups = [];
 
         foreach ($domains as $owner) {
             self::assertUniqueKeys($owner, 'page', array_map(fn ($page) => $page->key, $owner->pages));
+            self::assertUniqueKeys(
+                $owner,
+                'sidebar group',
+                array_map(fn (SidebarGroup $group) => $group->key, $owner->sidebarGroups),
+            );
+
+            foreach ($owner->sidebarGroups as $group) {
+                $registeredGroup = RegisteredSidebarGroup::of($owner, $group);
+                $sidebarGroups[$registeredGroup->key] = $registeredGroup;
+            }
 
             foreach ($owner->pages as $page) {
                 $registered = RegisteredPage::of($owner, $page);
@@ -94,10 +109,25 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
                 array_merge([], ...array_map(fn (RegisteredNavigation $root) => $root->keys(), $roots)),
             );
 
+            foreach ($roots as $root) {
+                $group = $root->navigationItem->group;
+
+                if ($group !== null && ! array_key_exists($group, $sidebarGroups)) {
+                    throw InvalidNavigationDeclaration::groupMissing($root->key, $group);
+                }
+            }
+
             $navigation = [...$navigation, ...$roots];
         }
 
-        $declarations = new self($pages, $sections, self::actionsOf($pages, $sections), $navigation, $domains);
+        $declarations = new self(
+            $pages,
+            $sections,
+            self::actionsOf($pages, $sections),
+            $navigation,
+            $domains,
+            $sidebarGroups,
+        );
         $declarations->refuseRepeatedRoutes();
         $declarations->refuseRepeatedPropNames();
 
@@ -171,6 +201,14 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
         return $this->navigation;
     }
 
+    /**
+     * The sidebar group with the given full key, which every grouped root item names, as checked at start-up.
+     */
+    public function sidebarGroup(string $key): RegisteredSidebarGroup
+    {
+        return $this->sidebarGroups[$key] ?? throw UiDeclarationMissing::for($key);
+    }
+
     public function page(string $key): RegisteredPage
     {
         return $this->pages[$key] ?? throw UiDeclarationMissing::for($key);
@@ -232,7 +270,7 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
 
     /**
      * Checks the items a children reader returned for a parent the same way as declared items: as children, under the
-     * parent's domain, opening that domain's pages, each key once.
+     * parent's domain, opening that domain's pages. A key met twice is the navigation index's to drop, per request.
      *
      * @param  list<NavigationItem>  $navigationItems
      * @return list<RegisteredNavigation>
@@ -245,7 +283,7 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
             }
         }
 
-        $children = array_map(
+        return array_map(
             fn (NavigationItem $navigationItem) => RegisteredNavigation::of(
                 $parent->owner,
                 $navigationItem,
@@ -253,14 +291,6 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
             ),
             $navigationItems,
         );
-
-        self::assertUniqueKeys(
-            $parent->owner,
-            'navigation',
-            array_merge([], ...array_map(fn (RegisteredNavigation $child) => $child->keys(), $children)),
-        );
-
-        return $children;
     }
 
     /**

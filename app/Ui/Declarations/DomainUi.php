@@ -18,6 +18,7 @@ use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\SectionProvider;
+use App\Ui\Contracts\SidebarGroupProvider;
 use App\Ui\Exceptions\UiComponentMissing;
 use App\Ui\Exceptions\UiKeyInvalid;
 use App\Ui\Exceptions\UiResolverInvalid;
@@ -39,6 +40,7 @@ final readonly class DomainUi
      * @param  list<NavigationItem>  $navigation
      * @param  list<Section>  $sections
      * @param  list<string>  $nativeParts
+     * @param  list<SidebarGroup>  $sidebarGroups
      */
     private function __construct(
         public string $name,
@@ -49,11 +51,12 @@ final readonly class DomainUi
         public array $navigation,
         public array $sections,
         public array $nativeParts,
+        public array $sidebarGroups,
     ) {}
 
     /**
-     * Reads what a domain or module declares through PageProvider, NavigationProvider, SectionProvider and
-     * NativePartProvider, given its name, namespace and folder.
+     * Reads what a domain or module declares through PageProvider, NavigationProvider, SectionProvider,
+     * NativePartProvider and SidebarGroupProvider, given its name, namespace and folder.
      */
     public static function of(object $domain, string $name, string $namespace, string $scriptFolder): self
     {
@@ -65,6 +68,7 @@ final readonly class DomainUi
             navigation: $domain instanceof NavigationProvider ? $domain->navigation() : [],
             sections: $domain instanceof SectionProvider ? $domain->sections() : [],
             nativeParts: $domain instanceof NativePartProvider ? $domain->nativeParts() : [],
+            sidebarGroups: $domain instanceof SidebarGroupProvider ? $domain->sidebarGroups() : [],
         );
     }
 
@@ -73,6 +77,7 @@ final readonly class DomainUi
      * @param  list<NavigationItem>  $navigation
      * @param  list<Section>  $sections
      * @param  list<string>  $nativeParts
+     * @param  list<SidebarGroup>  $sidebarGroups
      */
     public static function declaring(
         string $name,
@@ -82,6 +87,7 @@ final readonly class DomainUi
         array $navigation = [],
         array $sections = [],
         array $nativeParts = [],
+        array $sidebarGroups = [],
     ): self {
         return new self(
             name: $name,
@@ -92,6 +98,7 @@ final readonly class DomainUi
             navigation: $navigation,
             sections: $sections,
             nativeParts: $nativeParts,
+            sidebarGroups: $sidebarGroups,
         );
     }
 

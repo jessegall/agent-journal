@@ -301,11 +301,11 @@ final class PlansDomain extends Domain implements
     {
         return [
             NavigationItem::page('list', 'Plans', Icon::Plan, position: 20)->children([
-                NavigationItem::page('open', 'Open', page: 'list', query: ['state' => 'open'])
+                NavigationItem::page('open', 'Open', page: 'list', query: ['state' => 'open'], position: 10)
                     ->count(OpenPlansCount::class),
-                NavigationItem::page('waiting', 'Waiting', page: 'list', query: ['state' => 'waiting'])
+                NavigationItem::page('waiting', 'Waiting', page: 'list', query: ['state' => 'waiting'], position: 20)
                     ->count(WaitingPlansCount::class),
-                NavigationItem::page('closed', 'Closed', page: 'list', query: ['state' => 'closed']),
+                NavigationItem::page('closed', 'Closed', page: 'list', query: ['state' => 'closed'], position: 30),
             ]),
         ];
     }

@@ -56,6 +56,7 @@ use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Section;
+use App\Ui\Declarations\SidebarGroup;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Str;
 use PhpOption\None;
@@ -388,9 +389,14 @@ final readonly class DomainEntry
      * @param  list<Page>  $pages
      * @param  list<NavigationItem>  $navigation
      * @param  list<Section>  $sections
+     * @param  list<SidebarGroup>  $sidebarGroups
      */
-    public function declaring(array $pages = [], array $navigation = [], array $sections = []): DomainUi
-    {
+    public function declaring(
+        array $pages = [],
+        array $navigation = [],
+        array $sections = [],
+        array $sidebarGroups = [],
+    ): DomainUi {
         return DomainUi::declaring(
             $this->name,
             $this->namespace,
@@ -398,6 +404,7 @@ final readonly class DomainEntry
             $pages,
             $navigation,
             $sections,
+            sidebarGroups: $sidebarGroups,
         );
     }
 
