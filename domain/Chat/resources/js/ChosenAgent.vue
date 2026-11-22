@@ -2,6 +2,11 @@
 import { usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import type { AgentOptionData, ChatData } from '@generated/types/chat';
+import type { SessionState } from '@kit/CoreTypes';
+import Avatar from '@kit/Avatar';
+import Icon from '@kit/Icon';
+import Status from '@kit/Status';
+import type { StatusState } from '@kit/Status';
 import { agentUrl } from './agentLinks';
 import AgentMenu from './AgentMenu.vue';
 import AgentSessionActions from './AgentSessionActions.vue';
@@ -21,20 +26,24 @@ const selected = computed(() => props.data.agents.find((agent) => agent.id === p
 const status = computed(() => selected.value?.status);
 const announcement = useStatusAnnouncement(() => status.value, () => isDialogOpen.value);
 
-// Each state's mark: a filled dot for a running driver, a ring while it moves, a danger dot for a refusal.
-const marks: Record<string, string> = {
-    working: 'bg-brand',
-    idle: 'bg-text-3',
-    starting: 'border-2 border-brand bg-transparent',
-    stopping: 'border-2 border-tone-warn bg-transparent',
-    interrupting: 'border-2 border-tone-warn bg-transparent',
-    'waiting-for-sign-in': 'bg-tone-warn',
-    'no-capacity': 'bg-danger',
-    refused: 'bg-danger',
-    failed: 'bg-danger',
-    unknown: 'border-2 border-text-3 bg-transparent',
+// Each session state as the kit's Status shows it: a spinner while it moves, a hollow dot at rest, an alert when refused.
+const looks: Record<SessionState, StatusState> = {
+    stopped: 'stopped',
+    starting: 'connecting',
+    working: 'working',
+    idle: 'open',
+    stopping: 'running',
+    interrupting: 'running',
+    failed: 'failed',
+    refused: 'failed',
+    'waiting-for-sign-in': 'not-signed-in',
+    'no-capacity': 'failed',
+    unknown: 'open',
+    retired: 'ended',
 };
-const isEmphasised = computed(() => ['failed', 'refused', 'no-capacity'].includes(status.value?.sessionState ?? ''));
+const isMain = computed(() => selected.value !== undefined && selected.value.id === props.data.mainAgentId);
+// The second line names what runs the agent: its driver while a session runs, else the profile it starts from.
+const subline = computed(() => selected.value?.sessionDriverLabel ?? selected.value?.profileKey ?? '');
 </script>
 
 <template>
@@ -42,20 +51,23 @@ const isEmphasised = computed(() => ['failed', 'refused', 'no-capacity'].include
         <div class="relative">
             <button
                 type="button"
-                class="flex items-center gap-2 rounded-control px-1.5 py-1 hover:bg-hover"
+                class="flex items-center gap-2 rounded-control py-1 pr-1.5 pl-1 text-left hover:bg-hover"
                 aria-haspopup="listbox"
                 :aria-expanded="isMenuOpen"
+                title="Choose whom this chat talks to"
                 @click="isMenuOpen = !isMenuOpen"
             >
-                <span
-                    class="size-2 flex-none rounded-full"
-                    :class="marks[status?.sessionState ?? ''] ?? 'bg-text-4'"
-                    aria-hidden="true"
-                ></span>
-                <span class="font-semibold text-text">{{ selected?.name ?? 'Choose an agent' }}</span>
-                <template v-if="status">
-                    <span :class="isEmphasised ? 'font-semibold text-danger' : 'text-text-3'">{{ status.label }}</span>
+                <template v-if="selected">
+                    <Avatar :participant="{ kind: 'agent', driver: selected.sessionDriver ?? '' }" size="lg" />
+                    <span class="flex flex-col leading-tight">
+                        <span class="text-body text-text">{{ isMain ? `${selected.name} · main` : selected.name }}</span>
+                        <small class="text-small text-text-3">{{ subline }}</small>
+                    </span>
                 </template>
+                <template v-else>
+                    <span class="font-semibold text-text">Choose an agent</span>
+                </template>
+                <Icon name="caret" :size="14" />
             </button>
             <template v-if="status?.reason">
                 <p class="max-w-[60ch] px-1.5 text-small break-words text-danger">
@@ -78,6 +90,9 @@ const isEmphasised = computed(() => ['failed', 'refused', 'no-capacity'].include
                 />
             </template>
         </div>
+        <template v-if="status">
+            <Status :state="looks[status.sessionState]" :label="status.label" />
+        </template>
         <template v-if="data.setupRequired">
             <span class="text-small text-text-3">No main agent yet: run <code>php artisan agents:install</code>.</span>
         </template>

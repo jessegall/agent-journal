@@ -240,7 +240,7 @@ function retryFocused(): void {
                 :agent-url="agentUrl"
             />
         </template>
-        <template v-if="chat.setupRequired">
+        <template v-if="offersChoice && chat.setupRequired">
             <p class="text-small text-text-3">
                 This installation has no main agent yet. Run
                 <code>php artisan agents:install</code> to create it.
