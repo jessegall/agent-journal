@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Models;
 
 use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\EventSource;
 use App\Contracts\ReadableModel;
@@ -36,6 +37,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     /**
@@ -61,7 +63,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
      *
      * @param  list<SequenceStep>  $steps
      */
-    public static function define(string $name, string $summary, array $steps): self
+    public static function create(string $name, string $summary, array $steps): self
     {
         $sequence = new self();
         $sequence->name = $name;

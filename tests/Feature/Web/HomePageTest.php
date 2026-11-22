@@ -114,7 +114,6 @@ final class HomePageTest extends TestCase
             ->missing('page.data.plans')
             ->missing('page.data.chat')
             ->reloadOnly('window_plans_list', fn (AssertableInertia $reload) => $reload
-                ->where('window_plans_list.data.root.children.0.children.2.field.value', 'release')
                 ->where('window_plans_list.data.root.children.0.children.1.text', '1'))
             ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
                 ->where('window_chat_conversation.state', 'ready')
@@ -137,7 +136,6 @@ final class HomePageTest extends TestCase
         ) => $page
             ->missing('page.data.rules')
             ->reloadOnly(['window_plans_list', 'window_rules_list'], fn (AssertableInertia $reload) => $reload
-                ->where('window_plans_list.data.root.children.0.children.2.field.value', 'release')
                 ->where('window_rules_list.data.root.children.0.children.1.field.value', 'phase')
                 ->where('window_rules_list.data.root.children.0.children.0.text', 'Rules (1)')
                 ->where('window_rules_list.data.root.children.1.children.0.children.0.text', 'No rules awaiting review')

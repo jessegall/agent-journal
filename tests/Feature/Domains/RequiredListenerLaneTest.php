@@ -14,6 +14,7 @@ use App\Events\MergeOutcomeRecorded;
 use App\Events\MessageAnswerRequired;
 use App\Events\MessageSent;
 use App\Events\OutputChunkCommitted;
+use App\Events\ProcessRunOutlasted;
 use App\Events\RunOutcomeRecorded;
 use App\Events\SessionClosed;
 use App\Events\SessionOpened;
@@ -35,7 +36,10 @@ use Domain\Plans\Events\PlanReviewRequested;
 use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Listeners\CountPhaseTaskStates;
 use Domain\Plans\Listeners\SamplePlanOfStartedTask;
+use Domain\Sequences\Events\SequenceEnded;
 use Domain\Sequences\Events\SequenceStarted;
+use Domain\Sequences\Events\SequenceStepEnded;
+use Domain\Sequences\Events\SequenceStepReached;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskDescribed;
@@ -107,6 +111,10 @@ final class RequiredListenerLaneTest extends TestCase
                 AskHopAssigned::class,
                 ReportFiled::class,
                 ReportJobLinked::class,
+                ProcessRunOutlasted::class,
+                SequenceEnded::class,
+                SequenceStepEnded::class,
+                SequenceStepReached::class,
             ],
             $registry->events(),
         );

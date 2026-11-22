@@ -1329,6 +1329,8 @@ case	TaskState::Cancelled
 case	TaskState::Finished
 case	TaskState::Open
 case	TaskState::Started
+case	TaskStateGroup::Done
+case	TaskStateGroup::Open
 case	TaskStreamEntryType::Change
 case	TaskStreamEntryType::Log
 case	TaskTextLimit::Note
@@ -2238,6 +2240,9 @@ class	ChangeAgentModelHandler
 class	ChangeAutoAssignmentRequest
 class	ChangeDocumentDetailsCommand
 class	ChangeDocumentDetailsHandler
+class	ChangeSequenceCommand
+class	ChangeSequenceController
+class	ChangeSequenceHandler
 class	ChangeSupervisorCommand
 class	ChangeSupervisorHandler
 class	ChannelRunEvents
@@ -2777,6 +2782,9 @@ class	DecodesAnyJson
 class	DefaultDrivers
 class	DefaultUnavailable
 class	DeferredCommandHandler
+class	DefineSequenceCommand
+class	DefineSequenceController
+class	DefineSequenceHandler
 class	DeliverAgentCommand
 class	DeliverAgentHandler
 class	DeliverMessages
@@ -3970,6 +3978,8 @@ class	MessagePinPolicy
 class	MessagePinRecords
 class	MessagePolicy
 class	MessagePresentationAcknowledgeTool
+class	MessageReaction
+class	MessageReactionPolicy
 class	MessageRead
 class	MessageReadBatch
 class	MessageReadResult
@@ -4076,6 +4086,7 @@ class	NavigationUncertainty
 class	NestedCommandFailureIgnored
 class	NetworkRules
 class	NewMessage
+class	NewSequenceResolver
 class	NextAction
 class	NextStep
 class	NgrokGateway
@@ -4771,6 +4782,9 @@ class	RaisePlanProgressChanged
 class	RaisedOutsideUnit
 class	RankedLaunchCandidate
 class	RawRowAccess
+class	ReactController
+class	ReactInput
+class	ReactionData
 class	ReadAndOrPipeline
 class	ReadAttachmentTool
 class	ReadBuilder
@@ -5655,6 +5669,7 @@ class	SaveProfileDraftCall
 class	SaveProfileDraftCommand
 class	SaveProfileDraftController
 class	SaveProfileDraftHandler
+class	SaveSequenceRequest
 class	SaveSettingsPageController
 class	SaveSettingsRequest
 class	SaveSharePreviewCommand
@@ -5794,21 +5809,31 @@ class	SendTerminalInputController
 class	SendTerminalInputHandler
 class	SentMessageAnswer
 class	SeparateRequiredListeners
+class	Sequence
+class	SequenceChanged
+class	SequenceChangedMeanwhile
 class	SequenceCommandHandler
+class	SequenceDefined
 class	SequenceEditorPartData
+class	SequenceEditorResolver
 class	SequenceEnded
+class	SequenceIndexLayout
 class	SequenceIndexResolver
+class	SequenceMissing
 class	SequencePolicy
 class	SequenceRecords
+class	SequenceRequest
 class	SequenceRun
 class	SequenceRunDocking
 class	SequenceRunMissing
 class	SequenceRunRequest
 class	SequenceRunWindowResolver
 class	SequenceStarted
+class	SequenceStep
 class	SequenceStepData
 class	SequenceStepEnded
 class	SequenceStepReached
+class	SequenceWindowResolver
 class	SequenceWork
 class	SequencesDomain
 class	SequencesServiceProvider
@@ -6070,6 +6095,7 @@ class	ShowDocumentRevisionCall
 class	ShowDocumentRevisionController
 class	ShowDraftCall
 class	ShowDraftController
+class	ShowHelperStartInChat
 class	ShowLongRunInChat
 class	ShowMessageCall
 class	ShowMessageCommand
@@ -6499,6 +6525,7 @@ class	StoredSearchPage
 class	StoredSearchPosition
 class	StoredSearchProgress
 class	StoredSelectedTargetData
+class	StoredSequencePolicy
 class	StoredSettings
 class	StoredSettingsSnapshot
 class	StoredShareColumnInvalid
@@ -6825,6 +6852,8 @@ class	Title
 class	ToggleGroup
 class	ToggleGroupAvailabilityData
 class	ToggleOption
+class	ToggleReactionCommand
+class	ToggleReactionHandler
 class	Token
 class	TokenCursor
 class	TooManyTickCommands
@@ -7476,7 +7505,6 @@ constant	LayoutPartData::TONES
 constant	LayoutRoots::CORE_ROOT_FILES
 constant	LayoutRoots::ROLE_FOLDERS
 constant	LayoutSplitData::LIST_WIDTH
-constant	LibraryWindowResolver::SHARING_NOTICE
 constant	LimitMcpMessage::BYTE_LIMIT
 constant	LimitMcpMessage::MAX_DEPTH
 constant	LimitUsageReport::MOST_BYTES
@@ -7512,6 +7540,7 @@ constant	MessagePage::DEFAULT_LIMIT
 constant	MessagePage::LARGEST_LIMIT
 constant	MessagePin::DEFAULT_LIMIT
 constant	MessagePin::LARGEST_LIMIT
+constant	MessageReaction::READ_LIMIT
 constant	MessageReadResult::TOOL
 constant	MessageSearchAccess::ID_ARGUMENT
 constant	MessageSearchAccess::READ
@@ -7667,6 +7696,7 @@ constant	ProfileDraftRevision::UPDATED_AT
 constant	ProfileIndexLayout::ROWS
 constant	ProfileListCommand::ROWS
 constant	ProfileProposal::UNSUPPORTED_FIELDS
+constant	ProfileReaderLayout::MODELS_HELP
 constant	ProfileRevision::LINK_TYPE
 constant	ProfileRevision::UPDATED_AT
 constant	ProfileRunExecution::EVIDENCE_LIMIT
@@ -7823,6 +7853,7 @@ constant	RuntimeScreen::KEEP_SECONDS
 constant	RuntimeStatusResolver::REQUESTS_EACH
 constant	RuntimeStatusResolver::RUNTIMES
 constant	SaveDraftPageController::SAVED_DRAFT
+constant	SaveSequenceRequest::TEXT_CHARACTER_LIMIT
 constant	SaveSettingsRequest::RESERVED
 constant	ScopeResolution::ALTERNATIVE_LIMIT
 constant	ScopeResolution::DISCOVERY_ACTION
@@ -7878,7 +7909,9 @@ constant	SendDriverRequestAgainHandler::KEY_PREFIX
 constant	SentMessageAnswer::REQUEST_KEY
 constant	SentMessageAnswer::SENT_MESSAGE
 constant	SeparateRequiredListeners::DEFERRING_INTERFACES
+constant	SequenceIndexLayout::LIST_LIMIT
 constant	SequenceRun::LINK_TYPE
+constant	SequenceWindowResolver::RUN_LIMIT
 constant	SessionOutputGrant::MOST_GRANTS
 constant	SessionOutputPaths::DOT_SEGMENT
 constant	SessionProvenance::SESSION
@@ -8462,6 +8495,7 @@ enum	TableType
 enum	TaskHolderFilter
 enum	TaskRunState
 enum	TaskState
+enum	TaskStateGroup
 enum	TaskStreamEntryType
 enum	TaskTextLimit
 enum	TaskWaitChange
@@ -9209,6 +9243,7 @@ method	AccountsLayout::rowOf()
 method	AccountsLayout::stateTone()
 method	AccountsLayout::stateWord()
 method	AccountsLayout::usageGroup()
+method	AccountsLayout::usageMeterOf()
 method	AccountsLayout::windowRow()
 method	AccountsPageRequest::chosenAccount()
 method	AccountsPageRequest::isAdding()
@@ -11172,6 +11207,9 @@ method	ChangeAutoAssignmentRequest::rules()
 method	ChangeDocumentDetailsCommand::__construct()
 method	ChangeDocumentDetailsHandler::__construct()
 method	ChangeDocumentDetailsHandler::handle()
+method	ChangeSequenceCommand::__construct()
+method	ChangeSequenceController::__invoke()
+method	ChangeSequenceHandler::handle()
 method	ChangeSupervisorCommand::__construct()
 method	ChangeSupervisorHandler::__construct()
 method	ChangeSupervisorHandler::handle()
@@ -11216,6 +11254,7 @@ method	ChatConversations::capabilitiesOf()
 method	ChatConversations::keyOf()
 method	ChatConversations::linesFrom()
 method	ChatConversations::pageFor()
+method	ChatConversations::reactionsByMessage()
 method	ChatConversations::replyTargetOf()
 method	ChatConversations::rowOf()
 method	ChatConversations::rowsOf()
@@ -13010,6 +13049,9 @@ method	DefaultUnavailable::forStart()
 method	DefaultUnavailable::reason()
 method	DeferredCommandHandler::__construct()
 method	DeferredCommandHandler::handle()
+method	DefineSequenceCommand::__construct()
+method	DefineSequenceController::__invoke()
+method	DefineSequenceHandler::handle()
 method	DeliverAgentCommand::__construct()
 method	DeliverAgentCommand::target()
 method	DeliverAgentHandler::__construct()
@@ -16227,7 +16269,6 @@ method	LibraryTypeFilter::isForDocuments()
 method	LibraryTypeFilter::isForReports()
 method	LibraryTypeFilter::label()
 method	LibraryWindowResolver::__construct()
-method	LibraryWindowResolver::choicesOf()
 method	LibraryWindowResolver::creation()
 method	LibraryWindowResolver::emptyFor()
 method	LibraryWindowResolver::nextOf()
@@ -16942,6 +16983,11 @@ method	MessagePolicy::model()
 method	MessagePresentationAcknowledgeTool::command()
 method	MessagePresentationAcknowledgeTool::payload()
 method	MessagePresentationAcknowledgeTool::writeSchema()
+method	MessageReaction::create()
+method	MessageReaction::findFor()
+method	MessageReaction::toMessages()
+method	MessageReaction::withdraw()
+method	MessageReactionPolicy::model()
 method	MessageRead::__construct()
 method	MessageReadBatch::__construct()
 method	MessageReadResult::__construct()
@@ -17414,6 +17460,8 @@ method	NestedCommandFailureIgnored::for()
 method	NetworkRules::all()
 method	NetworkRules::curl()
 method	NewMessage::__construct()
+method	NewSequenceResolver::__construct()
+method	NewSequenceResolver::read()
 method	NextAction::__construct()
 method	NextAction::structuredContent()
 method	NextStep::__construct()
@@ -18396,8 +18444,6 @@ method	PlanHasUnfinishedTasks::notStarted()
 method	PlanHasUnfinishedTasks::refusalCode()
 method	PlanHasUnfinishedTasks::status()
 method	PlanIndexLayout::__construct()
-method	PlanIndexLayout::choicesOf()
-method	PlanIndexLayout::countsOf()
 method	PlanIndexLayout::creation()
 method	PlanIndexLayout::emptyFor()
 method	PlanIndexLayout::of()
@@ -19684,6 +19730,9 @@ method	RawRowAccess::findingsIn()
 method	RawRowAccess::isRowQuery()
 method	RawRowAccess::key()
 method	RawRowAccess::violation()
+method	ReactController::__invoke()
+method	ReactInput::__construct()
+method	ReactionData::__construct()
 method	ReadAdmission::allowedTargets()
 method	ReadAdmission::assess()
 method	ReadAndOrPipeline::pipes()
@@ -22058,6 +22107,10 @@ method	SaveProfileDraftCommand::__construct()
 method	SaveProfileDraftController::__invoke()
 method	SaveProfileDraftHandler::handle()
 method	SaveProfileDraftHandler::saveFor()
+method	SaveSequenceRequest::name()
+method	SaveSequenceRequest::openedVersion()
+method	SaveSequenceRequest::rules()
+method	SaveSequenceRequest::steps()
 method	SaveSettingsPageController::__invoke()
 method	SaveSettingsPageController::commandFor()
 method	SaveSettingsPageController::settingsOf()
@@ -22586,17 +22639,35 @@ method	SeparateRequiredListeners::handle()
 method	SeparateRequiredListeners::isDeclaredBy()
 method	SeparateRequiredListeners::requiredClassOf()
 method	SeparateRequiredListeners::sorted()
+method	Sequence::byId()
+method	Sequence::casts()
+method	Sequence::change()
+method	Sequence::create()
+method	Sequence::lockedById()
+method	Sequence::runs()
+method	Sequence::stepList()
+method	Sequence::stored()
+method	SequenceChanged::__construct()
+method	SequenceChangedMeanwhile::since()
+method	SequenceDefined::__construct()
 method	SequenceEditorPartData::__construct()
+method	SequenceEditorResolver::__construct()
+method	SequenceEditorResolver::read()
 method	SequenceEnded::__construct()
 method	SequenceEnded::follower()
 method	SequenceEnded::runId()
 method	SequenceEnded::wordsFor()
+method	SequenceIndexLayout::of()
+method	SequenceIndexResolver::__construct()
 method	SequenceIndexResolver::read()
+method	SequenceMissing::forId()
 method	SequencePolicy::model()
 method	SequenceRecords::followedBy()
 method	SequenceRecords::get()
 method	SequenceRecords::heldBy()
 method	SequenceRecords::many()
+method	SequenceRequest::rules()
+method	SequenceRequest::sequenceId()
 method	SequenceRun::advance()
 method	SequenceRun::cancel()
 method	SequenceRun::casts()
@@ -22604,6 +22675,7 @@ method	SequenceRun::composeDockCard()
 method	SequenceRun::create()
 method	SequenceRun::identifyFor()
 method	SequenceRun::lockedById()
+method	SequenceRun::sequence()
 method	SequenceRun::startFor()
 method	SequenceRun::stepLabel()
 method	SequenceRun::stepLine()
@@ -22621,6 +22693,8 @@ method	SequenceStarted::__construct()
 method	SequenceStarted::follower()
 method	SequenceStarted::runId()
 method	SequenceStarted::wordsFor()
+method	SequenceStep::__construct()
+method	SequenceStep::toArray()
 method	SequenceStepData::__construct()
 method	SequenceStepEnded::__construct()
 method	SequenceStepEnded::follower()
@@ -22630,6 +22704,10 @@ method	SequenceStepReached::__construct()
 method	SequenceStepReached::follower()
 method	SequenceStepReached::runId()
 method	SequenceStepReached::wordsFor()
+method	SequenceWindowResolver::__construct()
+method	SequenceWindowResolver::read()
+method	SequenceWindowResolver::runParts()
+method	SequenceWindowResolver::stepRows()
 method	SequenceWork::__construct()
 method	SequenceWork::currentInstruction()
 method	SequenceWork::needsWork()
@@ -22861,6 +22939,7 @@ method	SettingsAccessPolicy::allows()
 method	SettingsCatalogue::everyOwner()
 method	SettingsCatalogue::owner()
 method	SettingsCatalogueData::__construct()
+method	SettingsCatalogueData::declaresSettings()
 method	SettingsChange::__construct()
 method	SettingsChanged::__construct()
 method	SettingsConflict::for()
@@ -23598,6 +23677,8 @@ method	ShowDocumentRevisionCall::__construct()
 method	ShowDocumentRevisionController::__invoke()
 method	ShowDraftCall::__construct()
 method	ShowDraftController::__invoke()
+method	ShowHelperStartInChat::__construct()
+method	ShowHelperStartInChat::handle()
 method	ShowLongRunInChat::__construct()
 method	ShowLongRunInChat::handle()
 method	ShowMessageCall::__construct()
@@ -25063,6 +25144,7 @@ method	StoredSearchProgress::__construct()
 method	StoredSearchProgress::fromSearchProgress()
 method	StoredSelectedTargetData::__construct()
 method	StoredSelectedTargetData::target()
+method	StoredSequencePolicy::model()
 method	StoredSettings::__construct()
 method	StoredSettings::assertOwnSetting()
 method	StoredSettings::boolean()
@@ -25744,6 +25826,7 @@ method	TaskState::hasEnded()
 method	TaskState::isHoldingChecks()
 method	TaskState::stateLabel()
 method	TaskState::unfinished()
+method	TaskStateGroup::states()
 method	TaskStream::__construct()
 method	TaskStream::changes()
 method	TaskStream::cursorOf()
@@ -26204,6 +26287,9 @@ method	ToggleOption::__construct()
 method	ToggleOption::key()
 method	ToggleOption::label()
 method	ToggleOption::make()
+method	ToggleReactionCommand::__construct()
+method	ToggleReactionHandler::__construct()
+method	ToggleReactionHandler::handle()
 method	Token::__construct()
 method	Token::literal()
 method	TokenCursor::__construct()
@@ -27326,7 +27412,6 @@ parameter	$cascade
 parameter	$case
 parameter	$caseClauses
 parameter	$caseCount
-parameter	$cases
 parameter	$catalogue
 parameter	$catalogueDigest
 parameter	$catalogueRevision
@@ -27380,6 +27465,7 @@ parameter	$choices
 parameter	$choose
 parameter	$chosen
 parameter	$chosenAccount
+parameter	$chosenId
 parameter	$chunk
 parameter	$chunkSize
 parameter	$chunks
@@ -27766,6 +27852,8 @@ parameter	$eligibleAccounts
 parameter	$else
 parameter	$email
 parameter	$emitted
+parameter	$emoji
+parameter	$emojis
 parameter	$emphasis
 parameter	$empty
 parameter	$emptyFolderVariables
@@ -28259,6 +28347,7 @@ parameter	$isLimit
 parameter	$isLive
 parameter	$isLoggedIn
 parameter	$isMeasured
+parameter	$isMine
 parameter	$isNegated
 parameter	$isNew
 parameter	$isNewIdentity
@@ -28726,6 +28815,8 @@ parameter	$openFiles
 parameter	$openMode
 parameter	$openProposals
 parameter	$openRequestId
+parameter	$opened
+parameter	$openedVersion
 parameter	$opener
 parameter	$opening
 parameter	$opensIn
@@ -28819,6 +28910,7 @@ parameter	$parameterTypes
 parameter	$parameters
 parameter	$params
 parameter	$parent
+parameter	$parentAgentId
 parameter	$parentClaimId
 parameter	$parentDriver
 parameter	$parentId
@@ -29103,6 +29195,7 @@ parameter	$ranked
 parameter	$reach
 parameter	$reachedLiveJob
 parameter	$reachesStart
+parameter	$reactions
 parameter	$read
 parameter	$readArguments
 parameter	$readAt
@@ -29116,6 +29209,7 @@ parameter	$readFiles
 parameter	$readInterestId
 parameter	$readOnly
 parameter	$readOnlyRoot
+parameter	$readable
 parameter	$reader
 parameter	$readerRevision
 parameter	$readerRevisionId
@@ -29537,6 +29631,7 @@ parameter	$sent
 parameter	$sentAt
 parameter	$sentSteps
 parameter	$sequence
+parameter	$sequenceId
 parameter	$sequenceRunId
 parameter	$serverClock
 parameter	$serverName
@@ -29808,6 +29903,7 @@ parameter	$takes
 parameter	$takesAssignments
 parameter	$takesOnlyEvents
 parameter	$takesOver
+parameter	$tally
 parameter	$target
 parameter	$targetBefore
 parameter	$targetBranch
@@ -31410,6 +31506,10 @@ property	ChangeDocumentDetailsCommand::$abstract
 property	ChangeDocumentDetailsCommand::$draft
 property	ChangeDocumentDetailsCommand::$title
 property	ChangeDocumentDetailsHandler::$drafts
+property	ChangeSequenceCommand::$name
+property	ChangeSequenceCommand::$openedVersion
+property	ChangeSequenceCommand::$sequenceId
+property	ChangeSequenceCommand::$steps
 property	ChangeSupervisorCommand::$actor
 property	ChangeSupervisorCommand::$expectedVersion
 property	ChangeSupervisorCommand::$target
@@ -31550,6 +31650,7 @@ property	ChatMessageData::$addressedTo
 property	ChatMessageData::$body
 property	ChatMessageData::$deliveries
 property	ChatMessageData::$id
+property	ChatMessageData::$reactions
 property	ChatMessageData::$readByMe
 property	ChatMessageData::$replyTo
 property	ChatMessageData::$requestKey
@@ -32467,6 +32568,8 @@ property	DeclineInput::$messageId
 property	DeclineInput::$reason
 property	DeferredCommandHandler::$container
 property	DeferredCommandHandler::$handler
+property	DefineSequenceCommand::$name
+property	DefineSequenceCommand::$steps
 property	DeliverAgentCommand::$agentId
 property	DeliverAgentCommand::$idempotencyKey
 property	DeliverAgentCommand::$message
@@ -34985,6 +35088,7 @@ property	NavigationUncertainty::$stalledStep
 property	NewMessage::$body
 property	NewMessage::$destinationInboxId
 property	NewMessage::$sourceInboxId
+property	NewSequenceResolver::$index
 property	NextAction::$arguments
 property	NextAction::$tool
 property	NextStep::$command
@@ -36538,6 +36642,12 @@ property	RaisesEvents::$raised
 property	RankedLaunchCandidate::$actor
 property	RankedLaunchCandidate::$rank
 property	RankedLaunchCandidate::$sawThisPurpose
+property	ReactInput::$emoji
+property	ReactInput::$inboxId
+property	ReactInput::$messageId
+property	ReactionData::$count
+property	ReactionData::$emoji
+property	ReactionData::$isMine
 property	ReadAttachmentTool::$attachments
 property	ReadBuilder::$completeRelationMax
 property	ReadBuilder::$mode
@@ -38568,6 +38678,9 @@ property	SentMessageAnswer::$conversations
 property	SentMessageAnswer::$inertia
 property	SentMessageAnswer::$key
 property	SentMessageAnswer::$redirect
+property	Sequence::$attributes
+property	SequenceChanged::$sequenceId
+property	SequenceDefined::$sequenceId
 property	SequenceEditorPartData::$cancelAddress
 property	SequenceEditorPartData::$draftedBy
 property	SequenceEditorPartData::$method
@@ -38575,14 +38688,21 @@ property	SequenceEditorPartData::$name
 property	SequenceEditorPartData::$saveAddress
 property	SequenceEditorPartData::$steps
 property	SequenceEditorPartData::$version
+property	SequenceEditorResolver::$index
+property	SequenceEditorResolver::$request
 property	SequenceEnded::$follower
 property	SequenceEnded::$runId
 property	SequenceEnded::$state
+property	SequenceIndexResolver::$index
 property	SequenceRun::$attributes
 property	SequenceRunWindowResolver::$request
 property	SequenceRunWindowResolver::$runs
 property	SequenceStarted::$runId
 property	SequenceStarted::$target
+property	SequenceStep::$doneWhen
+property	SequenceStep::$id
+property	SequenceStep::$runsWhen
+property	SequenceStep::$title
 property	SequenceStepData::$doneWhen
 property	SequenceStepData::$id
 property	SequenceStepData::$runsWhen
@@ -38593,6 +38713,8 @@ property	SequenceStepEnded::$step
 property	SequenceStepReached::$follower
 property	SequenceStepReached::$runId
 property	SequenceStepReached::$step
+property	SequenceWindowResolver::$index
+property	SequenceWindowResolver::$request
 property	SequenceWork::$runNumber
 property	SequenceWork::$state
 property	SequenceWork::$stepInstruction
@@ -39070,6 +39192,7 @@ property	ShowDocumentCall::$selection
 property	ShowDocumentRevisionCall::$number
 property	ShowDocumentRevisionCall::$revision
 property	ShowDraftCall::$number
+property	ShowHelperStartInChat::$lines
 property	ShowLongRunInChat::$lines
 property	ShowMessageCall::$messageId
 property	ShowMessageCommand::$description
@@ -39366,6 +39489,7 @@ property	StackVerdict::$reason
 property	StackVerdict::$recovery
 property	StartAccepted::$agentId
 property	StartAccepted::$authorizedSource
+property	StartAccepted::$parentAgentId
 property	StartAccepted::$requestId
 property	StartAccepted::$sessionId
 property	StartAccountData::$accountId
@@ -40637,6 +40761,10 @@ property	ToggleGroupAvailabilityData::$state
 property	ToggleOption::$key
 property	ToggleOption::$label
 property	ToggleOption::$startsOn
+property	ToggleReactionCommand::$emoji
+property	ToggleReactionCommand::$inboxId
+property	ToggleReactionCommand::$messageId
+property	ToggleReactionHandler::$readable
 property	Token::$descriptor
 property	Token::$hereDocument
 property	Token::$range
@@ -42484,6 +42612,7 @@ variable	$range
 variable	$rank
 variable	$ranked
 variable	$ranks
+variable	$reaction
 variable	$read
 variable	$readGrant
 variable	$readOnly

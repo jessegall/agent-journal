@@ -26,7 +26,7 @@ final class StoredSequenceTest extends TestCase
 
     public function test_defining_stores_the_steps_and_raises_its_fact(): void
     {
-        $sequence = Sequence::define('Release', 'Ship a version', [self::step('tests')]);
+        $sequence = Sequence::create('Release', 'Ship a version', [self::step('tests')]);
 
         $this->assertSame(1, $sequence->fresh()?->version);
         $this->assertEquals([self::step('tests')->toArray()], $sequence->fresh()?->steps);
@@ -35,7 +35,7 @@ final class StoredSequenceTest extends TestCase
 
     public function test_a_change_goes_one_version_on_and_a_started_run_keeps_its_own_steps(): void
     {
-        $sequence = Sequence::define('Release', 'Ship a version', [self::step('tests')]);
+        $sequence = Sequence::create('Release', 'Ship a version', [self::step('tests')]);
         $sequence->takeRaisedEvents();
         $run = SequenceRun::create('Release', ['tests']);
         $run->sequence()->associate($sequence)->save();
@@ -49,7 +49,7 @@ final class StoredSequenceTest extends TestCase
 
     public function test_a_change_from_an_older_version_is_refused(): void
     {
-        $sequence = Sequence::define('Release', 'Ship a version', [self::step('tests')]);
+        $sequence = Sequence::create('Release', 'Ship a version', [self::step('tests')]);
         $sequence->change('Release', 'Ship a version', [self::step('merge')]);
 
         $this->expectException(SequenceChangedMeanwhile::class);

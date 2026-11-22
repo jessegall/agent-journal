@@ -6,6 +6,8 @@ use App\Enums\ActorType;
 use App\Support\ActorIdentity;
 use App\Values\StackTarget;
 use Domain\Sequences\Enums\SequenceRunState;
+use Domain\Sequences\Events\SequenceChanged;
+use Domain\Sequences\Events\SequenceDefined;
 use Domain\Sequences\Events\SequenceEnded;
 use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Events\SequenceStepEnded;
@@ -18,6 +20,20 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
+    SequenceDefined::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Sequence::create',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SequenceDefined('sequence'),
+    ],
+    SequenceChanged::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Sequence::change',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SequenceChanged('sequence'),
+    ],
     SequenceStarted::class => [
         'role' => EventRole::RowFact,
         'owner' => 'SequenceRun::startFor',

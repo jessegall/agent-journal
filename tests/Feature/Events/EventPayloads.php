@@ -172,6 +172,7 @@ final class EventPayloads
                     'agentId' => 'string',
                     'sessionId' => 'string',
                     'authorizedSource' => '?App\Support\RecordIdentity',
+                    'parentAgentId' => '?string',
                 ],
             ],
             StartUnavailable::class => [

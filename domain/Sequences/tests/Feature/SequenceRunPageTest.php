@@ -35,7 +35,7 @@ final class SequenceRunPageTest extends TestCase
 
     public function test_the_index_lists_the_stored_sequences_and_a_chosen_one_shows_its_steps_and_runs(): void
     {
-        $sequence = Sequence::define('Release', 'Ship a version', [
+        $sequence = Sequence::create('Release', 'Ship a version', [
             new SequenceStep(...['id' => 'tests', 'title' => 'Tests', 'runsWhen' => 'held', 'doneWhen' => 'green']),
         ]);
 

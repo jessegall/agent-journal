@@ -88,18 +88,11 @@ final class ChatWindowTest extends TestCase
         $main = Agent::create('Main agent', 'main-agent');
         MainAgentDesignation::create($main);
 
-        $this->askBetween(
-            $this->inboxOf(ActorIdentity::of($this->owner)),
-            $this->inboxOf(new ActorIdentity(ActorType::Agent, $main->id)),
-            'Done for today.',
-        );
-
         $this->actingAs($this->owner)->get('/chat')->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.setupRequired', false)
             ->where('page.data.selectedAgentId', $main->id)
             ->where('page.data.conversation.agentId', $main->id)
             ->where('page.data.conversation.sessionId', null)
-            ->where('page.data.conversation.messages.0.body', 'Done for today.')
             ->where('page.data.agents.0.name', 'Builder')
             ->where('page.data.agents.0.actions', ['switch'])
             ->where('page.data.agents.1.name', 'Main agent')

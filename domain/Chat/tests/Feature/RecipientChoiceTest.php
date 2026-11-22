@@ -10,14 +10,14 @@ use App\Contracts\MainSeatTakeover;
 use App\Enums\ActorType;
 use App\Enums\CommandEntry;
 use App\Models\Agent;
-use App\Models\DeskRecord;
 use App\Support\ActorIdentity;
-use App\Support\BuiltInDesks;
 use App\Support\EntryDispatchers;
 use App\Support\StartSessions;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Http\Requests\ConversationRequest;
+use Domain\Chat\Models\Conversation;
+use Domain\Chat\Models\DirectChat;
 use Domain\Chat\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
@@ -51,9 +51,11 @@ final class RecipientChoiceTest extends TestCase
         'messages',
         'message_attentions',
         'links',
+        'conversations',
+        'direct_chats',
     ];
 
-    public function test_the_agent_at_main_is_reached_at_mains_inbox_and_another_at_its_own(): void
+    public function test_each_agent_is_reached_in_its_own_chat_with_the_viewer(): void
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
@@ -70,11 +72,19 @@ final class RecipientChoiceTest extends TestCase
             fn () => $this->app->make(MainSeatTakeover::class)->takeOver(Agent::query()->findOrFail($main[0])),
         );
 
-        $mainInboxId = DeskRecord::query()->named(BuiltInDesks::MAIN)->sole()->inboxId();
-        $helperInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $helper[0]))->inboxId();
+        $mainShown = $this->destinationShownFor($owner, $main[0]);
+        $helperShown = $this->destinationShownFor($owner, $helper[0]);
 
-        $this->assertSame($mainInboxId, $this->destinationShownFor($owner, $main[0]));
-        $this->assertSame($helperInboxId, $this->destinationShownFor($owner, $helper[0]));
+        $this->assertNotSame($mainShown, $helperShown);
+        $this->assertTrue($this->isPairChatWith($mainShown, $main[0]));
+        $this->assertTrue($this->isPairChatWith($helperShown, $helper[0]));
+    }
+
+    private function isPairChatWith(string $inboxId, string $agentId): bool
+    {
+        $conversation = Conversation::query()->where('inbox_id', $inboxId)->sole();
+
+        return DirectChat::findFor($conversation)?->holds(new ActorIdentity(ActorType::Agent, $agentId)) === true;
     }
 
     /**

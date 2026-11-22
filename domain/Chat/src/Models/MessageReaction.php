@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Models;
 
 use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
 use App\Contracts\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
@@ -14,8 +15,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * One emoji a user or agent reacted with to one message in a chat, theirs alone: reacting again with the same emoji
- * takes it back.
+ * One emoji a user or agent reacted with to one message in a chat, theirs alone.
  *
  * @property string $id
  * @property string $actor_type
@@ -30,6 +30,7 @@ final class MessageReaction extends Model implements ReadableModel
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
+    use Linkable;
     use PlacedInConversation;
 
     /**
@@ -42,48 +43,55 @@ final class MessageReaction extends Model implements ReadableModel
     /**
      * The reactions to these messages, oldest first, at most the read limit.
      *
-     * @param  list<string>  $messageIds
+     * @param  list<string>  $ids
      * @return list<self>
      */
-    public static function toMessages(array $messageIds): array
+    public static function toMessages(array $ids): array
     {
-        if ($messageIds === []) {
+        if ($ids === []) {
             return [];
         }
 
         return array_values(self::query()
-            ->whereIn('message_id', $messageIds)
+            ->whereIn('message_id', $ids)
             ->oldest()
             ->readUpTo(self::READ_LIMIT)
             ->get()
             ->all());
     }
 
-    // ----------[ Mutations ]----------
-
     /**
-     * Adds the owner's reaction with this emoji, or takes it back when the owner already reacted with it; answers
-     * whether it is there now.
+     * The owner's reaction with this emoji to the message, when it reacted with it.
      */
-    public static function toggleFor(ActorIdentity $owner, string $inboxId, string $messageId, string $emoji): bool
+    public static function findFor(ActorIdentity $owner, string $inboxId, string $messageId, string $emoji): self|null
     {
-        $existing = self::query()
+        return self::query()
             ->ownedBy($owner)
             ->inConversation($inboxId)
             ->where('message_id', $messageId)
             ->where('emoji', $emoji)
             ->first();
+    }
 
-        if ($existing !== null) {
-            $existing->delete();
+    // ----------[ Mutations ]----------
 
-            return false;
-        }
-
+    /**
+     * The owner's new reaction with this emoji to the message.
+     */
+    public static function create(ActorIdentity $owner, string $inboxId, string $messageId, string $emoji): self
+    {
         $reaction = new self(['inbox_id' => $inboxId, 'message_id' => $messageId, 'emoji' => $emoji]);
         $reaction->belongTo($owner);
         $reaction->save();
 
-        return true;
+        return $reaction;
+    }
+
+    /**
+     * Takes this reaction back.
+     */
+    public function withdraw(): void
+    {
+        $this->delete();
     }
 }

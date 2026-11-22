@@ -23,11 +23,17 @@ final readonly class ToggleReactionHandler extends ChatCommandHandler
     {
         $this->readable->requireIn($command->inboxId, $command->messageId);
 
-        return MessageReaction::toggleFor(
-            ActorIdentity::of($command->dispatchedBy()),
-            $command->inboxId,
-            $command->messageId,
-            $command->emoji,
-        );
+        $owner = ActorIdentity::of($command->dispatchedBy());
+        $existing = MessageReaction::findFor($owner, $command->inboxId, $command->messageId, $command->emoji);
+
+        if ($existing !== null) {
+            $existing->withdraw();
+
+            return false;
+        }
+
+        MessageReaction::create($owner, $command->inboxId, $command->messageId, $command->emoji);
+
+        return true;
     }
 }
