@@ -212,14 +212,14 @@ final class AgentRuntime extends Model implements ReadableModel
     /**
      * The driver key of each session's runtime, keyed by session; a session that opened no runtime is left out.
      *
-     * @param  list<string>  $sessionIds
+     * @param  list<string>  $ids
      * @return array<string, string>
      */
-    public static function driverKeysOfSessions(array $sessionIds): array
+    public static function driverKeysOfSessions(array $ids): array
     {
         return self::query()
-            ->whereIn('agent_session_id', $sessionIds)
-            ->limit(count($sessionIds))
+            ->whereIn('agent_session_id', $ids)
+            ->limit(count($ids))
             ->pluck('driver_key', 'agent_session_id')
             ->map(fn (mixed $key) => (string) $key)
             ->all();

@@ -166,6 +166,13 @@ final class StartRefusalCopyTest extends TestCase
                 'Start the agent again',
                 'Start the agent again',
             ],
+            'pinned-build-missing' => [
+                HostRefusal::PinnedBuildMissing,
+                HostRefusal::PinnedBuildMissing->explanation(),
+                StartRemedyType::OperatorInstruction,
+                'Restore the pinned build on the host, or end the session and start a new one',
+                'Ask your host operator to restore the pinned build on the host, or end the session and start a new one.',
+            ],
             'conversation-missing' => [
                 ResumeRefusal::ConversationMissing,
                 'This conversation is unavailable to resume.',
