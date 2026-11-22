@@ -13,8 +13,9 @@ import Icon from './Icon.vue';
  * item left takes the focus; when none is left, the menu closes and the button takes it. The menu enters over 180ms with
  * a 4px rise, and without motion under reduced motion.
  */
-withDefaults(defineProps<{ label: string; align?: 'left' | 'right'; triggerClass?: string }>(), {
+withDefaults(defineProps<{ label: string; align?: 'left' | 'right'; triggerClass?: string; disabled?: boolean }>(), {
     align: 'right',
+    disabled: false,
     triggerClass:
         'size-7 justify-center rounded-button text-text-3 hover:bg-hover hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text',
 });
@@ -96,7 +97,8 @@ defineExpose({ open: () => openAt('first') });
             :aria-controls="panelId"
             :aria-label="label"
             :title="label"
-            class="inline-flex items-center transition-colors duration-(--duration-hover) motion-reduce:transition-none"
+            :disabled="disabled"
+            class="inline-flex items-center transition-colors duration-(--duration-hover) motion-reduce:transition-none disabled:cursor-default disabled:opacity-45"
             :class="triggerClass"
             @click="toggleFromButton"
             @keydown.down.prevent="openAt('first')"
