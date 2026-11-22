@@ -27,6 +27,8 @@ from journal.support.time_source import TimeSource
 FIRST_PROFILE = "journal-medior"
 # a worker in one of these states holds no task any more
 LET_GO = (WorkerState.MERGED, WorkerState.RELEASED)
+# a worker in one of these states is at work, so a task in its queue stays there unless the project allows otherwise
+RUNNING = (WorkerState.DISPATCHED, WorkerState.READY, WorkerState.CLOCKING_OUT)
 
 
 class AutoDispatch(Job):
@@ -69,6 +71,7 @@ class AutoDispatch(Job):
         so they go out to workers of their own at the next round: on the hosted journal four open tasks sat behind two busy
         workers while 18 of 30 places stood free (19 Nov)."""
         taken, later = 0, self.plans.later_phase_task_ids()
+        running_allowed = self.settings.option(WorkersOptions.AUTO_DISPATCH_UNQUEUE_RUNNING)
         for task in self.tasks.open_delegated():
             if task.row_id in later:
                 continue
@@ -77,9 +80,20 @@ class AutoDispatch(Job):
             holders = self.tasks.holders(task)
             if not holders or not all(self.holds(holder) for holder in holders) or self.tasks.open_waits(task):
                 continue
+            if not running_allowed and any(self.runs(holder) for holder in holders):
+                continue
             if self.tasks.unqueued_task(task, Actor.system()):
                 self.logs.save(TaskLog.build(task, "taken out of a busy worker's queue so a worker of its own takes it", self.time_source.seconds()), Actor.system())
                 taken += 1
+
+    def runs(self, holder: Ref) -> bool:
+        """Whether the holder is a worker at work."""
+        if holder.type != Worker.table():
+            return False
+        try:
+            return self.workers.find(holder.id).state in RUNNING
+        except MissingRow:
+            return False
 
     def holds(self, holder: Ref) -> bool:
         if holder.type != Worker.table():

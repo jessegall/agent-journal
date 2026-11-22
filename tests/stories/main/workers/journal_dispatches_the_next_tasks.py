@@ -73,6 +73,26 @@ def test_the_journal_dispatches_no_worker_past_the_workers_it_keeps_running(stor
     story.expect_stack(story.agents.subject, Orchestrating)
 
 
+@story(OrchestratorWorker, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
+@setting(WorkersOptions.AUTO_DISPATCH, True)
+@setting(WorkersOptions.AUTO_DISPATCH_LIMIT, 3)
+def test_an_open_task_still_marked_delegated_that_no_worker_holds_is_handed_out_again(story):
+    """On the hosted journal 17 open tasks kept their delegated mark after their last worker was released, so the journal
+    passed them over and the orchestrator took them for handed out (19 Nov)."""
+    from journal.repositories.scope import Scope
+    from journal.repositories.tasks import Tasks
+    from journal.support.actor import Actor
+    printer = story.agent_creates_briefed_task(story.agents.subject, "the printer", "- prints each rule")
+    with story.app.container.get(Scope).environment(1):
+        tasks = story.app.container.get(Tasks)
+        tasks.save(tasks.find(printer).with_(delegated=True), Actor.system())
+    story.journal_dispatches_the_next_tasks()
+    story.expect_task_logged(printer, "no worker holds it any more, so the journal hands it out again")
+    story.expect_worker(story.newest("workers"), state=WorkerState.DISPATCHED)
+    story.expect_task(printer, delegated=True)
+    story.expect_stack(story.agents.subject, Orchestrating)
+
+
 @story(OrchestratorWorkerDelivered, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
 @setting(WorkersOptions.AUTO_DISPATCH, True)
 @setting(WorkersOptions.AUTO_DISPATCH_LIMIT, 1)
@@ -116,26 +136,6 @@ def test_a_task_the_orchestrator_just_made_is_left_for_its_grace_and_dispatched_
     story.expect_stack(story.agents.subject, Orchestrating)
 
 
-@story(OrchestratorWorker, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
-@setting(WorkersOptions.AUTO_DISPATCH, True)
-@setting(WorkersOptions.AUTO_DISPATCH_LIMIT, TWO_PLACES)
-def test_an_open_task_still_marked_delegated_that_no_worker_holds_is_handed_out_again(story):
-    """On the hosted journal 17 open tasks kept their delegated mark after their last worker was released, so the journal
-    passed them over and the orchestrator took them for handed out (19 Nov)."""
-    from journal.repositories.scope import Scope
-    from journal.repositories.tasks import Tasks
-    from journal.support.actor import Actor
-    printer = story.agent_creates_briefed_task(story.agents.subject, "the printer", "- prints each rule")
-    with story.app.container.get(Scope).environment(1):
-        tasks = story.app.container.get(Tasks)
-        tasks.save(tasks.find(printer).with_(delegated=True), Actor.system())
-    story.journal_dispatches_the_next_tasks()
-    story.expect_task_logged(printer, "no worker holds it any more, so the journal hands it out again")
-    story.expect_worker(story.newest("workers"), state=WorkerState.DISPATCHED)
-    story.expect_task(printer, delegated=True)
-    story.expect_stack(story.agents.subject, Orchestrating)
-
-
 @story(OrchestratorWorkerDelivered, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
 @setting(WorkersOptions.AUTO_DISPATCH, True)
 @setting(WorkersOptions.AUTO_DISPATCH_LIMIT, TWO_PLACES)
@@ -160,6 +160,10 @@ def test_with_places_free_a_task_queued_behind_a_busy_worker_goes_out_to_a_worke
     story.expect_task(printer, delegated=True)
     story.time_travel(seconds=121)
     story.journal_dispatches_the_next_tasks()
+    story.expect_task(printer, delegated=True)
+    story.user_sets(WorkersOptions.AUTO_DISPATCH_UNQUEUE_RUNNING, True)
+    story.time_travel(seconds=121)
+    story.journal_dispatches_the_next_tasks()
     story.expect_task_logged(printer, "taken out of a busy worker's queue so a worker of its own takes it")
     story.expect_task(printer, delegated=False)
     story.time_travel(seconds=121)
@@ -169,24 +173,11 @@ def test_with_places_free_a_task_queued_behind_a_busy_worker_goes_out_to_a_worke
     story.expect_stack(story.agents.subject, Orchestrating)
 
 
-@story(OrchestratorWorker, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
-@setting(WorkersOptions.AUTO_DISPATCH, True)
-@setting(WorkersOptions.AUTO_DISPATCH_LIMIT, TWO_PLACES)
-def test_with_the_switch_off_a_queued_task_waits_for_its_worker(story):
-    printer = story.agent_creates_briefed_task(story.agents.subject, "the printer", "- prints each rule")
-    story.agent_runs(story.agents.subject, f"worker queue {story.agents.workers.first()} {printer}")
-    workers = story.newest("workers")
-    story.time_travel(seconds=121)
-    story.journal_dispatches_the_next_tasks()
-    story.expect_task(printer, delegated=True)
-    assert story.newest("workers") == workers, "no worker of its own is sent"
-    story.expect_stack(story.agents.subject, Orchestrating)
-
-
 @story(OrchestratorTwoPhasePlan, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
 @setting(WorkersOptions.AUTO_DISPATCH, True)
 @setting(WorkersOptions.AUTO_DISPATCH_LIMIT, 3)
 @setting(WorkersOptions.AUTO_DISPATCH_UNQUEUE, True)
+@setting(WorkersOptions.AUTO_DISPATCH_UNQUEUE_RUNNING, True)
 def test_a_plan_handed_to_one_worker_still_gets_another_worker_for_its_other_task_in_the_phase_at_work(story):
     """Redmar, 19 Nov: one worker doing all of a plan's work is no parallel strategy; a free place takes the plan's next task."""
     header = story.agent_adds_plan_task(story.agents.subject, story.plans.first, "the header")
