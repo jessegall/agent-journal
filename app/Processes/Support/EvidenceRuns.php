@@ -11,6 +11,7 @@ use App\Processes\Contracts\CommandPermissionResolver;
 use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Enums\ParseOutcome;
 use App\Processes\Enums\RunMode;
+use App\Processes\Enums\RunRequestIntent;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\EvidencePermitRefused;
 use App\Processes\Exceptions\PhaseTimingRefused;
@@ -125,6 +126,7 @@ final readonly class EvidenceRuns
             'evidence-permit',
             $permit->working_folder,
             $plan,
+            RunRequestIntent::ScheduledCheck,
         ));
 
         $permit->consume($requestId, $run);

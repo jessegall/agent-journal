@@ -8,6 +8,7 @@ use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyDefinition;
 use App\Agents\Contracts\MergeAdmission;
 use App\Autoload\Support\FolderClasses;
+use App\Communication\Contracts\NotificationTargets;
 use App\Engine\Support\EngineListenerSet;
 use App\Links\Support\LinkTypeRegistry;
 use App\Operations\Enums\AccessType;
@@ -25,6 +26,7 @@ use App\Supervision\Models\SupervisorLink;
 use App\Supervision\Policies\AskPolicy;
 use App\Supervision\Policies\SupervisorPolicy;
 use App\Supervision\Readers\AskRecords;
+use App\Supervision\Resolvers\MergeAskNotificationTarget;
 use App\Supervision\Support\AdvanceDueAsksOnTick;
 use App\Supervision\Support\AskTypeRegistry;
 use App\Supervision\Support\CurrentAskAdmission;
@@ -64,7 +66,9 @@ final class SupervisionServiceProvider extends ServiceProvider
         AskTypeRegistry $types,
         Repository $config,
         EngineListenerSet $engineListeners,
+        NotificationTargets $notificationTargets,
     ): void {
+        $notificationTargets->register(MergeAskNotificationTarget::KEY, MergeAskNotificationTarget::class);
         $engineListeners->add(AdvanceDueAsksOnTick::class);
         $engineListeners->add(HandOffCodeReviewsOnTick::class);
         $engineListeners->add(SettleMergeOutcomesOnTick::class);

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import type { MessageView } from '@kit/CoreTypes';
 import type { ConversationIntent } from './composables/useConversationIntents';
 import type { RecoveryEntry } from './composables/useMessageDrafts';
@@ -16,6 +17,8 @@ const props = defineProps<{
     pending: ConversationIntent[];
     refused: { entry: RecoveryEntry; reason: string }[];
     ownInboxId: string;
+    // The address that opens one question passively, as a notification opens it.
+    questionUrl: (messageId: string) => string;
 }>();
 
 const emit = defineEmits<{
@@ -81,6 +84,9 @@ function stateOf(message: MessageView): string | null {
                         <button type="button" class="underline" @click="emit('reply', message)">
                             Reply
                         </button>
+                        <Link :href="questionUrl(message.id)" class="underline" preserve-scroll>
+                            Open question
+                        </Link>
                     </template>
                 </span>
             </div>

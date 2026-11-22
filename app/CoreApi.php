@@ -537,6 +537,9 @@ use App\Communication\Contracts\InboxProvider;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Contracts\MessageCommand;
+use App\Communication\Contracts\Notifications;
+use App\Communication\Contracts\NotificationTargetResolver;
+use App\Communication\Contracts\NotificationTargets;
 use App\Communication\Data\AgentInbox;
 use App\Communication\Data\AgentInboxCounts;
 use App\Communication\Data\AgentMessageCard;
@@ -549,10 +552,13 @@ use App\Communication\Data\MessageReadBatch;
 use App\Communication\Data\MessageReader;
 use App\Communication\Data\MessageReadResult;
 use App\Communication\Data\MessageView;
+use App\Communication\Data\NotificationLink;
+use App\Communication\Data\NotificationTarget;
 use App\Communication\Data\WakeStatus;
 use App\Communication\Enums\AgentInboxState;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\MessageState;
+use App\Communication\Enums\NotificationSourceType;
 use App\Communication\Events\MessageAnswered;
 use App\Communication\Events\MessageAnswerRequired;
 use App\Communication\Events\MessageClaimReleased;
@@ -1526,6 +1532,9 @@ final class CoreApi
                 ActiveActorCounter::class,
                 UserPresences::class,
                 ConversationResolver::class,
+                Notifications::class,
+                NotificationTargets::class,
+                NotificationTargetResolver::class,
                 CommentResolver::class,
                 ShellCommandParser::class,
                 CommandClassifier::class,
@@ -1872,6 +1881,9 @@ final class CoreApi
                 DismissalType::class,
                 WakeStatus::class,
                 MessageState::class,
+                NotificationTarget::class,
+                NotificationLink::class,
+                NotificationSourceType::class,
                 CommentDetails::class,
                 RecordCommentView::class,
                 TextCommentView::class,

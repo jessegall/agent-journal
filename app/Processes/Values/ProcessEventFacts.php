@@ -61,4 +61,9 @@ final readonly class ProcessEventFacts
     {
         return new self('run_stopped', ['reason' => $reason]);
     }
+
+    public static function runFinished(int $rootStatus): self
+    {
+        return new self('run_finished', ['root_status' => $rootStatus]);
+    }
 }

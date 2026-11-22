@@ -2,7 +2,10 @@ import { onMounted, ref } from 'vue';
 import { keepStored, readStored } from '@/composables/browserStorage';
 
 const STORAGE_KEY = 'sidebar-mini';
-const PHONE_WIDTH = '(max-width: 760px)';
+/**
+ * The width up to which the shell lays itself out for a phone.
+ */
+export const PHONE_WIDTH = '(max-width: 760px)';
 
 const isMini = ref(false);
 const isOpenOnPhone = ref(false);

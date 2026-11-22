@@ -46,6 +46,7 @@ final class RunEvent extends Data
             RunEventType::PartStopped => $events->stopped($part, (string) $this->reason),
             RunEventType::PartLost => $events->lost($part),
             RunEventType::RunStopped => $events->runStopped((string) $this->reason),
+            RunEventType::RunFinished => $events->runFinished((int) $this->code),
             RunEventType::Heartbeat => null,
         };
     }

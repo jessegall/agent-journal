@@ -12,4 +12,7 @@ return [
     'Message::create',
     'Message::dismissBy',
     'Message::requireAnswer',
+    'NotificationScope::addUnread',
+    'NotificationScope::recordChange',
+    'NotificationScope::removeUnread',
 ];

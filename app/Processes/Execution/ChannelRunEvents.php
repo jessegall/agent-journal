@@ -111,6 +111,19 @@ final class ChannelRunEvents implements RunEvents
     }
 
     /**
+     * Spools the root status before anything is reported locally, signed with the run's event key like every event,
+     * and sends it with the rest; it stays spooled until the journal accepted it.
+     */
+    public function runFinished(int $rootStatus): void
+    {
+        $this->append('events.jsonl', RunEvent::from([
+            'sequence' => ++$this->sequence,
+            'type' => RunEventType::RunFinished,
+            'code' => $rootStatus,
+        ]));
+    }
+
+    /**
      * Sends a heartbeat when the last one is older than the heartbeat interval.
      */
     public function beat(): void

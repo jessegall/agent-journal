@@ -8,7 +8,13 @@ use App\Http\Controllers\Communication\AskMessageController;
 use App\Http\Controllers\Communication\DismissMessageController;
 use App\Http\Controllers\Communication\InboxCountsController;
 use App\Http\Controllers\Communication\InboxHistoryController;
+use App\Http\Controllers\Communication\MarkAllNotificationsReadController;
+use App\Http\Controllers\Communication\MarkNotificationReadController;
+use App\Http\Controllers\Communication\MarkQuestionNotificationReadController;
+use App\Http\Controllers\Communication\MarkTargetNotificationReadController;
 use App\Http\Controllers\Communication\MessagesBetweenController;
+use App\Http\Controllers\Communication\NotificationChangesController;
+use App\Http\Controllers\Communication\NotificationPageController;
 use App\Http\Controllers\Communication\ReadMessagesController;
 use App\Http\Controllers\Communication\ReleaseMessageClaimController;
 use App\Http\Controllers\Communication\ReplyToMessageController;
@@ -61,4 +67,12 @@ Route::middleware(['web', 'auth', 'journal.user'])
         Route::get('history', InboxHistoryController::class)->name('history');
         Route::get('counts', InboxCountsController::class)->name('counts');
         Route::get('wake-status', WakeStatusController::class)->name('wake-status');
+        Route::get('notifications', NotificationPageController::class)->name('notifications');
+        Route::get('notifications/changes', NotificationChangesController::class)->name('notifications.changes');
+        Route::post('notifications/read', MarkNotificationReadController::class)->name('notifications.read');
+        Route::post('notifications/read-all', MarkAllNotificationsReadController::class)->name('notifications.read-all');
+        Route::post('notifications/read-question', MarkQuestionNotificationReadController::class)
+            ->name('notifications.read-question');
+        Route::post('notifications/read-target', MarkTargetNotificationReadController::class)
+            ->name('notifications.read-target');
     });

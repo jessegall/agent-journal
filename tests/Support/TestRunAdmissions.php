@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Processes\Enums\RunMode;
+use App\Processes\Enums\RunRequestIntent;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\StepType;
 use App\Processes\Values\ExecutionPlan;
@@ -22,6 +23,8 @@ final class TestRunAdmissions
         string|null $line = null,
         ExecutionPlan|null $plan = null,
         string $workingFolder = '',
+        RunRequestIntent $intent = RunRequestIntent::ExplicitRequest,
+        string|null $outcomeUserId = null,
     ): RunAdmission {
         return new RunAdmission(
             $admissionId ?? bin2hex(random_bytes(8)),
@@ -36,6 +39,8 @@ final class TestRunAdmissions
                 'root' => ['type' => StepType::Sequence, 'node' => 0, 'context' => 0],
                 'tree_digest' => str_repeat('b', 64),
             ]),
+            $intent,
+            $outcomeUserId,
         );
     }
 }

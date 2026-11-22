@@ -7,6 +7,7 @@ namespace App\Agents\Resolvers;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\StartRecordResolver;
 use App\Agents\Exceptions\StartRecordMissing;
 use App\Agents\Models\Agent;
@@ -14,6 +15,8 @@ use App\Agents\Models\StartRecord;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\StartRecordDetails;
 use App\Operations\Enums\AccessType;
+use PhpOption\None;
+use PhpOption\Option;
 
 /**
  * Reads start records for the actor of this request: an agent sees only the starts of itself, and a receipt is read
@@ -23,6 +26,7 @@ final readonly class StartRecords implements StartRecordResolver
 {
     public function __construct(
         private CurrentActor $actors,
+        private CurrentSession $sessions,
         private CurrentAuthorizer $authorizer,
     ) {}
 
@@ -55,6 +59,15 @@ final readonly class StartRecords implements StartRecordResolver
         )->get()
             ->map(fn (StartRecord $record) => self::detailsOf($record))
             ->all());
+    }
+
+    public function currentOwnerStart(): Option
+    {
+        if (! $this->sessions->hasSession()) {
+            return None::create();
+        }
+
+        return StartRecord::ownerStartOf($this->sessions->sessionId())->map(self::detailsOf(...));
     }
 
     private function maintainsAgents(): bool

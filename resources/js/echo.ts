@@ -13,12 +13,14 @@ export type UserConnection = {
 };
 
 /**
- * What the connection tells its owner: a page change, a protected view to clear, the private channel signed in to
+ * What the connection tells its owner: a page change, a protected view to clear, notifications to read again, the
+ * private channel signed in to
  * (first and after every reconnect, when changes may have been missed), the transport lost, and a refused sign-in.
  */
 export type LiveHandlers = {
     onChange: () => void;
     onProtectedViewInvalidated: () => void;
+    onNotificationsChanged: () => void;
     onSubscribed: () => void;
     onLost: () => void;
     onRefused: () => void;
@@ -62,7 +64,8 @@ export function connectUser(userId: string, handlers: LiveHandlers): UserConnect
             traceLive('signal received');
             handlers.onChange();
         })
-        .listen('.view.protected-invalidated', handlers.onProtectedViewInvalidated);
+        .listen('.view.protected-invalidated', handlers.onProtectedViewInvalidated)
+        .listen('.notifications.changed', handlers.onNotificationsChanged);
     echo.connector.pusher.connection.bind(
         'state_change',
         (states: { current: string }) => {

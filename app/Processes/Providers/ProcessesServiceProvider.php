@@ -6,6 +6,7 @@ namespace App\Processes\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyDefinition;
+use App\Communication\Contracts\NotificationTargets;
 use App\Docking\Sources\Contracts\DockRegistration;
 use App\Links\Support\LinkTypeRegistry;
 use App\Operations\Enums\AccessType;
@@ -59,6 +60,7 @@ use App\Processes\Models\RuleProposal;
 use App\Processes\Models\RuleRevision;
 use App\Processes\Policies\ProcessAdministrationPolicy;
 use App\Processes\Policies\ProcessPolicy;
+use App\Processes\Resolvers\RunNotificationTarget;
 use App\Processes\Rules\JournalClassifier;
 use App\Processes\Support\ActiveRules;
 use App\Processes\Support\CommandAliases;
@@ -119,8 +121,13 @@ final class ProcessesServiceProvider extends ServiceProvider
         ]));
     }
 
-    public function boot(LinkTypeRegistry $links, PolicyCatalogue $policies, DockRegistration $docks): void
-    {
+    public function boot(
+        LinkTypeRegistry $links,
+        PolicyCatalogue $policies,
+        DockRegistration $docks,
+        NotificationTargets $notificationTargets,
+    ): void {
+        $notificationTargets->register(RunNotificationTarget::KEY, RunNotificationTarget::class);
         $docks->offerDockFor($docks->register(ProcessRun::DOCK_TYPE, ProcessRun::class, RunDocking::class));
         $docks->offerDockFor($docks->register(OutputDocking::DOCK_TYPE, DockedOutput::class, OutputDocking::class));
 

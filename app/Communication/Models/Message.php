@@ -198,6 +198,17 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         return self::query()->whereKey($id)->lockForUpdate()->firstOr(fn () => throw MessageMissing::forId($id));
     }
 
+    /**
+     * The ids of the messages sent to any inbox outside the given ones, as a query to read them by.
+     *
+     * @param  Builder<*>  $inboxIds
+     * @return Builder<self>
+     */
+    public static function idsOutsideInboxes(Builder $inboxIds): Builder
+    {
+        return self::query()->acrossInboxes()->whereNotIn('destination_inbox_id', $inboxIds)->select('id');
+    }
+
     // ----------[ Mutations ]----------
 
     /**

@@ -26,6 +26,7 @@ use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\RecordCommentsPartData;
 use Domain\Documents\Data\RecordLinksPartData;
 use Domain\Documents\Data\RecordSharePartData;
+use Domain\Documents\Data\ReportReceiptPartData;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Http\Requests\RecordPageRequest;
@@ -35,7 +36,8 @@ use Domain\Documents\Support\RecordPageReads;
 /**
  * A report's page as a publication: its title, label and abstract, then the tab the window chose, read alone. Text is
  * the report's body, the public-comment notice and its comments; Links its linked records; Details its attention,
- * settlements, Settle and Share. It docks as the report it shows.
+ * settlements, Settle and Share. It docks as the report it shows, and once shown marks the reader's report-ready
+ * receipt of it read.
  */
 final readonly class ReportWindowResolver implements PageResolver
 {
@@ -57,7 +59,13 @@ final readonly class ReportWindowResolver implements PageResolver
 
         $page = PublicationPage::make(
             $report->title,
-            [LayoutPartData::text('label', $label, 'code')],
+            [
+                LayoutPartData::text('label', $label, 'code'),
+                LayoutPartData::native(
+                    'receipt',
+                    LayoutNativeData::of('documents/ReportReceipt', new ReportReceiptPartData((string) $number)),
+                ),
+            ],
             $report->abstract,
             fn () => LayoutBodyData::fromMarkdown($report->body),
             [

@@ -14,8 +14,9 @@ use App\Processes\Values\Run\FetchedAdmission;
 use App\Processes\Values\Run\SupervisedRun;
 
 /**
- * Runs the plan under the supervisor and reports every event over the signed channel; the report keeps the end of
- * the output and the exit status.
+ * Runs the plan under the supervisor and reports every event over the signed channel, the root status last, spooled
+ * before the local report so a lost connection only delays it; the report keeps the end of the output and the exit
+ * status.
  */
 final readonly class SuperviseRun implements Pipe
 {
@@ -41,6 +42,7 @@ final readonly class SuperviseRun implements Pipe
         );
 
         $outcome = $this->supervisor->run($events, $admission->plan(), $admission->context());
+        $events->runFinished($outcome->status);
         $events->flush();
         $preview = mb_substr($outcome->output, -self::PREVIEW_CHARACTER_LIMIT);
 
