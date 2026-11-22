@@ -2,6 +2,7 @@
 import { router } from '@inertiajs/vue3';
 import { ref, useId } from 'vue';
 import Field from '@/components/kit/Field.vue';
+import Input from '@/components/kit/Input.vue';
 import { useWindowQueryChange } from '@/framework/useWindowQuery';
 import type { LayoutFieldData, LayoutPartData } from '@/generated/types/core';
 
@@ -33,11 +34,23 @@ function apply(): void {
 
 <template>
     <form role="search" class="flex items-end gap-2" @submit.prevent="apply">
-        <Field
-            :id="fieldId"
-            v-model="value"
-            :label="part.text ?? ''"
-            :hint="part.detail ?? undefined"
-        />
+        <template v-if="part.style === 'search'">
+            <Input
+                :id="fieldId"
+                v-model="value"
+                type="search"
+                class="w-full @2xl:w-50"
+                :aria-label="part.text ?? ''"
+                :placeholder="part.text ?? ''"
+            />
+        </template>
+        <template v-else>
+            <Field
+                :id="fieldId"
+                v-model="value"
+                :label="part.text ?? ''"
+                :hint="part.detail ?? undefined"
+            />
+        </template>
     </form>
 </template>

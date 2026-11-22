@@ -118,17 +118,19 @@ function destinationOf(row: LayoutRowData): string | null {
             </dl>
         </template>
         <template #choices>
-            <ul class="flex flex-wrap gap-1">
+            <ul
+                class="flex flex-wrap gap-4 border-b border-line px-3 in-data-[layout-box=page-head]:border-0 in-data-[layout-box=page-head]:px-0"
+            >
                 <template v-for="row in shown" :key="row.key">
-                    <li>
+                    <li class="flex">
                         <Link
                             :href="windowQuery(row.query)"
                             preserve-scroll
                             :aria-current="row.isCurrent ? 'true' : undefined"
-                            class="block rounded-sm border border-line px-2 py-1 text-small hover:bg-hover focus-visible:outline-2 focus-visible:outline-brand"
+                            class="block py-[7px] text-badge tracking-[.03em] focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-focus"
                             :class="{
-                                'bg-sel text-text': row.isCurrent,
-                                'text-text-2': !row.isCurrent,
+                                'text-text shadow-[inset_0_-1px_0_var(--color-brand)]': row.isCurrent,
+                                'text-text-3 hover:text-text-2': !row.isCurrent,
                             }"
                             >{{ row.label }}</Link
                         >

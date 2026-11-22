@@ -158,6 +158,25 @@ const headTools = computed(() => props.part.children.filter((child) => !HEAD_LEA
                 </span>
             </SettingRow>
         </template>
+        <template #page>
+            <div data-layout-box="page" class="flex h-full min-h-0 flex-col">
+                <template v-for="child in part.children.slice(0, 1)" :key="child.key">
+                    <LayoutPart :part="child" />
+                </template>
+                <div class="flex min-h-0 flex-1 flex-col overflow-y-auto">
+                    <template v-for="child in part.children.slice(1)" :key="child.key">
+                        <LayoutPart :part="child" />
+                    </template>
+                </div>
+            </div>
+        </template>
+        <template #page-list>
+            <div data-layout-box="page-list" class="flex flex-col">
+                <template v-for="child in part.children" :key="child.key">
+                    <LayoutPart :part="child" />
+                </template>
+            </div>
+        </template>
         <template #page-head>
             <header
                 data-layout-box="page-head"

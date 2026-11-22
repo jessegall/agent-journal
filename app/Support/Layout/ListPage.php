@@ -137,7 +137,7 @@ final readonly class ListPage
         $parts = [...$this->filters, $this->content()];
 
         if (! $this->back instanceof LayoutBackData) {
-            return DeclaredLayoutData::of(LayoutPartData::box('list', 'stack', $this->header(), ...$parts));
+            return DeclaredLayoutData::of(LayoutPartData::box('list', 'page', $this->header(), ...$parts));
         }
 
         $split = $this->reader === []
@@ -146,12 +146,12 @@ final readonly class ListPage
 
         return DeclaredLayoutData::of(LayoutPartData::box(
             'index',
-            'stack',
+            'page',
             $this->header(),
             LayoutPartData::split(
                 'split',
                 $split,
-                LayoutPartData::box('list', 'stack', ...$parts),
+                LayoutPartData::box('list', 'page-list', ...$parts),
                 ...$this->readerParts(),
             ),
         ));

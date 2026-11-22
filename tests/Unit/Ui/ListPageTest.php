@@ -25,6 +25,16 @@ use Tests\TestCase;
  */
 final class ListPageTest extends TestCase
 {
+    public function test_a_page_fills_its_frame_and_its_list_column_stacks_without_gaps(): void
+    {
+        $alone = ListPage::make('Tasks', $this->rows(2), ListEmpty::informing('Empty'))->layout()->root;
+        $split = ListPage::make('Tasks', $this->rows(2), ListEmpty::informing('Empty'))
+            ->withReader(new LayoutBackData('/tasks', 'Tasks'))
+            ->layout()->root;
+
+        $this->assertSame(['page', 'page', 'page-list'], [$alone->style, $split->style, $split->children[1]->children[0]->style]);
+    }
+
     public function test_a_page_announces_a_total_only_when_it_is_supplied(): void
     {
         $without = ListPage::make('Tasks', $this->rows(2), ListEmpty::informing('Empty'))->layout()->root;
