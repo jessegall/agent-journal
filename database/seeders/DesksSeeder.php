@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Desks\Database\Seeders;
+namespace Database\Seeders;
 
 use App\Commands\InstallDesks\InstallDesksCommand;
 use App\Enums\CommandEntry;

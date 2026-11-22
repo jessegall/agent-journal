@@ -40,9 +40,7 @@ use App\Support\CommandRegistry;
 use App\Support\ReadPermit;
 use App\Support\Reflector;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use SplFileInfo;
+use Tests\Architecture\Support\FormerPaths;
 use Tests\TestCase;
 
 /**
@@ -119,7 +117,7 @@ final class SharingBoundaryTest extends TestCase
         $sharing = array_values(
             array_filter(
                 CoreCommands::commands(),
-                fn (string $command) => str_starts_with($command, 'App\\Sharing\\Commands\\'),
+                fn (string $command) => FormerPaths::classWasIn($command, ['app/Sharing/Commands/']),
             ),
         );
 
@@ -161,28 +159,22 @@ final class SharingBoundaryTest extends TestCase
     }
 
     /**
+     * The sharing files by the folders they had before plan 62 moved them to their roles.
+     *
      * @return list<string>
      */
     private function sharingFiles(): array
     {
-        $files = [];
-        $roots = [
-            app_path('Sharing'),
-            app_path('Http/Controllers/Sharing'),
-            app_path('Http/Requests/Sharing'),
-            app_path('Http/Data/Sharing'),
-            app_path('Http/Middleware/Sharing'),
-        ];
-
-        foreach (array_filter($roots, is_dir(...)) as $root) {
-            foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root)) as $file) {
-                if ($file instanceof SplFileInfo && $file->getExtension() === 'php') {
-                    $files[] = $file->getPathname();
-                }
-            }
-        }
-
-        return $files;
+        return array_map(
+            base_path(...),
+            FormerPaths::filesFrom([
+                'app/Sharing/',
+                'app/Http/Controllers/Sharing/',
+                'app/Http/Requests/Sharing/',
+                'app/Http/Data/Sharing/',
+                'app/Http/Middleware/Sharing/',
+            ]),
+        );
     }
 
     /**
@@ -190,10 +182,10 @@ final class SharingBoundaryTest extends TestCase
      */
     private function handlers(): array
     {
-        return array_map(
-            fn (string $file) => 'App\\Sharing\\Commands\\'.basename(dirname($file)).'\\'.basename($file, '.php'),
-            glob(app_path('Sharing/Commands/*/*Handler.php')) ?: [],
-        );
+        return array_values(array_filter(
+            $this->classesFrom('app/Sharing/Commands/'),
+            fn (string $class) => str_ends_with($class, 'Handler'),
+        ));
     }
 
     /**
@@ -201,9 +193,27 @@ final class SharingBoundaryTest extends TestCase
      */
     private function classesIn(string $folder): array
     {
+        return array_values(array_filter(
+            $this->classesFrom("app/Sharing/{$folder}/"),
+            fn (string $class) => ! str_contains(substr(FormerPaths::of(self::pathOf($class)), strlen("app/Sharing/{$folder}/")), '/'),
+        ));
+    }
+
+    /**
+     * The classes whose files were under the old folder.
+     *
+     * @return list<string>
+     */
+    private function classesFrom(string $prefix): array
+    {
         return array_map(
-            fn (string $file) => 'App\\Sharing\\'.$folder.'\\'.basename($file, '.php'),
-            glob(app_path("Sharing/{$folder}/*.php")) ?: [],
+            fn (string $path) => 'App\\'.str_replace('/', '\\', substr($path, 4, -4)),
+            FormerPaths::filesFrom([$prefix]),
         );
+    }
+
+    private static function pathOf(string $className): string
+    {
+        return 'app/'.str_replace('\\', '/', substr($className, 4)).'.php';
     }
 }

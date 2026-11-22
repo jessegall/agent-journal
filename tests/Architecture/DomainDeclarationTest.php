@@ -35,119 +35,9 @@ final class DomainDeclarationTest extends TestCase
         'Providers/AppServiceProvider.php',
     ];
 
-    /**
-     * The fixed files of the domain foundation at the root of App\Domain, relative to its folder; each domain is a
-     * folder beside them.
-     */
-    private const array SHARED_PLACE_FILES = [
-        'Support/Domain.php',
-        'Concerns/HasAssignables.php',
-        'Concerns/HasLinkRecords.php',
-        'Concerns/HasStates.php',
-        'Concerns/HasIncomingWork.php',
-        'Contracts/StateProvider.php',
-        'Contracts/IncomingWorkProvider.php',
-        'Contracts/AssignableContributor.php',
-        'Contracts/InternalAssignableContributor.php',
-        'Contracts/LinkRecordProvider.php',
-        'Contracts/DomainBootstrapper.php',
-        'Contracts/ScriptKeywordProvider.php',
-        'Contracts/ScriptObjectProvider.php',
-        'Bootstrappers/LoadMigrations.php',
-        'Bootstrappers/RegisterAssignables.php',
-        'Bootstrappers/RegisterLinkRecords.php',
-        'Bootstrappers/RegisterStates.php',
-        'Bootstrappers/RegisterIncomingWork.php',
-        'Bootstrappers/RegisterScriptDefinitions.php',
-        'Contracts/AssigneeContributor.php',
-        'Contracts/PageProvider.php',
-        'Contracts/NavigationProvider.php',
-        'Contracts/SectionProvider.php',
-        'Contracts/VisibilityCheck.php',
-        'Contracts/PageResolver.php',
-        'Contracts/SectionResolver.php',
-        'Contracts/CountResolver.php',
-        'Contracts/NavigationChildren.php',
-        'Contracts/UserInterfaceUpdater.php',
-        'Contracts/PageOption.php',
-        'Declarations/ActionRoute.php',
-        'Declarations/ChoiceOption.php',
-        'Declarations/DomainUi.php',
-        'Declarations/FloatSize.php',
-        'Declarations/NavigationItem.php',
-        'Declarations/Page.php',
-        'Declarations/ResolverDataClass.php',
-        'Declarations/ResolverDefinition.php',
-        'Declarations/RegisteredAction.php',
-        'Declarations/RegisteredNavigation.php',
-        'Declarations/RegisteredPage.php',
-        'Declarations/RegisteredSection.php',
-        'Declarations/RoutePath.php',
-        'Declarations/Section.php',
-        'Declarations/Slot.php',
-        'Declarations/SlotContext.php',
-        'Declarations/ToggleOption.php',
-        'Enums/ActionMethod.php',
-        'Enums/Icon.php',
-        'Enums/PageDestination.php',
-        'Enums/PageSkeleton.php',
-        'Enums/SlotContextType.php',
-        'Support/DomainEntry.php',
-        'Support/DomainRegistry.php',
-        'Support/AvailableListener.php',
-        'Support/FailureLoggingListener.php',
-        'Support/DomainStateType.php',
-        'Support/DomainTickableStateType.php',
-        'Support/DomainStatus.php',
-        'Support/DomainSwitches.php',
-        'Support/SettingsDomainAvailability.php',
-        'UiDeclarations.php',
-        'Providers/DomainServiceProvider.php',
-        'Providers/DomainEventServiceProvider.php',
-        'Pipes/CheckListenerPairs.php',
-        'Pipes/ExpandUiUpdaterListeners.php',
-        'Pipes/GateListenersByDomain.php',
-        'Pipes/SeparateRequiredListeners.php',
-        'Support/ListenerOwnership.php',
-        'Registration/ListenerPolicy.php',
-        'Support/StateListenerDeclarations.php',
-        'Support/GatedListeners.php',
-        'Support/ListenerDeclarations.php',
-        'Support/Exports.php',
-        'Exceptions/AlwaysOnDomainRequiresSwitchable.php',
-        'Exceptions/AmbiguousDomainRoot.php',
-        'Exceptions/DomainCycle.php',
-        'Exceptions/CapabilityWithoutTrait.php',
-        'Exceptions/DomainDeclarationError.php',
-        'Exceptions/DomainListedTwice.php',
-        'Exceptions/DomainNotFound.php',
-        'Exceptions/DomainRequiresItself.php',
-        'Exceptions/SkillConditionRefused.php',
-        'Exceptions/SkillDeclarationRefused.php',
-        'Exceptions/InvalidExports.php',
-        'Exceptions/InvalidListener.php',
-        'Exceptions/InvalidNavigationDeclaration.php',
-        'Exceptions/InvalidPageDeclaration.php',
-        'Exceptions/InvalidSectionDeclaration.php',
-        'Exceptions/NotADomain.php',
-        'Exceptions/RequiredDomainMissing.php',
-        'Exceptions/RequiredDomainTwice.php',
-        'Exceptions/UiComponentMissing.php',
-        'Exceptions/UiDeclarationMissing.php',
-        'Exceptions/UiKeyInvalid.php',
-        'Exceptions/UiKeyRepeated.php',
-        'Exceptions/UiPathInvalid.php',
-        'Exceptions/UiPathRepeated.php',
-        'Exceptions/UiResolverInvalid.php',
-        'Exceptions/UiRouteConflict.php',
-        'Exceptions/UiSlotMismatch.php',
-        'Exceptions/UiSlotMissing.php',
-    ];
-
     public function test_the_real_app_declares_everything_where_it_belongs(): void
     {
         $appFolder = $this->appFolder();
-        $sharedFolder = $appFolder.'/Domains';
         $starterKitFiles = array_map(fn (string $file) => "{$appFolder}/{$file}", self::STARTER_KIT_FILES);
         $rules = $this->rules($this->app->make(DomainRegistry::class));
         $files = DomainFiles::in(DomainFiles::domainCode());
@@ -157,7 +47,6 @@ final class DomainDeclarationTest extends TestCase
             ...$rules->filesOutsideDomains($files, [], []),
             ...$rules->starterKitDomainUses($starterKitFiles),
             ...$rules->namespacesOutsideDomains(),
-            ...$rules->extraSharedFiles($sharedFolder, self::SHARED_PLACE_FILES),
         ];
 
         $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));
@@ -207,16 +96,6 @@ final class DomainDeclarationTest extends TestCase
         $this->assertSame(
             ['declares namespace Tests\Fixtures\Declarations\Good, outside Tests\Fixtures\Declarations\Wrong'],
             $this->reasons($this->rules($this->registry())->namespacesOutsideDomains()),
-        );
-    }
-
-    public function test_the_shared_place_holds_only_its_fixed_files(): void
-    {
-        $violations = $this->rules($this->registry())->extraSharedFiles($this->fixture('Shared'), ['Fixed.php']);
-
-        $this->assertSame(
-            [$this->fixture('Shared/Exceptions/SharedHelper.php')],
-            array_map(fn (Violation $violation) => $violation->file, $violations),
         );
     }
 

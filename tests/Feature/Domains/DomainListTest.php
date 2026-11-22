@@ -37,9 +37,8 @@ final class DomainListTest extends TestCase
             $this->assertContains($folder, $paths);
         }
 
-        $this->assertContains(app_path('Hooks/Listeners'), $paths);
-
-        $this->assertNotContains(app_path('Listeners'), $paths);
+        $this->assertContains(app_path('Listeners'), $paths);
+        $this->assertContains(app_path('Mcp/Listeners'), $paths);
         $this->assertNotContains(app_path('Http/Listeners'), $paths);
     }
 

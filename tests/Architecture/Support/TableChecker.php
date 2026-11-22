@@ -128,10 +128,11 @@ final readonly class TableChecker
      */
     private function migrationNamesTwice(): array
     {
-        $folders = [
+        // Core's own migration folder is the root one, so it is read once.
+        $folders = array_values(array_unique([
             $this->rootMigrationFolder,
             ...array_merge(...array_map(fn (TableOwner $entry) => $entry->migrationFolders, $this->entries)),
-        ];
+        ]));
         $seen = [];
         $violations = [];
 
@@ -167,7 +168,8 @@ final readonly class TableChecker
         foreach (ScanCache::findings(new TableScan(), DomainFiles::in([$this->rootMigrationFolder])) as $use) {
             $owner = $this->owners[$use->table] ?? null;
 
-            if ($owner !== null && $use->type === TableType::Change) {
+            // Core's migrations are the root ones, so only a package's table changed from them is refused.
+            if ($owner !== null && $owner->name !== 'Core' && $use->type === TableType::Change) {
                 $violations[] = new Violation(
                     $use->file,
                     $use->line,

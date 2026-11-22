@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Numbers\Database\Seeders;
+namespace Database\Seeders;
 
 use App\Support\OutsideCommandAllowance;
 use Illuminate\Database\Seeder;

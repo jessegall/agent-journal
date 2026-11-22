@@ -32,7 +32,7 @@ final class SignedCallRulesTest extends TestCase
     /**
      * The folders that may name an agent or a session in their own calls, where the agent itself is the subject.
      */
-    private const array AGENT_FOLDERS = ['App\\Agents\\', 'App\\Hooks\\'];
+    private const array AGENT_FOLDERS = ['App\\Calls\\Agents\\', 'App\\Calls\\Hooks\\'];
 
     public function test_every_agent_route_is_a_declared_call(): void
     {
@@ -88,7 +88,7 @@ final class SignedCallRulesTest extends TestCase
 
     public function test_no_code_writes_an_agent_path_outside_the_routes_and_the_sender(): void
     {
-        $allowed = ['/Routes/', 'AgentRequests/Support/SignedCallSender.php', 'Mcp/Servers/JournalServer.php'];
+        $allowed = ['/routes/', 'app/Support/SignedCallSender.php', 'Mcp/Servers/JournalServer.php'];
         $found = [];
 
         foreach (DomainFiles::in([app_path(), ...DomainFiles::domainCode()]) as $file) {
@@ -151,8 +151,6 @@ final class SignedCallRulesTest extends TestCase
         $calls = [];
 
         $files = [
-            // An area's Calls folder until plan 62 phase 4 moves it to app/Calls/<Area>; remove the first glob then.
-            ...glob(app_path('*/Calls/*Call.php')) ?: [],
             ...glob(app_path('Calls/*/*Call.php')) ?: [],
             ...glob(base_path('domain/*/src/Calls/*Call.php')) ?: [],
         ];
@@ -178,10 +176,7 @@ final class SignedCallRulesTest extends TestCase
         $commands = [];
 
         $files = [
-            // An area's Console folder until plan 62 moves its adapters to Console/Commands; remove those globs then.
-            ...glob(app_path('*/Console/*Command.php')) ?: [],
             ...glob(app_path('Console/Commands/*Command.php')) ?: [],
-            ...glob(base_path('domain/*/src/Console/*Command.php')) ?: [],
             ...glob(base_path('domain/*/src/Console/Commands/*Command.php')) ?: [],
         ];
 

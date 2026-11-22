@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\DirectFileAccess;
+use Tests\Architecture\Support\FormerPaths;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -29,10 +30,11 @@ final class DirectFileAccessTest extends TestCase
 
     public function test_only_the_files_area_touches_the_disk(): void
     {
-        $found = DirectFileAccess::across(base_path())->outside('app/Files');
+        $found = DirectFileAccess::across(base_path());
 
-        // The Files primitives that already sit in app/Support by role touch the disk as app/Files does.
-        foreach (self::FILES_PRIMITIVES as $primitive) {
+        // The Files area's own files touch the disk: those plan 62 moved out of app/Files, and the primitives that
+        // already sat in app/Support by role.
+        foreach ([...FormerPaths::filesFrom(['app/Files/']), ...self::FILES_PRIMITIVES] as $primitive) {
             $found = $found->outside($primitive);
         }
 

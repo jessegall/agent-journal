@@ -39,7 +39,7 @@ final readonly class AssignmentWriteScan implements FileScan
 
     public function key(): string
     {
-        return 'assignment-writes-1';
+        return 'assignment-writes-2';
     }
 
     public function findingsIn(ParsedFile $file): array
@@ -76,7 +76,7 @@ final readonly class AssignmentWriteScan implements FileScan
 
     private static function isAssignmentType(Node $node): bool
     {
-        return $node instanceof Node\Name && str_starts_with($node->toString(), 'App\\Assignments\\')
+        return $node instanceof Node\Name && FormerPaths::classWasIn($node->toString(), ['app/Assignments/'])
             && ! $node->getAttribute('parent') instanceof Node\UseItem;
     }
 

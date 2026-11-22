@@ -45,7 +45,7 @@ final class GeneratedCallsTest extends TestCase
 
     public function test_a_check_fails_on_a_changed_file(): void
     {
-        $path = app_path('Client/Support/JournalClient.php');
+        $path = app_path('Support/JournalClient.php');
         $original = (string) file_get_contents($path);
         file_put_contents($path, $original.<<<'TEXT'
 

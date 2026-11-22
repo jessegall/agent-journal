@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Attributes\JournalRoute;
+use App\Calls\Processes\ProcessCalls;
 use App\Data\ExplainedNodeData;
 use App\Enums\JournalRouteType;
 use App\Enums\ShellDialect;
 use App\Exceptions\CommandStopped;
-use App\Calls\Processes\ProcessCalls;
 use Illuminate\Console\Command;
 
 /**

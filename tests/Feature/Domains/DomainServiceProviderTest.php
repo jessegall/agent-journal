@@ -91,7 +91,6 @@ final class DomainServiceProviderTest extends TestCase
 
         $this->assertSame($folders, array_values(array_intersect($paths, $folders)));
         $this->assertNotContains(app_path('Http/Listeners'), $paths);
-        $this->assertNotContains(app_path('Listeners'), $paths);
     }
 
     public function test_a_list_holding_a_class_that_is_no_domain_stops_the_app(): void

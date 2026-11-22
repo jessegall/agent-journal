@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
+use App\Calls\Processes\ProcessCalls;
 use App\Contracts\CommandClassifier;
 use App\Contracts\Files;
 use App\Enums\ActorType;
@@ -12,7 +13,6 @@ use App\Enums\ShellDialect;
 use App\Models\PartRun;
 use App\Models\ProcessEvent;
 use App\Models\ProcessRun;
-use App\Calls\Processes\ProcessCalls;
 use App\Support\ActorIdentity;
 use App\Support\Execution\ChannelRunEvents;
 use App\Support\ExecutionPlanner;

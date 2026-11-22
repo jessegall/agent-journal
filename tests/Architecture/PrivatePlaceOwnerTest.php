@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\DomainFiles;
+use Tests\Architecture\Support\FormerPaths;
 use Tests\Architecture\Support\PrivatePlaceScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -18,7 +19,7 @@ use Tests\TestCase;
 final class PrivatePlaceOwnerTest extends TestCase
 {
     /**
-     * The folders, from the project root, that may name each private place.
+     * The folders, from the project root, that may name each private place; a moved file counts by its former path.
      */
     private const array OWNERS = [
         'Accounts' => ['app/Profiles/', 'app/Hooks/'],
@@ -81,7 +82,7 @@ final class PrivatePlaceOwnerTest extends TestCase
             foreach ($found as $finding) {
                 $owners = [...self::OWNERS[$finding['place']], 'app/Files/'];
 
-                if (! array_any($owners, fn (string $owner) => str_starts_with($relative, $owner))) {
+                if (! FormerPaths::wasIn($relative, $owners)) {
                     $strangers[] = "{$relative}:{$finding['line']} names Place::{$finding['place']}";
                 }
             }

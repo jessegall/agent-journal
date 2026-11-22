@@ -147,36 +147,6 @@ final readonly class DeclarationRules
         return $violations;
     }
 
-    /**
-     * The domain foundation holds exactly its fixed files beside the domain folders, given relative to its folder.
-     *
-     * @param  list<string>  $fixedFiles
-     * @return list<Violation>
-     */
-    public function extraSharedFiles(string $sharedFolder, array $fixedFiles): array
-    {
-        $violations = [];
-
-        foreach (DomainFiles::allIn($sharedFolder) as $path) {
-            if ($this->isInADomain($path)) {
-                continue;
-            }
-
-            if (! in_array(substr($path, strlen($sharedFolder) + 1), $fixedFiles, true)) {
-                $violations[] = new Violation(
-                    $path,
-                    1,
-                    $path,
-                    'App\Domain',
-                    'App\Domain',
-                    ViolationType::SharedPlaceFile,
-                );
-            }
-        }
-
-        return $violations;
-    }
-
     private function isInADomain(string $path): bool
     {
         return array_any($this->entries, fn (DomainEntry $entry) => $entry->holdsFile($path));

@@ -15,7 +15,9 @@ declare(strict_types=1);
 
 use App\Enums\Place;
 use App\Exceptions\DepthTooDeep;
+use App\Support\ClosedFolders;
 use App\Support\CodeFiles;
+use App\Support\FileContents;
 use App\Support\FileWriter;
 use App\Support\FolderWalker;
 use App\Support\LocalFiles;
@@ -23,8 +25,6 @@ use App\Support\PathConfinement;
 use App\Support\PlaceRoots;
 use App\Values\Depth;
 use App\Values\FilePath;
-use App\Support\ClosedFolders;
-use App\Support\FileContents;
 use Illuminate\Config\Repository;
 use Illuminate\Filesystem\Filesystem;
 

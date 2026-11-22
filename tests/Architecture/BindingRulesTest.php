@@ -12,6 +12,7 @@ use App\Support\ActorStore;
 use App\Support\DomainRegistry;
 use App\Support\Exports;
 use App\Support\Registry\AssignmentRegistry;
+use App\Support\ShellParser;
 use Tests\Architecture\Support\BindingRules;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
@@ -110,9 +111,9 @@ final class BindingRulesTest extends TestCase
         ));
     }
 
-    public function test_cores_parser_comes_from_processes(): void
+    public function test_cores_parser_is_the_shell_parser(): void
     {
-        $this->assertStringStartsWith('App\Processes\\', $this->app->make(ShellCommandParser::class)::class);
+        $this->assertInstanceOf(ShellParser::class, $this->app->make(ShellCommandParser::class));
     }
 
     public function test_only_the_authentication_sites_name_the_actor_store_or_set_the_actor(): void

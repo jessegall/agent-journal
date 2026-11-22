@@ -6,12 +6,12 @@ namespace App\Console\Commands;
 
 use App\Attributes\JournalRoute;
 use App\Attributes\OutsideThePlaces;
+use App\Calls\Processes\ProcessCalls;
 use App\Console\Concerns\RunsCallPipelines;
 use App\Enums\CommandClass;
 use App\Enums\JournalRouteType;
 use App\Enums\OutputStream;
 use App\Enums\PlaceExemption;
-use App\Calls\Processes\ProcessCalls;
 use App\Values\CommandReport;
 use Illuminate\Console\Command;
 

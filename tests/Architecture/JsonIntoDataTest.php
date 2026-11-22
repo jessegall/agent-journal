@@ -7,6 +7,7 @@ namespace Tests\Architecture;
 use App\Support\Reflector;
 use Spatie\LaravelData\Data;
 use Tests\Architecture\Support\DomainFiles;
+use Tests\Architecture\Support\FormerPaths;
 use Tests\Architecture\Support\JsonDecodeScan;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -51,7 +52,8 @@ final class JsonIntoDataTest extends TestCase
         foreach (ScanCache::findingsInFolders(new JsonDecodeScan(), $folders) as $path => $decodes) {
             $relative = substr($path, strlen(base_path()) + 1);
 
-            if (str_starts_with($relative, 'app/Files/')) {
+            // The Files area decodes files as it reads them: its files plan 62 moved, and LocalFiles, moved before.
+            if (FormerPaths::wasIn($relative, ['app/Files/']) || $relative === 'app/Support/LocalFiles.php') {
                 continue;
             }
 

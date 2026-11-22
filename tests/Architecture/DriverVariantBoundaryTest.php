@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Symfony\Component\Finder\Finder;
+use Tests\Architecture\Support\FormerPaths;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -52,9 +53,7 @@ final class DriverVariantBoundaryTest extends TestCase
      */
     private static function mayNameVariant(string $path): bool
     {
-        return str_starts_with($path, 'app/Agents/')
-            || str_starts_with($path, 'app/Profiles/')
-            || str_starts_with($path, 'app/Drivers/')
+        return FormerPaths::wasIn($path, ['app/Agents/', 'app/Profiles/', 'app/Drivers/'])
             || in_array($path, self::ALLOWED, true);
     }
 }

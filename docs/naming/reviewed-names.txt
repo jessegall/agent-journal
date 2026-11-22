@@ -3262,6 +3262,7 @@ class	FolderWorkspace
 class	FollowingSequenceState
 class	FollowingSequenceStateFactory
 class	FollowingSequenceStateReference
+class	FormerPaths
 class	Frame
 class	FrameBaselineMissing
 class	FrameBaselines
@@ -7238,6 +7239,7 @@ constant	FileFunctionScan::ITERATORS
 constant	FlowGraphData::MERMAID_ESCAPES
 constant	FolderWorkspace::ROOT
 constant	FollowingSequenceStateReference::TYPE_KEY
+constant	FormerPaths::MAP
 constant	Frame::BUDGET_SECONDS
 constant	Frame::CANCELLED
 constant	Frame::INITIALIZE
@@ -10582,6 +10584,7 @@ method	BoundaryChecker::eventViolations()
 method	BoundaryChecker::isCheckedRegistrationSite()
 method	BoundaryChecker::isCoreEvent()
 method	BoundaryChecker::isDeclared()
+method	BoundaryChecker::isDomainFoundation()
 method	BoundaryChecker::isDomainName()
 method	BoundaryChecker::isFreeToUse()
 method	BoundaryChecker::isPrivateCoreName()
@@ -12615,7 +12618,6 @@ method	DeclarationInvalid::notJson()
 method	DeclarationInvalid::refusalCode()
 method	DeclarationInvalid::status()
 method	DeclarationRules::__construct()
-method	DeclarationRules::extraSharedFiles()
 method	DeclarationRules::filesOutsideDomains()
 method	DeclarationRules::isInADomain()
 method	DeclarationRules::liesIn()
@@ -14560,6 +14562,12 @@ method	FollowingSequenceStateFactory::sessionTransfer()
 method	FollowingSequenceStateFactory::stateClass()
 method	FollowingSequenceStateFactory::statesFor()
 method	FollowingSequenceStateReference::forRun()
+method	FormerPaths::classWasIn()
+method	FormerPaths::filesFrom()
+method	FormerPaths::of()
+method	FormerPaths::paths()
+method	FormerPaths::read()
+method	FormerPaths::wasIn()
 method	Frame::__construct()
 method	Frame::answer()
 method	Frame::answerEvent()
@@ -27102,7 +27110,6 @@ parameter	$firstRequest
 parameter	$firstRequestId
 parameter	$firstRound
 parameter	$fixed
-parameter	$fixedFiles
 parameter	$flag
 parameter	$flags
 parameter	$floatSize
@@ -28041,6 +28048,7 @@ parameter	$precision
 parameter	$predecessor
 parameter	$preferences
 parameter	$prefix
+parameter	$prefixes
 parameter	$preflight
 parameter	$preparation
 parameter	$prepared
@@ -28659,7 +28667,6 @@ parameter	$shareId
 parameter	$shareRecords
 parameter	$shareable
 parameter	$shared
-parameter	$sharedFolder
 parameter	$sharedFolders
 parameter	$shares
 parameter	$sharing
@@ -32582,6 +32589,7 @@ property	FolderWalker::$roots
 property	FolderWorkspace::$folder
 property	FollowingSequenceState::$sequence
 property	FollowingSequenceStateFactory::$runs
+property	FormerPaths::$paths
 property	Frame::$admittedAt
 property	Frame::$bottom
 property	Frame::$bytes

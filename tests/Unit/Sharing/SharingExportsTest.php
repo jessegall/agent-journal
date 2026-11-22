@@ -25,7 +25,7 @@ final class SharingExportsTest extends TestCase
 
         foreach (glob(dirname(__DIR__, 2).'/Fixtures/Domains/Pamphlets/*.php') ?: [] as $file) {
             preg_match_all(
-                '/^use (App\\\\(?:Sharing|Records)\\\\[A-Za-z\\\\]+);/m',
+                '/^use (App\\\\[A-Za-z\\\\]+);/m',
                 (string) file_get_contents($file),
                 $imports,
             );
