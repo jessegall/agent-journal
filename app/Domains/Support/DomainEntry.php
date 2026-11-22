@@ -53,6 +53,8 @@ use App\Skills\Contracts\SkillProvider;
 use App\Skills\Values\SkillConditionDefinition;
 use App\Skills\Values\SkillOwner;
 use App\Ui\Declarations\DomainUi;
+use App\Ui\Declarations\Menu;
+use App\Ui\Declarations\MenuItem;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Section;
@@ -390,12 +392,16 @@ final readonly class DomainEntry
      * @param  list<NavigationItem>  $navigation
      * @param  list<Section>  $sections
      * @param  list<SidebarGroup>  $sidebarGroups
+     * @param  list<Menu>  $menus
+     * @param  list<MenuItem>  $menuItems
      */
     public function declaring(
         array $pages = [],
         array $navigation = [],
         array $sections = [],
         array $sidebarGroups = [],
+        array $menus = [],
+        array $menuItems = [],
     ): DomainUi {
         return DomainUi::declaring(
             $this->name,
@@ -405,6 +411,8 @@ final readonly class DomainEntry
             $navigation,
             $sections,
             sidebarGroups: $sidebarGroups,
+            menus: $menus,
+            menuItems: $menuItems,
         );
     }
 

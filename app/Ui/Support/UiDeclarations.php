@@ -9,8 +9,12 @@ use App\Ui\Contracts\SlotSections;
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Data\SlotSectionData;
 use App\Ui\Declarations\DomainUi;
+use App\Ui\Declarations\Menu;
+use App\Ui\Declarations\MenuItem;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\RegisteredAction;
+use App\Ui\Declarations\RegisteredMenu;
+use App\Ui\Declarations\RegisteredMenuItem;
 use App\Ui\Declarations\RegisteredNavigation;
 use App\Ui\Declarations\RegisteredPage;
 use App\Ui\Declarations\RegisteredSection;
@@ -37,6 +41,8 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
      * @param  list<RegisteredNavigation>  $navigation  the root items
      * @param  list<DomainUi>  $owners  every domain, also one that declares nothing
      * @param  array<string, RegisteredSidebarGroup>  $sidebarGroups  by full key
+     * @param  array<string, RegisteredMenu>  $menus  by full key
+     * @param  array<string, list<RegisteredMenuItem>>  $menuItems  the items of each menu, by the menu's full key
      */
     private function __construct(
         private array $pages,
@@ -45,6 +51,8 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
         private array $navigation,
         private array $owners,
         private array $sidebarGroups,
+        private array $menus,
+        private array $menuItems,
     ) {}
 
     /**
@@ -55,6 +63,7 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
         $pages = [];
         $slotHosts = [];
         $sidebarGroups = [];
+        $menus = [];
 
         foreach ($domains as $owner) {
             self::assertUniqueKeys($owner, 'page', array_map(fn ($page) => $page->key, $owner->pages));
@@ -67,6 +76,13 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
             foreach ($owner->sidebarGroups as $group) {
                 $registeredGroup = RegisteredSidebarGroup::of($owner, $group);
                 $sidebarGroups[$registeredGroup->key] = $registeredGroup;
+            }
+
+            self::assertUniqueKeys($owner, 'menu', array_map(fn (Menu $menu) => $menu->key, $owner->menus));
+
+            foreach ($owner->menus as $menu) {
+                $registeredMenu = RegisteredMenu::of($owner, $menu);
+                $menus[$registeredMenu->key] = $registeredMenu;
             }
 
             foreach ($owner->pages as $page) {
@@ -120,13 +136,16 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
             $navigation = [...$navigation, ...$roots];
         }
 
+        $actions = self::actionsOf($pages, $sections);
         $declarations = new self(
             $pages,
             $sections,
-            self::actionsOf($pages, $sections),
+            $actions,
             $navigation,
             $domains,
             $sidebarGroups,
+            $menus,
+            self::menuItemsOf($domains, $menus, $pages, $actions),
         );
         $declarations->refuseRepeatedRoutes();
         $declarations->refuseRepeatedPropNames();
@@ -199,6 +218,24 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
     public function navigation(): array
     {
         return $this->navigation;
+    }
+
+    /**
+     * The menu with the given full key, as checked at start-up.
+     */
+    public function menu(string $key): RegisteredMenu
+    {
+        return $this->menus[$key] ?? throw UiDeclarationMissing::for($key);
+    }
+
+    /**
+     * The items every installed domain puts in the menu with the given full key, in no particular order.
+     *
+     * @return list<RegisteredMenuItem>
+     */
+    public function menuItems(string $menuKey): array
+    {
+        return $this->menuItems[$menuKey] ?? [];
     }
 
     /**
@@ -315,6 +352,35 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
         }
 
         return $actions;
+    }
+
+    /**
+     * Every domain's menu items, checked against the menus, pages and actions, grouped by the menu each joins.
+     *
+     * @param  list<DomainUi>  $domains
+     * @param  array<string, RegisteredMenu>  $menus
+     * @param  array<string, RegisteredPage>  $pages
+     * @param  array<string, RegisteredAction>  $actions
+     * @return array<string, list<RegisteredMenuItem>>
+     */
+    private static function menuItemsOf(array $domains, array $menus, array $pages, array $actions): array
+    {
+        $items = [];
+
+        foreach ($domains as $owner) {
+            self::assertUniqueKeys(
+                $owner,
+                'menu item',
+                array_map(fn (MenuItem $item) => $item->key, $owner->menuItems),
+            );
+
+            foreach ($owner->menuItems as $item) {
+                $registered = RegisteredMenuItem::of($owner, $item, $menus, $pages, $actions);
+                $items[$registered->menu->key][] = $registered;
+            }
+        }
+
+        return $items;
     }
 
     /**

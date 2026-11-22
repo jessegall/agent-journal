@@ -17,6 +17,7 @@ use App\Links\Support\LinkTypeRegistry;
 use App\Operations\Enums\AccessType;
 use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Ui\Contracts\DeclaredPages;
+use App\Ui\Contracts\RecordMenus as RecordMenusContract;
 use App\Ui\Contracts\SlotSections;
 use App\Ui\Support\UiDeclarations;
 use App\Web\Console\GenerateUiManifest;
@@ -36,6 +37,7 @@ use App\Web\Support\OwnerAutoAssignmentAccess;
 use App\Web\Support\OwnerSettingsAccess;
 use App\Web\Support\PageChangeBroadcastLog;
 use App\Web\Support\ReaderRequests;
+use App\Web\Support\RecordMenus;
 use App\Web\Support\UiComponentFinder;
 use App\Web\Support\UiOwnerAvailability;
 use App\Web\Support\UserChannel;
@@ -67,6 +69,7 @@ final class WebServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(NavigationRecordsContract::class, NavigationRecords::class);
+        $this->app->bind(RecordMenusContract::class, RecordMenus::class);
         $this->app->bind(InstalledVersionContract::class, InstalledVersion::class);
         $this->app->bind(ReaderRequestsContract::class, ReaderRequests::class);
         $this->app->bind(WindowResultsContract::class, WindowResults::class);

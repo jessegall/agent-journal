@@ -4,21 +4,14 @@ import FormErrors from '@/components/kit/FormErrors.vue';
 import LayoutPart from '@/components/layout/LayoutPart.vue';
 import { formSendingHooks } from '@/composables/usePageChanges';
 import { useHostProp } from '@/framework/hostProp';
-import type { Method } from '@inertiajs/core';
-import type { ActionMethod, LayoutPartData } from '@/generated/types/core';
-import { provideLayoutForm, startingValues } from './layoutForm';
+import type { LayoutPartData } from '@/generated/types/core';
+import { inertiaMethods, provideLayoutForm, startingValues } from './layoutForm';
 
 // A form of a declared layout: it sends its fields and fixed values to its one registered action and asks only for the
 // prop of the window it is drawn in, keeping the window's state, so a refusal or a field error shows in place with the
 // input kept.
 const props = defineProps<{ part: LayoutPartData }>();
 const hostProp = useHostProp();
-const inertiaMethods: Record<ActionMethod, Method> = {
-    GET: 'get',
-    POST: 'post',
-    PATCH: 'patch',
-    DELETE: 'delete',
-};
 const form = useForm(startingValues(props.part));
 provideLayoutForm(form);
 

@@ -12,6 +12,7 @@ use App\Records\Contracts\RecordResolver;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Contracts\ShareStatusResolver;
 use App\Ui\Contracts\PageResolver;
+use App\Ui\Contracts\RecordMenus;
 use App\Ui\Enums\ActionMethod;
 use App\Ui\Layout\LayoutActionData;
 use App\Ui\Layout\LayoutBodyData;
@@ -32,6 +33,7 @@ use Domain\Documents\Data\RecordLinksPartData;
 use Domain\Documents\Data\RecordSharePartData;
 use Domain\Documents\Data\RecoverDraftPartData;
 use Domain\Documents\Data\RevisionCard;
+use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Enums\EditingState;
 use Domain\Documents\Http\Requests\RecordPageRequest;
@@ -40,7 +42,7 @@ use Domain\Documents\Support\RecordPageReads;
 use Spatie\LaravelData\Optional;
 
 /**
- * A document's page as a publication: its title, label, revision and abstract; under them the editing part, which
+ * A document's page as a publication: its title, label, revision, actions menu and abstract; under them the editing part, which
  * stays mounted whichever tab is shown, so a held draft survives a tab change; then the tab the window chose, read
  * alone. Text is the body, the public-comment notice and comments; Links its linked records; Details its editing and
  * attention, settlements, Settle and Share; History its revisions, each linking to its own page.
@@ -55,6 +57,7 @@ final readonly class DocumentWindowResolver implements PageResolver
         private RecordResolver $records,
         private ShareStatusResolver $shares,
         private RecordPageReads $reads,
+        private RecordMenus $menus,
     ) {}
 
     public function read(): DockablePublicationData
@@ -70,6 +73,10 @@ final readonly class DocumentWindowResolver implements PageResolver
             [
                 LayoutPartData::text('label', $label, 'code'),
                 LayoutPartData::text('revision', "revision {$document->revision}", 'muted'),
+                LayoutPartData::menu(
+                    'actions',
+                    $this->menus->onRecord(DocumentsDomain::DOCUMENT_ACTIONS, (string) $number),
+                ),
             ],
             $document->abstract,
             fn () => LayoutBodyData::fromMarkdown($document->body),
