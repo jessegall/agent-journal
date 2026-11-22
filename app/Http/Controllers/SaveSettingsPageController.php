@@ -16,11 +16,11 @@ use App\Data\SettingGroupData;
 use App\Data\StringChoiceValueData;
 use App\Enums\SettingType;
 use App\Http\Requests\Settings\SaveSettingsRequest;
+use App\Http\Responses\PageActionAnswers;
 use App\Support\SettingsValues;
 use App\Values\SettingReference;
 use App\Values\SettingsChange;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Routing\Redirector;
 
 /**
  * Saves the values changed on the settings page, one command each against the revision the page read, the next
@@ -32,7 +32,7 @@ final readonly class SaveSettingsPageController
         SaveSettingsRequest $request,
         SettingsCatalogue $catalogue,
         CommandBus $commands,
-        Redirector $redirect,
+        PageActionAnswers $answers,
     ): RedirectResponse {
         $revision = $request->expectedRevision();
         $sent = $request->values();
@@ -53,7 +53,7 @@ final readonly class SaveSettingsPageController
             }
         }
 
-        return $redirect->back(303);
+        return $answers->backWithNotice('Settings saved');
     }
 
     /**

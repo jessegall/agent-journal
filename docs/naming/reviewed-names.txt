@@ -4206,6 +4206,7 @@ class	PackageFileData
 class	PackageRules
 class	PackageScripts
 class	Page
+class	PageActionAnswers
 class	PageChangeBroadcastLog
 class	PageChanged
 class	PageController
@@ -7451,6 +7452,7 @@ constant	OutputVerdict::CODE
 constant	PackageScripts::HARMLESS_CALLBACKS
 constant	PackageScripts::PACKAGE_FILES
 constant	Page::LARGEST_LIMIT
+constant	PageActionAnswers::NOTICE
 constant	PageChanged::NAME
 constant	PathConfinement::LINK_LIMIT
 constant	PendingAgentMessage::DELIVERY_LIMIT
@@ -17554,6 +17556,9 @@ method	Page::onHome()
 method	Page::options()
 method	Page::slots()
 method	Page::visibleWhen()
+method	PageActionAnswers::__construct()
+method	PageActionAnswers::backWith()
+method	PageActionAnswers::backWithNotice()
 method	PageChangeBroadcastLog::__construct()
 method	PageChangeBroadcastLog::record()
 method	PageChanged::__construct()
@@ -29068,6 +29073,7 @@ parameter	$value	app/Concerns/BoundedReads.php
 parameter	$value	app/Data/DockDestinationOptionData.php
 parameter	$value	app/Exceptions/ArrangementUnknown.php
 parameter	$value	app/Exceptions/ProfileProposalRefused.php
+parameter	$value	app/Http/Responses/PageActionAnswers.php
 parameter	$value	app/Models/Support/ReadsForActor.php
 parameter	$value	app/Support/ArrangementSetting.php
 parameter	$value	app/Support/Cards/DestinationArgument.php
@@ -34349,6 +34355,7 @@ property	Page::$skeleton
 property	Page::$slots
 property	Page::$title
 property	Page::$visibility
+property	PageActionAnswers::$inertia
 property	PageChangeBroadcastLog::$log
 property	PageChanged::$userIds
 property	PageController::$declarations

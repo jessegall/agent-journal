@@ -6,10 +6,9 @@ namespace App\Http\Controllers\Profiles;
 
 use App\Contracts\CommandBus;
 use App\Http\Requests\Profiles\StartProfileMainRequest;
+use App\Http\Responses\PageActionAnswers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Routing\Redirector;
-use Inertia\ResponseFactory;
 
 /**
  * Starts a main agent from a profile that coordinates the journal's work. A page's form returns to that page with the
@@ -26,15 +25,12 @@ final readonly class StartProfileMainController
     public function __invoke(
         StartProfileMainRequest $request,
         CommandBus $commands,
-        ResponseFactory $inertia,
-        Redirector $redirect,
+        PageActionAnswers $answers,
     ): JsonResponse|RedirectResponse {
         $receipt = $commands->run($request->command());
 
         if (! $request->expectsJson()) {
-            $inertia->flash(self::STARTED_SESSION, $receipt->sessionId);
-
-            return $redirect->back(303);
+            return $answers->backWith(self::STARTED_SESSION, $receipt->sessionId);
         }
 
         return new JsonResponse([

@@ -6,12 +6,11 @@ namespace App\Http\Controllers;
 
 use App\Contracts\CommandBus;
 use App\Http\Requests\Connections\IssueProjectInvitationRequest;
+use App\Http\Responses\PageActionAnswers;
 use App\Support\InstallLine;
 use App\Values\InstallTicket;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Routing\Redirector;
-use Inertia\ResponseFactory;
 
 /**
  * Issues an install line through the bus and answers it once. The ticket is made here, so the command, its receipt
@@ -29,8 +28,7 @@ final readonly class IssueProjectInvitationController
         IssueProjectInvitationRequest $request,
         CommandBus $commands,
         InstallLine $line,
-        ResponseFactory $inertia,
-        Redirector $redirect,
+        PageActionAnswers $answers,
     ): JsonResponse|RedirectResponse {
         $ticket = InstallTicket::generate();
         $issued = $commands->run($request->commandFor($ticket));
@@ -44,9 +42,7 @@ final readonly class IssueProjectInvitationController
         ];
 
         if (! $request->expectsJson()) {
-            $inertia->flash(self::ISSUED_LINE, $answer);
-
-            return $redirect->back(303);
+            return $answers->backWith(self::ISSUED_LINE, $answer);
         }
 
         return new JsonResponse($answer, JsonResponse::HTTP_CREATED, ['Cache-Control' => 'no-store, private']);

@@ -8,11 +8,10 @@ use App\Contracts\CurrentActor;
 use App\Data\Sharing\ShareLinkData;
 use App\Exceptions\ShareLinkRefused;
 use App\Http\Requests\Sharing\ShareRequest;
+use App\Http\Responses\PageActionAnswers;
 use App\Support\ShareLinkResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Routing\Redirector;
-use Inertia\ResponseFactory;
 
 /**
  * The owner's deliberate reveal of a share's public address, never kept in a page: the share window gets it as a
@@ -29,15 +28,12 @@ final readonly class RevealShareLinkController
         ShareRequest $request,
         CurrentActor $actors,
         ShareLinkResolver $links,
-        ResponseFactory $inertia,
-        Redirector $redirect,
+        PageActionAnswers $answers,
     ): JsonResponse|RedirectResponse {
         $url = $links->linkFor($actors->actor(), $request->shareId())->getOrThrow(ShareLinkRefused::unknown());
 
         if (! $request->expectsJson()) {
-            $inertia->flash(self::REVEALED_LINK, $url);
-
-            return $redirect->back(303);
+            return $answers->backWith(self::REVEALED_LINK, $url);
         }
 
         return new JsonResponse(new ShareLinkData($url));

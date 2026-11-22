@@ -6,11 +6,10 @@ namespace App\Http\Controllers;
 
 use App\Commands\RevokeProjectBinding\RevokeProjectBindingCommand;
 use App\Contracts\CommandBus;
+use App\Http\Responses\PageActionAnswers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Redirector;
-use Inertia\ResponseFactory;
 
 /**
  * Revokes a connected folder and its host through the bus, once; the window's page is shown again with the outcome
@@ -22,8 +21,7 @@ final readonly class RevokeProjectBindingController
         string $binding,
         Request $request,
         CommandBus $commands,
-        ResponseFactory $inertia,
-        Redirector $redirect,
+        PageActionAnswers $answers,
     ): JsonResponse|RedirectResponse {
         $outcome = $commands->run(new RevokeProjectBindingCommand($binding));
 
@@ -35,8 +33,6 @@ final readonly class RevokeProjectBindingController
             ]);
         }
 
-        $inertia->flash(RevokeProjectBindingsController::REVOKED_BINDINGS, [$outcome->id => $outcome->result]);
-
-        return $redirect->back(303);
+        return $answers->backWith(RevokeProjectBindingsController::REVOKED_BINDINGS, [$outcome->id => $outcome->result]);
     }
 }

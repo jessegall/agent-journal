@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
-import { nextTick, ref } from 'vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { nextTick, onBeforeUnmount, ref } from 'vue';
 import Icon from '@/components/kit/Icon.vue';
+import { flashedNoticeToast } from '@/composables/flashedNotice';
 import { notificationToasts } from '@/composables/notificationToasts';
 import { holdsPresentation } from '@/composables/presentationLease';
 import { useBellPanel } from '@/composables/useBellPanel';
@@ -31,6 +32,14 @@ onNotificationArrivals((arrivals) => {
 
     notificationToasts(arrivals, page.url).forEach((outcome) => toasts.show(outcome));
 });
+
+/**
+ * A page action's flashed notice shows as a success toast, once, on the page it came back to.
+ */
+const stopHearingFlash = router.on('flash', (event) =>
+    flashedNoticeToast(event.detail.flash, page.url).forEach((outcome) => toasts.show(outcome)),
+);
+onBeforeUnmount(stopHearingFlash);
 
 function holdsFocus(element: Element | null): boolean {
     return element !== null && region.value?.contains(element) === true;

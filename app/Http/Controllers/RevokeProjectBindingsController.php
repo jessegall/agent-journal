@@ -6,10 +6,9 @@ namespace App\Http\Controllers;
 
 use App\Commands\RevokeProjectBindings\RevokeProjectBindingsCommand;
 use App\Contracts\CommandBus;
+use App\Http\Responses\PageActionAnswers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Redirector;
-use Inertia\ResponseFactory;
 
 /**
  * Revokes the bindings the owner chose in the Connect a project window in one command, and shows the window again
@@ -25,14 +24,12 @@ final readonly class RevokeProjectBindingsController
     public function __invoke(
         Request $request,
         CommandBus $commands,
-        ResponseFactory $inertia,
-        Redirector $redirect,
+        PageActionAnswers $answers,
     ): RedirectResponse {
         $request->validate(['bindings' => ['required', 'array', 'min:1', 'max:50'], 'bindings.*' => ['ulid']]);
         $bindingIds = array_values(array_map(strval(...), $request->array('bindings')));
         $revoked = $commands->run(new RevokeProjectBindingsCommand($bindingIds));
-        $inertia->flash(self::REVOKED_BINDINGS, $revoked->outcomesByBindingId());
 
-        return $redirect->back(303);
+        return $answers->backWith(self::REVOKED_BINDINGS, $revoked->outcomesByBindingId());
     }
 }

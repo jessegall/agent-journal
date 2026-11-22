@@ -6,10 +6,9 @@ namespace App\Http\Controllers\Agents;
 
 use App\Contracts\CommandBus;
 use App\Http\Requests\Agents\StopAgentRequest;
+use App\Http\Responses\PageActionAnswers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Routing\Redirector;
-use Inertia\ResponseFactory;
 
 /**
  * Stops the session the caller saw: a page's form returns to that page with the stop request's id flashed, so the bar
@@ -26,15 +25,12 @@ final readonly class StopAgentController
         StopAgentRequest $request,
         string $agent,
         CommandBus $commands,
-        ResponseFactory $inertia,
-        Redirector $redirect,
+        PageActionAnswers $answers,
     ): JsonResponse|RedirectResponse {
         $receipt = $commands->run($request->command($agent));
 
         if (! $request->expectsJson()) {
-            $inertia->flash(self::STOP_REQUEST, $receipt->requestId);
-
-            return $redirect->back(303);
+            return $answers->backWith(self::STOP_REQUEST, $receipt->requestId);
         }
 
         return new JsonResponse(['requestId' => $receipt->requestId, 'version' => $receipt->sequence]);

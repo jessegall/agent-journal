@@ -10,9 +10,9 @@ use App\Contracts\SettingsCatalogue;
 use App\Data\SettingData;
 use App\Enums\SettingSource;
 use App\Http\Requests\Settings\SaveSettingsRequest;
+use App\Http\Responses\PageActionAnswers;
 use App\Values\SettingReference;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Routing\Redirector;
 
 /**
  * Takes every changed setting of an owner back to its default, one reset each against the revision the page read, the
@@ -24,7 +24,7 @@ final readonly class ResetSettingsPageController
         SaveSettingsRequest $request,
         SettingsCatalogue $catalogue,
         CommandBus $commands,
-        Redirector $redirect,
+        PageActionAnswers $answers,
     ): RedirectResponse {
         $revision = $request->expectedRevision();
 
@@ -37,7 +37,7 @@ final readonly class ResetSettingsPageController
             }
         }
 
-        return $redirect->back(303);
+        return $answers->backWithNotice('Settings reset to their defaults');
     }
 
     private function isChanged(SettingData $setting): bool
