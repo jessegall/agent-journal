@@ -114,6 +114,7 @@ final readonly class ScreenSlot
     {
         $registration = new ScreenRegistration($stored->runtimeId, $stored->hostId, $stored->processGeneration);
         $frame = ScreenFrameData::from($stored->frame);
+
         $screen = new ReceivedScreen(
             $frame,
             ScreenIdentity::ofReport($registration, $frame),
