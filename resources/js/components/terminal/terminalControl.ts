@@ -32,10 +32,10 @@ export type TerminalControlClient = {
  * One input as the journal takes it: text with or without Enter, one named key, or a paste.
  */
 export type TerminalInputPayload =
-    | { kind: 'text'; text: string; enter: boolean }
-    | { kind: 'key'; key: string }
-    | { kind: 'paste'; text: string }
-    | { kind: 'resize'; rows: number; columns: number };
+    | { type: 'text'; text: string; enter: boolean }
+    | { type: 'key'; key: string }
+    | { type: 'paste'; text: string }
+    | { type: 'resize'; rows: number; columns: number };
 
 /**
  * The most bytes one paste may carry, as the journal bounds it.
@@ -172,7 +172,7 @@ export class TerminalControl {
      * Sends the text, and Enter after it when asked, as one operation at the next sequence.
      */
     async send(text: string, enter: boolean, screenRevision: number): Promise<void> {
-        await this.sendInput({ kind: 'text', text, enter }, screenRevision);
+        await this.sendInput({ type: 'text', text, enter }, screenRevision);
     }
 
     /**
@@ -190,7 +190,7 @@ export class TerminalControl {
             this.publish({ unsentLine: this.unsentAfter(input) });
             const outcome = await this.followReceipt(sequence);
 
-            if (input.kind === 'resize') {
+            if (input.type === 'resize') {
                 this.publish({ geometry: outcome === 'applied' ? this.lastAchievedSize : 'resize unavailable' });
             }
         } catch (failure) {
@@ -203,13 +203,13 @@ export class TerminalControl {
      * the screen.
      */
     private unsentAfter(input: TerminalInputPayload): string {
-        if (input.kind === 'key' || input.kind === 'resize') {
+        if (input.type === 'key' || input.type === 'resize') {
             return this.current.unsentLine;
         }
-        if (input.kind === 'paste') {
+        if (input.type === 'paste') {
             return this.current.unsentLine + input.text;
         }
-        if (input.kind === 'text' && input.enter) {
+        if (input.type === 'text' && input.enter) {
             return '';
         }
 

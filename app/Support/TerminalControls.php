@@ -188,7 +188,7 @@ final readonly class TerminalControls
             'screen_revision' => $input->screenRevision,
             'text' => $input->text,
             'enter' => $input->enter,
-            'kind' => $input->type->value,
+            'type' => $input->type->value,
             'key' => $input->key?->value,
             'rows' => $input->rows,
             'columns' => $input->columns,
@@ -419,13 +419,13 @@ final readonly class TerminalControls
     }
 
     /**
-     * Refuses a key or a paste for a host that does not carry that kind of input out.
+     * Refuses a key or a paste for a host that does not carry that type of input out.
      *
      * @throws TerminalControlRefused
      */
-    private function assertCarriesOut(AgentRuntime $runtime, TerminalInputType $kind): void
+    private function assertCarriesOut(AgentRuntime $runtime, TerminalInputType $type): void
     {
-        if (! Host::query()->whereKey($runtime->host_id)->sole()->carriesOutBrowserInputOf($kind)) {
+        if (! Host::query()->whereKey($runtime->host_id)->sole()->carriesOutBrowserInputOf($type)) {
             throw TerminalControlRefused::watchOnly();
         }
     }

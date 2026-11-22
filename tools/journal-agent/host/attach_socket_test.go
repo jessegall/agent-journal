@@ -238,7 +238,7 @@ func TestABrowserResizeIsBoundedAndReportsTheAchievedSize(t *testing.T) {
 	receipt := terminal.gate.ApplyBrowser(inputs.BrowserOperation{
 		GrantID:  grant.ID,
 		Sequence: 1,
-		Kind:     inputs.ResizeOperation,
+		Type:     inputs.ResizeOperation,
 		Rows:     40,
 		Columns:  600,
 	}, terminal.layout, "")

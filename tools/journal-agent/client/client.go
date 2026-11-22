@@ -90,7 +90,7 @@ type BrowserControlFields struct {
 	Text           string `json:"text"`
 	Enter          bool   `json:"enter"`
 	Choice         string `json:"choice"`
-	Kind           string `json:"kind"`
+	Type           string `json:"type"`
 	Key            string `json:"key"`
 	Rows           int    `json:"rows"`
 	Columns        int    `json:"columns"`

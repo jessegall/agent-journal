@@ -4,14 +4,14 @@ import "testing"
 
 func keyAt(grant BrowserGrant, sequence uint64, key string) BrowserOperation {
 	operation := textAt(grant, sequence, "")
-	operation.Kind, operation.Key = KeyOperation, key
+	operation.Type, operation.Key = KeyOperation, key
 
 	return operation
 }
 
 func pasteAt(grant BrowserGrant, sequence uint64, text string) BrowserOperation {
 	operation := textAt(grant, sequence, text)
-	operation.Kind = PasteOperation
+	operation.Type = PasteOperation
 
 	return operation
 }

@@ -90,7 +90,7 @@ type BrowserControl struct {
 	Text           string
 	Enter          bool
 	Choice         string
-	InputKind      string
+	InputType      string
 	Key            string
 	Rows           int
 	Columns        int

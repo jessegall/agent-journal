@@ -214,7 +214,7 @@ func (loop *Loop) browserControl(ctx context.Context, runtime *liveRuntime, requ
 		Text:           fields.Text,
 		Enter:          fields.Enter,
 		Choice:         fields.Choice,
-		InputKind:      fields.Kind,
+		InputType:      fields.Type,
 		Key:            fields.Key,
 		Rows:           fields.Rows,
 		Columns:        fields.Columns,

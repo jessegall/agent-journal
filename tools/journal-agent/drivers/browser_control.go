@@ -125,22 +125,22 @@ func (driver *TerminalDriver) operationOf(control contracts.BrowserControl) term
 		Generation:     control.Generation,
 		Attachment:     driver.runtime.Attachment,
 		PromptRevision: control.PromptRevision,
-		Kind:           terminal.TextOperation,
+		Type:           terminal.TextOperation,
 		Text:           control.Text,
 	}
 	switch {
 	case control.Operation == "check_screen":
-		operation.Kind = terminal.CheckOperation
+		operation.Type = terminal.CheckOperation
 	case control.Operation == "draft_choice":
-		operation.Kind, operation.Choice = terminal.ChoiceOperation, terminal.DraftChoice(control.Choice)
-	case control.InputKind == "key":
-		operation.Kind, operation.Key = terminal.KeyOperation, control.Key
-	case control.InputKind == "paste":
-		operation.Kind = terminal.PasteOperation
-	case control.InputKind == "resize":
-		operation.Kind, operation.Rows, operation.Columns = terminal.ResizeOperation, control.Rows, control.Columns
+		operation.Type, operation.Choice = terminal.ChoiceOperation, terminal.DraftChoice(control.Choice)
+	case control.InputType == "key":
+		operation.Type, operation.Key = terminal.KeyOperation, control.Key
+	case control.InputType == "paste":
+		operation.Type = terminal.PasteOperation
+	case control.InputType == "resize":
+		operation.Type, operation.Rows, operation.Columns = terminal.ResizeOperation, control.Rows, control.Columns
 	case control.Text == "" && control.Enter:
-		operation.Kind = terminal.EnterOperation
+		operation.Type = terminal.EnterOperation
 	case control.Enter:
 		operation.Text += "\r"
 	}

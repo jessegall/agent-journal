@@ -155,10 +155,10 @@ export function useTerminalControl(
         choose: (choice: 'send' | 'save-and-clear') => control.choose(choice),
         check: () => control.check(),
         send: (text: string, enter: boolean) => control.send(text, enter, promptRevision()),
-        sendKey: (key: string) => control.sendInput({ kind: 'key', key }, promptRevision()),
-        paste: (text: string) => control.sendInput({ kind: 'paste', text }, promptRevision()),
+        sendKey: (key: string) => control.sendInput({ type: 'key', key }, promptRevision()),
+        paste: (text: string) => control.sendInput({ type: 'paste', text }, promptRevision()),
         resize: (rows: number, columns: number) =>
-            control.sendInput({ kind: 'resize', rows, columns }, promptRevision()),
+            control.sendInput({ type: 'resize', rows, columns }, promptRevision()),
         promptRevision,
         deleteSavedDraft: (index: number) => control.deleteSavedDraft(index),
         openPrivate: () => control.openPrivate(),

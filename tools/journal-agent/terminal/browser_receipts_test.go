@@ -28,7 +28,7 @@ func textAt(grant BrowserGrant, sequence uint64, text string) BrowserOperation {
 		Sequence:   sequence,
 		Generation: scope.Generation,
 		Attachment: scope.Attachment,
-		Kind:       TextOperation,
+		Type:       TextOperation,
 		Text:       text,
 	}
 }
@@ -110,7 +110,7 @@ func TestAShortWriteFencesTheStreamUntilAScreenCheck(t *testing.T) {
 	short := gate.ApplyBrowser(textAt(grant, 1, "ls -la"), layout, "")
 	fenced := gate.ApplyBrowser(textAt(grant, 2, "pwd"), layout, "")
 	writtenWhileFenced := program.written.String()
-	check := BrowserOperation{GrantID: grant.ID, Generation: 1, Attachment: "attachment-1", Kind: CheckOperation}
+	check := BrowserOperation{GrantID: grant.ID, Generation: 1, Attachment: "attachment-1", Type: CheckOperation}
 	checked := gate.ApplyBrowser(check, layout, "")
 	after := gate.ApplyBrowser(textAt(grant, 2, "p"), layout, "")
 

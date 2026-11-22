@@ -12,21 +12,21 @@ import (
 	"journal-agent/screen/contracts"
 )
 
-// OperationKind is what a browser operation does: ordinary text, one Enter, a screen check that reconciles an
+// OperationType is what a browser operation does: ordinary text, one Enter, a screen check that reconciles an
 // uncertain stream, or a draft choice at give-back.
-type OperationKind string
+type OperationType string
 
 const (
-	TextOperation  OperationKind = "text"
-	EnterOperation OperationKind = "enter"
+	TextOperation  OperationType = "text"
+	EnterOperation OperationType = "enter"
 	// CheckOperation reconciles a fenced stream against a fresh screen; it takes no sequence and writes nothing.
-	CheckOperation  OperationKind = "check"
-	ChoiceOperation OperationKind = "choice"
+	CheckOperation  OperationType = "check"
+	ChoiceOperation OperationType = "choice"
 	// KeyOperation sends one named key; PasteOperation pastes text, several lines only in bracketed paste;
 	// ResizeOperation gives the PTY and the screen the writer's size, bounded by both.
-	KeyOperation    OperationKind = "key"
-	PasteOperation  OperationKind = "paste"
-	ResizeOperation OperationKind = "resize"
+	KeyOperation    OperationType = "key"
+	PasteOperation  OperationType = "paste"
+	ResizeOperation OperationType = "resize"
 )
 
 // Resizer gives the program's PTY and the screen read from it a size, bounded by both, and says the size it
@@ -79,7 +79,7 @@ type BrowserOperation struct {
 	Generation     uint64
 	Attachment     string
 	PromptRevision uint64
-	Kind           OperationKind
+	Type           OperationType
 	Text           string
 	Choice         DraftChoice
 	Key            string
@@ -130,7 +130,7 @@ func (receipts *grantReceipts) digestOf(operation BrowserOperation) []byte {
 	parts := []string{
 		operation.GrantID,
 		operation.Attachment,
-		string(operation.Kind),
+		string(operation.Type),
 		operation.Text,
 		string(operation.Choice),
 		operation.Key,
@@ -210,7 +210,7 @@ func (gate *InputGate) applyLocked(
 		return BrowserReceipt{Sequence: operation.Sequence, Outcome: Expired}, nil
 	}
 	receipts := gate.browser.receipts
-	if operation.Kind == CheckOperation {
+	if operation.Type == CheckOperation {
 		receipts.uncertain = false
 
 		return BrowserReceipt{Sequence: operation.Sequence, Outcome: Applied}, nil
@@ -225,7 +225,7 @@ func (gate *InputGate) applyLocked(
 		return BrowserReceipt{Sequence: operation.Sequence, Outcome: Uncertain}, nil
 	}
 	// A resize types nothing into the composer, so it needs no prompt that admits input.
-	if operation.Kind == ResizeOperation {
+	if operation.Type == ResizeOperation {
 		return gate.resizeLocked(operation, receipts), nil
 	}
 	if !gate.admitsPrompt(layout) || operation.PromptRevision != gate.browser.promptRevision ||
@@ -243,7 +243,7 @@ func (gate *InputGate) writeLocked(
 	clearKeys string,
 	bracketedPaste bool,
 ) (BrowserReceipt, func() BrowserReceipt) {
-	switch operation.Kind {
+	switch operation.Type {
 	case TextOperation:
 		return receipts.keep(operation, gate.writeCounted(operation.Sequence, receipts, operation.Text)), nil
 	case EnterOperation:

@@ -68,13 +68,13 @@ func (client *Client) Recover(ctx context.Context, installationNonce string) (Re
 // the release and protocol it runs, the combinations it can run, how setting up the folder ended and whether it takes
 // over a live boot.
 type PresenceReport struct {
-	BootID       string            `json:"bootId"`
-	Sequence     int               `json:"sequence"`
-	Release      string            `json:"release"`
-	Protocol     int               `json:"protocol"`
-	Descriptors  []HostDescriptor  `json:"descriptors"`
-	Provisioning string            `json:"provisioning"`
-	Takeover     bool              `json:"takeover"`
+	BootID       string           `json:"bootId"`
+	Sequence     int              `json:"sequence"`
+	Release      string           `json:"release"`
+	Protocol     int              `json:"protocol"`
+	Descriptors  []HostDescriptor `json:"descriptors"`
+	Provisioning string           `json:"provisioning"`
+	Takeover     bool             `json:"takeover"`
 	// SetupGeneration is the folder's setup generation, which rises on every setup or resume of it.
 	SetupGeneration int `json:"setupGeneration"`
 	// Reconciled is whether this boot already reported what became of its earlier sessions: until it did, the
