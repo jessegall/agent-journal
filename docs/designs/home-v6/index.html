@@ -63,7 +63,8 @@ svg.s13{width:13px;height:13px}svg.s14{width:14px;height:14px}
 .side.rail .nav{justify-content:center;padding:7px 0}
 /* The rail's labels show on hover and on keyboard focus. */
 .side.rail .nav:hover::after,.side.rail .nav:focus-visible::after{content:attr(data-tip);position:absolute;left:48px;top:50%;transform:translateY(-50%);background:var(--raised);border:1px solid var(--border-2);border-radius:var(--radius-control);padding:3px 8px;font-size:var(--text-small);color:var(--text);box-shadow:var(--shadow-pop);white-space:nowrap}
-.main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg);position:relative}
+/* .main is not positioned: menus, popovers, the palette and its scrim are measured from #app and cover the whole app. */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg)}
 .topbar{min-height:40px;flex:none;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);padding:0 10px 0 16px;color:var(--text-2)}
 .crumb{display:flex;align-items:center;gap:8px;min-width:0}
 .crumb .sq{width:8px;height:8px;border-radius:2px;background:var(--brand)}
@@ -76,7 +77,7 @@ svg.s13{width:13px;height:13px}svg.s14{width:14px;height:14px}
 .ib:focus-visible,.btn:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 .ib[aria-pressed=true]{background:var(--sel);color:var(--text)}
 .ib[disabled]{opacity:.4;pointer-events:none}
-.count{position:absolute;top:1px;right:0;min-width:14px;height:14px;border-radius:7px;background:var(--brand);color:var(--on-brand);font-size:var(--text-meta);font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 3px;line-height:1}
+.count{position:absolute;top:-2px;right:-2px;min-width:14px;height:14px;border-radius:7px;background:var(--brand);color:var(--on-brand);font-size:var(--text-meta);font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 3px;line-height:1}
 .pill{display:inline-flex;gap:7px;align-items:center;height:26px;padding:0 10px 0 8px;border-radius:999px;border:1px solid var(--border-2);background:var(--raised);font:inherit;font-size:var(--text-small);color:var(--text-2);cursor:pointer}
 .pill:hover{color:var(--text);border-color:var(--border-3)}
 .pill:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
@@ -118,7 +119,8 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 
 /* ---------- Home: the grid of panes, floating windows ---------- */
 .desk{position:relative;flex:1;min-height:0;overflow:hidden}
-.pane{position:absolute;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
+/* Each pane is its own stacking context, so what opens inside it (a panel, a picker) stays below floating windows. */
+.pane{position:absolute;display:flex;flex-direction:column;background:var(--bg);overflow:hidden;isolation:isolate}
 .pane.droptarget{outline:2px solid var(--focus);outline-offset:-3px}
 .strip{height:34px;flex:none;display:flex;align-items:stretch;gap:8px;border-bottom:1px solid var(--border);background:var(--side);padding:0 5px 0 14px;user-select:none}
 .tabs{display:flex;gap:12px;min-width:0;flex:1;overflow:hidden}
@@ -139,6 +141,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .split.row::after{left:3px;top:0;bottom:0;width:2px}.split.col::after{top:3px;left:0;right:0;height:2px}
 .split:hover::after,.split:focus-visible::after,.split.dragging::after{background:var(--border-3)}
 .split:focus-visible{outline:none}
+.split:focus-visible::after{background:var(--focus)}
 .win{position:absolute;display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--border-2);border-radius:var(--radius-card);box-shadow:var(--shadow-window);overflow:hidden;min-width:260px}
 .win.active{border-color:var(--border-3)}
 .win.min{height:36px!important}
@@ -187,7 +190,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .docbar small{color:var(--text-3);font-size:var(--text-badge)}
 .docbar.lifting{transform:scale(.96);opacity:.45}
 .docbar.flash{outline:2px solid var(--focus);outline-offset:2px}
-.composer{margin:0 4px 14px;border:1px solid var(--border-2);border-radius:var(--radius-composer);padding:10px 10px 8px 12px;background:var(--bg)}
+.composer{margin:0 0 14px;border:1px solid var(--border-3);border-radius:var(--radius-composer);padding:10px 10px 8px 12px;background:var(--bg)}
 .composer:focus-within{border-color:var(--border-3)}
 .composer textarea{display:block;width:100%;border:0;outline:0;resize:none;background:transparent;color:var(--text);font:inherit;height:22px}
 .composer textarea::placeholder{color:var(--text-4)}
@@ -274,7 +277,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .lrow>.meter{flex:none}
 .lrow>.chip{flex:none}
 /* Accounts: a grid of fixed columns: mark, name with its type under it, default, usage, sign-in. */
-.lrow.agrid{display:grid;grid-template-columns:16px minmax(0,1fr) 64px 84px 96px;gap:12px;align-items:center;padding:8px 12px}
+.lrow.agrid{display:grid;grid-template-columns:16px minmax(0,1fr) 84px 96px;gap:12px;align-items:center;padding:8px 12px}
 /* A list row's name with one short muted line under it: the same pattern in every list that has a second line. */
 .nm2{display:flex;flex-direction:column;min-width:0;flex:1;gap:1px}
 .nm2 .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -298,7 +301,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .docbody{font-size:var(--text-card);line-height:1.65;color:var(--text)}
 .docbody .para{margin:0 0 10px;border-radius:var(--radius-control)}
 .docbody .para.sel{background:color-mix(in srgb,var(--brand) 9%,transparent)}
-.docbody .para.has{box-shadow:inset 2px 0 0 var(--border-3);padding-left:8px}
+.docbody .para.has{border-left:2px solid var(--border-3);padding-left:8px;margin-left:-10px}
 .docbody h3{margin:18px 0 6px;font-weight:600;font-size:var(--text-title)}
 .docbody pre{font-family:var(--font-mono);font-size:var(--text-small);background:var(--code-bg);border:1px solid var(--line);border-radius:var(--radius-field);padding:10px 12px;overflow:auto;white-space:pre}
 .docbody code{font-family:var(--font-mono);font-size:var(--text-small);background:var(--code-bg);padding:0 3px;border-radius:3px}
@@ -426,7 +429,9 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .menu hr{border:0;border-top:1px solid var(--line);margin:4px 2px}
 .mgroup{font-size:var(--text-group);letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--text-3);padding:8px 8px 3px}
 .mi{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:var(--radius-control);color:var(--text-2);cursor:pointer;width:100%;border:0;background:transparent;font:inherit;font-size:var(--text-small);text-align:left;touch-action:none}
-.mi:hover,.mi:focus-visible,.mi.on{background:var(--hover);color:var(--text);outline:0}
+.mi:hover{background:var(--hover);color:var(--text);outline:0}
+/* The row Enter will run is plainly marked: a stronger fill and the focus ring. */
+.mi:focus-visible,.mi.on{background:var(--sel);color:var(--text);outline:0;box-shadow:inset 0 0 0 2px var(--focus)}
 .mi[disabled]{opacity:.45;pointer-events:none}
 .mi .k{margin-left:auto;font-size:var(--text-meta);color:var(--text-3);font-family:var(--font-mono);display:inline-flex;white-space:nowrap}
 .mi small{display:block;color:var(--text-3);font-size:var(--text-badge);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -438,6 +443,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .addpop .rows,.pal .rows{max-height:340px;overflow:auto;padding:6px}
 .qfoot{padding:7px 12px;border-top:1px solid var(--line);font-size:var(--text-meta);color:var(--text-3)}
 .scrim{position:absolute;inset:0;background:rgba(0,0,0,.18);z-index:160}
+.app.dark .scrim{background:rgba(0,0,0,.45)}
 .pal{position:absolute;left:50%;top:72px;transform:translateX(-50%);width:560px;background:var(--raised);border:1px solid var(--border-2);border-radius:var(--radius-card);box-shadow:var(--shadow-window);z-index:170;overflow:hidden}
 .pal .rows{max-height:420px}
 .keys{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:460px;background:var(--raised);border:1px solid var(--border-2);border-radius:var(--radius-card);box-shadow:var(--shadow-window);z-index:170;padding:14px 16px}
@@ -480,7 +486,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .sedit .ops{display:flex;flex-direction:column;gap:2px}
 .sedit.lifting{background:var(--hover);box-shadow:var(--shadow-pop)}
 /* Docked cards: the parts of app/Docking (title, subtitle, state, progress, buttons), stacked under the conversation. */
-.dockarea{margin:0 4px 8px;display:flex;flex-direction:column;gap:6px}
+.dockarea{margin:0 0 8px;display:flex;flex-direction:column;gap:6px}
 .dhead{display:flex;align-items:center;gap:6px;font-size:var(--text-badge);color:var(--text-3);padding:0 2px}
 .dcard{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:var(--radius-card);background:var(--raised);padding:8px 8px 8px 12px;position:relative}
 .dcard .t{flex:1;min-width:0}
@@ -492,6 +498,14 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 .dstack::before{bottom:4px;left:6px;right:6px}.dstack::after{bottom:0;left:12px;right:12px;opacity:.7}
 .gsplit{display:flex;flex:1;min-height:0}
 .gsplit .gwrap{flex:1;min-width:0}
+/* On a page with a list beside it the graph is narrow, so the task's panel goes under the graph instead. */
+.pgbody .gsplit{flex-direction:column}
+.pgbody .gcard.gside{width:auto;border-left:0;border-top:1px solid var(--line);max-height:45%}
+.lrow>.meter+.meta{width:auto}
+.lrow[aria-selected=true] .meter{background:var(--border-3)}
+.graph .edge{stroke:var(--text-4)!important}.graph .edge.met{stroke:var(--border-3)!important}.graph .edge.hot,.graph .edge.added{stroke:var(--text)!important}
+.graph .node rect{stroke:var(--border-3)}
+.connect-cmd{white-space:normal!important;word-break:break-all;height:auto!important;min-height:30px;padding:6px 10px!important}
 .gcard.gside{position:static;width:280px;flex:none;border:0;border-left:1px solid var(--line);border-radius:0;box-shadow:none;overflow:auto;padding:14px 16px}
 /* What an agent looked at for a message: one quiet line that opens the list of its sources. */
 .srcline{display:inline-flex;align-items:center;gap:6px;margin-top:6px;border:0;background:transparent;font:inherit;font-size:var(--text-badge);color:var(--text-3);padding:0;cursor:pointer}
@@ -516,7 +530,7 @@ a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--bor
 /* Split create button: the main part is the plain way; the chevron offers the agent way. */
 .splitb{display:inline-flex;align-items:stretch}
 .splitb .btn{border-color:var(--border-2);background:var(--bg);color:var(--text)}
-.splitb .main{border-radius:var(--radius-button) 0 0 var(--radius-button)}
+.splitb .sb-main{border-radius:var(--radius-button) 0 0 var(--radius-button)}
 .splitb .more{border-radius:0 var(--radius-button) var(--radius-button) 0;border-left:0;padding:0 6px}
 .splitb .btn:hover{background:var(--hover)}
 /* The create dialogs: a plain form, and a short guided chat that drafts the same form. */
@@ -995,7 +1009,7 @@ function chatHtml(c){const cv=CONV[c],grp=isGroup(c);let last=null,prevI=-1;
 const EXTRA_KIND={};
 function composer(c){const ph=`Message ${convName(c)}`;
   const rp=REPLYTO&&REPLYTO.conv===c?`<div class="replying">${I('reply','s14')}<span>Replying to <b>${MEM[speaker(c,CONV[c].msgs[REPLYTO.i])].name}</b> · “${esc(snippet(c,REPLYTO.i))}”</span><button class="ib" style="width:20px;height:20px" data-unreply aria-label="Stop replying">${I('close','s14')}</button></div>`:'';
-  return `<div class="composer">${rp}<textarea placeholder="${esc(ph)}" data-compose="${c}" data-fk="compose:${c}" aria-label="${esc(ph)}"></textarea><div class="r"><span class="ib" title="Attach">${I('clip','s14')}</span><span style="flex:1"></span><span class="chip faint">Opus</span><button class="btn sm send" data-send="${c}">${I('arrow','s14')}Send</button></div></div>`}
+  return `<div class="composer">${rp}<textarea placeholder="${esc(ph)}" data-compose="${c}" data-fk="compose:${c}" aria-label="${esc(ph)}"></textarea><div class="r"><span class="ib" title="Attach">${I('clip','s14')}</span><span style="flex:1"></span><span class="chip faint">Opus</span><button class="btn sm send" data-send="${c}" data-fk="send:${c}">${I('arrow','s14')}Send</button></div></div>`}
 /* Hooks for later sections: content above the composer (docked cards) and a terminal beside the chat. */
 const ABOVE_COMPOSER=[];
 const chatView=c=>`<div class="chatcol" style="max-width:${readW+48}px" data-chatdrop="${c}"><div class="scroll"><div class="chat" data-chat="${c}">${chatHtml(c)}</div></div>${ABOVE_COMPOSER.map(f=>f(c)).join('')}${composer(c)}</div>`;
@@ -1176,7 +1190,7 @@ function chatPlain(){const p=paneOf('chat');if(p&&p.tabs.length===1)p.framed=fal
    Layouts: the steps of growing are layouts the user can also save
    ===================================================================================================================== */
 const STEPS={
-  start:['1 · Day one','A new user sees only the chat, centred at the reading width, with the composer under it. Nothing else. The + in the agent bar adds a window; ⌘K does everything.'],
+  start:['1 · Day one','A new user sees only the chat in the middle, centred at the reading width, with the composer under it. The + in the agent bar adds a window; ⌘K does everything.'],
   first:['2 · A first window','Tasks floats where it opened. Push it past the right edge of Home to dock it there, or drag it onto the chat\'s compass (the cross of five squares in the middle of a pane).'],
   docked:['3 · Docked','Asks and Tasks docked on the right; the chat keeps its reading width in the space left. Drag the shared edges, or focus one and use the arrow keys.'],
   bare:['4 · Without the chat','Tasks, Plans and Asks fill Home in a grid. The chat comes back from the + or ⌘K.'],
@@ -1221,7 +1235,7 @@ function topbarHtml(){const n=unread(),c=A.mainConv;
   return `<header class="topbar"><nav class="crumb" aria-label="Breadcrumb"><span class="sq" aria-hidden="true"></span><span>Journal</span><span class="sep" aria-hidden="true">/</span><b aria-current="page">${PAGE_TITLE()}</b></nav>
     <div class="r">${page==='home'&&ui.barHidden?`<button class="pill" data-showbar data-fk="pill" title="Show the agent bar">${c==='main'?CLAUDE('s14'):I('users','s14')}${convName(c)}<span class="spin" role="img" aria-label="working"></span>${I('caret','s14')}</button>`:''}
     <button class="ib" data-bell data-fk="bell" aria-haspopup="menu" aria-label="Notifications${n?', '+n+' unread':''}" title="Notifications">${I('bell','s13')}${n?`<span class="count">${n}</span>`:''}</button>
-    <button class="ib" data-rail data-fk="railbtn" aria-label="${ui.rail?'Show the sidebar':'Fold the sidebar to icons'}" title="${ui.rail?'Show the sidebar':'Fold the sidebar to icons'}">${I('list','s13')}</button>
+    <button class="ib" data-rail data-fk="railbtn" aria-label="${ui.rail?'Show the page names':'Hide the page names'}" title="${ui.rail?'Show the page names':'Hide the page names'}">${I('list','s13')}</button>
     <button class="ib" data-scheme data-fk="scheme" aria-haspopup="menu" aria-label="Color scheme" title="Color scheme">${I('scheme','s13')}</button>
     <span class="who-me">You</span><button class="ib" aria-label="Sign out" title="Sign out">${I('power','s13')}</button></div></header>`}
 /* The agent bar names whom the main chat talks to; for a group, who is in it. Stop names what it stops. */
@@ -1327,14 +1341,14 @@ function addHtml(){const q=addpop.q.toLowerCase(),rows=WIN_ROWS().concat(helpers
 function openAdd(at,trigger){const app=$('#app').getBoundingClientRect();let x,y;if(at instanceof Element){const r=at.getBoundingClientRect();x=r.right-app.left-320;y=r.bottom-app.top+4}else{x=at.x;y=at.y}
   addpop={x:Math.max(6,x),y,q:'',i:0,trigger:trigger||(at instanceof Element?at.dataset.fk:null),place:at instanceof Element?null:at.place};menu=null;render()}
 /* ⌘K: every command, page, window, conversation and record in one centred list. */
-function palRows(){const q=pal.q.trim().toLowerCase(),k=page==='home'?activeKey():null,R=[];
+function palRows(){const q=pal.q.trim().toLowerCase(),ptext=pal.q.trim(),ptrig=pal.trigger,k=page==='home'?activeKey():null,R=[];
   const C=(label,ic,run,keys)=>R.push({group:'Commands',label,ic,run,keys});
   if(page==='home'){if(k){C(`Dock ${meta(k).t} on the left`,'dock',()=>dockEdge(k,'left'));C(`Dock ${meta(k).t} on the right`,'dock',()=>dockEdge(k,'right'));C(`Dock ${meta(k).t} along the bottom`,'dock',()=>dockEdge(k,'below'));C(`Float ${meta(k).t}`,'float',()=>floatKey(k));C(`Close ${meta(k).t}`,'close',()=>{closeWin(k);return false})}
     const ap=A.active&&A.active.pane;if(ap&&A.grid&&panesIn(A.grid).length>1)C(A.zoom?'Restore the layout':'Fill Home with the active pane',A.zoom?'restore':'fill',()=>{A.zoom=A.zoom?null:ap});
     const cp=paneOf('chat');if(cp&&isPlain(cp))C('Make the chat a window','window',chatToWindow);if(cp&&cp.framed&&cp.tabs.length===1)C('Make the chat plain again','chat',chatPlain);
     C('Back to just the chat','home',backToChat);LAYOUTS.forEach(l=>C(`Layout: ${l.name}`,'layout',()=>{useLayout(l);return false}));C('Save this layout','save',saveLayout);
     C(ui.barHidden?'Show the agent bar':'Hide the agent bar','barup',toggleBar);C(`${MEM[agentOf(A.mainConv)].name}'s memories`,'brain',()=>{openWin('mem:'+agentOf(A.mainConv));return false})}
-  C(ui.rail?'Show the sidebar':'Fold the sidebar to icons','list',toggleRail);C(mode==='dark'?'Light colour scheme':'Dark colour scheme','scheme',()=>setMode(mode==='dark'?'light':'dark'));C('Keyboard shortcuts','keyb',()=>{keysOpen={trigger:pal.trigger};return false},'?');
+  C(ui.rail?'Show the page names':'Hide the page names','list',toggleRail);C(mode==='dark'?'Light color scheme':'Dark color scheme','scheme',()=>setMode(mode==='dark'?'light':'dark'));C('Keyboard shortcuts','keyb',()=>{keysOpen={trigger:ptrig};return false},'?');
   C('Task graph of plan 56','graph',()=>{page='tasks';TASKVIEW='graph';GRAPH.plan=56;return false});
   PAL_EXTRA.forEach(f=>f(C));
   [['home','Home'],['tasks','Tasks'],['plans','Plans'],['docs','Documents'],...PAGES_EXTRA.map(p=>[p.id,p.t]),['accounts','Accounts'],['settings','Settings']].forEach(([p,t])=>R.push({group:'Pages',label:t,ic:'arrow',run:()=>{page=p;return false}}));
@@ -1342,7 +1356,7 @@ function palRows(){const q=pal.q.trim().toLowerCase(),k=page==='home'?activeKey(
   activeConvs().forEach(c=>R.push({group:'Conversations',label:convName(c),ic:'chat',run:()=>{openConv(c);return false}}));
   if(q){TASKS.forEach(([n,t])=>R.push({group:'Go to',label:'Task '+n,sub:t,ic:'todos',run:()=>{openItem('task:'+n);return false}}));DOCS.forEach(([n,t])=>R.push({group:'Go to',label:'Doc '+n,sub:t,ic:'docs',run:()=>{openItem('doc:'+n);return false}}));
     Object.keys(FILES).forEach(p=>R.push({group:'Go to',label:base(p),sub:p,ic:'file',run:()=>{openFile(p);return false}}))}
-  const out=R.filter(r=>!q||(r.label+' '+(r.sub||'')).toLowerCase().includes(q));if(q)out.push({group:'Ask',label:`Message ${convName(A.mainConv)}: “${esc(pal.q.trim())}”`,ic:'arrow',run:()=>{page='home';sendMessage(A.mainConv,pal.q.trim());return false}});return out}
+  const out=R.filter(r=>!q||(r.label+' '+(r.sub||'')).toLowerCase().includes(q));if(q)out.push({group:'Ask',label:`Message ${convName(A.mainConv)}: “${esc(ptext)}”`,ic:'arrow',run:()=>{page='home';sendMessage(A.mainConv,ptext);return false}});return out}
 const PAL_EXTRA=[];
 function palHtml(){const rows=palRows();pal.rows=rows;let g=null;
   return `<div class="scrim" data-scrim></div><div class="pal" id="pal" role="dialog" aria-label="Command palette"><div class="qs">${I('search','s14')}<input id="palq" value="${esc(pal.q)}" placeholder="Type a command, a page, a window, a task, a document or a file" aria-label="Command" autocomplete="off"></div>
@@ -1463,14 +1477,15 @@ function dragNode(e,n,g){const nu=GRAPH.nudge[n]||{dx:0,dy:0},o={...nu};
     (ev,moved)=>{if(!moved){GRAPH.sel=GRAPH.sel===n?null:n;render();focusFk('gnode:'+n);return}render()})}
 /* A document dragged from the chat: a chip; over the agent's name the list opens; resting on an agent opens its
    chat; dropping hands it over. */
-function dragDoc(e,n,bar){let chip=null,hoverC=null,timer=null,target=null;const app=$('#app');
+/* The chat the bar comes from is never a target: it shows no highlight there, and a release over it hands nothing over. */
+function dragDoc(e,n,bar){let chip=null,hoverC=null,timer=null,target=null;const app=$('#app'),srcChat=bar.closest('[data-chat]'),src=srcChat&&srcChat.dataset.chat;
   pointerDrag(e,(ev)=>{const ar=app.getBoundingClientRect();if(!chip){chip=document.createElement('div');chip.className='dchip';chip.innerHTML=I('docs','s14')+'Doc '+n;app.appendChild(chip);bar.classList.add('lifting')}
       chip.style.left=(ev.clientX-ar.left+10)+'px';chip.style.top=(ev.clientY-ar.top+8)+'px';
       const el=document.elementFromPoint(ev.clientX,ev.clientY);target=null;$$('.whoBtn.drop').forEach(x=>x.classList.remove('drop'));$$('.pane.droptarget').forEach(x=>x.classList.remove('droptarget'));
       const who=el&&el.closest('[data-convmenu]'),item=el&&el.closest('[data-dropconv]'),chat=el&&el.closest('[data-chatdrop]');
       if(who){who.classList.add('drop');if(!menu||!menu.drop)openMenu(convMenuItems().filter(it=>it.dropconv||it.head==='Conversations'),who,'convmenu',{drop:true})}
-      if(item){const c=item.dataset.dropconv;target=c;$$('[data-dropconv]').forEach(x=>x.classList.toggle('on',x===item));if(hoverC!==c){hoverC=c;clearTimeout(timer);timer=setTimeout(()=>{A.mainConv=c;render();const it=$(`[data-dropconv="${c}"]`);if(it)it.classList.add('on')},450)}}
-      else if(chat){target=chat.dataset.chatdrop;const p=chat.closest('[data-pane]');if(p)p.classList.add('droptarget')}},
+      if(item&&item.dataset.dropconv!==src){const c=item.dataset.dropconv;target=c;$$('[data-dropconv]').forEach(x=>x.classList.toggle('on',x===item));if(hoverC!==c){hoverC=c;clearTimeout(timer);timer=setTimeout(()=>{A.mainConv=c;render();const it=$(`[data-dropconv="${c}"]`);if(it)it.classList.add('on')},450)}}
+      else if(chat&&chat.dataset.chatdrop!==src){target=chat.dataset.chatdrop;const p=chat.closest('[data-pane]');if(p)p.classList.add('droptarget')}},
     (ev,moved)=>{clearTimeout(timer);bar.classList.remove('lifting');if(chip)chip.remove();menu=null;
       if(!moved){openItem('doc:'+n);return}if(target&&CONV[target]){if(target!=='main'&&!CONV[target].members&&!isOpen('conv:'+target)&&A.mainConv!==target)A.mainConv=target;handDoc(target,n)}else render()})}
 /* Play: the same flow, step by step, with a caption for each step. */
@@ -1489,7 +1504,7 @@ async function playDocFlow(){if(playing)return;playing=true;step='docs';page='ho
 /* The Comment button sits beside the selection, over the content, so nothing moves and the text stays copyable. */
 function placeCommentButton(sel){$$('.cfloat').forEach(x=>x.remove());const s=sel||SEL;if(!s)return;
   const box=$('#main').querySelector(`[data-code="${CSS.escape(s.path)}"]`);if(!box)return;const ln=box.querySelector(`[data-ln="${s.b}"]`);if(!ln)return;
-  const scroller=box.closest('.pbody,.pgread'),host=$('#main');if(!scroller)return;const br=scroller.getBoundingClientRect(),lr=ln.getBoundingClientRect(),hr=host.getBoundingClientRect();
+  const scroller=box.closest('.pbody,.pgread'),host=$('#main');if(!scroller)return;const br=scroller.getBoundingClientRect(),lr=ln.getBoundingClientRect(),hr=$('#app').getBoundingClientRect();
   const y=Math.min(br.bottom-34,Math.max(br.top+4,lr.bottom+2))-hr.top,x=br.right-hr.left-124;
   host.insertAdjacentHTML('beforeend',`<button class="btn sm primary cfloat" data-commentgo style="left:${x}px;top:${y}px">${I('comment','s14')}Comment</button>`);
   const b=$('[data-commentgo]',host);b.onclick=()=>openComment(s);b.onmousedown=ev=>ev.preventDefault()}
@@ -1599,7 +1614,7 @@ function wire(){const on=(s,fn)=>$$(s).forEach(fn),app=$('#app');
   on('.toggle',t=>t.onclick=()=>t.setAttribute('aria-checked',t.getAttribute('aria-checked')!=='true'));
   WIRE_EXTRA.forEach(f=>f(on));
   /* Menus */
-  const m=$('#menu');if(m){$$('[data-mi]',m).forEach(b=>b.onclick=()=>{const it=menu.items[+b.dataset.mi],t=menu.trigger;menu=null;const r=it.run();if(r!==false){changed();if(t)focusFk(t)}});
+  const m=$('#menu');if(m){$$('[data-mi]',m).forEach(b=>b.onclick=()=>{const it=menu.items[+b.dataset.mi],t=menu.trigger;menu=null;const r=it.run();if(r!==false){changed();if(t)focusFk(t)}else if(!menu){render();if(t)focusFk(t)}});
     m.onkeydown=ev=>{const bs=$$('.mi:not([disabled])',m),i=bs.indexOf(document.activeElement);if(ev.key==='ArrowDown'){ev.preventDefault();bs[(i+1)%bs.length].focus()}if(ev.key==='ArrowUp'){ev.preventDefault();bs[(i-1+bs.length)%bs.length].focus()}if(ev.key==='Escape'){ev.preventDefault();closeMenus()}}}
   const ap=$('#addpop');if(ap){const q=$('#addq');q.oninput=()=>{addpop.q=q.value;addpop.i=0;render()};
     q.onkeydown=ev=>{const n=addpop.rows.length;if(ev.key==='ArrowDown'){ev.preventDefault();addpop.i=(addpop.i+1)%n;render()}if(ev.key==='ArrowUp'){ev.preventDefault();addpop.i=(addpop.i-1+n)%n;render()}
@@ -1612,9 +1627,9 @@ function wire(){const on=(s,fn)=>$$(s).forEach(fn),app=$('#app');
   on('[data-scrim]',s=>s.onclick=closeMenus);
   $('#main').oncontextmenu=onContext;
   $('#side').oncontextmenu=ev=>{const b=ev.target.closest('[data-page]');if(!b)return;ev.preventDefault();const ar=app.getBoundingClientRect(),pg=b.dataset.page;
-    openMenu([{head:b.dataset.tip},{label:'Open the page',ic:'arrow',run:()=>{page=pg}},...(['tasks','plans','docs'].includes(pg)?[{label:'Open as a window on Home',ic:'window',run:()=>{openWin(pg);return false}}]:[]),{sep:1},{label:ui.rail?'Show the sidebar':'Fold the sidebar to icons',ic:'list',run:toggleRail}],{x:ev.clientX-ar.left,y:ev.clientY-ar.top},'nav:'+pg)};
+    openMenu([{head:b.dataset.tip},{label:'Open the page',ic:'arrow',run:()=>{page=pg}},...(['tasks','plans','docs'].includes(pg)?[{label:'Open as a window on Home',ic:'window',run:()=>{openWin(pg);return false}}]:[]),{sep:1},{label:ui.rail?'Show the page names':'Hide the page names',ic:'list',run:toggleRail}],{x:ev.clientX-ar.left,y:ev.clientY-ar.top},'nav:'+pg)};
 }
-function runPal(r){if(!r)return;const t=pal.trigger;pal=null;const res=r.run();if(res!==false){changed();if(t)focusFk(t)}else render()}
+function runPal(r){if(!r)return;const t=pal.trigger;pal=null;const res=r.run();if(res!==false){changed();if(t)focusFk(t)}else if(!pal&&!menu){render();if(t)focusFk(t)}}
 function openTree(n){const o=n.dataset.topen;if(!o)return;if(o==='chat'){openConv('main');return}if(o.startsWith('conv:'))return openConv(o.slice(5));if(o.startsWith('file:'))return openFile(o.slice(5));openItem(o.slice(5))}
 
 /* Right-click: a menu for what is under the pointer. Selected text keeps the browser's own menu, so copying works. */
@@ -1636,21 +1651,22 @@ function onContext(ev){const t=ev.target,sel=getSelection();if(sel&&!sel.isColla
     items=[{head:m.t},...(p?[{label:A.zoom?'Restore the layout':'Fill Home with this pane',ic:A.zoom?'restore':'fill',run:()=>{A.zoom=A.zoom?null:p.id}},{label:'Float',ic:'float',run:()=>{floatKey(k)}}]:[{label:'Dock on the left',ic:'dock',run:()=>dockEdge(k,'left')},{label:'Dock on the right',ic:'dock',run:()=>dockEdge(k,'right')}]),
       {label:'Dock along the bottom',ic:'dock',run:()=>dockEdge(k,'below')},...(k==='chat'&&p&&p.framed&&p.tabs.length===1?[{label:'Make the chat plain again',ic:'chat',run:chatPlain}]:[]),{sep:1},{label:'Close',ic:'close',run:()=>{closeWin(k);return false}}];trig=(p?'tab:':'fbar:')+k}
   else if(page==='home'&&(pn||t.closest('.emptydesk')||t.id==='desk')){const cp=paneOf('chat');items=[{label:'Add a window here…',ic:'plus',run:()=>{openAdd({x:at.x,y:at.y,place:dp});return false}},...(cp&&isPlain(cp)?[{label:'Make the chat a window',ic:'window',run:chatToWindow}]:[]),{sep:1},{label:'Save this layout',ic:'save',run:saveLayout},{label:'Back to just the chat',ic:'home',disabled:!(A.floats.length||panesIn(A.grid).length>1),run:backToChat}]}
-  if(!items)return;ev.preventDefault();openMenu(items,at,trig)}
+  if(!items)return;ev.preventDefault();const own=t.closest('[data-fk]');openMenu(items,at,trig||(own&&own.dataset.fk))}
 
 /* =====================================================================================================================
    Keys: only keys the browser and the OS leave alone
    ===================================================================================================================== */
 addEventListener('keydown',ev=>{const t=ev.target,inField=t.closest&&t.closest('input,textarea,select,[contenteditable]');
-  if((ev.metaKey||ev.ctrlKey)&&!ev.shiftKey&&!ev.altKey&&ev.code==='KeyK'){ev.preventDefault();if(pal)closeMenus();else{const ae=document.activeElement,fk=ae&&ae.dataset&&ae.dataset.fk;menu=null;addpop=null;pal={q:'',i:0,trigger:fk};render()}return}
+  if((ev.metaKey||ev.ctrlKey)&&!ev.shiftKey&&!ev.altKey&&ev.code==='KeyK'){ev.preventDefault();if(pal)closeMenus();else{const ae=document.activeElement,fk=ae&&ae.dataset&&ae.dataset.fk;menu=null;addpop=null;keysOpen=false;pal={q:'',i:0,trigger:fk};render()}return}
   if(ev.key==='Escape'&&(menu||addpop||pal||keysOpen)){ev.preventDefault();closeMenus();return}
   if(ev.key==='Escape'&&GRAPH.sel&&!inField){const n=GRAPH.sel;GRAPH.sel=null;render();focusFk('gnode:'+n);return}
   if(ev.key==='Escape'&&SEL&&!COMPOSE&&!inField){SEL=null;$$('.cfloat').forEach(x=>x.remove());render();return}
-  if(inField||t.closest&&t.closest('.term'))return;
-  if(ev.altKey&&!ev.metaKey&&!ev.ctrlKey&&page==='home'){
+  /* ⌥1, ⌥2 and ⌥` work from the composer too: Option with a digit or the backtick types nothing a chat needs. */
+  if(ev.altKey&&!ev.metaKey&&!ev.ctrlKey&&page==='home'&&!(t.closest&&t.closest('.term'))){
     if(ev.code==='Digit1'){ev.preventDefault();isOpen('project')?closeWin('project'):openWin('project',{dock:'left'});return}
     if(ev.code==='Digit2'){ev.preventDefault();isOpen('activity')?closeWin('activity'):openWin('activity',{dock:'below'});return}
     if(ev.code==='Backquote'){ev.preventDefault();cycle();return}}
+  if(inField||t.closest&&t.closest('.term'))return;
   if(ev.key==='?'){ev.preventDefault();keysOpen={trigger:document.activeElement&&document.activeElement.dataset&&document.activeElement.dataset.fk};render();return}});
 /* ⌥` walks the windows: each pane, then each floating window; the active one is marked. */
 function cycle(){const list=[...panesIn(A.grid).map(p=>({pane:p.id})),...A.floats.map(f=>({float:f.key}))];if(!list.length)return;const i=list.findIndex(x=>A.active&&((x.pane&&x.pane===A.active.pane)||(x.float&&x.float===A.active.float)));
@@ -1856,7 +1872,7 @@ WIRE_EXTRA.push(on=>{
   on('[data-tint]',b=>b.onclick=()=>{termKey(b.dataset.tint,{ctrlKey:true,key:'c',preventDefault(){}})});
   on('[data-trestart]',b=>b.onclick=()=>{const who=b.dataset.trestart,T=TERM[who];T.state='restarting';T.input='';render();setTimeout(()=>{T.state='connecting';render();setTimeout(()=>{T.state='live';T.lines=TBOOT.slice(0,3).concat(['<d>Restarted. Worker 5 picks up where it was.</d>']);STATE.w5='Writing the pane grid docking';render()},800)},1000)});
   on('[data-tend]',b=>b.onclick=()=>{const T=TERM[b.dataset.tend];T.state='ended';T.exit=0;STATE.w5='Ended';render()})});
-PAL_EXTRA.push(C=>{C('Sequences','seq',()=>{page='sequences';return false});if(page==='home'&&CONV[A.mainConv]&&CONV[A.mainConv].term)C('Open the terminal','term',()=>{openWin('term:'+A.mainConv,{dock:'right'});return false})});
+PAL_EXTRA.push(C=>{if(page==='home'&&CONV[A.mainConv]&&CONV[A.mainConv].term)C('Open the terminal','term',()=>{openWin('term:'+A.mainConv,{dock:'right'});return false})});
 /* =====================================================================================================================
    Panels inside the chat: an agent's memories and a sequence open over the conversation, not as windows.
    Windows are for what a user keeps on Home; these belong to the chat they were opened from.
@@ -1941,7 +1957,7 @@ const CREATE={
     draft:a=>{const appr=!a[2].startsWith('No'),who=a[2].startsWith('I ')?'you':'a reviewer',start=a[1]==='When I start it'?'you start it':a[1].replace(/^When /,'').replace(/^a /,'a ');
       return {name:a[0],steps:[{t:'Do the work',when:start,done:'the work is committed'},{t:'Run the checks',when:'the work is committed',done:'every check passes'},...(appr?[{t:'Ask for approval',when:'the checks pass',done:`${who} approves`,wait:who}]:[]),{t:'Finish and tell the chat',when:appr?`${who} approves`:'the checks pass',done:'the result is in the chat'}]}}}};
 let FORM=null,GUIDE=null;
-function splitBtn(kind){const k=CREATE[kind];return `<span class="splitb"><button class="btn sm main" data-create="${kind}" data-fk="create:${kind}" title="${k.plain}">${I('plus','s14')}${k.title}</button><button class="btn sm more" data-createmenu="${kind}" data-fk="createmenu:${kind}" aria-haspopup="menu" aria-label="More ways to create a ${k.noun}" title="More ways">${I('caret','s14')}</button></span>`}
+function splitBtn(kind){const k=CREATE[kind];return `<span class="splitb"><button class="btn sm sb-main" data-create="${kind}" data-fk="create:${kind}" title="${k.plain}">${I('plus','s14')}${k.title}</button><button class="btn sm more" data-createmenu="${kind}" data-fk="createmenu:${kind}" aria-haspopup="menu" aria-label="More ways to create a ${k.noun}" title="More ways">${I('caret','s14')}</button></span>`}
 function createPlain(kind,values,drafted){menu=null;if(kind==='sequence'){newSequence(values,drafted);return}FORM={kind,values:{...(values||{})},drafted:!!drafted,focus:true};GUIDE=null;render()}
 function newSequence(d,drafted){const id=Math.max(...SEQS.map(s=>s.id))+1,steps=d&&d.steps?d.steps:[{t:'',when:'',done:''}];SEQS.push({id,name:d&&d.name||'New sequence',about:'Steps an agent follows.',steps:clone(steps)});
   SEQSEL=id;SEQEDIT={id,steps:clone(steps),drafted:!!drafted};GUIDE=null;showEmpty=false;page='sequences';render()}
@@ -2102,6 +2118,33 @@ function profilesHtml(){const sel=PROFILES.find(p=>p[0]===PROFSEL),row2=(t,line,
 PAGES_EXTRA.push({id:'profiles',t:'Profiles',ic:'users',line:'the kinds of helper: each with its program and models, driver, supervisor, rules and scripts.',html:profilesHtml});
 WIRE_EXTRA.push(on=>on('#main .pglist [data-item^="prof:"]',r=>r.onclick=()=>{PROFSEL=r.dataset.item.split(':')[1];render();focusFk('row:'+r.dataset.item)}));
 LOADERS.push(freshSet);
+/* =====================================================================================================================
+   Round 9 fixes (reports 321 to 324)
+   ===================================================================================================================== */
+/* The composer grows with what is typed, up to about six lines, also when a draft comes back after a redraw. */
+const growBox=t=>{t.style.height='auto';t.style.height=Math.min(Math.max(22,t.scrollHeight),140)+'px'};
+AFTER_RENDER.push(()=>$$('#main [data-compose]').forEach(t=>{if(t.value)growBox(t);t.addEventListener('input',()=>growBox(t))}));
+/* Answer on a question card puts the question above the composer; the next message is the answer. */
+let ANSWERQ=null;
+const baseComposer2=composer;
+composer=function(c){const h=composer2(c);return h};
+function composer2(c){const h=baseComposer2(c);if(!ANSWERQ||ANSWERQ.conv!==c)return h;
+  return h.replace('<div class="composer">',`<div class="composer"><div class="replying">${I('question','s14')}<span>Answering <b>${esc(ANSWERQ.q)}</b></span><button class="ib" style="width:20px;height:20px" data-unanswer aria-label="Stop answering">${I('close','s14')}</button></div>`)}
+const baseSend=sendMessage;
+sendMessage=function(c,t,extra){if(ANSWERQ&&ANSWERQ.conv===c&&t&&t.trim())ANSWERQ=null;return baseSend(c,t,extra)};
+WIRE_EXTRA.push(on=>{
+  on('.rowcard .btn, .dcard .btn',b=>{if(b.textContent.trim()!=='Answer')return;b.onclick=ev=>{ev.stopPropagation();const c=A.mainConv;ANSWERQ={conv:c,q:'Which save behaviour for the name?'};page='home';render();focusFk('compose:'+c)}});
+  on('[data-unanswer]',b=>b.onclick=()=>{const c=ANSWERQ&&ANSWERQ.conv;ANSWERQ=null;render();if(c)focusFk('compose:'+c)})});
+/* The add popover: kept inside the app, its chosen row kept in view, and rows that open from the keyboard too. */
+AFTER_RENDER.push(()=>{const p=$('#addpop');if(!p)return;const app=$('#app');
+  if(p.offsetLeft+p.offsetWidth>app.clientWidth-6)p.style.left=Math.max(6,app.clientWidth-p.offsetWidth-6)+'px';if(p.offsetTop+p.offsetHeight>app.clientHeight-6)p.style.top=Math.max(6,app.clientHeight-p.offsetHeight-6)+'px';
+  const on=$('.mi.on',p);if(on)on.scrollIntoView({block:'nearest'});
+  $$('[data-addrow]',p).forEach(b=>b.onclick=()=>{if(!addpop)return;const r=addpop.rows[+b.dataset.addrow],at=addpop.place;addpop=null;if(r)openWin(r.key,at?{at}:{})})});
+/* Focus after opening the plain chat goes to its composer; it has no tab to hold it. */
+const baseFocusKey=focusKey;
+focusKey=function(k){const p=paneOf(k);if(k==='chat'&&p&&isPlain(p)){focusFk('compose:'+A.mainConv);return}baseFocusKey(k)};
+/* A step change starts clean: no old toast whose Undo would bring back the last step, and no state left from it. */
+LOADERS.push(()=>{$('#toast').classList.remove('on');clearTimeout(toast.t);ACTFILTER=1;ACTOPEN=null;GRAPH.applied=false;GRAPH.sel=null;GRAPH.necks=false;GRAPH.suggest=false;TASKF='open';ANSWERQ=null;PLANTASK=null;PLANBACK=null});
 /* A plan made a moment ago has no tasks yet: its graph says so instead of drawing nothing. */
 const baseGraphView=graphView;
 graphView=function(plan){const P=PLANS.find(p=>p[0]===plan);if(!P||!P[3].length)return `<div class="empty"><b>No tasks in this plan yet</b>Its tasks, and what each waits on, show here.</div>`;return baseGraphView(plan)};
@@ -2132,7 +2175,7 @@ function startChrome(){
   load()}
 const NOTE_CARDS=[
   ['Docking is tiling','A window pushed past an edge of Home docks along that side. Dropped on a pane\'s compass, it splits the pane or joins its tabs. Panes share edges you drag, or move with the arrow keys. Windows taken out float; ⌥ while dragging keeps a window floating.'],
-  ['The chat, plain or a window','Alone, or beside docked panes, the chat is plain: no frame and no header, just the conversation at the reading width. Make it a window (right-click, ⌘K) and it gets a tab strip and moves like the rest.'],
+  ['The chat, plain or a window','As Home\'s only pane, the chat is plain: no frame and no header, just the conversation at the reading width. Beside other panes it has a tab strip like theirs and moves like the rest.'],
   ['A clean chat, and Activity','What agents do (tasks in hand, memories, searches, documents read, agents started) goes to Activity, each entry with an importance. Only what you choose reaches the chat, as a quiet line: from the panel\'s “In the chat” menu, or per kind in Settings.'],
   ['Documents','Documents, reports and Markdown files open in a reader. Select text to comment on it to any agent, ask an agent for feedback, or drag a document\'s bar from the chat onto an agent to hand it over.'],
   ['The task graph','Tasks and Plans show what waits on what. Click a task to light its whole chain, everything it waits on and everything waiting on it, with its holder and its waits beside it; click again, on empty space, or press Escape to clear. Show bottlenecks finds the tasks that hold up many others; Suggest improvement shows waits that can go, as a before and after.'],
