@@ -59,6 +59,7 @@ final readonly class ReadPartLiveHandler implements CommandHandler
                     .$failure::class.": {$failure->getMessage()}",
                 ['part_run' => $command->partRunId, 'exception' => $failure],
             );
+
             $position->markFailed();
 
             return $position->interpretation->value;
