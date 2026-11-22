@@ -15,6 +15,7 @@ use App\Enums\TimelineEventType;
 use App\Events\ChatLinePosted;
 use App\Support\ActorIdentity;
 use App\Support\Cards\DockIdentity;
+use App\Values\ChatLine;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -47,17 +48,20 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['inbox_id', 'sequence', 'type', 'actor_type', 'actor_id', 'interval_id'])]
 final class TimelineEvent extends Model implements EventSource, ReadableModel
 {
-    use RaisesEvents;
-
-    /** The most characters a plain line holds. */
-    public const int LINE_CHARACTER_LIMIT = 240;
-
-    /** The most characters a plain line's subject holds. */
-    public const int SUBJECT_CHARACTER_LIMIT = 120;
-
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
+
+    /**
+     * The most characters a plain line holds.
+     */
+    public const int LINE_CHARACTER_LIMIT = 240;
+
+    /**
+     * The most characters a plain line's subject holds.
+     */
+    public const int SUBJECT_CHARACTER_LIMIT = 120;
 
     public const null UPDATED_AT = null;
 
@@ -128,6 +132,27 @@ final class TimelineEvent extends Model implements EventSource, ReadableModel
         $event->raise(new ChatLinePosted($event->id, $inboxId, $sequence));
 
         return $event;
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * The plain line this event holds, as a chat shows it.
+     */
+    public function chatLine(): ChatLine
+    {
+        $source = $this->line_source_type === null
+            ? null
+            : new DockIdentity($this->line_source_type, (string) $this->line_source_id);
+
+        return new ChatLine(
+            $this->sequence,
+            (string) $this->line_subject,
+            (string) $this->line,
+            $source,
+            $this->line_card_placement ?? LineCardPlacement::Inline,
+            $this->created_at,
+        );
     }
 
     // ----------[ Accessors ]----------

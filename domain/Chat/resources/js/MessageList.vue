@@ -5,8 +5,8 @@ import Button from '@kit/Button';
 import Card from '@kit/Card';
 import type { DockCardEnvelope } from '@kit/dockCards';
 import Icon from '@kit/Icon';
-import DockPart from './dock/DockPart.vue';
 import LineWords from './LineWords.vue';
+import RecordCard from './RecordCard.vue';
 import type { ChatLineData, ChatMessageData, ParticipantData } from '@generated/types/chat';
 import type { ConversationIntent } from './composables/useConversationIntents';
 import type { RecoveryEntry } from './composables/useMessageDrafts';
@@ -180,13 +180,8 @@ const isEmpty = computed(() => rows.value.length === 0 && props.pending.length =
                 <p class="self-center text-badge text-text-3">{{ day }}</p>
             </template>
             <template v-if="line !== null && line.card !== null && line.cardPlacement === 'inline'">
-                <Card tone="plain" class="w-full max-w-[92%] self-start px-3 py-2" :aria-label="line.card.accessibleName">
-                    <template v-if="line.card.root">
-                        <DockPart :node="line.card.root" :path="`${line.card.placementId}/${line.card.root.key}`" />
-                    </template>
-                    <template v-else>
-                        <p class="truncate text-small text-text-2">{{ line.card.safeSummary }}</p>
-                    </template>
+                <Card tone="plain" class="w-full max-w-[92%] self-start px-3 py-2">
+                    <RecordCard :card="line.card" />
                 </Card>
             </template>
             <template v-else-if="line !== null && line.card !== null">

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\RecordRunEvents\RecordRunEventsCommand;
+use App\Contracts\ChatLines;
 use App\Contracts\ShellAdmission;
 use App\Enums\ShellDialect;
 use App\Models\ProcessRun;
 use App\Support\ActorIdentity;
-use App\Support\ChatLines;
 use App\Values\ChatLine;
 use App\Values\ExecutionContext;
 use Tests\Support\MessagingTestCase;

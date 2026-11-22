@@ -73,7 +73,7 @@ use Illuminate\Support\Carbon;
  * @property ExecutionPlan $plan
  * @property CarbonImmutable|null $consumed_at
  * @property CarbonImmutable|null $heartbeat_at
- * @property CarbonImmutable|null $shown_in_chat_at when its agent's chat began showing it, once it outlasted a quick command
+ * @property CarbonImmutable|null $shown_in_chat_at when its agent's chat began showing it
  * @property CarbonImmutable|null $started_at
  * @property CarbonImmutable|null $ended_at
  * @property RunRequestIntent $request_intent
@@ -99,24 +99,26 @@ use Illuminate\Support\Carbon;
 ])]
 final class ProcessRun extends Model implements Dockable, EventSource, ReadableModel
 {
+    use BelongsToOneActor;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
+    use RaisesEvents;
+
     /**
      * The type a run docks under.
      */
     public const string DOCK_TYPE = 'process.run';
 
-    /** How long a quick command runs at most; a run past it shows in its agent's chat. */
+    /**
+     * How long a quick command runs at most; a run past it shows in its agent's chat.
+     */
     public const int QUICK_COMMAND_SECOND_LIMIT = 10;
 
     /**
      * The most parts, attempts included, a docked run loads with its card.
      */
     public const int DOCK_PART_LIMIT = 500;
-
-    use BelongsToOneActor;
-    use BoundedReads;
-    use HasUlids;
-    use Linkable;
-    use RaisesEvents;
 
     /**
      * @var array<string, mixed>
@@ -255,7 +257,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         $this->assertSaved($this->save());
 
         if ($outlasted) {
-            $this->raise(new ProcessRunOutlasted($this->id, new ActorIdentity(ActorType::from((string) $this->actor_type), (string) $this->actor_id)));
+            $this->raise(new ProcessRunOutlasted($this->id, $this->owningActor()));
         }
     }
 

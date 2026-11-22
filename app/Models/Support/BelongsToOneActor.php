@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models\Support;
 
 use App\Contracts\CurrentActor;
+use App\Enums\ActorType;
 use App\Support\ActorIdentity;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -44,6 +45,16 @@ trait BelongsToOneActor
     {
         $this->setAttribute('actor_type', $actor->type->value);
         $this->setAttribute('actor_id', $actor->id);
+    }
+
+    /**
+     * The actor the row belongs to, once it was given to one.
+     */
+    public function owningActor(): ActorIdentity
+    {
+        $type = ActorType::from((string) $this->getAttribute('actor_type'));
+
+        return new ActorIdentity($type, (string) $this->getAttribute('actor_id'));
     }
 
     /**

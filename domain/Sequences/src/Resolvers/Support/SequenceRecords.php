@@ -46,6 +46,8 @@ final readonly class SequenceRecords
      */
     public function heldBy(ActorIdentity $follower, string $runId): SequenceRun
     {
-        return SequenceRun::query()->ownedBy($follower)->findOr($runId, fn () => throw SequenceRunMissing::forId($runId));
+        return SequenceRun::query()
+            ->ownedBy($follower)
+            ->findOr($runId, fn () => throw SequenceRunMissing::forId($runId));
     }
 }

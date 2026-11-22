@@ -37,7 +37,7 @@ function item(
 }
 
 describe('the sidebar', () => {
-    it('draws the merged navigation by group, the foot apart, the current item and its counts', () => {
+    it('draws the merged navigation as one list without group heads, the foot apart, the current item and its counts', () => {
         page.props.navigation = {
             items: [
                 item({ key: 'web.home', label: 'Home', url: '/', icon: 'home' }),
@@ -67,26 +67,12 @@ describe('the sidebar', () => {
         const view = mount(AppSidebar);
         const headings = view.find('aside').findAll('h2').map((heading) => heading.text());
 
-        expect(headings).toEqual(['Work', 'Agents', 'Agents']);
+        expect(headings).toEqual([]);
         expect(view.find('[aria-current="page"]').attributes('href')).toBe('/plans?state=open');
         expect(view.find('a[href="/plans?state=open"]').text()).toContain('0');
         expect(view.find('a[href="/plans?state=waiting"]').text()).toBe('Waiting');
         expect(view.find('nav[aria-label="More pages"]').text()).toContain('Help');
         expect(view.find('nav[aria-label="Pages"]').text()).not.toContain('Help');
-    });
-
-    it('leaves out the head of a group with no visible item', () => {
-        page.props.navigation = {
-            items: [item({ key: 'web.home', label: 'Home', url: '/', icon: 'home' })],
-            groups: [],
-            current: [],
-        };
-        page.props.navigationCounts = undefined;
-
-        const view = mount(AppSidebar);
-
-        expect(view.find('aside').findAll('h2')).toHaveLength(0);
-        expect(view.find('nav[aria-label="More pages"]').exists()).toBe(false);
     });
 
     it('is 216 px wide, marks the current page with a bar as well as its colour, and folds to a 56 px rail', async () => {

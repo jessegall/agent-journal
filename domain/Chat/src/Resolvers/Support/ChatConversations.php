@@ -6,6 +6,7 @@ namespace Domain\Chat\Resolvers\Support;
 
 use App\Contracts\ActorLabels;
 use App\Contracts\ChatEligibility;
+use App\Contracts\ChatLines;
 use App\Contracts\ConversationResolver;
 use App\Contracts\CurrentActor;
 use App\Contracts\InboxResolver;
@@ -21,7 +22,6 @@ use App\Support\AgentDrivers;
 use App\Support\AgentOption;
 use App\Support\ChatInboxes;
 use App\Support\ChatInterval;
-use App\Support\ChatLines;
 use App\Values\ChatLine;
 use Domain\Chat\Data\ChatCapabilitiesData;
 use Domain\Chat\Data\ChatLineData;
@@ -31,9 +31,7 @@ use Domain\Chat\Data\ChatSummaryData;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Data\DeliveryData;
 use Domain\Chat\Data\ParticipantData;
-use Domain\Chat\Data\QuestionActionsData;
 use Domain\Chat\Data\ReplyTargetData;
-use Domain\Chat\Data\SpeakerData;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Support\DockProjection;
 
@@ -253,11 +251,11 @@ final readonly class ChatConversations
             'id' => $message->id,
             'sequence' => (int) $message->sequence,
             'rootId' => $message->userRootId,
-            'speaker' => SpeakerData::from([
+            'speaker' => [
                 'actor' => $speaker,
                 'label' => $message->authorLabel ?? $speaker,
                 'driver' => $drivers[$speaker] ?? null,
-            ]),
+            ],
             'addressedTo' => $message->addresseeType === null
                 ? null
                 : "{$message->addresseeType}:{$message->addresseeId}",
@@ -266,11 +264,11 @@ final readonly class ChatConversations
             'state' => $message->state,
             'stateVersion' => $message->stateVersion,
             'respondent' => $respondent,
-            'actions' => QuestionActionsData::from([
+            'actions' => [
                 'answer' => $settles,
                 'decline' => $settles,
                 'retryDelivery' => array_any($deliveries, fn (DeliveryData $delivery) => $delivery->rangeId !== null),
-            ]),
+            ],
             'readByMe' => $message->shownToViewer,
             'sentAt' => $message->sentAt,
             'requestKey' => $message->requestKey,

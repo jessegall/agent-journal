@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
+use App\Contracts\ChatLines;
 use App\Enums\LineCardPlacement;
 use App\Support\ActorIdentity;
-use App\Support\ChatLines;
 use App\Values\ChatLine;
 use Domain\Chat\Support\DockProjection;
 use Domain\Sequences\Commands\AdvanceSequence\AdvanceSequenceCommand;

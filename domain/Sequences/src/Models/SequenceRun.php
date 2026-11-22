@@ -11,7 +11,6 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\EventSource;
 use App\Contracts\Numbered;
 use App\Contracts\ReadableModel;
-use App\Enums\ActorType;
 use App\Enums\Alignment;
 use App\Enums\Tone;
 use App\Models\Support\BelongsToOneActor;
@@ -68,7 +67,9 @@ final class SequenceRun extends Model implements Dockable, EventSource, Numbered
     use Linkable;
     use RaisesEvents;
 
-    /** The run's stable name in links and in the chat lines that show it. */
+    /**
+     * The run's stable name in links and in the chat lines that show it.
+     */
     public const string LINK_TYPE = 'sequences.sequence-run';
 
     /**
@@ -125,7 +126,7 @@ final class SequenceRun extends Model implements Dockable, EventSource, Numbered
         $this->belongTo($follower);
         $this->assertSaved($this->save());
         $this->raise(new SequenceStarted($this->id, new StackTarget($follower->id, $sessionId)));
-        $this->raise(new SequenceStepReached($this->id, $this->follower(), $this->current_step));
+        $this->raise(new SequenceStepReached($this->id, $this->owningActor(), $this->current_step));
     }
 
     /**
@@ -138,31 +139,23 @@ final class SequenceRun extends Model implements Dockable, EventSource, Numbered
         if ($ended >= count($this->steps)) {
             $this->state = SequenceRunState::Finished;
             $this->assertSaved($this->save());
-            $this->raise(new SequenceStepEnded($this->id, $this->follower(), $ended));
-            $this->raise(new SequenceEnded($this->id, $this->follower(), $this->state));
+            $this->raise(new SequenceStepEnded($this->id, $this->owningActor(), $ended));
+            $this->raise(new SequenceEnded($this->id, $this->owningActor(), $this->state));
 
             return;
         }
 
         $this->current_step++;
         $this->assertSaved($this->save());
-        $this->raise(new SequenceStepEnded($this->id, $this->follower(), $ended));
-        $this->raise(new SequenceStepReached($this->id, $this->follower(), $this->current_step));
+        $this->raise(new SequenceStepEnded($this->id, $this->owningActor(), $ended));
+        $this->raise(new SequenceStepReached($this->id, $this->owningActor(), $this->current_step));
     }
 
     public function cancel(): void
     {
         $this->state = SequenceRunState::Cancelled;
         $this->assertSaved($this->save());
-        $this->raise(new SequenceEnded($this->id, $this->follower(), $this->state));
-    }
-
-    /**
-     * The agent following the run, set by starting it.
-     */
-    public function follower(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from((string) $this->actor_type), (string) $this->actor_id);
+        $this->raise(new SequenceEnded($this->id, $this->owningActor(), $this->state));
     }
 
     /**
@@ -208,10 +201,14 @@ final class SequenceRun extends Model implements Dockable, EventSource, Numbered
      */
     private function stepLabel(int $step): StateLabel
     {
+        $key = "step-{$step}-state";
+        $isDone = $step < $this->current_step || $this->state === SequenceRunState::Finished;
+        $isRunning = $step === $this->current_step && $this->state->needsWork();
+
         return match (true) {
-            $step < $this->current_step || $this->state === SequenceRunState::Finished => new StateLabel("step-{$step}-state", 'Done', Tone::Muted),
-            $step === $this->current_step && $this->state->needsWork() => new StateLabel("step-{$step}-state", 'Running', Tone::Note),
-            default => new StateLabel("step-{$step}-state", 'Waiting', Tone::Neutral),
+            $isDone => new StateLabel($key, 'Done', Tone::Muted),
+            $isRunning => new StateLabel($key, 'Running', Tone::Note),
+            default => new StateLabel($key, 'Waiting', Tone::Neutral),
         };
     }
 

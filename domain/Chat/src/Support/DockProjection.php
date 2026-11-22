@@ -137,7 +137,8 @@ final readonly class DockProjection
 
         foreach ($sources as $key => $source) {
             foreach ($composed->find($source) as $card) {
-                $cards[$key] = $this->encoder->encode($card, $key, $source, mb_substr($card->accessibleName, 0, self::SUMMARY_CHARACTER_LIMIT));
+                $summary = mb_substr($card->accessibleName, 0, self::SUMMARY_CHARACTER_LIMIT);
+                $cards[$key] = $this->encoder->encode($card, $key, $source, $summary);
             }
         }
 

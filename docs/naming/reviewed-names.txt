@@ -600,6 +600,8 @@ case	LifecycleState::Running
 case	LifecycleState::Skipped
 case	LifecycleState::SpawnFailed
 case	LifecycleState::Stopped
+case	LineCardPlacement::Inline
+case	LineCardPlacement::Panel
 case	MenuEntryState::Current
 case	MenuEntryState::Retired
 case	MenuEntryState::Superseded
@@ -1391,6 +1393,7 @@ case	TextAnchorType::Section
 case	TimelineEventType::Closed
 case	TimelineEventType::Joined
 case	TimelineEventType::Left
+case	TimelineEventType::Line
 case	TimelineEventType::Message
 case	TimelineEventType::Transferred
 case	TokenType::AndIf
@@ -1697,6 +1700,8 @@ class	AdmittedUsers
 class	AdvanceAskCommand
 class	AdvanceAskHandler
 class	AdvanceDueAsksOnTick
+class	AdvanceSequenceCommand
+class	AdvanceSequenceHandler
 class	AdvanceSkillContext
 class	AdvisoryEngineLock
 class	AdvisoryStackAdmission
@@ -2157,6 +2162,8 @@ class	CancelProjectCommandRunCommand
 class	CancelProjectCommandRunHandler
 class	CancelRuntimeRequestController
 class	CancelScriptRuntimeRequestController
+class	CancelSequenceCommand
+class	CancelSequenceHandler
 class	CancelSignInCommand
 class	CancelSignInController
 class	CancelSignInHandler
@@ -2226,6 +2233,10 @@ class	ChatInboxes
 class	ChatInput
 class	ChatInterval
 class	ChatIntervalEvidence
+class	ChatLine
+class	ChatLineData
+class	ChatLinePosted
+class	ChatLines
 class	ChatMemberAuthority
 class	ChatMemberAuthorizer
 class	ChatMemberJoined
@@ -4413,6 +4424,7 @@ class	PostCommentCommand
 class	PostCommentController
 class	PostCommentHandler
 class	PostCommentRequest
+class	PostSequenceLines
 class	PostTextCommentCommand
 class	PostTextCommentHandler
 class	PreToolBody
@@ -4467,6 +4479,7 @@ class	ProcessReconcileCommand
 class	ProcessRestoreCheckCommand
 class	ProcessRules
 class	ProcessRun
+class	ProcessRunOutlasted
 class	ProcessShowCommand
 class	ProcessStart
 class	ProcessStartScope
@@ -5687,15 +5700,19 @@ class	SentMessageAnswer
 class	SeparateRequiredListeners
 class	SequenceCommandHandler
 class	SequenceEditorPartData
+class	SequenceEnded
 class	SequenceIndexResolver
 class	SequencePolicy
 class	SequenceRecords
 class	SequenceRun
+class	SequenceRunDocking
 class	SequenceRunMissing
 class	SequenceRunRequest
 class	SequenceRunWindowResolver
 class	SequenceStarted
 class	SequenceStepData
+class	SequenceStepEnded
+class	SequenceStepReached
 class	SequenceWork
 class	SequencesDomain
 class	SequencesServiceProvider
@@ -5957,6 +5974,7 @@ class	ShowDocumentRevisionCall
 class	ShowDocumentRevisionController
 class	ShowDraftCall
 class	ShowDraftController
+class	ShowLongRunInChat
 class	ShowMessageCall
 class	ShowMessageCommand
 class	ShowMessageController
@@ -7022,6 +7040,8 @@ constant	ChatAdmissionPolicy::CANDIDATE_LIMIT
 constant	ChatExcerpt::MESSAGE_LIMIT
 constant	ChatInboxProvider::UNTITLED
 constant	ChatInboxes::PROVIDER_KEY
+constant	ChatLines::CHAT_LIMIT
+constant	ChatLines::PAGE_LINE_LIMIT
 constant	ChatWindowResolver::INBOX_MISSING
 constant	ChatWindowResolver::PAGE
 constant	CheckDraftPageController::CHECKED_DRAFT
@@ -7507,6 +7527,7 @@ constant	ProbeChallenges::SECONDS
 constant	ProcessEvent::OPERATIONAL_ERROR
 constant	ProcessRun::DOCK_PART_LIMIT
 constant	ProcessRun::DOCK_TYPE
+constant	ProcessRun::QUICK_COMMAND_SECOND_LIMIT
 constant	Profile::LINK_TYPE
 constant	ProfileActivateCommand::NO_OWNER_YET
 constant	ProfileBases::TYPE
@@ -7684,6 +7705,7 @@ constant	SendDriverRequestAgainHandler::KEY_PREFIX
 constant	SentMessageAnswer::REQUEST_KEY
 constant	SentMessageAnswer::SENT_MESSAGE
 constant	SeparateRequiredListeners::DEFERRING_INTERFACES
+constant	SequenceRun::LINK_TYPE
 constant	SessionOutputGrant::MOST_GRANTS
 constant	SessionOutputPaths::DOT_SEGMENT
 constant	SessionProvenance::SESSION
@@ -7906,6 +7928,8 @@ constant	TickCommands::MAXIMUM
 constant	TickDelivery::MICROSECONDS_PER_SECOND
 constant	TickDelivery::NANOSECONDS_PER_MICROSECOND
 constant	TickDelivery::NANOSECONDS_PER_MILLISECOND
+constant	TimelineEvent::LINE_CHARACTER_LIMIT
+constant	TimelineEvent::SUBJECT_CHARACTER_LIMIT
 constant	TimelineEvent::UPDATED_AT
 constant	ToolArguments::FIRST_PAGE_FILTERS
 constant	ToolRules::CHECK
@@ -8069,6 +8093,7 @@ enum	LayoutTag
 enum	LeaveReason
 enum	LibraryTypeFilter
 enum	LifecycleState
+enum	LineCardPlacement
 enum	MenuEntryState
 enum	MergeAttemptState
 enum	MergeRefusalReason
@@ -9247,6 +9272,8 @@ method	AdvanceAskHandler::handle()
 method	AdvanceDueAsksOnTick::__construct()
 method	AdvanceDueAsksOnTick::__invoke()
 method	AdvanceDueAsksOnTick::maintenanceScope()
+method	AdvanceSequenceCommand::__construct()
+method	AdvanceSequenceHandler::handle()
 method	AdvanceSkillContext::handle()
 method	AdvisoryEngineLock::__construct()
 method	AdvisoryEngineLock::acquire()
@@ -10803,6 +10830,8 @@ method	CancelProjectCommandRunCommand::__construct()
 method	CancelProjectCommandRunHandler::handle()
 method	CancelRuntimeRequestController::__invoke()
 method	CancelScriptRuntimeRequestController::__invoke()
+method	CancelSequenceCommand::__construct()
+method	CancelSequenceHandler::handle()
 method	CancelSignInCommand::__construct()
 method	CancelSignInController::__invoke()
 method	CancelSignInHandler::__construct()
@@ -10935,6 +10964,7 @@ method	ChatCapabilitiesData::__construct()
 method	ChatConversations::__construct()
 method	ChatConversations::capabilitiesOf()
 method	ChatConversations::keyOf()
+method	ChatConversations::linesFrom()
 method	ChatConversations::pageFor()
 method	ChatConversations::replyTargetOf()
 method	ChatConversations::rowOf()
@@ -11015,6 +11045,13 @@ method	ChatInboxes::open()
 method	ChatInput::__construct()
 method	ChatInterval::__construct()
 method	ChatIntervalEvidence::__construct()
+method	ChatLine::__construct()
+method	ChatLineData::__construct()
+method	ChatLineData::fromChatLine()
+method	ChatLinePosted::__construct()
+method	ChatLinePosted::scopedInboxId()
+method	ChatLines::linesFrom()
+method	ChatLines::post()
 method	ChatMemberAuthority::__construct()
 method	ChatMemberAuthority::description()
 method	ChatMemberAuthority::mayRunApplicationCommands()
@@ -13094,7 +13131,9 @@ method	DockPlacement::remove()
 method	DockPlacement::source()
 method	DockProjection::__construct()
 method	DockProjection::batchAfter()
+method	DockProjection::cardsOf()
 method	DockProjection::composed()
+method	DockProjection::composedSources()
 method	DockProjection::encoded()
 method	DockProjection::page()
 method	DockRegistration::definition()
@@ -15284,6 +15323,7 @@ method	InboxInterval::end()
 method	InboxInterval::heldBy()
 method	InboxInterval::isActive()
 method	InboxInterval::isHeldBy()
+method	InboxInterval::stillOpen()
 method	InboxInterval::takeRole()
 method	InboxIntervals::enter()
 method	InboxIntervals::leave()
@@ -18312,6 +18352,9 @@ method	PostCommentRequest::givenAnchorFields()
 method	PostCommentRequest::range()
 method	PostCommentRequest::rules()
 method	PostCommentRequest::submissionKey()
+method	PostSequenceLines::__construct()
+method	PostSequenceLines::handle()
+method	PostSequenceLines::wordsFor()
 method	PostTextCommentCommand::__construct()
 method	PostTextCommentHandler::__construct()
 method	PostTextCommentHandler::handle()
@@ -18546,6 +18589,7 @@ method	ProcessRun::nextUpdate()
 method	ProcessRun::ofAnyActor()
 method	ProcessRun::outcomeAudience()
 method	ProcessRun::outcomeRecipients()
+method	ProcessRun::outlastsAQuickCommand()
 method	ProcessRun::parts()
 method	ProcessRun::recordHeartbeat()
 method	ProcessRun::revokeOutcomeUser()
@@ -18554,6 +18598,7 @@ method	ProcessRun::stopSurvivors()
 method	ProcessRun::unfinishedIn()
 method	ProcessRun::withDockParts()
 method	ProcessRunCallers::callerOf()
+method	ProcessRunOutlasted::__construct()
 method	ProcessShowCommand::handle()
 method	ProcessStart::accountIdentity()
 method	ProcessStart::advanceOutputGeneration()
@@ -21941,18 +21986,27 @@ method	SeparateRequiredListeners::isDeclaredBy()
 method	SeparateRequiredListeners::requiredClassOf()
 method	SeparateRequiredListeners::sorted()
 method	SequenceEditorPartData::__construct()
+method	SequenceEnded::__construct()
 method	SequenceIndexResolver::read()
 method	SequencePolicy::model()
 method	SequenceRecords::followedBy()
 method	SequenceRecords::get()
+method	SequenceRecords::heldBy()
 method	SequenceRecords::many()
 method	SequenceRun::advance()
 method	SequenceRun::cancel()
 method	SequenceRun::casts()
+method	SequenceRun::composeDockCard()
 method	SequenceRun::create()
+method	SequenceRun::follower()
+method	SequenceRun::identifyFor()
 method	SequenceRun::lockedById()
 method	SequenceRun::startFor()
+method	SequenceRun::stepLabel()
+method	SequenceRun::stepLine()
 method	SequenceRun::work()
+method	SequenceRunDocking::cardsFor()
+method	SequenceRunDocking::requireReadable()
 method	SequenceRunMissing::forId()
 method	SequenceRunRequest::rules()
 method	SequenceRunRequest::runId()
@@ -21962,6 +22016,8 @@ method	SequenceRunWindowResolver::markOf()
 method	SequenceRunWindowResolver::read()
 method	SequenceStarted::__construct()
 method	SequenceStepData::__construct()
+method	SequenceStepEnded::__construct()
+method	SequenceStepReached::__construct()
 method	SequenceWork::__construct()
 method	SequenceWork::currentInstruction()
 method	SequenceWork::needsWork()
@@ -22929,6 +22985,8 @@ method	ShowDocumentRevisionCall::__construct()
 method	ShowDocumentRevisionController::__invoke()
 method	ShowDraftCall::__construct()
 method	ShowDraftController::__invoke()
+method	ShowLongRunInChat::__construct()
+method	ShowLongRunInChat::handle()
 method	ShowMessageCall::__construct()
 method	ShowMessageCommand::handle()
 method	ShowMessageController::__invoke()
@@ -25388,6 +25446,7 @@ method	TimeBudget::processorMilliseconds()
 method	TimelineEvent::actor()
 method	TimelineEvent::casts()
 method	TimelineEvent::create()
+method	TimelineEvent::createLine()
 method	TimelineEvent::ofInbox()
 method	TimelineEventType::changesMembership()
 method	TimingVerdict::__construct()
@@ -26492,6 +26551,7 @@ parameter	$captured
 parameter	$capturedAt
 parameter	$captures
 parameter	$card
+parameter	$cardPlacement
 parameter	$cards
 parameter	$cascade
 parameter	$case
@@ -27165,6 +27225,7 @@ parameter	$from
 parameter	$fromHostId
 parameter	$fromOffset
 parameter	$fromRevision
+parameter	$fromSequence
 parameter	$fromState
 parameter	$function
 parameter	$gate
@@ -28069,6 +28130,7 @@ parameter	$port
 parameter	$ports
 parameter	$position
 parameter	$positional
+parameter	$postedAt
 parameter	$posting
 parameter	$precision
 parameter	$predecessor
@@ -28234,6 +28296,7 @@ parameter	$rank
 parameter	$ranked
 parameter	$reach
 parameter	$reachedLiveJob
+parameter	$reachesStart
 parameter	$read
 parameter	$readArguments
 parameter	$readAt
@@ -28960,6 +29023,7 @@ parameter	$ticketDigest
 parameter	$ticking
 parameter	$time
 parameter	$timeline
+parameter	$timelineEventId
 parameter	$timeoutSeconds
 parameter	$times
 parameter	$timing
@@ -29569,6 +29633,7 @@ property	AdvanceAskHandler::$escalation
 property	AdvanceDueAsksOnTick::$asks
 property	AdvanceDueAsksOnTick::$clock
 property	AdvanceDueAsksOnTick::$commands
+property	AdvanceSequenceCommand::$sequenceRunId
 property	AdvisoryEngineLock::$databases
 property	AdvisoryEngineLock::$ownerBackendId
 property	AdvisoryEngineLock::$settings
@@ -30441,6 +30506,7 @@ property	CancelPrivateEntryHandler::$controls
 property	CancelProjectCommandCall::$requestKey
 property	CancelProjectCommandRunCommand::$agentId
 property	CancelProjectCommandRunCommand::$requestKey
+property	CancelSequenceCommand::$sequenceRunId
 property	CancelSignInCommand::$attemptId
 property	CancelSignInHandler::$challenges
 property	CancelSignInHandler::$facts
@@ -30532,6 +30598,7 @@ property	ChatConversations::$dock
 property	ChatConversations::$eligibility
 property	ChatConversations::$inboxes
 property	ChatConversations::$labels
+property	ChatConversations::$lines
 property	ChatConversations::$messages
 property	ChatData::$agents
 property	ChatData::$canCreateChats
@@ -30596,6 +30663,21 @@ property	ChatInterval::$intervalId
 property	ChatInterval::$joinedSequence
 property	ChatInterval::$role
 property	ChatIntervalEvidence::$intervalId
+property	ChatLine::$cardPlacement
+property	ChatLine::$line
+property	ChatLine::$postedAt
+property	ChatLine::$sequence
+property	ChatLine::$source
+property	ChatLine::$subject
+property	ChatLineData::$card
+property	ChatLineData::$cardPlacement
+property	ChatLineData::$line
+property	ChatLineData::$postedAt
+property	ChatLineData::$sequence
+property	ChatLineData::$subject
+property	ChatLinePosted::$inboxId
+property	ChatLinePosted::$sequence
+property	ChatLinePosted::$timelineEventId
 property	ChatMemberAuthority::$entry
 property	ChatMemberAuthorizer::$policies
 property	ChatMemberJoined::$inboxId
@@ -30649,6 +30731,7 @@ property	ChatRoleChanged::$member
 property	ChatRoleChanged::$role
 property	ChatRowsInput::$inboxId
 property	ChatRowsInput::$olderCursor
+property	ChatRowsPageData::$lines
 property	ChatRowsPageData::$messages
 property	ChatRowsPageData::$olderCursor
 property	ChatStateConflict::$staleCode
@@ -31330,6 +31413,7 @@ property	ConversationData::$capabilities
 property	ConversationData::$dock
 property	ConversationData::$inboxId
 property	ConversationData::$latestSequence
+property	ConversationData::$lines
 property	ConversationData::$messages
 property	ConversationData::$olderCursor
 property	ConversationData::$participants
@@ -34878,6 +34962,8 @@ property	PostCommentCommand::$body
 property	PostCommentCommand::$submissionKey
 property	PostCommentCommand::$target
 property	PostCommentHandler::$comments
+property	PostSequenceLines::$lines
+property	PostSequenceLines::$runs
 property	PostTextCommentCommand::$body
 property	PostTextCommentCommand::$range
 property	PostTextCommentCommand::$submissionKey
@@ -35020,6 +35106,8 @@ property	ProcessReconcileCommand::$signature
 property	ProcessRestoreCheckCommand::$description
 property	ProcessRestoreCheckCommand::$signature
 property	ProcessRun::$attributes
+property	ProcessRunOutlasted::$processRunId
+property	ProcessRunOutlasted::$runner
 property	ProcessShowCommand::$description
 property	ProcessShowCommand::$signature
 property	ProcessStart::$hidden
@@ -37486,6 +37574,9 @@ property	SequenceEditorPartData::$name
 property	SequenceEditorPartData::$saveAddress
 property	SequenceEditorPartData::$steps
 property	SequenceEditorPartData::$version
+property	SequenceEnded::$follower
+property	SequenceEnded::$runId
+property	SequenceEnded::$state
 property	SequenceRun::$attributes
 property	SequenceRunWindowResolver::$request
 property	SequenceRunWindowResolver::$runs
@@ -37495,6 +37586,12 @@ property	SequenceStepData::$doneWhen
 property	SequenceStepData::$id
 property	SequenceStepData::$runsWhen
 property	SequenceStepData::$title
+property	SequenceStepEnded::$follower
+property	SequenceStepEnded::$runId
+property	SequenceStepEnded::$step
+property	SequenceStepReached::$follower
+property	SequenceStepReached::$runId
+property	SequenceStepReached::$step
 property	SequenceWork::$runNumber
 property	SequenceWork::$state
 property	SequenceWork::$stepInstruction
@@ -37972,6 +38069,7 @@ property	ShowDocumentCall::$selection
 property	ShowDocumentRevisionCall::$number
 property	ShowDocumentRevisionCall::$revision
 property	ShowDraftCall::$number
+property	ShowLongRunInChat::$lines
 property	ShowMessageCall::$messageId
 property	ShowMessageCommand::$description
 property	ShowMessageCommand::$signature
@@ -40512,6 +40610,7 @@ variable	$flag
 variable	$flags
 variable	$folder
 variable	$folders
+variable	$follower
 variable	$forbiddenWordLines
 variable	$form
 variable	$former
@@ -41078,6 +41177,7 @@ variable	$outcome
 variable	$outcomes
 variable	$outcomesById
 variable	$outer
+variable	$outlasted
 variable	$outline
 variable	$output
 variable	$outputs

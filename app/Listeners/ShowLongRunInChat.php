@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Attributes\InCommandTransaction;
+use App\Contracts\ChatLines;
 use App\Contracts\Listener;
 use App\Events\ProcessRunOutlasted;
 use App\Models\ProcessRun;
 use App\Support\Cards\DockIdentity;
-use App\Support\ChatLines;
 
 /**
  * Shows a run that outlasted a quick command in its agent's chats, as a card that follows the run to its end.
