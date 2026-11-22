@@ -14565,6 +14565,8 @@ method	FollowingSequenceStateFactory::statesFor()
 method	FollowingSequenceStateReference::forRun()
 method	FormerPaths::classWasIn()
 method	FormerPaths::filesFrom()
+method	FormerPaths::foldersToScan()
+method	FormerPaths::liesOutside()
 method	FormerPaths::of()
 method	FormerPaths::paths()
 method	FormerPaths::read()
@@ -40201,6 +40203,7 @@ variable	$cookie
 variable	$copies
 variable	$copy
 variable	$copyId
+variable	$coreAreas
 variable	$coreExports
 variable	$coreGroups
 variable	$coreRoot

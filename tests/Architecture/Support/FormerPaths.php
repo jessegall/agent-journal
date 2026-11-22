@@ -52,6 +52,35 @@ final class FormerPaths
     }
 
     /**
+     * The folders to scan for a list of judged folders, given from the project root: the package and test folders as
+     * they are, and app whole when an old Core area such as app/Bus is among them.
+     *
+     * @param  list<string>  $folders
+     * @return list<string>
+     */
+    public static function foldersToScan(array $folders): array
+    {
+        $others = array_values(array_filter($folders, fn (string $folder) => ! str_starts_with($folder, 'app/')));
+
+        return count($others) === count($folders) ? $others : [...$others, 'app'];
+    }
+
+    /**
+     * Whether a scanned file lies outside the judged folders: an app file that was in none of the old Core areas.
+     *
+     * @param  list<string>  $folders
+     */
+    public static function liesOutside(string $relativePath, array $folders): bool
+    {
+        $coreAreas = array_values(array_map(
+            fn (string $folder) => "{$folder}/",
+            array_filter($folders, fn (string $folder) => str_starts_with($folder, 'app/')),
+        ));
+
+        return str_starts_with($relativePath, 'app/') && ! self::wasIn($relativePath, $coreAreas);
+    }
+
+    /**
      * Every current file, relative to the project, that was in one of the old folders.
      *
      * @param  list<string>  $prefixes
