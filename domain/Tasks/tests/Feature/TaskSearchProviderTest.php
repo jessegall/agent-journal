@@ -27,9 +27,9 @@ use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 
 /**
- * The title scan visits blocks of 32 ids tier by tier: a match only in the second block comes after a scanning
- * call, equal titles stay two hits, a miss reads one block per call, and a refresh answers only what still
- * matches inside the live grant.
+ * The title scan visits blocks of at most 32 tasks the tier's pattern matches, tier by tier: a match only in the
+ * second block comes after a scanning call, equal titles stay two hits, a miss reads one block per call, and a
+ * refresh answers only what still matches inside the live grant.
  */
 final class TaskSearchProviderTest extends TestCase
 {
@@ -42,20 +42,24 @@ final class TaskSearchProviderTest extends TestCase
     public function test_a_match_only_in_the_second_block_comes_after_a_scanning_call(): void
     {
         foreach (range(1, TaskSearchProvider::BLOCK_SIZE) as $index) {
-            self::task($index, "Unrelated chore {$index}");
+            self::task($index, 'Driver');
         }
 
-        $match = self::task(TaskSearchProvider::BLOCK_SIZE + 1, 'Driver');
+        $match = self::task(TaskSearchProvider::BLOCK_SIZE + 1, 'Old driver');
         $provider = $this->app->make(TaskSearchProvider::class);
-        $query = self::query('driver', self::user());
+        $query = self::query('driver', self::user(), SearchQuery::HIT_LIMIT);
+        $batch = $provider->search($query);
+        $previous = null;
 
-        $first = $provider->search($query);
-        $this->assertInstanceOf(ScanningOutcome::class, $first->outcome);
-        $this->assertSame([], $first->hits);
+        for ($call = 0; $call < 10 && ! in_array($match->id, self::ids($batch), true); $call++) {
+            $previous = $batch;
+            $batch = $provider->search($query->from(self::nextOf($batch)));
+        }
 
-        $second = $provider->search($query->from(self::nextWork($first)));
-        $this->assertSame([$match->id], self::ids($second));
-        $this->assertSame(ScoreTier::ExactTitle, $second->hits[0]->score);
+        $this->assertSame([$match->id], self::ids($batch));
+        $this->assertSame(ScoreTier::TitleContains, $batch->hits[0]->score);
+        $this->assertNotNull($previous);
+        $this->assertInstanceOf(ScanningOutcome::class, $previous->outcome);
     }
 
     public function test_two_tasks_with_identical_titles_both_appear(): void
@@ -85,9 +89,11 @@ final class TaskSearchProviderTest extends TestCase
         $log = DB::getQueryLog();
         DB::disableQueryLog();
 
+        $reads = array_values(array_filter($log, fn (array $entry): bool => str_starts_with($entry['query'], 'select')));
+
         $this->assertInstanceOf(ScanningOutcome::class, $second->outcome);
-        $this->assertCount(1, $log);
-        $this->assertStringContainsString('limit '.TaskSearchProvider::BLOCK_SIZE, $log[0]['query']);
+        $this->assertCount(1, $reads);
+        $this->assertStringContainsString('limit '.TaskSearchProvider::BLOCK_SIZE, $reads[0]['query']);
         $this->assertFalse(self::nextWork($second)->equals($position));
     }
 
@@ -127,14 +133,14 @@ final class TaskSearchProviderTest extends TestCase
         return Task::factory()->create(['id' => self::ID_PREFIX.sprintf('%04d', $index), 'title' => $title]);
     }
 
-    private static function query(string $words, SearchReader $reader): SearchQuery
+    private static function query(string $words, SearchReader $reader, int $allowance = 10): SearchQuery
     {
         return new SearchQuery(
             $reader,
             SearchWords::fromInput($words),
             SearchScope::within(self::SOURCE_KEY),
             self::SOURCE_KEY,
-            10,
+            $allowance,
             WorkBudget::forBatch(150),
             null,
         );
@@ -151,6 +157,17 @@ final class TaskSearchProviderTest extends TestCase
     private static function ids(SearchBatch $batch): array
     {
         return array_map(fn ($hit) => $hit->reference->id, $batch->hits);
+    }
+
+    private static function nextOf(SearchBatch $batch): SourcePosition
+    {
+        $outcome = $batch->outcome;
+
+        if ($outcome instanceof MoreOutcome) {
+            return $outcome->nextSeek;
+        }
+
+        return self::nextWork($batch);
     }
 
     private static function nextWork(SearchBatch $batch): SourcePosition

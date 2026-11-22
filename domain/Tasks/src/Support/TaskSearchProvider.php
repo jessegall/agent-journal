@@ -9,6 +9,7 @@ use App\Contracts\ServedEnvironment;
 use App\Enums\ScoreTier;
 use App\Support\RecordIdentity;
 use App\Support\StatementDeadline;
+use App\Support\TextSearch;
 use App\Values\AdmittedConstraints;
 use App\Values\HitIdentity;
 use App\Values\RefreshCandidates;
@@ -22,8 +23,9 @@ use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Searches tasks by a bounded keyset scan: a high-water id fixed on the first call, then blocks of at most 32 ids in
- * binary order, tier by tier from exact title down to contains, emitting only hits whose highest tier is the tier
- * being visited; then the briefs, read in fixed segments that overlap by the words' length so a phrase across a
+ * binary order, tier by tier from exact title down to contains, each narrowed by the title trigram index to the
+ * tasks that tier's pattern matches, emitting only hits whose highest tier is the tier being visited; then the
+ * briefs the brief index matches, read in fixed segments that overlap by the words' length so a phrase across a
  * segment edge is found. A complete task reference is answered first, at tier 500, by its indexed lookup.
  */
 final readonly class TaskSearchProvider implements SearchProvider
@@ -116,7 +118,10 @@ final readonly class TaskSearchProvider implements SearchProvider
         $blockSize = max(1, min(self::BLOCK_SIZE, $query->budget->remainingCandidates()));
         $query->budget->chargeCandidates($blockSize);
 
+        $pattern = $tier->likePattern(TextSearch::literal($query->words->text));
+
         $block = $this->deadline->within($query->budget->remainingMilliseconds(), fn () => $this->admitted($constraints)
+            ->titleLike($pattern)
             ->where('id', '>', $position->text(self::AFTER))
             ->where('id', '<=', $highWater)
             ->orderBy('id')
@@ -166,7 +171,10 @@ final readonly class TaskSearchProvider implements SearchProvider
         $query->budget->chargeCandidates($rowLimit);
         $query->budget->chargeBytes($rowLimit * self::SEGMENT_CHARACTERS * self::BYTES_PER_CHARACTER);
 
+        $pattern = ScoreTier::BodyContains->likePattern(TextSearch::literal($query->words->text));
+
         $rows = $this->deadline->within($query->budget->remainingMilliseconds(), fn () => $this->admitted($constraints)
+            ->briefLike($pattern)
             ->where('id', '<=', $highWater)
             ->when(
                 $record === '',

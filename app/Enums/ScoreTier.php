@@ -41,6 +41,19 @@ enum ScoreTier: int
         return $tiers[$index + 1] ?? null;
     }
 
+    /**
+     * The LIKE pattern a source narrows this tier by, from words already escaped as a literal: equal for an exact
+     * title, starting with them for a prefix, holding them anywhere for contains and body.
+     */
+    public function likePattern(string $literal): string
+    {
+        return match ($this) {
+            self::Reference, self::ExactTitle => $literal,
+            self::TitlePrefix => $literal.'%',
+            self::TitleContains, self::BodyContains => '%'.$literal.'%',
+        };
+    }
+
     public function isAbove(self $other): bool
     {
         return $this->value > $other->value;
