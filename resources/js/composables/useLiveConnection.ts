@@ -1,3 +1,4 @@
+import { notifyChatAccessEnded } from '@/kit/chatAccess';
 import { usePage } from '@inertiajs/vue3';
 import { onBeforeUnmount, onMounted, readonly, ref, watch } from 'vue';
 import type { LiveHandlers, UserConnection } from '@/echo';
@@ -85,6 +86,7 @@ export function useLiveConnection(): void {
                 pageChanged();
             }),
             onNotificationsChanged: whileCurrent(followNotificationsSignal),
+            onChatAccessEnded: whileCurrent(notifyChatAccessEnded),
             onSubscribed: whileCurrent(() => {
                 state.subscribed();
                 reconcileNotifications();

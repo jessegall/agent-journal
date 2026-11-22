@@ -34,6 +34,7 @@ vi.mock('@generated/routes/chat', () => ({
 }));
 
 const { useConversationIntents } = await import('./useConversationIntents');
+const { notifyChatAccessEnded } = await import('@kit/chatAccess');
 const { useMessageDrafts } = await import('./useMessageDrafts');
 
 let scope = 0;
@@ -84,6 +85,19 @@ describe('useConversationIntents', () => {
             headers: { 'Idempotency-Key': intent.key },
         });
         expect(posts[0].options.optimistic).toBeUndefined();
+        expect(useMessageDrafts().read(`user-${scope}/inbox-chat`)).toBe('');
+    });
+
+    it('forgets a lost chat: its pending send, its draft, and nothing restores into it later', () => {
+        const owner = ownerOf();
+        const intent = owner.beginSend(draft('Hello'));
+        owner.submit(intent, 'window_chat_conversation');
+
+        notifyChatAccessEnded('inbox-chat');
+        posts[0].options.onError({ body: 'Refused' });
+        useMessageDrafts().write(`user-${scope}/inbox-chat`, 'Typed after');
+
+        expect(owner.intents).toHaveLength(0);
         expect(useMessageDrafts().read(`user-${scope}/inbox-chat`)).toBe('');
     });
 

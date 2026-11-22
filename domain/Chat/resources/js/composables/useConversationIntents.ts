@@ -1,6 +1,7 @@
 import type { FormDataConvertible } from '@inertiajs/core';
 import { reactive, ref } from 'vue';
 import type { ChatMessageData } from '@generated/types/chat';
+import { onChatAccessEnded } from '@kit/chatAccess';
 import { keyedPost } from '@kit/keyedPost';
 import { onPurge } from '@kit/protectedView';
 import { newRequestId } from '@kit/requestId';
@@ -68,6 +69,8 @@ function createOwner(draftKey: string) {
      * What a screen reader hears next about the sends: Sending, Sent, or why one was refused, once each.
      */
     const announcement = ref('');
+    // Set once the chat is lost: every late answer of a request sent before is ignored, and nothing is sent again.
+    let isPurged = false;
     const userId = draftKey.split('/')[0];
 
     onPurge(() => {
@@ -134,6 +137,10 @@ function createOwner(draftKey: string) {
     }
 
     function refuse(intent: ConversationIntent): void {
+        if (isPurged) {
+            return;
+        }
+
         const index = intents.indexOf(intent);
 
         if (index >= 0) {
@@ -179,6 +186,10 @@ function createOwner(draftKey: string) {
      * as errors; an answer that never came is settled by reading the conversation again.
      */
     function submit(intent: ConversationIntent, conversationProp: string): void {
+        if (isPurged) {
+            return;
+        }
+
         const route = intent.kind === 'send' ? sendRoute() : replyRoute();
 
         keyedPost(route.url, intent.body, intent.key, {
@@ -196,7 +207,7 @@ function createOwner(draftKey: string) {
      * The server took the send; the conversation it read back shows its row by its request key.
      */
     function confirmBy(intent: ConversationIntent): void {
-        if (intent.status === 'sending') {
+        if (!isPurged && intent.status === 'sending') {
             intent.status = 'confirmed';
             intent.confirmedGeneration = markDirty('write');
             drafts.confirm(intent.key);
@@ -209,7 +220,7 @@ function createOwner(draftKey: string) {
      * that answered without one leaves it unknown, with Check again.
      */
     function checkByRead(intent: ConversationIntent): void {
-        if (intent.status === 'confirmed') {
+        if (isPurged || intent.status === 'confirmed') {
             return;
         }
 
@@ -292,8 +303,18 @@ function createOwner(draftKey: string) {
         return intents.some((intent) => intent.isTransportOpen);
     }
 
+    /**
+     * Forgets every send of a chat this tab lost; their late answers change nothing.
+     */
+    function purge(): void {
+        isPurged = true;
+        intents.splice(0, intents.length);
+        refusals.clear();
+    }
+
     return {
         intents,
+        purge,
         beginSend,
         beginReply,
         submit,
@@ -312,6 +333,18 @@ function createOwner(draftKey: string) {
 }
 
 export type ConversationIntents = ReturnType<typeof createOwner>;
+
+// A chat this tab lost takes its sends, its drafts and its recoveries with it.
+onChatAccessEnded((inboxId) => {
+    for (const [key, owner] of [...owners]) {
+        if (key.endsWith(`/${inboxId}`)) {
+            owner.purge();
+            owners.delete(key);
+        }
+    }
+
+    useMessageDrafts().purgeChat(inboxId);
+});
 
 /**
  * The one owner of the user's sends in one chat, the same on Home and on Chat's own page.

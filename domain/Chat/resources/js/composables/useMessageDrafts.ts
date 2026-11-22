@@ -28,6 +28,15 @@ export type RecoveryEntry = {
 };
 
 const drafts = reactive(new Map<string, string>(storedDrafts()));
+
+/**
+ * The chats this tab lost: their drafts stay empty and no late send can restore into them.
+ */
+const lostChats = new Set<string>();
+
+function isLost(key: string): boolean {
+    return lostChats.has(key.slice(key.indexOf('/') + 1));
+}
 const recoveries = reactive(new Map<string, RecoveryEntry>(storedRecoveries()));
 
 /**
@@ -77,6 +86,10 @@ export function useMessageDrafts() {
     }
 
     function write(key: string, body: string): void {
+        if (isLost(key)) {
+            return;
+        }
+
         if ((drafts.get(key) ?? '') !== body) {
             generations.set(key, generationOf(key) + 1);
         }
@@ -119,7 +132,11 @@ export function useMessageDrafts() {
     function restoreOrOffer(intentKey: string): 'restored' | 'offered' {
         const entry = recoveries.get(intentKey);
 
-        if (entry === undefined || generationOf(entry.draftKey) !== entry.generation || read(entry.draftKey) !== '') {
+        if (entry === undefined || isLost(entry.draftKey)) {
+            return 'offered';
+        }
+
+        if (generationOf(entry.draftKey) !== entry.generation || read(entry.draftKey) !== '') {
             return 'offered';
         }
 
@@ -146,10 +163,12 @@ export function useMessageDrafts() {
     }
 
     /**
-     * Removes the draft and the recovery entries of one user's conversation with an agent.
+     * Removes the draft and the recovery entries of a chat this browser lost, for whoever was signed in, and keeps it
+     * closed: nothing writes into it again in this tab.
      */
-    function purgeScope(userId: string, agentId: string): void {
-        removeWhere((key) => key === draftKey(userId, agentId));
+    function purgeChat(inboxId: string): void {
+        lostChats.add(inboxId);
+        removeWhere((key) => key.endsWith(`/${inboxId}`));
     }
 
     /**
@@ -186,7 +205,7 @@ export function useMessageDrafts() {
         restoreOrOffer,
         discard,
         confirm,
-        purgeScope,
+        purgeChat,
         purgeUser,
         recoveryEntries,
         storageAvailable: isStorageAvailable('session'),
