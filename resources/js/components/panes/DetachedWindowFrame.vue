@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import Icon from '@/components/kit/Icon.vue';
+import IconButton from '@/components/kit/IconButton.vue';
+import ResizeGrip from '@/components/kit/ResizeGrip.vue';
+import WindowHeader from '@/components/kit/WindowHeader.vue';
 import {
     bringToFront,
     changeDetached,
@@ -60,14 +63,6 @@ function moveBy(event: PointerEvent): void {
     follow(event, (dx, dy) => ({ left: from.left + dx, top: from.top + dy }));
 }
 
-function resizeBy(event: PointerEvent): void {
-    const from = { width: props.window.width, height: props.window.height };
-    follow(event, (dx, dy) => ({
-        width: from.width + dx,
-        height: from.height + dy,
-    }));
-}
-
 const SMALL_STEP = 12;
 const LARGE_STEP = 48;
 
@@ -117,55 +112,35 @@ function dock(): void {
         @pointerdown="front"
         @keydown="resizeByKey"
     >
-        <div
-            class="flex h-[34px] flex-none cursor-grab touch-none items-center gap-2 bg-float-bar pr-[5px] pl-3 text-small text-text"
-            :class="{ 'border-b border-border': !window.isMinimised }"
+        <WindowHeader
+            variant="bar"
+            :title="shown?.title"
+            :active="true"
+            class="touch-none"
+            :class="{ 'border-b-0': window.isMinimised }"
             @pointerdown="moveBy"
         >
-            <template v-if="shown">
-                <Icon :name="shown.icon" :size="13" class="text-text-3" />
-                <span class="truncate">{{ shown.title }}</span>
+            <template #leading>
+                <template v-if="shown">
+                    <Icon :name="shown.icon" :size="13" class="text-text-3" />
+                </template>
             </template>
-            <span class="flex-1"></span>
-            <button
-                type="button"
-                class="grid size-[26px] place-items-center rounded-control text-text-3 hover:bg-hover hover:text-text"
-                :title="
-                    window.isMinimised
-                        ? 'Show the whole window'
-                        : 'Show only this bar'
-                "
-                :aria-label="
-                    window.isMinimised
-                        ? 'Show the whole window'
-                        : 'Show only this bar'
-                "
-                @click="change({ isMinimised: !window.isMinimised })"
-            >
-                <Icon
-                    :name="window.isMinimised ? 'window' : 'minimize'"
-                    :size="16"
+            <template #actions>
+                <IconButton
+                    :icon="window.isMinimised ? 'window' : 'minimize'"
+                    :label="window.isMinimised ? 'Show the whole window' : 'Show only this bar'"
+                    @click="change({ isMinimised: !window.isMinimised })"
                 />
-            </button>
-            <button
-                type="button"
-                class="grid size-[26px] place-items-center rounded-control text-text-3 hover:bg-hover hover:text-text"
-                title="Window menu"
-                aria-label="Window menu"
-                @click.stop="isMenuOpen = !isMenuOpen"
-            >
-                <Icon name="dots-vertical" :size="16" />
-            </button>
-            <button
-                type="button"
-                class="grid size-[26px] place-items-center rounded-control text-text-3 hover:bg-hover hover:text-text"
-                title="Dock it back into the layout"
-                aria-label="Dock"
-                @click="dock"
-            >
-                <Icon name="dock" :size="16" />
-            </button>
-        </div>
+                <IconButton
+                    icon="dots-vertical"
+                    label="Window menu"
+                    haspopup="menu"
+                    :expanded="isMenuOpen"
+                    @click.stop="isMenuOpen = !isMenuOpen"
+                />
+                <IconButton icon="dock" label="Dock" @click="dock" />
+            </template>
+        </WindowHeader>
         <template v-if="isMenuOpen">
             <MenuList
                 :entries="[
@@ -193,11 +168,11 @@ function dock(): void {
             <slot />
         </div>
         <template v-if="!window.isMinimised">
-            <span
-                class="absolute right-0 bottom-0 z-3 size-3.5 cursor-nwse-resize touch-none bg-[linear-gradient(135deg,transparent_55%,var(--border-3)_55%,var(--border-3)_61%,transparent_61%,transparent_72%,var(--border-3)_72%,var(--border-3)_78%,transparent_78%)]"
-                title="Resize"
-                @pointerdown.stop="resizeBy"
-            ></span>
+            <ResizeGrip
+                class="z-3"
+                @pointerdown.stop
+                @resize="(dx: number, dy: number) => change({ width: window.width + dx, height: window.height + dy })"
+            />
         </template>
     </section>
 </template>
