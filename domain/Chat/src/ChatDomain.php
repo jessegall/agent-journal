@@ -24,6 +24,9 @@ use App\Mcp\Contracts\McpToolProvider;
 use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\FolderClasses;
+use App\Support\MessageSearchAccess;
+use App\Support\MessageSearchProvider;
+use App\Support\Searchable;
 use App\Values\PolicyDefinition;
 use Domain\Chat\Events\DockChanged;
 use Domain\Chat\Http\Controllers\CancelMessageController;
@@ -182,6 +185,14 @@ final class ChatDomain extends Domain implements
     public function overviewContributions(): array
     {
         return [PendingMessagesOverview::class];
+    }
+
+    /**
+     * Chat messages, searched and opened under the message visibility scope.
+     */
+    public function searchables(): array
+    {
+        return [Searchable::make('message', 'Messages', MessageSearchAccess::class, MessageSearchProvider::class)];
     }
 
     public function searchContributions(): array

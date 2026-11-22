@@ -1488,6 +1488,8 @@ use App\Values\OpenAction;
 use App\Values\TieredSearchSource;
 use App\Values\SearchableBody;
 use App\Support\ReadToolSearchAccess;
+use App\Support\MessageSearchAccess;
+use App\Support\MessageSearchProvider;
 use App\Support\NumberedReferenceRecognizer;
 use App\Support\TieredRecordSearch;
 use App\Support\StatementDeadline;
@@ -2992,6 +2994,8 @@ final class CoreApi
                 ProvidesModelRecords::class,
                 Searchable::class,
                 ReadToolSearchAccess::class,
+                MessageSearchAccess::class,
+                MessageSearchProvider::class,
                 NumberedReferenceRecognizer::class,
                 TieredRecordSearch::class,
                 StatementDeadline::class,
