@@ -13,7 +13,7 @@ import { newRequestId } from '@kit/requestId';
 import { useStartRestoration } from './composables/useStartRestoration';
 import { useSwitchOperation } from './composables/useSwitchOperation';
 import type { AgentOptionData, ChatData, DriverChoiceData } from '@generated/types/chat';
-import type { DriverSourceType, ModeSourceType, StartPreviewData } from '@generated/types/core';
+import type { DriverSourceType, ModeSourceType, StartPreviewData } from '@kit/CoreTypes';
 import type { WindowResult } from '@kit/PageTypes';
 import type { DriverVariant } from '@kit/CoreTypes';
 import {
