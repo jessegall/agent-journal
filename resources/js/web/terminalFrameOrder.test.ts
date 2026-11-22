@@ -1,6 +1,6 @@
 import type { ScreenFrameData } from '@generated/types/core';
 import { describe, expect, it } from 'vitest';
-import { supersedes } from '../../../app/Web/Resources/js/terminalFrameOrder';
+import { supersedes } from '@/components/terminal/terminalFrameOrder';
 
 function frameOf(epoch: string, sequence: number, stream: string | null = 's1'): ScreenFrameData {
     return {

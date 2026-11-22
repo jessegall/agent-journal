@@ -10,11 +10,11 @@ import type {
     TerminalClient,
     TerminalFailure,
     TerminalScreen,
-} from '../../../app/Web/Resources/js/terminalSubscription';
+} from '@/components/terminal/terminalSubscription';
 import {
     TerminalSubscription,
     WAKE_GAP_MILLISECONDS,
-} from '../../../app/Web/Resources/js/terminalSubscription';
+} from '@/components/terminal/terminalSubscription';
 
 type Pending<Answer> = { resolve: (answer: Answer) => void; reject: (failure: unknown) => void };
 

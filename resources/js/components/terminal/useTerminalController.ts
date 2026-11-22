@@ -83,10 +83,11 @@ function noticesOf(screen: TerminalScreen, ageSeconds: number): string[] {
 
 /**
  * The one controller of a view of an agent's terminal: it owns the subscription, opens one read interest when the
- * view mounts or shows again, renews it every 10 seconds, reads every half second, and closes it when the view hides
- * or unmounts or the agent changes. The presentation it hands out is all a terminal view draws.
+ * view mounts or shows again, renews it every 10 seconds, reads every half second, and closes it when the view is
+ * hidden, by its placement or by the browser, or unmounts or the agent changes. The presentation it hands out is all a
+ * terminal view draws.
  */
-export function useTerminalController(agentId: Ref<string>) {
+export function useTerminalController(agentId: Ref<string>, isShown: Ref<boolean>) {
     const screen = shallowRef<TerminalScreen>({
         state: 'opening',
         frame: null,
@@ -134,26 +135,33 @@ export function useTerminalController(agentId: Ref<string>) {
         timers.splice(0).forEach((timer) => window.clearInterval(timer));
     }
 
-    function followVisibility(): void {
-        if (document.visibilityState === 'hidden') {
-            stopTimers();
-            subscription.stop();
+    function isWatching(): boolean {
+        return isShown.value && document.visibilityState !== 'hidden';
+    }
 
-            return;
+    function followVisibility(): void {
+        stopTimers();
+        subscription.stop();
+        if (isWatching()) {
+            start();
         }
-        start();
     }
 
     watch(agentId, (agent) => {
         stopTimers();
         subscription.stop();
         subscription = subscribe(agent);
-        start();
+        if (isWatching()) {
+            start();
+        }
     });
+    watch(isShown, followVisibility);
 
     onMounted(() => {
         document.addEventListener('visibilitychange', followVisibility);
-        start();
+        if (isWatching()) {
+            start();
+        }
     });
     onBeforeUnmount(() => {
         document.removeEventListener('visibilitychange', followVisibility);
