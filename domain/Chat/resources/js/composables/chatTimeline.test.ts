@@ -19,6 +19,7 @@ function row(sequence: number, readByMe = false): ChatMessageData {
         sentAt: '2026-11-22T10:00:00Z',
         requestKey: null,
         deliveries: [],
+        reactions: [],
     } as ChatMessageData;
 }
 

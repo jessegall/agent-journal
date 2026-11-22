@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Http\Requests;
 
-use Domain\Sequences\Data\SequenceStepData;
+use Domain\Sequences\Values\SequenceStep;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -44,17 +44,17 @@ final class SaveSequenceRequest extends FormRequest
     }
 
     /**
-     * @return list<SequenceStepData>
+     * @return list<SequenceStep>
      */
     public function steps(): array
     {
         return array_values(array_map(
-            fn (array $step) => SequenceStepData::from([
-                'id' => (string) $step['id'],
-                'title' => (string) $step['title'],
-                'runsWhen' => (string) $step['runs_when'],
-                'doneWhen' => (string) $step['done_when'],
-            ]),
+            fn (array $step) => new SequenceStep(
+                (string) $step['id'],
+                (string) $step['title'],
+                (string) $step['runs_when'],
+                (string) $step['done_when'],
+            ),
             $this->array('steps'),
         ));
     }

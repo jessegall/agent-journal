@@ -26,15 +26,15 @@ use App\Values\ChatLine;
 use Domain\Chat\Data\ChatCapabilitiesData;
 use Domain\Chat\Data\ChatLineData;
 use Domain\Chat\Data\ChatMessageData;
-use Domain\Chat\Data\ReactionData;
-use Domain\Chat\Models\MessageReaction;
 use Domain\Chat\Data\ChatRowsPageData;
 use Domain\Chat\Data\ChatSummaryData;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Data\DeliveryData;
 use Domain\Chat\Data\ParticipantData;
+use Domain\Chat\Data\ReactionData;
 use Domain\Chat\Data\ReplyTargetData;
 use Domain\Chat\Models\Conversation;
+use Domain\Chat\Models\MessageReaction;
 use Domain\Chat\Support\DockProjection;
 
 /**
@@ -305,11 +305,11 @@ final readonly class ChatConversations
             ];
         }
 
-        return array_map(fn (array $emojis) => array_values(array_map(
+        return array_map(fn (array $emojis) => array_map(
             fn (string $emoji, array $tally) => ReactionData::from(['emoji' => $emoji, ...$tally]),
             array_keys($emojis),
             $emojis,
-        )), $grouped);
+        ), $grouped);
     }
 
     private static function replyTargetOf(MessageView $message): ReplyTargetData|null

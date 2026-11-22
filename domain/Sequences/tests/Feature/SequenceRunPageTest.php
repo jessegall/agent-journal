@@ -6,10 +6,10 @@ namespace Domain\Sequences\Tests\Feature;
 
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Sequences\Data\SequenceStepData;
 use Domain\Sequences\Models\Sequence;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Tests\TestCase;
+use Domain\Sequences\Values\SequenceStep;
 use Tests\Support\RefreshHookDatabase;
 
 /**
@@ -33,7 +33,7 @@ final class SequenceRunPageTest extends TestCase
     public function test_the_index_lists_the_stored_sequences_and_a_chosen_one_shows_its_steps_and_runs(): void
     {
         $sequence = Sequence::define('Release', 'Ship a version', [
-            SequenceStepData::from(['id' => 'tests', 'title' => 'Tests', 'runsWhen' => 'held', 'doneWhen' => 'green']),
+            new SequenceStep(...['id' => 'tests', 'title' => 'Tests', 'runsWhen' => 'held', 'doneWhen' => 'green']),
         ]);
         $run = SequenceRun::create('Release', ['Run the tests']);
         $run->sequence()->associate($sequence)->save();

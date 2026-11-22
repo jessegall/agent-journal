@@ -6,7 +6,6 @@ namespace Domain\Sequences\Tests\Feature;
 
 use Domain\Sequences\Commands\ChangeSequence\ChangeSequenceCommand;
 use Domain\Sequences\Commands\ChangeSequence\ChangeSequenceHandler;
-use Domain\Sequences\Data\SequenceStepData;
 use Domain\Sequences\Events\SequenceChanged;
 use Domain\Sequences\Events\SequenceDefined;
 use Domain\Sequences\Exceptions\SequenceChangedMeanwhile;
@@ -14,6 +13,7 @@ use Domain\Sequences\Models\Sequence;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Policies\StoredSequencePolicy;
 use Domain\Sequences\Tests\TestCase;
+use Domain\Sequences\Values\SequenceStep;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\RefreshHookDatabase;
 
@@ -32,7 +32,7 @@ final class StoredSequenceTest extends TestCase
         $sequence = Sequence::define('Release', 'Ship a version', [self::step('tests')]);
 
         $this->assertSame(1, $sequence->fresh()?->version);
-        $this->assertEquals([self::step('tests')], $sequence->fresh()?->stepList());
+        $this->assertSame([self::step('tests')->toArray()], $sequence->fresh()?->steps);
         Event::assertDispatched(
             SequenceDefined::class,
             fn (SequenceDefined $fact) => $fact->sequenceId === $sequence->id,
@@ -73,9 +73,9 @@ final class StoredSequenceTest extends TestCase
         $this->assertSame(Sequence::class, StoredSequencePolicy::model());
     }
 
-    private static function step(string $id): SequenceStepData
+    private static function step(string $id): SequenceStep
     {
-        return SequenceStepData::from([
+        return new SequenceStep(...[
             'id' => $id,
             'title' => ucfirst($id),
             'runsWhen' => 'held',

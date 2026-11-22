@@ -12,6 +12,7 @@ use Domain\Sequences\Data\SequenceStepData;
 use Domain\Sequences\Events\SequenceChanged;
 use Domain\Sequences\Events\SequenceDefined;
 use Domain\Sequences\Exceptions\SequenceMissing;
+use Domain\Sequences\Values\SequenceStep;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -58,7 +59,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
     /**
      * A new sequence of these steps.
      *
-     * @param  list<SequenceStepData>  $steps
+     * @param  list<SequenceStep>  $steps
      */
     public static function define(string $name, string $summary, array $steps): self
     {
@@ -113,7 +114,7 @@ final class Sequence extends Model implements EventSource, ReadableModel
     /**
      * Replaces the name, summary and steps, one version on; the runs already started keep their own steps.
      *
-     * @param  list<SequenceStepData>  $steps
+     * @param  list<SequenceStep>  $steps
      */
     public function change(string $name, string $summary, array $steps): void
     {
@@ -126,11 +127,11 @@ final class Sequence extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * @param  list<SequenceStepData>  $steps
+     * @param  list<SequenceStep>  $steps
      * @return list<array{id: string, title: string, runsWhen: string, doneWhen: string}>
      */
     private static function stored(array $steps): array
     {
-        return array_map(fn (SequenceStepData $step) => $step->toArray(), $steps);
+        return array_map(fn (SequenceStep $step) => $step->toArray(), $steps);
     }
 }

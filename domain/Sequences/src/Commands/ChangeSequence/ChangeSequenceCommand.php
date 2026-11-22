@@ -7,8 +7,8 @@ namespace Domain\Sequences\Commands\ChangeSequence;
 use App\Attributes\Authorize;
 use App\Enums\AccessType;
 use App\Support\Command;
-use Domain\Sequences\Data\SequenceStepData;
 use Domain\Sequences\Policies\StoredSequencePolicy;
+use Domain\Sequences\Values\SequenceStep;
 
 /**
  * Replaces a stored sequence's name and steps, refused when it changed since the version the editor opened.
@@ -19,7 +19,7 @@ use Domain\Sequences\Policies\StoredSequencePolicy;
 final readonly class ChangeSequenceCommand extends Command
 {
     /**
-     * @param  list<SequenceStepData>  $steps
+     * @param  list<SequenceStep>  $steps
      */
     public function __construct(
         public string $sequenceId,

@@ -51,12 +51,12 @@ final class MessageReaction extends Model implements ReadableModel
             return [];
         }
 
-        return self::query()
+        return array_values(self::query()
             ->whereIn('message_id', $messageIds)
             ->oldest()
             ->readUpTo(self::READ_LIMIT)
             ->get()
-            ->all();
+            ->all());
     }
 
     // ----------[ Mutations ]----------

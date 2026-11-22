@@ -19,12 +19,14 @@ use Domain\Sequences\Models\Sequence;
  */
 final readonly class SequenceIndexLayout
 {
+    private const int LIST_LIMIT = 200;
+
     /**
      * @param  list<LayoutPartData>  $reader  the chosen sequence's reader, none for the index address
      */
     public function of(string $chosenId, array $reader): DeclaredLayoutData
     {
-        $sequences = Sequence::query()->get()->all();
+        $sequences = array_values(Sequence::query()->latest()->readUpTo(self::LIST_LIMIT)->get()->all());
 
         return ListPage::make(
             'Sequences',

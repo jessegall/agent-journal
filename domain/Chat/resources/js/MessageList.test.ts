@@ -74,6 +74,7 @@ describe('MessageList', () => {
             sentAt: '2026-11-22T13:42:00Z',
             requestKey: null,
             deliveries: [],
+            reactions: [],
         });
         const participants = [
             { actor: 'user:ada', label: 'Ada', driver: null, role: 'owner' },
@@ -155,6 +156,7 @@ describe('MessageList', () => {
             sentAt: '2026-11-22T13:42:00Z',
             requestKey: null,
             deliveries: [],
+            reactions: [],
         });
         const step = { sequence: 2, subject: 'Ship', line: 'Step 1 of 4', postedAt: '2026-11-22T13:43:00Z', card: null, cardPlacement: 'inline' as const };
         const list = mount(MessageList, {
