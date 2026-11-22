@@ -10,7 +10,9 @@ const reads: Array<Record<string, unknown>> = [];
 
 vi.mock('@inertiajs/vue3', () => ({
     usePage: () => ({ props: { currentUser: { id: 'user-1' } } }),
-    router: { post: (_url: string, body: Record<string, unknown>) => reads.push(body) },
+    router: {
+        post: (_url: string, body: Record<string, unknown>) => reads.push(body),
+    },
 }));
 vi.mock('@kit/protectedView', () => ({
     isRevealed: (prop: string) => revealedProps.value.has(prop),
@@ -20,10 +22,13 @@ vi.mock('@kit/protectedView', () => ({
         return () => undefined;
     },
 }));
-vi.mock('@generated/routes/chat', () => ({ read: () => ({ url: '/chat/messages/read' }) }));
+vi.mock('@generated/routes/chat', () => ({
+    read: () => ({ url: '/chat/messages/read' }),
+}));
 vi.mock('./composables/useConversationIntents', () => ({
     useConversationIntents: () => ({
-        rows: (messages: unknown[]) => messages.map((message) => ({ kind: 'message', message })),
+        rows: (messages: unknown[]) =>
+            messages.map((message) => ({ kind: 'message', message })),
         settle: () => undefined,
         recoveryEntries: () => [],
         refusalOf: () => '',
@@ -31,11 +36,17 @@ vi.mock('./composables/useConversationIntents', () => ({
     }),
 }));
 vi.mock('@kit/SlotSections', () => ({ default: { template: '<div />' } }));
-vi.mock('./MessageList.vue', () => ({ default: { name: 'MessageList', template: '<ol aria-label="Messages" />' } }));
+vi.mock('./MessageList.vue', () => ({
+    default: { name: 'MessageList', template: '<ol aria-label="Messages" />' },
+}));
 vi.mock('./dock/DockStack.vue', () => ({ default: { template: '<div />' } }));
-vi.mock('./Composer.vue', () => ({ default: { name: 'Composer', template: '<form aria-label="Composer" />' } }));
+vi.mock('./Composer.vue', () => ({
+    default: { name: 'Composer', template: '<form aria-label="Composer" />' },
+}));
 vi.mock('./AgentPicker.vue', () => ({ default: { template: '<div />' } }));
-vi.mock('./AgentSessionActions.vue', () => ({ default: { template: '<div />' } }));
+vi.mock('./AgentSessionActions.vue', () => ({
+    default: { template: '<div />' },
+}));
 
 const { default: ChatPane } = await import('./ChatPane.vue');
 
@@ -53,7 +64,13 @@ function chatWith(conversationId: string): ChatData {
             sessionId: null,
             sessionGeneration: 0,
             dock: { cards: [], more: null },
-            messages: [{ id: `${conversationId}-unread`, sourceInboxId: 'inbox-agent', firstReader: undefined }],
+            messages: [
+                {
+                    id: `${conversationId}-unread`,
+                    sourceInboxId: 'inbox-agent',
+                    firstReader: undefined,
+                },
+            ],
         },
     } as unknown as ChatData;
 }
@@ -64,6 +81,7 @@ function mountPane(conversationId = 'conversation-1') {
             chat: chatWith(conversationId),
             offersChoice: false,
             agentUrl: () => '/chat',
+            questionUrl: () => '/chat?question=1',
             loadMore: () => undefined,
             protectedProp: 'window_chat_conversation',
         },
@@ -114,6 +132,9 @@ describe('ChatPane', () => {
 
         await pane.setProps({ chat: chatWith('conversation-2') });
 
-        expect(reads.map((read) => read.messageIds)).toEqual([['conversation-1-unread'], ['conversation-2-unread']]);
+        expect(reads.map((read) => read.messageIds)).toEqual([
+            ['conversation-1-unread'],
+            ['conversation-2-unread'],
+        ]);
     });
 });

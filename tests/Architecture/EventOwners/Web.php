@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Web\Events\PageChanged;
 use App\Web\Events\NotificationsInvalidated;
+use App\Web\Events\PageChanged;
 use App\Web\Events\ProtectedViewInvalidated;
 use Tests\Architecture\Support\EventRole;
 

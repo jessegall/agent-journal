@@ -33,9 +33,9 @@ final readonly class RunOutcomeSummaries
             ->acrossActors()
             ->where('project_key', $this->projects->current())
             ->whereKey($runId)
-            ->first();
+            ->firstOption();
 
-        return Option::fromValue($run)
+        return $run
             ->filter(fn (ProcessRun $found) => $this->mayHearOf($found))
             ->flatMap(fn (ProcessRun $found) => RunOutcome::ofRun($found)
                 ->map(fn (RunOutcome $outcome) => $this->summary($found, $outcome)));
