@@ -1,0 +1,5349 @@
+[
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "_inertia/devtools/entries",
+        "name": null,
+        "action": "Inertia\\DevTools\\Http\\EntriesController@index",
+        "middleware": [
+            "Inertia\\DevTools\\Http\\PreventPreviousUrlTracking",
+            "web",
+            "Inertia\\DevTools\\Http\\PreserveFlashData",
+            "Inertia\\DevTools\\Http\\Authorize"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "_inertia/devtools/entries/{id}",
+        "name": null,
+        "action": "Inertia\\DevTools\\Http\\EntriesController@show",
+        "middleware": [
+            "Inertia\\DevTools\\Http\\PreventPreviousUrlTracking",
+            "web",
+            "Inertia\\DevTools\\Http\\PreserveFlashData",
+            "Inertia\\DevTools\\Http\\Authorize"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "_boost/browser-logs",
+        "name": "boost.browser-logs",
+        "action": "Closure",
+        "middleware": []
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "login",
+        "name": "login.store",
+        "action": "Laravel\\Fortify\\Http\\Controllers\\AuthenticatedSessionController@store",
+        "middleware": [
+            "web",
+            "guest:web",
+            "throttle:login"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "logout",
+        "name": "logout",
+        "action": "Laravel\\Fortify\\Http\\Controllers\\AuthenticatedSessionController@destroy",
+        "middleware": [
+            "web",
+            "auth:web"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "user/confirmed-password-status",
+        "name": "password.confirmation",
+        "action": "Laravel\\Fortify\\Http\\Controllers\\ConfirmedPasswordStatusController@show",
+        "middleware": [
+            "web",
+            "auth:web"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "user/confirm-password",
+        "name": "password.confirm.store",
+        "action": "Laravel\\Fortify\\Http\\Controllers\\ConfirmablePasswordController@store",
+        "middleware": [
+            "web",
+            "auth:web"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "profiles/{profile}/start-main",
+        "name": "profiles.start-main",
+        "action": "App\\Http\\Controllers\\Profiles\\StartProfileMainController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "profiles/starts/{requestId}",
+        "name": "profiles.start-receipt",
+        "action": "App\\Http\\Controllers\\Profiles\\StartReceiptController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "profiles/{profile}/switch",
+        "name": "profiles.switch",
+        "action": "App\\Http\\Controllers\\Profiles\\SwitchAgentDriverController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "profiles/switches/{requestId}",
+        "name": "profiles.switch-stage",
+        "action": "App\\Http\\Controllers\\Profiles\\DriverSwitchStageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/sign-ins/claim",
+        "name": "profiles.sign-in-host.claim",
+        "action": "App\\Http\\Controllers\\Profiles\\ClaimSignInController",
+        "middleware": [
+            "journal.host",
+            "App\\Http\\Middleware\\Profiles\\RefuseRunnerOfOtherArrangement"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/sign-ins/reconcile",
+        "name": "profiles.sign-in-host.reconcile",
+        "action": "App\\Http\\Controllers\\Profiles\\ReconcileSignInsController",
+        "middleware": [
+            "journal.host"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/sign-ins/{attempt}/report",
+        "name": "profiles.sign-in-host.report",
+        "action": "App\\Http\\Controllers\\Profiles\\ReportSignInController",
+        "middleware": [
+            "journal.host"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/sign-ins/{attempt}/challenge",
+        "name": "profiles.sign-in-host.challenge",
+        "action": "App\\Http\\Controllers\\Profiles\\PublishSignInChallengeController",
+        "middleware": [
+            "journal.host"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/sign-ins/{attempt}/code",
+        "name": "profiles.sign-in-host.code",
+        "action": "App\\Http\\Controllers\\Profiles\\TakeSignInCodeController",
+        "middleware": [
+            "journal.host"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/sign-ins/{attempt}/cleanup",
+        "name": "profiles.sign-in-host.cleanup",
+        "action": "App\\Http\\Controllers\\Profiles\\ReportSignInCleanupController",
+        "middleware": [
+            "journal.host"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/accounts/checks/claim",
+        "name": "profiles.account-host.checks.claim",
+        "action": "App\\Http\\Controllers\\Profiles\\ClaimAccountCheckController",
+        "middleware": [
+            "journal.host",
+            "App\\Http\\Middleware\\Profiles\\RefuseRunnerOfOtherArrangement"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/accounts/{account}/check",
+        "name": "profiles.account-host.check",
+        "action": "App\\Http\\Controllers\\Profiles\\ReportAccountCheckController",
+        "middleware": [
+            "journal.host"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/accounts/cleanups/claim",
+        "name": "profiles.account-host.cleanups.claim",
+        "action": "App\\Http\\Controllers\\Profiles\\ClaimCleanupController",
+        "middleware": [
+            "journal.host",
+            "App\\Http\\Middleware\\Profiles\\RefuseRunnerOfOtherArrangement"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/accounts/{account}/cleanup",
+        "name": "profiles.account-host.cleanup",
+        "action": "App\\Http\\Controllers\\Profiles\\ReportAccountCleanupController",
+        "middleware": [
+            "journal.host"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/profiles/draft/show",
+        "name": "profiles.agent.draft.show",
+        "action": "App\\Scripts\\Http\\Controllers\\ShowProfileDraftController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/profiles/draft/save",
+        "name": "profiles.agent.draft.save",
+        "action": "App\\Scripts\\Http\\Controllers\\SaveProfileDraftController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/profiles/draft/check",
+        "name": "profiles.agent.draft.check",
+        "action": "App\\Scripts\\Http\\Controllers\\CheckProfileScriptController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/profiles/language",
+        "name": "profiles.agent.language",
+        "action": "App\\Scripts\\Http\\Controllers\\ReadProfileLanguageController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/profiles/runs/show",
+        "name": "profiles.agent.runs.show",
+        "action": "App\\Scripts\\Http\\Controllers\\ShowProfileRunController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "profiles/draft/show",
+        "name": "scripts.draft.show",
+        "action": "App\\Scripts\\Http\\Controllers\\ShowProfileDraftController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "profiles/draft/save",
+        "name": "scripts.draft.save",
+        "action": "App\\Scripts\\Http\\Controllers\\SaveProfileDraftController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "profiles/draft/check",
+        "name": "scripts.draft.check",
+        "action": "App\\Scripts\\Http\\Controllers\\CheckProfileScriptController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "profiles/language",
+        "name": "scripts.language",
+        "action": "App\\Scripts\\Http\\Controllers\\ReadProfileLanguageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "profiles/runs/show",
+        "name": "scripts.runs.show",
+        "action": "App\\Scripts\\Http\\Controllers\\ShowProfileRunController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/asks/make",
+        "name": "asks.agent.make",
+        "action": "App\\Supervision\\Http\\Controllers\\MakeAskController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/asks/list",
+        "name": "asks.agent.list",
+        "action": "App\\Supervision\\Http\\Controllers\\ListAsksController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/asks/show",
+        "name": "asks.agent.show",
+        "action": "App\\Supervision\\Http\\Controllers\\ShowAskController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/asks/reply",
+        "name": "asks.agent.reply",
+        "action": "App\\Supervision\\Http\\Controllers\\ReplyToAskController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/asks/withdraw",
+        "name": "asks.agent.withdraw",
+        "action": "App\\Supervision\\Http\\Controllers\\WithdrawAskController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "presence/heartbeat",
+        "name": "actors.presence.heartbeat",
+        "action": "App\\Http\\Controllers\\Actors\\RecordUserHeartbeatController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agents/retire",
+        "name": "agents.retire",
+        "action": "App\\Http\\Controllers\\Agents\\RetireAgentController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agents/{agent}/start",
+        "name": "agents.start",
+        "action": "App\\Http\\Controllers\\Agents\\StartAgentController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agents/{agent}/stop",
+        "name": "agents.stop",
+        "action": "App\\Http\\Controllers\\Agents\\StopAgentController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agents/{agent}/interrupt",
+        "name": "agents.interrupt",
+        "action": "App\\Http\\Controllers\\Agents\\InterruptAgentController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "agents/{agent}/capacity",
+        "name": "agents.capacity",
+        "action": "App\\Http\\Controllers\\Agents\\CheckCapacityController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agents/{agent}/launch-outcome/dismiss",
+        "name": "agents.launch-outcome.dismiss",
+        "action": "App\\Http\\Controllers\\Agents\\DismissLaunchOutcomeController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agents/switches/{switch}/retry",
+        "name": "agents.switch.retry",
+        "action": "App\\Http\\Controllers\\Agents\\RetryDriverSwitchController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agents/switches/{switch}/recheck",
+        "name": "agents.switch.recheck",
+        "action": "App\\Http\\Controllers\\Agents\\RecheckDriverSwitchController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agents/{agent}/sessions/{session}/cancel-launch",
+        "name": "agents.cancel-launch",
+        "action": "App\\Http\\Controllers\\Agents\\CancelLaunchController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agents/sessions/{session}/continue",
+        "name": "agents.continue",
+        "action": "App\\Http\\Controllers\\Agents\\ContinueStartController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/agents/retire",
+        "name": "agents.agent.retire",
+        "action": "App\\Agents\\Http\\Controllers\\Calls\\RetireAgentController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/heartbeat",
+        "name": "agents.agent.heartbeat",
+        "action": "App\\Agents\\Http\\Controllers\\Calls\\RecordHeartbeatController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/claim",
+        "name": "agents.host.claim",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\ClaimRequestsController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/runtimes",
+        "name": "agents.host.runtimes.open",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\OpenMainRuntimeController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/runtimes/{runtime}/start",
+        "name": "agents.host.start",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\StartGrantController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "host/runtimes/{runtime}/tool-discovery",
+        "name": "agents.host.runtimes.tool-discovery",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\ToolDiscoveryController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/runtimes/{runtime}/navigation",
+        "name": "agents.host.navigation.raise",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\RaiseNavigationController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/navigation/{navigation}/interrupt",
+        "name": "agents.host.navigation.interrupt",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\InterruptNavigationController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/menu-entries/{entry}/replayed",
+        "name": "agents.host.menu-entries.replayed",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\ReplayedEntryController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/menu-entries/{entry}/stale",
+        "name": "agents.host.menu-entries.stale",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\StaleEntryController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/reports/activity",
+        "name": "agents.host.reports.activity",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\ActivityReportController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/reports/request",
+        "name": "agents.host.reports.request",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\RequestReportController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/reports/turn",
+        "name": "agents.host.reports.turn",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\TurnReportController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/reports/usage",
+        "name": "agents.host.reports.usage",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\UsageReportController",
+        "middleware": [
+            "journal.host:1,2",
+            "App\\Http\\Middleware\\Agents\\LimitUsageReport"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/reports/heartbeat",
+        "name": "agents.host.reports.heartbeat",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\HeartbeatReportController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/reports/exit",
+        "name": "agents.host.reports.exit",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\ExitReportController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/reports/screen",
+        "name": "agents.host.reports.screen",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\ScreenReportController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/reports/protection",
+        "name": "agents.host.reports.protection",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\ProtectionReportController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/reports/descriptors",
+        "name": "agents.host.reports.descriptors",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\DescriptorsReportController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "host/stop-attempts",
+        "name": "agents.host.stop-attempts.pending",
+        "action": "App\\Http\\Controllers\\Hooks\\Host\\PendingStopAttemptsController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/stop-attempts/{attempt}/results",
+        "name": "agents.host.stop-attempts.results",
+        "action": "App\\Http\\Controllers\\Hooks\\Host\\StopResultsController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/starts/claim",
+        "name": "agents.host.starts.claim",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\ClaimStartController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "host/starts",
+        "name": "agents.host.starts.unresolved",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\ReconcileStartsController@index",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/starts/reconcile",
+        "name": "agents.host.starts.reconcile",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\ReconcileStartsController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/starts/{start}/running",
+        "name": "agents.host.starts.running",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\ReportRunningController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/starts/{start}/stopped",
+        "name": "agents.host.starts.stopped",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\ReportStoppedController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/starts/{start}/failure",
+        "name": "agents.host.starts.failure",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\ReportFailureController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "host/workspace-reads",
+        "name": "agents.host.workspace-reads.pending",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\WorkspaceReadController@index",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/workspace-reads/{reference}",
+        "name": "agents.host.workspace-reads.report",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\WorkspaceReadController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "host/cleanups",
+        "name": "agents.host.cleanups.pending",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\CleanupReportController@index",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/cleanups/{session}",
+        "name": "agents.host.cleanups.report",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\CleanupReportController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "host/starts/{start}/outputs",
+        "name": "agents.host.starts.outputs",
+        "action": "App\\Http\\Controllers\\Agents\\Host\\OutputGrantController",
+        "middleware": [
+            "journal.host:1,2"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "releases/compatibility",
+        "name": "agents.releases.compatibility",
+        "action": "App\\Http\\Controllers\\Agents\\Releases\\ReleaseCompatibilityController",
+        "middleware": []
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "releases/current/manifest.json",
+        "name": "agents.releases.manifest",
+        "action": "App\\Http\\Controllers\\Agents\\Releases\\CurrentManifestController",
+        "middleware": []
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "releases/current/manifest.json.sig",
+        "name": "agents.releases.signature",
+        "action": "App\\Http\\Controllers\\Agents\\Releases\\CurrentSignatureController",
+        "middleware": []
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "releases/{version}/{target}/{name}",
+        "name": "agents.releases.artifact",
+        "action": "App\\Http\\Controllers\\Agents\\Releases\\ReleaseArtifactController",
+        "middleware": []
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/assignments/show",
+        "name": "assignments.agent.show",
+        "action": "App\\Assignments\\Http\\Controllers\\Calls\\ShowAssignmentController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/assignments/assign",
+        "name": "assignments.agent.assign",
+        "action": "App\\Assignments\\Http\\Controllers\\Calls\\AssignRecordController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/assignments/reassign",
+        "name": "assignments.agent.reassign",
+        "action": "App\\Assignments\\Http\\Controllers\\Calls\\ReassignRecordController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/assignments/unassign",
+        "name": "assignments.agent.unassign",
+        "action": "App\\Assignments\\Http\\Controllers\\Calls\\UnassignRecordController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/assignments/auto/enable",
+        "name": "assignments.agent.auto.enable",
+        "action": "App\\Assignments\\Http\\Controllers\\Calls\\EnableAutoAssignmentController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/assignments/auto/configure",
+        "name": "assignments.agent.auto.configure",
+        "action": "App\\Assignments\\Http\\Controllers\\Calls\\ConfigureAutoAssignmentController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/assignments/auto/disable",
+        "name": "assignments.agent.auto.disable",
+        "action": "App\\Assignments\\Http\\Controllers\\Calls\\DisableAutoAssignmentController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/assignments/auto/show",
+        "name": "assignments.agent.auto.show",
+        "action": "App\\Assignments\\Http\\Controllers\\Calls\\ShowAutoAssignmentController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/assignments/auto/list",
+        "name": "assignments.agent.auto.list",
+        "action": "App\\Assignments\\Http\\Controllers\\Calls\\ListAutoAssignmentsController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/assignments/auto/pools",
+        "name": "assignments.agent.auto.pools",
+        "action": "App\\Assignments\\Http\\Controllers\\Calls\\ListAssignmentPoolsController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "assignments/show",
+        "name": "assignments.show",
+        "action": "App\\Http\\Controllers\\Assignments\\ShowAssignmentController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "assignments/assign",
+        "name": "assignments.assign",
+        "action": "App\\Http\\Controllers\\Assignments\\AssignRecordController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "assignments/reassign",
+        "name": "assignments.reassign",
+        "action": "App\\Http\\Controllers\\Assignments\\ReassignRecordController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "assignments/unassign",
+        "name": "assignments.unassign",
+        "action": "App\\Http\\Controllers\\Assignments\\UnassignRecordController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "assignments/auto/enable",
+        "name": "assignments.auto.enable",
+        "action": "App\\Http\\Controllers\\Assignments\\EnableAutoAssignmentController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "assignments/auto/configure",
+        "name": "assignments.auto.configure",
+        "action": "App\\Http\\Controllers\\Assignments\\ConfigureAutoAssignmentController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "assignments/auto/disable",
+        "name": "assignments.auto.disable",
+        "action": "App\\Http\\Controllers\\Assignments\\DisableAutoAssignmentController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "assignments/auto/show",
+        "name": "assignments.auto.show",
+        "action": "App\\Http\\Controllers\\Assignments\\ShowAutoAssignmentController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "assignments/auto/list",
+        "name": "assignments.auto.list",
+        "action": "App\\Http\\Controllers\\Assignments\\ListAutoAssignmentsController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "assignments/auto/pools",
+        "name": "assignments.auto.pools",
+        "action": "App\\Http\\Controllers\\Assignments\\AutoAssignmentPoolsController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/links/add",
+        "name": "links.agent.add",
+        "action": "App\\Records\\Http\\Controllers\\Calls\\AddLinkController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/links/remove",
+        "name": "links.agent.remove",
+        "action": "App\\Records\\Http\\Controllers\\Calls\\RemoveLinkController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "links/add",
+        "name": "links.add",
+        "action": "App\\Http\\Controllers\\Links\\LinkRecordsController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "links/remove",
+        "name": "links.remove",
+        "action": "App\\Http\\Controllers\\Links\\UnlinkRecordsController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/sharing/request",
+        "name": "shares.agent.request",
+        "action": "App\\Sharing\\Http\\Controllers\\Calls\\RequestShareController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/sharing/status",
+        "name": "shares.agent.status",
+        "action": "App\\Sharing\\Http\\Controllers\\Calls\\ShareStatusController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/bindings/{binding}/presence",
+        "name": "agents.host.bindings.presence",
+        "action": "App\\Connections\\Http\\Controllers\\BindingPresenceController",
+        "middleware": [
+            "journal.host:2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/bindings/{binding}/status",
+        "name": "agents.host.bindings.status",
+        "action": "App\\Connections\\Http\\Controllers\\BindingStatusController",
+        "middleware": [
+            "journal.host:2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/bindings/{binding}/runtimes",
+        "name": "agents.host.bindings.runtimes",
+        "action": "App\\Connections\\Http\\Controllers\\BindingRuntimeController",
+        "middleware": [
+            "journal.host:2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/bindings/{binding}/runtimes/{runtime}/lease",
+        "name": "connections.runtimes.lease",
+        "action": "App\\Connections\\Http\\Controllers\\RuntimeLeaseController",
+        "middleware": [
+            "journal.host:2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/bindings/{binding}/runtimes/{runtime}/stopped",
+        "name": "connections.runtimes.stopped",
+        "action": "App\\Connections\\Http\\Controllers\\BindingRuntimeStopController",
+        "middleware": [
+            "journal.host:2"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "host/deliveries",
+        "name": "connections.deliveries.submit",
+        "action": "App\\Connections\\Http\\Controllers\\WorktreeDeliveryController",
+        "middleware": [
+            "journal.host:2"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "install/{ticket}",
+        "name": "connections.install",
+        "action": "App\\Connections\\Http\\Controllers\\InstallScriptController",
+        "middleware": []
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "api/project-connections/redeem",
+        "name": "connections.redeem",
+        "action": "App\\Connections\\Http\\Controllers\\RedeemProjectInvitationController",
+        "middleware": [
+            "throttle:10,1"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "api/project-commands",
+        "name": "connections.commands.run",
+        "action": "App\\Connections\\Http\\Controllers\\Calls\\RunProjectCommandController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "api/project-commands/{requestKey}/cancel",
+        "name": "connections.commands.cancel",
+        "action": "App\\Connections\\Http\\Controllers\\Calls\\CancelProjectCommandController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "api/project-commands/status",
+        "name": "connections.commands.status",
+        "action": "App\\Connections\\Http\\Controllers\\Calls\\ReadProjectCommandStatusController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "api/project-commands/device",
+        "name": "connections.commands.device",
+        "action": "App\\Connections\\Http\\Controllers\\DeviceCommandController",
+        "middleware": [
+            "throttle:60,1",
+            "App\\Connections\\Http\\Middleware\\AuthenticateDeviceGrant"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "api/device-grants",
+        "name": "connections.device-grants.start",
+        "action": "App\\Connections\\Http\\Controllers\\DeviceGrantController@start",
+        "middleware": [
+            "throttle:30,1"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "api/device-grants/poll",
+        "name": "connections.device-grants.poll",
+        "action": "App\\Connections\\Http\\Controllers\\DeviceGrantController@poll",
+        "middleware": [
+            "throttle:30,1"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "api/project-connections/recover",
+        "name": "connections.recover",
+        "action": "App\\Connections\\Http\\Controllers\\RecoverBindingController",
+        "middleware": [
+            "throttle:30,1"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "project-connections/invitations",
+        "name": "connections.invitations.issue",
+        "action": "App\\Connections\\Http\\Controllers\\IssueProjectInvitationController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "throttle:20,1"
+        ]
+    },
+    {
+        "methods": [
+            "DELETE"
+        ],
+        "uri": "project-connections/invitations/{invitation}",
+        "name": "connections.invitations.revoke",
+        "action": "App\\Connections\\Http\\Controllers\\RevokeProjectInvitationController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "throttle:20,1"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "project-connections/devices/{code}/approve",
+        "name": "connections.devices.approve",
+        "action": "App\\Connections\\Http\\Controllers\\ApproveDeviceGrantController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "throttle:20,1"
+        ]
+    },
+    {
+        "methods": [
+            "DELETE"
+        ],
+        "uri": "project-connections/devices/{grant}",
+        "name": "connections.devices.revoke",
+        "action": "App\\Connections\\Http\\Controllers\\RevokeDeviceGrantController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "throttle:20,1"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "project-connections/bindings/revoke",
+        "name": "connections.bindings.revoke-chosen",
+        "action": "App\\Connections\\Http\\Controllers\\RevokeProjectBindingsController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "throttle:20,1"
+        ]
+    },
+    {
+        "methods": [
+            "PUT"
+        ],
+        "uri": "project-connections/bindings/{binding}/environment/{environment}",
+        "name": "connections.bindings.environment",
+        "action": "App\\Connections\\Http\\Controllers\\AssignBindingEnvironmentController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "throttle:20,1"
+        ]
+    },
+    {
+        "methods": [
+            "DELETE"
+        ],
+        "uri": "project-connections/bindings/{binding}",
+        "name": "connections.bindings.revoke",
+        "action": "App\\Connections\\Http\\Controllers\\RevokeProjectBindingController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "throttle:20,1"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/send",
+        "name": "communication.agent.send",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\SendMessageController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/ask",
+        "name": "communication.agent.ask",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\AskMessageController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/question",
+        "name": "communication.agent.question",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\AskQuestionController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/select",
+        "name": "communication.agent.select",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\SelectMessageController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/answer",
+        "name": "communication.agent.answer",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\AnswerMessageController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/reply",
+        "name": "communication.agent.reply",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\ReplyToMessageController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/require-answer",
+        "name": "communication.agent.require-answer",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\RequireMessageAnswerController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/read",
+        "name": "communication.agent.read",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\ReadMessagesController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/take-next",
+        "name": "communication.agent.take-next",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\TakeNextMessagesController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/dismiss",
+        "name": "communication.agent.dismiss",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\DismissMessageController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/release-claim",
+        "name": "communication.agent.release-claim",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\ReleaseMessageClaimController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/show",
+        "name": "communication.agent.show",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\ShowMessageController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/between",
+        "name": "communication.agent.between",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\ListMessagesBetweenController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/history",
+        "name": "communication.agent.history",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\ReadInboxHistoryController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/counts",
+        "name": "communication.agent.counts",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\CountInboxMessagesController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/wake-status",
+        "name": "communication.agent.wake-status",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\ReadWakeStatusController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/chat/post",
+        "name": "communication.agent.chat.post",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\PostChatMessageController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/chat/ask",
+        "name": "communication.agent.chat.ask",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\AskChatQuestionController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/chat/reply",
+        "name": "communication.agent.chat.reply",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\ReplyInChatController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/chat/claim",
+        "name": "communication.agent.chat.claim",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\ClaimSpeechController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/chat/release",
+        "name": "communication.agent.chat.release",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\ReleaseSpeechController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/chat/answer",
+        "name": "communication.agent.chat.answer",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\AnswerChatQuestionController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/chat/decline",
+        "name": "communication.agent.chat.decline",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\DeclineChatQuestionController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/communication/chat/acknowledge",
+        "name": "communication.agent.chat.acknowledge",
+        "action": "App\\Communication\\Http\\Controllers\\Calls\\AcknowledgePresentationController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "communication/send",
+        "name": "communication.send",
+        "action": "App\\Http\\Controllers\\Communication\\SendMessageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "communication/ask",
+        "name": "communication.ask",
+        "action": "App\\Http\\Controllers\\Communication\\AskMessageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "communication/reply",
+        "name": "communication.reply",
+        "action": "App\\Http\\Controllers\\Communication\\ReplyToMessageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "communication/require-answer",
+        "name": "communication.require-answer",
+        "action": "App\\Http\\Controllers\\Communication\\RequireMessageAnswerController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "communication/read",
+        "name": "communication.read",
+        "action": "App\\Http\\Controllers\\Communication\\ReadMessagesController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "communication/take-next",
+        "name": "communication.take-next",
+        "action": "App\\Http\\Controllers\\Communication\\TakeNextMessagesController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "communication/dismiss",
+        "name": "communication.dismiss",
+        "action": "App\\Http\\Controllers\\Communication\\DismissMessageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "communication/release-claim",
+        "name": "communication.release-claim",
+        "action": "App\\Http\\Controllers\\Communication\\ReleaseMessageClaimController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "communication/show",
+        "name": "communication.show",
+        "action": "App\\Http\\Controllers\\Communication\\ShowMessageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "communication/between",
+        "name": "communication.between",
+        "action": "App\\Http\\Controllers\\Communication\\MessagesBetweenController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "communication/history",
+        "name": "communication.history",
+        "action": "App\\Http\\Controllers\\Communication\\InboxHistoryController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "communication/counts",
+        "name": "communication.counts",
+        "action": "App\\Http\\Controllers\\Communication\\InboxCountsController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "communication/wake-status",
+        "name": "communication.wake-status",
+        "action": "App\\Http\\Controllers\\Communication\\WakeStatusController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "communication/notifications",
+        "name": "communication.notifications",
+        "action": "App\\Http\\Controllers\\Communication\\NotificationPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "communication/notifications/changes",
+        "name": "communication.notifications.changes",
+        "action": "App\\Http\\Controllers\\Communication\\NotificationChangesController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "communication/notifications/read",
+        "name": "communication.notifications.read",
+        "action": "App\\Http\\Controllers\\Communication\\MarkNotificationReadController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "communication/notifications/read-all",
+        "name": "communication.notifications.read-all",
+        "action": "App\\Http\\Controllers\\Communication\\MarkAllNotificationsReadController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "communication/notifications/read-question",
+        "name": "communication.notifications.read-question",
+        "action": "App\\Http\\Controllers\\Communication\\MarkQuestionNotificationReadController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "communication/notifications/read-target",
+        "name": "communication.notifications.read-target",
+        "action": "App\\Http\\Controllers\\Communication\\MarkTargetNotificationReadController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/comments/post",
+        "name": "comments.agent.post",
+        "action": "App\\Comments\\Http\\Controllers\\Calls\\PostCommentController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/comments/list",
+        "name": "comments.agent.list",
+        "action": "App\\Comments\\Http\\Controllers\\Calls\\ListCommentsController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/comments/location",
+        "name": "comments.agent.location",
+        "action": "App\\Comments\\Http\\Controllers\\Calls\\LocateCommentController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "comments/post",
+        "name": "comments.post",
+        "action": "App\\Http\\Controllers\\Comments\\PostCommentController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "comments/list",
+        "name": "comments.list",
+        "action": "App\\Http\\Controllers\\Comments\\ListCommentsController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "comments/location",
+        "name": "comments.location",
+        "action": "App\\Http\\Controllers\\Comments\\CommentLocationController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/text/version",
+        "name": "text.agent.version",
+        "action": "App\\Text\\Http\\Controllers\\Calls\\ReadTextVersionController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/text/sections",
+        "name": "text.agent.sections",
+        "action": "App\\Text\\Http\\Controllers\\Calls\\ListTextSectionsController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/text/read",
+        "name": "text.agent.read",
+        "action": "App\\Text\\Http\\Controllers\\Calls\\ReadTextController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "text/version",
+        "name": "text.version",
+        "action": "App\\Http\\Controllers\\Text\\TextVersionController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "text/sections",
+        "name": "text.sections",
+        "action": "App\\Http\\Controllers\\Text\\TextSectionsController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "text/read",
+        "name": "text.read",
+        "action": "App\\Http\\Controllers\\Text\\ReadTextController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "hooks/bypasses",
+        "name": "hooks.bypasses",
+        "action": "App\\Http\\Controllers\\Hooks\\BypassReportController",
+        "middleware": [
+            "App\\Http\\Middleware\\Agents\\AuthenticateAgent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "hooks/{driver}",
+        "name": "hooks.answer",
+        "action": "App\\Http\\Controllers\\Hooks\\HookController",
+        "middleware": [
+            "App\\Http\\Middleware\\Agents\\AuthenticateAgent"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "hooks/stacks/{agentId}/{sessionId}",
+        "name": "hooks.stacks.show",
+        "action": "App\\Http\\Controllers\\Hooks\\StackInspectionController",
+        "middleware": [
+            "web",
+            "auth"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "agent/mcp/v1",
+        "name": null,
+        "action": "Closure",
+        "middleware": [
+            "Laravel\\Mcp\\Server\\Middleware\\ValidateOrigin"
+        ]
+    },
+    {
+        "methods": [
+            "DELETE"
+        ],
+        "uri": "agent/mcp/v1",
+        "name": null,
+        "action": "Closure",
+        "middleware": [
+            "Laravel\\Mcp\\Server\\Middleware\\ValidateOrigin"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/mcp/v1",
+        "name": "mcp.journal",
+        "action": "Closure",
+        "middleware": [
+            "Laravel\\Mcp\\Server\\Middleware\\ValidateOrigin",
+            "Laravel\\Mcp\\Server\\Middleware\\ReorderJsonAccept",
+            "Laravel\\Mcp\\Server\\Middleware\\ValidateMcpHeaders",
+            "Laravel\\Mcp\\Server\\Middleware\\AddWwwAuthenticateHeader",
+            "journal.agent",
+            "App\\Http\\Middleware\\Mcp\\LimitMcpMessage",
+            "App\\Http\\Middleware\\Mcp\\SetCallDeadline",
+            "throttle:journal-mcp"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/admit",
+        "name": "processes.agent.admit",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\AdmitLineController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/admissions/{processRun}",
+        "name": "processes.agent.admission",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\FetchAdmissionController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/permits/{evidencePermit}/runs",
+        "name": "processes.agent.evidence",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\StartEvidenceRunController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/runs/{processRun}/currency",
+        "name": "processes.agent.currency",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\CheckRunCurrencyController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/runs/{processRun}/output/summary",
+        "name": "processes.agent.output.summary",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\ReadOutputSummaryController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/runs/{processRun}/output/tail",
+        "name": "processes.agent.output.tail",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\ReadOutputTailController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/runs/{processRun}/output/search",
+        "name": "processes.agent.output.search",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\SearchOutputController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/runs/{processRun}/output/bytes",
+        "name": "processes.agent.output.bytes",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\ReadOutputBytesController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/runs/{processRun}/events",
+        "name": "processes.agent.events",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\RecordRunEventsController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/runs/{processRun}/chunks",
+        "name": "processes.agent.chunks",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\RecordRunChunkController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/runs/{processRun}/restore-check",
+        "name": "processes.agent.restore-check",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\CheckRestoredOutputController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/runs/clean",
+        "name": "processes.agent.clean",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\CleanOutputController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/requests/{commandRequest}/readers",
+        "name": "processes.agent.readers",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\ProposeReaderController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/requests/{commandRequest}/sample-approval",
+        "name": "processes.agent.sample-approval",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\ApproveSampleController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/requests/{commandRequest}/samples",
+        "name": "processes.agent.samples",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\StartSampleController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/requests/{commandRequest}/samples/settle",
+        "name": "processes.agent.samples.settle",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\SettleSampleController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/requests/{commandRequest}/proofs",
+        "name": "processes.agent.proofs",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\ProveReaderController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/requests/{commandRequest}/proposals",
+        "name": "processes.agent.proposals.propose",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\ProposeRuleController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/requests/{commandRequest}/show",
+        "name": "processes.agent.requests.show",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\ShowCommandRequestController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/proposals/list",
+        "name": "processes.agent.proposals.list",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\ListProposalsController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/proposals/import",
+        "name": "processes.agent.proposals.import",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\ImportProposalsController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/proposals/{proposal}/revisions",
+        "name": "processes.agent.proposals.revise",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\ReviseProposalController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/proposals/{proposal}/withdraw",
+        "name": "processes.agent.proposals.withdraw",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\WithdrawProposalController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/proposals/{proposal}/approve",
+        "name": "processes.agent.proposals.approve",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\ApproveProposalController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/proposals/{proposal}/reject",
+        "name": "processes.agent.proposals.reject",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\RejectProposalController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/rules/{rule}/retire",
+        "name": "processes.agent.rules.retire",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\RetireRuleController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/rules/{rule}/restore",
+        "name": "processes.agent.rules.restore",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\RestoreRuleController",
+        "middleware": [
+            "journal.agent",
+            "Illuminate\\Routing\\Middleware\\SubstituteBindings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/processes/explain",
+        "name": "processes.explain",
+        "action": "App\\Processes\\Http\\Controllers\\Calls\\ExplainCommandController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/tasks/assigned",
+        "name": "tasks.assigned",
+        "action": "Domain\\Tasks\\Http\\Controllers\\Calls\\ListAssignedTasksController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/tasks/create",
+        "name": "tasks.create",
+        "action": "Domain\\Tasks\\Http\\Controllers\\Calls\\CreateTaskController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/tasks/edit",
+        "name": "tasks.edit",
+        "action": "Domain\\Tasks\\Http\\Controllers\\Calls\\EditTaskController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/plans/assigned",
+        "name": "plans.assigned",
+        "action": "Domain\\Plans\\Http\\Controllers\\Calls\\ListAssignedPlansController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/plans/work/assign",
+        "name": "plans.work.assign",
+        "action": "Domain\\Plans\\Http\\Controllers\\Calls\\AssignPlanWorkController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/plans/work/reassign",
+        "name": "plans.work.reassign",
+        "action": "Domain\\Plans\\Http\\Controllers\\Calls\\ReassignPlanWorkController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/plans/work/unassign",
+        "name": "plans.work.unassign",
+        "action": "Domain\\Plans\\Http\\Controllers\\Calls\\UnassignPlanWorkController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/plans/create",
+        "name": "plans.create",
+        "action": "Domain\\Plans\\Http\\Controllers\\Calls\\CreatePlanController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/plans/edit",
+        "name": "plans.edit",
+        "action": "Domain\\Plans\\Http\\Controllers\\Calls\\EditPlanController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/plans/finish",
+        "name": "plans.finish",
+        "action": "Domain\\Plans\\Http\\Controllers\\Calls\\FinishPlanController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/plans/cancel",
+        "name": "plans.cancel",
+        "action": "Domain\\Plans\\Http\\Controllers\\Calls\\CancelPlanController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/plans/phases/create",
+        "name": "plans.phases.create",
+        "action": "Domain\\Plans\\Http\\Controllers\\Calls\\AddPhaseController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/plans/phases/add-tasks",
+        "name": "plans.phases.add-tasks",
+        "action": "Domain\\Plans\\Http\\Controllers\\Calls\\AddPhaseTasksController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/plans/phases/check",
+        "name": "plans.phases.check",
+        "action": "Domain\\Plans\\Http\\Controllers\\Calls\\RecordPhaseCheckController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/plans/phases/checks",
+        "name": "plans.phases.checks",
+        "action": "Domain\\Plans\\Http\\Controllers\\Calls\\ListPhaseChecksController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/docs/make",
+        "name": "documents.agent.docs.make",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\MakeDocumentController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/docs/list",
+        "name": "documents.agent.docs.list",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\ListDocumentsController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/docs/show",
+        "name": "documents.agent.docs.show",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\ShowDocumentController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/docs/open",
+        "name": "documents.agent.docs.open",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\OpenDocumentController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/docs/edit",
+        "name": "documents.agent.docs.edit",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\EditDocumentController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/docs/close",
+        "name": "documents.agent.docs.close",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\CloseDocumentController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/docs/comment",
+        "name": "documents.agent.docs.comment",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\CommentDocumentController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/docs/draft",
+        "name": "documents.agent.docs.draft",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\ShowDraftController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/docs/revisions",
+        "name": "documents.agent.docs.revisions",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\ListDocumentRevisionsController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/docs/revision",
+        "name": "documents.agent.docs.revision",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\ShowDocumentRevisionController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/docs/settle",
+        "name": "documents.agent.docs.settle",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\SettleDocumentController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/docs/inspect",
+        "name": "documents.agent.docs.inspect",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\InspectDocumentController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/reports/close",
+        "name": "documents.agent.reports.close",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\SettleReportController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/reports/inspect",
+        "name": "documents.agent.reports.inspect",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\InspectReportController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/reports/edit",
+        "name": "documents.agent.reports.edit",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\EditReportController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/reports/make",
+        "name": "documents.agent.reports.make",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\MakeReportController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/reports/comment",
+        "name": "documents.agent.reports.comment",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\CommentReportController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/reports/list",
+        "name": "documents.agent.reports.list",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\ListReportsController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/reports/show",
+        "name": "documents.agent.reports.show",
+        "action": "Domain\\Documents\\Http\\Controllers\\Calls\\ShowReportController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/chat/dock/add",
+        "name": "chat.agent.dock.add",
+        "action": "Domain\\Chat\\Http\\Controllers\\Calls\\DockAddController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/chat/dock/list",
+        "name": "chat.agent.dock.list",
+        "action": "Domain\\Chat\\Http\\Controllers\\Calls\\DockListController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/chat/dock/remove",
+        "name": "chat.agent.dock.remove",
+        "action": "Domain\\Chat\\Http\\Controllers\\Calls\\DockRemoveController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/helpers/start",
+        "name": "helpers.start",
+        "action": "Domain\\Helpers\\Http\\Controllers\\Calls\\StartHelperController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/helpers/send",
+        "name": "helpers.send",
+        "action": "Domain\\Helpers\\Http\\Controllers\\Calls\\SendHelperController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/helpers/continue",
+        "name": "helpers.continue",
+        "action": "Domain\\Helpers\\Http\\Controllers\\Calls\\ContinueHelperController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/helpers/steer",
+        "name": "helpers.steer",
+        "action": "Domain\\Helpers\\Http\\Controllers\\Calls\\SteerHelperController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/helpers/cancel",
+        "name": "helpers.cancel",
+        "action": "Domain\\Helpers\\Http\\Controllers\\Calls\\CancelHelperJobController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/helpers/notices",
+        "name": "helpers.notices",
+        "action": "Domain\\Helpers\\Http\\Controllers\\Calls\\ListHelperNoticesController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/memory/save",
+        "name": "memory.save",
+        "action": "Domain\\Memory\\Http\\Controllers\\Calls\\SaveMemoryController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/memory/edit",
+        "name": "memory.edit",
+        "action": "Domain\\Memory\\Http\\Controllers\\Calls\\EditMemoryController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/memory/remove",
+        "name": "memory.remove",
+        "action": "Domain\\Memory\\Http\\Controllers\\Calls\\RemoveMemoryController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "agent/memory/list",
+        "name": "memory.list",
+        "action": "Domain\\Memory\\Http\\Controllers\\Calls\\ListMemoriesController",
+        "middleware": [
+            "journal.agent"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "login",
+        "name": "login",
+        "action": "App\\Http\\Controllers\\Web\\LoginController",
+        "middleware": [
+            "web",
+            "guest"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "layouts",
+        "name": "layouts.store",
+        "action": "App\\Http\\Controllers\\Web\\LayoutsController@store",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "PUT"
+        ],
+        "uri": "layouts/{layout}",
+        "name": "layouts.update",
+        "action": "App\\Http\\Controllers\\Web\\LayoutsController@update",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "DELETE"
+        ],
+        "uri": "layouts/{layout}",
+        "name": "layouts.destroy",
+        "action": "App\\Http\\Controllers\\Web\\LayoutsController@destroy",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "/",
+        "name": "home",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.home"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "web/asks",
+        "name": "web.asks",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.asks"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "web/asks/{ask}",
+        "name": "web.ask",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.ask"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "web/runtimes",
+        "name": "web.runtimes",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.runtimes"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "web/agents/{agent}/terminal",
+        "name": "web.terminal",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "sharing",
+        "name": "sharing.shares",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sharing.shares"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "sharing/shares/{share}",
+        "name": "sharing.share",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sharing.share"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "sharing/gateways",
+        "name": "sharing.gateways",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sharing.gateways"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "sharing/{reference}",
+        "name": "sharing.share-preview",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sharing.share-preview"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "connections",
+        "name": "connections.connect",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:connections.connect"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "connections/devices/{code}",
+        "name": "connections.device",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:connections.device"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "processes",
+        "name": "processes.command-requests",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:processes.command-requests"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "processes/requests/{request}",
+        "name": "processes.command-request",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:processes.command-request"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "processes/runs",
+        "name": "processes.runs",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:processes.runs"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "processes/runs/{run}",
+        "name": "processes.run",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:processes.run"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "processes/runs/{run}/outcome",
+        "name": "processes.run-outcome",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:processes.run-outcome"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "accounts",
+        "name": "accounts.accounts",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.accounts"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "accounts/profiles",
+        "name": "accounts.profiles",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.profiles"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "accounts/profiles/{profile}",
+        "name": "accounts.profile",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.profile"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "accounts/starts/{session}",
+        "name": "accounts.account-start",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.account-start"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "scripts/{profile}",
+        "name": "scripts.profile-script",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:scripts.profile-script"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "settings",
+        "name": "settings.settings",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:settings.settings"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "tasks",
+        "name": "tasks.list",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:tasks.list"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "tasks/{task}",
+        "name": "tasks.task",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:tasks.task"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "plans",
+        "name": "plans.list",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:plans.list"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "plans/{plan}/tasks/{task}",
+        "name": "plans.plan-task",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:plans.plan-task"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "plans/{plan}",
+        "name": "plans.plan",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:plans.plan"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "plans/{plan}/phases/{phase}",
+        "name": "plans.phase",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:plans.phase"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "documents",
+        "name": "documents.library",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:documents.library"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "documents/docs/{document}",
+        "name": "documents.document",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:documents.document"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "documents/docs/{document}/revisions/{revision}",
+        "name": "documents.revision",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:documents.revision"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "documents/reports/{report}",
+        "name": "documents.report",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:documents.report"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "chat",
+        "name": "chat.conversation",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "chat/inbox",
+        "name": "chat.inbox",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.inbox"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "chat/history",
+        "name": "chat.history",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.history"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "rules",
+        "name": "rules.list",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:rules.list"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "sequences",
+        "name": "sequences.index",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sequences.index"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "sequences/runs/{run}",
+        "name": "sequences.run",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sequences.run"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "reminders",
+        "name": "reminders.list",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:reminders.list"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "helpers/jobs",
+        "name": "helpers.jobs",
+        "action": "App\\Http\\Controllers\\Web\\PageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:helpers.jobs"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "web/drafts/{noun}/questions",
+        "name": "web.draft-questions",
+        "action": "App\\Web\\Http\\Controllers\\Drafts\\DraftQuestionsController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.home"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/drafts/{noun}",
+        "name": "web.draft-record",
+        "action": "App\\Web\\Http\\Controllers\\Drafts\\DraftRecordController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.home"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/asks/{ask}/approve-merge",
+        "name": "web.approve-merge",
+        "action": "App\\Web\\Http\\Controllers\\Asks\\ApproveMergeAskPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.ask"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/runtimes/{session}/release-hold",
+        "name": "web.release-runtime-hold",
+        "action": "App\\Web\\Http\\Controllers\\Runtimes\\ReleaseRuntimeHoldController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.runtimes"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/runtimes/requests/{driver_request}/retry",
+        "name": "web.retry-runtime-request",
+        "action": "App\\Web\\Http\\Controllers\\Runtimes\\RetryRuntimeRequestController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.runtimes"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/runtimes/requests/{driver_request}/send-again",
+        "name": "web.send-runtime-request-again",
+        "action": "App\\Web\\Http\\Controllers\\Runtimes\\SendRuntimeRequestAgainController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.runtimes"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/runtimes/requests/{driver_request}/cancel",
+        "name": "web.cancel-runtime-request",
+        "action": "App\\Web\\Http\\Controllers\\Runtimes\\CancelRuntimeRequestController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.runtimes"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/runtimes/requests/{driver_request}/resolve",
+        "name": "web.resolve-runtime-request",
+        "action": "App\\Web\\Http\\Controllers\\Runtimes\\ResolveRuntimeRequestController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.runtimes"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/runtimes/requests/{driver_request}/resume-script",
+        "name": "web.resume-runtime-script",
+        "action": "App\\Web\\Http\\Controllers\\Runtimes\\ResumeScriptRuntimeRequestController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.runtimes"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/runtimes/requests/{driver_request}/cancel-script",
+        "name": "web.cancel-runtime-script",
+        "action": "App\\Web\\Http\\Controllers\\Runtimes\\CancelScriptRuntimeRequestController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.runtimes"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/agents/{agent}/terminal/interests",
+        "name": "web.open-terminal-interest",
+        "action": "App\\Web\\Http\\Controllers\\Terminal\\OpenTerminalController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/agents/{agent}/terminal/interests/renew",
+        "name": "web.renew-terminal-interest",
+        "action": "App\\Web\\Http\\Controllers\\Terminal\\RenewTerminalController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/agents/{agent}/terminal/interests/close",
+        "name": "web.close-terminal-interest",
+        "action": "App\\Web\\Http\\Controllers\\Terminal\\CloseTerminalController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "web/agents/{agent}/terminal/frame",
+        "name": "web.terminal-frame",
+        "action": "App\\Web\\Http\\Controllers\\Terminal\\TerminalFrameController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/agents/{agent}/terminal/control/take",
+        "name": "web.take-terminal-control",
+        "action": "App\\Web\\Http\\Controllers\\Terminal\\TakeTerminalControlController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/agents/{agent}/terminal/control/cancel",
+        "name": "web.cancel-terminal-take",
+        "action": "App\\Web\\Http\\Controllers\\Terminal\\CancelTerminalTakeController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/agents/{agent}/terminal/control/renew",
+        "name": "web.renew-terminal-control",
+        "action": "App\\Web\\Http\\Controllers\\Terminal\\RenewTerminalControlController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/agents/{agent}/terminal/control/release",
+        "name": "web.release-terminal-control",
+        "action": "App\\Web\\Http\\Controllers\\Terminal\\ReleaseTerminalControlController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/agents/{agent}/terminal/control/input",
+        "name": "web.send-terminal-input",
+        "action": "App\\Web\\Http\\Controllers\\Terminal\\SendTerminalInputController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/agents/{agent}/terminal/control/draft",
+        "name": "web.choose-terminal-draft",
+        "action": "App\\Web\\Http\\Controllers\\Terminal\\ChooseTerminalDraftController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/agents/{agent}/terminal/control/check",
+        "name": "web.check-terminal-screen",
+        "action": "App\\Web\\Http\\Controllers\\Terminal\\CheckTerminalScreenController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/agents/{agent}/terminal/private/open",
+        "name": "web.open-private-entry",
+        "action": "App\\Web\\Http\\Controllers\\Terminal\\OpenPrivateEntryController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/agents/{agent}/terminal/private/submit",
+        "name": "web.submit-private-input",
+        "action": "App\\Web\\Http\\Controllers\\Terminal\\SubmitPrivateInputController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "web/agents/{agent}/terminal/private/cancel",
+        "name": "web.cancel-private-entry",
+        "action": "App\\Web\\Http\\Controllers\\Terminal\\CancelPrivateEntryController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "web/agents/{agent}/terminal/control",
+        "name": "web.terminal-control",
+        "action": "App\\Web\\Http\\Controllers\\Terminal\\TerminalControlReceiptController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:web.terminal"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "sharing/shares/{share}/link",
+        "name": "sharing.reveal-share-link",
+        "action": "App\\Sharing\\Http\\Controllers\\RevealShareLinkController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sharing.share"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "sharing/shares/{share}/retry",
+        "name": "sharing.retry-share",
+        "action": "App\\Sharing\\Http\\Controllers\\RetryShareController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sharing.share"
+        ]
+    },
+    {
+        "methods": [
+            "DELETE"
+        ],
+        "uri": "sharing/shares/{share}",
+        "name": "sharing.revoke-share",
+        "action": "App\\Sharing\\Http\\Controllers\\RevokeShareController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sharing.share"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "sharing/gateways",
+        "name": "sharing.configure-share-gateway",
+        "action": "App\\Sharing\\Http\\Controllers\\ConfigureShareGatewayController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sharing.gateways"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "sharing/gateways/{configuration}/default",
+        "name": "sharing.make-share-gateway-default",
+        "action": "App\\Sharing\\Http\\Controllers\\MakeShareGatewayDefaultController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sharing.gateways"
+        ]
+    },
+    {
+        "methods": [
+            "DELETE"
+        ],
+        "uri": "sharing/gateways/{configuration}",
+        "name": "sharing.disable-share-gateway",
+        "action": "App\\Sharing\\Http\\Controllers\\DisableShareGatewayController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sharing.gateways"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "sharing/{reference}/previews",
+        "name": "sharing.save-share-preview",
+        "action": "App\\Sharing\\Http\\Controllers\\SharePreviewController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sharing.share-preview"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "sharing/{reference}/shares",
+        "name": "sharing.create-share",
+        "action": "App\\Sharing\\Http\\Controllers\\CreateShareController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sharing.share-preview"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "sharing/shares/{share}/approval",
+        "name": "sharing.approve-share-request",
+        "action": "App\\Sharing\\Http\\Controllers\\ApproveShareRequestController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sharing.share-preview"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "sharing/shares/{share}/scope",
+        "name": "sharing.refresh-share-scope",
+        "action": "App\\Sharing\\Http\\Controllers\\RefreshShareScopeController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:sharing.share-preview"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "processes/bundles/approval",
+        "name": "processes.approve-rule-bundle",
+        "action": "App\\Processes\\Http\\Controllers\\ApproveBundlePageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:processes.command-requests"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "processes/requests/{request}/sample-approval",
+        "name": "processes.approve-sample",
+        "action": "App\\Processes\\Http\\Controllers\\ApproveSamplePageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:processes.command-request"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "processes/proposals/{proposal}/approval",
+        "name": "processes.approve-proposal",
+        "action": "App\\Processes\\Http\\Controllers\\ApproveProposalPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:processes.command-request"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "processes/proposals/{proposal}/rejection",
+        "name": "processes.reject-proposal",
+        "action": "App\\Processes\\Http\\Controllers\\RejectProposalPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:processes.command-request"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "processes/runs/{run}/stop",
+        "name": "processes.stop-run",
+        "action": "App\\Processes\\Http\\Controllers\\StopRunPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:processes.run"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "processes/runs/{run}/clean",
+        "name": "processes.clean-run",
+        "action": "App\\Processes\\Http\\Controllers\\CleanRunPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:processes.run"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "accounts/{account}/activate",
+        "name": "accounts.activate",
+        "action": "App\\Profiles\\Http\\Controllers\\ActivateAccountController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.accounts"
+        ]
+    },
+    {
+        "methods": [
+            "PATCH"
+        ],
+        "uri": "accounts/{account}",
+        "name": "accounts.rename",
+        "action": "App\\Profiles\\Http\\Controllers\\RenameAccountController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.accounts"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "accounts/sign-ins",
+        "name": "accounts.start-sign-in",
+        "action": "App\\Profiles\\Http\\Controllers\\StartSignInController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.accounts"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "accounts/sign-ins/receipt",
+        "name": "accounts.sign-in-receipt",
+        "action": "App\\Profiles\\Http\\Controllers\\SignInReceiptController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.accounts"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "accounts/{account}/sign-in-again",
+        "name": "accounts.sign-in-again",
+        "action": "App\\Profiles\\Http\\Controllers\\SignInAgainController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.accounts"
+        ]
+    },
+    {
+        "methods": [
+            "DELETE"
+        ],
+        "uri": "accounts/{account}",
+        "name": "accounts.remove",
+        "action": "App\\Profiles\\Http\\Controllers\\RemoveAccountController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.accounts"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "accounts/{account}/cleanup/retry",
+        "name": "accounts.retry-cleanup",
+        "action": "App\\Profiles\\Http\\Controllers\\RetryAccountCleanupController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.accounts"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "accounts/{account}/recheck",
+        "name": "accounts.recheck",
+        "action": "App\\Profiles\\Http\\Controllers\\RecheckAccountController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.accounts"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "accounts/sign-ins/{attempt}/cleanup/retry",
+        "name": "accounts.retry-sign-in-cleanup",
+        "action": "App\\Profiles\\Http\\Controllers\\RetryAttemptCleanupController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.accounts"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "accounts/notices/{notice}/dismiss",
+        "name": "accounts.dismiss",
+        "action": "App\\Profiles\\Http\\Controllers\\DismissAccountNoticeController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.accounts"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "accounts/sign-ins/{attempt}/challenge",
+        "name": "accounts.challenge",
+        "action": "App\\Profiles\\Http\\Controllers\\SignInChallengeController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.accounts"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "accounts/sign-ins/{attempt}/code",
+        "name": "accounts.submit-code",
+        "action": "App\\Profiles\\Http\\Controllers\\SubmitSignInCodeController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.accounts"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "accounts/sign-ins/{attempt}/cancel",
+        "name": "accounts.cancel-sign-in",
+        "action": "App\\Profiles\\Http\\Controllers\\CancelSignInController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:accounts.accounts"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "scripts/{profile}/draft/check",
+        "name": "scripts.check-draft",
+        "action": "App\\Scripts\\Http\\Controllers\\Pages\\CheckDraftPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:scripts.profile-script"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "scripts/{profile}/draft/save",
+        "name": "scripts.save-draft",
+        "action": "App\\Scripts\\Http\\Controllers\\Pages\\SaveDraftPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:scripts.profile-script"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "settings/save",
+        "name": "settings.save",
+        "action": "App\\Settings\\Http\\Controllers\\SaveSettingsPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:settings.settings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "settings/reset",
+        "name": "settings.reset",
+        "action": "App\\Settings\\Http\\Controllers\\ResetSettingsPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:settings.settings"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "tasks/create",
+        "name": "tasks.create-task",
+        "action": "Domain\\Tasks\\Http\\Controllers\\CreateTaskPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:tasks.list"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "tasks/{task}/start",
+        "name": "tasks.start",
+        "action": "Domain\\Tasks\\Http\\Controllers\\StartTaskPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:tasks.task"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "tasks/{task}/block",
+        "name": "tasks.block",
+        "action": "Domain\\Tasks\\Http\\Controllers\\BlockTaskPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:tasks.task"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "tasks/{task}/cancel",
+        "name": "tasks.cancel",
+        "action": "Domain\\Tasks\\Http\\Controllers\\CancelTaskPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:tasks.task"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "tasks/{task}/waits",
+        "name": "tasks.add-wait",
+        "action": "Domain\\Tasks\\Http\\Controllers\\AddTaskWaitPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:tasks.task"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "tasks/{task}/waits/remove",
+        "name": "tasks.remove-wait",
+        "action": "Domain\\Tasks\\Http\\Controllers\\RemoveTaskWaitPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:tasks.task"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "tasks/{task}/waits/waive",
+        "name": "tasks.waive-wait",
+        "action": "Domain\\Tasks\\Http\\Controllers\\WaiveTaskWaitPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:tasks.task"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "plans/{plan}/start",
+        "name": "plans.start",
+        "action": "Domain\\Plans\\Http\\Controllers\\StartPlanController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:plans.list"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "plans/create",
+        "name": "plans.create-plan",
+        "action": "Domain\\Plans\\Http\\Controllers\\CreatePlanPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:plans.list"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "plans/{plan}/cancel",
+        "name": "plans.cancel-plan",
+        "action": "Domain\\Plans\\Http\\Controllers\\CancelPlanPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:plans.plan"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "plans/{plan}/work",
+        "name": "plans.assign-work",
+        "action": "Domain\\Plans\\Http\\Controllers\\AssignPlanWorkPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:plans.plan"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "plans/{plan}/work/reassign",
+        "name": "plans.reassign-work",
+        "action": "Domain\\Plans\\Http\\Controllers\\ReassignPlanWorkPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:plans.plan"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "plans/{plan}/finish",
+        "name": "plans.finish-plan",
+        "action": "Domain\\Plans\\Http\\Controllers\\FinishPlanPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:plans.plan"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "plans/{plan}/review",
+        "name": "plans.request-review",
+        "action": "Domain\\Plans\\Http\\Controllers\\RequestPlanReviewPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:plans.plan"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "plans/{plan}/review/withdraw",
+        "name": "plans.withdraw-review",
+        "action": "Domain\\Plans\\Http\\Controllers\\WithdrawPlanReviewPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:plans.plan"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "plans/{plan}/review/approve",
+        "name": "plans.approve-review",
+        "action": "Domain\\Plans\\Http\\Controllers\\ApprovePlanReviewPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:plans.plan"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "plans/{plan}/review/changes",
+        "name": "plans.request-changes",
+        "action": "Domain\\Plans\\Http\\Controllers\\RequestPlanChangesPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:plans.plan"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "documents/docs",
+        "name": "documents.create-document",
+        "action": "Domain\\Documents\\Http\\Controllers\\CreateDocumentPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:documents.library"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "documents/reports",
+        "name": "documents.create-report",
+        "action": "Domain\\Documents\\Http\\Controllers\\CreateReportPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:documents.library"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "documents/docs/{document}/open",
+        "name": "documents.open-document",
+        "action": "Domain\\Documents\\Http\\Controllers\\OpenDocumentPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:documents.document"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "documents/docs/{document}/save",
+        "name": "documents.save-draft",
+        "action": "Domain\\Documents\\Http\\Controllers\\SaveDraftPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:documents.document"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "documents/docs/{document}/close",
+        "name": "documents.close-draft",
+        "action": "Domain\\Documents\\Http\\Controllers\\CloseDraftPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:documents.document"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "documents/docs/{document}/settle",
+        "name": "documents.settle-document",
+        "action": "Domain\\Documents\\Http\\Controllers\\SettleDocumentPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:documents.document"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "documents/docs/{document}/recover",
+        "name": "documents.recover-draft",
+        "action": "Domain\\Documents\\Http\\Controllers\\RecoverDocumentPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:documents.document"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "documents/reports/{report}/settle",
+        "name": "documents.settle-report",
+        "action": "Domain\\Documents\\Http\\Controllers\\SettleReportPageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:documents.report"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "chat/messages",
+        "name": "chat.send",
+        "action": "Domain\\Chat\\Http\\Controllers\\SendMessageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "chat/messages/read",
+        "name": "chat.read",
+        "action": "Domain\\Chat\\Http\\Controllers\\ReadShownController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "chat/messages/reply",
+        "name": "chat.reply",
+        "action": "Domain\\Chat\\Http\\Controllers\\ReplyController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "chat/messages/decline",
+        "name": "chat.decline",
+        "action": "Domain\\Chat\\Http\\Controllers\\DeclineQuestionController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "chat/messages/retry-delivery",
+        "name": "chat.retry-delivery",
+        "action": "Domain\\Chat\\Http\\Controllers\\RetryDeliveryController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "chat/messages/outcome",
+        "name": "chat.outcome",
+        "action": "Domain\\Chat\\Http\\Controllers\\RequestOutcomeController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "chat/events",
+        "name": "chat.events",
+        "action": "Domain\\Chat\\Http\\Controllers\\ChatEventsController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "chat/messages/rows",
+        "name": "chat.rows",
+        "action": "Domain\\Chat\\Http\\Controllers\\ChatRowsController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "chat/dock",
+        "name": "chat.dock",
+        "action": "Domain\\Chat\\Http\\Controllers\\DockController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "chat/dock/remove",
+        "name": "chat.undock",
+        "action": "Domain\\Chat\\Http\\Controllers\\UndockController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "chat/chats",
+        "name": "chat.create-group",
+        "action": "Domain\\Chat\\Http\\Controllers\\Membership\\CreateGroupChatController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "chat/chats/candidates",
+        "name": "chat.candidates",
+        "action": "Domain\\Chat\\Http\\Controllers\\Membership\\ChatCandidatesController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "chat/chats/members",
+        "name": "chat.add-member",
+        "action": "Domain\\Chat\\Http\\Controllers\\Membership\\AddParticipantController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "chat/chats/members/remove",
+        "name": "chat.remove-member",
+        "action": "Domain\\Chat\\Http\\Controllers\\Membership\\RemoveParticipantController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "chat/chats/transfer",
+        "name": "chat.transfer",
+        "action": "Domain\\Chat\\Http\\Controllers\\Membership\\TransferChatController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "chat/chats/leave",
+        "name": "chat.leave",
+        "action": "Domain\\Chat\\Http\\Controllers\\Membership\\LeaveChatController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "chat/chats/close",
+        "name": "chat.close",
+        "action": "Domain\\Chat\\Http\\Controllers\\Membership\\CloseChatController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.conversation"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "chat/inbox/take-next",
+        "name": "chat.take-next",
+        "action": "Domain\\Chat\\Http\\Controllers\\TakeNextController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.inbox"
+        ]
+    },
+    {
+        "methods": [
+            "POST"
+        ],
+        "uri": "chat/history/cancel",
+        "name": "chat.cancel",
+        "action": "Domain\\Chat\\Http\\Controllers\\CancelMessageController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:chat.history"
+        ]
+    },
+    {
+        "methods": [
+            "PATCH"
+        ],
+        "uri": "rules/{rule}/approve",
+        "name": "rules.approve",
+        "action": "Domain\\Rules\\Http\\Controllers\\ApproveRuleController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:rules.list"
+        ]
+    },
+    {
+        "methods": [
+            "PATCH"
+        ],
+        "uri": "rules/{rule}/deny",
+        "name": "rules.deny",
+        "action": "Domain\\Rules\\Http\\Controllers\\DenyRuleController",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user",
+            "journal.visible:rules.list"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "POST",
+            "HEAD"
+        ],
+        "uri": "broadcasting/auth",
+        "name": null,
+        "action": "\\Illuminate\\Broadcasting\\BroadcastController@authenticate",
+        "middleware": [
+            "web",
+            "auth",
+            "journal.user"
+        ]
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "up",
+        "name": null,
+        "action": "Illuminate\\Foundation\\Http\\HealthCheck",
+        "middleware": []
+    },
+    {
+        "methods": [
+            "GET",
+            "HEAD"
+        ],
+        "uri": "storage/{path}",
+        "name": "storage.local",
+        "action": "Closure",
+        "middleware": []
+    },
+    {
+        "methods": [
+            "PUT"
+        ],
+        "uri": "storage/{path}",
+        "name": "storage.local.upload",
+        "action": "Closure",
+        "middleware": []
+    }
+]

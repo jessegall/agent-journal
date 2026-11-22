@@ -1,0 +1,876 @@
+[
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "07c429a5e40c9e09bb008536e72f8f3f5fb43748",
+        "old_path": "domain/Memory/database/migrations/2026_11_17_000009_create_memories_table.php",
+        "old_class": null,
+        "final_path": "domain/Memory/database/migrations/2026_11_17_000009_create_memories_table.php",
+        "final_class": null,
+        "status": "stay",
+        "kind": "anonymous migration",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2f8fa6255f8f2a82523ec43244009032e1d4fde1",
+        "old_path": "domain/Memory/resources/skills/memory.md",
+        "old_class": null,
+        "final_path": "domain/Memory/resources/skills/memory.md",
+        "final_class": null,
+        "status": "stay",
+        "kind": "blade or static asset",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f8ba4decc77994c11fba739ba19fca508e46725c",
+        "old_path": "domain/Memory/src/Api/MemoryCard.php",
+        "old_class": "Domain\\Memory\\Api\\MemoryCard",
+        "final_path": "domain/Memory/src/Values/MemoryCard.php",
+        "final_class": "Domain\\Memory\\Values\\MemoryCard",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a7a27e0d89d5b89927e12ccde76b10c22f395ab0",
+        "old_path": "domain/Memory/src/Api/MemoryPage.php",
+        "old_class": "Domain\\Memory\\Api\\MemoryPage",
+        "final_path": "domain/Memory/src/Values/MemoryPage.php",
+        "final_class": "Domain\\Memory\\Values\\MemoryPage",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "cbec6b8d670eb2b360e1635265ebdfd26bfdb2a9",
+        "old_path": "domain/Memory/src/Calls/EditMemoryCall.php",
+        "old_class": "Domain\\Memory\\Calls\\EditMemoryCall",
+        "final_path": "domain/Memory/src/Calls/EditMemoryCall.php",
+        "final_class": "Domain\\Memory\\Calls\\EditMemoryCall",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b8801d73a77aa7818c92512b492b7893de6fbd66",
+        "old_path": "domain/Memory/src/Calls/ListMemoriesCall.php",
+        "old_class": "Domain\\Memory\\Calls\\ListMemoriesCall",
+        "final_path": "domain/Memory/src/Calls/ListMemoriesCall.php",
+        "final_class": "Domain\\Memory\\Calls\\ListMemoriesCall",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9d13b2efa4f1111bb418e6260583c3d2deabd802",
+        "old_path": "domain/Memory/src/Calls/MemoryCalls.php",
+        "old_class": "Domain\\Memory\\Calls\\MemoryCalls",
+        "final_path": "domain/Memory/src/Calls/MemoryCalls.php",
+        "final_class": "Domain\\Memory\\Calls\\MemoryCalls",
+        "status": "generate",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "130cfe9cb2db9f5e1a5a27235a2dde826c651660",
+        "old_path": "domain/Memory/src/Calls/MemoryNamed.php",
+        "old_class": "Domain\\Memory\\Calls\\MemoryNamed",
+        "final_path": "domain/Memory/src/Calls/MemoryNamed.php",
+        "final_class": "Domain\\Memory\\Calls\\MemoryNamed",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f43efa9efcb3866f926639f29cb000a9c032a9b5",
+        "old_path": "domain/Memory/src/Calls/MemoryPage.php",
+        "old_class": "Domain\\Memory\\Calls\\MemoryPage",
+        "final_path": "domain/Memory/src/Calls/MemoryPage.php",
+        "final_class": "Domain\\Memory\\Calls\\MemoryPage",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "5fdf37723d2f14530c9eb529fa0452a613d0e448",
+        "old_path": "domain/Memory/src/Calls/RemoveMemoryCall.php",
+        "old_class": "Domain\\Memory\\Calls\\RemoveMemoryCall",
+        "final_path": "domain/Memory/src/Calls/RemoveMemoryCall.php",
+        "final_class": "Domain\\Memory\\Calls\\RemoveMemoryCall",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "de49ad3e54a2fec9cf470b914a483632b9c7f491",
+        "old_path": "domain/Memory/src/Calls/SaveMemoryCall.php",
+        "old_class": "Domain\\Memory\\Calls\\SaveMemoryCall",
+        "final_path": "domain/Memory/src/Calls/SaveMemoryCall.php",
+        "final_class": "Domain\\Memory\\Calls\\SaveMemoryCall",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "6044738b15920c87b55b315f22b3e1367214b797",
+        "old_path": "domain/Memory/src/Commands/EditMemory/EditMemoryCommand.php",
+        "old_class": "Domain\\Memory\\Commands\\EditMemory\\EditMemoryCommand",
+        "final_path": "domain/Memory/src/Commands/EditMemory/EditMemoryCommand.php",
+        "final_class": "Domain\\Memory\\Commands\\EditMemory\\EditMemoryCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "90a5532c3700468193c2f91d9b468cace5e5f4b5",
+        "old_path": "domain/Memory/src/Commands/EditMemory/EditMemoryHandler.php",
+        "old_class": "Domain\\Memory\\Commands\\EditMemory\\EditMemoryHandler",
+        "final_path": "domain/Memory/src/Commands/EditMemory/EditMemoryHandler.php",
+        "final_class": "Domain\\Memory\\Commands\\EditMemory\\EditMemoryHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c3efab9c4225ebb32cf0421c7c909a4a45e78754",
+        "old_path": "domain/Memory/src/Commands/RemoveMemory/RemoveMemoryCommand.php",
+        "old_class": "Domain\\Memory\\Commands\\RemoveMemory\\RemoveMemoryCommand",
+        "final_path": "domain/Memory/src/Commands/RemoveMemory/RemoveMemoryCommand.php",
+        "final_class": "Domain\\Memory\\Commands\\RemoveMemory\\RemoveMemoryCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8f91b6909b5294240b4162cc49785c665a22fa16",
+        "old_path": "domain/Memory/src/Commands/RemoveMemory/RemoveMemoryHandler.php",
+        "old_class": "Domain\\Memory\\Commands\\RemoveMemory\\RemoveMemoryHandler",
+        "final_path": "domain/Memory/src/Commands/RemoveMemory/RemoveMemoryHandler.php",
+        "final_class": "Domain\\Memory\\Commands\\RemoveMemory\\RemoveMemoryHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f8cd2a3feb190f73e0ddceb9a7aadf3f0b2e9f8d",
+        "old_path": "domain/Memory/src/Commands/SaveMemory/SaveMemoryCommand.php",
+        "old_class": "Domain\\Memory\\Commands\\SaveMemory\\SaveMemoryCommand",
+        "final_path": "domain/Memory/src/Commands/SaveMemory/SaveMemoryCommand.php",
+        "final_class": "Domain\\Memory\\Commands\\SaveMemory\\SaveMemoryCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "1a7f45309e268afbb9ff7e63d3dc6ceee398b11c",
+        "old_path": "domain/Memory/src/Commands/SaveMemory/SaveMemoryHandler.php",
+        "old_class": "Domain\\Memory\\Commands\\SaveMemory\\SaveMemoryHandler",
+        "final_path": "domain/Memory/src/Commands/SaveMemory/SaveMemoryHandler.php",
+        "final_class": "Domain\\Memory\\Commands\\SaveMemory\\SaveMemoryHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "6b12bb12347b6f0ad2eb44f3d50610e53ecd6858",
+        "old_path": "domain/Memory/src/Commands/Support/MemoryCommandHandler.php",
+        "old_class": "Domain\\Memory\\Commands\\Support\\MemoryCommandHandler",
+        "final_path": "domain/Memory/src/Commands/Support/MemoryCommandHandler.php",
+        "final_class": "Domain\\Memory\\Commands\\Support\\MemoryCommandHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "bbe8fbeafd3b8e35a522d1643a2b58148c35d66b",
+        "old_path": "domain/Memory/src/Console/MemoryEditCommand.php",
+        "old_class": "Domain\\Memory\\Console\\MemoryEditCommand",
+        "final_path": "domain/Memory/src/Console/Commands/MemoryEditCommand.php",
+        "final_class": "Domain\\Memory\\Console\\Commands\\MemoryEditCommand",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f7006923c87c3c9f1df921095c0959ddbae0fabd",
+        "old_path": "domain/Memory/src/Console/MemoryListCommand.php",
+        "old_class": "Domain\\Memory\\Console\\MemoryListCommand",
+        "final_path": "domain/Memory/src/Console/Commands/MemoryListCommand.php",
+        "final_class": "Domain\\Memory\\Console\\Commands\\MemoryListCommand",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d0753425b3cdddc5d1352454c138ad29eaa92325",
+        "old_path": "domain/Memory/src/Console/MemoryRemoveCommand.php",
+        "old_class": "Domain\\Memory\\Console\\MemoryRemoveCommand",
+        "final_path": "domain/Memory/src/Console/Commands/MemoryRemoveCommand.php",
+        "final_class": "Domain\\Memory\\Console\\Commands\\MemoryRemoveCommand",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "21a54561a76ab04b77a1d38a81e56441d90c4559",
+        "old_path": "domain/Memory/src/Console/MemorySaveCommand.php",
+        "old_class": "Domain\\Memory\\Console\\MemorySaveCommand",
+        "final_path": "domain/Memory/src/Console/Commands/MemorySaveCommand.php",
+        "final_class": "Domain\\Memory\\Console\\Commands\\MemorySaveCommand",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f1bf91c0275ce1e865d9eaa29a57b3751f2f0c0f",
+        "old_path": "domain/Memory/src/Contracts/MemoryResolver.php",
+        "old_class": "Domain\\Memory\\Contracts\\MemoryResolver",
+        "final_path": "domain/Memory/src/Contracts/MemoryResolver.php",
+        "final_class": "Domain\\Memory\\Contracts\\MemoryResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "77690caab9cb80455269ed3aa9d4849ea00eda12",
+        "old_path": "domain/Memory/src/Exceptions/MemoryRevisionChanged.php",
+        "old_class": "Domain\\Memory\\Exceptions\\MemoryRevisionChanged",
+        "final_path": "domain/Memory/src/Exceptions/MemoryRevisionChanged.php",
+        "final_class": "Domain\\Memory\\Exceptions\\MemoryRevisionChanged",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "79c597c8da19fa808a8f5871e5008da2de71aaca",
+        "old_path": "domain/Memory/src/Exceptions/MemoryUnavailable.php",
+        "old_class": "Domain\\Memory\\Exceptions\\MemoryUnavailable",
+        "final_path": "domain/Memory/src/Exceptions/MemoryUnavailable.php",
+        "final_class": "Domain\\Memory\\Exceptions\\MemoryUnavailable",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "51754535d618944887a69b5f656968513e4d6d04",
+        "old_path": "domain/Memory/src/Http/Controllers/Calls/EditMemoryController.php",
+        "old_class": "Domain\\Memory\\Http\\Controllers\\Calls\\EditMemoryController",
+        "final_path": "domain/Memory/src/Http/Controllers/Calls/EditMemoryController.php",
+        "final_class": "Domain\\Memory\\Http\\Controllers\\Calls\\EditMemoryController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e175da74b1635aadebd03f5cfe4634bf536d7277",
+        "old_path": "domain/Memory/src/Http/Controllers/Calls/ListMemoriesController.php",
+        "old_class": "Domain\\Memory\\Http\\Controllers\\Calls\\ListMemoriesController",
+        "final_path": "domain/Memory/src/Http/Controllers/Calls/ListMemoriesController.php",
+        "final_class": "Domain\\Memory\\Http\\Controllers\\Calls\\ListMemoriesController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "21f96caab580eece9ba9b1ca6823d0449184f013",
+        "old_path": "domain/Memory/src/Http/Controllers/Calls/RemoveMemoryController.php",
+        "old_class": "Domain\\Memory\\Http\\Controllers\\Calls\\RemoveMemoryController",
+        "final_path": "domain/Memory/src/Http/Controllers/Calls/RemoveMemoryController.php",
+        "final_class": "Domain\\Memory\\Http\\Controllers\\Calls\\RemoveMemoryController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "3bb30a9c6531567fcdfb3651de37bb7ee832e1c1",
+        "old_path": "domain/Memory/src/Http/Controllers/Calls/SaveMemoryController.php",
+        "old_class": "Domain\\Memory\\Http\\Controllers\\Calls\\SaveMemoryController",
+        "final_path": "domain/Memory/src/Http/Controllers/Calls/SaveMemoryController.php",
+        "final_class": "Domain\\Memory\\Http\\Controllers\\Calls\\SaveMemoryController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "89c35c2e3dfa55900f2f8b865845ea5e2115c274",
+        "old_path": "domain/Memory/src/Listeners/SupplyMemories.php",
+        "old_class": "Domain\\Memory\\Listeners\\SupplyMemories",
+        "final_path": "domain/Memory/src/Listeners/SupplyMemories.php",
+        "final_class": "Domain\\Memory\\Listeners\\SupplyMemories",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "05b7bd3e05dbb7dfc546b61cac5867ef1b426e31",
+        "old_path": "domain/Memory/src/Mcp/EditMemoryTool.php",
+        "old_class": "Domain\\Memory\\Mcp\\EditMemoryTool",
+        "final_path": "domain/Memory/src/Mcp/Tools/EditMemoryTool.php",
+        "final_class": "Domain\\Memory\\Mcp\\Tools\\EditMemoryTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "1892109bf562a94f1bf05c65afe7ee80ba5211ed",
+        "old_path": "domain/Memory/src/Mcp/MemoriesListTool.php",
+        "old_class": "Domain\\Memory\\Mcp\\MemoriesListTool",
+        "final_path": "domain/Memory/src/Mcp/Tools/MemoriesListTool.php",
+        "final_class": "Domain\\Memory\\Mcp\\Tools\\MemoriesListTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "4d36d86de29b4d6b0a2d77dff40cd930258a31f6",
+        "old_path": "domain/Memory/src/Mcp/MemoryReadResult.php",
+        "old_class": "Domain\\Memory\\Mcp\\MemoryReadResult",
+        "final_path": "domain/Memory/src/Support/Mcp/MemoryReadResult.php",
+        "final_class": "Domain\\Memory\\Support\\Mcp\\MemoryReadResult",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "79e9a5e5550b84901f1754b43fd159c59b3c3dd0",
+        "old_path": "domain/Memory/src/Mcp/MemoryReadTool.php",
+        "old_class": "Domain\\Memory\\Mcp\\MemoryReadTool",
+        "final_path": "domain/Memory/src/Mcp/Tools/MemoryReadTool.php",
+        "final_class": "Domain\\Memory\\Mcp\\Tools\\MemoryReadTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "707fc8e9dfb2dcbb69c37fea729db05efe99367a",
+        "old_path": "domain/Memory/src/Mcp/MemoryResource.php",
+        "old_class": "Domain\\Memory\\Mcp\\MemoryResource",
+        "final_path": "domain/Memory/src/Mcp/Resources/MemoryResource.php",
+        "final_class": "Domain\\Memory\\Mcp\\Resources\\MemoryResource",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "5ad85878c756c3fb6f4f960f24e3f63b44082604",
+        "old_path": "domain/Memory/src/Mcp/MemoryWriteTool.php",
+        "old_class": "Domain\\Memory\\Mcp\\MemoryWriteTool",
+        "final_path": "domain/Memory/src/Mcp/Tools/MemoryWriteTool.php",
+        "final_class": "Domain\\Memory\\Mcp\\Tools\\MemoryWriteTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "eb431d76f3ab2f73533bd8af88162baaba1820dd",
+        "old_path": "domain/Memory/src/Mcp/RemoveMemoryTool.php",
+        "old_class": "Domain\\Memory\\Mcp\\RemoveMemoryTool",
+        "final_path": "domain/Memory/src/Mcp/Tools/RemoveMemoryTool.php",
+        "final_class": "Domain\\Memory\\Mcp\\Tools\\RemoveMemoryTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "712251108fc0a4776f1c54482cfbaea2399fe657",
+        "old_path": "domain/Memory/src/Mcp/SaveMemoryTool.php",
+        "old_class": "Domain\\Memory\\Mcp\\SaveMemoryTool",
+        "final_path": "domain/Memory/src/Mcp/Tools/SaveMemoryTool.php",
+        "final_class": "Domain\\Memory\\Mcp\\Tools\\SaveMemoryTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "5ad9a045f76062335ffcfe083b4f41a8ece813c7",
+        "old_path": "domain/Memory/src/MemoryDomain.php",
+        "old_class": "Domain\\Memory\\MemoryDomain",
+        "final_path": "domain/Memory/src/MemoryDomain.php",
+        "final_class": "Domain\\Memory\\MemoryDomain",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d73052396497deb6b5c1108148ef2876e475830b",
+        "old_path": "domain/Memory/src/Models/Memory.php",
+        "old_class": "Domain\\Memory\\Models\\Memory",
+        "final_path": "domain/Memory/src/Models/Memory.php",
+        "final_class": "Domain\\Memory\\Models\\Memory",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "cfa8af08f3d4db954b89aee822449fa4b99a9ecd",
+        "old_path": "domain/Memory/src/Policies/MemoryPolicy.php",
+        "old_class": "Domain\\Memory\\Policies\\MemoryPolicy",
+        "final_path": "domain/Memory/src/Policies/MemoryPolicy.php",
+        "final_class": "Domain\\Memory\\Policies\\MemoryPolicy",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "4396d62fb5ff6033999e91a4aa5af9f2d0b64b5f",
+        "old_path": "domain/Memory/src/Providers/MemoryServiceProvider.php",
+        "old_class": "Domain\\Memory\\Providers\\MemoryServiceProvider",
+        "final_path": "domain/Memory/src/Providers/MemoryServiceProvider.php",
+        "final_class": "Domain\\Memory\\Providers\\MemoryServiceProvider",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2c287d062caa0ced19377ec7d06c2f9f1e55d465",
+        "old_path": "domain/Memory/src/Resolvers/OwnMemories.php",
+        "old_class": "Domain\\Memory\\Resolvers\\OwnMemories",
+        "final_path": "domain/Memory/src/Resolvers/OwnMemories.php",
+        "final_class": "Domain\\Memory\\Resolvers\\OwnMemories",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "bda3b9359039891d8ceaa829b026dcddbd718209",
+        "old_path": "domain/Memory/src/Routes/agent.php",
+        "old_class": null,
+        "final_path": "domain/Memory/routes/agent.php",
+        "final_class": null,
+        "status": "move",
+        "kind": "route script",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ca3a97862dafc785a169fbedf2602d32d6c16c62",
+        "old_path": "domain/Memory/src/Skills/MemorySkill.php",
+        "old_class": "Domain\\Memory\\Skills\\MemorySkill",
+        "final_path": "domain/Memory/src/Support/Skills/MemorySkill.php",
+        "final_class": "Domain\\Memory\\Support\\Skills\\MemorySkill",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "eaa9ac53d5fdabcdda6275e16c0a6cb34d4a7b23",
+        "old_path": "domain/Memory/src/Support/AgentMemories.php",
+        "old_class": "Domain\\Memory\\Support\\AgentMemories",
+        "final_path": "domain/Memory/src/Support/AgentMemories.php",
+        "final_class": "Domain\\Memory\\Support\\AgentMemories",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Memory",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    }
+]

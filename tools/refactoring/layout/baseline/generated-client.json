@@ -1,0 +1,257 @@
+{
+    "app/AgentRequests/Console/GenerateCallsCommand.php": {
+        "hash": "74242c775e37c88bcd90289a67c900650e23356a1cbaaa0363088b5ea0236d79",
+        "methods": [
+            "handle"
+        ]
+    },
+    "app/AgentRequests/Support/CallGroups.php": {
+        "hash": "862162ab6da5042bd0810c021dc64673b6268ad81f3a4c47790cdd7631ae34f8",
+        "methods": [
+            "__construct",
+            "__construct"
+        ]
+    },
+    "app/Agents/Calls/AgentCalls.php": {
+        "hash": "df3b680290c22d51e29f8e7b880b515a8389da392086ac6a54b70f8b4db34a7c",
+        "methods": [
+            "__construct",
+            "recordHeartbeat",
+            "retireAgent"
+        ]
+    },
+    "app/Assignments/Calls/AssignmentCalls.php": {
+        "hash": "3e11313cf80205b9651094e4c1447bf730243e254fac9f2c528ee7cdc8de8278",
+        "methods": [
+            "__construct",
+            "assignRecord",
+            "configureAutoAssignment",
+            "disableAutoAssignment",
+            "enableAutoAssignment",
+            "listAssignmentPools",
+            "listAutoAssignments",
+            "reassignRecord",
+            "showAssignment",
+            "showAutoAssignment",
+            "unassignRecord"
+        ]
+    },
+    "app/Client/Support/JournalClient.php": {
+        "hash": "bd8306b529add9b4a73ae25be134d9bc02463447bf183a8e401c52e2bd0d87b0",
+        "methods": [
+            "__construct"
+        ]
+    },
+    "app/Comments/Calls/CommentCalls.php": {
+        "hash": "e54a22f1d493fcc87969ed286266021d6a059a92d58559c24c60d0f0dc7a6564",
+        "methods": [
+            "__construct",
+            "listComments",
+            "locateComment",
+            "postComment"
+        ]
+    },
+    "app/Communication/Calls/CommunicationCalls.php": {
+        "hash": "516d399686e9234332043400ad1039ca4faa872b4b4dfdf547cc60387d86030b",
+        "methods": [
+            "__construct",
+            "acknowledgePresentation",
+            "answerChatQuestion",
+            "answerMessage",
+            "askChatQuestion",
+            "askMessage",
+            "askQuestion",
+            "claimSpeech",
+            "countInboxMessages",
+            "declineChatQuestion",
+            "dismissMessage",
+            "listMessagesBetween",
+            "postChatMessage",
+            "readInboxHistory",
+            "readMessages",
+            "readWakeStatus",
+            "releaseMessageClaim",
+            "releaseSpeech",
+            "replyInChat",
+            "replyToMessage",
+            "requireMessageAnswer",
+            "selectMessage",
+            "sendMessage",
+            "showMessage",
+            "takeNextMessages"
+        ]
+    },
+    "app/Connections/Calls/ConnectionCalls.php": {
+        "hash": "ea365b33f8bff6e4ea670a706cfec5d807e576c4589846e7a04306e1fca27ad1",
+        "methods": [
+            "__construct",
+            "cancelProjectCommand",
+            "readProjectCommandStatus",
+            "runProjectCommand"
+        ]
+    },
+    "app/Processes/Calls/ProcessCalls.php": {
+        "hash": "0516482a977b320398274cd0f2ddcc50d5a0cd7d381005d0f4b79c6797e40cc7",
+        "methods": [
+            "__construct",
+            "admitLine",
+            "approveProposal",
+            "approveSample",
+            "checkRestoredOutput",
+            "checkRunCurrency",
+            "cleanOutput",
+            "explainCommand",
+            "fetchAdmission",
+            "importProposals",
+            "listProposals",
+            "proposeReader",
+            "proposeRule",
+            "proveReader",
+            "readOutputBytes",
+            "readOutputSummary",
+            "readOutputTail",
+            "recordRunChunk",
+            "recordRunEvents",
+            "rejectProposal",
+            "restoreRule",
+            "retireRule",
+            "reviseProposal",
+            "searchOutput",
+            "settleSample",
+            "showCommandRequest",
+            "startEvidenceRun",
+            "startSample",
+            "withdrawProposal"
+        ]
+    },
+    "app/Records/Calls/RecordCalls.php": {
+        "hash": "82f7462b23ce97553e2d0b71253883d716398b9183599c6580db6df3820e258b",
+        "methods": [
+            "__construct",
+            "addLink",
+            "removeLink"
+        ]
+    },
+    "app/Scripts/Calls/ScriptCalls.php": {
+        "hash": "d1d97b3f55a43a960f68437883f94fed8ec3616f316d0be7dfed4cc44f837d30",
+        "methods": [
+            "__construct",
+            "checkProfileScript",
+            "readProfileLanguage",
+            "saveProfileDraft",
+            "showProfileDraft",
+            "showProfileRun"
+        ]
+    },
+    "app/Sharing/Calls/SharingCalls.php": {
+        "hash": "e300930a650accc7764bf6e9ab2689071bac12cc68d7da1a5e5085701d5494d8",
+        "methods": [
+            "__construct",
+            "requestShare",
+            "shareStatus"
+        ]
+    },
+    "app/Supervision/Calls/SupervisionCalls.php": {
+        "hash": "5f9fbca7c0cad13a10f30a131c613f1a420940c06295c2ddf5d6f657112464db",
+        "methods": [
+            "__construct",
+            "listAsks",
+            "makeAsk",
+            "replyToAsk",
+            "showAsk",
+            "withdrawAsk"
+        ]
+    },
+    "app/Text/Calls/TextCalls.php": {
+        "hash": "15cac76e2b2b5ecca9a394c6f5d1628b29abbbe9f5b8015d13f2bb291ea936f6",
+        "methods": [
+            "__construct",
+            "listTextSections",
+            "readText",
+            "readTextVersion"
+        ]
+    },
+    "domain/Chat/src/Calls/ChatCalls.php": {
+        "hash": "afcdb50c9cadb26e405ed1ecf8dfcecae9a05fa2d7baf9a2ec738fd05d7451d7",
+        "methods": [
+            "__construct",
+            "dockAdd",
+            "dockList",
+            "dockRemove"
+        ]
+    },
+    "domain/Documents/src/Calls/DocumentCalls.php": {
+        "hash": "327cc960db51087d6612baaddc82f5ed8ce962e2d89343750a3aa47001266bf2",
+        "methods": [
+            "__construct",
+            "closeDocument",
+            "documentComment",
+            "editDocument",
+            "editReport",
+            "inspectDocument",
+            "inspectReport",
+            "listDocumentRevisions",
+            "listDocuments",
+            "listReports",
+            "makeDocument",
+            "makeReport",
+            "openDocument",
+            "reportComment",
+            "settleDocument",
+            "settleReport",
+            "showDocument",
+            "showDocumentRevision",
+            "showDraft",
+            "showReport"
+        ]
+    },
+    "domain/Helpers/src/Calls/HelperCalls.php": {
+        "hash": "090711c39edd7521bcefec5a1c694e56ab6dade4f10452abe4ff1323bafb7b21",
+        "methods": [
+            "__construct",
+            "cancelHelperJob",
+            "continueHelper",
+            "listHelperNotices",
+            "sendHelper",
+            "startHelper",
+            "steerHelper"
+        ]
+    },
+    "domain/Memory/src/Calls/MemoryCalls.php": {
+        "hash": "3df69635b8ef6b574f50fd118d2c3c93eec905388c249efc76b9fd67db0e7b3c",
+        "methods": [
+            "__construct",
+            "editMemory",
+            "listMemories",
+            "removeMemory",
+            "saveMemory"
+        ]
+    },
+    "domain/Plans/src/Calls/PlanCalls.php": {
+        "hash": "5ebec632348931e60dc0b0d4c8876df32a247d792189cdbd1f1683c479e4dc17",
+        "methods": [
+            "__construct",
+            "addPhase",
+            "addPhaseTasks",
+            "assignPlanWork",
+            "cancelPlan",
+            "createPlan",
+            "editPlan",
+            "finishPlan",
+            "listAssignedPlans",
+            "listPhaseChecks",
+            "reassignPlanWork",
+            "recordPhaseCheck",
+            "unassignPlanWork"
+        ]
+    },
+    "domain/Tasks/src/Calls/TaskCalls.php": {
+        "hash": "a9abbb4840cc1e023e20b8028ccc7b907d6b991d558bb76967e2bd016bd6c466",
+        "methods": [
+            "__construct",
+            "createTask",
+            "editTask",
+            "listAssignedTasks"
+        ]
+    }
+}

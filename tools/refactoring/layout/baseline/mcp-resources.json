@@ -1,0 +1,11 @@
+[
+    "journal://v1/docs/{id}/revisions/{revision}",
+    "journal://v1/memories/{id}",
+    "journal://v1/messages/{id}",
+    "journal://v1/operations/{request_key}",
+    "journal://v1/overview",
+    "journal://v1/plans/{id}",
+    "journal://v1/reports/{id}",
+    "journal://v1/rules",
+    "journal://v1/tasks/{id}"
+]

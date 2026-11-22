@@ -20,6 +20,11 @@ final readonly class DomainTypeWriter implements Writer
 {
     public const string COMPATIBILITY_FILE = 'types/generated/index.ts';
 
+    /**
+     * One row per transformed PHP type: its class, owner key, exported symbol and module, sorted by class.
+     */
+    public const string TYPE_OWNERS_FILE = 'generated/type-owners.json';
+
     public function __construct(private TypeOwners $owners) {}
 
     public function output(array $transformed, TransformedCollection $transformedCollection): array
@@ -41,6 +46,7 @@ final readonly class DomainTypeWriter implements Writer
 
         return [
             ...$files,
+            new WriteableFile(self::TYPE_OWNERS_FILE, $this->typeOwners($transformed)),
             new WriteableFile(
                 self::COMPATIBILITY_FILE,
                 "// Generated; re-exports every owner's types for the pages that still import this file.\n".implode(
@@ -81,6 +87,33 @@ final readonly class DomainTypeWriter implements Writer
     public function resolveReference(Transformed $transformed): ModuleImportResolvedReference
     {
         return new ModuleImportResolvedReference((string) $transformed->getName(), $this->pathOf($transformed));
+    }
+
+    /**
+     * @param  array<Transformed>  $transformed
+     */
+    private function typeOwners(array $transformed): string
+    {
+        $rows = [];
+
+        foreach ($transformed as $type) {
+            $reference = $type->getReference();
+
+            if (! $reference instanceof ClassStringReference) {
+                continue;
+            }
+
+            $rows[$reference->classString] = [
+                'class' => $reference->classString,
+                'owner' => $this->owners->ownerOf($reference->classString),
+                'symbol' => $type->getName(),
+                'module' => $this->pathOf($type),
+            ];
+        }
+
+        ksort($rows);
+
+        return json_encode(array_values($rows), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n";
     }
 
     private function pathOf(Transformed $transformed): string

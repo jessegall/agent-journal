@@ -1,0 +1,97 @@
+[
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "089749e16a2eb66d7422fa5418b3c53ff97b8f08",
+        "old_path": "domain/Reminders/resources/skills/reminders.md",
+        "old_class": null,
+        "final_path": "domain/Reminders/resources/skills/reminders.md",
+        "final_class": null,
+        "status": "stay",
+        "kind": "blade or static asset",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Reminders",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "dd519f6b965d825a161c7aecb36edeb2eda68865",
+        "old_path": "domain/Reminders/src/Commands/Support/ReminderCommandHandler.php",
+        "old_class": "Domain\\Reminders\\Commands\\Support\\ReminderCommandHandler",
+        "final_path": "domain/Reminders/src/Commands/Support/ReminderCommandHandler.php",
+        "final_class": "Domain\\Reminders\\Commands\\Support\\ReminderCommandHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Reminders",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ecae9b455c1e0556a83fd0a489c3fb8b06290d13",
+        "old_path": "domain/Reminders/src/RemindersDomain.php",
+        "old_class": "Domain\\Reminders\\RemindersDomain",
+        "final_path": "domain/Reminders/src/RemindersDomain.php",
+        "final_class": "Domain\\Reminders\\RemindersDomain",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Reminders",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "3c53b090fe12861adb2a16ae45e1f4a3adbaa753",
+        "old_path": "domain/Reminders/src/Resolvers/RemindersWindowResolver.php",
+        "old_class": "Domain\\Reminders\\Resolvers\\RemindersWindowResolver",
+        "final_path": "domain/Reminders/src/Resolvers/RemindersWindowResolver.php",
+        "final_class": "Domain\\Reminders\\Resolvers\\RemindersWindowResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Reminders",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a61b4180197b7410a1759a41b9af5ad129d96868",
+        "old_path": "domain/Reminders/src/Skills/RemindersSkill.php",
+        "old_class": "Domain\\Reminders\\Skills\\RemindersSkill",
+        "final_path": "domain/Reminders/src/Support/Skills/RemindersSkill.php",
+        "final_class": "Domain\\Reminders\\Support\\Skills\\RemindersSkill",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Reminders",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    }
+]

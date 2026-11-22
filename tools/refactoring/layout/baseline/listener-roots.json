@@ -1,0 +1,13 @@
+[
+    "/app/app/Agents/Listeners",
+    "/app/app/Communication/Listeners",
+    "/app/app/Connections/Listeners",
+    "/app/app/Hooks/Listeners",
+    "/app/app/Mcp/Listeners",
+    "/app/app/Processes/Listeners",
+    "/app/app/Profiles/Listeners",
+    "/app/app/Sharing/Listeners",
+    "/app/app/Skills/Listeners",
+    "/app/app/Supervision/Listeners",
+    "/app/app/Web/Listeners"
+]

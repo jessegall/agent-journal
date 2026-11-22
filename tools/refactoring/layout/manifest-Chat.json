@@ -1,0 +1,4467 @@
+[
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d350aac85fbf5954610e0f6cdeda5f59c0b73c55",
+        "old_path": "domain/Chat/database/migrations/2026_11_19_000001_create_message_pins_table.php",
+        "old_class": null,
+        "final_path": "domain/Chat/database/migrations/2026_11_19_000001_create_message_pins_table.php",
+        "final_class": null,
+        "status": "stay",
+        "kind": "anonymous migration",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d2d913c1ba4420d0d7b4eb7df2015411298fe24b",
+        "old_path": "domain/Chat/database/migrations/2026_11_21_000001_create_conversations_table.php",
+        "old_class": null,
+        "final_path": "domain/Chat/database/migrations/2026_11_21_000001_create_conversations_table.php",
+        "final_class": null,
+        "status": "stay",
+        "kind": "anonymous migration",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "88295e0d7f025b10ee3d232d4fa01faf26de4e8c",
+        "old_path": "domain/Chat/database/migrations/2026_11_21_000002_create_dock_placements_table.php",
+        "old_class": null,
+        "final_path": "domain/Chat/database/migrations/2026_11_21_000002_create_dock_placements_table.php",
+        "final_class": null,
+        "status": "stay",
+        "kind": "anonymous migration",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e7a76003e73ef87021b0ddd1c421ff6bf1f35410",
+        "old_path": "domain/Chat/database/migrations/2026_11_21_000003_create_direct_chats_table.php",
+        "old_class": null,
+        "final_path": "domain/Chat/database/migrations/2026_11_21_000003_create_direct_chats_table.php",
+        "final_class": null,
+        "status": "stay",
+        "kind": "anonymous migration",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7340fe31f6dd200aa1017a1ec989e938d38b7234",
+        "old_path": "domain/Chat/resources/js/AgentMenu.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/AgentMenu.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "54a87efd135c3c446f7010ea05bac9671358d23c",
+        "old_path": "domain/Chat/resources/js/AgentMenu.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/AgentMenu.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "5f6aaa97b4f081bf530a57bc47758b144fd869cb",
+        "old_path": "domain/Chat/resources/js/AgentPicker.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/AgentPicker.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b2167cc5e34135b32c8fe5c55b1c8cfcc1af8c51",
+        "old_path": "domain/Chat/resources/js/AgentPicker.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/AgentPicker.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a6755d54c788ecad2e33f9ccdc2daece1ea6bb3c",
+        "old_path": "domain/Chat/resources/js/AgentSessionActions.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/AgentSessionActions.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a75c3ee5b5214196ff305b0426ec436c711e7723",
+        "old_path": "domain/Chat/resources/js/ChatPane.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/ChatPane.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "59bd46916b4f32f0615bc6a55b370cd524bd7b7d",
+        "old_path": "domain/Chat/resources/js/ChatPane.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/ChatPane.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c0f556471d96acac7faf715f7c19e8fb32d320c8",
+        "old_path": "domain/Chat/resources/js/ChatWindow.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/ChatWindow.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7e108e2b0acfa46d04f41de0cfc03a9ff270f0d0",
+        "old_path": "domain/Chat/resources/js/ChatWithTerminal.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/ChatWithTerminal.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "deb0c3571dfdcc9480c63d90d8f915ef124c5941",
+        "old_path": "domain/Chat/resources/js/ChosenAgent.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/ChosenAgent.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a6261ff3634c3f496d0bde2090b34871a46e77c8",
+        "old_path": "domain/Chat/resources/js/Composer.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/Composer.test.ts",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "abe76cf50f40ad9c3446a209c78d7d76e5e48cfa",
+        "old_path": "domain/Chat/resources/js/Composer.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/Composer.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "1587d2b03a0580cd16555abe3a9ce1e302258195",
+        "old_path": "domain/Chat/resources/js/DockedTerminal.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/DockedTerminal.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "1f0dcf7f121a357c531c3f84105f0f928bd17c42",
+        "old_path": "domain/Chat/resources/js/FocusedQuestion.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/FocusedQuestion.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "3a9d33df551bdba0d98e8065666cf193311411a6",
+        "old_path": "domain/Chat/resources/js/InboxMessageList.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/InboxMessageList.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b03aa3143e68cb1950d594c5cfde7d1352880c2c",
+        "old_path": "domain/Chat/resources/js/InboxMessages.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/InboxMessages.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d2f7d3cb8223de180768359d154f52da7466213f",
+        "old_path": "domain/Chat/resources/js/MessageDeliveries.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/MessageDeliveries.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2722a3eb1f44455cac414acb8b0e4b027845f70e",
+        "old_path": "domain/Chat/resources/js/MessageList.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/MessageList.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2e8e020d8a3c060f6daca3b17b9b717e00ea4f5b",
+        "old_path": "domain/Chat/resources/js/MessageList.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/MessageList.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "186d686a89cc33830769de98b83aaab1547b7816",
+        "old_path": "domain/Chat/resources/js/PendingMessage.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/PendingMessage.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "35558bb25d5f07b13a0c124c638ea6269e773902",
+        "old_path": "domain/Chat/resources/js/RefusedSend.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/RefusedSend.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "31affaacd3c763a4ea9022250d7a3829e10efaae",
+        "old_path": "domain/Chat/resources/js/SessionAction.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/SessionAction.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "607b40e29304223bcaf59c75ec0bde566f14623e",
+        "old_path": "domain/Chat/resources/js/SessionForm.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/SessionForm.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "358e523e60750b069db60419c042e77d45cd8788",
+        "old_path": "domain/Chat/resources/js/SessionForm.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/SessionForm.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "5add5e58dd0a0daa29664ee65b20a98315be3064",
+        "old_path": "domain/Chat/resources/js/StopConfirmation.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/StopConfirmation.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "af53370767ece2107e7a2bd429a23a69e2313743",
+        "old_path": "domain/Chat/resources/js/agentLinks.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/agentLinks.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "1e53edae4f9848ccf70f83d52983b7c217eedd67",
+        "old_path": "domain/Chat/resources/js/chats/ChatRoster.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/chats/ChatRoster.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "6966780d58eaf67c9adcae8fb8979b1eb4ec36c1",
+        "old_path": "domain/Chat/resources/js/chats/ChatRoster.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/chats/ChatRoster.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a03bc1dbdeb498addc8583055a8477c474ebcf63",
+        "old_path": "domain/Chat/resources/js/chats/CreateChatForm.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/chats/CreateChatForm.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e6452a7ba458de126756fe25a3641ac5ce83ab64",
+        "old_path": "domain/Chat/resources/js/chats/InboxSelector.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/chats/InboxSelector.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "81d756f35f34542b00620eccfa54aab3f795b21d",
+        "old_path": "domain/Chat/resources/js/chats/ParticipantRow.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/chats/ParticipantRow.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "6dd25e54b4fec831803663c7526225bba5c93877",
+        "old_path": "domain/Chat/resources/js/composables/arrivalAnnouncement.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/arrivalAnnouncement.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "5213b0e498e16dd03cec27f0436f331a6de57259",
+        "old_path": "domain/Chat/resources/js/composables/arrivalAnnouncement.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/arrivalAnnouncement.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f8d7e7ae005a1265e721b44b02b6067876f69fc8",
+        "old_path": "domain/Chat/resources/js/composables/chatTimeline.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/chatTimeline.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "da1828ef86148884ab00efba91f3a13829154875",
+        "old_path": "domain/Chat/resources/js/composables/chatTimeline.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/chatTimeline.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7fa544cea086ddbdeae83c63e9d91842463c5590",
+        "old_path": "domain/Chat/resources/js/composables/useChatTimeline.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/useChatTimeline.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e329b7c276ac8661083c0b23e837af24fb153897",
+        "old_path": "domain/Chat/resources/js/composables/useChatTimeline.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/useChatTimeline.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "92e9e89cbb46250ed83c322a7bb648b4a74efb6d",
+        "old_path": "domain/Chat/resources/js/composables/useChosenAgent.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/useChosenAgent.test.ts",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7eba9487891984714a9a84fc8069a706fa943dd3",
+        "old_path": "domain/Chat/resources/js/composables/useChosenAgent.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/useChosenAgent.ts",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "3c8d40d6f08e1a42ebd6259e807872aa05ef3670",
+        "old_path": "domain/Chat/resources/js/composables/useComposerHeight.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/useComposerHeight.ts",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d2318233012c3220df34f5c252bce7103bdfc2b1",
+        "old_path": "domain/Chat/resources/js/composables/useConversationIntents.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/useConversationIntents.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "5bd45393036ed7559374aba063ded4cb5c6bd8f6",
+        "old_path": "domain/Chat/resources/js/composables/useConversationIntents.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/useConversationIntents.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "35676d4b1ebfd71138e6dbbebdf13a3f6af44f2b",
+        "old_path": "domain/Chat/resources/js/composables/useMessageDrafts.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/useMessageDrafts.test.ts",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a4e452b3de1cd440db70e25638a6b39f78a17d94",
+        "old_path": "domain/Chat/resources/js/composables/useMessageDrafts.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/useMessageDrafts.ts",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "43ebf560ad60761ec6b57c1063ca5657a00dc0f1",
+        "old_path": "domain/Chat/resources/js/composables/useStartRestoration.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/useStartRestoration.ts",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d87108c4ecf8ff85f16aa385084b6d5cdeecccfe",
+        "old_path": "domain/Chat/resources/js/composables/useStatusAnnouncement.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/useStatusAnnouncement.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c998981fefbeec945fcbf41ebc4a9a5ffb55866a",
+        "old_path": "domain/Chat/resources/js/composables/useStatusAnnouncement.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/useStatusAnnouncement.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "706073adf77d40107eb1a21fc713ef61f5f8fcf1",
+        "old_path": "domain/Chat/resources/js/composables/useSwitchOperation.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/useSwitchOperation.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2c6e8d72f3e4fa4776cca3ebece626d758164d56",
+        "old_path": "domain/Chat/resources/js/composables/useSwitchOperation.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/useSwitchOperation.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "bd3d8379fbfcd0b769a4484d0668be7f130af052",
+        "old_path": "domain/Chat/resources/js/composables/useTerminalDock.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/composables/useTerminalDock.ts",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "3d18e9f04d46275bfb671754f6a5b39625c18450",
+        "old_path": "domain/Chat/resources/js/dock/DockCard.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/DockCard.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "0e8fd5849df33714259d1c03d2c0e10f196478b0",
+        "old_path": "domain/Chat/resources/js/dock/DockPart.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/DockPart.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a9dc9487aa9b407031b6ca9e6d5135db63d51d15",
+        "old_path": "domain/Chat/resources/js/dock/DockStack.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/DockStack.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8d307406402795794bbc8510f548c9e583b02441",
+        "old_path": "domain/Chat/resources/js/dock/dockFolds.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/dockFolds.ts",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "4390514f377ae6cedfd4dc8300e044c81de4c4ec",
+        "old_path": "domain/Chat/resources/js/dock/parts/ButtonPart.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/parts/ButtonPart.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "986cdf39c614accc81744e80dcda5de8bcc4bc3e",
+        "old_path": "domain/Chat/resources/js/dock/parts/ChatExcerptPart.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/parts/ChatExcerptPart.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8eefb1b5ade1e648892fdd2783a3c0bf77dd6df0",
+        "old_path": "domain/Chat/resources/js/dock/parts/ConsoleOutputPart.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/parts/ConsoleOutputPart.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "32e74d169203f981a12beb6d4fa6bb443f7048f9",
+        "old_path": "domain/Chat/resources/js/dock/parts/CountedProgressPart.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/parts/CountedProgressPart.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "296974517667dd4463e7db18d65dd6bbb72e54f9",
+        "old_path": "domain/Chat/resources/js/dock/parts/DisclosurePart.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/parts/DisclosurePart.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e4fdc7d9f176f2a28d0d9aa2cc5dbc10ae5076f7",
+        "old_path": "domain/Chat/resources/js/dock/parts/DurationPart.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/parts/DurationPart.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a26dbcf9b371272b178d57a114f6dbfdac886159",
+        "old_path": "domain/Chat/resources/js/dock/parts/GroupPart.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/parts/GroupPart.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8d39c17792fc8a0a0fc2a1cb1a848bf39f58239c",
+        "old_path": "domain/Chat/resources/js/dock/parts/IndeterminateProgressPart.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/parts/IndeterminateProgressPart.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2ef39c1600a8bce8ece3fb7bdda3a53c1b3ac4c8",
+        "old_path": "domain/Chat/resources/js/dock/parts/RowPart.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/parts/RowPart.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e9e4fef3a59cfb1747e68d25c484f9f19385885c",
+        "old_path": "domain/Chat/resources/js/dock/parts/StackPart.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/parts/StackPart.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7f3628632a6d0df7416f30b689d4f003375eb3fd",
+        "old_path": "domain/Chat/resources/js/dock/parts/StateLabelPart.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/parts/StateLabelPart.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2f17e49d34dd2b2326215b527c33f61aee72bd29",
+        "old_path": "domain/Chat/resources/js/dock/parts/SubtitlePart.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/parts/SubtitlePart.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "cdb79c103417d6ae2d13a7896e4b4f0a1a70dde0",
+        "old_path": "domain/Chat/resources/js/dock/parts/TitlePart.vue",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/dock/parts/TitlePart.vue",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "453d75310e254dd04f5242ca4b39d357fe9237bc",
+        "old_path": "domain/Chat/resources/js/sendStates.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/sendStates.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e4b3daf5b9f6eca6375aec44db94ecdb43fb1f67",
+        "old_path": "domain/Chat/resources/js/terminalPlacement.test.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/terminalPlacement.test.ts",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "81a9047feea8b475a9ef9446f332824a9fefc85c",
+        "old_path": "domain/Chat/resources/js/terminalPlacement.ts",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/js/terminalPlacement.ts",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7c878f27097a73d17fff02310033b79b181318d4",
+        "old_path": "domain/Chat/resources/skills/messages.md",
+        "old_class": null,
+        "final_path": "domain/Chat/resources/skills/messages.md",
+        "final_class": null,
+        "status": "stay",
+        "kind": "blade or static asset",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "1ea79805332faac74bbfe731f1183e2d1bd898a3",
+        "old_path": "domain/Chat/src/Calls/ChatCalls.php",
+        "old_class": "Domain\\Chat\\Calls\\ChatCalls",
+        "final_path": "domain/Chat/src/Calls/ChatCalls.php",
+        "final_class": "Domain\\Chat\\Calls\\ChatCalls",
+        "status": "generate",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7d05b2c757a2a53673cf48c0ba5472fc4ff000f5",
+        "old_path": "domain/Chat/src/Calls/DockAddCall.php",
+        "old_class": "Domain\\Chat\\Calls\\DockAddCall",
+        "final_path": "domain/Chat/src/Calls/DockAddCall.php",
+        "final_class": "Domain\\Chat\\Calls\\DockAddCall",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a53af5aa8d4ab270dddb34d884ac20d9a2f77ba5",
+        "old_path": "domain/Chat/src/Calls/DockListCall.php",
+        "old_class": "Domain\\Chat\\Calls\\DockListCall",
+        "final_path": "domain/Chat/src/Calls/DockListCall.php",
+        "final_class": "Domain\\Chat\\Calls\\DockListCall",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "973f60092bcf2a2b19bb3efd712fcbf25c9bc891",
+        "old_path": "domain/Chat/src/Calls/DockRemoveCall.php",
+        "old_class": "Domain\\Chat\\Calls\\DockRemoveCall",
+        "final_path": "domain/Chat/src/Calls/DockRemoveCall.php",
+        "final_class": "Domain\\Chat\\Calls\\DockRemoveCall",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "23a6d48d988c00dd9463a633216810e72ffc802f",
+        "old_path": "domain/Chat/src/ChatDomain.php",
+        "old_class": "Domain\\Chat\\ChatDomain",
+        "final_path": "domain/Chat/src/ChatDomain.php",
+        "final_class": "Domain\\Chat\\ChatDomain",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "94a0709c8bf590d8d8aad75b9cb91b314996eb77",
+        "old_path": "domain/Chat/src/Commands/AddChatParticipant/AddChatParticipantCommand.php",
+        "old_class": "Domain\\Chat\\Commands\\AddChatParticipant\\AddChatParticipantCommand",
+        "final_path": "domain/Chat/src/Commands/AddChatParticipant/AddChatParticipantCommand.php",
+        "final_class": "Domain\\Chat\\Commands\\AddChatParticipant\\AddChatParticipantCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ed23bda717c548fe2ed87398601f5be0acfe8a2b",
+        "old_path": "domain/Chat/src/Commands/AddChatParticipant/AddChatParticipantHandler.php",
+        "old_class": "Domain\\Chat\\Commands\\AddChatParticipant\\AddChatParticipantHandler",
+        "final_path": "domain/Chat/src/Commands/AddChatParticipant/AddChatParticipantHandler.php",
+        "final_class": "Domain\\Chat\\Commands\\AddChatParticipant\\AddChatParticipantHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8dc9127d0d77df91e34511c4f809c61b5b55bb3e",
+        "old_path": "domain/Chat/src/Commands/ClearDeletedSource/ClearDeletedSourceCommand.php",
+        "old_class": "Domain\\Chat\\Commands\\ClearDeletedSource\\ClearDeletedSourceCommand",
+        "final_path": "domain/Chat/src/Commands/ClearDeletedSource/ClearDeletedSourceCommand.php",
+        "final_class": "Domain\\Chat\\Commands\\ClearDeletedSource\\ClearDeletedSourceCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "6e6af6aa33e2b6e17e0d84b3141100325a213fa4",
+        "old_path": "domain/Chat/src/Commands/ClearDeletedSource/ClearDeletedSourceHandler.php",
+        "old_class": "Domain\\Chat\\Commands\\ClearDeletedSource\\ClearDeletedSourceHandler",
+        "final_path": "domain/Chat/src/Commands/ClearDeletedSource/ClearDeletedSourceHandler.php",
+        "final_class": "Domain\\Chat\\Commands\\ClearDeletedSource\\ClearDeletedSourceHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "496acb1d4d63727488fba2bec2bd1a02233fafbd",
+        "old_path": "domain/Chat/src/Commands/CloseChat/CloseChatCommand.php",
+        "old_class": "Domain\\Chat\\Commands\\CloseChat\\CloseChatCommand",
+        "final_path": "domain/Chat/src/Commands/CloseChat/CloseChatCommand.php",
+        "final_class": "Domain\\Chat\\Commands\\CloseChat\\CloseChatCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "83b43f7b1c64ff1d2a1f26d472e1f6419d872c1a",
+        "old_path": "domain/Chat/src/Commands/CloseChat/CloseChatHandler.php",
+        "old_class": "Domain\\Chat\\Commands\\CloseChat\\CloseChatHandler",
+        "final_path": "domain/Chat/src/Commands/CloseChat/CloseChatHandler.php",
+        "final_class": "Domain\\Chat\\Commands\\CloseChat\\CloseChatHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "199f44fc99e7fb03613b15d7fef36be0af6f005a",
+        "old_path": "domain/Chat/src/Commands/CreateGroupChat/CreateGroupChatCommand.php",
+        "old_class": "Domain\\Chat\\Commands\\CreateGroupChat\\CreateGroupChatCommand",
+        "final_path": "domain/Chat/src/Commands/CreateGroupChat/CreateGroupChatCommand.php",
+        "final_class": "Domain\\Chat\\Commands\\CreateGroupChat\\CreateGroupChatCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "27249c24d7168f8b7c2a31c241bb99a9cc140ba6",
+        "old_path": "domain/Chat/src/Commands/CreateGroupChat/CreateGroupChatHandler.php",
+        "old_class": "Domain\\Chat\\Commands\\CreateGroupChat\\CreateGroupChatHandler",
+        "final_path": "domain/Chat/src/Commands/CreateGroupChat/CreateGroupChatHandler.php",
+        "final_class": "Domain\\Chat\\Commands\\CreateGroupChat\\CreateGroupChatHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d1311f6b6fd4e29afa4f93aef8202b3a65c1362f",
+        "old_path": "domain/Chat/src/Commands/DockSource/DockSourceCommand.php",
+        "old_class": "Domain\\Chat\\Commands\\DockSource\\DockSourceCommand",
+        "final_path": "domain/Chat/src/Commands/DockSource/DockSourceCommand.php",
+        "final_class": "Domain\\Chat\\Commands\\DockSource\\DockSourceCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "faf461ee5629f64fcd8d89360c10d03d341d7f37",
+        "old_path": "domain/Chat/src/Commands/DockSource/DockSourceHandler.php",
+        "old_class": "Domain\\Chat\\Commands\\DockSource\\DockSourceHandler",
+        "final_path": "domain/Chat/src/Commands/DockSource/DockSourceHandler.php",
+        "final_class": "Domain\\Chat\\Commands\\DockSource\\DockSourceHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c35fb406244334adf7147c16347da4f3ff000bd5",
+        "old_path": "domain/Chat/src/Commands/LeaveChat/LeaveChatCommand.php",
+        "old_class": "Domain\\Chat\\Commands\\LeaveChat\\LeaveChatCommand",
+        "final_path": "domain/Chat/src/Commands/LeaveChat/LeaveChatCommand.php",
+        "final_class": "Domain\\Chat\\Commands\\LeaveChat\\LeaveChatCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f3c0f6fc8a8f109a511e6df7124d17e1b955ff96",
+        "old_path": "domain/Chat/src/Commands/LeaveChat/LeaveChatHandler.php",
+        "old_class": "Domain\\Chat\\Commands\\LeaveChat\\LeaveChatHandler",
+        "final_path": "domain/Chat/src/Commands/LeaveChat/LeaveChatHandler.php",
+        "final_class": "Domain\\Chat\\Commands\\LeaveChat\\LeaveChatHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7bd51bf9593028e99d966d2ee09f329bff762aa7",
+        "old_path": "domain/Chat/src/Commands/OpenPairChat/OpenPairChatCommand.php",
+        "old_class": "Domain\\Chat\\Commands\\OpenPairChat\\OpenPairChatCommand",
+        "final_path": "domain/Chat/src/Commands/OpenPairChat/OpenPairChatCommand.php",
+        "final_class": "Domain\\Chat\\Commands\\OpenPairChat\\OpenPairChatCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ae2f61134480e859a468fcb40f3f79525a5c0d62",
+        "old_path": "domain/Chat/src/Commands/OpenPairChat/OpenPairChatHandler.php",
+        "old_class": "Domain\\Chat\\Commands\\OpenPairChat\\OpenPairChatHandler",
+        "final_path": "domain/Chat/src/Commands/OpenPairChat/OpenPairChatHandler.php",
+        "final_class": "Domain\\Chat\\Commands\\OpenPairChat\\OpenPairChatHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "6a6f2de5009b0ebe6e7a7d08d2b66016ab31bc60",
+        "old_path": "domain/Chat/src/Commands/PinMessage/PinMessageCommand.php",
+        "old_class": "Domain\\Chat\\Commands\\PinMessage\\PinMessageCommand",
+        "final_path": "domain/Chat/src/Commands/PinMessage/PinMessageCommand.php",
+        "final_class": "Domain\\Chat\\Commands\\PinMessage\\PinMessageCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "4f1d837c1e99308fe933c8d631e13d94336e23bb",
+        "old_path": "domain/Chat/src/Commands/PinMessage/PinMessageHandler.php",
+        "old_class": "Domain\\Chat\\Commands\\PinMessage\\PinMessageHandler",
+        "final_path": "domain/Chat/src/Commands/PinMessage/PinMessageHandler.php",
+        "final_class": "Domain\\Chat\\Commands\\PinMessage\\PinMessageHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a50b55958ad5a2fccb83be6842af1cfca736ec08",
+        "old_path": "domain/Chat/src/Commands/RemoveChatParticipant/RemoveChatParticipantCommand.php",
+        "old_class": "Domain\\Chat\\Commands\\RemoveChatParticipant\\RemoveChatParticipantCommand",
+        "final_path": "domain/Chat/src/Commands/RemoveChatParticipant/RemoveChatParticipantCommand.php",
+        "final_class": "Domain\\Chat\\Commands\\RemoveChatParticipant\\RemoveChatParticipantCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "bfef8b70afa1c3804b84aebc79521f4eeb2ebf91",
+        "old_path": "domain/Chat/src/Commands/RemoveChatParticipant/RemoveChatParticipantHandler.php",
+        "old_class": "Domain\\Chat\\Commands\\RemoveChatParticipant\\RemoveChatParticipantHandler",
+        "final_path": "domain/Chat/src/Commands/RemoveChatParticipant/RemoveChatParticipantHandler.php",
+        "final_class": "Domain\\Chat\\Commands\\RemoveChatParticipant\\RemoveChatParticipantHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b7c25dfaa83df3fa6358071e0fb1946fd5909cdd",
+        "old_path": "domain/Chat/src/Commands/Support/ChatCommandHandler.php",
+        "old_class": "Domain\\Chat\\Commands\\Support\\ChatCommandHandler",
+        "final_path": "domain/Chat/src/Commands/Support/ChatCommandHandler.php",
+        "final_class": "Domain\\Chat\\Commands\\Support\\ChatCommandHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ab908c381793aa4bd4c8eca364836837c5ca8fc3",
+        "old_path": "domain/Chat/src/Commands/TransferChatOwnership/TransferChatOwnershipCommand.php",
+        "old_class": "Domain\\Chat\\Commands\\TransferChatOwnership\\TransferChatOwnershipCommand",
+        "final_path": "domain/Chat/src/Commands/TransferChatOwnership/TransferChatOwnershipCommand.php",
+        "final_class": "Domain\\Chat\\Commands\\TransferChatOwnership\\TransferChatOwnershipCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "3349950c483afaaefadbf754fb0d6032d94fd16a",
+        "old_path": "domain/Chat/src/Commands/TransferChatOwnership/TransferChatOwnershipHandler.php",
+        "old_class": "Domain\\Chat\\Commands\\TransferChatOwnership\\TransferChatOwnershipHandler",
+        "final_path": "domain/Chat/src/Commands/TransferChatOwnership/TransferChatOwnershipHandler.php",
+        "final_class": "Domain\\Chat\\Commands\\TransferChatOwnership\\TransferChatOwnershipHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c179f1773509c86a7890b735d22c7402730b9c0a",
+        "old_path": "domain/Chat/src/Commands/UndockSource/UndockSourceCommand.php",
+        "old_class": "Domain\\Chat\\Commands\\UndockSource\\UndockSourceCommand",
+        "final_path": "domain/Chat/src/Commands/UndockSource/UndockSourceCommand.php",
+        "final_class": "Domain\\Chat\\Commands\\UndockSource\\UndockSourceCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "6ac397f7809a7687f533cead3ebd3d400516c708",
+        "old_path": "domain/Chat/src/Commands/UndockSource/UndockSourceHandler.php",
+        "old_class": "Domain\\Chat\\Commands\\UndockSource\\UndockSourceHandler",
+        "final_path": "domain/Chat/src/Commands/UndockSource/UndockSourceHandler.php",
+        "final_class": "Domain\\Chat\\Commands\\UndockSource\\UndockSourceHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8180e46f52a4ac5d7500b6761c8d74f32d93a4b7",
+        "old_path": "domain/Chat/src/Commands/UnpinMessage/UnpinMessageCommand.php",
+        "old_class": "Domain\\Chat\\Commands\\UnpinMessage\\UnpinMessageCommand",
+        "final_path": "domain/Chat/src/Commands/UnpinMessage/UnpinMessageCommand.php",
+        "final_class": "Domain\\Chat\\Commands\\UnpinMessage\\UnpinMessageCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a1aa02d98226ba428c691258b3266b787c98490c",
+        "old_path": "domain/Chat/src/Commands/UnpinMessage/UnpinMessageHandler.php",
+        "old_class": "Domain\\Chat\\Commands\\UnpinMessage\\UnpinMessageHandler",
+        "final_path": "domain/Chat/src/Commands/UnpinMessage/UnpinMessageHandler.php",
+        "final_class": "Domain\\Chat\\Commands\\UnpinMessage\\UnpinMessageHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f4e6cec45d072adf4cea3369e76eb56d13af207a",
+        "old_path": "domain/Chat/src/Console/Concerns/ChoosesChat.php",
+        "old_class": "Domain\\Chat\\Console\\Concerns\\ChoosesChat",
+        "final_path": "domain/Chat/src/Console/Concerns/ChoosesChat.php",
+        "final_class": "Domain\\Chat\\Console\\Concerns\\ChoosesChat",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8553237c29e20cb90d35b3d66cfceaf9de0c6b36",
+        "old_path": "domain/Chat/src/Console/DockAddCommand.php",
+        "old_class": "Domain\\Chat\\Console\\DockAddCommand",
+        "final_path": "domain/Chat/src/Console/Commands/DockAddCommand.php",
+        "final_class": "Domain\\Chat\\Console\\Commands\\DockAddCommand",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "76657059ca5d8d9c59bc9562ef75f9f10743580b",
+        "old_path": "domain/Chat/src/Console/DockListCommand.php",
+        "old_class": "Domain\\Chat\\Console\\DockListCommand",
+        "final_path": "domain/Chat/src/Console/Commands/DockListCommand.php",
+        "final_class": "Domain\\Chat\\Console\\Commands\\DockListCommand",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "97f5fdc409286202a055cec43dd96cc8d0f5ffbd",
+        "old_path": "domain/Chat/src/Console/DockRemoveCommand.php",
+        "old_class": "Domain\\Chat\\Console\\DockRemoveCommand",
+        "final_path": "domain/Chat/src/Console/Commands/DockRemoveCommand.php",
+        "final_class": "Domain\\Chat\\Console\\Commands\\DockRemoveCommand",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "dee269a4166fe832895dd738f832022503a5d6cc",
+        "old_path": "domain/Chat/src/Data/AgentOptionData.php",
+        "old_class": "Domain\\Chat\\Data\\AgentOptionData",
+        "final_path": "domain/Chat/src/Data/AgentOptionData.php",
+        "final_class": "Domain\\Chat\\Data\\AgentOptionData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "0fce287aacb4df32bb725fc4adf44172c523c4cc",
+        "old_path": "domain/Chat/src/Data/AgentStatusData.php",
+        "old_class": "Domain\\Chat\\Data\\AgentStatusData",
+        "final_path": "domain/Chat/src/Data/AgentStatusData.php",
+        "final_class": "Domain\\Chat\\Data\\AgentStatusData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2942fb65237a1f05618d071c97b9fcfe8d606eb4",
+        "old_path": "domain/Chat/src/Data/CancelInput.php",
+        "old_class": "Domain\\Chat\\Data\\CancelInput",
+        "final_path": "domain/Chat/src/Data/CancelInput.php",
+        "final_class": "Domain\\Chat\\Data\\CancelInput",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f8ba2eaf436265cbc47fce2ae087884c208e6fa2",
+        "old_path": "domain/Chat/src/Data/ChatCapabilitiesData.php",
+        "old_class": "Domain\\Chat\\Data\\ChatCapabilitiesData",
+        "final_path": "domain/Chat/src/Data/ChatCapabilitiesData.php",
+        "final_class": "Domain\\Chat\\Data\\ChatCapabilitiesData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ab6a94f177122bb0ed7f19def699f929662620f8",
+        "old_path": "domain/Chat/src/Data/ChatData.php",
+        "old_class": "Domain\\Chat\\Data\\ChatData",
+        "final_path": "domain/Chat/src/Data/ChatData.php",
+        "final_class": "Domain\\Chat\\Data\\ChatData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c733404442305d45445a17c4a9c376a5604e664e",
+        "old_path": "domain/Chat/src/Data/ChatEventData.php",
+        "old_class": "Domain\\Chat\\Data\\ChatEventData",
+        "final_path": "domain/Chat/src/Data/ChatEventData.php",
+        "final_class": "Domain\\Chat\\Data\\ChatEventData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "19070bfd3c0639319235411e8440b43b13b9c169",
+        "old_path": "domain/Chat/src/Data/ChatEventsInput.php",
+        "old_class": "Domain\\Chat\\Data\\ChatEventsInput",
+        "final_path": "domain/Chat/src/Data/ChatEventsInput.php",
+        "final_class": "Domain\\Chat\\Data\\ChatEventsInput",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a3e9a5aeb5310e5fe65c73909be99517b5b2bf8e",
+        "old_path": "domain/Chat/src/Data/ChatEventsPageData.php",
+        "old_class": "Domain\\Chat\\Data\\ChatEventsPageData",
+        "final_path": "domain/Chat/src/Data/ChatEventsPageData.php",
+        "final_class": "Domain\\Chat\\Data\\ChatEventsPageData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "626880d183244052499e2f8ec6992b83327046ce",
+        "old_path": "domain/Chat/src/Data/ChatInput.php",
+        "old_class": "Domain\\Chat\\Data\\ChatInput",
+        "final_path": "domain/Chat/src/Data/ChatInput.php",
+        "final_class": "Domain\\Chat\\Data\\ChatInput",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "760243321c32a42aea8c992a73b634951871a21e",
+        "old_path": "domain/Chat/src/Data/ChatMessageData.php",
+        "old_class": "Domain\\Chat\\Data\\ChatMessageData",
+        "final_path": "domain/Chat/src/Data/ChatMessageData.php",
+        "final_class": "Domain\\Chat\\Data\\ChatMessageData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "315f0aaeb72c796a2395758250659e88073db976",
+        "old_path": "domain/Chat/src/Data/ChatRowsInput.php",
+        "old_class": "Domain\\Chat\\Data\\ChatRowsInput",
+        "final_path": "domain/Chat/src/Data/ChatRowsInput.php",
+        "final_class": "Domain\\Chat\\Data\\ChatRowsInput",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8324034d7f34ce4e049995ae073ac340dcf4efe5",
+        "old_path": "domain/Chat/src/Data/ChatRowsPageData.php",
+        "old_class": "Domain\\Chat\\Data\\ChatRowsPageData",
+        "final_path": "domain/Chat/src/Data/ChatRowsPageData.php",
+        "final_class": "Domain\\Chat\\Data\\ChatRowsPageData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "bdcfd696cffcb25a720d6388aa31cec5a8e05300",
+        "old_path": "domain/Chat/src/Data/ChatSummaryData.php",
+        "old_class": "Domain\\Chat\\Data\\ChatSummaryData",
+        "final_path": "domain/Chat/src/Data/ChatSummaryData.php",
+        "final_class": "Domain\\Chat\\Data\\ChatSummaryData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "70326db96a0e9c4930dbde1395cd3f64390ad94e",
+        "old_path": "domain/Chat/src/Data/ConversationData.php",
+        "old_class": "Domain\\Chat\\Data\\ConversationData",
+        "final_path": "domain/Chat/src/Data/ConversationData.php",
+        "final_class": "Domain\\Chat\\Data\\ConversationData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "81490a323d9329fdbb235a0011417b910061ed9c",
+        "old_path": "domain/Chat/src/Data/CreateGroupInput.php",
+        "old_class": "Domain\\Chat\\Data\\CreateGroupInput",
+        "final_path": "domain/Chat/src/Data/CreateGroupInput.php",
+        "final_class": "Domain\\Chat\\Data\\CreateGroupInput",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "13e2667a7502c8d479840064c0b8901777646c43",
+        "old_path": "domain/Chat/src/Data/DeclineInput.php",
+        "old_class": "Domain\\Chat\\Data\\DeclineInput",
+        "final_path": "domain/Chat/src/Data/DeclineInput.php",
+        "final_class": "Domain\\Chat\\Data\\DeclineInput",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a7609cfc6e6fdaadf50429e33535e200d7c45814",
+        "old_path": "domain/Chat/src/Data/DeliveryData.php",
+        "old_class": "Domain\\Chat\\Data\\DeliveryData",
+        "final_path": "domain/Chat/src/Data/DeliveryData.php",
+        "final_class": "Domain\\Chat\\Data\\DeliveryData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "99952159ceb6a20a001e66742a45a09ca05ff07c",
+        "old_path": "domain/Chat/src/Data/DockAnswerData.php",
+        "old_class": "Domain\\Chat\\Data\\DockAnswerData",
+        "final_path": "domain/Chat/src/Data/DockAnswerData.php",
+        "final_class": "Domain\\Chat\\Data\\DockAnswerData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c889e4994fd2c2fd04d848deeef70948c55364f8",
+        "old_path": "domain/Chat/src/Data/DockCursorData.php",
+        "old_class": "Domain\\Chat\\Data\\DockCursorData",
+        "final_path": "domain/Chat/src/Data/DockCursorData.php",
+        "final_class": "Domain\\Chat\\Data\\DockCursorData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b0ca37cc274195d2540d18ea36cc8db6a5c07f53",
+        "old_path": "domain/Chat/src/Data/DockInput.php",
+        "old_class": "Domain\\Chat\\Data\\DockInput",
+        "final_path": "domain/Chat/src/Data/DockInput.php",
+        "final_class": "Domain\\Chat\\Data\\DockInput",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b9442a3acde366f33dab18c31c19bbca41a4a9bc",
+        "old_path": "domain/Chat/src/Data/DockListData.php",
+        "old_class": "Domain\\Chat\\Data\\DockListData",
+        "final_path": "domain/Chat/src/Data/DockListData.php",
+        "final_class": "Domain\\Chat\\Data\\DockListData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "bd5b520f8eb19f670edfaa5038eabaabd5bc5629",
+        "old_path": "domain/Chat/src/Data/DockPageData.php",
+        "old_class": "Domain\\Chat\\Data\\DockPageData",
+        "final_path": "domain/Chat/src/Data/DockPageData.php",
+        "final_class": "Domain\\Chat\\Data\\DockPageData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9bb7722d888def75cd0663e1b4668cd4b65ac00c",
+        "old_path": "domain/Chat/src/Data/DockedSourceData.php",
+        "old_class": "Domain\\Chat\\Data\\DockedSourceData",
+        "final_path": "domain/Chat/src/Data/DockedSourceData.php",
+        "final_class": "Domain\\Chat\\Data\\DockedSourceData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b7232ffffaac066d14f8ecf708925088adea7943",
+        "old_path": "domain/Chat/src/Data/DriverChoiceData.php",
+        "old_class": "Domain\\Chat\\Data\\DriverChoiceData",
+        "final_path": "domain/Chat/src/Data/DriverChoiceData.php",
+        "final_class": "Domain\\Chat\\Data\\DriverChoiceData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e8dedaa9233e92c3e429a1ac829e9a8d71a520a5",
+        "old_path": "domain/Chat/src/Data/FocusedQuestionData.php",
+        "old_class": "Domain\\Chat\\Data\\FocusedQuestionData",
+        "final_path": "domain/Chat/src/Data/FocusedQuestionData.php",
+        "final_class": "Domain\\Chat\\Data\\FocusedQuestionData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "550e65b1f83b08a2fcf4db7ed6c3a5ca05f7cb45",
+        "old_path": "domain/Chat/src/Data/InboxMessagesPartData.php",
+        "old_class": "Domain\\Chat\\Data\\InboxMessagesPartData",
+        "final_path": "domain/Chat/src/Data/InboxMessagesPartData.php",
+        "final_class": "Domain\\Chat\\Data\\InboxMessagesPartData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9f009af6e2b55f3bdcaa775617ab4dd77b5b5955",
+        "old_path": "domain/Chat/src/Data/MessageInput.php",
+        "old_class": "Domain\\Chat\\Data\\MessageInput",
+        "final_path": "domain/Chat/src/Data/MessageInput.php",
+        "final_class": "Domain\\Chat\\Data\\MessageInput",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "3231a5dda0f33bfe900488a14db0c078b809ed24",
+        "old_path": "domain/Chat/src/Data/ParticipantData.php",
+        "old_class": "Domain\\Chat\\Data\\ParticipantData",
+        "final_path": "domain/Chat/src/Data/ParticipantData.php",
+        "final_class": "Domain\\Chat\\Data\\ParticipantData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "13279b1f01a2c7d36e3b87127b6c0889f49ca2ee",
+        "old_path": "domain/Chat/src/Data/ParticipantInput.php",
+        "old_class": "Domain\\Chat\\Data\\ParticipantInput",
+        "final_path": "domain/Chat/src/Data/ParticipantInput.php",
+        "final_class": "Domain\\Chat\\Data\\ParticipantInput",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "61f651eed1d8888a154bdee65d29d6241a1d9a1e",
+        "old_path": "domain/Chat/src/Data/QuestionActionsData.php",
+        "old_class": "Domain\\Chat\\Data\\QuestionActionsData",
+        "final_path": "domain/Chat/src/Data/QuestionActionsData.php",
+        "final_class": "Domain\\Chat\\Data\\QuestionActionsData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "1cec5377843db39b1c451e996f1e3fc8439e44f8",
+        "old_path": "domain/Chat/src/Data/ReadShownInput.php",
+        "old_class": "Domain\\Chat\\Data\\ReadShownInput",
+        "final_path": "domain/Chat/src/Data/ReadShownInput.php",
+        "final_class": "Domain\\Chat\\Data\\ReadShownInput",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a307ba5335aac17ff457a35630e0f5bfcc88c7eb",
+        "old_path": "domain/Chat/src/Data/ReplyInput.php",
+        "old_class": "Domain\\Chat\\Data\\ReplyInput",
+        "final_path": "domain/Chat/src/Data/ReplyInput.php",
+        "final_class": "Domain\\Chat\\Data\\ReplyInput",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "0a0a9bb8de212a457bbe88d59daeb3fe8f7e8007",
+        "old_path": "domain/Chat/src/Data/ReplyTargetData.php",
+        "old_class": "Domain\\Chat\\Data\\ReplyTargetData",
+        "final_path": "domain/Chat/src/Data/ReplyTargetData.php",
+        "final_class": "Domain\\Chat\\Data\\ReplyTargetData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d11143192ce9ac4edb045e86c4fbec31712d36cc",
+        "old_path": "domain/Chat/src/Data/RequestOutcomeData.php",
+        "old_class": "Domain\\Chat\\Data\\RequestOutcomeData",
+        "final_path": "domain/Chat/src/Data/RequestOutcomeData.php",
+        "final_class": "Domain\\Chat\\Data\\RequestOutcomeData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e331827d8208f41da9e2aa9a30a4e3d395cd6f28",
+        "old_path": "domain/Chat/src/Data/RequestOutcomeInput.php",
+        "old_class": "Domain\\Chat\\Data\\RequestOutcomeInput",
+        "final_path": "domain/Chat/src/Data/RequestOutcomeInput.php",
+        "final_class": "Domain\\Chat\\Data\\RequestOutcomeInput",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "978ad878ffd2b5b7d93aebc6e0643250148a2ac8",
+        "old_path": "domain/Chat/src/Data/ResumableConversationData.php",
+        "old_class": "Domain\\Chat\\Data\\ResumableConversationData",
+        "final_path": "domain/Chat/src/Data/ResumableConversationData.php",
+        "final_class": "Domain\\Chat\\Data\\ResumableConversationData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "0551032e2148619c87ca73be948c19c5e5b38ac5",
+        "old_path": "domain/Chat/src/Data/RetryDeliveryInput.php",
+        "old_class": "Domain\\Chat\\Data\\RetryDeliveryInput",
+        "final_path": "domain/Chat/src/Data/RetryDeliveryInput.php",
+        "final_class": "Domain\\Chat\\Data\\RetryDeliveryInput",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "4c780c9ba9ae2ce9d71e0e434d3616ec96b85b2a",
+        "old_path": "domain/Chat/src/Data/SpeakerData.php",
+        "old_class": "Domain\\Chat\\Data\\SpeakerData",
+        "final_path": "domain/Chat/src/Data/SpeakerData.php",
+        "final_class": "Domain\\Chat\\Data\\SpeakerData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7b53996ef60697e3a25a7e015cd897d59c6523e3",
+        "old_path": "domain/Chat/src/Data/StatusActionData.php",
+        "old_class": "Domain\\Chat\\Data\\StatusActionData",
+        "final_path": "domain/Chat/src/Data/StatusActionData.php",
+        "final_class": "Domain\\Chat\\Data\\StatusActionData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a13a3e90719f69b58bbbf006ee9cfc12b3133b68",
+        "old_path": "domain/Chat/src/Data/StatusOperationData.php",
+        "old_class": "Domain\\Chat\\Data\\StatusOperationData",
+        "final_path": "domain/Chat/src/Data/StatusOperationData.php",
+        "final_class": "Domain\\Chat\\Data\\StatusOperationData",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "cef183572a7b16a7b19170d6b3be34257949e602",
+        "old_path": "domain/Chat/src/Data/TakeNextInput.php",
+        "old_class": "Domain\\Chat\\Data\\TakeNextInput",
+        "final_path": "domain/Chat/src/Data/TakeNextInput.php",
+        "final_class": "Domain\\Chat\\Data\\TakeNextInput",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "230b2148b8aaf6530bf91d2a4fac079ea925093c",
+        "old_path": "domain/Chat/src/Data/UndockInput.php",
+        "old_class": "Domain\\Chat\\Data\\UndockInput",
+        "final_path": "domain/Chat/src/Data/UndockInput.php",
+        "final_class": "Domain\\Chat\\Data\\UndockInput",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "99342296fcd0f6c905e8682c49d769eb0e9cbf13",
+        "old_path": "domain/Chat/src/Enums/ConversationState.php",
+        "old_class": "Domain\\Chat\\Enums\\ConversationState",
+        "final_path": "domain/Chat/src/Enums/ConversationState.php",
+        "final_class": "Domain\\Chat\\Enums\\ConversationState",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d534b931e3993cb01511d5c4323d7deadf5f0744",
+        "old_path": "domain/Chat/src/Enums/DockOutcome.php",
+        "old_class": "Domain\\Chat\\Enums\\DockOutcome",
+        "final_path": "domain/Chat/src/Enums/DockOutcome.php",
+        "final_class": "Domain\\Chat\\Enums\\DockOutcome",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e7df4015376fce477c68e11d9014029b6e5437a8",
+        "old_path": "domain/Chat/src/Enums/DockedState.php",
+        "old_class": "Domain\\Chat\\Enums\\DockedState",
+        "final_path": "domain/Chat/src/Enums/DockedState.php",
+        "final_class": "Domain\\Chat\\Enums\\DockedState",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "431988cacd79f6593576349a94a5860cc523e725",
+        "old_path": "domain/Chat/src/Enums/RequestOutcome.php",
+        "old_class": "Domain\\Chat\\Enums\\RequestOutcome",
+        "final_path": "domain/Chat/src/Enums/RequestOutcome.php",
+        "final_class": "Domain\\Chat\\Enums\\RequestOutcome",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "08b52c9f34712a9dcfcd85ad3a452e0049814b84",
+        "old_path": "domain/Chat/src/Enums/SentOperation.php",
+        "old_class": "Domain\\Chat\\Enums\\SentOperation",
+        "final_path": "domain/Chat/src/Enums/SentOperation.php",
+        "final_class": "Domain\\Chat\\Enums\\SentOperation",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "07f83660c0ae3b375873178e55896f6cbeaa0fef",
+        "old_path": "domain/Chat/src/Events/DockChanged.php",
+        "old_class": "Domain\\Chat\\Events\\DockChanged",
+        "final_path": "domain/Chat/src/Events/DockChanged.php",
+        "final_class": "Domain\\Chat\\Events\\DockChanged",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2ac2051246f969244069752ea9e49ecf198a99ea",
+        "old_path": "domain/Chat/src/Exceptions/ChatMembershipRefused.php",
+        "old_class": "Domain\\Chat\\Exceptions\\ChatMembershipRefused",
+        "final_path": "domain/Chat/src/Exceptions/ChatMembershipRefused.php",
+        "final_class": "Domain\\Chat\\Exceptions\\ChatMembershipRefused",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "602c0f451773e852d8c8b7705b573efc3d27e081",
+        "old_path": "domain/Chat/src/Exceptions/ConversationUnavailable.php",
+        "old_class": "Domain\\Chat\\Exceptions\\ConversationUnavailable",
+        "final_path": "domain/Chat/src/Exceptions/ConversationUnavailable.php",
+        "final_class": "Domain\\Chat\\Exceptions\\ConversationUnavailable",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "59dcaa0cbc6bb088efafa9ae6b8fb2e12674eaa2",
+        "old_path": "domain/Chat/src/Http/Controllers/Calls/DockAddController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\Calls\\DockAddController",
+        "final_path": "domain/Chat/src/Http/Controllers/Calls/DockAddController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\Calls\\DockAddController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "edaa6f0968406cbb5f85b4dec9a602596e3d9366",
+        "old_path": "domain/Chat/src/Http/Controllers/Calls/DockListController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\Calls\\DockListController",
+        "final_path": "domain/Chat/src/Http/Controllers/Calls/DockListController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\Calls\\DockListController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "600cc84ccb1f008efa7028ad85a3cec1da66eb47",
+        "old_path": "domain/Chat/src/Http/Controllers/Calls/DockRemoveController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\Calls\\DockRemoveController",
+        "final_path": "domain/Chat/src/Http/Controllers/Calls/DockRemoveController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\Calls\\DockRemoveController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "21ca79e4c80bac8a8a962d0b5db25db567fad083",
+        "old_path": "domain/Chat/src/Http/Controllers/CancelMessageController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\CancelMessageController",
+        "final_path": "domain/Chat/src/Http/Controllers/CancelMessageController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\CancelMessageController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ec1544007acfe26aefba713211ef0c3a1b16721d",
+        "old_path": "domain/Chat/src/Http/Controllers/ChatEventsController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\ChatEventsController",
+        "final_path": "domain/Chat/src/Http/Controllers/ChatEventsController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\ChatEventsController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e7e3d49faee341047993c6c5894af8f75d1db4de",
+        "old_path": "domain/Chat/src/Http/Controllers/ChatRowsController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\ChatRowsController",
+        "final_path": "domain/Chat/src/Http/Controllers/ChatRowsController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\ChatRowsController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e0b171f8fa7f9a8234c2f96730b831e75715a893",
+        "old_path": "domain/Chat/src/Http/Controllers/DeclineQuestionController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\DeclineQuestionController",
+        "final_path": "domain/Chat/src/Http/Controllers/DeclineQuestionController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\DeclineQuestionController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "de62d96c575ff85da85316240e8c69c295ca079f",
+        "old_path": "domain/Chat/src/Http/Controllers/DockController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\DockController",
+        "final_path": "domain/Chat/src/Http/Controllers/DockController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\DockController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "1351761a7f892cc276b81533c6998ebdd380b45b",
+        "old_path": "domain/Chat/src/Http/Controllers/Membership/AddParticipantController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\Membership\\AddParticipantController",
+        "final_path": "domain/Chat/src/Http/Controllers/Membership/AddParticipantController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\Membership\\AddParticipantController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "650f1fde715af993ce19aced5adb2f3ff15411cb",
+        "old_path": "domain/Chat/src/Http/Controllers/Membership/ChatCandidatesController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\Membership\\ChatCandidatesController",
+        "final_path": "domain/Chat/src/Http/Controllers/Membership/ChatCandidatesController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\Membership\\ChatCandidatesController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "00d642643926931d4bf0693a0ea13669e5622c68",
+        "old_path": "domain/Chat/src/Http/Controllers/Membership/CloseChatController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\Membership\\CloseChatController",
+        "final_path": "domain/Chat/src/Http/Controllers/Membership/CloseChatController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\Membership\\CloseChatController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b1302cb0cf10ad554e3cb9061d0e3d70563f815a",
+        "old_path": "domain/Chat/src/Http/Controllers/Membership/CreateGroupChatController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\Membership\\CreateGroupChatController",
+        "final_path": "domain/Chat/src/Http/Controllers/Membership/CreateGroupChatController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\Membership\\CreateGroupChatController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2555e078b8fd4a46ea2ca1a9edee7c6f3ee9183e",
+        "old_path": "domain/Chat/src/Http/Controllers/Membership/LeaveChatController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\Membership\\LeaveChatController",
+        "final_path": "domain/Chat/src/Http/Controllers/Membership/LeaveChatController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\Membership\\LeaveChatController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d83e19137242d406f2ec03787360b5ffe6e11c0c",
+        "old_path": "domain/Chat/src/Http/Controllers/Membership/RemoveParticipantController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\Membership\\RemoveParticipantController",
+        "final_path": "domain/Chat/src/Http/Controllers/Membership/RemoveParticipantController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\Membership\\RemoveParticipantController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c109301378489463b32f240a6e5a19b724e07234",
+        "old_path": "domain/Chat/src/Http/Controllers/Membership/TransferChatController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\Membership\\TransferChatController",
+        "final_path": "domain/Chat/src/Http/Controllers/Membership/TransferChatController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\Membership\\TransferChatController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ec7cb9476e207657c9d12303253929f047ed0416",
+        "old_path": "domain/Chat/src/Http/Controllers/ReadShownController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\ReadShownController",
+        "final_path": "domain/Chat/src/Http/Controllers/ReadShownController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\ReadShownController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "5a1552488133a6774a1d34bfe15dbdd62d6b86bc",
+        "old_path": "domain/Chat/src/Http/Controllers/ReplyController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\ReplyController",
+        "final_path": "domain/Chat/src/Http/Controllers/ReplyController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\ReplyController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f208e1eb0ba9af50f1fa4f9c3522a80de9770898",
+        "old_path": "domain/Chat/src/Http/Controllers/RequestOutcomeController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\RequestOutcomeController",
+        "final_path": "domain/Chat/src/Http/Controllers/RequestOutcomeController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\RequestOutcomeController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a09eb312ba0cf24363020bfaee2a9cd47197f7e0",
+        "old_path": "domain/Chat/src/Http/Controllers/RetryDeliveryController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\RetryDeliveryController",
+        "final_path": "domain/Chat/src/Http/Controllers/RetryDeliveryController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\RetryDeliveryController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c7c49a98ca4169ca1b83e3a1455ceb09ebc1c49d",
+        "old_path": "domain/Chat/src/Http/Controllers/SendMessageController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\SendMessageController",
+        "final_path": "domain/Chat/src/Http/Controllers/SendMessageController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\SendMessageController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "0603599c78b0f70e6753cc4a390447984f4efbdc",
+        "old_path": "domain/Chat/src/Http/Controllers/TakeNextController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\TakeNextController",
+        "final_path": "domain/Chat/src/Http/Controllers/TakeNextController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\TakeNextController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "1d12adfc0afb64cf7d809e215acf27e2e2cabe93",
+        "old_path": "domain/Chat/src/Http/Controllers/UndockController.php",
+        "old_class": "Domain\\Chat\\Http\\Controllers\\UndockController",
+        "final_path": "domain/Chat/src/Http/Controllers/UndockController.php",
+        "final_class": "Domain\\Chat\\Http\\Controllers\\UndockController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "4c6963169ee1d26f24b016f2c1ff4a0d8d0ebb21",
+        "old_path": "domain/Chat/src/Http/Requests/ConversationRequest.php",
+        "old_class": "Domain\\Chat\\Http\\Requests\\ConversationRequest",
+        "final_path": "domain/Chat/src/Http/Requests/ConversationRequest.php",
+        "final_class": "Domain\\Chat\\Http\\Requests\\ConversationRequest",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d81d46c1fb5c98add9211ddb08446a2217e2945d",
+        "old_path": "domain/Chat/src/Http/Requests/HistoryRequest.php",
+        "old_class": "Domain\\Chat\\Http\\Requests\\HistoryRequest",
+        "final_path": "domain/Chat/src/Http/Requests/HistoryRequest.php",
+        "final_class": "Domain\\Chat\\Http\\Requests\\HistoryRequest",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "bb2c77c7ad050151eb0c8eeae4c7670648a7e49a",
+        "old_path": "domain/Chat/src/Listeners/RemoveDeletedSource.php",
+        "old_class": "Domain\\Chat\\Listeners\\RemoveDeletedSource",
+        "final_path": "domain/Chat/src/Listeners/RemoveDeletedSource.php",
+        "final_class": "Domain\\Chat\\Listeners\\RemoveDeletedSource",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "49f1670ceb4be49b364124bfa38cf7a42097e1a6",
+        "old_path": "domain/Chat/src/Mcp/AnswerMessageTool.php",
+        "old_class": "Domain\\Chat\\Mcp\\AnswerMessageTool",
+        "final_path": "domain/Chat/src/Mcp/Tools/AnswerMessageTool.php",
+        "final_class": "Domain\\Chat\\Mcp\\Tools\\AnswerMessageTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a2a11e42bea685caaf3f4a2bc31230a09b35f530",
+        "old_path": "domain/Chat/src/Mcp/AskQuestionTool.php",
+        "old_class": "Domain\\Chat\\Mcp\\AskQuestionTool",
+        "final_path": "domain/Chat/src/Mcp/Tools/AskQuestionTool.php",
+        "final_class": "Domain\\Chat\\Mcp\\Tools\\AskQuestionTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9b180c98039a359b014ba03a88db2054c3d06fbf",
+        "old_path": "domain/Chat/src/Mcp/DismissMessageTool.php",
+        "old_class": "Domain\\Chat\\Mcp\\DismissMessageTool",
+        "final_path": "domain/Chat/src/Mcp/Tools/DismissMessageTool.php",
+        "final_class": "Domain\\Chat\\Mcp\\Tools\\DismissMessageTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "0e1a1db00db784769f022a4b6aace2ed7871a4c3",
+        "old_path": "domain/Chat/src/Mcp/DockAddTool.php",
+        "old_class": "Domain\\Chat\\Mcp\\DockAddTool",
+        "final_path": "domain/Chat/src/Mcp/Tools/DockAddTool.php",
+        "final_class": "Domain\\Chat\\Mcp\\Tools\\DockAddTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f0335d98d365bdfaa4a106bc0e162da83e5da8dc",
+        "old_path": "domain/Chat/src/Mcp/DockListTool.php",
+        "old_class": "Domain\\Chat\\Mcp\\DockListTool",
+        "final_path": "domain/Chat/src/Mcp/Tools/DockListTool.php",
+        "final_class": "Domain\\Chat\\Mcp\\Tools\\DockListTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d5acaa0fff017be991ae2b16122baffcd008d274",
+        "old_path": "domain/Chat/src/Mcp/DockRemoveTool.php",
+        "old_class": "Domain\\Chat\\Mcp\\DockRemoveTool",
+        "final_path": "domain/Chat/src/Mcp/Tools/DockRemoveTool.php",
+        "final_class": "Domain\\Chat\\Mcp\\Tools\\DockRemoveTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b963725b82163dea62481705b684a2e40d8d7865",
+        "old_path": "domain/Chat/src/Mcp/MessageContextTool.php",
+        "old_class": "Domain\\Chat\\Mcp\\MessageContextTool",
+        "final_path": "domain/Chat/src/Mcp/Tools/MessageContextTool.php",
+        "final_class": "Domain\\Chat\\Mcp\\Tools\\MessageContextTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "aba9e914da0d90347b9f84e098f337bac891d5fd",
+        "old_path": "domain/Chat/src/Mcp/MessageDetailsTool.php",
+        "old_class": "Domain\\Chat\\Mcp\\MessageDetailsTool",
+        "final_path": "domain/Chat/src/Mcp/Tools/MessageDetailsTool.php",
+        "final_class": "Domain\\Chat\\Mcp\\Tools\\MessageDetailsTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c649d5b6a605c1237457dce25c0e756827077511",
+        "old_path": "domain/Chat/src/Mcp/MessageReadResult.php",
+        "old_class": "Domain\\Chat\\Mcp\\MessageReadResult",
+        "final_path": "domain/Chat/src/Support/Mcp/MessageReadResult.php",
+        "final_class": "Domain\\Chat\\Support\\Mcp\\MessageReadResult",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ce84c3e62f00f098ee3260193abab7496e12142e",
+        "old_path": "domain/Chat/src/Mcp/MessageReadTool.php",
+        "old_class": "Domain\\Chat\\Mcp\\MessageReadTool",
+        "final_path": "domain/Chat/src/Mcp/Tools/MessageReadTool.php",
+        "final_class": "Domain\\Chat\\Mcp\\Tools\\MessageReadTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f5bb7cb9d632254f33dddbc634f93a5af2e1c9fe",
+        "old_path": "domain/Chat/src/Mcp/MessageResource.php",
+        "old_class": "Domain\\Chat\\Mcp\\MessageResource",
+        "final_path": "domain/Chat/src/Mcp/Resources/MessageResource.php",
+        "final_class": "Domain\\Chat\\Mcp\\Resources\\MessageResource",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "3830ac4a0b10e104b65528edaea3261f45bc448b",
+        "old_path": "domain/Chat/src/Mcp/MessageSearch.php",
+        "old_class": "Domain\\Chat\\Mcp\\MessageSearch",
+        "final_path": "domain/Chat/src/Support/Mcp/MessageSearch.php",
+        "final_class": "Domain\\Chat\\Support\\Mcp\\MessageSearch",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "6cb39cfc1b134a7e090e2d89a7eae53b438cfd30",
+        "old_path": "domain/Chat/src/Mcp/MessagesListTool.php",
+        "old_class": "Domain\\Chat\\Mcp\\MessagesListTool",
+        "final_path": "domain/Chat/src/Mcp/Tools/MessagesListTool.php",
+        "final_class": "Domain\\Chat\\Mcp\\Tools\\MessagesListTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "0a79bbe4470083a06ad85deb12fb854fe74c93a7",
+        "old_path": "domain/Chat/src/Mcp/PendingMessagesOverview.php",
+        "old_class": "Domain\\Chat\\Mcp\\PendingMessagesOverview",
+        "final_path": "domain/Chat/src/Support/Mcp/PendingMessagesOverview.php",
+        "final_class": "Domain\\Chat\\Support\\Mcp\\PendingMessagesOverview",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "0d4acef30a31697dba641fffaa40d8c3114c207e",
+        "old_path": "domain/Chat/src/Mcp/ReplyToMessageTool.php",
+        "old_class": "Domain\\Chat\\Mcp\\ReplyToMessageTool",
+        "final_path": "domain/Chat/src/Mcp/Tools/ReplyToMessageTool.php",
+        "final_class": "Domain\\Chat\\Mcp\\Tools\\ReplyToMessageTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b3fd186a9fbde99907897d555475534e209c3176",
+        "old_path": "domain/Chat/src/Mcp/SelectMessageTool.php",
+        "old_class": "Domain\\Chat\\Mcp\\SelectMessageTool",
+        "final_path": "domain/Chat/src/Mcp/Tools/SelectMessageTool.php",
+        "final_class": "Domain\\Chat\\Mcp\\Tools\\SelectMessageTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8cf24d77ec92a5746e5e6d20d3f556dc6a64e666",
+        "old_path": "domain/Chat/src/Models/Concerns/PlacedInConversation.php",
+        "old_class": "Domain\\Chat\\Models\\Concerns\\PlacedInConversation",
+        "final_path": "domain/Chat/src/Models/Concerns/PlacedInConversation.php",
+        "final_class": "Domain\\Chat\\Models\\Concerns\\PlacedInConversation",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b526fbfdd039d0859560b96afbc5949148bbb462",
+        "old_path": "domain/Chat/src/Models/Conversation.php",
+        "old_class": "Domain\\Chat\\Models\\Conversation",
+        "final_path": "domain/Chat/src/Models/Conversation.php",
+        "final_class": "Domain\\Chat\\Models\\Conversation",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ef7528f4365e38cecb520ab1b6c8edc1cebaacdd",
+        "old_path": "domain/Chat/src/Models/DirectChat.php",
+        "old_class": "Domain\\Chat\\Models\\DirectChat",
+        "final_path": "domain/Chat/src/Models/DirectChat.php",
+        "final_class": "Domain\\Chat\\Models\\DirectChat",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9b0b4d2cb3044acfad0267ede9cb0c8b9ef51d14",
+        "old_path": "domain/Chat/src/Models/DockPlacement.php",
+        "old_class": "Domain\\Chat\\Models\\DockPlacement",
+        "final_path": "domain/Chat/src/Models/DockPlacement.php",
+        "final_class": "Domain\\Chat\\Models\\DockPlacement",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "5a648f8abbb2c5c289eb62a1bb7e0bfe038e3ffe",
+        "old_path": "domain/Chat/src/Models/MessagePin.php",
+        "old_class": "Domain\\Chat\\Models\\MessagePin",
+        "final_path": "domain/Chat/src/Models/MessagePin.php",
+        "final_class": "Domain\\Chat\\Models\\MessagePin",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c48f8f9eae9787fc7b97e712c663798d9a3696e8",
+        "old_path": "domain/Chat/src/Policies/ConversationPolicy.php",
+        "old_class": "Domain\\Chat\\Policies\\ConversationPolicy",
+        "final_path": "domain/Chat/src/Policies/ConversationPolicy.php",
+        "final_class": "Domain\\Chat\\Policies\\ConversationPolicy",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b3747fae8569bd7e7ca96464eb36d42182163ef7",
+        "old_path": "domain/Chat/src/Policies/MessagePinPolicy.php",
+        "old_class": "Domain\\Chat\\Policies\\MessagePinPolicy",
+        "final_path": "domain/Chat/src/Policies/MessagePinPolicy.php",
+        "final_class": "Domain\\Chat\\Policies\\MessagePinPolicy",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "6f3b6a71912b477e190f4f9f3b09b7678805f69a",
+        "old_path": "domain/Chat/src/Providers/ChatServiceProvider.php",
+        "old_class": "Domain\\Chat\\Providers\\ChatServiceProvider",
+        "final_path": "domain/Chat/src/Providers/ChatServiceProvider.php",
+        "final_class": "Domain\\Chat\\Providers\\ChatServiceProvider",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "80b1ce034c7e2d3789597a661385df4d98fb7f7e",
+        "old_path": "domain/Chat/src/Resolvers/ChatWindowResolver.php",
+        "old_class": "Domain\\Chat\\Resolvers\\ChatWindowResolver",
+        "final_path": "domain/Chat/src/Resolvers/ChatWindowResolver.php",
+        "final_class": "Domain\\Chat\\Resolvers\\ChatWindowResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2d5be83b477d65e0d88f919a742b34372e05130b",
+        "old_path": "domain/Chat/src/Resolvers/ChosenAgentSection.php",
+        "old_class": "Domain\\Chat\\Resolvers\\ChosenAgentSection",
+        "final_path": "domain/Chat/src/Resolvers/ChosenAgentSection.php",
+        "final_class": "Domain\\Chat\\Resolvers\\ChosenAgentSection",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b07c4707a37d0e45b9c1f543f76b5198ef9b8639",
+        "old_path": "domain/Chat/src/Resolvers/HistoryPageResolver.php",
+        "old_class": "Domain\\Chat\\Resolvers\\HistoryPageResolver",
+        "final_path": "domain/Chat/src/Resolvers/HistoryPageResolver.php",
+        "final_class": "Domain\\Chat\\Resolvers\\HistoryPageResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f6bc028540147553aed3d4e0e96c566dcebe0f91",
+        "old_path": "domain/Chat/src/Resolvers/InboxPageResolver.php",
+        "old_class": "Domain\\Chat\\Resolvers\\InboxPageResolver",
+        "final_path": "domain/Chat/src/Resolvers/InboxPageResolver.php",
+        "final_class": "Domain\\Chat\\Resolvers\\InboxPageResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a82ce8fb05dbed342da48bf8ce63a10da4ba33b9",
+        "old_path": "domain/Chat/src/Resolvers/Support/ChatConversations.php",
+        "old_class": "Domain\\Chat\\Resolvers\\Support\\ChatConversations",
+        "final_path": "domain/Chat/src/Resolvers/Support/ChatConversations.php",
+        "final_class": "Domain\\Chat\\Resolvers\\Support\\ChatConversations",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b96d4cde8f2f801f82225fe12c42a5dabe88fce0",
+        "old_path": "domain/Chat/src/Resolvers/Support/DockListing.php",
+        "old_class": "Domain\\Chat\\Resolvers\\Support\\DockListing",
+        "final_path": "domain/Chat/src/Resolvers/Support/DockListing.php",
+        "final_class": "Domain\\Chat\\Resolvers\\Support\\DockListing",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "510e68a653b8f0a3ba13b86c0ff8704ad008790e",
+        "old_path": "domain/Chat/src/Resolvers/Support/MessagePinRecords.php",
+        "old_class": "Domain\\Chat\\Resolvers\\Support\\MessagePinRecords",
+        "final_path": "domain/Chat/src/Resolvers/Support/MessagePinRecords.php",
+        "final_class": "Domain\\Chat\\Resolvers\\Support\\MessagePinRecords",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "aa3645ad75299d1411706a6009e59093be0dbbbf",
+        "old_path": "domain/Chat/src/Routes/agent.php",
+        "old_class": null,
+        "final_path": "domain/Chat/routes/agent.php",
+        "final_class": null,
+        "status": "move",
+        "kind": "route script",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "33e163c9c5bb16cf163ff27f4400b1a8c1f992a7",
+        "old_path": "domain/Chat/src/Skills/ChatSkill.php",
+        "old_class": "Domain\\Chat\\Skills\\ChatSkill",
+        "final_path": "domain/Chat/src/Support/Skills/ChatSkill.php",
+        "final_class": "Domain\\Chat\\Support\\Skills\\ChatSkill",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7b263c395e6e1c4fb6c8650cbafff75c5b0030f0",
+        "old_path": "domain/Chat/src/Support/AgentDockOffers.php",
+        "old_class": "Domain\\Chat\\Support\\AgentDockOffers",
+        "final_path": "domain/Chat/src/Support/AgentDockOffers.php",
+        "final_class": "Domain\\Chat\\Support\\AgentDockOffers",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "3318c99fc7a5b7c6f6d444b75d8cff0670858b6f",
+        "old_path": "domain/Chat/src/Support/AuthorizedConversations.php",
+        "old_class": "Domain\\Chat\\Support\\AuthorizedConversations",
+        "final_path": "domain/Chat/src/Support/AuthorizedConversations.php",
+        "final_class": "Domain\\Chat\\Support\\AuthorizedConversations",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "dc5216fbc37e3648933ace299d355e402304b339",
+        "old_path": "domain/Chat/src/Support/ChatAdmissionPolicy.php",
+        "old_class": "Domain\\Chat\\Support\\ChatAdmissionPolicy",
+        "final_path": "domain/Chat/src/Support/ChatAdmissionPolicy.php",
+        "final_class": "Domain\\Chat\\Support\\ChatAdmissionPolicy",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "30cec4e4dab9b532121d5dcb14a814416fb324af",
+        "old_path": "domain/Chat/src/Support/ChatInbox.php",
+        "old_class": "Domain\\Chat\\Support\\ChatInbox",
+        "final_path": "domain/Chat/src/Support/ChatInbox.php",
+        "final_class": "Domain\\Chat\\Support\\ChatInbox",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "fcb1f8732fdacd8b7dd3cf422d7a3ce729a53c67",
+        "old_path": "domain/Chat/src/Support/ChatInboxAccess.php",
+        "old_class": "Domain\\Chat\\Support\\ChatInboxAccess",
+        "final_path": "domain/Chat/src/Support/ChatInboxAccess.php",
+        "final_class": "Domain\\Chat\\Support\\ChatInboxAccess",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "18578ce6b63daa7cf51e687c5bd76b4c89acc6b4",
+        "old_path": "domain/Chat/src/Support/ChatInboxProvider.php",
+        "old_class": "Domain\\Chat\\Support\\ChatInboxProvider",
+        "final_path": "domain/Chat/src/Support/ChatInboxProvider.php",
+        "final_class": "Domain\\Chat\\Support\\ChatInboxProvider",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ecdf61b33a95e379bbb9536182949d5b693a2469",
+        "old_path": "domain/Chat/src/Support/ChatMembership.php",
+        "old_class": "Domain\\Chat\\Support\\ChatMembership",
+        "final_path": "domain/Chat/src/Support/ChatMembership.php",
+        "final_class": "Domain\\Chat\\Support\\ChatMembership",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2df78b6231ab7ec33da4b44b13efefe3b4a6de19",
+        "old_path": "domain/Chat/src/Support/ChatRevocation.php",
+        "old_class": "Domain\\Chat\\Support\\ChatRevocation",
+        "final_path": "domain/Chat/src/Support/ChatRevocation.php",
+        "final_class": "Domain\\Chat\\Support\\ChatRevocation",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a6d933e852807e81e3fa8d6a64eb4bff632cd876",
+        "old_path": "domain/Chat/src/Support/DockCards.php",
+        "old_class": "Domain\\Chat\\Support\\DockCards",
+        "final_path": "domain/Chat/src/Support/DockCards.php",
+        "final_class": "Domain\\Chat\\Support\\DockCards",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "59ff5cf6372461115b2175673b48fb7d1972f6e2",
+        "old_path": "domain/Chat/src/Support/DockCursor.php",
+        "old_class": "Domain\\Chat\\Support\\DockCursor",
+        "final_path": "domain/Chat/src/Support/DockCursor.php",
+        "final_class": "Domain\\Chat\\Support\\DockCursor",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d2cd237c6b4d448671d4be0636a7637a41e85fc1",
+        "old_path": "domain/Chat/src/Support/DockProjection.php",
+        "old_class": "Domain\\Chat\\Support\\DockProjection",
+        "final_path": "domain/Chat/src/Support/DockProjection.php",
+        "final_class": "Domain\\Chat\\Support\\DockProjection",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "38c05ec6533f7f8d349f0c7f874aff758717e6b0",
+        "old_path": "domain/Chat/src/Support/DockRequests.php",
+        "old_class": "Domain\\Chat\\Support\\DockRequests",
+        "final_path": "domain/Chat/src/Support/DockRequests.php",
+        "final_class": "Domain\\Chat\\Support\\DockRequests",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f7984bf5a99daa39efe0f6016e3c67b092dc8e3b",
+        "old_path": "domain/Chat/src/Support/PairChats.php",
+        "old_class": "Domain\\Chat\\Support\\PairChats",
+        "final_path": "domain/Chat/src/Support/PairChats.php",
+        "final_class": "Domain\\Chat\\Support\\PairChats",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "561c624c93fff3502b05e8dbe13ccdb30712d7e4",
+        "old_path": "domain/Chat/src/Support/PinnableMessages.php",
+        "old_class": "Domain\\Chat\\Support\\PinnableMessages",
+        "final_path": "domain/Chat/src/Support/PinnableMessages.php",
+        "final_class": "Domain\\Chat\\Support\\PinnableMessages",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "76b39af0ebfdedc84c5ad282d8c52e84f68e5122",
+        "old_path": "domain/Chat/src/Support/PlacedSources.php",
+        "old_class": "Domain\\Chat\\Support\\PlacedSources",
+        "final_path": "domain/Chat/src/Support/PlacedSources.php",
+        "final_class": "Domain\\Chat\\Support\\PlacedSources",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "0dfcb0cd6143af68545bdb2494e015fb9596bf2f",
+        "old_path": "domain/Chat/src/Support/RequestOutcomes.php",
+        "old_class": "Domain\\Chat\\Support\\RequestOutcomes",
+        "final_path": "domain/Chat/src/Support/RequestOutcomes.php",
+        "final_class": "Domain\\Chat\\Support\\RequestOutcomes",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "1cf1aba38636a4f5762e809926280a95f6212deb",
+        "old_path": "domain/Chat/src/Support/SentMessageAnswer.php",
+        "old_class": "Domain\\Chat\\Support\\SentMessageAnswer",
+        "final_path": "domain/Chat/src/Support/SentMessageAnswer.php",
+        "final_class": "Domain\\Chat\\Support\\SentMessageAnswer",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "0a57d3490d4c92e765a12a59a8f401819f9155ac",
+        "old_path": "domain/Chat/src/Values/DockResult.php",
+        "old_class": "Domain\\Chat\\Values\\DockResult",
+        "final_path": "domain/Chat/src/Values/DockResult.php",
+        "final_class": "Domain\\Chat\\Values\\DockResult",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Chat",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    }
+]

@@ -1,0 +1,4475 @@
+[
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2a4d6da1166ceb59a60fe05f570605e353d2171c",
+        "old_path": "domain/Tasks/database/factories/TaskFactory.php",
+        "old_class": "Domain\\Tasks\\Database\\Factories\\TaskFactory",
+        "final_path": "domain/Tasks/database/factories/TaskFactory.php",
+        "final_class": "Domain\\Tasks\\Database\\Factories\\TaskFactory",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d82ada9620db5531743c98e90d66c7078a32e1e1",
+        "old_path": "domain/Tasks/database/migrations/2026_11_17_000006_create_tasks_table.php",
+        "old_class": null,
+        "final_path": "domain/Tasks/database/migrations/2026_11_17_000006_create_tasks_table.php",
+        "final_class": null,
+        "status": "stay",
+        "kind": "anonymous migration",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d2d689b67e1c266cea8a1d9b55219e2c4be85b62",
+        "old_path": "domain/Tasks/database/migrations/2026_11_17_000010_create_task_runs_table.php",
+        "old_class": null,
+        "final_path": "domain/Tasks/database/migrations/2026_11_17_000010_create_task_runs_table.php",
+        "final_class": null,
+        "status": "stay",
+        "kind": "anonymous migration",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "373c2e7779bb93ebfc3a26017471a73f47de72e2",
+        "old_path": "domain/Tasks/database/migrations/2026_11_22_000001_create_task_history_table.php",
+        "old_class": null,
+        "final_path": "domain/Tasks/database/migrations/2026_11_22_000001_create_task_history_table.php",
+        "final_class": null,
+        "status": "stay",
+        "kind": "anonymous migration",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c3ddc4dd350b12cdc2dfac65ffb35946a344537a",
+        "old_path": "domain/Tasks/database/migrations/2026_11_22_000002_create_task_log_entries_table.php",
+        "old_class": null,
+        "final_path": "domain/Tasks/database/migrations/2026_11_22_000002_create_task_log_entries_table.php",
+        "final_class": null,
+        "status": "stay",
+        "kind": "anonymous migration",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "55854d92687ac011c61a8448f323d4c2f2aea3b9",
+        "old_path": "domain/Tasks/database/migrations/2026_11_22_000003_create_task_checks_table.php",
+        "old_class": null,
+        "final_path": "domain/Tasks/database/migrations/2026_11_22_000003_create_task_checks_table.php",
+        "final_class": null,
+        "status": "stay",
+        "kind": "anonymous migration",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c2ee262fe8b1ed17ba7a8c4df645bab720020924",
+        "old_path": "domain/Tasks/database/migrations/2026_11_22_000004_create_task_waits_table.php",
+        "old_class": null,
+        "final_path": "domain/Tasks/database/migrations/2026_11_22_000004_create_task_waits_table.php",
+        "final_class": null,
+        "status": "stay",
+        "kind": "anonymous migration",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "6e6441e6ac7aca249aaf96dcbf7dc849e3314564",
+        "old_path": "domain/Tasks/database/migrations/2026_11_22_000005_create_task_wait_history_table.php",
+        "old_class": null,
+        "final_path": "domain/Tasks/database/migrations/2026_11_22_000005_create_task_wait_history_table.php",
+        "final_class": null,
+        "status": "stay",
+        "kind": "anonymous migration",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "046ecbc46f12c8ba88bf93494d9ecda51ce06131",
+        "old_path": "domain/Tasks/database/seeders/PlanTasksSeeder.php",
+        "old_class": "Domain\\Tasks\\Database\\Seeders\\PlanTasksSeeder",
+        "final_path": "domain/Tasks/database/seeders/PlanTasksSeeder.php",
+        "final_class": "Domain\\Tasks\\Database\\Seeders\\PlanTasksSeeder",
+        "status": "stay",
+        "kind": "seeder",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2b8a366e28bc6c15020c4e2e694cd717d22eabb0",
+        "old_path": "domain/Tasks/resources/js/TaskCommentsTab.vue",
+        "old_class": null,
+        "final_path": "domain/Tasks/resources/js/TaskCommentsTab.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "dd88752cd01853f93862d3618db3aa8b50e8dca6",
+        "old_path": "domain/Tasks/resources/js/TaskEvidenceTabs.test.ts",
+        "old_class": null,
+        "final_path": "domain/Tasks/resources/js/TaskEvidenceTabs.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7ab45d4aeab1eea36fd42e79018766d1c33fa408",
+        "old_path": "domain/Tasks/resources/js/TaskGraph.vue",
+        "old_class": null,
+        "final_path": "domain/Tasks/resources/js/TaskGraph.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2329b1e3477c9ee978d465f005cd8cda1dc4c24d",
+        "old_path": "domain/Tasks/resources/js/TaskGraphCanvas.vue",
+        "old_class": null,
+        "final_path": "domain/Tasks/resources/js/TaskGraphCanvas.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8860328b02a13137aad8a4af1f0477d28f639b7c",
+        "old_path": "domain/Tasks/resources/js/TaskLogsTab.vue",
+        "old_class": null,
+        "final_path": "domain/Tasks/resources/js/TaskLogsTab.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2a27097433c293e8fd23d232d0b74e5c9a5ed1a4",
+        "old_path": "domain/Tasks/resources/js/TaskProofsTab.vue",
+        "old_class": null,
+        "final_path": "domain/Tasks/resources/js/TaskProofsTab.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2beca3fa743c97034980e29c58e46e8eafc7f9c9",
+        "old_path": "domain/Tasks/resources/js/TaskWaitDialog.vue",
+        "old_class": null,
+        "final_path": "domain/Tasks/resources/js/TaskWaitDialog.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "6096717abe2562adb81903eb648e47a929299695",
+        "old_path": "domain/Tasks/resources/js/TaskWaitsTab.test.ts",
+        "old_class": null,
+        "final_path": "domain/Tasks/resources/js/TaskWaitsTab.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "62fdc81d2348616d98763d8f673be1f61dcc692f",
+        "old_path": "domain/Tasks/resources/js/TaskWaitsTab.vue",
+        "old_class": null,
+        "final_path": "domain/Tasks/resources/js/TaskWaitsTab.vue",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f18af99f2cf489d3047e12fe3eecb754156bcb81",
+        "old_path": "domain/Tasks/resources/js/openedWaits.ts",
+        "old_class": null,
+        "final_path": "domain/Tasks/resources/js/openedWaits.ts",
+        "final_class": null,
+        "status": "stay",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7f0439497602de979c580d70f5f0702f13378d4a",
+        "old_path": "domain/Tasks/resources/js/taskGraph.test.ts",
+        "old_class": null,
+        "final_path": "domain/Tasks/resources/js/taskGraph.test.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "75fa22d7b2484f2e00c464e594137ba88fad740b",
+        "old_path": "domain/Tasks/resources/js/taskGraph.ts",
+        "old_class": null,
+        "final_path": "domain/Tasks/resources/js/taskGraph.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "27ec20cc995e009c75220b24ee0497eee6b57bc6",
+        "old_path": "domain/Tasks/resources/js/taskLooks.ts",
+        "old_class": null,
+        "final_path": "domain/Tasks/resources/js/taskLooks.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a593aba7515d1ec6de57d4d561145b4f64dbd637",
+        "old_path": "domain/Tasks/resources/js/useTaskLogs.ts",
+        "old_class": null,
+        "final_path": "domain/Tasks/resources/js/useTaskLogs.ts",
+        "final_class": null,
+        "status": "generate",
+        "kind": "vue/ts",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "4bbcfb1e0521dc4ffb6acd0ad278dba7ac3b6157",
+        "old_path": "domain/Tasks/resources/skills/tasks.md",
+        "old_class": null,
+        "final_path": "domain/Tasks/resources/skills/tasks.md",
+        "final_class": null,
+        "status": "stay",
+        "kind": "blade or static asset",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d29826fcad1a38541c05eb58aa7e310298d27383",
+        "old_path": "domain/Tasks/src/Api/Events/TaskBlocked.php",
+        "old_class": "Domain\\Tasks\\Api\\Events\\TaskBlocked",
+        "final_path": "domain/Tasks/src/Events/TaskBlocked.php",
+        "final_class": "Domain\\Tasks\\Events\\TaskBlocked",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Plans/src/Listeners/CountPhaseTaskStates.php",
+            "domain/Plans/src/Listeners/RaisePlanProgressChanged.php",
+            "domain/Tasks/tests/Feature/TaskCommandsTest.php",
+            "domain/Tasks/tests/Feature/TaskPageSignalsTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d8ff7ebbaabcdb0e519f9a544470f4f2c1fa14c5",
+        "old_path": "domain/Tasks/src/Api/Events/TaskCancelled.php",
+        "old_class": "Domain\\Tasks\\Api\\Events\\TaskCancelled",
+        "final_path": "domain/Tasks/src/Events/TaskCancelled.php",
+        "final_class": "Domain\\Tasks\\Events\\TaskCancelled",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Plans/src/Listeners/CountPhaseTaskStates.php",
+            "domain/Plans/src/Listeners/RaisePlanProgressChanged.php",
+            "domain/Tasks/tests/Feature/TaskCommandsTest.php",
+            "domain/Tasks/tests/Feature/TaskPageSignalsTest.php",
+            "domain/Tasks/tests/Feature/WorkerLifecycleFactsTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "14f833b07cd52efd6f1a6e0aa791cdf7662d2ce9",
+        "old_path": "domain/Tasks/src/Api/Events/TaskCheckRecorded.php",
+        "old_class": "Domain\\Tasks\\Api\\Events\\TaskCheckRecorded",
+        "final_path": "domain/Tasks/src/Events/TaskCheckRecorded.php",
+        "final_class": "Domain\\Tasks\\Events\\TaskCheckRecorded",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Tasks/tests/Feature/TaskCheckTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2fd93511f04c9bf89a4297d7880ee1191489718f",
+        "old_path": "domain/Tasks/src/Api/Events/TaskFinished.php",
+        "old_class": "Domain\\Tasks\\Api\\Events\\TaskFinished",
+        "final_path": "domain/Tasks/src/Events/TaskFinished.php",
+        "final_class": "Domain\\Tasks\\Events\\TaskFinished",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Plans/src/Listeners/CountPhaseTaskStates.php",
+            "domain/Plans/src/Listeners/RaisePlanProgressChanged.php",
+            "domain/Tasks/tests/Feature/TaskCommandsTest.php",
+            "domain/Tasks/tests/Feature/TaskPageSignalsTest.php",
+            "domain/Tasks/tests/Feature/WorkerLifecycleFactsTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d676d3a43790af11e072f5e9f687fd3da40653e2",
+        "old_path": "domain/Tasks/src/Api/Events/TaskLogged.php",
+        "old_class": "Domain\\Tasks\\Api\\Events\\TaskLogged",
+        "final_path": "domain/Tasks/src/Events/TaskLogged.php",
+        "final_class": "Domain\\Tasks\\Events\\TaskLogged",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d467520cff9e5e607da2c7efa4055dd0a994f7da",
+        "old_path": "domain/Tasks/src/Api/Events/TaskStartCommitted.php",
+        "old_class": "Domain\\Tasks\\Api\\Events\\TaskStartCommitted",
+        "final_path": "domain/Tasks/src/Events/TaskStartCommitted.php",
+        "final_class": "Domain\\Tasks\\Events\\TaskStartCommitted",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Tasks/tests/Feature/TaskPageSignalsTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "3b0a54342c72c8dd9a9de30d6ed73c9def4ee596",
+        "old_path": "domain/Tasks/src/Api/Events/TaskWaitChanged.php",
+        "old_class": "Domain\\Tasks\\Api\\Events\\TaskWaitChanged",
+        "final_path": "domain/Tasks/src/Events/TaskWaitChanged.php",
+        "final_class": "Domain\\Tasks\\Events\\TaskWaitChanged",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "60e6c38919eed4490abb157a6e3f7d7331a8983e",
+        "old_path": "domain/Tasks/src/Api/TaskAssignmentCompletion.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskAssignmentCompletion",
+        "final_path": "domain/Tasks/src/Values/TaskAssignmentCompletion.php",
+        "final_class": "Domain\\Tasks\\Values\\TaskAssignmentCompletion",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ceadb77980c5f238a818eafdfa453e68447e7a0e",
+        "old_path": "domain/Tasks/src/Api/TaskCard.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskCard",
+        "final_path": "domain/Tasks/src/Values/TaskCard.php",
+        "final_class": "Domain\\Tasks\\Values\\TaskCard",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "574f7cda82d8bc24befee1e25ef1cc220faf7487",
+        "old_path": "domain/Tasks/src/Api/TaskDetails.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskDetails",
+        "final_path": "domain/Tasks/src/Data/TaskDetails.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskDetails",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "fb9cadc1d94e9f4d577d525568591dc99708b37b",
+        "old_path": "domain/Tasks/src/Api/TaskExecution.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskExecution",
+        "final_path": "domain/Tasks/src/Values/TaskExecution.php",
+        "final_class": "Domain\\Tasks\\Values\\TaskExecution",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "38cbdd105794c048ce7ae0908479f299ef903692",
+        "old_path": "domain/Tasks/src/Api/TaskFilters.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskFilters",
+        "final_path": "domain/Tasks/src/Values/TaskFilters.php",
+        "final_class": "Domain\\Tasks\\Values\\TaskFilters",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Tasks/tests/Feature/TaskDetailsResolverTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "783005d31101d3fccefd3a68ec1a4f9ee72b5035",
+        "old_path": "domain/Tasks/src/Api/TaskGraph.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskGraph",
+        "final_path": "domain/Tasks/src/Data/TaskGraph.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskGraph",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a749bfa22235e6b99337cbdab29ff95380c767b4",
+        "old_path": "domain/Tasks/src/Api/TaskGraphDestinations.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskGraphDestinations",
+        "final_path": "domain/Tasks/src/Data/TaskGraphDestinations.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskGraphDestinations",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "6d38de41f7d01ad0af57d4adff1fdd9889e80ec9",
+        "old_path": "domain/Tasks/src/Api/TaskGraphEdge.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskGraphEdge",
+        "final_path": "domain/Tasks/src/Data/TaskGraphEdge.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskGraphEdge",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "bf66d67bd03e3d815d06a993b2fcfacbff2d65f2",
+        "old_path": "domain/Tasks/src/Api/TaskGraphNode.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskGraphNode",
+        "final_path": "domain/Tasks/src/Data/TaskGraphNode.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskGraphNode",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "718150aee52797afb6f58b290c863f5e0e44a3ee",
+        "old_path": "domain/Tasks/src/Api/TaskGraphSuggestion.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskGraphSuggestion",
+        "final_path": "domain/Tasks/src/Data/TaskGraphSuggestion.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskGraphSuggestion",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7383435e4b475ca768e4e3e1cb935a624a926d63",
+        "old_path": "domain/Tasks/src/Api/TaskHistoryPage.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskHistoryPage",
+        "final_path": "domain/Tasks/src/Values/TaskHistoryPage.php",
+        "final_class": "Domain\\Tasks\\Values\\TaskHistoryPage",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d7e458a8df7c31696b4fdedf2ce0c3b84beae10d",
+        "old_path": "domain/Tasks/src/Api/TaskList.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskList",
+        "final_path": "domain/Tasks/src/Values/TaskList.php",
+        "final_class": "Domain\\Tasks\\Values\\TaskList",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "1adf4b2d61f2eee1ae5d698af709a19132b02880",
+        "old_path": "domain/Tasks/src/Api/TaskLogLine.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskLogLine",
+        "final_path": "domain/Tasks/src/Values/TaskLogLine.php",
+        "final_class": "Domain\\Tasks\\Values\\TaskLogLine",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Tasks/tests/Feature/TaskLogTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7f920f8eb480447165c04131ca7581c2b6996d41",
+        "old_path": "domain/Tasks/src/Api/TaskLogPage.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskLogPage",
+        "final_path": "domain/Tasks/src/Values/TaskLogPage.php",
+        "final_class": "Domain\\Tasks\\Values\\TaskLogPage",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b7472388d895e618dc8f0b1e81df9d7aba63dbbe",
+        "old_path": "domain/Tasks/src/Api/TaskProgress.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskProgress",
+        "final_path": "domain/Tasks/src/Values/TaskProgress.php",
+        "final_class": "Domain\\Tasks\\Values\\TaskProgress",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Plans/src/Support/PlanProgressCount.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a5abee2300c1d16b484f7a1dfab515876ed56d88",
+        "old_path": "domain/Tasks/src/Api/TaskProof.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskProof",
+        "final_path": "domain/Tasks/src/Values/TaskProof.php",
+        "final_class": "Domain\\Tasks\\Values\\TaskProof",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Tasks/tests/Feature/TaskCheckTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a5776cc6f1d86bada5e91c796ae31c9331127924",
+        "old_path": "domain/Tasks/src/Api/TaskProofPage.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskProofPage",
+        "final_path": "domain/Tasks/src/Values/TaskProofPage.php",
+        "final_class": "Domain\\Tasks\\Values\\TaskProofPage",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "09507da0f363b066fa5c9bc379da8bece45f75d9",
+        "old_path": "domain/Tasks/src/Api/TaskSummary.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskSummary",
+        "final_path": "domain/Tasks/src/Values/TaskSummary.php",
+        "final_class": "Domain\\Tasks\\Values\\TaskSummary",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Plans/src/Commands/RecordPhaseCheck/RecordPhaseCheckHandler.php",
+            "domain/Plans/src/Data/PhaseTaskData.php",
+            "domain/Plans/src/Resolvers/PlanTaskWindowResolver.php",
+            "domain/Plans/src/Support/PhaseTiming.php",
+            "domain/Plans/src/Support/PlanOutline.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "4f086489530d773f40d2cf5e1ee425b41bcf14d6",
+        "old_path": "domain/Tasks/src/Api/TaskText.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskText",
+        "final_path": "domain/Tasks/src/Data/TaskText.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskText",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Plans/src/Resolvers/PlanTaskWindowResolver.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8f0d3340574139d81b8510f3f465ad4061823c61",
+        "old_path": "domain/Tasks/src/Api/TaskTransition.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskTransition",
+        "final_path": "domain/Tasks/src/Values/TaskTransition.php",
+        "final_class": "Domain\\Tasks\\Values\\TaskTransition",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Tasks/tests/Feature/TaskHistoryTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9a55e5ad1f1e59fccdbed07b4176a26843d17366",
+        "old_path": "domain/Tasks/src/Api/TaskType.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskType",
+        "final_path": "domain/Tasks/src/Support/TaskType.php",
+        "final_class": "Domain\\Tasks\\Support\\TaskType",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Plans/src/PlansDomain.php",
+            "domain/Plans/tests/Feature/PlanTaskPoolTest.php",
+            "domain/Tasks/tests/Feature/TaskAssignerTest.php",
+            "domain/Tasks/tests/Feature/TaskPoolsTest.php",
+            "domain/Tasks/tests/Feature/TaskStartWaitsTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "891307d93660ed77a47f30cc894520bd82d5d46c",
+        "old_path": "domain/Tasks/src/Api/TaskWaitLink.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskWaitLink",
+        "final_path": "domain/Tasks/src/Values/TaskWaitLink.php",
+        "final_class": "Domain\\Tasks\\Values\\TaskWaitLink",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2e24d26447d8fc3a90c9e8c90d5bbcc22797ff40",
+        "old_path": "domain/Tasks/src/Api/TaskWaits.php",
+        "old_class": "Domain\\Tasks\\Api\\TaskWaits",
+        "final_path": "domain/Tasks/src/Values/TaskWaits.php",
+        "final_class": "Domain\\Tasks\\Values\\TaskWaits",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "787ebce19a48f8fe1cfa25782e5ab8bf747ea1ba",
+        "old_path": "domain/Tasks/src/Assignments/ActiveTaskAssignments.php",
+        "old_class": "Domain\\Tasks\\Assignments\\ActiveTaskAssignments",
+        "final_path": "domain/Tasks/src/Support/Assignments/ActiveTaskAssignments.php",
+        "final_class": "Domain\\Tasks\\Support\\Assignments\\ActiveTaskAssignments",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Tasks/tests/Feature/TaskAssignerTest.php",
+            "domain/Tasks/tests/Feature/TaskPoolsTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "3a7852711b768f671411dc1ac5eb5e6a70df255d",
+        "old_path": "domain/Tasks/src/Assignments/NamedTaskPool.php",
+        "old_class": "Domain\\Tasks\\Assignments\\NamedTaskPool",
+        "final_path": "domain/Tasks/src/Support/Assignments/NamedTaskPool.php",
+        "final_class": "Domain\\Tasks\\Support\\Assignments\\NamedTaskPool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Tasks/tests/Feature/TaskPoolsTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8dbd5b0e5845267ca97edcb6f86ec618340d134f",
+        "old_path": "domain/Tasks/src/Assignments/NamedTaskPoolFactory.php",
+        "old_class": "Domain\\Tasks\\Assignments\\NamedTaskPoolFactory",
+        "final_path": "domain/Tasks/src/Support/Assignments/NamedTaskPoolFactory.php",
+        "final_class": "Domain\\Tasks\\Support\\Assignments\\NamedTaskPoolFactory",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Tasks/tests/Feature/TaskPoolsTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "6162487e47fe012706577b2d405fb7decf1517ee",
+        "old_path": "domain/Tasks/src/Assignments/OpenTaskPool.php",
+        "old_class": "Domain\\Tasks\\Assignments\\OpenTaskPool",
+        "final_path": "domain/Tasks/src/Support/Assignments/OpenTaskPool.php",
+        "final_class": "Domain\\Tasks\\Support\\Assignments\\OpenTaskPool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Tasks/tests/Feature/TaskPoolsTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "dd65486d92acfa91f1cc0bf537ded5974f78251d",
+        "old_path": "domain/Tasks/src/Assignments/OpenTaskPoolFactory.php",
+        "old_class": "Domain\\Tasks\\Assignments\\OpenTaskPoolFactory",
+        "final_path": "domain/Tasks/src/Support/Assignments/OpenTaskPoolFactory.php",
+        "final_class": "Domain\\Tasks\\Support\\Assignments\\OpenTaskPoolFactory",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Tasks/tests/Feature/TaskPoolsTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "93ebd1d55f6f6b9aa552fa18df3f4384ab16d17f",
+        "old_path": "domain/Tasks/src/Assignments/TaskAssigner.php",
+        "old_class": "Domain\\Tasks\\Assignments\\TaskAssigner",
+        "final_path": "domain/Tasks/src/Support/Assignments/TaskAssigner.php",
+        "final_class": "Domain\\Tasks\\Support\\Assignments\\TaskAssigner",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Tasks/tests/Feature/TaskAssignerTest.php",
+            "domain/Tasks/tests/Feature/TaskPoolsTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "0e5bc5336b25cbc3739d19bbb159b7be77ed61e8",
+        "old_path": "domain/Tasks/src/Calls/CreateTaskCall.php",
+        "old_class": "Domain\\Tasks\\Calls\\CreateTaskCall",
+        "final_path": "domain/Tasks/src/Calls/CreateTaskCall.php",
+        "final_class": "Domain\\Tasks\\Calls\\CreateTaskCall",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c20f34abf7f31916c6f5182a41bd6bb8d31ffe92",
+        "old_path": "domain/Tasks/src/Calls/EditTaskCall.php",
+        "old_class": "Domain\\Tasks\\Calls\\EditTaskCall",
+        "final_path": "domain/Tasks/src/Calls/EditTaskCall.php",
+        "final_class": "Domain\\Tasks\\Calls\\EditTaskCall",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c98b322665229acd46ec023b23583fbce4053094",
+        "old_path": "domain/Tasks/src/Calls/ListAssignedTasksCall.php",
+        "old_class": "Domain\\Tasks\\Calls\\ListAssignedTasksCall",
+        "final_path": "domain/Tasks/src/Calls/ListAssignedTasksCall.php",
+        "final_class": "Domain\\Tasks\\Calls\\ListAssignedTasksCall",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b966c4193cdcd720576ace24cc3356f48977ddfc",
+        "old_path": "domain/Tasks/src/Calls/TaskCalls.php",
+        "old_class": "Domain\\Tasks\\Calls\\TaskCalls",
+        "final_path": "domain/Tasks/src/Calls/TaskCalls.php",
+        "final_class": "Domain\\Tasks\\Calls\\TaskCalls",
+        "status": "generate",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "bd6b71bf9b43a012f477962af43bdbda90cd21cb",
+        "old_path": "domain/Tasks/src/Calls/TaskEdited.php",
+        "old_class": "Domain\\Tasks\\Calls\\TaskEdited",
+        "final_path": "domain/Tasks/src/Calls/TaskEdited.php",
+        "final_class": "Domain\\Tasks\\Calls\\TaskEdited",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7dd4e9e2f52a1aabeb032b51b92b15101c0957d2",
+        "old_path": "domain/Tasks/src/Calls/TaskNamed.php",
+        "old_class": "Domain\\Tasks\\Calls\\TaskNamed",
+        "final_path": "domain/Tasks/src/Calls/TaskNamed.php",
+        "final_class": "Domain\\Tasks\\Calls\\TaskNamed",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d845bced35e3062228f441c46353fe28e4a61a74",
+        "old_path": "domain/Tasks/src/Commands/AddTaskWait/AddTaskWaitCommand.php",
+        "old_class": "Domain\\Tasks\\Commands\\AddTaskWait\\AddTaskWaitCommand",
+        "final_path": "domain/Tasks/src/Commands/AddTaskWait/AddTaskWaitCommand.php",
+        "final_class": "Domain\\Tasks\\Commands\\AddTaskWait\\AddTaskWaitCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "26e14a2dca3f468c6ec50b4bf939cf04422164a6",
+        "old_path": "domain/Tasks/src/Commands/AddTaskWait/AddTaskWaitHandler.php",
+        "old_class": "Domain\\Tasks\\Commands\\AddTaskWait\\AddTaskWaitHandler",
+        "final_path": "domain/Tasks/src/Commands/AddTaskWait/AddTaskWaitHandler.php",
+        "final_class": "Domain\\Tasks\\Commands\\AddTaskWait\\AddTaskWaitHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "3438d9f31def9ed238c1036080acccda11c49be4",
+        "old_path": "domain/Tasks/src/Commands/BindTaskCheck/BindTaskCheckCommand.php",
+        "old_class": "Domain\\Tasks\\Commands\\BindTaskCheck\\BindTaskCheckCommand",
+        "final_path": "domain/Tasks/src/Commands/BindTaskCheck/BindTaskCheckCommand.php",
+        "final_class": "Domain\\Tasks\\Commands\\BindTaskCheck\\BindTaskCheckCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "925dd8f2f15f6b8d1f5ca6ada856d6912a293ebb",
+        "old_path": "domain/Tasks/src/Commands/BindTaskCheck/BindTaskCheckHandler.php",
+        "old_class": "Domain\\Tasks\\Commands\\BindTaskCheck\\BindTaskCheckHandler",
+        "final_path": "domain/Tasks/src/Commands/BindTaskCheck/BindTaskCheckHandler.php",
+        "final_class": "Domain\\Tasks\\Commands\\BindTaskCheck\\BindTaskCheckHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e7105815233e474e4ad0a6dfd832fdd6e673ed0e",
+        "old_path": "domain/Tasks/src/Commands/BlockTask/BlockTaskCommand.php",
+        "old_class": "Domain\\Tasks\\Commands\\BlockTask\\BlockTaskCommand",
+        "final_path": "domain/Tasks/src/Commands/BlockTask/BlockTaskCommand.php",
+        "final_class": "Domain\\Tasks\\Commands\\BlockTask\\BlockTaskCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "71334c9766dd2c85450833ad19724e09289662df",
+        "old_path": "domain/Tasks/src/Commands/BlockTask/BlockTaskHandler.php",
+        "old_class": "Domain\\Tasks\\Commands\\BlockTask\\BlockTaskHandler",
+        "final_path": "domain/Tasks/src/Commands/BlockTask/BlockTaskHandler.php",
+        "final_class": "Domain\\Tasks\\Commands\\BlockTask\\BlockTaskHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "031fd518b75aca46ff5a2b6d001e4355e51013d5",
+        "old_path": "domain/Tasks/src/Commands/CancelTask/CancelTaskCommand.php",
+        "old_class": "Domain\\Tasks\\Commands\\CancelTask\\CancelTaskCommand",
+        "final_path": "domain/Tasks/src/Commands/CancelTask/CancelTaskCommand.php",
+        "final_class": "Domain\\Tasks\\Commands\\CancelTask\\CancelTaskCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ed868407525abeeb6440d5c5a5e56ede50383977",
+        "old_path": "domain/Tasks/src/Commands/CancelTask/CancelTaskHandler.php",
+        "old_class": "Domain\\Tasks\\Commands\\CancelTask\\CancelTaskHandler",
+        "final_path": "domain/Tasks/src/Commands/CancelTask/CancelTaskHandler.php",
+        "final_class": "Domain\\Tasks\\Commands\\CancelTask\\CancelTaskHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9b2dcddf38ed5ab60d1a86782716be345d5a07cc",
+        "old_path": "domain/Tasks/src/Commands/CreateTask/CreateTaskCommand.php",
+        "old_class": "Domain\\Tasks\\Commands\\CreateTask\\CreateTaskCommand",
+        "final_path": "domain/Tasks/src/Commands/CreateTask/CreateTaskCommand.php",
+        "final_class": "Domain\\Tasks\\Commands\\CreateTask\\CreateTaskCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8f700247a25d496a744d6b21b1a1dc5efc950c20",
+        "old_path": "domain/Tasks/src/Commands/CreateTask/CreateTaskHandler.php",
+        "old_class": "Domain\\Tasks\\Commands\\CreateTask\\CreateTaskHandler",
+        "final_path": "domain/Tasks/src/Commands/CreateTask/CreateTaskHandler.php",
+        "final_class": "Domain\\Tasks\\Commands\\CreateTask\\CreateTaskHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e90c1154ee05278ecd241583caa58bcb6af1c9f1",
+        "old_path": "domain/Tasks/src/Commands/EditTask/EditTaskCommand.php",
+        "old_class": "Domain\\Tasks\\Commands\\EditTask\\EditTaskCommand",
+        "final_path": "domain/Tasks/src/Commands/EditTask/EditTaskCommand.php",
+        "final_class": "Domain\\Tasks\\Commands\\EditTask\\EditTaskCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "68771cdba875ac88b626d1e6a4ebd1cb19f3b5ff",
+        "old_path": "domain/Tasks/src/Commands/EditTask/EditTaskHandler.php",
+        "old_class": "Domain\\Tasks\\Commands\\EditTask\\EditTaskHandler",
+        "final_path": "domain/Tasks/src/Commands/EditTask/EditTaskHandler.php",
+        "final_class": "Domain\\Tasks\\Commands\\EditTask\\EditTaskHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "64bd8cf647406dacb8408c1835048cfa725f4b9a",
+        "old_path": "domain/Tasks/src/Commands/FinishTask/FinishTaskCommand.php",
+        "old_class": "Domain\\Tasks\\Commands\\FinishTask\\FinishTaskCommand",
+        "final_path": "domain/Tasks/src/Commands/FinishTask/FinishTaskCommand.php",
+        "final_class": "Domain\\Tasks\\Commands\\FinishTask\\FinishTaskCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "860f2470839869b2cfc538ca80a6b803f1644160",
+        "old_path": "domain/Tasks/src/Commands/FinishTask/FinishTaskHandler.php",
+        "old_class": "Domain\\Tasks\\Commands\\FinishTask\\FinishTaskHandler",
+        "final_path": "domain/Tasks/src/Commands/FinishTask/FinishTaskHandler.php",
+        "final_class": "Domain\\Tasks\\Commands\\FinishTask\\FinishTaskHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "505e4a90200a05f9eb284902420c0134aa044d7b",
+        "old_path": "domain/Tasks/src/Commands/LogTaskRun/LogTaskRunCommand.php",
+        "old_class": "Domain\\Tasks\\Commands\\LogTaskRun\\LogTaskRunCommand",
+        "final_path": "domain/Tasks/src/Commands/LogTaskRun/LogTaskRunCommand.php",
+        "final_class": "Domain\\Tasks\\Commands\\LogTaskRun\\LogTaskRunCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ae9545cf58acc1c06349aa2795e6091a4a21e99b",
+        "old_path": "domain/Tasks/src/Commands/LogTaskRun/LogTaskRunHandler.php",
+        "old_class": "Domain\\Tasks\\Commands\\LogTaskRun\\LogTaskRunHandler",
+        "final_path": "domain/Tasks/src/Commands/LogTaskRun/LogTaskRunHandler.php",
+        "final_class": "Domain\\Tasks\\Commands\\LogTaskRun\\LogTaskRunHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "681e30136e45fd8b274bef09827572ec3b5bad45",
+        "old_path": "domain/Tasks/src/Commands/RemoveTaskWait/RemoveTaskWaitCommand.php",
+        "old_class": "Domain\\Tasks\\Commands\\RemoveTaskWait\\RemoveTaskWaitCommand",
+        "final_path": "domain/Tasks/src/Commands/RemoveTaskWait/RemoveTaskWaitCommand.php",
+        "final_class": "Domain\\Tasks\\Commands\\RemoveTaskWait\\RemoveTaskWaitCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "0a316683028b1e439e9e6707e7a77663a72ecab5",
+        "old_path": "domain/Tasks/src/Commands/RemoveTaskWait/RemoveTaskWaitHandler.php",
+        "old_class": "Domain\\Tasks\\Commands\\RemoveTaskWait\\RemoveTaskWaitHandler",
+        "final_path": "domain/Tasks/src/Commands/RemoveTaskWait/RemoveTaskWaitHandler.php",
+        "final_class": "Domain\\Tasks\\Commands\\RemoveTaskWait\\RemoveTaskWaitHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d9a0424cff7b249aaf9e59535038ba3c53911fa4",
+        "old_path": "domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunCommand.php",
+        "old_class": "Domain\\Tasks\\Commands\\ResumeTaskRun\\ResumeTaskRunCommand",
+        "final_path": "domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunCommand.php",
+        "final_class": "Domain\\Tasks\\Commands\\ResumeTaskRun\\ResumeTaskRunCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ffb9a4e844932da186d62be9de3e181f2ae082e5",
+        "old_path": "domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunHandler.php",
+        "old_class": "Domain\\Tasks\\Commands\\ResumeTaskRun\\ResumeTaskRunHandler",
+        "final_path": "domain/Tasks/src/Commands/ResumeTaskRun/ResumeTaskRunHandler.php",
+        "final_class": "Domain\\Tasks\\Commands\\ResumeTaskRun\\ResumeTaskRunHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "883718ed66ae8efbf0f37e6cb2a00617c0a52ba1",
+        "old_path": "domain/Tasks/src/Commands/RunTaskCheck/RunTaskCheckCommand.php",
+        "old_class": "Domain\\Tasks\\Commands\\RunTaskCheck\\RunTaskCheckCommand",
+        "final_path": "domain/Tasks/src/Commands/RunTaskCheck/RunTaskCheckCommand.php",
+        "final_class": "Domain\\Tasks\\Commands\\RunTaskCheck\\RunTaskCheckCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "48e64c7cfcdf2123d2a57e3126b5ef101c40f00a",
+        "old_path": "domain/Tasks/src/Commands/RunTaskCheck/RunTaskCheckHandler.php",
+        "old_class": "Domain\\Tasks\\Commands\\RunTaskCheck\\RunTaskCheckHandler",
+        "final_path": "domain/Tasks/src/Commands/RunTaskCheck/RunTaskCheckHandler.php",
+        "final_class": "Domain\\Tasks\\Commands\\RunTaskCheck\\RunTaskCheckHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ee8ecd3a79eb15e54f3bd8c517f4abc8317e0cde",
+        "old_path": "domain/Tasks/src/Commands/StartTask/StartTaskCommand.php",
+        "old_class": "Domain\\Tasks\\Commands\\StartTask\\StartTaskCommand",
+        "final_path": "domain/Tasks/src/Commands/StartTask/StartTaskCommand.php",
+        "final_class": "Domain\\Tasks\\Commands\\StartTask\\StartTaskCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "4de77b92c8f7087554b764d035393b110ddc3902",
+        "old_path": "domain/Tasks/src/Commands/StartTask/StartTaskHandler.php",
+        "old_class": "Domain\\Tasks\\Commands\\StartTask\\StartTaskHandler",
+        "final_path": "domain/Tasks/src/Commands/StartTask/StartTaskHandler.php",
+        "final_class": "Domain\\Tasks\\Commands\\StartTask\\StartTaskHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "4bce5e722b49d2d296f1cbb50ffc0666811953f8",
+        "old_path": "domain/Tasks/src/Commands/Support/TaskCommandHandler.php",
+        "old_class": "Domain\\Tasks\\Commands\\Support\\TaskCommandHandler",
+        "final_path": "domain/Tasks/src/Commands/Support/TaskCommandHandler.php",
+        "final_class": "Domain\\Tasks\\Commands\\Support\\TaskCommandHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "4c7fb3bbcd1a0cf685afb65c620de362de82edc9",
+        "old_path": "domain/Tasks/src/Commands/WaiveTaskWait/WaiveTaskWaitCommand.php",
+        "old_class": "Domain\\Tasks\\Commands\\WaiveTaskWait\\WaiveTaskWaitCommand",
+        "final_path": "domain/Tasks/src/Commands/WaiveTaskWait/WaiveTaskWaitCommand.php",
+        "final_class": "Domain\\Tasks\\Commands\\WaiveTaskWait\\WaiveTaskWaitCommand",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2a31e53880524fda72469f39db02ba697943aaf6",
+        "old_path": "domain/Tasks/src/Commands/WaiveTaskWait/WaiveTaskWaitHandler.php",
+        "old_class": "Domain\\Tasks\\Commands\\WaiveTaskWait\\WaiveTaskWaitHandler",
+        "final_path": "domain/Tasks/src/Commands/WaiveTaskWait/WaiveTaskWaitHandler.php",
+        "final_class": "Domain\\Tasks\\Commands\\WaiveTaskWait\\WaiveTaskWaitHandler",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "913d70208df4ae61681a4bdd58ec78bf49453422",
+        "old_path": "domain/Tasks/src/Console/AssignedTasksCommand.php",
+        "old_class": "Domain\\Tasks\\Console\\AssignedTasksCommand",
+        "final_path": "domain/Tasks/src/Console/Commands/AssignedTasksCommand.php",
+        "final_class": "Domain\\Tasks\\Console\\Commands\\AssignedTasksCommand",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "78693f39d36f9273d6056644e1c8362e120559be",
+        "old_path": "domain/Tasks/src/Contracts/AssignedTaskResolver.php",
+        "old_class": "Domain\\Tasks\\Contracts\\AssignedTaskResolver",
+        "final_path": "domain/Tasks/src/Contracts/AssignedTaskResolver.php",
+        "final_class": "Domain\\Tasks\\Contracts\\AssignedTaskResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "75fb9a26e994b3ec6b02b9eee2061d914565b970",
+        "old_path": "domain/Tasks/src/Contracts/TaskAssignmentResolver.php",
+        "old_class": "Domain\\Tasks\\Contracts\\TaskAssignmentResolver",
+        "final_path": "domain/Tasks/src/Contracts/TaskAssignmentResolver.php",
+        "final_class": "Domain\\Tasks\\Contracts\\TaskAssignmentResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ac98f38832fc691fdd7b9624ed77f36d194f30c5",
+        "old_path": "domain/Tasks/src/Contracts/TaskDetailsResolver.php",
+        "old_class": "Domain\\Tasks\\Contracts\\TaskDetailsResolver",
+        "final_path": "domain/Tasks/src/Contracts/TaskDetailsResolver.php",
+        "final_class": "Domain\\Tasks\\Contracts\\TaskDetailsResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "de782d79c3ce98b0604fff05080a1fc6a700e773",
+        "old_path": "domain/Tasks/src/Contracts/TaskGraphResolver.php",
+        "old_class": "Domain\\Tasks\\Contracts\\TaskGraphResolver",
+        "final_path": "domain/Tasks/src/Contracts/TaskGraphResolver.php",
+        "final_class": "Domain\\Tasks\\Contracts\\TaskGraphResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e1cc42460fccc868f8da80c8f43ab7434a7d91d6",
+        "old_path": "domain/Tasks/src/Contracts/TaskHistoryResolver.php",
+        "old_class": "Domain\\Tasks\\Contracts\\TaskHistoryResolver",
+        "final_path": "domain/Tasks/src/Contracts/TaskHistoryResolver.php",
+        "final_class": "Domain\\Tasks\\Contracts\\TaskHistoryResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b820cde081072b3568ac19401e200b58718655b6",
+        "old_path": "domain/Tasks/src/Contracts/TaskListResolver.php",
+        "old_class": "Domain\\Tasks\\Contracts\\TaskListResolver",
+        "final_path": "domain/Tasks/src/Contracts/TaskListResolver.php",
+        "final_class": "Domain\\Tasks\\Contracts\\TaskListResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "b2e27f0e22ea42fe0ecef63b8de6fa59a6f71472",
+        "old_path": "domain/Tasks/src/Contracts/TaskLogResolver.php",
+        "old_class": "Domain\\Tasks\\Contracts\\TaskLogResolver",
+        "final_path": "domain/Tasks/src/Contracts/TaskLogResolver.php",
+        "final_class": "Domain\\Tasks\\Contracts\\TaskLogResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2eeaaaa4ae1abe2ab0ed989e995e02fe013c387a",
+        "old_path": "domain/Tasks/src/Contracts/TaskProgressCounter.php",
+        "old_class": "Domain\\Tasks\\Contracts\\TaskProgressCounter",
+        "final_path": "domain/Tasks/src/Contracts/TaskProgressCounter.php",
+        "final_class": "Domain\\Tasks\\Contracts\\TaskProgressCounter",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "222cd83b30f2117e51cd7bef773d130247949699",
+        "old_path": "domain/Tasks/src/Contracts/TaskProofResolver.php",
+        "old_class": "Domain\\Tasks\\Contracts\\TaskProofResolver",
+        "final_path": "domain/Tasks/src/Contracts/TaskProofResolver.php",
+        "final_class": "Domain\\Tasks\\Contracts\\TaskProofResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ee5abd7a13464fdbf4bda443a5673fbf07a8a005",
+        "old_path": "domain/Tasks/src/Contracts/TaskResolver.php",
+        "old_class": "Domain\\Tasks\\Contracts\\TaskResolver",
+        "final_path": "domain/Tasks/src/Contracts/TaskResolver.php",
+        "final_class": "Domain\\Tasks\\Contracts\\TaskResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e5c667fe5e42694ae4cb4371d5ba19c1c29020e9",
+        "old_path": "domain/Tasks/src/Contracts/TaskWaitResolver.php",
+        "old_class": "Domain\\Tasks\\Contracts\\TaskWaitResolver",
+        "final_path": "domain/Tasks/src/Contracts/TaskWaitResolver.php",
+        "final_class": "Domain\\Tasks\\Contracts\\TaskWaitResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "736ad9589070647097b0c20b002492964560566d",
+        "old_path": "domain/Tasks/src/Enums/TaskHolderFilter.php",
+        "old_class": "Domain\\Tasks\\Enums\\TaskHolderFilter",
+        "final_path": "domain/Tasks/src/Enums/TaskHolderFilter.php",
+        "final_class": "Domain\\Tasks\\Enums\\TaskHolderFilter",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "62513233dbde9ed1098d6497c50b0d264a219b08",
+        "old_path": "domain/Tasks/src/Enums/TaskRunState.php",
+        "old_class": "Domain\\Tasks\\Enums\\TaskRunState",
+        "final_path": "domain/Tasks/src/Enums/TaskRunState.php",
+        "final_class": "Domain\\Tasks\\Enums\\TaskRunState",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ba7c559d4077c70c5e5e226447dc74254f01ec66",
+        "old_path": "domain/Tasks/src/Enums/TaskState.php",
+        "old_class": "Domain\\Tasks\\Enums\\TaskState",
+        "final_path": "domain/Tasks/src/Enums/TaskState.php",
+        "final_class": "Domain\\Tasks\\Enums\\TaskState",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9f8a11b1daa8001e274903cd96c9b0cb0882959e",
+        "old_path": "domain/Tasks/src/Enums/TaskStreamEntryType.php",
+        "old_class": "Domain\\Tasks\\Enums\\TaskStreamEntryType",
+        "final_path": "domain/Tasks/src/Enums/TaskStreamEntryType.php",
+        "final_class": "Domain\\Tasks\\Enums\\TaskStreamEntryType",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "974500478c2fdc5590519e00981bf30689ab11ef",
+        "old_path": "domain/Tasks/src/Enums/TaskTextLimit.php",
+        "old_class": "Domain\\Tasks\\Enums\\TaskTextLimit",
+        "final_path": "domain/Tasks/src/Enums/TaskTextLimit.php",
+        "final_class": "Domain\\Tasks\\Enums\\TaskTextLimit",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "db23efcf88a91e51e71f93a1708fae96e9a8d0c9",
+        "old_path": "domain/Tasks/src/Enums/TaskWaitChange.php",
+        "old_class": "Domain\\Tasks\\Enums\\TaskWaitChange",
+        "final_path": "domain/Tasks/src/Enums/TaskWaitChange.php",
+        "final_class": "Domain\\Tasks\\Enums\\TaskWaitChange",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "6d86ed99c38b061c37c14900c458142ea8455a2c",
+        "old_path": "domain/Tasks/src/Enums/TaskWaitTargetType.php",
+        "old_class": "Domain\\Tasks\\Enums\\TaskWaitTargetType",
+        "final_path": "domain/Tasks/src/Enums/TaskWaitTargetType.php",
+        "final_class": "Domain\\Tasks\\Enums\\TaskWaitTargetType",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "61cc9f677e021763a895d524309f19a1eacd956d",
+        "old_path": "domain/Tasks/src/Events/TaskDescribed.php",
+        "old_class": "Domain\\Tasks\\Events\\TaskDescribed",
+        "final_path": "domain/Tasks/src/Events/TaskDescribed.php",
+        "final_class": "Domain\\Tasks\\Events\\TaskDescribed",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "4a9e1a1bfbae2daa43a548e20ae6e14bc83ab1c8",
+        "old_path": "domain/Tasks/src/Events/TaskStarted.php",
+        "old_class": "Domain\\Tasks\\Events\\TaskStarted",
+        "final_path": "domain/Tasks/src/Events/TaskStarted.php",
+        "final_class": "Domain\\Tasks\\Events\\TaskStarted",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "708a964d3c5be1c6cb7112399201e31a6db8d965",
+        "old_path": "domain/Tasks/src/Exceptions/CandidateLimitInvalid.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\CandidateLimitInvalid",
+        "final_path": "domain/Tasks/src/Exceptions/CandidateLimitInvalid.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\CandidateLimitInvalid",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8652c9d0d48615b75eddfcc8b2b42f9f713de515",
+        "old_path": "domain/Tasks/src/Exceptions/TaskChangedSinceRead.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\TaskChangedSinceRead",
+        "final_path": "domain/Tasks/src/Exceptions/TaskChangedSinceRead.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\TaskChangedSinceRead",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "98f1841f73b94b5858da669eaa6d8864ccb6e778",
+        "old_path": "domain/Tasks/src/Exceptions/TaskCheckRefused.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\TaskCheckRefused",
+        "final_path": "domain/Tasks/src/Exceptions/TaskCheckRefused.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\TaskCheckRefused",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "db116ffd1f261d8dea748e3561093895177cf7f4",
+        "old_path": "domain/Tasks/src/Exceptions/TaskMissing.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\TaskMissing",
+        "final_path": "domain/Tasks/src/Exceptions/TaskMissing.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\TaskMissing",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f0df75886dcf9b1ab9a82ff7bea577cfe04b721f",
+        "old_path": "domain/Tasks/src/Exceptions/TaskNotOpenForAssignment.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\TaskNotOpenForAssignment",
+        "final_path": "domain/Tasks/src/Exceptions/TaskNotOpenForAssignment.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\TaskNotOpenForAssignment",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "419fb256ae54f9777d429ca0996b19ab9bd4f18f",
+        "old_path": "domain/Tasks/src/Exceptions/TaskPoolRefused.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\TaskPoolRefused",
+        "final_path": "domain/Tasks/src/Exceptions/TaskPoolRefused.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\TaskPoolRefused",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "3de2014d2b797758943f82b4f97544624e1af801",
+        "old_path": "domain/Tasks/src/Exceptions/TaskRestartRefused.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\TaskRestartRefused",
+        "final_path": "domain/Tasks/src/Exceptions/TaskRestartRefused.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\TaskRestartRefused",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "180909491c4263a281d865805da1ae98ba4d26bc",
+        "old_path": "domain/Tasks/src/Exceptions/TaskResumeCovered.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\TaskResumeCovered",
+        "final_path": "domain/Tasks/src/Exceptions/TaskResumeCovered.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\TaskResumeCovered",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "824028f22823cc78c03df755c15e955b8451e6c7",
+        "old_path": "domain/Tasks/src/Exceptions/TaskRevisionChanged.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\TaskRevisionChanged",
+        "final_path": "domain/Tasks/src/Exceptions/TaskRevisionChanged.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\TaskRevisionChanged",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "dad629dfd8c941e6033beb386e62534ca49b06a3",
+        "old_path": "domain/Tasks/src/Exceptions/TaskRunFinished.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\TaskRunFinished",
+        "final_path": "domain/Tasks/src/Exceptions/TaskRunFinished.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\TaskRunFinished",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "94cffbdbd3d11f3b04870a6c4f175a1fbdefce5d",
+        "old_path": "domain/Tasks/src/Exceptions/TaskRunNotYours.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\TaskRunNotYours",
+        "final_path": "domain/Tasks/src/Exceptions/TaskRunNotYours.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\TaskRunNotYours",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ccf0a0a29a49191bad5c33b55972e02318773594",
+        "old_path": "domain/Tasks/src/Exceptions/TaskRunStale.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\TaskRunStale",
+        "final_path": "domain/Tasks/src/Exceptions/TaskRunStale.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\TaskRunStale",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "06575f624087b7706b003a7ae143636e6b1a3877",
+        "old_path": "domain/Tasks/src/Exceptions/TaskRunTaken.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\TaskRunTaken",
+        "final_path": "domain/Tasks/src/Exceptions/TaskRunTaken.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\TaskRunTaken",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "53e2ce78fe281ff0e5c642294783801c003147c2",
+        "old_path": "domain/Tasks/src/Exceptions/TaskWaitRefused.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\TaskWaitRefused",
+        "final_path": "domain/Tasks/src/Exceptions/TaskWaitRefused.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\TaskWaitRefused",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "32407f47c99229a81d071312af5f0c84f08c2ddd",
+        "old_path": "domain/Tasks/src/Exceptions/TaskWaitsUnmet.php",
+        "old_class": "Domain\\Tasks\\Exceptions\\TaskWaitsUnmet",
+        "final_path": "domain/Tasks/src/Exceptions/TaskWaitsUnmet.php",
+        "final_class": "Domain\\Tasks\\Exceptions\\TaskWaitsUnmet",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "81769299ce93161c763793bcbba953715d5e4b76",
+        "old_path": "domain/Tasks/src/Http/Controllers/AddTaskWaitPageController.php",
+        "old_class": "Domain\\Tasks\\Http\\Controllers\\AddTaskWaitPageController",
+        "final_path": "domain/Tasks/src/Http/Controllers/AddTaskWaitPageController.php",
+        "final_class": "Domain\\Tasks\\Http\\Controllers\\AddTaskWaitPageController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e7083673b054df1e78b9b639ce512b8223b00d5f",
+        "old_path": "domain/Tasks/src/Http/Controllers/BlockTaskPageController.php",
+        "old_class": "Domain\\Tasks\\Http\\Controllers\\BlockTaskPageController",
+        "final_path": "domain/Tasks/src/Http/Controllers/BlockTaskPageController.php",
+        "final_class": "Domain\\Tasks\\Http\\Controllers\\BlockTaskPageController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "78974b552acd3a612ac5976b15d697e2a5246066",
+        "old_path": "domain/Tasks/src/Http/Controllers/Calls/CreateTaskController.php",
+        "old_class": "Domain\\Tasks\\Http\\Controllers\\Calls\\CreateTaskController",
+        "final_path": "domain/Tasks/src/Http/Controllers/Calls/CreateTaskController.php",
+        "final_class": "Domain\\Tasks\\Http\\Controllers\\Calls\\CreateTaskController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2278b577339d3427b4b92857b1234d7c230a7f15",
+        "old_path": "domain/Tasks/src/Http/Controllers/Calls/EditTaskController.php",
+        "old_class": "Domain\\Tasks\\Http\\Controllers\\Calls\\EditTaskController",
+        "final_path": "domain/Tasks/src/Http/Controllers/Calls/EditTaskController.php",
+        "final_class": "Domain\\Tasks\\Http\\Controllers\\Calls\\EditTaskController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9f13c5225e1295a44815c04ee04029fd03567078",
+        "old_path": "domain/Tasks/src/Http/Controllers/Calls/ListAssignedTasksController.php",
+        "old_class": "Domain\\Tasks\\Http\\Controllers\\Calls\\ListAssignedTasksController",
+        "final_path": "domain/Tasks/src/Http/Controllers/Calls/ListAssignedTasksController.php",
+        "final_class": "Domain\\Tasks\\Http\\Controllers\\Calls\\ListAssignedTasksController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e424cbb8a6ce734dd1b0c84f1cba0a3abcadaddd",
+        "old_path": "domain/Tasks/src/Http/Controllers/CancelTaskPageController.php",
+        "old_class": "Domain\\Tasks\\Http\\Controllers\\CancelTaskPageController",
+        "final_path": "domain/Tasks/src/Http/Controllers/CancelTaskPageController.php",
+        "final_class": "Domain\\Tasks\\Http\\Controllers\\CancelTaskPageController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "6a567126a52a9593d20eb73f9a76375dc6f34f64",
+        "old_path": "domain/Tasks/src/Http/Controllers/CreateTaskPageController.php",
+        "old_class": "Domain\\Tasks\\Http\\Controllers\\CreateTaskPageController",
+        "final_path": "domain/Tasks/src/Http/Controllers/CreateTaskPageController.php",
+        "final_class": "Domain\\Tasks\\Http\\Controllers\\CreateTaskPageController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "4a835c312abe9e71e7456679e0fbaaa9bd5aae7b",
+        "old_path": "domain/Tasks/src/Http/Controllers/RemoveTaskWaitPageController.php",
+        "old_class": "Domain\\Tasks\\Http\\Controllers\\RemoveTaskWaitPageController",
+        "final_path": "domain/Tasks/src/Http/Controllers/RemoveTaskWaitPageController.php",
+        "final_class": "Domain\\Tasks\\Http\\Controllers\\RemoveTaskWaitPageController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "5961c70d478939690a269e174f2f45b80c42a7e4",
+        "old_path": "domain/Tasks/src/Http/Controllers/StartTaskPageController.php",
+        "old_class": "Domain\\Tasks\\Http\\Controllers\\StartTaskPageController",
+        "final_path": "domain/Tasks/src/Http/Controllers/StartTaskPageController.php",
+        "final_class": "Domain\\Tasks\\Http\\Controllers\\StartTaskPageController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7c0e887c0e50f183bfb8bdeff55ce456daec2ca1",
+        "old_path": "domain/Tasks/src/Http/Controllers/WaiveTaskWaitPageController.php",
+        "old_class": "Domain\\Tasks\\Http\\Controllers\\WaiveTaskWaitPageController",
+        "final_path": "domain/Tasks/src/Http/Controllers/WaiveTaskWaitPageController.php",
+        "final_class": "Domain\\Tasks\\Http\\Controllers\\WaiveTaskWaitPageController",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e529e42c408ec985030b74ab5eaa01b3e66aae0a",
+        "old_path": "domain/Tasks/src/Http/Data/AssignedTaskCardData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\AssignedTaskCardData",
+        "final_path": "domain/Tasks/src/Data/AssignedTaskCardData.php",
+        "final_class": "Domain\\Tasks\\Data\\AssignedTaskCardData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "687b58fb8b06ef4e0efcf8b0e4c2737b4bbbb459",
+        "old_path": "domain/Tasks/src/Http/Data/AssignedTaskListData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\AssignedTaskListData",
+        "final_path": "domain/Tasks/src/Data/AssignedTaskListData.php",
+        "final_class": "Domain\\Tasks\\Data\\AssignedTaskListData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d4f7ec34a7fb944e883c3752c0dcd3ce74820051",
+        "old_path": "domain/Tasks/src/Http/Data/TaskActionsData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskActionsData",
+        "final_path": "domain/Tasks/src/Data/TaskActionsData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskActionsData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "523ce54df3b91ce86499b2139fab0261ef723585",
+        "old_path": "domain/Tasks/src/Http/Data/TaskCommentsData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskCommentsData",
+        "final_path": "domain/Tasks/src/Data/TaskCommentsData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskCommentsData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f2eb914dd501fe39750aea5340b14bfb8da36147",
+        "old_path": "domain/Tasks/src/Http/Data/TaskExecutionData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskExecutionData",
+        "final_path": "domain/Tasks/src/Data/TaskExecutionData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskExecutionData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "38aa2c5b33d8d5f79270e37589a6ea963d1ef06c",
+        "old_path": "domain/Tasks/src/Http/Data/TaskFiltersData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskFiltersData",
+        "final_path": "domain/Tasks/src/Data/TaskFiltersData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskFiltersData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "91a83bd3653cc005b2ee0b3cb495a42eb1a7d35a",
+        "old_path": "domain/Tasks/src/Http/Data/TaskListData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskListData",
+        "final_path": "domain/Tasks/src/Data/TaskListData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskListData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "cfd9e478654fc638dc4539f91ec01040e69329be",
+        "old_path": "domain/Tasks/src/Http/Data/TaskLogsData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskLogsData",
+        "final_path": "domain/Tasks/src/Data/TaskLogsData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskLogsData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a63727e4b1d9862a35460784fbfe64ae4e1be71e",
+        "old_path": "domain/Tasks/src/Http/Data/TaskLogsPartData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskLogsPartData",
+        "final_path": "domain/Tasks/src/Data/TaskLogsPartData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskLogsPartData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "4a10a6868190ad05f5c0ee0f0030e6c730bf8d95",
+        "old_path": "domain/Tasks/src/Http/Data/TaskProofData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskProofData",
+        "final_path": "domain/Tasks/src/Data/TaskProofData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskProofData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7f74cc0372fe66de56f10d5c83d8058a6b05643c",
+        "old_path": "domain/Tasks/src/Http/Data/TaskProofsData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskProofsData",
+        "final_path": "domain/Tasks/src/Data/TaskProofsData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskProofsData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e7e5859eb6d92161a28660e5e4d80abf4fc79841",
+        "old_path": "domain/Tasks/src/Http/Data/TaskProofsPartData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskProofsPartData",
+        "final_path": "domain/Tasks/src/Data/TaskProofsPartData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskProofsPartData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f8530e4f9151d09e80e015e4fa985828c60d9415",
+        "old_path": "domain/Tasks/src/Http/Data/TaskReaderData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskReaderData",
+        "final_path": "domain/Tasks/src/Data/TaskReaderData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskReaderData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9832639a58b84ae4a294a3ea9fb4247db3f2f0cb",
+        "old_path": "domain/Tasks/src/Http/Data/TaskRowData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskRowData",
+        "final_path": "domain/Tasks/src/Data/TaskRowData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskRowData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d518a7019defd26e2fde05476c1b7c116243c691",
+        "old_path": "domain/Tasks/src/Http/Data/TaskRunnerData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskRunnerData",
+        "final_path": "domain/Tasks/src/Data/TaskRunnerData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskRunnerData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9c3cc63a131c047fd27d470b9af972189d2c4fee",
+        "old_path": "domain/Tasks/src/Http/Data/TaskStreamEntryData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskStreamEntryData",
+        "final_path": "domain/Tasks/src/Data/TaskStreamEntryData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskStreamEntryData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Tasks/tests/Feature/TaskStreamTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d0a834a2b6f6194d4ebb6d099c1d4a9f60da83a6",
+        "old_path": "domain/Tasks/src/Http/Data/TaskStreamPageData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskStreamPageData",
+        "final_path": "domain/Tasks/src/Data/TaskStreamPageData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskStreamPageData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "af1475853e253e548dc13e03c99b2d90fbbe7ce8",
+        "old_path": "domain/Tasks/src/Http/Data/TaskWaitActionsData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskWaitActionsData",
+        "final_path": "domain/Tasks/src/Data/TaskWaitActionsData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskWaitActionsData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "865ad8c6f603ce883573c4fbcf6ff7069e7ca022",
+        "old_path": "domain/Tasks/src/Http/Data/TaskWaitChoiceData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskWaitChoiceData",
+        "final_path": "domain/Tasks/src/Data/TaskWaitChoiceData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskWaitChoiceData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f14086303d0456af763ce8c1230a4c1ffc60d2a0",
+        "old_path": "domain/Tasks/src/Http/Data/TaskWaitItemData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskWaitItemData",
+        "final_path": "domain/Tasks/src/Data/TaskWaitItemData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskWaitItemData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2e4777adf2a214b5d73aef5896c9fcb54ddd799f",
+        "old_path": "domain/Tasks/src/Http/Data/TaskWaitsData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskWaitsData",
+        "final_path": "domain/Tasks/src/Data/TaskWaitsData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskWaitsData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "3dd760b91c0cb0c4ba8fdb0dc792eda12887e54d",
+        "old_path": "domain/Tasks/src/Http/Data/TaskWaitsPartData.php",
+        "old_class": "Domain\\Tasks\\Http\\Data\\TaskWaitsPartData",
+        "final_path": "domain/Tasks/src/Data/TaskWaitsPartData.php",
+        "final_class": "Domain\\Tasks\\Data\\TaskWaitsPartData",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e74a99b6055a558024e0f39b7ae683cd1a872d67",
+        "old_path": "domain/Tasks/src/Http/Requests/Concerns/ReadsTaskFilters.php",
+        "old_class": "Domain\\Tasks\\Http\\Requests\\Concerns\\ReadsTaskFilters",
+        "final_path": "domain/Tasks/src/Http/Requests/Concerns/ReadsTaskFilters.php",
+        "final_class": "Domain\\Tasks\\Http\\Requests\\Concerns\\ReadsTaskFilters",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9813fe46ca9465538172d3a5ec8ab79cc97e93e9",
+        "old_path": "domain/Tasks/src/Http/Requests/CreateTaskRequest.php",
+        "old_class": "Domain\\Tasks\\Http\\Requests\\CreateTaskRequest",
+        "final_path": "domain/Tasks/src/Http/Requests/CreateTaskRequest.php",
+        "final_class": "Domain\\Tasks\\Http\\Requests\\CreateTaskRequest",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e8d2e217743c0e108190593af38014583d754c10",
+        "old_path": "domain/Tasks/src/Http/Requests/TaskActionRequest.php",
+        "old_class": "Domain\\Tasks\\Http\\Requests\\TaskActionRequest",
+        "final_path": "domain/Tasks/src/Http/Requests/TaskActionRequest.php",
+        "final_class": "Domain\\Tasks\\Http\\Requests\\TaskActionRequest",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2742fe1bf4fbbcbb9945a8dc6e5c7428ff79eed5",
+        "old_path": "domain/Tasks/src/Http/Requests/TaskRequest.php",
+        "old_class": "Domain\\Tasks\\Http\\Requests\\TaskRequest",
+        "final_path": "domain/Tasks/src/Http/Requests/TaskRequest.php",
+        "final_class": "Domain\\Tasks\\Http\\Requests\\TaskRequest",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8953e972b68b59d51f9d0d745a556041ccf31d4b",
+        "old_path": "domain/Tasks/src/Http/Requests/TaskWaitRequest.php",
+        "old_class": "Domain\\Tasks\\Http\\Requests\\TaskWaitRequest",
+        "final_path": "domain/Tasks/src/Http/Requests/TaskWaitRequest.php",
+        "final_class": "Domain\\Tasks\\Http\\Requests\\TaskWaitRequest",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "852d54f5797928ccf672f51eb647edb910205fe9",
+        "old_path": "domain/Tasks/src/Http/Requests/TasksRequest.php",
+        "old_class": "Domain\\Tasks\\Http\\Requests\\TasksRequest",
+        "final_path": "domain/Tasks/src/Http/Requests/TasksRequest.php",
+        "final_class": "Domain\\Tasks\\Http\\Requests\\TasksRequest",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "73e8503106b8bfb6a99e6bd0fee953f27249d0ae",
+        "old_path": "domain/Tasks/src/Listeners/AnnounceTaskStart.php",
+        "old_class": "Domain\\Tasks\\Listeners\\AnnounceTaskStart",
+        "final_path": "domain/Tasks/src/Listeners/AnnounceTaskStart.php",
+        "final_class": "Domain\\Tasks\\Listeners\\AnnounceTaskStart",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "216826c97d572d7e1bc3b5d7bf0e0c665a4cc626",
+        "old_path": "domain/Tasks/src/Listeners/BindTaskCheckResults.php",
+        "old_class": "Domain\\Tasks\\Listeners\\BindTaskCheckResults",
+        "final_path": "domain/Tasks/src/Listeners/BindTaskCheckResults.php",
+        "final_class": "Domain\\Tasks\\Listeners\\BindTaskCheckResults",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "3bf35a3ae1fb03d377bb61f690491124172adde4",
+        "old_path": "domain/Tasks/src/Listeners/PushTaskState.php",
+        "old_class": "Domain\\Tasks\\Listeners\\PushTaskState",
+        "final_path": "domain/Tasks/src/Listeners/PushTaskState.php",
+        "final_class": "Domain\\Tasks\\Listeners\\PushTaskState",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9a659c2457f352dfa4c5420a2fae444bac043a84",
+        "old_path": "domain/Tasks/src/Listeners/RecordTaskHistory.php",
+        "old_class": "Domain\\Tasks\\Listeners\\RecordTaskHistory",
+        "final_path": "domain/Tasks/src/Listeners/RecordTaskHistory.php",
+        "final_class": "Domain\\Tasks\\Listeners\\RecordTaskHistory",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2ccbb7fc2d659fbc8748e3b5f47eb6163bb5c440",
+        "old_path": "domain/Tasks/src/Mcp/AssignedTasksTool.php",
+        "old_class": "Domain\\Tasks\\Mcp\\AssignedTasksTool",
+        "final_path": "domain/Tasks/src/Mcp/Tools/AssignedTasksTool.php",
+        "final_class": "Domain\\Tasks\\Mcp\\Tools\\AssignedTasksTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "42f7684ca929d32c3152ae3cd364e2251ed5666f",
+        "old_path": "domain/Tasks/src/Mcp/BlockTaskTool.php",
+        "old_class": "Domain\\Tasks\\Mcp\\BlockTaskTool",
+        "final_path": "domain/Tasks/src/Mcp/Tools/BlockTaskTool.php",
+        "final_class": "Domain\\Tasks\\Mcp\\Tools\\BlockTaskTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "047f53f3634164f271950805e2dbdebef5f04114",
+        "old_path": "domain/Tasks/src/Mcp/CancelTaskTool.php",
+        "old_class": "Domain\\Tasks\\Mcp\\CancelTaskTool",
+        "final_path": "domain/Tasks/src/Mcp/Tools/CancelTaskTool.php",
+        "final_class": "Domain\\Tasks\\Mcp\\Tools\\CancelTaskTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e5f950b1665146b017017a409fd185687f8b72ef",
+        "old_path": "domain/Tasks/src/Mcp/CreateTaskTool.php",
+        "old_class": "Domain\\Tasks\\Mcp\\CreateTaskTool",
+        "final_path": "domain/Tasks/src/Mcp/Tools/CreateTaskTool.php",
+        "final_class": "Domain\\Tasks\\Mcp\\Tools\\CreateTaskTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c4e0de60c2b8ef99ab815556dc0dcae7c88db0be",
+        "old_path": "domain/Tasks/src/Mcp/EditTaskTool.php",
+        "old_class": "Domain\\Tasks\\Mcp\\EditTaskTool",
+        "final_path": "domain/Tasks/src/Mcp/Tools/EditTaskTool.php",
+        "final_class": "Domain\\Tasks\\Mcp\\Tools\\EditTaskTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "dce434c746b1152ee00e3aa9ef562aa0981afb87",
+        "old_path": "domain/Tasks/src/Mcp/FinishTaskTool.php",
+        "old_class": "Domain\\Tasks\\Mcp\\FinishTaskTool",
+        "final_path": "domain/Tasks/src/Mcp/Tools/FinishTaskTool.php",
+        "final_class": "Domain\\Tasks\\Mcp\\Tools\\FinishTaskTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ecb0779c7502761b8f3d6c56b3ea65cd756f63f0",
+        "old_path": "domain/Tasks/src/Mcp/HeldTasksOverview.php",
+        "old_class": "Domain\\Tasks\\Mcp\\HeldTasksOverview",
+        "final_path": "domain/Tasks/src/Support/Mcp/HeldTasksOverview.php",
+        "final_class": "Domain\\Tasks\\Support\\Mcp\\HeldTasksOverview",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8d6e71806b6025022bae3cf93aad8cdc88b49181",
+        "old_path": "domain/Tasks/src/Mcp/LogTaskTool.php",
+        "old_class": "Domain\\Tasks\\Mcp\\LogTaskTool",
+        "final_path": "domain/Tasks/src/Mcp/Tools/LogTaskTool.php",
+        "final_class": "Domain\\Tasks\\Mcp\\Tools\\LogTaskTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "45c788f1ee77fdbef23786e756308a2b6f713fb2",
+        "old_path": "domain/Tasks/src/Mcp/RunTaskCheckTool.php",
+        "old_class": "Domain\\Tasks\\Mcp\\RunTaskCheckTool",
+        "final_path": "domain/Tasks/src/Mcp/Tools/RunTaskCheckTool.php",
+        "final_class": "Domain\\Tasks\\Mcp\\Tools\\RunTaskCheckTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ce6b62652133f083c5f7cb220777c788c7d89277",
+        "old_path": "domain/Tasks/src/Mcp/StartTaskTool.php",
+        "old_class": "Domain\\Tasks\\Mcp\\StartTaskTool",
+        "final_path": "domain/Tasks/src/Mcp/Tools/StartTaskTool.php",
+        "final_class": "Domain\\Tasks\\Mcp\\Tools\\StartTaskTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c50829e381f35c52faeb6905ec6a21fd2158198d",
+        "old_path": "domain/Tasks/src/Mcp/TaskListTool.php",
+        "old_class": "Domain\\Tasks\\Mcp\\TaskListTool",
+        "final_path": "domain/Tasks/src/Mcp/Tools/TaskListTool.php",
+        "final_class": "Domain\\Tasks\\Mcp\\Tools\\TaskListTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c0e51e680ad1d05f5e751b803c94a5fcb21b217b",
+        "old_path": "domain/Tasks/src/Mcp/TaskReadResult.php",
+        "old_class": "Domain\\Tasks\\Mcp\\TaskReadResult",
+        "final_path": "domain/Tasks/src/Support/Mcp/TaskReadResult.php",
+        "final_class": "Domain\\Tasks\\Support\\Mcp\\TaskReadResult",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a5f92bf46e702a1069d46c1818a148d0c57714ab",
+        "old_path": "domain/Tasks/src/Mcp/TaskReadTool.php",
+        "old_class": "Domain\\Tasks\\Mcp\\TaskReadTool",
+        "final_path": "domain/Tasks/src/Mcp/Tools/TaskReadTool.php",
+        "final_class": "Domain\\Tasks\\Mcp\\Tools\\TaskReadTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "f3a0d6aa63ab4c19b89e8cf6aab21093805d314c",
+        "old_path": "domain/Tasks/src/Mcp/TaskResource.php",
+        "old_class": "Domain\\Tasks\\Mcp\\TaskResource",
+        "final_path": "domain/Tasks/src/Mcp/Resources/TaskResource.php",
+        "final_class": "Domain\\Tasks\\Mcp\\Resources\\TaskResource",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ee9bf5d94e5fb0dc4560626f9a9677cb26adec64",
+        "old_path": "domain/Tasks/src/Mcp/TaskSearch.php",
+        "old_class": "Domain\\Tasks\\Mcp\\TaskSearch",
+        "final_path": "domain/Tasks/src/Support/Mcp/TaskSearch.php",
+        "final_class": "Domain\\Tasks\\Support\\Mcp\\TaskSearch",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "87d849a5bdc3777712c274123ec696a4559c5c33",
+        "old_path": "domain/Tasks/src/Mcp/TaskWriteTool.php",
+        "old_class": "Domain\\Tasks\\Mcp\\TaskWriteTool",
+        "final_path": "domain/Tasks/src/Mcp/Tools/TaskWriteTool.php",
+        "final_class": "Domain\\Tasks\\Mcp\\Tools\\TaskWriteTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d99d97bb21e4841b970e6c0a415b9e53fcdaf0bd",
+        "old_path": "domain/Tasks/src/Mcp/TasksListTool.php",
+        "old_class": "Domain\\Tasks\\Mcp\\TasksListTool",
+        "final_path": "domain/Tasks/src/Mcp/Tools/TasksListTool.php",
+        "final_class": "Domain\\Tasks\\Mcp\\Tools\\TasksListTool",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "5f4c9d7f7fdef52e059fdd2b6fb2e5c6151baedc",
+        "old_path": "domain/Tasks/src/Models/Task.php",
+        "old_class": "Domain\\Tasks\\Models\\Task",
+        "final_path": "domain/Tasks/src/Models/Task.php",
+        "final_class": "Domain\\Tasks\\Models\\Task",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "837a81d396d316c578d900bf186bae0bbfe0e92a",
+        "old_path": "domain/Tasks/src/Models/TaskCheck.php",
+        "old_class": "Domain\\Tasks\\Models\\TaskCheck",
+        "final_path": "domain/Tasks/src/Models/TaskCheck.php",
+        "final_class": "Domain\\Tasks\\Models\\TaskCheck",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e205ec2dc82615a6ef8c24799a1acb04621543f6",
+        "old_path": "domain/Tasks/src/Models/TaskHistoryEntry.php",
+        "old_class": "Domain\\Tasks\\Models\\TaskHistoryEntry",
+        "final_path": "domain/Tasks/src/Models/TaskHistoryEntry.php",
+        "final_class": "Domain\\Tasks\\Models\\TaskHistoryEntry",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2058279cdc372fbb92a6c6c26499289d6b400463",
+        "old_path": "domain/Tasks/src/Models/TaskLogEntry.php",
+        "old_class": "Domain\\Tasks\\Models\\TaskLogEntry",
+        "final_path": "domain/Tasks/src/Models/TaskLogEntry.php",
+        "final_class": "Domain\\Tasks\\Models\\TaskLogEntry",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "8d0d5cf0a1e0eea134cc2ef0b24821bc3b5027a5",
+        "old_path": "domain/Tasks/src/Models/TaskRun.php",
+        "old_class": "Domain\\Tasks\\Models\\TaskRun",
+        "final_path": "domain/Tasks/src/Models/TaskRun.php",
+        "final_class": "Domain\\Tasks\\Models\\TaskRun",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "79d8d46c0db57dbcf72f161a495df96b6fc862f0",
+        "old_path": "domain/Tasks/src/Models/TaskWait.php",
+        "old_class": "Domain\\Tasks\\Models\\TaskWait",
+        "final_path": "domain/Tasks/src/Models/TaskWait.php",
+        "final_class": "Domain\\Tasks\\Models\\TaskWait",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9d04812689aad6ee1506bb6fb4d47ff35fd119ac",
+        "old_path": "domain/Tasks/src/Models/TaskWaitHistory.php",
+        "old_class": "Domain\\Tasks\\Models\\TaskWaitHistory",
+        "final_path": "domain/Tasks/src/Models/TaskWaitHistory.php",
+        "final_class": "Domain\\Tasks\\Models\\TaskWaitHistory",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "5f001bec74dfa4940397e7288b9166b32255cabd",
+        "old_path": "domain/Tasks/src/Policies/TaskPolicy.php",
+        "old_class": "Domain\\Tasks\\Policies\\TaskPolicy",
+        "final_path": "domain/Tasks/src/Policies/TaskPolicy.php",
+        "final_class": "Domain\\Tasks\\Policies\\TaskPolicy",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a8c9c9d617a3d57c2abe6e551fc50e6fd5885a97",
+        "old_path": "domain/Tasks/src/Policies/TaskRunPolicy.php",
+        "old_class": "Domain\\Tasks\\Policies\\TaskRunPolicy",
+        "final_path": "domain/Tasks/src/Policies/TaskRunPolicy.php",
+        "final_class": "Domain\\Tasks\\Policies\\TaskRunPolicy",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "0104e6a5d8e1a3f500184d27b3befd62cad60979",
+        "old_path": "domain/Tasks/src/Providers/TasksServiceProvider.php",
+        "old_class": "Domain\\Tasks\\Providers\\TasksServiceProvider",
+        "final_path": "domain/Tasks/src/Providers/TasksServiceProvider.php",
+        "final_class": "Domain\\Tasks\\Providers\\TasksServiceProvider",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9b19017ec573ed57b779710f39ac2237dd14e9b7",
+        "old_path": "domain/Tasks/src/Resolvers/AssignedTasks.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\AssignedTasks",
+        "final_path": "domain/Tasks/src/Resolvers/AssignedTasks.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\AssignedTasks",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "85054d319b84b7f3f05b8b0af2ea8465838124cb",
+        "old_path": "domain/Tasks/src/Resolvers/ListedTasks.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\ListedTasks",
+        "final_path": "domain/Tasks/src/Resolvers/ListedTasks.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\ListedTasks",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "11ffd62eb09b7e3d3a09e796bbbbd849b6dd68a8",
+        "old_path": "domain/Tasks/src/Resolvers/Support/TaskExecutions.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\Support\\TaskExecutions",
+        "final_path": "domain/Tasks/src/Resolvers/Support/TaskExecutions.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\Support\\TaskExecutions",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "03336936d7d13fd4544de4cb86bc7ba4b14b94aa",
+        "old_path": "domain/Tasks/src/Resolvers/Support/TaskRecords.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\Support\\TaskRecords",
+        "final_path": "domain/Tasks/src/Resolvers/Support/TaskRecords.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\Support\\TaskRecords",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "4922b1bb63172f29631d697a9b3338e14b267fb9",
+        "old_path": "domain/Tasks/src/Resolvers/TaskAssignmentRecords.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\TaskAssignmentRecords",
+        "final_path": "domain/Tasks/src/Resolvers/TaskAssignmentRecords.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\TaskAssignmentRecords",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "2faa7a94388cffcf52767e66c2cfae171a771029",
+        "old_path": "domain/Tasks/src/Resolvers/TaskAssignments.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\TaskAssignments",
+        "final_path": "domain/Tasks/src/Resolvers/TaskAssignments.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\TaskAssignments",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "db7f250ae604cd5021d73f391edebfd6f48b8ff0",
+        "old_path": "domain/Tasks/src/Resolvers/TaskCounts.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\TaskCounts",
+        "final_path": "domain/Tasks/src/Resolvers/TaskCounts.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\TaskCounts",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a24ec517987c84218f5cdaa7d4630f46f25ff3ce",
+        "old_path": "domain/Tasks/src/Resolvers/TaskDetailRecords.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\TaskDetailRecords",
+        "final_path": "domain/Tasks/src/Resolvers/TaskDetailRecords.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\TaskDetailRecords",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "ae042fbe57eb8a036d4d94a4fee71ded5625d9e7",
+        "old_path": "domain/Tasks/src/Resolvers/TaskGraphRecords.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\TaskGraphRecords",
+        "final_path": "domain/Tasks/src/Resolvers/TaskGraphRecords.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\TaskGraphRecords",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "cbf609aaf2f69dd8cbc6cbdf70270b945fcb7607",
+        "old_path": "domain/Tasks/src/Resolvers/TaskHistoryRecords.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\TaskHistoryRecords",
+        "final_path": "domain/Tasks/src/Resolvers/TaskHistoryRecords.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\TaskHistoryRecords",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d1e9a9cacd425217ea5d5aad1884c0039891a59d",
+        "old_path": "domain/Tasks/src/Resolvers/TaskLogRecords.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\TaskLogRecords",
+        "final_path": "domain/Tasks/src/Resolvers/TaskLogRecords.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\TaskLogRecords",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "26b2701bcceca53f42fb50bf0b2341044eef0053",
+        "old_path": "domain/Tasks/src/Resolvers/TaskProofRecords.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\TaskProofRecords",
+        "final_path": "domain/Tasks/src/Resolvers/TaskProofRecords.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\TaskProofRecords",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7f6fac57cb7b5d48a0e5d5a069090358f0a6f2db",
+        "old_path": "domain/Tasks/src/Resolvers/TaskRecords.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\TaskRecords",
+        "final_path": "domain/Tasks/src/Resolvers/TaskRecords.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\TaskRecords",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a25d84177f0342c42435123203e6b8577c040105",
+        "old_path": "domain/Tasks/src/Resolvers/TaskRunAssignments.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\TaskRunAssignments",
+        "final_path": "domain/Tasks/src/Resolvers/TaskRunAssignments.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\TaskRunAssignments",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "fe83237904f46a19bcb26319760495eed1bbee03",
+        "old_path": "domain/Tasks/src/Resolvers/TaskWaitRecords.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\TaskWaitRecords",
+        "final_path": "domain/Tasks/src/Resolvers/TaskWaitRecords.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\TaskWaitRecords",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "0aadfc099b2bdc2d6d6ead00c03dc78461fd81d0",
+        "old_path": "domain/Tasks/src/Resolvers/TaskWindowResolver.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\TaskWindowResolver",
+        "final_path": "domain/Tasks/src/Resolvers/TaskWindowResolver.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\TaskWindowResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7a2cb329c547cfbf8c4669e2fad6e676d0d6f928",
+        "old_path": "domain/Tasks/src/Resolvers/TasksWindowResolver.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\TasksWindowResolver",
+        "final_path": "domain/Tasks/src/Resolvers/TasksWindowResolver.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\TasksWindowResolver",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "64b310a0eeb896eacc1dff9ef7f162af40634fc1",
+        "old_path": "domain/Tasks/src/Resolvers/VisibleTasks.php",
+        "old_class": "Domain\\Tasks\\Resolvers\\VisibleTasks",
+        "final_path": "domain/Tasks/src/Resolvers/VisibleTasks.php",
+        "final_class": "Domain\\Tasks\\Resolvers\\VisibleTasks",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "828dd64dadb008b3c5d594c667815ffac6130f6e",
+        "old_path": "domain/Tasks/src/Routes/agent.php",
+        "old_class": null,
+        "final_path": "domain/Tasks/routes/agent.php",
+        "final_class": null,
+        "status": "move",
+        "kind": "route script",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "7409224454e3e6d6301329215570e9d7f46dd432",
+        "old_path": "domain/Tasks/src/Skills/TasksSkill.php",
+        "old_class": "Domain\\Tasks\\Skills\\TasksSkill",
+        "final_path": "domain/Tasks/src/Support/Skills/TasksSkill.php",
+        "final_class": "Domain\\Tasks\\Support\\Skills\\TasksSkill",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "a5bd602ee63c104d3d3e5bad50df19ef841914a7",
+        "old_path": "domain/Tasks/src/States/Support/WorkingOnTaskStateFactory.php",
+        "old_class": "Domain\\Tasks\\States\\Support\\WorkingOnTaskStateFactory",
+        "final_path": "domain/Tasks/src/Support/States/Support/WorkingOnTaskStateFactory.php",
+        "final_class": "Domain\\Tasks\\Support\\States\\Support\\WorkingOnTaskStateFactory",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "c2b295b1d4533d1cbc4db5b4546a1bd17283c003",
+        "old_path": "domain/Tasks/src/States/Support/WorkingOnTaskStateReference.php",
+        "old_class": "Domain\\Tasks\\States\\Support\\WorkingOnTaskStateReference",
+        "final_path": "domain/Tasks/src/Support/States/Support/WorkingOnTaskStateReference.php",
+        "final_class": "Domain\\Tasks\\Support\\States\\Support\\WorkingOnTaskStateReference",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Tasks/tests/Feature/TaskStateContributionTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "5cc90ebe163b1e0c404d88c37eaa48961a6be445",
+        "old_path": "domain/Tasks/src/States/WorkingOnTaskState.php",
+        "old_class": "Domain\\Tasks\\States\\WorkingOnTaskState",
+        "final_path": "domain/Tasks/src/Support/States/WorkingOnTaskState.php",
+        "final_class": "Domain\\Tasks\\Support\\States\\WorkingOnTaskState",
+        "status": "move",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [
+            "domain/Tasks/tests/Unit/States/WorkingOnTaskTest.php"
+        ],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9e25b30a817120fdfc59018071ea747923197a9d",
+        "old_path": "domain/Tasks/src/Support/DockedTask.php",
+        "old_class": "Domain\\Tasks\\Support\\DockedTask",
+        "final_path": "domain/Tasks/src/Support/DockedTask.php",
+        "final_class": "Domain\\Tasks\\Support\\DockedTask",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "571f8be7817278c3886efaed9f7f7e6e68fadf4e",
+        "old_path": "domain/Tasks/src/Support/EnvironmentAssignedTasks.php",
+        "old_class": "Domain\\Tasks\\Support\\EnvironmentAssignedTasks",
+        "final_path": "domain/Tasks/src/Support/EnvironmentAssignedTasks.php",
+        "final_class": "Domain\\Tasks\\Support\\EnvironmentAssignedTasks",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "63994cface5b05e74a965ab3a04c1d234c01f7af",
+        "old_path": "domain/Tasks/src/Support/TaskDetailsFactory.php",
+        "old_class": "Domain\\Tasks\\Support\\TaskDetailsFactory",
+        "final_path": "domain/Tasks/src/Support/TaskDetailsFactory.php",
+        "final_class": "Domain\\Tasks\\Support\\TaskDetailsFactory",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "fb49320fc6bb70d48b3ed4beff744bd422bfcb54",
+        "old_path": "domain/Tasks/src/Support/TaskDocking.php",
+        "old_class": "Domain\\Tasks\\Support\\TaskDocking",
+        "final_path": "domain/Tasks/src/Support/TaskDocking.php",
+        "final_class": "Domain\\Tasks\\Support\\TaskDocking",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "82e4a2840c8f5b3d027f3705313f95a9395a3c67",
+        "old_path": "domain/Tasks/src/Support/TaskGraphLock.php",
+        "old_class": "Domain\\Tasks\\Support\\TaskGraphLock",
+        "final_path": "domain/Tasks/src/Support/TaskGraphLock.php",
+        "final_class": "Domain\\Tasks\\Support\\TaskGraphLock",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "872de599356f5e067344506da463ae7bf045f0b6",
+        "old_path": "domain/Tasks/src/Support/TaskIndexLayout.php",
+        "old_class": "Domain\\Tasks\\Support\\TaskIndexLayout",
+        "final_path": "domain/Tasks/src/Support/TaskIndexLayout.php",
+        "final_class": "Domain\\Tasks\\Support\\TaskIndexLayout",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "d745b87246ea3e10e90938785c949752649603cb",
+        "old_path": "domain/Tasks/src/Support/TaskReaderLayout.php",
+        "old_class": "Domain\\Tasks\\Support\\TaskReaderLayout",
+        "final_path": "domain/Tasks/src/Support/TaskReaderLayout.php",
+        "final_class": "Domain\\Tasks\\Support\\TaskReaderLayout",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "690d38e61a82afab6469b6e6e173e5887433bb65",
+        "old_path": "domain/Tasks/src/Support/TaskStream.php",
+        "old_class": "Domain\\Tasks\\Support\\TaskStream",
+        "final_path": "domain/Tasks/src/Support/TaskStream.php",
+        "final_class": "Domain\\Tasks\\Support\\TaskStream",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "1c13a06fbd055137a815c7c6cc7d2958e7c43eab",
+        "old_path": "domain/Tasks/src/Support/TaskWaitGraph.php",
+        "old_class": "Domain\\Tasks\\Support\\TaskWaitGraph",
+        "final_path": "domain/Tasks/src/Support/TaskWaitGraph.php",
+        "final_class": "Domain\\Tasks\\Support\\TaskWaitGraph",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "9b635a98926838866aeb4551dd3af77d1e64c1a4",
+        "old_path": "domain/Tasks/src/Support/TaskWork.php",
+        "old_class": "Domain\\Tasks\\Support\\TaskWork",
+        "final_path": "domain/Tasks/src/Support/TaskWork.php",
+        "final_class": "Domain\\Tasks\\Support\\TaskWork",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 3,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    },
+    {
+        "revision": "d28deaad66a1fbe82f95131aa6ee8d571fe05ee5",
+        "blob": "e3de44c565999607519f78d16364bf178faee1d4",
+        "old_path": "domain/Tasks/src/TasksDomain.php",
+        "old_class": "Domain\\Tasks\\TasksDomain",
+        "final_path": "domain/Tasks/src/TasksDomain.php",
+        "final_class": "Domain\\Tasks\\TasksDomain",
+        "status": "stay",
+        "kind": "class",
+        "generator": {
+            "input": null,
+            "output": null
+        },
+        "phase": 4,
+        "batch": "Tasks",
+        "consumers": [],
+        "ownership_checks": [],
+        "detector_dependencies": []
+    }
+]

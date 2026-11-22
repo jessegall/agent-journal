@@ -1,0 +1,12 @@
+[
+    "Domain\\Tasks\\TasksDomain",
+    "Domain\\Plans\\PlansDomain",
+    "Domain\\Documents\\DocumentsDomain",
+    "Domain\\Chat\\ChatDomain",
+    "Domain\\Memory\\MemoryDomain",
+    "Domain\\Rules\\RulesDomain",
+    "Domain\\Sequences\\SequencesDomain",
+    "Domain\\Reminders\\RemindersDomain",
+    "Domain\\Access\\AccessDomain",
+    "Domain\\Helpers\\HelpersDomain"
+]

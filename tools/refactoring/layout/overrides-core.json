@@ -1,0 +1,296 @@
+{
+    "about": "Doc 107 revision 3, sections Placement decisions for mixed folders and Name collisions: reviewed destinations that the destination key alone would get wrong.",
+    "counts": {
+        "old_area_folders": 41,
+        "rows": 5331,
+        "moves": 4921,
+        "stays": 341,
+        "generated": 69
+    },
+    "batches_by_phase": {
+        "3": [
+            {
+                "batch": "Actors",
+                "rows": 107
+            },
+            {
+                "batch": "AgentRequests",
+                "rows": 68
+            },
+            {
+                "batch": "Agents",
+                "rows": 544
+            },
+            {
+                "batch": "Assignments",
+                "rows": 141
+            },
+            {
+                "batch": "Autoload",
+                "rows": 4
+            },
+            {
+                "batch": "Bus",
+                "rows": 148
+            },
+            {
+                "batch": "Comments",
+                "rows": 30
+            },
+            {
+                "batch": "Communication",
+                "rows": 164
+            },
+            {
+                "batch": "Connections",
+                "rows": 87
+            },
+            {
+                "batch": "Desks",
+                "rows": 49
+            },
+            {
+                "batch": "Docking",
+                "rows": 71
+            },
+            {
+                "batch": "Domains",
+                "rows": 54
+            },
+            {
+                "batch": "Drivers",
+                "rows": 31
+            },
+            {
+                "batch": "Engine",
+                "rows": 41
+            },
+            {
+                "batch": "Exports",
+                "rows": 3
+            },
+            {
+                "batch": "Files",
+                "rows": 39
+            },
+            {
+                "batch": "Hooks",
+                "rows": 340
+            },
+            {
+                "batch": "Http",
+                "rows": 83
+            },
+            {
+                "batch": "Links",
+                "rows": 7
+            },
+            {
+                "batch": "Numbers",
+                "rows": 15
+            },
+            {
+                "batch": "Operations",
+                "rows": 3
+            },
+            {
+                "batch": "Pipelines",
+                "rows": 13
+            },
+            {
+                "batch": "Processes",
+                "rows": 550
+            },
+            {
+                "batch": "Profiles",
+                "rows": 248
+            },
+            {
+                "batch": "Queries",
+                "rows": 1
+            },
+            {
+                "batch": "Reads",
+                "rows": 31
+            },
+            {
+                "batch": "Records",
+                "rows": 22
+            },
+            {
+                "batch": "Reflection",
+                "rows": 29
+            },
+            {
+                "batch": "Registries",
+                "rows": 1
+            },
+            {
+                "batch": "Scripts",
+                "rows": 74
+            },
+            {
+                "batch": "Settings",
+                "rows": 99
+            },
+            {
+                "batch": "Sharing",
+                "rows": 148
+            },
+            {
+                "batch": "Skills",
+                "rows": 138
+            },
+            {
+                "batch": "Supervision",
+                "rows": 80
+            },
+            {
+                "batch": "Text",
+                "rows": 28
+            },
+            {
+                "batch": "Ui",
+                "rows": 104
+            },
+            {
+                "batch": "Web",
+                "rows": 62
+            }
+        ],
+        "4": [
+            {
+                "batch": "Actors",
+                "rows": 3
+            },
+            {
+                "batch": "AgentRequests",
+                "rows": 2
+            },
+            {
+                "batch": "Agents",
+                "rows": 211
+            },
+            {
+                "batch": "Assignments",
+                "rows": 61
+            },
+            {
+                "batch": "Bus",
+                "rows": 14
+            },
+            {
+                "batch": "Comments",
+                "rows": 19
+            },
+            {
+                "batch": "Communication",
+                "rows": 154
+            },
+            {
+                "batch": "Connections",
+                "rows": 89
+            },
+            {
+                "batch": "Desks",
+                "rows": 18
+            },
+            {
+                "batch": "Docking",
+                "rows": 1
+            },
+            {
+                "batch": "Domains",
+                "rows": 2
+            },
+            {
+                "batch": "Drivers",
+                "rows": 1
+            },
+            {
+                "batch": "Engine",
+                "rows": 14
+            },
+            {
+                "batch": "Files",
+                "rows": 1
+            },
+            {
+                "batch": "Hooks",
+                "rows": 19
+            },
+            {
+                "batch": "Links",
+                "rows": 1
+            },
+            {
+                "batch": "Numbers",
+                "rows": 6
+            },
+            {
+                "batch": "Processes",
+                "rows": 209
+            },
+            {
+                "batch": "Profiles",
+                "rows": 126
+            },
+            {
+                "batch": "Reads",
+                "rows": 1
+            },
+            {
+                "batch": "Records",
+                "rows": 13
+            },
+            {
+                "batch": "Reflection",
+                "rows": 1
+            },
+            {
+                "batch": "Scripts",
+                "rows": 25
+            },
+            {
+                "batch": "Settings",
+                "rows": 26
+            },
+            {
+                "batch": "Sharing",
+                "rows": 68
+            },
+            {
+                "batch": "Skills",
+                "rows": 67
+            },
+            {
+                "batch": "Supervision",
+                "rows": 52
+            },
+            {
+                "batch": "Text",
+                "rows": 11
+            },
+            {
+                "batch": "Web",
+                "rows": 49
+            }
+        ]
+    },
+    "paths": {
+        "app/Hooks/Attributes/StackWide.php": "app/Attributes/StackWide.php",
+        "app/Hooks/Lifecycle/LifecycleAnswer.php": "app/Values/LifecycleAnswer.php",
+        "app/Hooks/Lifecycle/LifecycleContext.php": "app/Values/LifecycleContext.php",
+        "app/Hooks/Lifecycle/LifecycleOrigin.php": "app/Values/LifecycleOrigin.php",
+        "app/Hooks/Lifecycle/LifecycleOrigins.php": "app/Support/Lifecycle/LifecycleOrigins.php",
+        "app/Hooks/Settlement/FrameLifecycle.php": "app/Support/Settlement/FrameLifecycle.php",
+        "app/Hooks/Settlement/LifecycleAnswers.php": "app/Support/Settlement/LifecycleAnswers.php",
+        "app/Hooks/Settlement/LifecycleEffects.php": "app/Support/Settlement/LifecycleEffects.php",
+        "app/Actors/Models/Support/BelongsToOneActor.php": "app/Models/Support/BelongsToOneActor.php",
+        "app/Http/Data/Support/OptionalOrMissing.php": "app/Data/Support/OptionalOrMissing.php",
+        "app/Exports/Support/Exports.php": "app/Support/Exports.php",
+        "app/Domains/Support/Exports.php": "app/Support/ExportValidator.php",
+        "app/Web/Support/NavigationRecords.php": "app/Support/WebNavigationRecords.php",
+        "app/Agents/Support/NavigationRecords.php": "app/Support/AgentNavigationRecords.php"
+    }
+}

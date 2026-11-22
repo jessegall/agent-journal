@@ -7170,6 +7170,7 @@ constant	DomainEventServiceProvider::LANES
 constant	DomainEventServiceProvider::LANES_VERSION
 constant	DomainEventServiceProvider::STATE_EVENTS
 constant	DomainTypeWriter::COMPATIBILITY_FILE
+constant	DomainTypeWriter::TYPE_OWNERS_FILE
 constant	DomainUi::DECLARED_LAYOUT
 constant	DraftAnswersRequest::ANSWER_LIMIT
 constant	DraftTokens::FILE
@@ -13431,6 +13432,7 @@ method	DomainTypeWriter::output()
 method	DomainTypeWriter::ownerExportLines()
 method	DomainTypeWriter::pathOf()
 method	DomainTypeWriter::resolveReference()
+method	DomainTypeWriter::typeOwners()
 method	DomainUi::__construct()
 method	DomainUi::assertImplements()
 method	DomainUi::assertInvokableController()

@@ -1,0 +1,3650 @@
+[
+    {
+        "class": "App\\Actors\\Enums\\ActorType",
+        "owner": "core",
+        "symbol": "ActorType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Actors\\Enums\\ChatPermission",
+        "owner": "core",
+        "symbol": "ChatPermission",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Actors\\Enums\\ReadEntitlementType",
+        "owner": "core",
+        "symbol": "ReadEntitlementType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\AgentRequests\\Enums\\CallEffect",
+        "owner": "core",
+        "symbol": "CallEffect",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\AgentRequests\\Enums\\ReceiptOwner",
+        "owner": "core",
+        "symbol": "ReceiptOwner",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\AgentRequests\\Enums\\ReportLineType",
+        "owner": "core",
+        "symbol": "ReportLineType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Data\\DriverRequestStatus",
+        "owner": "core",
+        "symbol": "DriverRequestStatus",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Data\\RuntimeSetting",
+        "owner": "core",
+        "symbol": "RuntimeSetting",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Data\\RuntimeStatus",
+        "owner": "core",
+        "symbol": "RuntimeStatus",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Data\\ScreenCursorData",
+        "owner": "core",
+        "symbol": "ScreenCursorData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Data\\ScreenFrameData",
+        "owner": "core",
+        "symbol": "ScreenFrameData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Data\\ScreenMenuData",
+        "owner": "core",
+        "symbol": "ScreenMenuData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Data\\ScreenRowData",
+        "owner": "core",
+        "symbol": "ScreenRowData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Data\\ScreenRunData",
+        "owner": "core",
+        "symbol": "ScreenRunData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Data\\ScreenStyleData",
+        "owner": "core",
+        "symbol": "ScreenStyleData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Data\\TerminalControlData",
+        "owner": "core",
+        "symbol": "TerminalControlData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Data\\TerminalFrameData",
+        "owner": "core",
+        "symbol": "TerminalFrameData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Data\\TerminalInterestData",
+        "owner": "core",
+        "symbol": "TerminalInterestData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Data\\TerminalReceiptData",
+        "owner": "core",
+        "symbol": "TerminalReceiptData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Data\\TerminalScreenIdentityData",
+        "owner": "core",
+        "symbol": "TerminalScreenIdentityData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\AccessRuleType",
+        "owner": "core",
+        "symbol": "AccessRuleType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\AccountModeType",
+        "owner": "core",
+        "symbol": "AccountModeType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\AccountProcessRole",
+        "owner": "core",
+        "symbol": "AccountProcessRole",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\AgentAction",
+        "owner": "core",
+        "symbol": "AgentAction",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\AgentPresence",
+        "owner": "core",
+        "symbol": "AgentPresence",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\ArrangementType",
+        "owner": "core",
+        "symbol": "ArrangementType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\CapabilityStatusType",
+        "owner": "core",
+        "symbol": "CapabilityStatusType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\CapacityResource",
+        "owner": "core",
+        "symbol": "CapacityResource",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\CleanupState",
+        "owner": "core",
+        "symbol": "CleanupState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\CleanupStep",
+        "owner": "core",
+        "symbol": "CleanupStep",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\ConversationModeType",
+        "owner": "core",
+        "symbol": "ConversationModeType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\DockerImageName",
+        "owner": "core",
+        "symbol": "DockerImageName",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\DriverFailure",
+        "owner": "core",
+        "symbol": "DriverFailure",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\DriverOperation",
+        "owner": "core",
+        "symbol": "DriverOperation",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\DriverSourceType",
+        "owner": "core",
+        "symbol": "DriverSourceType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\DriverSwitchStage",
+        "owner": "core",
+        "symbol": "DriverSwitchStage",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\DriverVariant",
+        "owner": "core",
+        "symbol": "DriverVariant",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\ExecutionModeType",
+        "owner": "core",
+        "symbol": "ExecutionModeType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\ExpectedTiming",
+        "owner": "core",
+        "symbol": "ExpectedTiming",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\HoldReason",
+        "owner": "core",
+        "symbol": "HoldReason",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\HostCapabilityType",
+        "owner": "core",
+        "symbol": "HostCapabilityType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\HostProtocolVersion",
+        "owner": "core",
+        "symbol": "HostProtocolVersion",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\HostRefusal",
+        "owner": "core",
+        "symbol": "HostRefusal",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\HostWakeRefusal",
+        "owner": "core",
+        "symbol": "HostWakeRefusal",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\LaunchCandidateRank",
+        "owner": "core",
+        "symbol": "LaunchCandidateRank",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\LaunchProfileType",
+        "owner": "core",
+        "symbol": "LaunchProfileType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\MenuEntryState",
+        "owner": "core",
+        "symbol": "MenuEntryState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\MergeAttemptState",
+        "owner": "core",
+        "symbol": "MergeAttemptState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\MergeRefusalReason",
+        "owner": "core",
+        "symbol": "MergeRefusalReason",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\ModelSelectionType",
+        "owner": "core",
+        "symbol": "ModelSelectionType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\MountType",
+        "owner": "core",
+        "symbol": "MountType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\NavigationAnswerer",
+        "owner": "core",
+        "symbol": "NavigationAnswerer",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\NavigationCompletion",
+        "owner": "core",
+        "symbol": "NavigationCompletion",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\NavigationKey",
+        "owner": "core",
+        "symbol": "NavigationKey",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\NavigationRaiseOutcome",
+        "owner": "core",
+        "symbol": "NavigationRaiseOutcome",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\NavigationReason",
+        "owner": "core",
+        "symbol": "NavigationReason",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\NavigationState",
+        "owner": "core",
+        "symbol": "NavigationState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\OfflineReplyMode",
+        "owner": "core",
+        "symbol": "OfflineReplyMode",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\ProcessStartState",
+        "owner": "core",
+        "symbol": "ProcessStartState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\RecoveryAction",
+        "owner": "core",
+        "symbol": "RecoveryAction",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\RequestOutcome",
+        "owner": "core",
+        "symbol": "RequestOutcome",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\RequestProgress",
+        "owner": "core",
+        "symbol": "RequestProgress",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\ReservationState",
+        "owner": "core",
+        "symbol": "ReservationState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\ResourceType",
+        "owner": "core",
+        "symbol": "ResourceType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\ResumeRefusal",
+        "owner": "core",
+        "symbol": "ResumeRefusal",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\RuntimeActivity",
+        "owner": "core",
+        "symbol": "RuntimeActivity",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\RuntimeEventType",
+        "owner": "core",
+        "symbol": "RuntimeEventType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\ScreenBuffer",
+        "owner": "core",
+        "symbol": "ScreenBuffer",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\ScreenReportRefusal",
+        "owner": "core",
+        "symbol": "ScreenReportRefusal",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\SessionState",
+        "owner": "core",
+        "symbol": "SessionState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\SessionStatus",
+        "owner": "core",
+        "symbol": "SessionStatus",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\StartDisposition",
+        "owner": "core",
+        "symbol": "StartDisposition",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\StartOriginType",
+        "owner": "core",
+        "symbol": "StartOriginType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\StartPreflightRefusal",
+        "owner": "core",
+        "symbol": "StartPreflightRefusal",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\StartReadiness",
+        "owner": "core",
+        "symbol": "StartReadiness",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\StartRefusalType",
+        "owner": "core",
+        "symbol": "StartRefusalType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\StartRemedyType",
+        "owner": "core",
+        "symbol": "StartRemedyType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\StartUnavailableReason",
+        "owner": "core",
+        "symbol": "StartUnavailableReason",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\StatusActionType",
+        "owner": "core",
+        "symbol": "StatusActionType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\TerminalControlRefusal",
+        "owner": "core",
+        "symbol": "TerminalControlRefusal",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\TerminalDraftChoice",
+        "owner": "core",
+        "symbol": "TerminalDraftChoice",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\TerminalFrameState",
+        "owner": "core",
+        "symbol": "TerminalFrameState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\TerminalGrantState",
+        "owner": "core",
+        "symbol": "TerminalGrantState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\TerminalInputType",
+        "owner": "core",
+        "symbol": "TerminalInputType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\TerminalNamedKey",
+        "owner": "core",
+        "symbol": "TerminalNamedKey",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\TerminalReceiptOutcome",
+        "owner": "core",
+        "symbol": "TerminalReceiptOutcome",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\TerminalViewRefusal",
+        "owner": "core",
+        "symbol": "TerminalViewRefusal",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\TransportProfileType",
+        "owner": "core",
+        "symbol": "TransportProfileType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Agents\\Enums\\WorkspaceUse",
+        "owner": "core",
+        "symbol": "WorkspaceUse",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Assignments\\Enums\\AssignmentOutcomeType",
+        "owner": "core",
+        "symbol": "AssignmentOutcomeType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Assignments\\Enums\\AssignmentPurpose",
+        "owner": "core",
+        "symbol": "AssignmentPurpose",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Assignments\\Enums\\AssignmentReason",
+        "owner": "core",
+        "symbol": "AssignmentReason",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Assignments\\Enums\\AutoAssignmentClaimType",
+        "owner": "core",
+        "symbol": "AutoAssignmentClaimType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Assignments\\Enums\\AutoAssignmentState",
+        "owner": "core",
+        "symbol": "AutoAssignmentState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Assignments\\Enums\\ClaimBasis",
+        "owner": "core",
+        "symbol": "ClaimBasis",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Assignments\\Enums\\PoolInputType",
+        "owner": "core",
+        "symbol": "PoolInputType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Assignments\\Enums\\PoolMembersType",
+        "owner": "core",
+        "symbol": "PoolMembersType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Assignments\\Support\\AssignmentData",
+        "owner": "core",
+        "symbol": "AssignmentData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Bus\\Enums\\CommandAdmissionStage",
+        "owner": "core",
+        "symbol": "CommandAdmissionStage",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Bus\\Enums\\CommandEffectType",
+        "owner": "core",
+        "symbol": "CommandEffectType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Bus\\Enums\\CommandEntry",
+        "owner": "core",
+        "symbol": "CommandEntry",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Bus\\Enums\\CommandOriginStatus",
+        "owner": "core",
+        "symbol": "CommandOriginStatus",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Bus\\Enums\\CommandScopeType",
+        "owner": "core",
+        "symbol": "CommandScopeType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Bus\\Enums\\MiddlewareStage",
+        "owner": "core",
+        "symbol": "MiddlewareStage",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Bus\\Enums\\ReceiptState",
+        "owner": "core",
+        "symbol": "ReceiptState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Bus\\Enums\\RefusalCode",
+        "owner": "core",
+        "symbol": "RefusalCode",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Comments\\Data\\CommentDetails",
+        "owner": "core",
+        "symbol": "CommentDetails",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Comments\\Data\\CommentList",
+        "owner": "core",
+        "symbol": "CommentList",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Comments\\Data\\RecordCommentLocation",
+        "owner": "core",
+        "symbol": "RecordCommentLocation",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Comments\\Data\\RecordCommentView",
+        "owner": "core",
+        "symbol": "RecordCommentView",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Comments\\Data\\TextCommentLocation",
+        "owner": "core",
+        "symbol": "TextCommentLocation",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Comments\\Data\\TextCommentView",
+        "owner": "core",
+        "symbol": "TextCommentView",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Comments\\Enums\\CommentType",
+        "owner": "core",
+        "symbol": "CommentType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Data\\InboxCounts",
+        "owner": "core",
+        "symbol": "InboxCounts",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Data\\InboxView",
+        "owner": "core",
+        "symbol": "InboxView",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Data\\MessageClaimHolder",
+        "owner": "core",
+        "symbol": "MessageClaimHolder",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Data\\MessagePage",
+        "owner": "core",
+        "symbol": "MessagePage",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Data\\MessageReader",
+        "owner": "core",
+        "symbol": "MessageReader",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Data\\MessageView",
+        "owner": "core",
+        "symbol": "MessageView",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Data\\NotificationChangeItem",
+        "owner": "core",
+        "symbol": "NotificationChangeItem",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Data\\NotificationChangePage",
+        "owner": "core",
+        "symbol": "NotificationChangePage",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Data\\NotificationDestination",
+        "owner": "core",
+        "symbol": "NotificationDestination",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Data\\NotificationItem",
+        "owner": "core",
+        "symbol": "NotificationItem",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Data\\NotificationPage",
+        "owner": "core",
+        "symbol": "NotificationPage",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Enums\\AgentInboxState",
+        "owner": "core",
+        "symbol": "AgentInboxState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Enums\\DismissalType",
+        "owner": "core",
+        "symbol": "DismissalType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Enums\\IntervalRole",
+        "owner": "core",
+        "symbol": "IntervalRole",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Enums\\LeaveReason",
+        "owner": "core",
+        "symbol": "LeaveReason",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Enums\\MessageState",
+        "owner": "core",
+        "symbol": "MessageState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Enums\\MessageType",
+        "owner": "core",
+        "symbol": "MessageType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Enums\\NotificationMutationType",
+        "owner": "core",
+        "symbol": "NotificationMutationType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Enums\\NotificationSourceType",
+        "owner": "core",
+        "symbol": "NotificationSourceType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Enums\\OutstandingRangeState",
+        "owner": "core",
+        "symbol": "OutstandingRangeState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Enums\\PresentationBatchState",
+        "owner": "core",
+        "symbol": "PresentationBatchState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Enums\\ReceiptDeliveryState",
+        "owner": "core",
+        "symbol": "ReceiptDeliveryState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Enums\\SpeechOpportunityState",
+        "owner": "core",
+        "symbol": "SpeechOpportunityState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Enums\\TimelineEventType",
+        "owner": "core",
+        "symbol": "TimelineEventType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Communication\\Enums\\WakeState",
+        "owner": "core",
+        "symbol": "WakeState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Connections\\Enums\\BindingReadiness",
+        "owner": "connections",
+        "symbol": "BindingReadiness",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Connections\\Enums\\ChildRole",
+        "owner": "connections",
+        "symbol": "ChildRole",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Connections\\Enums\\CommandRunState",
+        "owner": "connections",
+        "symbol": "CommandRunState",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Connections\\Enums\\ConnectionAuditActor",
+        "owner": "connections",
+        "symbol": "ConnectionAuditActor",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Connections\\Enums\\ConnectionAuditType",
+        "owner": "connections",
+        "symbol": "ConnectionAuditType",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Connections\\Enums\\DeliveryOutcome",
+        "owner": "connections",
+        "symbol": "DeliveryOutcome",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Connections\\Enums\\DeviceGrantState",
+        "owner": "connections",
+        "symbol": "DeviceGrantState",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Connections\\Enums\\InstallAttemptState",
+        "owner": "connections",
+        "symbol": "InstallAttemptState",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Connections\\Enums\\InvitationMode",
+        "owner": "connections",
+        "symbol": "InvitationMode",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Docking\\Data\\DockDestinationOptionData",
+        "owner": "core",
+        "symbol": "DockDestinationOptionData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Docking\\Data\\DockOfferData",
+        "owner": "core",
+        "symbol": "DockOfferData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Docking\\Data\\SourceActionData",
+        "owner": "core",
+        "symbol": "SourceActionData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Docking\\Enums\\Alignment",
+        "owner": "core",
+        "symbol": "Alignment",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Docking\\Enums\\ConsoleStream",
+        "owner": "core",
+        "symbol": "ConsoleStream",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Docking\\Enums\\DisclosureState",
+        "owner": "core",
+        "symbol": "DisclosureState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Docking\\Enums\\Emphasis",
+        "owner": "core",
+        "symbol": "Emphasis",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Docking\\Enums\\PartType",
+        "owner": "core",
+        "symbol": "PartType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Docking\\Enums\\Tone",
+        "owner": "core",
+        "symbol": "Tone",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Drivers\\Enums\\DriverCapability",
+        "owner": "core",
+        "symbol": "DriverCapability",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Drivers\\Enums\\DriverOutcome",
+        "owner": "core",
+        "symbol": "DriverOutcome",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Drivers\\Enums\\SupportState",
+        "owner": "core",
+        "symbol": "SupportState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Files\\Enums\\EntryType",
+        "owner": "core",
+        "symbol": "EntryType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Files\\Enums\\Permissions",
+        "owner": "core",
+        "symbol": "Permissions",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Files\\Enums\\Place",
+        "owner": "core",
+        "symbol": "Place",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Files\\Enums\\PlaceExemption",
+        "owner": "core",
+        "symbol": "PlaceExemption",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Decisions\\Enums\\SimpleAnswer",
+        "owner": "core",
+        "symbol": "SimpleAnswer",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\AnswerType",
+        "owner": "core",
+        "symbol": "AnswerType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\AuthenticationArrangement",
+        "owner": "core",
+        "symbol": "AuthenticationArrangement",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\CallFailure",
+        "owner": "core",
+        "symbol": "CallFailure",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\CodexTool",
+        "owner": "core",
+        "symbol": "CodexTool",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\ContextStartType",
+        "owner": "core",
+        "symbol": "ContextStartType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\DriverEvidence",
+        "owner": "core",
+        "symbol": "DriverEvidence",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\DriverPermission",
+        "owner": "core",
+        "symbol": "DriverPermission",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\DriverStopDecision",
+        "owner": "core",
+        "symbol": "DriverStopDecision",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\FileAccess",
+        "owner": "core",
+        "symbol": "FileAccess",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\FileOperation",
+        "owner": "core",
+        "symbol": "FileOperation",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\FrameLiveness",
+        "owner": "core",
+        "symbol": "FrameLiveness",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\HookEvent",
+        "owner": "core",
+        "symbol": "HookEvent",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\RewriteSupport",
+        "owner": "core",
+        "symbol": "RewriteSupport",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\SessionEndReason",
+        "owner": "core",
+        "symbol": "SessionEndReason",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\SessionTransferType",
+        "owner": "core",
+        "symbol": "SessionTransferType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\StackStatus",
+        "owner": "core",
+        "symbol": "StackStatus",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\StateEventStage",
+        "owner": "core",
+        "symbol": "StateEventStage",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\StopAttemptState",
+        "owner": "core",
+        "symbol": "StopAttemptState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\StopPreparationState",
+        "owner": "core",
+        "symbol": "StopPreparationState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\StopResultType",
+        "owner": "core",
+        "symbol": "StopResultType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\Enums\\ToolOutcome",
+        "owner": "core",
+        "symbol": "ToolOutcome",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Hooks\\ToolNames\\Enums\\ClaudeCodeTool",
+        "owner": "core",
+        "symbol": "ClaudeCodeTool",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Connections\\BindingListData",
+        "owner": "connections",
+        "symbol": "BindingListData",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Connections\\BindingProviderData",
+        "owner": "connections",
+        "symbol": "BindingProviderData",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Connections\\ConnectProjectWindowData",
+        "owner": "connections",
+        "symbol": "ConnectProjectWindowData",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Connections\\DeviceApprovalData",
+        "owner": "connections",
+        "symbol": "DeviceApprovalData",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Connections\\EnvironmentOptionData",
+        "owner": "connections",
+        "symbol": "EnvironmentOptionData",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Connections\\InstallAttemptListData",
+        "owner": "connections",
+        "symbol": "InstallAttemptListData",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Connections\\InstallAttemptRowData",
+        "owner": "connections",
+        "symbol": "InstallAttemptRowData",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Connections\\JoinTargetData",
+        "owner": "connections",
+        "symbol": "JoinTargetData",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Connections\\ProjectBindingRowData",
+        "owner": "connections",
+        "symbol": "ProjectBindingRowData",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Connections\\ReleaseOfferData",
+        "owner": "connections",
+        "symbol": "ReleaseOfferData",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Connections\\ReleaseTargetData",
+        "owner": "connections",
+        "symbol": "ReleaseTargetData",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Connections\\SupportRecordRowData",
+        "owner": "connections",
+        "symbol": "SupportRecordRowData",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Connections\\TerminalSignInRowData",
+        "owner": "connections",
+        "symbol": "TerminalSignInRowData",
+        "module": "generated/types/connections/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\PaginationData",
+        "owner": "core",
+        "symbol": "PaginationData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\AccountListData",
+        "owner": "accounts",
+        "symbol": "AccountListData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\AccountMonthCostData",
+        "owner": "accounts",
+        "symbol": "AccountMonthCostData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\AccountNoticeData",
+        "owner": "accounts",
+        "symbol": "AccountNoticeData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\AccountNoticesData",
+        "owner": "accounts",
+        "symbol": "AccountNoticesData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\AccountRowData",
+        "owner": "accounts",
+        "symbol": "AccountRowData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\AccountSelectionData",
+        "owner": "accounts",
+        "symbol": "AccountSelectionData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\AccountStartData",
+        "owner": "accounts",
+        "symbol": "AccountStartData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\AccountThreadTokensData",
+        "owner": "accounts",
+        "symbol": "AccountThreadTokensData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\AccountUsageData",
+        "owner": "accounts",
+        "symbol": "AccountUsageData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\AccountUsageWindowData",
+        "owner": "accounts",
+        "symbol": "AccountUsageWindowData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\DriverMethodsData",
+        "owner": "accounts",
+        "symbol": "DriverMethodsData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\EligibleAccountData",
+        "owner": "accounts",
+        "symbol": "EligibleAccountData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\EligibleAccountsData",
+        "owner": "accounts",
+        "symbol": "EligibleAccountsData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\PendingAttemptCleanupData",
+        "owner": "accounts",
+        "symbol": "PendingAttemptCleanupData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\SignInAttemptData",
+        "owner": "accounts",
+        "symbol": "SignInAttemptData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\SignInMethodData",
+        "owner": "accounts",
+        "symbol": "SignInMethodData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\SignInReceiptData",
+        "owner": "accounts",
+        "symbol": "SignInReceiptData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Profiles\\StartAccountData",
+        "owner": "accounts",
+        "symbol": "StartAccountData",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Sharing\\GatewayConfigurePartData",
+        "owner": "sharing",
+        "symbol": "GatewayConfigurePartData",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Sharing\\GatewayRevisionData",
+        "owner": "sharing",
+        "symbol": "GatewayRevisionData",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Sharing\\RootShareData",
+        "owner": "sharing",
+        "symbol": "RootShareData",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Sharing\\SavedSharePreviewData",
+        "owner": "sharing",
+        "symbol": "SavedSharePreviewData",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Sharing\\ShareAuditData",
+        "owner": "sharing",
+        "symbol": "ShareAuditData",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Sharing\\ShareAuditEntryData",
+        "owner": "sharing",
+        "symbol": "ShareAuditEntryData",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Sharing\\ShareCandidateData",
+        "owner": "sharing",
+        "symbol": "ShareCandidateData",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Sharing\\ShareControlsPartData",
+        "owner": "sharing",
+        "symbol": "ShareControlsPartData",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Sharing\\ShareFiltersData",
+        "owner": "sharing",
+        "symbol": "ShareFiltersData",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Sharing\\ShareLinkData",
+        "owner": "sharing",
+        "symbol": "ShareLinkData",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Sharing\\ShareMemberData",
+        "owner": "sharing",
+        "symbol": "ShareMemberData",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Sharing\\SharePreviewData",
+        "owner": "sharing",
+        "symbol": "SharePreviewData",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Sharing\\ShareProposalStatusData",
+        "owner": "sharing",
+        "symbol": "ShareProposalStatusData",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Sharing\\ShareRowData",
+        "owner": "sharing",
+        "symbol": "ShareRowData",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Http\\Data\\Sharing\\ShareRuntimeData",
+        "owner": "sharing",
+        "symbol": "ShareRuntimeData",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Http\\Enums\\UsageMeasurementType",
+        "owner": "core",
+        "symbol": "UsageMeasurementType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Mcp\\Enums\\DiscoveryProfile",
+        "owner": "core",
+        "symbol": "DiscoveryProfile",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Operations\\Enums\\AccessType",
+        "owner": "core",
+        "symbol": "AccessType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Operations\\Enums\\ProfileAudience",
+        "owner": "core",
+        "symbol": "ProfileAudience",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\BundleListPartData",
+        "owner": "processes",
+        "symbol": "BundleListPartData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\BundleRowData",
+        "owner": "processes",
+        "symbol": "BundleRowData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\ClassificationRuleRowData",
+        "owner": "processes",
+        "symbol": "ClassificationRuleRowData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\ClassificationSummaryData",
+        "owner": "processes",
+        "symbol": "ClassificationSummaryData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\DeclarationData",
+        "owner": "processes",
+        "symbol": "DeclarationData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\ExplainedNodeData",
+        "owner": "processes",
+        "symbol": "ExplainedNodeData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\ExplanationData",
+        "owner": "processes",
+        "symbol": "ExplanationData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\HeldPartData",
+        "owner": "processes",
+        "symbol": "HeldPartData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\PartOutputData",
+        "owner": "processes",
+        "symbol": "PartOutputData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\PartSnapshotData",
+        "owner": "processes",
+        "symbol": "PartSnapshotData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\PartSummaryData",
+        "owner": "processes",
+        "symbol": "PartSummaryData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\ProblemData",
+        "owner": "processes",
+        "symbol": "ProblemData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\ProposalData",
+        "owner": "processes",
+        "symbol": "ProposalData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\ReaderProofData",
+        "owner": "processes",
+        "symbol": "ReaderProofData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\RequestRowData",
+        "owner": "processes",
+        "symbol": "RequestRowData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\RequestWindowData",
+        "owner": "processes",
+        "symbol": "RequestWindowData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\RunOutcomePageData",
+        "owner": "processes",
+        "symbol": "RunOutcomePageData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\RunOutcomeSummaryData",
+        "owner": "processes",
+        "symbol": "RunOutcomeSummaryData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\RunRowData",
+        "owner": "processes",
+        "symbol": "RunRowData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\RunSnapshotData",
+        "owner": "processes",
+        "symbol": "RunSnapshotData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\RunWindowData",
+        "owner": "processes",
+        "symbol": "RunWindowData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Data\\SampleData",
+        "owner": "processes",
+        "symbol": "SampleData",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\AdmissionRefusalCode",
+        "owner": "processes",
+        "symbol": "AdmissionRefusalCode",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\AdmissionState",
+        "owner": "processes",
+        "symbol": "AdmissionState",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\AnalysisLimit",
+        "owner": "processes",
+        "symbol": "AnalysisLimit",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\AssessmentOutcome",
+        "owner": "processes",
+        "symbol": "AssessmentOutcome",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\BindingType",
+        "owner": "processes",
+        "symbol": "BindingType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\CaptureState",
+        "owner": "processes",
+        "symbol": "CaptureState",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\ClaimedOutcome",
+        "owner": "processes",
+        "symbol": "ClaimedOutcome",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\ClassificationState",
+        "owner": "processes",
+        "symbol": "ClassificationState",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\CommandClass",
+        "owner": "processes",
+        "symbol": "CommandClass",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\CommandEffect",
+        "owner": "processes",
+        "symbol": "CommandEffect",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\CommandType",
+        "owner": "processes",
+        "symbol": "CommandType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\EmptyPolicy",
+        "owner": "processes",
+        "symbol": "EmptyPolicy",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\EmptySelection",
+        "owner": "processes",
+        "symbol": "EmptySelection",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\EvidenceSource",
+        "owner": "processes",
+        "symbol": "EvidenceSource",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\ExampleType",
+        "owner": "processes",
+        "symbol": "ExampleType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\FramingType",
+        "owner": "processes",
+        "symbol": "FramingType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\InterpretationState",
+        "owner": "processes",
+        "symbol": "InterpretationState",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\JournalRouteType",
+        "owner": "processes",
+        "symbol": "JournalRouteType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\LifecycleState",
+        "owner": "processes",
+        "symbol": "LifecycleState",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\NodeType",
+        "owner": "processes",
+        "symbol": "NodeType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\OperandType",
+        "owner": "processes",
+        "symbol": "OperandType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\Outcome",
+        "owner": "processes",
+        "symbol": "Outcome",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\OutputEncoding",
+        "owner": "processes",
+        "symbol": "OutputEncoding",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\OutputRequirement",
+        "owner": "processes",
+        "symbol": "OutputRequirement",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\OutputStream",
+        "owner": "processes",
+        "symbol": "OutputStream",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\ParseOutcome",
+        "owner": "processes",
+        "symbol": "ParseOutcome",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\PartEndType",
+        "owner": "processes",
+        "symbol": "PartEndType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\PartJoin",
+        "owner": "processes",
+        "symbol": "PartJoin",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\PartResultType",
+        "owner": "processes",
+        "symbol": "PartResultType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\PositionPurpose",
+        "owner": "processes",
+        "symbol": "PositionPurpose",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\ProblemCode",
+        "owner": "processes",
+        "symbol": "ProblemCode",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\ProgressType",
+        "owner": "processes",
+        "symbol": "ProgressType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\ProposalState",
+        "owner": "processes",
+        "symbol": "ProposalState",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\RecordRole",
+        "owner": "processes",
+        "symbol": "RecordRole",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\RedirectType",
+        "owner": "processes",
+        "symbol": "RedirectType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\RequestHoldReason",
+        "owner": "processes",
+        "symbol": "RequestHoldReason",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\RequestState",
+        "owner": "processes",
+        "symbol": "RequestState",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\ReviewLimit",
+        "owner": "processes",
+        "symbol": "ReviewLimit",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\RunEventType",
+        "owner": "processes",
+        "symbol": "RunEventType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\RunLogicalResult",
+        "owner": "processes",
+        "symbol": "RunLogicalResult",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\RunMode",
+        "owner": "processes",
+        "symbol": "RunMode",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\RunRequestIntent",
+        "owner": "processes",
+        "symbol": "RunRequestIntent",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\RunResultSource",
+        "owner": "processes",
+        "symbol": "RunResultSource",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\ScopeType",
+        "owner": "processes",
+        "symbol": "ScopeType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\ShellDialect",
+        "owner": "processes",
+        "symbol": "ShellDialect",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\StepType",
+        "owner": "processes",
+        "symbol": "StepType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\StreamUse",
+        "owner": "processes",
+        "symbol": "StreamUse",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\SummaryRule",
+        "owner": "processes",
+        "symbol": "SummaryRule",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\TokenType",
+        "owner": "processes",
+        "symbol": "TokenType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\ToolType",
+        "owner": "processes",
+        "symbol": "ToolType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\UnresolvedType",
+        "owner": "processes",
+        "symbol": "UnresolvedType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\UnsupportedKeyword",
+        "owner": "processes",
+        "symbol": "UnsupportedKeyword",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\WordPlace",
+        "owner": "processes",
+        "symbol": "WordPlace",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Processes\\Enums\\WordSegmentType",
+        "owner": "processes",
+        "symbol": "WordSegmentType",
+        "module": "generated/types/processes/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Data\\ScriptDiagnostic",
+        "owner": "accounts",
+        "symbol": "ScriptDiagnostic",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\AccountCheckResult",
+        "owner": "accounts",
+        "symbol": "AccountCheckResult",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\AccountNoticeReason",
+        "owner": "accounts",
+        "symbol": "AccountNoticeReason",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\AccountState",
+        "owner": "accounts",
+        "symbol": "AccountState",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\AuthorizationType",
+        "owner": "accounts",
+        "symbol": "AuthorizationType",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\CleanupProblem",
+        "owner": "accounts",
+        "symbol": "CleanupProblem",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\CleanupTarget",
+        "owner": "accounts",
+        "symbol": "CleanupTarget",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\CommandDirectory",
+        "owner": "accounts",
+        "symbol": "CommandDirectory",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\InstancePolicy",
+        "owner": "accounts",
+        "symbol": "InstancePolicy",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\PolicyOriginType",
+        "owner": "accounts",
+        "symbol": "PolicyOriginType",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\ProfileChangeType",
+        "owner": "accounts",
+        "symbol": "ProfileChangeType",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\SignInMethod",
+        "owner": "accounts",
+        "symbol": "SignInMethod",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\SignInOutcome",
+        "owner": "accounts",
+        "symbol": "SignInOutcome",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\SignInReceiptStatus",
+        "owner": "accounts",
+        "symbol": "SignInReceiptStatus",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\SignInRefusal",
+        "owner": "accounts",
+        "symbol": "SignInRefusal",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\SignInState",
+        "owner": "accounts",
+        "symbol": "SignInState",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\SignInType",
+        "owner": "accounts",
+        "symbol": "SignInType",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\SupervisorCoverageType",
+        "owner": "accounts",
+        "symbol": "SupervisorCoverageType",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Profiles\\Enums\\UsageWindowSlot",
+        "owner": "accounts",
+        "symbol": "UsageWindowSlot",
+        "module": "generated/types/accounts/index.ts"
+    },
+    {
+        "class": "App\\Reads\\Enums\\ReadMode",
+        "owner": "core",
+        "symbol": "ReadMode",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Reads\\Enums\\ReadView",
+        "owner": "core",
+        "symbol": "ReadView",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Records\\Data\\RecordCard",
+        "owner": "core",
+        "symbol": "RecordCard",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Reflection\\Enums\\AttributeMatch",
+        "owner": "core",
+        "symbol": "AttributeMatch",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Reflection\\Enums\\TypeShape",
+        "owner": "core",
+        "symbol": "TypeShape",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Data\\FlowEdgeData",
+        "owner": "scripts",
+        "symbol": "FlowEdgeData",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Data\\FlowGraphData",
+        "owner": "scripts",
+        "symbol": "FlowGraphData",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Data\\FlowNodeData",
+        "owner": "scripts",
+        "symbol": "FlowNodeData",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Data\\ProfileDraftData",
+        "owner": "scripts",
+        "symbol": "ProfileDraftData",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Data\\ProfileLanguageData",
+        "owner": "scripts",
+        "symbol": "ProfileLanguageData",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Data\\ProfileRunData",
+        "owner": "scripts",
+        "symbol": "ProfileRunData",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Data\\ProfileScriptPageData",
+        "owner": "scripts",
+        "symbol": "ProfileScriptPageData",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Data\\ProfileStepData",
+        "owner": "scripts",
+        "symbol": "ProfileStepData",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Data\\ScriptKeywordData",
+        "owner": "scripts",
+        "symbol": "ScriptKeywordData",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Data\\ScriptObjectData",
+        "owner": "scripts",
+        "symbol": "ScriptObjectData",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Enums\\DiagnosticCode",
+        "owner": "scripts",
+        "symbol": "DiagnosticCode",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Enums\\FlowNodeType",
+        "owner": "scripts",
+        "symbol": "FlowNodeType",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Enums\\KeywordCategory",
+        "owner": "scripts",
+        "symbol": "KeywordCategory",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Enums\\ProfileRunState",
+        "owner": "scripts",
+        "symbol": "ProfileRunState",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Enums\\ScriptEffect",
+        "owner": "scripts",
+        "symbol": "ScriptEffect",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Enums\\StepStatus",
+        "owner": "scripts",
+        "symbol": "StepStatus",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Scripts\\Enums\\SyntaxForm",
+        "owner": "scripts",
+        "symbol": "SyntaxForm",
+        "module": "generated/types/scripts/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\BooleanValueData",
+        "owner": "settings",
+        "symbol": "BooleanValueData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\DecimalConstraintsData",
+        "owner": "settings",
+        "symbol": "DecimalConstraintsData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\DecimalValueData",
+        "owner": "settings",
+        "symbol": "DecimalValueData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\IntegerChoiceConstraintsData",
+        "owner": "settings",
+        "symbol": "IntegerChoiceConstraintsData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\IntegerChoiceOptionData",
+        "owner": "settings",
+        "symbol": "IntegerChoiceOptionData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\IntegerChoiceValueData",
+        "owner": "settings",
+        "symbol": "IntegerChoiceValueData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\IntegerConstraintsData",
+        "owner": "settings",
+        "symbol": "IntegerConstraintsData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\IntegerValueData",
+        "owner": "settings",
+        "symbol": "IntegerValueData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\InvalidValueData",
+        "owner": "settings",
+        "symbol": "InvalidValueData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\PlainGroupAvailabilityData",
+        "owner": "settings",
+        "symbol": "PlainGroupAvailabilityData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\SettingData",
+        "owner": "settings",
+        "symbol": "SettingData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\SettingGroupData",
+        "owner": "settings",
+        "symbol": "SettingGroupData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\SettingIdentityData",
+        "owner": "settings",
+        "symbol": "SettingIdentityData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\SettingsCatalogueData",
+        "owner": "settings",
+        "symbol": "SettingsCatalogueData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\StringChoiceConstraintsData",
+        "owner": "settings",
+        "symbol": "StringChoiceConstraintsData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\StringChoiceOptionData",
+        "owner": "settings",
+        "symbol": "StringChoiceOptionData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\StringChoiceValueData",
+        "owner": "settings",
+        "symbol": "StringChoiceValueData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\StringConstraintsData",
+        "owner": "settings",
+        "symbol": "StringConstraintsData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\StringValueData",
+        "owner": "settings",
+        "symbol": "StringValueData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Data\\ToggleGroupAvailabilityData",
+        "owner": "settings",
+        "symbol": "ToggleGroupAvailabilityData",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Enums\\GroupAvailability",
+        "owner": "settings",
+        "symbol": "GroupAvailability",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Enums\\SettingAvailability",
+        "owner": "settings",
+        "symbol": "SettingAvailability",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Enums\\SettingSource",
+        "owner": "settings",
+        "symbol": "SettingSource",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Enums\\SettingTarget",
+        "owner": "settings",
+        "symbol": "SettingTarget",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Enums\\SettingType",
+        "owner": "settings",
+        "symbol": "SettingType",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Settings\\Enums\\SettingsOutcome",
+        "owner": "settings",
+        "symbol": "SettingsOutcome",
+        "module": "generated/types/settings/index.ts"
+    },
+    {
+        "class": "App\\Sharing\\Enums\\GatewayEndpointState",
+        "owner": "sharing",
+        "symbol": "GatewayEndpointState",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Sharing\\Enums\\GatewayOperationType",
+        "owner": "sharing",
+        "symbol": "GatewayOperationType",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Sharing\\Enums\\GatewayOutcome",
+        "owner": "sharing",
+        "symbol": "GatewayOutcome",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Sharing\\Enums\\ShareAuditActor",
+        "owner": "sharing",
+        "symbol": "ShareAuditActor",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Sharing\\Enums\\ShareAuditType",
+        "owner": "sharing",
+        "symbol": "ShareAuditType",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Sharing\\Enums\\ShareRelationType",
+        "owner": "sharing",
+        "symbol": "ShareRelationType",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Sharing\\Enums\\ShareState",
+        "owner": "sharing",
+        "symbol": "ShareState",
+        "module": "generated/types/sharing/index.ts"
+    },
+    {
+        "class": "App\\Skills\\Enums\\ConditionOutcome",
+        "owner": "core",
+        "symbol": "ConditionOutcome",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Skills\\Enums\\GenerationState",
+        "owner": "core",
+        "symbol": "GenerationState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Skills\\Enums\\PublicationState",
+        "owner": "core",
+        "symbol": "PublicationState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Skills\\Enums\\ReadEvidence",
+        "owner": "core",
+        "symbol": "ReadEvidence",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Skills\\Enums\\SkillOrigin",
+        "owner": "core",
+        "symbol": "SkillOrigin",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Skills\\Enums\\SkillReload",
+        "owner": "core",
+        "symbol": "SkillReload",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Supervision\\Data\\AskCard",
+        "owner": "core",
+        "symbol": "AskCard",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Supervision\\Data\\AskDetail",
+        "owner": "core",
+        "symbol": "AskDetail",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Supervision\\Data\\AskInbox",
+        "owner": "core",
+        "symbol": "AskInbox",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Supervision\\Enums\\AskOriginType",
+        "owner": "core",
+        "symbol": "AskOriginType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Supervision\\Enums\\AskResult",
+        "owner": "core",
+        "symbol": "AskResult",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Supervision\\Enums\\AskRouteStatus",
+        "owner": "core",
+        "symbol": "AskRouteStatus",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Supervision\\Enums\\CodeReviewState",
+        "owner": "core",
+        "symbol": "CodeReviewState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Supervision\\Enums\\CoreAskType",
+        "owner": "core",
+        "symbol": "CoreAskType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Supervision\\Enums\\OwnerRouteType",
+        "owner": "core",
+        "symbol": "OwnerRouteType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Supervision\\Enums\\RepairRequestState",
+        "owner": "core",
+        "symbol": "RepairRequestState",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Supervision\\Enums\\ReviewDecisionType",
+        "owner": "core",
+        "symbol": "ReviewDecisionType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Supervision\\Enums\\SupervisorDispatchOutcome",
+        "owner": "core",
+        "symbol": "SupervisorDispatchOutcome",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Supervision\\Enums\\UnansweredReason",
+        "owner": "core",
+        "symbol": "UnansweredReason",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Supervision\\Enums\\WorkChainEnding",
+        "owner": "core",
+        "symbol": "WorkChainEnding",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Supervision\\Enums\\WorkRepairOutcome",
+        "owner": "core",
+        "symbol": "WorkRepairOutcome",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Text\\Data\\TextSections",
+        "owner": "core",
+        "symbol": "TextSections",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Text\\Data\\TextVersionSummary",
+        "owner": "core",
+        "symbol": "TextVersionSummary",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Text\\Enums\\TextAnchorType",
+        "owner": "core",
+        "symbol": "TextAnchorType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Text\\Support\\Section",
+        "owner": "core",
+        "symbol": "Section",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Text\\Support\\TextPart",
+        "owner": "core",
+        "symbol": "TextPart",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Text\\Support\\TextSelection",
+        "owner": "core",
+        "symbol": "TextSelection",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Text\\Values\\TextAnchor",
+        "owner": "core",
+        "symbol": "TextAnchor",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Data\\DraftQuestionData",
+        "owner": "core",
+        "symbol": "DraftQuestionData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Data\\DraftQuestionsData",
+        "owner": "core",
+        "symbol": "DraftQuestionsData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Data\\DraftedRecordData",
+        "owner": "core",
+        "symbol": "DraftedRecordData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Data\\SlotSectionData",
+        "owner": "core",
+        "symbol": "SlotSectionData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Enums\\ActionMethod",
+        "owner": "core",
+        "symbol": "ActionMethod",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Enums\\Icon",
+        "owner": "core",
+        "symbol": "Icon",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Enums\\LayoutTag",
+        "owner": "core",
+        "symbol": "LayoutTag",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Enums\\NarrowView",
+        "owner": "core",
+        "symbol": "NarrowView",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Enums\\PageDestination",
+        "owner": "core",
+        "symbol": "PageDestination",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Enums\\PageSkeleton",
+        "owner": "core",
+        "symbol": "PageSkeleton",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Enums\\ReaderWidth",
+        "owner": "core",
+        "symbol": "ReaderWidth",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Enums\\SlotContextType",
+        "owner": "core",
+        "symbol": "SlotContextType",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\DeclaredLayoutData",
+        "owner": "core",
+        "symbol": "DeclaredLayoutData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutActionData",
+        "owner": "core",
+        "symbol": "LayoutActionData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutBackData",
+        "owner": "core",
+        "symbol": "LayoutBackData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutBodyData",
+        "owner": "core",
+        "symbol": "LayoutBodyData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutDialogData",
+        "owner": "core",
+        "symbol": "LayoutDialogData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutFactPieceData",
+        "owner": "core",
+        "symbol": "LayoutFactPieceData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutFactValueData",
+        "owner": "core",
+        "symbol": "LayoutFactValueData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutFieldData",
+        "owner": "core",
+        "symbol": "LayoutFieldData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutFormData",
+        "owner": "core",
+        "symbol": "LayoutFormData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutMenuData",
+        "owner": "core",
+        "symbol": "LayoutMenuData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutMenuGroupData",
+        "owner": "core",
+        "symbol": "LayoutMenuGroupData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutMenuItemData",
+        "owner": "core",
+        "symbol": "LayoutMenuItemData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutNativeData",
+        "owner": "core",
+        "symbol": "LayoutNativeData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutPartData",
+        "owner": "core",
+        "symbol": "LayoutPartData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutProgressData",
+        "owner": "core",
+        "symbol": "LayoutProgressData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutRowData",
+        "owner": "core",
+        "symbol": "LayoutRowData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutSplitData",
+        "owner": "core",
+        "symbol": "LayoutSplitData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Ui\\Layout\\LayoutTabData",
+        "owner": "core",
+        "symbol": "LayoutTabData",
+        "module": "generated/types/core/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\CurrentUserData",
+        "owner": "web",
+        "symbol": "CurrentUserData",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\DeniedWindow",
+        "owner": "web",
+        "symbol": "DeniedWindow",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\FailedWindow",
+        "owner": "web",
+        "symbol": "FailedWindow",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\HomeData",
+        "owner": "web",
+        "symbol": "HomeData",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\HomeWindowData",
+        "owner": "web",
+        "symbol": "HomeWindowData",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\LayoutData",
+        "owner": "web",
+        "symbol": "LayoutData",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\LoginInput",
+        "owner": "web",
+        "symbol": "LoginInput",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\NavigationCountsData",
+        "owner": "web",
+        "symbol": "NavigationCountsData",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\NavigationData",
+        "owner": "web",
+        "symbol": "NavigationData",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\NavigationGroupData",
+        "owner": "web",
+        "symbol": "NavigationGroupData",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\NavigationItemData",
+        "owner": "web",
+        "symbol": "NavigationItemData",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\ReadyWindow",
+        "owner": "web",
+        "symbol": "ReadyWindow",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\RecoveryRefusalPartData",
+        "owner": "web",
+        "symbol": "RecoveryRefusalPartData",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\RuntimeEntryData",
+        "owner": "web",
+        "symbol": "RuntimeEntryData",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\SharedData",
+        "owner": "web",
+        "symbol": "SharedData",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\TerminalWindowData",
+        "owner": "web",
+        "symbol": "TerminalWindowData",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Data\\UnavailableWindow",
+        "owner": "web",
+        "symbol": "UnavailableWindow",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Enums\\WindowState",
+        "owner": "web",
+        "symbol": "WindowState",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "App\\Web\\Pages\\LoginPage",
+        "owner": "web",
+        "symbol": "LoginPage",
+        "module": "generated/types/web/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\AgentOptionData",
+        "owner": "chat",
+        "symbol": "AgentOptionData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\AgentStatusData",
+        "owner": "chat",
+        "symbol": "AgentStatusData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\CancelInput",
+        "owner": "chat",
+        "symbol": "CancelInput",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ChatCapabilitiesData",
+        "owner": "chat",
+        "symbol": "ChatCapabilitiesData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ChatData",
+        "owner": "chat",
+        "symbol": "ChatData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ChatEventData",
+        "owner": "chat",
+        "symbol": "ChatEventData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ChatEventsInput",
+        "owner": "chat",
+        "symbol": "ChatEventsInput",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ChatEventsPageData",
+        "owner": "chat",
+        "symbol": "ChatEventsPageData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ChatInput",
+        "owner": "chat",
+        "symbol": "ChatInput",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ChatMessageData",
+        "owner": "chat",
+        "symbol": "ChatMessageData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ChatRowsInput",
+        "owner": "chat",
+        "symbol": "ChatRowsInput",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ChatRowsPageData",
+        "owner": "chat",
+        "symbol": "ChatRowsPageData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ChatSummaryData",
+        "owner": "chat",
+        "symbol": "ChatSummaryData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ConversationData",
+        "owner": "chat",
+        "symbol": "ConversationData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\CreateGroupInput",
+        "owner": "chat",
+        "symbol": "CreateGroupInput",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\DeclineInput",
+        "owner": "chat",
+        "symbol": "DeclineInput",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\DeliveryData",
+        "owner": "chat",
+        "symbol": "DeliveryData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\DockAnswerData",
+        "owner": "chat",
+        "symbol": "DockAnswerData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\DockInput",
+        "owner": "chat",
+        "symbol": "DockInput",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\DockPageData",
+        "owner": "chat",
+        "symbol": "DockPageData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\DriverChoiceData",
+        "owner": "chat",
+        "symbol": "DriverChoiceData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\FocusedQuestionData",
+        "owner": "chat",
+        "symbol": "FocusedQuestionData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\InboxMessagesPartData",
+        "owner": "chat",
+        "symbol": "InboxMessagesPartData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\MessageInput",
+        "owner": "chat",
+        "symbol": "MessageInput",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ParticipantData",
+        "owner": "chat",
+        "symbol": "ParticipantData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ParticipantInput",
+        "owner": "chat",
+        "symbol": "ParticipantInput",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\QuestionActionsData",
+        "owner": "chat",
+        "symbol": "QuestionActionsData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ReadShownInput",
+        "owner": "chat",
+        "symbol": "ReadShownInput",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ReplyInput",
+        "owner": "chat",
+        "symbol": "ReplyInput",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ReplyTargetData",
+        "owner": "chat",
+        "symbol": "ReplyTargetData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\RequestOutcomeData",
+        "owner": "chat",
+        "symbol": "RequestOutcomeData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\RequestOutcomeInput",
+        "owner": "chat",
+        "symbol": "RequestOutcomeInput",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\ResumableConversationData",
+        "owner": "chat",
+        "symbol": "ResumableConversationData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\RetryDeliveryInput",
+        "owner": "chat",
+        "symbol": "RetryDeliveryInput",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\SpeakerData",
+        "owner": "chat",
+        "symbol": "SpeakerData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\StatusActionData",
+        "owner": "chat",
+        "symbol": "StatusActionData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\StatusOperationData",
+        "owner": "chat",
+        "symbol": "StatusOperationData",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\TakeNextInput",
+        "owner": "chat",
+        "symbol": "TakeNextInput",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Data\\UndockInput",
+        "owner": "chat",
+        "symbol": "UndockInput",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Enums\\ConversationState",
+        "owner": "chat",
+        "symbol": "ConversationState",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Enums\\DockOutcome",
+        "owner": "chat",
+        "symbol": "DockOutcome",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Enums\\DockedState",
+        "owner": "chat",
+        "symbol": "DockedState",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Enums\\RequestOutcome",
+        "owner": "chat",
+        "symbol": "RequestOutcome",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Chat\\Enums\\SentOperation",
+        "owner": "chat",
+        "symbol": "SentOperation",
+        "module": "generated/types/chat/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\CloseCard",
+        "owner": "documents",
+        "symbol": "CloseCard",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\DockData",
+        "owner": "documents",
+        "symbol": "DockData",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\DockSuggestion",
+        "owner": "documents",
+        "symbol": "DockSuggestion",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\DocumentBlockData",
+        "owner": "documents",
+        "symbol": "DocumentBlockData",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\DocumentCommentsPartData",
+        "owner": "documents",
+        "symbol": "DocumentCommentsPartData",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\DocumentFilters",
+        "owner": "documents",
+        "symbol": "DocumentFilters",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\DocumentRecipientData",
+        "owner": "documents",
+        "symbol": "DocumentRecipientData",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\DocumentThreadData",
+        "owner": "documents",
+        "symbol": "DocumentThreadData",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\DocumentView",
+        "owner": "documents",
+        "symbol": "DocumentView",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\DraftEditorPartData",
+        "owner": "documents",
+        "symbol": "DraftEditorPartData",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\DraftState",
+        "owner": "documents",
+        "symbol": "DraftState",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\DraftView",
+        "owner": "documents",
+        "symbol": "DraftView",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\PublicationCard",
+        "owner": "documents",
+        "symbol": "PublicationCard",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\PublicationList",
+        "owner": "documents",
+        "symbol": "PublicationList",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\RecordCommentsPartData",
+        "owner": "documents",
+        "symbol": "RecordCommentsPartData",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\RecordInspection",
+        "owner": "documents",
+        "symbol": "RecordInspection",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\RecordLinksPartData",
+        "owner": "documents",
+        "symbol": "RecordLinksPartData",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\RecordReadsData",
+        "owner": "documents",
+        "symbol": "RecordReadsData",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\RecordSharePartData",
+        "owner": "documents",
+        "symbol": "RecordSharePartData",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\RecordText",
+        "owner": "documents",
+        "symbol": "RecordText",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\RecoverDraftPartData",
+        "owner": "documents",
+        "symbol": "RecoverDraftPartData",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\ReportReceiptPartData",
+        "owner": "documents",
+        "symbol": "ReportReceiptPartData",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\ReportView",
+        "owner": "documents",
+        "symbol": "ReportView",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\RevisionCard",
+        "owner": "documents",
+        "symbol": "RevisionCard",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\RevisionView",
+        "owner": "documents",
+        "symbol": "RevisionView",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Data\\SettlementCard",
+        "owner": "documents",
+        "symbol": "SettlementCard",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Enums\\AttentionFilter",
+        "owner": "documents",
+        "symbol": "AttentionFilter",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Enums\\AttentionState",
+        "owner": "documents",
+        "symbol": "AttentionState",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Enums\\CloseCause",
+        "owner": "documents",
+        "symbol": "CloseCause",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Enums\\EditingState",
+        "owner": "documents",
+        "symbol": "EditingState",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Enums\\LibraryTypeFilter",
+        "owner": "documents",
+        "symbol": "LibraryTypeFilter",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Enums\\PublicationView",
+        "owner": "documents",
+        "symbol": "PublicationView",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Documents\\Enums\\UploadType",
+        "owner": "documents",
+        "symbol": "UploadType",
+        "module": "generated/types/documents/index.ts"
+    },
+    {
+        "class": "Domain\\Helpers\\Enums\\JobState",
+        "owner": "helpers",
+        "symbol": "JobState",
+        "module": "generated/types/helpers/index.ts"
+    },
+    {
+        "class": "Domain\\Helpers\\Enums\\PurposeType",
+        "owner": "helpers",
+        "symbol": "PurposeType",
+        "module": "generated/types/helpers/index.ts"
+    },
+    {
+        "class": "Domain\\Helpers\\Enums\\ReportJobDiscrepancyReason",
+        "owner": "helpers",
+        "symbol": "ReportJobDiscrepancyReason",
+        "module": "generated/types/helpers/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\PhaseCheckData",
+        "owner": "plans",
+        "symbol": "PhaseCheckData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\PhaseHeadingData",
+        "owner": "plans",
+        "symbol": "PhaseHeadingData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\PhaseReaderData",
+        "owner": "plans",
+        "symbol": "PhaseReaderData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\PhaseTaskData",
+        "owner": "plans",
+        "symbol": "PhaseTaskData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\PhaseTaskPageData",
+        "owner": "plans",
+        "symbol": "PhaseTaskPageData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\PlanCardData",
+        "owner": "plans",
+        "symbol": "PlanCardData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\PlanFiltersData",
+        "owner": "plans",
+        "symbol": "PlanFiltersData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\PlanListData",
+        "owner": "plans",
+        "symbol": "PlanListData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\PlanOutlineData",
+        "owner": "plans",
+        "symbol": "PlanOutlineData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\PlanReaderData",
+        "owner": "plans",
+        "symbol": "PlanReaderData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\PlanReviewData",
+        "owner": "plans",
+        "symbol": "PlanReviewData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\PlanReviewReceiptData",
+        "owner": "plans",
+        "symbol": "PlanReviewReceiptData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\PlanWorkPreviewData",
+        "owner": "plans",
+        "symbol": "PlanWorkPreviewData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\PlanWorkRecipientData",
+        "owner": "plans",
+        "symbol": "PlanWorkRecipientData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\StartPlanData",
+        "owner": "plans",
+        "symbol": "StartPlanData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Data\\TaskPlanData",
+        "owner": "plans",
+        "symbol": "TaskPlanData",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Enums\\PlanEndType",
+        "owner": "plans",
+        "symbol": "PlanEndType",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Enums\\PlanReviewState",
+        "owner": "plans",
+        "symbol": "PlanReviewState",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Enums\\PlanState",
+        "owner": "plans",
+        "symbol": "PlanState",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Enums\\PlanStateGroup",
+        "owner": "plans",
+        "symbol": "PlanStateGroup",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Enums\\PlanTextLimit",
+        "owner": "plans",
+        "symbol": "PlanTextLimit",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Plans\\Enums\\PlanType",
+        "owner": "plans",
+        "symbol": "PlanType",
+        "module": "generated/types/plans/index.ts"
+    },
+    {
+        "class": "Domain\\Rules\\Data\\RuleFiltersData",
+        "owner": "rules",
+        "symbol": "RuleFiltersData",
+        "module": "generated/types/rules/index.ts"
+    },
+    {
+        "class": "Domain\\Rules\\Enums\\RuleState",
+        "owner": "rules",
+        "symbol": "RuleState",
+        "module": "generated/types/rules/index.ts"
+    },
+    {
+        "class": "Domain\\Sequences\\Data\\SequenceEditorPartData",
+        "owner": "sequences",
+        "symbol": "SequenceEditorPartData",
+        "module": "generated/types/sequences/index.ts"
+    },
+    {
+        "class": "Domain\\Sequences\\Data\\SequenceStepData",
+        "owner": "sequences",
+        "symbol": "SequenceStepData",
+        "module": "generated/types/sequences/index.ts"
+    },
+    {
+        "class": "Domain\\Sequences\\Enums\\SequenceRunState",
+        "owner": "sequences",
+        "symbol": "SequenceRunState",
+        "module": "generated/types/sequences/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Api\\TaskGraph",
+        "owner": "tasks",
+        "symbol": "TaskGraph",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Api\\TaskGraphDestinations",
+        "owner": "tasks",
+        "symbol": "TaskGraphDestinations",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Api\\TaskGraphEdge",
+        "owner": "tasks",
+        "symbol": "TaskGraphEdge",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Api\\TaskGraphNode",
+        "owner": "tasks",
+        "symbol": "TaskGraphNode",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Api\\TaskGraphSuggestion",
+        "owner": "tasks",
+        "symbol": "TaskGraphSuggestion",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Enums\\TaskHolderFilter",
+        "owner": "tasks",
+        "symbol": "TaskHolderFilter",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Enums\\TaskRunState",
+        "owner": "tasks",
+        "symbol": "TaskRunState",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Enums\\TaskState",
+        "owner": "tasks",
+        "symbol": "TaskState",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Enums\\TaskStreamEntryType",
+        "owner": "tasks",
+        "symbol": "TaskStreamEntryType",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Enums\\TaskTextLimit",
+        "owner": "tasks",
+        "symbol": "TaskTextLimit",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Enums\\TaskWaitChange",
+        "owner": "tasks",
+        "symbol": "TaskWaitChange",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Enums\\TaskWaitTargetType",
+        "owner": "tasks",
+        "symbol": "TaskWaitTargetType",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskActionsData",
+        "owner": "tasks",
+        "symbol": "TaskActionsData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskCommentsData",
+        "owner": "tasks",
+        "symbol": "TaskCommentsData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskFiltersData",
+        "owner": "tasks",
+        "symbol": "TaskFiltersData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskListData",
+        "owner": "tasks",
+        "symbol": "TaskListData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskLogsData",
+        "owner": "tasks",
+        "symbol": "TaskLogsData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskLogsPartData",
+        "owner": "tasks",
+        "symbol": "TaskLogsPartData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskProofData",
+        "owner": "tasks",
+        "symbol": "TaskProofData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskProofsData",
+        "owner": "tasks",
+        "symbol": "TaskProofsData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskProofsPartData",
+        "owner": "tasks",
+        "symbol": "TaskProofsPartData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskReaderData",
+        "owner": "tasks",
+        "symbol": "TaskReaderData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskRowData",
+        "owner": "tasks",
+        "symbol": "TaskRowData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskRunnerData",
+        "owner": "tasks",
+        "symbol": "TaskRunnerData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskStreamEntryData",
+        "owner": "tasks",
+        "symbol": "TaskStreamEntryData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskStreamPageData",
+        "owner": "tasks",
+        "symbol": "TaskStreamPageData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskWaitActionsData",
+        "owner": "tasks",
+        "symbol": "TaskWaitActionsData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskWaitChoiceData",
+        "owner": "tasks",
+        "symbol": "TaskWaitChoiceData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskWaitItemData",
+        "owner": "tasks",
+        "symbol": "TaskWaitItemData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskWaitsData",
+        "owner": "tasks",
+        "symbol": "TaskWaitsData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Domain\\Tasks\\Http\\Data\\TaskWaitsPartData",
+        "owner": "tasks",
+        "symbol": "TaskWaitsPartData",
+        "module": "generated/types/tasks/index.ts"
+    },
+    {
+        "class": "Illuminate\\Contracts\\Pagination\\CursorPaginator",
+        "owner": "shared",
+        "symbol": "CursorPaginatorInterface",
+        "module": "generated/types/shared/index.ts"
+    },
+    {
+        "class": "Illuminate\\Contracts\\Pagination\\LengthAwarePaginator",
+        "owner": "shared",
+        "symbol": "LengthAwarePaginatorInterface",
+        "module": "generated/types/shared/index.ts"
+    },
+    {
+        "class": "Illuminate\\Pagination\\CursorPaginator",
+        "owner": "shared",
+        "symbol": "CursorPaginator",
+        "module": "generated/types/shared/index.ts"
+    },
+    {
+        "class": "Illuminate\\Pagination\\LengthAwarePaginator",
+        "owner": "shared",
+        "symbol": "LengthAwarePaginator",
+        "module": "generated/types/shared/index.ts"
+    },
+    {
+        "class": "Spatie\\LaravelData\\CursorPaginatedDataCollection",
+        "owner": "shared",
+        "symbol": "CursorPaginatedDataCollection",
+        "module": "generated/types/shared/index.ts"
+    },
+    {
+        "class": "Spatie\\LaravelData\\PaginatedDataCollection",
+        "owner": "shared",
+        "symbol": "PaginatedDataCollection",
+        "module": "generated/types/shared/index.ts"
+    }
+]
