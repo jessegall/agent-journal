@@ -74,6 +74,8 @@ const (
 	ProgressApplying          Progress = "applying"
 	ProgressApplied           Progress = "applied"
 	ProgressDeliveryUncertain Progress = "delivery_uncertain"
+	// ProgressCancelled is a request a browser take settled before it was submitted: nothing of it reached the program.
+	ProgressCancelled Progress = "cancelled"
 	ProgressFailed            Progress = "failed"
 	ProgressUnavailable       Progress = "unavailable"
 )

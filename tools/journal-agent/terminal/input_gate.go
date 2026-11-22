@@ -83,7 +83,7 @@ func (gate *InputGate) Type(requestID string, attempt int, text string, readGene
 		return nil, err
 	}
 
-	gate.pending = &TypedLine{RequestID: requestID, Attempt: attempt, Text: text}
+	gate.pending = &TypedLine{RequestID: requestID, Attempt: attempt, Text: text, settled: make(chan struct{})}
 	gate.owner = DriverInput
 
 	return gate.pending, nil
@@ -95,6 +95,9 @@ func (gate *InputGate) Submit(line *TypedLine, enterRetries int) (Delivery, erro
 	gate.mutex.Lock()
 	defer gate.mutex.Unlock()
 
+	if line.stranded {
+		return DeliveryUncertain, ErrLineStranded
+	}
 	if line.invalidated {
 		return DeliveryUncertain, ErrLineInvalidated
 	}

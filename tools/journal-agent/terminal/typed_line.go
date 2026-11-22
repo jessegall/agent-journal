@@ -9,6 +9,11 @@ type TypedLine struct {
 	Text        string
 	enters      int
 	invalidated bool
+	// stranded is a line a browser take found on its way; settled closes once the take settled it, and cancelled says
+	// it was cleared before any Enter.
+	stranded  bool
+	cancelled bool
+	settled   chan struct{}
 }
 
 // Delivery is what became of a typed line.
@@ -27,6 +32,8 @@ var (
 	ErrComposerHeld = errors.New("the composer holds text or changed since it was read: the driver line waits")
 	// ErrLineInvalidated refuses to submit a driver line the user typed over; their keys went through instead.
 	ErrLineInvalidated = errors.New("the user typed while the driver line was pending: it is not submitted")
+	// ErrLineStranded refuses to submit a driver line a browser take is settling; Settlement says how it ended.
+	ErrLineStranded = errors.New("a browser take is settling the driver line: it is not submitted")
 	// ErrUserTyping refuses driver keys while the user holds the input.
 	ErrUserTyping = errors.New("the user holds the input: driver keys wait")
 )

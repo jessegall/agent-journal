@@ -295,6 +295,9 @@ func (driver *TerminalDriver) prompt(
 
 	driver.waitUntil(echoDeadline, func() bool { return driver.runtime.Gate.Echoes(text) })
 	delivery, err := driver.runtime.Gate.Submit(line, 0)
+	if errors.Is(err, terminal.ErrLineStranded) {
+		return driver.strandedResult(request, line), nil
+	}
 	if err != nil || delivery != terminal.Delivered {
 		return contracts.OperationResult{Request: request, Progress: contracts.ProgressDeliveryUncertain}, err
 	}
@@ -305,6 +308,22 @@ func (driver *TerminalDriver) prompt(
 	driver.mutex.Unlock()
 
 	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplying}, nil
+}
+
+// strandedSettleWait is how long a driver waits for a browser take to settle its stranded line.
+const strandedSettleWait = 5 * time.Second
+
+// strandedResult is how a line a browser take stranded ended: cancelled before submit only on the take's proven
+// settlement, otherwise uncertain, never replayed.
+func (driver *TerminalDriver) strandedResult(
+	request contracts.RequestIdentity,
+	line *terminal.TypedLine,
+) contracts.OperationResult {
+	if driver.runtime.Gate.Settlement(line, strandedSettleWait) {
+		return contracts.OperationResult{Request: request, Progress: contracts.ProgressCancelled}
+	}
+
+	return contracts.OperationResult{Request: request, Progress: contracts.ProgressDeliveryUncertain}
 }
 
 // awaitTurnEnd waits for the turn to take the composer away and then for an empty, still composer again.
