@@ -70,7 +70,9 @@ export function providePaneLayout(
     const knownWindows = computed(() =>
         windowList.value.map((each) => each.key),
     );
-    const firstArrangement = (): Arrangement => {
+    const firstArrangement = (): Arrangement =>
+        firstWindowOnly(knownWindows.value[0]);
+    const sideBySide = (): Arrangement => {
         const [first, ...others] = knownWindows.value;
 
         return defaultArrangement(first, others);
@@ -83,10 +85,7 @@ export function providePaneLayout(
 
     const presets = computed<Preset[]>(() => [
         { name: 'Default', arrangement: firstArrangement() },
-        {
-            name: 'Chat only',
-            arrangement: firstWindowOnly(knownWindows.value[0]),
-        },
+        { name: 'Side by side', arrangement: sideBySide() },
     ]);
 
     const store: PaneLayoutStore = {

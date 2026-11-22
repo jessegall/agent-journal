@@ -3,11 +3,13 @@ import {
     arrangementFrom,
     bringToFront,
     changeDetached,
+    DETACHED_SIZE,
     defaultArrangement,
     detachWindow,
     dockWindow,
     dropWindow,
     firstWindowOnly,
+    floatNewWindow,
     shownWindows,
 } from './arrangement';
 import type { DropTarget } from './arrangement';
@@ -126,8 +128,8 @@ describe('detached windows', () => {
                 key: 'plans',
                 left: 80,
                 top: 80,
-                width: 480,
-                height: 360,
+                width: DETACHED_SIZE.width,
+                height: DETACHED_SIZE.height,
                 isMinimised: false,
             },
         ]);
@@ -230,5 +232,26 @@ describe('a stored or imported arrangement', () => {
                 'chat',
             ]),
         ).toBeNull();
+    });
+});
+
+describe('day one and a first window', () => {
+    it('starts with the chat alone at the reading width, and a window added floats at the desk top right, the next a step in', () => {
+        const desk = { top: 124, right: screen.width };
+        const dayOne = firstWindowOnly('chat');
+        const first = floatNewWindow(dayOne, 'tasks', screen, desk);
+        const second = floatNewWindow(first, 'plans', screen, desk);
+
+        expect(panesIn(dayOne.grid)).toMatchObject([
+            { windows: ['chat'], limitWidth: true },
+        ]);
+        expect(first.detached).toMatchObject([
+            { key: 'tasks', top: desk.top + 24, isMinimised: false },
+        ]);
+        expect(first.detached[0].left + first.detached[0].width).toBe(
+            desk.right - 24,
+        );
+        expect(second.detached[1].top - first.detached[0].top).toBe(24);
+        expect(windowsIn(second.grid)).toEqual(['chat']);
     });
 });

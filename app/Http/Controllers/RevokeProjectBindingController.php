@@ -33,6 +33,8 @@ final readonly class RevokeProjectBindingController
             ]);
         }
 
-        return $answers->backWith(RevokeProjectBindingsController::REVOKED_BINDINGS, [$outcome->id => $outcome->result]);
+        $revoked = [$outcome->id => $outcome->result];
+
+        return $answers->backWith(RevokeProjectBindingsController::REVOKED_BINDINGS, $revoked);
     }
 }

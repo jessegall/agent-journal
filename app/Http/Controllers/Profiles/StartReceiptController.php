@@ -29,8 +29,8 @@ final readonly class StartReceiptController
     {
         try {
             $receipt = $records->receipt(strtolower($request));
-        } catch (StartRecordMissing) {
-            throw new NotFoundHttpException(self::UNAVAILABLE);
+        } catch (StartRecordMissing $missing) {
+            throw new NotFoundHttpException(self::UNAVAILABLE, $missing);
         }
 
         return match ($receipt->disposition) {

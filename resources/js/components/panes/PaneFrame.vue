@@ -36,6 +36,12 @@ const { grab } = useWindowDrag();
 const isAdding = ref(false);
 const addButton = ref<{ $el: HTMLElement } | null>(null);
 const addAnchor = computed(() => addButton.value?.$el ?? null);
+/**
+ * The chat on day one: the only pane of Home, holding one window, drawn plain with no tab strip, as the design draws it.
+ */
+const isPlain = computed(
+    () => store.layout.value.type === 'pane' && props.pane.windows.length === 1,
+);
 const isMenuOpen = ref(false);
 
 const tabs = computed<PaneTab[]>(() =>
@@ -221,6 +227,7 @@ const menuEntries = computed<MenuEntry[]>(() => {
         :data-pane-id="pane.id"
     >
         <PaneTabs
+            v-if="!isPlain"
             :tabs="tabs"
             :insert-at="insertAt"
             :data-tabs-of="pane.id"
@@ -281,7 +288,7 @@ const menuEntries = computed<MenuEntry[]>(() => {
             <template v-if="pane.active">
                 <div
                     class="h-full"
-                    :class="{ 'mx-auto max-w-[860px]': pane.limitWidth }"
+                    :class="{ 'mx-auto max-w-[760px]': pane.limitWidth }"
                 >
                     <slot :window-key="pane.active" />
                 </div>

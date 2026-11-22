@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
 import { bringToFront, changeDetached } from '@/components/panes/arrangement';
 import { usePaneLayout } from '@/components/panes/usePaneLayout';
 
 /**
- * The information bar, drawn over the desk's top edge instead of in the flow, so the chat below it does not move down
- * when a window floats: it lists the floating windows, each with Restore, which brings a minimised one back at its place
- * and in front. With no floating window it is not there.
+ * The information bar, a row between the agent bar and the desk while a window floats: Floating, then a chip for each
+ * floating window that brings it to front, and shows a minimised one whole again at its place. With no floating window
+ * it is not there.
  */
 const store = usePaneLayout();
 const floating = computed(() =>
@@ -31,18 +30,23 @@ function restore(key: string): void {
         <div
             role="region"
             aria-label="Floating windows"
-            class="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-wrap items-center gap-2 px-4 py-1.5 text-small text-text-3"
+            class="flex min-h-[30px] flex-none flex-wrap items-center gap-2 border-b border-border pr-[5px] pl-3.5 text-small text-text-3"
         >
+            <span>Floating</span>
             <template v-for="window in floating" :key="window.key">
-                <span
-                    class="pointer-events-auto inline-flex items-center gap-2 rounded-field border border-border-2 bg-raised py-0.5 pr-1 pl-2 shadow-pop"
+                <button
+                    type="button"
+                    class="inline-flex h-[22px] items-center gap-[5px] rounded-seg border border-line px-2 text-badge text-text-3 hover:border-border-3 hover:text-text focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
+                    :aria-label="`Restore ${window.title}`"
+                    @click="restore(window.key)"
                 >
-                    <Icon :name="window.icon" :size="12" />
-                    <span class="text-text-2">{{ window.title }}</span>
-                    <Button size="small" variant="ghost" :aria-label="`Restore ${window.title}`" @click="restore(window.key)"
-                        >Restore</Button
-                    >
-                </span>
+                    <Icon :name="window.icon" :size="13" />
+                    {{
+                        window.isMinimised
+                            ? `${window.title} · bar only`
+                            : window.title
+                    }}
+                </button>
             </template>
         </div>
     </template>

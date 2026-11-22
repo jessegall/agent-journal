@@ -145,11 +145,6 @@ final class WebServiceProvider extends ServiceProvider
     }
 
     /**
-     * A refused command is a form error on a web page, with its stable code flashed beside it, and on a browser's JSON
-     * request its code, message and fields with its status. Refused input and an expired sign-in answer a JSON caller
-     * the same way. The text names no class and holds no trace.
-     */
-    /**
      * The form field a refusal is shown under: a start refusal's own next step names it, every other refusal is the
      * whole command's.
      */
@@ -158,6 +153,11 @@ final class WebServiceProvider extends ServiceProvider
         return $refusal instanceof StartRefusal ? $refusal->reason()->remedy()->type->field() : 'command';
     }
 
+    /**
+     * A refused command is a form error on a web page, with its stable code flashed beside it, and on a browser's JSON
+     * request its code, message and fields with its status. Refused input and an expired sign-in answer a JSON caller
+     * the same way. The text names no class and holds no trace.
+     */
     private function renderRefusals(ExceptionHandler $exceptions): void
     {
         if (! $exceptions instanceof Handler) {
@@ -181,8 +181,8 @@ final class WebServiceProvider extends ServiceProvider
 
         // A coded refusal of a read, such as a chat cursor that no longer fits, answers with its own status, so a
         // partial reload hears why its read was refused.
-        $exceptions->renderable(function (CodedRefusal $refused, Request $request): JsonResponse|Response|null {
-            if (! $request->hasSession() || $refused instanceof CommandRefusal) {
+        $exceptions->renderable(function (Throwable $refused, Request $request): JsonResponse|Response|null {
+            if (! $refused instanceof CodedRefusal || ! $request->hasSession() || $refused instanceof CommandRefusal) {
                 return null;
             }
 
