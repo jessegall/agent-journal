@@ -45,18 +45,23 @@ type BrowserGrant struct {
 // GrantState is who holds the input as the screen report and the claim answers say it: the owner, the live grant's id
 // when a browser holds it, a take still pending, and whether a local key or resize last took control back.
 type GrantState struct {
-	Owner        Owner
-	GrantID      string
-	PendingTake  string
-	LocalControl bool
+	Owner          Owner
+	GrantID        string
+	PendingTake    string
+	LocalControl   bool
+	PromptRevision uint64
 }
 
 // browserGrants is the gate's record of browser writers; the gate's mutex guards it.
 type browserGrants struct {
 	grant          *BrowserGrant
+	receipts       *grantReceipts
 	pendingTake    string
 	cancelledTakes []string
 	localControl   bool
+	// promptRevision rises each time the prompt turns protected or unknown; promptAllowed is how it was last seen.
+	promptRevision uint64
+	promptAllowed  bool
 }
 
 func (grants *browserGrants) isCancelled(takeID string) bool {
@@ -99,6 +104,11 @@ func (gate *InputGate) Take(takeID string, scope GrantScope) (BrowserGrant, erro
 	if err != nil {
 		return BrowserGrant{}, err
 	}
+	receipts, err := newGrantReceipts()
+	if err != nil {
+		return BrowserGrant{}, err
+	}
+	gate.browser.receipts = receipts
 	gate.invalidatePending()
 	gate.browser.grant = &BrowserGrant{ID: id, TakeID: takeID, Scope: scope, ExpiresAt: gate.now().Add(GrantLifetime)}
 	gate.browser.pendingTake, gate.browser.localControl = "", false
@@ -157,9 +167,10 @@ func (gate *InputGate) GrantState() GrantState {
 
 	gate.expireGrant()
 	state := GrantState{
-		Owner:        gate.owner,
-		PendingTake:  gate.browser.pendingTake,
-		LocalControl: gate.browser.localControl,
+		Owner:          gate.owner,
+		PendingTake:    gate.browser.pendingTake,
+		LocalControl:   gate.browser.localControl,
+		PromptRevision: gate.browser.promptRevision,
 	}
 	if held := gate.browser.grant; held != nil {
 		state.GrantID = held.ID
@@ -207,7 +218,7 @@ func (gate *InputGate) expireGrant() {
 // endGrant drops the grant and gives the composer back: free when empty, a draft when text was left; the caller
 // holds the mutex.
 func (gate *InputGate) endGrant() {
-	gate.browser.grant = nil
+	gate.browser.grant, gate.browser.receipts = nil, nil
 	if gate.owner != BrowserInput {
 		return
 	}
