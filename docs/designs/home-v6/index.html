@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Home, version 6 · round 2: from a plain chat to an IDE</title>
+<title>Home, version 6</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 /* Self-contained: no external fonts or scripts. Colours inside .app are version 6 token names in the Stone mono
@@ -141,11 +141,21 @@ body.dk .win.float{box-shadow:0 14px 36px rgba(0,0,0,.55),0 1px 3px rgba(0,0,0,.
 .wbody{flex:1;overflow:auto;min-height:0;scrollbar-width:thin}
 .wgrip{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;touch-action:none}
 .wgrip::after{content:"";position:absolute;right:4px;bottom:4px;width:7px;height:7px;border-right:1.5px solid var(--border-3);border-bottom:1.5px solid var(--border-3)}
-.tabs{display:flex;gap:2px;align-items:stretch;height:34px;flex:1;min-width:0;overflow:hidden}
-.tab{display:flex;align-items:center;gap:6px;padding:0 4px 0 10px;font-size:12.5px;color:var(--text-3);border-radius:7px 7px 0 0;margin-top:4px;cursor:pointer;white-space:nowrap}
+/* Tabs are flat: no box and no radius; the active one is marked by its text and a 2 px line flush with the bar's bottom edge. */
+.tabs{display:flex;align-items:stretch;height:34px;flex:1;min-width:0;overflow:hidden;margin-bottom:-1px}
+.tab{display:flex;align-items:center;gap:6px;padding:0 4px 0 12px;font-size:12.5px;color:var(--text-3);cursor:pointer;white-space:nowrap;touch-action:none}
 .tab:hover{color:var(--text-2)}
-.tab.on{background:var(--bg);color:var(--text);font-weight:500;box-shadow:inset 0 2px 0 var(--plum)}
-.tab .ib{width:18px;height:18px}
+.tab.on{color:var(--text);font-weight:500;box-shadow:inset 0 -2px 0 var(--plum)}
+.tab:focus-visible{outline:2px solid var(--ring);outline-offset:-2px}
+.tab .ib{width:18px;height:18px;opacity:0}
+.tab:hover .ib,.tab.on .ib,.tab .ib:focus-visible{opacity:1}
+.wtitle{display:inline-flex;align-items:center;gap:4px;font-weight:500;font-size:12.5px;color:var(--text);border-radius:5px;padding:2px 4px 2px 5px;margin-left:-5px;cursor:pointer;white-space:nowrap;min-width:0}
+.wtitle:hover{background:var(--hover)}
+.wtitle:focus-visible{outline:2px solid var(--ring);outline-offset:1px}
+.wtitle svg{color:var(--text-3)}
+.whoBtn{display:flex;align-items:center;gap:10px;border:0;background:transparent;font:inherit;color:inherit;padding:3px 6px 3px 3px;margin-left:-3px;border-radius:8px;cursor:pointer;text-align:left}
+.whoBtn:hover{background:var(--hover)}
+.whoBtn:focus-visible{outline:2px solid var(--ring);outline-offset:1px}
 .splitter{position:absolute;top:8px;bottom:8px;width:9px;cursor:col-resize;touch-action:none;z-index:5}
 .splitter::after{content:"";position:absolute;left:4px;top:45%;height:36px;width:1px;background:var(--border-3)}
 .lrow{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--line);font-size:12.5px}
@@ -358,16 +368,17 @@ function suggHtml(conv){const s=SUGG[conv]||'offered',n=CONV[conv].name;
   if(s==='accepted')return `<div class="sugg"><span class="jm" title="From the journal">J</span><div class="t">${n} has its own window<small>Close it any time; its chat keeps every message.</small></div><button class="btn sm" data-sugg="show:${conv}">Show it</button></div>`;
   if(s==='dismissed')return `<div class="sugg" style="border-style:solid;border-color:var(--line)"><span class="jm">J</span><div class="t" style="color:var(--text-3)">Not now. ${n} stays in Helpers.</div><button class="btn sm" data-sugg="accept:${conv}">Add a window</button></div>`;
   return `<div class="sugg"><span class="jm" title="From the journal">J</span><div class="t">${n} started: ${CONV[conv].sub.toLowerCase()}<small>Suggested by the journal · follow it and chat with it in a window</small></div><button class="btn sm bordered" data-sugg="accept:${conv}">${I('plus','s14')}Add a window</button><button class="ib sm" data-sugg="dismiss:${conv}" title="Not now" aria-label="Not now">${I('close','s14')}</button></div>`}
-function chatHead(conv,scope){if(activeConvs().length<2)return '';const c=CONV[conv];
-  return `<div class="chead"><button class="convbtn" data-convmenu="${scope}" aria-haspopup="menu" title="Switch conversation">${conv==='main'?CLAUDE('s14'):I('users','s14')}${c.name}${I('caret','s14')}</button><span>${c.sub}</span><span style="flex:1"></span>${scope==='main'&&conv!=='main'?`<button class="ib sm" data-popconv="${conv}" title="Open ${c.name} in its own window" aria-label="Open in its own window">${I('pop','s14')}</button>`:''}</div>`}
+/* A chat has no header of its own. Which conversation it shows is switched from the agent bar (the plain column) or
+   from the window's own bar (a chat window): the chat is either plain or a proper window, never a framed box between. */
+const STATE_LINE={main:'Working on task 1702',h262:'Designing the notifications bell',w3:'Writing the test for Enter'};
 const composer=conv=>`<div class="composer"><textarea placeholder="Message ${CONV[conv].name}…" data-compose="${conv}" aria-label="Message ${CONV[conv].name}"></textarea><div class="r"><span class="ib sm">${I('clip','s14')}</span><span style="flex:1"></span><span class="chip faint">Opus</span><button class="btn sm primary" data-send="${conv}">${I('arrow','s14')}Send</button></div></div>`;
-const chatView=(conv,scope,limit)=>`<div class="wchat" style="max-width:${limit?readW:9999}px">${chatHead(conv,scope)}<div class="chat">${chatHtml(conv)}</div>${composer(conv)}</div>`;
+const chatView=(conv,scope,limit)=>`<div class="wchat" style="max-width:${limit?readW:9999}px"><div class="chat">${chatHtml(conv)}</div>${composer(conv)}</div>`;
 
 /* ---------- shared state ---------- */
 let mode='dark', frameW=1440, readW=760, vkey='float', step='start', own=false;
 let A, ui={rail:false,barHidden:false,status:false};
 let qm=null, hm=false, ctx=null, keysOpen=false, zc=10, lastPointer=null, seq=0, quiet=true, opened=new Set();
-let NOTES=[], BAL=[];
+let NOTES=[], BAL=[], justDragged=false;
 const PAD=10, EASE='cubic-bezier(.2,.8,.2,1)', CALM=matchMedia('(prefers-reduced-motion: reduce)');
 const sideW=()=>ui.rail?56:216;
 const W=()=>frameW-sideW();
@@ -380,7 +391,9 @@ function centred(left,right,top=0,bottom=H()){const room=right-left,w=Math.min(r
 function tabMeta(t){return t.k==='hchat'?{t:t.conv==='main'?'Chat':'Chat · '+CONV[t.conv].name,ic:t.conv==='main'?'ask':'users'}:{t:itemOf(t.ref).t,ic:itemOf(t.ref).ic}}
 function meta(w){if(w.type==='hchat'){const c=CONV[w.conv];return {t:'Chat · '+c.name,ic:'users',w:440,h:520,gw:4,gh:9}}
   if(w.type==='item'){const it=itemOf(w.ref);return {t:it.t,ic:it.ic,w:360,h:260,gw:3,gh:5}}
-  if(w.type==='editor')return {t:'Editor',ic:'docs',w:700,h:480,gw:6,gh:9}; return CAT[w.type]}
+  if(w.type==='editor')return {t:'Editor',ic:'docs',w:700,h:480,gw:6,gh:9};
+  if(w.type==='chat'){const k=A&&A.mainConv||'main';return {...CAT.chat,t:activeConvs().length>1?'Chat · '+CONV[k].name:'Chat'}}
+  return CAT[w.type]}
 function bodyOf(w,limit){if(w.type==='chat')return chatView(A.mainConv,'main',limit);if(w.type==='hchat')return chatView(w.conv,w.id,limit);if(w.type==='item')return itemOf(w.ref).body;
   if(w.type==='editor'){const t=w.tabs[w.act]||w.tabs[0];if(!t)return `<div class="emptydesk"><span>No tabs. Double-click something in Project to open it here.</span></div>`;return t.k==='hchat'?chatView(t.conv,'tab:'+w.id+':'+w.act,true):itemOf(t.ref).body}
   return BODY[w.type]()}
@@ -498,7 +511,7 @@ const STEPS={start:['1 · Day one','A new user sees only the chat, centred at th
   first:['2 · A first window','The user pressed Space and chose Tasks; it floats where the menu stood. Drag it to the right edge to snap it flush.'],
   desk:['3 · A dashboard','Asks and Tasks snapped to the right quarters; the chat sits in the free left half at a narrower width.'],
   bare:['4 · Without the chat','The chat is hidden; Tasks fills the left half, Plans and Asks the right quarters. Space, then Chat, brings it back.'],
-  helper:['5 · A helper starts','The agent dispatched Helper 262. Under the agent\'s line, the journal itself adds a quiet card: add a window for that helper. Accept it to see the helper\'s chat open flush on the right while the main chat steps aside; a moment later a notification says its first draft is ready.'],
+  helper:['5 · A helper starts','The agent dispatched Helper 262. Under the agent\'s line, the journal itself adds a quiet card: add a window for that helper. Accept it to see the helper\'s chat open flush on the right while the main chat steps aside; a moment later a notification says its first draft is ready. The name in the agent bar is now a switcher: choose Helper 262 to talk to it in the plain chat.'],
   ide:['6 · Like an IDE','The far end of the same Home: sidebar folded to icons, Project tree on the left (⌘1), an editor with tabs where the chat is the first tab, Activity below (⌘2), and a status bar with the agents, shortcuts and a notifications bell. Each piece was added with Space and snapped; Back to just the chat folds it all away again, with Undo.']};
 const STEP_UI={start:{},first:{},desk:{},bare:{},helper:{},ide:{rail:true,status:true}};
 
@@ -507,8 +520,11 @@ function side(){const navs=[['home','Home',1],['todos','Tasks'],['plan','Plans']
   return `<div class="brand"><b>J</b>${ui.rail?'':'Journal'}</div>`+navs.map(([ic,t,on])=>`<div class="nav ${on?'on':''}" title="${ui.rail?t:''}">${I(ic)}${ui.rail?'':t}${on?'<span class="pd" title="A question waits on you"></span>':''}</div>`).join('')
    +`<div class="sidefoot"><button class="ib" id="railBtn" title="${ui.rail?'Show the sidebar':'Fold the sidebar to icons'} · ⌘B" aria-label="${ui.rail?'Show the sidebar':'Fold the sidebar to icons'}">${I('sidebar','s14')}</button></div>`}
 const unread=()=>NOTES.filter(n=>!n.read).length;
-function abar(){return `<div class="agent"><span class="av">${CLAUDE()}</span><div class="who"><span>Agent 1 · main</span><small>Claude Code · Opus · Work (Max)</small></div></div>
-  <span class="st" style="margin-left:12px;color:var(--text-2)"><span class="spin"></span>Working on task 1702</span>
+/* The agent bar names whom the main chat talks to. Once helpers or workers run, that name is the switcher. */
+function abar(){const k=A.mainConv,c=CONV[k],many=activeConvs().length>1;
+  const who=`<span class="av">${k==='main'?CLAUDE():I('users')}</span><div class="who"><span>${k==='main'?'Agent 1 · main':c.name}</span><small>${k==='main'?'Claude Code · Opus · Work (Max)':c.sub}</small></div>`;
+  return `<div class="agent">${many?`<button class="whoBtn" data-convmenu="main" aria-haspopup="menu" title="Switch conversation">${who}${I('caret','s14')}</button>`:who}</div>
+  <span class="st" style="margin-left:12px;color:var(--text-2)"><span class="spin"></span>${STATE_LINE[k]}</span>
   <div class="r"><button class="btn sm bordered">${I('power','s14')}Stop</button>${!ui.status&&NOTES.length?`<button class="ib" data-bell title="Notifications" aria-label="Notifications" style="position:relative">${I('bell','s14')}${unread()?`<span class="badge">${unread()}</span>`:''}</button>`:''}<button class="ib" id="addBtn" title="Add a window · Space or ⌘K" aria-label="Add a window (Space)">${I('plus')}</button><button class="ib" id="homeBtn" title="Home" aria-label="Home menu" aria-expanded="${hm}">${I('layout','s14')}</button><button class="ib" id="hideBar" title="Hide the agent bar · ⌘⇧B" aria-label="Hide the agent bar">${I('barup','s14')}</button></div>`}
 function sbar(){const n=unread();return `<span class="st"><span class="spin"></span>Agent 1 working</span><span>${helpersOn?'2 helpers and workers running':'1 worker running'}</span><span class="st strong"><span class="dot plum"></span>1 waits on you</span><span class="gap"></span>
   <span><kbd>⌘K</kbd> go to anything</span><span><kbd>⌘1</kbd> Project</span><span><kbd>⌘2</kbd> Activity</span><button class="ib" data-keys title="Keyboard shortcuts · ?" aria-label="Keyboard shortcuts">${I('keyb','s14')}</button><button class="ib" data-bell title="Notifications" aria-label="Notifications, ${n} unread">${I('bell','s14')}${n?`<span class="badge">${n}</span>`:''}</button>`}
@@ -521,16 +537,18 @@ function boxHtml(b,v){
       <div class="wbar" data-drag="drawer" style="padding-left:4px"><div class="tabs" role="tablist">${tabs.map(w=>`<div class="tab ${w===act?'on':''}" role="tab" aria-selected="${w===act}" data-tab="${w.id}">${I(meta(w).ic,'s14')}${title(w)}<button class="ib" data-close="${w.id}" aria-label="Close ${title(w)}">${I('close','s14')}</button></div>`).join('')}</div></div>
       <div class="wbody">${bodyOf(act,false)}</div></section>`}
   const w=A.wins.find(x=>x.id===b.id);
-  if(b.plain)return `<div class="chatcol" data-flip="chatcol" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px">${chatHead(A.mainConv,'main')}<div class="scroll"><div class="chat">${chatHtml(A.mainConv)}</div></div>${composer(A.mainConv)}</div>`;
+  if(b.plain)return `<div class="chatcol" data-flip="chatcol" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px" aria-label="Chat with ${CONV[A.mainConv].name}"><div class="scroll"><div class="chat">${chatHtml(A.mainConv)}</div></div>${composer(A.mainConv)}</div>`;
   const m=meta(w),cls=b.flush?'flush':b.float?'float':'flat';
   const head=w.type==='editor'?`<div class="tabs" role="tablist">${w.tabs.map((t,i)=>{const tm=tabMeta(t);return `<div class="tab ${i===w.act?'on':''}" role="tab" aria-selected="${i===w.act}" data-etab="${w.id}:${i}">${I(tm.ic,'s14')}${tm.t}<button class="ib" data-eclose="${w.id}:${i}" aria-label="Close ${tm.t}">${I('close','s14')}</button></div>`}).join('')}</div>`
+    :(w.type==='chat'||w.type==='hchat')&&activeConvs().length>1?`${I(m.ic,'s14')}<span class="wtitle" role="button" tabindex="0" aria-haspopup="menu" data-convmenu="${w.type==='chat'?'main':w.id}" title="Switch conversation">${title(w)}${I('caret','s14')}</span>`
     :`${I(m.ic,'s14')}<span class="t">${title(w)}</span>${m.n!=null&&['tasks','docs','asks'].includes(w.type)?`<span class="n">${m.n}</span>`:''}`;
   return `<section class="win ${cls}" data-w="${w.id}" data-flip="${w.id}" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px;z-index:${b.z||1}" aria-label="${title(w)}">
     <div class="wbar" data-drag="${w.id}" title="${v.free?'Drag to move · double-click to fill or restore':'Drag to move'}">${lights(w,v)}${head}</div>
     <div class="wbody">${bodyOf(w,b.limit)}</div>${b.grip?`<div class="wgrip" data-grip="${w.id}"></div>`:''}</section>`}
 function qmRows(){const q=qm.q.trim().toLowerCase();
   let rows=Object.entries(CAT).map(([k,c])=>{const n=A.wins.filter(w=>w.type===k).length;
-    const sub=k==='chat'?(n||chatTab()?'open · brings it forward':'hidden · brings it back'):c.tool?(n?'open · '+c.tool+' closes it':c.tool):n?(n>1?n+' open · opens another':'open · opens another'):'';
+    const plain=k==='chat'&&vkey==='float'&&A.wins.some(w=>w.type==='chat'&&w.plain);
+    const sub=k==='chat'?(plain?'in the middle · opens it as a window here':n||chatTab()?'open · brings it forward':'hidden · brings it back'):c.tool?(n?'open · '+c.tool+' closes it':c.tool):n?(n>1?n+' open · opens another':'open · opens another'):'';
     return {type:k,label:c.t,ic:c.ic,key:c.key,sub,group:'Windows'}});
   if(helpersOn)activeConvs().filter(c=>c!=='main').forEach(c=>rows.push({type:'hchat',extra:{conv:c},label:'Chat · '+CONV[c].name,ic:'users',sub:A.wins.some(w=>w.type==='hchat'&&w.conv===c)?'open · brings it forward':CONV[c].sub,group:'Conversations'}));
   if(q)TASKS.forEach(([n,t])=>rows.push({type:'item',extra:{ref:'task:'+n},label:'Task '+n,sub:t,ic:'todos',group:'Go to'}));
@@ -555,7 +573,7 @@ function homeItems(){const c=A.wins.find(w=>w.type==='chat'),it=[];
     {label:ui.rail?'Show the sidebar':'Fold the sidebar to icons',ic:'sidebar',keys:'⌘B',run:toggleRail},{label:ui.barHidden?'Show the agent bar':'Hide the agent bar',ic:'barup',keys:'⌘⇧B',run:toggleBar},
     {label:'Status bar',ic:'keyb',tick:ui.status,run:()=>{ui.status=!ui.status}},{label:'Keyboard shortcuts',ic:'keyb',keys:'?',run:()=>{keysOpen=true}});
   return it}
-function keysHtml(){const K=[['Space','Add a window (outside a text field)'],['⌘K','Go to anything, also from a field'],['⌘1','Show or hide Project'],['⌘2','Show or hide Activity'],['⌘B','Fold or show the sidebar'],['⌘⇧B','Hide or show the agent bar'],['Double-click a bar','Fill or restore'],['Drag to an edge','Snap to a half, a quarter or fill'],['Right-click','The menu for what is under the pointer'],['Esc','Close a menu'],['?','This list']];
+function keysHtml(){const K=[['Space','Add a window (outside a text field)'],['⌘K','Go to anything, also from a field'],['⌘1','Show or hide Project'],['⌘2','Show or hide Activity'],['⌘B','Fold or show the sidebar'],['⌘⇧B','Hide or show the agent bar'],['Double-click a bar','Fill or restore'],['⌃⌥ ← → ↑ ↓','Snap the front window left, right, fill, restore'],['Drag a tab down','Take it out into its own window'],['Drag to an edge','Snap to a half, a quarter or fill'],['Right-click','The menu for what is under the pointer'],['Esc','Close a menu'],['?','This list']];
   return `<div class="keys" id="keys" role="dialog" aria-label="Keyboard shortcuts"><h4>Keyboard shortcuts</h4><dl>${K.map(([k,d])=>`<dt><kbd>${k}</kbd></dt><dd>${d}</dd>`).join('')}</dl></div>`}
 let hmItems=[];
 function render(){
@@ -569,7 +587,7 @@ function render(){
   const boxes=v.layout(A);let h=boxes.map(b=>boxHtml(b,v)).join('');
   if(v.scrolls&&boxes.length){const bottom=Math.max(...boxes.map(b=>b.y+b.h))+PAD;h+=`<div style="position:absolute;left:0;top:${bottom}px;width:1px;height:1px"></div>`}
   if(!A.wins.length)h+=`<div class="emptydesk"><b>Nothing on Home</b><span>Press <kbd>Space</kbd> to add a window, or right-click here. The chat is one of them.</span></div>`;
-  if(ui.barHidden)h+=`<button class="pill" id="showBar" title="Show the agent bar · ⌘⇧B">${CLAUDE('s14')}Agent 1<span class="spin"></span><span class="dot plum" title="A question waits on you"></span>${I('caret','s14')}</button>`;
+  if(ui.barHidden)h+=`<button class="pill" id="showBar" title="Show the agent bar · ⌘⇧B">${A.mainConv==='main'?CLAUDE('s14'):I('users','s14')}${CONV[A.mainConv].name}<span class="spin"></span><span class="dot plum" title="A question waits on you"></span>${I('caret','s14')}</button>`;
   if(BAL.length)h+=`<div class="balloons" role="status">${BAL.map(b=>`<div class="balloon">${I('bell','s14')}<div class="t">${b.t}<small>${b.sub||''}</small>${b.actLabel?`<div class="r"><button class="btn sm bordered" data-bact="${b.id}">${b.actLabel}</button></div>`:''}</div><button class="ib sm" data-bclose="${b.id}" aria-label="Dismiss">${I('close','s14')}</button></div>`).join('')}</div>`;
   if(qm)h+=qmHtml();
   if(hm){hmItems=homeItems();h+=menuHtml('hm','hm',hmItems)}
@@ -589,7 +607,8 @@ function render(){
   document.getElementById('notes').innerHTML=[...v.notes,
     ['Two ends, one Home','The plain chat and the IDE-like setup are the same Home: every piece is a window added with Space and snapped, so nothing new has to be learnt between them, and Back to just the chat returns to day one.'],
     ['A quiet suggestion','When the agent dispatches a helper or worker, the journal (not the agent) adds one dashed card marked J under the agent\'s line: add a window for it. One button, a Not now, no sound, once per helper.'],
-    ['Chat with a helper','The name at the top of a chat switches it between the main agent and each running helper or worker; the window button opens that conversation on its own. Rows in Helpers and the tree do the same.'],
+    ['The chat: plain or a window','Alone, the chat is plain: no frame, no header, just the centred conversation. With others it stays plain, or becomes a proper window with its own bar that drags, snaps and sizes like the rest (Space, Chat; or right-click the desk). Never a framed box in between.'],
+    ['Chat with a helper','Once helpers run, the name in the agent bar switches the plain chat between the main agent and each helper or worker; a chat window switches from its title. Either menu opens a conversation in its own window.'],
     ['More room, never lost','The sidebar folds to an icon rail with its button kept at the bottom; the agent bar hides into a pill at the top right that keeps the agent\'s state and dot. Each has a shortcut, a Home menu entry and an Undo.'],
     ['Notifications','A balloon at the bottom right for a few seconds, then kept under the bell (in the status bar, or in the agent bar when there is none). Nothing beeps; nothing steals focus.']].map(([t,x])=>`<div><b>${t}</b>${x}</div>`).join('');
   [['#vars','k',vkey],['#steps','k',own?'':step],['#widths','w',String(frameW)]].forEach(([s,a,val])=>document.querySelectorAll(s+' button').forEach(b=>b.setAttribute('aria-pressed',b.dataset[a]===val)));
@@ -625,6 +644,7 @@ function openInEditor(spec){const e=editor();if(!e)return false;let i=e.tabs.fin
 function openAt(type,p,extra={},opts={}){qm=null;ctx=null;
   if(type==='chat'&&chatTab()&&!hasChat(A)){const e=editor();e.act=e.tabs.findIndex(t=>t.k==='hchat'&&t.conv==='main');front(e);changed();flash(e.id);return e}
   const probe={type,...extra},have=A.wins.find(w=>sameKind(w,probe)&&(type==='chat'||type==='hchat'||type==='item'||CAT[type]&&CAT[type].tool));
+  if(have&&type==='chat'&&have.plain&&vkey==='float'){chatToWindow(have);Object.assign(have,{x:Math.round(Math.max(0,Math.min(W()-120,p.x))),y:Math.round(Math.max(0,Math.min(H()-120,p.y))),h:Math.min(have.h,H()-Math.round(Math.max(0,p.y))-12)})}
   if(have){front(have);if(opts.snap&&vkey==='float')snapTo(have,opts.snap);if(vkey==='drawer'&&type!=='chat')A.drawer.active=have.id;changed();flash(vkey==='drawer'&&type!=='chat'?'drawer':have.id);return have}
   if(CAT[type]&&type!=='chat'&&A.wins.filter(w=>w.type===type).length>=8){toast('Eight '+CAT[type].t+' windows are open: close one first');render();return}
   const w=newWin(type,extra);
@@ -693,7 +713,7 @@ function dragFloat(e,w,el){let started=false,ox=0,oy=0,zone=null,xs=[],ys=[];
     if(zone){showPreview({...zoneRect(zone,w),flush:true},ZONE_NAME[zone]);guides()}
     else{showPreview(null);[x,gx]=snap(x,w.w,xs);[y,gy]=snap(y,w.h,ys);guides(gx,gy)}
     w.x=Math.round(Math.max(-w.w+48,Math.min(W()-48,x)));w.y=Math.round(Math.max(0,Math.min(H()-34,y)));el.style.left=w.x+'px';el.style.top=w.y+'px';moveChat()},
-  ()=>{el.classList.remove('dragging');if(!started)return;if(zone)snapTo(w,zone);changed()})}
+  ()=>{el.classList.remove('dragging');if(!started)return;justDragged=true;setTimeout(()=>justDragged=false,60);if(zone)snapTo(w,zone);changed()})}
 
 function wire(){
   const desk=document.getElementById('desk'),v=V[vkey],on=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
@@ -715,7 +735,14 @@ function wire(){
   on('[data-fill]',b=>{b.onpointerdown=ev=>ev.stopPropagation();b.onclick=()=>{const w=A.wins.find(x=>x.id===b.dataset.fill);snapTo(w,'fill');changed()}});
   on('[data-restore]',b=>{b.onpointerdown=ev=>ev.stopPropagation();b.onclick=()=>{const w=A.wins.find(x=>x.id===b.dataset.restore);restoreWin(w);front(w);changed()}});
   on('[data-tab]',t=>t.onclick=()=>{A.drawer.active=t.dataset.tab;render()});
-  on('[data-etab]',t=>t.onclick=()=>{const [id,i]=t.dataset.etab.split(':');const e=A.wins.find(w=>w.id===id);e.act=+i;render()});
+  on('[data-etab]',t=>{t.onclick=()=>{const [id,i]=t.dataset.etab.split(':');const e=A.wins.find(w=>w.id===id);e.act=+i;render()};
+    /* A tab dragged down out of the bar becomes its own window where it is let go, as in an IDE. */
+    t.onpointerdown=e=>{if(e.button!==0||e.target.closest('button'))return;e.stopPropagation();const [id,i]=t.dataset.etab.split(':'),ed=A.wins.find(w=>w.id===id),tb=ed.tabs[+i],tm=tabMeta(tb);let out=false;
+      const spec=tb.k==='hchat'&&tb.conv==='main'?{type:'chat',extra:{}}:tb.k==='hchat'?{type:'hchat',extra:{conv:tb.conv}}:{type:'item',extra:{ref:tb.ref}};
+      drag(e,(dx,dy,ev)=>{if(!out&&Math.abs(dy)<22)return;out=true;const p=deskPoint(ev),z=vkey==='float'?zoneAt(p):null,m=meta({type:spec.type,...spec.extra});
+        showPreview(z?{...zoneRect(z),flush:true}:{x:p.x-40,y:p.y-14,w:m.w,h:m.h},I(tm.ic,'s14')+tm.t)},
+      (dx,dy,ev)=>{if(!out){t.onclick();return}const p=deskPoint(ev),z=vkey==='float'?zoneAt(p):null;ed.tabs.splice(+i,1);ed.act=Math.max(0,Math.min(ed.act,ed.tabs.length-1));
+        if(spec.type==='chat'&&hasChat(A)){changed();return}openAt(spec.type,{x:p.x-40,y:p.y-14},spec.extra,{snap:z})})}});
   on('[data-eclose]',b=>{b.onpointerdown=ev=>ev.stopPropagation();b.onclick=ev=>{ev.stopPropagation();const [id,i]=b.dataset.eclose.split(':');const e=A.wins.find(w=>w.id===id);e.tabs.splice(+i,1);e.act=Math.max(0,Math.min(e.act,e.tabs.length-1));changed()}});
   on('[data-sugg]',b=>b.onclick=()=>{const [k,conv]=b.dataset.sugg.split(':');
     if(k==='accept')acceptSugg(conv);
@@ -723,7 +750,8 @@ function wire(){
     if(k==='show'){if(openInEditor({k:'hchat',conv}))return;const hw=A.wins.find(w=>w.type==='hchat'&&w.conv===conv);if(hw){front(hw);changed();flash(vkey==='drawer'?'drawer':hw.id)}else acceptSugg(conv)}});
   on('[data-popconv]',b=>b.onclick=()=>{const conv=b.dataset.popconv;A.mainConv='main';openAt('hchat',helperPoint(),{conv},{snap:'right'})});
   on('[data-chatwith]',b=>b.onclick=()=>{if(!openInEditor({k:'hchat',conv:b.dataset.chatwith}))openAt('hchat',helperPoint(),{conv:b.dataset.chatwith})});
-  on('[data-convmenu]',b=>b.onclick=ev=>{ev.stopPropagation();const scope=b.dataset.convmenu,r=b.getBoundingClientRect(),d=desk.getBoundingClientRect();
+  on('[data-convmenu]',b=>{if(b.tagName!=='BUTTON')b.onkeydown=ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();ev.stopPropagation();b.onclick(ev)}};
+    b.onclick=ev=>{ev.stopPropagation();if(justDragged)return;const scope=b.dataset.convmenu,r=b.getBoundingClientRect(),d=desk.getBoundingClientRect();
     let get,set;
     if(scope==='main'){get=()=>A.mainConv;set=c=>A.mainConv=c}
     else if(scope.startsWith('tab:')){const [,id,i]=scope.split(':'),e=A.wins.find(w=>w.id===id),t=e.tabs[+i];get=()=>t.conv;set=c=>t.conv=c}
@@ -731,7 +759,9 @@ function wire(){
     const cur=get(),items=[{head:'Conversations'},...activeConvs().map(c=>({label:CONV[c].name,sub:CONV[c].sub,ic:c==='main'?'ask':'users',tick:c===cur,run:()=>set(c)}))];
     const others=activeConvs().filter(c=>c!=='main'&&c!==cur&&!A.wins.some(w=>w.type==='hchat'&&w.conv===c));
     if(others.length)items.push({sep:1},...others.map(c=>({label:`Open ${CONV[c].name} in its own window`,ic:'pop',run:()=>{openAt('hchat',helperPoint(),{conv:c},{snap:'right'});return false}})));
-    ctx={x:r.left-d.left,y:r.bottom-d.top+4,items};hm=false;render()});
+    const pc=A.wins.find(w=>w.type==='chat');
+    if(scope==='main'&&vkey==='float'&&pc)items.push({sep:1},pc.plain?{label:'Make the chat a window',ic:'layout',run:()=>chatToWindow(pc)}:{label:'Chat back into the middle',ic:'ask',run:()=>{restoreWin(pc);pc.plain=true}});
+    ctx={x:r.left-d.left,y:r.bottom-d.top+4,items};hm=false;render()}});
   on('[data-tnode]',n=>{n.onclick=()=>{const id=n.dataset.tnode;TREE_SEL=id;if(n.hasAttribute('aria-expanded')){TREE_OPEN.has(id)?TREE_OPEN.delete(id):TREE_OPEN.add(id)}render()};
     n.ondblclick=()=>{if(n.dataset.topen){const s=openSpec(n.dataset.topen);if(!openInEditor(s))s.k==='hchat'?openAt('hchat',helperPoint(),{conv:s.conv}):openAt('item',{x:W()/2-180,y:60},{ref:s.ref})}};
     n.onkeydown=ev=>{if(ev.key==='Enter')n.ondblclick();if(ev.key===' '){ev.preventDefault();ev.stopPropagation();n.onclick()}}});
@@ -800,12 +830,19 @@ function onContext(ev){const t=ev.target;if(t.closest('textarea,input,.qm,.ctx,.
     if(w.type==='chat'&&vkey==='float')items.splice(items.length-2,0,{label:'Back into the middle',ic:'ask',run:()=>{restoreWin(w);w.plain=true}},{sep:1})}
   else if(t===document.getElementById('desk')||t.closest('.emptydesk')||t.closest('.chatcol')&&!t.closest('.rowcard,.composer,.chead,.sugg')){
     items=[{label:'Add a window…',ic:'plus',keys:'Space',run:()=>{openMenu(p);return false}}];
+    const pc=A.wins.find(w=>w.type==='chat'&&w.plain);
+    if(v.free&&pc)items.push({label:'Make the chat a window',ic:'layout',run:()=>chatToWindow(pc)});
     if(v.free)items.push({label:'Tile all windows',ic:'layout',disabled:A.wins.length<2,run:tileAll},{label:'Float all windows',ic:'front',disabled:!A.wins.some(w=>w.snap),run:()=>A.wins.forEach(restoreWin)});
     items.push({sep:1},{label:'Back to just the chat',ic:'home',disabled:!A.wins.some(w=>w.type!=='chat'),run:backToChat})}
   if(!items)return;ev.preventDefault();qm=null;hm=false;keysOpen=false;ctx={x:p.x,y:p.y,items};render()}
 
 /* ---------- keys ---------- */
 addEventListener('keydown',ev=>{const t=ev.target,inField=t.closest&&t.closest('input,textarea,select,[contenteditable]'),mod=ev.metaKey||ev.ctrlKey;
+  /* ⌃⌥ and an arrow snap the front window without the mouse: left or right half, fill, restore. */
+  if(ev.ctrlKey&&ev.altKey&&!inField&&vkey==='float'&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(ev.key)){
+    const ws=A.wins.filter(w=>!(w.type==='chat'&&w.plain)),w=ws.sort((p,q)=>q.z-p.z)[0];if(!w)return;ev.preventDefault();
+    if(ev.key==='ArrowLeft')snapTo(w,'left');if(ev.key==='ArrowRight')snapTo(w,'right');if(ev.key==='ArrowUp')snapTo(w,'fill');if(ev.key==='ArrowDown'){restoreWin(w);front(w)}
+    changed();flash(w.id);return}
   if(mod&&(ev.key==='b'||ev.key==='B')){ev.preventDefault();if(ev.shiftKey)toggleBar();else toggleRail();return}
   if(mod&&(ev.key==='k'||ev.key==='K')){ev.preventDefault();if(!qm)openMenu();return}
   if(mod&&ev.key==='1'){ev.preventDefault();toggleTool('project',[0,0,.2,1]);return}
