@@ -18,6 +18,10 @@ use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\SignInProtocols;
 use App\Ui\Contracts\PageResolver;
+use App\Ui\Layout\DeclaredLayoutData;
+use App\Ui\Layout\LayoutNativeData;
+use App\Ui\Layout\LayoutPartData;
+use App\Ui\Layout\LayoutRowData;
 use Carbon\CarbonImmutable;
 
 /**
@@ -30,7 +34,7 @@ final readonly class AccountsWindowResolver implements PageResolver
 
     public function __construct(private AccountUses $uses, private SignInProtocols $protocols) {}
 
-    public function read(): AccountListData
+    public function read(): DeclaredLayoutData
     {
         $accounts = Account::listed();
         $selections = ActiveAccount::listed();
@@ -41,7 +45,7 @@ final readonly class AccountsWindowResolver implements PageResolver
         $costs = AccountUsageCost::monthTotals(array_map(fn (Account $account) => $account->id, $accounts), $now);
         $threads = AccountUsageTokens::newestOf($accounts);
 
-        return AccountListData::from([
+        $list = AccountListData::from([
             'rows' => array_map(fn (Account $account) => AccountRowData::fromAccount(
                 $account,
                 in_array($account->id, $chosen, true),
@@ -64,5 +68,44 @@ final readonly class AccountsWindowResolver implements PageResolver
                 HookDriver::cases(),
             ),
         ]);
+
+        return DeclaredLayoutData::of(LayoutPartData::box(
+            'accounts-page',
+            'stack',
+            $this->startsOf($accounts, $selections),
+            LayoutPartData::native('accounts', LayoutNativeData::of('accounts/AccountsWindow', $list)),
+        ));
+    }
+
+    /**
+     * Which saved account new starts of each driver use, as shared fact rows above the native list.
+     *
+     * @param  list<Account>  $accounts
+     * @param  list<ActiveAccount>  $selections
+     */
+    private function startsOf(array $accounts, array $selections): LayoutPartData
+    {
+        $labels = [];
+
+        foreach ($accounts as $account) {
+            $labels[$account->id] = $account->label;
+        }
+
+        $chosen = [];
+
+        foreach ($selections as $selection) {
+            $chosen[$selection->driver] = $selection->account_id === null
+                ? 'none chosen'
+                : $labels[$selection->account_id] ?? 'a removed account';
+        }
+
+        return LayoutPartData::collection('starts', 'facts', array_map(
+            fn (HookDriver $driver) => new LayoutRowData(
+                $driver->value,
+                "New {$driver->value} starts use",
+                $chosen[$driver->value] ?? 'none chosen',
+            ),
+            HookDriver::cases(),
+        ));
     }
 }
