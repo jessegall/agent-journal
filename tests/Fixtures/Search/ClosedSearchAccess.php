@@ -7,7 +7,9 @@ namespace Tests\Fixtures\Search;
 use App\Contracts\SearchAccess;
 use App\Support\ActorContext;
 use App\Values\AdmittedConstraints;
+use App\Values\OpenAction;
 use App\Values\ReadRequest;
+use App\Values\RecordLocation;
 use App\Values\SearchReader;
 
 /**
@@ -33,5 +35,10 @@ final class ClosedSearchAccess implements SearchAccess
     public function admitsOpen(SearchReader $reader, string $recordId): bool
     {
         return $reader->isAgent();
+    }
+
+    public function openAction(string $recordId, RecordLocation|null $location): OpenAction
+    {
+        return new OpenAction('logs_read', ['line_id' => $recordId]);
     }
 }

@@ -87,6 +87,20 @@ final readonly class SearchRequest
     }
 
     /**
+     * The handle a continuation request carries.
+     *
+     * @throws SearchRequestInvalid
+     */
+    public function continuationHandle(): string
+    {
+        if ($this->continuation === null) {
+            throw SearchRequestInvalid::withoutWords();
+        }
+
+        return $this->continuation;
+    }
+
+    /**
      * @throws SearchRequestInvalid
      */
     private static function continuing(

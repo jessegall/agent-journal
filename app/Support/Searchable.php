@@ -9,6 +9,7 @@ use App\Contracts\SearchAccess;
 use App\Contracts\SearchProvider;
 use App\Exceptions\SearchableInvalid;
 use Closure;
+use Illuminate\Contracts\Container\Container;
 
 /**
  * One source a domain declares for search: its local key, its label, the access policy that guards it, the
@@ -72,6 +73,30 @@ final readonly class Searchable
     public function hasRecognizer(): bool
     {
         return $this->recognizerClass !== null;
+    }
+
+    /**
+     * The provider, built when a search reaches this source: the container makes a class, a closure is wrapped.
+     */
+    public function providerFrom(Container $container): SearchProvider
+    {
+        if ($this->provider instanceof Closure) {
+            return new ClosureSearchProvider($this->provider);
+        }
+
+        return $container->make($this->provider);
+    }
+
+    /**
+     * The recognizer of complete references, or null when the source declares none.
+     */
+    public function recognizerFrom(Container $container): ReferenceRecognizer|null
+    {
+        if ($this->recognizerClass === null) {
+            return null;
+        }
+
+        return $container->make($this->recognizerClass);
     }
 
     /**

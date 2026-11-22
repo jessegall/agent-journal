@@ -9,7 +9,9 @@ use App\Contracts\SearchAccess;
 use App\Support\ActorContext;
 use App\Values\AdmittedConstraints;
 use App\Values\AllowedNames;
+use App\Values\OpenAction;
 use App\Values\ReadRequest;
+use App\Values\RecordLocation;
 use App\Values\SearchReader;
 use Domain\Tasks\Support\Mcp\TaskReadResult;
 
@@ -56,5 +58,13 @@ final readonly class TaskSearchAccess implements SearchAccess
         }
 
         return $this->reads->allows(TaskReadResult::requestFor($recordId));
+    }
+
+    /**
+     * The task summary through tasks_read; the brief passage opener is added with the body tier.
+     */
+    public function openAction(string $recordId, RecordLocation|null $location): OpenAction
+    {
+        return new OpenAction(TaskReadResult::TOOL, ['task_id' => $recordId]);
     }
 }

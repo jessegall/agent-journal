@@ -7,6 +7,8 @@ namespace App\Contracts;
 use App\Support\ActorContext;
 use App\Values\ReadRequest;
 use App\Values\AdmittedConstraints;
+use App\Values\OpenAction;
+use App\Values\RecordLocation;
 use App\Values\SearchReader;
 
 /**
@@ -32,4 +34,9 @@ interface SearchAccess
      * owner's read makes, asked before a hit is emitted and again when it is opened.
      */
     public function admitsOpen(SearchReader $reader, string $recordId): bool;
+
+    /**
+     * The read that opens this record, or the passage at this location, such as tasks_read with its task_id.
+     */
+    public function openAction(string $recordId, RecordLocation|null $location): OpenAction;
 }
