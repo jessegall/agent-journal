@@ -34,7 +34,8 @@ class NewFocusPlaces(SingleInstance):
 
     def found(self, agent_id: int) -> list[PlanTask]:
         new_ids = [task.id for task in self.new_tasks(agent_id)]
-        return self.queries.query(PlanTask).matching(Among("state", ACTIVE_STATES)).matching(Among("task_id", new_ids)).get() if new_ids else []
+        places = self.queries.query(PlanTask).matching(Among("state", ACTIVE_STATES)).matching(Among("task_id", new_ids))
+        return list(places.every_row("a main agent may hold more than 50 started tasks in plans")) if new_ids else []
 
     def first(self, event: HookEvent, agent_id: int) -> PlanTask | None:
         return next(iter(self.places(event, agent_id)), None)
