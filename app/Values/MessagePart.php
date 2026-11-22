@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\MessagePartType;
-use JsonSerializable;
+use Spatie\LaravelData\Data;
 
 /**
  * One part of a delivery to an agent, in its place among the others: a text, or an attachment named by its id, the
  * digest of the version sent and its label. The agent reads an attachment through the journal, never from a path.
  */
-final readonly class MessagePart implements JsonSerializable
+final class MessagePart extends Data
 {
-    private function __construct(
-        public MessagePartType $type,
-        public string $text,
-        public string $attachmentId,
-        public string $digest,
-        public string $label,
+    public function __construct(
+        public readonly MessagePartType $type,
+        public readonly string $text,
+        public readonly string $attachmentId,
+        public readonly string $digest,
+        public readonly string $label,
     ) {}
 
     public static function text(string $text): self
@@ -34,47 +34,16 @@ final readonly class MessagePart implements JsonSerializable
     /**
      * The parts as stored or sent.
      *
-     * @param  list<array{type: string, text: string, attachmentId: string, digest: string, label: string}>  $stored
+     * @param  list<array<string, mixed>>  $stored
      * @return list<self>
      */
     public static function listOf(array $stored): array
     {
-        return array_map(
-            fn (array $part): self => new self(
-                MessagePartType::from($part['type']),
-                $part['text'],
-                $part['attachmentId'],
-                $part['digest'],
-                $part['label'],
-            ),
-            $stored,
-        );
+        return array_values(self::collect($stored));
     }
 
     public function isAttachment(): bool
     {
         return $this->type === MessagePartType::Attachment;
-    }
-
-    /**
-     * @return array{type: string, text: string, attachmentId: string, digest: string, label: string}
-     */
-    public function toArray(): array
-    {
-        return [
-            'type' => $this->type->value,
-            'text' => $this->text,
-            'attachmentId' => $this->attachmentId,
-            'digest' => $this->digest,
-            'label' => $this->label,
-        ];
-    }
-
-    /**
-     * @return array{type: string, text: string, attachmentId: string, digest: string, label: string}
-     */
-    public function jsonSerialize(): array
-    {
-        return $this->toArray();
     }
 }

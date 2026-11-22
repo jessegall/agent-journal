@@ -44,7 +44,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $idempotency_key
  * @property string $payload_digest
  * @property string|null $message
- * @property list<array{type: string, text: string, attachmentId: string, digest: string, label: string}>|null $parts
+ * @property list<array<string, mixed>>|null $parts
  * @property string|null $model
  * @property string|null $effort
  * @property RequestProgress $progress
