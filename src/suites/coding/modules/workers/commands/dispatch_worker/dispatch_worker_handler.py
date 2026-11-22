@@ -7,6 +7,7 @@ import json
 
 from engine.command.bus import Bus
 from engine.command.context import Context
+from engine.performance.timing import Timing
 from suites.coding.modules.workers.support.model_complexity_policy import ModelComplexityPolicy
 from engine.command.handler import Handler
 from engine.provider.providers import Providers
@@ -64,7 +65,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     command = DispatchWorker
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: HelperTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, start_check: AgentStartCheck, release: StartedTaskRelease, reservations: MainReservedTasks, presets: WorkerTestPresets, complexity: ModelComplexityPolicy, assigned_worker_tasks: AssignedWorkerTasks, external_waits: OutsideWaits) -> None:
+                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: HelperTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, start_check: AgentStartCheck, release: StartedTaskRelease, reservations: MainReservedTasks, presets: WorkerTestPresets, complexity: ModelComplexityPolicy, assigned_worker_tasks: AssignedWorkerTasks, external_waits: OutsideWaits, timing: Timing) -> None:
+        self.timing = timing
         self.assigned_worker_tasks, self.outside_waits = assigned_worker_tasks, external_waits
         self.complexity = complexity
         self.release, self.reservations, self.presets = release, reservations, presets
@@ -105,13 +107,18 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         start = StartAgent(command.session or str(uuid4()), program, Worker.key, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
         if command.source_worker_id is not None:
             return self.takeover_launch(command, start, choice, environment, context)
+        self.timing.stamp("dispatch_checked")
         source = self.sources.source_copy(replace(context, environment_id=task.environment_id))
         task_sources = self.copies.copies(tasks, source)
         taken = self.git.branches(environment.folder, WORKER_BRANCHES.format(environment=environment.name))
+        self.timing.stamp("dispatch_branches_read")
         opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id, taken, command.new_agent_reason.strip(), choice.reason, command.starts_program and AssignableTasks.has_open(tasks)), context)
         try:
+            self.timing.stamp("dispatch_worktree_opened")
             start = self.git.start(environment.folder, opened.worktree, tuple(listed.id for listed in tasks))
+            self.timing.stamp("dispatch_branch_start_found")
             self.git.cut(environment.folder, opened.worktree, start.point)
+            self.timing.stamp("dispatch_worktree_cut")
             try:
                 self.bus.run_with_context(PrepareWorktree(opened.worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies, profile.name), context)
                 worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, start.base_commit, tuple(listed.id for listed in tasks), task_sources, json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_LINKS), *command.library_links)))), json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_COPIES), *command.library_copies))))), context)
