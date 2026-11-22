@@ -62,6 +62,7 @@ STASH_LOCK_FILE = "journal-stash.lock"
 DEPENDENCY_FOLDER_NAMES = {"node_modules", "bower_components", "vendor", ".venv", "venv", "env", ".bundle"}
 SKIP_WORKTREE_MARK = "S "
 LISTING_WORD = "list"
+NEW_WORKTREE = ("worktree", "add")
 
 UNTRACKED_STATUS = "?? "
 PUBLISHED_FOLDERS = (".claude", ".agents")
@@ -69,7 +70,8 @@ PUBLISHED_FOLDERS = (".claude", ".agents")
 GIT_OPTIONS_WITH_VALUE = frozenset({"-c", "-C", "--git-dir", "--work-tree", "--namespace", "--exec-path", "--super-prefix", "--config-env"})
 # the git commands that move a branch, a ref or the shared repository wait in the merge lane, one at a time; a
 # command that only touches its own worktree's index and files (add, rm, mv, restore, clean, update-index) does not,
-# so a dispatch setting up a new worktree never waits behind a merge
+# so a dispatch setting up a new worktree never waits behind a merge; nor does a worktree add, which makes a new branch
+# at a commit read before it and moves no branch there is
 BRANCH_CHANGES = frozenset({"merge", "rebase", "checkout", "switch", "worktree", "stash", "reset", "commit", "cherry-pick", "revert", "branch", "pull", "push", "clone", "am", "apply", "update-ref", "config", "fetch", "tag", "notes"})
 
 
@@ -849,7 +851,7 @@ class WorktreeGit:
     def changes_branches(arguments: Sequence[str]) -> bool:
         command = WorktreeGit.subcommand(arguments)
         word_after = next(iter(arguments[arguments.index(command) + 1:][:1]), "") if command else ""
-        return command in BRANCH_CHANGES and word_after != LISTING_WORD
+        return command in BRANCH_CHANGES and word_after != LISTING_WORD and (command, word_after) != NEW_WORKTREE
 
     # The git command in the arguments, after any options placed before it such as -c name=value.
     @staticmethod

@@ -31,7 +31,8 @@ def test_a_git_command_that_changes_a_branch_is_a_merge_run_whatever_options_com
     assert run_git(*arguments) is ProcessType.MERGE
 
 
-@pytest.mark.parametrize("arguments", [("status",), ("-c", "color.ui=never", "log", "-1"), ("rev-parse", "HEAD")], ids=["status", "config-option", "rev-parse"])
+@pytest.mark.parametrize("arguments", [("status",), ("-c", "color.ui=never", "log", "-1"), ("rev-parse", "HEAD"), ("worktree", "add", "-b", "worker", "/w", "c0ffee1")],
+                         ids=["status", "config-option", "rev-parse", "new-worktree"])
 def test_a_git_command_that_only_reads_is_a_quick_run(arguments):
     assert run_git(*arguments) is ProcessType.QUICK
 
