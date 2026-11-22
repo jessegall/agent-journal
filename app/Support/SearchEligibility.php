@@ -129,6 +129,27 @@ final readonly class SearchEligibility
     }
 
     /**
+     * The inline hints the eligible sources give for an input too short to search, such as Type task 7 for 7; it
+     * reads declarations only, so no record query runs until the input qualifies.
+     *
+     * @return list<string>
+     */
+    public function hints(SearchReader $reader, string $input): array
+    {
+        $hints = [];
+
+        foreach ($this->eligible($reader) as $source) {
+            $hint = $source->searchable->recognizerFrom($this->container)?->hint($input);
+
+            if ($hint !== null) {
+                $hints[] = $hint;
+            }
+        }
+
+        return $hints;
+    }
+
+    /**
      * One page of the eligible sources whose key or label starts with the prefix, after the given key.
      *
      * @throws SearchValueInvalid

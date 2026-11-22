@@ -37,4 +37,18 @@ final readonly class TaskLogSearchAccess extends ReadToolSearchAccess
     {
         return TaskReadResult::ID_ARGUMENT;
     }
+
+    /**
+     * A log line opens the inspector on its Logs tab at that line.
+     *
+     * @return array<string, string>
+     */
+    public function pageQuery(RecordLocation|null $location): array
+    {
+        if ($location === null) {
+            return [];
+        }
+
+        return ['tab' => 'logs', 'entry' => $location->id];
+    }
 }

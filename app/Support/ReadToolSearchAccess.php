@@ -74,4 +74,12 @@ abstract readonly class ReadToolSearchAccess implements SearchAccess
     {
         return new OpenAction($this->readName(), [$this->idArgument() => $recordId]);
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function pageQuery(RecordLocation|null $location): array
+    {
+        return [];
+    }
 }

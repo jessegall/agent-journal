@@ -35,4 +35,20 @@ final readonly class DocumentSearchAccess extends ReadToolSearchAccess
     {
         return 'doc_id';
     }
+
+    /**
+     * A passage opens the page at the revision it was found in, when it names one.
+     *
+     * @return array<string, string>
+     */
+    public function pageQuery(RecordLocation|null $location): array
+    {
+        if ($location === null || ! PublicationPassage::isId($location->id)) {
+            return [];
+        }
+
+        $revision = PublicationPassage::fromId($location->id)->revision;
+
+        return $revision === null ? [] : ['revision' => (string) $revision];
+    }
 }

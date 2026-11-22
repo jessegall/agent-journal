@@ -39,4 +39,18 @@ final readonly class TaskSearchAccess extends ReadToolSearchAccess
     {
         return TaskReadResult::ID_ARGUMENT;
     }
+
+    /**
+     * A brief passage opens the inspector on its Brief tab at that passage.
+     *
+     * @return array<string, string>
+     */
+    public function pageQuery(RecordLocation|null $location): array
+    {
+        if ($location === null) {
+            return [];
+        }
+
+        return ['tab' => 'brief', 'passage' => $location->id];
+    }
 }

@@ -39,4 +39,12 @@ interface SearchAccess
      * The read that opens this record, or the passage at this location, such as tasks_read with its task_id.
      */
     public function openAction(string $recordId, RecordLocation|null $location): OpenAction;
+
+    /**
+     * The query the record's page takes to open at this location, such as tab=logs and the line; none for the
+     * record itself.
+     *
+     * @return array<string, string>
+     */
+    public function pageQuery(RecordLocation|null $location): array;
 }

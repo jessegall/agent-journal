@@ -41,4 +41,9 @@ final class ClosedSearchAccess implements SearchAccess
     {
         return new OpenAction('logs_read', ['line_id' => $recordId]);
     }
+
+    public function pageQuery(RecordLocation|null $location): array
+    {
+        return [];
+    }
 }

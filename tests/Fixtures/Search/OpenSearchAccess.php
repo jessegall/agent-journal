@@ -41,4 +41,9 @@ final class OpenSearchAccess implements SearchAccess
     {
         return new OpenAction('tasks_read', ['task_id' => $recordId]);
     }
+
+    public function pageQuery(RecordLocation|null $location): array
+    {
+        return [];
+    }
 }
