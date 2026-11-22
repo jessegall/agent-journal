@@ -20,5 +20,7 @@ final class RevisionPageData extends Data
         public readonly string $abstract,
         public readonly string $bodyHtml,
         public readonly bool $historical,
+        // When the revision was saved, so a revision with an empty body still says which it is.
+        public readonly string $closedAt,
     ) {}
 }

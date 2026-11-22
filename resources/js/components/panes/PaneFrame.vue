@@ -260,9 +260,12 @@ const menuEntries = computed<MenuEntry[]>(() => {
                 </div>
             </template>
             <template v-else>
-                <p class="p-4 text-body text-text-3">
-                    Nothing is open in this pane.
-                </p>
+                <div class="flex flex-col items-start gap-2 p-4">
+                    <p class="text-body text-text-3">Nothing is open in this pane.</p>
+                    <template v-if="store.closedWindows.value.length > 0">
+                        <Button variant="bordered" size="small" @click="isAdding = true">Open a window</Button>
+                    </template>
+                </div>
             </template>
         </div>
         <template v-if="compassZone">

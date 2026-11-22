@@ -28,6 +28,7 @@ final readonly class RevisionWindowResolver implements PageResolver
             'abstract' => $revision->abstract,
             'bodyHtml' => MarkdownText::body($revision->body)->toSafeHtml(),
             'historical' => $revision->historical,
+            'closedAt' => $revision->closedAt,
         ]);
     }
 }
