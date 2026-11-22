@@ -192,7 +192,7 @@ final class SearchCoordinatorTest extends TestCase
         $this->assertSame([self::RULE_D], self::ids($second));
     }
 
-    public function test_the_nine_source_exercise_ends_incomplete_on_call_three_with_tasks_as_the_narrower_scope(): void
+    public function test_the_nine_source_exercise_ends_incomplete_on_call_two_with_tasks_as_the_narrower_scope(): void
     {
         $task = Task::factory()->create(['title' => 'Driver']);
         $grant = new MutableReadGrant([$task->id]);
@@ -207,13 +207,11 @@ final class SearchCoordinatorTest extends TestCase
 
         $first = $coordinator->search(self::owner(), self::agent(), SearchRequest::parse(query: 'driver'));
         $second = $this->resume($coordinator, $first);
-        $third = $this->resume($coordinator, $second);
 
-        $this->assertSame(SearchStatus::Pending, $first->status);
-        $this->assertSame(SearchStatus::Retryable, $second->status);
-        $this->assertSame(SearchStatus::Incomplete, $third->status);
-        $this->assertNull($third->continuation);
-        $this->assertContains(['query' => 'driver', 'within' => 'tasks.task'], $third->narrowerSearches());
+        $this->assertSame(SearchStatus::Retryable, $first->status);
+        $this->assertSame(SearchStatus::Incomplete, $second->status);
+        $this->assertNull($second->continuation);
+        $this->assertContains(['query' => 'driver', 'within' => 'tasks.task'], $second->narrowerSearches());
 
         $scoped = $coordinator->search(
             self::owner(),

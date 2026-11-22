@@ -7904,6 +7904,7 @@ constant	ScriptStopPreparation::PREPARING
 constant	ScriptStopPreparation::RETURNS_HELD
 constant	ScriptStopPreparation::TRIGGER
 constant	ScriptStopPreparation::UNCHANGED_RETURNS_TO_HOLD
+constant	SearchCoordinator::BATCHES_PER_SOURCE
 constant	SearchCoordinator::BATCH_LIMIT
 constant	SearchCoordinator::CALL_MILLISECONDS
 constant	SearchCoordinator::IDLE_CALL_LIMIT
@@ -16821,6 +16822,7 @@ method	MemoryDomain::mcpResources()
 method	MemoryDomain::overviewContributions()
 method	MemoryDomain::policies()
 method	MemoryDomain::requires()
+method	MemoryDomain::searchables()
 method	MemoryDomain::skills()
 method	MemoryEditCommand::handle()
 method	MemoryListCommand::handle()
@@ -41527,6 +41529,7 @@ variable	$base
 variable	$baseRevision
 variable	$batch
 variable	$batchIds
+variable	$batchLimit
 variable	$batches
 variable	$before
 variable	$best

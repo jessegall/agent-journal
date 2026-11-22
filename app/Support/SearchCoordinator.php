@@ -47,7 +47,17 @@ final readonly class SearchCoordinator implements RecordSearch
 
     public const int CALL_MILLISECONDS = 1000;
 
+    /**
+     * The fewest batches one call may ask of its sources together.
+     */
     public const int BATCH_LIMIT = 8;
+
+    /**
+     * The batches a call may ask of each source once there are more sources than the floor covers twice: a source with
+     * nothing to find needs a batch per tier to prove it, so a broad search over many sources would otherwise end
+     * every first call before the later sources could certify a head (doc 104 section 6 left eight to be tuned).
+     */
+    public const int BATCHES_PER_SOURCE = 2;
 
     public const int RESPONSE_BYTE_LIMIT = 49_152;
 
@@ -192,12 +202,13 @@ final readonly class SearchCoordinator implements RecordSearch
         $timedOut = false;
         $visible = [];
         $batches = 0;
+        $batchLimit = max(self::BATCH_LIMIT, self::BATCHES_PER_SOURCE * count($progress->sources));
 
         while (true) {
             $asked = 0;
 
             foreach ($progress->sources as $key => $source) {
-                if (! $source->awaitsRefill() || $batches >= self::BATCH_LIMIT || ! self::hasTime($deadline)) {
+                if (! $source->awaitsRefill() || $batches >= $batchLimit || ! self::hasTime($deadline)) {
                     continue;
                 }
 
@@ -229,7 +240,7 @@ final readonly class SearchCoordinator implements RecordSearch
 
             $pageFull = $bytesFull || count($emitted) >= $progress->limit;
 
-            $canAskAgain = $progress->hasSourceToRefill() && $batches < self::BATCH_LIMIT;
+            $canAskAgain = $progress->hasSourceToRefill() && $batches < $batchLimit;
 
             if ($pageFull || ! $canAskAgain || $timedOut || ! self::hasTime($deadline)) {
                 break;

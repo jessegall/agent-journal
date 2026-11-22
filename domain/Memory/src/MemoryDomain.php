@@ -11,6 +11,7 @@ use App\Enums\AccessType;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Support\Domain;
 use App\Support\Exports;
+use App\Support\Searchable;
 use App\Values\PolicyDefinition;
 use Domain\Memory\Commands\EditMemory\EditMemoryCommand;
 use Domain\Memory\Commands\RemoveMemory\RemoveMemoryCommand;
@@ -20,6 +21,8 @@ use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Mcp\Resources\MemoryResource;
 use Domain\Memory\Policies\MemoryPolicy;
+use Domain\Memory\Support\MemorySearchAccess;
+use Domain\Memory\Support\MemorySearchProvider;
 use Domain\Memory\Support\Skills\MemorySkill;
 use Domain\Memory\Values\MemoryCard;
 use Domain\Memory\Values\MemoryPage;
@@ -65,6 +68,11 @@ final class MemoryDomain extends Domain implements
     public function commands(): array
     {
         return [SaveMemoryCommand::class, EditMemoryCommand::class, RemoveMemoryCommand::class];
+    }
+
+    public function searchables(): array
+    {
+        return [Searchable::make('memory', 'Memories', MemorySearchAccess::class, MemorySearchProvider::class)];
     }
 
     public function skills(): array
