@@ -53,6 +53,9 @@ final readonly class PlanReviewView
             'mayRequest' => $mayEdit && $plan->state === PlanState::Planned,
             'mayWithdraw' => $mayEdit && $plan->state === PlanState::Reviewing,
             'mayDecide' => in_array(AccessType::Admin, $allowed, true) && $plan->state === PlanState::Reviewing,
+            'mayCancel' => $mayEdit && ! in_array($plan->state, [PlanState::Done, PlanState::Cancelled], true),
+            'mayFinish' => $mayEdit && $plan->state === PlanState::Started && $plan->progress->unfinished() === 0,
+            'revision' => $plan->revision,
             'edition' => $requested === null ? Optional::create() : self::editionOf($requested),
             'receipt' => $approval === null ? Optional::create() : self::receiptOf($approval),
             'changesRequested' => $latest !== null && $latest->state === PlanReviewState::ChangesRequested

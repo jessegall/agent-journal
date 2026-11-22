@@ -34,6 +34,7 @@ final class TaskReaderData extends Data
         public readonly TaskState $state,
         public readonly int $revision,
         public readonly string $brief,
+        public readonly TaskActionsData $actions,
         public readonly string $label,
         public readonly CommentList $comments,
         #[DataCollectionOf(SlotSectionData::class)]
@@ -46,6 +47,8 @@ final class TaskReaderData extends Data
         public readonly TaskWaitsData|Optional $waits = new Optional(),
         public readonly TaskWaitActionsData|Optional $waitActions = new Optional(),
         public readonly string|Optional $blockReason = new Optional(),
+        public readonly string|Optional $resultNote = new Optional(),
+        public readonly string|Optional $cancelReason = new Optional(),
     ) {}
 
 
@@ -56,6 +59,7 @@ final class TaskReaderData extends Data
      */
     public static function fromDetails(
         TaskDetails $details,
+        TaskActionsData $actions,
         CommentList $comments,
         array $sections,
         TaskLogsData|Optional $logs,
@@ -71,6 +75,7 @@ final class TaskReaderData extends Data
             'state' => $details->state,
             'revision' => $details->revision,
             'brief' => $details->text instanceof TaskText ? $details->text->brief : '',
+            'actions' => $actions,
             'label' => "task {$details->number}",
             'comments' => $comments,
             'sections' => $sections,
@@ -85,6 +90,12 @@ final class TaskReaderData extends Data
             'waitActions' => $waitActions instanceof Optional ? null : $waitActions,
             'blockReason' => $details->state === TaskState::Blocked && $details->text instanceof TaskText
                 ? $details->text->blockReason
+                : null,
+            'resultNote' => $details->state === TaskState::Finished && $details->text instanceof TaskText
+                ? $details->text->resultNote
+                : null,
+            'cancelReason' => $details->state === TaskState::Cancelled && $details->text instanceof TaskText
+                ? $details->text->cancelReason
                 : null,
         ], fn (mixed $readerValue) => $readerValue !== null));
     }

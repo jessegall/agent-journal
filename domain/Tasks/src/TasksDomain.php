@@ -79,7 +79,10 @@ use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Http\Controllers\AddTaskWaitPageController;
+use Domain\Tasks\Http\Controllers\BlockTaskPageController;
+use Domain\Tasks\Http\Controllers\CancelTaskPageController;
 use Domain\Tasks\Http\Controllers\RemoveTaskWaitPageController;
+use Domain\Tasks\Http\Controllers\StartTaskPageController;
 use Domain\Tasks\Http\Controllers\WaiveTaskWaitPageController;
 use Domain\Tasks\Mcp\HeldTasksOverview;
 use Domain\Tasks\Mcp\TaskResource;
@@ -146,6 +149,9 @@ final class TasksDomain extends Domain implements
                 ->at('{task}')
                 ->inInspector()
                 ->actions(
+                    ActionRoute::post('{task}/start', StartTaskPageController::class, 'start'),
+                    ActionRoute::post('{task}/block', BlockTaskPageController::class, 'block'),
+                    ActionRoute::post('{task}/cancel', CancelTaskPageController::class, 'cancel'),
                     ActionRoute::post('{task}/waits', AddTaskWaitPageController::class, 'add-wait'),
                     ActionRoute::post('{task}/waits/remove', RemoveTaskWaitPageController::class, 'remove-wait'),
                     ActionRoute::post('{task}/waits/waive', WaiveTaskWaitPageController::class, 'waive-wait'),

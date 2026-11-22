@@ -19,7 +19,9 @@ use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Contracts\TaskProofResolver;
 use Domain\Tasks\Contracts\TaskWaitResolver;
+use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Http\Data\TaskActionsData;
 use Domain\Tasks\Http\Data\TaskLogsData;
 use Domain\Tasks\Http\Data\TaskProofData;
 use Domain\Tasks\Http\Data\TaskProofsData;
@@ -30,6 +32,7 @@ use Domain\Tasks\Http\Data\TaskWaitsData;
 use Domain\Tasks\Http\Requests\TaskRequest;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
+use Domain\Tasks\Policies\TaskRunPolicy;
 use Domain\Tasks\Support\TaskStream;
 use Spatie\LaravelData\Optional;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -64,6 +67,7 @@ final readonly class TaskWindowResolver implements PageResolver
             $taskId = $this->request->taskId();
             return TaskReaderData::fromDetails(
                 $this->details->details($taskId, ReadView::Context),
+                $this->actionsOf($taskId),
                 $this->comments->list(new RecordIdentity(Task::LINK_TYPE, $taskId), $this->request->commentsPage()),
                 $this->slots->sectionsIn('tasks.task', 'inspector'),
                 $this->logsOf($taskId),
@@ -133,5 +137,38 @@ final readonly class TaskWindowResolver implements PageResolver
                 ? "Task {$task->number} has ended, so its waits no longer change."
                 : Optional::create(),
         ]);
+    }
+
+    /**
+     * What the caller may do with the task now: start it when the run policy lets them create a run, the task is open
+     * or blocked and its waits are met; block its started run and cancel it while it has not ended when they hold the
+     * run's edit; the reason when start is not offered.
+     */
+    private function actionsOf(string $taskId): TaskActionsData
+    {
+        $task = Task::ofId($taskId);
+        $allowed = $this->authorizer->filterActions(
+            TaskRunPolicy::class,
+            $task,
+            [AccessType::Create, AccessType::Edit],
+        );
+        $mayCreate = in_array(AccessType::Create, $allowed, true);
+        $mayEditRun = in_array(AccessType::Edit, $allowed, true);
+        $isWaiting = $this->waits->readyAmong([$task->id]) === [];
+        $startReason = match (true) {
+            $task->state->hasEnded() => "Task {$task->number} is {$task->state->value}.",
+            $task->state === TaskState::Started => "Task {$task->number} is already being worked on.",
+            $isWaiting => "Task {$task->number} waits for other tasks to finish.",
+            ! $mayCreate => 'You may not start this task.',
+            default => null,
+        };
+
+        return TaskActionsData::from(array_filter([
+            'mayStart' => $startReason === null,
+            'mayBlock' => $mayEditRun && $task->state === TaskState::Started,
+            'mayCancel' => $mayEditRun && ! $task->state->hasEnded(),
+            'runNumber' => $task->run_number,
+            'startReason' => $startReason,
+        ], fn (mixed $actionValue) => $actionValue !== null));
     }
 }

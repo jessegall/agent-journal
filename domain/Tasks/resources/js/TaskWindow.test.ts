@@ -20,6 +20,7 @@ function reader(changes: Partial<TaskReaderData> = {}): TaskReaderData {
         latestRun: 4,
         sections: [],
         label: 'task 31',
+        actions: { mayStart: false, mayBlock: false, mayCancel: false, runNumber: 4 },
         comments: { items: [], nextAfter: null },
         ...changes,
     } as TaskReaderData;
@@ -52,5 +53,24 @@ describe('TaskWindow', () => {
 
         expect(tab.attributes('aria-controls')).toBe(panel.attributes('id'));
         expect(panel.attributes('aria-labelledby')).toBe(tab.attributes('id'));
+    });
+});
+
+describe('TaskWindow after a start', () => {
+    it('shows the new run number and the actor taking it, with Start offered only when the domain offers it', () => {
+        const started = mount(TaskWindow, {
+            props: {
+                data: reader({
+                    latestRun: 5,
+                    runningNow: { actorType: 'agent', actorId: 'w1', actorLabel: 'Worker one' },
+                    actions: { mayStart: false, mayBlock: true, mayCancel: true, runNumber: 5, startReason: 'Task 31 is already being worked on.' },
+                }),
+            },
+        });
+
+        expect(started.text()).toContain('Run 5');
+        expect(started.text()).toContain('Worker one');
+        expect(started.text()).toContain('Task 31 is already being worked on.');
+        expect(started.findAll('button').some((button) => button.text() === 'Start task')).toBe(false);
     });
 });
