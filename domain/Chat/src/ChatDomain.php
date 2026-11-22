@@ -28,6 +28,7 @@ use App\Ui\Enums\SlotContextType;
 use Domain\Chat\Events\DockChanged;
 use Domain\Chat\Http\Controllers\CancelMessageController;
 use Domain\Chat\Http\Controllers\ChatEventsController;
+use Domain\Chat\Http\Controllers\ChatRowsController;
 use Domain\Chat\Http\Controllers\DeclineQuestionController;
 use Domain\Chat\Http\Controllers\DockController;
 use Domain\Chat\Http\Controllers\Membership\AddParticipantController;
@@ -117,6 +118,7 @@ final class ChatDomain extends Domain implements
                     ActionRoute::post('messages/decline', DeclineQuestionController::class, 'decline'),
                     ActionRoute::get('messages/outcome', RequestOutcomeController::class, 'outcome'),
                     ActionRoute::get('events', ChatEventsController::class, 'events'),
+                    ActionRoute::get('messages/rows', ChatRowsController::class, 'rows'),
                     ActionRoute::post('dock', DockController::class, 'dock'),
                     ActionRoute::post('dock/remove', UndockController::class, 'undock'),
                     ActionRoute::post('chats', CreateGroupChatController::class, 'create-group'),

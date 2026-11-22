@@ -21,6 +21,7 @@ use App\Communication\Support\ChatInboxes;
 use App\Communication\Support\ChatInterval;
 use Domain\Chat\Data\ChatCapabilitiesData;
 use Domain\Chat\Data\ChatMessageData;
+use Domain\Chat\Data\ChatRowsPageData;
 use Domain\Chat\Data\ChatSummaryData;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Data\ParticipantData;
@@ -78,6 +79,25 @@ final readonly class ChatConversations
             'olderCursor' => $page->olderCursor,
             'messages' => $rows,
             'dock' => $this->dock->page($conversation, $dockToken),
+        ]);
+    }
+
+    /**
+     * One page of the chat's rows by speaker, the newest without a cursor or the page before the given one, at most
+     * fifty, with the cursor of the page before it.
+     */
+    public function rowsPage(string $inboxId, string|null $olderCursor): ChatRowsPageData
+    {
+        $viewer = ActorIdentity::of($this->actors->actor());
+        $intervals = $this->chats->activeIntervals($this->inboxes->resolve($inboxId));
+        $members = array_map(fn (ChatInterval $interval) => $interval->actor, $intervals);
+        $drivers = $this->agentDrivers->driversOf($members);
+        $page = $this->messages->timeline($inboxId, $olderCursor, MessagePage::DEFAULT_LIMIT);
+        $rows = array_map(fn (MessageView $message) => self::rowOf($message, $drivers, $viewer), $page->messages);
+
+        return ChatRowsPageData::from([
+            'messages' => $rows,
+            'olderCursor' => $page->olderCursor,
         ]);
     }
 

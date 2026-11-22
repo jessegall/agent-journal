@@ -6,6 +6,7 @@ namespace Domain\Chat\Http\Controllers;
 
 use App\Communication\Resolvers\ChatTimeline;
 use Domain\Chat\Data\ChatEventsInput;
+use Domain\Chat\Data\ChatEventsPageData;
 use Illuminate\Http\JsonResponse;
 
 final readonly class ChatEventsController
@@ -19,6 +20,6 @@ final readonly class ChatEventsController
             ? $timeline->snapshot($input->inboxId)
             : $timeline->after($input->inboxId, $input->cursor);
 
-        return new JsonResponse($page, headers: ['Cache-Control' => 'no-store']);
+        return new JsonResponse(ChatEventsPageData::from($page), headers: ['Cache-Control' => 'no-store']);
     }
 }

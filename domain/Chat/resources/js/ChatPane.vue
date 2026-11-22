@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch } from 'vue';
+import { useChatTimeline } from './composables/useChatTimeline';
 import { useConversationIntents } from './composables/useConversationIntents';
 import { draftKey } from './composables/useMessageDrafts';
 import type { AgentOptionData, ChatData } from '@generated/types/chat';
@@ -61,10 +62,15 @@ const key = computed(() => {
 const replyingTo = ref<ReplyTarget | null>(null);
 
 /**
+ * This view's own rows of the chat, merged in timeline order without gaps or duplicates, and paged back on request.
+ */
+const timeline = useChatTimeline(conversation);
+
+/**
  * The owner of the user's sends in this conversation, the same one Home and Chat's page share.
  */
 const owner = computed(() => (key.value === undefined ? undefined : useConversationIntents(key.value)));
-const shownRows = computed(() => owner.value?.rows(conversation.value?.messages ?? []) ?? []);
+const shownRows = computed(() => owner.value?.rows(timeline.messages.value) ?? []);
 const pending = computed(() => shownRows.value.flatMap((row) => (row.kind === 'intent' ? [row.intent] : [])));
 const refused = computed(() =>
     (owner.value?.recoveryEntries() ?? []).map((entry) => ({
@@ -74,18 +80,12 @@ const refused = computed(() =>
 );
 
 // A read that returned the user's own sends settles them.
-watch(
-    () => conversation.value?.messages,
-    (messages) => owner.value?.settle(messages ?? []),
-);
-const unreadShown = computed(() =>
-    (conversation.value?.messages ?? [])
-        .filter((message) => message.speaker.actor !== conversation.value?.viewer && !message.readByMe)
-        .map((message) => message.id),
-);
+watch(timeline.messages, (messages) => owner.value?.settle(messages));
+const unreadShown = timeline.unreadShown;
 
 /**
- * Marks the incoming rows this chat shows as read by the viewer alone. It runs when the user opens the
+ * Marks the incoming rows this view shows as read by the viewer alone: only rows actually shown, never one held past
+ * a gap; acknowledging one already read changes nothing. It runs when the user opens the
  * conversation or asks for it, never on a background refresh.
  */
 function readShown(): void {
@@ -208,13 +208,15 @@ function retryFocused(): void {
                     />
                 </template>
                 <MessageList
-                    :messages="conversation.messages"
+                    :messages="timeline.messages.value"
+                    :has-older="timeline.hasOlder.value"
                     :pending="pending"
                     :refused="refused"
                     :viewer="conversation.viewer"
                     :participants="conversation.participants"
                     :question-url="questionUrl"
                     @reply="(message) => (replyingTo = message)"
+                    @older="timeline.loadOlder"
                     @decline="decline"
                     @check-again="(intent) => owner?.retry(intent, protectedProp)"
                     @restore="(intentKey) => owner?.restore(intentKey)"

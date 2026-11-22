@@ -15,6 +15,8 @@ import RefusedSend from './RefusedSend.vue';
  */
 const props = defineProps<{
     messages: ChatMessageData[];
+    // Whether older rows wait before the first one shown.
+    hasOlder: boolean;
     pending: ConversationIntent[];
     refused: { entry: RecoveryEntry; reason: string }[];
     // The viewing actor as type:id, the speaker of the viewer's own rows.
@@ -26,6 +28,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     reply: [message: ChatMessageData];
+    older: [];
     decline: [message: ChatMessageData];
     checkAgain: [intent: ConversationIntent];
     restore: [intentKey: string];
@@ -65,6 +68,11 @@ function stateOf(message: ChatMessageData): string | null {
                     Send a message below to start a conversation, or start a session from the bar.
                 </p>
             </div>
+        </template>
+        <template v-if="hasOlder">
+            <button type="button" class="self-center text-small text-text-3 underline" @click="emit('older')">
+                Show earlier messages
+            </button>
         </template>
         <template v-for="message in messages" :key="message.id">
             <div
