@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Domain\Chat\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use App\Communication\Commands\ReplyToMessage;
+use App\Communication\Commands\AnswerChatQuestion;
+use App\Communication\Commands\ReplyInChat;
+use App\Communication\Contracts\ConversationResolver;
+use App\Communication\Enums\MessageState;
 use Domain\Chat\Data\ReplyInput;
 use Domain\Chat\Support\SentMessageAnswer;
 use Illuminate\Http\JsonResponse;
@@ -18,17 +21,20 @@ use Illuminate\Http\Request;
 final readonly class ReplyController
 {
     /**
-     * Replies at the version the user saw; a message that changed since is refused and the page shows it anew.
+     * Replies in the message's own chat; a question waiting for an answer is answered and closed by it.
      */
     public function __invoke(
         ReplyInput $input,
         Request $request,
         CommandBus $commands,
+        ConversationResolver $messages,
         SentMessageAnswer $answer,
     ): JsonResponse|RedirectResponse {
-        $replyId = $commands->run(
-            new ReplyToMessage($input->messageId, $input->stateVersion, $input->body, $input->agent),
-        );
+        $parent = $messages->detail($input->messageId);
+
+        $replyId = $parent->state === MessageState::WaitingForAnswer
+            ? $commands->run(new AnswerChatQuestion($input->messageId, $input->body, $input->requestKey))
+            : $commands->run(new ReplyInChat($input->messageId, $input->body, $input->requestKey, $input->inboxId));
 
         return $answer->to($request, $replyId, $input->agent);
     }

@@ -43,8 +43,10 @@ use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -87,6 +89,7 @@ use Spatie\LaravelData\Optional;
  * @property string|null $dismissal_reason
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
+ * @property-read int $timeline_position
  */
 #[Fillable([
     'message_type',
@@ -386,6 +389,16 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         return $line === trim($this->body) || str_ends_with($preview, '…') ? $preview : $preview.'…';
     }
 
+    /**
+     * The timeline position a row read with its position carries.
+     *
+     * @return Attribute<int, never>
+     */
+    protected function timelinePosition(): Attribute
+    {
+        return Attribute::get(fn () => (int) $this->getAttribute('timeline_sequence'));
+    }
+
     public function isChat(): bool
     {
         return $this->message_type === MessageType::Chat;
@@ -471,6 +484,25 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
         $this->closed_at = $at;
     }
 
+    /**
+     * The receipts of the outer message held by the reader's active interval, for a where-exists.
+     *
+     * @param  Builder<self>  $outer
+     */
+    private static function activeReceiptsOf(
+        QueryBuilder $receipts,
+        Builder $outer,
+        ActorIdentity $reader,
+    ): QueryBuilder {
+        return $receipts->selectRaw('1')
+            ->from('message_receipts')
+            ->join('inbox_intervals', 'inbox_intervals.id', '=', 'message_receipts.interval_id')
+            ->whereColumn('message_receipts.message_id', $outer->qualifyColumn('id'))
+            ->whereNull('inbox_intervals.left_at')
+            ->where('inbox_intervals.actor_type', $reader->type->value)
+            ->where('inbox_intervals.actor_id', $reader->id);
+    }
+
     // ----------[ Scopes ]----------
 
     /**
@@ -497,12 +529,10 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
      * @param  Builder<self>  $messages
      */
     #[Scope]
-    protected function forInboxState(Builder $messages, AgentInboxState $state): void
+    protected function forInboxState(Builder $messages, AgentInboxState $state, ActorIdentity $reader): void
     {
         match ($state) {
-            AgentInboxState::Pending => $messages->where(fn (Builder $pending) => $pending
-                ->where('state', MessageState::WaitingForAnswer)
-                ->orWhere(fn (Builder $unread) => $unread->whereNull('read_at')->where('state', MessageState::Sent))),
+            AgentInboxState::Pending => $messages->pendingFor($reader),
             AgentInboxState::Answered => $messages->where('state', MessageState::Answered),
             AgentInboxState::All => $messages,
         };
@@ -580,5 +610,116 @@ final class Message extends Model implements Assignable, EventSource, Numbered, 
             ->orWhere(fn (Builder $same) => $same
                 ->where('created_at', $cursor->created_at)
                 ->where('id', '<', $cursor->id)));
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofType(Builder $query, MessageType $type): void
+    {
+        $query->where($query->qualifyColumn('message_type'), $type);
+    }
+
+    /**
+     * Chat rows the reader holds a receipt of through the interval it is active in now.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function receivedNowBy(Builder $query, ActorIdentity $reader): void
+    {
+        $query->whereExists(fn ($receipts) => self::activeReceiptsOf($receipts, $query, $reader));
+    }
+
+    /**
+     * Chat rows the reader received through its active interval and has not been shown yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unpresentedTo(Builder $query, ActorIdentity $reader): void
+    {
+        $query->whereExists(fn ($receipts) => self::activeReceiptsOf($receipts, $query, $reader)
+            ->whereNull('message_receipts.presented_at'));
+    }
+
+    /**
+     * Chat questions whose answer is kept as the reader's open turn to speak.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function reservedTo(Builder $query, ActorIdentity $reader): void
+    {
+        $query->where($query->qualifyColumn('state'), MessageState::WaitingForAnswer)
+            ->whereIn($query->qualifyColumn('id'), SpeechOpportunity::query()
+                ->openFor($reader)
+                ->whereNotNull('reserved_question_id')
+                ->select('reserved_question_id'));
+    }
+
+    /**
+     * Messages the reader has not read: desk mail nobody read yet, and chat rows not yet shown to the reader.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unreadBy(Builder $query, ActorIdentity $reader): void
+    {
+        $query->where(fn (Builder $unread) => $unread
+            ->where(fn (Builder $desk) => $desk->ofType(MessageType::Desk)->whereNull('read_at'))
+            ->orWhere(fn (Builder $chat) => $chat->ofType(MessageType::Chat)->unpresentedTo($reader)));
+    }
+
+    /**
+     * Questions waiting on the reader: any desk question, and chat questions kept for the reader's turn.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function waitingFor(Builder $query, ActorIdentity $reader): void
+    {
+        $query->where(fn (Builder $waiting) => $waiting
+            ->where(fn (Builder $desk) => $desk
+                ->ofType(MessageType::Desk)
+                ->where('state', MessageState::WaitingForAnswer))
+            ->orWhere(fn (Builder $chat) => $chat->ofType(MessageType::Chat)->reservedTo($reader)));
+    }
+
+    /**
+     * What waits for the reader: what it has not read and the questions waiting on it.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function pendingFor(Builder $query, ActorIdentity $reader): void
+    {
+        $query->where(fn (Builder $pending) => $pending->unreadBy($reader)->orWhere(
+            fn (Builder $waiting) => $waiting->waitingFor($reader),
+        ));
+    }
+
+    /**
+     * Chat rows with the timeline position they were accepted at, read as timeline_sequence.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withTimelinePosition(Builder $query): void
+    {
+        $query
+            ->join('inbox_timeline_events', 'inbox_timeline_events.id', '=', $query->qualifyColumn('timeline_event_id'))
+            ->select($query->qualifyColumn('*'))
+            ->addSelect('inbox_timeline_events.sequence as timeline_sequence');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function beforePosition(Builder $query, int $sequence): void
+    {
+        $query->where('inbox_timeline_events.sequence', '<', $sequence);
     }
 }

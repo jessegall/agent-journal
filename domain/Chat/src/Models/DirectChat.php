@@ -69,6 +69,19 @@ final class DirectChat extends Model implements ReadableModel
     // ----------[ Queries ]----------
 
     /**
+     * Holds the pair's lock to the end of the transaction, so two opens of the same pair make one chat.
+     */
+    public static function lockPair(string|null $environmentId, ActorIdentity $first, ActorIdentity $second): void
+    {
+        [$low, $high] = self::ordered($first, $second);
+        $environment = $environmentId ?? self::LOCAL_ENVIRONMENT;
+
+        self::query()->getConnection()->select('select pg_advisory_xact_lock(hashtext(?))', [
+            "direct-chat:{$environment}:{$low}:{$high}",
+        ]);
+    }
+
+    /**
      * The direct chat of the two actors in the environment, once one was opened.
      */
     public static function findPair(string|null $environmentId, ActorIdentity $first, ActorIdentity $second): self|null

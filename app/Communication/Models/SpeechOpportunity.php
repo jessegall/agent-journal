@@ -111,6 +111,22 @@ final class SpeechOpportunity extends Model implements ReadableModel
     }
 
     /**
+     * Gives the claim up: the turn is offered again, its reservation kept, and the released token no longer holds.
+     *
+     * @throws ChatStateConflict
+     */
+    public function release(): void
+    {
+        if ($this->state !== SpeechOpportunityState::Claimed) {
+            throw ChatStateConflict::opportunityNotClaimed($this->id);
+        }
+
+        $this->state = SpeechOpportunityState::Offered;
+        $this->releaseLease();
+        $this->save();
+    }
+
+    /**
      * @throws ChatStateConflict
      */
     public function spend(Message $contribution): void
@@ -152,6 +168,11 @@ final class SpeechOpportunity extends Model implements ReadableModel
     public function isOpen(): bool
     {
         return $this->state->isOpen();
+    }
+
+    public function isReserved(): bool
+    {
+        return $this->reserved_question_id !== null;
     }
 
     /**

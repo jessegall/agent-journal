@@ -6,6 +6,8 @@ namespace Domain\Chat\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Contracts\AgentDirectory;
+use App\Agents\Exceptions\StackTargetRefused;
 use App\Docking\Cards\DockIdentity;
 use App\Docking\Exceptions\DockDefinitionInvalid;
 use App\Docking\Exceptions\DockSourceUnavailable;
@@ -23,20 +25,27 @@ use Illuminate\Container\Container;
 final readonly class DockRequests
 {
     public function __construct(
-        private AuthorizedConversations $conversations,
+        private AgentDirectory $agents,
+        private PairChats $pairs,
         private CurrentActor $actors,
         private DockRegistration $registry,
         private Container $container,
     ) {}
 
     /**
-     * The direct chat the current actor holds with the agent.
+     * The direct chat the current actor holds with the agent, opened the first time.
      *
      * @throws ConversationUnavailable
      */
     public function conversationWith(string $agentId): Conversation
     {
-        return $this->conversations->withAgent($agentId)->conversation();
+        try {
+            $agent = $this->agents->visibleAgent($agentId);
+        } catch (StackTargetRefused $refused) {
+            throw ConversationUnavailable::withPeer($refused);
+        }
+
+        return $this->pairs->open($this->actor(), $agent);
     }
 
     /**

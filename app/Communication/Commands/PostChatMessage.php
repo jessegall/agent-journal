@@ -29,5 +29,6 @@ final readonly class PostChatMessage extends Command
         public string $body,
         #[Required]
         public string $requestKey,
+        public string|null $claimToken = null,
     ) {}
 }

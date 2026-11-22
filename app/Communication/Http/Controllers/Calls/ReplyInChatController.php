@@ -16,7 +16,13 @@ final readonly class ReplyInChatController
 {
     public function __invoke(ReplyInChatCall $call, CommandBus $commands): MessageNamed
     {
-        $messageId = $commands->run(new ReplyInChat($call->parentId, $call->body, $call->requestKey->value, $call->inboxId));
+        $messageId = $commands->run(new ReplyInChat(
+            $call->parentId,
+            $call->body,
+            $call->requestKey->value,
+            $call->inboxId,
+            $call->claimToken,
+        ));
 
         return MessageNamed::from(['messageId' => $messageId]);
     }

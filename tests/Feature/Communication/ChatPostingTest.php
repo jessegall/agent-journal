@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
+use App\Communication\Commands\ClaimSpeech;
 use App\Communication\Commands\PostChatMessage;
 use App\Communication\Commands\ReplyInChat;
 use App\Communication\Enums\MessageType;
@@ -39,7 +40,8 @@ final class ChatPostingTest extends MessagingTestCase
         $question = $this->runOnBus(new PostChatMessage($this->chat->inbox_id, 'Can you look?', 'first-key'));
 
         $this->asAgent($this->builder);
-        $answer = $this->runOnBus(new ReplyInChat($question, 'Looking now.', 'reply-key'));
+        $token = $this->runOnBus(new ClaimSpeech($this->chat->inbox_id, $question));
+        $answer = $this->runOnBus(new ReplyInChat($question, 'Looking now.', 'reply-key', null, $token));
 
         $this->assertSame($question, Message::visibleById($question)->id);
 

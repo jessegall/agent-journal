@@ -31,7 +31,7 @@ trait OpensPairChats
         $this->inboxOf($second);
 
         $providerId = strtolower((string) Str::ulid());
-        $inboxId = $this->app->make(ChatInboxes::class)->open(Conversation::CHAT_INBOX_PROVIDER, $providerId);
+        $inboxId = $this->app->make(ChatInboxes::class)->open($providerId);
         $conversation = Conversation::openFor($inboxId, $providerId, $first, null, null);
         DirectChat::recordFor($conversation, null, $first, $second);
 

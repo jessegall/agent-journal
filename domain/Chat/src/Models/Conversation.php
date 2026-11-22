@@ -6,6 +6,7 @@ namespace Domain\Chat\Models;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Communication\Support\ChatInboxes;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -45,7 +46,7 @@ final class Conversation extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
-    public const string CHAT_INBOX_PROVIDER = 'chat';
+    public const string CHAT_INBOX_PROVIDER = ChatInboxes::PROVIDER_KEY;
 
     // ----------[ Constructors ]----------
 

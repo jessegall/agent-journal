@@ -30,13 +30,6 @@ final readonly class ReplyInChat extends Command
         #[Required]
         public string $requestKey,
         public string|null $inboxId = null,
+        public string|null $claimToken = null,
     ) {}
-
-    /**
-     * Whether the caller named a chat other than the one the parent was posted in.
-     */
-    public function namesAnotherInboxThan(string $inboxId): bool
-    {
-        return $this->inboxId !== null && $this->inboxId !== $inboxId;
-    }
 }

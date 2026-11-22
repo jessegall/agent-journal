@@ -26,7 +26,59 @@ final readonly class ChatEnvelope
         public ActorIdentity|null $respondent,
         public string|null $userRootId,
         public string $requestKey,
+        public bool $answersParent = false,
     ) {}
+
+    /**
+     * An answer to a waiting question, posted as a reply under it.
+     */
+    public static function answer(
+        Inbox $inbox,
+        ActorIdentity $author,
+        MessageBody $body,
+        Message $question,
+        string $requestKey,
+    ): self {
+        return new self(
+            $inbox,
+            $author,
+            $body,
+            MessageState::Sent,
+            $question,
+            null,
+            null,
+            $question->user_root_id,
+            $requestKey,
+            true,
+        );
+    }
+
+    /**
+     * The same message, under the user message the author's turn to speak belongs to.
+     */
+    public function underRoot(string $userRootId): self
+    {
+        return new self(
+            $this->inbox,
+            $this->author,
+            $this->body,
+            $this->state,
+            $this->parent,
+            $this->addressee,
+            $this->respondent,
+            $userRootId,
+            $this->requestKey,
+            $this->answersParent,
+        );
+    }
+
+    /**
+     * Whether this is the answer to the given question.
+     */
+    public function isAnswerTo(string $questionId): bool
+    {
+        return $this->answersParent && $this->parent?->id === $questionId;
+    }
 
     public static function post(Inbox $inbox, ActorIdentity $author, MessageBody $body, string $requestKey): self
     {
@@ -86,6 +138,7 @@ final readonly class ChatEnvelope
             $this->state->value,
             $this->body->text,
             $this->parent?->id,
+            $this->answersParent,
             $this->addressee?->toArray(),
             $this->respondent?->toArray(),
         ]));

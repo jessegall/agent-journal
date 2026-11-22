@@ -35,5 +35,6 @@ final class PostChatMessageCall extends Data implements JournalCall
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public readonly CallKey $requestKey,
+        public readonly string|null $claimToken = null,
     ) {}
 }

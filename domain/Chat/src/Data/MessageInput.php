@@ -10,8 +10,9 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * What the composer sends: the body exactly as typed (never trimmed, see bootstrap/app.php) the agent it goes to and the session
- * the sender saw it run, so a message is never delivered to a session the sender did not see.
+ * What the composer sends: the body exactly as typed (never trimmed, see bootstrap/app.php), the chat inbox it is
+ * posted in under its request key, and the agent and session the sender saw run, so a message never reaches a session
+ * the sender did not see.
  */
 #[TypeScript]
 final class MessageInput extends Data
@@ -20,9 +21,9 @@ final class MessageInput extends Data
         #[Regex('/\S/')]
         public readonly string $body,
         #[Ulid]
-        public readonly string $sourceInboxId,
-        #[Ulid]
-        public readonly string $destinationInboxId,
+        public readonly string $inboxId,
+        #[Regex('/^[A-Za-z0-9-]{1,64}$/')]
+        public readonly string $requestKey,
         #[Ulid]
         public readonly string $agent,
         #[Ulid]

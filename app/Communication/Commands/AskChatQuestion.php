@@ -31,6 +31,7 @@ final readonly class AskChatQuestion extends Command
         #[Required]
         public string $requestKey,
         public string|null $respondentText = null,
+        public string|null $claimToken = null,
     ) {}
 
     /**

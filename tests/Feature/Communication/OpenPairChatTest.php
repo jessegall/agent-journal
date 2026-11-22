@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Communication;
+
+use App\Actors\Support\ActorContext;
+use App\Communication\Contracts\InboxResolver;
+use App\Communication\Exceptions\InboxUnavailable;
+use App\Communication\Support\RegisteredInboxes;
+use Domain\Chat\Commands\OpenPairChat;
+use Tests\Support\MessagingTestCase;
+
+/**
+ * The user's direct chat with an agent opens once and reopens at the same inbox by its pair; another agent gets its
+ * own chat, and only the pair's two members are members of it.
+ */
+final class OpenPairChatTest extends MessagingTestCase
+{
+    public function test_the_same_pair_reopens_at_one_inbox_and_another_agent_gets_its_own(): void
+    {
+        $this->asOwner();
+
+        $first = $this->runOnBus(new OpenPairChat($this->builder->agent_id));
+        $again = $this->runOnBus(new OpenPairChat($this->builder->agent_id));
+        $other = $this->runOnBus(new OpenPairChat($this->reviewer->agent_id));
+
+        $this->assertSame($first, $again);
+        $this->assertNotSame($first, $other);
+
+        $inbox = $this->app->make(InboxResolver::class)->resolve($first);
+        $access = $this->app->make(RegisteredInboxes::class)->accessFor($inbox);
+
+        $this->assertCount(2, $access->members($inbox)->memberships);
+        $this->expectException(InboxUnavailable::class);
+        $access->membership($inbox, ActorContext::forAgent($this->reviewer->agent_id));
+    }
+}

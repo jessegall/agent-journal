@@ -36,5 +36,6 @@ final class ReplyInChatCall extends Data implements JournalCall
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public readonly CallKey $requestKey,
         public readonly string|null $inboxId = null,
+        public readonly string|null $claimToken = null,
     ) {}
 }

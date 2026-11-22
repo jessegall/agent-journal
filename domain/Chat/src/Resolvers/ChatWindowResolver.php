@@ -7,20 +7,20 @@ namespace Domain\Chat\Resolvers;
 use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\AgentOption;
+use App\Bus\Contracts\CommandBus;
 use App\Communication\Contracts\ConversationResolver;
-use App\Communication\Data\MessagePage;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Http\Data\Profiles\EligibleAccountsData;
 use App\Profiles\Contracts\StartAccounts;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\SlotSections;
 use App\Web\Exceptions\PrivateRecordMissing;
+use Domain\Chat\Commands\OpenPairChat;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Data\FocusedQuestionData;
 use Domain\Chat\Http\Requests\ConversationRequest;
-use Domain\Chat\Support\AuthorizedConversations;
-use Domain\Chat\Support\DockProjection;
+use Domain\Chat\Resolvers\Support\ChatConversations;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
 
@@ -39,10 +39,10 @@ final readonly class ChatWindowResolver implements PageResolver
         private ConversationRequest $request,
         private AgentDirectory $agents,
         private ConversationResolver $messages,
-        private AuthorizedConversations $conversations,
-        private DockProjection $dock,
+        private ChatConversations $chats,
         private SlotSections $slots,
         private StartAccounts $startAccounts,
+        private CommandBus $commands,
     ) {}
 
     public function read(): ChatData
@@ -145,16 +145,8 @@ final readonly class ChatWindowResolver implements PageResolver
 
     private function conversationWith(AgentOption $agent): ConversationData
     {
-        $peers = $this->conversations->withVisibleAgent($agent);
-        $page = $this->messages->between($peers->ownInboxId, $peers->peerInboxId, null, MessagePage::DEFAULT_LIMIT);
-        $dock = $this->dock->page($peers->existingConversation(), $this->request->dockToken());
+        $chatInboxId = $this->commands->run(new OpenPairChat($agent->agentId));
 
-        return ConversationData::fromPage(
-            $peers->ownInboxId,
-            $peers->peerInboxId,
-            $page,
-            $agent,
-            $dock,
-        );
+        return $this->chats->pageFor($agent, $chatInboxId, $this->request->dockToken());
     }
 }

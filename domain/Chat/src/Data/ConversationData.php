@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use App\Agents\Support\AgentOption;
-use App\Communication\Data\MessagePage;
-use App\Communication\Data\MessageView;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The conversation with one agent, with its live session when it has one and the sources docked in it; its id keys
- * the composer's draft.
+ * The chat with one agent at its own inbox: who is viewing, who takes part, the newest page of its rows by speaker,
+ * how far it has got and how much the viewer has not read, and the sources docked in it; its inbox id keys the
+ * composer's draft.
  *
  * @method static static from(array<string, mixed> $conversation)
  */
@@ -21,40 +19,23 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class ConversationData extends Data
 {
     /**
-     * @param  list<MessageView>  $messages
+     * @param  list<ParticipantData>  $participants
+     * @param  list<ChatMessageData>  $messages
      */
     public function __construct(
-        public readonly string $id,
+        public readonly string $inboxId,
         public readonly string $agentId,
         public readonly string|null $sessionId,
         public readonly int $sessionGeneration,
-        public readonly string $sourceInboxId,
-        public readonly string $destinationInboxId,
-        #[DataCollectionOf(MessageView::class)]
+        public readonly string $viewer,
+        #[DataCollectionOf(ParticipantData::class)]
+        public readonly array $participants,
+        public readonly bool $canManageParticipants,
+        public readonly int $latestSequence,
+        public readonly int $unreadCount,
+        public readonly string|null $olderCursor,
+        #[DataCollectionOf(ChatMessageData::class)]
         public readonly array $messages,
         public readonly DockPageData $dock,
     ) {}
-
-    /**
-     * The messages between the user's inbox and the chosen agent's inbox, whether or not the agent runs a session,
-     * and the first page of what is docked there.
-     */
-    public static function fromPage(
-        string $sourceInboxId,
-        string $destinationInboxId,
-        MessagePage $page,
-        AgentOption $agent,
-        DockPageData $dock,
-    ): self {
-        return self::from([
-            'id' => "{$sourceInboxId}-{$destinationInboxId}",
-            'agentId' => $agent->agentId,
-            'sessionId' => $agent->sessionId,
-            'sessionGeneration' => $agent->sessionGeneration,
-            'sourceInboxId' => $sourceInboxId,
-            'destinationInboxId' => $destinationInboxId,
-            'messages' => $page->messages,
-            'dock' => $dock,
-        ]);
-    }
 }

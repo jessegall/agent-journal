@@ -17,12 +17,14 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final readonly class ChatInboxes
 {
+    public const string PROVIDER_KEY = 'chat';
+
     /**
-     * Makes the inbox row the provider registers under its own id, and answers the new inbox id.
+     * Makes the chat inbox row under the provider's own id for it, and answers the new inbox id.
      */
-    public function open(string $providerKey, string $providerId): string
+    public function open(string $providerId): string
     {
-        return InboxRecord::create($providerKey, $providerId)->id;
+        return InboxRecord::create(self::PROVIDER_KEY, $providerId)->id;
     }
 
     /**

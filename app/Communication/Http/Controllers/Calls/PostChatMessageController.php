@@ -16,7 +16,12 @@ final readonly class PostChatMessageController
 {
     public function __invoke(PostChatMessageCall $call, CommandBus $commands): MessageNamed
     {
-        $messageId = $commands->run(new PostChatMessage($call->inboxId, $call->body, $call->requestKey->value));
+        $messageId = $commands->run(new PostChatMessage(
+            $call->inboxId,
+            $call->body,
+            $call->requestKey->value,
+            $call->claimToken,
+        ));
 
         return MessageNamed::from(['messageId' => $messageId]);
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Models;
 
 use App\Communication\Exceptions\InboxUnavailable;
+use App\Communication\Support\ChatInboxes;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -50,6 +51,16 @@ final class InboxRecord extends Model implements ReadableModel
         $inbox->save();
 
         return $inbox;
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * Whether the inbox is a chat's, read only through its members' receipts.
+     */
+    public static function isChatInbox(string $id): bool
+    {
+        return self::query()->whereKey($id)->where('provider_key', ChatInboxes::PROVIDER_KEY)->exists();
     }
 
     // ----------[ Mutations ]----------

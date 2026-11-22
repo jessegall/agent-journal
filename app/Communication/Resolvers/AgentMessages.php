@@ -41,7 +41,8 @@ final readonly class AgentMessages implements AgentMessageReader
     public function inbox(AgentInboxState $state, int $page): AgentInbox
     {
         $numbered = new NumberedPage($page);
-        $incoming = $this->incoming()->where(fn (Builder $messages) => $messages->forInboxState($state));
+        $reader = ActorIdentity::of($this->actors->actor());
+        $incoming = $this->incoming()->where(fn (Builder $messages) => $messages->forInboxState($state, $reader));
         $total = (clone $incoming)->count();
 
         $messages = $incoming->orderByDesc('created_at')->orderByDesc('id')
@@ -60,10 +61,11 @@ final readonly class AgentMessages implements AgentMessageReader
 
     public function counts(): AgentInboxCounts
     {
+        $reader = ActorIdentity::of($this->actors->actor());
+
         return new AgentInboxCounts(
-            $this->incoming()->whereNull('read_at')->count(),
-            $this->incoming()->where(fn (Builder $messages) => $messages->forInboxState(AgentInboxState::Pending))
-                ->count(),
+            $this->incoming()->unreadBy($reader)->count(),
+            $this->incoming()->pendingFor($reader)->count(),
         );
     }
 

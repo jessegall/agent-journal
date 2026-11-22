@@ -16,7 +16,13 @@ final readonly class AskChatQuestionController
 {
     public function __invoke(AskChatQuestionCall $call, CommandBus $commands): MessageNamed
     {
-        $messageId = $commands->run(new AskChatQuestion($call->inboxId, $call->body, $call->requestKey->value, $call->respondent));
+        $messageId = $commands->run(new AskChatQuestion(
+            $call->inboxId,
+            $call->body,
+            $call->requestKey->value,
+            $call->respondent,
+            $call->claimToken,
+        ));
 
         return MessageNamed::from(['messageId' => $messageId]);
     }

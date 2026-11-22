@@ -521,14 +521,19 @@ use App\Comments\Policies\CommentPolicy;
 use App\Comments\Support\HasComments;
 use App\Comments\Support\PublicComment;
 use App\Comments\Support\PublicCommentPage;
+use App\Communication\Commands\AcknowledgeChatMessages;
+use App\Communication\Commands\AnswerChatQuestion;
 use App\Communication\Commands\AnswerMessage;
 use App\Communication\Commands\AskChatQuestion;
 use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\AskQuestion;
+use App\Communication\Commands\ClaimSpeech;
+use App\Communication\Commands\DeclineChatQuestion;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\PostChatMessage;
 use App\Communication\Commands\ReadMessages;
 use App\Communication\Commands\ReleaseMessageClaim;
+use App\Communication\Commands\ReleaseSpeech;
 use App\Communication\Commands\ReplyInChat;
 use App\Communication\Commands\ReplyToMessage;
 use App\Communication\Commands\RequireMessageAnswer;
@@ -1419,6 +1424,7 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                MembershipEvidence::class,
                 TypeReflections::class,
                 ReflectedType::class,
                 StartAccounts::class,
@@ -2043,7 +2049,6 @@ final class CoreApi
                 AssignmentPurpose::class,
                 SeatChangeResult::class,
                 InboxMembership::class,
-                MembershipEvidence::class,
                 DeskSeatEvidence::class,
                 ChatIntervalEvidence::class,
                 InboxMembers::class,
@@ -2339,6 +2344,11 @@ final class CoreApi
                 PostChatMessage::class,
                 AskChatQuestion::class,
                 ReplyInChat::class,
+                AcknowledgeChatMessages::class,
+                ClaimSpeech::class,
+                ReleaseSpeech::class,
+                AnswerChatQuestion::class,
+                DeclineChatQuestion::class,
                 SelectMessage::class,
                 AskQuestion::class,
                 AnswerMessage::class,
