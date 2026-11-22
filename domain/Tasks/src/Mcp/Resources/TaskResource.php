@@ -7,7 +7,6 @@ namespace Domain\Tasks\Mcp\Resources;
 use App\Contracts\ReadGrant;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Support\ToolArguments;
-use App\Values\ReadRequest;
 use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -35,7 +34,7 @@ final class TaskResource extends JournalResource implements HasUriTemplate
     {
         $taskId = ToolArguments::uriId($request);
         $view = ToolArguments::query($this->name(), $request, ['view', 'continuation']);
-        $this->reads->assertAllowed(new ReadRequest(TaskReadResult::TOOL, arguments: ['task_id' => $taskId]));
+        $this->reads->assertAllowed(TaskReadResult::requestFor($taskId));
 
         return Response::text(json_encode(
             $this->tasks->read($taskId, $view)->structuredContent(),

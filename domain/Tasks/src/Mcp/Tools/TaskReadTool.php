@@ -37,7 +37,7 @@ final class TaskReadTool extends JournalReadTool
             return parent::readRequest();
         }
 
-        return new ReadRequest($this->name(), arguments: ['task_id' => $arguments->ulid('task_id')]);
+        return TaskReadResult::requestFor($arguments->ulid('task_id'));
     }
 
     protected function read(ToolArguments $arguments): ToolResult

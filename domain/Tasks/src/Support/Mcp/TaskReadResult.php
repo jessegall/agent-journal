@@ -12,6 +12,7 @@ use App\Mcp\Support\Continuation;
 use App\Mcp\Support\ToolArguments;
 use App\Support\AssignmentData;
 use App\Support\AssignmentHolder;
+use App\Values\ReadRequest;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Data\TaskDetails;
 use Domain\Tasks\Data\TaskExecutionData;
@@ -31,6 +32,15 @@ final readonly class TaskReadResult
         private Continuations $continuations,
         private TextFields $fields,
     ) {}
+
+    /**
+     * The read of one task by id, targeted at that task so a grant scoped to it admits it; the tool, the resource
+     * and search all ask with this one request.
+     */
+    public static function requestFor(string $taskId): ReadRequest
+    {
+        return new ReadRequest(self::TOOL, arguments: ['task_id' => $taskId], target: $taskId);
+    }
 
     public function read(string $taskId, ToolArguments $arguments): ToolResult
     {

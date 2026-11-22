@@ -6,6 +6,7 @@ namespace Tests\Fixtures\Search;
 
 use App\Contracts\ReadGrant;
 use App\Exceptions\ReadGrantRefused;
+use App\Values\AllowedNames;
 use App\Values\ReadRequest;
 
 /**
@@ -28,5 +29,10 @@ final readonly class NamedReadGrant implements ReadGrant
         if (! $this->allows($request)) {
             throw ReadGrantRefused::because("{$request->name} is not granted");
         }
+    }
+
+    public function allowedTargets(string $name): AllowedNames
+    {
+        return in_array($name, $this->allowedReads, true) ? AllowedNames::all() : AllowedNames::only([]);
     }
 }

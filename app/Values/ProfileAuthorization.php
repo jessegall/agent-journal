@@ -93,6 +93,27 @@ final readonly class ProfileAuthorization
     }
 
     /**
+     * The targets the profile holds the named read for: every target when it holds the read unscoped or allows
+     * everything, else only the targets its scoped reads name, which may be none.
+     */
+    public function readTargets(string $name): AllowedNames
+    {
+        if ($this->holdsRead($name, null)) {
+            return AllowedNames::all();
+        }
+
+        $targets = [];
+
+        foreach ($this->reads as $read) {
+            if ($read->name === $name && $read->target !== null) {
+                $targets[] = $read->target;
+            }
+        }
+
+        return AllowedNames::only($targets);
+    }
+
+    /**
      * @return list<array{name: string, target: string|null}>
      */
     public function readsAsArrays(): array

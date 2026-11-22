@@ -29,4 +29,9 @@ final class ClosedSearchAccess implements SearchAccess
     {
         return AdmittedConstraints::unrestricted();
     }
+
+    public function admitsOpen(SearchReader $reader, string $recordId): bool
+    {
+        return $reader->isAgent();
+    }
 }

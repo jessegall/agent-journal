@@ -26,4 +26,10 @@ interface SearchAccess
      * What the reader's grant admits, compiled once for a batch from the real principal.
      */
     public function constraints(SearchReader $reader): AdmittedConstraints;
+
+    /**
+     * Whether the reader may run the open action of this record now: the same argument-specific decision the
+     * owner's read makes, asked before a hit is emitted and again when it is opened.
+     */
+    public function admitsOpen(SearchReader $reader, string $recordId): bool;
 }
