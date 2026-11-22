@@ -9,7 +9,8 @@ import type { PhasePages } from './usePhasePages';
 /**
  * A phase's tasks in their order, a page at a time, each row's link 'Task 31 · title' opening that task's reader in
  * the inspector by its number, the phase and its cursor staying as they are; closing the reader gives the focus back
- * to that link. Load more appends the next page once and moves the focus to its first row; when the last page brings
+ * to that link. A task that waits on others also offers View prerequisites, opening its reader on its waits. Load
+ * more appends the next page once and moves the focus to its first row; when the last page brings
  * nothing it says so to its parent, which gives the focus back to the phase's heading. A failed page keeps the rows
  * and offers Retry of the same page.
  */
@@ -80,6 +81,21 @@ watch(
                         · {{ task.title }}</Link
                     >
                     <StateBadge :label="task.stateLabel" outlined />
+                    <template v-if="task.hasWaits">
+                        <Link
+                            :href="
+                                inspectorLink('tasks.task', {
+                                    task: task.number,
+                                    section: 'waits',
+                                })
+                            "
+                            preserve-state
+                            preserve-scroll
+                            class="text-small text-text-2 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text"
+                            @click="remember"
+                            >View prerequisites for task {{ task.number }}</Link
+                        >
+                    </template>
                 </li>
             </template>
         </ol>

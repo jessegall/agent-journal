@@ -13,13 +13,14 @@ import { list as tasksRoute } from '@generated/routes/tasks';
 import type { TaskReaderData } from '@generated/types/tasks';
 import TaskLogsTab from './TaskLogsTab.vue';
 import TaskProofsTab from './TaskProofsTab.vue';
+import TaskWaitsTab from './TaskWaitsTab.vue';
 import { taskStateLook } from './taskLooks';
 
 /**
  * One task, on its own page or in the inspector: Task 31 and its title first, the state below, then its facts each
  * labelled apart (the holder, the latest run and who runs it now, then what other domains add, such as Plans' plan of
  * the task), and its sections as
- * tabs: Brief, the brief's paragraphs in order as text, or No brief yet, never the result note instead; Logs and Proofs,
+ * tabs: Brief, Waits (opened first when the reader was asked for them), the brief's paragraphs in order as text, or No brief yet, never the result note instead; Logs and Proofs,
  * each read only once its tab is chosen; and Comments, Core's thread on the task, whose draft and lost post this
  * pane keeps for the task across tabs and redraws.
  * Back returns to the tasks list it was opened from, with its query, or to the tasks list.
@@ -28,11 +29,12 @@ const props = defineProps<{ data: TaskReaderData }>();
 
 const pane = useHostProp();
 const thread = computed(() => commentThreadOf(pane, props.data.label));
-const section = ref('brief');
-const opened = reactive(new Set(['brief']));
+const section = ref(props.data.waits === undefined ? 'brief' : 'waits');
+const opened = reactive(new Set([section.value]));
 watch(section, (chosen) => opened.add(chosen));
 const tabs = [
     { key: 'brief', label: 'Brief' },
+    { key: 'waits', label: 'Waits' },
     { key: 'logs', label: 'Logs' },
     { key: 'proofs', label: 'Proofs' },
     { key: 'comments', label: 'Comments' },
@@ -92,6 +94,20 @@ function back(): void {
             </template>
             <div class="mt-3 flex flex-col gap-3">
                 <StateBadge v-bind="taskStateLook[data.state]" outlined />
+                <template v-if="data.blockReason !== undefined">
+                    <p
+                        class="rounded-control border border-border-2 px-3 py-2 text-body text-text"
+                    >
+                        <span class="font-medium">Blocked</span>
+                        <template v-if="data.latestRun !== undefined">
+                            in run {{ data.latestRun }}</template
+                        >:
+                        <span
+                            class="whitespace-pre-wrap [overflow-wrap:anywhere]"
+                            v-text="data.blockReason"
+                        />
+                    </p>
+                </template>
                 <FactsList :facts="facts" />
                 <SlotSections :sections="data.sections" />
                 <Tabs v-model="section" :tabs="tabs">
@@ -110,6 +126,11 @@ function back(): void {
                                 />
                             </template>
                         </div>
+                    </template>
+                    <template #waits>
+                        <template v-if="opened.has('waits')">
+                            <TaskWaitsTab :waits="data.waits" :number="data.number" />
+                        </template>
                     </template>
                     <template #logs>
                         <template v-if="opened.has('logs')">

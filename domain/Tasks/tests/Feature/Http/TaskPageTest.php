@@ -7,6 +7,8 @@ namespace Domain\Tasks\Tests\Feature\Http;
 use App\Assignments\Support\AssigneeIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use App\Bus\Contracts\CommandBus;
+use Domain\Tasks\Commands\AddTaskWait;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
@@ -53,6 +55,25 @@ final class TaskPageTest extends TestCase
             ->missing('page.data.latestRun')
             ->missing('page.data.runningNow')
             ->where('page.data.brief', "First part.\n\nSecond part."));
+    }
+
+    public function test_the_waits_tab_lists_the_prerequisite_and_the_holder_both_ways(): void
+    {
+        $first = Task::factory()->create(['title' => 'Prepare records']);
+        $second = Task::factory()->create(['title' => 'Publish records']);
+        $this->startUserRequestAs($this->owner->id);
+        $this->app->make(CommandBus::class)->run(new AddTaskWait($second->id, $first->id));
+
+        $waiting = $this->actingAs($this->owner)->get("/tasks/{$second->number}?section=waits")->assertOk();
+        $waiting->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.data.waits.waitsFor.0.number', (string) $first->number)
+            ->where('page.data.waits.waitsFor.0.state', 'open')
+            ->where('page.data.waits.waitsFor.0.isSatisfied', false)
+            ->count('page.data.waits.holdsUp', 0));
+
+        $holding = $this->actingAs($this->owner)->get("/tasks/{$first->number}?section=waits")->assertOk();
+        $holding->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.data.waits.holdsUp.0.number', (string) $second->number));
     }
 
     public function test_an_empty_brief_stays_empty_and_an_unknown_number_is_not_found(): void
