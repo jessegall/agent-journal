@@ -1,3 +1,4 @@
+from engine.agent_step.errors.step_conflict_error import StepConflictError
 from engine.request.request_values import RequestValues
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
@@ -39,6 +40,9 @@ class AgentStepRound:
                 # each agent's step is one request, whose readers share what they read
                 with container.get(RequestValues).opened():
                     bus.run(RunAgentStep(request.id), Actor.core(), environment_id=agent.environment_id)
+            # a step whose basis moved while it was decided is no fault: it is counted and decided again next round
+            except StepConflictError:
+                bus.run(CountStepFailure(request.id), Actor.core(), environment_id=agent.environment_id)
             # one agent's step that fails is counted and logged, and the round goes on with the others
             except Exception as error:
                 container.get(ErrorLog).reported(["agent step round", str(request.session_agent_id)], error, agent.environment_id)

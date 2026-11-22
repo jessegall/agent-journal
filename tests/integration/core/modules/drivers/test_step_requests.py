@@ -1,3 +1,7 @@
+from engine.agent_step.errors.step_conflict_error import StepConflictError
+from engine.command.bus import Bus
+from engine.log.error_log import ErrorLog
+from core.modules.drivers.commands.run_agent_step.run_agent_step import RunAgentStep
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_step_request import AgentStepRequest
 from core.modules.drivers.ticks.agent_step_round import AgentStepRound
@@ -33,3 +37,22 @@ def test_the_round_serves_an_open_request(played):
     story.expect_success(f'message send "read the brief" --to agent:{helper.id}', actor=story.agent)
     AgentStepRound()(story.container)
     assert [request.served_at is not None for request in requests(story, helper.id)] == [True]
+
+
+def test_a_step_whose_basis_moved_waits_for_the_next_round_and_logs_no_error(played, monkeypatch):
+    story = played(StartedHelper)
+    helper = helper_agent(story)
+    waiting_slice_on(story, helper.session)
+    story.expect_success(f'message send "read the brief" --to agent:{helper.id}', actor=story.agent)
+    bus, errors = story.container.get(Bus), []
+    run = bus.run
+
+    def conflicting_run(command, *arguments, **keywords):
+        if isinstance(command, RunAgentStep):
+            raise StepConflictError()
+        return run(command, *arguments, **keywords)
+
+    monkeypatch.setattr(bus, "run", conflicting_run)
+    monkeypatch.setattr(story.container.get(ErrorLog), "reported", lambda *arguments: errors.append(arguments))
+    AgentStepRound()(story.container)
+    assert errors == [] and [request.served_at for request in requests(story, helper.id)] == [None]
