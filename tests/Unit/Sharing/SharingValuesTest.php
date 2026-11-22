@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Sharing;
 
-use Tests\Architecture\Support\FormerPaths;
 use App\Enums\ShareAuditType;
 use App\Enums\ShareRelationType;
 use App\Enums\ShareState;
@@ -31,6 +30,7 @@ use App\Support\ShareSelection;
 use App\Support\ShareTargetRead;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Tests\Architecture\Support\FormerPaths;
 
 /**
  * The sharing values and enums: states answer which are live, terminal or retryable, relation sets are built from

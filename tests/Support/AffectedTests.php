@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use Tests\Architecture\Support\FormerPaths;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
+use Tests\Architecture\Support\FormerPaths;
 
 /**
  * The tests a set of changed files can break, read from the domain boundaries and Core's areas: a change inside one

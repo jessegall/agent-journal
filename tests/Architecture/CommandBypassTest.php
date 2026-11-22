@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Tests\Architecture\Support\FormerPaths;
 use Tests\Architecture\Support\CallScan;
+use Tests\Architecture\Support\FormerPaths;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
-use Tests\Architecture\Support\FormerPaths;
 use App\Data\BooleanValueData;
 use App\Data\DecimalConstraintsData;
 use App\Data\DecimalValueData;
@@ -25,6 +24,7 @@ use App\Support\ReflectedProperty;
 use App\Support\Reflector;
 use PhpOption\Option;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Tests\Architecture\Support\FormerPaths;
 use Tests\TestCase;
 
 /**

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use Tests\Architecture\Support\FormerPaths;
 use App\Commands\SendMessage\SendMessageCommand;
 use App\Events\MessageSent;
 use App\Exceptions\InboxUnavailable;
@@ -16,6 +15,7 @@ use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Tests\Architecture\Support\FormerPaths;
 use Tests\Fixtures\Communication\FailingMessageListener;
 use Tests\Support\MessagingTestCase;
 
