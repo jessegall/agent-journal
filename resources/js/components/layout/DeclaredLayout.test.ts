@@ -531,4 +531,43 @@ describe('a declared layout', () => {
         expect(view.get('.flex-col.items-stretch').text()).toContain('fast');
         expect(view.find('[role="switch"]').exists()).toBe(false);
     });
+
+    it('opens the menu of a focused row with the Menu key or Shift and F10, only when the row has one', async () => {
+        const view = mount(DeclaredLayout, {
+            attachTo: document.body,
+            props: {
+                data: {
+                    root: part({
+                        tag: 'collection',
+                        key: 'rows',
+                        style: 'list',
+                        rows: [
+                            {
+                                key: 'with-menu',
+                                label: 'With menu',
+                                value: '',
+                                query: {},
+                                isCurrent: false,
+                                menu: {
+                                    key: 'task',
+                                    label: 'Actions for task 1',
+                                    groups: [{ key: 'main', items: [{ key: 'open', label: 'Open', href: '/tasks/1' }] }],
+                                },
+                            },
+                            { key: 'plain', label: 'Plain', value: '', query: {}, isCurrent: false },
+                        ],
+                    }),
+                },
+            },
+            global: { stubs: { Link: { props: ['href'], template: '<a :href="href"><slot /></a>' } } },
+        });
+        const rows = view.findAll('li');
+
+        await rows[1].trigger('keydown', { key: 'ContextMenu' });
+        expect(document.body.querySelector('[role="menu"]:not([hidden])')).toBeNull();
+
+        await rows[0].trigger('keydown', { key: 'F10', shiftKey: true });
+        expect(view.find('[role="menu"]').exists()).toBe(true);
+        view.unmount();
+    });
 });

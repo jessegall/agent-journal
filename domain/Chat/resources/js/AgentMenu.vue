@@ -16,6 +16,14 @@ const props = defineProps<{
 
 const emit = defineEmits<{ close: [] }>();
 
+const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+// Escape closes the menu and gives the focus back to the button that opened it.
+function closeToOpener(): void {
+    emit('close');
+    opener?.focus();
+}
+
 const search = ref('');
 const options = ref<HTMLLIElement[]>([]);
 const found = computed(() =>
@@ -42,7 +50,7 @@ async function focusOption(index: number): Promise<void> {
 <template>
     <div
         class="absolute top-full left-0 z-90 mt-1 flex w-72 flex-col gap-2 rounded-control border border-border-2 bg-raised p-2 shadow-lg"
-        @keydown.escape="emit('close')"
+        @keydown.escape.stop="closeToOpener"
     >
         <input
             v-model="search"

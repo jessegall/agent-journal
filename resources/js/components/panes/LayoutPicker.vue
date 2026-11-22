@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useCloseOutside } from '@/composables/useCloseOutside';
+import { useMenuKeys } from '@/composables/useMenuKeys';
 import { router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import Button from '@/components/kit/Button.vue';
@@ -15,7 +16,8 @@ import LayoutThumb from './LayoutThumb.vue';
  * Version 5's layout picker (agents/LayoutPicker.vue with kit/PresetList.vue): the presets, then the user's saved
  * layouts, each a row with its thumbnail; a saved row shows its tools on hover: save the current layout to it,
  * download it, rename and delete. Save layout names a new one inline, Import reads a layout file, and the notice line
- * says why a save, a name or a file was refused.
+ * says why a save, a name or a file was refused. The arrow keys move between the rows and Escape closes it with the
+ * focus back on its button.
  */
 const props = defineProps<{ layouts: LayoutData[] }>();
 
@@ -168,6 +170,15 @@ async function importFile(event: Event): Promise<void> {
     }
 }
 
+const { onKeydown } = useMenuKeys(panel);
+const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+// Escape closes the menu and gives the focus back to the button that opened it.
+function closeToOpener(): void {
+    emit('done');
+    opener?.focus();
+}
+
 useCloseOutside(panel, () => emit('done'));
 </script>
 
@@ -176,6 +187,8 @@ useCloseOutside(panel, () => emit('done'));
         ref="panel"
         role="menu"
         aria-label="Layouts"
+        @keydown="onKeydown"
+        @keydown.escape.stop="closeToOpener"
         class="z-90 flex max-h-[min(70vh,560px)] w-[300px] min-w-60 flex-col gap-0.5 overflow-y-auto rounded-menu border border-border-2 bg-raised p-1.5 shadow-[0_14px_36px_rgba(0,0,0,.45)]"
     >
         <span

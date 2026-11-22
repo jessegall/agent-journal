@@ -13,11 +13,11 @@ import { rememberRow, restoreRow } from './listReturn';
 
 // The keyed rows of a declared layout: facts as term and value pairs, choices that each set the window's query, the
 // chosen one marked current, or a list whose rows open their own page or their own window query. A row with an actions
-// menu shows its actions button beside it, and a right click on the row opens the same menu, bound to that row's
-// record. A list keeps the rows it shows when a Show more is waiting for its answer, and adds the rows that answer
-// brings; any other read replaces them. A row that declares leading or trailing parts is drawn in a ListRow with them
-// in its slots, only its title linking, so its own parts and its menu stay controls of their own; a fact's value draws
-// each piece as its own link when it has an address.
+// menu shows its actions button beside it, and a right click on the row, or the Menu key or Shift+F10 on it when it is
+// focused, opens the same menu, bound to that row's record. A list keeps the rows it shows when a Show more is waiting
+// for its answer, and adds the rows that answer brings; any other read replaces them. A row that declares leading or
+// trailing parts is drawn in a ListRow with them in its slots, only its title linking, so its own parts and its menu
+// stay controls of their own; a fact's value draws each piece as its own link when it has an address.
 const props = defineProps<{ part: LayoutPartData }>();
 const windowQuery = useWindowQueryChange();
 const isAppending = useLayoutAppend();
@@ -71,6 +71,18 @@ function openRowMenu(event: MouseEvent, row: LayoutRowData): void {
 
 function hasParts(row: LayoutRowData): boolean {
     return row.leading !== undefined || row.trailing !== undefined;
+}
+
+function openRowMenuFromKey(event: KeyboardEvent, row: LayoutRowData): void {
+    const isMenuKey = event.key === 'ContextMenu' || (event.key === 'F10' && event.shiftKey);
+    const menu = rowMenus.get(row.key);
+
+    if (!isMenuKey || row.menu === undefined || row.menu.groups.length === 0 || menu === undefined) {
+        return;
+    }
+
+    event.preventDefault();
+    menu.openFromContext();
 }
 
 function destinationOf(row: LayoutRowData): string | null {
@@ -133,6 +145,7 @@ function destinationOf(row: LayoutRowData): string | null {
                     <li
                         class="flex items-center gap-1"
                         @contextmenu="openRowMenu($event, row)"
+                        @keydown="openRowMenuFromKey($event, row)"
                     >
                         <template v-if="hasParts(row)">
                             <ListRow
