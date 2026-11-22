@@ -245,45 +245,46 @@ const menuEntries = computed<MenuEntry[]>(() => {
         :aria-label="`Pane with ${titleOf(pane)}`"
         :data-pane-id="pane.id"
     >
-        <PaneTabs
-            v-if="!isPlain"
-            :tabs="tabs"
-            :insert-at="insertAt"
-            :data-tabs-of="pane.id"
-            @grab="
-                (event, key) =>
-                    grab(event, key, pane.id, () =>
-                        store.change(
-                            activate(store.layout.value, pane.id, key),
-                        ),
-                    )
-            "
-            @detach="detach"
-            @pick="
-                (key) =>
-                    store.change(activate(store.layout.value, pane.id, key))
-            "
-            @close="closeTab"
-            @split="split"
-        >
-            <Button
-                ref="addButton"
-                variant="icon"
-                aria-label="Add a window"
-                title="Add a window"
-                :aria-expanded="isAdding"
-                @click="isAdding = !isAdding"
-                ><Icon name="plus" :size="13"
-            /></Button>
-            <Button
-                variant="icon"
-                aria-label="Window settings"
-                title="Window settings"
-                :aria-expanded="isMenuOpen"
-                @click="isMenuOpen = !isMenuOpen"
-                ><Icon name="dots-vertical" :size="13"
-            /></Button>
-        </PaneTabs>
+        <template v-if="!isPlain">
+            <PaneTabs
+                :tabs="tabs"
+                :insert-at="insertAt"
+                :data-tabs-of="pane.id"
+                @grab="
+                    (event, key) =>
+                        grab(event, key, pane.id, () =>
+                            store.change(
+                                activate(store.layout.value, pane.id, key),
+                            ),
+                        )
+                "
+                @detach="detach"
+                @pick="
+                    (key) =>
+                        store.change(activate(store.layout.value, pane.id, key))
+                "
+                @close="closeTab"
+                @split="split"
+            >
+                <Button
+                    ref="addButton"
+                    variant="icon"
+                    aria-label="Add a window"
+                    title="Add a window"
+                    :aria-expanded="isAdding"
+                    @click="isAdding = !isAdding"
+                    ><Icon name="plus" :size="13"
+                /></Button>
+                <Button
+                    variant="icon"
+                    aria-label="Window settings"
+                    title="Window settings"
+                    :aria-expanded="isMenuOpen"
+                    @click="isMenuOpen = !isMenuOpen"
+                    ><Icon name="dots-vertical" :size="13"
+                /></Button>
+            </PaneTabs>
+        </template>
         <AddWindowPopover
             v-model:open="isAdding"
             :windows="store.closedWindows.value"

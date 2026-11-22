@@ -157,19 +157,18 @@ export function designPresets(windowKeys: string[], screen: Screen): Preset[] {
     const chatPane = dayOne.grid;
     const docked = splitOf('row', 0.64, chatPane, splitOf('column', 0.36, paneOf(second), paneOf(third)));
     const windowsOnly = splitOf('row', 0.55, paneOf(second), splitOf('column', 0.55, paneOf(third), paneOf(fourth)));
-    const candidates: Preset[] = [
-        { name: 'Just the chat', arrangement: dayOne },
-        ...(second === undefined
-            ? []
-            : [
-                  {
-                      name: 'A first window',
-                      arrangement: floatNewWindow(dayOne, second, screen, { top: DETACHED_START, right: screen.width }),
-                  },
-              ]),
-        ...(docked === null ? [] : [{ name: 'Docked', arrangement: { grid: docked, detached: [] } }]),
-        ...(windowsOnly === null ? [] : [{ name: 'Windows only', arrangement: { grid: windowsOnly, detached: [] } }]),
+    const firstFloat = second === undefined
+        ? null
+        : floatNewWindow(dayOne, second, screen, { top: DETACHED_START, right: screen.width });
+    const named: [string, Arrangement | null][] = [
+        ['Just the chat', dayOne],
+        ['A first window', firstFloat],
+        ['Docked', docked === null ? null : { grid: docked, detached: [] }],
+        ['Windows only', windowsOnly === null ? null : { grid: windowsOnly, detached: [] }],
     ];
+    const candidates = named.flatMap(([name, arrangement]): Preset[] =>
+        arrangement === null ? [] : [{ name, arrangement }],
+    );
 
     return candidates.filter((preset, index) =>
         candidates
