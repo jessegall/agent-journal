@@ -10,7 +10,7 @@ use App\Operations\Enums\AccessType;
 use App\Profiles\Policies\AccountPolicy;
 
 /**
- * The owner removes a saved account: no start uses it again, no other account replaces it as the program's choice,
+ * The owner removes a saved account: no start uses it again, no other account replaces it as the driver's choice,
  * and the host signs it out and deletes its folder once its processes ended. Removing it again changes nothing.
  *
  * @extends Command<null>

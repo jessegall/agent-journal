@@ -8,8 +8,8 @@ use App\Profiles\Enums\CleanupTarget;
 use App\Profiles\Enums\SignInMethod;
 
 /**
- * A cleanup a host took: what it cleans, by id, its program and method, its folder on the host, the generation to report in and
- * whether the program's sign-in store was already proven gone.
+ * A cleanup a host took: what it cleans, by id, its driver and method, its folder on the host, the generation to report in and
+ * whether the driver's sign-in store was already proven gone.
  */
 final readonly class ClaimedCleanup
 {

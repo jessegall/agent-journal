@@ -12,7 +12,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * The hook command a started program runs needs only its start environment and PHP: with the database and Redis
+ * The hook command a started driver runs needs only its start environment and PHP: with the database and Redis
  * the journal's .env names out of reach, it still relays the call and answers with the start's offline reply.
  */
 final class HookRelayScriptTest extends TestCase
@@ -33,7 +33,7 @@ final class HookRelayScriptTest extends TestCase
         parent::tearDown();
     }
 
-    #[TimeLimit(seconds: 20, reason: 'It boots the application in a child process, as the started program does.')]
+    #[TimeLimit(seconds: 20, reason: 'It boots the application in a child process, as the started driver does.')]
     public function test_the_hook_command_relays_with_the_database_and_redis_unreachable(): void
     {
         $result = Process::env($this->startEnvironment())

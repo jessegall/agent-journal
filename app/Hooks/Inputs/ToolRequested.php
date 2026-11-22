@@ -18,7 +18,7 @@ use PhpOption\Option;
 
 /**
  * A native tool call that is neither a shell command nor a file edit, such as a read, a search, a web fetch or an MCP
- * tool, with the operation its program adapter declared for it.
+ * tool, with the operation its driver adapter declared for it.
  */
 final readonly class ToolRequested implements HookInput
 {

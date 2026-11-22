@@ -198,7 +198,7 @@ watch(
 );
 
 /**
- * A sign-in of another method already running for the program, such as a subscription sign-in while a key was
+ * A sign-in of another method already running for the driver, such as a subscription sign-in while a key was
  * asked for in another tab: it shows with Resume or Cancel before it takes any input.
  */
 const isOtherMethodRunning = computed(

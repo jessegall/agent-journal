@@ -9,7 +9,7 @@ use App\Agents\Values\SelectedDriver;
 
 /**
  * What a start tells its caller: the request, the session and agent, the selection, whether the session is new,
- * the conversation mode and the program's arguments; the actual model is not reported by current adapters. It never
+ * the conversation mode and the driver's arguments; the actual model is not reported by current adapters. It never
  * holds the start token or the settings.
  */
 final readonly class StartReceipt
@@ -17,7 +17,7 @@ final readonly class StartReceipt
     public const string ACTUAL_MODEL_NOT_REPORTED = 'not reported by this adapter';
 
     /**
-     * @param  list<string>  $programArguments
+     * @param  list<string>  $driverArguments
      */
     public function __construct(
         public string $requestId,
@@ -27,6 +27,6 @@ final readonly class StartReceipt
         public bool $newSession,
         public ConversationModeType $conversationMode,
         public string $actualModel,
-        public array $programArguments,
+        public array $driverArguments,
     ) {}
 }

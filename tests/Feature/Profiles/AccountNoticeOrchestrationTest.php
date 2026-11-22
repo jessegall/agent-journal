@@ -12,8 +12,8 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A program's notices are recorded and resolved by Profiles under the program's selection lock: a repeat counts the
- * open notice again, a resolve closes every open one of the program and no other, and a record after it opens a new
+ * A driver's notices are recorded and resolved by Profiles under the driver's selection lock: a repeat counts the
+ * open notice again, a resolve closes every open one of the driver and no other, and a record after it opens a new
  * one instead of bringing a resolved one back.
  */
 final class AccountNoticeOrchestrationTest extends TestCase

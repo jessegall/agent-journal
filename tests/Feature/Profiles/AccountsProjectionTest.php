@@ -31,7 +31,7 @@ use Tests\TestCase;
 
 /**
  * No Profiles handler sends AccountsChanged: the row facts the Accounts page shows reach one projection after the
- * commit, which names the same program and account, attempt or notice the page refreshed for before; a rolled-back
+ * commit, which names the same driver and account, attempt or notice the page refreshed for before; a rolled-back
  * action refreshes nothing, and a notice is recorded through its own command, whose failure is logged.
  */
 final class AccountsProjectionTest extends TestCase

@@ -17,8 +17,8 @@ use App\Profiles\Values\SignInIdentity;
 use App\Profiles\Values\SignInVerification;
 
 /**
- * A Claude Code sign-in by a value the owner gives: no program runs until the value arrives, then it is written to a
- * private file in the account folder, which the program reads at every launch, never through its arguments or its
+ * A Claude Code sign-in by a value the owner gives: no driver runs until the value arrives, then it is written to a
+ * private file in the account folder, which the driver reads at every launch, never through its arguments or its
  * environment. The status names the method, and one short model call proves the value works.
  */
 abstract readonly class ClaudeSecretSignIn implements SignInProtocol
@@ -41,7 +41,7 @@ abstract readonly class ClaudeSecretSignIn implements SignInProtocol
     }
 
     /**
-     * Keeps the value in its own file, created only for the owner, lets the program find it, and ends the wait.
+     * Keeps the value in its own file, created only for the owner, lets the driver find it, and ends the wait.
      */
     public function acceptCode(PrivateAccountProcess $process, string $code): void
     {
@@ -113,7 +113,7 @@ abstract readonly class ClaudeSecretSignIn implements SignInProtocol
     }
 
     /**
-     * The account folder's real path, which the program may report instead of the path it was given.
+     * The account folder's real path, which the driver may report instead of the path it was given.
      */
     protected function realFolder(string $directory): string
     {
@@ -126,7 +126,7 @@ abstract readonly class ClaudeSecretSignIn implements SignInProtocol
     abstract protected function authMethod(): string;
 
     /**
-     * Lets the program find the value at launch, beside its file.
+     * Lets the driver find the value at launch, beside its file.
      */
     abstract protected function install(string $directory): void;
 

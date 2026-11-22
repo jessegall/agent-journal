@@ -9,7 +9,7 @@ use Carbon\CarbonImmutable;
 
 /**
  * One observed reading of a limit window: the provider's limit, the window, how much of it is used in percent, how
- * long it lasts and the Unix second it resets, each only when the program reported it.
+ * long it lasts and the Unix second it resets, each only when the driver reported it.
  */
 final readonly class UsageWindowReading
 {

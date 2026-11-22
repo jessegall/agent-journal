@@ -14,7 +14,7 @@ use App\Skills\Values\SkillKey;
 use Illuminate\Console\Command;
 
 /**
- * Prints one skill's rendered SKILL.md exactly as a program reads it.
+ * Prints one skill's rendered SKILL.md exactly as a driver reads it.
  */
 final class SkillShowCommand extends Command
 {

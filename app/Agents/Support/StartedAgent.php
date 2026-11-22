@@ -10,19 +10,19 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
 
 /**
- * What the host needs to run one started program: its journal session, its token, handed out once, and its isolated
+ * What the host needs to run one started driver: its journal session, its token, handed out once, and its isolated
  * settings.
  */
 final readonly class StartedAgent
 {
     /**
-     * @param  list<string>  $programArguments  the arguments the host starts the program with, such as its model
+     * @param  list<string>  $driverArguments  the arguments the host starts the driver with, such as its model
      */
     public function __construct(
         public AgentSession $session,
         public string $token,
         public string $settings,
-        public array $programArguments,
+        public array $driverArguments,
         public AgentRuntime|null $runtime,
         public DriverRequest|null $firstRequest,
     ) {}

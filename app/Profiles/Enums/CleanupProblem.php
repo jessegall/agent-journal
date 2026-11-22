@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Enums;
 
 /**
- * Why a cleanup has not finished, in words safe to show: the program could not confirm its sign-in is gone, the
- * folder could not be deleted, or a running session still uses the folder. The program's own output is never kept.
+ * Why a cleanup has not finished, in words safe to show: the driver could not confirm its sign-in is gone, the
+ * folder could not be deleted, or a running session still uses the folder. The driver's own output is never kept.
  */
 enum CleanupProblem: string
 {

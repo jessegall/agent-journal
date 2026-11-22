@@ -8,8 +8,8 @@ use App\Agents\Enums\LaunchProfileType;
 use App\Drivers\Enums\HookDriver;
 
 /**
- * What a contained host found of a program's protected arrangement in the agent image (journal-agent protection),
- * item by item; a program no contained host has reported has no items.
+ * What a contained host found of a driver's protected arrangement in the agent image (journal-agent protection),
+ * item by item; a driver no contained host has reported has no items.
  *
  * @phpstan-import-type StoredItem from ProtectedItem
  *
@@ -28,7 +28,7 @@ final readonly class ProtectionReport
     ) {}
 
     /**
-     * The report of a program, build and platform no contained host has reported on.
+     * The report of a driver, build and platform no contained host has reported on.
      */
     public static function unreported(HookDriver $driver, string $build, string $platform): self
     {
@@ -49,7 +49,7 @@ final readonly class ProtectionReport
     }
 
     /**
-     * The key a host keeps a report under, one per program, build and platform; the standard container's keeps the
+     * The key a host keeps a report under, one per driver, build and platform; the standard container's keeps the
      * key reports had before protected starts had their own.
      */
     public static function keyOf(HookDriver $driver, string $build, string $platform): string
@@ -97,7 +97,7 @@ final readonly class ProtectionReport
     }
 
     /**
-     * What stands between this program and a contained start, for the refusal to name.
+     * What stands between this driver and a contained start, for the refusal to name.
      */
     public function shortfall(): string
     {

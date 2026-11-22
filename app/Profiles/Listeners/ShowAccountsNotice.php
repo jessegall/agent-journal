@@ -13,8 +13,8 @@ use App\Profiles\Commands\RecordAccountNotice;
 use App\Profiles\Enums\AccountNoticeReason;
 
 /**
- * Turns a refused start or a failure the owner can act on into a notice on the program's accounts, from the safe
- * program and reason alone, through its own command after the fact committed.
+ * Turns a refused start or a failure the owner can act on into a notice on the driver's accounts, from the safe
+ * driver and reason alone, through its own command after the fact committed.
  */
 final readonly class ShowAccountsNotice implements Listener
 {

@@ -197,7 +197,7 @@ trait CommittedHookStack
     protected function capabilities(RewriteSupport $rewrites = RewriteSupport::WithoutApproval): DriverCapabilities
     {
         return new DriverCapabilities(
-            'Test program',
+            'Test driver',
             'pre-tool and stop replies',
             ['onShellCommand', 'onStop'],
             $rewrites,

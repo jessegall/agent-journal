@@ -10,7 +10,7 @@ use App\Contracts\ListenerFailureLog;
 use App\Ui\Contracts\UserInterfaceUpdater;
 
 /**
- * A start of an agent was refused because no account could run its program; it names the program and a safe
+ * A start of an agent was refused because no account could run its driver; it names the driver and a safe
  * reason, never an account.
  */
 final readonly class StartUnavailable implements Event, ListenerFailureLog, UserInterfaceUpdater

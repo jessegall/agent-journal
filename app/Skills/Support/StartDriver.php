@@ -10,8 +10,8 @@ use App\Drivers\Values\ProviderKey;
 use App\Text\Support\StableKey;
 
 /**
- * The program a session was started with, as its program and provider keys: a registered program gives both, a
- * program without a registration gives no provider, and a session with no program gives neither.
+ * The driver a session was started with, as its driver and provider keys: a registered driver gives both, a
+ * driver without a registration gives no provider, and a session with no driver gives neither.
  */
 final readonly class StartDriver
 {
@@ -21,7 +21,7 @@ final readonly class StartDriver
     ) {}
 
     /**
-     * @param  string|null  $driver  the program the session recorded at start
+     * @param  string|null  $driver  the driver the session recorded at start
      */
     public static function of(string|null $driver): self
     {

@@ -7,7 +7,7 @@ namespace App\Profiles\Events;
 use App\Profiles\Contracts\ShownOnAccounts;
 
 /**
- * A notice on the program's accounts was recorded, or counted again.
+ * A notice on the driver's accounts was recorded, or counted again.
  */
 final readonly class AccountNoticeRecorded implements ShownOnAccounts
 {

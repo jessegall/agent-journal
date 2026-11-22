@@ -10,7 +10,7 @@ use App\Bus\Support\Command;
 use App\Profiles\Enums\AccountCheckResult;
 
 /**
- * The host reports what the program's own check of an account said, made outside any transaction in the generation
+ * The host reports what the driver's own check of an account said, made outside any transaction in the generation
  * it was asked for. Run for an authenticated host by the journal itself (internal, not exported).
  *
  * @extends Command<null>

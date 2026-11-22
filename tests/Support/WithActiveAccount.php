@@ -13,13 +13,13 @@ use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Values\AccountLabel;
 
 /**
- * For a test that starts agents through the real start path: saves a signed-in account for each program and
+ * For a test that starts agents through the real start path: saves a signed-in account for each driver and
  * chooses it, as the owner would on the Accounts page, so starts run with it.
  */
 trait WithActiveAccount
 {
     /**
-     * Saves and chooses an account for every program; the owner acts while it does, and a test sets its own actor
+     * Saves and chooses an account for every driver; the owner acts while it does, and a test sets its own actor
      * afterwards.
      *
      * @return array<string, Account>

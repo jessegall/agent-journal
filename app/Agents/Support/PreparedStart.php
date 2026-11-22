@@ -8,7 +8,7 @@ use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Values\SelectedDriver;
 
 /**
- * Everything the host needs for one committed start: the runtime and session it belongs to, the selected program and
+ * Everything the host needs for one committed start: the runtime and session it belongs to, the selected driver and
  * model, the frozen policy, the assigned workspace and a reference to the host account it uses, never a credential.
  */
 final readonly class PreparedStart
@@ -25,7 +25,7 @@ final readonly class PreparedStart
     ) {}
 
     /**
-     * The name the protected host knows the selected program by.
+     * The name the protected host knows the selected driver by.
      */
     public function hostDriver(): string
     {

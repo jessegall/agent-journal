@@ -14,8 +14,8 @@ use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\Validator;
 
 /**
- * The owner starts signing in a new account of a program, which is named once it proves who it is; the page's
- * Idempotency-Key header names the click, so a repeat answers the same attempt. A program the journal does not know is
+ * The owner starts signing in a new account of a driver, which is named once it proves who it is; the page's
+ * Idempotency-Key header names the click, so a repeat answers the same attempt. A driver the journal does not know is
  * refused before any attempt.
  */
 final class StartSignInRequest extends FormRequest
@@ -32,7 +32,7 @@ final class StartSignInRequest extends FormRequest
     }
 
     /**
-     * A method the program does not declare on this host is refused with the request, before any attempt.
+     * A method the driver does not declare on this host is refused with the request, before any attempt.
      *
      * @return list<Closure(Validator): void>
      */
@@ -42,7 +42,7 @@ final class StartSignInRequest extends FormRequest
             $method = SignInMethod::tryFrom((string) $this->input('method'));
 
             if ($method !== null && ! in_array($method, $protocols->methodsOf($this->driver()), true)) {
-                $validator->errors()->add('method', 'This program has no such sign-in method here.');
+                $validator->errors()->add('method', 'This driver has no such sign-in method here.');
             }
         }];
     }

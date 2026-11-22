@@ -10,7 +10,7 @@ namespace App\Agents\Enums;
 enum StartRemedyType: string
 {
     case ChooseModel = 'choose-model';
-    case ChooseProgram = 'choose-program';
+    case ChooseDriver = 'choose-driver';
     case ChooseAccount = 'choose-account';
     case ReviewConfiguration = 'review-configuration';
     case RetryStart = 'retry-start';
@@ -29,7 +29,7 @@ enum StartRemedyType: string
     {
         return match ($this) {
             self::ChooseModel => 'model',
-            self::ChooseProgram => 'driver',
+            self::ChooseDriver => 'driver',
             self::ChooseAccount => 'accountId',
             self::ChooseConversation, self::StartNewConversation => 'conversationId',
             self::ReviewConfiguration, self::RetryStart, self::CheckCapacity, self::ConnectHost, self::UpdateHost,

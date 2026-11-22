@@ -10,7 +10,7 @@ use App\Profiles\Support\SignInEgress;
 use Tests\TestCase;
 
 /**
- * On a server every sign-in program goes out through the allow-list proxy; on the Mac, with none set, its clean
+ * On a server every sign-in driver goes out through the allow-list proxy; on the Mac, with none set, its clean
  * environment stays as it was (doc 61, decision 5).
  */
 final class SignInEgressTest extends TestCase
@@ -28,7 +28,7 @@ final class SignInEgressTest extends TestCase
 
         $this->folder = sys_get_temp_dir().'/sign-in-egress-'.uniqid();
         mkdir($this->folder, 0o700);
-        $driver = $this->folder.'/program';
+        $driver = $this->folder.'/driver';
         file_put_contents($driver, "#!/bin/sh\nenv > \"\$HOME/environment\"\n");
         chmod($driver, 0o700);
         config(['accounts.claude_program' => $driver, 'accounts.codex_program' => $driver]);
@@ -64,7 +64,7 @@ final class SignInEgressTest extends TestCase
     }
 
     /**
-     * The environment each program was started with, as the fake program wrote it.
+     * The environment each driver was started with, as the fake driver wrote it.
      *
      * @return list<array<string, string>>
      */

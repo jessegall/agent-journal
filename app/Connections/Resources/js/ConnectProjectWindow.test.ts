@@ -328,7 +328,7 @@ describe('ConnectProjectWindow', () => {
         expect(wrapper.text()).toContain('No connected projects');
     });
 
-    it('offers Start for an eligible program with its command and names why another is unavailable', () => {
+    it('offers Start for an eligible driver with its command and names why another is unavailable', () => {
         const data = windowData(true);
         const [row] = data.bindings.rows;
         const wrapper = mount(ConnectProjectWindow, {

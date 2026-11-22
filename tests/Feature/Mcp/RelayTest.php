@@ -10,7 +10,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * php artisan mcp:relay as a started program runs it: a child process on stdio, posting each frame as one signed call
+ * php artisan mcp:relay as a started driver runs it: a child process on stdio, posting each frame as one signed call
  * to a stand-in journal (tests/Fixtures/Mcp/relay-server.php) and writing each answer back as one line.
  */
 #[TimeLimit(

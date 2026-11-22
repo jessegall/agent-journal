@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Skills\Values;
 
 /**
- * What one session's next publication delivers: its program and target, and the selection with its digest.
+ * What one session's next publication delivers: its driver and target, and the selection with its digest.
  */
 final readonly class PublicationIntent
 {

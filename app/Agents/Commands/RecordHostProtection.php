@@ -10,7 +10,7 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
 /**
- * Keeps a contained host's latest protection report for one program and build. Run for an authenticated host by the
+ * Keeps a contained host's latest protection report for one driver and build. Run for an authenticated host by the
  * journal itself (internal, not exported).
  *
  * @extends Command<void>

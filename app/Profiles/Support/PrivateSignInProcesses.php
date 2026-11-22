@@ -23,9 +23,9 @@ use Carbon\CarbonImmutable;
 use Closure;
 
 /**
- * The host's sign-in runner: takes one sign-in, makes its private folder, runs the program's own sign-in until it
- * ends or its deadline passes, checks the folder with the program's own check, and reports only a safe outcome.
- * It runs on the host, outside the app's containers, and never sends the program's output anywhere.
+ * The host's sign-in runner: takes one sign-in, makes its private folder, runs the driver's own sign-in until it
+ * ends or its deadline passes, checks the folder with the driver's own check, and reports only a safe outcome.
+ * It runs on the host, outside the app's containers, and never sends the driver's output anywhere.
  */
 final readonly class PrivateSignInProcesses
 {
@@ -93,7 +93,7 @@ final readonly class PrivateSignInProcesses
     }
 
     /**
-     * Runs the next account check with the program's own status check and answers whether there was one; only a
+     * Runs the next account check with the driver's own status check and answers whether there was one; only a
      * certain answer is reported as signed in or out.
      */
     public function checkNext(): bool
@@ -124,7 +124,7 @@ final readonly class PrivateSignInProcesses
     }
 
     /**
-     * Runs the next cleanup: the program signs the folder out and its own certain check must show no sign-in left
+     * Runs the next cleanup: the driver signs the folder out and its own certain check must show no sign-in left
      * before the folder is deleted; each proof is reported on its own, and a failed step is tried again later.
      */
     public function cleanNext(): bool
@@ -149,7 +149,7 @@ final readonly class PrivateSignInProcesses
     }
 
     /**
-     * Whether the cleanup's sign-in is gone: a folder that is gone holds none, so its program is never started in it.
+     * Whether the cleanup's sign-in is gone: a folder that is gone holds none, so its driver is never started in it.
      */
     private function removeStore(ClaimedCleanup $claimed): bool
     {
@@ -207,8 +207,8 @@ final readonly class PrivateSignInProcesses
     }
 
     /**
-     * Runs the sign-in until the program finishes, the attempt expires or the journal ends it, and answers whether
-     * the attempt is still live; a code reaches the program only from a live poll.
+     * Runs the sign-in until the driver finishes, the attempt expires or the journal ends it, and answers whether
+     * the attempt is still live; a code reaches the driver only from a live poll.
      */
     private function waitForEnd(SignInProtocol $protocol, PrivateAccountProcess $process, ClaimedSignIn $claimed): bool
     {
@@ -242,8 +242,8 @@ final readonly class PrivateSignInProcesses
     }
 
     /**
-     * Hands the user's answer to the program and answers whether it arrived whole; one that may have arrived in part
-     * ends the attempt interrupted, since an answer the program may have taken is never given again.
+     * Hands the user's answer to the driver and answers whether it arrived whole; one that may have arrived in part
+     * ends the attempt interrupted, since an answer the driver may have taken is never given again.
      */
     private function deliver(
         SignInProtocol $protocol,
@@ -263,7 +263,7 @@ final readonly class PrivateSignInProcesses
     }
 
     /**
-     * Hands the user the program's challenge once it printed one, and answers whether it did.
+     * Hands the user the driver's challenge once it printed one, and answers whether it did.
      */
     private function publishChallenge(
         SignInProtocol $protocol,

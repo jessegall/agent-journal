@@ -10,7 +10,7 @@ use Closure;
 
 /**
  * A native call for a tool that only reads, such as reading a file: the journal has no state that judges it, so the
- * program gets the neutral reply and its own permission handling decides.
+ * driver gets the neutral reply and its own permission handling decides.
  */
 final readonly class UnjudgedCall implements DriverCall
 {

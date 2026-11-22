@@ -11,7 +11,7 @@ use App\Agents\Support\PreparedStart;
 
 /**
  * The host boundary that starts and stops a prepared start; the protected host implements it, nothing else spawns
- * a program.
+ * a driver.
  */
 interface StartExecutor
 {

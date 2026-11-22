@@ -11,7 +11,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Asks the areas that extend a start to contribute, at once, inside the claim: the account settings a host needs to
- * start the program, and the additions its grant carries. Each is a synchronous request, not a fact.
+ * start the driver, and the additions its grant carries. Each is a synchronous request, not a fact.
  */
 final readonly class StartExtensionRequests
 {

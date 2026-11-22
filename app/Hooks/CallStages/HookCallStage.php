@@ -14,13 +14,13 @@ use App\Hooks\Stack\HookAnswer;
 use Closure;
 
 /**
- * One hook call as it enters the answer pipeline: the input, what the program can take, the adapter's way to render
+ * One hook call as it enters the answer pipeline: the input, what the driver can take, the adapter's way to render
  * the reply, and whose call it is.
  */
 final readonly class HookCallStage
 {
     /**
-     * @param  Closure(HookAnswer): DriverReply  $render  the program adapter's reply to the final answer
+     * @param  Closure(HookAnswer): DriverReply  $render  the driver adapter's reply to the final answer
      */
     public function __construct(
         public HookInput $input,

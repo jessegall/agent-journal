@@ -8,7 +8,7 @@ use App\Profiles\Exceptions\SignInCodeInvalid;
 
 /**
  * A code the user typed for a sign-in: trimmed, 1 to 512 bytes, one word with no control character, so it is
- * typed into the program as nothing but itself.
+ * typed into the driver as nothing but itself.
  */
 final readonly class SignInCode
 {

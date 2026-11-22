@@ -22,7 +22,7 @@ use TypeError;
 use ValueError;
 
 /**
- * Stores a revision's start policy in its own columns (program, whether it is pinned, allowed models, the policies,
+ * Stores a revision's start policy in its own columns (driver, whether it is pinned, allowed models, the policies,
  * the configuration hash and provenance) and rebuilds it through the policies' own checks when read. A column that no
  * longer reads fails the read rather than stand in for a default.
  *

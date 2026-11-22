@@ -8,7 +8,7 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
 /**
- * The journal's JSON-RPC answer to a frame, passed back to the program: its id and either the method's result or an
+ * The journal's JSON-RPC answer to a frame, passed back to the driver: its id and either the method's result or an
  * error, each as the journal wrote it.
  */
 final class JsonRpcReplyData extends Data

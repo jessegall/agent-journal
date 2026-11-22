@@ -12,7 +12,7 @@ use RuntimeException;
 
 /**
  * An answer the attempt cannot take: it is not waiting for one, or its sign-in asks for none. Nothing reaches the
- * program.
+ * driver.
  */
 final class SignInAnswerRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {

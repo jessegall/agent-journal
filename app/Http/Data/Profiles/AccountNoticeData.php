@@ -10,7 +10,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One open notice about a program's accounts: the program, the safe reason, how often and since when.
+ * One open notice about a driver's accounts: the driver, the safe reason, how often and since when.
  *
  * @method static static from(AccountNotice $notice)
  * @method static static from(array<string, mixed> $payload)

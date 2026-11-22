@@ -8,7 +8,7 @@ use App\Hooks\Drivers\DriverReply;
 use Spatie\LaravelData\Data;
 
 /**
- * The endpoint's answer to the host: what the program's hook prints, on which stream, and its exit code.
+ * The endpoint's answer to the host: what the driver's hook prints, on which stream, and its exit code.
  */
 final class HookResponse extends Data
 {

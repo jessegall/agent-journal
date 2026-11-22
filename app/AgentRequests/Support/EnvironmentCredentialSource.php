@@ -9,7 +9,7 @@ use App\AgentRequests\Exceptions\StartSettingMissing;
 use App\AgentRequests\Exceptions\StartTokenRefused;
 
 /**
- * The start token read from JOURNAL_URL and JOURNAL_START_TOKEN in the program's environment, refused when a
+ * The start token read from JOURNAL_URL and JOURNAL_START_TOKEN in the driver's environment, refused when a
  * value is missing or a placeholder, or when the address leaves this machine without HTTPS.
  */
 final readonly class EnvironmentCredentialSource implements StartTokenSource

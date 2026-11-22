@@ -6,7 +6,7 @@ namespace App\Agents\Enums;
 
 /**
  * How a helper container is started: the standard way, as one unprivileged user, or protected, where a root-owned
- * init starts the program and the shell executor as two users and then drops its rights (doc 78 revision 2).
+ * init starts the driver and the shell executor as two users and then drops its rights (doc 78 revision 2).
  */
 enum LaunchProfileType: string
 {
@@ -14,7 +14,7 @@ enum LaunchProfileType: string
     case ProtectedAccount = 'protected-account';
 
     /**
-     * The user the container starts as: the program's own for a standard start, root for the init of a protected one.
+     * The user the container starts as: the driver's own for a standard start, root for the init of a protected one.
      */
     public function user(): string
     {
@@ -40,7 +40,7 @@ enum LaunchProfileType: string
 
     /**
      * The platform a contained host's protection report names for starts of this profile: a protected start keeps
-     * the account by its two users and the managed policy, not by the program's own sandbox, so it has its own report.
+     * the account by its two users and the managed policy, not by the driver's own sandbox, so it has its own report.
      */
     public function protectionPlatform(): string
     {

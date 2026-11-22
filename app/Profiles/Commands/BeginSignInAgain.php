@@ -14,7 +14,7 @@ use App\Profiles\Values\SignInStarted;
 
 /**
  * The owner confirms signing a saved account in again: no new start uses the account from then on, and the host
- * starts the program's sign-in once every process on its folder has ended. A second start from another tab rejoins
+ * starts the driver's sign-in once every process on its folder has ended. A second start from another tab rejoins
  * the attempt already running; the owner's request key keeps its receipt, so a repeat answers the same attempt.
  *
  * @extends Command<SignInStarted>

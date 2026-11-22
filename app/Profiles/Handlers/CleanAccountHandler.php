@@ -11,7 +11,7 @@ use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Support\AccountUsagePurge;
 
 /**
- * Applies a host's cleanup proofs under the program's selection lock, then the account's, only in the generation the
+ * Applies a host's cleanup proofs under the driver's selection lock, then the account's, only in the generation the
  * cleanup was asked in; a failure keeps the cleanup pending for the next try, and a finished removal deletes the
  * account's usage readings.
  */

@@ -53,7 +53,7 @@ final readonly class ClaudeStatus
 
     /**
      * Whether the folder it read is the attempted one: the same path, behind a trailing slash or not, or the folder's
-     * real path, as the program reports it after following a symbolic link.
+     * real path, as the driver reports it after following a symbolic link.
      */
     private function reads(string $directory, string $realDirectory): bool
     {

@@ -84,7 +84,7 @@ final class DriverReplies
     }
 
     /**
-     * A rewrite the program takes without approval runs the replacement line; one that needs approval is refused.
+     * A rewrite the driver takes without approval runs the replacement line; one that needs approval is refused.
      */
     private static function rewrite(RewriteSupport $rewrites, HookAnswer $answer, DriverToolInput $original): DriverReply
     {

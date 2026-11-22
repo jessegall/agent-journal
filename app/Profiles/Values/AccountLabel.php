@@ -8,7 +8,7 @@ use App\Profiles\Exceptions\AccountLabelInvalid;
 
 /**
  * The name a user gives a saved account, trimmed, 1 to 80 characters, with no control character or path separator,
- * so it never becomes a path or a command. Two accounts of a program never share its case-folded form.
+ * so it never becomes a path or a command. Two accounts of a driver never share its case-folded form.
  */
 final readonly class AccountLabel
 {
@@ -18,7 +18,7 @@ final readonly class AccountLabel
 
     /**
      * A label proposed from the text a verified sign-in shows, without its control characters and path separators,
-     * cut to fit; the fallback, such as the program's name, when nothing of it is left.
+     * cut to fit; the fallback, such as the driver's name, when nothing of it is left.
      */
     public static function proposedFrom(string|null $display, string $fallback): self
     {
@@ -54,7 +54,7 @@ final readonly class AccountLabel
     }
 
     /**
-     * The case-folded form two labels of one program may not share.
+     * The case-folded form two labels of one driver may not share.
      */
     public function key(): string
     {

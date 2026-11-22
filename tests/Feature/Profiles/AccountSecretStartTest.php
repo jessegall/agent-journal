@@ -20,7 +20,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A start on a token account opens the token's file for the program on descriptor 3 and names that descriptor; an
+ * A start on a token account opens the token's file for the driver on descriptor 3 and names that descriptor; an
  * OAuth or key account's start reads no file.
  */
 final class AccountSecretStartTest extends TestCase

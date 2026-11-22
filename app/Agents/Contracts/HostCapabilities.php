@@ -8,7 +8,7 @@ use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 
 /**
- * What the recorded evidence says about running a program with an account in an execution mode.
+ * What the recorded evidence says about running a driver with an account in an execution mode.
  */
 interface HostCapabilities
 {

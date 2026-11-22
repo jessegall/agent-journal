@@ -7,7 +7,7 @@ namespace Tests\Support;
 use App\Hooks\Drivers\HookPayload;
 
 /**
- * The recorded hook payloads of one program and the mapping its capability record expects, read from
+ * The recorded hook payloads of one driver and the mapping its capability record expects, read from
  * tests/Fixtures/Hooks.
  */
 final readonly class ProgramFixture

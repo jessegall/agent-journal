@@ -38,7 +38,7 @@ No owner store existed for the subjects the states are about, so plan 2 built th
 |---|---|---|
 | Starting a program with the relay environment (JOURNAL_URL, JOURNAL_START_TOKEN, JOURNAL_ROLE, JOURNAL_BYPASS_LOG) | the host that starts programs; `bin/journal-hook` and `hooks:relay` exist (task 88) | not planned yet |
 | Agent scoping (rule 4) on the new task, message, sequence, memory and rule stores | Tasks, Chat, Sequences, Memory, Rules models | task 92 |
-| A full hook call and a lock wait measured on the live Octane app | Hooks; `docs/hooks/program-capabilities.md` | task 93 |
+| A full hook call and a lock wait measured on the live Octane app | Hooks; `docs/hooks/driver-capabilities.md` | task 93 |
 
 ## Core's public surface (plan 5, tasks 156 and 163; plan 6)
 

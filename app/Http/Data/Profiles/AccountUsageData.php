@@ -13,7 +13,7 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The usage an account's programs reported: its limit windows in the current sign-in, the cost observed this UTC
+ * The usage an account's drivers reported: its limit windows in the current sign-in, the cost observed this UTC
  * month and the newest thread token count, each only when one was reported.
  */
 #[TypeScript]

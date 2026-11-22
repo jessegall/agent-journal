@@ -62,7 +62,7 @@ final class ReadyStateTest extends TestCase
 
             yield "{$role}, a build" => [$ready, self::line([self::part(CommandType::Build)])];
 
-            yield "{$role}, an unnamed program" => [$ready, self::line([self::part(CommandType::Unknown)])];
+            yield "{$role}, an unnamed driver" => [$ready, self::line([self::part(CommandType::Unknown)])];
 
             yield "{$role}, a write" => [
                 $ready,

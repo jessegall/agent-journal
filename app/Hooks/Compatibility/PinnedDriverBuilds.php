@@ -8,7 +8,7 @@ use App\Agents\Contracts\PinnedBuilds;
 use App\Drivers\Enums\HookDriver;
 
 /**
- * The pinned build of each program, as its checked compatibility names it.
+ * The pinned build of each driver, as its checked compatibility names it.
  */
 final readonly class PinnedDriverBuilds implements PinnedBuilds
 {

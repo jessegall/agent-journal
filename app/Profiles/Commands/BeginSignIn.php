@@ -14,7 +14,7 @@ use App\Profiles\Policies\AccountPolicy;
 use App\Profiles\Values\SignInStarted;
 
 /**
- * The owner starts signing in a new account of a program, named once it proves who it is; a saved account is signed
+ * The owner starts signing in a new account of a driver, named once it proves who it is; a saved account is signed
  * in again with BeginSignInAgain. A second start while one runs rejoins the attempt running; the owner's request key
  * keeps its receipt, so a repeat answers the same attempt and a key used for another start is refused.
  *
@@ -30,7 +30,7 @@ final readonly class BeginSignIn extends Command implements TargetedCommand
     ) {}
 
     /**
-     * The receipt is for the program whose new account it signs in.
+     * The receipt is for the driver whose new account it signs in.
      */
     public static function targetOf(string $driver): string
     {

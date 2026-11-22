@@ -7,7 +7,7 @@ namespace App\Agents\Data;
 use Spatie\LaravelData\Data;
 
 /**
- * The protected host's answer to a stop: the exit code, when the program reported one, and when it ended.
+ * The protected host's answer to a stop: the exit code, when the driver reported one, and when it ended.
  */
 final class HostStopReplyData extends Data
 {

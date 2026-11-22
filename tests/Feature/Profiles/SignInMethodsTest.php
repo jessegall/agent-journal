@@ -14,8 +14,8 @@ use App\Profiles\Support\SignInProtocols;
 use Tests\TestCase;
 
 /**
- * Each program declares the sign-in methods its host offers, OAuth first, and a method it does not declare is refused
- * naming the program, the method and the build it is pinned to.
+ * Each driver declares the sign-in methods its host offers, OAuth first, and a method it does not declare is refused
+ * naming the driver, the method and the build it is pinned to.
  */
 final class SignInMethodsTest extends TestCase
 {

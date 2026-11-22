@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hooks\Enums;
 
 /**
- * How far a claim about a pinned program is shown: its contract tests pass, the real program showed it, or what
- * showing it needs is still missing. Only what the real program showed may let an agent start.
+ * How far a claim about a pinned driver is shown: its contract tests pass, the real driver showed it, or what
+ * showing it needs is still missing. Only what the real driver showed may let an agent start.
  */
 enum DriverEvidence: string
 {

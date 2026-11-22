@@ -6,7 +6,7 @@ namespace App\Agents\Handlers;
 
 use App\Agents\Actions\StartHeartbeats;
 use App\Agents\Commands\ClaimStart;
-use App\Agents\Contracts\UnstartableProgram;
+use App\Agents\Contracts\UnstartableDriver;
 use App\Agents\Enums\ProcessStartState;
 use App\Agents\Events\AccountSettingsRequested;
 use App\Agents\Events\ChildCheckoutRequested;
@@ -22,9 +22,9 @@ use App\Agents\Support\StartExtensionRequests;
 use App\Contracts\CommandHandler;
 
 /**
- * Hands the host a pending start of a runtime assigned to it, with the recipe the program's adapter checked and, for a
+ * Hands the host a pending start of a runtime assigned to it, with the recipe the driver's adapter checked and, for a
  * connected project's child, the checkout its worktree is prepared for; another host's start is refused. When the
- * program's build cannot start here, the start ends stopped with that reason, its session and runtime end, and the host
+ * driver's build cannot start here, the start ends stopped with that reason, its session and runtime end, and the host
  * gets none; when the adapter names no sign-in method for the account, the claim rolls back and the start stays
  * pending.
  */
@@ -57,8 +57,8 @@ final readonly class ClaimStartHandler implements CommandHandler
 
         try {
             $this->extensions->accountSettings($requested);
-        } catch (UnstartableProgram $refusal) {
-            // The program's build cannot start here at all: the start ends with the reason, and its session and
+        } catch (UnstartableDriver $refusal) {
+            // The driver's build cannot start here at all: the start ends with the reason, and its session and
             // runtime end as a reported exit ends them, so the agent can start again.
             $start->refuse($refusal->getMessage());
             $this->heartbeats->markExited($session, $refusal->getMessage());

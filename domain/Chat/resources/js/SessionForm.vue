@@ -423,7 +423,7 @@ function switchSession(): void {
 
 // A switch is reviewed before it is sent: its source, its target and what happens to the running session.
 const isReviewing = ref(false);
-const driverLabel = (value: string | null) => drivers.find((choice) => choice.value === value)?.label ?? 'its program';
+const driverLabel = (value: string | null) => drivers.find((choice) => choice.value === value)?.label ?? 'its driver';
 const sourceLabel = computed(() => driverLabel(props.agent.sessionDriver));
 const targetLabel = computed(() => driverLabel(driver.value));
 // The leg of the agent's switch the host has not confirmed, in the words of that leg; none while both are known.

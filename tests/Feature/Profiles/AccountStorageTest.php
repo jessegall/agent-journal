@@ -27,7 +27,7 @@ use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
- * The saved accounts, their selection rows and sign-in attempts: only the owner reads them, a program has one
+ * The saved accounts, their selection rows and sign-in attempts: only the owner reads them, a driver has one
  * selection row, one attempt at a time writes an account's folder, and a removed account keeps its row and label.
  */
 final class AccountStorageTest extends TestCase

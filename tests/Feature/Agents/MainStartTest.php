@@ -14,7 +14,7 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A user starts a main agent with a program and a model named outright (doc 14 revision 4, 'A start always
+ * A user starts a main agent with a driver and a model named outright (doc 14 revision 4, 'A start always
  * names a model'): a named pair starts, a missing one or the default model without a profile is refused before any
  * session exists.
  */

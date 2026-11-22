@@ -7,7 +7,7 @@ namespace App\Http\Requests\Profiles;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * The owner chooses the account the route names for new starts of its program.
+ * The owner chooses the account the route names for new starts of its driver.
  */
 final class ActivateAccountRequest extends FormRequest
 {

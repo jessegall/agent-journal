@@ -9,7 +9,7 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
 /**
- * The host's runner hands over the challenge its program printed for the attempt it runs, for the user only. Run
+ * The host's runner hands over the challenge its driver printed for the attempt it runs, for the user only. Run
  * for an authenticated host by the journal itself (internal, not exported).
  *
  * @extends Command<null>

@@ -12,7 +12,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * A viewer opens, renews or closes their view of the agent's terminal named in the route, at an interval they may
- * choose; nothing in it reaches the program.
+ * choose; nothing in it reaches the driver.
  */
 final class TerminalViewRequest extends FormRequest
 {

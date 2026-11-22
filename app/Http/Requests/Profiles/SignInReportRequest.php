@@ -11,8 +11,8 @@ use Illuminate\Validation\Rule;
 
 /**
  * The host sign-in runner's report on the attempt the route names: its safe outcome, the generation it ran in and,
- * once verified, who the program's own proof named: display text, subject and workspace apart; once refused, the
- * provider's short reason with any key replaced. Never the program's other output.
+ * once verified, who the driver's own proof named: display text, subject and workspace apart; once refused, the
+ * provider's short reason with any key replaced. Never the driver's other output.
  */
 final class SignInReportRequest extends FormRequest
 {

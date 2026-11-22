@@ -9,7 +9,7 @@ use App\Records\Support\RecordIdentity;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
- * A start the journal accepted and committed: what the host's delivery receives, so no program starts inside the
+ * A start the journal accepted and committed: what the host's delivery receives, so no driver starts inside the
  * transaction.
  */
 final readonly class StartAccepted implements Event, ShouldDispatchAfterCommit

@@ -22,8 +22,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * Something the owner should look at on a program's accounts, kept even when no account or session exists: the
- * program, the safe reason and how often it happened, until the owner dismisses it or a later success resolves it.
+ * Something the owner should look at on a driver's accounts, kept even when no account or session exists: the
+ * driver, the safe reason and how often it happened, until the owner dismisses it or a later success resolves it.
  *
  * @property string $id
  * @property string $driver
@@ -56,7 +56,7 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * A new open notice of the program and reason, counted once.
+     * A new open notice of the driver and reason, counted once.
      */
     public static function create(string $driver, AccountNoticeReason $reason): self
     {
@@ -70,7 +70,7 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * The program's open notice of the reason, locked, if one is open.
+     * The driver's open notice of the reason, locked, if one is open.
      */
     public static function lockedOpenFor(string $driver, AccountNoticeReason $reason): self|null
     {
@@ -84,7 +84,7 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The program's open notices, locked in the order of their ids.
+     * The driver's open notices, locked in the order of their ids.
      *
      * @return list<self>
      */
@@ -96,7 +96,7 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
             ->where('driver', $driver)
             ->orderBy('id')
             ->lockForUpdate()
-            ->readAll('a program keeps one open notice per reason')
+            ->readAll('a driver keeps one open notice per reason')
             ->get();
 
         return array_values($notices->all());
@@ -125,7 +125,7 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Closes the notice: the owner dismissed it, or the program's accounts work again.
+     * Closes the notice: the owner dismissed it, or the driver's accounts work again.
      */
     public function resolveAt(CarbonImmutable $now): void
     {

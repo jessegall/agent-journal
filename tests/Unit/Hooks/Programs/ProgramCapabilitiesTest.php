@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Hooks\Programs;
+namespace Tests\Unit\Hooks\Drivers;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\Decision;
@@ -36,7 +36,7 @@ final class ProgramCapabilitiesTest extends TestCase
 
     public function test_a_hook_the_adapter_does_not_map_is_refused_by_name(): void
     {
-        $this->expectExceptionObject(UnsupportedHook::for('Test program', 'onCompaction'));
+        $this->expectExceptionObject(UnsupportedHook::for('Test driver', 'onCompaction'));
 
         $this->capabilities(RewriteSupport::WithoutApproval)->assertSupports('onCompaction');
     }
@@ -80,20 +80,20 @@ final class ProgramCapabilitiesTest extends TestCase
 
     public function test_the_evidence_lives_in_one_document_with_the_pinned_versions_and_no_production_run(): void
     {
-        $evidence = (string) file_get_contents(base_path('docs/hooks/program-capabilities.md'));
+        $evidence = (string) file_get_contents(base_path('docs/hooks/driver-capabilities.md'));
 
         $this->assertStringContainsString('## Claude Code', $evidence);
         $this->assertStringContainsString('## Codex', $evidence);
         $this->assertStringContainsString('X-Journal-Call-Signature', $evidence);
-        $this->assertStringContainsString('| Program and pinned version | Claude Code 2.1.323,', $evidence);
-        $this->assertStringContainsString('| Program and pinned version | codex-cli 0.165.0,', $evidence);
-        $this->assertStringContainsString('No production program runs under it yet:', $evidence);
+        $this->assertStringContainsString('| Driver and pinned version | Claude Code 2.1.323,', $evidence);
+        $this->assertStringContainsString('| Driver and pinned version | codex-cli 0.165.0,', $evidence);
+        $this->assertStringContainsString('No production driver runs under it yet:', $evidence);
     }
 
     private function capabilities(RewriteSupport $rewrites): DriverCapabilities
     {
         return new DriverCapabilities(
-            'Test program',
+            'Test driver',
             'pre-tool and stop replies, checked against documentation on 2026-11-17',
             ['onShellCommand', 'onStop'],
             $rewrites,

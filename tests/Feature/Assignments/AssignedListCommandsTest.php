@@ -24,7 +24,7 @@ use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
- * The console client of a started program: "journal task assigned" and "journal plan assigned" ask the real
+ * The console client of a started driver: "journal task assigned" and "journal plan assigned" ask the real
  * endpoints over a signed call with the start's token and print only what that agent holds; an empty list succeeds,
  * and a refusal, an unreachable journal or missing start settings fail with a message that never shows the token.
  */

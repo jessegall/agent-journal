@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The estimated cost of one result a program reported on a saved account, kept once and never changed: the
+ * The estimated cost of one result a driver reported on a saved account, kept once and never changed: the
  * generation it ran in, the source that identifies the result, the amount in US dollars and when it was observed.
  *
  * @property string $id

@@ -55,7 +55,7 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A main start from a profile: its default model and revision become the start's selection, a pinned program
+ * A main start from a profile: its default model and revision become the start's selection, a pinned driver
  * refuses another, a helper profile cannot start a main, and a later activation leaves an accepted start as it was.
  */
 final class ProfileStartTest extends TestCase

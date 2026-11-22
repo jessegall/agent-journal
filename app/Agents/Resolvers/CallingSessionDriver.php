@@ -9,7 +9,7 @@ use App\Agents\Contracts\CurrentSession;
 use App\Agents\Models\AgentSession;
 
 /**
- * Reads the calling session's program from its own row.
+ * Reads the calling session's driver from its own row.
  */
 final readonly class CallingSessionDriver implements CallingDriver
 {

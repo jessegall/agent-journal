@@ -13,7 +13,7 @@ use App\Hooks\Compatibility\DriverCompatibility;
 use App\Profiles\Enums\InstancePolicy;
 
 /**
- * What a start from a profile is: the program and model selected for it, the profile's type, the revision it was
+ * What a start from a profile is: the driver and model selected for it, the profile's type, the revision it was
  * selected from, that revision's start policy and its authorization.
  */
 final readonly class ProfileSelection

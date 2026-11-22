@@ -9,7 +9,7 @@ use App\Agents\Enums\StartRefusalType;
 use InvalidArgumentException;
 
 /**
- * A start with no program from the caller, its profile or its parent session.
+ * A start with no driver from the caller, its profile or its parent session.
  */
 final class DriverRequired extends InvalidArgumentException implements StartRefusal
 {

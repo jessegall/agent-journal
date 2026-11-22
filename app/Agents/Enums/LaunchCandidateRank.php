@@ -6,7 +6,7 @@ namespace App\Agents\Enums;
 
 /**
  * How well an eligible helper fits a new launch (doc 14 decision D5): same purpose with a conversation on the chosen
- * program and exact model, same purpose with an adapter-confirmed compatible model, same purpose without a usable
+ * driver and exact model, same purpose with an adapter-confirmed compatible model, same purpose without a usable
  * conversation, or another purpose. Model strength and cache age never count.
  */
 enum LaunchCandidateRank: int

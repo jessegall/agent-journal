@@ -21,7 +21,7 @@ use Tests\Support\RunsTrustedCommands;
 use Tests\TestCase;
 
 /**
- * A menu library entry belongs to its owner, is found by program, first screen and goal, carries a stale mark per
+ * A menu library entry belongs to its owner, is found by driver, first screen and goal, carries a stale mark per
  * build and is superseded or retired, never deleted.
  */
 final class MenuEntryTest extends TestCase

@@ -8,7 +8,7 @@ use Carbon\CarbonImmutable;
 use PhpOption\Option;
 
 /**
- * What the host reports once an execution ended: its exit code when the program gave one, never a made-up zero.
+ * What the host reports once an execution ended: its exit code when the driver gave one, never a made-up zero.
  */
 final readonly class ExitReceipt
 {

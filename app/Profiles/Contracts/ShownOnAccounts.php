@@ -7,7 +7,7 @@ namespace App\Profiles\Contracts;
 use App\Contracts\Event;
 
 /**
- * A Profiles row fact the owner's Accounts page shows: the program it belongs to and the account, attempt or notice
+ * A Profiles row fact the owner's Accounts page shows: the driver it belongs to and the account, attempt or notice
  * the page refreshes for.
  */
 interface ShownOnAccounts extends Event

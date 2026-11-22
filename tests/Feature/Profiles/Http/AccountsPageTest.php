@@ -54,7 +54,7 @@ final class AccountsPageTest extends TestCase
             $this->actingAs($this->owner)->get('/accounts')->assertOk();
         }
 
-        // Only the journal's own version read may run; no provider program, account process or model call.
+        // Only the journal's own version read may run; no provider driver, account process or model call.
         Process::assertDidntRun(
             fn ($process) => (array) $process->command !== ['git', '-C', base_path(), 'rev-parse', 'HEAD'],
         );

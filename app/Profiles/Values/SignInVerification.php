@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Profiles\Values;
 
 /**
- * What a program's own check says about an account folder: signed in or not, who it names, and whether the answer was
+ * What a driver's own check says about an account folder: signed in or not, who it names, and whether the answer was
  * certain; an unreadable answer proves nothing. A refused proof keeps the provider's reason, with any key in it
- * replaced; nothing else of the program's output is kept.
+ * replaced; nothing else of the driver's output is kept.
  */
 final readonly class SignInVerification
 {
@@ -21,7 +21,7 @@ final readonly class SignInVerification
     ) {}
 
     /**
-     * A proof the provider refused, with its reason as the program printed it: a key in it is replaced by "the key",
+     * A proof the provider refused, with its reason as the driver printed it: a key in it is replaced by "the key",
      * a request's address and tracing after it are cut, and it is kept short.
      */
     public static function refused(string $reason): self

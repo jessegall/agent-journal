@@ -7,7 +7,7 @@ namespace App\AgentRequests\Support;
 use App\AgentRequests\Exceptions\StartSettingMissing;
 
 /**
- * The environment the journal's start gave a program, read one required setting at a time.
+ * The environment the journal's start gave a driver, read one required setting at a time.
  */
 final readonly class StartEnvironment
 {

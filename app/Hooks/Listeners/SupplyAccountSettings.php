@@ -13,8 +13,8 @@ use App\Hooks\Drivers\CodexAccountSettings;
 use Illuminate\Contracts\Config\Repository;
 
 /**
- * Fills in a claimed start's account settings for a program the journal runs, from its pinned compatibility; a build
- * or arrangement the real program has not shown refuses the claim, so no process starts.
+ * Fills in a claimed start's account settings for a driver the journal runs, from its pinned compatibility; a build
+ * or arrangement the real driver has not shown refuses the claim, so no process starts.
  */
 final class SupplyAccountSettings implements Listener
 {

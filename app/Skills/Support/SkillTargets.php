@@ -7,8 +7,8 @@ namespace App\Skills\Support;
 use App\Drivers\Values\DriverKey;
 
 /**
- * Where the journal keeps each session's delivered skills: a protected folder it owns per session and program, which
- * the program adapter points the start at. Staged generations live beside it.
+ * Where the journal keeps each session's delivered skills: a protected folder it owns per session and driver, which
+ * the driver adapter points the start at. Staged generations live beside it.
  */
 final readonly class SkillTargets
 {

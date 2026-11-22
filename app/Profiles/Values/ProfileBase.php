@@ -40,7 +40,7 @@ final readonly class ProfileBase
         public bool $coordinator,
         // What its sessions may use in a container on a server; locally every start keeps the defaults.
         public ExecutionBudgets $containedBudgets,
-        // Whether its program is its container's own terminal process, which the host attaches to, again after a
+        // Whether its driver is its container's own terminal process, which the host attaches to, again after a
         // restart: the main agent's is; a helper runs without a terminal.
         public bool $attachable,
         // How its sessions run when a start names no variant: the main agent in a terminal, a helper headless.
@@ -155,7 +155,7 @@ final readonly class ProfileBase
     }
 
     /**
-     * Whether a contained start's program is its container's own terminal process, which the host attaches to.
+     * Whether a contained start's driver is its container's own terminal process, which the host attaches to.
      */
     public function isAttachable(): bool
     {

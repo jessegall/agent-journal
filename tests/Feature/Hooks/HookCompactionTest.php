@@ -121,7 +121,7 @@ final class HookCompactionTest extends TestCase
             new CompactionDetails($callId),
         );
         $capabilities = new DriverCapabilities(
-            'Test program',
+            'Test driver',
             'compaction context',
             ['onCompaction'],
             RewriteSupport::WithoutApproval,

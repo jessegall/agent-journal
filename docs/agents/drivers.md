@@ -1,7 +1,7 @@
 # Agent drivers
 
 How a running agent program is driven, for a reader of the code. The design is doc 40; the live evidence is in
-`docs/hooks/program-capabilities.md`.
+`docs/hooks/driver-capabilities.md`.
 
 ## The parts
 

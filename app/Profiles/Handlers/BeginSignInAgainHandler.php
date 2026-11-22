@@ -18,7 +18,7 @@ use Illuminate\Contracts\Bus\Dispatcher as JobDispatcher;
 use Illuminate\Contracts\Config\Repository;
 
 /**
- * Starts or rejoins a sign-in again under the program's selection lock, then the account's: the account is held so no
+ * Starts or rejoins a sign-in again under the driver's selection lock, then the account's: the account is held so no
  * new start starts on it, the attempt becomes the folder's one writer in a new sign-in generation, and a host may
  * take it at once only when no process runs on the account; otherwise the account sweep lets it go once they ended.
  */

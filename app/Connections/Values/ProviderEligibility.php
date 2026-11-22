@@ -7,7 +7,7 @@ namespace App\Connections\Values;
 use App\Drivers\Enums\HookDriver;
 
 /**
- * Whether a connected folder may start one program: eligible, or unavailable with the reason the owner reads.
+ * Whether a connected folder may start one driver: eligible, or unavailable with the reason the owner reads.
  */
 final readonly class ProviderEligibility
 {

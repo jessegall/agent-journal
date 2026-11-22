@@ -16,7 +16,7 @@ use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;
 
 /**
- * Codex as every sign-in method runs it on the host: the configured program, with the account folder as its
+ * Codex as every sign-in method runs it on the host: the configured driver, with the account folder as its
  * CODEX_HOME and HOME and its sign-in kept in that folder's own auth.json, never a keyring shared with other accounts
  * or the user's own login; `codex login status` is its check.
  */
@@ -29,7 +29,7 @@ final readonly class CodexDriver
     ) {}
 
     /**
-     * Runs the program in the account folder, its file credential store set first.
+     * Runs the driver in the account folder, its file credential store set first.
      *
      * @param  list<string>  $arguments
      */
@@ -82,7 +82,7 @@ final readonly class CodexDriver
     }
 
     /**
-     * Signs the folder's account out with the program's own command and removes what it kept, so a later check is
+     * Signs the folder's account out with the driver's own command and removes what it kept, so a later check is
      * certain the folder is signed out.
      */
     public function signOut(string $directory): void

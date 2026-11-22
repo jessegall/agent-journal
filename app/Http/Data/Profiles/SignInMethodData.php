@@ -10,7 +10,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One sign-in method a program declares here, as the add-account wizard offers it: whether the owner gives a key or
+ * One sign-in method a driver declares here, as the add-account wizard offers it: whether the owner gives a key or
  * token, the sentence about how it is paid for or how long it lasts, and its card: title, description, the short
  * billing label and, for a key or token, where to get the secret.
  */

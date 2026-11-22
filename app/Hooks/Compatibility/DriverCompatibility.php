@@ -11,9 +11,9 @@ use App\Hooks\Enums\AuthenticationArrangement;
 use App\Hooks\Enums\DriverEvidence;
 
 /**
- * What start preparation may rely on for one pinned program: its version and binary digest, the flags and
+ * What start preparation may rely on for one pinned driver: its version and binary digest, the flags and
  * settings checked against that build, and how starts on one account share its sign-in, with how far that is shown
- * and who shows the rest. Settings text is never taken as proof that the program honours it.
+ * and who shows the rest. Settings text is never taken as proof that the driver honours it.
  */
 final readonly class DriverCompatibility
 {
@@ -98,7 +98,7 @@ final readonly class DriverCompatibility
     }
 
     /**
-     * Refuses an account start whose way of sharing the sign-in the real program has not shown.
+     * Refuses an account start whose way of sharing the sign-in the real driver has not shown.
      *
      * @throws DriverArrangementUnproven
      */

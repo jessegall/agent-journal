@@ -9,7 +9,7 @@ use Domain\Helpers\Values\HelperWork;
 
 /**
  * One dispatch as the parent asked it: who asks, the request id that makes a repeat find the same job, the profile,
- * the model and program it names, the work, and for a send the identity it addresses.
+ * the model and driver it names, the work, and for a send the identity it addresses.
  */
 final readonly class DispatchRequest
 {

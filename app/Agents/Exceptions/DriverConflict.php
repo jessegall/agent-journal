@@ -9,7 +9,7 @@ use App\Agents\Enums\StartRefusalType;
 use InvalidArgumentException;
 
 /**
- * A program the caller named that the profile's pinned program forbids.
+ * A driver the caller named that the profile's pinned driver forbids.
  */
 final class DriverConflict extends InvalidArgumentException implements StartRefusal
 {

@@ -372,7 +372,7 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
     // ----------[ Answers ]----------
 
     /**
-     * The settings store the start's program keeps its conversations in: its account's folder, named by identity.
+     * The settings store the start's driver keeps its conversations in: its account's folder, named by identity.
      */
     public function settingsIdentity(): string
     {

@@ -12,7 +12,7 @@ use App\Hooks\Inputs\Values\HookIdentity;
 use App\Hooks\Models\FailureReceipt;
 
 /**
- * Receives a program's failure notification once per native event and publishes it as a safe fact; a retry of the
+ * Receives a driver's failure notification once per native event and publishes it as a safe fact; a retry of the
  * same event publishes nothing.
  */
 final readonly class RecordDriverFailure

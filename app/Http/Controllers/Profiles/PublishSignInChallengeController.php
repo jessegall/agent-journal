@@ -11,7 +11,7 @@ use App\Profiles\Commands\PublishSignInChallenge;
 use Illuminate\Http\Response;
 
 /**
- * Takes the challenge the host's program printed for the attempt it runs. The host's calls run as the journal itself.
+ * Takes the challenge the host's driver printed for the attempt it runs. The host's calls run as the journal itself.
  */
 final readonly class PublishSignInChallengeController
 {

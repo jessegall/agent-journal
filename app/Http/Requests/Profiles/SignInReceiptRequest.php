@@ -9,7 +9,7 @@ use App\Profiles\Commands\BeginSignInAgain;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * The owner asks what became of one sign-in start under its request key: a new account's start names its program,
+ * The owner asks what became of one sign-in start under its request key: a new account's start names its driver,
  * a renewal names its account.
  */
 final class SignInReceiptRequest extends FormRequest

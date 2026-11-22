@@ -8,7 +8,7 @@ use App\Hooks\Contracts\JournalToolNames;
 use App\Hooks\Exceptions\UnsupportedHook;
 
 /**
- * Recognizes a program's calls to the journal's own MCP server: a tool named mcp__journal__<name> for exactly a name
+ * Recognizes a driver's calls to the journal's own MCP server: a tool named mcp__journal__<name> for exactly a name
  * the journal offers, and a resource read that names the journal server and a journal://v1 address. Any other server
  * or address is refused; an mcp__ prefix alone is never trusted.
  */

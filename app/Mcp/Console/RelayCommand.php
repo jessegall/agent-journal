@@ -16,10 +16,10 @@ use Illuminate\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 /**
- * The MCP server a started program runs on stdio: each frame goes to the journal as one signed call whose body is
+ * The MCP server a started driver runs on stdio: each frame goes to the journal as one signed call whose body is
  * the frame's exact bytes, and each answer comes back as one line. It reads no journal data itself.
  */
-#[AsCommand(name: 'mcp:relay', description: "Pass a started program's MCP frames to the journal, signed")]
+#[AsCommand(name: 'mcp:relay', description: "Pass a started driver's MCP frames to the journal, signed")]
 final class RelayCommand extends Command
 {
     public function handle(StartTokenSource $credentials, AgentRequestClient $client): int

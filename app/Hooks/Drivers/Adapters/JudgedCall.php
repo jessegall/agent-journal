@@ -17,7 +17,7 @@ use App\Hooks\Stack\HookAnswer;
 use Closure;
 
 /**
- * A native call the journal answers: the input for the walk, and how the program's reply is rendered from the answer.
+ * A native call the journal answers: the input for the walk, and how the driver's reply is rendered from the answer.
  */
 final readonly class JudgedCall implements DriverCall
 {

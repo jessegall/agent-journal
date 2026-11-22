@@ -12,7 +12,7 @@ use App\Bus\Exceptions\Concerns\RendersRefusal;
 use RuntimeException;
 
 /**
- * No account can start a start of the program; it names only the program and a safe reason.
+ * No account can start a start of the driver; it names only the driver and a safe reason.
  */
 final class AccountUnavailable extends RuntimeException implements CodedRefusal, StartRefusal
 {

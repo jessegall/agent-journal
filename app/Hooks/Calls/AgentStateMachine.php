@@ -35,7 +35,7 @@ final readonly class AgentStateMachine
     ) {}
 
     /**
-     * @param  Closure(HookAnswer): DriverReply  $render  the program adapter's reply to the final answer
+     * @param  Closure(HookAnswer): DriverReply  $render  the driver adapter's reply to the final answer
      */
     public function answer(
         HookInput $input,

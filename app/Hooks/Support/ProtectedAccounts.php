@@ -7,9 +7,9 @@ namespace App\Hooks\Support;
 use App\Hooks\Inputs\ProtectedFileRead;
 
 /**
- * The folders of saved program accounts that model tools never reach on their own: every account's credentials,
+ * The folders of saved driver accounts that model tools never reach on their own: every account's credentials,
  * settings and other sessions' histories. It also knows the commands that would read a sign-in some other way, such
- * as the macOS Keychain or the programs' own sign-in commands.
+ * as the macOS Keychain or the drivers' own sign-in commands.
  */
 final readonly class ProtectedAccounts
 {
@@ -50,7 +50,7 @@ final readonly class ProtectedAccounts
     }
 
     /**
-     * Whether a shell command reads a sign-in through the Keychain, a program's own sign-in commands or the variables
+     * Whether a shell command reads a sign-in through the Keychain, a driver's own sign-in commands or the variables
      * that name an account folder; no grant ever allows these.
      */
     public function readsSignIn(string $command): bool

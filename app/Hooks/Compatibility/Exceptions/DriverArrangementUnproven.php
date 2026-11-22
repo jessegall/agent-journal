@@ -13,7 +13,7 @@ use App\Hooks\Enums\DriverEvidence;
 use RuntimeException;
 
 /**
- * A pinned program's way of sharing an account's sign-in is not shown on the real program, so no start uses it.
+ * A pinned driver's way of sharing an account's sign-in is not shown on the real driver, so no start uses it.
  */
 final class DriverArrangementUnproven extends RuntimeException implements CodedRefusal, CommandRefusal
 {
@@ -28,7 +28,7 @@ final class DriverArrangementUnproven extends RuntimeException implements CodedR
     ): self {
         return new self(
             "{$driver} {$version} starts on an account as {$arrangement->value}, which is {$evidence->value}; "
-            ."{$owner} shows it on the real program before an agent may start this way.",
+            ."{$owner} shows it on the real driver before an agent may start this way.",
         );
     }
 

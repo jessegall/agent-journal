@@ -11,7 +11,7 @@ use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
- * Another saved account of the same program already has this name, ignoring case.
+ * Another saved account of the same driver already has this name, ignoring case.
  */
 final class AccountLabelTaken extends RuntimeException implements CodedRefusal, CommandRefusal
 {

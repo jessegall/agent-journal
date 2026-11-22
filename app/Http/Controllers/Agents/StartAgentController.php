@@ -9,7 +9,7 @@ use App\Http\Requests\Agents\StartAgentRequest;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Starts a user's main agent with the program and model they named, and answers the receipt.
+ * Starts a user's main agent with the driver and model they named, and answers the receipt.
  */
 final readonly class StartAgentController
 {

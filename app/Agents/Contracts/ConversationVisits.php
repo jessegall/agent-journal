@@ -8,7 +8,7 @@ use App\Agents\Exceptions\ConversationIncompatible;
 use Carbon\CarbonImmutable;
 
 /**
- * Records an agent's visits to its program conversation: when a session enters it, with the transcript path the host
+ * Records an agent's visits to its driver conversation: when a session enters it, with the transcript path the host
  * named for it, and when it is compacted.
  */
 interface ConversationVisits

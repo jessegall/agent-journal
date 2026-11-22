@@ -9,7 +9,7 @@ use App\Agents\Enums\StartRefusalType;
 use InvalidArgumentException;
 
 /**
- * A program name the journal has no adapter for.
+ * A driver name the journal has no adapter for.
  */
 final class DriverUnsupported extends InvalidArgumentException implements StartRefusal
 {

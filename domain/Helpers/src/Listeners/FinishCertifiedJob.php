@@ -14,7 +14,7 @@ use Domain\Helpers\Support\HelperLifecycleEntry;
 use Domain\Helpers\Support\JobStopEvidence;
 
 /**
- * Finishes a helper job once Core certifies its helper's stop: its final checks passed, never because the program
+ * Finishes a helper job once Core certifies its helper's stop: its final checks passed, never because the driver
  * exited. The job changes through its own command, run by the journal after the certification committed.
  */
 final readonly class FinishCertifiedJob implements Listener

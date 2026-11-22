@@ -12,7 +12,7 @@ use InvalidArgumentException;
 
 /**
  * A sign-in code, key or token that is empty, too long, holds a control character or a space, so it never reaches the
- * program and the sign-in keeps waiting for another; the message never shows the value.
+ * driver and the sign-in keeps waiting for another; the message never shows the value.
  */
 final class SignInCodeInvalid extends InvalidArgumentException implements CodedRefusal, CommandRefusal
 {

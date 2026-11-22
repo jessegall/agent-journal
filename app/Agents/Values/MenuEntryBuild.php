@@ -10,7 +10,7 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
- * One program build a menu entry was proven on, and whether its replay went stale there: why, and the redacted
+ * One driver build a menu entry was proven on, and whether its replay went stale there: why, and the redacted
  * screen it failed on.
  */
 #[MapName(SnakeCaseMapper::class)]

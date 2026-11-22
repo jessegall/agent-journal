@@ -12,7 +12,7 @@ use Laravel\Mcp\Transport\JsonRpcRequest;
 use Laravel\Mcp\Transport\JsonRpcResponse;
 
 /**
- * The package's tools/list, which also records that the signed caller's program discovered its tools.
+ * The package's tools/list, which also records that the signed caller's driver discovered its tools.
  */
 final class ListToolsAndRecordDiscovery extends ListTools
 {

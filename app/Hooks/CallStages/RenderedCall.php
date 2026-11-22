@@ -9,7 +9,7 @@ use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\HookAnswer;
 
 /**
- * A hook call with the reply the program gets, ready to be saved with its stack.
+ * A hook call with the reply the driver gets, ready to be saved with its stack.
  */
 final readonly class RenderedCall
 {
