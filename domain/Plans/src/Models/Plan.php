@@ -304,22 +304,6 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     // ----------[ Answers ]----------
 
     /**
-     * How far the tasks in the plan's phases have got, from the tallies kept on the row; no task is read.
-     *
-     * @return Attribute<PlanProgress, never>
-     */
-    protected function progress(): Attribute
-    {
-        return Attribute::get(fn () => new PlanProgress(
-            $this->finished_tasks,
-            $this->cancelled_tasks,
-            $this->blocked_tasks,
-            $this->started_tasks,
-            $this->total_tasks,
-        ));
-    }
-
-    /**
      * Whether the plan is being worked: started, and neither finished nor cancelled.
      */
     public function isStarted(): bool
@@ -463,6 +447,24 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
             $withText ? $this->finish_note : null,
             $withText ? $this->cancel_reason : null,
         );
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * How far the tasks in the plan's phases have got, from the tallies kept on the row; no task is read.
+     *
+     * @return Attribute<PlanProgress, never>
+     */
+    protected function progress(): Attribute
+    {
+        return Attribute::get(fn () => new PlanProgress(
+            $this->finished_tasks,
+            $this->cancelled_tasks,
+            $this->blocked_tasks,
+            $this->started_tasks,
+            $this->total_tasks,
+        ));
     }
 
     // ----------[ Relations ]----------

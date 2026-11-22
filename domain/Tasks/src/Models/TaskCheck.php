@@ -139,6 +139,16 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * A task's checks in the order they were asked for; the table has no updated_at.
+     */
+    public function defaultReadOrder(): ReadOrder
+    {
+        return ReadOrder::by(['task_checks.task_id'], 'task_checks.id');
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
      * The check as Tasks' proofs read gives it, no model leaving the domain.
      *
      * @return Attribute<TaskProof, never>
@@ -157,13 +167,5 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
             CarbonImmutable::parse($this->created_at),
             $this->bound_at === null ? null : CarbonImmutable::parse($this->bound_at),
         ));
-    }
-
-    /**
-     * A task's checks in the order they were asked for; the table has no updated_at.
-     */
-    public function defaultReadOrder(): ReadOrder
-    {
-        return ReadOrder::by(['task_checks.task_id'], 'task_checks.id');
     }
 }

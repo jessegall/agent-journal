@@ -225,6 +225,8 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         return $live->isEmpty() ? InstallAttemptState::Expired : InstallAttemptState::Open;
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * The target as the owner's list names it: New project, or the project and environment it joins; a Join whose
      * environment was deleted, which empties its key, says so.

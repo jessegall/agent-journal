@@ -331,22 +331,6 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
 
     // ----------[ Answers ]----------
 
-    /**
-     * The words the task's current state was entered with: the finish note, the block reason or the cancel reason;
-     * none for an open or started task.
-     *
-     * @return Attribute<string|null, never>
-     */
-    protected function stateText(): Attribute
-    {
-        return Attribute::get(fn () => match ($this->state) {
-            TaskState::Finished => $this->result_note,
-            TaskState::Blocked => $this->block_reason,
-            TaskState::Cancelled => $this->cancel_reason,
-            TaskState::Open, TaskState::Started => null,
-        });
-    }
-
     public function isOpenForAssignment(): bool
     {
         return $this->state === TaskState::Open;
@@ -435,6 +419,24 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
             ...$this->details($holder, $execution)->all(),
             'text' => TaskDetailsFactory::text($this),
         ]);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The words the task's current state was entered with: the finish note, the block reason or the cancel reason;
+     * none for an open or started task.
+     *
+     * @return Attribute<string|null, never>
+     */
+    protected function stateText(): Attribute
+    {
+        return Attribute::get(fn () => match ($this->state) {
+            TaskState::Finished => $this->result_note,
+            TaskState::Blocked => $this->block_reason,
+            TaskState::Cancelled => $this->cancel_reason,
+            TaskState::Open, TaskState::Started => null,
+        });
     }
 
     // ----------[ Scopes ]----------
