@@ -66,7 +66,7 @@ watch(issued, (line) => {
 
     if (line !== null) {
         expiry = setTimeout(
-            () => drop('This install line expired. Generate a new one.'),
+            () => drop('This install line expired. Make a new one.'),
             Date.parse(line.expiresAt) - Date.now(),
         );
     }

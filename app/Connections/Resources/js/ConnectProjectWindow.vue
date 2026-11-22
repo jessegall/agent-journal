@@ -8,6 +8,8 @@ import Button from '@kit/Button';
 import EmptyState from '@kit/EmptyState';
 import { dateTimeWithZone } from '@kit/format';
 import PageHeader from '@kit/PageHeader';
+import StaleListNotice from '@kit/StaleListNotice';
+import { usePage } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
 import { keyedPost } from '@kit/keyedPost';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
@@ -36,6 +38,13 @@ const recovery = ref('');
 // The row whose Revoke had focus when the journal became unreachable, to return to once it answers again.
 let revokeRowBeforeOutage: string | null = null;
 const retryButton = ref<{ $el: HTMLElement } | null>(null);
+const page = usePage();
+// The address that opened this window, such as a Settings group, so Back leads there; only a path on this journal.
+const backAddress = computed(() => {
+    const asked = new URL(page.url, 'http://journal.local').searchParams.get('return');
+
+    return asked !== null && asked.startsWith('/') && !asked.startsWith('//') ? asked : null;
+});
 const list = ref<HTMLElement | null>(null);
 
 /**
@@ -72,7 +81,7 @@ function settle(answered: boolean): void {
         recovery.value = '';
         void nextTick(() => {
             if (revokeRowBeforeOutage !== null) {
-                retryButton.value?.$el.focus();
+                retryButton.value?.$el.querySelector('button')?.focus();
             }
         });
 
@@ -249,6 +258,11 @@ function revokeBinding(bindingId: string, deviceName: string): void {
 
 <template>
     <div class="mx-auto flex w-full max-w-[760px] flex-col gap-4 sm:pt-4">
+        <template v-if="backAddress !== null">
+            <div class="px-4 sm:px-0">
+                <Button :href="backAddress" size="small" variant="ghost">Back</Button>
+            </div>
+        </template>
         <PageHeader title="Connect a project" :count="data.bindings.rows.length" />
         <section class="flex flex-col gap-3 px-4 sm:px-0">
             <p>
@@ -278,23 +292,17 @@ function revokeBinding(bindingId: string, deviceName: string): void {
         </section>
         <InstallAttemptList :attempts="data.attempts" :fresh="fresh" />
         <template v-if="!fresh">
-            <div
-                role="alert"
-                class="mx-4 flex flex-wrap items-center gap-3 rounded-card border border-tone-warn px-3 py-2 text-small sm:mx-0"
-            >
-                <span class="flex-1">
-                    Journal unreachable. This is the last known list, read
-                    {{ dateTimeWithZone(data.bindings.serverTime) }}. Revoking and copying wait until the journal
-                    answers.
-                </span>
-                <Button ref="retryButton" variant="bordered" size="small" @click="reread">Retry</Button>
-            </div>
+            <StaleListNotice
+                ref="retryButton"
+                :reason="`The journal is unreachable; this list was read ${dateTimeWithZone(data.bindings.serverTime)}. Revoking and copying wait until it answers.`"
+                @retry="reread"
+            />
         </template>
         <p class="sr-only" role="status">{{ recovery }}</p>
         <template v-if="data.bindings.rows.length === 0">
             <EmptyState
                 icon="connections"
-                title="No connected projects"
+                title="No projects connected yet"
                 text="Generate an install line above to connect a project from another machine."
             />
         </template>
