@@ -9,7 +9,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The chat with one agent at its own inbox: who is viewing, who takes part, the newest page of its rows by speaker,
+ * One chat at its own inbox, with an agent or among users only: who is viewing, who takes part, the newest page of its rows by speaker,
  * how far it has got and how much the viewer has not read, and the sources docked in it; its inbox id keys the
  * composer's draft.
  *
@@ -24,13 +24,14 @@ final class ConversationData extends Data
      */
     public function __construct(
         public readonly string $inboxId,
-        public readonly string $agentId,
+        public readonly string|null $agentId,
         public readonly string|null $sessionId,
         public readonly int $sessionGeneration,
         public readonly string $viewer,
         #[DataCollectionOf(ParticipantData::class)]
         public readonly array $participants,
         public readonly bool $canManageParticipants,
+        public readonly ChatCapabilitiesData $capabilities,
         public readonly int $latestSequence,
         public readonly int $unreadCount,
         public readonly string|null $olderCursor,

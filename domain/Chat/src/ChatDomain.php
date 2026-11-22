@@ -28,6 +28,13 @@ use App\Ui\Enums\SlotContextType;
 use Domain\Chat\Events\DockChanged;
 use Domain\Chat\Http\Controllers\CancelMessageController;
 use Domain\Chat\Http\Controllers\DockController;
+use Domain\Chat\Http\Controllers\Membership\AddParticipantController;
+use Domain\Chat\Http\Controllers\Membership\ChatCandidatesController;
+use Domain\Chat\Http\Controllers\Membership\CloseChatController;
+use Domain\Chat\Http\Controllers\Membership\CreateGroupChatController;
+use Domain\Chat\Http\Controllers\Membership\LeaveChatController;
+use Domain\Chat\Http\Controllers\Membership\RemoveParticipantController;
+use Domain\Chat\Http\Controllers\Membership\TransferChatController;
 use Domain\Chat\Http\Controllers\ReadShownController;
 use Domain\Chat\Http\Controllers\ReplyController;
 use Domain\Chat\Http\Controllers\RequestOutcomeController;
@@ -108,6 +115,13 @@ final class ChatDomain extends Domain implements
                     ActionRoute::get('messages/outcome', RequestOutcomeController::class, 'outcome'),
                     ActionRoute::post('dock', DockController::class, 'dock'),
                     ActionRoute::post('dock/remove', UndockController::class, 'undock'),
+                    ActionRoute::post('chats', CreateGroupChatController::class, 'create-group'),
+                    ActionRoute::get('chats/candidates', ChatCandidatesController::class, 'candidates'),
+                    ActionRoute::post('chats/members', AddParticipantController::class, 'add-member'),
+                    ActionRoute::post('chats/members/remove', RemoveParticipantController::class, 'remove-member'),
+                    ActionRoute::post('chats/transfer', TransferChatController::class, 'transfer'),
+                    ActionRoute::post('chats/leave', LeaveChatController::class, 'leave'),
+                    ActionRoute::post('chats/close', CloseChatController::class, 'close'),
                 ),
             Page::layout('inbox', 'Inbox', Icon::Chat, InboxPageResolver::class)
                 ->at('inbox')

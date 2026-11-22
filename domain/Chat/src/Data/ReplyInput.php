@@ -24,7 +24,7 @@ final class ReplyInput extends Data
         #[Regex('/\S/')]
         public readonly string $body,
         #[Ulid]
-        public readonly string $agent,
+        public readonly string|null $agent,
         #[Ulid]
         public readonly string $inboxId,
         #[Regex('/^[A-Za-z0-9-]{1,64}$/')]

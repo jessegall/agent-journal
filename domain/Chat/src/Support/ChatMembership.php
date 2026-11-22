@@ -19,6 +19,7 @@ use Carbon\CarbonImmutable;
 use Domain\Chat\Exceptions\ChatMembershipRefused;
 use Domain\Chat\Models\Conversation;
 use Domain\Chat\Models\DirectChat;
+use Illuminate\Support\Str;
 
 /**
  * Who is in a chat, changed under its locks: the target's admission first, then the chat inbox; every rule is checked
@@ -35,6 +36,32 @@ final readonly class ChatMembership
         private InboxIntervals $intervals,
         private ChatDepartures $departures,
     ) {}
+
+    /**
+     * Opens a group chat owned by the creator, which must hold the create permission, and adds each user through the
+     * same rules as any later addition. Answers the chat's inbox id.
+     *
+     * @param  list<ActorIdentity>  $members
+     *
+     * @throws ChatMembershipRefused
+     */
+    public function createGroup(ActorIdentity $creator, string $title, array $members): string
+    {
+        if (! $this->policy->mayCreate($creator, null)) {
+            throw ChatMembershipRefused::mayNotCreate();
+        }
+
+        $providerId = strtolower((string) Str::ulid());
+        $inboxId = $this->chats->open($providerId);
+        Conversation::openFor($inboxId, $providerId, $creator, null, $title);
+        $this->intervals->join(new ChatInbox($inboxId, $title), $creator, IntervalRole::Owner);
+
+        foreach ($members as $member) {
+            $this->add($creator, $inboxId, $member);
+        }
+
+        return $inboxId;
+    }
 
     /**
      * Adds the target as a member; adding someone already in the chat changes nothing.

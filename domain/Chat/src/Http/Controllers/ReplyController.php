@@ -28,6 +28,6 @@ final readonly class ReplyController
     ): JsonResponse|RedirectResponse {
         $replyId = $commands->run(new ReplyInChat($input->messageId, $input->body, $input->requestKey, $input->inboxId));
 
-        return $answer->to($request, $replyId, $input->agent);
+        return $answer->to($request, $replyId, $input->agent, $input->inboxId);
     }
 }

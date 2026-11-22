@@ -15,6 +15,11 @@ use RuntimeException;
  */
 final class ChatMembershipRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
+    public static function mayNotCreate(): self
+    {
+        return new self('You may not open chats here.');
+    }
+
     public static function notOwner(string $inboxId): self
     {
         return new self("Only the owner of chat {$inboxId} may change who is in it.");

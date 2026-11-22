@@ -25,9 +25,9 @@ final class MessageInput extends Data
         #[Regex('/^[A-Za-z0-9-]{1,64}$/')]
         public readonly string $requestKey,
         #[Ulid]
-        public readonly string $agent,
+        public readonly string|null $agent = null,
         #[Ulid]
-        public readonly string|null $expectedSessionId,
-        public readonly int $expectedGeneration,
+        public readonly string|null $expectedSessionId = null,
+        public readonly int $expectedGeneration = 0,
     ) {}
 }

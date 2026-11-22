@@ -21,6 +21,7 @@ use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Data\FocusedQuestionData;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Resolvers\Support\ChatConversations;
+use Domain\Chat\Support\AuthorizedConversations;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
 
@@ -40,6 +41,7 @@ final readonly class ChatWindowResolver implements PageResolver
         private AgentDirectory $agents,
         private ConversationResolver $messages,
         private ChatConversations $chats,
+        private AuthorizedConversations $conversations,
         private SlotSections $slots,
         private StartAccounts $startAccounts,
         private CommandBus $commands,
@@ -49,6 +51,12 @@ final readonly class ChatWindowResolver implements PageResolver
     {
         $agents = $this->agents->visible();
         $main = $this->agents->mainAgentId();
+        $chosenInbox = $this->request->chosenInbox();
+
+        if ($chosenInbox->isDefined()) {
+            return $this->readChat($agents, $main, $chosenInbox->get());
+        }
+
         $chosen = $this->request->chosenAgent()->orElse($main)->map($this->visibleOrPrivate(...));
 
         return ChatData::from([
@@ -61,6 +69,28 @@ final readonly class ChatWindowResolver implements PageResolver
             ...$chosen->map($this->conversationFields(...))->getOrElse([]),
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
             ...$this->eligibleAccounts($chosen),
+            ...$this->focusedQuestion(),
+        ]);
+    }
+
+    /**
+     * The chat window on a chat chosen by its inbox, with or without an agent in it; a chat the reader is not in is
+     * refused like a missing one.
+     *
+     * @param  list<AgentOption>  $agents
+     * @param  Option<string>  $main
+     */
+    private function readChat(array $agents, Option $main, string $inboxId): ChatData
+    {
+        $this->conversations->inInbox($inboxId);
+
+        return ChatData::from([
+            'agents' => $agents,
+            'setupRequired' => $main->isEmpty(),
+            'mainAgentId' => $main->getOrElse(Optional::create()),
+            'selectedAgentId' => Optional::create(),
+            'conversation' => $this->chats->pageFor(null, $inboxId, $this->request->dockToken()),
+            'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
             ...$this->focusedQuestion(),
         ]);
     }

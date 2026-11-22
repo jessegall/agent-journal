@@ -29,10 +29,17 @@ final readonly class SentMessageAnswer
     /**
      * @throws ConversationUnavailable when a repeated request's message is no longer visible to the caller
      */
-    public function to(Request $request, string $messageId, string $agentId): JsonResponse|RedirectResponse
-    {
+    public function to(
+        Request $request,
+        string $messageId,
+        string|null $agentId,
+        string $inboxId,
+    ): JsonResponse|RedirectResponse {
         if (! $request->expectsJson()) {
-            $home = $this->redirect->getUrlGenerator()->route('home', ConversationRequest::queryFor($agentId), false);
+            $query = $agentId === null
+                ? ConversationRequest::queryForInbox($inboxId)
+                : ConversationRequest::queryFor($agentId);
+            $home = $this->redirect->getUrlGenerator()->route('home', $query, false);
 
             return $this->redirect->back(303, [], $home);
         }

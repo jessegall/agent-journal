@@ -31,10 +31,12 @@ final readonly class SendMessageController
         CommandBus $commands,
         SentMessageAnswer $answer,
     ): JsonResponse|RedirectResponse {
-        $agents->visibleAgent($input->agent)->assertRuns($input->expectedSessionId, $input->expectedGeneration);
+        if ($input->agent !== null) {
+            $agents->visibleAgent($input->agent)->assertRuns($input->expectedSessionId, $input->expectedGeneration);
+        }
 
         $messageId = $commands->run(new PostChatMessage($input->inboxId, $input->body, $input->requestKey));
 
-        return $answer->to($request, $messageId, $input->agent);
+        return $answer->to($request, $messageId, $input->agent, $input->inboxId);
     }
 }

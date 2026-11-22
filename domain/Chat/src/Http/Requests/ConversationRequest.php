@@ -25,6 +25,7 @@ final class ConversationRequest extends FormRequest
     {
         return [
             'agent' => ['nullable', 'string', 'ulid'],
+            'inbox' => ['nullable', 'string', 'ulid'],
             'dock' => ['nullable', 'string', 'max:2048'],
             'accountsFor' => ['nullable', Rule::enum(HookDriver::class)],
             'question' => ['nullable', 'string', 'ulid'],
@@ -49,6 +50,26 @@ final class ConversationRequest extends FormRequest
     public static function queryFor(string $agentId): array
     {
         return ['window' => ['chat.conversation' => ['agent' => $agentId]]];
+    }
+
+    /**
+     * The query that opens Home with this chat chosen in the chat window, by its inbox, whether or not it has an agent.
+     *
+     * @return array<string, array<string, array<string, string>>>
+     */
+    public static function queryForInbox(string $inboxId): array
+    {
+        return ['window' => ['chat.conversation' => ['inbox' => $inboxId]]];
+    }
+
+    /**
+     * The chat the query names by its inbox, when it names one.
+     *
+     * @return Option<string>
+     */
+    public function chosenInbox(): Option
+    {
+        return $this->filled('inbox') ? Some::create($this->string('inbox')->lower()->toString()) : None::create();
     }
 
     /**
