@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+import { sendPageAction } from '@kit/pageActions';
+import { useForm } from '@inertiajs/vue3';
 import type { RecordCard } from '@kit/CoreTypes';
 import Button from '@kit/Button';
 import { addLink, removeLink } from '@kit/linkRoutes';
@@ -23,11 +24,7 @@ function add(): void {
 }
 
 function remove(link: RecordCard): void {
-    router.post(
-        removeLink.url(),
-        { source: props.source, target: link.label },
-        { preserveScroll: true, ...formSendingHooks() },
-    );
+    sendPageAction(removeLink(), { source: props.source, target: link.label }, { only: [] });
 }
 </script>
 

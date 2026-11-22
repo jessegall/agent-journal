@@ -8,7 +8,6 @@ use App\Commands\LinkRecords\LinkRecordsCommand;
 use App\Contracts\CommandBus;
 use App\Contracts\RecordResolver;
 use App\Http\Requests\Links\LinkRecordsRequest;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -19,13 +18,9 @@ final readonly class LinkRecordsController
         CommandBus $commands,
         RecordResolver $records,
         Redirector $redirect,
-    ): JsonResponse|RedirectResponse {
+    ): RedirectResponse {
         $commands->run(new LinkRecordsCommand($request->source($records), $request->target($records)));
 
-        if (! $request->expectsJson()) {
-            return $redirect->back(303);
-        }
-
-        return new JsonResponse(['source' => $request->sourceReference(), 'target' => $request->targetReference()]);
+        return $redirect->back(303);
     }
 }
