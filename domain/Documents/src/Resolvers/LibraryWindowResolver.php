@@ -36,8 +36,6 @@ use Domain\Documents\Http\Requests\ListRecordsRequest;
  */
 final readonly class LibraryWindowResolver implements PageResolver
 {
-    public const string SHARING_NOTICE = 'Documents and reports are shared with every agent and user of this journal; linked private records stay private.';
-
     public function __construct(
         private DocumentResolver $documents,
         private ReportResolver $reports,
@@ -58,15 +56,7 @@ final readonly class LibraryWindowResolver implements PageResolver
         ];
 
         return ListPage::make('Documents', $rows, $this->emptyFor($filters))
-            ->searching(
-                'Search titles, abstracts and text',
-                new LayoutFieldData('query', $filters->query, ['after', 'page']),
-            )
-            ->filteredBy(
-                LayoutPartData::text('sharing', self::SHARING_NOTICE, 'muted'),
-                $this->choicesOf('type', LibraryTypeFilter::cases(), $type),
-                $this->choicesOf('attention', AttentionFilter::cases(), $filters->attention),
-            )
+            ->searching('Search documents', new LayoutFieldData('query', $filters->query, ['after', 'page']))
             ->creatingWith($this->creation('doc', 'Create document'), $this->creation('report', 'Create report'))
             ->paged(ListPaging::cursor($type === LibraryTypeFilter::All ? null : $this->nextOf($documents ?? $reports)))
             ->withReader(new LayoutBackData('/documents', 'Documents'))
@@ -93,19 +83,6 @@ final readonly class LibraryWindowResolver implements PageResolver
     private function nextOf(PublicationList|null $list): string|null
     {
         return $list?->next;
-    }
-
-    /**
-     * @param  list<LibraryTypeFilter|AttentionFilter>  $cases
-     */
-    private function choicesOf(string $key, array $cases, LibraryTypeFilter|AttentionFilter $chosen): LayoutPartData
-    {
-        return LayoutPartData::collection($key, 'choices', array_map(fn ($case) => LayoutRowData::from([
-            'key' => $case->value,
-            'label' => $case->label(),
-            'query' => [$key => $case->value, 'after' => ''],
-            'isCurrent' => $case === $chosen,
-        ]), $cases));
     }
 
     /**
