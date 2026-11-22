@@ -3764,6 +3764,7 @@ class	LexedLine
 class	LexerCursor
 class	LexerScan
 class	LibraryEntryAnswer
+class	LibraryReuse
 class	LibraryWindowResolver
 class	LimitMcpMessage
 class	LimitUsageReport
@@ -7538,6 +7539,9 @@ constant	LayoutPartData::TONES
 constant	LayoutRoots::CORE_ROOT_FILES
 constant	LayoutRoots::ROLE_FOLDERS
 constant	LayoutSplitData::LIST_WIDTH
+constant	LibraryReuse::ELEMENTS
+constant	LibraryReuse::ROLES
+constant	LibraryReuse::SKIPPED
 constant	LimitMcpMessage::BYTE_LIMIT
 constant	LimitMcpMessage::MAX_DEPTH
 constant	LimitUsageReport::MOST_BYTES
@@ -8080,6 +8084,7 @@ constant	StateReferences::MAXIMUM
 constant	StatementDeadline::CANCELLED
 constant	StaticFactoryScan::FRESH_EACH_CALL
 constant	StaticFactoryScan::INJECTABLE
+constant	StaticFactoryScan::NOT_FACTORIES
 constant	StaticFactoryScan::REPEATED
 constant	StopAgentController::STOP_REQUEST
 constant	StopAttempt::FIRST_GENERATION
@@ -16344,6 +16349,11 @@ method	LexerScan::__construct()
 method	LexerScan::nextPipe()
 method	LexerScan::tokens()
 method	LibraryEntryAnswer::__construct()
+method	LibraryReuse::componentFor()
+method	LibraryReuse::in()
+method	LibraryReuse::isSkipped()
+method	LibraryReuse::offendersIn()
+method	LibraryReuse::templateOf()
 method	LibraryTypeFilter::isForDocuments()
 method	LibraryTypeFilter::isForReports()
 method	LibraryTypeFilter::label()
@@ -27971,6 +27981,7 @@ parameter	$egress
 parameter	$either
 parameter	$elapsedMicroseconds
 parameter	$elapsedSeconds
+parameter	$element
 parameter	$elementType
 parameter	$eligibility
 parameter	$eligible
@@ -41883,6 +41894,8 @@ variable	$effect
 variable	$effects
 variable	$elapsedMicroseconds
 variable	$elapsedSinceBaseline
+variable	$elementMatches
+variable	$elements
 variable	$eligibility
 variable	$eligible
 variable	$elseLine
@@ -42962,6 +42975,9 @@ variable	$revocation
 variable	$revoked
 variable	$rewritten
 variable	$right
+variable	$role
+variable	$roleMatches
+variable	$roles
 variable	$room
 variable	$root
 variable	$roots
@@ -43232,6 +43248,7 @@ variable	$taskIdsByPhase
 variable	$taskOffset
 variable	$taskPage
 variable	$tasks
+variable	$template
 variable	$temporary
 variable	$terminal
 variable	$text
