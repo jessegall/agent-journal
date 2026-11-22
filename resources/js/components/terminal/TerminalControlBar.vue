@@ -2,6 +2,7 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import type { TerminalScreenIdentityData } from '@generated/types/core';
+import { PASTE_BYTE_LIMIT } from './terminalControl';
 import TerminalStopAction from './TerminalStopAction.vue';
 import type { TerminalControlHandle } from './useTerminalControl';
 
@@ -44,7 +45,45 @@ watch(
     },
 );
 
+/**
+ * The named key a keystroke sends to the driver, or none when the line edits it locally or it leaves the line.
+ */
+const keyNames: Record<string, string> = {
+    ArrowUp: 'up',
+    ArrowDown: 'down',
+    ArrowLeft: 'left',
+    ArrowRight: 'right',
+    Home: 'home',
+    End: 'end',
+    PageUp: 'page_up',
+    PageDown: 'page_down',
+    Tab: 'tab',
+    Escape: 'escape',
+};
+
+function namedKeyOf(event: KeyboardEvent): string | null {
+    if (event.ctrlKey && !event.metaKey && /^[a-z]$/i.test(event.key)) {
+        return `ctrl_${event.key.toLowerCase()}`;
+    }
+    if ((event.key === 'Backspace' || event.key === 'Delete') && typed.value === '') {
+        return event.key.toLowerCase();
+    }
+
+    return keyNames[event.key] ?? null;
+}
+
+const isComposing = ref(false);
+
 function submit(event: KeyboardEvent): void {
+    if (isComposing.value || event.isComposing) {
+        return;
+    }
+    if (event.key === 'F6' || (event.key === 'Tab' && event.shiftKey)) {
+        event.preventDefault();
+        controlsButton.value?.focus();
+
+        return;
+    }
     if (event.key === 'Enter') {
         event.preventDefault();
         void props.control.send(typed.value, true);
@@ -53,11 +92,70 @@ function submit(event: KeyboardEvent): void {
         return;
     }
 
-    if (event.key === 'F6' || (event.key === 'Tab' && event.shiftKey)) {
-        event.preventDefault();
-        controlsButton.value?.focus();
+    const key = namedKeyOf(event);
+
+    if (key === null) {
+        return;
     }
+
+    event.preventDefault();
+    event.stopPropagation();
+    void props.control.sendKey(key);
 }
+
+/**
+ * The paste waiting for the writer's confirmation, with the prompt revision it was made under; it lives in memory
+ * only and goes when the prompt changes.
+ */
+const preview = ref<{ text: string; lines: number; revision: number } | null>(null);
+const pasteRefusal = ref('');
+
+function onPaste(event: ClipboardEvent): void {
+    const text = event.clipboardData?.getData('text/plain') ?? '';
+    event.preventDefault();
+    pasteRefusal.value = '';
+
+    if (new TextEncoder().encode(text).length > PASTE_BYTE_LIMIT) {
+        pasteRefusal.value = `A paste may be at most ${PASTE_BYTE_LIMIT} bytes; nothing was sent.`;
+
+        return;
+    }
+    // eslint-disable-next-line no-control-regex
+    if (!/[\u0000-\u001f\u007f]/.test(text)) {
+        void props.control.paste(text);
+
+        return;
+    }
+
+    preview.value = { text, lines: text.split('\n').length, revision: props.control.promptRevision() };
+}
+
+function confirmPaste(): void {
+    const shown = preview.value;
+    preview.value = null;
+
+    if (shown === null || shown.revision !== props.control.promptRevision()) {
+        return;
+    }
+
+    void props.control.paste(shown.text);
+}
+
+/**
+ * An input method's text stays local while it is composed; the committed text joins the line, which Enter sends once.
+ */
+function onCompositionEnd(): void {
+    isComposing.value = false;
+}
+
+watch(
+    () => [props.identity?.privacyRevision, props.control.promptRevision()],
+    () => {
+        preview.value = null;
+        typed.value = '';
+        isComposing.value = false;
+    },
+);
 
 function sendWithoutEnter(): void {
     if (typed.value === '') {
@@ -113,9 +211,32 @@ async function copy(text: string): Promise<void> {
                     autocomplete="off"
                     spellcheck="false"
                     @keydown="submit"
+                    @paste="onPaste"
+                    @compositionstart="isComposing = true"
+                    @compositionend="onCompositionEnd"
                 />
                 <Button variant="bordered" size="sm" @click="sendWithoutEnter">Type without Enter</Button>
+                <Button variant="ghost" size="sm" @click="control.sendKey('shift_tab')">
+                    Send Shift+Tab to driver
+                </Button>
             </div>
+            <template v-if="pasteRefusal">
+                <p class="text-small text-warn" role="alert">{{ pasteRefusal }}</p>
+            </template>
+            <template v-if="preview">
+                <section class="flex flex-col gap-1.5" aria-label="Paste preview">
+                    <p class="text-small text-text-2">
+                        This paste has {{ preview.lines }} lines; each line break may run a command in the terminal.
+                    </p>
+                    <pre class="max-h-40 overflow-auto rounded border border-border-2 p-2 text-small">{{
+                        preview.text
+                    }}</pre>
+                    <div class="flex gap-1.5">
+                        <Button variant="primary" size="sm" @click="confirmPaste">Paste it</Button>
+                        <Button variant="ghost" size="sm" @click="preview = null">Cancel</Button>
+                    </div>
+                </section>
+            </template>
         </template>
         <template v-if="view.state === 'choosing'">
             <div class="flex flex-col gap-1.5" role="group" aria-label="The unfinished line">

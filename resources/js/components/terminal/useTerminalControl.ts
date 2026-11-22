@@ -27,8 +27,8 @@ function clientFor(agentId: string): TerminalControlClient {
         cancel: (takeId) => answered(postJson(cancelTerminalTake.url(agentId), { takeId })),
         renew: (grantId) => answered(postJson(renewTerminalControl.url(agentId), { grantId })),
         release: (grantId) => answered(postJson(releaseTerminalControl.url(agentId), { grantId })),
-        input: (grantId, text, enter, sequence, screenRevision) =>
-            answered(postJson(sendTerminalInput.url(agentId), { grantId, text, enter, sequence, screenRevision })),
+        input: (grantId, input, sequence, screenRevision) =>
+            answered(postJson(sendTerminalInput.url(agentId), { grantId, ...input, sequence, screenRevision })),
         choose: (grantId, choice, sequence) =>
             answered(postJson(chooseTerminalDraft.url(agentId), { grantId, choice, sequence })),
         check: (grantId) => answered(postJson(checkTerminalScreen.url(agentId), { grantId })),
@@ -58,6 +58,10 @@ export function useTerminalControl(
 ) {
     const view = shallowRef<ControlView>({ state: 'watching', notice: '', unsentLine: '', savedDrafts: [] });
     let control = controlFor(agentId.value);
+
+    function promptRevision(): number {
+        return screen.value.frame?.promptRevision ?? 0;
+    }
     let renewal = 0;
 
     function controlFor(agent: string): TerminalControl {
@@ -120,7 +124,10 @@ export function useTerminalControl(
         keepTyping: () => control.keepTyping(),
         choose: (choice: 'send' | 'save-and-clear') => control.choose(choice),
         check: () => control.check(),
-        send: (text: string, enter: boolean) => control.send(text, enter, screen.value.frame?.promptRevision ?? 0),
+        send: (text: string, enter: boolean) => control.send(text, enter, promptRevision()),
+        sendKey: (key: string) => control.sendInput({ kind: 'key', key }, promptRevision()),
+        paste: (text: string) => control.sendInput({ kind: 'paste', text }, promptRevision()),
+        promptRevision,
         deleteSavedDraft: (index: number) => control.deleteSavedDraft(index),
         holdsGrant: () => control.holdsGrant(),
     };

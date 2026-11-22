@@ -14,10 +14,11 @@ function controlled(client: Partial<TerminalControlClient>) {
         cancel: async () => answer({ state: 'releasing' }),
         renew: async () => answer({ state: 'granted', grantId: 'grant' }),
         release: async () => answer({ state: 'releasing', grantId: 'grant' }),
-        input: async (...args) => {
-            sent.push(args);
+        input: async (grantId, input, sequence, revision) => {
+            const text = 'text' in input ? input.text : input.key;
+            sent.push([grantId, text, input.kind === 'text' && input.enter, sequence, revision]);
 
-            return answer({ state: 'granted', grantId: 'grant', nextSequence: (args[3] as number) + 1 });
+            return answer({ state: 'granted', grantId: 'grant', nextSequence: sequence + 1 });
         },
         choose: async () => answer({ state: 'granted', grantId: 'grant' }),
         check: async () => answer({ state: 'granted', grantId: 'grant' }),

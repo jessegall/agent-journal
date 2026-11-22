@@ -9,11 +9,29 @@ export type TerminalControlClient = {
     cancel: (takeId: string) => Promise<TerminalControlData>;
     renew: (grantId: string) => Promise<TerminalControlData>;
     release: (grantId: string) => Promise<TerminalControlData>;
-    input: (grantId: string, text: string, enter: boolean, sequence: number, screenRevision: number) => Promise<TerminalControlData>;
+    input: (
+        grantId: string,
+        input: TerminalInputPayload,
+        sequence: number,
+        screenRevision: number,
+    ) => Promise<TerminalControlData>;
     choose: (grantId: string, choice: DraftChoice, sequence: number) => Promise<TerminalControlData>;
     check: (grantId: string) => Promise<TerminalControlData>;
     receipt: (takeId: string, sequence: number) => Promise<TerminalControlData>;
 };
+
+/**
+ * One input as the journal takes it: text with or without Enter, one named key, or a paste.
+ */
+export type TerminalInputPayload =
+    | { kind: 'text'; text: string; enter: boolean }
+    | { kind: 'key'; key: string }
+    | { kind: 'paste'; text: string };
+
+/**
+ * The most bytes one paste may carry, as the journal bounds it.
+ */
+export const PASTE_BYTE_LIMIT = 16_384;
 
 /**
  * What the writer decides for an unfinished line when they give the input back.
@@ -131,19 +149,41 @@ export class TerminalControl {
      * Sends the text, and Enter after it when asked, as one operation at the next sequence.
      */
     async send(text: string, enter: boolean, screenRevision: number): Promise<void> {
+        await this.sendInput({ kind: 'text', text, enter }, screenRevision);
+    }
+
+    /**
+     * Sends one input at the next sequence for the prompt revision the writer saw, and follows its receipt.
+     */
+    async sendInput(input: TerminalInputPayload, screenRevision: number): Promise<void> {
         if (this.grantId === '' || this.current.state !== 'controlling') {
             return;
         }
         const sequence = this.nextSequence;
 
         try {
-            const answer = await this.client.input(this.grantId, text, enter, sequence, screenRevision);
+            const answer = await this.client.input(this.grantId, input, sequence, screenRevision);
             this.nextSequence = answer.nextSequence;
-            this.publish({ unsentLine: enter ? '' : this.current.unsentLine + text });
+            this.publish({ unsentLine: this.unsentAfter(input) });
             await this.followReceipt(sequence);
         } catch (failure) {
             this.inputRefused(failure);
         }
+    }
+
+    /**
+     * The line left unsent after the input: Enter sends it, text and a one-line paste add to it, a key leaves it to
+     * the screen.
+     */
+    private unsentAfter(input: TerminalInputPayload): string {
+        if (input.kind === 'key') {
+            return this.current.unsentLine;
+        }
+        if (input.kind === 'text' && input.enter) {
+            return '';
+        }
+
+        return this.current.unsentLine + input.text;
     }
 
     /**
@@ -181,7 +221,8 @@ export class TerminalControl {
             if (outcome !== 'applied') {
                 return;
             }
-            const savedDrafts = choice === 'save-and-clear' ? [...this.current.savedDrafts, line] : this.current.savedDrafts;
+            const savedDrafts =
+                choice === 'save-and-clear' ? [...this.current.savedDrafts, line] : this.current.savedDrafts;
             this.publish({ unsentLine: '', savedDrafts });
             await this.release();
         } catch (failure) {
