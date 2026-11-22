@@ -11,9 +11,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 /**
  * A plan's review and ending as its reader shows them: which review actions the caller may take, whether they may
  * cancel the plan or finish it (a started plan with no unfinished task), the revision they read, what assigning its
- * work would move, the edition asked for with its
- * frozen snapshot, the latest approval as a receipt (historical once the plan changed), the note of a request for
- * changes, and what changed against the edition before.
+ * work would move, the number of the review asked for, the latest approval as a receipt (historical once the plan
+ * changed) and the note of a request for changes.
  */
 #[TypeScript]
 final class PlanReviewData extends Data
@@ -26,9 +25,8 @@ final class PlanReviewData extends Data
         public readonly bool $mayFinish,
         public readonly int $revision,
         public readonly PlanWorkPreviewData $work,
-        public readonly PlanReviewEditionData|Optional $edition = new Optional(),
+        public readonly int|Optional $reviewNumber = new Optional(),
         public readonly PlanReviewReceiptData|Optional $receipt = new Optional(),
         public readonly PlanReviewReceiptData|Optional $changesRequested = new Optional(),
-        public readonly PlanEditionChangesData|Optional $changes = new Optional(),
     ) {}
 }

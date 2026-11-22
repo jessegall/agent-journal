@@ -8,6 +8,7 @@ ${option.description} ${option.billingNote}
 30 days
 7 days
 : {{ step.action }} by {{ step.actor }}, project {{ step.projectId ?? 'not recorded' }}
+= range.from && line
 A sample run: it shows what the command does and gives no result.
 API key
 About the whole record
@@ -75,10 +76,15 @@ Close to the right
 Code from the sign-in page
 Codex cannot run in a container yet: its sandbox does not keep its tools
 Color scheme
+Command output
 Commands and sessions of {{ binding.projectLabel }} on {{ binding.machineLabel }} stop being accepted at once. The files on that computer stay as they are. A device that is offline now stops when its lease ends.
+Comment
 Comment on a section
+Comment on the selected lines
 Comment on the selected paragraphs
 Comment on this
+Comment on this document
+Comment on {{ range }} · “{{ quote }}”
 Comments
 Compare code
 Configure a gateway
@@ -104,6 +110,7 @@ Delete
 Detach
 Device
 Dismiss
+Doc {{ number }} · {{ title }}
 Dock
 Dock it back into the layout
 Domain off
@@ -168,6 +175,7 @@ Layout file to import
 Layout name
 Layouts
 Leave blank to keep the stored one
+Left to spend
 Light
 Link copied.
 Link to Claude's sign-in page
@@ -202,6 +210,7 @@ No connected projects
 No endpoint is serving this share.
 No install line was issued in the last 30 days.
 No linked record can be shared with it.
+No memories yet
 No module bundle is waiting.
 No notifications yet
 No output yet. Status {{ part.lifecycle }}, ended by {{ part.end }}.
@@ -251,6 +260,7 @@ Paste a key from the OpenAI platform.
 Paste a token made with claude setup-token.
 Paste it below and send it.
 Paste it in a terminal in the project folder. It works once, until {{ timeOfDay(expiresAt) }}.
+Period
 Pool empty
 Pool too large
 Presets
@@ -289,6 +299,7 @@ Removing
 Rename
 Replace
 Reply
+Reset
 Reset layout
 Resize
 Resize panes
@@ -321,6 +332,7 @@ Save revision {{ revision + 1 }}
 Save the current layout to it
 Saved
 Secrets
+Send
 Send code
 Setting up
 Settled
@@ -350,6 +362,7 @@ Signed in
 Signed in as {{ accountIdentity }}.
 Sorting a command into kinds does not allow it to run, and a sample run only shows what the command does.
 Source text
+Spent
 Split below
 Split right
 Split this pane in two?
@@ -365,6 +378,7 @@ Status
 Status unknown
 Status: {{ part.lifecycle }}, ended by {{ part.end }}
 Still to do: {{ data.steps.join('; ') }}
+Stop
 Stop session
 Stopped
 Stopping
@@ -407,9 +421,11 @@ This release cannot do {{ release.missingCapabilities.join(', ') }} yet.
 This server can direct an agent to read and change files in your project. A line works once, for ten minutes.
 This sign-in is already running
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
+To
 To renew it, choose Sign in again on the account.
 Turning off traffic inspection does not hide the content from the provider.
 Undo
+Undock
 Unfinished sign-ins
 Unknown
 Update share {{ liveShare.number }}
@@ -443,6 +459,7 @@ Write a comment
 You can approve once the request is ready for review; a check first needs a checked reader.
 You can change it later from the list.
 You can close this window: the sign-in keeps waiting on the host. Resume it from the Accounts header.
+Your comment
 Your last answer did not arrive. Paste it again.
 Your last code did not arrive. Paste it again.
 a file the user names on the command line, wherever it lies
@@ -489,9 +506,11 @@ unresolved
 until {{ dateTime(signIn.expiresAt) }}
 updated {{ seconds(ageSeconds()) }} ago
 {{ completed }} of {{ total }}
+{{ counted(memories.length, 'memory', 'memories') }} · the number is its weight, heaviest first
 {{ data.request.state }}: waiting because {{ data.request.holdReason }}
 {{ driverName(driver) }} does not say which provider account this is, so signing in to the same account again adds another one.
 {{ failure }} Choose fewer lines, or comment on the lines instead of a quote.
+{{ name }}'s chat
 {{ output.stream }}: bytes {{ output.startsAt }} to {{ output.size }} of {{ output.size }}
 {{ provider.label }}: start it with
 {{ request.script }} step {{ request.scriptStep ?? 0 }}: {{ request.scriptEvidence ?? '' }}
@@ -501,6 +520,8 @@ updated {{ seconds(ageSeconds()) }} ago
 {{ target.name }} is not offered yet: its size was not measured.
 {{ target.name }}: {{ size(target.bytes) }} to download and install. Needs {{ target.prerequisites.join(', ') }}.
 {{ title }} can sit beside this pane or join its tabs.
+{{ window.value }}% used
+· Drag onto an agent
 · device sign-in
 · sign-in page
 ← Back

@@ -58,7 +58,7 @@ describe('LineCommentable', () => {
         const pressed = view.findAll('[data-line] button').map((gutter) => gutter.attributes('aria-pressed'));
 
         expect(pressed).toEqual(['false', 'true', 'true', 'true']);
-        expect(view.get('button[aria-label="Comment on the selected lines"]').exists()).toBe(true);
+        expect(view.find('button[aria-label="Comment on the selected lines"]').exists()).toBe(true);
         view.unmount();
     });
 

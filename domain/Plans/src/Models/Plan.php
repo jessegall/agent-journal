@@ -7,6 +7,7 @@ namespace Domain\Plans\Models;
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Exceptions\AssignmentPoolTooLarge;
 use App\Assignments\Exceptions\AssignmentPoolUnavailable;
@@ -41,6 +42,7 @@ use Domain\Plans\Enums\PlanTextLimit;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanReviewRefused;
+use Domain\Plans\Exceptions\PlanUnderReview;
 use Domain\Plans\Exceptions\StartDenied;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -174,6 +176,23 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     /**
+     * Locks the plan as lockStructure does for a change of its content, its phases or its tasks, which a plan under
+     * review refuses.
+     *
+     * @throws PlanUnderReview
+     */
+    public static function lockForChange(string $planId): self
+    {
+        $plan = self::lockStructure($planId);
+
+        if ($plan->state === PlanState::Reviewing) {
+            throw PlanUnderReview::forPlan($plan->number);
+        }
+
+        return $plan;
+    }
+
+    /**
      * A plan is shared as a summary root; the documents and reports linked to it are the owner's to select.
      */
     public static function shareRelations(): ShareRelationSet
@@ -241,11 +260,14 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     /**
-     * Puts the planned plan up for review with its frozen edition; any other state refuses.
+     * Puts the planned plan up for review by its reviewers; any other state refuses. The plan holds still until the
+     * review ends.
+     *
+     * @param  list<ActorIdentity>  $reviewers
      *
      * @throws PlanReviewRefused
      */
-    public function requestReview(string $editionId): void
+    public function requestReview(PlanReviewEdition $review, array $reviewers): void
     {
         if ($this->state !== PlanState::Planned) {
             throw PlanReviewRefused::notPlanned($this->number, $this->state->value);
@@ -253,7 +275,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
 
         $this->state = PlanState::Reviewing;
         $this->assertSaved($this->save());
-        $this->raise(new PlanReviewRequested($this->id, $editionId));
+        $this->raise(new PlanReviewRequested($this->id, $review->id, $reviewers));
     }
 
     /**

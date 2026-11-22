@@ -7,7 +7,7 @@ import type {
     SignInMethodData,
 } from '@generated/types/accounts';
 import Button from '@kit/Button';
-import Modal from '@kit/Modal';
+import Dialog from '@kit/Dialog';
 import Spinner from '@kit/Spinner';
 import { computed, ref, useId, watch } from 'vue';
 import ChooseSignIn from './ChooseSignIn.vue';
@@ -356,8 +356,8 @@ function cancelAndClose(): void {
 </script>
 
 <template>
-    <Modal
-        :is-open="request !== null"
+    <Dialog
+        :open="request !== null"
         title="Add an account"
         :step-count="3"
         :step="step"
@@ -596,5 +596,5 @@ function cancelAndClose(): void {
                 >
             </template>
         </template>
-    </Modal>
+    </Dialog>
 </template>

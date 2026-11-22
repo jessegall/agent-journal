@@ -12,6 +12,7 @@ use Domain\Tasks\Api\Events\TaskStartCommitted;
 use Domain\Tasks\Api\Events\TaskWaitChanged;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWaitChange;
+use Domain\Tasks\Events\TaskDescribed;
 use Domain\Tasks\Events\TaskStarted;
 use Tests\Architecture\Support\EventRole;
 
@@ -76,5 +77,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new TaskStarted('task', ActorIdentity::system(), TaskState::Open, 'entry'),
+    ],
+    TaskDescribed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Task::describe',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TaskDescribed('task'),
     ],
 ];

@@ -38,6 +38,7 @@ use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Database\Factories\TaskFactory;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskTextLimit;
+use Domain\Tasks\Events\TaskDescribed;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\CandidateLimitInvalid;
 use Domain\Tasks\Exceptions\TaskMissing;
@@ -277,7 +278,8 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
         $this->title = $title;
         $this->brief = $brief;
         $this->revision++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TaskDescribed($this->id));
     }
 
     /**

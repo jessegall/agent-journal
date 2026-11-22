@@ -7,7 +7,7 @@ import type { WindowResult } from '@kit/PageTypes';
 import { accountStart, activate, remove } from '@generated/routes/accounts';
 import { Link, useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
-import Modal from '@kit/Modal';
+import Dialog from '@kit/Dialog';
 import Field from '@kit/Field';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { computed, nextTick, ref, useId, watch } from 'vue';
@@ -241,8 +241,8 @@ function signInAgain(): void {
 </script>
 
 <template>
-    <Modal
-        :is-open="isOpen"
+    <Dialog
+        :open="isOpen"
         :title="isAskingToRemove ? 'Remove this account?' : account.label"
         @close="emit('close')"
         @opened="opened"
@@ -418,5 +418,5 @@ function signInAgain(): void {
                 <Button @click="emit('close')">Close</Button>
             </template>
         </template>
-    </Modal>
+    </Dialog>
 </template>

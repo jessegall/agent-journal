@@ -10,11 +10,7 @@ use App\Assignments\Support\AssigneeName;
 use App\Assignments\Support\AssignmentGroup;
 use App\Assignments\Support\Page;
 use App\Operations\Enums\AccessType;
-use Domain\Plans\Data\PlanEditionChangesData;
 use Domain\Plans\Data\PlanReviewData;
-use Domain\Plans\Data\PlanReviewEditionData;
-use Domain\Plans\Data\PlanReviewMemberData;
-use Domain\Plans\Data\PlanReviewPhaseData;
 use Domain\Plans\Data\PlanReviewReceiptData;
 use Domain\Plans\Data\PlanWorkPreviewData;
 use Domain\Plans\Data\PlanWorkRecipientData;
@@ -22,30 +18,20 @@ use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
-use Domain\Plans\Models\PlanReviewMember;
-use Domain\Plans\Models\PlanReviewPhase;
 use Domain\Plans\Policies\PlanPolicy;
 use Spatie\LaravelData\Optional;
 
 /**
  * Builds a plan's review for its reader in a bounded read: the actions its state and the caller's grants allow
- * (Edit to ask for and withdraw a review, Admin to decide), the edition asked for with its first phases and members
- * and their briefs cut short, the latest approval and the latest request for changes, and the comparison with the
- * edition before when there is one.
+ * (Edit to ask for and withdraw a review, Admin to decide), the number of the review asked for, the latest approval
+ * and the latest request for changes. The plan itself is read live: it cannot change while it is under review.
  */
 final readonly class PlanReviewView
 {
-    public const int PHASES_SHOWN = 20;
-
-    public const int MEMBERS_SHOWN = 20;
-
-    public const int BRIEF_SHOWN = 400;
-
     public const int RECIPIENTS_SHOWN = 20;
 
     public function __construct(
         private CurrentAuthorizer $authorizer,
-        private PlanEditionComparison $comparison,
         private AssigneeResolver $assignees,
     ) {}
 
@@ -66,12 +52,11 @@ final readonly class PlanReviewView
             'mayFinish' => $mayEdit && $plan->state === PlanState::Started && $plan->progress->unfinished() === 0,
             'revision' => $plan->revision,
             'work' => $this->workOf($plan, $mayEdit),
-            'edition' => $requested === null ? Optional::create() : self::editionOf($requested),
+            'reviewNumber' => $requested === null ? Optional::create() : $requested->number,
             'receipt' => $approval === null ? Optional::create() : self::receiptOf($approval),
             'changesRequested' => $latest !== null && $latest->state === PlanReviewState::ChangesRequested
                 ? self::receiptOf($latest)
                 : Optional::create(),
-            'changes' => $this->changesOf($latest),
         ]);
     }
 
@@ -95,56 +80,6 @@ final readonly class PlanReviewView
                 fn (AssigneeName $name) => PlanWorkRecipientData::ofName($name),
                 $this->assignees->eligible('agent', new Page(null, self::RECIPIENTS_SHOWN))->assignees,
             ),
-        );
-    }
-
-    private function changesOf(PlanReviewEdition|null $latest): PlanEditionChangesData|Optional
-    {
-        $older = $latest === null || $latest->number === 1
-            ? null
-            : PlanReviewEdition::numberedIn($latest->plan_id, $latest->number - 1);
-
-        if ($latest === null || $older === null) {
-            return Optional::create();
-        }
-
-        return PlanEditionChangesData::ofChanges($older->number, $this->comparison->between($older, $latest));
-    }
-
-    private static function editionOf(PlanReviewEdition $edition): PlanReviewEditionData
-    {
-        $phases = PlanReviewPhase::pageOf($edition->id, 0, self::PHASES_SHOWN + 1);
-
-        return new PlanReviewEditionData(
-            $edition->number,
-            $edition->fingerprint,
-            $edition->title,
-            $edition->brief,
-            $edition->type->value,
-            array_values($phases->take(self::PHASES_SHOWN)->map(
-                fn (PlanReviewPhase $phase) => self::phaseOf($phase),
-            )->all()),
-            $phases->count() > self::PHASES_SHOWN,
-        );
-    }
-
-    private static function phaseOf(PlanReviewPhase $phase): PlanReviewPhaseData
-    {
-        $members = PlanReviewMember::pageOf($phase->edition_id, $phase->position, 0, self::MEMBERS_SHOWN + 1);
-
-        return new PlanReviewPhaseData(
-            $phase->position,
-            (string) $phase->phase_number,
-            $phase->title,
-            array_values($members->take(self::MEMBERS_SHOWN)->map(
-                fn (PlanReviewMember $member) => new PlanReviewMemberData(
-                    (string) $member->task_number,
-                    $member->title,
-                    mb_substr($member->brief, 0, self::BRIEF_SHOWN),
-                    mb_strlen($member->brief) > self::BRIEF_SHOWN,
-                ),
-            )->all()),
-            $members->count() > self::MEMBERS_SHOWN,
         );
     }
 

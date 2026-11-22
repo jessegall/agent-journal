@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Support;
 
 use Domain\Plans\Exceptions\PhaseRevisionChanged;
+use Domain\Plans\Exceptions\PlanUnderReview;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
@@ -22,7 +23,7 @@ final readonly class PlanStructure
 
     public function addPhase(Plan $plan, string $title): Phase
     {
-        Plan::lockStructure($plan->id);
+        Plan::lockForChange($plan->id);
         PlanReviewEdition::currentApprovalOf($plan->id)?->markHistorical();
 
         return Phase::create($plan, $title);
@@ -36,10 +37,11 @@ final readonly class PlanStructure
      * @param  list<string>  $ids
      *
      * @throws TaskAlreadyInAPhase
+     * @throws PlanUnderReview
      */
     public function addTasks(Phase $phase, array $ids): void
     {
-        $plan = Plan::lockStructure($phase->plan_id);
+        $plan = Plan::lockForChange($phase->plan_id);
         $phase->refresh();
         $duplicateTaskIds = array_keys(array_filter(array_count_values($ids), fn (int $count) => $count > 1));
         $alreadyPlacedTaskId = PhaseTask::query()->whereIn('task_id', $ids)->value('task_id');
@@ -68,10 +70,11 @@ final readonly class PlanStructure
      *
      * @throws PhaseRevisionChanged
      * @throws TaskAlreadyInAPhase
+     * @throws PlanUnderReview
      */
     public function addTasksAtRevision(Phase $phase, int $expectedRevision, array $ids): void
     {
-        Plan::lockStructure($phase->plan_id);
+        Plan::lockForChange($phase->plan_id);
         $phase->refresh();
         $phase->assertAtRevision($expectedRevision);
         $this->addTasks($phase, $ids);

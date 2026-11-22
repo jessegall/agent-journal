@@ -105,7 +105,7 @@ final readonly class WindowResults implements WindowResultsContract
     private function failed(string $key, ResolverDefinition $resolver, Throwable $failure): FailedWindow
     {
         $this->log->error(
-            "The window {$key} failed: {$failure::class}: {$failure->getMessage()}",
+            "The window {$key} failed: ".$failure::class.": {$failure->getMessage()}",
             ['key' => $key, 'reader' => $resolver->resolver, 'exception' => $failure],
         );
 
@@ -113,6 +113,6 @@ final readonly class WindowResults implements WindowResultsContract
             return FailedWindow::make();
         }
 
-        return FailedWindow::because("{$failure::class}: {$failure->getMessage()}");
+        return FailedWindow::because($failure::class.": {$failure->getMessage()}");
     }
 }

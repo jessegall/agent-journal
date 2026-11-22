@@ -6,6 +6,7 @@ namespace Domain\Plans\Handlers\Support;
 
 use App\Contracts\CommandHandler;
 use Domain\Plans\Exceptions\PlanRevisionChanged;
+use Domain\Plans\Exceptions\PlanUnderReview;
 use Domain\Plans\Models\Plan;
 
 /**
@@ -17,10 +18,11 @@ abstract readonly class PlanCommandHandler implements CommandHandler
      * The plan locked for a structural change, refused when it is no longer at the revision the caller read.
      *
      * @throws PlanRevisionChanged
+     * @throws PlanUnderReview
      */
     final protected function lockPlanAtRevision(string $planId, int $expectedRevision): Plan
     {
-        $plan = Plan::lockStructure($planId);
+        $plan = Plan::lockForChange($planId);
 
         if ($plan->revision !== $expectedRevision) {
             throw PlanRevisionChanged::for($plan->number, $expectedRevision, $plan->revision);

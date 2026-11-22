@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
 use Domain\Plans\Api\Events\PlanCancelled;
 use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Api\Events\PlanProgressChanged;
@@ -53,7 +54,7 @@ return [
         'owner' => 'Plan::requestReview',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new PlanReviewRequested('plan', 'edition'),
+        'sample' => fn () => new PlanReviewRequested('plan', 'edition', [ActorIdentity::system()]),
     ],
     PlanReviewWithdrawn::class => [
         'role' => EventRole::RowFact,
