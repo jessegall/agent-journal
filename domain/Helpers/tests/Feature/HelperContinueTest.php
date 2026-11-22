@@ -6,7 +6,9 @@ namespace Domain\Helpers\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
 use App\Events\LaunchEnded;
+use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\StartRecord;
+use App\Support\Capabilities\CodexHeadlessCapabilities;
 use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
 use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
 use Domain\Helpers\Commands\SteerHelper\SteerHelperCommand;
@@ -42,6 +44,13 @@ final class HelperContinueTest extends TestCase
 
     private const string CONTINUE_COMMAND = 'journal helper continue';
 
+    /**
+     * A driver that reopens an earlier conversation; Codex headless cannot yet (task 2480).
+     */
+    private const string RESUMING_DRIVER = 'claude-code';
+
+    private const string CODEX = 'codex';
+
     public function test_an_ended_attempt_leaves_the_job_unfinished_with_a_complete_continue_command(): void
     {
         $receipt = $this->start('request-1', 'Review plan 7');
@@ -66,8 +75,8 @@ final class HelperContinueTest extends TestCase
 
         $requestId = (string) Str::ulid();
 
-        $continued = $this->continueJob($receipt, $requestId);
-        $repeated = $this->continueJob($receipt, $requestId);
+        $continued = $this->continueJob($receipt, $requestId, self::RESUMING_DRIVER);
+        $repeated = $this->continueJob($receipt, $requestId, self::RESUMING_DRIVER);
 
         $job = HelperJob::query()->findOrFail($receipt->jobId);
         $this->assertSame($receipt->jobId, $continued->jobId);
@@ -75,6 +84,19 @@ final class HelperContinueTest extends TestCase
         $this->assertSame(JobState::Accepted, $job->state);
         $this->assertSame(self::BRIEF, $job->brief);
         $this->assertSame(2, StartRecord::query()->where('owner_reference', 'like', '%'.$receipt->jobId)->count());
+    }
+
+    public function test_a_continue_on_a_driver_that_cannot_reopen_a_conversation_is_refused_by_its_reason(): void
+    {
+        $receipt = $this->start('request-1', 'Review plan 7');
+        $this->endAttempt($receipt);
+        $this->endSessionOf($receipt);
+
+        $this->assertThrows(
+            fn () => $this->continueJob($receipt, (string) Str::ulid(), self::CODEX),
+            DriverCapabilityUnsupported::class,
+            CodexHeadlessCapabilities::NO_EXACT_RESUME,
+        );
     }
 
     public function test_a_finished_job_refuses_with_a_send_command_and_a_live_one_as_uncertain(): void
@@ -122,10 +144,10 @@ final class HelperContinueTest extends TestCase
         $this->app->make(Dispatcher::class)->dispatch(new LaunchEnded($job->assignmentIdentity()));
     }
 
-    private function continueJob(HelperReceipt $receipt, string $requestId): HelperReceipt
+    private function continueJob(HelperReceipt $receipt, string $requestId, string|null $driverKey = null): HelperReceipt
     {
         return $this->commands()->run(
-            new ContinueHelperCommand($requestId, $receipt->identityId, $receipt->jobId, 'default', null),
+            new ContinueHelperCommand($requestId, $receipt->identityId, $receipt->jobId, 'default', $driverKey),
         );
     }
 
