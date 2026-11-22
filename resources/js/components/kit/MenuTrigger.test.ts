@@ -52,8 +52,8 @@ describe('MenuTrigger', () => {
     });
 
     it('shows a spinner while it is busy', () => {
-        expect(trigger({ busy: true }).get('button').find('[aria-hidden="true"].animate-spin').exists()).toBe(true);
-        expect(trigger().get('button').find('.animate-spin').exists()).toBe(false);
+        expect(trigger({ busy: true }).get('button').find('[aria-hidden="true"].spinner').exists()).toBe(true);
+        expect(trigger().get('button').find('.spinner').exists()).toBe(false);
     });
 
     it('takes the hover fill and a 2px focus outline at offset 1 as a drop target', () => {

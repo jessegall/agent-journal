@@ -8,7 +8,7 @@ const visit = vi.fn();
 
 vi.mock('@inertiajs/vue3', () => ({
     Link: { props: ['href'], template: '<a :href="href"><slot /></a>' },
-    router: { visit: (...values: unknown[]) => visit(...values) },
+    router: { on: vi.fn(), visit: (...values: unknown[]) => visit(...values) },
 }));
 
 const { default: RecordMenu } = await import('./RecordMenu.vue');

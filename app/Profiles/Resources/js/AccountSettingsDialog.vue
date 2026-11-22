@@ -135,17 +135,12 @@ watch(
     () => props.isOpen,
     (isOpen) => {
         if (isOpen) {
+            // It opens on the saved name, with the focus on its close button, so nothing is selected or typed over.
             isAskingToRemove.value = false;
+            revert();
         }
     },
 );
-
-/**
- * Opens on the saved name; the focus stays where the dialog puts it, so nothing is selected or typed over.
- */
-function opened(): void {
-    revert();
-}
 
 /**
  * Escape in an edited name puts the saved name back and keeps the dialog open; a second Escape closes it.
@@ -244,8 +239,8 @@ function signInAgain(): void {
     <Dialog
         :open="isOpen"
         :title="isAskingToRemove ? 'Remove this account?' : account.label"
+        initial-focus="button[aria-label='Close']"
         @close="emit('close')"
-        @opened="opened"
     >
         <template v-if="isAskingToRemove">
             <div class="flex flex-col gap-3">

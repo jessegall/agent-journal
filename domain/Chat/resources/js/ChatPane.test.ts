@@ -10,7 +10,7 @@ const reads: Array<Record<string, unknown>> = [];
 
 vi.mock('@inertiajs/vue3', () => ({
     usePage: () => ({ props: { currentUser: { id: 'user-1' } } }),
-    router: {
+    router: { on: vi.fn(),
         post: (_url: string, body: Record<string, unknown>) => reads.push(body),
     },
 }));
@@ -39,6 +39,24 @@ vi.mock('./composables/useConversationIntents', () => ({
         announcement: { value: '' },
     }),
 }));
+// The timeline reads its rows from the chat's events; here they come with the conversation, so the test watches only
+// when the pane reads what it shows.
+vi.mock('./composables/useChatTimeline', async () => {
+    const { computed, ref } = await import('vue');
+
+    return {
+        useChatTimeline: (conversation: { value?: { messages?: { id: string; readByMe: boolean }[] } }) => ({
+            messages: computed(() => conversation.value?.messages ?? []),
+            unreadShown: computed(() =>
+                (conversation.value?.messages ?? []).filter((row) => !row.readByMe).map((row) => row.id),
+            ),
+            hasOlder: ref(false),
+            loadOlder: vi.fn(),
+            catchUp: vi.fn(),
+            accessEnded: ref(false),
+        }),
+    };
+});
 vi.mock('@kit/SlotSections', () => ({ default: { template: '<div />' } }));
 vi.mock('./MessageList.vue', () => ({
     default: { name: 'MessageList', template: '<ol aria-label="Messages" />' },

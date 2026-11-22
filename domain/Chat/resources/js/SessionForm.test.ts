@@ -272,9 +272,9 @@ describe('SessionForm', () => {
 
         const model = form.find('select[id$="-model"]');
         expect(model.attributes('aria-describedby')).toBe(
-            `${model.attributes('id')}-description`,
+            `${model.attributes('id')}-error`,
         );
-        expect(form.find(`#${model.attributes('id')}-description`).text()).toBe(
+        expect(form.find(`#${model.attributes('id')}-error`).text()).toBe(
             'This profile does not allow that model.',
         );
         expect(document.activeElement?.id).toBe(model.attributes('id'));

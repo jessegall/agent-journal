@@ -22,7 +22,10 @@ describe('the install line field', () => {
     });
 
     it('shows the line for a manual copy when the clipboard refuses it', async () => {
-        Object.assign(navigator, { clipboard: { writeText: vi.fn().mockRejectedValue(new Error('refused')) } });
+        Object.defineProperty(navigator, 'clipboard', {
+            value: { writeText: vi.fn().mockRejectedValue(new Error('refused')) },
+            configurable: true,
+        });
         const view = mount(InstallLineField, { props });
 
         await view.findAll('button').find((button) => button.text() === 'Copy')?.trigger('click');
@@ -34,7 +37,7 @@ describe('the install line field', () => {
 
     it('copies the line and says so, and holds the copy back while the journal cannot be reached', async () => {
         const writeText = vi.fn().mockResolvedValue(undefined);
-        Object.assign(navigator, { clipboard: { writeText } });
+        Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
         const view = mount(InstallLineField, { props });
 
         await view.findAll('button').find((button) => button.text() === 'Copy')?.trigger('click');

@@ -133,6 +133,7 @@ function windowData(
 function windowWith(canIssue: boolean) {
     return mount(ConnectProjectWindow, {
         props: { data: windowData(canIssue) },
+        global: { stubs: { teleport: true } },
     });
 }
 
@@ -223,7 +224,7 @@ describe('ConnectProjectWindow', () => {
 
         await button(wrapper, 'Revoke').trigger('click');
         await flushPromises();
-        expect(wrapper.find('dialog').text()).toContain('Revoke Owner laptop');
+        expect(wrapper.find('[role="dialog"]').text()).toContain('Revoke Owner laptop');
         expect(destroy).not.toHaveBeenCalled();
         await button(wrapper, 'Revoke connection').trigger('click');
         await flushPromises();
@@ -412,6 +413,7 @@ describe('ConnectProjectWindow', () => {
         const wrapper = mount(ConnectProjectWindow, {
             props: { data: windowData(true) },
             attachTo: document.body,
+            global: { stubs: { teleport: true } },
         });
 
         await button(wrapper, 'Revoke').trigger('click');

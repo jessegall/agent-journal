@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
-import { defineComponent, ref } from 'vue';
+import { defineComponent, nextTick, ref } from 'vue';
 import Tree from './Tree.vue';
 import TreeItem from './TreeItem.vue';
 
@@ -41,8 +41,9 @@ describe('Tree', () => {
         view.unmount();
     });
 
-    it('keeps one item in the tab order, the selected one', () => {
+    it('keeps one item in the tab order, the selected one', async () => {
         const view = mountTree();
+        await nextTick();
 
         expect(view.findAll('[role="treeitem"]').map((row) => row.attributes('tabindex'))).toEqual(['-1', '0']);
         view.unmount();

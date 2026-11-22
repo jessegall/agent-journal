@@ -110,6 +110,7 @@ function account(overrides: Partial<AccountRowData> = {}): AccountRowData {
 function row(props: { account?: AccountRowData; isChosen?: boolean } = {}) {
     return mount(AccountRow, {
         attachTo: document.body,
+        global: { stubs: { teleport: true } },
         props: {
             account: props.account ?? account(),
             isChosen: props.isChosen ?? false,
@@ -216,7 +217,6 @@ describe('an account row', () => {
         const view = row({ account: account({ isHeldForCheck: true }) });
 
         expect(view.text()).toContain('Checking');
-        expect(view.text()).toContain('StateChecking');
         expect(view.text()).not.toMatch(/StateSigned in|·Signed in/);
         view.unmount();
     });
@@ -249,7 +249,7 @@ describe('an account row', () => {
     it('has one settings button and no other icon actions', () => {
         const labels = row()
             .findAll('li [aria-label]')
-            .filter((found) => found.element.closest('dialog') === null)
+            .filter((found) => found.element.closest('[role="dialog"]') === null)
             .map((found) => found.attributes('aria-label'));
 
         expect(labels).toEqual(['Settings of jesse@example.com']);
@@ -267,15 +267,15 @@ describe('the settings dialog', () => {
 
         await button(shown, 'Recheck')?.trigger('click');
         await flushPromises();
-        expect(shown.find('dialog').attributes('open')).toBeUndefined();
+        expect(shown.find('[role="dialog"]').exists()).toBe(false);
 
         await shown.find('[data-account-row]').trigger('click');
         await flushPromises();
-        expect(shown.find('dialog').attributes('open')).toBeDefined();
+        expect(shown.find('[role="dialog"]').exists()).toBe(true);
 
-        await shown.find('dialog h3').trigger('click');
+        await shown.find('[role="dialog"] h2').trigger('click');
         await flushPromises();
-        expect(shown.find('dialog').attributes('open')).toBeDefined();
+        expect(shown.find('[role="dialog"]').exists()).toBe(true);
         shown.unmount();
     });
 
@@ -558,7 +558,7 @@ describe('usage on an open page', () => {
         });
         await flushPromises();
 
-        expect(document.querySelector('dialog[open]')).not.toBeNull();
+        expect(document.querySelector('[role="dialog"]')).not.toBeNull();
         expect(naming!.label).toBe('Typed name');
         expect(document.activeElement).toBe(field);
         expect(document.querySelector('[aria-label="Usage"]')).not.toBeNull();

@@ -8,7 +8,9 @@ import type {
 } from '@generated/types/accounts';
 import Button from '@kit/Button';
 import Dialog from '@kit/Dialog';
+import DialogHeader from '@kit/DialogHeader';
 import Spinner from '@kit/Spinner';
+import StepBars from '@kit/StepBars';
 import { computed, ref, useId, watch } from 'vue';
 import ChooseSignIn from './ChooseSignIn.vue';
 import ChosenSignIn from './ChosenSignIn.vue';
@@ -356,13 +358,14 @@ function cancelAndClose(): void {
 </script>
 
 <template>
-    <Dialog
-        :open="request !== null"
-        title="Add an account"
-        :step-count="3"
-        :step="step"
-        @close="askToClose"
-    >
+    <Dialog :open="request !== null" title="Add an account" @close="askToClose">
+        <template #header>
+            <DialogHeader title="Add an account" @close="askToClose">
+                <template #trailing>
+                    <StepBars :count="3" :step="step" />
+                </template>
+            </DialogHeader>
+        </template>
         <template v-if="isAskingToClose && shownMethod !== undefined">
             <ChosenSignIn :driver="shownDriver" :method="shownMethod" />
             <div

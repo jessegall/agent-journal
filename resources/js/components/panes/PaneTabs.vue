@@ -106,6 +106,14 @@ function openMenuFromKey(event: KeyboardEvent, tab: PaneTab): void {
     menu.value = { tab, left: box.left, top: box.bottom };
 }
 
+/**
+ * A tab's keys besides Enter, Space and Delete: the menu key opens its menu, the arrows, Home and End move along.
+ */
+function answerKey(event: KeyboardEvent, tab: PaneTab): void {
+    openMenuFromKey(event, tab);
+    void pickByKey(event, tab);
+}
+
 async function pickByKey(event: KeyboardEvent, tab: PaneTab): Promise<void> {
     const place = props.tabs.indexOf(tab);
     const last = props.tabs.length - 1;
@@ -184,11 +192,10 @@ onBeforeUnmount(() => watcher?.disconnect());
                     @mousedown.middle.prevent
                     @auxclick="closeByMiddleClick($event, tab.key)"
                     @contextmenu.prevent="openMenu($event, tab)"
-                    @keydown="openMenuFromKey($event, tab)"
                     @keydown.enter.prevent="emit('pick', tab.key)"
                     @keydown.space.prevent="emit('pick', tab.key)"
                     @keydown.delete.prevent="emit('close', tab.key)"
-                    @keydown="pickByKey($event, tab)"
+                    @keydown="answerKey($event, tab)"
                 >
                     <Icon :name="tab.icon" :size="13" />
                     <span v-show="!isCompact || tab.isActive">{{

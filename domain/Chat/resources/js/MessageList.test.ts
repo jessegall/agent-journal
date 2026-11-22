@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import type { ConversationIntent } from './composables/useConversationIntents';
 
-vi.mock('@inertiajs/vue3', () => ({ Link: { template: '<a><slot /></a>' } }));
+vi.mock('@inertiajs/vue3', () => ({ Link: { template: '<a><slot /></a>' }, router: { on: vi.fn() } }));
 vi.mock('@generated/routes/chat', () => ({ history: () => ({ url: '/chat/history' }) }));
 
 const { default: MessageList } = await import('./MessageList.vue');

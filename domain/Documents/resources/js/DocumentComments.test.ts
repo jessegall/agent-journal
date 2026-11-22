@@ -60,6 +60,7 @@ describe('the document comments', () => {
         });
         const view = mountPart(part());
 
+        await view.get('[data-line="2"] button').trigger('click');
         await view.get('[data-line="2"] button').trigger('keydown', { key: 'c' });
         await view.get('textarea').setValue('Why this?');
         const sendButton = view.findAll('button').find((button) => button.text() === 'Send');

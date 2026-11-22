@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onUpdated, provide, useTemplateRef, watch } from 'vue';
+import { nextTick, onMounted, onUpdated, provide, useTemplateRef, watch } from 'vue';
 import { listBoxActiveKey } from './listBoxActive';
 
 /**
@@ -56,7 +56,7 @@ function controlKeys(event: KeyboardEvent): void {
     activeId.value = shown[(targets[event.key] + shown.length) % shown.length].id;
 }
 
-onUpdated(() => {
+function keepAnActiveOption(): void {
     const shown = options();
 
     if (shown.some((option) => option.id === activeId.value)) {
@@ -64,7 +64,10 @@ onUpdated(() => {
     }
 
     activeId.value = shown[0]?.id ?? null;
-});
+}
+
+onMounted(keepAnActiveOption);
+onUpdated(keepAnActiveOption);
 
 watch(activeId, async (id) => {
     await nextTick();

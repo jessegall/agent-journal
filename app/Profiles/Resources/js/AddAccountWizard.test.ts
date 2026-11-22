@@ -161,6 +161,7 @@ function accountRow(id: string, label: string): AccountRowData {
 function openWizard() {
     return mount(AddAccountWizard, {
         attachTo: document.body,
+        global: { stubs: { teleport: true } },
         props: { request: { kind: 'new' }, methods, attempts: [], rows: [] },
     });
 }
@@ -338,6 +339,7 @@ describe('AddAccountWizard', () => {
     it('renews a key with its own words and keeps the field shut while agents finish', async () => {
         const view = mount(AddAccountWizard, {
             attachTo: document.body,
+        global: { stubs: { teleport: true } },
             props: {
                 request: {
                     kind: 'again',
@@ -572,6 +574,7 @@ describe('AddAccountWizard', () => {
         const tab = () =>
             mount(AddAccountWizard, {
                 attachTo: document.body,
+        global: { stubs: { teleport: true } },
                 props: {
                     request: {
                         kind: 'again',

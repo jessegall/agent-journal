@@ -199,6 +199,7 @@ watch(
     },
 );
 watch(isShown, readOnOpen);
+watch(isShown, readOnOpen);
 
 /**
  * Declines a question the viewer was asked; the server checks it is the respondent and records why.

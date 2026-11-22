@@ -8,7 +8,7 @@ type Callbacks = { onNetworkError: () => boolean; onHttpException: (response: { 
 const reloads: { data: Record<string, string>; callbacks: Callbacks }[] = [];
 
 vi.mock('@inertiajs/vue3', () => ({
-    router: {
+    router: { on: vi.fn(),
         reload: ({ data, ...callbacks }: { data: Record<string, string> } & Callbacks) =>
             reloads.push({ data, callbacks }),
     },

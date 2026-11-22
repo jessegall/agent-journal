@@ -6,7 +6,7 @@ import type { PhaseTaskPageData, PlanOutlineData } from '@generated/types/plans'
 const reloads: { data: Record<string, string> }[] = [];
 
 vi.mock('@inertiajs/vue3', () => ({
-    router: { reload: (options: { data: Record<string, string> }) => reloads.push(options) },
+    router: { on: vi.fn(), reload: (options: { data: Record<string, string> }) => reloads.push(options) },
     usePage: () => ({ url: '/plans/12' }),
     Link: { template: '<a><slot /></a>' },
 }));

@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
+import { nextTick } from 'vue';
 import AddWindowPopover from './AddWindowPopover.vue';
 import type { PaneWindow } from './paneLayout';
 
@@ -35,6 +36,7 @@ describe('the add window popover', () => {
 
     it('adds the active window on Enter and closes', async () => {
         const { view } = mountOpen();
+        await nextTick();
 
         await view.get('input').trigger('keydown', { key: 'ArrowDown' });
         await view.get('input').trigger('keydown', { key: 'Enter' });

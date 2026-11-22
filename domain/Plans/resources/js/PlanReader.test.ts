@@ -5,7 +5,7 @@ import { reactive } from 'vue';
 import type { PlanCardData, PlanReaderData } from '@generated/types/plans';
 
 vi.mock('@inertiajs/vue3', () => ({
-    router: { reload: vi.fn() },
+    router: { on: vi.fn(), reload: vi.fn() },
     useForm: () => reactive({ errors: {}, processing: false, submit: vi.fn() }),
     Link: { template: '<a><slot /></a>' },
 }));

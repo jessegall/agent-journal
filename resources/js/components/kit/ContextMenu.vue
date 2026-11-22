@@ -50,7 +50,11 @@ async function openAt(x: number, y: number): Promise<void> {
 function isOverSelectedText(target: Node): boolean {
     const selection = window.getSelection();
 
-    return selection !== null && !selection.isCollapsed && selection.containsNode(target, true);
+    if (selection === null || selection.isCollapsed || selection.rangeCount === 0) {
+        return false;
+    }
+
+    return selection.getRangeAt(0).intersectsNode(target);
 }
 
 function openFromPointer(event: MouseEvent): void {

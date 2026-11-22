@@ -565,11 +565,14 @@ describe('a declared layout', () => {
         });
         const rows = view.findAll('li');
 
+        const shownMenus = () =>
+            view.findAll<HTMLElement>('[role="menu"]').filter((menu) => menu.element.style.display !== 'none');
+
         await rows[1].trigger('keydown', { key: 'ContextMenu' });
-        expect(document.body.querySelector('[role="menu"]:not([hidden])')).toBeNull();
+        expect(shownMenus()).toHaveLength(0);
 
         await rows[0].trigger('keydown', { key: 'F10', shiftKey: true });
-        expect(view.find('[role="menu"]').exists()).toBe(true);
+        expect(shownMenus()).toHaveLength(1);
         view.unmount();
     });
 

@@ -65,7 +65,7 @@ describe('the sidebar', () => {
         page.props.navigationCounts = { counts: { 'plans.open': 0 } };
 
         const view = mount(AppSidebar);
-        const headings = view.findAll('h2').map((heading) => heading.text());
+        const headings = view.find('aside').findAll('h2').map((heading) => heading.text());
 
         expect(headings).toEqual(['Work', 'Agents', 'Agents']);
         expect(view.find('[aria-current="page"]').attributes('href')).toBe('/plans?state=open');
@@ -85,7 +85,7 @@ describe('the sidebar', () => {
 
         const view = mount(AppSidebar);
 
-        expect(view.findAll('h2')).toHaveLength(0);
+        expect(view.find('aside').findAll('h2')).toHaveLength(0);
         expect(view.find('nav[aria-label="More pages"]').exists()).toBe(false);
     });
 
