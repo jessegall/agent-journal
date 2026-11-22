@@ -195,6 +195,33 @@ body.dk .win.float{box-shadow:0 14px 36px rgba(0,0,0,.55),0 1px 3px rgba(0,0,0,.
 .src{white-space:pre;padding-right:140px}
 .code .k,.code .tg{color:var(--text);font-weight:600}.code .ty{color:var(--text)}.code .s,.code .nu{color:var(--text-3)}.code .cm{color:var(--text-3);font-style:italic}
 .cpick{display:flex;align-items:center;gap:8px;margin:4px 0 8px 48px;font-family:-apple-system,'Segoe UI',system-ui,sans-serif;font-size:11.5px;color:var(--text-3)}
+/* Group chats: who speaks is told by shape (agents square, people round), name and side, not by colour. */
+.prog-codex{color:var(--text)}
+.ini{width:16px;height:16px;flex:none;border-radius:50%;border:1px solid var(--border-3);background:var(--raised);font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;color:var(--text-2);line-height:1}
+.ini.lg{width:26px;height:26px;font-size:11px}
+.avs{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;border:1px solid var(--border-2);flex:none}
+.avs svg{width:11px;height:11px}
+.stack{display:inline-flex;align-items:center}
+.stack>*{box-shadow:0 0 0 2px var(--bg);background:var(--bg)}
+.stack>*+*{margin-left:-7px}
+.msg{position:relative}
+.mact{position:absolute;top:-12px;right:-4px;display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;border-radius:6px;border:1px solid var(--border-2);background:var(--raised);font:inherit;font-size:11.5px;color:var(--text-2);cursor:pointer;opacity:0;transition:opacity .12s}
+.msg:hover .mact,.mact:focus-visible{opacity:1}
+.mact:focus-visible{outline:2px solid var(--ring);outline-offset:1px}
+.me .mact{right:auto;left:-70px;top:4px}
+.rq{display:flex;gap:6px;align-items:center;border:0;background:transparent;font:inherit;font-size:11.5px;color:var(--text-3);padding:0 0 0 8px;margin:2px 0 5px;border-left:2px solid var(--border-3);cursor:pointer;text-align:left;max-width:100%;min-width:0}
+.rq b{color:var(--text-2);font-weight:500;flex:none}
+.rq span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rq:hover{color:var(--text-2)}
+.rq:focus-visible{outline:2px solid var(--ring);outline-offset:1px}
+.sys{align-self:center;font-size:11.5px;color:var(--text-3);text-align:center;max-width:86%}
+.typing{display:flex;gap:6px;align-items:center;font-size:11.5px;color:var(--text-3)}
+.replying{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3);padding:0 0 7px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.replying span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.replying b{color:var(--text-2);font-weight:500}
+.msg.flash{outline:2px solid var(--ring);outline-offset:4px;border-radius:8px}
+.chat code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:12px}
+.whoGroup{display:flex;align-items:center;gap:10px}
 /* The quiet first line of a helper's or worker's chat: who started it, for what, who supervises it. Not a header. */
 .origin{align-self:stretch;display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-3);padding:0 2px 8px;border-bottom:1px solid var(--line)}
 .cbar,.cthread,.codefoot{font-family:-apple-system,'Segoe UI',system-ui,sans-serif;font-size:12.5px;line-height:1.45;white-space:normal}
@@ -289,6 +316,9 @@ body.dk .qm,body.dk .ctx,body.dk .hm,body.dk .keys{box-shadow:0 18px 50px rgba(0
   <symbol id="sidebar" viewBox="0 0 16 16"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M6 2.5v11"/></symbol>
   <symbol id="barup" viewBox="0 0 16 16"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M2 6h12M6 10l2-2 2 2"/></symbol>
   <symbol id="pulse" viewBox="0 0 16 16"><path d="M1.5 8h3l1.5-4 3 8 1.5-4h4"/></symbol>
+  <symbol id="knot" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.6"/><path d="M8 2.4v5.6l4.8 2.8M8 8l-4.8 2.8"/></symbol>
+  <symbol id="reply" viewBox="0 0 16 16"><path d="M6.5 4 3 7.5 6.5 11"/><path d="M3 7.5h6a4 4 0 0 1 4 4v1"/></symbol>
+  <symbol id="userplus" viewBox="0 0 16 16"><circle cx="6.5" cy="5.5" r="2.4"/><path d="M2 13.2c.4-2.4 2.1-3.7 4.5-3.7s4.1 1.3 4.5 3.7M12.5 4.5v4M10.5 6.5h4"/></symbol>
   <symbol id="keyb" viewBox="0 0 16 16"><rect x="1.5" y="4" width="13" height="8" rx="1.5"/><path d="M4 7h.1M6.5 7h.1M9 7h.1M11.5 7h.1M5 9.5h6"/></symbol>
 </defs></svg>
 
@@ -446,6 +476,7 @@ function tokens(mode){
 /* ---------- icons and sample content ---------- */
 const I=(n,c='')=>`<svg class="i ${c}" aria-hidden="true"><use href="#${n}"/></svg>`;
 const CLAUDE=(c='')=>`<svg class="i prog-claude ${c}" aria-hidden="true"><use href="#spark"/></svg>`;
+const CODEX=(c='')=>`<svg class="i prog-codex ${c}" aria-hidden="true"><use href="#knot"/></svg>`;
 const ST={work:`<span class="st" style="color:var(--text-2)"><span class="spin"></span>Working</span>`,done:`<span class="st">${I('tick','s14')}Done</span>`,
   open:`<span class="st"><span class="dot hollow"></span>Open</span>`,you:`<span class="st strong"><span class="dot plum"></span>Waits on you</span>`,
   testing:`<span class="st"><span class="dot solid"></span>Testing</span>`,failed:`<span class="st" style="color:var(--danger)">${I('alert','s14')}Failed</span>`};
@@ -563,17 +594,58 @@ const BASE=()=>[['day','Today'],['me','Can you tidy up the account settings dial
   ['ag','13:42','I\'ve asked a designer. The draft is in <a class="lk">doc 85</a>: Save now sits inside the name field and appears only once the name has changed. The work is <a class="lk">task 1702</a>.'],
   ['card','task'],['card','ask'],['me','Inside the field, Enter saves. Go.'],['ag','13:47','Done. Worker 3 is on it; I\'ll tell you when it\'s ready to test.']];
 let CONV={};
+/* Everyone who can be in a chat. Agents show their program's mark in a rounded square; people show initials in a
+   circle. That shape, the name on the first line of a run of messages, and the side (yours on the right) tell speakers
+   apart without colour, as the house style asks; only the program marks keep their own colour. */
+const MEM={you:{name:'You',kind:'you'},
+  a1:{name:'Agent 1',kind:'agent',prog:'claude',role:'Claude Code · main agent'},
+  cx1:{name:'Codex 1',kind:'agent',prog:'codex',role:'Codex agent'},
+  h262:{name:'Helper 262',kind:'agent',prog:'claude',role:'Claude Code · helper'},
+  w3:{name:'Worker 3',kind:'agent',prog:'claude',role:'Claude Code · worker'},
+  sam:{name:'Sam',kind:'person',ini:'S',role:'Teammate · online'},
+  noor:{name:'Noor',kind:'person',ini:'N',role:'Teammate · away'}};
+const OWN={main:'a1',h262:'h262',w3:'w3'};
 function freshConvs(){CONV={main:{name:'Agent 1',sub:'main agent',msgs:BASE()},
   h262:{name:'Helper 262',sub:'Designing the notifications bell',origin:'Started by Agent 1 for plan 54 · 14:01 · supervised by Agent 1',msgs:[['ag','14:02','I\'m reading the bell and toast code first.'],['ag','14:05','One question before I draw: should the bell count only what waits on you, or every unread line?']]},
-  w3:{name:'Worker 3',sub:'Task 1702 · 2 of 5 steps',origin:'Started by Agent 1 for task 1702 · 13:47 · supervised by Agent 1',msgs:[['ag','13:50','Save now sits inside the name field. Writing the test for Enter next.']]}}}
-let helpersOn=false, SUGG={};
-const activeConvs=()=>helpersOn?['main','h262','w3']:['main'];
-function chatHtml(conv){const c=CONV[conv];return (c.origin?`<div class="origin">${I('users','s14')}<span>${c.origin}</span></div>`:'')+c.msgs.map(m=>m[0]==='day'?`<div class="day">${m[1]}</div>`:m[0]==='me'?`<div class="me">${m[1]}</div>`
-  :m[0]==='ag'?`<div class="ag"><div class="m">${conv==='main'?CLAUDE('s14'):I('users','s14')}${c.name} · ${m[1]}</div>${m[2]}</div>`
-  :m[0]==='sugg'?suggHtml(m[1])
-  :m[1]==='task'?`<div class="rowcard" data-item="task:1702">${I('todos')}<div class="t">Account settings dialog: Save inside the name field<small>Task 1702 · Worker 3 · 2 of 5 steps</small></div>${ST.work}</div>`
-  :m[0]==='code'?codeCardHtml(m[1])
-  :`<div class="rowcard">${I('ask')}<div class="t">Which save behaviour for the name?<small>Question · asked 13:44</small></div><button class="btn sm primary">Answer</button></div>`).join('')}
+  w3:{name:'Worker 3',sub:'Task 1702 · 2 of 5 steps',origin:'Started by Agent 1 for task 1702 · 13:47 · supervised by Agent 1',msgs:[['ag','13:50','Save now sits inside the name field. Writing the test for Enter next.']]},
+  /* A group chat: the user, a Claude agent, a Codex agent and a second person. Everyone receives every message. */
+  g1:{name:'Bell design',members:['you','a1','cx1','sam'],origin:'You started this chat with Agent 1 and Codex 1 · everyone in it receives every message',msgs:[
+    ['day','Today'],
+    ['me','Can you two settle where the bell lives? Agent 1 drafts, Codex 1 checks it against the code.'],
+    ['say','a1','14:10','I\'d put the bell in the status bar, and in the agent bar when the status bar is off.'],
+    ['say','cx1','14:11','Agreed on the place. One catch: <code>AgentBar.vue</code> only takes slots, so the fallback needs a slot of its own.',2],
+    ['say','a1','14:11','Good catch. I\'ll add a bell slot to the task.',3],
+    ['sys','You added Sam · Sam can read the chat so far and receives every new message'],
+    ['say','sam','14:14','From the support side: the count should only include what waits on you, not every unread line.'],
+    ['say','cx1','14:15','That matches Helper 262\'s question. I\'ll make the count filter on waits-on-you.',6]]}};
+  CONV.g1.sub='Group · '+members('g1').map(m=>MEM[m].name).join(', ')}
+let helpersOn=false, groupOn=false, SUGG={}, REPLYTO=null;
+const activeConvs=()=>['main',...(helpersOn?['h262','w3']:[]),...(groupOn?['g1']:[])];
+/* A chat's members: a one-to-one chat is the user and its own agent until someone is added. */
+const members=conv=>CONV[conv].members||['you',OWN[conv]];
+const isGroup=conv=>members(conv).length>2;
+const speaker=(conv,m)=>m[0]==='me'?'you':m[0]==='ag'?OWN[conv]:m[1];
+function avatar(id,big){const p=MEM[id];if(p.kind==='person'||p.kind==='you')return `<span class="ini ${big?'lg':''}" title="${p.name}${p.role?' · '+p.role:''}">${p.kind==='you'?'Y':p.ini}</span>`;
+  const mark=p.prog==='codex'?CODEX(big?'':'s14'):p.prog==='claude'&&id==='a1'?CLAUDE(big?'':'s14'):I('users',big?'':'s14');
+  return big?`<span class="av" title="${p.name} · ${p.role}">${mark}</span>`:`<span class="avs" title="${p.name} · ${p.role}">${mark}</span>`}
+const stack=conv=>`<span class="stack">${members(conv).slice(0,4).map(m=>avatar(m,true)).join('')}${members(conv).length>4?`<span class="ini lg">+${members(conv).length-4}</span>`:''}</span>`;
+const plain=h=>String(h).replace(/<[^>]+>/g,'');
+function snippet(conv,j){const m=CONV[conv].msgs[j];if(!m)return '';const txt=plain(m[0]==='me'?m[1]:m[0]==='ag'?m[2]:m[3]);return txt.length>64?txt.slice(0,64)+'…':txt}
+/* A reply carries a quiet quote of the message it answers; clicking it scrolls there. */
+const quote=(conv,j)=>`<button class="rq" data-jump="${j}" title="Show the message this answers">${I('reply','s14')}<b>${MEM[speaker(conv,CONV[conv].msgs[j])].name}</b><span>${esc(snippet(conv,j))}</span></button>`;
+function chatHtml(conv){const c=CONV[conv],grp=isGroup(conv);let last=null;
+  return (c.origin?`<div class="origin">${I('users','s14')}<span>${c.origin}</span></div>`:'')+c.msgs.map((m,i)=>{const k=m[0];
+    if(k==='day'){last=null;return `<div class="day">${m[1]}</div>`}
+    if(k==='sys'){last=null;return `<div class="sys">${m[1]}</div>`}
+    if(k==='typing'){return `<div class="typing">${avatar(m[1])}${MEM[m[1]].name} is writing…</div>`}
+    if(k==='sugg'){last=null;return suggHtml(m[1])}
+    if(k==='code'){last='you';return codeCardHtml(m[1])}
+    if(k==='card'){last=null;return m[1]==='task'?`<div class="rowcard" data-item="task:1702">${I('todos')}<div class="t">Account settings dialog: Save inside the name field<small>Task 1702 · Worker 3 · 2 of 5 steps</small></div>${ST.work}</div>`
+      :`<div class="rowcard">${I('ask')}<div class="t">Which save behaviour for the name?<small>Question · asked 13:44</small></div><button class="btn sm primary">Answer</button></div>`}
+    const who=speaker(conv,m),rt=k==='me'?m[2]:k==='say'?m[4]:null,act=`<button class="mact" data-reply="${conv}:${i}" title="Reply to this message" aria-label="Reply to ${MEM[who].name}">${I('reply','s14')}Reply</button>`;
+    if(who==='you'){last='you';return `<div class="me msg" data-mi="${i}">${rt!=null?quote(conv,rt):''}${m[1]}${act}</div>`}
+    const time=k==='ag'?m[1]:m[2],text=k==='ag'?m[2]:m[3],head=!grp||last!==who||rt!=null;last=who;
+    return `<div class="ag msg" data-mi="${i}">${head?`<div class="m">${avatar(who)}<span style="color:var(--text-2);font-weight:500">${MEM[who].name}</span>${grp&&MEM[who].kind!=='you'?`<span>· ${MEM[who].kind==='person'?'person':MEM[who].prog==='codex'?'Codex':'Claude Code'}</span>`:''}<span>· ${time}</span></div>`:''}${rt!=null?quote(conv,rt):''}${text}${act}</div>`}).join('')}
 /* The journal's own suggestion, not the agent's words: dashed, marked J, one button, dismissable. */
 function suggHtml(conv){const s=SUGG[conv]||'offered',n=CONV[conv].name;
   if(s==='accepted')return `<div class="sugg"><span class="jm" title="From the journal">J</span><div class="t">${n} has its own window<small>Close it any time; its chat keeps every message.</small></div><button class="btn sm" data-sugg="show:${conv}">Show it</button></div>`;
@@ -581,8 +653,11 @@ function suggHtml(conv){const s=SUGG[conv]||'offered',n=CONV[conv].name;
   return `<div class="sugg"><span class="jm" title="From the journal">J</span><div class="t">${n} started: ${CONV[conv].sub.toLowerCase()}<small>Suggested by the journal · follow it and chat with it in a window</small></div><button class="btn sm bordered" data-sugg="accept:${conv}">${I('plus','s14')}Add a window</button><button class="ib sm" data-sugg="dismiss:${conv}" title="Not now" aria-label="Not now">${I('close','s14')}</button></div>`}
 /* A chat has no header of its own. Which conversation it shows is switched from the agent bar (the plain column) or
    from the window's own bar (a chat window): the chat is either plain or a proper window, never a framed box between. */
-const STATE_LINE={main:'Working on task 1702',h262:'Designing the notifications bell',w3:'Writing the test for Enter'};
-const composer=conv=>`<div class="composer"><textarea placeholder="Message ${CONV[conv].name}…" data-compose="${conv}" aria-label="Message ${CONV[conv].name}"></textarea><div class="r"><span class="ib sm">${I('clip','s14')}</span><span style="flex:1"></span><span class="chip faint">Opus</span><button class="btn sm primary" data-send="${conv}">${I('arrow','s14')}Send</button></div></div>`;
+const STATE_LINE={main:'Working on task 1702',h262:'Designing the notifications bell',w3:'Writing the test for Enter',g1:'Agent 1 working · Codex 1 reading'};
+/* In a group the composer says the message goes to everyone, and shows what it replies to when it does. */
+const composer=conv=>{const grp=isGroup(conv),ph=grp?`Message everyone in ${CONV[conv].name}… @name asks one of them`:`Message ${CONV[conv].name}…`;
+  const rp=REPLYTO&&REPLYTO.conv===conv?`<div class="replying">${I('reply','s14')}<span>Replying to <b>${MEM[speaker(conv,CONV[conv].msgs[REPLYTO.i])].name}</b> · “${esc(snippet(conv,REPLYTO.i))}”</span><button class="ib sm" data-unreply aria-label="Stop replying">${I('close','s14')}</button></div>`:'';
+  return `<div class="composer">${rp}<textarea placeholder="${esc(ph)}" data-compose="${conv}" aria-label="${esc(ph)}"></textarea><div class="r"><span class="ib sm">${I('clip','s14')}</span><span style="flex:1"></span><span class="chip faint">Opus</span><button class="btn sm primary" data-send="${conv}">${I('arrow','s14')}Send</button></div></div>`};
 const chatView=(conv,scope,limit)=>`<div class="wchat" style="max-width:${limit?readW:9999}px"><div class="chat">${chatHtml(conv)}</div>${composer(conv)}</div>`;
 
 /* ---------- shared state ---------- */
@@ -732,11 +807,14 @@ function side(){const navs=[['home','Home',1],['todos','Tasks'],['plan','Plans']
    +`<div class="sidefoot"><button class="ib" id="railBtn" title="${ui.rail?'Show the sidebar':'Fold the sidebar to icons'} · ⌘B" aria-label="${ui.rail?'Show the sidebar':'Fold the sidebar to icons'}">${I('sidebar','s14')}</button></div>`}
 const unread=()=>NOTES.filter(n=>!n.read).length;
 /* The agent bar names whom the main chat talks to. Once helpers or workers run, that name is the switcher. */
-function abar(){const k=A.mainConv,c=CONV[k],many=activeConvs().length>1;
-  const who=`<span class="av">${k==='main'?CLAUDE():I('users')}</span><div class="who"><span>${k==='main'?'Agent 1 · main':c.name}</span><small>${k==='main'?'Claude Code · Opus · Work (Max)':c.sub}</small></div>`;
-  return `<div class="agent">${many?`<button class="whoBtn" data-convmenu="main" aria-haspopup="menu" title="Switch conversation">${who}${I('caret','s14')}</button>`:who}</div>
-  <span class="st" style="margin-left:12px;color:var(--text-2)"><span class="spin"></span>${STATE_LINE[k]}</span>
-  <div class="r"><button class="btn sm bordered">${I('power','s14')}Stop</button>${!ui.status&&NOTES.length?`<button class="ib" data-bell title="Notifications" aria-label="Notifications" style="position:relative">${I('bell','s14')}${unread()?`<span class="badge">${unread()}</span>`:''}</button>`:''}<button class="ib" id="addBtn" title="Add a window · Space or ⌘K" aria-label="Add a window (Space)">${I('plus')}</button><button class="ib" id="homeBtn" title="Home" aria-label="Home menu" aria-expanded="${hm}">${I('layout','s14')}</button><button class="ib" id="hideBar" title="Hide the agent bar · ⌘⇧B" aria-label="Hide the agent bar">${I('barup','s14')}</button></div>`}
+function abar(){const k=A.mainConv,c=CONV[k],grp=isGroup(k),ms=members(k);
+  /* A group names itself and its members; the count opens who is in it, the person-plus adds someone. */
+  const who=grp?`${stack(k)}<div class="who"><span>${c.name}</span><small>${ms.map(m=>MEM[m].name).join(', ')}</small></div>`
+    :`${avatar(OWN[k],true)}<div class="who"><span>${k==='main'?'Agent 1 · main':c.name}</span><small>${k==='main'?'Claude Code · Opus · Work (Max)':c.sub}</small></div>`;
+  return `<div class="agent"><button class="whoBtn" data-convmenu="main" aria-haspopup="menu" title="Switch conversation, or add someone to this chat">${who}${I('caret','s14')}</button>
+    ${grp?`<button class="btn sm" data-members="${k}" aria-haspopup="menu" title="Who is in this chat">${I('users','s14')}${ms.length} in this chat</button><button class="ib" data-addto="${k}" title="Add someone to this chat" aria-label="Add someone to this chat">${I('userplus','s14')}</button>`:''}</div>
+  <span class="st" style="margin-left:6px;color:var(--text-2)"><span class="spin"></span>${STATE_LINE[k]||''}</span>
+  <div class="r">${grp?'':`<button class="btn sm bordered">${I('power','s14')}Stop</button>`}${!ui.status&&NOTES.length?`<button class="ib" data-bell title="Notifications" aria-label="Notifications" style="position:relative">${I('bell','s14')}${unread()?`<span class="badge">${unread()}</span>`:''}</button>`:''}<button class="ib" id="addBtn" title="Add a window · Space or ⌘K" aria-label="Add a window (Space)">${I('plus')}</button><button class="ib" id="homeBtn" title="Home" aria-label="Home menu" aria-expanded="${hm}">${I('layout','s14')}</button><button class="ib" id="hideBar" title="Hide the agent bar · ⌘⇧B" aria-label="Hide the agent bar">${I('barup','s14')}</button></div>`}
 function sbar(){const n=unread();return `<span class="st"><span class="spin"></span>Agent 1 working</span><span>${helpersOn?'2 helpers and workers running':'1 worker running'}</span><span class="st strong"><span class="dot plum"></span>1 waits on you</span><span class="gap"></span>
   <span><kbd>⌘K</kbd> go to anything</span><span><kbd>⌘1</kbd> Project</span><span><kbd>⌘2</kbd> Activity</span><button class="ib" data-keys title="Keyboard shortcuts · ?" aria-label="Keyboard shortcuts">${I('keyb','s14')}</button><button class="ib" data-bell title="Notifications" aria-label="Notifications, ${n} unread">${I('bell','s14')}${n?`<span class="badge">${n}</span>`:''}</button>`}
 function title(w){const same=A.wins.filter(x=>sameKind(x,w));return meta(w).t+(same.length>1?' '+(same.indexOf(w)+1):'')}
