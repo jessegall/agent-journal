@@ -13,6 +13,7 @@ use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
+use App\Ui\Contracts\NativePartProvider;
 use Domain\Sequences\Commands\StartSequence;
 use Domain\Sequences\Policies\SequencePolicy;
 use Domain\Sequences\Skills\SequencesSkill;
@@ -21,6 +22,7 @@ use Domain\Sequences\States\Support\FollowingSequenceStateReference;
 
 final class SequencesDomain extends Domain implements
     CommandProvider,
+    NativePartProvider,
     PolicyProvider,
     SkillProvider,
     StateProvider
@@ -56,6 +58,16 @@ final class SequencesDomain extends Domain implements
     public function requires(): array
     {
         return [];
+    }
+
+    /**
+     * The native part a declared page mounts to edit the steps of a sequence definition.
+     *
+     * @return list<string>
+     */
+    public function nativeParts(): array
+    {
+        return ['SequenceEditor.vue'];
     }
 
     public function exports(): Exports
