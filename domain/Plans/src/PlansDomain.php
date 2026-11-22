@@ -79,7 +79,6 @@ use Domain\Plans\Resolvers\WaitingPlansCount;
 use Domain\Plans\Resolvers\WaitingPlansSection;
 use Domain\Plans\Support\Assignments\PlanTaskPoolFactory;
 use Domain\Plans\Support\Mcp\HeldPlansOverview;
-use Domain\Plans\Support\Mcp\PlanSearch;
 use Domain\Plans\Support\PhaseAssignmentProvider;
 use Domain\Plans\Support\PhaseRecords;
 use Domain\Plans\Support\PlanAssignmentProvider;
@@ -356,10 +355,5 @@ final class PlansDomain extends Domain implements
                 PlanReferenceRecognizer::class,
             ),
         ];
-    }
-
-    public function searchContributions(): array
-    {
-        return [PlanSearch::class];
     }
 }

@@ -15,5 +15,4 @@ interface McpRegistration
 
     public function registerOverviewContribution(string $className): void;
 
-    public function registerSearchContribution(string $className): void;
 }

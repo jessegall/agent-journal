@@ -11,9 +11,6 @@ use App\Contracts\ReflectorFactory;
 use App\CoreApi;
 use App\CoreCommands;
 use App\CoreMcpTools;
-use App\Mcp\Contracts\SearchEntry;
-use App\Mcp\Support\DeclaredSearch;
-use App\Mcp\Support\JournalSearch;
 use App\Mcp\Support\McpCatalogue;
 use App\Support\CommandRegistry;
 use App\Support\CommandRuleRegistry;
@@ -100,10 +97,6 @@ class DomainServiceProvider extends ServiceProvider
             SearchDiagnostics::class,
             fn (Application $app): SearchDiagnostics => new SearchDiagnostics($app->make('log')->channel('search')),
         );
-
-        $this->app->bind(SearchEntry::class, fn (Application $app): SearchEntry => $app->make(
-            $app->make('config')->boolean('search.declared') ? DeclaredSearch::class : JournalSearch::class,
-        ));
 
         $classNames = Psr4ClassNames::fromComposer();
 

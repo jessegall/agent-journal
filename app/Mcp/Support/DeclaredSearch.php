@@ -7,9 +7,10 @@ namespace App\Mcp\Support;
 use App\Contracts\ServedEnvironment;
 use App\Enums\SearchSurface;
 use App\Mcp\Contracts\Continuations as ContinuationsContract;
-use App\Mcp\Contracts\SearchEntry;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
+use App\Mcp\Exceptions\ContinuationInvalid;
+use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
 use App\Support\SearchCoordinator;
@@ -21,15 +22,28 @@ use App\Values\SearchAnswer;
 use App\Values\SearchOwner;
 use App\Values\SearchReader;
 use App\Values\SearchRequest;
-use Illuminate\Contracts\JsonSchema\JsonSchema;
 
 /**
  * The search tool over the sources the domains declare: words with an optional scope and limit, a continuation, or
  * a discovery page of the sources the caller may search. The answer names its status and the one next action.
  */
-final readonly class DeclaredSearch implements SearchEntry
+final readonly class DeclaredSearch
 {
+    public const string TOOL = 'search';
+
     private const string DISCOVERY_SELECTOR = 'discover';
+
+    /**
+     * The arguments of the search contract that came before, refused with the current ones named.
+     */
+    private const array RETIRED_ARGUMENTS = ['types', 'page'];
+
+    /**
+     * The selector the search contract that came before signed its cursors with.
+     */
+    private const string OBSOLETE_SELECTOR = '';
+
+    private const string CURRENT_ARGUMENTS = 'query, within, limit, continuation, discover or prefix';
 
     public function __construct(
         private SearchCoordinator $coordinator,
@@ -39,35 +53,18 @@ final readonly class DeclaredSearch implements SearchEntry
         private ServedEnvironment $environment,
     ) {}
 
-    public function schema(JsonSchema $schema): array
-    {
-        return [
-            'query' => $schema->string(),
-            'within' => $schema->string()->max(200),
-            'limit' => $schema->integer()->min(1)->max(SearchRequest::LIMIT_MAXIMUM),
-            'continuation' => $schema->string(),
-            'discover' => $schema->boolean(),
-            'prefix' => $schema->string()->max(64),
-        ];
-    }
-
-    public function description(): string
-    {
-        return 'Search records and passages.';
-    }
-
     public function search(ToolArguments $arguments): ToolResult
     {
+        foreach (self::RETIRED_ARGUMENTS as $retired) {
+            if ($arguments->sent($retired)) {
+                throw ToolArgumentInvalid::for($retired, self::CURRENT_ARGUMENTS);
+            }
+        }
+
         $continuation = $arguments->optionalText('continuation');
 
-        if ($continuation !== null && self::isDiscoveryCursor($continuation)) {
-            $read = $this->continuations->open($continuation, JournalSearch::TOOL, self::DISCOVERY_SELECTOR);
-
-            return $this->discover(
-                (string) $read->filters['prefix'],
-                (int) $read->filters['limit'],
-                (string) $read->filters['after'],
-            );
+        if ($continuation !== null && self::isSignedCursor($continuation)) {
+            return $this->signedCursor($continuation);
         }
 
         $request = SearchRequest::parse(
@@ -86,14 +83,35 @@ final readonly class DeclaredSearch implements SearchEntry
         return $this->answer($this->coordinator->search($this->owner(), $this->reader(), $request));
     }
 
+    /**
+     * A signed two-part cursor: the next discovery page, or a cursor of the search contract that came before,
+     * which answers restart; a cursor not issued to this caller is refused.
+     */
+    private function signedCursor(string $cursor): ToolResult
+    {
+        try {
+            $read = $this->continuations->open($cursor, self::TOOL, self::DISCOVERY_SELECTOR);
+        } catch (ContinuationInvalid) {
+            $this->continuations->open($cursor, self::TOOL, self::OBSOLETE_SELECTOR);
+
+            return $this->answer(SearchAnswer::restart());
+        }
+
+        return $this->discover(
+            (string) $read->filters['prefix'],
+            (int) $read->filters['limit'],
+            (string) $read->filters['after'],
+        );
+    }
+
     private function discover(string $prefix, int $limit, string|null $after): ToolResult
     {
         $page = $this->eligibility->discover($this->reader(), $prefix, $limit, $after);
         $next = [];
 
         if ($page->hasMore()) {
-            $next[] = new NextAction(JournalSearch::TOOL, ['continuation' => $this->continuations->issue(
-                new Continuation(JournalSearch::TOOL, self::DISCOVERY_SELECTOR, [
+            $next[] = new NextAction(self::TOOL, ['continuation' => $this->continuations->issue(
+                new Continuation(self::TOOL, self::DISCOVERY_SELECTOR, [
                     'prefix' => $prefix,
                     'limit' => $limit,
                     'after' => $page->nextAfter,
@@ -138,15 +156,15 @@ final readonly class DeclaredSearch implements SearchEntry
                 fn (DeclaredSearchable $source) => self::sourceOf($source),
                 $answer->scope->sources,
             );
-            $next[] = new NextAction(JournalSearch::TOOL, ScopeResolution::DISCOVERY_ACTION);
+            $next[] = new NextAction(self::TOOL, ScopeResolution::DISCOVERY_ACTION);
         }
 
         if ($answer->continuation !== null) {
-            $next[] = new NextAction(JournalSearch::TOOL, ['continuation' => $answer->continuation]);
+            $next[] = new NextAction(self::TOOL, ['continuation' => $answer->continuation]);
         }
 
         foreach ($answer->narrowerSearches() as $arguments) {
-            $next[] = new NextAction(JournalSearch::TOOL, $arguments);
+            $next[] = new NextAction(self::TOOL, $arguments);
         }
 
         return ToolResult::ok($fields, $next);
@@ -166,7 +184,7 @@ final readonly class DeclaredSearch implements SearchEntry
             $this->agent->sessionId,
             ActorContext::forAgent($this->agent->agentId),
             implode(',', $this->environment->environmentIds()),
-            JournalSearch::TOOL,
+            self::TOOL,
             SearchSurface::AgentTool,
         );
     }
@@ -177,9 +195,9 @@ final readonly class DeclaredSearch implements SearchEntry
     }
 
     /**
-     * A discovery cursor is a signed continuation of two parts; a search handle has three.
+     * A signed continuation has two parts; a search handle has three.
      */
-    private static function isDiscoveryCursor(string $continuation): bool
+    private static function isSignedCursor(string $continuation): bool
     {
         return substr_count($continuation, '.') === 1;
     }

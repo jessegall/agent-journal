@@ -13,7 +13,7 @@ use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
- * In the integration build a participant's search within chat.message finds only the messages it may see, a hidden
+ * A participant's search within chat.message finds only the messages it may see, a hidden
  * message's words give no hit, and opening a hit rechecks the message's current visibility.
  */
 #[TimeLimit(5, 'Each case sends several signed MCP calls.')]
@@ -30,7 +30,6 @@ final class DeclaredMessageSearchTest extends TestCase
 
     public function test_only_visible_messages_match_and_opening_rechecks_visibility(): void
     {
-        config(['search.declared' => true]);
         $caller = TestStart::start();
         $other = TestStart::start();
         $visible = $this->askInboxOf(ActorIdentity::of($caller->agent), "A note.\nUse the violet harbor.");

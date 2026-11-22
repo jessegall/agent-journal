@@ -4,21 +4,32 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
+use App\Mcp\Contracts\Continuations;
+use App\Mcp\Support\Continuation;
+use App\Support\ActorContext;
 use App\Support\ActorIdentity;
+use Domain\Plans\Models\Plan;
+use Domain\Rules\Models\Rule;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
+use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
+/**
+ * After the cutover the ordinary search tool serves every declared source: the six scoped searches return their
+ * records, the retired types argument gets the current arguments named, and a cursor of the old contract answers
+ * restart.
+ */
+#[TimeLimit(10, 'Six scoped searches each cross a signed MCP request.')]
 final class SearchToolTest extends TestCase
 {
     use CommitsHookRows;
     use SendsMcpFrames;
     use WritesInboxMessages;
-
-    private const string SEARCH_PHRASE = 'violet harbor';
 
     private const array TABLES = [
         'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'number_groups', 'links',
@@ -26,51 +37,59 @@ final class SearchToolTest extends TestCase
         'inboxes', 'desks', 'desk_seats', 'desk_preferences', 'assignments', 'messages', 'message_attentions',
     ];
 
-    public function test_search_finds_matches_by_area_and_never_returns_a_private_message_from_another_inbox(): void
+    public function test_the_six_scoped_searches_return_their_records(): void
     {
         $caller = TestStart::start();
-        $other = TestStart::start();
-        $task = Task::factory()->create(['title' => 'Check the violet harbor']);
-        $message = $this->askInboxOf(ActorIdentity::of($caller->agent), "A note.\nUse the violet harbor.");
-        $hidden = $this->askInboxOf(ActorIdentity::of($other->agent), 'Private violet harbor coordinates.');
-        $document = $this->callMcpTool($caller, 'docs_create', [
-            'title' => 'Dispatch guide',
-            'abstract' => 'Safe dispatch instructions.',
-            'body' => "# Guide\nStart again from the violet harbor.",
-            'request_key' => 'search-document',
-        ])->assertJsonPath('result.isError', false)->json('result.structuredContent.document_id');
+        $proposer = ActorContext::forAgent(TestIds::of(70));
+        $records = [
+            'tasks.task' => Task::factory()->create(['title' => 'Check the violet harbor'])->id,
+            'plans.plan' => Plan::factory()->create(['title' => 'Violet harbor rollout'])->id,
+            'rules.rule' => Rule::create('Mind the violet harbor.', 'It matters.', null, $proposer)->id,
+            'chat.message' => $this->askInboxOf(ActorIdentity::of($caller->agent), 'Use the violet harbor.')->id,
+            'documents.document' => $this->callMcpTool($caller, 'docs_create', [
+                'title' => 'Dispatch guide',
+                'abstract' => 'Safe dispatch.',
+                'body' => "# Guide\nStart again from the violet harbor.",
+                'request_key' => 'search-document',
+            ])->json('result.structuredContent.document_id'),
+            'documents.report' => $this->callMcpTool($caller, 'reports_create', [
+                'title' => 'Violet harbor check',
+                'abstract' => 'What was checked.',
+                'body' => "# Check\nAll clear.",
+                'request_key' => 'search-report',
+            ])->json('result.structuredContent.record_id'),
+        ];
 
-        $answer = $this->callMcpTool($caller, 'search', [
-            'query' => 'violet harbor',
-            'types' => ['tasks.task', 'chat.message', 'documents.document', 'unknown.area'],
-        ])->assertJsonPath('result.isError', false)->json('result.structuredContent');
+        foreach ($records as $within => $id) {
+            $hits = $this->callMcpTool($caller, 'search', ['query' => 'violet harbor', 'within' => $within])
+                ->assertJsonPath('result.isError', false)
+                ->json('result.structuredContent.hits');
 
-        $this->assertSame(['unknown.area'], $answer['unavailable_types']);
-        $this->assertSame([
-            'tasks.task' => $task->id, 'chat.message' => $message->id, 'documents.document' => $document,
-        ], array_column($answer['hits'], 'id', 'type'));
-        $this->assertNotContains($hidden->id, array_column($answer['hits'], 'id'));
-
-        foreach ($answer['hits'] as $hit) {
-            $this->assertStringContainsString(self::SEARCH_PHRASE, $hit['excerpt']);
-            $this->assertLessThanOrEqual(200, mb_strlen($hit['excerpt']));
+            $this->assertContains($id, array_map(fn (array $hit): string => $hit['reference']['id'], $hits), $within);
         }
     }
 
-    public function test_search_continues_only_the_type_that_has_more_results(): void
+    public function test_the_retired_types_argument_names_the_current_arguments(): void
     {
         $caller = TestStart::start();
-        Task::factory()->count(3)->create(['title' => 'Temporary runway']);
-        $first = $this->callMcpTool($caller, 'search', [
-            'query' => 'runway', 'types' => ['tasks.task', 'chat.message'],
-        ])->assertJsonPath('result.structuredContent.types_with_more', ['tasks.task'])->json('result.structuredContent');
-        $next = $first['next_actions'][0];
 
-        $second = $this->callMcpTool($caller, $next['tool'], $next['arguments'])
-            ->assertJsonPath('result.isError', false)->json('result.structuredContent');
-        $this->assertCount(2, $first['hits']);
-        $this->assertCount(1, $second['hits']);
-        $this->assertSame('tasks.task', $second['hits'][0]['type']);
-        $this->assertNotContains($second['hits'][0]['id'], array_column($first['hits'], 'id'));
+        $answer = $this->callMcpTool($caller, 'search', ['query' => 'runway', 'types' => ['tasks.task']])
+            ->assertJsonPath('result.isError', true)
+            ->json('result.structuredContent');
+
+        $this->assertStringContainsString('query, within, limit', json_encode($answer, JSON_THROW_ON_ERROR));
+    }
+
+    public function test_a_cursor_of_the_old_contract_answers_restart(): void
+    {
+        $caller = TestStart::start();
+        $caller->startRequest($this->app);
+        $old = $this->app->make(Continuations::class)->issue(
+            new Continuation('search', '', ['query' => 'runway', 'types' => ['tasks.task']], 2),
+        );
+
+        $this->callMcpTool($caller, 'search', ['continuation' => $old])
+            ->assertJsonPath('result.isError', false)
+            ->assertJsonPath('result.structuredContent.search_status', 'restart');
     }
 }

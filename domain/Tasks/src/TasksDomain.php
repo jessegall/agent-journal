@@ -84,7 +84,6 @@ use Domain\Tasks\Support\Assignments\NamedTaskPoolFactory;
 use Domain\Tasks\Support\Assignments\OpenTaskPoolFactory;
 use Domain\Tasks\Support\Assignments\TaskAssigner;
 use Domain\Tasks\Support\Mcp\HeldTasksOverview;
-use Domain\Tasks\Support\Mcp\TaskSearch;
 use Domain\Tasks\Support\Skills\TasksSkill;
 use Domain\Tasks\Support\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\Support\States\Support\WorkingOnTaskStateReference;
@@ -294,11 +293,6 @@ final class TasksDomain extends Domain implements
     public function overviewContributions(): array
     {
         return [HeldTasksOverview::class];
-    }
-
-    public function searchContributions(): array
-    {
-        return [TaskSearch::class];
     }
 
     public function searchables(): array

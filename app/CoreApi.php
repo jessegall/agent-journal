@@ -988,12 +988,9 @@ use App\Mcp\Contracts\McpCall;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Contracts\OverviewContribution;
-use App\Mcp\Contracts\SearchContribution;
 use App\Mcp\Contracts\TextFields;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\OverviewSection;
-use App\Mcp\Data\SearchHit;
-use App\Mcp\Data\SearchPage;
 use App\Mcp\Data\ToolResult as McpToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\ContinuationInvalid;
@@ -1617,7 +1614,6 @@ final class CoreApi
                 SessionProvenance::class,
                 InboxNotices::class,
                 CurrentSession::class,
-                SearchContribution::class,
                 SearchProvider::class,
                 SearchAccess::class,
                 ReferenceRecognizer::class,
@@ -2022,8 +2018,6 @@ final class CoreApi
                 ReadRequest::class,
                 Continuation::class,
                 TextChunk::class,
-                SearchHit::class,
-                SearchPage::class,
                 ScoreTier::class,
                 SearchSurface::class,
                 FailureReason::class,

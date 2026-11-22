@@ -8,19 +8,16 @@ use App\Contracts\JournalToolNames;
 use App\Contracts\ReflectorFactory;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\OverviewContribution;
-use App\Mcp\Contracts\SearchContribution;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\McpClassInvalid;
 use App\Mcp\Exceptions\McpCommandMissing;
 use App\Mcp\Exceptions\McpResourceUriTaken;
-use App\Mcp\Exceptions\McpSearchTypeTaken;
 use App\Mcp\Exceptions\McpToolNameInvalid;
 use App\Mcp\Exceptions\McpToolNameTaken;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Support\CommandRegistry;
-use App\Support\RecordIdentity;
 use Laravel\Mcp\Server\Attributes\Name;
 
 /**
@@ -46,11 +43,6 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      * @var list<class-string<OverviewContribution>>
      */
     private array $overviewContributions = [];
-
-    /**
-     * @var array<string, class-string<SearchContribution>>
-     */
-    private array $searchContributions = [];
 
     public function __construct(
         private readonly CommandRegistry $commands,
@@ -118,31 +110,6 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
         }
 
         $this->overviewContributions[] = $className;
-    }
-
-    public function registerSearchContribution(string $className): void
-    {
-        if (! $this->reflectors->isSubclassOf($className, SearchContribution::class)) {
-            throw McpClassInvalid::for($className, SearchContribution::class);
-        }
-
-        $contribution = $this->reflectors->make($className)->newInstanceWithoutConstructor();
-        $type = $contribution->recordType();
-        RecordIdentity::assertKnownType($type);
-
-        if (isset($this->searchContributions[$type])) {
-            throw McpSearchTypeTaken::between($type, $this->searchContributions[$type], $className);
-        }
-
-        $this->searchContributions[$type] = $className;
-    }
-
-    /**
-     * @return array<string, class-string<SearchContribution>>
-     */
-    public function searchContributionClasses(): array
-    {
-        return $this->searchContributions;
     }
 
     /**

@@ -40,7 +40,6 @@ use Domain\Rules\Mcp\Tools\RulesListTool;
 use Domain\Rules\Policies\RulePolicy;
 use Domain\Rules\Resolvers\RulesWindowResolver;
 use Domain\Rules\Support\Mcp\ActiveRulesOverview;
-use Domain\Rules\Support\Mcp\RuleSearch;
 use Domain\Rules\Support\RuleReferenceRecognizer;
 use Domain\Rules\Support\RuleSearchAccess;
 use Domain\Rules\Support\RuleSearchProvider;
@@ -150,11 +149,6 @@ final class RulesDomain extends Domain implements
                 RuleReferenceRecognizer::class,
             ),
         ];
-    }
-
-    public function searchContributions(): array
-    {
-        return [RuleSearch::class];
     }
 
     public function skills(): array

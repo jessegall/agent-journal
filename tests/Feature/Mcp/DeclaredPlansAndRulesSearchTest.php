@@ -18,8 +18,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * In the integration build, search within plans.plan and within rules.rule finds the records the legacy search
- * types find for the same words, and a plan reference resolves in one search plus one open.
+ * Search within plans.plan and within rules.rule finds their records for the words, and a plan reference resolves
+ * in one search plus one open.
  */
 #[TimeLimit(5, 'Each case sends several signed MCP calls.')]
 final class DeclaredPlansAndRulesSearchTest extends TestCase
@@ -44,29 +44,22 @@ final class DeclaredPlansAndRulesSearchTest extends TestCase
         $this->caller = TestStart::start();
     }
 
-    public function test_within_plans_and_within_rules_find_what_the_legacy_types_find(): void
+    public function test_within_plans_and_within_rules_find_their_records(): void
     {
         $plan = Plan::factory()->create(['title' => 'Driver rollout']);
         $proposer = ActorContext::forAgent(TestIds::of(70));
         $rule = Rule::create('Keep every driver small.', 'Drivers grew.', null, $proposer);
 
-        config(['search.declared' => false]);
-        $legacyPlans = $this->idsOf('result.structuredContent.hits', ['query' => 'driver', 'types' => ['plans.plan']]);
-        $legacyRules = $this->idsOf('result.structuredContent.hits', ['query' => 'driver', 'types' => ['rules.rule']]);
 
-        config(['search.declared' => true]);
         $declaredPlans = $this->idsOf('result.structuredContent.hits', ['query' => 'driver', 'within' => 'plans.plan']);
         $declaredRules = $this->idsOf('result.structuredContent.hits', ['query' => 'driver', 'within' => 'rules.rule']);
 
-        $this->assertSame([$plan->id], $legacyPlans);
-        $this->assertSame($legacyPlans, $declaredPlans);
-        $this->assertSame([$rule->id], $legacyRules);
-        $this->assertSame($legacyRules, $declaredRules);
+        $this->assertSame([$plan->id], $declaredPlans);
+        $this->assertSame([$rule->id], $declaredRules);
     }
 
     public function test_a_plan_reference_resolves_in_one_search_and_one_open(): void
     {
-        config(['search.declared' => true]);
         $plan = Plan::factory()->create(['title' => 'One search across domain declarations']);
 
         $search = $this->callMcpTool($this->caller, 'search', ['query' => "plan {$plan->number}"])
@@ -87,6 +80,6 @@ final class DeclaredPlansAndRulesSearchTest extends TestCase
     {
         $hits = $this->callMcpTool($this->caller, 'search', $arguments)->json($path);
 
-        return array_map(fn (array $hit): string => $hit['id'] ?? $hit['reference']['id'], $hits);
+        return array_map(fn (array $hit): string => $hit['reference']['id'], $hits);
     }
 }

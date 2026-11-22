@@ -4,32 +4,36 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Mcp\Contracts\SearchEntry;
 use App\Mcp\Data\ToolResult;
-use App\Mcp\Support\JournalSearch;
+use App\Mcp\Support\DeclaredSearch;
 use App\Mcp\Support\ToolArguments;
+use App\Values\SearchRequest;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
 /**
- * The one read-only search tool; what it searches, its arguments and its description come from the search entry
- * the configuration chose.
+ * The one read-only search tool over every source the domains declare: words with an optional scope and limit, a
+ * continuation of an earlier search, or a discovery page of the sources the caller may search.
  */
 #[IsReadOnly]
-#[Name(JournalSearch::TOOL)]
+#[Name(DeclaredSearch::TOOL)]
+#[Description('Search records and passages.')]
 final class SearchTool extends JournalReadTool
 {
-    public function __construct(private readonly SearchEntry $search) {}
-
-    public function description(): string
-    {
-        return $this->search->description();
-    }
+    public function __construct(private readonly DeclaredSearch $search) {}
 
     public function schema(JsonSchema $schema): array
     {
-        return $this->search->schema($schema);
+        return [
+            'query' => $schema->string(),
+            'within' => $schema->string()->max(200),
+            'limit' => $schema->integer()->min(1)->max(SearchRequest::LIMIT_MAXIMUM),
+            'continuation' => $schema->string(),
+            'discover' => $schema->boolean(),
+            'prefix' => $schema->string()->max(64),
+        ];
     }
 
     protected function read(ToolArguments $arguments): ToolResult

@@ -112,9 +112,7 @@ use Domain\Documents\Support\DocumentSearchProvider;
 use Domain\Documents\Support\DocumentShareProvider;
 use Domain\Documents\Support\Links\DocumentLinkRecords;
 use Domain\Documents\Support\Links\ReportLinkRecords;
-use Domain\Documents\Support\Mcp\DocumentSearch;
 use Domain\Documents\Support\Mcp\OpenReportsOverview;
-use Domain\Documents\Support\Mcp\ReportSearch;
 use Domain\Documents\Support\ReportReferenceRecognizer;
 use Domain\Documents\Support\ReportSearchAccess;
 use Domain\Documents\Support\ReportSearchProvider;
@@ -309,11 +307,6 @@ final class DocumentsDomain extends Domain implements
                 ReportReferenceRecognizer::class,
             ),
         ];
-    }
-
-    public function searchContributions(): array
-    {
-        return [DocumentSearch::class, ReportSearch::class];
     }
 
     /**

@@ -55,7 +55,6 @@ use Domain\Chat\Resolvers\ChatWindowResolver;
 use Domain\Chat\Resolvers\ChosenAgentSection;
 use Domain\Chat\Resolvers\HistoryPageResolver;
 use Domain\Chat\Resolvers\InboxPageResolver;
-use Domain\Chat\Support\Mcp\MessageSearch;
 use Domain\Chat\Support\Mcp\PendingMessagesOverview;
 use Domain\Chat\Support\Skills\ChatSkill;
 
@@ -193,10 +192,5 @@ final class ChatDomain extends Domain implements
     public function searchables(): array
     {
         return [Searchable::make('message', 'Messages', MessageSearchAccess::class, MessageSearchProvider::class)];
-    }
-
-    public function searchContributions(): array
-    {
-        return [MessageSearch::class];
     }
 }
