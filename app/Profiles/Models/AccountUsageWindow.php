@@ -81,7 +81,7 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
 
         $window->fillWith($reading);
         $window->assertSaved($window->save());
-        $window->raise(new AccountUsageChanged($account->driver, $account->id));
+        $window->raise(new AccountUsageChanged($account->account_protocol, $account->id));
     }
 
     // ----------[ Queries ]----------

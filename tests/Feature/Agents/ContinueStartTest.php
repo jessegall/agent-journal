@@ -59,7 +59,7 @@ final class ContinueStartTest extends TestCase
     {
         $first = $this->startFirst();
         $session = AgentSession::query()->findOrFail($first);
-        $oldAccount = Account::query()->withoutGlobalScopes()->where('driver', 'claude-code')->sole();
+        $oldAccount = Account::query()->withoutGlobalScopes()->where('account_protocol', 'claude-code')->sole();
         $session->endAt(CarbonImmutable::now());
         $label = AccountLabel::from('Second');
         $newAccount = Account::create(HookDriver::ClaudeCode, $label, '/journal/accounts/second');

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('driver', 64);
+            $table->string('account_protocol', 64);
             $table->string('method', 32)->default('oauth');
             $table->string('label', 80);
             $table->string('label_key', 80);
@@ -37,16 +37,16 @@ return new class extends Migration
             $table->timestampTz('checked_at')->nullable();
             $table->timestampsTz();
 
-            $table->index('driver');
+            $table->index('account_protocol');
             $table->timestampTz('check_inconclusive_at')->nullable();
             $table->unsignedInteger('name_revision')->default(0);
         });
 
-        DB::statement("create unique index accounts_label_in_use on accounts (driver, label_key) where state <> 'removed'");
+        DB::statement("create unique index accounts_label_in_use on accounts (account_protocol, label_key) where state <> 'removed'");
 
         Schema::create('active_accounts', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('driver', 64)->unique();
+            $table->string('account_protocol', 64)->unique();
             $table->ulid('account_id')->nullable();
             $table->boolean('has_selected')->default(false);
             $table->unsignedBigInteger('change_number')->default(0);
@@ -55,7 +55,7 @@ return new class extends Migration
 
         Schema::create('sign_in_attempts', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('driver', 64);
+            $table->string('account_protocol', 64);
             $table->string('method', 32);
             $table->string('actor_type', 16);
             $table->string('actor_id', 64);
@@ -74,7 +74,7 @@ return new class extends Migration
             $table->timestampTz('expires_at');
             $table->timestampsTz();
 
-            $table->index(['driver', 'state']);
+            $table->index(['account_protocol', 'state']);
             $table->string('refusal', 300)->nullable();
             $table->string('result_account_id', 26)->nullable();
             $table->string('submission_key', 128)->nullable();

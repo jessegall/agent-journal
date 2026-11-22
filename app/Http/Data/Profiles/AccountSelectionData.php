@@ -22,6 +22,6 @@ final class AccountSelectionData extends Data
 
     public static function fromSelection(ActiveAccount $selection): self
     {
-        return new self($selection->driver, $selection->account_id, $selection->change_number);
+        return new self($selection->account_protocol, $selection->account_id, $selection->change_number);
     }
 }

@@ -31,7 +31,7 @@ final class PendingAttemptCleanupData extends Data
     {
         return new self(
             $attempt->id,
-            $attempt->driver,
+            $attempt->account_protocol,
             $attempt->cleanup_problem,
             $attempt->updated_at?->toIso8601String(),
             $attempt->awaitsCleanupRetry(),

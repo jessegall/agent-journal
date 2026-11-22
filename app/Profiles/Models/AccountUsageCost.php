@@ -91,7 +91,7 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
         ]);
 
         $entry->assertSaved($entry->save());
-        $entry->raise(new AccountUsageChanged($account->driver, $account->id));
+        $entry->raise(new AccountUsageChanged($account->account_protocol, $account->id));
     }
 
     // ----------[ Queries ]----------

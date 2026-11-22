@@ -43,7 +43,7 @@ use Illuminate\Support\Str;
  * attempt may still owe the deletion of what it left behind.
  *
  * @property string $id
- * @property string $driver
+ * @property string $account_protocol the account provider's protocol, which every driver of one family shares
  * @property string|null $account_id
  * @property string|null $result_account_id
  * @property SignInMethod $method
@@ -68,7 +68,7 @@ use Illuminate\Support\Str;
  * @property-read Account|null $account
  * @property-read Account|null $resultAccount
  */
-#[Fillable(['driver', 'method', 'actor_type', 'actor_id'])]
+#[Fillable(['account_protocol', 'method', 'actor_type', 'actor_id'])]
 final class SignInAttempt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -119,7 +119,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         CarbonImmutable $expiresAt,
     ): self {
         $attempt = new self([
-            'driver' => $accountOrDriver instanceof Account ? $accountOrDriver->driver : $accountOrDriver->value,
+            'account_protocol' => $accountOrDriver instanceof Account ? $accountOrDriver->account_protocol : $accountOrDriver->value,
             'method' => $method,
             ...$starter->asColumns('actor'),
         ]);
@@ -219,7 +219,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public static function driverForJournal(string $attemptId): HookDriver
     {
-        $driver = self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($attemptId)->value('driver');
+        $driver = self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($attemptId)->value('account_protocol');
 
         if (! is_string($driver)) {
             throw SignInAttemptMissing::for($attemptId);
@@ -465,7 +465,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         }
 
         $this->resetCleanupTries();
-        $this->raise(new SignInAttemptCleanupRetried($this->driver, $this->id));
+        $this->raise(new SignInAttemptCleanupRetried($this->account_protocol, $this->id));
     }
 
     /**
@@ -475,7 +475,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     {
         $this->waits_for_uses = false;
         $this->assertSaved($this->save());
-        $this->raise(new SignInAttemptReleased($this->driver, $this->id, $this->account_id));
+        $this->raise(new SignInAttemptReleased($this->account_protocol, $this->id, $this->account_id));
     }
 
     // ----------[ Answers ]----------
@@ -587,7 +587,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     public function finish(SignInState $state): void
     {
         $this->end($state);
-        $this->raise(new SignInAttemptFinished($this->driver, $this->id, $this->account_id));
+        $this->raise(new SignInAttemptFinished($this->account_protocol, $this->id, $this->account_id));
     }
 
     public function awaitsCleanupRetry(): bool
@@ -644,7 +644,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         $this->state = SignInState::Starting;
         $this->expires_at = $expiresAt;
         $this->assertSaved($this->save());
-        $this->raise(new SignInAttemptStarted($this->driver, $this->id, $this->account_id));
+        $this->raise(new SignInAttemptStarted($this->account_protocol, $this->id, $this->account_id));
     }
 
     // ----------[ Scopes ]----------
@@ -655,6 +655,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function ofDriver(Builder $query, HookDriver $driver): void
     {
-        $query->where('driver', $driver->value);
+        $query->where('account_protocol', $driver->value);
     }
 }

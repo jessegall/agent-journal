@@ -38,7 +38,7 @@ final readonly class UsageReadings
             return;
         }
 
-        $window->replaceWith($account->driver, $reading);
+        $window->replaceWith($account->account_protocol, $reading);
     }
 
     public function recordTokens(Account $account, int $generation, ThreadTokens $tokens): void
@@ -55,6 +55,6 @@ final readonly class UsageReadings
             return;
         }
 
-        $count->replaceWith($account->driver, $tokens);
+        $count->replaceWith($account->account_protocol, $tokens);
     }
 }

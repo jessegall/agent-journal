@@ -28,12 +28,12 @@ final readonly class PublishSignInChallengeHandler implements CommandHandler
             return;
         }
 
-        if (! HookDriver::from($attempt->driver)->isSignInAddress($command->address)) {
+        if (! HookDriver::from($attempt->account_protocol)->isSignInAddress($command->address)) {
             throw SignInChallengeRefused::untrustedAddress($attempt->id);
         }
 
         $challenge = new SignInChallenge($command->address, $command->code);
         $this->challenges->publish($attempt->id, $challenge, $attempt->expires_at);
-        $this->facts->publishAfterCommit(new AccountsChanged($attempt->driver, $attempt->account_id ?? $attempt->id));
+        $this->facts->publishAfterCommit(new AccountsChanged($attempt->account_protocol, $attempt->account_id ?? $attempt->id));
     }
 }

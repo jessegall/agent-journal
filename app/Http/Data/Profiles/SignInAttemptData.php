@@ -39,7 +39,7 @@ final class SignInAttemptData extends Data
     {
         return new self(
             $attempt->id,
-            $attempt->driver,
+            $attempt->account_protocol,
             $attempt->method,
             $attempt->type(),
             $attempt->account_id,

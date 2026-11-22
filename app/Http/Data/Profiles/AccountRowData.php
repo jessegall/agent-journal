@@ -59,10 +59,10 @@ final class AccountRowData extends Data
     ): self {
         return new self(
             $account->id,
-            $account->driver,
+            $account->account_protocol,
             $account->label,
             $account->name_revision,
-            SignInMethodData::fromMethod(HookDriver::from($account->driver), $account->method),
+            SignInMethodData::fromMethod(HookDriver::from($account->account_protocol), $account->method),
             $account->state,
             $account->identity,
             $account->workspace,

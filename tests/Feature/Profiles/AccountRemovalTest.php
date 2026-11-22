@@ -124,7 +124,7 @@ final class AccountRemovalTest extends TestCase
         $this->assertNull($this->account->live_writer_attempt_id);
         $this->assertSame(SignInState::Cancelled, SignInAttempt::query()->withoutGlobalScopes()->sole()->state);
         $this->assertNull(
-            ActiveAccount::query()->withoutGlobalScopes()->where('driver', 'codex')->value('account_id'),
+            ActiveAccount::query()->withoutGlobalScopes()->where('account_protocol', 'codex')->value('account_id'),
         );
         $this->assertThrows(
             fn () => ActiveAccount::lockedAccountForStart(HookDriver::Codex),

@@ -32,7 +32,7 @@ final readonly class SubmitSignInCodeHandler implements CommandHandler
 
         $attempt->assertWaitsForAnswer(CarbonImmutable::now());
 
-        if (! $this->protocols->for($attempt->driver, $attempt->method)->canTakeAnswer()) {
+        if (! $this->protocols->for($attempt->account_protocol, $attempt->method)->canTakeAnswer()) {
             throw SignInAnswerRefused::asksForNone($attempt->id);
         }
 
@@ -51,7 +51,7 @@ final readonly class SubmitSignInCodeHandler implements CommandHandler
     {
         $secret = SignInSecret::from($text);
         $key = $this->config->string('app.key');
-        $attempt->keepFingerprint($secret->fingerprintFor($attempt->driver, $attempt->method, $key));
+        $attempt->keepFingerprint($secret->fingerprintFor($attempt->account_protocol, $attempt->method, $key));
 
         return $secret->secret;
     }

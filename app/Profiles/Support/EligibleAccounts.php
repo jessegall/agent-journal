@@ -43,7 +43,7 @@ final readonly class EligibleAccounts implements StartAccounts
     {
         $this->authorizer->authorize(ProfileAdministrationPolicy::class, Profile::class, AccessType::Create);
         $default = ActiveAccount::defaultAccountIdOf($driver);
-        $accounts = array_filter(Account::listed(), fn (Account $account) => $account->driver === $driver->value);
+        $accounts = array_filter(Account::listed(), fn (Account $account) => $account->account_protocol === $driver->value);
 
         return EligibleAccountsData::from([
             'driver' => $driver->value,

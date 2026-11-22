@@ -28,14 +28,14 @@ use Illuminate\Support\Str;
  * change number that only grows so a page can tell a newer choice from an older one.
  *
  * @property string $id
- * @property string $driver
+ * @property string $account_protocol the account provider's protocol, which every driver of one family shares
  * @property string|null $account_id
  * @property bool $has_selected
  * @property int $change_number
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['driver'])]
+#[Fillable(['account_protocol'])]
 final class ActiveAccount extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -122,7 +122,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
      */
     public static function listed(): array
     {
-        return array_values(self::query()->orderBy('driver')->readAll('one row per driver')->get()->all());
+        return array_values(self::query()->orderBy('account_protocol')->readAll('one row per driver')->get()->all());
     }
 
     // ----------[ Mutations ]----------
@@ -138,7 +138,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
             return false;
         }
 
-        $this->raise(new AccountSwitched($this->driver, $account->id));
+        $this->raise(new AccountSwitched($this->account_protocol, $account->id));
 
         return true;
     }
@@ -187,7 +187,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     public function assertAtChange(int $number): void
     {
         if ($this->change_number !== $number) {
-            throw AccountSelectionChanged::forDriver($this->driver);
+            throw AccountSelectionChanged::forDriver($this->account_protocol);
         }
     }
 
@@ -221,7 +221,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function ofDriver(Builder $query, HookDriver $driver): void
     {
-        $query->where('driver', $driver->value);
+        $query->where('account_protocol', $driver->value);
     }
 
     /**
@@ -231,7 +231,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     {
         $selection = new self();
         $selection->id = strtolower((string) Str::ulid());
-        $selection->driver = $driver->value;
+        $selection->account_protocol = $driver->value;
         $selection->has_selected = false;
         $selection->change_number = 0;
         $selection->insertIfAbsent();

@@ -50,7 +50,7 @@ use Illuminate\Support\Str;
  * generation it saw. A removed account keeps its row and label for the starts that used it.
  *
  * @property string $id
- * @property string $driver
+ * @property string $account_protocol the account provider's protocol, which every driver of one family shares
  * @property string $label
  * @property string $label_key
  * @property int $name_revision
@@ -77,7 +77,7 @@ use Illuminate\Support\Str;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['driver', 'label'])]
+#[Fillable(['account_protocol', 'label'])]
 final class Account extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -123,7 +123,7 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public static function create(HookDriver $driver, AccountLabel $label, string $directory): self
     {
-        $account = new self(['driver' => $driver->value]);
+        $account = new self(['account_protocol' => $driver->value]);
         $account->name($label);
         $account->state = AccountState::SignedIn;
         $account->directory = $directory;
@@ -169,7 +169,7 @@ final class Account extends Model implements EventSource, ReadableModel
 
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('driver', $driver->value)
+            ->where('account_protocol', $driver->value)
             ->where('subject', $identity->subject)
             ->where('state', '!=', AccountState::Removed->value)
             ->limit(20)
@@ -189,7 +189,7 @@ final class Account extends Model implements EventSource, ReadableModel
 
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('driver', $attempt->driver)
+            ->where('account_protocol', $attempt->account_protocol)
             ->where('fingerprint', $attempt->fingerprint)
             ->where('state', '!=', AccountState::Removed->value)
             ->when($attempt->account_id !== null, fn ($accounts) => $accounts->whereKeyNot($attempt->account_id))
@@ -222,7 +222,7 @@ final class Account extends Model implements EventSource, ReadableModel
     {
         $accounts = self::query()
             ->where('state', '<>', AccountState::Removed->value)
-            ->orderBy('driver')
+            ->orderBy('account_protocol')
             ->orderBy('label_key')
             ->readAll('the owner sees every saved account at once')
             ->get();
@@ -304,7 +304,7 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public static function driverForJournal(string $accountId): HookDriver
     {
-        $driver = self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($accountId)->value('driver');
+        $driver = self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($accountId)->value('account_protocol');
 
         return HookDriver::from((string) $driver);
     }
@@ -316,7 +316,7 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public static function driverOf(string $accountId): HookDriver
     {
-        $driver = self::query()->whereKey($accountId)->value('driver');
+        $driver = self::query()->whereKey($accountId)->value('account_protocol');
 
         if (! is_string($driver)) {
             throw AccountMissing::for($accountId);
@@ -388,7 +388,7 @@ final class Account extends Model implements EventSource, ReadableModel
         $this->expires_at = $identity->expiry();
         $this->checked_at = $checkedAt;
         $this->assertSaved($this->save());
-        $this->raise(new AccountSignedIn($this->driver, $this->id));
+        $this->raise(new AccountSignedIn($this->account_protocol, $this->id));
         $this->releaseWriter($attempt->id);
     }
 
@@ -479,7 +479,7 @@ final class Account extends Model implements EventSource, ReadableModel
         $this->assertSaved($this->save());
 
         if ($isSignedOut) {
-            $this->raise(new AccountSignedOut($this->driver, $this->id));
+            $this->raise(new AccountSignedOut($this->account_protocol, $this->id));
         }
 
         return $isSignedOut;
@@ -504,20 +504,20 @@ final class Account extends Model implements EventSource, ReadableModel
         }
 
         $taken = self::query()
-            ->where('driver', $this->driver)
+            ->where('account_protocol', $this->account_protocol)
             ->where('label_key', $label->key())
             ->where('state', '<>', AccountState::Removed->value)
             ->whereKeyNot($this->id)
             ->exists();
 
         if ($taken) {
-            throw AccountLabelTaken::for($this->driver, $label->label);
+            throw AccountLabelTaken::for($this->account_protocol, $label->label);
         }
 
         $this->name($label);
         $this->name_revision++;
         $this->assertSaved($this->save());
-        $this->raise(new AccountRenamed($this->driver, $this->id));
+        $this->raise(new AccountRenamed($this->account_protocol, $this->id));
     }
 
     /**
@@ -562,7 +562,7 @@ final class Account extends Model implements EventSource, ReadableModel
 
         $this->maintenance = true;
         $this->assertSaved($this->save());
-        $this->raise(new AccountHeldForMaintenance($this->driver, $this->id));
+        $this->raise(new AccountHeldForMaintenance($this->account_protocol, $this->id));
     }
 
     /**
@@ -581,7 +581,7 @@ final class Account extends Model implements EventSource, ReadableModel
         $this->operation_id = strtolower((string) Str::ulid());
         $this->sign_in_generation++;
         $this->assertSaved($this->save());
-        $this->raise(new AccountRemovalBegun($this->driver, $this->id));
+        $this->raise(new AccountRemovalBegun($this->account_protocol, $this->id));
     }
 
     /**
@@ -595,7 +595,7 @@ final class Account extends Model implements EventSource, ReadableModel
         }
 
         $this->resetCleanupTries();
-        $this->raise(new AccountCleanupRetried($this->driver, $this->id));
+        $this->raise(new AccountCleanupRetried($this->account_protocol, $this->id));
     }
 
     /**
@@ -624,7 +624,7 @@ final class Account extends Model implements EventSource, ReadableModel
         }
 
         $this->finishRemoval();
-        $this->raise(new AccountCleaned($this->driver, $this->id));
+        $this->raise(new AccountCleaned($this->account_protocol, $this->id));
 
         return true;
     }
@@ -680,7 +680,7 @@ final class Account extends Model implements EventSource, ReadableModel
     {
         return new SelectedAccount(
             $this->recordIdentity(),
-            $this->driver,
+            $this->account_protocol,
             $this->directoryForStart(),
             $this->sign_in_generation,
         );
@@ -701,7 +701,7 @@ final class Account extends Model implements EventSource, ReadableModel
         $reason = $this->startUnavailableReason();
 
         if ($reason !== null) {
-            throw AccountUnavailable::forStart($this->driver, $reason);
+            throw AccountUnavailable::forStart($this->account_protocol, $reason);
         }
     }
 
@@ -725,7 +725,7 @@ final class Account extends Model implements EventSource, ReadableModel
     public function assertReviewed(int $signIn): void
     {
         if ($this->sign_in_generation !== $signIn) {
-            throw AccountUnavailable::forStart($this->driver, StartUnavailableReason::ChosenAccountChanged);
+            throw AccountUnavailable::forStart($this->account_protocol, StartUnavailableReason::ChosenAccountChanged);
         }
     }
 
@@ -737,7 +737,7 @@ final class Account extends Model implements EventSource, ReadableModel
     public function directoryForStart(): string
     {
         if ($this->directory === null) {
-            throw AccountUnavailable::forStart($this->driver, StartUnavailableReason::NoAccount);
+            throw AccountUnavailable::forStart($this->account_protocol, StartUnavailableReason::NoAccount);
         }
 
         return $this->directory;
@@ -795,7 +795,7 @@ final class Account extends Model implements EventSource, ReadableModel
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('driver', $driver->value)
+            ->where('account_protocol', $driver->value)
             ->where('label_key', $label->key())
             ->where('state', '!=', AccountState::Removed->value)
             ->exists();
@@ -815,6 +815,6 @@ final class Account extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function ofDriver(Builder $query, HookDriver $driver): void
     {
-        $query->where('driver', $driver->value);
+        $query->where('account_protocol', $driver->value);
     }
 }

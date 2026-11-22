@@ -88,7 +88,7 @@ final class AccountSwitchingTest extends TestCase
 
         $this->assertRefused(AccountSelectionChanged::class, new SwitchAccountCommand($home->id, 0));
 
-        $chosen = ActiveAccount::query()->withoutGlobalScopes()->pluck('account_id', 'driver')->all();
+        $chosen = ActiveAccount::query()->withoutGlobalScopes()->pluck('account_id', 'account_protocol')->all();
         $this->assertSame(['claude-code' => $work->id, 'codex' => $codex->id], $chosen);
     }
 

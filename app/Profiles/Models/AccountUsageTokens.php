@@ -83,7 +83,7 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
 
         $snapshot->fillWith($tokens);
         $snapshot->assertSaved($snapshot->save());
-        $snapshot->raise(new AccountUsageChanged($account->driver, $account->id));
+        $snapshot->raise(new AccountUsageChanged($account->account_protocol, $account->id));
     }
 
     // ----------[ Queries ]----------

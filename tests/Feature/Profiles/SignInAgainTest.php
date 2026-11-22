@@ -374,7 +374,7 @@ final class SignInAgainTest extends TestCase
 
     private function chosen(): string|null
     {
-        return ActiveAccount::query()->withoutGlobalScopes()->where('driver', 'codex')->value('account_id');
+        return ActiveAccount::query()->withoutGlobalScopes()->where('account_protocol', 'codex')->value('account_id');
     }
 
     private function startProcessOnAccount(): void

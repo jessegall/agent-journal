@@ -20,7 +20,7 @@ final readonly class ClaimAccountCheckHandler implements CommandHandler
 
         return new ClaimedAccountCheck(
             $account->id,
-            $account->driver,
+            $account->account_protocol,
             $account->method,
             $account->directory,
             (int) $account->check_requested_generation,

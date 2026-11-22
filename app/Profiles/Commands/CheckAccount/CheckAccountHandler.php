@@ -31,6 +31,6 @@ final readonly class CheckAccountHandler implements CommandHandler
         }
 
         $selection->clearIfChosen($account);
-        $this->notices->record($account->driver, AccountNoticeReason::NeedsSignIn);
+        $this->notices->record($account->account_protocol, AccountNoticeReason::NeedsSignIn);
     }
 }
