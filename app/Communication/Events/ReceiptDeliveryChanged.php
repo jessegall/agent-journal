@@ -7,12 +7,11 @@ namespace App\Communication\Events;
 use App\Communication\Enums\ReceiptDeliveryState;
 use App\Contracts\Event;
 use App\Ui\Contracts\UserInterfaceUpdater;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * Waking one recipient about one chat receipt moved on: accepted, retried, waiting, given up or cancelled.
  */
-final readonly class ReceiptDeliveryChanged implements Event, ShouldDispatchAfterCommit, UserInterfaceUpdater
+final readonly class ReceiptDeliveryChanged implements Event, UserInterfaceUpdater
 {
     public function __construct(
         public string $deliveryId,

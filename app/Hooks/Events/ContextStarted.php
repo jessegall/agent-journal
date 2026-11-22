@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Events;
 
 use App\Agents\Values\StackTarget;
-use App\Contracts\Event;
+use App\Contracts\AnsweredAtOnce;
 use App\Hooks\Contracts\ReminderContribution;
 use App\Hooks\Enums\ContextStartType;
 
@@ -14,7 +14,7 @@ use App\Hooks\Enums\ContextStartType;
  * idempotent reaction and add their current reminders, at once, inside the hook call; nothing in a summary counts as
  * finished work.
  */
-final readonly class ContextStarted implements Event
+final readonly class ContextStarted implements AnsweredAtOnce
 {
     public function __construct(
         public StackTarget $target,

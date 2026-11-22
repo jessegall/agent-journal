@@ -8180,6 +8180,7 @@ interface	AgentStartCommand
 interface	AliasResolver
 interface	Answer
 interface	AnswerPart
+interface	AnsweredAtOnce
 interface	AskAdmission
 interface	AskReader
 interface	AskSubjectResolver
@@ -23686,7 +23687,9 @@ method	StateEventDispatcher::fromDispatcher()
 method	StateEventDispatcher::getListeners()
 method	StateEventDispatcher::hasBridge()
 method	StateEventDispatcher::invokeListeners()
+method	StateEventDispatcher::isHeldFact()
 method	StateEventDispatcher::parseEventAndPayload()
+method	StateEventDispatcher::send()
 method	StateEventDispatcher::useContainer()
 method	StateEventEffects::__construct()
 method	StateEventEffects::apply()
@@ -27657,6 +27660,7 @@ parameter	$pathsByConversation
 parameter	$pattern
 parameter	$patterns
 parameter	$pause
+parameter	$payload	app/Hooks/Delivery/StateEventDispatcher.php
 parameter	$payloadDigest
 parameter	$pending
 parameter	$pendingCleanups
@@ -41252,6 +41256,7 @@ variable	$traitMethods
 variable	$traitUse
 variable	$traits
 variable	$traitsByFile
+variable	$transactions
 variable	$transition
 variable	$transport
 variable	$traverser

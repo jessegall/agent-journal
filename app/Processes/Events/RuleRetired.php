@@ -7,12 +7,11 @@ namespace App\Processes\Events;
 use App\Contracts\Event;
 use App\Processes\Contracts\ActiveRuleChange;
 use App\Processes\Models\ClassificationRule;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A project owner retired a command rule: new admissions stop relying on it, processes already started run on.
  */
-final readonly class RuleRetired implements ActiveRuleChange, Event, ShouldDispatchAfterCommit
+final readonly class RuleRetired implements ActiveRuleChange, Event
 {
     public function __construct(
         public string $projectKey,

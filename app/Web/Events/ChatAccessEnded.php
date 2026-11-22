@@ -8,13 +8,12 @@ use App\Contracts\Event;
 use App\Web\Support\UserChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * One user's access to one chat ended: it left, was removed or the chat closed. Its window reads the page again and
  * hears nothing more about that chat.
  */
-final readonly class ChatAccessEnded implements Event, ShouldBroadcast, ShouldDispatchAfterCommit
+final readonly class ChatAccessEnded implements Event, ShouldBroadcast
 {
     public const string NAME = 'chat.access-ended';
 

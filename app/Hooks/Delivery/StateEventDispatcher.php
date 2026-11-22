@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Delivery;
 
+use App\Contracts\AnsweredAtOnce;
 use App\Contracts\Event;
 use App\Hooks\StateEvents\StateEventDispatch;
 use App\Hooks\StateEvents\StateEventPayload;
@@ -52,19 +53,24 @@ final class StateEventDispatcher extends Dispatcher
         return $wrapped;
     }
 
+    /**
+     * A journal fact dispatched inside a transaction, such as a command's, is heard once it commits and never when it
+     * rolls back, wherever it was dispatched from, as if it were marked ShouldDispatchAfterCommit; a question its
+     * listeners answer at once, and anything that is no journal fact, is heard at once.
+     */
     public function dispatch($event, $arguments = [], $halt = false)
     {
         if (! $event instanceof Event || ! $this->hasBridge($event::class)) {
-            return parent::dispatch($event, $arguments, $halt);
+            return $this->send($event, $arguments, $halt);
         }
 
         if ($arguments instanceof StateEventPayload && $arguments->hasKey($this->payloadKey)) {
-            return parent::dispatch($event, $arguments, $halt);
+            return $this->send($event, $arguments, $halt);
         }
 
         $dispatch = ($this->scope)()->capture($event);
 
-        return parent::dispatch($event, new StateEventPayload($this->payloadKey, $dispatch), $halt);
+        return $this->send($event, new StateEventPayload($this->payloadKey, $dispatch), $halt);
     }
 
     /**
@@ -139,13 +145,44 @@ final class StateEventDispatcher extends Dispatcher
 
     private function awaitsCommit(Event $event): bool
     {
-        if (! $event instanceof ShouldDispatchAfterCommit) {
+        if (! $this->isHeldFact($event, false)) {
             return false;
         }
 
         $manager = $this->resolveTransactionManager();
 
         return $manager !== null && $manager->callbackApplicableTransactions()->isNotEmpty();
+    }
+
+    /**
+     * Hands the dispatch to Laravel, deferring a journal fact's listeners to the commit the way Laravel defers an
+     * event marked ShouldDispatchAfterCommit; with no transaction open they run at once.
+     */
+    private function send(object|string $event, mixed $payload, bool $halt): mixed
+    {
+        if (! $this->isHeldFact($event, $halt) || $event instanceof ShouldDispatchAfterCommit) {
+            return parent::dispatch($event, $payload, $halt);
+        }
+
+        $transactions = $this->resolveTransactionManager();
+
+        if ($transactions === null) {
+            return parent::dispatch($event, $payload, $halt);
+        }
+
+        [$name, $parsed] = $this->parseEventAndPayload($event, $payload);
+        $transactions->addCallback(fn () => $this->invokeListeners($name, $parsed, $halt));
+
+        return null;
+    }
+
+    /**
+     * Whether the dispatch is a journal fact that waits for the commit: no question answered at once, and no halting
+     * dispatch, whose caller waits for the first answer.
+     */
+    private function isHeldFact(object|string $event, bool $halt): bool
+    {
+        return $event instanceof Event && ! $event instanceof AnsweredAtOnce && ! $halt;
     }
 
     private function hasBridge(string $event): bool

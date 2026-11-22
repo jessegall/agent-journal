@@ -101,13 +101,12 @@ use Domain\Tasks\Events\TaskStarted;
 final class EventPayloads
 {
     /**
-     * @return array<class-string, array{afterCommit: bool, fields: array<string, string>}>
+     * @return array<class-string, array{fields: array<string, string>}>
      */
     public static function facts(): array
     {
         return [
             AgentHoldReleased::class => [
-                'afterCommit' => false,
                 'fields' => [
                     'runtimeId' => 'string',
                     'hold' => 'App\Agents\Enums\HoldReason',
@@ -116,7 +115,6 @@ final class EventPayloads
                 ],
             ],
             AgentRuntimeReassigned::class => [
-                'afterCommit' => false,
                 'fields' => [
                     'runtimeId' => 'string',
                     'fromHostId' => 'string',
@@ -128,7 +126,6 @@ final class EventPayloads
                 ],
             ],
             DriverRequestRecovered::class => [
-                'afterCommit' => false,
                 'fields' => [
                     'requestId' => 'string',
                     'action' => 'App\Agents\Enums\RecoveryAction',
@@ -137,19 +134,16 @@ final class EventPayloads
                 ],
             ],
             LaunchCancelled::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'work' => 'App\Records\Support\RecordIdentity',
                 ],
             ],
             MergeOutcomeRecorded::class => [
-                'afterCommit' => false,
                 'fields' => [
                     'attemptId' => 'string',
                 ],
             ],
             DriverFailed::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'agentId' => 'string',
                     'sessionId' => 'string',
@@ -160,14 +154,12 @@ final class EventPayloads
                 ],
             ],
             SessionClosed::class => [
-                'afterCommit' => false,
                 'fields' => [
                     'agentId' => 'string',
                     'sessionId' => 'string',
                 ],
             ],
             SessionOpened::class => [
-                'afterCommit' => false,
                 'fields' => [
                     'agentId' => 'string',
                     'sessionId' => 'string',
@@ -175,7 +167,6 @@ final class EventPayloads
                 ],
             ],
             StartAccepted::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'requestId' => 'string',
                     'agentId' => 'string',
@@ -184,7 +175,6 @@ final class EventPayloads
                 ],
             ],
             StartUnavailable::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'agentId' => 'string',
                     'driver' => 'string',
@@ -192,7 +182,6 @@ final class EventPayloads
                 ],
             ],
             AssignmentsChanged::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'operationId' => 'string',
                     'actor' => 'App\Actors\Support\ActorIdentity',
@@ -202,21 +191,18 @@ final class EventPayloads
                 ],
             ],
             CommentPosted::class => [
-                'afterCommit' => false,
                 'fields' => [
                     'commentId' => 'string',
                     'target' => 'App\Records\Support\RecordIdentity',
                 ],
             ],
             MessageAnswerRequired::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'messageId' => 'string',
                     'destinationInboxId' => 'string',
                 ],
             ],
             MessageAnswered::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'messageId' => 'string',
                     'replyId' => 'string',
@@ -224,14 +210,12 @@ final class EventPayloads
                 ],
             ],
             MessageClaimReleased::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'messageId' => 'string',
                     'claim' => 'App\Assignments\Support\AssignmentReference',
                 ],
             ],
             MessageDismissed::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'messageId' => 'string',
                     'dismissedBy' => 'App\Actors\Support\ActorIdentity',
@@ -239,7 +223,6 @@ final class EventPayloads
                 ],
             ],
             MessageRead::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'messageId' => 'string',
                     'inboxId' => 'string',
@@ -247,7 +230,6 @@ final class EventPayloads
                 ],
             ],
             MessageSent::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'messageId' => 'string',
                     'author' => 'App\Actors\Support\ActorIdentity',
@@ -256,14 +238,12 @@ final class EventPayloads
                 ],
             ],
             MessageTakenUp::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'messageId' => 'string',
                     'claimant' => 'App\Actors\Support\ActorIdentity',
                 ],
             ],
             ChatMessageAccepted::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'messageId' => 'string',
                     'author' => 'App\Actors\Support\ActorIdentity',
@@ -271,7 +251,6 @@ final class EventPayloads
                 ],
             ],
             ChatMemberJoined::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'intervalId' => 'string',
                     'inboxId' => 'string',
@@ -279,7 +258,6 @@ final class EventPayloads
                 ],
             ],
             ChatMemberLeft::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'intervalId' => 'string',
                     'inboxId' => 'string',
@@ -288,7 +266,6 @@ final class EventPayloads
                 ],
             ],
             ChatRoleChanged::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'intervalId' => 'string',
                     'inboxId' => 'string',
@@ -297,7 +274,6 @@ final class EventPayloads
                 ],
             ],
             ChatReceiptPresented::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'receiptId' => 'string',
                     'messageId' => 'string',
@@ -305,13 +281,11 @@ final class EventPayloads
                 ],
             ],
             ReceiptDeliveriesScheduled::class => [
-                'afterCommit' => false,
                 'fields' => [
                     'deliveryIds' => 'array',
                 ],
             ],
             ReceiptDeliveryChanged::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'deliveryId' => 'string',
                     'receiptId' => 'string',
@@ -319,7 +293,6 @@ final class EventPayloads
                 ],
             ],
             SpeechOpportunitySettled::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'opportunityId' => 'string',
                     'userRootId' => 'string',
@@ -328,34 +301,29 @@ final class EventPayloads
                 ],
             ],
             EngineTicked::class => [
-                'afterCommit' => false,
                 'fields' => [
                     'now' => 'Carbon\CarbonImmutable',
                     'sincePrevious' => 'App\Hooks\Ticks\ElapsedTime',
                 ],
             ],
             HelperCompletionCertified::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'work' => 'App\Records\Support\RecordIdentity',
                     'attempt' => 'App\Hooks\Values\StopAttemptReference',
                 ],
             ],
             HelperStopHeld::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'work' => 'App\Records\Support\RecordIdentity',
                     'attempt' => 'App\Hooks\Values\StopAttemptReference',
                 ],
             ],
             LinksRemoved::class => [
-                'afterCommit' => false,
                 'fields' => [
                     'linkIds' => 'array',
                 ],
             ],
             BundleActivated::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'projectKey' => 'string',
                     'module' => 'string',
@@ -363,7 +331,6 @@ final class EventPayloads
                 ],
             ],
             EvidenceInvalid::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'assessmentId' => 'string',
                     'partRunId' => 'string',
@@ -373,7 +340,6 @@ final class EventPayloads
                 ],
             ],
             OutputChunkCommitted::class => [
-                'afterCommit' => false,
                 'fields' => [
                     'partRunId' => 'string',
                     'stream' => 'string',
@@ -382,7 +348,6 @@ final class EventPayloads
                 ],
             ],
             RuleActivated::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'projectKey' => 'string',
                     'ruleId' => 'string',
@@ -392,7 +357,6 @@ final class EventPayloads
                 ],
             ],
             RuleRejected::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'proposalId' => 'string',
                     'authorType' => 'string',
@@ -401,7 +365,6 @@ final class EventPayloads
                 ],
             ],
             RuleRetired::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'projectKey' => 'string',
                     'ruleId' => 'string',
@@ -410,7 +373,6 @@ final class EventPayloads
                 ],
             ],
             ProfileRevisionRevoked::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'key' => 'App\Profiles\Values\ProfileKey',
                     'revision' => 'int',
@@ -418,7 +380,6 @@ final class EventPayloads
                 ],
             ],
             SettingsChanged::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'owner' => 'string',
                     'target' => 'App\Settings\Enums\SettingTarget',
@@ -427,31 +388,26 @@ final class EventPayloads
                 ],
             ],
             ShareActivated::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'share' => 'App\Sharing\Support\ShareFact',
                 ],
             ],
             ShareCreated::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'share' => 'App\Sharing\Support\ShareFact',
                 ],
             ],
             ShareExpired::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'share' => 'App\Sharing\Support\ShareFact',
                 ],
             ],
             ShareFailed::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'share' => 'App\Sharing\Support\ShareFact',
                 ],
             ],
             ShareGatewayChanged::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'configurationId' => 'string',
                     'configurationVersion' => 'int',
@@ -460,38 +416,32 @@ final class EventPayloads
                 ],
             ],
             ShareRequested::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'share' => 'App\Sharing\Support\ShareFact',
                 ],
             ],
             ShareRevoked::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'share' => 'App\Sharing\Support\ShareFact',
                 ],
             ],
             ShareScopeChanged::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'share' => 'App\Sharing\Support\ShareFact',
                 ],
             ],
             SessionSkillsIntended::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'publicationId' => 'string',
                 ],
             ],
             SkillsChanged::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'skillId' => 'string',
                     'revision' => 'int',
                 ],
             ],
             DocumentClosed::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'documentId' => 'string',
                     'number' => 'int',
@@ -499,7 +449,6 @@ final class EventPayloads
                 ],
             ],
             DocumentCreated::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'documentId' => 'string',
                     'number' => 'int',
@@ -507,21 +456,18 @@ final class EventPayloads
                 ],
             ],
             DocumentDraftSaved::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'documentId' => 'string',
                     'version' => 'int',
                 ],
             ],
             DocumentOpened::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'documentId' => 'string',
                     'number' => 'int',
                 ],
             ],
             DocumentPublished::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'documentId' => 'string',
                     'number' => 'int',
@@ -529,7 +475,6 @@ final class EventPayloads
                 ],
             ],
             DraftKept::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'draftId' => 'string',
                     'documentId' => 'string',
@@ -537,14 +482,12 @@ final class EventPayloads
                 ],
             ],
             RecordSettled::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'recordType' => 'string',
                     'recordId' => 'string',
                 ],
             ],
             ReportFiled::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'reportId' => 'string',
                     'number' => 'int',
@@ -552,21 +495,18 @@ final class EventPayloads
                 ],
             ],
             PlanCancelled::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'planId' => 'string',
                     'cancelledBy' => 'App\Actors\Support\ActorContext',
                 ],
             ],
             PlanFinished::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'planId' => 'string',
                     'finishedBy' => 'App\Actors\Support\ActorContext',
                 ],
             ],
             PlanReviewDecided::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'planId' => 'string',
                     'editionId' => 'string',
@@ -574,7 +514,6 @@ final class EventPayloads
                 ],
             ],
             PlanReviewRequested::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'planId' => 'string',
                     'editionId' => 'string',
@@ -582,46 +521,39 @@ final class EventPayloads
                 ],
             ],
             PlanReviewWithdrawn::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'planId' => 'string',
                     'editionId' => 'string',
                 ],
             ],
             PlanStarted::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'planId' => 'string',
                     'startedBy' => 'App\Actors\Support\ActorContext',
                 ],
             ],
             RuleApproved::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'ruleId' => 'string',
                 ],
             ],
             RuleDenied::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'ruleId' => 'string',
                 ],
             ],
             RuleRemoved::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'ruleId' => 'string',
                 ],
             ],
             SequenceStarted::class => [
-                'afterCommit' => false,
                 'fields' => [
                     'runId' => 'string',
                     'target' => 'App\Agents\Values\StackTarget',
                 ],
             ],
             TaskBlocked::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'taskId' => 'string',
                     'previousState' => 'Domain\Tasks\Enums\TaskState',
@@ -629,11 +561,9 @@ final class EventPayloads
                 ],
             ],
             TaskDescribed::class => [
-                'afterCommit' => false,
                 'fields' => ['taskId' => 'string'],
             ],
             TaskCancelled::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'taskId' => 'string',
                     'previousState' => 'Domain\Tasks\Enums\TaskState',
@@ -641,7 +571,6 @@ final class EventPayloads
                 ],
             ],
             TaskFinished::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'taskId' => 'string',
                     'previousState' => 'Domain\Tasks\Enums\TaskState',
@@ -649,21 +578,18 @@ final class EventPayloads
                 ],
             ],
             TaskCheckRecorded::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'taskId' => 'string',
                     'checkId' => 'string',
                 ],
             ],
             TaskLogged::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'taskId' => 'string',
                     'entryId' => 'string',
                 ],
             ],
             TaskWaitChanged::class => [
-                'afterCommit' => true,
                 'fields' => [
                     'waitId' => 'string',
                     'dependentTaskId' => 'string',
@@ -672,7 +598,6 @@ final class EventPayloads
                 ],
             ],
             TaskStarted::class => [
-                'afterCommit' => false,
                 'fields' => [
                     'taskId' => 'string',
                     'actor' => 'App\Actors\Support\ActorIdentity',

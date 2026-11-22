@@ -8,13 +8,12 @@ use App\Contracts\Event;
 use App\Web\Support\UserChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * Tells each user's browser that its notifications changed, so it reads them again; it names nothing, no title, no
  * receipt and no count.
  */
-final readonly class NotificationsInvalidated implements Event, ShouldBroadcast, ShouldDispatchAfterCommit
+final readonly class NotificationsInvalidated implements Event, ShouldBroadcast
 {
     public const string NAME = 'notifications.changed';
 

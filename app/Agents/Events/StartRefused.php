@@ -7,13 +7,12 @@ namespace App\Agents\Events;
 use App\Contracts\Event;
 use App\Ui\Contracts\UserInterfaceUpdater;
 use DateTimeImmutable;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * The host's claim of a start was refused for good, such as a driver build that cannot start in a container; the
  * agent's page rereads it and shows the refusal in place of Working.
  */
-final readonly class StartRefused implements Event, ShouldDispatchAfterCommit, UserInterfaceUpdater
+final readonly class StartRefused implements Event, UserInterfaceUpdater
 {
     public function __construct(
         public string $agentId,

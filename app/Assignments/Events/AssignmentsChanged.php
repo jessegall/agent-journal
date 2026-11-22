@@ -10,14 +10,13 @@ use App\Assignments\Support\AssignmentChange;
 use App\Contracts\Event;
 use App\Ui\Contracts\UserInterfaceUpdater;
 use DateTimeImmutable;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * The one fact a command that changed assignments raises, after its transaction committed: who did it, why, and every
  * record whose holder changed. A command that changed nothing raises none. Delivery is not guaranteed and nothing is
  * kept to replay it.
  */
-final readonly class AssignmentsChanged implements Event, ShouldDispatchAfterCommit, UserInterfaceUpdater
+final readonly class AssignmentsChanged implements Event, UserInterfaceUpdater
 {
     /**
      * @param  list<AssignmentChange>  $changes

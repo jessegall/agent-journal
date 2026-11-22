@@ -9,7 +9,6 @@ use App\Docking\Sources\Contracts\DockSourceChanged;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Values\PartProjection;
 use App\Ui\Contracts\UserInterfaceUpdater;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A run changed after its change was stored: its next update number, and the parts that changed with the reading each
@@ -18,7 +17,6 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 final readonly class RunChanged implements
     DockSourceChanged,
     Event,
-    ShouldDispatchAfterCommit,
     UserInterfaceUpdater
 {
     /**

@@ -51,8 +51,6 @@ final class StateEventDeliveryTest extends TestCase
     use InstallsCommandModules;
     use RegistersNoteStates;
 
-    private const string EVALUATING_STACK = 'evaluating stack';
-
     protected function setUpCommittedHookStack(): void
     {
         $this->installCommandModules();
@@ -188,11 +186,12 @@ final class StateEventDeliveryTest extends TestCase
             }
         });
 
+        // The effect's own fact waits for the effect's commit, so the cycle shows once that delivery tries to reenter.
         try {
             $this->dispatch(new NoteWritten(marked: [new RecordNoteEffectCommand('reenter')]));
             $this->fail('The delivery reentered an active origin.');
-        } catch (StateEventReentry $failure) {
-            $this->assertStringContainsString('cycle', $failure->getMessage());
+        } catch (StateEventAfterCommitFailed $failure) {
+            $this->assertInstanceOf(StateEventReentry::class, $failure->getPrevious());
         }
 
         $this->dispatch(new NoteWritten(marked: [new RecordNoteEffectCommand('independent')]));
@@ -200,13 +199,11 @@ final class StateEventDeliveryTest extends TestCase
         $this->assertSame(['reenter', 'independent'], $effects->labels);
     }
 
-    public function test_synchronous_delivery_cannot_reenter_the_stack_of_an_unfinished_hook(): void
+    public function test_a_fact_dispatched_inside_an_unfinished_hook_waits_for_its_commit_and_never_reenters(): void
     {
         $this->pushState(new StateReference('notes.writing', NoSubject::None));
-        $this->expectException(StateEventReentry::class);
-        $this->expectExceptionMessage(self::EVALUATING_STACK);
 
-        $this->machine()->answer(
+        $reply = $this->machine()->answer(
             $this->stop(),
             $this->capabilities(),
             new OperationDeadline(),
@@ -216,6 +213,8 @@ final class StateEventDeliveryTest extends TestCase
                 return DriverReplies::stop($answer);
             },
         );
+
+        $this->assertInstanceOf(DriverReply::class, $reply);
     }
 
     public function test_after_commit_failure_reports_its_stage_and_leaves_the_producers_write(): void

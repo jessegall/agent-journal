@@ -10,7 +10,6 @@ use App\Docking\Sources\Contracts\DockSourceChanged;
 use App\Ui\Contracts\UserInterfaceUpdater;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A task is blocked. Raised only once the change has committed; it names the state the task left, so a
@@ -20,7 +19,6 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 final readonly class TaskBlocked implements
     DockSourceChanged,
     Event,
-    ShouldDispatchAfterCommit,
     UserInterfaceUpdater
 {
     public function __construct(

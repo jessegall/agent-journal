@@ -6,12 +6,11 @@ namespace Domain\Documents\Api\Events;
 
 use App\Contracts\Event;
 use App\Ui\Contracts\UserInterfaceUpdater;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A draft of a document was closed. It carries ids and numbers, never the text.
  */
-final readonly class DocumentClosed implements Event, ShouldDispatchAfterCommit, UserInterfaceUpdater
+final readonly class DocumentClosed implements Event, UserInterfaceUpdater
 {
     public function __construct(public string $documentId, public int $number, public int $revisionNumber) {}
 }

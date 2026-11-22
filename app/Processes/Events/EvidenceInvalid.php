@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Processes\Events;
 
 use App\Contracts\Event;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A check's run gave no result: its assessment found problems. Raised once per assessment after it is stored, for the
  * run's actor and the project owner, with every problem code.
  */
-final readonly class EvidenceInvalid implements Event, ShouldDispatchAfterCommit
+final readonly class EvidenceInvalid implements Event
 {
     /**
      * @param  list<string>  $codes

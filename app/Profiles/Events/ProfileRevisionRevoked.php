@@ -6,13 +6,12 @@ namespace App\Profiles\Events;
 
 use App\Contracts\Event;
 use App\Profiles\Values\ProfileKey;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A profile's revision was revoked, after its transaction committed. The fence of its sessions is already retained in
  * that transaction; this fact is for other subscribers and is not kept to replay.
  */
-final readonly class ProfileRevisionRevoked implements Event, ShouldDispatchAfterCommit
+final readonly class ProfileRevisionRevoked implements Event
 {
     public function __construct(
         public ProfileKey $key,

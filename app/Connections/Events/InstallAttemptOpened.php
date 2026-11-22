@@ -6,12 +6,11 @@ namespace App\Connections\Events;
 
 use App\Contracts\Event;
 use DateTimeImmutable;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * An owner opened an attempt to install a line for one target, under its public reference.
  */
-final readonly class InstallAttemptOpened implements Event, ShouldDispatchAfterCommit
+final readonly class InstallAttemptOpened implements Event
 {
     public function __construct(
         public string $attemptId,

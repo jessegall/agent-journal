@@ -7,12 +7,11 @@ namespace Domain\Plans\Api\Events;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\Event;
 use App\Ui\Contracts\UserInterfaceUpdater;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A plan was put up for review by the reviewers it names. Raised only once the request has committed.
  */
-final readonly class PlanReviewRequested implements Event, ShouldDispatchAfterCommit, UserInterfaceUpdater
+final readonly class PlanReviewRequested implements Event, UserInterfaceUpdater
 {
     public function __construct(
         public string $planId,

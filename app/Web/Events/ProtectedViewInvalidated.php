@@ -8,13 +8,12 @@ use App\Contracts\Event;
 use App\Web\Support\UserChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * Tells each affected user's browser that something it shows may no longer be theirs to see, so it drops what it
  * shows before reading again. It names nothing.
  */
-final readonly class ProtectedViewInvalidated implements Event, ShouldBroadcast, ShouldDispatchAfterCommit
+final readonly class ProtectedViewInvalidated implements Event, ShouldBroadcast
 {
     public const string NAME = 'view.protected-invalidated';
 

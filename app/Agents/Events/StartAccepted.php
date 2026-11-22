@@ -6,13 +6,12 @@ namespace App\Agents\Events;
 
 use App\Contracts\Event;
 use App\Records\Support\RecordIdentity;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A start the journal accepted and committed: what the host's delivery receives, so no driver starts inside the
  * transaction.
  */
-final readonly class StartAccepted implements Event, ShouldDispatchAfterCommit
+final readonly class StartAccepted implements Event
 {
     public function __construct(
         public string $requestId,

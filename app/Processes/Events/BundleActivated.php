@@ -7,12 +7,11 @@ namespace App\Processes\Events;
 use App\Contracts\Event;
 use App\Processes\Contracts\ActiveRuleChange;
 use App\Processes\Models\ModuleRuleBundle;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A project owner activated a module's rule bundle at one digest; raised after the change is committed.
  */
-final readonly class BundleActivated implements ActiveRuleChange, Event, ShouldDispatchAfterCommit
+final readonly class BundleActivated implements ActiveRuleChange, Event
 {
     public function __construct(public string $projectKey, public string $module, public string $digest) {}
 

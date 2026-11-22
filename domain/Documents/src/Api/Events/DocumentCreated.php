@@ -7,12 +7,11 @@ namespace Domain\Documents\Api\Events;
 use App\Actors\Support\ActorContext;
 use App\Contracts\Event;
 use App\Ui\Contracts\UserInterfaceUpdater;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A document was published with its first revision. It carries ids and the number, never the text.
  */
-final readonly class DocumentCreated implements Event, ShouldDispatchAfterCommit, UserInterfaceUpdater
+final readonly class DocumentCreated implements Event, UserInterfaceUpdater
 {
     public function __construct(
         public string $documentId,

@@ -6,9 +6,8 @@ namespace Domain\Documents\Api\Events;
 
 use App\Actors\Support\ActorContext;
 use App\Contracts\Event;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
-final readonly class DraftKept implements Event, ShouldDispatchAfterCommit
+final readonly class DraftKept implements Event
 {
     public function __construct(
         public string $draftId,

@@ -6,6 +6,7 @@ namespace Tests\Feature\Events;
 
 use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\CommandBus;
+use App\Contracts\AnsweredAtOnce;
 use App\Reflection\Support\DeclaredType;
 use App\Reflection\Support\ReflectedMethod;
 use App\Reflection\Support\Reflector;
@@ -28,7 +29,6 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Models\Task;
 use Illuminate\Contracts\Container\Container;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -70,14 +70,14 @@ final class EventPayloadTest extends TestCase
     private const array UNQUEUEABLE = [Model::class, Container::class, Closure::class];
 
     /**
-     * @return iterable<string, array{class-string, bool, array<string, string>}>
+     * @return iterable<string, array{class-string, array<string, string>}>
      */
     public static function facts(): iterable
     {
         foreach (EventPayloads::facts() as $event => $shape) {
-            $name = class_basename($event).' keeps its fields and its delivery';
+            $name = class_basename($event).' keeps its fields';
 
-            yield $name => [$event, $shape['afterCommit'], $shape['fields']];
+            yield $name => [$event, $shape['fields']];
         }
     }
 
@@ -86,7 +86,7 @@ final class EventPayloadTest extends TestCase
      * @param  array<string, string>  $fields
      */
     #[DataProvider('facts')]
-    public function test_a_fact_keeps_its_published_shape(string $event, bool $afterCommit, array $fields): void
+    public function test_a_fact_keeps_its_published_shape(string $event, array $fields): void
     {
         $declaration = Reflector::of($event);
         $declared = [];
@@ -101,7 +101,8 @@ final class EventPayloadTest extends TestCase
         }
 
         $this->assertSame($fields, $declared);
-        $this->assertSame($afterCommit, $declaration->implements(ShouldDispatchAfterCommit::class));
+        // A published fact is heard after its command commits, never as a question answered at once.
+        $this->assertFalse($declaration->implements(AnsweredAtOnce::class));
         $this->assertSame([], $this->unqueueableTypesIn($event, []));
     }
 

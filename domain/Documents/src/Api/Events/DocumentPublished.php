@@ -8,7 +8,6 @@ use App\Contracts\Event;
 use App\Docking\Sources\Contracts\DockSourceChanged;
 use App\Ui\Contracts\UserInterfaceUpdater;
 use Domain\Documents\Api\DocumentType;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A close published a new revision of a document. It carries ids and numbers, never the text.
@@ -16,7 +15,6 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 final readonly class DocumentPublished implements
     DockSourceChanged,
     Event,
-    ShouldDispatchAfterCommit,
     UserInterfaceUpdater
 {
     public function __construct(public string $documentId, public int $number, public int $revisionNumber) {}

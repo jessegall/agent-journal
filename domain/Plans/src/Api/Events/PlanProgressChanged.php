@@ -8,7 +8,6 @@ use App\Contracts\Event;
 use App\Docking\Sources\Contracts\DockSourceChanged;
 use App\Ui\Contracts\UserInterfaceUpdater;
 use Domain\Plans\Models\Plan;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A task in one of the plan's phases started, finished, was blocked or was cancelled, so the plan's progress moved.
@@ -17,7 +16,6 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 final readonly class PlanProgressChanged implements
     DockSourceChanged,
     Event,
-    ShouldDispatchAfterCommit,
     UserInterfaceUpdater
 {
     public function __construct(public string $planId) {}

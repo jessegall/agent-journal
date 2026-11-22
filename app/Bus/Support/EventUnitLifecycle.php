@@ -115,10 +115,9 @@ final readonly class EventUnitLifecycle implements CommandFacts, UnitOwner
 
     /**
      * Sends a fact through the unit's owner-ordered stream, in its place among the facts the models raise, released
-     * after the commit; outside a unit its required listeners run and it goes out at once. It takes the facts delivered after the commit: an event
-     * marked ShouldDispatchAfterCommit, a send in an afterCommit closure, a command-level fact and an occurrence a
-     * required listener stages. A plain dispatch whose listeners write in the transaction is not one of them, and an
-     * afterCommit job keeps Laravel's own after-commit dispatch.
+     * after the commit; outside a unit its required listeners run and it goes out at once. It takes a command-level
+     * fact whose required listeners must run in the transaction, and an occurrence a required listener stages; a plain
+     * dispatch is heard after the commit too, through the app's dispatcher, but runs no required listener.
      */
     public function publishAfterCommit(Event $event): void
     {

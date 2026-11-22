@@ -19,9 +19,10 @@ earlier requests.
 
 ## What not to do
 
-- Never deliver from an after-commit callback or a `ShouldDispatchAfterCommit` event listener when the notice must
-  arrive: a crash between the commit and the callback loses it. After-commit events are for screens and other
-  best-effort reactions only.
+- Never deliver from an after-commit callback or an ordinary event listener when the notice must arrive: every
+  journal fact dispatched inside a command is heard only after the commit, and a crash between the commit and the
+  listener loses it. Ordinary listeners are for screens and other best-effort reactions only; work that must commit
+  with the command is an `#[InCommandTransaction]` listener.
 - Never call into `app/Agents` internals: only the exported commands.
 - Never put content in the notice that the receiver may not read.
 

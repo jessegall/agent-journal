@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
+use Tests\Fixtures\Modules\Notes\Commands\AuditNote\AuditNoteCommand;
 use Tests\Fixtures\Modules\Notes\Events\NoteRemoved;
 use App\Operations\Enums\AccessType;
 use App\Actors\Contracts\PolicyProvider;
@@ -186,6 +187,7 @@ final class NotesDomain extends Domain implements
     {
         return [
             WriteNoteCommand::class,
+            AuditNoteCommand::class,
             PinNoteCommand::class,
             CopyNoteCommand::class,
             RefuseNoteCommand::class,

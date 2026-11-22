@@ -6,13 +6,12 @@ namespace App\Connections\Events;
 
 use App\Contracts\Event;
 use DateTimeImmutable;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A project folder on a machine was joined to a project through that machine's host. It carries ids only, never
  * the folder's path.
  */
-final readonly class ProjectBindingCreated implements Event, ShouldDispatchAfterCommit
+final readonly class ProjectBindingCreated implements Event
 {
     public function __construct(
         public string $bindingId,

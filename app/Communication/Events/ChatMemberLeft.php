@@ -9,12 +9,11 @@ use App\Communication\Contracts\InboxScopedFact;
 use App\Communication\Enums\LeaveReason;
 use App\Contracts\Event;
 use App\Ui\Contracts\UserInterfaceUpdater;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * An actor's interval in a chat inbox ended, for the reason given.
  */
-final readonly class ChatMemberLeft implements Event, InboxScopedFact, ShouldDispatchAfterCommit, UserInterfaceUpdater
+final readonly class ChatMemberLeft implements Event, InboxScopedFact, UserInterfaceUpdater
 {
     public function __construct(
         public string $intervalId,

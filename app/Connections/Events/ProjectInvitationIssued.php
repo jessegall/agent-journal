@@ -6,12 +6,11 @@ namespace App\Connections\Events;
 
 use App\Contracts\Event;
 use DateTimeImmutable;
-use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * The owner issued an install line. It carries the invitation and when it expires, never the ticket.
  */
-final readonly class ProjectInvitationIssued implements Event, ShouldDispatchAfterCommit
+final readonly class ProjectInvitationIssued implements Event
 {
     public function __construct(
         public string $invitationId,
