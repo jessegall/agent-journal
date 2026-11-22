@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import Avatar from '@kit/Avatar';
 import Button from '@kit/Button';
 import Card from '@kit/Card';
 import Icon from '@kit/Icon';
@@ -9,6 +8,8 @@ import type { ChatMessageData, ParticipantData } from '@generated/types/chat';
 import type { ConversationIntent } from './composables/useConversationIntents';
 import type { RecoveryEntry } from './composables/useMessageDrafts';
 import MessageDeliveries from './MessageDeliveries.vue';
+import MessageHead from './MessageHead.vue';
+import NoMessages from './NoMessages.vue';
 import PendingMessage from './PendingMessage.vue';
 import RefusedSend from './RefusedSend.vue';
 
@@ -133,17 +134,15 @@ function stateOf(message: ChatMessageData): string | null {
 
     return isOwn(message) || message.readByMe ? null : 'Unread';
 }
+
+// Nothing to show yet: no message, none being sent and none refused.
+const isEmpty = computed(() => props.messages.length === 0 && props.pending.length === 0 && props.refused.length === 0);
 </script>
 
 <template>
     <div class="flex flex-1 flex-col gap-3.5 overflow-y-auto pt-[22px] pb-[18px]" role="log" aria-live="polite" aria-label="Messages">
-        <template v-if="messages.length === 0 && pending.length === 0 && refused.length === 0">
-            <div class="m-auto flex flex-col items-center gap-1 text-center">
-                <p class="text-empty text-text-2">No messages yet</p>
-                <p class="text-small text-text-3">
-                    Send a message below to start a conversation, or start a session from the bar.
-                </p>
-            </div>
+        <template v-if="isEmpty">
+            <NoMessages />
         </template>
         <template v-if="hasOlder">
             <button type="button" class="self-center text-small text-text-3 underline" @click="emit('older')">
@@ -166,20 +165,11 @@ function stateOf(message: ChatMessageData): string | null {
                 ]"
             >
                 <template v-if="!isOwn(message)">
-                    <span class="mb-0.5 flex items-center gap-[5px] text-badge text-text-3">
-                        <Avatar
-                            :participant="{
-                                kind: message.speaker.driver === null ? 'user' : 'agent',
-                                driver: message.speaker.driver ?? undefined,
-                                initials: message.speaker.label.slice(0, 1).toUpperCase(),
-                            }"
-                        />
-                        <span class="font-medium text-text-2">{{ message.speaker.label }}</span>
-                        <span>· {{ time }}</span>
-                        <template v-if="message.addressedTo !== null">
-                            <span>→ {{ labelOf(message.addressedTo) }}</span>
-                        </template>
-                    </span>
+                    <MessageHead
+                        :speaker="message.speaker"
+                        :time="time"
+                        :addressee="message.addressedTo === null ? null : labelOf(message.addressedTo)"
+                    />
                 </template>
                 <template v-if="message.replyTo !== null && message.replyTo.visible">
                     <a
