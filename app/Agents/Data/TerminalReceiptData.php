@@ -17,5 +17,7 @@ final class TerminalReceiptData extends Data
     public function __construct(
         public readonly int $sequence,
         public readonly TerminalReceiptOutcome $outcome,
+        // The rows and columns a resize achieved, as rowsxcolumns; none for any other input.
+        public readonly string|null $achievedSize = null,
     ) {}
 }

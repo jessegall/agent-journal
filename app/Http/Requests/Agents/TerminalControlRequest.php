@@ -43,6 +43,8 @@ final class TerminalControlRequest extends FormRequest
             'enter' => ['sometimes', 'boolean'],
             'kind' => ['sometimes', Rule::enum(TerminalInputKind::class)],
             'key' => ['required_if:kind,key', Rule::enum(TerminalNamedKey::class)],
+            'rows' => ['required_if:kind,resize', 'integer', 'min:1', 'max:1000'],
+            'columns' => ['required_if:kind,resize', 'integer', 'min:1', 'max:1000'],
             'sequence' => ['sometimes', 'integer', 'min:1'],
             'screenRevision' => ['sometimes', 'integer', 'min:0'],
             'choice' => ['sometimes', Rule::enum(TerminalDraftChoice::class)],
@@ -80,6 +82,8 @@ final class TerminalControlRequest extends FormRequest
             $this->integer('screenRevision'),
             $this->enum('kind', TerminalInputKind::class) ?? TerminalInputKind::Text,
             $this->enum('key', TerminalNamedKey::class),
+            $this->integer('rows'),
+            $this->integer('columns'),
         );
 
         return new SendTerminalInput($this->agentId(), $this->grantId(), $input);

@@ -8,8 +8,8 @@ use App\Agents\Enums\TerminalInputKind;
 use App\Agents\Enums\TerminalNamedKey;
 
 /**
- * One input a browser writer sends through their grant: text with or without Enter, one named key, or a paste, at its
- * sequence and for the screen revision the writer saw when they composed it.
+ * One input a browser writer sends through their grant: text with or without Enter, one named key, a paste, or a
+ * resize to rows and columns, at its sequence and for the screen revision the writer saw when they composed it.
  */
 final readonly class TerminalInput
 {
@@ -25,6 +25,8 @@ final readonly class TerminalInput
         public int $screenRevision,
         public TerminalInputKind $kind = TerminalInputKind::Text,
         public TerminalNamedKey|null $key = null,
+        public int $rows = 0,
+        public int $columns = 0,
     ) {}
 
     public function isOverPasteBound(): bool

@@ -159,6 +159,7 @@ func (socket *AttachSocket) terminalFor(request AttachRequest) (*hostTerminal, e
 	}
 	gate := inputs.NewInputGate(file, reader, layout.Composer, time.Now)
 	terminal := &hostTerminal{pty: file, reader: reader, layout: layout, gate: gate}
+	gate.ResizeWith(terminal.resizeForBrowser)
 	socket.terminals[request.RuntimeID] = terminal
 	go func() {
 		terminal.copyOut()
@@ -193,6 +194,27 @@ func (socket *AttachSocket) forget(runtimeID string, ended *hostTerminal) {
 func (terminal *hostTerminal) resize(rows, columns uint16) {
 	_ = pty.Setsize(terminal.pty, &pty.Winsize{Rows: rows, Cols: columns})
 	_ = terminal.reader.Resize(int(columns), int(rows))
+}
+
+// resizeForBrowser gives the PTY and the screen a browser writer's size, bounded by the screen's limits, and says
+// the size achieved; when either refuses, both go back to the size they had.
+func (terminal *hostTerminal) resizeForBrowser(rows, columns int) (int, int, error) {
+	limits := screen.DefaultLimits
+	rows, columns = min(max(rows, 1), limits.MaxRows), min(max(columns, 1), limits.MaxColumns)
+	before, err := pty.GetsizeFull(terminal.pty)
+	if err != nil {
+		return 0, 0, err
+	}
+	if err := pty.Setsize(terminal.pty, &pty.Winsize{Rows: uint16(rows), Cols: uint16(columns)}); err != nil {
+		return 0, 0, err
+	}
+	if err := terminal.reader.Resize(columns, rows); err != nil {
+		_ = pty.Setsize(terminal.pty, before)
+
+		return 0, 0, err
+	}
+
+	return rows, columns, nil
 }
 
 // Terminal is a program the host runs as a driver sees it: the screen read from its output and the one gate every

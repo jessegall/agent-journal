@@ -209,6 +209,8 @@ func (loop *Loop) browserControl(ctx context.Context, runtime *liveRuntime, requ
 		Choice:         fields.Choice,
 		InputKind:      fields.Kind,
 		Key:            fields.Key,
+		Rows:           fields.Rows,
+		Columns:        fields.Columns,
 	})
 	loop.reportResult(ctx, request, result, err)
 }

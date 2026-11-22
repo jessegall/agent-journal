@@ -86,6 +86,8 @@ type BrowserControlFields struct {
 	Choice         string `json:"choice"`
 	Kind           string `json:"kind"`
 	Key            string `json:"key"`
+	Rows           int    `json:"rows"`
+	Columns        int    `json:"columns"`
 }
 
 // BrowserControl reads the fields of a browser writer's operation from the request's message.
@@ -405,7 +407,7 @@ func (client *Client) Claim(ctx context.Context, limit, waitSeconds, watchedVers
 		target += "&arrangement=" + url.QueryEscape(client.arrangement)
 	}
 	if client.browserInput {
-		target += "&browser_input=1&browser_keys=1&browser_paste=1"
+		target += "&browser_input=1&browser_keys=1&browser_paste=1&browser_resize=1"
 	}
 	return answerOf[Claim](ctx, client, target, nil)
 }

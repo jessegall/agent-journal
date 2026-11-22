@@ -222,3 +222,28 @@ func TestALocalKeyRetiresALiveBrowserGrantBeforeItsBytes(t *testing.T) {
 	}
 	t.Fatalf("the local key left the browser grant live: %+v", terminal.gate.GrantState())
 }
+
+func TestABrowserResizeIsBoundedAndReportsTheAchievedSize(t *testing.T) {
+	socket, programs := listeningSocket(t)
+	attached(t, socket, "runtime-1", 24, 80)
+	terminal := terminalOf(t, socket, "runtime-1")
+	<-programs
+	waitForSize(t, socket, "runtime-1", 24, 80)
+	grant, err := terminal.gate.Take("take-1", inputs.GrantScope{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	receipt := terminal.gate.ApplyBrowser(inputs.BrowserOperation{
+		GrantID:  grant.ID,
+		Sequence: 1,
+		Kind:     inputs.ResizeOperation,
+		Rows:     40,
+		Columns:  600,
+	}, terminal.layout, "")
+
+	if receipt.Outcome != inputs.Applied || receipt.Rows != 40 || receipt.Columns != screen.DefaultLimits.MaxColumns {
+		t.Fatalf("the resize answered %+v", receipt)
+	}
+	waitForSize(t, socket, "runtime-1", 40, screen.DefaultLimits.MaxColumns)
+}

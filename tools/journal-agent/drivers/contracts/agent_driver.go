@@ -92,6 +92,8 @@ type BrowserControl struct {
 	Choice         string
 	InputKind      string
 	Key            string
+	Rows           int
+	Columns        int
 }
 
 // BrowserControlled carries out browser writers' operations; a driver without a terminal does not.

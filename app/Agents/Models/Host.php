@@ -42,6 +42,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $browser_input
  * @property bool $browser_keys
  * @property bool $browser_paste
+ * @property bool $browser_resize
  */
 #[Fillable(['installation_name', 'credential_hash', 'start_roots', 'arrangement'])]
 final class Host extends Model implements ReadableModel
@@ -65,6 +66,7 @@ final class Host extends Model implements ReadableModel
             'browser_input' => 'boolean',
             'browser_keys' => 'boolean',
             'browser_paste' => 'boolean',
+            'browser_resize' => 'boolean',
             'revoked_at' => 'immutable_datetime',
         ];
     }
@@ -195,8 +197,9 @@ final class Host extends Model implements ReadableModel
         $this->browser_input = $capabilities->text;
         $this->browser_keys = $capabilities->keys;
         $this->browser_paste = $capabilities->paste;
+        $this->browser_resize = $capabilities->resize;
 
-        if (! $this->isDirty(['browser_input', 'browser_keys', 'browser_paste'])) {
+        if (! $this->isDirty(['browser_input', 'browser_keys', 'browser_paste', 'browser_resize'])) {
             return;
         }
 
@@ -232,8 +235,14 @@ final class Host extends Model implements ReadableModel
      */
     public function carriesOutBrowserInputOf(TerminalInputKind $kind): bool
     {
-        return (new BrowserInputCapabilities($this->browser_input, $this->browser_keys, $this->browser_paste))
-            ->carriesOut($kind);
+        $capabilities = new BrowserInputCapabilities(
+            $this->browser_input,
+            $this->browser_keys,
+            $this->browser_paste,
+            $this->browser_resize,
+        );
+
+        return $capabilities->carriesOut($kind);
     }
 
     public function speaksCurrentProtocol(): bool

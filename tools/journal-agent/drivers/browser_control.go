@@ -3,6 +3,7 @@ package drivers
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"journal-agent/drivers/contracts"
 	"journal-agent/terminal"
@@ -39,8 +40,12 @@ func (driver *TerminalDriver) ControlFromBrowser(
 	}
 
 	receipt := gate.ApplyBrowser(driver.operationOf(control), driver.runtime.Layout, clearLineKeys)
+	result := contracts.OperationResult{Request: control.Request, Progress: progressOf(receipt.Outcome)}
+	if receipt.Rows > 0 {
+		result.ActualBinding = fmt.Sprintf("%dx%d", receipt.Rows, receipt.Columns)
+	}
 
-	return contracts.OperationResult{Request: control.Request, Progress: progressOf(receipt.Outcome)}, nil
+	return result, nil
 }
 
 // take issues or renews the writer's grant for the program as it runs now.
@@ -96,6 +101,8 @@ func (driver *TerminalDriver) operationOf(control contracts.BrowserControl) term
 		operation.Kind, operation.Key = terminal.KeyOperation, control.Key
 	case control.InputKind == "paste":
 		operation.Kind = terminal.PasteOperation
+	case control.InputKind == "resize":
+		operation.Kind, operation.Rows, operation.Columns = terminal.ResizeOperation, control.Rows, control.Columns
 	case control.Text == "" && control.Enter:
 		operation.Kind = terminal.EnterOperation
 	case control.Enter:

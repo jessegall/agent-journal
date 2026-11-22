@@ -29,6 +29,8 @@ type InputGate struct {
 	browser    browserGrants
 	// stopping is a gate a stop fenced: no take is granted and no driver line or key is written any more.
 	stopping bool
+	// resizer gives a browser writer's size to the PTY the host owns; nil where nothing may be resized.
+	resizer Resizer
 }
 
 // NewInputGate guards writes to the program, reading its composer from the reader; now is the clock of draft ages.

@@ -22,10 +22,16 @@ const (
 	// CheckOperation reconciles a fenced stream against a fresh screen; it takes no sequence and writes nothing.
 	CheckOperation  OperationKind = "check"
 	ChoiceOperation OperationKind = "choice"
-	// KeyOperation sends one named key; PasteOperation pastes text, several lines only in bracketed paste.
-	KeyOperation   OperationKind = "key"
-	PasteOperation OperationKind = "paste"
+	// KeyOperation sends one named key; PasteOperation pastes text, several lines only in bracketed paste;
+	// ResizeOperation gives the PTY and the screen the writer's size, bounded by both.
+	KeyOperation    OperationKind = "key"
+	PasteOperation  OperationKind = "paste"
+	ResizeOperation OperationKind = "resize"
 )
+
+// Resizer gives the program's PTY and the screen read from it a size, bounded by both, and says the size it
+// achieved; an error leaves the size as it was.
+type Resizer func(rows, columns int) (achievedRows, achievedColumns int, err error)
 
 // PasteByteLimit is the most bytes one paste may carry.
 const PasteByteLimit = 16 << 10
@@ -77,6 +83,8 @@ type BrowserOperation struct {
 	Text           string
 	Choice         DraftChoice
 	Key            string
+	Rows           int
+	Columns        int
 }
 
 // BrowserReceipt is the payload-free outcome of a browser operation: its sequence, the outcome, the sequence
@@ -87,6 +95,9 @@ type BrowserReceipt struct {
 	Expected     uint64
 	BytesWritten int
 	SavedText    string
+	// Rows and Columns are the size a resize achieved.
+	Rows    int
+	Columns int
 }
 
 // storedReceipt is a receipt kept for repeats, with the keyed digest of its whole operation.
@@ -128,7 +139,13 @@ func (receipts *grantReceipts) digestOf(operation BrowserOperation) []byte {
 		_ = binary.Write(mac, binary.BigEndian, uint32(len(part)))
 		mac.Write([]byte(part))
 	}
-	numbers := [3]uint64{operation.Sequence, operation.Generation, operation.PromptRevision}
+	numbers := [5]uint64{
+		operation.Sequence,
+		operation.Generation,
+		operation.PromptRevision,
+		uint64(operation.Rows),
+		uint64(operation.Columns),
+	}
 	_ = binary.Write(mac, binary.BigEndian, numbers)
 
 	return mac.Sum(nil)
@@ -231,6 +248,8 @@ func (gate *InputGate) writeLocked(
 		return gate.keyLocked(operation, receipts), nil
 	case PasteOperation:
 		return gate.pasteLocked(operation, receipts, bracketedPaste), nil
+	case ResizeOperation:
+		return gate.resizeLocked(operation, receipts), nil
 	}
 
 	return gate.chooseLocked(operation, receipts, clearKeys)
@@ -262,6 +281,33 @@ func (gate *InputGate) pasteLocked(operation BrowserOperation, receipts *grantRe
 	pasted := pasteStart + strings.ReplaceAll(operation.Text, pasteEnd, "") + pasteEnd
 
 	return receipts.keep(operation, gate.writeCounted(operation.Sequence, receipts, pasted))
+}
+
+// resizeLocked gives the program the writer's size through the host's resizer and keeps the achieved size in the
+// receipt; with no resizer, or one that fails, the size stays as it was and the resize is unavailable.
+func (gate *InputGate) resizeLocked(operation BrowserOperation, receipts *grantReceipts) BrowserReceipt {
+	if gate.resizer == nil {
+		return BrowserReceipt{Sequence: operation.Sequence, Outcome: Paused}
+	}
+	rows, columns, err := gate.resizer(operation.Rows, operation.Columns)
+	if err != nil {
+		return BrowserReceipt{Sequence: operation.Sequence, Outcome: Paused}
+	}
+
+	return receipts.keep(operation, BrowserReceipt{
+		Sequence: operation.Sequence,
+		Outcome:  Applied,
+		Rows:     rows,
+		Columns:  columns,
+	})
+}
+
+// ResizeWith makes the gate give a browser writer's resizes to the host's resizer, which owns the PTY.
+func (gate *InputGate) ResizeWith(resizer Resizer) {
+	gate.mutex.Lock()
+	defer gate.mutex.Unlock()
+
+	gate.resizer = resizer
 }
 
 // isOrdinaryLine is whether the text is one line with no control character in it.

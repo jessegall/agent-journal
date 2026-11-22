@@ -185,6 +185,8 @@ final readonly class TerminalControls
             'enter' => $input->enter,
             'kind' => $input->kind->value,
             'key' => $input->key?->value,
+            'rows' => $input->rows,
+            'columns' => $input->columns,
         ]);
 
         return $this->answerOf($grant, $now);
@@ -260,7 +262,7 @@ final readonly class TerminalControls
 
         return TerminalControlData::from([
             ...$this->fieldsOf($grant, $now),
-            'receipt' => ['sequence' => $sequence, 'outcome' => $outcome],
+            'receipt' => ['sequence' => $sequence, 'outcome' => $outcome, 'achievedSize' => $sent?->actual_binding],
         ]);
     }
 
