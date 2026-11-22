@@ -12,8 +12,8 @@ const emit = defineEmits<{ restore: [intentKey: string]; discard: [intentKey: st
 </script>
 
 <template>
-    <div class="ml-auto flex max-w-[85%] flex-col items-end gap-0.5">
-        <p class="rounded-bubble border border-border-2 px-3 py-2 text-body whitespace-pre-wrap text-text-2">
+    <div class="flex max-w-[78%] flex-col items-end gap-0.5 self-end">
+        <p class="rounded-[10px_10px_4px_10px] border border-border-2 px-3 py-2 text-body whitespace-pre-wrap text-text-2">
             {{ entry.text }}
         </p>
         <span class="flex gap-2 text-small text-tone-warn">
