@@ -32,7 +32,7 @@ final readonly class WaitingPlansSection implements SectionResolver
     {
         $this->sessions->requireActive((string) $context->id);
         $filters = new PlanFilters(states: PlanStateGroup::Waiting->states());
-        $cards = PlanCardData::collect($this->records->list($filters)->cards);
+        $cards = array_map(PlanCardData::fromPlanCard(...), $this->records->list($filters)->cards);
 
         if ($cards === []) {
             return DeclaredLayoutData::of(LayoutPartData::box('waiting', 'stack'));
