@@ -23,17 +23,16 @@ class PerformanceState:
         self.reloading = home.folder / "performance-reloading"
         self.boot_events: dict[FileVersion, int] = {}
 
-    # asked for every command and timed step, so the four marks of a start, reload or test run are looked at once a
-    # second at most, and dropped when this state changes one; a restart or an update, which other processes mark,
-    # is looked at each time
+    # asked for every command and timed step, inside writes too, so the marks of a start, reload, test run, restart
+    # or update are looked at once a second at most, and dropped when this state changes one
     @property
     def can_measure(self) -> bool:
-        return (MeasureAnswer.shared(self.home).answer(self.clock.unix_seconds(), self.unmarked_now)
-                and not (self.restart.is_restarting or self.restart.is_updating))
+        return MeasureAnswer.shared(self.home).answer(self.clock.unix_seconds(), self.unmarked_now)
 
     def unmarked_now(self) -> bool:
         return not (FileAccess.exists(self.starting) or FileAccess.exists(self.home.folder / "server-starting")
-                    or FileAccess.exists(self.reloading) or FileAccess.exists(self.tests))
+                    or FileAccess.exists(self.reloading) or FileAccess.exists(self.tests)
+                    or self.restart.is_restarting or self.restart.is_updating)
 
     def begin_start(self) -> None:
         FileAccess.write(self.starting, "0")
