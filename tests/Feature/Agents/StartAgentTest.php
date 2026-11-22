@@ -7,6 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Commands\RetireAgent\RetireAgentCommand;
 use App\Commands\StartAgent\StartAgentCommand;
 use App\Contracts\CommandBus;
+use App\Contracts\DriverCatalogue;
 use App\Contracts\ServerClock;
 use App\Contracts\StartHeartbeats;
 use App\Enums\ConversationModeType;
@@ -21,6 +22,7 @@ use App\Events\StartAccepted;
 use App\Exceptions\AccountUnavailable;
 use App\Exceptions\AgentBusy;
 use App\Exceptions\HostUnavailable;
+use App\Exceptions\StartPreviewStale;
 use App\Exceptions\StartRefused;
 use App\Models\Account;
 use App\Models\ActiveAccount;
@@ -235,7 +237,18 @@ final class StartAgentTest extends TestCase
         $this->assertSame(SessionStatus::Silent, AgentSession::query()->findOrFail($receipt->sessionId)->status);
     }
 
-    private function request(): StartRequest
+    public function test_a_start_previewed_before_the_drivers_changed_is_refused_and_keeps_nothing(): void
+    {
+        $stale = $this->app->make(DriverCatalogue::class)->revision() - 1;
+
+        $this->assertThrows(
+            fn () => $this->start($this->request($stale)),
+            StartPreviewStale::class,
+        );
+        $this->assertSame(0, StartRecord::query()->count());
+    }
+
+    private function request(int|null $previewRevision = null): StartRequest
     {
         return new StartRequest(
             TestSelections::requestId(),
@@ -248,6 +261,7 @@ final class StartAgentTest extends TestCase
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
             variant: DriverVariant::Headless,
+            previewRevision: $previewRevision,
         );
     }
 

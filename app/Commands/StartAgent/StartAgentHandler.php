@@ -15,6 +15,7 @@ use App\Enums\StartOriginType;
 use App\Events\StartAccepted;
 use App\Exceptions\AgentBusy;
 use App\Exceptions\HostUnavailable;
+use App\Exceptions\StartPreviewStale;
 use App\Exceptions\StartRefusalReplayed;
 use App\Exceptions\StartRefused;
 use App\Exceptions\StartRequestConflict;
@@ -63,6 +64,7 @@ final readonly class StartAgentHandler implements CommandHandler
     ) {}
 
     /**
+     * @throws StartPreviewStale
      * @throws StartRequestConflict
      * @throws StartRefusalReplayed
      * @throws StartRefused
@@ -72,6 +74,10 @@ final readonly class StartAgentHandler implements CommandHandler
     {
         $request = $command->request;
         $dispatcher = ActorIdentity::of($command->dispatchedBy());
+
+        if ($request->previewRevision !== null && $request->previewRevision !== $this->drivers->revision()) {
+            throw StartPreviewStale::since($request->previewRevision, $this->drivers->revision());
+        }
 
         $record = StartRecord::accept(
             $request,

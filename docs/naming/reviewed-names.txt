@@ -629,6 +629,10 @@ case	MessageType::Chat
 case	MessageType::Desk
 case	MiddlewareStage::BeforeTransaction
 case	MiddlewareStage::InsideTransaction
+case	ModeSourceType::Explicit
+case	ModeSourceType::OnlyMode
+case	ModeSourceType::Profile
+case	ModeSourceType::Saved
 case	ModelSelectionType::Named
 case	ModelSelectionType::ProfileDefault
 case	MountType::Bind
@@ -6337,6 +6341,9 @@ class	StartPlanRequest
 class	StartPlanTool
 class	StartPolicy
 class	StartPreflightRefused
+class	StartPreview
+class	StartPreviewStale
+class	StartPreviews
 class	StartProfile
 class	StartProfileAuthority
 class	StartProfileMainCommand
@@ -8347,6 +8354,7 @@ enum	MergeRefusalReason
 enum	MessageState
 enum	MessageType
 enum	MiddlewareStage
+enum	ModeSourceType
 enum	ModelSelectionType
 enum	MountType
 enum	NameType
@@ -24521,6 +24529,14 @@ method	StartPreflightRefused::because()
 method	StartPreflightRefused::reason()
 method	StartPreflightRefused::refusalCode()
 method	StartPreflightRefused::status()
+method	StartPreview::__construct()
+method	StartPreview::canRun()
+method	StartPreviewStale::since()
+method	StartPreviews::__construct()
+method	StartPreviews::modeOf()
+method	StartPreviews::modesOf()
+method	StartPreviews::preview()
+method	StartPreviews::unavailableReason()
 method	StartProfile::__construct()
 method	StartProfile::grants()
 method	StartProfile::hasKeyIn()
@@ -28348,6 +28364,7 @@ parameter	$isLive
 parameter	$isLoggedIn
 parameter	$isMeasured
 parameter	$isMine
+parameter	$isModeLocked
 parameter	$isNegated
 parameter	$isNew
 parameter	$isNewIdentity
@@ -28654,6 +28671,7 @@ parameter	$missingProblem
 parameter	$missingProviders
 parameter	$missingRule
 parameter	$mode
+parameter	$modeSource
 parameter	$modeText
 parameter	$model
 parameter	$modelChoices
@@ -28913,6 +28931,7 @@ parameter	$parent
 parameter	$parentAgentId
 parameter	$parentClaimId
 parameter	$parentDriver
+parameter	$parentFamily
 parameter	$parentId
 parameter	$parentRuntimeId
 parameter	$parentSessionId
@@ -29054,6 +29073,8 @@ parameter	$presentations
 parameter	$preview
 parameter	$previewChecksum
 parameter	$previewId
+parameter	$previewRevision
+parameter	$previewed
 parameter	$previous
 parameter	$previousPassStart
 parameter	$previousState
@@ -39568,6 +39589,7 @@ property	StartHelperCommand::$work
 property	StartHelperHandler::$dispatch
 property	StartOwnedAgentCommand::$request
 property	StartOwnedAgentHandler::$commands
+property	StartOwnedAgentHandler::$profiles
 property	StartOwnedAgentHandler::$sessions
 property	StartOwnedAgentHandler::$sources
 property	StartPermitRun::$processes
@@ -39582,6 +39604,15 @@ property	StartPolicy::$profileRevision
 property	StartPolicy::$requiresReview
 property	StartPolicy::$stopConditions
 property	StartPreflightRefused::$refusal
+property	StartPreview::$catalogueRevision
+property	StartPreview::$driverKey
+property	StartPreview::$isModeLocked
+property	StartPreview::$label
+property	StartPreview::$mode
+property	StartPreview::$modeSource
+property	StartPreview::$selection
+property	StartPreview::$unavailableReason
+property	StartPreviews::$drivers
 property	StartProfile::$snapshot
 property	StartProfileAuthority::$profile
 property	StartProfileMainCommand::$agentId
@@ -39655,6 +39686,7 @@ property	StartRequest::$origin
 property	StartRequest::$ownerReference
 property	StartRequest::$parentSessionId
 property	StartRequest::$policy
+property	StartRequest::$previewRevision
 property	StartRequest::$requestId
 property	StartRequest::$savesVariant
 property	StartRequest::$selection

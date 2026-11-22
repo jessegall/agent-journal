@@ -31,6 +31,8 @@ final readonly class StartRequest
         public string|null $conversationTarget = null,
         public ChosenAccount|null $chosenAccount = null,
         public bool $savesVariant = false,
+        // The catalogue revision the start was previewed at, when it was; the start refuses once it moved on.
+        public int|null $previewRevision = null,
     ) {}
 
     /**
